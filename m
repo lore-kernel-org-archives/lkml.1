@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYKCQkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYKCQl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756631AbYKCQkR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 11:40:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbYKCQkD
+	id S1756716AbYKCQl6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 11:41:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbYKCQlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 11:40:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60036 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755211AbYKCQkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 11:40:01 -0500
-Message-ID: <490F2953.30709@kernel.org>
-Date: Tue, 04 Nov 2008 01:39:47 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 3 Nov 2008 11:41:50 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:52299 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755041AbYKCQlt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 11:41:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XKjcFEYc07HuSUkWQSoLQGaZEj+fq6zzw50MLBaOT+EytlDbfyFjT0N8c4NLVwlzp9
+         IxXCtdPVtTzyjnpdapWdiQzJ2b+Zxy1qst2gAOlnMqKFFZIaZ2fd5v406vV0FWZuchSn
+         7fDvQOcvxpmxef/K0EqsGP0MvrUZvIUGHCTsU=
+Message-ID: <bc64b4640811030841h5bcc537fy4b645c6d293b7b46@mail.gmail.com>
+Date: Mon, 3 Nov 2008 19:41:47 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <20081103162547.GA25546@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Mike Anderson <andmike@linux.vnet.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Problems with the block-layer timeouts
-References: <Pine.LNX.4.44L0.0811031051210.2454-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0811031051210.2454-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Nov 2008 16:39:51 +0000 (UTC)
+Content-Disposition: inline
+References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com>
+	 <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
+	 <20081103145514.GA23466@oksana.dev.rtsoft.ru>
+	 <bc64b4640811030820j660b8386x39bf2285b1dba887@mail.gmail.com>
+	 <20081103162547.GA25546@oksana.dev.rtsoft.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Alan Stern!  :-)
+2008/11/3 Anton Vorontsov <avorontsov@ru.mvista.com>:
+> On Mon, Nov 03, 2008 at 07:20:06PM +0300, Dmitry wrote:
+>> 2008/11/3 Anton Vorontsov <avorontsov@ru.mvista.com>:
+>> > On Sun, Nov 02, 2008 at 11:36:08PM +0300, Dmitry wrote:
+>> >> 2008/10/29 Dmitry Baryshkov <dbaryshkov@gmail.com>:
+>> >> > There are already several wm97xx-battery drivers. Do register the tosa one
+>> >> > only on tosa machines.
+>> >> >
+>> >> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+>> >> > ---
+>> >> >  drivers/power/tosa_battery.c |    3 +++
+>> >> >  1 files changed, 3 insertions(+), 0 deletions(-)
+>> >>
+>> >> What about this patch?
+>> >
+>> > Sorry for the delay.
+>> >
+>> >> IMO it can and should be merged during 2.6.28-rc cycle.
+>> >>
+>> >> diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
+>> >> index 2eab35a..4e52c22 100644
+>> >> --- a/drivers/power/tosa_battery.c
+>> >> +++ b/drivers/power/tosa_battery.c
+>> >> @@ -469,6 +469,9 @@ static struct platform_driver tosa_bat_driver = {
+>> >>
+>> >>  static int __init tosa_bat_init(void)
+>> >>  {
+>> >> +     if (!machine_is_tosa())
+>> >> +             return -EINVAL;
+>> >> +
+>> >
+>> > I tend to reject this approach. You should rename the driver instead.
+>> >
+>> > I.e.
+>> > -.driver.name    = "wm97xx-battery",
+>> > -.driver.name    = "tosa-battery",
+>> >
+>> > And make sure that this won't break users of that driver (though
+>> > I don't see any).
+>>
+>> The wm97xx-battery device is registered by
+>> drivers/input/toucscreen/wm97xx-core.c
+>
+> Hmm.. So you can't rename the tosa driver, because then it won't
+> work, correct?
 
-Alan Stern wrote:
-> Even a "peek and fetch" interface might not be best, at least as far as
-> timer issues are concerned.  Ideally, the timer shouldn't be started
-> until the SCSI midlayer knows that the request has successfully been
-> sent to the lower-level driver.
-> 
-> Therefore the best approach would be to EXPORT blk_add_timer().  It 
-> should be called at the end of scsi_dispatch_cmd(), when the return 
-> value from the queuecommand method is known to be 0.
-> 
-> With something like this, Mike's fix to end_that_request_last() 
-> wouldn't be needed, since blkdev_dequeue_request() wouldn't 
-> automatically start the timer.  It seems silly to start the timer when 
-> you know you're just going to stop it immediately afterwards.
+Yup.
+I see few ways to resolve this:
+* write better wm97xx interface. Dunno if that is feasible or possible.
+  One of the possible solutions is to pass battery and ts device names
+  and data from within board data via ac97 layer to wm97xx-core. This
+  will provide several benefits (e.g. then we can drop lots of parameters
+  from wm97xx-core, which are really board parameters).
+* Merge most of functionality of wm97xx-battery driver for Palms (by Marek),
+  my tosa battery driver, name that The Only wm97xx-battery Driver. However
+  on this path we will have to put lot's of code into hooks, which is
+pretty much
+  ugly IMO.
 
-Block layer currently doesn't know when a request is actually being
-issued.  For timeout, blk_add_timer() can be exported but I think that
-only aggravate the already highly fragmented block layer interface
-(different users use it differently to the point of scary chaos).  For
-minor example, block tracing considers elv_next_request() as the command
-issue point which isn't quite true for SCSI and many other drivers.  For
-that too, we can export the tracing interface but I don't think that's
-the right direction.  More stuff are scheduled to be moved to block
-layer and exporting more and more implementation details to block layer
-users will have hard time scaling.
-
-I'm trying to convert all drivers to use the same command issue model -
-elv_next_request() -> blkdev_dequeue_request() on actual issue ->
-blk_end_request().  I have first draft of the conversion patchset but
-it's gonna take me a few more days to review and test what I can as
-several drivers (mostly legacy ones) are a bit tricky.
-
-For the time being, SCSI layer is the only block layer timeout user and
-completion w/o dequeuing is only for error cases in SCSI, so the
-inefficiency there shouldn't matter too much.
-
-Jens, what do you think?
-
-Thanks.
 
 -- 
-tejun
+With best wishes
+Dmitry
