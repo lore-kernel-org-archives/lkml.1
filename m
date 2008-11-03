@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYKCXey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYKCXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYKCXey (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKCXep
+	id S1756680AbYKCXfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbYKCXf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:34:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59245 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751164AbYKCXep (ORCPT
+	Mon, 3 Nov 2008 18:35:29 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:28166 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbYKCXf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:34:45 -0500
-Date: Mon, 3 Nov 2008 15:34:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rakib Mullick" <rakib.mullick@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] kernel/cpu.c: Section mismatch warning fix.
-Message-Id: <20081103153425.7282ab84.akpm@linux-foundation.org>
-In-Reply-To: <b9df5fa10810292104h38fcee68kae42cf5ab6275fbb@mail.gmail.com>
-References: <b9df5fa10810292104h38fcee68kae42cf5ab6275fbb@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 3 Nov 2008 18:35:28 -0500
+Subject: Re: [PATCH] disable CPU side GART accesses
+From: Bob Montgomery <bob.montgomery@hp.com>
+Reply-To: bob.montgomery@hp.com
+To: Dave Airlie <airlied@gmail.com>
+Cc: Dave Jones <davej@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "vojtech@suse.cz" <vojtech@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "chandru@in.ibm.com" <chandru@in.ibm.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <21d7e9970810291440w50d15c30o961dad801cf71548@mail.gmail.com>
+References: <1224107317.2215.238.camel@amd.troyhebe>
+	 <20081015234842.GA10999@elte.hu>	 <1225147341.2215.401.camel@amd.troyhebe>
+	 <4906495B.1060506@kernel.org>	 <1225313564.3428.14.camel@amd.troyhebe>
+	 <21d7e9970810291424g369035d4h562b54c676d49aef@mail.gmail.com>
+	 <20081029213244.GD24794@redhat.com>
+	 <21d7e9970810291440w50d15c30o961dad801cf71548@mail.gmail.com>
+Content-Type: text/plain
+Organization: Contractor at HP
+Date: Mon, 03 Nov 2008 16:36:19 -0700
+Message-Id: <1225755379.3428.39.camel@amd.troyhebe>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008 10:04:54 +0600
-"Rakib Mullick" <rakib.mullick@gmail.com> wrote:
-
->  LD      kernel/built-in.o
-> WARNING: kernel/built-in.o(.text+0xb7c8): Section mismatch in
-> reference from the function notify_cpu_starting() to the variable
-> .cpuinit.data:cpu_chain
-> The function notify_cpu_starting() references
-> the variable __cpuinitdata cpu_chain.
-> This is often because notify_cpu_starting lacks a __cpuinitdata
-> annotation or the annotation of cpu_chain is wrong.
+On Wed, 2008-10-29 at 21:40 +0000, Dave Airlie wrote:
+> On Thu, Oct 30, 2008 at 7:32 AM, Dave Jones <davej@redhat.com> wrote:
+> > On Thu, Oct 30, 2008 at 07:24:34AM +1000, Dave Airlie wrote:
+> >
+> >  > This stops the CPU from using the aperture for most DRI things. I
+> >  > can't confirm this won't regress working systems
+> >  > though. The whole AMD GART thing scares me, esp if some of the host
+> >  > chipsets also have an AGP GART.
+> >
+> > The easy cop-out for those in the past has been 'dont support them'.
+> > It's why we removed some K8 chipset PCI IDs from the via driver for eg.
+> > iirc, if we leave them unprogrammed, they're essentially irrelevant.
+> >
 > 
-> This patch fixes the above section mismatch warning. If anything else
-> please notice.
-> Thanks.
+> I was more going the other way, why use the IOMMU for AGP when it has
+> other tasks to
+> do, and we have a host chipset GART.
 > 
-> Signed-off-by: Md.Rakib H. Mullick <rakib.mullick@gmail.com>
-> 
-> --- linux-2.6-orig/kernel/cpu.c	2008-10-28 20:52:38.000000000 +0600
-> +++ linux-2.6/kernel/cpu.c	2008-10-28 22:46:22.000000000 +0600
-> @@ -462,7 +462,7 @@ out:
->   * It must be called by the arch code on the new cpu, before the new cpu
->   * enables interrupts and before the "boot" cpu returns from __cpu_up().
->   */
-> -void notify_cpu_starting(unsigned int cpu)
-> +void __cpuinit notify_cpu_starting(unsigned int cpu)
->  {
->  	unsigned long val = CPU_STARTING;
+> Granted I've never had an AMD + AGP system to ever care about this.
 
-arch/alpha/kernel/smp.c calls notify_cpu_starting() from __init code.
+We're specifically talking about AMD64, and we're not using an IOMMU for
+AGP, we're using the AMD64 implementation of the GART for an IOMMU.
+The (possible) danger is that some old AMD64 system could also (or
+instead) try using the GART for AGP and run into a problem since my
+patch wants to disable CPU side access to the aperture, which is fine
+when we're using it as an IOMMU.
 
-arch/cris/arch-v32/kernel/smp.c calls notify_cpu_starting() from __init code.
+In drivers/gpu/drm/drm_memory.c:agp_remap(), there are these comments
+about the part of the code that deals with "cant_use_aperture":
 
-arch/x86/mach-voyager/voyager_smp.c calls notify_cpu_starting() from
-__init code.
+/*
+ * OK, we're mapping AGP space on a chipset/platform on which
+ * memory accesses by the CPU do not get remapped by the GART.
+ * We fix this by using the kernel's page-table instead (that's
+ * probably faster anyhow...).
+ */
 
-arch/m32r/kernel/smpboot.c calls notify_cpu_starting() from __init code.
+So that's encouraging.  Now the question is this:  Can I just go into
+amd64-agp.c and add ".cant_use_aperture=true" to the agp_bridge_driver
+struct?  Who's brave enough to say that will just work? :-)
 
-arch/sparc/kernel/sun4d_smp.c calls notify_cpu_starting() from __init code.
+static const struct agp_bridge_driver amd_8151_driver = {
+...
 
-arch/powerpc/kernel/smp.c calls notify_cpu_starting() from __devinit
-code.
+The "cant_use_aperture" paths have possibly
+never been tested on amd64 agp systems, but
+are in use on these systems:
 
-arch/um/kernel/smp.c calls notify_cpu_starting() from .text code.
+alpha-agp.c:    .cant_use_aperture      = true,
+hp-agp.c:       .cant_use_aperture      = true,
+i460-agp.c:     .cant_use_aperture      = true,
+parisc-agp.c:   .cant_use_aperture      = true,
+sgi-agp.c:      .cant_use_aperture = true,
+uninorth-agp.c: .cant_use_aperture      = true,
+uninorth-agp.c: .cant_use_aperture      = true,
+
+Thanks for any more enlightenment,
+Bob Montgomery
 
 
-The other nine callers call notify_cpu_starting() from __cpuinit code.
 
 
-What a mess.
+
+
+
