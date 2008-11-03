@@ -1,174 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbYKCRPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbYKCRSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752171AbYKCRPp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 12:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbYKCRPe
+	id S1752575AbYKCRSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYKCRSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 12:15:34 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:56843 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbYKCRPd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 12:15:33 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Mon, 03 Nov 2008 12:15:00 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: vapier@gentoo.org, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SMC91x: delete unused local variable "lp"
-In-reply-to: <20081104.014511.108120668.anemo@mba.ocn.ne.jp>
-Message-id: <alpine.LFD.2.00.0811031154270.13034@xanadu.home>
-References: <1225288566-18457-1-git-send-email-vapier@gentoo.org>
- <20081104.014511.108120668.anemo@mba.ocn.ne.jp>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 3 Nov 2008 12:18:24 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34703 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751118AbYKCRSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:18:23 -0500
+Message-ID: <490F317C.9040603@redhat.com>
+Date: Mon, 03 Nov 2008 11:14:36 -0600
+From: David Smith <dsmith@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [patch 15/21] ptrace changes
+References: <20081001083317.782967473@de.ibm.com> <20081001084129.042880937@de.ibm.com>
+In-Reply-To: <20081001084129.042880937@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Atsushi Nemoto wrote:
+Note that I know ~0 about s390 register layouts, but...
 
-> On Wed, 29 Oct 2008 09:56:06 -0400, Mike Frysinger <vapier@gentoo.org> wrote:
-> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> > ---
-> >  drivers/net/smc91x.c |    2 --
-> >  1 files changed, 0 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
-> > index c70870e..6f9895d 100644
-> > --- a/drivers/net/smc91x.c
-> > +++ b/drivers/net/smc91x.c
-> > @@ -2060,7 +2060,6 @@ static int smc_request_attrib(struct platform_device *pdev,
-> >  			      struct net_device *ndev)
-> >  {
-> >  	struct resource * res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "smc91x-attrib");
-> > -	struct smc_local *lp = netdev_priv(ndev);
-> >  
-> >  	if (!res)
-> >  		return 0;
-> 
-> The local variable 'lp' is actually used on some platforms (via
-> SMC_IO_SHIFT).
+Martin Schwidefsky wrote:
+> Index: quilt-2.6/arch/s390/kernel/ptrace.c
+> ===================================================================
+> --- quilt-2.6.orig/arch/s390/kernel/ptrace.c
+> +++ quilt-2.6/arch/s390/kernel/ptrace.c
+> @@ -639,40 +640,44 @@ long compat_arch_ptrace(struct task_stru
+>  }
+>  #endif
+>
+> -asmlinkage void
+> -syscall_trace(struct pt_regs *regs, int entryexit)
+> +asmlinkage long do_syscall_trace_enter(struct pt_regs *regs)
+>  {
 
-Oops, indeed.
+...
 
-> Please revert this change and do another way ("unused" marker or
-> something) to fix the warnings.
+> +	if (unlikely(current->audit_context))
+> +		audit_syscall_entry(test_thread_flag(TIF_31BIT) ?
+> +					AUDIT_ARCH_S390 : AUDIT_ARCH_S390X,
+> +				    regs->gprs[2], regs->orig_gpr2,
+> +				    regs->gprs[3], regs->gprs[4],
+> +				    regs->gprs[5]);
+> +	return ret;
+> +}
 
-There were no warnings AFAIK.
+According to the above, the syscall number is in regs->gprs[2] and the
+1st syscall argument is in regs->orig_gpr2.
 
-Actually, the best fix might be the following patch:
+Then in:
 
------
-From: Nicolas Pitre <nico@cam.org>
+> Index: quilt-2.6/arch/s390/include/asm/syscall.h
+> ===================================================================
 
-Commit 51ac3beffd removed an apparently unused local variable from 
-smc_request_attrib(), but some platforms actually needs the lp variable 
-to define SMC_IO_SHIFT which is used to define ATTRIB_SIZE.
+...
 
-Let's always add a reference to lp to avoid such mistakes in the future,
-which in the constant case gets optimized away at compile time.
+> +static inline long syscall_get_nr(struct task_struct *task,
+> +				  struct pt_regs *regs)
+> +{
+> +	if (regs->trap != __LC_SVC_OLD_PSW)
+> +		return -1;
+> +	return regs->gprs[2];
+> +}
 
-Signed-off-by: Nicolas Pitre <nico@cam.org>
+... according to the syscall_get_nr(), the syscall number is in
+regs->gprs[2], which matches what is in arch/s390/kernel/ptrace.c ...
 
-diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
-index 6f9895d..a657321 100644
---- a/drivers/net/smc91x.c
-+++ b/drivers/net/smc91x.c
-@@ -2060,6 +2060,7 @@ static int smc_request_attrib(struct platform_device *pdev,
- 			      struct net_device *ndev)
- {
- 	struct resource * res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "smc91x-attrib");
-+	struct smc_local *lp = netdev_priv(ndev);
- 
- 	if (!res)
- 		return 0;
-diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
-index a07cc93..23fc21a 100644
---- a/drivers/net/smc91x.h
-+++ b/drivers/net/smc91x.h
-@@ -91,7 +91,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_8BIT	0
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	1
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT      	1
- #define SMC_USE_BFIN_DMA	0
- 
-@@ -106,7 +105,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_8BIT	0
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	0
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT      	1
- #define SMC_USE_BFIN_DMA	0
- 
-@@ -138,7 +136,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_32BIT	0
- #define SMC_NOWAIT		1
- 
--#define SMC_IO_SHIFT		0
- 
- #define SMC_inw(a, r)		in_be16((volatile u16 *)((a) + (r)))
- #define SMC_outw(v, a, r)	out_be16((volatile u16 *)((a) + (r)), v)
-@@ -172,7 +169,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_8BIT	1
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	0
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT		1
- 
- #define SMC_inb(a, r)		readb((a) + (r))
-@@ -197,7 +193,7 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_NOWAIT		1
- 
- /* The first two address lines aren't connected... */
--#define SMC_IO_SHIFT		2
-+#define SMC_IO_SHIFT		(lp, 2)
- 
- #define SMC_inb(a, r)		readb((a) + (r))
- #define SMC_outb(v, a, r)	writeb(v, (a) + (r))
-@@ -210,7 +206,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_8BIT	0
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	0
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT		1
- 
- #define SMC_inw(a, r)		readw((a) + (r))
-@@ -226,7 +221,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_8BIT	1
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	1
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT		1
- #define SMC_USE_PXA_DMA		1
- 
-@@ -258,7 +252,6 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- #define SMC_CAN_USE_8BIT	0
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	0
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT		1
- 
- #define SMC_inw(a, r)		readw((a) + (r))
-@@ -387,7 +380,6 @@ static inline void LPD7_SMC_outsw (unsigned char* a, int r,
- #define SMC_CAN_USE_8BIT	0
- #define SMC_CAN_USE_16BIT	1
- #define SMC_CAN_USE_32BIT	0
--#define SMC_IO_SHIFT		0
- #define SMC_NOWAIT		1
- 
- #define SMC_inw(a, r)		au_readw((unsigned long)((a) + (r)))
-@@ -682,7 +674,7 @@ smc_pxa_dma_irq(int dma, void *dummy)
- #endif
- 
- #ifndef SMC_IO_SHIFT
--#define SMC_IO_SHIFT	0
-+#define SMC_IO_SHIFT	(lp, 0)
- #endif
- 
- #ifndef	SMC_IRQ_FLAGS
+> +static inline void syscall_get_arguments(struct task_struct *task,
+> +					 struct pt_regs *regs,
+> +					 unsigned int i, unsigned int n,
+> +					 unsigned long *args)
+> +{
+> +	BUG_ON(i + n > 6);
+> +#ifdef CONFIG_COMPAT
+> +	if (test_tsk_thread_flag(task, TIF_31BIT)) {
+> +		if (i + n == 6)
+> +			args[--n] = (u32) regs->args[0];
+> +		while (n-- > 0)
+> +			args[n] = (u32) regs->gprs[2 + i + n];
+> +	}
+> +#endif
+> +	if (i + n == 6)
+> +		args[--n] = regs->args[0];
+> +	memcpy(args, &regs->gprs[2 + i], n * sizeof(args[0]));
+> +}
+> +
+> +static inline void syscall_set_arguments(struct task_struct *task,
+> +					 struct pt_regs *regs,
+> +					 unsigned int i, unsigned int n,
+> +					 const unsigned long *args)
+> +{
+> +	BUG_ON(i + n > 6);
+> +	if (i + n == 6)
+> +		regs->args[0] = args[--n];
+> +	memcpy(&regs->gprs[2 + i], args, n * sizeof(args[0]));
+> +}
+> +
+> +#endif	/* _ASM_SYSCALL_H */
+
+According to syscall_get_arguments()/syscall_set_arguments(), the 1st
+syscall argument is in regs->gprs[2], which *doesn't* match what is in
+arch/s390/kernel/ptrace.c.
+
+Is this correct, or should the 1st syscall argument be found in
+regs->orig_gpr2 by syscall_get_arguments()/syscall_set_arguments()?
+
+-- 
+David Smith
+dsmith@redhat.com
+Red Hat
+http://www.redhat.com
+256.217.0141 (direct)
+256.837.0057 (fax)
