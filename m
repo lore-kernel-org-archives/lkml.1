@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbYKCHJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYKCHXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbYKCHJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 02:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYKCHJO
+	id S1754738AbYKCHXP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 02:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYKCHW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 02:09:14 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:54110 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbYKCHJN (ORCPT
+	Mon, 3 Nov 2008 02:22:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:63318 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbYKCHW5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 02:09:13 -0500
-X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 02:09:13 EST
-From: Paul Collins <paul@burly.ondioline.org>
-To: benh@kernel.crashing.org
-Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-Date: Mon, 03 Nov 2008 20:01:52 +1300
-In-Reply-To: <1225662539.8004.237.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Mon, 03 Nov 2008 08:48:59 +1100")
-Message-ID: <871vxtthr3.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Mon, 3 Nov 2008 02:22:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xpMgRfHUlL4eLc08/Vz1zSmr4ZyAMtdwSgO1diiIC9k+3q0NXUhsmUnzmf8Cf+1ZMz
+         /blX8odoZtGoWchaKgc4ODQxX+vxrgJ98SZc59UzPHvXy4RPgrEi4OBikWNIsdzO1/c4
+         w82bX9dH/iGhsaKC08ZOssaHnqkElqpnBlbqE=
+Date: Mon, 3 Nov 2008 10:22:51 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Joshua Hoblitt <j_kernel@hoblitt.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
+Message-ID: <20081103072251.GA16459@localhost>
+References: <Sl8SUNhCbfL.A.O5H.yueDJB@chimera> <4xS1r6m15_B.A.93B.LweDJB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4xS1r6m15_B.A.93B.LweDJB@chimera>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> Now, the problem is ... My second son was just born last wed. so I'm
-> pretty unavailable right now. Thus, for .29, I'm tempted to go for the
-> simpler approach which is to blacklist M7's from imageblit acceleration.
+[Rafael J. Wysocki - Sun, Nov 02, 2008 at 05:49:34PM +0100]
+| This message has been generated automatically as a part of a report
+| of regressions introduced between 2.6.26 and 2.6.27.
+| 
+| The following bug entry is on the current list of known regressions
+| introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+| be listed and let me know (either way).
+| 
+| 
+| Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
+| Subject		: kernel panic: softlockup in tick_periodic() ???
+| Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
+| Date		: 2008-09-11 16:46 (53 days old)
+| References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
+| Handled-By	: Thomas Gleixner <tglx@linutronix.de>
+| 		  Cyrill Gorcunov <gorcunov@gmail.com>
+| 		  Ingo Molnar <mingo@elte.hu>
+| 
+| 
 
-I am also experiencing this problem on a PowerBook G4 with an M10.
+Still in progress
 
-0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
-
-Here are the fonts I'm using:
-
-        http://ondioline.org/~paul/consolefonts/
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+		- Cyrill -
