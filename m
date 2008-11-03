@@ -1,42 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756814AbYKCXst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbYKCXxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756814AbYKCXst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbYKCXs3
+	id S1756241AbYKCXxl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbYKCXx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:48:29 -0500
-Received: from gw.goop.org ([64.81.55.164]:41537 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755211AbYKCXs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:48:28 -0500
-Message-ID: <490F8DC9.9000005@goop.org>
-Date: Mon, 03 Nov 2008 15:48:25 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Mon, 3 Nov 2008 18:53:29 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:49201 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751435AbYKCXx2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 18:53:28 -0500
+X-IronPort-AV: E=Sophos;i="4.33,539,1220227200"; 
+   d="scan'208";a="101225275"
+From: Roland Dreier <rdreier@cisco.com>
+To: Constantine Gavrilov <constantine.gavrilov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
+       netdev@vger.kernel.org
+Subject: Re: patch: support long (above 14 bytes) HW addresses in arp_ioctl
+References: <490EDBDD.1030104@gmail.com> <ada63n4wvxp.fsf@cisco.com>
+	<490F496C.2010608@gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 03 Nov 2008 15:53:26 -0800
+In-Reply-To: <490F496C.2010608@gmail.com> (Constantine Gavrilov's message of
+	"Mon, 03 Nov 2008 20:56:44 +0200")
+Message-ID: <adaod0wv021.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Mallick, Asit K" <asit.k.mallick@intel.com>
-Subject: Re: [patch] generic-ipi: fix the smp_mb() placement
-References: <20081029224229.GK30573@linux-os.sc.intel.com> <20081030185322.GE17822@elte.hu> <20081030202322.GM30573@linux-os.sc.intel.com> <490A9337.6090504@goop.org> <20081031093924.GG30317@elte.hu> <490AE820.1010301@goop.org> <20081031165334.GA10468@linux-os.sc.intel.com> <490B6AE8.3040700@goop.org> <20081103101736.GI13671@elte.hu>
-In-Reply-To: <20081103101736.GI13671@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Nov 2008 23:53:27.0094 (UTC) FILETIME=[5D810D60:01C93E0F]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> ok - so that makes it a v2.6.28 item i guess.
->   
+[netdev added to cc list]
 
-The case Suresh is talking about was a fix to Xen itself, rather than on 
-the kernel side, so it doesn't need to be a .28 issue on Xen's account.
+ > In arp_req_get() in net/arp.c, there is code:
+ > 
+ > memcpy(r->arp_ha.sa_data, neigh->ha, dev->addr_len);
+ > 
+ > dev->addr_len can be larger than size of
+ > r->arp_ha.sa_data. Inititally, I thought it would corrupt kernel
+ > stack. I was wrong, since r still has enough space not to overflow
+ > even for the largest HW address (32 bytes). It would corrupt the data
+ > structure though, and that corrupted reply would be propagated to
+ > user.
+ > 
+ > There is a similar situation in arp_req_set(), where a "junk" arp
+ > entry will be set if dev->addr_len is larger that 14 bytes. 
+ > 
+ > At the very minimum, both arp_req_set() and arp_req_get() should
+ > return error (-EINVAL), and not return junk or set junk. Truncated
+ > /proc/net/arp output should also be fixed.
 
-    J
+The EINVAL return makes sense; I'm not sure /proc/net/arp is important
+enough to fix.  I guess it depends on the impact of the fix.
+
+ > I was not aware that rtnetlink is capable of doing things like arp
+ > table or interface manipulation (like netdevice ioctls). My
+ > applications needs to be able to manipulate arp cache for large macs,
+ > and I do not mind recompiling by adding a flag. I do not mind fixing
+ > arp cli to use this either (venerable arp  does use arp_ioctl). And
+ > there are many many legacy solutions that use arp_ioctl() in programs
+ > and arp utility in scripts. Consider porting those to infiniband.
+ > 
+ > Will rtnetlink work for any net_device (like netdevice ioctls do) for
+ > ARP and interface configurations calls or does it require special
+ > support in net_device itself? Any possible problems with rtnetlink?
+
+rtnetlink is the preferred modern interface between userspace and kernel
+for networking information.  There is also the "iproute2" package that
+provides a good command line interface that is capable of handling IPoIB
+addresses.  For example:
+
+$ ip addr show dev ib1
+5: ib1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 2044 qdisc pfifo_fast state UP qlen 256
+    link/infiniband 80:00:00:48:fe:80:00:00:00:00:00:00:00:02:c9:03:00:00:01:65 brd 00:ff:ff:ff:ff:12:40:1b:ff:ff:00:00:00:00:00:00:ff:ff:ff:ff
+    inet 192.168.145.74/24 brd 192.168.145.255 scope global ib1
+    inet6 fe80::202:c903:0:165/64 scope link 
+       valid_lft forever preferred_lft forever
+
+$ ip neigh
+192.168.145.73 dev ib1 lladdr 80:00:00:48:fe:80:00:00:00:00:00:00:00:02:c9:03:00:00:01:30 STALE
+172.29.224.1 dev eth0 lladdr 00:00:0c:07:ac:e0 REACHABLE
+
+and so on.
+
+ - R.
