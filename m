@@ -1,88 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYKCTeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYKCTfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYKCTeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYKCTeL
+	id S1755068AbYKCTfM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:35:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYKCTe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:34:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36909 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753838AbYKCTeJ (ORCPT
+	Mon, 3 Nov 2008 14:34:57 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:8377 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750859AbYKCTe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:34:09 -0500
-Date: Mon, 3 Nov 2008 11:33:18 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arthur Jones <ajones@riverbed.com>
-Cc: sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-Id: <20081103113318.35b0c266.akpm@linux-foundation.org>
-In-Reply-To: <20081103184426.GA31894@ajones-laptop.nbttech.com>
-References: <4908C951.2000309@redhat.com>
-	<20081103184426.GA31894@ajones-laptop.nbttech.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 14:34:57 -0500
+Date: Mon, 3 Nov 2008 22:34:55 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Marek Vasut <marek.vasut@gmail.com>,
+       Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Subject: Re: [PATCH] power_supply: change the way how wm97xx-bat driver is
+	registered
+Message-ID: <20081103193455.GA17958@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com> <1225271050-21171-2-git-send-email-dbaryshkov@gmail.com> <20081103151151.GB23466@oksana.dev.rtsoft.ru> <20081103182955.GA17171@doriath.ww600.siemens.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1251
+Content-Disposition: inline
+In-Reply-To: <20081103182955.GA17171@doriath.ww600.siemens.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008 10:44:26 -0800
-Arthur Jones <ajones@riverbed.com> wrote:
-
-> Hi Eric,   This patch fixes the problem for me, and
-> seems to put the buffers on the dirty list at the
-> place where they are put on the list during the working
-> case.  Despite having rooted around in the innards of
-> ext3 for the last few days, I cannot say that I have
-> any sense of whether this patch will cause problems
-> elsewhere or even if this is the best place to
-> intercede.
+On Mon, Nov 03, 2008 at 09:29:55PM +0300, Dmitry Baryshkov wrote:
+> On Mon, Nov 03, 2008 at 06:11:51PM +0300, Anton Vorontsov wrote:
+> > On Wed, Oct 29, 2008 at 12:04:10PM +0300, Dmitry Baryshkov wrote:
+> > >  #ifdef CONFIG_BATTERY_WM97XX
+> > > -void __init wm97xx_bat_set_pdata(struct wm97xx_batt_info *data);
+> > > +int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data);
+> > >  #else
+> > > -static inline void wm97xx_bat_set_pdata(struct wm97xx_batt_info *data) {}
+> > > +static inline int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data)
+> > > +{
+> > > +	return -ENODEV;
+> > > +}
+> > >  #endif
+> > 
+> > How that supposed to work when BATTERY_WM97XX is a module?
+> > #ifdef CONFIG_BATTERY_WM97XX will evaluate to false, and you'll have
+> > dummy wm97xx_bat_set_pdata() that returns -ENODEV...
 > 
-> I post the complete patch not because I think it
-> should be committed as is, but rather to try
-> to explain the logic that brought it about.  At the
-> very least, this should be reviewed by the experts
-> here to make sure there is no collateral damage.
-> 
-> Arthur
-> 
-> -------------------
-> In ext3_sync_fs, we only wait for a commit to
-> finish if we started it, but there may be one
-> already in progress which will not be synced.
+> This won't of course fix the wm97xx driver model, but the module issue
+> should be fixed. What about this patch?
+[...]
+> -#ifdef CONFIG_BATTERY_WM97XX
+> -void __init wm97xx_bat_set_pdata(struct wm97xx_batt_info *data);
+> +#if defined(CONFIG_BATTERY_WM97XX) || defined(CONFIG_BATTERY_WM97XX_MODULE)
+> +int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data);
 
-argh.
+In case of CONFIG_BATTERY_WM97XX_MODULE, the build will break at link
+time, since wm97xx_bat_set_pdata() might be called from the built-in
+code (i.e. arch/arm/mach-pxa/palmtx.c).
 
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -2392,7 +2392,13 @@ static int ext3_sync_fs(struct super_block *sb, int wait)
->  	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
->  		if (wait)
->  			log_wait_commit(EXT3_SB(sb)->s_journal, target);
-> -	}
-> +	} else if (wait)
-> +		/*
-> +		 * We may have a commit in progress, clear it out
-> +		 * before we go on...
-> +		 */
-> +		ext3_force_commit(sb);
-> +
->  	return 0;
->  }
+>  #else
+> -static inline void wm97xx_bat_set_pdata(struct wm97xx_batt_info *data) {}
+> +static inline int wm97xx_bat_set_pdata(struct wm97xx_batt_info *data)
+> +{
+> +	return -ENODEV;
+> +}
+>  #endif
+>  
+>  #endif
+> -- 
+> 1.5.6.5
 
-Can we do
-
-	sb->s_dirt = 0;
-	if (wait)
-		ext3_force_commit(...);
-	else
-		journal_start_commit(...);
-
-?
-
-
-Also, I wonder if that `sb->s_dirt = 0' is correct if
-journal_start_commit() didn't start a commit?
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
