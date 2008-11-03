@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbYKCHXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbYKCHXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754738AbYKCHXP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 02:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbYKCHW6
+	id S1754874AbYKCHXl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 02:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYKCHXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 02:22:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:63318 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbYKCHW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 02:22:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xpMgRfHUlL4eLc08/Vz1zSmr4ZyAMtdwSgO1diiIC9k+3q0NXUhsmUnzmf8Cf+1ZMz
-         /blX8odoZtGoWchaKgc4ODQxX+vxrgJ98SZc59UzPHvXy4RPgrEi4OBikWNIsdzO1/c4
-         w82bX9dH/iGhsaKC08ZOssaHnqkElqpnBlbqE=
-Date: Mon, 3 Nov 2008 10:22:51 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Joshua Hoblitt <j_kernel@hoblitt.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Bug #11543] kernel panic: softlockup in tick_periodic() ???
-Message-ID: <20081103072251.GA16459@localhost>
-References: <Sl8SUNhCbfL.A.O5H.yueDJB@chimera> <4xS1r6m15_B.A.93B.LweDJB@chimera>
+	Mon, 3 Nov 2008 02:23:31 -0500
+Received: from molly.corsac.net ([81.57.48.219]:36853 "EHLO molly.corsac.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752258AbYKCHXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 02:23:30 -0500
+Date: Mon, 3 Nov 2008 08:23:27 +0100
+From: Yves-Alexis Perez <corsac@debian.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       "Carlos R. Mafra" <crmafra2@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Long delays and keystrokes required - related to disk
+	encryption?
+Message-ID: <20081103072327.GA6313@corsac.net>
+References: <200810281744.52587.elendil@planet.nl> <200810290153.23514.elendil@planet.nl> <4907D957.6040206@linux.intel.com> <20081029065428.GA15581@corsac.net> <20081029071143.GA15736@corsac.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4xS1r6m15_B.A.93B.LweDJB@chimera>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081029071143.GA15736@corsac.net>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Rafael J. Wysocki - Sun, Nov 02, 2008 at 05:49:34PM +0100]
-| This message has been generated automatically as a part of a report
-| of regressions introduced between 2.6.26 and 2.6.27.
-| 
-| The following bug entry is on the current list of known regressions
-| introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-| be listed and let me know (either way).
-| 
-| 
-| Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11543
-| Subject		: kernel panic: softlockup in tick_periodic() ???
-| Submitter	: Joshua Hoblitt <j_kernel@hoblitt.com>
-| Date		: 2008-09-11 16:46 (53 days old)
-| References	: http://marc.info/?l=linux-kernel&m=122117786124326&w=4
-| Handled-By	: Thomas Gleixner <tglx@linutronix.de>
-| 		  Cyrill Gorcunov <gorcunov@gmail.com>
-| 		  Ingo Molnar <mingo@elte.hu>
-| 
-| 
+On Wed, Oct 29, 2008 at 08:11:43AM +0100, Yves-Alexis Perez wrote:
+> On Wed, Oct 29, 2008 at 07:54:28AM +0100, Yves-Alexis Perez wrote:
+> > On Tue, Oct 28, 2008 at 08:32:39PM -0700, Arjan van de Ven wrote:
+> > > ok one easy thing to try, in the peek function (that this patch touches),
+> > > just stick a "return" as first statement in.
+> > > If that "fixes" it, we have a real issue with hrtimers, if not then something else is going on..
+> > 
+> > At first sight, it fixes it, yes. Tried on a recent git pull. I'll try
+> > to rebuild it without the fix to see if the problem reappears or if it
+> > was a side-effect from other change.
+> 
+> Confirmed, removing the “return;” shows the problem back. So I guess we
+> have a real issue with hrtimers :/
 
-Still in progress
+FTR, it seems fixed in 2.6.28-rc3 (I just git pull-ed the tree, so I
+don't know which commit has fixed the problem)
 
-		- Cyrill -
+Could anyone (Frans?) confirm this?
+-- 
+Yves-Alexis
