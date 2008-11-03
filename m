@@ -1,123 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYKCUAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbYKCUB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYKCUAk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYKCUAa
+	id S1755521AbYKCUB5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYKCUBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:00:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55393 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752263AbYKCUA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:00:29 -0500
-Message-ID: <490F5836.5030302@redhat.com>
-Date: Mon, 03 Nov 2008 13:59:50 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 3 Nov 2008 15:01:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:35263 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752610AbYKCUBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 15:01:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=nY6sjUTgUqj8O5vC09brq0TrBdmwX/iKVDsbAdk4TaHcAwVWra9F/U7rqaGB34U/+f
+         KDyagGqtyCuWuGVp/kY2iMXgSt185qpvnInZ0ftbCCuSX6Ak6/ek4Ihy3+YmsyKaGUKm
+         iZqb2REc+7Fvelhpi02Vi3OjcckoAZQiFaJeA=
+Message-ID: <490F5897.6000103@gmail.com>
+Date: Mon, 03 Nov 2008 22:01:27 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-To: Arthur Jones <ajones@riverbed.com>
-CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com>
-In-Reply-To: <20081103184426.GA31894@ajones-laptop.nbttech.com>
-Content-Type: text/plain; charset=us-ascii
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>, mingo@elte.hu,
+       srostedt@redhat.com, sandmann@daimi.au.dk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+ belongs to. Store thread group leader id, and use it to lookup the address
+ in the process's map. We could have looked up the address on thread's map,
+ but the thread might not exist by the time we are called. The process might
+ not exist either, but if you are reading trace_pipe, that is unlikely.
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <1225742189.7803.1631.camel@twins> <20081103195838.GD32603@ghostprotocols.net>
+In-Reply-To: <20081103195838.GD32603@ghostprotocols.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arthur Jones wrote:
-> Hi Eric,   This patch fixes the problem for me, and
-> seems to put the buffers on the dirty list at the
-> place where they are put on the list during the working
-> case.  Despite having rooted around in the innards of
-> ext3 for the last few days, I cannot say that I have
-> any sense of whether this patch will cause problems
-> elsewhere or even if this is the best place to
-> intercede.
-> 
-> I post the complete patch not because I think it
-> should be committed as is, but rather to try
-> to explain the logic that brought it about.  At the
-> very least, this should be reviewed by the experts
-> here to make sure there is no collateral damage.
-> 
-> Arthur
+On 2008-11-03 21:58, Arnaldo Carvalho de Melo wrote:
+> Em Mon, Nov 03, 2008 at 08:56:29PM +0100, Peter Zijlstra escreveu:
+>   
+>> fwiw, this is one amazing subject line.. ;-)
+>>     
+>
+> Too much for "subject says it all." 8)
 
-Seems like the right approach; I too was thinking that the problem was
-we just weren't either kicking off, or waiting for, the log commit at
-unmount time.
+Yep, I've just learned that the first line in my git commit message will
+be the subject line for the emails it sends out.
 
-I've had to step away from this problem for a couple days but will
-eyeball this soon, it seems like the right root cause & general approach
-to a fix, to me.
+I'll use the shorter subject line suggested by Ingo next time ;)
 
-Thanks!
-
--Eric
-
-> -------------------
-> In ext3_sync_fs, we only wait for a commit to
-> finish if we started it, but there may be one
-> already in progress which will not be synced.
-> 
-> In the case of a data=ordered umount with pending long
-> symlinks which are delayed due to a long list
-> of other I/O on the backing block device, this
-> causes the buffer associated with the long symlinks
-> to not be moved to the inode dirty list in the second
-> phase of fsync_super.  Then, before they can be dirtied
-> again, kjournald exits, seeing the UMOUNT flag and the
-> dirty pages are never written to the backing block device,
-> causing long symlink corruption and exposing new or
-> previously freed block data to userspace.
-> 
-> This can be reproduced with a script created
-> by Eric Sandeen <sandeen@redhat.com>:
-> 
-> 	#!/bin/bash
-> 
-> 	umount /mnt/test2
-> 	mount /dev/sdb4 /mnt/test2
-> 	rm -f /mnt/test2/*
-> 	dd if=/dev/zero of=/mnt/test2/bigfile bs=1M count=512
-> 	touch
-> 	/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-> 	ln -s
-> 	/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-> 	/mnt/test2/link
-> 	umount /mnt/test2
-> 	mount /dev/sdb4 /mnt/test2
-> 	ls /mnt/test2/
-> 	umount /mnt/test2
-> 
-> To ensure all commits are synced, we flush
-> all journal commits now when sync_fs'ing ext3.
-> 
-> Signed-off-by: Arthur Jones <ajones@riverbed.com>
-> ---
->  fs/ext3/super.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index 18eaa78..053659a 100644
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -2392,7 +2392,13 @@ static int ext3_sync_fs(struct super_block *sb, int wait)
->  	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
->  		if (wait)
->  			log_wait_commit(EXT3_SB(sb)->s_journal, target);
-> -	}
-> +	} else if (wait)
-> +		/*
-> +		 * We may have a commit in progress, clear it out
-> +		 * before we go on...
-> +		 */
-> +		ext3_force_commit(sb);
-> +
->  	return 0;
->  }
->  
-
+Best regards,
+--Edwin
