@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYKCXGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYKCXKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbYKCXGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbYKCXGp
+	id S1756076AbYKCXKx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbYKCXKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:06:45 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:26599 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752800AbYKCXGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:06:45 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=IN6XX1wIyPzuVWEHuGhJufe0FGOl8ffH8SdXq/9teOxlFEY0H1cfsN0m12eMVAUtiQVaXi8zMDwvdFSmilMsqQTbYcVwy9TTuUVkajXN7PeC1YBKtaoQKFA7jnSzzStT5faeDEya/HJAKwxFPdXDOqm4oJJzRhsEdCy1maPw4dk=  ;
-X-YMail-OSG: AT.3Y9QVM1nD9qV_y7CoOxDID6lakIdRI6kNe6KY_ITQ_c9GXveCAqITI.h0JBP3voZIBv05xzmLCyGUOTxALPdhoQuSSoLj.2H8iuUC1yh4gfwLwLE6pisq3TEGYfg1jSF_5OBWbpMIB5QG6gzQugJR
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] rtc-cmos: Fix boot log message
-Date: Mon, 3 Nov 2008 16:06:41 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200811031942.20360.elendil@planet.nl> <200811031952.39423.elendil@planet.nl>
-In-Reply-To: <200811031952.39423.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200811031506.42247.david-b@pacbell.net>
+	Mon, 3 Nov 2008 18:10:45 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:57518 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752314AbYKCXKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 18:10:44 -0500
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <200811040005.12418.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <200811032324.02163.rjw@sisk.pl> <1225751665.12673.511.camel@nimitz>
+	 <200811040005.12418.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 15:10:19 -0800
+Message-Id: <1225753819.12673.518.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 November 2008, Frans Pop wrote:
-> Alternative would be to change the following line at 808:
->                         is_hpet_enabled() ? ", hpet irqs" : "");
-> to:
->                         is_hpet_enabled() ? "hpet" : "<sensible value>");
+On Tue, 2008-11-04 at 00:05 +0100, Rafael J. Wysocki wrote:
+> On Monday, 3 of November 2008, Dave Hansen wrote:
+> > But, as I think about it, there is another issue that we need to
+> > address, CONFIG_NODES_SPAN_OTHER_NODES.
+> > 
+> > A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+> > have only one zone).  But, there may be another node with
+> > node_start_pfn=10 and a node_end_pfn=20.  This loop:
+> > 
+> >         for_each_zone(zone) {
+> > 		...
+> >                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+> >                         if (page_is_saveable(zone, pfn))
+> >                                 memory_bm_set_bit(orig_bm, pfn);
+> >         }
+> > 
+> > will walk over the smaller node's pfn range multiple times.  Is this OK?
+> 
+> Hm, well, I'm not really sure at the moment.
+> 
+> Does it mean that, in your example, the pfns 10 to 20 from the first node
+> refer to the same page frames that are referred to by the pfns from the
+> second node?
 
-The intent was "hpet irqs" vs "native IRQs" (typical PC options)
-vs "no irqs" (e.g. on SPARCs).
+Maybe using pfns didn't make for a good example.  I could have used
+physical addresses as well.
 
-I think fixes got trashed when the patch queue got corrupted
-by some queue-jumping ... see the patch in 
+All that I'm saying is that nodes (and zones) can span other nodes (and
+zones).  This means that the address ranges making up that node can
+overlap with the address ranges of another node.  This doesn't mean that
+*each* node has those address ranges.  Each individual address can only
+be in one node.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=11153
+Since zone *ranges* overlap, you can't tell to which zone a page belongs
+simply from its address.  You need to ask the 'struct page'.
 
-which was broken by a474aaedac99ba86e28ef6c912a7647c482db6dd,
-and has appropriately sane messaging.
+> > I think all you have to do to fix it is check page_zone(page) == zone
+> > and skip out if they don't match.
+> 
+> Well, probably.  I need to know exactly what's the relationship between pfns,
+> pages and physical page frames in that case.
 
-- Dave
+1 pfn == 1 'struct page' == 1 physical page
 
+The only exception to that is that we may have more 'struct pages' than
+we have actual physical memory due to rounding and so forth.
 
+-- Dave
 
