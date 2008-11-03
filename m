@@ -1,814 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753382AbYKCRa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753794AbYKCRa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753382AbYKCRa0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 12:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKCRaP
+	id S1753794AbYKCRa7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:30:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYKCRav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 12:30:15 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38701 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbYKCRaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 12:30:12 -0500
-Date: Mon, 3 Nov 2008 18:29:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Dave Airlie <airlied@gmail.com>, Keith Packard <keithp@keithp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [git pull] IO mappings, #2
-Message-ID: <20081103172951.GA7929@elte.hu>
-References: <20081022093615.GF12453@elte.hu> <1224746087-13991-1-git-send-email-keithp@keithp.com> <20081023080553.GB14714@elte.hu> <1224776350.6738.14.camel@koto.keithp.com> <21d7e9970811022300o2576b437kb35a55e2751889f6@mail.gmail.com> <alpine.LFD.2.00.0811030833340.3459@nehalem.linux-foundation.org> <20081103165319.GA27433@elte.hu>
+	Mon, 3 Nov 2008 12:30:51 -0500
+Received: from gv-out-0910.google.com ([216.239.58.188]:54936 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbYKCRau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:30:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=DtPtwP1HuZAN1qbPUMdzCzJcbT2mY0uH13KdaA96hq2CPi/RYzizcohnwn276sg0Kr
+         21lk6B8DZNpp3qvycvNhIIYweT6hBGleJKlO79ZZ38uJBgv2EoYxwcp7HhTAnPTxJyz7
+         JvV8e4iSYstBJ8kTuX2k8V1pbaiESXheS3jDw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: upstream regression (IO-APIC?)
+Date: Mon, 3 Nov 2008 18:28:07 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Alok N Kataria <akataria@vmware.com>,
+       Robert Hancock <hancockr@shaw.ca>,
+       Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@suse.cz>
+References: <fa.mewpISr5S4wcdUNw1DVfOnQfl8s@ifi.uio.no> <200811021537.24771.bzolnier@gmail.com> <200811022124.24992.bzolnier@gmail.com>
+In-Reply-To: <200811022124.24992.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081103165319.GA27433@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Message-Id: <200811031828.07285.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 02 November 2008, Bartlomiej Zolnierkiewicz wrote:
+> On Sunday 02 November 2008, Bartlomiej Zolnierkiewicz wrote:
+> > On Thursday 30 October 2008, Robert Hancock wrote:
+> > > Bartlomiej Zolnierkiewicz wrote:
+> > > > The current Linus tree as of commit e946217e4fdaa67681bbabfa8e6b18641921f750
+> > > > is broken for me.  I get either the following panic (see log from qemu below)
+> > > > or lost IRQs on ATA init...  Is this a known issue?
+> > > > 
+> > > > PS The tree that I used before and was supposedly good (sorry, I'm too tired
+> > > > to verify it now) had commit 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 at head.
+> > 
+> > Unfortunately 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 (v2.6.28-rc1)
+> > is also bad.  Bisecting it further was a real pain (i.e. I hit broken
+> > build with x86 irqbalance changes, broken build with netfilter nat
+> > changes and jbd journal problem).  In the end it turned out that 2.6.27
+> > is bad too!  However with 2.6.27 the panic occurs only once per several
+> > attempts and if there is no panic kernel boots normally (no lost IRQs).
+> > 
+> > [...]
+> > 
+> > I finally managed to narrow it down to change making x86 use tsc_khz
+> > for loops_per_jiffy -- commit 3da757daf86e498872855f0b5e101f763ba79499
+> > ("x86: use cpu_khz for loops_per_jiffy calculation").  This approach
+> > seems too simplistic (as I see now Arjan & Pavel expressed concerns
+> > about it back when the patch was posted initially [1][2]).  Also it
+> > would probably be preferred to re-use existing preset_lpj variable
+> > (just like KVM does it for similar purpose [3]) instead of adding a
+> > lpj_tsc one and increasing complexity.
+> 
+> It turned out that I can boot a kernel with different config with
+> HZ == 250 just fine and switching to HZ == 1000 makes it fail.
+> 
+> 
+> Looking into it some more:
+> 
+> HZ == 250 kernel (good):
+> 
+> Calibrating delay loop (skipped), value calculated using timer frequency.. 2986.79 BogoMIPS (lpj=5973580)
+> 
+> HZ == 1000 kernel (bad):
+> 
+> Calibrating delay loop (skipped), using tsc calculated value.. 2990.35 BogoMIPS (lpj=1495176)
+> 
+> HZ == 1000 kernel with hackyfix (good):
+> 
+> Calibrating delay using timer specific routine.. 3016.68 BogoMIPS (lpj=6033376)
+> 
+> 
+> Argggh... lpj is used for udelay() & friends so this bug is quite
+> dangerous (since udelay() & friends are used for hardware delays)...
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+It may be not as severe as I initially thought,
+(obviously) the real hardware works fine:
 
-> there was one pending item: i was waiting for the x86 #ifdef to be 
-> cleaned up out of include/linux/io-mapping.h, but that is trivial 
-> with no impact to any object code and can thus perhaps wait - would 
-> be nice to get this in early in this -rc.
+calibrate_delay_direct(): lpj=1495884
+Calibrating delay loop (skipped), value calculated using timer frequency.. 2990.36 BogoMIPS (lpj=1495183)
 
-These cleanups can now be found in the second tree below.
+So the issue only affects qemu ATM.
 
-They can be cleanly pulled over the other tree i just posted, but it 
-has slightly less testing. (the cleanup commits are fresh - but there 
-should be no difference in functionality)
-
-Please pull the latest io-mappings-for-linus-2 git tree from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git io-mappings-for-linus-2
-
- Thanks,
-
-	Ingo
-
------------------->
-Keith Packard (5):
-      x86: add iomap_atomic*()/iounmap_atomic() on 32-bit using fixmaps
-      resources: add io-mapping functions to dynamically map large device apertures
-      i915: use io-mapping interfaces instead of a variety of mapping kludges
-      io mapping: improve documentation
-      io mapping: clean up #ifdefs
-
-
- Documentation/io-mapping.txt     |   82 ++++++++++++++++++
- arch/x86/Kconfig                 |    4 +
- arch/x86/include/asm/fixmap.h    |    4 +
- arch/x86/include/asm/fixmap_32.h |    4 -
- arch/x86/include/asm/highmem.h   |    5 +-
- arch/x86/mm/Makefile             |    2 +-
- arch/x86/mm/init_32.c            |    3 +-
- arch/x86/mm/iomap_32.c           |   59 +++++++++++++
- drivers/gpu/drm/i915/i915_drv.h  |    3 +
- drivers/gpu/drm/i915/i915_gem.c  |  174 +++++++++++++++++--------------------
- include/asm-x86/iomap.h          |   30 +++++++
- include/linux/io-mapping.h       |  125 +++++++++++++++++++++++++++
- 12 files changed, 390 insertions(+), 105 deletions(-)
- create mode 100644 Documentation/io-mapping.txt
- create mode 100644 arch/x86/mm/iomap_32.c
- create mode 100644 include/asm-x86/iomap.h
- create mode 100644 include/linux/io-mapping.h
-
-diff --git a/Documentation/io-mapping.txt b/Documentation/io-mapping.txt
-new file mode 100644
-index 0000000..473e43b
---- /dev/null
-+++ b/Documentation/io-mapping.txt
-@@ -0,0 +1,82 @@
-+The io_mapping functions in linux/io-mapping.h provide an abstraction for
-+efficiently mapping small regions of an I/O device to the CPU. The initial
-+usage is to support the large graphics aperture on 32-bit processors where
-+ioremap_wc cannot be used to statically map the entire aperture to the CPU
-+as it would consume too much of the kernel address space.
-+
-+A mapping object is created during driver initialization using
-+
-+	struct io_mapping *io_mapping_create_wc(unsigned long base,
-+						unsigned long size)
-+
-+		'base' is the bus address of the region to be made
-+		mappable, while 'size' indicates how large a mapping region to
-+		enable. Both are in bytes.
-+
-+		This _wc variant provides a mapping which may only be used
-+		with the io_mapping_map_atomic_wc or io_mapping_map_wc.
-+
-+With this mapping object, individual pages can be mapped either atomically
-+or not, depending on the necessary scheduling environment. Of course, atomic
-+maps are more efficient:
-+
-+	void *io_mapping_map_atomic_wc(struct io_mapping *mapping,
-+				       unsigned long offset)
-+
-+		'offset' is the offset within the defined mapping region.
-+		Accessing addresses beyond the region specified in the
-+		creation function yields undefined results. Using an offset
-+		which is not page aligned yields an undefined result. The
-+		return value points to a single page in CPU address space.
-+
-+		This _wc variant returns a write-combining map to the
-+		page and may only be used with mappings created by
-+		io_mapping_create_wc
-+
-+		Note that the task may not sleep while holding this page
-+		mapped.
-+
-+	void io_mapping_unmap_atomic(void *vaddr)
-+
-+		'vaddr' must be the the value returned by the last
-+		io_mapping_map_atomic_wc call. This unmaps the specified
-+		page and allows the task to sleep once again.
-+
-+If you need to sleep while holding the lock, you can use the non-atomic
-+variant, although they may be significantly slower.
-+
-+	void *io_mapping_map_wc(struct io_mapping *mapping,
-+				unsigned long offset)
-+
-+		This works like io_mapping_map_atomic_wc except it allows
-+		the task to sleep while holding the page mapped.
-+
-+	void io_mapping_unmap(void *vaddr)
-+
-+		This works like io_mapping_unmap_atomic, except it is used
-+		for pages mapped with io_mapping_map_wc.
-+
-+At driver close time, the io_mapping object must be freed:
-+
-+	void io_mapping_free(struct io_mapping *mapping)
-+
-+Current Implementation:
-+
-+The initial implementation of these functions uses existing mapping
-+mechanisms and so provides only an abstraction layer and no new
-+functionality.
-+
-+On 64-bit processors, io_mapping_create_wc calls ioremap_wc for the whole
-+range, creating a permanent kernel-visible mapping to the resource. The
-+map_atomic and map functions add the requested offset to the base of the
-+virtual address returned by ioremap_wc.
-+
-+On 32-bit processors with HIGHMEM defined, io_mapping_map_atomic_wc uses
-+kmap_atomic_pfn to map the specified page in an atomic fashion;
-+kmap_atomic_pfn isn't really supposed to be used with device pages, but it
-+provides an efficient mapping for this usage.
-+
-+On 32-bit processors without HIGHMEM defined, io_mapping_map_atomic_wc and
-+io_mapping_map_wc both use ioremap_wc, a terribly inefficient function which
-+performs an IPI to inform all processors about the new mapping. This results
-+in a significant performance penalty.
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 6f20718..e60c59b 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1894,6 +1894,10 @@ config SYSVIPC_COMPAT
- endmenu
- 
- 
-+config HAVE_ATOMIC_IOMAP
-+	def_bool y
-+	depends on X86_32
-+
- source "net/Kconfig"
- 
- source "drivers/Kconfig"
-diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
-index 8668a94..23696d4 100644
---- a/arch/x86/include/asm/fixmap.h
-+++ b/arch/x86/include/asm/fixmap.h
-@@ -9,6 +9,10 @@
- 
- extern int fixmaps_set;
- 
-+extern pte_t *kmap_pte;
-+extern pgprot_t kmap_prot;
-+extern pte_t *pkmap_page_table;
-+
- void __native_set_fixmap(enum fixed_addresses idx, pte_t pte);
- void native_set_fixmap(enum fixed_addresses idx,
- 		       unsigned long phys, pgprot_t flags);
-diff --git a/arch/x86/include/asm/fixmap_32.h b/arch/x86/include/asm/fixmap_32.h
-index 09f29ab..c7115c1 100644
---- a/arch/x86/include/asm/fixmap_32.h
-+++ b/arch/x86/include/asm/fixmap_32.h
-@@ -28,10 +28,8 @@ extern unsigned long __FIXADDR_TOP;
- #include <asm/acpi.h>
- #include <asm/apicdef.h>
- #include <asm/page.h>
--#ifdef CONFIG_HIGHMEM
- #include <linux/threads.h>
- #include <asm/kmap_types.h>
--#endif
- 
- /*
-  * Here we define all the compile-time 'special' virtual
-@@ -75,10 +73,8 @@ enum fixed_addresses {
- #ifdef CONFIG_X86_CYCLONE_TIMER
- 	FIX_CYCLONE_TIMER, /*cyclone timer register*/
- #endif
--#ifdef CONFIG_HIGHMEM
- 	FIX_KMAP_BEGIN,	/* reserved pte's for temporary kernel mappings */
- 	FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1,
--#endif
- #ifdef CONFIG_PCI_MMCONFIG
- 	FIX_PCIE_MCFG,
- #endif
-diff --git a/arch/x86/include/asm/highmem.h b/arch/x86/include/asm/highmem.h
-index a3b3b7c..bf9276b 100644
---- a/arch/x86/include/asm/highmem.h
-+++ b/arch/x86/include/asm/highmem.h
-@@ -25,14 +25,11 @@
- #include <asm/kmap_types.h>
- #include <asm/tlbflush.h>
- #include <asm/paravirt.h>
-+#include <asm/fixmap.h>
- 
- /* declarations for highmem.c */
- extern unsigned long highstart_pfn, highend_pfn;
- 
--extern pte_t *kmap_pte;
--extern pgprot_t kmap_prot;
--extern pte_t *pkmap_page_table;
--
- /*
-  * Right now we initialize only a single pte table. It can be extended
-  * easily, subsequent pte tables have to be allocated in one physical
-diff --git a/arch/x86/mm/Makefile b/arch/x86/mm/Makefile
-index 59f89b4..fea4565 100644
---- a/arch/x86/mm/Makefile
-+++ b/arch/x86/mm/Makefile
-@@ -1,7 +1,7 @@
- obj-y	:=  init_$(BITS).o fault.o ioremap.o extable.o pageattr.o mmap.o \
- 	    pat.o pgtable.o gup.o
- 
--obj-$(CONFIG_X86_32)		+= pgtable_32.o
-+obj-$(CONFIG_X86_32)		+= pgtable_32.o iomap_32.o
- 
- obj-$(CONFIG_HUGETLB_PAGE)	+= hugetlbpage.o
- obj-$(CONFIG_X86_PTDUMP)	+= dump_pagetables.o
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 8396868..c483f42 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -334,7 +334,6 @@ int devmem_is_allowed(unsigned long pagenr)
- 	return 0;
- }
- 
--#ifdef CONFIG_HIGHMEM
- pte_t *kmap_pte;
- pgprot_t kmap_prot;
- 
-@@ -357,6 +356,7 @@ static void __init kmap_init(void)
- 	kmap_prot = PAGE_KERNEL;
- }
- 
-+#ifdef CONFIG_HIGHMEM
- static void __init permanent_kmaps_init(pgd_t *pgd_base)
- {
- 	unsigned long vaddr;
-@@ -436,7 +436,6 @@ static void __init set_highmem_pages_init(void)
- #endif /* !CONFIG_NUMA */
- 
- #else
--# define kmap_init()				do { } while (0)
- # define permanent_kmaps_init(pgd_base)		do { } while (0)
- # define set_highmem_pages_init()	do { } while (0)
- #endif /* CONFIG_HIGHMEM */
-diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
-new file mode 100644
-index 0000000..d0151d8
---- /dev/null
-+++ b/arch/x86/mm/iomap_32.c
-@@ -0,0 +1,59 @@
-+/*
-+ * Copyright © 2008 Ingo Molnar
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ */
-+
-+#include <asm/iomap.h>
-+#include <linux/module.h>
-+
-+/* Map 'pfn' using fixed map 'type' and protections 'prot'
-+ */
-+void *
-+iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
-+{
-+	enum fixed_addresses idx;
-+	unsigned long vaddr;
-+
-+	pagefault_disable();
-+
-+	idx = type + KM_TYPE_NR*smp_processor_id();
-+	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
-+	set_pte(kmap_pte-idx, pfn_pte(pfn, prot));
-+	arch_flush_lazy_mmu_mode();
-+
-+	return (void*) vaddr;
-+}
-+EXPORT_SYMBOL_GPL(iomap_atomic_prot_pfn);
-+
-+void
-+iounmap_atomic(void *kvaddr, enum km_type type)
-+{
-+	unsigned long vaddr = (unsigned long) kvaddr & PAGE_MASK;
-+	enum fixed_addresses idx = type + KM_TYPE_NR*smp_processor_id();
-+
-+	/*
-+	 * Force other mappings to Oops if they'll try to access this pte
-+	 * without first remap it.  Keeping stale mappings around is a bad idea
-+	 * also, in case the page changes cacheability attributes or becomes
-+	 * a protected page in a hypervisor.
-+	 */
-+	if (vaddr == __fix_to_virt(FIX_KMAP_BEGIN+idx))
-+		kpte_clear_flush(kmap_pte-idx, vaddr);
-+
-+	arch_flush_lazy_mmu_mode();
-+	pagefault_enable();
-+}
-+EXPORT_SYMBOL_GPL(iounmap_atomic);
-diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
-index f20ffe1..126b2f1 100644
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -31,6 +31,7 @@
- #define _I915_DRV_H_
- 
- #include "i915_reg.h"
-+#include <linux/io-mapping.h>
- 
- /* General customization:
-  */
-@@ -246,6 +247,8 @@ typedef struct drm_i915_private {
- 	struct {
- 		struct drm_mm gtt_space;
- 
-+		struct io_mapping *gtt_mapping;
-+
- 		/**
- 		 * List of objects currently involved in rendering from the
- 		 * ringbuffer.
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 17ae330..61183b9 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -171,35 +171,50 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
- 	return 0;
- }
- 
--/*
-- * Try to write quickly with an atomic kmap. Return true on success.
-- *
-- * If this fails (which includes a partial write), we'll redo the whole
-- * thing with the slow version.
-- *
-- * This is a workaround for the low performance of iounmap (approximate
-- * 10% cpu cost on normal 3D workloads).  kmap_atomic on HIGHMEM kernels
-- * happens to let us map card memory without taking IPIs.  When the vmap
-- * rework lands we should be able to dump this hack.
-+/* This is the fast write path which cannot handle
-+ * page faults in the source data
-  */
--static inline int fast_user_write(unsigned long pfn, char __user *user_data,
--				  int l, int o)
-+
-+static inline int
-+fast_user_write(struct io_mapping *mapping,
-+		loff_t page_base, int page_offset,
-+		char __user *user_data,
-+		int length)
- {
--#ifdef CONFIG_HIGHMEM
--	unsigned long unwritten;
- 	char *vaddr_atomic;
-+	unsigned long unwritten;
- 
--	vaddr_atomic = kmap_atomic_pfn(pfn, KM_USER0);
--#if WATCH_PWRITE
--	DRM_INFO("pwrite i %d o %d l %d pfn %ld vaddr %p\n",
--		 i, o, l, pfn, vaddr_atomic);
--#endif
--	unwritten = __copy_from_user_inatomic_nocache(vaddr_atomic + o, user_data, l);
--	kunmap_atomic(vaddr_atomic, KM_USER0);
--	return !unwritten;
--#else
-+	vaddr_atomic = io_mapping_map_atomic_wc(mapping, page_base);
-+	unwritten = __copy_from_user_inatomic_nocache(vaddr_atomic + page_offset,
-+						      user_data, length);
-+	io_mapping_unmap_atomic(vaddr_atomic);
-+	if (unwritten)
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+/* Here's the write path which can sleep for
-+ * page faults
-+ */
-+
-+static inline int
-+slow_user_write(struct io_mapping *mapping,
-+		loff_t page_base, int page_offset,
-+		char __user *user_data,
-+		int length)
-+{
-+	char __iomem *vaddr;
-+	unsigned long unwritten;
-+
-+	vaddr = io_mapping_map_wc(mapping, page_base);
-+	if (vaddr == NULL)
-+		return -EFAULT;
-+	unwritten = __copy_from_user(vaddr + page_offset,
-+				     user_data, length);
-+	io_mapping_unmap(vaddr);
-+	if (unwritten)
-+		return -EFAULT;
- 	return 0;
--#endif
- }
- 
- static int
-@@ -208,10 +223,12 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 		    struct drm_file *file_priv)
- {
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-+	drm_i915_private_t *dev_priv = dev->dev_private;
- 	ssize_t remain;
--	loff_t offset;
-+	loff_t offset, page_base;
- 	char __user *user_data;
--	int ret = 0;
-+	int page_offset, page_length;
-+	int ret;
- 
- 	user_data = (char __user *) (uintptr_t) args->data_ptr;
- 	remain = args->size;
-@@ -235,57 +252,37 @@ i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
- 	obj_priv->dirty = 1;
- 
- 	while (remain > 0) {
--		unsigned long pfn;
--		int i, o, l;
--
- 		/* Operation in this page
- 		 *
--		 * i = page number
--		 * o = offset within page
--		 * l = bytes to copy
-+		 * page_base = page offset within aperture
-+		 * page_offset = offset within page
-+		 * page_length = bytes to copy for this page
- 		 */
--		i = offset >> PAGE_SHIFT;
--		o = offset & (PAGE_SIZE-1);
--		l = remain;
--		if ((o + l) > PAGE_SIZE)
--			l = PAGE_SIZE - o;
--
--		pfn = (dev->agp->base >> PAGE_SHIFT) + i;
--
--		if (!fast_user_write(pfn, user_data, l, o)) {
--			unsigned long unwritten;
--			char __iomem *vaddr;
--
--			vaddr = ioremap_wc(pfn << PAGE_SHIFT, PAGE_SIZE);
--#if WATCH_PWRITE
--			DRM_INFO("pwrite slow i %d o %d l %d "
--				 "pfn %ld vaddr %p\n",
--				 i, o, l, pfn, vaddr);
--#endif
--			if (vaddr == NULL) {
--				ret = -EFAULT;
--				goto fail;
--			}
--			unwritten = __copy_from_user(vaddr + o, user_data, l);
--#if WATCH_PWRITE
--			DRM_INFO("unwritten %ld\n", unwritten);
--#endif
--			iounmap(vaddr);
--			if (unwritten) {
--				ret = -EFAULT;
-+		page_base = (offset & ~(PAGE_SIZE-1));
-+		page_offset = offset & (PAGE_SIZE-1);
-+		page_length = remain;
-+		if ((page_offset + remain) > PAGE_SIZE)
-+			page_length = PAGE_SIZE - page_offset;
-+
-+		ret = fast_user_write (dev_priv->mm.gtt_mapping, page_base,
-+				       page_offset, user_data, page_length);
-+
-+		/* If we get a fault while copying data, then (presumably) our
-+		 * source page isn't available. In this case, use the
-+		 * non-atomic function
-+		 */
-+		if (ret) {
-+			ret = slow_user_write (dev_priv->mm.gtt_mapping,
-+					       page_base, page_offset,
-+					       user_data, page_length);
-+			if (ret)
- 				goto fail;
--			}
- 		}
- 
--		remain -= l;
--		user_data += l;
--		offset += l;
-+		remain -= page_length;
-+		user_data += page_length;
-+		offset += page_length;
- 	}
--#if WATCH_PWRITE && 1
--	i915_gem_clflush_object(obj);
--	i915_gem_dump_object(obj, args->offset + args->size, __func__, ~0);
--	i915_gem_clflush_object(obj);
--#endif
- 
- fail:
- 	i915_gem_object_unpin(obj);
-@@ -1503,12 +1500,12 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 				 struct drm_i915_gem_exec_object *entry)
- {
- 	struct drm_device *dev = obj->dev;
-+	drm_i915_private_t *dev_priv = dev->dev_private;
- 	struct drm_i915_gem_relocation_entry reloc;
- 	struct drm_i915_gem_relocation_entry __user *relocs;
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 	int i, ret;
--	uint32_t last_reloc_offset = -1;
--	void __iomem *reloc_page = NULL;
-+	void __iomem *reloc_page;
- 
- 	/* Choose the GTT offset for our buffer and put it there. */
- 	ret = i915_gem_object_pin(obj, (uint32_t) entry->alignment);
-@@ -1631,26 +1628,11 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 		 * perform.
- 		 */
- 		reloc_offset = obj_priv->gtt_offset + reloc.offset;
--		if (reloc_page == NULL ||
--		    (last_reloc_offset & ~(PAGE_SIZE - 1)) !=
--		    (reloc_offset & ~(PAGE_SIZE - 1))) {
--			if (reloc_page != NULL)
--				iounmap(reloc_page);
--
--			reloc_page = ioremap_wc(dev->agp->base +
--						(reloc_offset &
--						 ~(PAGE_SIZE - 1)),
--						PAGE_SIZE);
--			last_reloc_offset = reloc_offset;
--			if (reloc_page == NULL) {
--				drm_gem_object_unreference(target_obj);
--				i915_gem_object_unpin(obj);
--				return -ENOMEM;
--			}
--		}
--
-+		reloc_page = io_mapping_map_atomic_wc(dev_priv->mm.gtt_mapping,
-+						      (reloc_offset &
-+						       ~(PAGE_SIZE - 1)));
- 		reloc_entry = (uint32_t __iomem *)(reloc_page +
--					   (reloc_offset & (PAGE_SIZE - 1)));
-+						   (reloc_offset & (PAGE_SIZE - 1)));
- 		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
- 
- #if WATCH_BUF
-@@ -1659,6 +1641,7 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 			  readl(reloc_entry), reloc_val);
- #endif
- 		writel(reloc_val, reloc_entry);
-+		io_mapping_unmap_atomic(reloc_page);
- 
- 		/* Write the updated presumed offset for this entry back out
- 		 * to the user.
-@@ -1674,9 +1657,6 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
- 		drm_gem_object_unreference(target_obj);
- 	}
- 
--	if (reloc_page != NULL)
--		iounmap(reloc_page);
--
- #if WATCH_BUF
- 	if (0)
- 		i915_gem_dump_object(obj, 128, __func__, ~0);
-@@ -2518,6 +2498,10 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
- 	if (ret != 0)
- 		return ret;
- 
-+	dev_priv->mm.gtt_mapping = io_mapping_create_wc(dev->agp->base,
-+							dev->agp->agp_info.aper_size
-+							* 1024 * 1024);
-+
- 	mutex_lock(&dev->struct_mutex);
- 	BUG_ON(!list_empty(&dev_priv->mm.active_list));
- 	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
-@@ -2535,11 +2519,13 @@ int
- i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
- 		       struct drm_file *file_priv)
- {
-+	drm_i915_private_t *dev_priv = dev->dev_private;
- 	int ret;
- 
- 	ret = i915_gem_idle(dev);
- 	drm_irq_uninstall(dev);
- 
-+	io_mapping_free(dev_priv->mm.gtt_mapping);
- 	return ret;
- }
- 
-diff --git a/include/asm-x86/iomap.h b/include/asm-x86/iomap.h
-new file mode 100644
-index 0000000..c1f0628
---- /dev/null
-+++ b/include/asm-x86/iomap.h
-@@ -0,0 +1,30 @@
-+/*
-+ * Copyright © 2008 Ingo Molnar
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <linux/uaccess.h>
-+#include <asm/cacheflush.h>
-+#include <asm/pgtable.h>
-+#include <asm/tlbflush.h>
-+
-+void *
-+iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot);
-+
-+void
-+iounmap_atomic(void *kvaddr, enum km_type type);
-diff --git a/include/linux/io-mapping.h b/include/linux/io-mapping.h
-new file mode 100644
-index 0000000..82df317
---- /dev/null
-+++ b/include/linux/io-mapping.h
-@@ -0,0 +1,125 @@
-+/*
-+ * Copyright © 2008 Keith Packard <keithp@keithp.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#ifndef _LINUX_IO_MAPPING_H
-+#define _LINUX_IO_MAPPING_H
-+
-+#include <linux/types.h>
-+#include <asm/io.h>
-+#include <asm/page.h>
-+#include <asm/iomap.h>
-+
-+/*
-+ * The io_mapping mechanism provides an abstraction for mapping
-+ * individual pages from an io device to the CPU in an efficient fashion.
-+ *
-+ * See Documentation/io_mapping.txt
-+ */
-+
-+/* this struct isn't actually defined anywhere */
-+struct io_mapping;
-+
-+#ifdef CONFIG_HAVE_ATOMIC_IOMAP
-+
-+/*
-+ * For small address space machines, mapping large objects
-+ * into the kernel virtual space isn't practical. Where
-+ * available, use fixmap support to dynamically map pages
-+ * of the object at run time.
-+ */
-+
-+static inline struct io_mapping *
-+io_mapping_create_wc(unsigned long base, unsigned long size)
-+{
-+	return (struct io_mapping *) base;
-+}
-+
-+static inline void
-+io_mapping_free(struct io_mapping *mapping)
-+{
-+}
-+
-+/* Atomic map/unmap */
-+static inline void *
-+io_mapping_map_atomic_wc(struct io_mapping *mapping, unsigned long offset)
-+{
-+	offset += (unsigned long) mapping;
-+	return iomap_atomic_prot_pfn(offset >> PAGE_SHIFT, KM_USER0,
-+				     __pgprot(__PAGE_KERNEL_WC));
-+}
-+
-+static inline void
-+io_mapping_unmap_atomic(void *vaddr)
-+{
-+	iounmap_atomic(vaddr, KM_USER0);
-+}
-+
-+static inline void *
-+io_mapping_map_wc(struct io_mapping *mapping, unsigned long offset)
-+{
-+	offset += (unsigned long) mapping;
-+	return ioremap_wc(offset, PAGE_SIZE);
-+}
-+
-+static inline void
-+io_mapping_unmap(void *vaddr)
-+{
-+	iounmap(vaddr);
-+}
-+
-+#else
-+
-+/* Create the io_mapping object*/
-+static inline struct io_mapping *
-+io_mapping_create_wc(unsigned long base, unsigned long size)
-+{
-+	return (struct io_mapping *) ioremap_wc(base, size);
-+}
-+
-+static inline void
-+io_mapping_free(struct io_mapping *mapping)
-+{
-+	iounmap(mapping);
-+}
-+
-+/* Atomic map/unmap */
-+static inline void *
-+io_mapping_map_atomic_wc(struct io_mapping *mapping, unsigned long offset)
-+{
-+	return ((char *) mapping) + offset;
-+}
-+
-+static inline void
-+io_mapping_unmap_atomic(void *vaddr)
-+{
-+}
-+
-+/* Non-atomic map/unmap */
-+static inline void *
-+io_mapping_map_wc(struct io_mapping *mapping, unsigned long offset)
-+{
-+	return ((char *) mapping) + offset;
-+}
-+
-+static inline void
-+io_mapping_unmap(void *vaddr)
-+{
-+}
-+
-+#endif /* HAVE_ATOMIC_IOMAP */
-+
-+#endif /* _LINUX_IO_MAPPING_H */
+Thanks,
+Bart
