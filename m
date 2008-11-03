@@ -1,87 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756578AbYKCXP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYKCXb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756578AbYKCXP1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYKCXPR
+	id S1755954AbYKCXb0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYKCXbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:15:17 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:3093 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751976AbYKCXPQ (ORCPT
+	Mon, 3 Nov 2008 18:31:18 -0500
+Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:48608 "EHLO
+	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753729AbYKCXbR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:15:16 -0500
-X-BigFish: VPS-33(zz146fK1432R98dR4015M1805Mzzzzz2fh6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-Message-ID: <490F85FC.9000001@am.sony.com>
-Date: Mon, 3 Nov 2008 15:15:08 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 3 Nov 2008 18:31:17 -0500
+From: Shehjar Tikoo <shehjart@cse.unsw.edu.au>
+To: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
+       tony.luck@intel.com, linux-kernel@vger.kernel.org
+Date: Tue, 04 Nov 2008 10:23:58 +1100
+Message-ID: <490F880E.4000801@cse.unsw.edu.au>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Paul Mackerras <paulus@samba.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: powerpc: struct device - replace bus_id with dev_name(),	dev_set_name()
-References: <1225594904.2142.26.camel@nga.site>
-In-Reply-To: <1225594904.2142.26.camel@nga.site>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Nov 2008 23:15:09.0364 (UTC) FILETIME=[03F34740:01C93E0A]
-X-SEL-encryption-scan: scanned
+Subject: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on Mar
+ 28, 2008
+Content-Type: multipart/mixed;
+ boundary="------------080305090302040509010205"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> (I did not compile or test it, please let me know, or help fixing
->  it, if something is wrong with the conversion)
-> 
-> This patch is part of a larger patch series which will remove
-> the "char bus_id[20]" name string from struct device. The device
-> name is managed in the kobject anyway, and without any size
-> limitation, and just needlessly copied into "struct device".
-> 
-> To set and read the device name dev_name(dev) and dev_set_name(dev)
-> must be used. If your code uses static kobjects, which it shouldn't
-> do, "const char *init_name" can be used to statically provide the
-> name the registered device should have. At registration time, the
-> init_name field is cleared, to enforce the use of dev_name(dev) to
-> access the device name at a later time.
-> 
-> We need to get rid of all occurrences of bus_id in the entire tree
-> to be able to enable the new interface. Please apply this patch,
-> and possibly convert any remaining remaining occurrences of bus_id.
-> 
-> We want to submit a patch to -next, which will remove bus_id from
-> "struct device", to find the remaining pieces to convert, and finally
-> switch over to the new api, which will remove the 20 bytes array
-> and does no longer have a size limitation.
-> 
-> Thanks,
-> Kay
-> 
-> 
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: powerpc: struct device - replace bus_id with dev_name(), dev_set_name()
-> 
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
-> ---
->  arch/powerpc/kernel/ibmebus.c             |    2 +-
->  arch/powerpc/kernel/of_device.c           |   18 +++++++-----------
->  arch/powerpc/kernel/vio.c                 |   12 ++++++------
->  arch/powerpc/platforms/85xx/mpc85xx_mds.c |    6 +++---
->  arch/powerpc/platforms/ps3/system-bus.c   |   28 ++++++++++++----------------
->  5 files changed, 29 insertions(+), 37 deletions(-)
+This is a multi-part message in MIME format.
+--------------080305090302040509010205
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-The PS3 parts look OK.  I think if it builds with ps3_defconfig then
-it will work.
+Hi All
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+I've been observing kernel panics for the past week on
+kernel versions 2.6.26, 2.6.27 but not on 2.6.24 and 2.6.25.
+
+The panic message says:
+
+arch/ia64/hp/common/sba_iommu.c: I/O MMU is out of mapping resources
+
+Using git-bisect, I've zeroed in on the commit that introduced this.
+Please see the attached file for the commit.
+
+The workload consists of 2 tests:
+1. Single fio process writing a 1 TB file.
+2. 15 fio processes writing 15GB files each.
+
+The panic happens on both workloads. There is no stack trace after
+the above message.
+
+Other info:
+System is HP RX6600(16Gb RAM, 16 processors w/ dual cores and HT)
+20 SATA disks under software RAID0 with 6 TB capacity.
+Silicon Image 3124 controller.
+File system is XFS.
+
+I'd much appreciate some help in fixing this because this panic has
+basically stalled my own work. I'd be willing to run more tests on my
+setup to test any patches that possibly fix this issue.
+
+Regards
+Shehjar
+
+--------------080305090302040509010205
+Content-Type: text/x-patch;
+ name="iommu-panic-culprit-commit.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="iommu-panic-culprit-commit.patch"
+
+commit b34eb53cdcb4f49fd31d78d0e385240820ed9063
+Author: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Date:   Fri Mar 28 14:27:03 2008 -0700
+
+    [IA64] make IOMMU respect the segment boundary limits
+    
+    IA64's IOMMU implementation allocates memory areas spanning LLD's segment
+    boundary limit.  It forces low level drivers to have a workaround to adjust
+    scatter lists that the IOMMU builds.
+    
+    We are in the process of making all the IOMMUs respect the segment boundary
+    limits to remove such work around in LLDs.  This patch is for IA64's IOMMU.
+    
+    Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Tony Luck <tony.luck@intel.com>
+
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 8fa3faf..1b73ffe 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -611,6 +611,9 @@ config IRQ_PER_CPU
+ 	bool
+ 	default y
+ 
++config IOMMU_HELPER
++	def_bool (IA64_HP_ZX1 || IA64_HP_ZX1_SWIOTLB || IA64_GENERIC)
++
+ source "arch/ia64/hp/sim/Kconfig"
+ 
+ source "arch/ia64/Kconfig.debug"
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index 523eae6..9409de5 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -35,6 +35,7 @@
+ #include <linux/nodemask.h>
+ #include <linux/bitops.h>         /* hweight64() */
+ #include <linux/crash_dump.h>
++#include <linux/iommu-helper.h>
+ 
+ #include <asm/delay.h>		/* ia64_get_itc() */
+ #include <asm/io.h>
+@@ -460,6 +461,13 @@ get_iovp_order (unsigned long size)
+ 	return order;
+ }
+ 
++static unsigned long ptr_to_pide(struct ioc *ioc, unsigned long *res_ptr,
++				 unsigned int bitshiftcnt)
++{
++	return (((unsigned long)res_ptr - (unsigned long)ioc->res_map) << 3)
++		+ bitshiftcnt;
++}
++
+ /**
+  * sba_search_bitmap - find free space in IO PDIR resource bitmap
+  * @ioc: IO MMU structure which owns the pdir we are interested in.
+@@ -471,15 +479,25 @@ get_iovp_order (unsigned long size)
+  * Cool perf optimization: search for log2(size) bits at a time.
+  */
+ static SBA_INLINE unsigned long
+-sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
++sba_search_bitmap(struct ioc *ioc, struct device *dev,
++		  unsigned long bits_wanted, int use_hint)
+ {
+ 	unsigned long *res_ptr;
+ 	unsigned long *res_end = (unsigned long *) &(ioc->res_map[ioc->res_size]);
+-	unsigned long flags, pide = ~0UL;
++	unsigned long flags, pide = ~0UL, tpide;
++	unsigned long boundary_size;
++	unsigned long shift;
++	int ret;
+ 
+ 	ASSERT(((unsigned long) ioc->res_hint & (sizeof(unsigned long) - 1UL)) == 0);
+ 	ASSERT(res_ptr < res_end);
+ 
++	boundary_size = (unsigned long long)dma_get_seg_boundary(dev) + 1;
++	boundary_size = ALIGN(boundary_size, 1ULL << iovp_shift) >> iovp_shift;
++
++	BUG_ON(ioc->ibase & ~iovp_mask);
++	shift = ioc->ibase >> iovp_shift;
++
+ 	spin_lock_irqsave(&ioc->res_lock, flags);
+ 
+ 	/* Allow caller to force a search through the entire resource space */
+@@ -504,9 +522,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 			if (likely(*res_ptr != ~0UL)) {
+ 				bitshiftcnt = ffz(*res_ptr);
+ 				*res_ptr |= (1UL << bitshiftcnt);
+-				pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
+-				pide <<= 3;	/* convert to bit address */
+-				pide += bitshiftcnt;
++				pide = ptr_to_pide(ioc, res_ptr, bitshiftcnt);
+ 				ioc->res_bitshift = bitshiftcnt + bits_wanted;
+ 				goto found_it;
+ 			}
+@@ -535,11 +551,13 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 			DBG_RES("    %p %lx %lx\n", res_ptr, mask, *res_ptr);
+ 			ASSERT(0 != mask);
+ 			for (; mask ; mask <<= o, bitshiftcnt += o) {
+-				if(0 == ((*res_ptr) & mask)) {
++				tpide = ptr_to_pide(ioc, res_ptr, bitshiftcnt);
++				ret = iommu_is_span_boundary(tpide, bits_wanted,
++							     shift,
++							     boundary_size);
++				if ((0 == ((*res_ptr) & mask)) && !ret) {
+ 					*res_ptr |= mask;     /* mark resources busy! */
+-					pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
+-					pide <<= 3;	/* convert to bit address */
+-					pide += bitshiftcnt;
++					pide = tpide;
+ 					ioc->res_bitshift = bitshiftcnt + bits_wanted;
+ 					goto found_it;
+ 				}
+@@ -560,6 +578,11 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 		end = res_end - qwords;
+ 
+ 		for (; res_ptr < end; res_ptr++) {
++			tpide = ptr_to_pide(ioc, res_ptr, 0);
++			ret = iommu_is_span_boundary(tpide, bits_wanted,
++						     shift, boundary_size);
++			if (ret)
++				goto next_ptr;
+ 			for (i = 0 ; i < qwords ; i++) {
+ 				if (res_ptr[i] != 0)
+ 					goto next_ptr;
+@@ -572,8 +595,7 @@ sba_search_bitmap(struct ioc *ioc, unsigned long bits_wanted, int use_hint)
+ 				res_ptr[i] = ~0UL;
+ 			res_ptr[i] |= RESMAP_MASK(bits);
+ 
+-			pide = ((unsigned long)res_ptr - (unsigned long)ioc->res_map);
+-			pide <<= 3;	/* convert to bit address */
++			pide = tpide;
+ 			res_ptr += qwords;
+ 			ioc->res_bitshift = bits;
+ 			goto found_it;
+@@ -605,7 +627,7 @@ found_it:
+  * resource bit map.
+  */
+ static int
+-sba_alloc_range(struct ioc *ioc, size_t size)
++sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
+ {
+ 	unsigned int pages_needed = size >> iovp_shift;
+ #ifdef PDIR_SEARCH_TIMING
+@@ -622,9 +644,9 @@ sba_alloc_range(struct ioc *ioc, size_t size)
+ 	/*
+ 	** "seek and ye shall find"...praying never hurts either...
+ 	*/
+-	pide = sba_search_bitmap(ioc, pages_needed, 1);
++	pide = sba_search_bitmap(ioc, dev, pages_needed, 1);
+ 	if (unlikely(pide >= (ioc->res_size << 3))) {
+-		pide = sba_search_bitmap(ioc, pages_needed, 0);
++		pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
+ 		if (unlikely(pide >= (ioc->res_size << 3))) {
+ #if DELAYED_RESOURCE_CNT > 0
+ 			unsigned long flags;
+@@ -653,7 +675,7 @@ sba_alloc_range(struct ioc *ioc, size_t size)
+ 			}
+ 			spin_unlock_irqrestore(&ioc->saved_lock, flags);
+ 
+-			pide = sba_search_bitmap(ioc, pages_needed, 0);
++			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
+ 			if (unlikely(pide >= (ioc->res_size << 3)))
+ 				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
+ 				      ioc->ioc_hpa);
+@@ -936,7 +958,7 @@ sba_map_single(struct device *dev, void *addr, size_t size, int dir)
+ 	spin_unlock_irqrestore(&ioc->res_lock, flags);
+ #endif
+ 
+-	pide = sba_alloc_range(ioc, size);
++	pide = sba_alloc_range(ioc, dev, size);
+ 
+ 	iovp = (dma_addr_t) pide << iovp_shift;
+ 
+@@ -1373,7 +1395,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
+ 		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
+ 		ASSERT(dma_len <= DMA_CHUNK_SIZE);
+ 		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
+-			| (sba_alloc_range(ioc, dma_len) << iovp_shift)
++			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
+ 			| dma_offset);
+ 		n_mappings++;
+ 	}
 
 
-
-
+--------------080305090302040509010205--
