@@ -1,108 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYKCXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756308AbYKCXjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbYKCXfi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 18:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbYKCXf3
+	id S1756308AbYKCXjn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYKCXjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 18:35:29 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:28166 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751435AbYKCXf2 (ORCPT
+	Mon, 3 Nov 2008 18:39:35 -0500
+Received: from tallyho.bytemark.co.uk ([80.68.81.166]:35572 "EHLO
+	tallyho.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263AbYKCXje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 18:35:28 -0500
-Subject: Re: [PATCH] disable CPU side GART accesses
-From: Bob Montgomery <bob.montgomery@hp.com>
-Reply-To: bob.montgomery@hp.com
-To: Dave Airlie <airlied@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "vojtech@suse.cz" <vojtech@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "chandru@in.ibm.com" <chandru@in.ibm.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <21d7e9970810291440w50d15c30o961dad801cf71548@mail.gmail.com>
-References: <1224107317.2215.238.camel@amd.troyhebe>
-	 <20081015234842.GA10999@elte.hu>	 <1225147341.2215.401.camel@amd.troyhebe>
-	 <4906495B.1060506@kernel.org>	 <1225313564.3428.14.camel@amd.troyhebe>
-	 <21d7e9970810291424g369035d4h562b54c676d49aef@mail.gmail.com>
-	 <20081029213244.GD24794@redhat.com>
-	 <21d7e9970810291440w50d15c30o961dad801cf71548@mail.gmail.com>
-Content-Type: text/plain
-Organization: Contractor at HP
-Date: Mon, 03 Nov 2008 16:36:19 -0700
-Message-Id: <1225755379.3428.39.camel@amd.troyhebe>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 18:39:34 -0500
+Date: Mon, 3 Nov 2008 23:39:17 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+Message-ID: <20081103233917.GF10325@brain>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <20081103125108.46d0639e.akpm@linux-foundation.org> <1225747308.12673.486.camel@nimitz> <200811032324.02163.rjw@sisk.pl> <1225751665.12673.511.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225751665.12673.511.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-29 at 21:40 +0000, Dave Airlie wrote:
-> On Thu, Oct 30, 2008 at 7:32 AM, Dave Jones <davej@redhat.com> wrote:
-> > On Thu, Oct 30, 2008 at 07:24:34AM +1000, Dave Airlie wrote:
-> >
-> >  > This stops the CPU from using the aperture for most DRI things. I
-> >  > can't confirm this won't regress working systems
-> >  > though. The whole AMD GART thing scares me, esp if some of the host
-> >  > chipsets also have an AGP GART.
-> >
-> > The easy cop-out for those in the past has been 'dont support them'.
-> > It's why we removed some K8 chipset PCI IDs from the via driver for eg.
-> > iirc, if we leave them unprogrammed, they're essentially irrelevant.
-> >
+On Mon, Nov 03, 2008 at 02:34:25PM -0800, Dave Hansen wrote:
+> On Mon, 2008-11-03 at 23:24 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 3 of November 2008, Dave Hansen wrote:
+> > > On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
+> > > > On Wed, 29 Oct 2008 13:25:00 +0100
+> > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
+> > > > > > 
+> > > > > > hibernation + memory hotplug was disabled in kconfig because we could
+> > > > > > not handle hibernation + sparse mem at some point. It seems to work
+> > > > > > now, so I guess we can enable it.
+> > > > > 
+> > > > > OK, if "it seems to work now" means that it has been tested and confirmed to
+> > > > > work, no objection from me.
+> > > > 
+> > > > yes, that was not a terribly confidence-inspiring commit message.
+> > > > 
+> > > > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
+> > > > hotplug when swsusp is enabled.  There's a lot of churn there right
+> > > > now.  We'll fix it up properly once it calms down." which is also
+> > > > rather rubbery.  
+> > > > 
+> > > > Cough up, guys: what was the issue with memory hotplug and swsusp, and
+> > > > is it indeed now fixed?
+> > > 
+> > > I suck.  That commit message was horrid and I'm racking my brain now to
+> > > remember what I meant.  Don't end up like me, kids.
+> > > 
+> > > I've attached the message that I sent to the swsusp folks.  I never got
+> > > a reply from that as far as I can tell.
+> > > 
+> > > http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
+> > > 
+> > > As I look at it now, it hasn't improved much since 2005.  Take a look at
+> > > kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
+> > > list of zones that a system has is static.  Memory hotplug needs to be
+> > > excluded while that operation is going on.
+> > 
+> > This operation is carried out on one CPU with interrupts disabled.  Is that
+> > not enough?
 > 
-> I was more going the other way, why use the IOMMU for AGP when it has
-> other tasks to
-> do, and we have a host chipset GART.
+> If that's true then you don't need any locking for anything at all,
+> right?
 > 
-> Granted I've never had an AMD + AGP system to ever care about this.
+> All of the changes I was talking about occur inside the kernel and code
+> has to run for it to happen.  So, if you are saying that absolutely no
+> other code on the system can possibly run, then it should be OK.
+> 
+> > > page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
+> > > things can become invalid at any time since no references are held or
+> > > taken on the page.  Or, a page that *was* invalid may become valid and
+> > > get missed.
+> > 
+> > Can that really happen given the conditions above?
+> 
+> Nope.
+> 
+> But, as I think about it, there is another issue that we need to
+> address, CONFIG_NODES_SPAN_OTHER_NODES.
+> 
+> A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+> have only one zone).  But, there may be another node with
+> node_start_pfn=10 and a node_end_pfn=20.  This loop:
+> 
+>         for_each_zone(zone) {
+> 		...
+>                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+>                         if (page_is_saveable(zone, pfn))
+>                                 memory_bm_set_bit(orig_bm, pfn);
+>         }
+> 
+> will walk over the smaller node's pfn range multiple times.  Is this OK?
+> 
+> I think all you have to do to fix it is check page_zone(page) == zone
+> and skip out if they don't match.
+> 
+> Andy, does anything else stick out to you?
 
-We're specifically talking about AMD64, and we're not using an IOMMU for
-AGP, we're using the AMD64 implementation of the GART for an IOMMU.
-The (possible) danger is that some old AMD64 system could also (or
-instead) try using the GART for AGP and run into a problem since my
-patch wants to disable CPU side access to the aperture, which is fine
-when we're using it as an IOMMU.
+I agree that there needs to be a check for being in the zone there to
+avoid the overlapping nodes issue.  Also need to make sure when
+constructing that check we check for pfn_valid before looking at the
+page to avoid holes in the memmap.
 
-In drivers/gpu/drm/drm_memory.c:agp_remap(), there are these comments
-about the part of the code that deals with "cant_use_aperture":
-
-/*
- * OK, we're mapping AGP space on a chipset/platform on which
- * memory accesses by the CPU do not get remapped by the GART.
- * We fix this by using the kernel's page-table instead (that's
- * probably faster anyhow...).
- */
-
-So that's encouraging.  Now the question is this:  Can I just go into
-amd64-agp.c and add ".cant_use_aperture=true" to the agp_bridge_driver
-struct?  Who's brave enough to say that will just work? :-)
-
-static const struct agp_bridge_driver amd_8151_driver = {
-...
-
-The "cant_use_aperture" paths have possibly
-never been tested on amd64 agp systems, but
-are in use on these systems:
-
-alpha-agp.c:    .cant_use_aperture      = true,
-hp-agp.c:       .cant_use_aperture      = true,
-i460-agp.c:     .cant_use_aperture      = true,
-parisc-agp.c:   .cant_use_aperture      = true,
-sgi-agp.c:      .cant_use_aperture = true,
-uninorth-agp.c: .cant_use_aperture      = true,
-uninorth-agp.c: .cant_use_aperture      = true,
-
-Thanks for any more enlightenment,
-Bob Montgomery
-
-
-
-
-
-
-
+-apw
