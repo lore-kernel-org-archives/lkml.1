@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYKCUwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbYKCUxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYKCUwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756294AbYKCUvt
+	id S1756760AbYKCUxX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:53:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756633AbYKCUw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:51:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42968 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756236AbYKCUvs (ORCPT
+	Mon, 3 Nov 2008 15:52:56 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:14715 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756195AbYKCUwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:51:48 -0500
-Date: Mon, 3 Nov 2008 12:51:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pavel@suse.cz, linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
-       Matt Tolentino <matthew.e.tolentino@intel.com>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Message-Id: <20081103125108.46d0639e.akpm@linux-foundation.org>
-In-Reply-To: <200810291325.01481.rjw@sisk.pl>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<200810291325.01481.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 15:52:54 -0500
+X-IronPort-AV: E=Sophos;i="4.33,538,1220227200"; 
+   d="scan'208";a="101175246"
+From: Roland Dreier <rdreier@cisco.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       sfr <sfr@canb.auug.org.au>, rolandd@cisco.com, ericvh@gmail.com,
+       akpm <akpm@linux-foundation.org>, davem@davemloft.net,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] net/9p: limit RDMA to INET
+References: <20081103111731.d12dbb84.randy.dunlap@oracle.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Mon, 03 Nov 2008 12:52:50 -0800
+In-Reply-To: <20081103111731.d12dbb84.randy.dunlap@oracle.com> (Randy Dunlap's
+	message of "Mon, 3 Nov 2008 11:17:31 -0800")
+Message-ID: <aday700v8f1.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Nov 2008 20:52:51.0255 (UTC) FILETIME=[22D73C70:01C93DF6]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 13:25:00 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+ > Make 9p's RDMA option depend on INET since it uses Infiniband rdma_*
+ > functions and that code depends on INET.  Otherwise 9p can try to
+ > use symbols which don't exist.
+ > 
+ > ERROR: "rdma_destroy_id" [net/9p/9pnet_rdma.ko] undefined!
 
-> On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > 
-> > hibernation + memory hotplug was disabled in kconfig because we could
-> > not handle hibernation + sparse mem at some point. It seems to work
-> > now, so I guess we can enable it.
-> 
-> OK, if "it seems to work now" means that it has been tested and confirmed to
-> work, no objection from me.
+Good catch.
 
-yes, that was not a terribly confidence-inspiring commit message.
+ >  config NET_9P_RDMA
+ > -	depends on NET_9P && INFINIBAND && EXPERIMENTAL
+ > +	depends on INET && INFINIBAND && EXPERIMENTAL
 
-3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-hotplug when swsusp is enabled.  There's a lot of churn there right
-now.  We'll fix it up properly once it calms down." which is also
-rather rubbery.  
+I wonder if there's a way to make this depend on INFINIBAND_ADDR_TRANS
+instead of INET, since that's the real dependency to get the rdma_*
+symbols.  However INFINIBAND_ADDR_TRANS is a bool that gets set to y iff
+INET and INFINIBAND are set, so it's not trivial to make a tristate
+depend on it.
 
-Cough up, guys: what was the issue with memory hotplug and swsusp, and
-is it indeed now fixed?
+Maybe this patch is fine as it is, since the Kconfig dependencies are
+unlikely to change anyway...
 
-Thanks.
-
-
-> 
-> > Signed-off-by: Pavel Machek <pavel@suse.cz>
-> > 
-> > 
-> > diff -ur linux/mm/Kconfig linux.tmp/mm/Kconfig
-> > --- linux/mm/Kconfig	2008-10-27 10:10:59.000000000 +0100
-> > +++ linux.tmp/mm/Kconfig	2008-10-29 10:02:41.000000000 +0100
-> > @@ -128,12 +128,9 @@
-> >  config MEMORY_HOTPLUG
-> >  	bool "Allow for memory hot-add"
-> >  	depends on SPARSEMEM || X86_64_ACPI_NUMA
-> > -	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
-> > +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
-> >  	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
-> >  
-> > -comment "Memory hotplug is currently incompatible with Software Suspend"
-> > -	depends on SPARSEMEM && HOTPLUG && HIBERNATION
-> > -
-> >  config MEMORY_HOTPLUG_SPARSE
-> >  	def_bool y
-> >  	depends on SPARSEMEM && MEMORY_HOTPLUG
-> > 
-> 
+ - R.
