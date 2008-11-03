@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYKCOza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbYKCOz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbYKCOza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 09:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYKCOzT
+	id S1755941AbYKCOz6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 09:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbYKCOzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 09:55:19 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:7574 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753823AbYKCOzQ (ORCPT
+	Mon, 3 Nov 2008 09:55:48 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:43804 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755816AbYKCOzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 09:55:16 -0500
-Date: Mon, 3 Nov 2008 17:55:14 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
-Message-ID: <20081103145514.GA23466@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com> <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
+	Mon, 3 Nov 2008 09:55:47 -0500
+Date: Mon, 3 Nov 2008 14:55:43 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: eeepc-laptop rfkill, stupid question #4
+Message-ID: <20081103145543.GA496@srcf.ucam.org>
+References: <20081031171126.GA17313@srcf.ucam.org> <490B4014.4040009@tuffmail.co.uk> <490B70A3.8010108@tuffmail.co.uk> <20081102040008.GB29606@khazad-dum.debian.net> <490D8C4E.3010201@tuffmail.co.uk> <20081102130655.GA12766@srcf.ucam.org> <20081103141628.GB31078@khazad-dum.debian.net> <20081103141836.GA31894@srcf.ucam.org> <490F0ACC.4000808@tuffmail.co.uk> <20081103145145.GD31078@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081103145145.GD31078@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 02, 2008 at 11:36:08PM +0300, Dmitry wrote:
-> 2008/10/29 Dmitry Baryshkov <dbaryshkov@gmail.com>:
-> > There are already several wm97xx-battery drivers. Do register the tosa one
-> > only on tosa machines.
-> >
-> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> > ---
-> >  drivers/power/tosa_battery.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> What about this patch?
+On Mon, Nov 03, 2008 at 12:51:45PM -0200, Henrique de Moraes Holschuh wrote:
 
-Sorry for the delay.
+> Not if you can enter or exit HARD_BLOCK, you're not.  If you cannot it is
+> fine.  But if you can, you really need to rfkill_force_state() on resume,
 
-> IMO it can and should be merged during 2.6.28-rc cycle.
-> 
-> diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
-> index 2eab35a..4e52c22 100644
-> --- a/drivers/power/tosa_battery.c
-> +++ b/drivers/power/tosa_battery.c
-> @@ -469,6 +469,9 @@ static struct platform_driver tosa_bat_driver = {
->  
->  static int __init tosa_bat_init(void)
->  {
-> +	if (!machine_is_tosa())
-> +		return -EINVAL;
-> +
+The state can always be overridden by software, so I think we're fine 
+there.
 
-I tend to reject this approach. You should rename the driver instead.
+> And the rfkill core seems to be buggy when you call force_state() on resume,
+> which you guys didn't hit because you're not doing it yet.  See my other
+> email...
 
-I.e.
--.driver.name    = "wm97xx-battery",
--.driver.name    = "tosa-battery",
-
-And make sure that this won't break users of that driver (though
-I don't see any).
-
->  	return platform_driver_register(&tosa_bat_driver);
->  }
-
-Thanks,
+Just to make sure: in the case where we *don't* support hard blocking, 
+there's no need to do anything special in the driver on resume and 
+rfkill should (but currently doesn't) do the right thing itself?
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Matthew Garrett | mjg59@srcf.ucam.org
