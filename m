@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbYKCQhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYKCQkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756769AbYKCQhn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 11:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYKCQhS
+	id S1756631AbYKCQkR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 11:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbYKCQkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 11:37:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53587 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754798AbYKCQhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 11:37:16 -0500
-Date: Mon, 3 Nov 2008 08:36:45 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Airlie <airlied@gmail.com>
-cc: Keith Packard <keithp@keithp.com>, Ingo Molnar <mingo@elte.hu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: io resources and cached mappings (was: [git pull] drm patches
- for 2.6.27-rc1)
-In-Reply-To: <21d7e9970811022300o2576b437kb35a55e2751889f6@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0811030833340.3459@nehalem.linux-foundation.org>
-References: <20081022093615.GF12453@elte.hu>  <1224746087-13991-1-git-send-email-keithp@keithp.com>  <20081023080553.GB14714@elte.hu>  <1224776350.6738.14.camel@koto.keithp.com> <21d7e9970811022300o2576b437kb35a55e2751889f6@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 3 Nov 2008 11:40:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60036 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755211AbYKCQkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 11:40:01 -0500
+Message-ID: <490F2953.30709@kernel.org>
+Date: Tue, 04 Nov 2008 01:39:47 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with the block-layer timeouts
+References: <Pine.LNX.4.44L0.0811031051210.2454-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0811031051210.2454-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Nov 2008 16:39:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Alan Stern!  :-)
 
-
-On Mon, 3 Nov 2008, Dave Airlie wrote:
+Alan Stern wrote:
+> Even a "peek and fetch" interface might not be best, at least as far as
+> timer issues are concerned.  Ideally, the timer shouldn't be started
+> until the SCSI midlayer knows that the request has successfully been
+> sent to the lower-level driver.
 > 
-> So I've put these patches into Fedora rawhide kernel to test, and 
-> glxgears on my 945G hw went from 85fps to 380fps, clearly we would want 
-> these patches upstream sooner rather than later.
+> Therefore the best approach would be to EXPORT blk_add_timer().  It 
+> should be called at the end of scsi_dispatch_cmd(), when the return 
+> value from the queuecommand method is known to be 0.
+> 
+> With something like this, Mike's fix to end_that_request_last() 
+> wouldn't be needed, since blkdev_dequeue_request() wouldn't 
+> automatically start the timer.  It seems silly to start the timer when 
+> you know you're just going to stop it immediately afterwards.
 
-I'm inclined to agree. Not that I think 380fps sounds very impressive (I 
-get 850+ fps with _software_ rendering, for chissake), but because 85 fps 
-is a joke, and clearly without this setup there's not even any point to 
-try to do any other optimizations.
+Block layer currently doesn't know when a request is actually being
+issued.  For timeout, blk_add_timer() can be exported but I think that
+only aggravate the already highly fragmented block layer interface
+(different users use it differently to the point of scary chaos).  For
+minor example, block tracing considers elv_next_request() as the command
+issue point which isn't quite true for SCSI and many other drivers.  For
+that too, we can export the tracing interface but I don't think that's
+the right direction.  More stuff are scheduled to be moved to block
+layer and exporting more and more implementation details to block layer
+users will have hard time scaling.
 
-And if we're looking at the patches being in Fedora anyway, there really 
-is no reason not to merge them. Even if it's out of the merge window.
+I'm trying to convert all drivers to use the same command issue model -
+elv_next_request() -> blkdev_dequeue_request() on actual issue ->
+blk_end_request().  I have first draft of the conversion patchset but
+it's gonna take me a few more days to review and test what I can as
+several drivers (mostly legacy ones) are a bit tricky.
 
-Ingo?
+For the time being, SCSI layer is the only block layer timeout user and
+completion w/o dequeuing is only for error cases in SCSI, so the
+inefficiency there shouldn't matter too much.
 
-			Linus
+Jens, what do you think?
+
+Thanks.
+
+-- 
+tejun
