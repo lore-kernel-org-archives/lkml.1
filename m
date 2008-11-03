@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756902AbYKCVH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYKCVIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756902AbYKCVH7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 16:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbYKCVHu
+	id S1757014AbYKCVIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 16:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbYKCVIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 16:07:50 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33930 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754956AbYKCVHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 16:07:49 -0500
-Date: Mon, 3 Nov 2008 15:07:48 -0600
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>
-Subject: RT sched: cpupri_vec lock contention with def_root_domain and no load balance
-Message-ID: <20081103210748.GC9937@sgi.com>
+	Mon, 3 Nov 2008 16:08:07 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:53569 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755091AbYKCVIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 16:08:05 -0500
+Message-ID: <490F6829.3020104@garzik.org>
+Date: Mon, 03 Nov 2008 16:07:53 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Avishay Traeger <avishay@gmail.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC 0/9] osdfs
+References: <4909C41A.7000406@panasas.com>
+In-Reply-To: <4909C41A.7000406@panasas.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When load balancing gets switched off for a set of cpus via the
-sched_load_balance flag in cpusets, those cpus wind up with the
-globally defined def_root_domain attached.  The def_root_domain is
-attached when partition_sched_domains calls detach_destroy_domains().
-A new root_domain is never allocated or attached as a sched domain
-will never be attached by __build_sched_domains() for the non-load
-balanced processors.
+Boaz Harrosh wrote:
+> Please review an OSD based file system. 
+> 
+> Given that our OSD initiator library is accepted into Kernel, we would
+> like to also submit an osdfs. This is the first iteration of this file system.
+> 
+> The next stage is to make it exportable by the pNFS-over-objects Server.
+> osdfs is one of the building blocks for a full, end-to-end open source
+> reference implementation of a Server/Client pNFS-over-objects we
+> want to have available in Linux. Other parts are the Generic pNFS
+> client project with the objects-layout-driver, and the generic pNFS
+> server plus osdfs once it is adapted to be exportable.
+> (See all about pNFS in Linux at:
+> http://wiki.linux-nfs.org/wiki/index.php/PNFS_prototype_design)
+> 
+> osdfs was originally developed by Avishay Traeger <avishay@gmail.com>
+> from IBM. A very old version of it is hosted on sourceforge as the osdfs
+> project. It was originally developed for the 2.6.10 Kernel over the old
+> IBM's osd-initiator Linux driver.
+> 
+> Since then it was picked by us, open-osd, and was both forward ported to
+> current Kernel, as well as converted to run over our osd Kernel Library.
+> The conversion effort, if anyone is interested, is also available as a
+> patchset here:
+>   git-clone git://git-open-osd.org/open-osd.git osdfs-devel
+> or on the web at:
+>   http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=shortlog;h=refs/heads/osdfs-devel
+> 
+> The Original code is based on ext2 code from the Kernel at the time.
+> Further reading is available at the last patch in the osdfs.txt file.
+> 
+> I have mechanically divided the code in parts, each introducing a
+> group of vfs function vectors, all tied at the end into a full filesystem.
+> Each patch can be compiled but it will only run at the very end.
+> This was done for the hope of easier reviewing.
+> 
+> Here is the list of patches
+> [RFC 1/9] osdfs: osd Swiss army knife
+> [RFC 2/9] osdfs: file and file_inode operations
+> [RFC 3/9] osdfs: symlink_inode and fast_symlink_inode operations
+> [RFC 4/9] osdfs: address_space_operations
+> [RFC 5/9] osdfs: dir_inode and directory operations
+> [RFC 6/9] osdfs: super_operations and file_system_type
+> [RFC 7/9] osdfs: mkosdfs
+> [RFC 8/9] osdfs: Documentation
 
-The problem with this scenario is that on systems with a large number
-of processors with load balancing switched off, we start to see the
-cpupri->pri_to_cpu->lock in the def_root_domain becoming contended.
-This starts to become much more apparent above 8 waking RT threads
-(with each RT thread running on it's own cpu, blocking and waking up
-continuously).
+Pretty cool stuff.
 
-I'm wondering if this is, in fact, the way things were meant to work,
-or should we have a root domain allocated for each cpu that is not to
-be part of a sched domain?  Note the the def_root_domain spans all of
-the non-load-balanced cpus in this case.  Having it attached to cpus
-that should not be load balancing doesn't quite make sense to me.
+I've been wondering when we would start seeing OSD filesystems make 
+their appearance.
+
+Random, unordered comments:
+
+* This is important stuff.  Should have been posted to LKML.  Please CC 
+LKML in the future.
+
+* As discussed at the filesystem summit, OSD use implies a need for an 
+MD-like layer for OSD objects.  Has anyone even started the design work 
+for this?
+
+* I tend to think there is room for more than one OSD filesystem in the 
+Linux kernel.  Assuming all OSDs will use the same Linux filesystem 
+driver will lead to bloat, and you potentially "code yourself into a 
+corner."  Let's not rule out multiple filesystems.
+
+As such, "osdfs" seems like too-generic a name. How about boazfs?  :)
+
+* Get this into the kernel ASAP!  OSD stuff languishes outside the 
+kernel for _far_ too long.  OSD is a key storage technology that needs 
+to be developed in the full light of the Linux community, not off in a 
+dark corner somewhere, where few see progress or discussions.
+
+Object-based storage, and its SCSI incarnation OSD, is a MAJOR revision 
+of the block storage API, moving away from LBA-addressed linear APIs. 
+That's a big deal, and should be discussed on LKML, IMO...
+
+	Jeff
 
 
-Here's where we've often seen this lock contention occur:
 
-0xa0000001006df1e0 _spin_lock_irqsave+0x40
-        args (0xa000000101f8e1c8)
-0xa00000010014b150 cpupri_set+0x290
-        args (0x16, 0x2c, 0x16, 0xa000000101f8e1c8, 0xa000000101f8b518, 0x1, 0x2c,
-0xa000000100092ee0, 0x48c)
-0xa000000100092ee0 __enqueue_rt_entity+0x300
-        args (0xe00000b4730401a0, 0xe0000b300316b510, 0xe0000b300316ba10, 0x500,
-0xe0000b300316b518, 0x50, 0xa000000100093bc0, 0x286, 0x4f)
-0xa000000100093bc0 enqueue_rt_entity+0xe0
-        args (0xe00000b4730401a0, 0x0, 0xa000000100093c50, 0x307, 0xe00000b4730401a0)
-0xa000000100093c50 enqueue_task_rt+0x30
-        args (0xe0000b300316b400, 0xe00000b473040000, 0x1, 0xa0000001000848d0, 0x309,
-0xa000000101122134)
-0xa0000001000848d0 enqueue_task+0xd0
-        args (0xe0000b300316b400, 0xe00000b473040000, 0x1, 0xa000000100084ba0, 0x309,
-0xa0000001013079b0)
-0xa000000100084ba0 activate_task+0x60
-        args (0xe0000b300316b400, 0xe00000b473040000, 0x1, 0xa00000010009a270, 0x58e,
-0xa000000100099ec0)
-0xa00000010009a270 try_to_wake_up+0x530
-        args (0xe00000b473040000, 0x1, 0xe0000b300316b400, 0x49c6, 0xe0000b300316bc10,
-0xe0000b300316bcac, 0xe00000b473040078, 0xe0000b300316bc38, 0xa00000010009a4d0)
-0xa00000010009a4d0 wake_up_process+0x30
+
+
