@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756670AbYKCVSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756043AbYKCVTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756670AbYKCVSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 16:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbYKCVSI
+	id S1756043AbYKCVTz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 16:19:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYKCVTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 16:18:08 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:44178 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752995AbYKCVSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 16:18:07 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
-	hotplug
-From: Nigel Cunningham <ncunningham@crca.org.au>
+	Mon, 3 Nov 2008 16:19:47 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:49473 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753649AbYKCVTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 16:19:46 -0500
+Date: Mon, 3 Nov 2008 16:19:29 -0500
+From: Theodore Tso <tytso@mit.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz
-In-Reply-To: <20081103125108.46d0639e.akpm@linux-foundation.org>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <200810291325.01481.rjw@sisk.pl>
-	 <20081103125108.46d0639e.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Tue, 04 Nov 2008 08:18:00 +1100
-Message-Id: <1225747080.6755.14.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Cc: Arthur Jones <ajones@riverbed.com>, sandeen@redhat.com,
+       linux-ext4@vger.kernel.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20081103211929.GA18117@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Arthur Jones <ajones@riverbed.com>, sandeen@redhat.com,
+	linux-ext4@vger.kernel.org, sct@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <4908C951.2000309@redhat.com> <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081103123750.67c96224.akpm@linux-foundation.org> <20081103205854.GC30565@ajones-laptop.nbttech.com> <20081103131313.e9ae2f93.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081103131313.e9ae2f93.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
-> On Wed, 29 Oct 2008 13:25:00 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Mon, Nov 03, 2008 at 01:13:13PM -0800, Andrew Morton wrote:
+> On Mon, 3 Nov 2008 12:58:54 -0800
+> Arthur Jones <ajones@riverbed.com> wrote:
 > 
-> > On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > > 
-> > > hibernation + memory hotplug was disabled in kconfig because we could
-> > > not handle hibernation + sparse mem at some point. It seems to work
-> > > now, so I guess we can enable it.
+> > Hi Andrew, ...
 > > 
-> > OK, if "it seems to work now" means that it has been tested and confirmed to
-> > work, no objection from me.
+> > On Mon, Nov 03, 2008 at 12:37:50PM -0800, Andrew Morton wrote:
+> > > [...]
+> > > OK.  But still, questions remain.
+> > > 
+> > > - should we clear s_dirt if log_wait_commit() didn't work?
+> > > 
+> > > - ext3_force_commit() clears s_dirt also
+> > > 
+> > > - should ext3_sync_fs() be dropping the ext3_force_commit() return
+> > >   value on the floor?
+
+Should all the callers of ->sync_fs also be dropping the error returns
+on the floor?
+
+> > 
+> > - does ext4 have a similar issue (ext4_sync_fs looks the same)?
+> > 
 > 
-> yes, that was not a terribly confidence-inspiring commit message.
-> 
-> 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-> hotplug when swsusp is enabled.  There's a lot of churn there right
-> now.  We'll fix it up properly once it calms down." which is also
-> rather rubbery.  
-> 
-> Cough up, guys: what was the issue with memory hotplug and swsusp, and
-> is it indeed now fixed?
+> I'm sure it does.  Someone(tm) should prepare the ext4 patch once we've
+> settled on the ext3 patch.
 
-IIRC, at least part of the question was "What if memory is hot unplugged
-in the middle of hibernating, or between hibernating and
-resuming." (Would apply to cold unplugging too).
+I'll take care of it.  And I would reflect the error returns up to
+ext3_sync_fs's callers, although at the moment it's not clear it would
+make much of a difference.  :-(
 
-Regards,
-
-Nigel
-
+						- Ted
