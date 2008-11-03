@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbYKCP7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYKCQIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbYKCP7V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 10:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbYKCP7L
+	id S1756109AbYKCQIg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 11:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYKCQI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 10:59:11 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:51390 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754972AbYKCP7K (ORCPT
+	Mon, 3 Nov 2008 11:08:27 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56494 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754727AbYKCQI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 10:59:10 -0500
-Date: Mon, 3 Nov 2008 10:59:08 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Mike Anderson <andmike@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Problems with the block-layer timeouts
-In-Reply-To: <20081103085247.GO31673@kernel.dk>
-Message-ID: <Pine.LNX.4.44L0.0811031051210.2454-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 3 Nov 2008 11:08:26 -0500
+Subject: Re: bdi: register sysfs bdi device only once per queue
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       Peter Korsgaard <jacmet@sunsite.dk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1225727635.6009.9.camel@linux>
+References: <1225727635.6009.9.camel@linux>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 03 Nov 2008 17:08:50 +0100
+Message-Id: <1225728530.7803.1630.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Tejun!  I ran across the same bug as you, but about a day later.
-
-On Mon, 3 Nov 2008, Jens Axboe wrote:
-
-> > So when should the timeout begin?  The most logical time is when the 
-> > driver does send the request to the hardware.  Of course, the block 
-> > core has no way to know when that happens, so a suitable proxy might be 
-> > when the request is removed from the block queue.  (On the other hand, 
-> > are there drivers which don't bother to dequeue a request until it has 
-> > completed?)  Either way, both the comments above and the actual code 
-> > should be changed.
-
-> We already discussed this issue with Tejun. There's a hack in my tree
-> now that just moves the activate call to dequeue time, which works ok
-> for SCSI (but wont work for eg IDE). The real fix is to have a peek and
-> fetch interface for retrieving requests. We've actually wanted that for
-> some time, since the current 'peek and mark active' approach doesn't
-> even work well now since it'll both force pushing of requests to the
-> dispatch list and mark it unmergeable, since the block layer does not
-> whether the driver has started handling the request or not.
+On Mon, 2008-11-03 at 16:53 +0100, Kay Sievers wrote:
+> Andrew, can you pick this up this please?
 > 
-> So, in summary, a short term fix will be merged soon and a longer term
-> fix will be right after.
+> Thanks,
+> Kay
+> 
+> 
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: bdi: register sysfs bdi device only once per queue
+> 
+> Devices which share the same queue, like floppies and mtd devices,
+> get registered multiple times in the bdi interface, but bdi accounts
+> only the last registered device of the devices sharing one queue.
 
-Even a "peek and fetch" interface might not be best, at least as far as
-timer issues are concerned.  Ideally, the timer shouldn't be started
-until the SCSI midlayer knows that the request has successfully been
-sent to the lower-level driver.
+David, is there any reason the mtd devices do this?
 
-Therefore the best approach would be to EXPORT blk_add_timer().  It 
-should be called at the end of scsi_dispatch_cmd(), when the return 
-value from the queuecommand method is known to be 0.
+> On remove, all earlier registered devices leak, stay around in
+> sysfs, and cause "duplicate filename" errors if the devices are
+> re-created.
+> 
+> This prevents the creation of multiple bdi interfaces per queue,
+> and the bdi device will carry the dev_t name of the block device
+> which is the first one registered, of the pool of devices using
+> the same queue.
+> 
+> Tested-By: Peter Korsgaard <jacmet@sunsite.dk>
+> Acked-By: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+> ---
+> 
+> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+> index f2e574d..e6676e5 100644
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+> @@ -176,6 +176,9 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+>  	int ret = 0;
+>  	struct device *dev;
+>  
+> +	if (bdi->dev)
+> +		goto exit;
+> +
+>  	va_start(args, fmt);
+>  	dev = device_create_vargs(bdi_class, parent, MKDEV(0, 0), bdi, fmt, args);
+>  	va_end(args);
 
-With something like this, Mike's fix to end_that_request_last() 
-wouldn't be needed, since blkdev_dequeue_request() wouldn't 
-automatically start the timer.  It seems silly to start the timer when 
-you know you're just going to stop it immediately afterwards.
-
-Alan Stern
-
+Would it make sense to make it print something like, please fix me?
