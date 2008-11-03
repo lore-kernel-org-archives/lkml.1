@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYKCTVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYKCTVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbYKCTVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYKCTVJ
+	id S1755243AbYKCTVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754071AbYKCTVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:21:09 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:24930 "EHLO
+	Mon, 3 Nov 2008 14:21:14 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:24949 "EHLO
 	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752612AbYKCTVF (ORCPT
+	with ESMTP id S1753397AbYKCTVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:21:05 -0500
-Date: Mon, 3 Nov 2008 08:55:09 -0800
+	Mon, 3 Nov 2008 14:21:06 -0500
+Date: Mon, 3 Nov 2008 11:20:18 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Stephen Rothwell <sfr@canb.auug.org.au>, avi@redhat.com
 Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 3 (kvm)
-Message-Id: <20081103085509.3f6d88ed.randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for November 3 (kvm)(resend/lost)
+Message-Id: <20081103112018.5823291b.randy.dunlap@oracle.com>
 In-Reply-To: <20081103183214.aac32543.sfr@canb.auug.org.au>
 References: <20081103183214.aac32543.sfr@canb.auug.org.au>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="Multipart=_Mon__3_Nov_2008_08_55_09_-0800_TUanAMdwYRLubeg6"
+ boundary="Multipart=_Mon__3_Nov_2008_11_20_18_-0800_PmZRyw0QH+GoITNk"
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -33,7 +33,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a multi-part message in MIME format.
 
---Multipart=_Mon__3_Nov_2008_08_55_09_-0800_TUanAMdwYRLubeg6
+--Multipart=_Mon__3_Nov_2008_11_20_18_-0800_PmZRyw0QH+GoITNk
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
@@ -50,7 +50,8 @@ make[2]: *** [arch/x86/kvm/../../../virt/kvm/kvm_main.o] Error 1
 ---
 ~Randy
 
---Multipart=_Mon__3_Nov_2008_08_55_09_-0800_TUanAMdwYRLubeg6
+
+--Multipart=_Mon__3_Nov_2008_11_20_18_-0800_PmZRyw0QH+GoITNk
 Content-Type: application/octet-stream;
  name="config-r5517"
 Content-Disposition: attachment;
@@ -904,4 +905,4 @@ Q09ORklHX1RFWFRTRUFSQ0hfQk09bQpDT05GSUdfVEVYVFNFQVJDSF9GU009bQpDT05GSUdfUExJ
 U1Q9eQpDT05GSUdfSEFTX0lPTUVNPXkKQ09ORklHX0hBU19JT1BPUlQ9eQpDT05GSUdfSEFTX0RN
 QT15CkNPTkZJR19DSEVDS19TSUdOQVRVUkU9eQo=
 
---Multipart=_Mon__3_Nov_2008_08_55_09_-0800_TUanAMdwYRLubeg6--
+--Multipart=_Mon__3_Nov_2008_11_20_18_-0800_PmZRyw0QH+GoITNk--
