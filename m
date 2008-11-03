@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbYKCOY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYKCOZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756013AbYKCOY7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 09:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755180AbYKCOYu
+	id S1756196AbYKCOZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 09:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbYKCOY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 09:24:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:8601 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754103AbYKCOYt (ORCPT
+	Mon, 3 Nov 2008 09:24:57 -0500
+Received: from wf-out-1314.google.com ([209.85.200.173]:12102 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755847AbYKCOY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 09:24:49 -0500
+	Mon, 3 Nov 2008 09:24:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=J2oXKwpSAGxaCO3vAgbdswHRd5bRKs06RAnsAZekAlPNxxQV8p2RGkWez5X8pqr+fC
-         GP7P5SLUOKggKwGVU7p/8bBslzkUjXFX6PQJ356XsWi6Vb28bC5Fj6kr2oeYCDv3iqYF
-         2i7LpCdXiJ+SHwp+w5hj5BQ+hQRzvPFyKmVmA=
-Date: Mon, 3 Nov 2008 17:28:01 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rmk+kernel@arm.linux.org.uk
-Subject: next-20081103: arch/arm/kernel/elf.c:30: error: 'e_flags'
-	undeclared
-Message-ID: <20081103142801.GA3918@x200.localdomain>
-References: <20081103183214.aac32543.sfr@canb.auug.org.au>
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=L/5Y25oxGu3Q+6qYFarg7LPrl4phom5VLtPwMQhRBsgkYgf+0sEzZuu1Ve5XcuB9ih
+         a0Rs188IAsleW31LlSJt3wcugx83rbwdFZoMq+qFCG92mWsB3W8c+yn8JnQcJ4vQTgyP
+         gp1AHe9NIGcARYbagmkSU31KuKmV0RpNDMJAQ=
+Message-ID: <dd18b0c30811030624o2d8fe46u1e3e82d6f6b94481@mail.gmail.com>
+Date: Mon, 3 Nov 2008 06:24:53 -0800
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: ACPI Warning (nspredef-0858): \_SB_.BAT0._BIF:
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081103183214.aac32543.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-s/e_flags/eflags/ but I'm not sure.
+Hmm,
+This is weired; I'm not sure but I think this might
+be caused by acpid or something in that area, i.g.
+doing a fresh install and loading the latest git leaves me
+without a warning message, but then after upgrading to intrepid
+I see this:
+[   11.116543] ACPI Warning (nspredef-0858): \_SB_.BAT0._BIF: Return
+Package type mismatch at index 9 - found Buffer, expected String
+[20080926]
+
+
+-- 
+Justin P. Mattock
