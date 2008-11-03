@@ -1,55 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYKCTwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYKCT4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbYKCTwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYKCTwN
+	id S1754781AbYKCT4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYKCT4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:52:13 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:40208 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618AbYKCTwM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:52:12 -0500
-Message-ID: <490F5667.3080904@garzik.org>
-Date: Mon, 03 Nov 2008 14:52:07 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Subbu Seetharaman <subbus@serverengines.com>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
-References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com>
-In-Reply-To: <20081103193641.GA12552@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 3 Nov 2008 14:56:09 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:11352 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbYKCT4I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 14:56:08 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [PATCH] Identify which executable object the userspace address
+ belongs to. Store thread group leader id, and use it to lookup the address
+ in the process's map. We could have looked up the address on thread's map,
+ but the thread might not exist by the time we are called. The process might
+ not exist either, but if you are reading trace_pipe, that is unlikely.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: =?ISO-8859-1?Q?T=F6r=F6k?= Edwin <edwintorok@gmail.com>
+Cc: mingo@elte.hu, srostedt@redhat.com, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1225660694-19765-3-git-send-email-edwintorok@gmail.com>
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com>
+	 <1225660694-19765-2-git-send-email-edwintorok@gmail.com>
+	 <1225660694-19765-3-git-send-email-edwintorok@gmail.com>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 20:56:29 +0100
+Message-Id: <1225742189.7803.1631.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Nov 03, 2008 at 04:25:12AM -0800, Subbu Seetharaman wrote:
->> If we could get more specific feedback about the areas that require
->> cleanup, we can take care of them quickly.  
->>
->> Since the last posting, we have brought up the driver in a PPC system
->> and fixed some endianness issues.  As soon as I have some specific
->> feedback, we can update the driver with these fixes as well.
->>
->> Please let me know as soon as the driver is in the staging area.
-> 
-> Does someone have a pointer to the driver, so that we can see what is
-> needed to be done?
-
-It was in my email :)  Repeating,
-
-The 'benet' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-
-It should be suitable for pulling directly into staging.
-
-	Jeff
-
+fwiw, this is one amazing subject line.. ;-)
 
