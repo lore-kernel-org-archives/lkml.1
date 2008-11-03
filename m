@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbYKCEH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYKCEhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbYKCEH6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 23:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbYKCEHu
+	id S1754689AbYKCEhS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 23:37:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbYKCEhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 23:07:50 -0500
-Received: from venus.billgatliff.com ([209.251.101.201]:33925 "EHLO
-	venus.billgatliff.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754462AbYKCEHt (ORCPT
+	Sun, 2 Nov 2008 23:37:04 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:7180 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754501AbYKCEhB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 23:07:49 -0500
-Message-ID: <490E7915.90103@billgatliff.com>
-Date: Sun, 02 Nov 2008 22:07:49 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Sun, 2 Nov 2008 23:37:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=InHmx7WUGML8azjJmdZLwj8vQnWSezrvnaNle587ljgVaHts5jDr9lNTl5AP9g8OYH
+         FVM7SF2AiKb4sIsRTecyfjmQuwUKXItXCqZ6MC33WKNhw3KMtSUW0rM5vOesUwp5IlGI
+         UBVLaCczpUac/h2N5lP8WA51R3vCcFnISfZto=
+Message-ID: <cf70f0210811022037q29175198xa21af93679f8189a@mail.gmail.com>
+Date: Mon, 3 Nov 2008 10:07:00 +0530
+From: "Shivdas Gujare" <shivdas.tech@gmail.com>
+To: beagleboard@googlegroups.com
+Subject: Re: Measuring boot time on beagle board with PRINTK_TIME
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <cf70f0210810310833y57603392vacb60926f2050ed0@mail.gmail.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: MMC maintainership help needed
-References: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-In-Reply-To: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+References: <cf70f0210810310833y57603392vacb60926f2050ed0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id mA34bTdq025825
 
-Pierre Ossman wrote:
-> 
-> On a related note, I see very little comments to my reviews except from
-> the original author. As such I'm having a hard time evaluating my role.
-> Are people satisified with my work as a gatekeeper or am I just being a
-> pain in the ass? I know I can be a bit anal at times. :)
-
-I'm quite satisfied.  I figure the more a pain in the ass you are, the more
-likely stuff works when it comes out the other side.  :)
-
-Not saying that you are a pain in the ass, just saying that I appreciate the
-gatekeeper role _and_ your code reviews.  Here lately, I seem to not have the
-resources to do a good job at either...
+Hoping any help !
+Regards,Shivdas
 
 
-b.g.
--- 
-Bill Gatliff
-bgat@billgatliff.com
+On Fri, Oct 31, 2008 at 9:03 PM, Shivdas Gujare <shivdas.tech@gmail.com> wrote:> Hi All,>> I am trying to measure kernel boot time on BeagleBoard.> I am using kernel from> git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap-2.6.git> and tag v2.6.27-omap1.>> I enabled CONFIG_PRINTK_TIME from menuconfig, compiled and loaded> uImage on beagle board.> and got the booting messages like,>> [    0.000000] CPU: ARMv7 Processor [411fc082] revision 2 (ARMv7), cr=00c5387f> [    0.000000] Machine: OMAP3 Beagle Board> [    0.000000] Memory policy: ECC disabled, Data cache writeback> [    0.000000] OMAP3430 ES2.1> [    0.000000] SRAM: Mapped pa 0x40200000 to va 0xd7000000 size: 0x100000> [    0.000000] CPU0: L1 I VIPT cache. Caches unified at level 2,> coherent at level 3> [    0.000000] CPU0: Level 1 cache is separate instruction and data> [    0.000000] CPU0: I cache: 16384 bytes, associativity 4, 64 byte> lines, 64 sets,> [    0.000000]       supports RA> [    0.000000] CPU0: D cache: 16384 bytes, associativity 4, 64 byte> lines, 64 sets,> [    0.000000]       supports RA WB WT> [    0.000000] CPU0: Level 2 cache is unified> [    0.000000] CPU0: unified cache: 262144 bytes, associativity 8, 64> byte lines, 512 sets,> [    0.000000]       supports WA RA WB WT> [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.> Total pages: 32512> [    0.000000] Kernel command line: console=ttyS2,115200,n8> root=/dev/nfs nfsroot=192.168.1.5:/data/target> ip=192.168.1.1::255.255.255.0 nolock,wsize=1024,rsize=1024 rootdelay=3> [    0.000000] Clocking rate (Crystal/DPLL/ARM core): 26.0/332/500 MHz> [    0.000000] GPMC revision 5.0> [    0.000000] IRQ: Found an INTC at 0xd8200000 (revision 4.0) with 96> interrupts> [    0.000000] Total of 96 interrupts on 1 active controller> [    0.000000] OMAP34xx GPIO hardware version 2.5> [    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)> [    0.000000] OMAP clockevent source: GPTIMER12 at 32768 Hz> [    0.000000] Console: colour dummy device 80x30> [    0.000000] Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)> [    0.000000] Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)> [    0.000000] Memory: 128MB = 128MB total> [    0.000000] Memory: 126448KB available (2936K code, 240K data, 132K init)> [    0.000000] Calibrating delay loop... 498.87 BogoMIPS (lpj=1945600)> [    0.000000] Mount-cache hash table entries: 512> [    0.000000] CPU: Testing write buffer coherency: ok> [    0.000000] net_namespace: 288 bytes> [    0.000000] NET: Registered protocol family 16> [    0.000000] Found NAND on CS0> [    0.000000] Registering NAND on CS0> [  133.036315] OMAP DMA hardware revision 4.0> [  133.037322] USB: No board-specific platform config found> [  133.042510] i2c_omap i2c_omap.1: bus 1 rev3.12 at 2600 kHz> [  133.046051] twl4030: PIH (irq 7) chaining IRQs 368..375> [  133.046081] twl4030: power (irq 373) chaining IRQs 376..383> [  133.046508] twl4030: gpio (irq 368) chaining IRQs 384..401> [  133.047851] i2c_omap i2c_omap.3: bus 3 rev3.12 at 400 kHz> [  133.050628] twl4030_usb twl4030_usb: Initialized TWL4030 USB module> [  133.052154] SCSI subsystem initialized> [  133.052154] musb_hdrc: version 6.0, musb-dma, peripheral, debug=0> [  133.052886] musb_hdrc: USB Peripheral mode controller at d80ab000> using DMA, IRQ 92> [  133.062805] NET: Registered protocol family 2> [  133.130187] IP route cache hash table entries: 1024 (order: 0, 4096 bytes)> [  133.130767] TCP established hash table entries: 4096 (order: 3, 32768 bytes)> [  133.130920] TCP bind hash table entries: 4096 (order: 2, 16384 bytes)> [  133.131011] TCP: Hash tables configured (established 4096 bind 4096)> [  133.131011] TCP reno registered> [  133.153594] NET: Registered protocol family 1> [  133.154632] NetWinder Floating Point Emulator V0.97 (double precision)> [  133.156646] VFS: Disk quotas dquot_6.5.1> [  133.156768] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)> [  133.157836] JFFS2 version 2.2. (NAND) ï¿½(c) 2001-2006 Red Hat, Inc.> [  133.160369] msgmni has been set to 247> [  133.160461] io scheduler noop registered> [  133.160491] io scheduler anticipatory registered (default)> [  133.160491] io scheduler deadline registered> [  133.160675] io scheduler cfq registered> [  133.161529] omapfb: configured for panel omap3beagle> [  133.172973] omapfb: DISPC version 3.0 initialized> [  133.187805] Console: switching to colour frame buffer device 128x48> [  133.201324] omapfb: Framebuffer initialized. Total vram 1572864 planes 1> [  133.201324] omapfb: Pixclock 48000 kHz hfreq 44.7 kHz vfreq 57.7 Hz> [  133.218933] Serial: 8250/16550 driver4 ports, IRQ sharing enabled> [  133.241180] serial8250.0: ttyS0 at MMIO 0x4806a000 (irq = 72) is a ST16654> [  133.262207] serial8250.0: ttyS1 at MMIO 0x4806c000 (irq = 73) is a ST16654> [  133.283325] serial8250.0: ttyS2 at MMIO 0x49020000 (irq = 74) is a ST16654> [  133.283386] console [ttyS2] enabled> [  133.709564] brd: module loaded> [  133.717285] loop: module loaded> [  133.720489] i2c /dev entries driver> [  133.729064] Driver 'sd' needs updating - please use bus_type methods> [  133.736206] omap2-nand driver initializing> [  133.741516] NAND device: Manufacturer ID: 0x2c, Chip ID: 0xba> (Micron NAND 256MiB 1,8V 16-bit)> [  133.750762] cmdlinepart partition parsing not available> [  133.756072] Creating 5 MTD partitions on "omap2-nand":> [  133.761260] 0x00000000-0x00080000 : "X-Loader"> [  133.767425] 0x00080000-0x00260000 : "U-Boot"> [  133.773773] 0x00260000-0x00280000 : "U-Boot Env"> [  133.779785] 0x00280000-0x00680000 : "Kernel"> [  133.787139] 0x00680000-0x10000000 : "File System"> [  133.899658] g_ether gadget: using random self ethernet address> [  133.905609] g_ether gadget: using random host ethernet address> [  133.912322] usb0: MAC 22:95:51:9f:0b:d7> [  133.916290] usb0: HOST MAC 6a:d9:96:72:68:20> [  133.920715] g_ether gadget: Ethernet Gadget, version: Memorial Day 2008> [  133.927429] g_ether gadget: g_ether ready> [  133.931945] twl4030_rtc twl4030_rtc: rtc core: registered twl4030_rtc as rtc0> [  133.939331] twl4030_rtc twl4030_rtc: Power up reset detected.> [  133.945526] twl4030_rtc twl4030_rtc: Enabling TWL4030-RTC.> [  134.060272] TCP cubic registered> [  134.063568] NET: Registered protocol family 17> [  134.068145] NET: Registered protocol family 15> [  134.073120] RPC: Registered udp transport module.> [  134.077880] RPC: Registered tcp transport module.> [  134.082702] Power Management for TI OMAP3.> [  134.087036] VFP support v0.3: implementor 41 architecture 3 part 30> variant c rev 1> [  134.096343] twl4030_rtc twl4030_rtc: setting system clock to> 2000-01-01 00:00:00 UTC (946684800)> [  134.286376] mmc0: new MMC card at address 0001> [  134.291412] mmcblk0: mmc0:0001 AF MMC 501760KiB> [  134.296356]  mmcblk0: p1 p2> [  134.345001] g_ether gadget: high speed config #1: CDC Ethernet (ECM)> [  135.615997] IP-Config: Guessing netmask 255.255.255.0> [  135.621307] IP-Config: Gateway not on directly connected network.> [  135.627593] Waiting 3sec before mounting root device...> [  138.638610] Looking up port of RPC 100003/2 on 192.168.1.5> [  138.855468] Looking up port of RPC 100005/1 on 192.168.1.5> [  139.229705] VFS: Mounted root (nfs filesystem).>> Looks like, these times are not proper. I just tried to measure boot> time using stopwatch , it boots in between 9-10 Sec.>> I came across corresponding bug in kernel bugzilla.> http://bugzilla.kernel.org/show_bug.cgi?id=10648>> But, from this reports, it looks like this issue is fixed and is> closed. But I am not able to get appropriate boot times.>> Is this bug is fixed? has anyone tried to measure boottime same as> this procedure?> Is there any alternate way to measure boot time on Beagle Board?>> Thanks for any help.>> Regards,> Shivdas>ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
