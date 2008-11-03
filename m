@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbYKCHmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYKCHm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754829AbYKCHmm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 02:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbYKCHma
+	id S1754830AbYKCHm4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 02:42:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYKCHmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 02:42:30 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:34736 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754395AbYKCHm3 (ORCPT
+	Mon, 3 Nov 2008 02:42:39 -0500
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:1233 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754691AbYKCHmg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 02:42:29 -0500
-Message-ID: <490EAB65.1000908@lwfinger.net>
-Date: Sun, 02 Nov 2008 23:42:29 -0800
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 3 Nov 2008 02:42:36 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 02:42:35 EST
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1224560624-9691-1-git-send-email-tytso@mit.edu>
+	<1224560624-9691-2-git-send-email-tytso@mit.edu>
+	<20081022172221.c1a8c5b5.akpm@linux-foundation.org>
+	<20081023025646.GD10369@mit.edu>
+From: Olaf Weber <olaf@infovore.xs4all.nl>
+Date: Mon, 03 Nov 2008 08:33:34 +0100
+In-Reply-To: <20081023025646.GD10369@mit.edu> (Theodore Tso's message of "Wed, 22 Oct 2008 22:56:47 -0400")
+Message-ID: <87zlkhb6wh.fsf@infovore.xs4all.nl>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.18 (linux)
 MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: System hang from holding left shift key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: olaf@infovore.xs4all.nl
+Subject: Re: [PATCH,RFC] ext3: Add support for non-native signed/unsigned htree hash algorithms
+X-SA-Exim-Version: 4.2 (built Thu, 14 Apr 2005 16:52:54 +0000)
+X-SA-Exim-Scanned: Yes (on localhost)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While absentmindedly holding down the left shift key as I was thinking about my
-next input, I froze the keyboard. After 3 seconds, the system sounded a high
-beep, and then a low beep after another 3 seconds. At that point, no key entry
-had any effect. From the beeps, one might conclude that the input buffer is
-full, but a CTRL/U did not clear it. Fortunately, a short press on the power
-button shut down the machine cleanly.
+Theodore Tso writes:
+> On Wed, Oct 22, 2008 at 05:22:21PM -0700, Andrew Morton wrote:
 
-I don't know if this is a regression. I found it in v2.6.28-rc2, but the oldest
-kernel that I could test (v2.6.24) already has the problem.
+>> > +		if (((int) c) == -1) {
+>> 
+>> arm says
+>> 
+>> fs/ext3/super.c: In function `ext3_fill_super':
+>> fs/ext3/super.c:1750: warning: comparison is always false due to limited range of data type
+>> 
+>> Also, is there any way in which this new code can be, umm, cleaned up?
 
-When the beeps occur, a stack dump is as follows:
+> Hmm..... is it considered safe to depend on the userspace limits.h
+> header file?  I guess if we trust that header file to be correct we
+> could check the value of CHAR_MIN and/or CHAR_MAX as defined by
+> limits.h.
 
-Pid: 2989, comm: Xorg Not tainted 2.6.28-rc2-Linus-00473-g67d1128-dirty #2
-Call Trace:
-  [<ffffffff803957ce>] kd_mksound+0x69/0xa9
-  [<ffffffff8039196c>] vt_ioctl+0x3c4/0x1744
-  [<ffffffff8038b097>] tty_ioctl+0x793/0x7fa
-  [<ffffffff8025c6c0>] ? trace_hardirqs_off+0xd/0xf
-  [<ffffffff8044f94a>] ? _spin_unlock_irqrestore+0x3d/0x4c
-  [<ffffffff802bf102>] vfs_ioctl+0x2f/0x7d
-  [<ffffffff802bf4fe>] do_vfs_ioctl+0x3ae/0x3e0
-  [<ffffffff8020c07c>] ? sysret_check+0x27/0x62
-  [<ffffffff802bf577>] sys_ioctl+0x47/0x6a
-  [<ffffffff8020c04b>] system_call_fastpath+0x16/0x1b
+> Alternatively we could do an #ifdef __CHAR_UNSIGNED__, which is
+> defined by gcc.  The manual for gcc tells us not to depend on it, but
+> to depend on limits.h instead.
 
-Thanks,
+> Any thoughts, or comments?  Does anyone know if the Intel compiler
+> will DTRT with either of these approaches?
 
-Larry
+Why not write the test like this?
 
+	if ((char)-1 > 0) {
+		/* char is unsigned */
+	} else {
+		/* char is signed */
+	}
 
+-- 
+Olaf Weber
