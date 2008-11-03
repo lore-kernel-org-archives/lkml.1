@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYKCJeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYKCJmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbYKCJeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbYKCJeL
+	id S1755285AbYKCJmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 04:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbYKCJmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:34:11 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:6192 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869AbYKCJeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:34:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=BHA3fLgNKfdRg88J0VqnHzXoh7UEbLEeqo57xzbWwBdffaglUYxk/iDJOEp4RJtD9s
-         WxEd7J2HJ1+KDEPtdUZwbLskDQ0hDjlDpRzsEMixFWVGL5YaliaXCiM+ZERS8KbU6SDz
-         +dZnBeFpOqxGROjMmxnHHChf94SKMxRnVMWv4=
-Message-ID: <9929d2390811030134ybe1d8aaq43b5a533f73fee71@mail.gmail.com>
-Date: Mon, 3 Nov 2008 01:34:06 -0800
-From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-To: andi@lisas.de
-Subject: Re: [RFC/PATCH] e100 driver didn't support any MII-less PHYs...
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bunk@kernel.org
-In-Reply-To: <20081103080430.GA32459@rhlx01.hs-esslingen.de>
+	Mon, 3 Nov 2008 04:42:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50456 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754652AbYKCJma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 04:42:30 -0500
+Date: Mon, 3 Nov 2008 10:41:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       ananth@in.ibm.com, jkenisto@us.ibm.com, mhiramat@redhat.com
+Subject: Re: [PATCH] ftrace: use kretprobe trampoline name to test in output
+Message-ID: <20081103094159.GA10400@elte.hu>
+References: <483C53EE.2060602@gmail.com> <alpine.DEB.1.10.0810302227360.21031@gandalf.stny.rr.com> <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com> <863e9df20810310832uadf4daay7b5a98b677d86561@mail.gmail.com> <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com> <863e9df20810311233j13f996b8qa185cceddbd90849@mail.gmail.com> <alpine.DEB.1.10.0810311541280.28774@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20071228235118.GA31059@rhlx01.hs-esslingen.de>
-	 <477732A5.5020501@intel.com>
-	 <20080101200908.GA14805@rhlx01.hs-esslingen.de>
-	 <20080129230315.GA13389@rhlx01.hs-esslingen.de>
-	 <479FB225.7090604@intel.com>
-	 <20080130064909.GA19793@rhlx01.hs-esslingen.de>
-	 <47A0A713.7030304@intel.com>
-	 <20081103080430.GA32459@rhlx01.hs-esslingen.de>
-X-Google-Sender-Auth: f79142949e2286ba
+In-Reply-To: <alpine.DEB.1.10.0810311541280.28774@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 3, 2008 at 12:04 AM, Andreas Mohr
-<andim2@users.sourceforge.net> wrote:
-> Hi,
->
-> On Wed, Jan 30, 2008 at 08:34:27AM -0800, Kok, Auke wrote:
->> Andreas Mohr wrote:
->> > Hi,
->> >
->> > On Tue, Jan 29, 2008 at 03:09:25PM -0800, Kok, Auke wrote:
->> >> Andreas Mohr wrote:
->> >>> Perhaps it's useful to file a bug/patch
->> >>> on http://sourceforge.net/projects/e1000/ ? Perhaps -mm testing?
->> >> I wanted to push this though our testing labs first which has not happened due to
->> >> time constraints - that should quickly at least confirm that the most common nics
->> >> work OK after the change with your patch. I'll try and see if we can get this
->> >> testing done soon.
->> >
->> > Oh, full-scale regression testing even? Nice idea...
->> > Would optionally be even better if during hardware tests one could also
->> > dig out some i82503-based card (or additional MII-less cards?)
->> > since I didn't really make any effort yet to try to make them all
->> > recognized/supported by my patch already (would have been out of scope anyway
->> > since I have this single card only).
->>
->> the problem is that I think that most of those (mii-less cards) are customly
->> designed by OEM's that buy the silicon and glue on a different interface and we
->> usually do not carry those designs in our labs apart from a few exceptions. So, I
->> can at least touch the common hardware in testing, but not the exotic stuff.
->
-> Any update on how to get this support in? (it's not available in 2.6.28-rc2)
->
-> As it stands, I'm not the only one who would need this...
->
-> Thanks!
->
-> Andreas Mohr
-> --
->
 
-I have a patch from Auke, which deals with the MII-less PHY's in e100.
- I will check on the status of the patch and either let you know the
-status or will be submitting a patch soon to netdev to address this
-issue.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
--- 
-Cheers,
-Jeff
+> [
+>   Ingo,
+> 
+>   Can you get this ready for 2.6.28. Without this fix, tracing
+>   breaks the ia64 build.
+> ]
+> 
+> When a function is kprobed, the return address is set to the
+> kprobe_trampoline, or something similar. This caused the output
+> of the trace to look confusing when the parent seemed to be this
+> "kprobe_trampoline" function.
+> 
+> To fix this, Abhishek Sagar added a test of the instruction pointer
+> of the parent to see if it matched the kprobe_trampoline. If it
+> did, the output would print a "[unknown/kretprobe'd]" instead.
+> 
+> Unfortunately, not all archs do this the same way, and the trampoline
+> function may not be exported, which causes failures in builds.
+> 
+> This patch will compare the name instead of the pointer to see
+> if it matches. This prevents us from depending on a function from
+> being exported, and should work on all archs. The worst that can
+> happen is that an arch might use a different name and then we
+> go back to the confusing output. At least the arch will still build.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> Tested-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+> Acked-by: Abhishek Sagar <sagar.abhishek@gmail.com>
+> ---
+>  kernel/trace/trace.c |   39 +++++++++++++++++++++------------------
+>  1 file changed, 21 insertions(+), 18 deletions(-)
+
+applied to tip/tracing/urgent, thanks!
+
+	Ingo
