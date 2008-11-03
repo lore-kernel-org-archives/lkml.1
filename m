@@ -1,103 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYKCQR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbYKCQUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756509AbYKCQR7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 11:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbYKCQRv
+	id S1756415AbYKCQUZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 11:20:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbYKCQUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 11:17:51 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:52473 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750921AbYKCQRv (ORCPT
+	Mon, 3 Nov 2008 11:20:10 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:23191 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754386AbYKCQUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 11:17:51 -0500
-Date: Mon, 3 Nov 2008 17:17:49 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       Richard Purdie <rpurdie@openedhand.com>
-cc: linux-mtd@lists.infradead.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] jffs2: Fix race condition in jffs2_lzo_compress()
-Message-ID: <Pine.LNX.4.64.0811031714590.6298@vixen.sonytel.be>
+	Mon, 3 Nov 2008 11:20:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Xen3F2dYB6XF0bnM6W7h0tfl6gYGMsHOwlWRYzVnqpgVcfgYrNqCZBiJIPngxbsL+F
+         sXd/1+gGKYAb+OUdjtEpXuPAn2OqzweZaPm2k6nM0MS+k2FLpIcblKOyDaYiPdyphchK
+         NTRVRTAdd0JHHVOgLHQD7l9jjEx0HVV6BQZac=
+Message-ID: <bc64b4640811030820j660b8386x39bf2285b1dba887@mail.gmail.com>
+Date: Mon, 3 Nov 2008 19:20:06 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
+Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081103145514.GA23466@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584349381-244102331-1225729069=:6298"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com>
+	 <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com>
+	 <20081103145514.GA23466@oksana.dev.rtsoft.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+2008/11/3 Anton Vorontsov <avorontsov@ru.mvista.com>:
+> On Sun, Nov 02, 2008 at 11:36:08PM +0300, Dmitry wrote:
+>> 2008/10/29 Dmitry Baryshkov <dbaryshkov@gmail.com>:
+>> > There are already several wm97xx-battery drivers. Do register the tosa one
+>> > only on tosa machines.
+>> >
+>> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
+>> > ---
+>> >  drivers/power/tosa_battery.c |    3 +++
+>> >  1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> What about this patch?
+>
+> Sorry for the delay.
+>
+>> IMO it can and should be merged during 2.6.28-rc cycle.
+>>
+>> diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
+>> index 2eab35a..4e52c22 100644
+>> --- a/drivers/power/tosa_battery.c
+>> +++ b/drivers/power/tosa_battery.c
+>> @@ -469,6 +469,9 @@ static struct platform_driver tosa_bat_driver = {
+>>
+>>  static int __init tosa_bat_init(void)
+>>  {
+>> +     if (!machine_is_tosa())
+>> +             return -EINVAL;
+>> +
+>
+> I tend to reject this approach. You should rename the driver instead.
+>
+> I.e.
+> -.driver.name    = "wm97xx-battery",
+> -.driver.name    = "tosa-battery",
+>
+> And make sure that this won't break users of that driver (though
+> I don't see any).
 
----584349381-244102331-1225729069=:6298
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+The wm97xx-battery device is registered by
+drivers/input/toucscreen/wm97xx-core.c
 
-deflate_mutex protects the globals lzo_mem and lzo_compress_buf. However,
-jffs2_lzo_compress() unlocks deflate_mutex _before_ it has copied out the
-compressed data from lzo_compress_buf. Correct this by moving the mutex unlock
-after the copy.
-In addition, document what deflate_mutex actually protects.
+>
+>>       return platform_driver_register(&tosa_bat_driver);
+>>  }
+>
+> Thanks,
+>
+> --
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+>
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
-Just noticed this when looking at the code.
-The patch is untested, except for a quick compile test.
 
- fs/jffs2/compr_lzo.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
 
---- a/fs/jffs2/compr_lzo.c
-+++ b/fs/jffs2/compr_lzo.c
-@@ -19,7 +19,7 @@
- 
- static void *lzo_mem;
- static void *lzo_compress_buf;
--static DEFINE_MUTEX(deflate_mutex);
-+static DEFINE_MUTEX(deflate_mutex);	/* for lzo_mem and lzo_compress_buf */
- 
- static void free_workspace(void)
- {
-@@ -49,18 +49,21 @@ static int jffs2_lzo_compress(unsigned c
- 
- 	mutex_lock(&deflate_mutex);
- 	ret = lzo1x_1_compress(data_in, *sourcelen, lzo_compress_buf, &compress_size, lzo_mem);
--	mutex_unlock(&deflate_mutex);
--
- 	if (ret != LZO_E_OK)
--		return -1;
-+		goto fail;
- 
- 	if (compress_size > *dstlen)
--		return -1;
-+		goto fail;
- 
- 	memcpy(cpage_out, lzo_compress_buf, compress_size);
--	*dstlen = compress_size;
-+	mutex_unlock(&deflate_mutex);
- 
-+	*dstlen = compress_size;
- 	return 0;
-+
-+ fail:
-+	mutex_unlock(&deflate_mutex);
-+	return -1;
- }
- 
- static int jffs2_lzo_decompress(unsigned char *data_in, unsigned char *cpage_out,
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
----584349381-244102331-1225729069=:6298--
+-- 
+With best wishes
+Dmitry
