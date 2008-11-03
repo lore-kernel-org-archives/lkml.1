@@ -1,112 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbYKCWf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbYKCWiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756969AbYKCWf6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818AbYKCWfr
+	id S1751838AbYKCWiV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYKCWiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:35:47 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48118 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698AbYKCWfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:35:46 -0500
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
-       Matt Tolentino <matthew.e.tolentino@intel.com>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
-       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
-In-Reply-To: <200811032324.02163.rjw@sisk.pl>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <20081103125108.46d0639e.akpm@linux-foundation.org>
-	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 03 Nov 2008 14:34:25 -0800
-Message-Id: <1225751665.12673.511.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 3 Nov 2008 17:38:12 -0500
+Received: from outbound-mail-133.bluehost.com ([67.222.39.23]:43096 "HELO
+	outbound-mail-133.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751353AbYKCWiL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 17:38:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=r26tRIz7zmIJXjdhptZ/gwVfAf0InAdCiKY1Q7Vc5+vIc6/+S2Y4IN5fwkaJwPl8HfqWW4oqSID11lwGEtLQMBtKO4ZLPXJI2X36lm7qhljnLBHk/9iQz+0DF0s3j2Yf;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yu Zhao <yu.zhao@intel.com>
+Subject: Re: [PATCH] PCI: Limit VPD length for Broadcom 5708S
+Date: Mon, 3 Nov 2008 14:37:57 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.26.5-45.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Eric Dumazet <dada1@cosmosbay.com>, benli@broadcom.com,
+       "willy@linux.intel.com" <willy@linux.intel.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>
+References: <48920413.6080508@cosmosbay.com> <4906AF5F.9040704@cosmosbay.com> <20081028064411.GA7043@yzhao12-linux.sh.intel.com>
+In-Reply-To: <20081028064411.GA7043@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811031437.57997.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-03 at 23:24 +0100, Rafael J. Wysocki wrote:
-> On Monday, 3 of November 2008, Dave Hansen wrote:
-> > On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
-> > > On Wed, 29 Oct 2008 13:25:00 +0100
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > > > > 
-> > > > > hibernation + memory hotplug was disabled in kconfig because we could
-> > > > > not handle hibernation + sparse mem at some point. It seems to work
-> > > > > now, so I guess we can enable it.
-> > > > 
-> > > > OK, if "it seems to work now" means that it has been tested and confirmed to
-> > > > work, no objection from me.
-> > > 
-> > > yes, that was not a terribly confidence-inspiring commit message.
-> > > 
-> > > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-> > > hotplug when swsusp is enabled.  There's a lot of churn there right
-> > > now.  We'll fix it up properly once it calms down." which is also
-> > > rather rubbery.  
-> > > 
-> > > Cough up, guys: what was the issue with memory hotplug and swsusp, and
-> > > is it indeed now fixed?
-> > 
-> > I suck.  That commit message was horrid and I'm racking my brain now to
-> > remember what I meant.  Don't end up like me, kids.
-> > 
-> > I've attached the message that I sent to the swsusp folks.  I never got
-> > a reply from that as far as I can tell.
-> > 
-> > http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
-> > 
-> > As I look at it now, it hasn't improved much since 2005.  Take a look at
-> > kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
-> > list of zones that a system has is static.  Memory hotplug needs to be
-> > excluded while that operation is going on.
-> 
-> This operation is carried out on one CPU with interrupts disabled.  Is that
-> not enough?
+On Monday, October 27, 2008 11:44 pm Yu Zhao wrote:
+> VPD quirks needs to be called after the capability is initialized. Since
+> VPD initialization is move to after pci_fixup_header, VPD quirks should
+> be done at pci_fixup_final stage correspondingly.
+>
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
-If that's true then you don't need any locking for anything at all,
-right?
+Thanks Yu.  Applied to my for-linus branch.  Looks like that was the only 
+affected quirk.
 
-All of the changes I was talking about occur inside the kernel and code
-has to run for it to happen.  So, if you are saying that absolutely no
-other code on the system can possibly run, then it should be OK.
-
-> > page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
-> > things can become invalid at any time since no references are held or
-> > taken on the page.  Or, a page that *was* invalid may become valid and
-> > get missed.
-> 
-> Can that really happen given the conditions above?
-
-Nope.
-
-But, as I think about it, there is another issue that we need to
-address, CONFIG_NODES_SPAN_OTHER_NODES.
-
-A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
-have only one zone).  But, there may be another node with
-node_start_pfn=10 and a node_end_pfn=20.  This loop:
-
-        for_each_zone(zone) {
-		...
-                for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
-                        if (page_is_saveable(zone, pfn))
-                                memory_bm_set_bit(orig_bm, pfn);
-        }
-
-will walk over the smaller node's pfn range multiple times.  Is this OK?
-
-I think all you have to do to fix it is check page_zone(page) == zone
-and skip out if they don't match.
-
-Andy, does anything else stick out to you?
-
--- Dave
-
+Jesse
