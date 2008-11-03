@@ -1,103 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbYKCSEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbYKCSJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754143AbYKCSEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 13:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYKCSEH
+	id S1753552AbYKCSJF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 13:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYKCSIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 13:04:07 -0500
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:43073 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751401AbYKCSEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 13:04:05 -0500
-Subject: Re: upstream regression (IO-APIC?)
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       Arjan van de Ven <arjan@infradead.org>, Pavel Machek <pavel@suse.cz>
-In-Reply-To: <200811031828.07285.bzolnier@gmail.com>
-References: <fa.mewpISr5S4wcdUNw1DVfOnQfl8s@ifi.uio.no>
-	 <200811021537.24771.bzolnier@gmail.com>
-	 <200811022124.24992.bzolnier@gmail.com>
-	 <200811031828.07285.bzolnier@gmail.com>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Mon, 03 Nov 2008 10:04:04 -0800
-Message-Id: <1225735444.8168.24.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 13:08:55 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37253 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750920AbYKCSIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 13:08:54 -0500
+Date: Mon, 3 Nov 2008 16:08:45 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
+Message-ID: <20081103180845.GC32603@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk> <20081030110352.GB25056@ghostprotocols.net> <20081030111144.GQ31673@kernel.dk> <20081103172112.GB32603@ghostprotocols.net> <20081103172244.GU31673@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081103172244.GU31673@kernel.dk>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-03 at 09:28 -0800, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 02 November 2008, Bartlomiej Zolnierkiewicz wrote:
-> > On Sunday 02 November 2008, Bartlomiej Zolnierkiewicz wrote:
-> > > On Thursday 30 October 2008, Robert Hancock wrote:
-> > > > Bartlomiej Zolnierkiewicz wrote:
-> > > > > The current Linus tree as of commit e946217e4fdaa67681bbabfa8e6b18641921f750
-> > > > > is broken for me.  I get either the following panic (see log from qemu below)
-> > > > > or lost IRQs on ATA init...  Is this a known issue?
-> > > > > 
-> > > > > PS The tree that I used before and was supposedly good (sorry, I'm too tired
-> > > > > to verify it now) had commit 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 at head.
+Em Mon, Nov 03, 2008 at 06:22:45PM +0100, Jens Axboe escreveu:
+> On Mon, Nov 03 2008, Arnaldo Carvalho de Melo wrote:
+> > Em Thu, Oct 30, 2008 at 12:11:45PM +0100, Jens Axboe escreveu:
+> > > On Thu, Oct 30 2008, Arnaldo Carvalho de Melo wrote:
+> > > > Yes, I tested it, run 'btrace /dev/sda' several times, while doing a
+> > > > 45 GB backup using rsync over NFS, etc. So it should have exercised the
+> > > > tracepoints use and repeated registrater/unregister cycles.
 > > > 
-> > > Unfortunately 57f8f7b60db6f1ed2c6918ab9230c4623a9dbe37 (v2.6.28-rc1)
-> > > is also bad.  Bisecting it further was a real pain (i.e. I hit broken
-> > > build with x86 irqbalance changes, broken build with netfilter nat
-> > > changes and jbd journal problem).  In the end it turned out that 2.6.27
-> > > is bad too!  However with 2.6.27 the panic occurs only once per several
-> > > attempts and if there is no panic kernel boots normally (no lost IRQs).
-> > > 
-> > > [...]
-> > > 
-> > > I finally managed to narrow it down to change making x86 use tsc_khz
-> > > for loops_per_jiffy -- commit 3da757daf86e498872855f0b5e101f763ba79499
-> > > ("x86: use cpu_khz for loops_per_jiffy calculation").  This approach
-> > > seems too simplistic (as I see now Arjan & Pavel expressed concerns
-> > > about it back when the patch was posted initially [1][2]).  Also it
-> > > would probably be preferred to re-use existing preset_lpj variable
-> > > (just like KVM does it for similar purpose [3]) instead of adding a
-> > > lpj_tsc one and increasing complexity.
+> > > Awesome, just wanted to know what level of testing you had done (from
+> > > "none" to "doesn't crash" to "actually works"), so thanks for that.
 > > 
-> > It turned out that I can boot a kernel with different config with
-> > HZ == 250 just fine and switching to HZ == 1000 makes it fail.
+> > Jens,
 > > 
+> > 	Now I'm working on the marker glue code for systemtap to use
+> > these tracepoints and I noticed that one important piece of information
+> > is not available unless one first uses blk_trace_ioctl to fill in
+> > request_queue->blk_trace, that is request_queue->blk_trace->dev, i.e.
+> > the device associated with the request_queue.
 > > 
-> > Looking into it some more:
+> > 	Is there a way to, from the request_queue, get the dev? I guess
+> > not, as if there would be you wouldn't have added it to struct
+> > blk_trace...
 > > 
-> > HZ == 250 kernel (good):
-> > 
-> > Calibrating delay loop (skipped), value calculated using timer frequency.. 2986.79 BogoMIPS (lpj=5973580)
-> > 
-> > HZ == 1000 kernel (bad):
-> > 
-> > Calibrating delay loop (skipped), using tsc calculated value.. 2990.35 BogoMIPS (lpj=1495176)
-> > 
-> > HZ == 1000 kernel with hackyfix (good):
-> > 
-> > Calibrating delay using timer specific routine.. 3016.68 BogoMIPS (lpj=6033376)
-> > 
-> > 
-> > Argggh... lpj is used for udelay() & friends so this bug is quite
-> > dangerous (since udelay() & friends are used for hardware delays)...
+> > 	Would it be sane to add get struct block_device->bd_dev dev_t
+> > info into struct request_queue at sd_probe time or most probably at some
+> > more suitable routine in the device/disk registration sequence of
+> > events?
 > 
-> It may be not as severe as I initially thought,
-> (obviously) the real hardware works fine:
-> 
-> calibrate_delay_direct(): lpj=1495884
-> Calibrating delay loop (skipped), value calculated using timer frequency.. 2990.36 BogoMIPS (lpj=1495183)
-> 
-> So the issue only affects qemu ATM.
-Oh so its on a emulator, something wrong in the timer emulation logic in
-qemu ?
+> You can't do that, the queue is nothing more than a transport. There's
+> no sane way to map from a queue to a device, since it's not given that
+> there will be a 1:1 mapping even. So no go there, sorry.
 
+No problem, its just that users such as systemtap will need to be
+provided a way to ask for the mapping to be established just like
+blktrace does today, except that no relay channel will be setup, etc.
+Then, at tracepoint time, if the mapping was established, i.e. if
+q->blk_trace is non NULL, we will then be able to look at
+q->blk_trace->dev.
 
-> 
-> Thanks,
-> Bart
+I'll come up with a patch for comments.
 
+- Arnaldo
