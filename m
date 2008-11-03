@@ -1,34 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbYKCW2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbYKCW3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbYKCW2X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYKCW2N
+	id S1755529AbYKCW3i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:29:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYKCW33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:28:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33373 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751760AbYKCW2M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:28:12 -0500
-Date: Mon, 3 Nov 2008 14:27:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: ajones@riverbed.com, sandeen@redhat.com, linux-ext4@vger.kernel.org,
-       sct@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-Id: <20081103142706.92e3a2ae.akpm@linux-foundation.org>
-In-Reply-To: <20081103220144.GD18117@mit.edu>
-References: <4908C951.2000309@redhat.com>
-	<20081103184426.GA31894@ajones-laptop.nbttech.com>
-	<20081103113318.35b0c266.akpm@linux-foundation.org>
-	<20081103201428.GB30565@ajones-laptop.nbttech.com>
-	<20081103123750.67c96224.akpm@linux-foundation.org>
-	<20081103205854.GC30565@ajones-laptop.nbttech.com>
-	<20081103131313.e9ae2f93.akpm@linux-foundation.org>
-	<20081103211929.GA18117@mit.edu>
-	<20081103132735.9e63a3d0.akpm@linux-foundation.org>
-	<20081103220144.GD18117@mit.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 3 Nov 2008 17:29:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39421 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbYKCW32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 17:29:28 -0500
+Date: Mon, 3 Nov 2008 17:28:50 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: trond.myklebust@fys.uio.no, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH] lockd: convert reclaimer thread to kthread interface
+Message-ID: <20081103172850.7d935783@tleilax.poochiereds.net>
+In-Reply-To: <20081103131215.75a83236.akpm@linux-foundation.org>
+References: <1225278945-15407-1-git-send-email-jlayton@redhat.com>
+	<20081103131215.75a83236.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,43 +26,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008 17:01:44 -0500
-Theodore Tso <tytso@mit.edu> wrote:
+On Mon, 3 Nov 2008 13:12:15 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
->  static int ext4_sync_fs(struct super_block *sb, int wait)
->  {
-> -	tid_t target;
-> +	int ret;
->  
->  	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
-> -	sb->s_dirt = 0;
-> -	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
-> -		if (wait)
-> -			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
-> -	}
-> -	return 0;
-> +	if (wait)
-> +		ret = ext4_force_commit(sb);
-> +	else
-> +		ret = jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
-> +	if (!ret)
-> +		sb->s_dirt = 0;
-> +	return ret;
->  }
+> On Wed, 29 Oct 2008 07:15:45 -0400
+> Jeff Layton <jlayton@redhat.com> wrote:
+> 
+> > My understanding is that there is a push to turn the kernel_thread
+> > interface into a non-exported symbol and move all kernel threads to use
+> > the kthread API. This patch changes lockd to use kthread_run to spawn
+> > the reclaimer thread.
+> > 
+> > I've made the assumption here that the extra module references taken
+> > when we spawn this thread are unnecessary and removed them. I've also
+> > added a KERN_ERR printk that pops if the thread can't be spawned to warn
+> > the admin that the locks won't be reclaimed.
+> > 
+> > I consider this patch 2.6.29 material.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > ---
+> >  fs/lockd/clntlock.c |   14 +++++++++-----
+> >  1 files changed, 9 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
+> > index 8307dd6..fcc2378 100644
+> > --- a/fs/lockd/clntlock.c
+> > +++ b/fs/lockd/clntlock.c
+> > @@ -14,6 +14,7 @@
+> >  #include <linux/sunrpc/svc.h>
+> >  #include <linux/lockd/lockd.h>
+> >  #include <linux/smp_lock.h>
+> > +#include <linux/kthread.h>
+> >  
+> >  #define NLMDBG_FACILITY		NLMDBG_CLIENT
+> >  
+> > @@ -191,11 +192,15 @@ __be32 nlmclnt_grant(const struct sockaddr *addr, const struct nlm_lock *lock)
+> >  void
+> >  nlmclnt_recovery(struct nlm_host *host)
+> >  {
+> > +	struct task_struct *task;
+> > +
+> >  	if (!host->h_reclaiming++) {
+> >  		nlm_get_host(host);
+> > -		__module_get(THIS_MODULE);
+> > -		if (kernel_thread(reclaimer, host, CLONE_FS | CLONE_FILES) < 0)
+> > -			module_put(THIS_MODULE);
+> > +		task = kthread_run(reclaimer, host, "%s-reclaim", host->h_name);
+> > +		if (IS_ERR(task))
+> > +			printk(KERN_ERR "lockd: unable to spawn reclaimer "
+> > +				"thread. Locks for %s won't be reclaimed! "
+> > +				"(%ld)\n", host->h_name, PTR_ERR(task));
+> >  	}
+> >  }
+> >  
+> > @@ -207,7 +212,6 @@ reclaimer(void *ptr)
+> >  	struct file_lock *fl, *next;
+> >  	u32 nsmstate;
+> >  
+> > -	daemonize("%s-reclaim", host->h_name);
+> >  	allow_signal(SIGKILL);
+> >  
+> >  	down_write(&host->h_rwsem);
+> > @@ -261,5 +265,5 @@ restart:
+> >  	nlm_release_host(host);
+> >  	lockd_down();
+> >  	unlock_kernel();
+> > -	module_put_and_exit(0);
+> > +	return 0;
+> >  }
+> 
+> Looks OK to me.  I assume the SIGKILL handling has been carefully tested?
+> 
 
-It should clear s_dirt before doing the "i/o", methinks?
+Not by me, though I don't think this patch will make that any better or
+worse. It should just change how the thread is spawned. My testing
+mostly consisted of making sure that we could reclaim locks after this
+was applied.
 
-The usual pattern is
+> 
+> Is it correct to emit a warning and keep going if the thread didn't
+> start?  Or would it be safer&saner to fail the whole mount (or whatever
+> syscall we're doing here..)
+> 
+> 
+> 
+> I see this:
+> 
+> 	/* Why are we leaking memory here? --okir */
+> 	if (signalled())
+> 		continue;
+> 
+> is that still true?  It seems unlikely that what appears to be a pretty
+> gross leak has been around for so long.
+> 
 
-	foo->dirty = 0;
-	do_io_on(foo);
+Well, just before that we do this:
 
-because
+    list_del_init(&fl->fl_u.nfs_fl.list);
 
+...and a little while after, we do this:
 
-	do_io_on(foo);
-					modify(foo);
-					foo->dirty = 1;
-	foo->dirty = 0;
+    list_add_tail(&fl->fl_u.nfs_fl.list, &host->h_granted);
 
-is racy.
+...so I assume the fact that the fl doesn't end up back on a list if
+we're signalled is the problem. If so, then yes, it does look like we're
+still leaking memory there.
+
+I've never heard of anyone needing to signal the reclaimer thread, so
+maybe we should just make it ignore all signals?
+
+> This code needs some BKL-removal love.
+
+Yep. All of lockd does, though IIRC that's held up by dependencies on
+the BKL in generic VFS locking code. Pulling the BKL out of lockd is
+probably going to be painful since it's almost surely hiding some
+races.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
