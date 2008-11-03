@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbYKCNfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYKCNhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbYKCNfo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 08:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbYKCNfc
+	id S1755795AbYKCNhb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 08:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYKCNhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 08:35:32 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:42166 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755215AbYKCNfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 08:35:31 -0500
-Subject: Re: [PATCH] ath5k: fix detection of jumbo frames
-From: Pavel Roskin <proski@gnu.org>
-To: Bob Copeland <me@bobcopeland.com>
-Cc: linville@tuxdriver.com, mickflemm@gmail.com, jirislaby@gmail.com,
-       lrodriguez@atheros.com, linux-wireless@vger.kernel.org,
-       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org,
-       michael+ath5k@stapelberg.de
-In-Reply-To: <1225652938-6244-1-git-send-email-me@bobcopeland.com>
-References: <1225652938-6244-1-git-send-email-me@bobcopeland.com>
-Content-Type: text/plain
-Date: Mon, 03 Nov 2008 08:35:28 -0500
-Message-Id: <1225719328.3575.9.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 08:37:22 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:49769 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755221AbYKCNhV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 08:37:21 -0500
+X-Greylist: delayed 3598 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 08:37:21 EST
+Date: Mon, 03 Nov 2008 07:37:10 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: dmesg excerpt, 2.6.28-rc3
+To: LKML <linux-kernel@vger.kernel.org>
+Message-id: <200811030737.10744.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-02 at 14:08 -0500, Bob Copeland wrote:
-> Set ath5k_rs_status.rs_more using mask + shift.  rs_more is a
-> u8, but we were setting it with a bitwise AND of a 16 bit value.
-> As a consequence, jumbo frames would not be discarded as intended.
-> Then, because the hw rate value of such frames is zero, and, since
-> 63266a653589e1a237527479f10212ea77ce7844 "ath5k: rates cleanup",
-> we do not fall back to the basic rate, such packets would trigger
-> the following WARN_ON:
+Greetings all;
 
-Thanks for catching it!  Please mention rs_antenna in addition to
-rs_more.
+I have been seeing an ACPI message saying it expected something it didn't get 
+while booting, but that message never makes it to any log. I turned on some 
+verbosity with the rc3 config, and now see this early in dmesg:
 
-> -	rs->rs_antenna = rx_status->rx_status_0 &
-> -		AR5K_5210_RX_DESC_STATUS0_RECEIVE_ANTENNA;
-> -	rs->rs_more = rx_status->rx_status_0 &
-> -		AR5K_5210_RX_DESC_STATUS0_MORE;
-> +	rs->rs_antenna = AR5K_REG_MS(rx_status->rx_status_0,
-> +		AR5K_5210_RX_DESC_STATUS0_RECEIVE_ANTENNA);
-> +	rs->rs_more = AR5K_REG_MS(rx_status->rx_status_0,
-> +		AR5K_5210_RX_DESC_STATUS0_MORE);
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 
+generic_get_mtrr+0x11c/0x130()
+[    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
+[    0.000000] Modules linked in:
+[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc3 #1
+[    0.000000] Call Trace:
+[    0.000000]  [<c04282e6>] warn_slowpath+0x76/0x90
+[    0.000000]  [<c0511657>] vsnprintf+0x2e7/0x680
+[    0.000000]  [<c042903b>] printk+0x1b/0x20
+[    0.000000]  [<c041b6dc>] pat_init+0x7c/0xa0
+[    0.000000]  [<c040fe0c>] post_set+0x1c/0x50
+[    0.000000]  [<c0428a8d>] release_console_sem+0x18d/0x1c0
+[    0.000000]  [<c041045c>] generic_get_mtrr+0x11c/0x130
+[    0.000000]  [<c0728ffa>] mtrr_trim_uncached_memory+0x7a/0x330
+[    0.000000]  [<c042903b>] printk+0x1b/0x20
+[    0.000000]  [<c0725d45>] e820_end_pfn+0xc5/0xf0
+[    0.000000]  [<c0724120>] setup_arch+0x420/0xb60
+[    0.000000]  [<c072726b>] reserve_early_overlap_ok+0x4b/0x60
+[    0.000000]  [<c071d9c8>] start_kernel+0x58/0x2e0
+[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
 
-rs_more should be boolean.  It would be better to use "!!" to calculate
-rs_rate.  No need to shift anything.  As for rs_antenna, it's fine with
-me.
+This is the latest, non-beta bios (1502, as of about a month ago anyway) for 
+this ASUS M2N-SLI deluxe mother board, with a slow 4 core phenom in the 
+socket.  Is anyone fam enough with the ASUS bios to suggest a fix?
 
-> +#define AR5K_5212_RX_DESC_STATUS0_DECOMP_CRC_ERROR_S	13
+This may have something to do with an extremely slow boot time, with a good 30 
+seconds wasted between the last bios message spit out, the time when grub 
+should be loading.  Each message from grub, until it finally presents the 
+boot choice menu, takes 7 to 15 seconds, and once its presented the menu, 
+then booting resumes at a normal speed.
 
-This doesn't belong to the patch.  It looks like it's another boolean
-value, but it's not currently used.
+I should make a movie so folks see what I'm talking about I guess.
+
+Ahh, I found the ACPI message too!
+
+[    0.625198] fan PNP0C0B:00: registered as cooling_device0
+[    0.625202] ACPI: Fan [FAN] (on)
+[    0.625608] processor ACPI0007:00: registered as cooling_device1
+[    0.625654] processor ACPI0007:01: registered as cooling_device2
+[    0.625703] processor ACPI0007:02: registered as cooling_device3
+[    0.625754] processor ACPI0007:03: registered as cooling_device4
+[    0.626200] ACPI Warning (nspredef-0858): \_TZ_.THRM._PSL: Return Package 
+type mismatch at index 0 - found [NULL Object Descriptor], expected Reference 
+[20080926]
+[    0.626206] ACPI: Expecting a [Reference] package element, found type 0
+
+What if anything can I do about these?
+
+Thanks.
 
 -- 
-Regards,
-Pavel Roskin
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+It is illegal to say "Oh, Boy" in Jonesboro, Georgia.
