@@ -1,72 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYKCWt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYKCWys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYKCWt7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYKCWtu
+	id S1756026AbYKCWys (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYKCWyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:49:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58398 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752992AbYKCWtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:49:50 -0500
-Message-ID: <490F8005.9020708@redhat.com>
-Date: Mon, 03 Nov 2008 17:49:41 -0500
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: "Eugene V. Lyubimkin" <jackyf.devel@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       hugh <hugh@veritas.com>
-Subject: Re: mmap: is default non-populating behavior stable?
-References: <490F73CD.4010705@gmail.com> <1225752083.7803.1644.camel@twins>
-In-Reply-To: <1225752083.7803.1644.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 3 Nov 2008 17:54:38 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54859
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753663AbYKCWyh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 17:54:37 -0500
+Date: Mon, 03 Nov 2008 14:54:13 -0800 (PST)
+Message-Id: <20081103.145413.38153968.davem@davemloft.net>
+To: marcel@holtmann.org
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes for 2.6.28-rc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
+References: <20081103205121.GA6005@havoc.gtf.org>
+	<B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-11-03 at 23:57 +0200, Eugene V. Lyubimkin wrote:
->> Hello kernel hackers!
->>
->> The current implementation of mmap() in kernel is very convenient.
->> It allows to mmap(fd) very big amount of memory having small file as back-end.
->> So one can mmap() 100 MiB on empty file, use first 10 KiB of memory, munmap() and have
->> only 10 KiB of file at the end. And while working with memory, file will automatically be
->> grown by read/write memory requests.
->>
->> Question is: can user-space application rely on this behavior (I failed to find any
->> documentation about this)?
->>
->> TIA and please CC me in replies.
-> 
-> mmap() writes past the end of the file should not grow the file if I
-> understand things write, but produce a sigbus (after the first page size
-> alignment).
+From: Marcel Holtmann <marcel@holtmann.org>
+Date: Mon, 3 Nov 2008 23:07:58 +0100
 
-Indeed, faulting beyond the end of file returns a SIGBUS,
-see these lines in mm/filemap.c:filemap_fault():
+> are you also queuing patches for drivers/net/usb/hso.c, because the
+> current state of that driver is fully broken. It oopses and shows up
+> with a WLAN RFKILL switch instead of WWAN. Also it has some weird
+> disconnect race with the TTY layer. Some patches have been posted,
+> but seems that nobody has picked them up so far.
 
-         size = (i_size_read(inode) + PAGE_CACHE_SIZE - 1) >> 
-PAGE_CACHE_SHIFT;
-         if (vmf->pgoff >= size)
-                 return VM_FAULT_SIGBUS;
+The person submitting those patches is, frankly, creating a lot
+of confusion.
 
-> The exact interaction of mmap() and truncate() I'm not exactly clear on.
-
-Truncate will reduce the size of the mmaps on the file to
-match the new file size, so processes accessing beyond the
-end of file will get a segmentation fault (SIGSEGV).
-
-> The safe way to do things is to first create your file of at least the
-> size you mmap, using truncate. This will create a sparse file, and will
-> on any sane filesystem not take more space than its meta data.
-> 
-> Thereafter you can fill it with writes to the mmap.
-
-Agreed.
-
--- 
-All Rights Reversed
+He can't clone my tree or pull from it, then Greg KH tries to
+take the fixes from him, and that doesn't go smoothly either.
