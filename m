@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYKCE6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYKCFDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbYKCE6u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 23:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbYKCE6l
+	id S1754541AbYKCFDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 00:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbYKCFDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 23:58:41 -0500
-Received: from xenotime.net ([72.52.64.118]:40641 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754522AbYKCE6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 23:58:40 -0500
-Date: Sun, 2 Nov 2008 20:58:17 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: "Peter Teoh" <htmldeveloper@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, adobriyan@gmail.com
-Subject: Re: removal of fs/proc/inode-alloc.txt
-Message-Id: <20081102205817.eb6cbe19.rdunlap@xenotime.net>
-In-Reply-To: <804dabb00811010013t2594a03fw3cef35a2f39a4f80@mail.gmail.com>
-References: <804dabb00811010013t2594a03fw3cef35a2f39a4f80@mail.gmail.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Nov 2008 00:03:07 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:57493 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbYKCFDG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 00:03:06 -0500
+Message-ID: <20297391.post@talk.nabble.com>
+Date: Sun, 2 Nov 2008 21:03:04 -0800 (PST)
+From: peter360 <peter360@fastmail.us>
+To: linux-kernel@vger.kernel.org
+Subject: which .ko file?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Nabble-From: peter360@fastmail.us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Nov 2008 15:13:49 +0800 Peter Teoh wrote:
 
-> I find it weird, that a text file should exists among the directories
-> of C and header files.   If it is a legitimate documentation it should
-> go into Documentation subdirectory, correct?   Or if it is so short
-> like it currently is, go into some C file.
-> 
-> Anyway I don't understand anything about this text file, and from its history:
-> 
-> http://www.google.com/search?q=site%3Alkml.org+%22inode-alloc.txt%22&btnG=Google+Search
-> 
-> I don't see its purpose here.
-> 
-> Can someone comment on its history, can it be removed?
+Hi,
 
-Alexey,
+How do I determine the .ko file used for a certain kernel module in a
+running kernel?  For example, on my dell laptop I see
+$ lsmod | grep 3945
+ipw3945               230952  1 
+ieee80211              65161  1 ipw3945
 
-With your /proc changes, can you please find a source file to hold this
-small file's comments?  or should it just be removed?
+$ modinfo ipw3945
+modinfo: could not open /lib/modules/2.6.18-92.1.1.el5/extra/ipw3945.ko: No
+such file or directory
 
-Thanks,
----
-~Randy
+$ locate ipw3945.ko
+/lib/modules/2.6.18-52.el5/weak-updates/ipw3945.ko
+/lib/modules/2.6.18-52.el5/weak-updates/ipw3945/ipw3945.ko
+/lib/modules/2.6.18-8.1.4.el5/extra/ipw3945/ipw3945.ko
+/lib/modules/2.6.18-92.1.1.el5/weak-updates/ipw3945/ipw3945.ko
+/lib/modules/2.6.18-92.1.10.el5/weak-updates/ipw3945.ko
+/lib/modules/2.6.18-92.1.10.el5/weak-updates/ipw3945/ipw3945.ko
+
+$ uname -a
+Linux mylaptop 2.6.18-92.1.1.el5 #1 SMP Thu May 22 09:01:47 EDT 2008 x86_64
+x86_64 x86_64 GNU/Linux
+
+How do I find out which ipw3945.ko file was actually loaded into the kernel?
+thanks!
+-- 
+View this message in context: http://www.nabble.com/which-.ko-file--tp20297391p20297391.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
