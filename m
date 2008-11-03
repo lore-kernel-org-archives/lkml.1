@@ -1,63 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYKCW7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbYKCXAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbYKCW7n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYKCW7d
+	id S1756772AbYKCXAr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 18:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYKCXAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:59:33 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:59361 "EHLO mail.dvmed.net"
+	Mon, 3 Nov 2008 18:00:38 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43383 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752314AbYKCW7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:59:32 -0500
-Message-ID: <490F824E.3070809@garzik.org>
-Date: Mon, 03 Nov 2008 17:59:26 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753723AbYKCXAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 18:00:38 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+Date: Tue, 4 Nov 2008 00:05:11 +0100
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811032324.02163.rjw@sisk.pl> <1225751665.12673.511.camel@nimitz>
+In-Reply-To: <1225751665.12673.511.camel@nimitz>
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver fixes for 2.6.28-rc
-References: <20081103205121.GA6005@havoc.gtf.org> <B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
-In-Reply-To: <B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200811040005.12418.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcel Holtmann wrote:
-> Hi Jeff,
+On Monday, 3 of November 2008, Dave Hansen wrote:
+> On Mon, 2008-11-03 at 23:24 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 3 of November 2008, Dave Hansen wrote:
+> > > On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
+> > > > On Wed, 29 Oct 2008 13:25:00 +0100
+> > > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
+> > > > > > 
+> > > > > > hibernation + memory hotplug was disabled in kconfig because we could
+> > > > > > not handle hibernation + sparse mem at some point. It seems to work
+> > > > > > now, so I guess we can enable it.
+> > > > > 
+> > > > > OK, if "it seems to work now" means that it has been tested and confirmed to
+> > > > > work, no objection from me.
+> > > > 
+> > > > yes, that was not a terribly confidence-inspiring commit message.
+> > > > 
+> > > > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
+> > > > hotplug when swsusp is enabled.  There's a lot of churn there right
+> > > > now.  We'll fix it up properly once it calms down." which is also
+> > > > rather rubbery.  
+> > > > 
+> > > > Cough up, guys: what was the issue with memory hotplug and swsusp, and
+> > > > is it indeed now fixed?
+> > > 
+> > > I suck.  That commit message was horrid and I'm racking my brain now to
+> > > remember what I meant.  Don't end up like me, kids.
+> > > 
+> > > I've attached the message that I sent to the swsusp folks.  I never got
+> > > a reply from that as far as I can tell.
+> > > 
+> > > http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
+> > > 
+> > > As I look at it now, it hasn't improved much since 2005.  Take a look at
+> > > kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
+> > > list of zones that a system has is static.  Memory hotplug needs to be
+> > > excluded while that operation is going on.
+> > 
+> > This operation is carried out on one CPU with interrupts disabled.  Is that
+> > not enough?
 > 
->> Please pull from 'davem-fixes' branch of
->> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
->> davem-fixes
->>
->> to receive the following updates:
->>
->> drivers/net/Kconfig                |   18 +++++++++++++++---
->> drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
->> drivers/net/mv643xx_eth.c          |    9 ++++++---
->> 3 files changed, 25 insertions(+), 8 deletions(-)
+> If that's true then you don't need any locking for anything at all,
+> right?
+
+Yes.
+
+> All of the changes I was talking about occur inside the kernel and code
+> has to run for it to happen.  So, if you are saying that absolutely no
+> other code on the system can possibly run, then it should be OK.
 > 
-> are you also queuing patches for drivers/net/usb/hso.c, because the 
-> current state of that driver is fully broken. It oopses and shows up 
-> with a WLAN RFKILL switch instead of WWAN. Also it has some weird 
-> disconnect race with the TTY layer. Some patches have been posted, but 
-> seems that nobody has picked them up so far.
+> > > page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
+> > > things can become invalid at any time since no references are held or
+> > > taken on the page.  Or, a page that *was* invalid may become valid and
+> > > get missed.
+> > 
+> > Can that really happen given the conditions above?
+> 
+> Nope.
+> 
+> But, as I think about it, there is another issue that we need to
+> address, CONFIG_NODES_SPAN_OTHER_NODES.
+> 
+> A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+> have only one zone).  But, there may be another node with
+> node_start_pfn=10 and a node_end_pfn=20.  This loop:
+> 
+>         for_each_zone(zone) {
+> 		...
+>                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+>                         if (page_is_saveable(zone, pfn))
+>                                 memory_bm_set_bit(orig_bm, pfn);
+>         }
+> 
+> will walk over the smaller node's pfn range multiple times.  Is this OK?
 
-Last patch sent me was sent on 9/16 by Denis Joseph Barrow; I replied 
-and never received a response after that.
+Hm, well, I'm not really sure at the moment.
 
-Patches welcome...
+Does it mean that, in your example, the pfns 10 to 20 from the first node
+refer to the same page frames that are referred to by the pfns from the
+second node?
 
-I don't see any hso patches on
-http://patchwork.ozlabs.org/project/netdev/list/ nor in my inbox, so I'm 
-guessing that no one sent me or netdev any hso patches.
+> I think all you have to do to fix it is check page_zone(page) == zone
+> and skip out if they don't match.
 
-	Jeff
+Well, probably.  I need to know exactly what's the relationship between pfns,
+pages and physical page frames in that case.
 
-
+Thanks,
+Rafael
