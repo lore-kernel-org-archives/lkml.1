@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404AbYKCTrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYKCTrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404AbYKCTrY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYKCTrP
+	id S1755555AbYKCTrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:47:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYKCTrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:47:15 -0500
-Received: from hs-out-0708.google.com ([64.233.178.248]:21743 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbYKCTrO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:47:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=iJAHkvi7K9B8EI2frFHMBbhbLQe/m7P9KJX/PCdqyekXWwW3Qju3uLYv2t5YqsT8Df
-         Kz9t8+svhJmAXlgKaGtLdV27U4WB+OGnHBGMuxqfIC+iRKwDusevHbUGxo89e+fERLFm
-         WbYvEkaLXNaf1JlG3PnCePSyGr2oihVfrRXv0=
-Message-ID: <524f69650811031147g6c133ed8wc8031a8586d66eaa@mail.gmail.com>
-Date: Mon, 3 Nov 2008 13:47:10 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Jeff Layton" <jlayton@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Do iov_len and iov_base have to be reset after EAGAIN on kernel_recvmsg?
+	Mon, 3 Nov 2008 14:47:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48944 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753222AbYKCTrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 14:47:39 -0500
+Date: Mon, 3 Nov 2008 20:47:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: BUG: sleeping function called from invalid context at
+	kernel/sched.c:5558
+Message-ID: <20081103194721.GA16897@elte.hu>
+References: <1225736361.5126.2.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1225736361.5126.2.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In cifs_demultiplex_thread Shirish suggested changing the following to
-handle the case in which EAGAIN is returned from kernel_recvmsg and
-has corrupted the value of iov_len and iov_base
 
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -417,10 +417,16 @@ incomplete_rcv:
- 			msleep(1); /* minimum sleep to prevent looping
- 				allowing socket to clear and app threads to set
- 				tcpStatus CifsNeedReconnect if server hung */
--			if (pdu_length < 4)
-+			if (pdu_length < 4) {
-+				iov.iov_base = (4 - pdu_length) +
-+							(char *)smb_buffer;
-+				iov.iov_len = pdu_length;
-+				smb_msg.msg_control = NULL;
-+				smb_msg.msg_controllen = 0;
- 				goto incomplete_rcv;
+* Thomas Meyer <thomas@m3y3r.de> wrote:
 
-based on Sridhar's comment:
+> False positive, while suspend/resume-to/from-disk?
+> 
+> [19332.352863] BUG: sleeping function called from invalid context at kernel/sched.c:5558
+> [19332.352866] in_atomic(): 0, irqs_disabled(): 1, pid: 3287, name: pm-hibernate
+> [19332.352869] Pid: 3287, comm: pm-hibernate Tainted: G        W  2.6.28-rc2 #97
+> [19332.352871] Call Trace:
+> [19332.352878]  [<c0436408>] __might_sleep+0xdc/0xe3
+> [19332.352882]  [<c043bbde>] __cond_resched+0x12/0x36
+> [19332.352886]  [<c09d29a8>] _cond_resched+0x27/0x32
+> [19332.352889]  [<c0697d9c>] acpi_ps_complete_op+0x1e0/0x1ef
+> [19332.352892]  [<c069884e>] ? acpi_ps_alloc_op+0x82/0x84
+> [19332.352896]  [<c0689814>] ? acpi_ds_exec_end_op+0x30c/0x370
+> [19332.352899]  [<c069839f>] acpi_ps_parse_loop+0x5f4/0x721
+> [19332.352902]  [<c069779c>] acpi_ps_parse_aml+0x6d/0x267
 
-"i think you are running into a case where kernel_recvmsg() is called
-via 'goto incomplete_rcv'
-It happens if the previous call fails with EAGAIN.  If you want to
-call recvmsg() after EAGAIN failure, you need to reset iov."
+Such messages are never false positives, this is a real bug.
 
-It sounds strange to reset iov_len and iov_base on EAGAIN or ENOSPACE
-from the socket, but seems harmless ... but what about resetting
-msg_control and msg_controllen ... is that ever necessary?  Is that
-safe?
-
--- 
-Thanks,
-
-Steve
+	Ingo
