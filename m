@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYKCNhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYKCNjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbYKCNhb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 08:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbYKCNhW
+	id S1755881AbYKCNjR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 08:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYKCNjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 08:37:22 -0500
-Received: from vms173007pub.verizon.net ([206.46.173.7]:49769 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755221AbYKCNhV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 08:37:21 -0500
-X-Greylist: delayed 3598 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 08:37:21 EST
-Date: Mon, 03 Nov 2008 07:37:10 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: dmesg excerpt, 2.6.28-rc3
-To: LKML <linux-kernel@vger.kernel.org>
-Message-id: <200811030737.10744.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-User-Agent: KMail/1.9.10
+	Mon, 3 Nov 2008 08:39:05 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:40391 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753117AbYKCNjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 08:39:04 -0500
+Message-ID: <490EFEE0.8030104@atmel.com>
+Date: Mon, 03 Nov 2008 14:38:40 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: LAK <linux-arm-kernel@lists.arm.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: MMC maintainership help needed
+References: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
+In-Reply-To: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all;
+Hi Pierre,
 
-I have been seeing an ACPI message saying it expected something it didn't get 
-while booting, but that message never makes it to any log. I turned on some 
-verbosity with the rc3 config, and now see this early in dmesg:
+Pierre Ossman :
+> I'm having trouble finding time and energy for handling MMC stuff in a
+> timely manner (as those of you sending patches to me have noticed).
+> Therefore I'm sending out this general plea for assistance.
+> 
+> If you see any MMC/SD/SDIO patches, bug reports or general questions,
+> don't be afraid to comment and/or ask for more information. Even if you
+> don't feel like you can solve the issue, any help you can provide means
+> that my limited time can be better spent. And you'll probably also get
+> more comfortable with the MMC parts in the process. :)
 
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at arch/x86/kernel/cpu/mtrr/generic.c:404 
-generic_get_mtrr+0x11c/0x130()
-[    0.000000] mtrr: your BIOS has set up an incorrect mask, fixing it up.
-[    0.000000] Modules linked in:
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.28-rc3 #1
-[    0.000000] Call Trace:
-[    0.000000]  [<c04282e6>] warn_slowpath+0x76/0x90
-[    0.000000]  [<c0511657>] vsnprintf+0x2e7/0x680
-[    0.000000]  [<c042903b>] printk+0x1b/0x20
-[    0.000000]  [<c041b6dc>] pat_init+0x7c/0xa0
-[    0.000000]  [<c040fe0c>] post_set+0x1c/0x50
-[    0.000000]  [<c0428a8d>] release_console_sem+0x18d/0x1c0
-[    0.000000]  [<c041045c>] generic_get_mtrr+0x11c/0x130
-[    0.000000]  [<c0728ffa>] mtrr_trim_uncached_memory+0x7a/0x330
-[    0.000000]  [<c042903b>] printk+0x1b/0x20
-[    0.000000]  [<c0725d45>] e820_end_pfn+0xc5/0xf0
-[    0.000000]  [<c0724120>] setup_arch+0x420/0xb60
-[    0.000000]  [<c072726b>] reserve_early_overlap_ok+0x4b/0x60
-[    0.000000]  [<c071d9c8>] start_kernel+0x58/0x2e0
-[    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+Ok.
 
-This is the latest, non-beta bios (1502, as of about a month ago anyway) for 
-this ASUS M2N-SLI deluxe mother board, with a slow 4 core phenom in the 
-socket.  Is anyone fam enough with the ASUS bios to suggest a fix?
+> On a related note, I see very little comments to my reviews except from
+> the original author. As such I'm having a hard time evaluating my role.
+> Are people satisified with my work as a gatekeeper or am I just being a
+> pain in the ass? I know I can be a bit anal at times. :)
 
-This may have something to do with an extremely slow boot time, with a good 30 
-seconds wasted between the last bios message spit out, the time when grub 
-should be loading.  Each message from grub, until it finally presents the 
-boot choice menu, takes 7 to 15 seconds, and once its presented the menu, 
-then booting resumes at a normal speed.
+Hey Pierre, you are just perfect in this role from my point of view.
 
-I should make a movie so folks see what I'm talking about I guess.
+With many contributors, we manage to enhance significantly the quality 
+of the at91_mci SD/MMC driver and your view and comments, as a 
+maintainer, have always been valuable.
 
-Ahh, I found the ACPI message too!
-
-[    0.625198] fan PNP0C0B:00: registered as cooling_device0
-[    0.625202] ACPI: Fan [FAN] (on)
-[    0.625608] processor ACPI0007:00: registered as cooling_device1
-[    0.625654] processor ACPI0007:01: registered as cooling_device2
-[    0.625703] processor ACPI0007:02: registered as cooling_device3
-[    0.625754] processor ACPI0007:03: registered as cooling_device4
-[    0.626200] ACPI Warning (nspredef-0858): \_TZ_.THRM._PSL: Return Package 
-type mismatch at index 0 - found [NULL Object Descriptor], expected Reference 
-[20080926]
-[    0.626206] ACPI: Expecting a [Reference] package element, found type 0
-
-What if anything can I do about these?
-
-Thanks.
-
+Kind regards,
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-It is illegal to say "Oh, Boy" in Jonesboro, Georgia.
+Nicolas Ferre
+
