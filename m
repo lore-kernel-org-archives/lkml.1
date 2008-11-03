@@ -1,80 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbYKCTGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbYKCTTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbYKCTGj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 14:06:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbYKCTG1
+	id S1754592AbYKCTTA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 14:19:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753878AbYKCTSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 14:06:27 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:34195 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752740AbYKCTG0 (ORCPT
+	Mon, 3 Nov 2008 14:18:47 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:23666 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753652AbYKCTSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 14:06:26 -0500
-X-Sasl-enc: 5VdEsOkVd+J1fYdLCx1NmP+lTCqXBUmPaVlKUc2VTVvj 1225739183
-Date: Mon, 3 Nov 2008 17:06:17 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Subject: Re: rfkill, stupid question #6
-Message-ID: <20081103190617.GE2417@khazad-dum.debian.net>
-References: <20081102130655.GA12766@srcf.ucam.org> <20081103141628.GB31078@khazad-dum.debian.net> <20081103141836.GA31894@srcf.ucam.org> <490F0ACC.4000808@tuffmail.co.uk> <20081103145145.GD31078@khazad-dum.debian.net> <20081103145543.GA496@srcf.ucam.org> <20081103150229.GF31078@khazad-dum.debian.net> <20081103150843.GA1107@srcf.ucam.org> <20081103163311.GA2417@khazad-dum.debian.net> <490F3C44.7080504@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490F3C44.7080504@tuffmail.co.uk>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 3 Nov 2008 14:18:46 -0500
+Date: Mon, 3 Nov 2008 11:17:31 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       sfr <sfr@canb.auug.org.au>
+Cc: rolandd@cisco.com, ericvh@gmail.com, akpm <akpm@linux-foundation.org>,
+       davem@davemloft.net, netdev <netdev@vger.kernel.org>
+Subject: [PATCH] net/9p: limit RDMA to INET
+Message-Id: <20081103111731.d12dbb84.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 03 Nov 2008, Alan Jenkins wrote:
-> I have one more question.  I read that if a STATE_SOFT_BLOCKED request
-> is made when the hardware is in STATE_HARD_BLOCKED, the rfkill driver is
-> expected to "double block".
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-If it can do so, yes.  It makes for marginally better use interaction.
+linux-next:
 
-> If the hard block is later cleared, the driver is expected to call
-> rfkill_force_state(SOFT_BLOCKED).  The SOFT_BLOCKED state can then be
-> cleared as normal.
+Make 9p's RDMA option depend on INET since it uses Infiniband rdma_*
+functions and that code depends on INET.  Otherwise 9p can try to
+use symbols which don't exist.
 
-Exactly.
+ERROR: "rdma_destroy_id" [net/9p/9pnet_rdma.ko] undefined!
+ERROR: "rdma_connect" [net/9p/9pnet_rdma.ko] undefined!
+ERROR: "rdma_create_id" [net/9p/9pnet_rdma.ko] undefined!
+ERROR: "rdma_create_qp" [net/9p/9pnet_rdma.ko] undefined!
+ERROR: "rdma_resolve_route" [net/9p/9pnet_rdma.ko] undefined!
+ERROR: "rdma_disconnect" [net/9p/9pnet_rdma.ko] undefined!
+ERROR: "rdma_resolve_addr" [net/9p/9pnet_rdma.ko] undefined!
 
-> But if there is an UNBLOCK request in the double-blocked state, the
-> rfkill core will reject it and preserve the  double-blocked state.  Is
-> this intended, or a known issue?
+I used an if/endif block so that the menu items would remain
+presented together.
 
-It is intended.  The user wants to unblock the radio (not "prepare it to
-unblock when I release the hardware rfkill line by doing something else"),
-so we have to error it out.
+Also correct an article adjective.
 
-And, frankly, I don't very much like the idea of the core returning a
--EPERM and yet having done a call toggle_radio(UNBLOCK).   Not to mention
-it is yet another border condition for the hook API.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ net/9p/Kconfig |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-So, if something took the pains to cause a double block, we require
-explicit unblocking AFTER the hardware rfkill lines are released (i.e. the
-device goes from HARD to SOFT blocked).
-
-BUT I don't feel strongly about it, so if someone wants to change that, I
-won't stand in the way.
-
-> Wouldn't it be simpler to use a bitmask so that the rfkill core can at
-> least represent this double-blocked state?  I guess the problem would be
-> how to shoehorn it into the sysfs interface.
-
-The core doesn't care, and doesn't have to in order to implement such a
-thing.  The drivers track it separately.
-
-The two problems is that it can be REALLY confusing for the end user, and
-that it requires a ABI change.  I don't know if it is worth it, I just know
-I am not going to be the one doing it :-)
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--- linux-next-20081103.orig/net/9p/Kconfig
++++ linux-next-20081103/net/9p/Kconfig
+@@ -13,22 +13,24 @@ menuconfig NET_9P
+ 
+ 	  If unsure, say N.
+ 
++if NET_9P
++
+ config NET_9P_VIRTIO
+-	depends on NET_9P && EXPERIMENTAL && VIRTIO
++	depends on EXPERIMENTAL && VIRTIO
+ 	tristate "9P Virtio Transport (Experimental)"
+ 	help
+ 	  This builds support for a transports between
+ 	  guest partitions and a host partition.
+ 
+ config NET_9P_RDMA
+-	depends on NET_9P && INFINIBAND && EXPERIMENTAL
++	depends on INET && INFINIBAND && EXPERIMENTAL
+ 	tristate "9P RDMA Transport (Experimental)"
+ 	help
+-	  This builds support for a RDMA transport.
++	  This builds support for an RDMA transport.
+ 
+ config NET_9P_DEBUG
+ 	bool "Debug information"
+-	depends on NET_9P
+ 	help
+ 	  Say Y if you want the 9P subsystem to log debug information.
+ 
++endif
