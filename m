@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYKCJqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYKCJxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbYKCJqx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYKCJqp
+	id S1755235AbYKCJxt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 04:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbYKCJxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:46:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37415 "EHLO mx3.mail.elte.hu"
+	Mon, 3 Nov 2008 04:53:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46313 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754652AbYKCJqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:46:44 -0500
-Date: Mon, 3 Nov 2008 10:46:27 +0100
+	id S1754640AbYKCJxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 04:53:38 -0500
+Date: Mon, 3 Nov 2008 10:53:23 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] fix compile breakage caused by x86: add
-	->pre_time_init to x86_quirks
-Message-ID: <20081103094627.GB10400@elte.hu>
-References: <1225400831.19324.21.camel@localhost.localdomain> <20081030222308.GM30303@elte.hu> <1225475246.3264.10.camel@localhost.localdomain>
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [VOYAGER] fix smp_intr_init() compile breakage
+Message-ID: <20081103095323.GB13671@elte.hu>
+References: <1225400572.19324.13.camel@localhost.localdomain> <20081030220338.GJ30303@elte.hu> <1225475989.3264.19.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225475246.3264.10.camel@localhost.localdomain>
+In-Reply-To: <1225475989.3264.19.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,35 +40,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> On Thu, 2008-10-30 at 23:23 +0100, Ingo Molnar wrote:
+> On Thu, 2008-10-30 at 23:03 +0100, Ingo Molnar wrote:
 > > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 > > 
-> > > >From da69eaed98248bf4b29e94d62a4e01a5c3758669 Mon Sep 17 00:00:00 2001
+> > > >From 4d4d1ebea1e30d0ea51784139f18aa15acbff5d9 Mon Sep 17 00:00:00 2001
 > > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > Date: Wed, 29 Oct 2008 13:14:29 -0500
-> > > Subject: [VOYAGER] x86: add voyager pre_time_init_hook
+> > > Date: Wed, 29 Oct 2008 11:13:33 -0500
+> > > Subject: [VOYAGER] x86: fix smp_intr_init() compile breakage
 > > > 
-> > > This was introduced by:
+> > > Looks like this became static on the rest of x86.  Fix it up by adding
+> > > an external definition to mach-voyager/setup.c
 > > > 
-> > > Author: Yinghai Lu <yhlu.kernel@gmail.com>
-> > > Date:   Sat Jul 19 18:02:26 2008 -0700
+> > > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > ---
+> > >  arch/x86/mach-voyager/setup.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
 > > > 
-> > >     x86: add ->pre_time_init to x86_quirks
-> > > 
-> > > In theory, voyager could also make use of the x86_quirks hooks but,
-> > > unfortunately, they're not set up correctly for that to happen yet.
+> > > diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
+> > > index 6bbdd63..7c6ff1a 100644
+> > > --- a/arch/x86/mach-voyager/setup.c
+> > > +++ b/arch/x86/mach-voyager/setup.c
+> > > @@ -24,6 +24,7 @@ static struct irqaction irq2 = {
+> > >  	.name = "cascade",
+> > >  };
+> > >  
+> > > +extern void smp_intr_init(void);
+> > >  void __init intr_init_hook(void)
 > > 
-> > okay, so how about setting them up that way instead? That way we win 
-> > twice: it becomes a tiny bit easier to add Voyager support to the 
-> > generic platform code, and we also fix the build breakage.
+> > please add function prototypes to the proper .h file. 
+> > (arch/x86/include/asm/voyager.h in this case)
+> > 
+> > I'd also suggest to rename the function to voyager_smp_intr_init(). 
+> > 
+> > Note that Voyager already has a voyager_smp_intr_init() prototype in 
+> > voyager.h. Something like the (completely untested) patch below.
+> > 
+> > 	Ingo
+> > 
+> > ---
+> >  arch/x86/mach-voyager/setup.c       |    2 +-
+> >  arch/x86/mach-voyager/voyager_smp.c |    2 +-
+> >  2 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/x86/mach-voyager/setup.c b/arch/x86/mach-voyager/setup.c
+> > index 6bbdd63..a580b95 100644
+> > --- a/arch/x86/mach-voyager/setup.c
+> > +++ b/arch/x86/mach-voyager/setup.c
+> > @@ -27,7 +27,7 @@ static struct irqaction irq2 = {
+> >  void __init intr_init_hook(void)
+> >  {
+> >  #ifdef CONFIG_SMP
+> > -	smp_intr_init();
+> > +	voyager_smp_intr_init();
+> >  #endif
+> >  
+> >  	setup_irq(2, &irq2);
+> > diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+> > index ff2b2ed..95c9035 100644
+> > --- a/arch/x86/mach-voyager/voyager_smp.c
+> > +++ b/arch/x86/mach-voyager/voyager_smp.c
+> > @@ -1250,7 +1250,7 @@ static void handle_vic_irq(unsigned int irq, struct irq_desc *desc)
+> >  #define QIC_SET_GATE(cpi, vector) \
+> >  	set_intr_gate((cpi) + QIC_DEFAULT_CPI_BASE, (vector))
+> >  
+> > -void __init smp_intr_init(void)
+> > +void __init voyager_smp_intr_init(void)
+> >  {
+> >  	int i;
 > 
-> Sure, it should be possible ... but reworking the current quirk 
-> infrastructure would definitely be an enhancement, whereas this is a 
-> compile fix for 2.6.28-rc
+> Not quite: still get the undeclared function in setup.c.  However, 
+> this should work (also untested: I'm in flight at the moment).
 
-but it's an ugly compile fix that just prolongues the pain that the 
-subarch code has been inflicting on us for many cycles. Please fix the 
-underlying problem properly - it should not be hard and it will 
-definitely be cleaner end result.
+applied to tip/x86/urgent, thanks James!
 
 	Ingo
