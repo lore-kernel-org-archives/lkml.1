@@ -1,89 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797AbYKCWTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbYKCWXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797AbYKCWTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbYKCWTe
+	id S1754107AbYKCWXM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:23:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYKCWW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:19:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43210 "EHLO ogre.sisk.pl"
+	Mon, 3 Nov 2008 17:22:58 -0500
+Received: from fwc.sitour.cz ([62.209.212.18]:4422 "EHLO kali.sitour.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751200AbYKCWTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:19:33 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [PATCH] hibernation should work ok with memory hotplug
-Date: Mon, 3 Nov 2008 23:24:01 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
-       Matt Tolentino <matthew.e.tolentino@intel.com>,
-       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
-       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <20081103125108.46d0639e.akpm@linux-foundation.org> <1225747308.12673.486.camel@nimitz>
-In-Reply-To: <1225747308.12673.486.camel@nimitz>
+	id S1751047AbYKCWW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 17:22:57 -0500
+X-Greylist: delayed 1863 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 17:22:56 EST
+Message-ID: <490F726F.6070204@mydatex.cz>
+Date: Mon, 03 Nov 2008 22:51:43 +0100
+From: Daniel Smolik <marvin@mydatex.cz>
+Organization: Mydatex s.r.o.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; cs-CZ; rv:1.8.0.14eol) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.13~pre080323b-0etch3)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bugme-new] [Bug 11886] New: without serial console system doesn't
+ poweroff
+References: <bug-11886-10286@http.bugzilla.kernel.org/> <20081103130505.d5b45f87.akpm@linux-foundation.org>
+In-Reply-To: <20081103130505.d5b45f87.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811032324.02163.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of November 2008, Dave Hansen wrote:
-> On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
-> > On Wed, 29 Oct 2008 13:25:00 +0100
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > On Wednesday, 29 of October 2008, Pavel Machek wrote:
-> > > > 
-> > > > hibernation + memory hotplug was disabled in kconfig because we could
-> > > > not handle hibernation + sparse mem at some point. It seems to work
-> > > > now, so I guess we can enable it.
-> > > 
-> > > OK, if "it seems to work now" means that it has been tested and confirmed to
-> > > work, no objection from me.
-> > 
-> > yes, that was not a terribly confidence-inspiring commit message.
-> > 
-> > 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
-> > hotplug when swsusp is enabled.  There's a lot of churn there right
-> > now.  We'll fix it up properly once it calms down." which is also
-> > rather rubbery.  
-> > 
-> > Cough up, guys: what was the issue with memory hotplug and swsusp, and
-> > is it indeed now fixed?
+Andrew Morton napsal(a):
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
 > 
-> I suck.  That commit message was horrid and I'm racking my brain now to
-> remember what I meant.  Don't end up like me, kids.
+> On Wed, 29 Oct 2008 04:06:11 -0700 (PDT)
+> bugme-daemon@bugzilla.kernel.org wrote:
 > 
-> I've attached the message that I sent to the swsusp folks.  I never got
-> a reply from that as far as I can tell.
+>> http://bugzilla.kernel.org/show_bug.cgi?id=11886
+>>
+>>            Summary: without serial console system doesn't  poweroff
+>>            Product: Power Management
+>>            Version: 2.5
+>>      KernelVersion: 2.6.27.4
+>>           Platform: All
+>>         OS/Version: Linux
+>>               Tree: Mainline
+>>             Status: NEW
+>>           Severity: normal
+>>           Priority: P1
+>>          Component: Other
+>>         AssignedTo: power-management_other@kernel-bugs.osdl.org
+>>         ReportedBy: marvin@mydatex.cz
+>>
+>>
+>> Latest working kernel version:
+>> Earliest failing kernel version:2.6.27.2
+>> Distribution: Debian Etch
+>> Hardware Environment: Supermiro C2SBC-Q  Dual Core Intel Cpu 1G RAM
+>> Software Environment: Debian Etch
+>> Problem Description: If I does't add serial console to kernel command line
+>> system doesn't poweroff. Linux hangs there:
+>>
+>> e1000e 0000:0d:00.0: PCI INT A disabled
+>> e1000e 0000:00:19.0: PCI INT A disabled
+>> ACPI: Preparing to enter system sleep state S5
+>> Disabling non-boot CPUs ...
+>>
+>> If I disable in kernel config Suspend to Ram and Hibernate all works without
+>> console. But with Suspend and hibernate enabled and serial console  added to
+>> kernel cmd line all works too:
+>>
+>> e1000e 0000:0d:00.0: PCI INT A disabled
+>> e1000e 0000:00:19.0: PCI INT A disabled
+>> ACPI: Preparing to enter system sleep state S5
+>> Disabling non-boot CPUs ...
+>> CPU 1 is now offline
+>> SMP alternatives: switching to UP code
+>> CPU1 is down
+>> Power down.
+>> acpi_power_off called
+>>
+>> Steps to reproduce:
+>> Compile kernel with attached config and try poweroff without serial console.
+>>
 > 
-> http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
+> OK, this is weird.
 > 
-> As I look at it now, it hasn't improved much since 2005.  Take a look at
-> kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
-> list of zones that a system has is static.  Memory hotplug needs to be
-> excluded while that operation is going on.
+> But the good news is that there is a very small number of commits
+> between 2.6.27.2 and 2.6.27.4.
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.3
+> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.4
+> 
+> I'd be looking at these:
+> 
+> commit 3b987ac961486373f91191b14291b331fa546072
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Sat Sep 6 13:13:01 2008 +0200
+> 
+>     ACPI suspend: Always use the 32-bit waking vector
+>     
+>     commit a6629105dd03d370fcb31e97bddf223fa4bb651e upstream.
+> 
+> 
+> commit 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Sat Oct 4 00:05:05 2008 +0200
+> 
+>     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
+>     
+>     commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 upstream.
+> 
+> 
+> 
+> presumably 2.6.28-rc3 is also broken?
+I don't know I can test it on Thu. But may be may fault or misunderstanding fist kernel which I test is 2.27.2. I don't 
+test any kernel before. I don't know if 2.6.26 works.
 
-This operation is carried out on one CPU with interrupts disabled.  Is that
-not enough?
+			Dan
 
-> page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
-> things can become invalid at any time since no references are held or
-> taken on the page.  Or, a page that *was* invalid may become valid and
-> get missed.
 
-Can that really happen given the conditions above?
 
-> The "missing a page" thing is probably correctable via the
-> zone_span_seqbegin() locks.  The "page becoming invalid" thing is
-> probably mostly fixable by acquiring a reference to the page itself.
-> I'd need to look how the locking on the hot remove side is working these
-> days to be much more constructive than that.
 
-Well, I don't think any locking is necessary for the image creation.
-
-Thanks,
-Rafael
