@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYKCSoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYKCSxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbYKCSoi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 13:44:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYKCSo3
+	id S1753442AbYKCSxL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 13:53:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbYKCSw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 13:44:29 -0500
-Received: from smtp1.riverbed.com ([206.169.144.12]:39566 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbYKCSo2 (ORCPT
+	Mon, 3 Nov 2008 13:52:57 -0500
+Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:49146 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751110AbYKCSw4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 13:44:28 -0500
-Date: Mon, 3 Nov 2008 10:44:26 -0800
-From: Arthur Jones <ajones@riverbed.com>
-To: Eric Sandeen <sandeen@redhat.com>
-CC: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-ID: <20081103184426.GA31894@ajones-laptop.nbttech.com>
-References: <4908C951.2000309@redhat.com>
+	Mon, 3 Nov 2008 13:52:56 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] rtc-cmos: Fix boot log message
+Date: Mon, 3 Nov 2008 19:52:38 +0100
+User-Agent: KMail/1.9.9
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200811031942.20360.elendil@planet.nl>
+In-Reply-To: <200811031942.20360.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4908C951.2000309@redhat.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200811031952.39423.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Nov 2008 18:52:39.0937 (UTC) FILETIME=[588F6F10:01C93DE5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eric,   This patch fixes the problem for me, and
-seems to put the buffers on the dirty list at the
-place where they are put on the list during the working
-case.  Despite having rooted around in the innards of
-ext3 for the last few days, I cannot say that I have
-any sense of whether this patch will cause problems
-elsewhere or even if this is the best place to
-intercede.
+On Monday 03 November 2008, Frans Pop wrote:
+> rtc0: alarms up to one month, y3k, 114 bytes nvram, , hpet irqs irqs
 
-I post the complete patch not because I think it
-should be committed as is, but rather to try
-to explain the logic that brought it about.  At the
-very least, this should be reviewed by the experts
-here to make sure there is no collateral damage.
+Here's a possible patch for this one.
 
-Arthur
+Alternative would be to change the following line at 808:
+			is_hpet_enabled() ? ", hpet irqs" : "");
+to:
+			is_hpet_enabled() ? "hpet" : "<sensible value>");
 
--------------------
-In ext3_sync_fs, we only wait for a commit to
-finish if we started it, but there may be one
-already in progress which will not be synced.
+Question is what that sensible value would be...
 
-In the case of a data=ordered umount with pending long
-symlinks which are delayed due to a long list
-of other I/O on the backing block device, this
-causes the buffer associated with the long symlinks
-to not be moved to the inode dirty list in the second
-phase of fsync_super.  Then, before they can be dirtied
-again, kjournald exits, seeing the UMOUNT flag and the
-dirty pages are never written to the backing block device,
-causing long symlink corruption and exposing new or
-previously freed block data to userspace.
-
-This can be reproduced with a script created
-by Eric Sandeen <sandeen@redhat.com>:
-
-	#!/bin/bash
-
-	umount /mnt/test2
-	mount /dev/sdb4 /mnt/test2
-	rm -f /mnt/test2/*
-	dd if=/dev/zero of=/mnt/test2/bigfile bs=1M count=512
-	touch
-	/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-	ln -s
-	/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-	/mnt/test2/link
-	umount /mnt/test2
-	mount /dev/sdb4 /mnt/test2
-	ls /mnt/test2/
-	umount /mnt/test2
-
-To ensure all commits are synced, we flush
-all journal commits now when sync_fs'ing ext3.
-
-Signed-off-by: Arthur Jones <ajones@riverbed.com>
 ---
- fs/ext3/super.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+From: Frans Pop <elendil@planet.nl>
 
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index 18eaa78..053659a 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -2392,7 +2392,13 @@ static int ext3_sync_fs(struct super_block *sb, int wait)
- 	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
- 		if (wait)
- 			log_wait_commit(EXT3_SB(sb)->s_journal, target);
--	}
-+	} else if (wait)
-+		/*
-+		 * We may have a commit in progress, clear it out
-+		 * before we go on...
-+		 */
-+		ext3_force_commit(sb);
-+
- 	return 0;
- }
+rtc-cmos: Fix boot log message
+    
+-rtc0: alarms up to one month, y3k, 114 bytes nvram, , hpet irqs irqs
++rtc0: alarms up to one month, y3k, 114 bytes nvram, hpet irqs
+    
+Signed-off-by: Frans Pop <elendil@planet.nl>
+
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index 5549231..6cf8e28 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -794,7 +794,7 @@ cmos_do_probe(struct device *dev, struct resource *ports, int rtc_irq)
+ 		goto cleanup2;
+ 	}
  
--- 
-1.5.4.3
+-	pr_info("%s: alarms up to one %s%s, %zd bytes nvram, %s irqs\n",
++	pr_info("%s: alarms up to one %s%s, %zd bytes nvram%s\n",
+ 			cmos_rtc.rtc->dev.bus_id,
+ 			is_valid_irq(rtc_irq)
+ 				?  (cmos_rtc.mon_alrm
