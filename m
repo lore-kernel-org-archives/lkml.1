@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbYKCIOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbYKCIPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbYKCIOu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 03:14:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbYKCIO2
+	id S1752916AbYKCIPP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 03:15:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYKCIO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 03:14:28 -0500
-Received: from mx39.mail.ru ([194.67.23.35]:59878 "EHLO mx39.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754616AbYKCIO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 03:14:27 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-acpi@vger.kernel.org
-Subject: 2.6.28-rc3: acpi_tb_create_local_fadt: array subscript is above array bounds
-Date: Mon, 3 Nov 2008 11:14:22 +0300
-User-Agent: KMail/1.9.10
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Mon, 3 Nov 2008 03:14:56 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57222 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755241AbYKCIOz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 03:14:55 -0500
+X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Nov 2008 03:14:54 EST
+Date: Mon, 3 Nov 2008 09:04:30 +0100
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: andi@lisas.de, e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bunk@kernel.org
+Subject: Re: [RFC/PATCH] e100 driver didn't support any MII-less PHYs...
+Message-ID: <20081103080430.GA32459@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <20071228235118.GA31059@rhlx01.hs-esslingen.de> <477732A5.5020501@intel.com> <20080101200908.GA14805@rhlx01.hs-esslingen.de> <20080129230315.GA13389@rhlx01.hs-esslingen.de> <479FB225.7090604@intel.com> <20080130064909.GA19793@rhlx01.hs-esslingen.de> <47A0A713.7030304@intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1941612.lOi2OpQDiG";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200811031114.23559.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47A0A713.7030304@intel.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1941612.lOi2OpQDiG
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-  CC      drivers/acpi/tables/tbfadt.o
-/home/bor/src/linux-git/drivers/acpi/tables/tbfadt.c: In function =E2=80=98=
-acpi_tb_create_local_fadt=E2=80=99:
-/home/bor/src/linux-git/arch/x86/include/asm/string_32.h:75: warning: array=
- subscript is above array bounds                                           =
-  =20
+On Wed, Jan 30, 2008 at 08:34:27AM -0800, Kok, Auke wrote:
+> Andreas Mohr wrote:
+> > Hi,
+> > 
+> > On Tue, Jan 29, 2008 at 03:09:25PM -0800, Kok, Auke wrote:
+> >> Andreas Mohr wrote:
+> >>> Perhaps it's useful to file a bug/patch
+> >>> on http://sourceforge.net/projects/e1000/ ? Perhaps -mm testing?
+> >> I wanted to push this though our testing labs first which has not happened due to
+> >> time constraints - that should quickly at least confirm that the most common nics
+> >> work OK after the change with your patch. I'll try and see if we can get this
+> >> testing done soon.
+> > 
+> > Oh, full-scale regression testing even? Nice idea...
+> > Would optionally be even better if during hardware tests one could also
+> > dig out some i82503-based card (or additional MII-less cards?)
+> > since I didn't really make any effort yet to try to make them all
+> > recognized/supported by my patch already (would have been out of scope anyway
+> > since I have this single card only).
+> 
+> the problem is that I think that most of those (mii-less cards) are customly
+> designed by OEM's that buy the silicon and glue on a different interface and we
+> usually do not carry those designs in our labs apart from a few exceptions. So, I
+> can at least touch the common hardware in testing, but not the exotic stuff.
 
---nextPart1941612.lOi2OpQDiG
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Any update on how to get this support in? (it's not available in 2.6.28-rc2)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+As it stands, I'm not the only one who would need this...
 
-iEYEABECAAYFAkkOst8ACgkQR6LMutpd94wZOwCfXjBa/Xn0ZdxdtJnfQVhpZqNA
-/tYAniDi49aPLksohsp/5OksGdB7zV5r
-=eB49
------END PGP SIGNATURE-----
+Thanks!
 
---nextPart1941612.lOi2OpQDiG--
+Andreas Mohr
