@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYKCUXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYKCUXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbYKCUXZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYKCUXK
+	id S1755165AbYKCUXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYKCUXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:23:10 -0500
-Received: from kroah.org ([198.145.64.141]:44966 "EHLO coco.kroah.org"
+	Mon, 3 Nov 2008 15:23:16 -0500
+Received: from kroah.org ([198.145.64.141]:44973 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750974AbYKCUXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:23:08 -0500
-Date: Mon, 3 Nov 2008 11:55:37 -0800
+	id S1754302AbYKCUXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 15:23:14 -0500
+Date: Mon, 3 Nov 2008 12:19:30 -0800
 From: Greg KH <greg@kroah.com>
 To: Jeff Garzik <jeff@garzik.org>
 Cc: Subbu Seetharaman <subbus@serverengines.com>, netdev@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
-Message-ID: <20081103195537.GA12922@kroah.com>
+Message-ID: <20081103201930.GB13299@kroah.com>
 References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -46,10 +46,16 @@ On Mon, Nov 03, 2008 at 02:52:07PM -0500, Jeff Garzik wrote:
 >
 > It should be suitable for pulling directly into staging.
 
-Ah, sorry, missed that :)
+Hm, call me extreemly stupid, but I don't see anything in that branch
+for this driver.
 
-I'll pull it in and post what I find.
+Here's what I did:
+  git fetch git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git benet master:jeff
+  git checkout jeff
 
-thanks,
+Even looking around at this tree with 'gitk --all' I don't see anything.
+So what did I do wrong here?
+
+confused,
 
 greg k-h
