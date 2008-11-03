@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbYKCQZ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYKCQdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbYKCQZ5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 11:25:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbYKCQZt
+	id S1756243AbYKCQdb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 11:33:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYKCQdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 11:25:49 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:7842 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754133AbYKCQZs (ORCPT
+	Mon, 3 Nov 2008 11:33:21 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:57516 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754995AbYKCQdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 11:25:48 -0500
-Date: Mon, 3 Nov 2008 19:25:47 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, cbou@mail.ru,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] power_supply: only register tosa_battery driver on tosa
-Message-ID: <20081103162547.GA25546@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1225271050-21171-1-git-send-email-dbaryshkov@gmail.com> <bc64b4640811021236t3458bf69vd1becc4ab1133be1@mail.gmail.com> <20081103145514.GA23466@oksana.dev.rtsoft.ru> <bc64b4640811030820j660b8386x39bf2285b1dba887@mail.gmail.com>
+	Mon, 3 Nov 2008 11:33:20 -0500
+X-Sasl-enc: WnUyF3kXjYSuCsBvNE8Lh2f8ZKYuHEJUdD8thrAP7VJ+ 1225729998
+Date: Mon, 3 Nov 2008 14:33:11 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux acpi <linux-acpi@vger.kernel.org>
+Subject: Re: eeepc-laptop rfkill, stupid question #4
+Message-ID: <20081103163311.GA2417@khazad-dum.debian.net>
+References: <20081102040008.GB29606@khazad-dum.debian.net> <490D8C4E.3010201@tuffmail.co.uk> <20081102130655.GA12766@srcf.ucam.org> <20081103141628.GB31078@khazad-dum.debian.net> <20081103141836.GA31894@srcf.ucam.org> <490F0ACC.4000808@tuffmail.co.uk> <20081103145145.GD31078@khazad-dum.debian.net> <20081103145543.GA496@srcf.ucam.org> <20081103150229.GF31078@khazad-dum.debian.net> <20081103150843.GA1107@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <bc64b4640811030820j660b8386x39bf2285b1dba887@mail.gmail.com>
+In-Reply-To: <20081103150843.GA1107@srcf.ucam.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 07:20:06PM +0300, Dmitry wrote:
-> 2008/11/3 Anton Vorontsov <avorontsov@ru.mvista.com>:
-> > On Sun, Nov 02, 2008 at 11:36:08PM +0300, Dmitry wrote:
-> >> 2008/10/29 Dmitry Baryshkov <dbaryshkov@gmail.com>:
-> >> > There are already several wm97xx-battery drivers. Do register the tosa one
-> >> > only on tosa machines.
-> >> >
-> >> > Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-> >> > ---
-> >> >  drivers/power/tosa_battery.c |    3 +++
-> >> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> >>
-> >> What about this patch?
-> >
-> > Sorry for the delay.
-> >
-> >> IMO it can and should be merged during 2.6.28-rc cycle.
-> >>
-> >> diff --git a/drivers/power/tosa_battery.c b/drivers/power/tosa_battery.c
-> >> index 2eab35a..4e52c22 100644
-> >> --- a/drivers/power/tosa_battery.c
-> >> +++ b/drivers/power/tosa_battery.c
-> >> @@ -469,6 +469,9 @@ static struct platform_driver tosa_bat_driver = {
-> >>
-> >>  static int __init tosa_bat_init(void)
-> >>  {
-> >> +     if (!machine_is_tosa())
-> >> +             return -EINVAL;
-> >> +
-> >
-> > I tend to reject this approach. You should rename the driver instead.
-> >
-> > I.e.
-> > -.driver.name    = "wm97xx-battery",
-> > -.driver.name    = "tosa-battery",
-> >
-> > And make sure that this won't break users of that driver (though
-> > I don't see any).
+On Mon, 03 Nov 2008, Matthew Garrett wrote:
+> On Mon, Nov 03, 2008 at 01:02:29PM -0200, Henrique de Moraes Holschuh wrote:
+> > Right now, you should still rfkill_force_state().  Please wait for an hour
+> > or two while I clean up that broken resume handling, and I will tell you for
+> > sure.
 > 
-> The wm97xx-battery device is registered by
-> drivers/input/toucscreen/wm97xx-core.c
+> Cool. I'll hold off posting my cleanups until then in that case.
 
-Hmm.. So you can't rename the tosa driver, because then it won't
-work, correct?
+Ok, two bugs reproduced, the fixes are ready and tested, and I will be
+sending it now to linux-wireless.  You're in the CC, so you will get them.
+
+I will also need to send patches for -stable, as the ones for mainline won't
+apply to -stable.
+
+Now, for what you asked: you DO NOT HAVE to use rfkill_force_state() in your
+driver's resume method, as long as you NEVER make use of
+RFKILL_STATE_HARD_BLOCKED.   I have fixed the bug that was messing this up.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
