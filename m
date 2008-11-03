@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYKCOu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbYKCOvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756338AbYKCOu6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 09:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbYKCOuu
+	id S1756496AbYKCOvY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 09:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYKCOvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 09:50:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:4482 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755279AbYKCOut (ORCPT
+	Mon, 3 Nov 2008 09:51:06 -0500
+Received: from ik-out-1112.google.com ([66.249.90.179]:40059 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756362AbYKCOvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 09:50:49 -0500
+	Mon, 3 Nov 2008 09:51:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=J4Wf9ZUKoQULJQfUMQk3OHNLNhbxIjR0/yU/yVKw/uLIoDzPKfq6CfTfwfnv+X1gQl
-         TjwAVrdtdL5IJN7J1isK+Q5RZdlxn3jv7UpJt73uotVkoyrbZ+oprO5FI0K5xIzDWxho
-         Qh1wt/IkdIVY3Wj6B0gZIDj6OxAamT/oX5TZg=
-Date: Mon, 3 Nov 2008 17:54:05 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, mingo@elte.hu
-Subject: next-20081103: voyager
-Message-ID: <20081103145405.GA13851@x200.localdomain>
-References: <20081103183214.aac32543.sfr@canb.auug.org.au>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Z441Ki+2eqb8J425QvF2NnkV5GWRYitdQUaXK8/3h1KhohjS+kn/yfra/X7b3Obx/0
+         R5IfwBSiVKVXGU+O5/C9vMZYhhjC3Yxt5rSmSMADMsz4MO4YPeOLEENeEu67x9BC49XC
+         TvGc4ya3C733gPKin6qbe36+5ODLHtDLQMxTA=
+Message-ID: <490F0FCF.4060905@gmail.com>
+Date: Mon, 03 Nov 2008 15:50:55 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081103183214.aac32543.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ivan Vecera <ivecera@redhat.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Francois Romieu <romieu@fr.zoreil.com>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: r8169 MAC addresses broken
+References: <490380C8.6070003@simon.arlott.org.uk>	<4903947A.3060206@gmail.com>	<20081025223443.GA30913@electric-eye.fr.zoreil.com>	<4904A7C5.7090801@gmail.com>	<20081026174654.GB24790@electric-eye.fr.zoreil.com>	<4906E4BE.9050304@gmail.com> <m3mygozvd4.fsf@maximus.localdomain> <490718C7.3010501@gmail.com> <490EBE83.7030309@redhat.com>
+In-Reply-To: <490EBE83.7030309@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On i386-voyager:
+On 11/03/2008 10:04 AM, Ivan Vecera wrote:
+> Jiri Slaby wrote:
+>> On 10/28/2008 02:45 PM, Krzysztof Halasa wrote:
+>>> Jiri Slaby <jirislaby@gmail.com> writes:
+>>>
+>>>>> Same thing if you unplug the battery ?
+>>>> Thanks, now it seems to be OK.
+>>> Well, perhaps reverting that patch was a bit premature?
+>> No, it helped after reverting that patch. I think we don't want defunct 2.6.28
+>> with these nics.
+> I cannot agree.
 
-  CC      arch/x86/mach-voyager/setup.o
-arch/x86/mach-voyager/setup.c: In function 'intr_init_hook':
-arch/x86/mach-voyager/setup.c:30: error: implicit declaration of function 'smp_intr_init'
-arch/x86/mach-voyager/setup.c: In function 'machine_specific_memory_setup':
-arch/x86/mach-voyager/setup.c:65: warning: unused variable 'new_nr'
-make[2]: *** [arch/x86/mach-voyager/setup.o] Error 1
-  CC      arch/x86/mach-voyager/voyager_smp.o
-arch/x86/mach-voyager/voyager_smp.c:67: error: conflicting types for 'phys_cpu_present_map'
-arch/x86/include/asm/mpspec.h:143: error: previous declaration of 'phys_cpu_present_map' was here
-arch/x86/mach-voyager/voyager_smp.c: In function 'start_secondary':
-arch/x86/mach-voyager/voyager_smp.c:452: error: implicit declaration of function 'notify_cpu_starting'
-arch/x86/mach-voyager/voyager_smp.c: In function 'smp_call_function_interrupt':
-arch/x86/mach-voyager/voyager_smp.c:965: error: implicit declaration of function 'generic_smp_call_function_interrupt'
-arch/x86/mach-voyager/voyager_smp.c: In function 'smp_call_function_single_interrupt':
-arch/x86/mach-voyager/voyager_smp.c:973: error: implicit declaration of function 'generic_smp_call_function_single_interrupt'
+You want defunct r8169 in 2.6.28? Or cannot agree with what?
+
+> IMO the problem was in the first version of the patch that didn't
+> check for invalid (zeroed) MAC address. In this case is necessary to power-off (desktop
+> case) or unplug the battery (notebook case).
+
+I see no updated patch in this thread to test -- am I missing something?
