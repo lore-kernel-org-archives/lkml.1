@@ -1,108 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYKCVUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbYKCVWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbYKCVUe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 16:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbYKCVUW
+	id S1756634AbYKCVWW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 16:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbYKCVWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 16:20:22 -0500
-Received: from proxima.lp0.eu ([85.158.45.36]:56276 "EHLO proxima.lp0.eu"
+	Mon, 3 Nov 2008 16:22:14 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:52768 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753572AbYKCVUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 16:20:20 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-	b=Q97wTsUhLJNKtDShyeBX5ZAocA0Hh678968d4sx9CONZ4wtNWeJdclacIaoKPENGhYqD4/pr4uZqhC3OiYCNdE9a7vDwzwSvZ/8VPSvVCWHiKqUmpaW8AnW5sZlq3pRP;
-Message-ID: <490F6B10.9070902@simon.arlott.org.uk>
-Date: Mon, 03 Nov 2008 21:20:16 +0000
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080928)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: xfrm_policy_kill: inconsistent {softirq-on-W} ->	{in-softirq-W}
- usage
-References: <490F3C08.6000209@simon.arlott.org.uk> <20081103205726.GA3589@x200.localdomain>
-In-Reply-To: <20081103205726.GA3589@x200.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1754058AbYKCVWN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 16:22:13 -0500
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20081103125108.46d0639e.akpm@linux-foundation.org>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <200810291325.01481.rjw@sisk.pl>
+	 <20081103125108.46d0639e.akpm@linux-foundation.org>
+Content-Type: multipart/mixed; boundary="=-1fB6XySKyXfNKA6Hp6XS"
+Date: Mon, 03 Nov 2008 13:21:48 -0800
+Message-Id: <1225747308.12673.486.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/11/08 20:57, Alexey Dobriyan wrote:
-> On Mon, Nov 03, 2008 at 05:59:36PM +0000, Simon Arlott wrote:
->> [163040.503328] =================================
->> [163040.504264] [ INFO: inconsistent lock state ]
->> [163040.504264] 2.6.28-rc2-git #19424-g083ead5
->> [163040.504264] ---------------------------------
->> [163040.504264] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
->> [163040.504264] swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
->> [163040.531914]  (xfrm_policy_gc_lock){-+..}, at: [<7846bf3f>] xfrm_policy_kill+0x46/0x7e
+
+--=-1fB6XySKyXfNKA6Hp6XS
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Mon, 2008-11-03 at 12:51 -0800, Andrew Morton wrote:
+> On Wed, 29 Oct 2008 13:25:00 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > On Wednesday, 29 of October 2008, Pavel Machek wrote:
+> > > 
+> > > hibernation + memory hotplug was disabled in kconfig because we could
+> > > not handle hibernation + sparse mem at some point. It seems to work
+> > > now, so I guess we can enable it.
+> > 
+> > OK, if "it seems to work now" means that it has been tested and confirmed to
+> > work, no objection from me.
 > 
-> If it's easily reproducible, try this patch:
+> yes, that was not a terribly confidence-inspiring commit message.
+> 
+> 3947be1969a9ce455ec30f60ef51efb10e4323d1 said "For now, disable memory
+> hotplug when swsusp is enabled.  There's a lot of churn there right
+> now.  We'll fix it up properly once it calms down." which is also
+> rather rubbery.  
+> 
+> Cough up, guys: what was the issue with memory hotplug and swsusp, and
+> is it indeed now fixed?
 
-Unfortunately I don't know how to reproduce it and I won't reboot that system 
-to apply a patch. I've checked my logs and can find only one other instance 
-of that message, from 5 months ago:
+I suck.  That commit message was horrid and I'm racking my brain now to
+remember what I meant.  Don't end up like me, kids.
 
-12 00:56:17 [461680.399422] =================================
-12 00:56:17 [461680.405467] [ INFO: inconsistent lock state ]
-12 00:56:17 [461680.409910] 2.6.23.9-git #44
-12 00:56:17 [461680.412876] ---------------------------------
-12 00:56:17 [461680.417315] inconsistent {softirq-on-W} -> {in-softirq-W} usage.
-12 00:56:17 [461680.423403] swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
-12 00:56:17 [461680.428450]  (xfrm_policy_gc_lock){-+..}, at: [<803355f6>] xfrm_policy_kill+0x63/0x9e
-12 00:56:17 [461680.436442] {softirq-on-W} state was registered at:
-12 00:56:17 [461680.441401]   [<80131712>] __lock_acquire+0x471/0xb96
-12 00:56:18 [461680.446591]   [<80132200>] lock_acquire+0x5d/0x75
-12 00:56:18 [461680.451431]   [<8038b2e7>] _spin_lock+0x35/0x42
-12 00:56:18 [461680.456098]   [<803355f6>] xfrm_policy_kill+0x63/0x9e
-12 00:56:18 [461680.461287]   [<8033570b>] xfrm_policy_delete+0x43/0x49
-12 00:56:18 [461680.466648]   [<802c0ef7>] sk_common_release+0x61/0x9e
-12 00:56:18 [461680.471925]   [<80310328>] udp_lib_close+0x8/0xa
-12 00:56:18 [461680.476677]   [<8031709d>] inet_release+0x42/0x48
-12 00:56:18 [461680.481519]   [<802bf269>] sock_release+0x17/0x80
-12 00:56:18 [461680.486453]   [<802bf726>] sock_close+0x2d/0x33
-12 00:56:18 [461680.491119]   [<80158838>] __fput+0xb9/0x185
-12 00:56:18 [461680.495527]   [<8015891a>] fput+0x16/0x18
-12 00:56:18 [461680.499668]   [<801561d3>] filp_close+0x54/0x5c
-12 00:56:18 [461680.504341]   [<80157334>] sys_close+0x6e/0xa6
-12 00:56:18 [461680.508916]   [<80102702>] sysenter_past_esp+0x5f/0x99
-12 00:56:18 [461680.514189]   [<ffffffff>] 0xffffffff
-12 00:56:18 [461680.517995] irq event stamp: 2352088264
-12 00:56:18 [461680.521915] hardirqs last  enabled at (2352088264): [<8011c626>] local_bh_enable_ip+0xc5/0xe1
-12 00:56:18 [461680.530552] hardirqs last disabled at (2352088263): [<8011c5bf>] local_bh_enable_ip+0x5e/0xe1
-12 00:56:18 [461680.539205] softirqs last  enabled at (2352088198): [<8011c07e>] __do_softirq+0xa3/0xa8
-12 00:56:18 [461680.547318] softirqs last disabled at (2352088207): [<8011c0b2>] do_softirq+0x2f/0x47
-12 00:56:18 [461680.555262] 
-12 00:56:18 [461680.555263] other info that might help us debug this:
-12 00:56:18 [461680.562055] no locks held by swapper/0.
-12 00:56:18 [461680.565975] 
-12 00:56:18 [461680.565977] stack backtrace:
-12 00:56:18 [461680.570523]  [<80103694>] show_trace_log_lvl+0x1a/0x2f
-12 00:56:18 [461680.575762]  [<8010421b>] show_trace+0x12/0x14
-12 00:56:18 [461680.580308]  [<80104232>] dump_stack+0x15/0x17
-12 00:56:18 [461680.584853]  [<801302fc>] print_usage_bug+0x143/0x14d
-12 00:56:18 [461680.590005]  [<8013093a>] mark_lock+0x125/0x44f
-12 00:56:18 [461680.594637]  [<801316a0>] __lock_acquire+0x3ff/0xb96
-12 00:56:18 [461680.599702]  [<80132200>] lock_acquire+0x5d/0x75
-12 00:56:18 [461680.604421]  [<8038b2e7>] _spin_lock+0x35/0x42
-12 00:56:18 [461680.608962]  [<803355f6>] xfrm_policy_kill+0x63/0x9e
-12 00:56:18 [461680.614027]  [<8033570b>] xfrm_policy_delete+0x43/0x49
-12 00:56:18 [461680.619267]  [<80336c54>] xfrm_policy_timer+0x199/0x1cc
-12 00:56:18 [461680.624590]  [<8011f1bd>] run_timer_softirq+0xf1/0x14e
-12 00:56:18 [461680.629828]  [<8011c02c>] __do_softirq+0x51/0xa8
-12 00:56:18 [461680.634548]  [<8011c0b2>] do_softirq+0x2f/0x47
-12 00:56:18 [461680.639093]  [<8011c2de>] irq_exit+0x3b/0x47
-12 00:56:18 [461680.643466]  [<8010d252>] smp_apic_timer_interrupt+0x69/0x74
-12 00:56:18 [461680.649228]  [<801031af>] apic_timer_interrupt+0x33/0x38
-12 00:56:18 [461680.654640]  [<8020b28b>] acpi_processor_idle+0x157/0x3e8
-12 00:56:18 [461680.660141]  [<80100b8e>] cpu_idle+0x46/0x6f
-12 00:56:18 [461680.664510]  [<803889e8>] rest_init+0x60/0x62
-12 00:56:18 [461680.668972]  [<804c2a16>] start_kernel+0x239/0x23f
-12 00:56:18 [461680.673870]  [<00000000>] 0x0
-12 00:56:18 [461680.677025]  =======================
+I've attached the message that I sent to the swsusp folks.  I never got
+a reply from that as far as I can tell.
 
--- 
-Simon Arlott
+http://sourceforge.net/mailarchive/forum.php?thread_name=1118682535.22631.22.camel%40localhost&forum_name=lhms-devel
+
+As I look at it now, it hasn't improved much since 2005.  Take a look at
+kernel/power/snapshot.c::copy_data_pages().  It still assumes that the
+list of zones that a system has is static.  Memory hotplug needs to be
+excluded while that operation is going on.
+
+page_is_saveable() checks for pfn_valid().  But, with memory hotplug,
+things can become invalid at any time since no references are held or
+taken on the page.  Or, a page that *was* invalid may become valid and
+get missed.
+
+The "missing a page" thing is probably correctable via the
+zone_span_seqbegin() locks.  The "page becoming invalid" thing is
+probably mostly fixable by acquiring a reference to the page itself.
+I'd need to look how the locking on the hot remove side is working these
+days to be much more constructive than that.
+
+-- Dave
+
+--=-1fB6XySKyXfNKA6Hp6XS
+Content-Disposition: inline
+Content-Description: Attached message - memory hotplug and software suspend
+Content-Type: message/rfc822
+
+Subject: memory hotplug and software suspend
+From: Dave Hansen <haveblue@us.ibm.com>
+To: swsusp@lister.fornax.hu
+Cc: lhms <lhms-devel@lists.sourceforge.net>
+Content-Type: text/plain
+Date: Mon, 13 Jun 2005 10:08:55 -0700
+Message-Id: <1118682535.22631.22.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 
+X-Evolution-Transport: smtp://haveblue@us.ibm.com
+X-Evolution-Account: nighthawk
+X-Evolution-Fcc: email://1096948158.24203.2@spirit/Sent
+X-Evolution-Format: text/plain
+X-Evolution-Source: imap://dave@localhost/
+Content-Transfer-Encoding: 7bit
+
+Software suspend folks,
+
+We're getting ready to submit memory hot-addition to the mainline
+kernel.  The patches that we currently have work with everything, except
+for the software suspend code currently in the kernel.
+
+The issue is that, during a swsusp operation, a hardware memory hotplug
+operation may occur.  For now, let's think about memory addition, and
+ignore removal.
+
+For example, let's look at copy_data_pages():
+
+        for_each_zone(zone) {
+		...
+                for (zone_pfn = 0; zone_pfn < zone->spanned_pages; ++zone_pfn) {
+
+In theory, while this loop is going on, a zone might be added, or a
+zone's range might be expanded, making zone_pfn not start at the
+beginning of a zone.  I think that can be fixed by using a new seqlock
+that I plan to submit:
+
+http://www.sr71.net/patches/2.6.12/2.6.12-rc5-mhp1/broken-out/C6-zone-span_seqlock.patch
+
+and holding the new pgdat->size_lock around the call to the saveable()
+function, to keep the pfn_valid().
+
+http://www.sr71.net/patches/2.6.12/2.6.12-rc5-mhp1/broken-out/C5.2-pgdat_size_lock.patch
+
+So, I have a couple of questions about swsusp.  Is the current code in
+2.6.12-rc6 going to be around for a while?  If not, does anyone have a
+problem with me making MEMORY_HOTPLUG depend on !SOFTWARE_SUSPEND for a
+bit, until everything settles out, and we can fix them to work together
+later?
+
+-- Dave
+
+--=-1fB6XySKyXfNKA6Hp6XS--
+
