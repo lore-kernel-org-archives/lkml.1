@@ -1,106 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYKCUkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYKCUmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbYKCUkU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 15:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbYKCUkE
+	id S1755828AbYKCUmq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 15:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126AbYKCUme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 15:40:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55433 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754184AbYKCUkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 15:40:01 -0500
-Date: Mon, 3 Nov 2008 12:37:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arthur Jones <ajones@riverbed.com>
-Cc: sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-Message-Id: <20081103123750.67c96224.akpm@linux-foundation.org>
-In-Reply-To: <20081103201428.GB30565@ajones-laptop.nbttech.com>
-References: <4908C951.2000309@redhat.com>
-	<20081103184426.GA31894@ajones-laptop.nbttech.com>
-	<20081103113318.35b0c266.akpm@linux-foundation.org>
-	<20081103201428.GB30565@ajones-laptop.nbttech.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Nov 2008 15:42:34 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:60620 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752174AbYKCUmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 15:42:33 -0500
+Message-ID: <490F6234.4060805@garzik.org>
+Date: Mon, 03 Nov 2008 15:42:28 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Subbu Seetharaman <subbus@serverengines.com>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
+References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org> <20081103201930.GB13299@kroah.com>
+In-Reply-To: <20081103201930.GB13299@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008 12:14:28 -0800
-Arthur Jones <ajones@riverbed.com> wrote:
-
-> Hi Andrew, ...
+Greg KH wrote:
+> On Mon, Nov 03, 2008 at 02:52:07PM -0500, Jeff Garzik wrote:
+>> Greg KH wrote:
+>>> On Mon, Nov 03, 2008 at 04:25:12AM -0800, Subbu Seetharaman wrote:
+>>>> If we could get more specific feedback about the areas that require
+>>>> cleanup, we can take care of them quickly.  
+>>>> Since the last posting, we have brought up the driver in a PPC system
+>>>> and fixed some endianness issues.  As soon as I have some specific
+>>>> feedback, we can update the driver with these fixes as well.
+>>>>
+>>>> Please let me know as soon as the driver is in the staging area.
+>>> Does someone have a pointer to the driver, so that we can see what is
+>>> needed to be done?
+>> It was in my email :)  Repeating,
+>>
+>> The 'benet' branch of
+>> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+>>
+>> It should be suitable for pulling directly into staging.
 > 
-> On Mon, Nov 03, 2008 at 11:33:18AM -0800, Andrew Morton wrote:
-> > [...]
-> > > --- a/fs/ext3/super.c
-> > > +++ b/fs/ext3/super.c
-> > > @@ -2392,7 +2392,13 @@ static int ext3_sync_fs(struct super_block *sb, int wait)
-> > >       if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
-> > >               if (wait)
-> > >                       log_wait_commit(EXT3_SB(sb)->s_journal, target);
-> > > -     }
-> > > +     } else if (wait)
-> > > +             /*
-> > > +              * We may have a commit in progress, clear it out
-> > > +              * before we go on...
-> > > +              */
-> > > +             ext3_force_commit(sb);
-> > > +
-> > >       return 0;
-> > >  }
-> > 
-> > Can we do
-> > 
-> >         sb->s_dirt = 0;
-> >         if (wait)
-> >                 ext3_force_commit(...);
-> >         else
-> >                 journal_start_commit(...);
+> Hm, call me extreemly stupid, but I don't see anything in that branch
+> for this driver.
 > 
-> I think this is what you had in mind:
-
-yup.
-
+> Here's what I did:
+>   git fetch git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git benet master:jeff
+>   git checkout jeff
 > 
-> diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-> index 18eaa78..2b48b85 100644
-> --- a/fs/ext3/super.c
-> +++ b/fs/ext3/super.c
-> @@ -2386,13 +2386,12 @@ static void ext3_write_super (struct super_block * sb)
->  
->  static int ext3_sync_fs(struct super_block *sb, int wait)
->  {
-> -	tid_t target;
-> -
->  	sb->s_dirt = 0;
-> -	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
-> -		if (wait)
-> -			log_wait_commit(EXT3_SB(sb)->s_journal, target);
-> -	}
-> +	if (wait)
-> +		ext3_force_commit(sb);
-> +	else
-> +		journal_start_commit(EXT3_SB(sb)->s_journal, NULL);
-> +
->  	return 0;
->  }
->  
-> I tried this and it too fixes the problem.  FWIW I agree it
-> looks better...
-> 
+> Even looking around at this tree with 'gitk --all' I don't see anything.
+> So what did I do wrong here?
 
-OK.  But still, questions remain.
+Well, the commit has been there long enough to mirror out, and show up 
+on the web interface:
 
-- should we clear s_dirt if log_wait_commit() didn't work?
+http://git.kernel.org/?p=linux/kernel/git/jgarzik/netdev-2.6.git;a=shortlog;h=benet
 
-- ext3_force_commit() clears s_dirt also
+therefore I am guessing there is some git user error here... but I could 
+not say what, since I am unfamiliar with your style of git invocation.
 
-- should ext3_sync_fs() be dropping the ext3_force_commit() return
-  value on the floor?
+I would recommend creating a new branch, or switching to an existing 
+one, and then pulling into it.  Pulling from a branch always works in my 
+experience, and that's what I've been doing since git was first written.
 
-This is all rather worrisome.
+URL=git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+git checkout -b tmp master
+git pull $URL benet
+
+Regards,
+
+	Jeff
+
+
+
