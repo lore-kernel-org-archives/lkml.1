@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYKCRCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbYKCRHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756716AbYKCRCT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 12:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbYKCRCL
+	id S1756716AbYKCRHv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 12:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbYKCRHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 12:02:11 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60791 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755907AbYKCRCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 12:02:10 -0500
-Date: Mon, 3 Nov 2008 15:01:15 -0200
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Use BIOS reboot on Toshiba Portege 4000
-Message-ID: <20081103170115.GC23893@blackpad>
-References: <200810312118.45368.arvidjaar@mail.ru> <20081103090843.GI11730@elte.hu> <490ECC4D.9090704@redhat.com> <20081103133306.GZ23893@blackpad> <490F0DA3.4090108@redhat.com> <m1myggdbzg.fsf@frodo.ebiederm.org>
+	Mon, 3 Nov 2008 12:07:42 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:56091 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755046AbYKCRHl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 12:07:41 -0500
+Date: Mon, 3 Nov 2008 12:07:40 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <tj@kernel.org>
+cc: Jens Axboe <jens.axboe@oracle.com>,
+       Mike Anderson <andmike@linux.vnet.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Problems with the block-layer timeouts
+In-Reply-To: <490F2953.30709@kernel.org>
+Message-ID: <Pine.LNX.4.44L0.0811031204490.2194-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1myggdbzg.fsf@frodo.ebiederm.org>
-X-Fnord: you can see the fnord
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 08:13:07AM -0800, Eric W. Biederman wrote:
-> Avi Kivity <avi@redhat.com> writes:
+On Tue, 4 Nov 2008, Tejun Heo wrote:
+
+> Hello, Alan Stern!  :-)
 > 
-> > Eduardo Habkost wrote:
-> >> We probably need to disable vmx on all CPUs, but emergency reboot skips
-> >> native_smp_send_stop() (where we could hook a virt_disable call in).
-> >>
-> >> As relying on IPIs defeats the whole point of emergency_restart, a proper
-> >> fix will need to use NMIs like the kdump code does.
-> >>
-> >
-> > They should use the same code; they have a similar environment at entry and
-> > reliability requirements for e_r are not greater than kdump's.
+> Alan Stern wrote:
+> > Even a "peek and fetch" interface might not be best, at least as far as
+> > timer issues are concerned.  Ideally, the timer shouldn't be started
+> > until the SCSI midlayer knows that the request has successfully been
+> > sent to the lower-level driver.
+> > 
+> > Therefore the best approach would be to EXPORT blk_add_timer().  It 
+> > should be called at the end of scsi_dispatch_cmd(), when the return 
+> > value from the queuecommand method is known to be 0.
+> > 
+> > With something like this, Mike's fix to end_that_request_last() 
+> > wouldn't be needed, since blkdev_dequeue_request() wouldn't 
+> > automatically start the timer.  It seems silly to start the timer when 
+> > you know you're just going to stop it immediately afterwards.
 > 
-> Just a sec.
+> Block layer currently doesn't know when a request is actually being
+> issued.  For timeout, blk_add_timer() can be exported but I think that
+> only aggravate the already highly fragmented block layer interface
+> (different users use it differently to the point of scary chaos).  For
+> minor example, block tracing considers elv_next_request() as the command
+> issue point which isn't quite true for SCSI and many other drivers.  For
+> that too, we can export the tracing interface but I don't think that's
+> the right direction.  More stuff are scheduled to be moved to block
+> layer and exporting more and more implementation details to block layer
+> users will have hard time scaling.
 > 
-> I think we are confusing two issues here.
+> I'm trying to convert all drivers to use the same command issue model -
+> elv_next_request() -> blkdev_dequeue_request() on actual issue ->
+> blk_end_request().  I have first draft of the conversion patchset but
+> it's gonna take me a few more days to review and test what I can as
+> several drivers (mostly legacy ones) are a bit tricky.
 > 
-> - Ordinary machine_restart which happens to call emergency_restart.
->   And is proceeded by machine_shutdown.
-> 
-> - And emergency_restart itself.
-> 
+> For the time being, SCSI layer is the only block layer timeout user and
+> completion w/o dequeuing is only for error cases in SCSI, so the
+> inefficiency there shouldn't matter too much.
 
-I am considering only emergency_restart() itself, that simply reboots
-the machine. All other cases should be calling the KVM reboot notifier,
-that disables virtualization on all CPUs.
+In fact, I have changed my mind.  Starting the timer after the command
+has been sent to the low-level driver would mean that the command might
+finish before the timer was started!
 
+So never mind.  I did confirm at least that your patch together with 
+Mike's fixed the problem I encountered last week.
 
-> To some extent I would be a lot happier if Alt-sysrq-r did what
-> was necessary to get into a context where it can call machine_restart
-> or even better kernel_restart().
-> emergency_restart() is a nice idea but is broken by design.
+I have a couple of small fixes for the block timer routines.  They'll 
+get posted separately later on.
 
-Eliminating emergency_restart() looks good in theory, but can we
-eliminate it on all cases? We need something for cases when we are on
-a possibly-broken state and we want to reboot the machine as reliably
-as possible.
+Alan Stern
 
-
-> 
-> That said.  If we can turn off vmx on that one processor.
-> That should be enough for the cpu to triple fault and let
-> the BIOS do what it needs to do on that cpu i.e. outb(magic, 0x92)
-> and toggle a motherboard level reset?
-> 
-> If I read the earlier comments correctly the deep issue is
-> that going through ACPI to reset systems is less reliable than
-> doing it the classic way.
-
-That's what Ingo suggested: instead of defaulting to ACPI reboot,
-disable VMX before rebooting if needed and get back to a safer default.
-
-That leads us to the NMI stuff: we need to disable VMX on all CPUs,
-and we can't use IPIs if we are on a possibly-broken state.
-
--- 
-Eduardo
