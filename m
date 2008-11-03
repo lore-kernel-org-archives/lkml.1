@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbYKCOQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbYKCORx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbYKCOQn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 09:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbYKCOQe
+	id S1756085AbYKCORx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 09:17:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbYKCORm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 09:16:34 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:55711 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752786AbYKCOQd (ORCPT
+	Mon, 3 Nov 2008 09:17:42 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:42167 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754918AbYKCORl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 09:16:33 -0500
-X-Sasl-enc: 08YPT/EEPp/wdwzoy3LV00m6dyytibJo5mKMiUqud2O8 1225721791
-Date: Mon, 3 Nov 2008 12:16:28 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: eeepc-laptop rfkill, stupid question #4
-Message-ID: <20081103141628.GB31078@khazad-dum.debian.net>
-References: <490B3BB5.8060801@tuffmail.co.uk> <20081031171126.GA17313@srcf.ucam.org> <490B4014.4040009@tuffmail.co.uk> <490B70A3.8010108@tuffmail.co.uk> <20081102040008.GB29606@khazad-dum.debian.net> <490D8C4E.3010201@tuffmail.co.uk> <20081102130655.GA12766@srcf.ucam.org>
+	Mon, 3 Nov 2008 09:17:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:newsgroups:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding:from
+         :sender;
+        b=l1Jmou+zBzrhw4GI3OJyM7vTlyswfrIjU0c8alQ4pYsi4ZQwOHbXcKSPewSGyT9Gw0
+         T07bRmKi6ejBY89hITKbz3eerhLeqWdPmrstcftdP4dJMbgr1mUqt6E52Q7RlJeMyS2+
+         v4U+cgjyFFdYRwo9zm+CwjrzxHR2B8yPdX3Rk=
+Message-ID: <490F07F8.10403@tuffmail.co.uk>
+Date: Mon, 03 Nov 2008 14:17:28 +0000
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081102130655.GA12766@srcf.ucam.org>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Newsgroups: gmane.linux.acpi.devel,gmane.linux.kernel
+To: Alexey Starikovskiy <aystarik@gmail.com>
+CC: Maciej Rutecki <maciej.rutecki@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Robert Hancock <hancockr@shaw.ca>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "fabio.comolli@gmail.com" <fabio.comolli@gmail.com>
+Subject: Re: Linux 2.6.28-rc1] ACPI Warning (nspredef-0852)[...]
+References: <fa.1HaqObZirROiyqr922A7hRDVc54@ifi.uio.no>	 <fa.Rzh43vSl9NX1QQ2nOYQSgEJcZAw@ifi.uio.no> <49035313.9080309@shaw.ca>	 <200810252004.01274.rjw@sisk.pl>	 <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>	 <8db1092f0810271319s5d15c2ffrab37a548fa388738@mail.gmail.com>	 <1225187050.5189.146.camel@yakui_zhao.sh.intel.com>	 <8db1092f0810281245k14555e26w30547cf17fde534f@mail.gmail.com> <8db1092f0811030406i48150022gb5b444710d749b43@mail.gmail.com> <490EEDDD.4010203@gmail.com>
+In-Reply-To: <490EEDDD.4010203@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Alan Jenkins <aj504@student.cs.york.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Nov 2008, Matthew Garrett wrote:
-> resume path. However, as you point out, right now it's possible for the 
-> user to change the hardware state in the BIOS and cause the two to get 
-> out of sync. That's certainly not ideal.
+Alexey Starikovskiy wrote:
+> Maciej Rutecki wrote:
+>> Problem still exists on 2.6.28-rc3:
+>> ACPI: EC: missing confirmations, switch off interrupt mode.
+>> ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for
+>> [EmbeddedControl] [20080926]
+>> ACPI Error (psparse-0524): Method parse/execution failed [\_TZ_.C31E]
+>> (Node f7019858), AE_TIME
+>> ACPI Error (psparse-0524): Method parse/execution failed
+>> [\_TZ_.TZ3_._TMP] (Node f7019ed0), AE_TIME
+>>
+>> But I don't see any functional problems.
+>>
+>> Regards
+>>   
+> please see #11917
 
-In fact, it is a bug.
+Um, I think you mean #11896.  I confess I don't understand why they are considered duplicates of each other, they have different error messages and patches.
 
-Can you read the state?  If so, you need to unconditionally do so on resume
-(from sleep or hibernation) and rfkill_force_state() it.
+Maciej: if you look at #11896, you will find patches from two different people.  If you're interested... well, let's just say I suggest you try Alex's patch first :).
 
-If you CANNOT read the state, you will have to force the radio to a known
-state somehow.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Alan
