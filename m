@@ -1,45 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYKCJck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYKCJeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYKCJck (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855AbYKCJcb
+	id S1755335AbYKCJeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 04:34:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbYKCJeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:32:31 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45052 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640AbYKCJca (ORCPT
+	Mon, 3 Nov 2008 04:34:11 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:6192 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754869AbYKCJeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:32:30 -0500
-Date: Mon, 3 Nov 2008 04:32:28 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Chinner <dgc@sgi.com>, Tiago Maluta <maluta_tiago@yahoo.com.br>
-Subject: Re: [Bug #11805] mounting XFS produces a segfault
-Message-ID: <20081103093228.GA3485@infradead.org>
-References: <Sl8SUNhCbfL.A.O5H.yueDJB@chimera> <4xS1r6m15_B.A.m8.KveDJB@chimera>
+	Mon, 3 Nov 2008 04:34:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=BHA3fLgNKfdRg88J0VqnHzXoh7UEbLEeqo57xzbWwBdffaglUYxk/iDJOEp4RJtD9s
+         WxEd7J2HJ1+KDEPtdUZwbLskDQ0hDjlDpRzsEMixFWVGL5YaliaXCiM+ZERS8KbU6SDz
+         +dZnBeFpOqxGROjMmxnHHChf94SKMxRnVMWv4=
+Message-ID: <9929d2390811030134ybe1d8aaq43b5a533f73fee71@mail.gmail.com>
+Date: Mon, 3 Nov 2008 01:34:06 -0800
+From: "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
+To: andi@lisas.de
+Subject: Re: [RFC/PATCH] e100 driver didn't support any MII-less PHYs...
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, bunk@kernel.org
+In-Reply-To: <20081103080430.GA32459@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4xS1r6m15_B.A.m8.KveDJB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <20071228235118.GA31059@rhlx01.hs-esslingen.de>
+	 <477732A5.5020501@intel.com>
+	 <20080101200908.GA14805@rhlx01.hs-esslingen.de>
+	 <20080129230315.GA13389@rhlx01.hs-esslingen.de>
+	 <479FB225.7090604@intel.com>
+	 <20080130064909.GA19793@rhlx01.hs-esslingen.de>
+	 <47A0A713.7030304@intel.com>
+	 <20081103080430.GA32459@rhlx01.hs-esslingen.de>
+X-Google-Sender-Auth: f79142949e2286ba
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 02, 2008 at 05:49:36PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.26 and 2.6.27.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> be listed and let me know (either way).
+On Mon, Nov 3, 2008 at 12:04 AM, Andreas Mohr
+<andim2@users.sourceforge.net> wrote:
+> Hi,
+>
+> On Wed, Jan 30, 2008 at 08:34:27AM -0800, Kok, Auke wrote:
+>> Andreas Mohr wrote:
+>> > Hi,
+>> >
+>> > On Tue, Jan 29, 2008 at 03:09:25PM -0800, Kok, Auke wrote:
+>> >> Andreas Mohr wrote:
+>> >>> Perhaps it's useful to file a bug/patch
+>> >>> on http://sourceforge.net/projects/e1000/ ? Perhaps -mm testing?
+>> >> I wanted to push this though our testing labs first which has not happened due to
+>> >> time constraints - that should quickly at least confirm that the most common nics
+>> >> work OK after the change with your patch. I'll try and see if we can get this
+>> >> testing done soon.
+>> >
+>> > Oh, full-scale regression testing even? Nice idea...
+>> > Would optionally be even better if during hardware tests one could also
+>> > dig out some i82503-based card (or additional MII-less cards?)
+>> > since I didn't really make any effort yet to try to make them all
+>> > recognized/supported by my patch already (would have been out of scope anyway
+>> > since I have this single card only).
+>>
+>> the problem is that I think that most of those (mii-less cards) are customly
+>> designed by OEM's that buy the silicon and glue on a different interface and we
+>> usually do not carry those designs in our labs apart from a few exceptions. So, I
+>> can at least touch the common hardware in testing, but not the exotic stuff.
+>
+> Any update on how to get this support in? (it's not available in 2.6.28-rc2)
+>
+> As it stands, I'm not the only one who would need this...
+>
+> Thanks!
+>
+> Andreas Mohr
+> --
+>
 
-The patch is in the XFS development tree.  Given that the maintainers
-didn't manage to get it into the merge window it might make sense to
-submit this fix individually.  Dave, what do you think about sending
-this patch out directly to Linus?
+I have a patch from Auke, which deals with the MII-less PHY's in e100.
+ I will check on the status of the patch and either let you know the
+status or will be submitting a patch soon to netdev to address this
+issue.
 
+-- 
+Cheers,
+Jeff
