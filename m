@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbYKCM0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYKCM3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbYKCM0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 07:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYKCM0L
+	id S1755538AbYKCM3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 07:29:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYKCM3l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 07:26:11 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:17107 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755265AbYKCM0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 07:26:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=b+yAFqUiDXrapM6UccJkQmmgqmu19/irvLd8qLOg7kCjxA7YHx31C6hB4EN0dSsVA0
-         StULMkwn/OnrsgMrdTzrgtx9AN+Ejyikm6+YnWy5osZy7oP9Q2NOG9ex+xRtu9b9zT5n
-         Wfx2MsJU4yqVeiavtLVt0SMYAcHVES5jS/Tbo=
-Message-ID: <490EEDDD.4010203@gmail.com>
-Date: Mon, 03 Nov 2008 15:26:05 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, Robert Hancock <hancockr@shaw.ca>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "fabio.comolli@gmail.com" <fabio.comolli@gmail.com>
-Subject: Re: Linux 2.6.28-rc1] ACPI Warning (nspredef-0852)[...]
-References: <fa.1HaqObZirROiyqr922A7hRDVc54@ifi.uio.no>	 <fa.Rzh43vSl9NX1QQ2nOYQSgEJcZAw@ifi.uio.no> <49035313.9080309@shaw.ca>	 <200810252004.01274.rjw@sisk.pl>	 <8db1092f0810251151l4c7f9382r34defa6d4d6ee24c@mail.gmail.com>	 <8db1092f0810271319s5d15c2ffrab37a548fa388738@mail.gmail.com>	 <1225187050.5189.146.camel@yakui_zhao.sh.intel.com>	 <8db1092f0810281245k14555e26w30547cf17fde534f@mail.gmail.com> <8db1092f0811030406i48150022gb5b444710d749b43@mail.gmail.com>
-In-Reply-To: <8db1092f0811030406i48150022gb5b444710d749b43@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 3 Nov 2008 07:29:41 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:48847 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbYKCM3l (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 07:29:41 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Pengfei Hu <hpfei.cn@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.27: add a kernel hacking option to protect kernel memory between different modules
+In-Reply-To: Your message of "Sun, 02 Nov 2008 22:15:11 +0800."
+             <a5f59d880811020615x297ff832kbce705d07318dfa2@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <a5f59d880811020615x297ff832kbce705d07318dfa2@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1225715378_3531P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 03 Nov 2008 07:29:39 -0500
+Message-ID: <67704.1225715379@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej Rutecki wrote:
-> Problem still exists on 2.6.28-rc3:
-> ACPI: EC: missing confirmations, switch off interrupt mode.
-> ACPI Exception (evregion-0419): AE_TIME, Returned by Handler for
-> [EmbeddedControl] [20080926]
-> ACPI Error (psparse-0524): Method parse/execution failed [\_TZ_.C31E]
-> (Node f7019858), AE_TIME
-> ACPI Error (psparse-0524): Method parse/execution failed
-> [\_TZ_.TZ3_._TMP] (Node f7019ed0), AE_TIME
->
-> But I don't see any functional problems.
->
-> Regards
->   
-please see #11917
+--==_Exmh_1225715378_3531P
+Content-Type: text/plain; charset=us-ascii
+
+On Sun, 02 Nov 2008 22:15:11 +0800, Pengfei Hu said:
+
+> efficiency and simplicity. But now more and more embed application use
+> linux. In the traditional embed system, all the task run in kernel and
+> share the memory. Using kernel thread can immigrate these application
+> easily. So there will be many task run in the kernel.
+
+So the target is embedded systems doing all sorts of stupid-crazy kernel
+thread tricks...
+
+> +          Change page table's present flag to prevent other module's accidental
+> +          access. This results in a large slowdown and waste more memory, but
+> +          helps to find certain types of memory corruptions.
+
+And your solution is to create a large slowdown, which will just make them
+look for ways to make it go faster... perhaps including even *more* stupid-crazy
+kernel thread tricks?
+
+Can you point at any bugs/failure modes that this patch would detect, but
+would *not* be found by any of the already-existing memory debugging tools?
+
+Is it at all sane to expect that a reasonable setting can be done for
+things like slab and vmalloc?  What happens when multiple modules allocate
+out of the same slab, or even worse, get vmalloc/kmalloc for *different*
+things on the same physical page?  It seems that unless you can separate
+memory allocations by module, this isn't going to provide a lot of help in
+finding memory allocation/usage issues.
+
+And I won't even *start* on all the data structures in the kernel that are
+shared across modules - do a 'cat /proc/slabinfo' or equivalent, and ask
+yourself how many of those you could tag as "private to module A", or
+"read/write by B, read-only by C, no-access by others".
+
+You *really* don't want to re-invent the IBM MVS-style "GETMAIN/FREEMAIN SP=nnn"
+mess. Trust me on this one. ;)
+
+
+--==_Exmh_1225715378_3531P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJDu6ycC3lWbTT17ARApslAJ44w1HEpzjkQ5MPkM5H5+CNxkE9YgCg3lo0
+xVNEbai6kkucFhi/P1RMSwg=
+=vxsA
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1225715378_3531P--
