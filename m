@@ -1,43 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYKCWys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbYKCW4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbYKCWys (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 17:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYKCWyi
+	id S1756409AbYKCW4R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 17:56:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYKCW4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 17:54:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54859
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753663AbYKCWyh (ORCPT
+	Mon, 3 Nov 2008 17:56:00 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:50995 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753431AbYKCWz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 17:54:37 -0500
-Date: Mon, 03 Nov 2008 14:54:13 -0800 (PST)
-Message-Id: <20081103.145413.38153968.davem@davemloft.net>
-To: marcel@holtmann.org
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes for 2.6.28-rc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
-References: <20081103205121.GA6005@havoc.gtf.org>
-	<B9DCBB9E-9DE3-4114-9FFC-7A7C0C3DA920@holtmann.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Nov 2008 17:55:59 -0500
+Date: Mon, 3 Nov 2008 17:55:44 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ajones@riverbed.com, sandeen@redhat.com, linux-ext4@vger.kernel.org,
+       sct@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20081103225544.GH18117@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, ajones@riverbed.com,
+	sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
+	linux-kernel@vger.kernel.org
+References: <20081103184426.GA31894@ajones-laptop.nbttech.com> <20081103113318.35b0c266.akpm@linux-foundation.org> <20081103201428.GB30565@ajones-laptop.nbttech.com> <20081103123750.67c96224.akpm@linux-foundation.org> <20081103205854.GC30565@ajones-laptop.nbttech.com> <20081103131313.e9ae2f93.akpm@linux-foundation.org> <20081103211929.GA18117@mit.edu> <20081103132735.9e63a3d0.akpm@linux-foundation.org> <20081103220144.GD18117@mit.edu> <20081103142706.92e3a2ae.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081103142706.92e3a2ae.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcel Holtmann <marcel@holtmann.org>
-Date: Mon, 3 Nov 2008 23:07:58 +0100
+On Mon, Nov 03, 2008 at 02:27:06PM -0800, Andrew Morton wrote:
+> It should clear s_dirt before doing the "i/o", methinks?
 
-> are you also queuing patches for drivers/net/usb/hso.c, because the
-> current state of that driver is fully broken. It oopses and shows up
-> with a WLAN RFKILL switch instead of WWAN. Also it has some weird
-> disconnect race with the TTY layer. Some patches have been posted,
-> but seems that nobody has picked them up so far.
+Yep, good point.  As I mentioned earlier, though, I'm about 99% sure
+that the right fix is to remove all mention of s_dirt entirely, and in
+fact we can make super_operations.write_super be NULL for ext3 and
+ext4.  But for now we should just keep it in its usual place for now,
+and save that for a cleanup commit later on.
 
-The person submitting those patches is, frankly, creating a lot
-of confusion.
+						- Ted
 
-He can't clone my tree or pull from it, then Greg KH tries to
-take the fixes from him, and that doesn't go smoothly either.
+commit b20506dc713db1105287b691390563d2aace6d84
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Mon Nov 3 17:54:41 2008 -0500
+
+    ext4: wait on all pending commits in ext4_sync_fs()
+    
+    In ext4_sync_fs, we only wait for a commit to finish if we started it,
+    but there may be one already in progress which will not be synced.
+    
+    In the case of a data=ordered umount with pending long symlinks which
+    are delayed due to a long list of other I/O on the backing block
+    device, this causes the buffer associated with the long symlinks to
+    not be moved to the inode dirty list in the second phase of
+    fsync_super.  Then, before they can be dirtied again, kjournald exits,
+    seeing the UMOUNT flag and the dirty pages are never written to the
+    backing block device, causing long symlink corruption and exposing new
+    or previously freed block data to userspace.
+    
+    To ensure all commits are synced, we flush all journal commits now
+    when sync_fs'ing ext4.
+    
+    Signed-off-by: Arthur Jones <ajones@riverbed.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+    Cc: Eric Sandeen <sandeen@redhat.com>
+    Cc: <linux-ext4@vger.kernel.org>
+
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 97cb896..5b5e38e 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2907,12 +2907,9 @@ int ext4_force_commit(struct super_block *sb)
+ /*
+  * Ext4 always journals updates to the superblock itself, so we don't
+  * have to propagate any other updates to the superblock on disk at this
+- * point.  Just start an async writeback to get the buffers on their way
+- * to the disk.
+- *
+- * This implicitly triggers the writebehind on sync().
++ * point.  (We can probably nuke this function altogether, and remove
++ * any mention to sb->s_dirt in all of fs/ext4; eventual cleanup...)
+  */
+-
+ static void ext4_write_super(struct super_block *sb)
+ {
+ 	if (mutex_trylock(&sb->s_lock) != 0)
+@@ -2922,15 +2919,15 @@ static void ext4_write_super(struct super_block *sb)
+ 
+ static int ext4_sync_fs(struct super_block *sb, int wait)
+ {
+-	tid_t target;
++	int ret;
+ 
+ 	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
+ 	sb->s_dirt = 0;
+-	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
+-		if (wait)
+-			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
+-	}
+-	return 0;
++	if (wait)
++		ret = ext4_force_commit(sb);
++	else
++		ret = jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, NULL);
++	return ret;
+ }
+ 
+ /*
