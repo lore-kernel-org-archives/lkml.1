@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYKCAdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbYKCApW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754453AbYKCAdz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Nov 2008 19:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYKCAdq
+	id S1754473AbYKCApW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Nov 2008 19:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYKCApI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Nov 2008 19:33:46 -0500
-Received: from taverner.CS.Berkeley.EDU ([128.32.168.222]:59708 "EHLO
-	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbYKCAdq (ORCPT
+	Sun, 2 Nov 2008 19:45:08 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50921 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754024AbYKCApH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Nov 2008 19:33:46 -0500
-To: linux-kernel@vger.kernel.org
-Path: not-for-mail
-From: daw@cs.berkeley.edu (David Wagner)
-Newsgroups: isaac.lists.linux-kernel
-Subject: Re: [PATCH] crypto: Add Skein hash algorithm variants
-Date: Mon, 3 Nov 2008 00:33:45 +0000 (UTC)
-Organization: University of California, Berkeley
-Message-ID: <gelgt9$7fk$1@taverner.cs.berkeley.edu>
-References: <20081102161506.GA21940@havoc.gtf.org>
-Reply-To: daw-news@cs.berkeley.edu (David Wagner)
-NNTP-Posting-Host: taverner.cs.berkeley.edu
-X-Trace: taverner.cs.berkeley.edu 1225672425 7668 128.32.168.222 (3 Nov 2008 00:33:45 GMT)
-X-Complaints-To: news@taverner.cs.berkeley.edu
-NNTP-Posting-Date: Mon, 3 Nov 2008 00:33:45 +0000 (UTC)
-X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
-Originator: daw@taverner.cs.berkeley.edu (David Wagner)
+	Sun, 2 Nov 2008 19:45:07 -0500
+Date: Sun, 2 Nov 2008 19:45:04 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: use raw spinlocks instead of spinlocks
+In-Reply-To: <490E3F73.1000405@gmail.com>
+Message-ID: <alpine.DEB.1.10.0811021940030.32371@gandalf.stny.rr.com>
+References: <490E3F73.1000405@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik  wrote:
->This is the first draft of the Skein hash algorithm that was recently
->mentioned, as a prominent submission to NIST's SHA-3 competition.
+On Mon, 3 Nov 2008, Frederic Weisbecker wrote:
 
-Adding Skein to the kernel makes no sense, from a cryptographic point of
-view, at this point in time.  The appropriate point would be after it
-has been analyzed and vetted by crypto experts over a period of time.
-I suspect even the designers of Skein would advise you not to use the
-algorithm until other cryptographers have had a chance to examine it and
-it has been subjected to cryptanalysis over a period of time.  The same
-goes for all new submissions to the NIST competition.
+> When I tried to figure out why my experimental function's return tracer was hanging, I discovered
+> that it was partially caused by the fact that the ring buffer might use the usual spinlocks during
+> entry insertion.
+> 
+> ring_buffer_lock_reserve() -> rb_reserve_next_event() -> __rb_reserve_next() -> spin_lock_irqsave()
+> 
+> Since this last function is traced, the result is a recursion during the trace. I guess it
+> happens too with the function tracer.
+> 
+> We should use the raw_spin_locks which are not traced.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+
+Frederic,
+
+Ingo has been very adamant about not using raw_spin_locks in the ring 
+buffers. My original code did this, and he nacked it. The reason being 
+(and he eventually convinced me) was that by using raw, we not only do not 
+trace the locking, we also remove the lock checking. This code can easily 
+produce deadlocks, so we do not want the lock checking removed.
+
+The real fix is to find a way in your tracer to detect the recursion, and 
+be able to prevent it. Like the atomic disables I use in ftrace. It does 
+the same thing. It leaves the lockdep checking on its own locks, but can 
+also detect if the lock checking caused it to recurse. When the recusion 
+is detected, the tracer itself will not trace.
+
+[ I hope this makes sense, I'm writing this on 3 hours of sleep ]
+
+Thanks,
+
+-- Steve
+
