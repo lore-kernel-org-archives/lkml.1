@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbYKCJmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYKCJqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755285AbYKCJmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 04:42:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbYKCJmb
+	id S1755235AbYKCJqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 04:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYKCJqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 04:42:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50456 "EHLO mx3.mail.elte.hu"
+	Mon, 3 Nov 2008 04:46:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37415 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754652AbYKCJma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 04:42:30 -0500
-Date: Mon, 3 Nov 2008 10:41:59 +0100
+	id S1754652AbYKCJqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 04:46:44 -0500
+Date: Mon, 3 Nov 2008 10:46:27 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       ananth@in.ibm.com, jkenisto@us.ibm.com, mhiramat@redhat.com
-Subject: Re: [PATCH] ftrace: use kretprobe trampoline name to test in output
-Message-ID: <20081103094159.GA10400@elte.hu>
-References: <483C53EE.2060602@gmail.com> <alpine.DEB.1.10.0810302227360.21031@gandalf.stny.rr.com> <alpine.DEB.1.10.0810311036130.20157@gandalf.stny.rr.com> <863e9df20810310832uadf4daay7b5a98b677d86561@mail.gmail.com> <alpine.DEB.1.10.0810311142220.22451@gandalf.stny.rr.com> <863e9df20810311233j13f996b8qa185cceddbd90849@mail.gmail.com> <alpine.DEB.1.10.0810311541280.28774@gandalf.stny.rr.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH] fix compile breakage caused by x86: add
+	->pre_time_init to x86_quirks
+Message-ID: <20081103094627.GB10400@elte.hu>
+References: <1225400831.19324.21.camel@localhost.localdomain> <20081030222308.GM30303@elte.hu> <1225475246.3264.10.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0810311541280.28774@gandalf.stny.rr.com>
+In-Reply-To: <1225475246.3264.10.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,40 +38,37 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> [
->   Ingo,
+> On Thu, 2008-10-30 at 23:23 +0100, Ingo Molnar wrote:
+> > * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > 
+> > > >From da69eaed98248bf4b29e94d62a4e01a5c3758669 Mon Sep 17 00:00:00 2001
+> > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > Date: Wed, 29 Oct 2008 13:14:29 -0500
+> > > Subject: [VOYAGER] x86: add voyager pre_time_init_hook
+> > > 
+> > > This was introduced by:
+> > > 
+> > > Author: Yinghai Lu <yhlu.kernel@gmail.com>
+> > > Date:   Sat Jul 19 18:02:26 2008 -0700
+> > > 
+> > >     x86: add ->pre_time_init to x86_quirks
+> > > 
+> > > In theory, voyager could also make use of the x86_quirks hooks but,
+> > > unfortunately, they're not set up correctly for that to happen yet.
+> > 
+> > okay, so how about setting them up that way instead? That way we win 
+> > twice: it becomes a tiny bit easier to add Voyager support to the 
+> > generic platform code, and we also fix the build breakage.
 > 
->   Can you get this ready for 2.6.28. Without this fix, tracing
->   breaks the ia64 build.
-> ]
-> 
-> When a function is kprobed, the return address is set to the
-> kprobe_trampoline, or something similar. This caused the output
-> of the trace to look confusing when the parent seemed to be this
-> "kprobe_trampoline" function.
-> 
-> To fix this, Abhishek Sagar added a test of the instruction pointer
-> of the parent to see if it matched the kprobe_trampoline. If it
-> did, the output would print a "[unknown/kretprobe'd]" instead.
-> 
-> Unfortunately, not all archs do this the same way, and the trampoline
-> function may not be exported, which causes failures in builds.
-> 
-> This patch will compare the name instead of the pointer to see
-> if it matches. This prevents us from depending on a function from
-> being exported, and should work on all archs. The worst that can
-> happen is that an arch might use a different name and then we
-> go back to the confusing output. At least the arch will still build.
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> Tested-by: Abhishek Sagar <sagar.abhishek@gmail.com>
-> Acked-by: Abhishek Sagar <sagar.abhishek@gmail.com>
-> ---
->  kernel/trace/trace.c |   39 +++++++++++++++++++++------------------
->  1 file changed, 21 insertions(+), 18 deletions(-)
+> Sure, it should be possible ... but reworking the current quirk 
+> infrastructure would definitely be an enhancement, whereas this is a 
+> compile fix for 2.6.28-rc
 
-applied to tip/tracing/urgent, thanks!
+but it's an ugly compile fix that just prolongues the pain that the 
+subarch code has been inflicting on us for many cycles. Please fix the 
+underlying problem properly - it should not be hard and it will 
+definitely be cleaner end result.
 
 	Ingo
