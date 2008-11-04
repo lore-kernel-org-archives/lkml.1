@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbYKDXs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYKDXtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759400AbYKDXs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:48:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYKDXjd
+	id S1757547AbYKDXtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbYKDXjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:39:33 -0500
-Received: from mail.suse.de ([195.135.220.2]:47593 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:39:37 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52067 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757573AbYKDXjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:39:31 -0500
-Date: Tue, 4 Nov 2008 15:32:03 -0800
+	id S1757010AbYKDXjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:39:36 -0500
+Date: Tue, 4 Nov 2008 15:32:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 30/57] powerpc: Dont use a 16G page if beyond mem= limits
-Message-ID: <20081104233203.GE659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 31/57] i2c: The i2c mailing list is moving
+Message-ID: <20081104233205.GF659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-don-t-use-a-16g-page-if-beyond-mem-limits.patch"
+Content-Disposition: inline; filename="i2c-the-i2c-mailing-list-is-moving.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,36 +38,124 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jon Tollefson <kniht@us.ibm.com>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 4792adbac9eb41cea77a45ab76258ea10d411173 upstream
+commit 846557d3ceb6c7493e090921db5d6158ec237228 upstream
 
-If mem= is used on the boot command line to limit memory then the memory block where a 16G page resides may not be available.
+Replace all references to the old i2c mailing list.
 
-Thanks to Michael Ellerman for finding the problem.
+This isn't a bug fix, but I would hate to miss bug reports because
+they're sent to a dead mailing list.
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/mm/hash_utils_64.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ Documentation/i2c/busses/i2c-sis96x |    2 +-
+ MAINTAINERS                         |   20 ++++++++++----------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -381,8 +381,10 @@ static int __init htab_dt_scan_hugepage_
- 	printk(KERN_INFO "Huge page(16GB) memory: "
- 			"addr = 0x%lX size = 0x%lX pages = %d\n",
- 			phys_addr, block_size, expected_pages);
--	lmb_reserve(phys_addr, block_size * expected_pages);
--	add_gpage(phys_addr, block_size, expected_pages);
-+	if (phys_addr + (16 * GB) <= lmb_end_of_DRAM()) {
-+		lmb_reserve(phys_addr, block_size * expected_pages);
-+		add_gpage(phys_addr, block_size, expected_pages);
-+	}
- 	return 0;
- }
+--- a/Documentation/i2c/busses/i2c-sis96x
++++ b/Documentation/i2c/busses/i2c-sis96x
+@@ -42,7 +42,7 @@ I suspect that this driver could be made
+ chipsets as well: 635, and 635T. If anyone owns a board with those chips
+ AND is willing to risk crashing & burning an otherwise well-behaved kernel
+ in the name of progress... please contact me at <mhoffman@lightlink.com> or
+-via the project's mailing list: <i2c@lm-sensors.org>.  Please send bug
++via the linux-i2c mailing list: <linux-i2c@vger.kernel.org>.  Please send bug
+ reports and/or success stories as well.
  
+ 
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -360,7 +360,7 @@ S:	Maintained
+ ALI1563 I2C DRIVER
+ P:	Rudolf Marek
+ M:	r.marek@assembler.cz
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ ALPHA PORT
+@@ -1681,7 +1681,7 @@ FREESCALE I2C CPM DRIVER
+ P:	Jochen Friedrich
+ M:	jochen@scram.de
+ L:	linuxppc-dev@ozlabs.org
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ FREESCALE SOC FS_ENET DRIVER
+@@ -1982,7 +1982,7 @@ S:	Maintained
+ I2C/SMBUS STUB DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ I2C SUBSYSTEM
+@@ -1990,14 +1990,14 @@ P:	Jean Delvare (PC drivers, core)
+ M:	khali@linux-fr.org
+ P:	Ben Dooks (embedded platforms)
+ M:	ben-linux@fluff.org
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ T:	quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
+ S:	Maintained
+ 
+ I2C-TINY-USB DRIVER
+ P:	Till Harbaum
+ M:	till@harbaum.org
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ T:	http://www.harbaum.org/till/i2c_tiny_usb
+ S:	Maintained
+ 
+@@ -3070,7 +3070,7 @@ S:	Maintained
+ OPENCORES I2C BUS DRIVER
+ P:	Peter Korsgaard
+ M:	jacmet@sunsite.dk
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ ORACLE CLUSTER FILESYSTEM 2 (OCFS2)
+@@ -3144,7 +3144,7 @@ S:	Maintained
+ PA SEMI SMBUS DRIVER
+ P:	Olof Johansson
+ M:	olof@lixom.net
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ PARALLEL PORT SUPPORT
+@@ -3280,7 +3280,7 @@ S:	Maintained
+ PNXxxxx I2C DRIVER
+ P:	Vitaly Wool
+ M:	vitalywool@gmail.com
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ PPP PROTOCOL DRIVERS AND COMPRESSORS
+@@ -3725,7 +3725,7 @@ S:	Maintained
+ SIS 96X I2C/SMBUS DRIVER
+ P:	Mark M. Hoffman
+ M:	mhoffman@lightlink.com
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ SIS FRAMEBUFFER DRIVER
+@@ -4445,7 +4445,7 @@ S:	Maintained
+ VIAPRO SMBUS DRIVER
+ P:	Jean Delvare
+ M:	khali@linux-fr.org
+-L:	i2c@lm-sensors.org
++L:	linux-i2c@vger.kernel.org
+ S:	Maintained
+ 
+ VIA VELOCITY NETWORK DRIVER
 
 -- 
