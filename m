@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbYKDX7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYKDX6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbYKDX7E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758901AbYKDXzz
+	id S1759622AbYKDX6p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:58:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbYKDXl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:55:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42186 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760905AbYKDXzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:55:53 -0500
-Date: Tue, 4 Nov 2008 15:54:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH] fork.c: cleanup for copy_sighand()
-Message-Id: <20081104155455.f0b0e5b1.akpm@linux-foundation.org>
-In-Reply-To: <490AC707.1060808@cn.fujitsu.com>
-References: <490AC707.1060808@cn.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 18:41:27 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52384 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757473AbYKDXlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:41:25 -0500
+Date: Tue, 4 Nov 2008 15:33:40 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Serge Hallyn <serue@us.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>
+Subject: [patch 57/57] file caps: always start with clear bprm->caps_*
+Message-ID: <20081104233340.GF659@suse.de>
+References: <20081104232144.186593464@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="file-caps-always-start-with-clear-bprm-caps_.patch"
+In-Reply-To: <20081104233028.GA659@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008 16:51:19 +0800
-Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-> Check CLONE_SIGHAND only is enough, because combination of CLONE_THREAD and
-> CLONE_SIGHAND is already done in copy_process().
-> 
-> Impact: cleanup, no functionality changed
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  kernel/fork.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index f608356..36a0dac 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -741,7 +741,7 @@ static int copy_sighand(unsigned long clone_flags, struct task_struct *tsk)
->  {
->  	struct sighand_struct *sig;
->  
-> -	if (clone_flags & (CLONE_SIGHAND | CLONE_THREAD)) {
-> +	if (clone_flags & CLONE_SIGHAND) {
->  		atomic_inc(&current->sighand->count);
->  		return 0;
->  	}
+------------------
+From: Serge Hallyn <serue@us.ibm.com>
 
-OK, it appears to be correct and might yield a tiny speedup on some
-architectures.
+commit 3318a386e4ca68c76e0294363d29bdc46fcad670 upstream
 
-But whether this change is desirable from a clarity and maintainability
-point of view is unclear to me.  Let's add the cc's..
+While Linux doesn't honor setuid on scripts.  However, it mistakenly
+behaves differently for file capabilities.
 
+This patch fixes that behavior by making sure that get_file_caps()
+begins with empty bprm->caps_*.  That way when a script is loaded,
+its bprm->caps_* may be filled when binfmt_misc calls prepare_binprm(),
+but they will be cleared again when binfmt_elf calls prepare_binprm()
+next to read the interpreter's file capabilities.
+
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: David Howells <dhowells@redhat.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ security/commoncap.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -279,10 +279,10 @@ static int get_file_caps(struct linux_bi
+ 	struct vfs_cap_data vcaps;
+ 	struct inode *inode;
+ 
+-	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
+-		bprm_clear_caps(bprm);
++	bprm_clear_caps(bprm);
++
++	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
+ 		return 0;
+-	}
+ 
+ 	dentry = dget(bprm->file->f_dentry);
+ 	inode = dentry->d_inode;
+
+-- 
