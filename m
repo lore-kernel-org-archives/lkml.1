@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYKDQzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYKDQ4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbYKDQzu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbYKDQzQ
+	id S1757980AbYKDQ4x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbYKDQ4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:55:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52773 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757229AbYKDQzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:55:13 -0500
-Message-ID: <49107E2C.8090803@redhat.com>
-Date: Tue, 04 Nov 2008 18:54:04 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Eduardo Habkost <ehabkost@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/14] x86: disable virt on kdump and emergency_restart
-References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
-In-Reply-To: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 11:56:32 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52158 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758123AbYKDQ4b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:56:31 -0500
+Date: Tue, 4 Nov 2008 18:05:01 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       heukelum@fastmail.fm, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081104170501.GE29626@one.firstfloor.org>
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081104150729.GC21470@localhost>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduardo Habkost wrote:
-> Hi,
->
-> This is a new version of the series to disabling virtualization on kdump,
-> now extended to do the same tricks on emergency_restart() if needed.
->   
+> not taking into account the cost of cs reading (which I
+> don't suspect to be that expensive apart from writting,
 
-Looks good.  If you me to push it upstream, I'll need kexec/kdump acks.  
-Otherwise, ack for the kvm bits.
+GDT accesses have an implied LOCK prefix. Especially
+on some older CPUs that could be slow.
 
--- 
-error compiling committee.c: too many arguments to function
+I don't know if it's a problem or not but it would need
+some careful benchmarking on different systems to make sure interrupt 
+latencies are not impacted.
 
+Another reason I would be also careful with this patch is that
+it will likely trigger slow paths in JITs like qemu/vmware/etc.
+
+Also code segment switching is likely not something that
+current and future micro architectures will spend a lot of time optimizing.
+
+I'm not sure that risk is worth the small improvement in code
+size.
+
+An alternative BTW to having all the stubs in the executable
+would be to just dynamically generate them when the interrupt
+is set up. Then you would only have the stubs around for the 
+interrupts which are actually used.
+
+-Andi
