@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbYKDQcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYKDQec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756700AbYKDQcL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:32:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYKDQb5
+	id S1756695AbYKDQec (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbYKDQeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:31:57 -0500
-Received: from gate.crashing.org ([63.228.1.57]:34849 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754021AbYKDQb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:31:57 -0500
-Date: Tue, 4 Nov 2008 10:31:05 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: Linus Torvalds <torvalds@osdl.org>
-cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/1] irq: Maintain user set affinity
-Message-ID: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
+	Tue, 4 Nov 2008 11:34:18 -0500
+Received: from no-dns-yet.demon.co.uk ([80.176.108.50]:63633 "HELO
+	mailgate.blueteddy.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1754720AbYKDQeR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:34:17 -0500
+X-Greylist: delayed 1011 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Nov 2008 11:34:15 EST
+Message-ID: <49107543.5080207@blueteddy.net>
+Date: Tue, 04 Nov 2008 16:16:03 +0000
+From: Dave Hudson <linux-kernel@blueteddy.net>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux Netdev <netdev@vger.kernel.org>,
+       Linux Networking <linux-net@vger.kernel.org>
+Subject: Re: time for TCP ECN defaulting to on?
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
+In-Reply-To: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Tue, 4 Nov 2008 10:13:53 -0600
-Subject: [PATCH 1/1] irq: Maintain user set affinity
+Daniel J Blueman wrote:
+> Is it time to enable TCP ECN per default and get the benefits, since
+> router support has been around and known-about for really considerable
+> time?
+> 
+> Perhaps it should be a question of enabling it, and educating people
+> to disable it if they run into issues, since we'll probably be in the
+> same situation in 5 years...and it'll be some time before these
+> kernels hit devices/servers anyway.
+> 
+> Daniel
 
-This addresses a regression in that if a user specified an affinity
-for an interrupt that affinity information would get reset between
-a request_irq(), free_irq() and request_irq() for the same irq.
+Unfortunately I think you'll find there are sufficiently large numbers 
+of broken SOHO routers out there that if you try this you'll cause a lot 
+of problems.  The problems range from no connectivity to in a few 
+extreme cases routers actually crashing or behaving in very 
+unpredictable ways.  Here's one summary that got presented to the IETF 
+about 18 months ago:
 
-On example of this is bringing up an ethernet interface, taking
-it down and bringing it back up again.
+http://www.ietf.org/proceedings/07mar/slides/tsvarea-3/sld6.htm
 
-Instead of always using the irq_default_affinity we use the
-previous setting of the IRQs affinity with the assumption that
-at boot the IRQs affinity will be set to irq_default_affinity.
+When a clueless end-user gets a Linux-enabled netbook that crashes their 
+router while their existing Vista or XP systems appear to work just fine 
+then the Linux network stack will get the blame for being buggy, not the 
+router :-(
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- kernel/irq/manage.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index c498a1b..ea7d11b 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -115,9 +115,12 @@ int irq_select_affinity(unsigned int irq)
- 	if (!irq_can_set_affinity(irq))
- 		return 0;
+Regards,
+Dave
 
--	cpus_and(mask, cpu_online_map, irq_default_affinity);
--
- 	desc = irq_to_desc(irq);
-+
-+	mask = desc->affinity;
-+
-+	cpus_and(mask, cpu_online_map, mask);
-+
- 	desc->affinity = mask;
- 	desc->chip->set_affinity(irq, mask);
-
--- 
-1.5.5.1
 
