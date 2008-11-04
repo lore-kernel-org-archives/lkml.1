@@ -1,121 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYKDSHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYKDSPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYKDSHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYKDSHK
+	id S1754780AbYKDSPe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:15:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbYKDSPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:07:10 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:59264 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753707AbYKDSHI (ORCPT
+	Tue, 4 Nov 2008 13:15:19 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39164 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752938AbYKDSPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:07:08 -0500
-Date: Tue, 4 Nov 2008 19:03:47 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, open-osd ml <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>
-Subject: Re: [PATCH 04/18] libosd: OSDv1 preliminary implementation
-Message-ID: <20081104180347.GA9818@uranus.ravnborg.org>
-References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225817069-5969-1-git-send-email-bharrosh@panasas.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 4 Nov 2008 13:15:18 -0500
+Message-ID: <491090F3.5020701@zytor.com>
+Date: Tue, 04 Nov 2008 10:14:11 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+CC: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+References: <20081104122839.GA22864@mailshack.com>  <20081104150729.GC21470@localhost>  <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com>
+In-Reply-To: <1225822006.21441.1282961299@webmail.messagingengine.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 06:44:29PM +0200, Boaz Harrosh wrote:
-> Implementation of the most basic OSD functionality and
-> infrastructure. Mainly Format, Create/Remove Partition,
-> Create/Remove Object, and read/write.
+Alexander van Heukelum wrote:
 > 
-> - Add Makefile and Kbuild to compile libosd.ko
-> - osd_initiator.c Implementation file for osd_initiator.h
->   and osd_sec.h APIs
-> - osd_debug.h - Some kprintf macro definitions
-
-A few comments below.
-
-	Sam
-
-
+> That's good to know. I assume this LOCKed bus cycle only occurs
+> if the (hidden) segment information is not cached in some way?
+> How many segments are typically cached? In particular, does it
+> optimize switching between two segments?
 > 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> Reviewed-by: Benny Halevy <bhalevy@panasas.com>
-> ---
->  drivers/scsi/osd/Kbuild          |   26 +++
->  drivers/scsi/osd/Makefile        |   37 +++
->  drivers/scsi/osd/osd_debug.h     |   27 +++
->  drivers/scsi/osd/osd_initiator.c |  450 ++++++++++++++++++++++++++++++++++++++
->  4 files changed, 540 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/scsi/osd/Kbuild
->  create mode 100755 drivers/scsi/osd/Makefile
->  create mode 100644 drivers/scsi/osd/osd_debug.h
->  create mode 100644 drivers/scsi/osd/osd_initiator.c
-> 
-> diff --git a/drivers/scsi/osd/Kbuild b/drivers/scsi/osd/Kbuild
-> new file mode 100644
-> index 0000000..b4678e0
-> --- /dev/null
-> +++ b/drivers/scsi/osd/Kbuild
-> @@ -0,0 +1,26 @@
-> +#
-> +# Kbuild for the OSD modules
-> +#
-> +# Copyright (C) 2008 Panasas Inc.  All rights reserved.
-> +#
-> +# Authors:
-> +#   Boaz Harrosh <bharrosh@panasas.com>
-> +#   Benny Halevy <bhalevy@panasas.com>
-> +#
-> +# This program is free software; you can redistribute it and/or modify
-> +# it under the terms of the GNU General Public License version 2
-> +#
-> +
-> +ifneq ($(OSD_INC),)
-> +# we are built out-of-tree Kconfigure everything as on
-> +
-> +CONFIG_SCSI_OSD_INITIATOR=m
-> +EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_INITIATOR -DCONFIG_SCSI_OSD_INITIATOR_MODULE
-> +
-> +EXTRA_CFLAGS += -I$(OSD_INC)
-> +# EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_DEBUG
-> +
-> +endif
-> +
-> +libosd-objs := osd_initiator.o
-> +obj-$(CONFIG_SCSI_OSD_INITIATOR) += libosd.o
 
-When you submit for inclusion please clean this up.
-1) use ccflags-y as replacement for EXTRA_CFLAGS
-2) use libosd-y as replacement for libosd-objs
+Yes, there is a segment descriptor cache (as opposed to the hidden but
+architectural segment descriptor *registers*, which the Intel
+documentation confusingly call a "cache".)
 
-> +
-> +#ifdef CONFIG_SCSI_OSD_INITIATOR_MODULE
-> +MODULE_AUTHOR("Boaz Harrosh <bharrosh@panasas.com>");
-> +MODULE_DESCRIPTION("open-osd initiator library libosd.ko");
-> +MODULE_LICENSE("GPL");
-> +#endif
+It is used to optimize switching between a small number of segments, and
+was crucial for decent performance on Win9x, which contained a bunch of
+16-bit code.
 
-no ifdef around here.
-
-> +void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_dev)
-> +{
-> +	memset(osdd, 0, sizeof(*osdd));
-> +	osdd->scsi_dev = scsi_dev;
-> +	osdd->def_timeout = BLK_DEFAULT_SG_TIMEOUT;
-> +	/* TODO: Allocate pools for osd_request attributes ... */
-> +}
-> +EXPORT_SYMBOL(osd_dev_init);
-kernel-doc comments for all exported funtions / variables.
-
-
+	-hpa
