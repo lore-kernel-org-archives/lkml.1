@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbYKDQZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbYKDQ0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbYKDQZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYKDQY5
+	id S1756587AbYKDQ0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:26:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbYKDQ0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:24:57 -0500
-Received: from mail.tpi.com ([198.107.51.143]:4340 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755717AbYKDQYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:24:55 -0500
-To: marcel@holtmann.org
-Subject: Dell Wireless 365 requires reset quirk
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-Id: <20081104162448.A338EF8A65@sepang.rtg.net>
-Date: Tue,  4 Nov 2008 09:24:48 -0700 (MST)
-From: timg@tpi.com (Tim Gardner)
+	Tue, 4 Nov 2008 11:26:11 -0500
+Received: from smtp1.riverbed.com ([206.169.144.12]:31816 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753718AbYKDQ0J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:26:09 -0500
+Date: Tue, 4 Nov 2008 08:26:08 -0800
+From: Arthur Jones <ajones@riverbed.com>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       sandeen@redhat.com, linux-ext4@vger.kernel.org, sct@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
+Message-ID: <20081104162608.GD3371@ajones-laptop.nbttech.com>
+References: <20081103123750.67c96224.akpm@linux-foundation.org> <20081103205854.GC30565@ajones-laptop.nbttech.com> <20081103131313.e9ae2f93.akpm@linux-foundation.org> <20081103211929.GA18117@mit.edu> <20081103132735.9e63a3d0.akpm@linux-foundation.org> <20081103220144.GD18117@mit.edu> <20081103142706.92e3a2ae.akpm@linux-foundation.org> <20081103225544.GH18117@mit.edu> <20081103230104.GC3371@ajones-laptop.nbttech.com> <20081103231209.GA29964@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081103231209.GA29964@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 931ccb629d739aa563347a4e866bc26107e6b545 Mon Sep 17 00:00:00 2001
-From: Tim Gardner <tim.gardner@canonical.com>
-Date: Tue, 4 Nov 2008 09:18:06 -0700
-Subject: [PATCH] Dell Wireless 365 needs BTUSB_RESET quirk.
- OriginalAuthor: Mario Limonciello <mario_limonciello@dell.com>
+Hi Ted, ...
 
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Cc: stable@kernel.org
----
- drivers/bluetooth/btusb.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+On Mon, Nov 03, 2008 at 03:12:09PM -0800, Theodore Tso wrote:
+> [...]
+> BTW, did you ever open a bugzilla entry for this the symlink
+> corruption problem that we should reference in the commit log?
 
-diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index af472e0..051b758 100644
---- a/drivers/bluetooth/btusb.c
-+++ b/drivers/bluetooth/btusb.c
-@@ -125,6 +125,9 @@ static struct usb_device_id blacklist_table[] = {
- 	/* Dell laptop with Broadcom chip */
- 	{ USB_DEVICE(0x413c, 0x8126), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
- 
-+	/* Dell Wireless 365 */
-+	{ USB_DEVICE(0x413c, 0x8160), .driver_info = BTUSB_RESET },
-+
- 	/* Dell Wireless 370 */
- 	{ USB_DEVICE(0x413c, 0x8156), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
- 
--- 
-1.5.6.3
+Nope...
 
+Patch looks good now -- thanks for looking into this...
+
+Arthur
