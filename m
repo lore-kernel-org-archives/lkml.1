@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbYKDP0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYKDP1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbYKDP0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 10:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYKDP0c
+	id S1755542AbYKDP1b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 10:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbYKDP1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 10:26:32 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37393 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753158AbYKDP0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 10:26:31 -0500
-Date: Tue, 4 Nov 2008 15:24:34 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Albert Comerma <albert@ecm.ub.es>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Somebody will apply it?
-Message-ID: <20081104152434.4be96db8@lxorguk.ukuu.org.uk>
-In-Reply-To: <49106865.1080009@ecm.ub.es>
-References: <49106865.1080009@ecm.ub.es>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 10:27:23 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60538 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752658AbYKDP1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 10:27:23 -0500
+Date: Tue, 4 Nov 2008 10:27:20 -0500
+From: Prarit Bhargava <prarit@redhat.com>
+To: linux-kernel@vger.kernel.org, tglx@linutronix.de, mark.langsdorf@amd.com
+Cc: Prarit Bhargava <prarit@redhat.com>
+Message-Id: <20081104152720.9964.71959.sendpatchset@prarit.bos.redhat.com>
+Subject: [PATCH] Warn of incorrect cpu_khz on AMD systems
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Nov 2008 16:21:09 +0100
-Albert Comerma <albert@ecm.ub.es> wrote:
+If none of the perfctrs are free when calculating cpu_khz we default to using
+ctr 3 (ie, we just choose 3).  This may lead to an incorrect tsc freq value
+which can cause the system to be unstable.
 
-> Since my previous message seems did not arrive anyone interested I 
-> repeat it, stressing that the maintainer seems not to maintain the 
-> driver, so somebody with access should apply the patch. It's a trivial 
-> patch...
+To aid in future debugging, WARN the user of a potential problem.
 
-Needs a Signed-off-by: line, but otherwise yes looks trivial if you've
-tested the driver with the new USB id
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-
-Alan
+diff --git a/arch/x86/kernel/time_64.c b/arch/x86/kernel/time_64.c
+index cb19d65..86d71b3 100644
+--- a/arch/x86/kernel/time_64.c
++++ b/arch/x86/kernel/time_64.c
+@@ -80,6 +80,8 @@ unsigned long __init calibrate_cpu(void)
+ 			break;
+ 	no_ctr_free = (i == 4);
+ 	if (no_ctr_free) {
++		printk(KERN_WARN "Warning: AMD perfctrs busy ... "
++		       "cpu_khz value may be incorrect.\n");
+ 		i = 3;
+ 		rdmsrl(MSR_K7_EVNTSEL3, evntsel3);
+ 		wrmsrl(MSR_K7_EVNTSEL3, 0);
