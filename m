@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYKDTeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYKDTgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYKDTeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYKDTeP
+	id S1755626AbYKDTgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYKDTgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:34:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48059 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177AbYKDTeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:34:14 -0500
-Message-ID: <4910A390.409@zytor.com>
-Date: Tue, 04 Nov 2008 11:33:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 4 Nov 2008 14:36:12 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:32798 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752177AbYKDTgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 14:36:12 -0500
+Date: Tue, 4 Nov 2008 14:36:04 -0500
+To: Doug Nazar <nazard@dragoninc.ca>
+Cc: "'David Woodhouse'" <David.Woodhouse@intel.com>,
+       "'Al Viro'" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28-rc3 truncates nfsd results
+Message-ID: <20081104193604.GE10974@fieldses.org>
+References: <000301c93eaa$fae98460$f0bc8d20$@ca>
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-CC: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <491090F3.5020701@zytor.com> <1225824256.28612.1282966677@webmail.messagingengine.com>
-In-Reply-To: <1225824256.28612.1282966677@webmail.messagingengine.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000301c93eaa$fae98460$f0bc8d20$@ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay, looking at this some more, the current interrupt stubs are just
-plain braindead.
+On Tue, Nov 04, 2008 at 01:27:23PM -0500, Doug Nazar wrote:
+> Commit 8d7c4203 "nfsd: fix failure to set eof in readdir in some situations"
+> breaks the nfsd server. Bisected it back to this commit and reverting it
+> fixes the problem.
 
-We have a large number of push instructions which save a negative
-number, even when that means using the full 5-byte form; then we use:
+Ugh, thanks.  So the test case is just listing a big directory?  I must
+have broken the case where we have to fill up multiple pages....
 
-	unsigned vector = ~regs->orig_ax;
+--b.
 
-in do_IRQ.  This is utterly moronic; if we use the short form push at
-all times, then we can set the upper bits (which distinguish us from a
-system call entry) at leisure (via a simple orl in common code), rather
-than in each stub, which to boot bloats it above the 8-byte mark.
-
-That way, each stub has the simple form:
-
-	6A xx E9 yy yy yy yy 90
-
-Down to 8 bytes, including one byte of padding.  Already better - we are
-down to 2K total, and each stub is aligned.
-
-Now, we can do better than that at the cost of an extra branch.  The
-extra branch, however, is a direct unconditional branch and so is not
-subject to misprediction (good), although it may end up taking an extra
-icache miss (bad):
-
-we can group our vectors in 8 groups of 32 vectors each.  Each contain a
-stub of the form:
-
-	6A xx EB yy
-
-... which jump to a common jump instruction at the end of each group.
-Thus, each group takes 32*4+5 bytes+3 bytes for alignment = 136 bytes,
-for a total of 1088 bytes.
-
-This has two disadvantages:
-- an extra jump.
-- we can no longer redirect a stub away from common code by
-  changing the branch in that slot.  We have to instead modify
-  the IDT.  This means "dedicated" interrupts don't get the
-  vector number at all, which is probably fine -- to be honest,
-  I'm not sure if they do at the moment either.
-
-Fixing the first of these I think is a no-brainer.  That will cut the
-size of the existing stub pool by almost half.  The second is more of a
-judgement call, and I'd like to see performance numbers for it.  Either
-which way, I think it's worthwhile to consider this as an alternative to
-  playing segmentation tricks, which I think could have really nasty
-side effects.
-
-	-hpa
-
+> However, it only happens on certain machines even with the same kernel &
+> filesystem (ext3). I've two groups of similar computers, each group running
+> identical kernels. The ones listing only ~250 files are of course in error.
+> Eldritch is running 2.6.28-rc3 with that commit reverted. With 2.8.28-rc3 it
+> showed the incorrect number.
+> 
+> 
+> [root@dryad - Tue Nov 04 13:15:41]
+> [/usr/src/linux] for f in golem eldritch slyph kobold basilisk faun  dryad
+> nymph troll ogre banshee cockatrice; do echo $f $(ls -1 /net/$f/usr/bin/ |
+> wc -l); done
+> 
+> golem 1082
+> eldritch 1644
+> slyph 1718
+> kobold 1081
+> basilisk 267
+> faun 265
+> 
+> dryad 1595
+> nymph 245
+> troll 243
+> ogre 243
+> banshee 926
+> cockatrice 237
+> 
+> 
