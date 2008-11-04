@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYKDQ3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYKDQaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756812AbYKDQ3m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYKDQ3a
+	id S1756846AbYKDQaV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYKDQaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:29:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47664 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755932AbYKDQ32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:29:28 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory hotplug
-Date: Tue, 4 Nov 2008 17:34:03 +0100
-User-Agent: KMail/1.9.9
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811041635.49932.rjw@sisk.pl> <1225813182.12673.587.camel@nimitz>
-In-Reply-To: <1225813182.12673.587.camel@nimitz>
+	Tue, 4 Nov 2008 11:30:01 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53460 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755501AbYKDQaA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:30:00 -0500
+Date: Tue, 4 Nov 2008 08:29:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata hibernation fixes
+In-Reply-To: <20081104062734.GA4420@havoc.gtf.org>
+Message-ID: <alpine.LFD.2.00.0811040823350.3419@nehalem.linux-foundation.org>
+References: <20081104062734.GA4420@havoc.gtf.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811041734.04802.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 4 of November 2008, Dave Hansen wrote:
-> On Tue, 2008-11-04 at 16:35 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, 4 of November 2008, Dave Hansen wrote:
-> > > On Tue, 2008-11-04 at 09:54 +0100, Rafael J. Wysocki wrote:
-> > > > To handle this, I need to know two things:
-> > > > 1) what changes of the zones are possible due to memory hotplugging
-> > > > (i.e.    can they grow, shring, change boundaries etc.)
-> > > 
-> > > All of the above. 
-> > 
-> > OK
-> > 
-> > If I allocate a page frame corresponding to specific pfn, is it guaranteed to
-> > be associated with the same pfn in future?
+
+
+On Tue, 4 Nov 2008, Jeff Garzik wrote:
 > 
-> Page allocation is different.  Since you hold a reference to a page, it
-> can not be removed until you release that reference.  That's why every
-> normal alloc_pages() user in the kernel doesn't have to worry about
-> memory hotplug.
+> This adds code at a late stage (heading towards -rc4), but does
+> eliminate a particular spin-up overcycling behavior associated with
+> hibernation.
 
-Good. :-)
+What does this have to do with hibernation? 
 
-So, if I allocate the image pages right prior to creating the image, they
-won't be touched by memory hotplug.
+If it's a hibernation-only issue, then there is something wrong. 
 
-Now, I need to do one more thing, which is to check how much memory has to be
-freed before creating the image.  For this purpose I need to lock memory
-hotplug temporarily, count pages to free and unlock it.  What interface should
-I use for this purpose? 
+Also, if it is an issue for normal power-off as well, then I wonder why 
+this isn't an issue on Windows. Does windows not spin down disks at all?
 
-[I'll also need to lock memory hotplug temporarily during resume.]
+IOW, I really don't think this is correct. 
 
-Rafael
+I _do_ think that correct might be:
+
+ - maybe we just do something odd and different, triggering some BIOS 
+   behavior that isn't there under Windows.
+
+   So we should power down thigns differently so that the BIOS.
+
+ - quite possibly: we just should not spin down disks at all, and just 
+   flush them and do the "park" command thing. If we're _really_ powering 
+   off, the disks will spin down on their own when power goes away. Maybe 
+   that's what Windows does?
+
+So I really don't want to pull this, because I want to get more of an 
+explanation for why we need to do this at all. I also don't think this is 
+even appropriate at this stage in -rc.
+
+Is it a regression? If so, that just strengthens the questions above - 
+what did _we_ start doing wrong that this is needed at all? Let's just 
+stop doing that, not add some idiotic black-list for somethign that _we_ 
+do wrong.
+
+			Linus
