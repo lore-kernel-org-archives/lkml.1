@@ -1,78 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbYKDWFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369AbYKDWI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbYKDWFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYKDWFI
+	id S1756369AbYKDWI2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 17:08:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbYKDWIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:05:08 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46470 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbYKDWFF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:05:05 -0500
-Date: Tue, 4 Nov 2008 17:05:03 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v3] ftrace: ftrace_preempt_disable comment fix
-In-Reply-To: <alpine.DEB.1.10.0811041651420.15875@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0811041702560.15875@gandalf.stny.rr.com>
-References: <20081104041554.605521183@goodmis.org> <20081104042203.123673140@goodmis.org> <20081104091042.GD23790@elte.hu> <alpine.DEB.1.10.0811041645330.15875@gandalf.stny.rr.com> <alpine.DEB.1.10.0811041651420.15875@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 4 Nov 2008 17:08:17 -0500
+Received: from mga01.intel.com ([192.55.52.88]:54714 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753740AbYKDWIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 17:08:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,545,1220252400"; 
+   d="scan'208";a="399922290"
+Message-Id: <20081104215627.046867000@linux-os.sc.intel.com>
+References: <20081104215626.751033000@linux-os.sc.intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 04 Nov 2008 13:53:05 -0800
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: jens.axboe@oracle.com, mingo@elte.hu, jeremy.fitzhardinge@citrix.com,
+       nickpiggin@yahoo.com.au, torvalds@linux-foundation.org,
+       paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 3/3] generic-ipi: fix the smp_mb() usage
+Content-Disposition: inline; filename=generic_ipi_weaken_barrier.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Remove the unnecessary smp_mb() in csd_flag_wait(), as the presence of that
+smp_mb() doesn't mean anything on the sender, when the ipi receiver is not
+doing any thing special (like memory fence) after clearing the CSD_FLAG_WAIT.
 
-[
-  Changes since v2:
+IPI receiver (on Alpha atleast) needs smp_read_barrier_depends() in the handler
+before reading the call_single_queue list in a lock-free fashion. Replace
+the existing smp_mb() (which is unnecessary) with smp_read_barrier_depends()
 
-   Andrew pointed out that "need resched" should be "need_resched".
-   He's trying to be more critical than Randy Dunlap. ;-)
-]
-
-Impact: comment fixes
-
-Updates to ftrace_preempt_disable comments as recommended
-by Andrew Morton.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 ---
- kernel/trace/trace.h |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux-trace.git/kernel/trace/trace.h
+Index: linux-2.6.git/kernel/smp.c
 ===================================================================
---- linux-trace.git.orig/kernel/trace/trace.h	2008-11-04 16:53:46.000000000 -0500
-+++ linux-trace.git/kernel/trace/trace.h	2008-11-04 17:02:14.000000000 -0500
-@@ -425,17 +425,17 @@ extern struct tracer nop_trace;
-  * ftrace_preempt_disable - disable preemption scheduler safe
-  *
-  * When tracing can happen inside the scheduler, there exists
-- * cases that the tracing might happen before the need_resched
-+ * cases where tracing might happen before the need_resched
-  * flag is checked. If this happens and the tracer calls
-  * preempt_enable (after a disable), a schedule might take place
-  * causing an infinite recursion.
-  *
-- * To prevent this, we read the need_recshed flag before
-- * disabling preemption. When we want to enable preemption we
-- * check the flag, if it is set, then we call preempt_enable_no_resched.
-- * Otherwise, we call preempt_enable.
-+ * To prevent this, we read the need_resched flag before
-+ * disabling preemption and store it. When we want to enable preemption
-+ * we check the stored flag, if it is set, then we call
-+ * preempt_enable_no_resched. Otherwise, we call preempt_enable.
-  *
-- * The rational for doing the above is that if need resched is set
-+ * The rationale for doing the above is that if need_resched is set
-  * and we have yet to reschedule, we are either in an atomic location
-  * (where we do not need to check for scheduling) or we are inside
-  * the scheduler and do not want to resched.
+--- linux-2.6.git.orig/kernel/smp.c	2008-11-04 09:54:29.000000000 -0800
++++ linux-2.6.git/kernel/smp.c	2008-11-04 10:04:54.000000000 -0800
+@@ -51,10 +51,6 @@
+ {
+ 	/* Wait for response */
+ 	do {
+-		/*
+-		 * We need to see the flags store in the IPI handler
+-		 */
+-		smp_mb();
+ 		if (!(data->flags & CSD_FLAG_WAIT))
+ 			break;
+ 		cpu_relax();
+@@ -162,7 +158,7 @@
+ 	 * Need to see other stores to list head for checking whether
+ 	 * list is empty without holding q->lock
+ 	 */
+-	smp_mb();
++	smp_read_barrier_depends();
+ 	while (!list_empty(&q->list)) {
+ 		unsigned int data_flags;
+ 
+@@ -196,7 +192,7 @@
+ 		/*
+ 		 * See comment on outer loop
+ 		 */
+-		smp_mb();
++		smp_read_barrier_depends();
+ 	}
+ }
+ 
+
+-- 
 
