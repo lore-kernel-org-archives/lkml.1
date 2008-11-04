@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbYKDMrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbYKDMre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbYKDMrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 07:47:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYKDMrL
+	id S1754296AbYKDMre (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 07:47:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbYKDMrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 07:47:11 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:52243 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbYKDMrK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 07:47:10 -0500
-Date: Tue, 4 Nov 2008 12:47:07 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Jenkins <aj504@cs.york.ac.uk>
-Cc: linux-kernel@vger.kernel.org, linux-testers@vger.kernel.org
-Subject: Re: Add option to passively listen for PCIE hotplug events
-Message-ID: <20081104124706.GB19401@srcf.ucam.org>
-References: <bspwK-420-11@gated-at.bofh.it> <bujnh-2fr-5@gated-at.bofh.it> <bujwT-2Ew-5@gated-at.bofh.it> <buml1-6du-3@gated-at.bofh.it> <d51a1b7b-32db-41dd-a36d-911ed62f5cb4@l33g2000pri.googlegroups.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d51a1b7b-32db-41dd-a36d-911ed62f5cb4@l33g2000pri.googlegroups.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Tue, 4 Nov 2008 07:47:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59111 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752483AbYKDMrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 07:47:15 -0500
+Subject: [PATCH] x86: remove noirqbalance param docs
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+Content-Type: text/plain
+Date: Tue, 04 Nov 2008 12:46:03 +0000
+Message-Id: <1225802763.6532.34.camel@blaa>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 03:29:23AM -0800, Alan Jenkins wrote:
+irqbalance was removed by:
 
-> I've tested pciehp with this patch on my EeePC, which as you say uses
-> pcie hotplug to allow power savings when the wireless is not needed.
-> Functionally it seems ok.
+  commit 8b8e8c1bf7275eca859fe551dfa484134eaf013b
+  Author: Yinghai Lu <yhlu.kernel@gmail.com>
+  Date:   Tue Aug 19 20:50:23 2008 -0700
 
-Hurrah. Progress.
+Remove the associated documentation for noirqbalance.
 
-> But resuming from suspend to ram can now take 15-20 seconds.  It seems
-> the longer suspend time happens with the device "present"; it's about
-> 5 seconds shorter with the device "removed", but still much longer
-> than previously.  There's more than one PCIE port, so the rest of the
-> delay could be due to other ports which always have devices "present".
+Signed-off-by: Mark McLoughlin <markmc@redhat.com>
+---
+ Documentation/kernel-parameters.txt |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-Mm. Yeah, a printk with timings would probably be a good plan. I'll do 
-some poking at this end and see where the time seems to be being lost.
-
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 1bbcaa8..de4de3e 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1470,8 +1470,6 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			Valid arguments: on, off
+ 			Default: on
+ 
+-	noirqbalance	[X86-32,SMP,KNL] Disable kernel irq balancing
+-
+ 	noirqdebug	[X86-32] Disables the code which attempts to detect and
+ 			disable unhandled interrupt sources.
+ 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.5.4.3
+
