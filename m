@@ -1,88 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYKDEHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYKDEQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYKDEHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 23:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYKDEHQ
+	id S1754045AbYKDEQa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 23:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKDEQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 23:07:16 -0500
-Received: from vms173007pub.verizon.net ([206.46.173.7]:37979 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753065AbYKDEHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 23:07:15 -0500
-Date: Mon, 03 Nov 2008 23:07:08 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] intel_menlo: max_state is unsigned, invalid test
-In-reply-to: <20081103143526.375be238.akpm@linux-foundation.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Sujith Thomas <sujith.thomas@intel.com>,
-       Zhang Rui <rui.zhang@intel.com>
-Cc: roel kluin <roel.kluin@gmail.com>, len.brown@intel.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Message-id: <alpine.LFD.2.00.0811032300551.3132@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <4908D067.9080207@gmail.com>
- <20081103143526.375be238.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 3 Nov 2008 23:16:20 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47682 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112AbYKDEQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 23:16:19 -0500
+Message-ID: <490FCC87.1070205@kernel.org>
+Date: Tue, 04 Nov 2008 13:16:07 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: petkovbb@gmail.com
+CC: axboe@kernel.dk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Subject: [PATCH] block: fix __blkdev_get() for removable devices
+References: <20081029071319.GA9205@gollum.tnic>	 <20081101201419.GA29462@gollum.tnic> <490F1AC6.8000109@kernel.org> <9ea470500811030956k209b2f2ci10bcde1ea4ac7334@mail.gmail.com>
+In-Reply-To: <9ea470500811030956k209b2f2ci10bcde1ea4ac7334@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Nov 2008 04:16:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit 0762b8bde9729f10f8e6249809660ff2ec3ad735 moved disk_get_part()
+in front of recursive get on the whole disk, which caused removable
+devices to try disk_get_part() before rescanning after a new media is
+inserted, which might fail legit open attempts or give the old
+partition.
 
+This patch fixes the problem by moving disk_get_part() after
+__blkdev_get() on the whole disk.
 
-On Mon, 3 Nov 2008, Andrew Morton wrote:
+This problem was spotted by Borislav Petkov.
 
-> On Wed, 29 Oct 2008 17:06:47 -0400
-> roel kluin <roel.kluin@gmail.com> wrote:
-> 
-> > max_state is unsigned, so the test is invalid.
-> > 
-> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> > ---
-> > I think max_state can only become -1, no? then probably a different
-> > patch is required.
-> > I may not be able to respond for a few weeks.
-> > 
-> > diff --git a/drivers/misc/intel_menlow.c b/drivers/misc/intel_menlow.c
-> > index e00a275..980171d 100644
-> > --- a/drivers/misc/intel_menlow.c
-> > +++ b/drivers/misc/intel_menlow.c
-> > @@ -121,7 +121,7 @@ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
-> >  	if (memory_get_int_max_bandwidth(cdev, &max_state))
-> >  		return -EFAULT;
-> >  
-> > -	if (max_state < 0 || state > max_state)
-> > +	if (max_state == -1 || state > max_state)
-> >  		return -EINVAL;
-> >  
-> >  	arg_list.count = 1;
-> > 
-> 
-> hm, maybe.
-> 
-> This can only happen if acpi_evaluate_integer(MEMORY_GET_BANDWIDTH)
-> returned no-error and a bandwidth of zero (I assume).
-> 
-> Is this a special case which the driver really wanted to handle?  If
-> so, why is "0" the only bad value which we're checking for?  Or is this
-> all some big brainfart which should be removed?
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: <Borislav Petkov> petkovbb@googlemail.com
+---
+Borislav, can you please verify this patch?  Thanks.
 
-Sujith,
-Please send me a patch to intel_menlo.c that documents the
-legal return values from GTHS.
+ fs/block_dev.c |   23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
-If 0 is illegal, that is fine, but the upstream driver doesn't
-check for it properl (I like Rui's 9/11 patch better than the above,
-so andrew, you can drop this patch in any case)
-
-thanks,
--Len
-
-ps.  Sujith, shouldn't there be a MAINTAINERS for this driver with your 
-name on it?
-
-
-
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index 88a776f..db831ef 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -986,7 +986,6 @@ static int __blkdev_put(struct block_device *bdev, fmode_t mode, int for_part);
+ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+ {
+ 	struct gendisk *disk;
+-	struct hd_struct *part = NULL;
+ 	int ret;
+ 	int partno;
+ 	int perm = 0;
+@@ -1004,24 +1003,25 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+ 		return ret;
+ 	}
+ 
+-	ret = -ENXIO;
+-
+ 	lock_kernel();
+ 
++	ret = -ENXIO;
+ 	disk = get_gendisk(bdev->bd_dev, &partno);
+ 	if (!disk)
+ 		goto out_unlock_kernel;
+-	part = disk_get_part(disk, partno);
+-	if (!part)
+-		goto out_unlock_kernel;
+ 
+ 	mutex_lock_nested(&bdev->bd_mutex, for_part);
+ 	if (!bdev->bd_openers) {
+ 		bdev->bd_disk = disk;
+-		bdev->bd_part = part;
+ 		bdev->bd_contains = bdev;
+ 		if (!partno) {
+ 			struct backing_dev_info *bdi;
++
++			ret = -ENXIO;
++			bdev->bd_part = disk_get_part(disk, partno);
++			if (!bdev->bd_part)
++				goto out_clear;
++
+ 			if (disk->fops->open) {
+ 				ret = disk->fops->open(bdev, mode);
+ 				if (ret)
+@@ -1049,18 +1049,17 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+ 			bdev->bd_contains = whole;
+ 			bdev->bd_inode->i_data.backing_dev_info =
+ 			   whole->bd_inode->i_data.backing_dev_info;
++			bdev->bd_part = disk_get_part(disk, partno);
+ 			if (!(disk->flags & GENHD_FL_UP) ||
+-			    !part || !part->nr_sects) {
++			    !bdev->bd_part || !bdev->bd_part->nr_sects) {
+ 				ret = -ENXIO;
+ 				goto out_clear;
+ 			}
+-			bd_set_size(bdev, (loff_t)part->nr_sects << 9);
++			bd_set_size(bdev, (loff_t)bdev->bd_part->nr_sects << 9);
+ 		}
+ 	} else {
+-		disk_put_part(part);
+ 		put_disk(disk);
+ 		module_put(disk->fops->owner);
+-		part = NULL;
+ 		disk = NULL;
+ 		if (bdev->bd_contains == bdev) {
+ 			if (bdev->bd_disk->fops->open) {
+@@ -1080,6 +1079,7 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+ 	return 0;
+ 
+  out_clear:
++	disk_put_part(bdev->bd_part);
+ 	bdev->bd_disk = NULL;
+ 	bdev->bd_part = NULL;
+ 	bdev->bd_inode->i_data.backing_dev_info = &default_backing_dev_info;
+@@ -1091,7 +1091,6 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, int for_part)
+  out_unlock_kernel:
+ 	unlock_kernel();
+ 
+-	disk_put_part(part);
+ 	if (disk)
+ 		module_put(disk->fops->owner);
+ 	put_disk(disk);
