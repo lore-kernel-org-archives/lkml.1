@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbYKDP2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYKDP3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbYKDP2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 10:28:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYKDP2Q
+	id S1755378AbYKDP3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 10:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbYKDP3Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 10:28:16 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:10843 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbYKDP2P (ORCPT
+	Tue, 4 Nov 2008 10:29:25 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37395 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752985AbYKDP3Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 10:28:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=o4tXWbKfEVvviuXpc/i5BRpzYOTBhsVN6ycsWsABsjZgUVNmG4bjPY9G8pbvPBlC3F
-         nigyBMyZyiEu9i8TGeWIu4xq+7ngAnOgtOnJDnThy1AoHD58w9kH/+IN+EKi23iiOaWo
-         FGLxZe6gZg/r9Q6+1TsBHcfpkhsN+KazCgJMg=
-Message-ID: <87a5b0800811040728s7f50ca2fhf9c2f19f2b518fe3@mail.gmail.com>
-Date: Tue, 4 Nov 2008 15:28:14 +0000
-From: "Will Newton" <will.newton@gmail.com>
-To: "Albert Comerma" <albert@ecm.ub.es>
-Subject: Re: Somebody will apply it?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <49106865.1080009@ecm.ub.es>
+	Tue, 4 Nov 2008 10:29:24 -0500
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] tty: Fix close races in USB serial
+To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Tue, 04 Nov 2008 15:29:24 +0000
+Message-ID: <20081104152916.30344.68193.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <49106865.1080009@ecm.ub.es>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/4 Albert Comerma <albert@ecm.ub.es>:
+From: Alan Cox <alan@redhat.com>
 
-Hi Albert,
+USB serial has always had races where the tty port usage count can hit zero
+during a receive event. The internal locking is a mutex so we can't use
+that in the IRQ handlers.
 
-> Since my previous message seems did not arrive anyone interested I repeat
-> it, stressing that the maintainer seems not to maintain the driver, so
-> somebody with access should apply the patch. It's a trivial patch...
+With krefs we can tackle this differently but we still need to be careful.
 
-Your message did reach the list, however it would help if you would
-resend the patch with a clear description and subject line and a
-signed-off-by.
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-I tried to contact Thomas a few months ago and also replied no reply,
-for what it's worth. Perhaps CCing the USB maintainer might help.
+ drivers/usb/serial/usb-serial.c |   15 ++++++++++-----
+ 1 files changed, 10 insertions(+), 5 deletions(-)
+
+
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index 794b5ff..aafa684 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -269,15 +269,19 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
+ 		return;
+ 	}
+ 
+-	--port->port.count;
+-	if (port->port.count == 0)
++	if (port->port.count == 1)
+ 		/* only call the device specific close if this
+-		 * port is being closed by the last owner */
++		 * port is being closed by the last owner. Ensure we do
++		 * this before we drop the port count. The call is protected
++		 * by the port mutex
++		 */
+ 		port->serial->type->close(tty, port, filp);
+ 
+-	if (port->port.count == (port->console? 1 : 0)) {
++	if (port->port.count == (port->console ? 2 : 1)) {
+ 		struct tty_struct *tty = tty_port_tty_get(&port->port);
+ 		if (tty) {
++			/* We must do this before we drop the port count to
++			   zero. */
+ 			if (tty->driver_data)
+ 				tty->driver_data = NULL;
+ 			tty_port_tty_set(&port->port, NULL);
+@@ -285,13 +289,14 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
+ 		}
+ 	}
+ 
+-	if (port->port.count == 0) {
++	if (port->port.count == 1) {
+ 		mutex_lock(&port->serial->disc_mutex);
+ 		if (!port->serial->disconnected)
+ 			usb_autopm_put_interface(port->serial->interface);
+ 		mutex_unlock(&port->serial->disc_mutex);
+ 		module_put(port->serial->type->driver.owner);
+ 	}
++	--port->port.count;
+ 
+ 	mutex_unlock(&port->mutex);
+ 	usb_serial_put(port->serial);
+
