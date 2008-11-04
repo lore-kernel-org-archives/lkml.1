@@ -1,190 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYKDOdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYKDOgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbYKDOdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 09:33:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYKDOdi
+	id S1754004AbYKDOgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 09:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbYKDOgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 09:33:38 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:51498 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbYKDOdi (ORCPT
+	Tue, 4 Nov 2008 09:36:00 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43047 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752483AbYKDOf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 09:33:38 -0500
-Date: Tue, 4 Nov 2008 14:33:32 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Add option to passively listen for PCIE hotplug events
-Message-ID: <20081104143332.GA21689@srcf.ucam.org>
-References: <bspwK-420-11@gated-at.bofh.it> <bujnh-2fr-5@gated-at.bofh.it> <bujwT-2Ew-5@gated-at.bofh.it> <buml1-6du-3@gated-at.bofh.it> <d51a1b7b-32db-41dd-a36d-911ed62f5cb4@l33g2000pri.googlegroups.com> <20081104124706.GB19401@srcf.ucam.org> <20081104133214.GA20427@srcf.ucam.org> <49105BA6.9090403@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49105BA6.9090403@tuffmail.co.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Tue, 4 Nov 2008 09:35:59 -0500
+Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
+ no load balance
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Dimitri Sivanich <sivanich@sgi.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <49105D84.8070108@novell.com>
+References: <20081103210748.GC9937@sgi.com>
+	 <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com>
+	 <49105D84.8070108@novell.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 04 Nov 2008 15:36:33 +0100
+Message-Id: <1225809393.7803.1669.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ah, one more spot. How about this one?
+On Tue, 2008-11-04 at 09:34 -0500, Gregory Haskins wrote:
+> Gregory Haskins wrote:
+> > Peter Zijlstra wrote:
+> >   
+> >> On Mon, 2008-11-03 at 15:07 -0600, Dimitri Sivanich wrote:
+> >>   
+> >>     
+> >>> When load balancing gets switched off for a set of cpus via the
+> >>> sched_load_balance flag in cpusets, those cpus wind up with the
+> >>> globally defined def_root_domain attached.  The def_root_domain is
+> >>> attached when partition_sched_domains calls detach_destroy_domains().
+> >>> A new root_domain is never allocated or attached as a sched domain
+> >>> will never be attached by __build_sched_domains() for the non-load
+> >>> balanced processors.
+> >>>
+> >>> The problem with this scenario is that on systems with a large number
+> >>> of processors with load balancing switched off, we start to see the
+> >>> cpupri->pri_to_cpu->lock in the def_root_domain becoming contended.
+> >>> This starts to become much more apparent above 8 waking RT threads
+> >>> (with each RT thread running on it's own cpu, blocking and waking up
+> >>> continuously).
+> >>>
+> >>> I'm wondering if this is, in fact, the way things were meant to work,
+> >>> or should we have a root domain allocated for each cpu that is not to
+> >>> be part of a sched domain?  Note the the def_root_domain spans all of
+> >>> the non-load-balanced cpus in this case.  Having it attached to cpus
+> >>> that should not be load balancing doesn't quite make sense to me.
+> >>>     
+> >>>       
+> >> It shouldn't be like that, each load-balance domain (in your case a
+> >> single cpu) should get its own root domain. Gregory?
+> >>   
+> >>     
+> >
+> > Yeah, this sounds broken.  I know that the root-domain code was being
+> > developed coincident to some upheaval with the cpuset code, so I suspect
+> > something may have been broken from the original intent.  I will take a
+> > look.
+> >
+> > -Greg
+> >
+> >   
+> 
+> After thinking about it some more, I am not quite sure what to do here. 
+> The root-domain code was really designed to be 1:1 with a disjoint
+> cpuset.  In this case, it sounds like all the non-balanced cpus are
+> still in one default cpuset.  In that case, the code is correct to place
+> all those cores in the singleton def_root_domain.  The question really
+> is: How do we support the sched_load_balance flag better?
+> 
+> I suppose we could go through the scheduler code and have it check that
+> flag before consulting the root-domain.  Another alternative is to have
+> the sched_load_balance=false flag create a disjoint cpuset.  Any thoughts?
 
-diff --git a/drivers/pci/hotplug/pciehp.h b/drivers/pci/hotplug/pciehp.h
-index b2801a7..c9f18f9 100644
---- a/drivers/pci/hotplug/pciehp.h
-+++ b/drivers/pci/hotplug/pciehp.h
-@@ -224,6 +224,10 @@ static inline int pciehp_get_hp_hw_control_from_firmware(struct pci_dev *dev)
- {
- 	u32 flags = (OSC_PCI_EXPRESS_NATIVE_HP_CONTROL |
- 		     OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-+	if (pciehp_force) {
-+		dev_info(&dev->dev, "Bypassing BIOS check for pciehp\n");
-+		return 0;
-+	}
- 	return acpi_get_hp_hw_control_from_firmware(dev, flags);
- }
- 
-diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
-index 4b23bc3..429e505 100644
---- a/drivers/pci/hotplug/pciehp_core.c
-+++ b/drivers/pci/hotplug/pciehp_core.c
-@@ -41,6 +41,7 @@ int pciehp_debug;
- int pciehp_poll_mode;
- int pciehp_poll_time;
- int pciehp_force;
-+int pciehp_passive=1;
- struct workqueue_struct *pciehp_wq;
- 
- #define DRIVER_VERSION	"0.4"
-@@ -50,15 +51,18 @@ struct workqueue_struct *pciehp_wq;
- MODULE_AUTHOR(DRIVER_AUTHOR);
- MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_LICENSE("GPL");
-+MODULE_ALIAS("acpi*:PNP0A08:*");
- 
- module_param(pciehp_debug, bool, 0644);
- module_param(pciehp_poll_mode, bool, 0644);
- module_param(pciehp_poll_time, int, 0644);
- module_param(pciehp_force, bool, 0644);
-+module_param(pciehp_passive, bool, 0644);
- MODULE_PARM_DESC(pciehp_debug, "Debugging mode enabled or not");
- MODULE_PARM_DESC(pciehp_poll_mode, "Using polling mechanism for hot-plug events or not");
- MODULE_PARM_DESC(pciehp_poll_time, "Polling mechanism frequency, in seconds");
- MODULE_PARM_DESC(pciehp_force, "Force pciehp, even if _OSC and OSHP are missing");
-+MODULE_PARM_DESC(pciehp_passive, "Listen for pciehp events, even if _OSC and OSHP are missing");
- 
- #define PCIE_MODULE_NAME "pciehp"
- 
-@@ -85,6 +89,13 @@ static struct hotplug_slot_ops pciehp_hotplug_slot_ops = {
-   	.get_cur_bus_speed =	get_cur_bus_speed,
- };
- 
-+static struct hotplug_slot_ops pciehp_passive_hotplug_slot_ops = {
-+	.owner =		THIS_MODULE,
-+	.get_adapter_status =	get_adapter_status,
-+  	.get_max_bus_speed =	get_max_bus_speed,
-+  	.get_cur_bus_speed =	get_cur_bus_speed,
-+};
-+
- /*
-  * Check the status of the Electro Mechanical Interlock (EMI)
-  */
-@@ -212,7 +223,11 @@ static int init_slots(struct controller *ctrl)
- 		hotplug_slot->info = info;
- 		hotplug_slot->private = slot;
- 		hotplug_slot->release = &release_slot;
--		hotplug_slot->ops = &pciehp_hotplug_slot_ops;
-+		if (pciehp_passive &&
-+		    pciehp_get_hp_hw_control_from_firmware(ctrl->pci_dev))
-+			hotplug_slot->ops = &pciehp_passive_hotplug_slot_ops;
-+		else
-+			hotplug_slot->ops = &pciehp_hotplug_slot_ops;
- 		slot->hotplug_slot = hotplug_slot;
- 		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
- 
-@@ -407,11 +422,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
- 	u8 value;
- 	struct pci_dev *pdev = dev->port;
- 
--	if (pciehp_force)
--		dev_info(&dev->device,
--			 "Bypassing BIOS check for pciehp use on %s\n",
--			 pci_name(pdev));
--	else if (pciehp_get_hp_hw_control_from_firmware(pdev))
-+	if (!pciehp_passive && pciehp_get_hp_hw_control_from_firmware(pdev))
- 		goto err_out_none;
- 
- 	ctrl = pcie_init(dev);
-@@ -435,11 +446,9 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
- 	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
- 
- 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
--	if (value && pciehp_force) {
--		rc = pciehp_enable_slot(t_slot);
--		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
--			value = 0;
--	}
-+	if (value && (pciehp_force || pciehp_passive))
-+		pciehp_enable_slot(t_slot);
-+
- 	if ((POWER_CTRL(ctrl)) && !value) {
- 		rc = t_slot->hpc_ops->power_off_slot(t_slot); /* Power off slot if not occupied*/
- 		if (rc)
-@@ -473,8 +482,11 @@ static int pciehp_suspend (struct pcie_device *dev, pm_message_t state)
- 
- static int pciehp_resume (struct pcie_device *dev)
- {
-+	struct pci_dev *pdev = dev->port;
- 	dev_info(&dev->device, "%s ENTRY\n", __func__);
--	if (pciehp_force) {
-+
-+	if (pciehp_force || (pciehp_passive &&
-+			     pciehp_get_hp_hw_control_from_firmware(pdev))) {
- 		struct controller *ctrl = get_service_data(dev);
- 		struct slot *t_slot;
- 		u8 status;
-diff --git a/drivers/pci/hotplug/pciehp_ctrl.c b/drivers/pci/hotplug/pciehp_ctrl.c
-index fead63c..9aee98f 100644
---- a/drivers/pci/hotplug/pciehp_ctrl.c
-+++ b/drivers/pci/hotplug/pciehp_ctrl.c
-@@ -185,7 +185,8 @@ static void set_slot_off(struct controller *ctrl, struct slot * pslot)
- 	 * before taking any action that relies on power having been
- 	 * removed from the slot/adapter.
- 	 */
--	msleep(1000);
-+	if (PWR_LED(ctrl) || ATTN_LED(ctrl))
-+		msleep(1000);
- 
- 	if (PWR_LED(ctrl))
- 		pslot->hpc_ops->green_led_off(pslot);
-@@ -288,17 +289,16 @@ static int remove_board(struct slot *p_slot)
- 		}
- 	}
- 
--	/*
--	 * After turning power off, we must wait for at least 1 second
--	 * before taking any action that relies on power having been
--	 * removed from the slot/adapter.
--	 */
--	msleep(1000);
--
--	if (PWR_LED(ctrl))
-+	if (PWR_LED(ctrl)) {
-+		/*
-+		 * After turning power off, we must wait for at least 1 second
-+		 * before taking any action that relies on power having been
-+		 * removed from the slot/adapter.
-+		 */
-+		msleep(1000);
- 		/* turn off Green LED */
- 		p_slot->hpc_ops->green_led_off(p_slot);
--
-+	}
- 	return 0;
- }
- 
+Hmm, but you cannot disable load-balance on a cpu without placing it in
+an cpuset first, right?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Or are folks disabling load-balance bottom-up, instead of top-down?
+
+In that case, I think we should dis-allow that.
