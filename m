@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbYKDX4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbYKDXz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760946AbYKDX4a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757908AbYKDXk6
+	id S1760831AbYKDXz5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:55:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbYKDXky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:40:58 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52313 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:40:54 -0500
+Received: from mx1.suse.de ([195.135.220.2]:47879 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757903AbYKDXk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:40:57 -0500
-Date: Tue, 4 Nov 2008 15:33:23 -0800
+	id S1757642AbYKDXkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:40:53 -0500
+Date: Tue, 4 Nov 2008 15:33:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Cox <alan@redhat.com>,
-       Ondrej Zary <linux@rainbow-software.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 50/57] libata: Fix LBA48 on pata_it821x RAID volumes.
-Message-ID: <20081104233323.GY659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 49/57] ACPI: EC: Check for IBF=0 periodically if not in GPE
+	mode
+Message-ID: <20081104233320.GX659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-fix-lba48-on-pata_it821x-raid-volumes.patch"
+Content-Disposition: inline; filename="acpi-ec-check-for-ibf-0-periodically-if-not-in-gpe-mode.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,38 +40,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ondrej Zary <linux@rainbow-software.org>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-Subject: [patch 50/57] libata: Fix LBA48 on pata_it821x RAID volumes.
+commit c0ff17720ec5f42205b3d2ca03a18da0a8272976 upstream.
 
-commit 054e5f616b5becdc096b793407dc33fe379749ac upstream
-
-libata: Fix LBA48 on pata_it821x RAID volumes.
-
-[http://lkml.org/lkml/2008/10/18/82]
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-Acked-by: Alan Cox <alan@redhat.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/pata_it821x.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/acpi/ec.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
---- a/drivers/ata/pata_it821x.c
-+++ b/drivers/ata/pata_it821x.c
-@@ -557,9 +557,8 @@ static unsigned int it821x_read_id(struc
- 	if (strstr(model_num, "Integrated Technology Express")) {
- 		/* Set feature bits the firmware neglects */
- 		id[49] |= 0x0300;	/* LBA, DMA */
--		id[82] |= 0x0400;	/* LBA48 */
- 		id[83] &= 0x7FFF;
--		id[83] |= 0x4000;	/* Word 83 is valid */
-+		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
- 		id[86] |= 0x0400;	/* LBA48 on */
- 		id[ATA_ID_MAJOR_VER] |= 0x1F;
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -298,6 +298,18 @@ static int ec_check_ibf0(struct acpi_ec 
+ 	return (status & ACPI_EC_FLAG_IBF) == 0;
+ }
+ 
++static int ec_wait_ibf0(struct acpi_ec *ec)
++{
++	unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
++	/* interrupt wait manually if GPE mode is not active */
++	unsigned long timeout = test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ?
++		msecs_to_jiffies(ACPI_EC_DELAY) : msecs_to_jiffies(1);
++	while (time_before(jiffies, delay))
++		if (wait_event_timeout(ec->wait, ec_check_ibf0(ec), timeout))
++			return 0;
++	return -ETIME;
++}
++
+ static int acpi_ec_transaction(struct acpi_ec *ec, struct transaction *t,
+ 			       int force_poll)
+ {
+@@ -315,8 +327,7 @@ static int acpi_ec_transaction(struct ac
+ 			goto unlock;
+ 		}
  	}
+-	if (!wait_event_timeout(ec->wait, ec_check_ibf0(ec),
+-				msecs_to_jiffies(ACPI_EC_DELAY))) {
++	if (ec_wait_ibf0(ec)) {
+ 		pr_err(PREFIX "input buffer is not empty, "
+ 				"aborting transaction\n");
+ 		status = -ETIME;
 
 -- 
