@@ -1,284 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYKDUX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbYKDU02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbYKDUX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 15:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbYKDUXQ
+	id S1755558AbYKDU02 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 15:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbYKDU0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 15:23:16 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:54440 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752501AbYKDUXP (ORCPT
+	Tue, 4 Nov 2008 15:26:20 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:42361 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753732AbYKDU0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 15:23:15 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH RFC v2] net: add PCINet driver
-Date: Tue, 4 Nov 2008 21:23:03 +0100
-User-Agent: KMail/1.9.9
-Cc: Ira Snyder <iws@ovro.caltech.edu>,
-       Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jan-Bernd Themann <THEMANN@de.ibm.com>
-References: <20081029202027.GH12879@ovro.caltech.edu> <200811041309.25869.arnd@arndb.de> <20081104173414.GB4641@ovro.caltech.edu>
-In-Reply-To: <20081104173414.GB4641@ovro.caltech.edu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 4 Nov 2008 15:26:19 -0500
+Message-ID: <4910AFC1.2080306@natemccallum.com>
+Date: Tue, 04 Nov 2008 15:25:37 -0500
+From: Nathaniel McCallum <nathaniel@natemccallum.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] Loaded driver modalias
+References: <491096D7.10808@natemccallum.com> <ac3eb2510811041155s3ef2df93w8fdd7ce7c009e994@mail.gmail.com>
+In-Reply-To: <ac3eb2510811041155s3ef2df93w8fdd7ce7c009e994@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811042123.03819.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/tCLAVvwmMYja9imRtXjUkg69yqn/BPK98hyL
- hBZjqZZd471tlYLgik3zh29DMkM19W5HzaacJ8EUPxhWdZVems
- aG/xQQlSnIYYljZJl4mnw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 November 2008, Ira Snyder wrote:
-> On Tue, Nov 04, 2008 at 01:09:25PM +0100, Arnd Bergmann wrote:
-> >
-> > Why 'depends on !PCI'? This means that you cannot build a kernel that
-> > is able to run both as host and endpoint for PCInet, right?
-> > 
-> 
-> Yes, that is correct. I did this because the Linux PCI code does some
-> relatively nasty things in agent mode. One thing that consistently
-> crashed my box was running through the quirks list and trying to
-> re-initialize an e100 that was in my box.
-> 
-> Remember, this is a PCI agent. It shouldn't be re-initializing the other
-> hardware on the PCI bus.
+Kay Sievers wrote:
+> On Tue, Nov 4, 2008 at 19:39, Nathaniel McCallum
+> <nathaniel@natemccallum.com> wrote:
+>   
+>> Please CC me to responses as I'm not subscribed to LKML.  Also, this is my
+>> first kernel patch, advise is certainly welcome.
+>>
+>> For something I'm working on I have the need to answer the question, "given
+>> a hardware ID, does Linux distro X have a driver to support this hardware?"
+>> and more specifically, "which drivers support this hardware?" I can,
+>> generally speaking, get this data from files like
+>> /lib/modules/*/modules.alias.  However, this does not work for drivers built
+>> into the kernel.  With that in mind, I've cooked up a little proof of
+>> concept. Basically, its a sysfs file
+>> /sys/modules/$module/drivers/$driver/modalias that, when read, contains
+>> modalias-style filters for this driver.
+>>
+>> The attached patch only does this for PCI drivers, each subsystem would need
+>> a patch like this.  Is this idea crazy?  Is there a better implementation?
+>>     
+>
+> Hmm, what if that gets larger than 4k? It seems not really like
+> something for sysfs. There are also drivers which export a modalias
+> which matches more devices, than the device it actually would accept
+> to bind to. Some driver have logic in the match() function to exclude
+> stuff.
+>   
+In this current patch, an error is returned.  Like I said, this is more 
+proof of concept than anything.  I'm trying to ask a running kernel 
+"What hardware do you at least pretend to support?" While I would love 
+to get only the drivers that would actually bind to the device, I don't 
+suspect this is possible since you'd need real or emulated hardware to 
+test this.  One of my explicit design requirements is that the hardware 
+ids don't represent "real" hardware.  The hardware might exist in real 
+life, but I don't have it (and I can't emulate it).  I just want to know 
+what Linux would try to do with the hardware *if* I had it.  Thus, I 
+don't really care about the logic in the match() function since it would 
+require real hardware.
 
-Yes, that makes sense. However, you should still be able to have the
-PCI code built into the kernel, as long as you prevent it from scanning
-the bus on the machine that is in agent/endpoint mode.
+What method would be appropriate for this other than sysfs?
+> What's the exact information you need? Would it be sufficient  to ask
+> a bus with a modalias string, which driver of that bus matched that
+> device?
+>   
+I want to create a database of this information that exists outside the 
+Linux kernel.  This database should contain a map of filters to drivers 
+such that, given any hardware id (real or otherwise), I should be able 
+to determine which kernel drivers would attempt to "do something" with 
+this hardware.
 
-This should be made clear in the device tree. On the QS22 machine, we
-remove the "pci" device from the device tree, and add a "pcie-ep"
-device.
+So, first I would snapshot one or more distributions (and perhaps 
+different kernels in the same distro).  Then I would compare hardware 
+IDs against this snapshot.  Once this driver database is built, you can 
+do lots of things with it, including stuff like regression testing.  The 
+important thing is that the hardware id is not available at the time the 
+snapshot is taken.
 
-> I left it optional so I could turn it on and off easily. I have no
-> strong feelings on keeping it optional.
-> 
-> Does the PCI bus reliably transfer data? I'm not sure. I left it there
-> so that we could at least turn on checksumming if there was a problem.
+One of the possible usages for this, outside of my project, would be to 
+create a list of the most common hardware ids out there.  Then, for each 
+kernel release, a snapshot could be taken of its hardware support.  
+Then, you could test to make sure that all common hardware is supported 
+and that no regressions have appeared.  Sure, this doesn't test whether 
+the *real* hardware works or not.  However, testing physical hardware 
+cannot be easily automated, and this can.
 
-Yes, PCI guarantees reliable transfers.
- 
-> > > +struct circ_buf_desc {
-> > > +	__le32 sc;
-> > > +	__le32 len;
-> > > +	__le32 addr;
-> > > +} __attribute__((__packed__));
-> > 
-> > It would be useful to always force aligning the desciptors to the whole
-> > 32 bit and avoid the packing here. Unaligned accesses are inefficient on
-> > many systems.
-> > 
-> 
-> I don't really know how to do that. I got a warning here from sparse
-> telling me something about expensive pointer subtraction. Adding a dummy
-> 32bit padding variable got rid of the warning, but I didn't change the
-> driver.
-
-Ok, I see. However, adding the packed attribute makes it more expensive
-to use.
-
-> > > +typedef struct circ_buf_desc cbd_t;
-> > 
-> > Also, don't pass structures by value if they don't fit into one or
-> > two registers.
-> > 
-> 
-> These are only used for pointers to the buffer descriptors (in RAM on
-> the Freescale) that hold packet information. I never copy them directly.
-
-Ok, then you should not have a typedef.
-
-> > > +/* Buffer Descriptor Accessors */
-> > > +#define CBDW_SC(_cbd, _sc) iowrite32((_sc), &(_cbd)->sc)
-> > > +#define CBDW_LEN(_cbd, _len) iowrite32((_len), &(_cbd)->len)
-> > > +#define CBDW_ADDR(_cbd, _addr) iowrite32((_addr), &(_cbd)->addr)
-> > > +
-> > > +#define CBDR_SC(_cbd) ioread32(&(_cbd)->sc)
-> > > +#define CBDR_LEN(_cbd) ioread32(&(_cbd)->len)
-> > > +#define CBDR_ADDR(_cbd) ioread32(&(_cbd)->addr)
-> > 
-> > We have found that accessing remote descriptors using mmio read is
-> > rather slow, and changed the code to always do local reads and
-> > remote writes.
-> > 
-> Interesting. I don't know how you would get network speed doing this.
-> X86 systems don't have a DMA conttroller. The entire purpose of making
-> the Freescale do all the copying was to use its DMA controller.
-> 
-> Using the DMA controller to transfer all of the data took my transfer
-> speed from ~3MB/sec to ~45MB/sec. While that is a good increase, it
-> could be better. I should be able to hit close to 133MB/sec (the limit
-> of PCI)
-
-Then I think I misunderstood something about this driver. Are these
-descriptors accessed by the DMA engine, or by software? If it's the
-DMA engine accessing them, can you put the descriptors on both sides
-of the bus rather than just on one side?
-
-Which side allocates them anyway? Since you use ioread32/iowrite32
-on the ppc side, it looks like they are on the PCI host, which does
-not seem to make much sense, because the ppc memory is much closer
-to the DMA engine?
-
-Obviously, you want the DMA engine to do the data transfers, but here, you
-use ioread32 for mmio transfers to the descriptors, which is slow.
-
-> Correct. This was done to make both sides as identical as possible. The
-> Freescale exports the entire 1MB block of IMMR registers at PCI BAR0. So
-> I have to use the offsets on the host side.
-> 
-> From the client side, I could just map what I need, but that would make
-> the two drivers diverge. I was trying to keep them the same.
-
-Ah, I see. We had the same problem on Axon, and I'm still looking for a
-good solution. The best option is probably to abstract the immr access
-in some way and provide a driver that implements them on top of PCI.
-> 
-> > > +static void wqtuart_rx_char(struct uart_port *port, const char ch);
-> > > +static void wqtuart_stop_tx(struct uart_port *port);
-> > 
-> > You should try to avoid forward declarations for static functions.
-> > If you order the function implementation correctly, that will
-> > also give you the expected reading order in the driver.
-> > 
-> 
-> Yep, I tried to do this. I couldn't figure out a sane ordering that
-> would work. I tried to keep the network and uart as seperate as possible
-> in the code.
-
-I'd suggest splitting the uart code into a separate driver then.
-
-> > > +struct wqt_dev {
-> > > +	/*--------------------------------------------------------------------*/
-> > > +	/* OpenFirmware Infrastructure                                        */
-> > > +	/*--------------------------------------------------------------------*/
-> > > +	struct of_device *op;
-> > > +	struct device *dev;
-> > 
-> > Why the dev? You can always get that from the of_device, right?
-> > 
-> 
-> Yes. I stored it there to make it identical to the host driver. By doing
-> this, both drivers have code that says "dev_debug(priv->dev, ...)"
-> rather than:
-> 
-> Host:
-> dev_debug(&priv->pdev->dev, ...)
-> 
-> Freescale:
-> dev_debug(&priv->op->dev, ...)
-
-Ok. You can just store the dev pointer then, and leave out the op pointer.
-You can always do a container_of() to get back to it.
- 
-> Yes, I agree. How do you make two Linux drivers that can be loaded for
-> the same hardware at the same time? :) AFAIK, you cannot.
-> 
-> I NEED two functions accessible at the same time, network (to transfer
-> data) and uart (to control my bootloader).
-> 
-> I use the uart to interact with the bootloader (U-Boot) and tell it
-> where to tftp a kernel. I use the network to transfer the kernel.
-> 
-> So you see, I really do need them both at the same time. If you know a
-> better way to do this, please let me know!
-> 
-> It was possible to write seperate U-Boot drivers, but only by being
-> careful to not conflict in my usage of the hardware.
-
-Ok, I see. I fear any nice solution would make the u-boot drivers much
-more complex.
- 
-> > > +	struct workqueue_struct *wq;
-> > 
-> > A per-device pointer to a workqueue_struct is unusual. What are you doing
-> > this for? How about using the system work queue?
-> > 
-> 
-> Look through the code carefully, especially at uart_tx_work_fn(), which
-> calls do_send_message().
-> 
-> do_send_message() can sleep for a long time. If I use the shared
-> workqueue, I block ALL OTHER USERS of the queue for the time I am
-> asleep. They cannot run.
-
-ok.
-
-> The LDD3 book says not to use the shared workqueue if you are going to
-> sleep for long periods. I followed their advice.
-
-ok.
-
-> > > +	/*--------------------------------------------------------------------*/
-> > > +	/* Ethernet Device Infrastructure                                     */
-> > > +	/*--------------------------------------------------------------------*/
-> > > +	struct net_device *ndev;
-> > 
-> > Why make this a separate structure? If you have one of these per net_device,
-> > you should embed the net_device into your own structure.
-> > 
-> 
-> This structure is embedded in struct net_device! Look at how
-> alloc_etherdev() works. You pass it the size of your private data
-> structure and it allocates the space for you.
-
-right, I remember now. Unfortunately, alloc_etherdev is a little bit
-different from many other kernel interfaces.
-
-> > > +	struct tasklet_struct tx_complete_tasklet;
-> > 
-> > Using a tasklet for tx processing sounds fishy because most of the
-> > network code already runs at softirq time. You do not gain anything
-> > by another softirq context.
-> > 
-> 
-> I didn't want to run the TX cleanup routine at hard irq time, because it
-> can potentially take some time to run. I would rather run it with hard
-> interrupts enabled.
-
-sure.
-
-> This DOES NOT do TX processing, it only frees skbs that have been
-> transferred. I used the network stack to do as much as possible, of
-> course.
-
-Most drivers now do that from the *rx* poll function, and call
-netif_rx_schedule when they get a tx interrupt.
-
-> > If this is in an interrupt handler, why disable the interrupts again?
-> > The same comment applies to many of the other places where you
-> > use spin_lock_irqsave rather than spin_lock or spin_lock_irq.
-> > 
-> 
-> I tried to make the locking do only what was needed. I just couldn't get
-> it correct unless I used spin_lock_irqsave(). I was able to get the
-> system to deadlock otherwise. This is why I posted the driver for
-> review, I could use some help here.
-> 
-> It isn't critical anyway. You can always use spin_lock_irqsave(), it is
-> just a little slower, but it will always work :)
-
-I like the documenting character of the spinlock functions. E.g. if you
-use spin_lock_irq() in a function, it is obvious that interrupts are enabled,
-and if you use spin_lock() on a lock that requires disabling interrupts,
-you know that interrupts are already off.
- 
-> Thanks so much for the review! I hope we can work together to get
-> something that can be merged into mainline Linux. I'm willing to write
-> code, I just need some direction from more experienced kernel
-> developers.
-
-Great, I can certainly help with that. Please CC me on anything related
-to this driver.
-
-	Arnd <><
+Nathaniel
