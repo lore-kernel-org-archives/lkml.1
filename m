@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbYKDTHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbYKDTIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756783AbYKDTHx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:07:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbYKDTHj
+	id S1756748AbYKDTIe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:08:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYKDTIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:07:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38287 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753981AbYKDTHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:07:36 -0500
-Subject: Re: [PATCH -v2 3/4] AUDIT: collect info when execve results in
- caps in pE
-From: Eric Paris <eparis@redhat.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
-       morgan@kernel.org, viro@ZenIV.linux.org.uk
-In-Reply-To: <20081104163540.GA24318@us.ibm.com>
-References: <20081103201742.12059.36030.stgit@paris.rdu.redhat.com>
-	 <20081103201753.12059.67262.stgit@paris.rdu.redhat.com>
-	 <20081104163540.GA24318@us.ibm.com>
-Content-Type: text/plain
-Date: Tue, 04 Nov 2008 14:07:26 -0500
-Message-Id: <1225825646.4662.22.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Tue, 4 Nov 2008 14:08:25 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47775 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753396AbYKDTIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 14:08:24 -0500
+Message-ID: <49109D7C.3090409@zytor.com>
+Date: Tue, 04 Nov 2008 11:07:40 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+CC: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <491090F3.5020701@zytor.com> <1225824256.28612.1282966677@webmail.messagingengine.com>
+In-Reply-To: <1225824256.28612.1282966677@webmail.messagingengine.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-04 at 10:35 -0600, Serge E. Hallyn wrote:
-> Quoting Eric Paris (eparis@redhat.com):
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index 8bb95ed..534abb5 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -8,6 +8,7 @@
-> >   */
-> > 
-> >  #include <linux/capability.h>
-> > +#include <linux/audit.h>
-> >  #include <linux/module.h>
-> >  #include <linux/init.h>
-> >  #include <linux/kernel.h>
-> > @@ -373,6 +374,9 @@ int cap_bprm_set_security (struct linux_binprm *bprm)
-> > 
-> >  void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
-> >  {
-> > +	kernel_cap_t pP = current->cap_permitted;
-> > +	kernel_cap_t pE = current->cap_effective;
-> > +
-> >  	if (bprm->e_uid != current->uid || bprm->e_gid != current->gid ||
-> >  	    !cap_issubset(bprm->cap_post_exec_permitted,
-> >  			  current->cap_permitted)) {
-> > @@ -407,6 +411,12 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
-> >  	}
-> > 
-> >  	/* AUD: Audit candidate if current->cap_effective is set */
-> > +	if (!cap_isclear(current->cap_effective)) {
-> > +		if (!cap_issubset(current->cap_effective, CAP_FULL_SET) ||
+Alexander van Heukelum wrote:
 > 
-> Hi Eric,
+> Thanks for the info!
 > 
-> can you explain what the cap_issubset() check is for here?
+> This just means that if there are performance problems, the
+> 'specialized'
+> handlers should be using the kernel segment or maybe a single common
+> segment. It would still allow us to get rid of the trampolines. A stack
+> trace should be enough to reconstruct which vector was originally called
+> in that case. Only the common_interrupt-codepath needs the original
+> vector as far as I can see.
+> 
+> You just made testing on larger machines with a lot of external
+> interrupts necessary :-/. (Assuming small machines do not show
+> performance problems, that is.)
+> 
 
-I'm glad you noticed it, because it is backwards!
+Overall, it more than anything else show the x86 architectural
+braindamage of not having an interrupt vector number register available
+anywhere.  However, I suspect using segment registers is liable to
+suffer from a "wall of jello" effect once you overflow the segment
+descriptor cache, which will typically be around 32 entries in size.
 
-should be
+Now, at least on my kernel, the existing IRQ stubs are rather weird:
+they are padded to 8 bytes and then misaligned onto a 4-byte boundary.
+Furthermore, at the cost of an extra jump, they can trivially be
+compressed down to 4 bytes apiece instead of 7-padded-to-8.
 
-if (!cap_issubset(CAP_FULL_SET, current->cap_effective) ||
-
-The idea is that I don't care to audit
-1) full set &&
-2) this is root &&
-3) root should have a full set
-
-This would still consider a root without a full set because the bset had
-been changed to be an interesting event.  I'm fine with that.
-
-I'll send -v3 once I hear comments on everything else....
-
--Eric
-
+	-hpa
