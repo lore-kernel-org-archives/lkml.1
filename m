@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbYKDQec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbYKDQfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbYKDQec (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:34:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbYKDQeS
+	id S1756174AbYKDQfL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYKDQe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:34:18 -0500
-Received: from no-dns-yet.demon.co.uk ([80.176.108.50]:63633 "HELO
-	mailgate.blueteddy.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1754720AbYKDQeR (ORCPT
+	Tue, 4 Nov 2008 11:34:57 -0500
+Received: from co203.xi-lite.net ([149.6.83.203]:46407 "EHLO
+	toronto.xi-lite.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754111AbYKDQe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:34:17 -0500
-X-Greylist: delayed 1011 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Nov 2008 11:34:15 EST
-Message-ID: <49107543.5080207@blueteddy.net>
-Date: Tue, 04 Nov 2008 16:16:03 +0000
-From: Dave Hudson <linux-kernel@blueteddy.net>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 4 Nov 2008 11:34:57 -0500
+X-Greylist: delayed 1702 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Nov 2008 11:34:56 EST
+Message-ID: <49107304.2060006@parrot.com>
+Date: Tue, 04 Nov 2008 17:06:28 +0100
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
 MIME-Version: 1.0
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linux Netdev <netdev@vger.kernel.org>,
-       Linux Networking <linux-net@vger.kernel.org>
-Subject: Re: time for TCP ECN defaulting to on?
-References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
-In-Reply-To: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Arm Mailing List <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: arm checkstack
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Nov 2008 16:07:21.0793 (UTC) FILETIME=[6B4C8310:01C93E97]
+X-AV-Checked: No Virus Found
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel J Blueman wrote:
-> Is it time to enable TCP ECN per default and get the benefits, since
-> router support has been around and known-about for really considerable
-> time?
-> 
-> Perhaps it should be a question of enabling it, and educating people
-> to disable it if they run into issues, since we'll probably be in the
-> same situation in 5 years...and it'll be some time before these
-> kernels hit devices/servers anyway.
-> 
-> Daniel
+Hi,
 
-Unfortunately I think you'll find there are sufficiently large numbers 
-of broken SOHO routers out there that if you try this you'll cause a lot 
-of problems.  The problems range from no connectivity to in a few 
-extreme cases routers actually crashing or behaving in very 
-unpredictable ways.  Here's one summary that got presented to the IETF 
-about 18 months ago:
-
-http://www.ietf.org/proceedings/07mar/slides/tsvarea-3/sld6.htm
-
-When a clueless end-user gets a Linux-enabled netbook that crashes their 
-router while their existing Vista or XP systems appear to work just fine 
-then the Linux network stack will get the blame for being buggy, not the 
-router :-(
+I wonder why the arm version of checkstack only catch stack size >= 300
+and < 10000 [1].
+Why doesn't it use ".*sub.*sp, sp, #([0-9]{1,8})" to catch all stack usage ?
 
 
-Regards,
-Dave
+Matthieu
 
 
+
+[1]
+$re = qr/.*sub.*sp, sp, #(([0-9]{2}|[3-9])[0-9]{2})/o;
