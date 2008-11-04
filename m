@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbYKDP3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbYKDPba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378AbYKDP3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 10:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbYKDP3Z
+	id S1755674AbYKDPba (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 10:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYKDPbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 10:29:25 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37395 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752985AbYKDP3Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 10:29:24 -0500
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] tty: Fix close races in USB serial
-To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 04 Nov 2008 15:29:24 +0000
-Message-ID: <20081104152916.30344.68193.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Tue, 4 Nov 2008 10:31:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47383 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752366AbYKDPbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 10:31:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory hotplug
+Date: Tue, 4 Nov 2008 16:35:48 +0100
+User-Agent: KMail/1.9.9
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811040954.34969.rjw@sisk.pl> <1225812111.12673.577.camel@nimitz>
+In-Reply-To: <1225812111.12673.577.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811041635.49932.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+On Tuesday, 4 of November 2008, Dave Hansen wrote:
+> On Tue, 2008-11-04 at 09:54 +0100, Rafael J. Wysocki wrote:
+> > To handle this, I need to know two things:
+> > 1) what changes of the zones are possible due to memory hotplugging
+> > (i.e.    can they grow, shring, change boundaries etc.)
+> 
+> All of the above. 
 
-USB serial has always had races where the tty port usage count can hit zero
-during a receive event. The internal locking is a mutex so we can't use
-that in the IRQ handlers.
+OK
 
-With krefs we can tackle this differently but we still need to be careful.
+If I allocate a page frame corresponding to specific pfn, is it guaranteed to
+be associated with the same pfn in future?
 
-Signed-off-by: Alan Cox <alan@redhat.com>
----
+> > 2) what kind of locking is needed to prevent zones from changing.
+> 
+> The amount of locking is pretty minimal.  We depend on some locking in
+> sysfs to keep two attempts to online from stepping on the other.
+> 
+> There is the zone_span_seq*() set of functions.  These are used pretty
+> sparsely, but we do use them in page_outside_zone_boundaries() to notice
+> when a zone is resized.
+> 
+> There are also the pgdat_resize*() locks.  Those are more for internal
+> use guarding the sparsemem structures and so forth.
+> 
+> Could you describe a little more why you need to lock down zone
+> resizing?  Do you *really* mean zones, or do you mean "the set of memory
+> on the system"?
 
- drivers/usb/serial/usb-serial.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+The latter, but our internal data structures are designed with zones in mind.
 
+> Why walk zones instead of pgdats? 
 
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index 794b5ff..aafa684 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -269,15 +269,19 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
- 		return;
- 	}
- 
--	--port->port.count;
--	if (port->port.count == 0)
-+	if (port->port.count == 1)
- 		/* only call the device specific close if this
--		 * port is being closed by the last owner */
-+		 * port is being closed by the last owner. Ensure we do
-+		 * this before we drop the port count. The call is protected
-+		 * by the port mutex
-+		 */
- 		port->serial->type->close(tty, port, filp);
- 
--	if (port->port.count == (port->console? 1 : 0)) {
-+	if (port->port.count == (port->console ? 2 : 1)) {
- 		struct tty_struct *tty = tty_port_tty_get(&port->port);
- 		if (tty) {
-+			/* We must do this before we drop the port count to
-+			   zero. */
- 			if (tty->driver_data)
- 				tty->driver_data = NULL;
- 			tty_port_tty_set(&port->port, NULL);
-@@ -285,13 +289,14 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
- 		}
- 	}
- 
--	if (port->port.count == 0) {
-+	if (port->port.count == 1) {
- 		mutex_lock(&port->serial->disc_mutex);
- 		if (!port->serial->disconnected)
- 			usb_autopm_put_interface(port->serial->interface);
- 		mutex_unlock(&port->serial->disc_mutex);
- 		module_put(port->serial->type->driver.owner);
- 	}
-+	--port->port.count;
- 
- 	mutex_unlock(&port->mutex);
- 	usb_serial_put(port->serial);
+This is a historical thing rather than anything else.  I think we could switch
+to pgdats, but that would require a code rewrite that's likely to introduce
+bugs, while our image-creating code is really well tested and doesn't change
+very often.
 
+Thanks,
+Rafael
