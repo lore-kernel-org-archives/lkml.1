@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbYKDSfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYKDShB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756346AbYKDSfW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:35:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYKDSew
+	id S1756107AbYKDShB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYKDSgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:34:52 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:48023 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752237AbYKDSeu (ORCPT
+	Tue, 4 Nov 2008 13:36:53 -0500
+Received: from smarthost02.mail.zen.net.uk ([212.23.3.141]:38521 "EHLO
+	smarthost02.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752123AbYKDSgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:34:50 -0500
-Message-ID: <491095C4.3000503@ru.mvista.com>
-Date: Tue, 04 Nov 2008 21:34:44 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] ide: rework handling of serialized ports
-References: <20081103200244.5098.29817.sendpatchset@localhost.localdomain> <20081103200326.5098.2058.sendpatchset@localhost.localdomain> <491094B2.4090107@ru.mvista.com>
-In-Reply-To: <491094B2.4090107@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 13:36:52 -0500
+Subject: Re: [PATCH] x86: Don't allow nr_irqs > NR_IRQS
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>
+In-Reply-To: <20081104180012.GG21470@localhost>
+References: <1225819102.3074.15.camel@achroite>
+	 <20081104180012.GG21470@localhost>
+Content-Type: text/plain; charset=utf-8
+Organization: Solarflare Communications
+Date: Tue, 04 Nov 2008 18:36:47 +0000
+Message-Id: <1225823807.3074.24.camel@achroite>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
+X-Originating-Smarthost02-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Tue, 2008-11-04 at 21:00 +0300, Cyrill Gorcunov wrote:
+[...]
+> | I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
+> | Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
+> | 5 IOAPICs (!) and returns 240.  Here are the log messages:
+> | 
+> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
+> | Tue Nov  4 16:53:47 2008 IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
+> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x02] address[0xfec81000] gsi_base[24])
+> | Tue Nov  4 16:53:47 2008 IOAPIC[1]: apic_id 2, version 32, address 0xfec81000, GSI 24-47
+> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x03] address[0xfec81400] gsi_base[48])
+> | Tue Nov  4 16:53:47 2008 IOAPIC[2]: apic_id 3, version 32, address 0xfec81400, GSI 48-71
+> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x04] address[0xfec82000] gsi_base[72])
+> | Tue Nov  4 16:53:47 2008 IOAPIC[3]: apic_id 4, version 32, address 0xfec82000, GSI 72-95
+> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x05] address[0xfec82400] gsi_base[96])
+> | Tue Nov  4 16:53:47 2008 IOAPIC[4]: apic_id 5, version 32, address 0xfec82400, GSI 96-119
+> | Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+> | Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+> | Tue Nov  4 16:53:47 2008 Enabling APIC mode:  Flat.  Using 5 I/O APICs
+> | 
+> | ﻿I think this has become possible since:
+> | 
+> | commit d6c88a507ef0b6afdb013cba4e7804ba7324d99a
+> | Author: Thomas Gleixner <tglx@linutronix.de>
+> | Date:   Wed Oct 15 15:27:23 2008 +0200
+> | 
+> |     genirq: revert dynarray
+> | 
+> |     Revert the dynarray changes. They need more thought and polishing.
+> | 
+> |     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+[...]
+> Hi Ben,
+> 
+> I don't think that is because of Thomas' commit. If we've got
+> number of pins larger then we expect it means something wrong
+> with our NR_IRQS. Is it possible to get your .config?
 
->> Index: b/drivers/ide/ide-probe.c
->> ===================================================================
->> --- a/drivers/ide/ide-probe.c
->> +++ b/drivers/ide/ide-probe.c
+Well there must have been an earlier change that resulted in detecting 5
+IOAPICs instead of just 1, but that presumably would work as long as the
+irq_desc array was dynamically allocated.  This reversion breaks that.
 
-> [...]
+You don't really need to see the config; NR_IRQS is *always* 224 on
+normal x86-32 systems.
 
->> @@ -1436,10 +1398,8 @@ static void ide_init_port(ide_hwif_t *hw
->>      }
->>  
->>      if ((d->host_flags & IDE_HFLAG_SERIALIZE) ||
->> -        ((d->host_flags & IDE_HFLAG_SERIALIZE_DMA) && hwif->dma_base)) {
->> -        if (hwif->mate)
->> -            hwif->mate->serialized = hwif->serialized = 1;
->> -    }
->> +        ((d->host_flags & IDE_HFLAG_SERIALIZE_DMA) && hwif->dma_base))
->> +        hwif->host_flags |= IDE_HFLAG_SERIALIZE;
+Ben.
 
->    I don't see what use is forcing this flag at all here -- it doesn't 
-> seem to be checked only in init_irq() now, so this *if* could just be 
-> moved there...
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
-    Oops, rephrasing hurts sometimes: I meant "it seems", of course. :-)
-
-MBR, Sergei
