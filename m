@@ -1,249 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYKDVn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYKDVnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbYKDVn2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 16:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYKDVnR
+	id S1757174AbYKDVnz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 16:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYKDVnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 16:43:17 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:40506 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbYKDVnQ (ORCPT
+	Tue, 4 Nov 2008 16:43:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46532 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754335AbYKDVno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 16:43:16 -0500
-Date: Tue, 4 Nov 2008 15:43:13 -0600
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Dustin Kirkland <dustin.kirkland@gmail.com>,
-       Eric Sandeen <sandeen@redhat.com>, Tyler Hicks <tchicks@us.ibm.com>,
-       David Kleikamp <shaggy@us.ibm.com>
-Subject: [PATCH 5/5] eCryptfs: Filename Encryption: mount option
-Message-ID: <20081104214313.GE6677@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20081104213754.GC6675@halcrowt61p.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081104213754.GC6675@halcrowt61p.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 4 Nov 2008 16:43:44 -0500
+Date: Tue, 4 Nov 2008 13:42:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: rientjes@google.com, npiggin@suse.de, peterz@infradead.org,
+       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/7] cpusets: add dirty map to struct address_space
+Message-Id: <20081104134256.24db6b36.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0811041513490.23418@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.0810300310180.18283@chino.kir.corp.google.com>
+	<20081104130918.bee16cff.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811041513490.23418@quilx.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable mount-wide filename encryption by providing the Filename
-Encryption Key (FNEK) signature as a mount option. Note that the
-ecryptfs-utils userspace package versions 61 or later support
-this option.
+On Tue, 4 Nov 2008 15:20:56 -0600 (CST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/main.c |  126 ++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 99 insertions(+), 27 deletions(-)
+> On Tue, 4 Nov 2008, Andrew Morton wrote:
+> 
+> >> +#ifdef CONFIG_CPUSETS
+> >> +#if MAX_NUMNODES <= BITS_PER_LONG
+> >> +	nodemask_t		dirty_nodes;	/* nodes with dirty pages */
+> >> +#else
+> >> +	nodemask_t		*dirty_nodes;	/* pointer to mask, if dirty */
+> >> +#endif
+> >> +#endif
+> >>  } __attribute__((aligned(sizeof(long))));
+> >
+> > eek.  Increasing the size of the address_space (and hence of the inode)
+> > is a moderately big deal - there can be millions of these in memory.
+> 
+> Well this is adding only a single word to the inode structure.
 
-diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-index fd63071..789cf2e 100644
---- a/fs/ecryptfs/main.c
-+++ b/fs/ecryptfs/main.c
-@@ -206,7 +206,9 @@ enum { ecryptfs_opt_sig, ecryptfs_opt_ecryptfs_sig,
-        ecryptfs_opt_cipher, ecryptfs_opt_ecryptfs_cipher,
-        ecryptfs_opt_ecryptfs_key_bytes,
-        ecryptfs_opt_passthrough, ecryptfs_opt_xattr_metadata,
--       ecryptfs_opt_encrypted_view, ecryptfs_opt_err };
-+       ecryptfs_opt_encrypted_view, ecryptfs_opt_fnek_sig,
-+       ecryptfs_opt_fn_cipher, ecryptfs_opt_fn_cipher_key_bytes,
-+       ecryptfs_opt_err };
- 
- static const match_table_t tokens = {
- 	{ecryptfs_opt_sig, "sig=%s"},
-@@ -217,6 +219,9 @@ static const match_table_t tokens = {
- 	{ecryptfs_opt_passthrough, "ecryptfs_passthrough"},
- 	{ecryptfs_opt_xattr_metadata, "ecryptfs_xattr_metadata"},
- 	{ecryptfs_opt_encrypted_view, "ecryptfs_encrypted_view"},
-+	{ecryptfs_opt_fnek_sig, "ecryptfs_fnek_sig=%s"},
-+	{ecryptfs_opt_fn_cipher, "ecryptfs_fn_cipher=%s"},
-+	{ecryptfs_opt_fn_cipher_key_bytes, "ecryptfs_fn_key_bytes=%u"},
- 	{ecryptfs_opt_err, NULL}
- };
- 
-@@ -281,8 +286,11 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
- 	int rc = 0;
- 	int sig_set = 0;
- 	int cipher_name_set = 0;
-+	int fn_cipher_name_set = 0;
- 	int cipher_key_bytes;
- 	int cipher_key_bytes_set = 0;
-+	int fn_cipher_key_bytes;
-+	int fn_cipher_key_bytes_set = 0;
- 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
- 		&ecryptfs_superblock_to_private(sb)->mount_crypt_stat;
- 	substring_t args[MAX_OPT_ARGS];
-@@ -290,7 +298,12 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
- 	char *sig_src;
- 	char *cipher_name_dst;
- 	char *cipher_name_src;
-+	char *fn_cipher_name_dst;
-+	char *fn_cipher_name_src;
-+	char *fnek_dst;
-+	char *fnek_src;
- 	char *cipher_key_bytes_src;
-+	char *fn_cipher_key_bytes_src;
- 
- 	if (!options) {
- 		rc = -EINVAL;
-@@ -322,10 +335,7 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
- 				global_default_cipher_name;
- 			strncpy(cipher_name_dst, cipher_name_src,
- 				ECRYPTFS_MAX_CIPHER_NAME_SIZE);
--			ecryptfs_printk(KERN_DEBUG,
--					"The mount_crypt_stat "
--					"global_default_cipher_name set to: "
--					"[%s]\n", cipher_name_dst);
-+			cipher_name_dst[ECRYPTFS_MAX_CIPHER_NAME_SIZE] = '\0';
- 			cipher_name_set = 1;
- 			break;
- 		case ecryptfs_opt_ecryptfs_key_bytes:
-@@ -335,11 +345,6 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
- 						   &cipher_key_bytes_src, 0);
- 			mount_crypt_stat->global_default_cipher_key_size =
- 				cipher_key_bytes;
--			ecryptfs_printk(KERN_DEBUG,
--					"The mount_crypt_stat "
--					"global_default_cipher_key_size "
--					"set to: [%d]\n", mount_crypt_stat->
--					global_default_cipher_key_size);
- 			cipher_key_bytes_set = 1;
- 			break;
- 		case ecryptfs_opt_passthrough:
-@@ -356,11 +361,51 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
- 			mount_crypt_stat->flags |=
- 				ECRYPTFS_ENCRYPTED_VIEW_ENABLED;
- 			break;
-+		case ecryptfs_opt_fnek_sig:
-+			fnek_src = args[0].from;
-+			fnek_dst =
-+				mount_crypt_stat->global_default_fnek_sig;
-+			strncpy(fnek_dst, fnek_src, ECRYPTFS_SIG_SIZE_HEX);
-+			mount_crypt_stat->global_default_fnek_sig[
-+				ECRYPTFS_SIG_SIZE_HEX] = '\0';
-+			rc = ecryptfs_add_global_auth_tok(
-+				mount_crypt_stat,
-+				mount_crypt_stat->global_default_fnek_sig);
-+			if (rc) {
-+				printk(KERN_ERR "Error attempting to register "
-+				       "global fnek sig [%s]; rc = [%d]\n",
-+				       mount_crypt_stat->global_default_fnek_sig,
-+				       rc);
-+				goto out;
-+			}
-+			mount_crypt_stat->flags |=
-+				(ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES
-+				 | ECRYPTFS_GLOBAL_ENCFN_USE_MOUNT_FNEK);
-+			break;
-+		case ecryptfs_opt_fn_cipher:
-+			fn_cipher_name_src = args[0].from;
-+			fn_cipher_name_dst =
-+				mount_crypt_stat->global_default_fn_cipher_name;
-+			strncpy(fn_cipher_name_dst, fn_cipher_name_src,
-+				ECRYPTFS_MAX_CIPHER_NAME_SIZE);
-+			mount_crypt_stat->global_default_fn_cipher_name[
-+				ECRYPTFS_MAX_CIPHER_NAME_SIZE] = '\0';
-+			fn_cipher_name_set = 1;
-+			break;
-+		case ecryptfs_opt_fn_cipher_key_bytes:
-+			fn_cipher_key_bytes_src = args[0].from;
-+			fn_cipher_key_bytes =
-+				(int)simple_strtol(fn_cipher_key_bytes_src,
-+						   &fn_cipher_key_bytes_src, 0);
-+			mount_crypt_stat->global_default_fn_cipher_key_bytes =
-+				fn_cipher_key_bytes;
-+			fn_cipher_key_bytes_set = 1;
-+			break;
- 		case ecryptfs_opt_err:
- 		default:
--			ecryptfs_printk(KERN_WARNING,
--					"eCryptfs: unrecognized option '%s'\n",
--					p);
-+			printk(KERN_WARNING
-+			       "%s: eCryptfs: unrecognized option [%s]\n",
-+			       __func__, p);
- 		}
- 	}
- 	if (!sig_set) {
-@@ -374,33 +419,60 @@ static int ecryptfs_parse_options(struct super_block *sb, char *options)
- 		int cipher_name_len = strlen(ECRYPTFS_DEFAULT_CIPHER);
- 
- 		BUG_ON(cipher_name_len >= ECRYPTFS_MAX_CIPHER_NAME_SIZE);
--
- 		strcpy(mount_crypt_stat->global_default_cipher_name,
- 		       ECRYPTFS_DEFAULT_CIPHER);
- 	}
--	if (!cipher_key_bytes_set) {
-+	if ((mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)
-+	    && !fn_cipher_name_set)
-+		strcpy(mount_crypt_stat->global_default_fn_cipher_name,
-+		       mount_crypt_stat->global_default_cipher_name);
-+	if (!cipher_key_bytes_set)
- 		mount_crypt_stat->global_default_cipher_key_size = 0;
--	}
-+	if ((mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)
-+	    && !fn_cipher_key_bytes_set)
-+		mount_crypt_stat->global_default_fn_cipher_key_bytes =
-+			mount_crypt_stat->global_default_cipher_key_size;
- 	mutex_lock(&key_tfm_list_mutex);
- 	if (!ecryptfs_tfm_exists(mount_crypt_stat->global_default_cipher_name,
--				 NULL))
-+				 NULL)) {
- 		rc = ecryptfs_add_new_key_tfm(
- 			NULL, mount_crypt_stat->global_default_cipher_name,
- 			mount_crypt_stat->global_default_cipher_key_size);
--	mutex_unlock(&key_tfm_list_mutex);
--	if (rc) {
--		printk(KERN_ERR "Error attempting to initialize cipher with "
--		       "name = [%s] and key size = [%td]; rc = [%d]\n",
--		       mount_crypt_stat->global_default_cipher_name,
--		       mount_crypt_stat->global_default_cipher_key_size, rc);
--		rc = -EINVAL;
--		goto out;
-+		if (rc) {
-+			printk(KERN_ERR "Error attempting to initialize "
-+			       "cipher with name = [%s] and key size = [%td]; "
-+			       "rc = [%d]\n",
-+			       mount_crypt_stat->global_default_cipher_name,
-+			       mount_crypt_stat->global_default_cipher_key_size,
-+			       rc);
-+			rc = -EINVAL;
-+			mutex_unlock(&key_tfm_list_mutex);
-+			goto out;
-+		}
- 	}
-+	if ((mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)
-+	    && !ecryptfs_tfm_exists(
-+		    mount_crypt_stat->global_default_fn_cipher_name, NULL)) {
-+		rc = ecryptfs_add_new_key_tfm(
-+			NULL, mount_crypt_stat->global_default_fn_cipher_name,
-+			mount_crypt_stat->global_default_fn_cipher_key_bytes);
-+		if (rc) {
-+			printk(KERN_ERR "Error attempting to initialize "
-+			       "cipher with name = [%s] and key size = [%td]; "
-+			       "rc = [%d]\n",
-+			       mount_crypt_stat->global_default_fn_cipher_name,
-+			       mount_crypt_stat->global_default_fn_cipher_key_bytes,
-+			       rc);
-+			rc = -EINVAL;
-+			mutex_unlock(&key_tfm_list_mutex);
-+			goto out;
-+		}
-+	}
-+	mutex_unlock(&key_tfm_list_mutex);
- 	rc = ecryptfs_init_global_auth_toks(mount_crypt_stat);
--	if (rc) {
-+	if (rc)
- 		printk(KERN_WARNING "One or more global auth toks could not "
- 		       "properly register; rc = [%d]\n", rc);
--	}
- out:
- 	return rc;
- }
--- 
-1.5.3.6
+multiplied by millions.
 
+> >> @@ -72,6 +72,8 @@ struct writeback_control {
+> >>  	 * so we use a single control to update them
+> >>  	 */
+> >>  	unsigned no_nrwrite_index_update:1;
+> >> +
+> >> +	nodemask_t *nodes;		/* Nodemask to writeback */
+> >
+> > This one doesn't get ifdefs?
+> 
+> The structure is typically allocated temporarily on the stack.
+
+An ifdef also helps catch the presence of unnecesary code.
+
+> >> +	nodemask_t *nodes = mapping->dirty_nodes;
+> >> +	int node = page_to_nid(page);
+> >> +
+> >> +	if (!nodes) {
+> >> +		nodes = kmalloc(sizeof(nodemask_t), GFP_ATOMIC);
+> >
+> > erk, OK, called from __set_page_dirty, needs to be atomic.
+> >
+> > What are the consequences when this allocation fails?
+> 
+> Dirty tracking will not occur. All nodes are assumed to be dirty.
+
+It won't oops?
+
+> We discussed this earlier 
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0709.1/2291.html
+
+Well, if it isn't in the changelog and isn't in code comments, we get
+to discuss it again.
+
+A great amount of mailing list discussion is a Huge Honking Big Fat
+Hint that the original code was insufficently understandable.
