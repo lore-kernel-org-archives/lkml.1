@@ -1,72 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756414AbYKDXgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYKDXhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756414AbYKDXgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYKDXgZ
+	id S1756690AbYKDXhj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYKDXh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:36:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48093 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752192AbYKDXgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:36:24 -0500
-Date: Tue, 4 Nov 2008 15:36:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: peterz@infradead.org, rientjes@google.com, npiggin@suse.de,
-       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 0/7] cpuset writeback throttling
-Message-Id: <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0811041648350.6254@quilx.com>
-References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
-	<20081104124753.fb1dde5a.akpm@linux-foundation.org>
-	<1225831988.7803.1939.camel@twins>
-	<20081104131637.68fbe055.akpm@linux-foundation.org>
-	<1225833710.7803.1993.camel@twins>
-	<20081104135004.f1717fcf.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0811041601100.5077@quilx.com>
-	<20081104143534.b5c16147.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0811041648350.6254@quilx.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 18:37:29 -0500
+Received: from mail.suse.de ([195.135.220.2]:47129 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753570AbYKDXh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:37:29 -0500
+Date: Tue, 4 Nov 2008 15:30:57 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
+       Dave Airlie <airlied@redhat.com>
+Subject: [patch 01/57] agp: Fix stolen memory counting on G4X.
+Message-ID: <20081104233057.GB659@suse.de>
+References: <20081104232144.186593464@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="agp-fix-stolen-memory-counting-on-g4x.patch"
+In-Reply-To: <20081104233028.GA659@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008 16:52:48 -0600 (CST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-> On Tue, 4 Nov 2008, Andrew Morton wrote:
-> 
-> > To fix this with a memcg-based throttling, the operator would need to
-> > be able to create memcg's which have pages only from particular nodes.
-> > (That's a bit indirect relative to what they want to do, but is
-> > presumably workable).
-> 
-> The system would need to have the capability to find the memcg groups that 
-> have dirty pages for a certain inode. Files are not constrained to nodes 
-> or memcg groups.
+------------------
+From: Eric Anholt <eric@anholt.net>
 
-Ah, we're talking about different things.
+commit 82e14a6215cbc9804ecc35281e973c6c8ce22fe7 upstream
 
-In a memcg implementation what we would implement is "throttle
-page-dirtying tasks in this memcg when the memcg's dirty memory reaches
-40% of its total".
+On the GM45, the amount of stolen memory mapped to the GTT was underestimated,
+even though we had 508KB more available since the GTT doesn't take from
+stolen memory. On the non-GM45 G4X, we overestimated how much stolen was
+mapped to the GTT by 4KB, resulting in GPU page faults when that page was
+accessed.
 
-But that doesn't solve the problem which this patchset is trying to
-solve, which is "don't let all the memory in all this group of nodes
-get dirty".
+This update requires a corresponding update to xf86-video-intel to work
+correctly.
 
+Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-Yes?  Someone help me out here.  I don't yet have my head around the
-overlaps and incompatibilities here.  Perhaps the containers guys will
-wake up and put their thinking caps on?
+---
+ drivers/char/agp/intel-agp.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -54,8 +54,7 @@
+ 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
+ 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
+ 		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
+-		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB || \
+-		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_GM45_HB)
++		 agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
+ 
+ #define IS_G33 (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
+ 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
+@@ -63,7 +62,8 @@
+ 
+ #define IS_G4X (agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_IGD_E_HB || \
+ 		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_Q45_HB || \
+-		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G45_HB)
++		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_G45_HB || \
++		agp_bridge->dev->device == PCI_DEVICE_ID_INTEL_GM45_HB)
+ 
+ extern int agp_memory_reserved;
+ 
+@@ -525,8 +525,10 @@ static void intel_i830_init_gtt_entries(
+ 		size += 4;
+ 	} else if (IS_G4X) {
+ 		/* On 4 series hardware, GTT stolen is separate from graphics
+-		 * stolen, ignore it in stolen gtt entries counting */
+-		size = 0;
++		 * stolen, ignore it in stolen gtt entries counting.  However,
++		 * 4KB of the stolen memory doesn't get mapped to the GTT.
++		 */
++		size = 4;
+ 	} else {
+ 		/* On previous hardware, the GTT size was just what was
+ 		 * required to map the aperture.
 
-
-What happens if cpuset A uses nodes 0,1,2,3,4,5,6,7,8,9 and cpuset B
-uses nodes 0,1?  Can activity in cpuset A cause ooms in cpuset B?
-
+-- 
