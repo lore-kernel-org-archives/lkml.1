@@ -1,160 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbYKDQvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYKDQw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbYKDQvm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbYKDQq7
+	id S1756002AbYKDQw1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:52:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbYKDQr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:46:59 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37576 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755522AbYKDQqG (ORCPT
+	Tue, 4 Nov 2008 11:47:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:40312 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757316AbYKDQr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:46:06 -0500
-From: Boaz Harrosh <bharrosh@panasas.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, open-osd ml <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 06/18] osd_uld: API for retrieving osd devices from Kernel
-Date: Tue,  4 Nov 2008 18:44:41 +0200
-Message-Id: <1225817081-6017-1-git-send-email-bharrosh@panasas.com>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <491073BB.4000900@panasas.com>
-References: <491073BB.4000900@panasas.com>
+	Tue, 4 Nov 2008 11:47:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=F41ndjSAdvOa+7Xd6IzaCrIqJ2Fa55dsd52HdXkQr/hTyzEKmzfjbYhc173E0Kp5Ym
+         W0/jbdKB57CbjbhILHIXcwozUPCnu3cJSW4kCST14NTAk0VsFjbSZKlJ29F6hPSP+qkr
+         58nrh0r5ySQs2Yo2x/8zI6yKLZd51gM4f4C4Y=
+Message-ID: <49107D98.9080201@gmail.com>
+Date: Tue, 04 Nov 2008 18:51:36 +0200
+From: "Eugene V. Lyubimkin" <jackyf.devel@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Peter Zijlstra <peterz@infradead.org>, Chris Friesen <cfriesen@nortel.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, hugh <hugh@veritas.com>
+Subject: Re: mmap: is default non-populating behavior stable?
+References: <490F73CD.4010705@gmail.com>	<1225752083.7803.1644.camel@twins>	<490F8005.9020708@redhat.com>	<491070B5.2060209@nortel.com>	<1225814820.7803.1672.camel@twins> <20081104162820.644b1487@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081104162820.644b1487@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD117098E412C7926C3D55A1A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel clients like osdfs can retrieve struct osd_dev(s)
-by means of below API.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD117098E412C7926C3D55A1A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-+ osduld_path_lookup() - given a path (e.g "/dev/osd0") locks and
-returns the corresponding struct osd_dev, which is then needed
-for subsequent libosd use.
+Alan Cox wrote:
+> On Tue, 04 Nov 2008 17:07:00 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
+>> [snip]
+>> I'm not sure how POSIX speaks of this.
+>>
+>> I think Linux does the expected thing.
+>=20
+> I believe our behaviour is correct for mmap/mumap/truncate and it
+> certainly used to be and was tested.
+>=20
+> At the point you do anything involving mremap (which is non posix) our
+> behaviour becomes rather bizarre.
 
-+ osduld_put_device() - free up use of an osd_dev.
+Thanks to all for answers. I have made the conclusion that doing "open() =
+new
+file, truncate(<big size>), mmap(<the same big size>), write/read some me=
+mory
+pages" should not populate other, untouched by write/read pages (until
+MAP_POPULATE given), right?
 
-Devices can be shared by multiple clients. The osd_uld_device's
-life time is governed by an embedded kref structure.
+--=20
+Eugene V. Lyubimkin aka JackYF
 
-The osd_uld_device holds an extra reference to both it's
-char-device and it's scsi_device, and will release these just
-before the final deallocation.
 
-There are three possible lock sources of the osd_uld_device
-1. First and for most is the probe() function called by
-  scsi-ml upon a successful login into a target. Released in release()
-  when logout.
-2. Second by user-mode file handles opened on the char-dev.
-3. Third is here by Kernel users.
-All three locks must be removed before the osd_uld_device is freed.
+--------------enigD117098E412C7926C3D55A1A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-The MODULE has three lock sources as well:
-1. scsi-ml at probe() time, removed after release(). (login/logout)
-2. The user-mode file handles open/close.
-3. Import symbols by client modules like osdfs.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-TODO:
-  This API is not enough for the pNFS-objects LD. A more versatile
-  API will be needed. Proposed API could be:
-  struct osd_dev *osduld_sysid_lookup(const char id[OSD_SYSTEMID_LEN]);
+iEYEARECAAYFAkkQfZ4ACgkQchorMMFUmYxbqgCfUXKdc7I7juZHEBsyPsVVtwiu
+zYwAn3cPA8yySpv583SYEUxTmcPALVQm
+=mfAu
+-----END PGP SIGNATURE-----
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/scsi/osd/osd_uld.c   |   52 ++++++++++++++++++++++++++++++++++++++++++
- include/scsi/osd_initiator.h |    5 ++++
- 2 files changed, 57 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/scsi/osd/osd_uld.c b/drivers/scsi/osd/osd_uld.c
-index 87b4540..0229301 100644
---- a/drivers/scsi/osd/osd_uld.c
-+++ b/drivers/scsi/osd/osd_uld.c
-@@ -42,6 +42,7 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
- 
-+#include <linux/namei.h>
- #include <linux/cdev.h>
- #include <linux/fs.h>
- #include <linux/module.h>
-@@ -142,6 +143,57 @@ static const struct file_operations osd_fops = {
- 	.unlocked_ioctl = osd_uld_ioctl,
- };
- 
-+struct osd_dev *osduld_path_lookup(const char *path)
-+{
-+	struct nameidata nd;
-+	struct inode *inode;
-+	struct cdev *cdev;
-+	struct osd_uld_device *oud;
-+	int error;
-+
-+	if (!path || !*path)
-+		return ERR_PTR(-EINVAL);
-+
-+	error = path_lookup(path, LOOKUP_FOLLOW, &nd);
-+	if (error)
-+		return ERR_PTR(error);
-+
-+	inode = nd.path.dentry->d_inode;
-+	error = -EINVAL; /* Not the right device e.g osd_uld_device */
-+	if (!S_ISCHR(inode->i_mode))
-+		goto out;
-+
-+	cdev = inode->i_cdev;
-+	if (!cdev)
-+		goto out;
-+
-+	/* The Magic wand. Is it our char-dev */
-+	/* TODO: Support sg devices */
-+	if (cdev->owner != THIS_MODULE)
-+		goto out;
-+
-+	oud = container_of(cdev, struct osd_uld_device, cdev);
-+
-+	__uld_get(oud);
-+	error = 0;
-+
-+out:
-+	path_put(&nd.path);
-+	return error ? ERR_PTR(error) : &oud->od;
-+}
-+EXPORT_SYMBOL(osduld_path_lookup);
-+
-+void osduld_put_device(struct osd_dev *od)
-+{
-+	if (od) {
-+		struct osd_uld_device *oud = container_of(od,
-+						struct osd_uld_device, od);
-+
-+		__uld_put(oud);
-+	}
-+}
-+EXPORT_SYMBOL(osduld_put_device);
-+
- /*
-  * Scsi Device operations
-  */
-diff --git a/include/scsi/osd_initiator.h b/include/scsi/osd_initiator.h
-index 24a70b7..0004df1 100644
---- a/include/scsi/osd_initiator.h
-+++ b/include/scsi/osd_initiator.h
-@@ -33,6 +33,11 @@ struct osd_dev {
- 	unsigned def_timeout;
- };
- 
-+/* Retrieve/return osd_dev(s) for use by Kernel clients */
-+struct osd_dev *osduld_path_lookup(const char *dev_name); /*Use IS_ERR/ERR_PTR*/
-+void osduld_put_device(struct osd_dev *od);
-+
-+/* These are called by uld at probe time */
- void osd_dev_init(struct osd_dev *, struct scsi_device *scsi_dev);
- void osd_dev_fini(struct osd_dev *);
- 
--- 
-1.6.0.1
-
+--------------enigD117098E412C7926C3D55A1A--
