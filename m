@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYKDGuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbYKDGvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbYKDGuJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 01:50:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYKDGt5
+	id S1754548AbYKDGvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 01:51:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYKDGvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 01:49:57 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:56908 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751506AbYKDGt4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 01:49:56 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: benh@kernel.crashing.org
-Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-	<871vxtthr3.fsf@burly.wgtn.ondioline.org>
-	<1225697689.8004.245.camel@pasglop>
-Date: Tue, 04 Nov 2008 19:49:54 +1300
-In-Reply-To: <1225697689.8004.245.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Mon, 03 Nov 2008 18:34:49 +1100")
-Message-ID: <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Tue, 4 Nov 2008 01:51:45 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53403 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709AbYKDGvo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 01:51:44 -0500
+Message-ID: <490FF047.2030008@cn.fujitsu.com>
+Date: Tue, 04 Nov 2008 14:48:39 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Matt Helsley <matthltc@us.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>
+Subject: [PATCH] freezer_cg: remove task_lock from freezer_fork()
+References: <20080811235323.872291138@us.ibm.com>	 <20080811235325.121356317@us.ibm.com>	 <6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>	 <490FE7B5.8020400@cn.fujitsu.com>
+In-Reply-To: <490FE7B5.8020400@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+In theory the task can be moved to another cgroup and the freezer will
+be freed right after task_lock is dropped, so the lock results in zero
+protection.
 
-> One thing you may want to try .. it will result in crap results on
-> screen but would help telling us if that's the cause, is to hack
-> radeonfb to round the image size to a multiple of 32 and see if that
-> stops the lockup.
+But in the case of freezer_fork() no lock is needed, since the task
+is not in tasklist yet so it won't be moved to another cgroup, so
+task->cgroups won't be changed or invalidated.
 
-I took a guess at how to do this and ended up with the patch below.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/cgroup_freezer.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-With the patch applied, the screen turns almost completely to gibberish
-at console handover and the machine hangs.  At the top I get two lines
-of old output from the previous boot.  (I'm pretty sure it's hung
-because the optical drive init happens after console handover, and I
-don't get the usual chunka-chunka noise.)
-
-The corruption I get is very similar to what I got when I originally
-reported the problem when I was using my patched-in 12x24 font.  (I
-created the .psf version later and switched back to default 8x16 to
-verify my problem was the same as James's.)
-
-
-diff --git a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
-index 8718f73..848e9bc 100644
---- a/drivers/video/aty/radeon_accel.c
-+++ b/drivers/video/aty/radeon_accel.c
-@@ -208,7 +208,11 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
- 	 * work ok for me without that and the doco doesn't seem to imply
- 	 * there is such a restriction.
- 	 */
--	OUTREG(DST_WIDTH_HEIGHT, (image->width << 16) | image->height);
-+	{
-+		/* Hack attack. */
-+		int width = ((image->width - 1) / 32 + 1) * 32;
-+		OUTREG(DST_WIDTH_HEIGHT, (width << 16) | image->height);
-+	}
+diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+index 7fa476f..6605907 100644
+--- a/kernel/cgroup_freezer.c
++++ b/kernel/cgroup_freezer.c
+@@ -184,9 +184,13 @@ static void freezer_fork(struct cgroup_subsys *ss, struct task_struct *task)
+ {
+ 	struct freezer *freezer;
  
- 	src_bytes = (((image->width * image->depth) + 7) / 8) * image->height;
- 	dwords = (src_bytes + 3) / 4;
-
-
+-	task_lock(task);
++	/*
++	 * No lock is needed, since the task isn't on tasklist yet,
++	 * so it can't be moved to another cgroup, which means the
++	 * freezer won't be removed and will be valid during this
++	 * function call.
++	 */
+ 	freezer = task_freezer(task);
+-	task_unlock(task);
+ 
+ 	spin_lock_irq(&freezer->lock);
+ 	BUG_ON(freezer->state == CGROUP_FROZEN);
 -- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+1.5.4.rc3
