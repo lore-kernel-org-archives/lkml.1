@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbYKDK3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbYKDKbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbYKDK3M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 05:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYKDK2y
+	id S1754507AbYKDKbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 05:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbYKDKbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 05:28:54 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:16572 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbYKDK2w (ORCPT
+	Tue, 4 Nov 2008 05:31:06 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:8621 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753011AbYKDKbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 05:28:52 -0500
+	Tue, 4 Nov 2008 05:31:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Ixru3jSFI8x2cFq6Ckf5aC+Y5JWHKeWHYw0h5u4r1vvdFudrk6kyqqMvy2T4wRsGh7
-         DtjqC2nUm6AdqJ4BhfSso5OsTZTmQ0KjThM0DV7t8ctkKIJKWXaS1s1ZdJ/bfE2P3EQO
-         aeNCMqMwW9r/0xgKzCivXNWnfYelGchG6e1uk=
-Message-ID: <c41302d20811040228y23ce963fh39c27f79cb7711df@mail.gmail.com>
-Date: Tue, 4 Nov 2008 12:28:47 +0200
-From: "Avishay Traeger" <avishay@gmail.com>
-To: "Boaz Harrosh" <bharrosh@panasas.com>
-Subject: Re: [osd-dev] [RFC 0/9] osdfs
-Cc: linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <49101FE2.30109@panasas.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=U2tB+RKY6EndNT46hSbUfYBZXT9aP2+AiPW6y6CFHKiXCXafX2j1NjUMLpADQ9DFgv
+         HC067/ER2JsoF6w40mVCuCX2XVU4XmJuypnEZjTSyBjkzb9tHhFWsduEgmNPRNGR1Zlg
+         K6X8IXLn1vPT94GvfvJrIbAEVJFM5/T8bEUvk=
+Date: Tue, 4 Nov 2008 13:34:21 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       "Koyama, Yoshiya" <Yoshiya.Koyama@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-fsdevel@vger.kernel.org
+Subject: Re: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data
+	to userspace
+Message-ID: <20081104103421.GB20682@x200.localdomain>
+References: <19f34abd0810251014s7968557br38e43aa0b9cdcf09@mail.gmail.com> <200810252241.53601.rjw@sisk.pl> <m163nggvhq.fsf@frodo.ebiederm.org> <19f34abd0810261408w61b1e2dbvb9a0e16ce5a10022@mail.gmail.com> <19f34abd0811040139t8334502i7a5d8501c5fe95ac@mail.gmail.com> <20081104100050.GA10398@x200.localdomain> <20081104100757.GB10398@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4909C41A.7000406@panasas.com> <490F6829.3020104@garzik.org>
-	 <49100213.6040307@panasas.com> <49101FE2.30109@panasas.com>
+In-Reply-To: <20081104100757.GB10398@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 4, 2008 at 12:11 PM, Boaz Harrosh <bharrosh@panasas.com> wrote:
+On Tue, Nov 04, 2008 at 01:07:57PM +0300, Alexey Dobriyan wrote:
+> On Tue, Nov 04, 2008 at 01:00:50PM +0300, Alexey Dobriyan wrote:
+> > On Tue, Nov 04, 2008 at 10:39:19AM +0100, Vegard Nossum wrote:
+> > > # uname -a
+> > > Linux ubuntu 2.6.28-rc2-next-20081031 #60 SMP Sat Nov 1 13:19:49 CET
+> > > 2008 i686 GNU/Linux
+> > > # prelink -mRf /sbin/udevd
+> > > # ./a.out /proc/4764/exe
+> > > warning: /proc/4764/exe: got return value 38, expected 11
+> > > 2f7362696e2f756465766400fffffffffdfffffffffffff7ffffbfff202864656c6574656429
+> > > /sbin/udevd                  (deleted)
+> > 
+> > reproduced
+> 
+> prelink does
+> 
+> 	rename("/sbin/udevd.#prelink#.N6pvOJ", "/sbin/udevd")
 
-<snip>
+OK, here is obvious (lame) reproducer, second readlink returns 32 while first
+returns 18:
 
->>> As such, "osdfs" seems like too-generic a name. How about boazfs?  :)
->>
->> I agree.  osdfs is the name given by Avishay and IBM and we just adopted it.
->> I think that obfs (Object-based File System) would better represent
->> what it is (although it's still generic compared to boazfs :-)
->>
->
-> If at all then it's avishayfs, but unless I write this filesystem from
-> scratch I don't think I can do anything about the name. The code is
-> copyrighted to Avishay Traeger, and that is the name he chose. Also
-> he has a sourceforge.net project of that name for a long time.
->
-> Avishay would you be willing to change the name? See above, people
-> think it is too generic a name. Like if someone would do a scsifs
-> or blocksfs.
->
-> Personally for me it's just a name, I don't mind either way.
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
-I don't care if we change the name.  I suppose we can discuss
-alternatives outside of the mailing lists, but I'd rather not do
-boazfs or avishayfs :-)
+int main(void)
+{
+	int fd, fd1;
+	char buf[64], buf1[64], img[42000];
+	ssize_t len;
 
-By the way, just to clarify: I wrote this file system at IBM, but they
-were nice enough to give me full ownership of the code.  I then
-proceeded to put the code up on sourceforge.  Thanks to Boaz and Benny
-for reviving the code and submitting it for inclusion in the kernel.
+	fd = open("/proc/self/exe", O_RDONLY);
 
-Avishay
+	readlink("/proc/self/exe", buf, sizeof(buf));
+	strcpy(buf1, buf);
+	strcat(buf1, ".xxx");
+	unlink(buf1);
+	fd1 = open(buf1, O_WRONLY|O_CREAT);
+	len = read(fd, img, sizeof(img));
+	close(fd);
+	write(fd1, img, len);
+	close(fd1);
+	rename(buf1, buf);
+
+	readlink("/proc/self/exe", buf, sizeof(buf));
+
+	return 0;
+}
