@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbYKDTMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbYKDTRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbYKDTMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:12:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbYKDTMo
+	id S1755421AbYKDTRr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbYKDTRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:12:44 -0500
-Received: from perninha.conectiva.com.br ([200.140.247.100]:54060 "EHLO
-	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbYKDTMn (ORCPT
+	Tue, 4 Nov 2008 14:17:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54634 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751636AbYKDTRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:12:43 -0500
-Date: Tue, 4 Nov 2008 17:14:14 -0200
-From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PATCH: __bprm_mm_init(): remove uneeded goto
-Message-ID: <20081104171414.6c1a8b52@doriath.conectiva>
-In-Reply-To: <20081104105707.39dc5e30.akpm@linux-foundation.org>
-References: <20081104140314.1b196764@doriath.conectiva>
-	<20081104105707.39dc5e30.akpm@linux-foundation.org>
-Organization: Mandriva
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i586-mandriva-linux-gnu)
+	Tue, 4 Nov 2008 14:17:35 -0500
+Date: Tue, 4 Nov 2008 11:16:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
+       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sami.Iren@seagate.com, pw@padd.com
+Subject: Re: [PATCH 04/18] libosd: OSDv1 preliminary implementation
+Message-Id: <20081104111631.5eb9aaf6.akpm@linux-foundation.org>
+In-Reply-To: <1225817069-5969-1-git-send-email-bharrosh@panasas.com>
+References: <491073BB.4000900@panasas.com>
+	<1225817069-5969-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,13 +30,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 4 Nov 2008 10:57:07 -0800
-Andrew Morton <akpm@linux-foundation.org> escreveu:
+On Tue,  4 Nov 2008 18:44:29 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-| The above code now uses the most common pattern for a kernel
-| function.  One we've learned from hard experience!
+> Implementation of the most basic OSD functionality and
+> infrastructure. Mainly Format, Create/Remove Partition,
+> Create/Remove Object, and read/write.
+> 
+>
+> ...
+>
+> +struct osd_request *_osd_request_alloc(gfp_t gfp)
+> +{
+> +	struct osd_request *or;
+> +
+> +	/* TODO: Use mempool with one saved request */
+> +	or = kzalloc(sizeof(*or), gfp);
+> +	return or;
+> +}
+> +
+> +void _osd_request_free(struct osd_request *or)
+> +{
+> +	kfree(or);
+> +}
 
- Wow, I have no words to thank you enough for this full explanation!
+These two functions can/should be made static.  Please generally check
+for this.
 
--- 
-Luiz Fernando N. Capitulino
+Also it'd probably make sense to declare both these inline.  The
+compiler _shoudl_ get it right, but stranger things have happened...
+
+>
+> ...
+>
+> +/*
+> + * If osd_finalize_request() was called but the request was not executed through
+> + * the block layer, then we must release BIOs.
+> + */
+> +static void _abort_unexecuted_bios(struct request *rq)
+> +{
+> +	struct bio *bio;
+> +
+> +	while ((bio = rq->bio) != NULL) {
+> +		rq->bio = bio->bi_next;
+> +		bio_endio(bio, 0);
+> +	}
+> +}
+
+Boy, that's a scary function.  bye-bye data.
+
+
