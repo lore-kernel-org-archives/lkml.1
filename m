@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbYKDQlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbYKDQm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbYKDQlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYKDQk7
+	id S1756250AbYKDQm4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:42:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYKDQms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:40:59 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:37576 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbYKDQk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:40:58 -0500
-Date: Tue, 4 Nov 2008 08:40:52 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Bug #11876] RCU hang on cpu re-hotplug with 2.6.27rc8
-Message-ID: <20081104164052.GA8499@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <Sl8SUNhCbfL.A.O5H.yueDJB@chimera> <4xS1r6m15_B.A.dU.7ueDJB@chimera>
+	Tue, 4 Nov 2008 11:42:48 -0500
+Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:59682 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751029AbYKDQms convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:42:48 -0500
+From: Frans Pop <elendil@planet.nl>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] rtc-cmos: Fix boot log message
+Date: Tue, 4 Nov 2008 17:42:43 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200811031942.20360.elendil@planet.nl> <200811031952.39423.elendil@planet.nl> <200811031506.42247.david-b@pacbell.net>
+In-Reply-To: <200811031506.42247.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4xS1r6m15_B.A.dU.7ueDJB@chimera>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200811041742.45285.elendil@planet.nl>
+X-OriginalArrivalTime: 04 Nov 2008 16:42:45.0980 (UTC) FILETIME=[5D69B9C0:01C93E9C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 02, 2008 at 05:49:38PM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.26 and 2.6.27.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11876
-> Subject		: RCU hang on cpu re-hotplug with 2.6.27rc8
-> Submitter	: Andi Kleen <andi@firstfloor.org>
-> Date		: 2008-10-06 23:28 (28 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122333610602399&w=2
-> Handled-By	: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On Tuesday 04 November 2008, David Brownell wrote:
+> On Monday 03 November 2008, Frans Pop wrote:
+> > Alternative would be to change the following line at 808:
+> >                         is_hpet_enabled() ? ", hpet irqs" : "");
+> > to:
+> >                         is_hpet_enabled() ? "hpet" : "<sensible
+> > value>");
+>
+> The intent was "hpet irqs" vs "native IRQs" (typical PC options)
+> vs "no irqs" (e.g. on SPARCs).
+>
+> I think fixes got trashed when the patch queue got corrupted
+> by some queue-jumping ... see the patch in
+>
+>   http://bugzilla.kernel.org/show_bug.cgi?id=11153
+>
+> which was broken by a474aaedac99ba86e28ef6c912a7647c482db6dd,
+> and has appropriately sane messaging.
 
-Hallo, Andi,
+AFAICT that patch is still pending, which means that the patch I proposed 
+should be good and fix the "regression".
 
-Last I heard, the act of enabling CONFIG_RCU_CPU_STALL_DETECTOR
-reduced the problem from a hang to a 3-second grace period.  How
-are things going with this now?
+When your original patch is then updated against git head and resubmitted, 
+things should still end up as you intended.
 
-						Thanx, Paul
+Cheers,
+FJP
