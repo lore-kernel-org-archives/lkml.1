@@ -1,168 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbYKDVk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbYKDVl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbYKDVk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 16:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbYKDVkL
+	id S1756223AbYKDVl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 16:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbYKDVlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 16:40:11 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:35855 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbYKDVkJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 16:40:09 -0500
-Date: Tue, 4 Nov 2008 15:39:58 -0600
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Dustin Kirkland <dustin.kirkland@gmail.com>,
-       Eric Sandeen <sandeen@redhat.com>, Tyler Hicks <tchicks@us.ibm.com>,
-       David Kleikamp <shaggy@us.ibm.com>
-Subject: [PATCH 2/5] eCryptfs: Filename Encryption: Header updates
-Message-ID: <20081104213958.GB6677@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20081104213754.GC6675@halcrowt61p.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081104213754.GC6675@halcrowt61p.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 4 Nov 2008 16:41:20 -0500
+Received: from gate.crashing.org ([63.228.1.57]:36086 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751877AbYKDVlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 16:41:19 -0500
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Paul Collins <paul@burly.ondioline.org>
+Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	 <1225662539.8004.237.camel@pasglop>
+	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
+	 <1225697689.8004.245.camel@pasglop>
+	 <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
+Content-Type: text/plain
+Date: Wed, 05 Nov 2008 08:36:00 +1100
+Message-Id: <1225834560.8004.275.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Extensions to the header file to support filename encryption.
+On Tue, 2008-11-04 at 19:49 +1300, Paul Collins wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > One thing you may want to try .. it will result in crap results on
+> > screen but would help telling us if that's the cause, is to hack
+> > radeonfb to round the image size to a multiple of 32 and see if that
+> > stops the lockup.
+> 
+> I took a guess at how to do this and ended up with the patch below.
+> 
+> With the patch applied, the screen turns almost completely to gibberish
+> at console handover and the machine hangs.  At the top I get two lines
+> of old output from the previous boot.  (I'm pretty sure it's hung
+> because the optical drive init happens after console handover, and I
+> don't get the usual chunka-chunka noise.)
+> 
+> The corruption I get is very similar to what I got when I originally
+> reported the problem when I was using my patched-in 12x24 font.  (I
+> created the .psf version later and switched back to default 8x16 to
+> verify my problem was the same as James's.)
+> 
+> 
+> diff --git a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
+> index 8718f73..848e9bc 100644
+> --- a/drivers/video/aty/radeon_accel.c
+> +++ b/drivers/video/aty/radeon_accel.c
+> @@ -208,7 +208,11 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
+>  	 * work ok for me without that and the doco doesn't seem to imply
+>  	 * there is such a restriction.
+>  	 */
+> -	OUTREG(DST_WIDTH_HEIGHT, (image->width << 16) | image->height);
+> +	{
+> +		/* Hack attack. */
+> +		int width = ((image->width - 1) / 32 + 1) * 32;
+> +		OUTREG(DST_WIDTH_HEIGHT, (width << 16) | image->height);
+> +	}
+>  
+>  	src_bytes = (((image->width * image->depth) + 7) / 8) * image->height;
+>  	dwords = (src_bytes + 3) / 4;
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/crypto.c          |    4 +-
- fs/ecryptfs/ecryptfs_kernel.h |   61 +++++++++++++++++++++++++++++++++--------
- 2 files changed, 51 insertions(+), 14 deletions(-)
+Oh and you also need to change the src_bytes calculation 
 
-diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-index 4857327..c9839df 100644
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -175,8 +175,8 @@ out:
-  *
-  * Returns zero on success; non-zero on error.
-  */
--static int ecryptfs_derive_iv(char *iv, struct ecryptfs_crypt_stat *crypt_stat,
--			      loff_t offset)
-+int ecryptfs_derive_iv(char *iv, struct ecryptfs_crypt_stat *crypt_stat,
-+		       loff_t offset)
- {
- 	int rc = 0;
- 	char dst[MD5_DIGEST_SIZE];
-diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
-index 76a95bd..b648175 100644
---- a/fs/ecryptfs/ecryptfs_kernel.h
-+++ b/fs/ecryptfs/ecryptfs_kernel.h
-@@ -51,12 +51,16 @@
- #define ECRYPTFS_VERSIONING_XATTR                 0x00000010
- #define ECRYPTFS_VERSIONING_MULTKEY               0x00000020
- #define ECRYPTFS_VERSIONING_DEVMISC               0x00000040
-+#define ECRYPTFS_VERSIONING_HMAC                  0x00000080
-+#define ECRYPTFS_VERSIONING_FILENAME_ENCRYPTION   0x00000100
-+#define ECRYPTFS_VERSIONING_GCM                   0x00000200
- #define ECRYPTFS_VERSIONING_MASK (ECRYPTFS_VERSIONING_PASSPHRASE \
- 				  | ECRYPTFS_VERSIONING_PLAINTEXT_PASSTHROUGH \
- 				  | ECRYPTFS_VERSIONING_PUBKEY \
- 				  | ECRYPTFS_VERSIONING_XATTR \
- 				  | ECRYPTFS_VERSIONING_MULTKEY \
--				  | ECRYPTFS_VERSIONING_DEVMISC)
-+				  | ECRYPTFS_VERSIONING_DEVMISC \
-+				  | ECRYPTFS_VERSIONING_FILENAME_ENCRYPTION)
- #define ECRYPTFS_MAX_PASSWORD_LENGTH 64
- #define ECRYPTFS_MAX_PASSPHRASE_BYTES ECRYPTFS_MAX_PASSWORD_LENGTH
- #define ECRYPTFS_SALT_SIZE 8
-@@ -232,23 +236,39 @@ struct ecryptfs_key_sig {
- 	char keysig[ECRYPTFS_SIG_SIZE_HEX];
- };
- 
-+struct ecryptfs_filename {
-+	struct list_head crypt_stat_list;
-+#define ECRYPTFS_FILENAME_CONTAINS_DECRYPTED 0x00000001
-+	u32 flags;
-+	u32 seq_no;
-+	char *filename;
-+	char *encrypted_filename;
-+	size_t filename_size;
-+	size_t encrypted_filename_size;
-+	char fnek_sig[ECRYPTFS_SIG_SIZE_HEX];
-+	char dentry_name[ECRYPTFS_ENCRYPTED_DENTRY_NAME_LEN + 1];
-+};
-+
- /**
-  * This is the primary struct associated with each encrypted file.
-  *
-  * TODO: cache align/pack?
-  */
- struct ecryptfs_crypt_stat {
--#define ECRYPTFS_STRUCT_INITIALIZED 0x00000001
--#define ECRYPTFS_POLICY_APPLIED     0x00000002
--#define ECRYPTFS_NEW_FILE           0x00000004
--#define ECRYPTFS_ENCRYPTED          0x00000008
--#define ECRYPTFS_SECURITY_WARNING   0x00000010
--#define ECRYPTFS_ENABLE_HMAC        0x00000020
--#define ECRYPTFS_ENCRYPT_IV_PAGES   0x00000040
--#define ECRYPTFS_KEY_VALID          0x00000080
--#define ECRYPTFS_METADATA_IN_XATTR  0x00000100
--#define ECRYPTFS_VIEW_AS_ENCRYPTED  0x00000200
--#define ECRYPTFS_KEY_SET            0x00000400
-+#define ECRYPTFS_STRUCT_INITIALIZED   0x00000001
-+#define ECRYPTFS_POLICY_APPLIED       0x00000002
-+#define ECRYPTFS_NEW_FILE             0x00000004
-+#define ECRYPTFS_ENCRYPTED            0x00000008
-+#define ECRYPTFS_SECURITY_WARNING     0x00000010
-+#define ECRYPTFS_ENABLE_HMAC          0x00000020
-+#define ECRYPTFS_ENCRYPT_IV_PAGES     0x00000040
-+#define ECRYPTFS_KEY_VALID            0x00000080
-+#define ECRYPTFS_METADATA_IN_XATTR    0x00000100
-+#define ECRYPTFS_VIEW_AS_ENCRYPTED    0x00000200
-+#define ECRYPTFS_KEY_SET              0x00000400
-+#define ECRYPTFS_ENCRYPT_FILENAMES    0x00000800
-+#define ECRYPTFS_ENCFN_USE_MOUNT_FNEK 0x00001000
-+#define ECRYPTFS_ENCFN_USE_FEK        0x00002000
- 	u32 flags;
- 	unsigned int file_version;
- 	size_t iv_bytes;
-@@ -597,6 +617,15 @@ struct ecryptfs_open_req {
- int ecryptfs_interpose(struct dentry *hidden_dentry,
- 		       struct dentry *this_dentry, struct super_block *sb,
- 		       u32 flags);
-+int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
-+					struct dentry *lower_dentry,
-+					struct ecryptfs_crypt_stat *crypt_stat,
-+					struct inode *ecryptfs_dir_inode,
-+					struct nameidata *ecryptfs_nd);
-+int ecryptfs_decode_and_decrypt_filename(char **decrypted_name,
-+					 size_t *decrypted_name_size,
-+					 struct dentry *ecryptfs_dentry,
-+					 const char *name, size_t name_size);
- int ecryptfs_fill_zeros(struct file *file, loff_t new_length);
- int ecryptfs_decode_filename(struct ecryptfs_crypt_stat *crypt_stat,
- 			     const char *name, int length,
-@@ -604,6 +633,12 @@ int ecryptfs_decode_filename(struct ecryptfs_crypt_stat *crypt_stat,
- int ecryptfs_encode_filename(struct ecryptfs_crypt_stat *crypt_stat,
- 			     const char *name, int length,
- 			     char **encoded_name);
-+int ecryptfs_encrypt_and_encode_filename(
-+	char **encoded_name,
-+	size_t *encoded_name_size,
-+	struct ecryptfs_crypt_stat *crypt_stat,
-+	struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
-+	const char *name, size_t name_size);
- struct dentry *ecryptfs_lower_dentry(struct dentry *this_dentry);
- void ecryptfs_dump_hex(char *data, int bytes);
- int virt_to_scatterlist(const void *addr, int size, struct scatterlist *sg,
-@@ -730,5 +765,7 @@ ecryptfs_parse_tag_70_packet(char **filename, size_t *filename_size,
- 			     size_t *packet_size,
- 			     struct ecryptfs_mount_crypt_stat *mount_crypt_stat,
- 			     char *data, size_t max_packet_size);
-+int ecryptfs_derive_iv(char *iv, struct ecryptfs_crypt_stat *crypt_stat,
-+		       loff_t offset);
- 
- #endif /* #ifndef ECRYPTFS_KERNEL_H */
--- 
-1.5.3.6
+Ben.
+
+> 
 
