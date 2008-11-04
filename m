@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbYKDRXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYKDRZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbYKDRXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYKDRXl
+	id S1756878AbYKDRZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYKDRZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:23:41 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:53890 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbYKDRXk (ORCPT
+	Tue, 4 Nov 2008 12:25:21 -0500
+Received: from smtp-vbr14.xs4all.nl ([194.109.24.34]:3199 "EHLO
+	smtp-vbr14.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754414AbYKDRZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:23:40 -0500
-From: Boaz Harrosh <bharrosh@panasas.com>
-To: Torben Mathiasen <device@lanana.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, open-osd ml <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 01/18] major.h: char-major number for OSD device driver
-Date: Tue,  4 Nov 2008 18:17:00 +0200
-Message-Id: <1225815420-5721-1-git-send-email-bharrosh@panasas.com>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <491073BB.4000900@panasas.com>
-References: <491073BB.4000900@panasas.com>
+	Tue, 4 Nov 2008 12:25:20 -0500
+Date: Tue, 4 Nov 2008 18:25:17 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.26] WARN warn_on_slowpath
+Message-ID: <20081104172513.GH23232@vanheusden.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Wed Nov  5 16:29:01 CET 2008
+X-Message-Flag: MultiTail - tail on steroids
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need a major for a char device for our OSD device driver.
-Attached is a proposed patch for the Documentation/devices.txt
-and include/linux/major.h files.
+While running my http://vanheusden.com/pyk/ script (which randomly
+inserts and removes modules) I triggered the folllowing WARNING in a
+2.6.26 kernel on an IBM xSeries x3650 (2 quadcores (intel qc x5450)
+and 10GB ram).
 
-I have allocated the *260* char device as it looked like the next
-available on the lanana.org web-site
-(http://lanana.org/docs/device-list/devices-2.6+.txt)
+[ 2812.832441] sysfs group ffffffffa0191ec0 not found for kobject 'cpufreq'
+[ 2812.833486] ------------[ cut here ]------------
+[ 2812.833556] WARNING: at fs/sysfs/group.c:139 cpufreq_stats_free_table+0x32/0x6e [cpufreq_stats]()
+[ 2812.837160] Modules linked in: cpufreq_ondemand sg lp cpufreq_userspace acpi_cpufreq pcspkr edac_core ses parport_pc appletalk(-) enclosure loop thermal parport cpufreq_stats(-) video output battery cdrom rng_core qla2xxx ac rfcomm l2cap bluetooth nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs freq_table ipv6 evdev ext3 jbd mbcache dm_log dm_mod usbhid hid ff_memless sd_mod firmware_class scsi_transport_fc ide_pci_generic ide_core ehci_hcd uhci_hcd scsi_tgt aacraid scsi_mod processor thermal_sys [last unloaded: dm_mirror]
+[ 2812.837160] Pid: 12061, comm: rmmod Not tainted 2.6.26-1-amd64 #1
+[ 2812.837160] 
+[ 2812.837160] Call Trace:
+[ 2812.837160]  [<ffffffff80234878>] warn_on_slowpath+0x51/0x7a
+[ 2812.837160]  [<ffffffff8022c195>] default_wake_function+0x0/0xe
+[ 2812.837160]  [<ffffffff802e21b4>] sysfs_find_dirent+0x1b/0x2f
+[ 2812.837160]  [<ffffffff802e2c62>] sysfs_get_dirent+0x51/0x59
+[ 2812.837160]  [<ffffffff802e3523>] sysfs_remove_group+0x41/0xc2
+[ 2812.837197]  [<ffffffffa0191380>] :cpufreq_stats:cpufreq_stats_free_table+0x32/0x6e
+[ 2812.837283]  [<ffffffffa01913fd>] :cpufreq_stats:cpufreq_stats_exit+0x41/0x58
+[ 2812.837355]  [<ffffffff80255200>] sys_delete_module+0x1a6/0x1fe
+[ 2812.837494]  [<ffffffff8020be9a>] system_call_after_swapgs+0x8a/0x8f
+[ 2812.837564] 
+[ 2812.837623] ---[ end trace a70f168407a6dea1 ]---
+[ 2812.837692] sysfs group ffffffffa0191ec0 not found for kobject 'cpufreq'
 
-Any number will do. Please allocate a number for us
 
-(See http:/open-osd.org for further information)
+Folkert van Heusden
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-CC: Torben Mathiasen <device@lanana.org>
----
- Documentation/devices.txt |    6 ++++++
- include/linux/major.h     |    1 +
- 2 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/devices.txt b/Documentation/devices.txt
-index 05c8064..d18070b 100644
---- a/Documentation/devices.txt
-+++ b/Documentation/devices.txt
-@@ -3142,6 +3142,12 @@ Your cooperation is appreciated.
- 		  1 = /dev/blockrom1	Second ROM card's translation layer interface
- 		  ...
- 
-+260 char	OSD (Object-based-device) SCSI Device
-+		  0 = /dev/osd0		First OSD Device
-+		  1 = /dev/osd1		Second OSD Device
-+		  ...
-+		  255 = /dev/osd255	256th OSD Device
-+
-  ****	ADDITIONAL /dev DIRECTORY ENTRIES
- 
- This section details additional entries that should or may exist in
-diff --git a/include/linux/major.h b/include/linux/major.h
-index 8824945..058ec15 100644
---- a/include/linux/major.h
-+++ b/include/linux/major.h
-@@ -171,5 +171,6 @@
- #define VIOTAPE_MAJOR		230
- 
- #define BLOCK_EXT_MAJOR		259
-+#define SCSI_OSD_MAJOR		260	/* open-osd's OSD scsi device */
- 
- #endif
 -- 
-1.6.0.1
-
+Ever wonder what is out there? Any alien races? Then please support
+the seti@home project: setiathome.ssl.berkeley.edu
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
