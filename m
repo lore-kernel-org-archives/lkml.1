@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbYKDXzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbYKDX4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbYKDXzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbYKDXku
+	id S1761051AbYKDX4p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:56:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbYKDXlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:40:50 -0500
-Received: from ns.suse.de ([195.135.220.2]:47856 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:41:03 -0500
+Received: from mail.suse.de ([195.135.220.2]:47900 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757438AbYKDXkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:40:49 -0500
-Date: Tue, 4 Nov 2008 15:33:18 -0800
+	id S1757924AbYKDXlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:41:01 -0500
+Date: Tue, 4 Nov 2008 15:33:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
-       "Rafael J. Wysocki" <rjw@suse.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 48/57] ACPI: EC: Rename some variables
-Message-ID: <20081104233318.GW659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>,
+       Zhao Yakui <yakui.zhao@intel.com>
+Subject: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using ACPI
+	reset mechanism
+Message-ID: <20081104233325.GZ659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-ec-rename-some-variables.patch"
+Content-Disposition: inline; filename="acpi-ingore-the-reset_reg_sup-bit-when-using-acpi-reset-mechanism.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,289 +40,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit 8463200a00fe2aea938b40173198a0983f2929ef upstream
-(needed by the next patch)
+Subject: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using ACPI reset mechanism
 
-No functional changes.
+commit 8fd145917fb62368a9b80db59562c20576238f5a upstream
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-Acked-by: Rafael J. Wysocki <rjw@suse.com>
+ACPI: Ingore the RESET_REG_SUP bit when using ACPI reset mechanism
+
+According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
+whether the ACPI reboot mechanism is supported.
+
+However, some boxes have this bit clear, have a valid
+ACPI_RESET_REG & RESET_VALUE, and ACPI reboot is the only
+mechanism that works for them after S3.
+
+This suggests that other operating systems may not be checking
+the RESET_REG_SUP bit, and are using other means to decide
+whether to use the ACPI reboot mechanism or not.
+
+Here we stop checking RESET_REG_SUP.
+Instead, When acpi reboot is requested,
+only the reset_register is checked. If the following
+conditions are met, it indicates that the reset register is supported.
+	a. reset_register is not zero
+	b. the access width is eight
+	c. the bit_offset is zero
+
+http://bugzilla.kernel.org/show_bug.cgi?id=7299
+http://bugzilla.kernel.org/show_bug.cgi?id=1148
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/ec.c |  118 ++++++++++++++++++++++++++++--------------------------
- 1 file changed, 63 insertions(+), 55 deletions(-)
+ drivers/acpi/reboot.c |   25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
 
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -95,10 +95,11 @@ struct acpi_ec_query_handler {
- 	u8 query_bit;
- };
+--- a/drivers/acpi/reboot.c
++++ b/drivers/acpi/reboot.c
+@@ -15,9 +15,28 @@ void acpi_reboot(void)
  
--struct transaction_data {
-+struct transaction {
- 	const u8 *wdata;
- 	u8 *rdata;
- 	unsigned short irq_count;
-+	u8 command;
- 	u8 wlen;
- 	u8 rlen;
- };
-@@ -113,8 +114,8 @@ static struct acpi_ec {
- 	struct mutex lock;
- 	wait_queue_head_t wait;
- 	struct list_head list;
--	struct transaction_data *t;
--	spinlock_t t_lock;
-+	struct transaction *curr;
-+	spinlock_t curr_lock;
- } *boot_ec, *first_ec;
+ 	rr = &acpi_gbl_FADT.reset_register;
  
- /* 
-@@ -176,37 +177,37 @@ static int ec_transaction_done(struct ac
- {
- 	unsigned long flags;
- 	int ret = 0;
--	spin_lock_irqsave(&ec->t_lock, flags);
--	if (!ec->t || (!ec->t->wlen && !ec->t->rlen))
-+	spin_lock_irqsave(&ec->curr_lock, flags);
-+	if (!ec->curr || (!ec->curr->wlen && !ec->curr->rlen))
- 		ret = 1;
--	spin_unlock_irqrestore(&ec->t_lock, flags);
-+	spin_unlock_irqrestore(&ec->curr_lock, flags);
- 	return ret;
- }
+-	/* Is the reset register supported? */
+-	if (!(acpi_gbl_FADT.flags & ACPI_FADT_RESET_REGISTER) ||
+-	    rr->bit_width != 8 || rr->bit_offset != 0)
++	/*
++	 * Is the ACPI reset register supported?
++	 *
++	 * According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
++	 * whether the ACPI reset mechanism is supported.
++	 *
++	 * However, some boxes have this bit clear, yet a valid
++	 * ACPI_RESET_REG & RESET_VALUE, and ACPI reboot is the only
++	 * mechanism that works for them after S3.
++	 *
++	 * This suggests that other operating systems may not be checking
++	 * the RESET_REG_SUP bit, and are using other means to decide
++	 * whether to use the ACPI reboot mechanism or not.
++	 *
++	 * So when acpi reboot is requested,
++	 * only the reset_register is checked. If the following
++	 * conditions are met, it indicates that the reset register is supported.
++	 * 	a. reset_register is not zero
++	 * 	b. the access width is eight
++	 * 	c. the bit_offset is zero
++	 */
++	if (!(rr->address) || rr->bit_width != 8 || rr->bit_offset != 0)
+ 		return;
  
- static void gpe_transaction(struct acpi_ec *ec, u8 status)
- {
- 	unsigned long flags;
--	spin_lock_irqsave(&ec->t_lock, flags);
--	if (!ec->t)
-+	spin_lock_irqsave(&ec->curr_lock, flags);
-+	if (!ec->curr)
- 		goto unlock;
--	if (ec->t->wlen > 0) {
-+	if (ec->curr->wlen > 0) {
- 		if ((status & ACPI_EC_FLAG_IBF) == 0) {
--			acpi_ec_write_data(ec, *(ec->t->wdata++));
--			--ec->t->wlen;
-+			acpi_ec_write_data(ec, *(ec->curr->wdata++));
-+			--ec->curr->wlen;
- 		} else
- 			/* false interrupt, state didn't change */
--			++ec->t->irq_count;
-+			++ec->curr->irq_count;
- 
--	} else if (ec->t->rlen > 0) {
-+	} else if (ec->curr->rlen > 0) {
- 		if ((status & ACPI_EC_FLAG_OBF) == 1) {
--			*(ec->t->rdata++) = acpi_ec_read_data(ec);
--			--ec->t->rlen;
-+			*(ec->curr->rdata++) = acpi_ec_read_data(ec);
-+			--ec->curr->rlen;
- 		} else
- 			/* false interrupt, state didn't change */
--			++ec->t->irq_count;
-+			++ec->curr->irq_count;
- 	}
- unlock:
--	spin_unlock_irqrestore(&ec->t_lock, flags);
-+	spin_unlock_irqrestore(&ec->curr_lock, flags);
- }
- 
- static int acpi_ec_wait(struct acpi_ec *ec)
-@@ -248,15 +249,11 @@ static int ec_poll(struct acpi_ec *ec)
- 	return -ETIME;
- }
- 
--static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
--					const u8 * wdata, unsigned wdata_len,
--					u8 * rdata, unsigned rdata_len,
-+static int acpi_ec_transaction_unlocked(struct acpi_ec *ec,
-+					struct transaction *t,
- 					int force_poll)
- {
- 	unsigned long tmp;
--	struct transaction_data t = {.wdata = wdata, .rdata = rdata,
--				     .wlen = wdata_len, .rlen = rdata_len,
--				     .irq_count = 0};
- 	int ret = 0;
- 	pr_debug(PREFIX "transaction start\n");
- 	/* disable GPE during transaction if storm is detected */
-@@ -265,29 +262,30 @@ static int acpi_ec_transaction_unlocked(
- 		acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
- 	}
- 	/* start transaction */
--	spin_lock_irqsave(&ec->t_lock, tmp);
-+	spin_lock_irqsave(&ec->curr_lock, tmp);
- 	/* following two actions should be kept atomic */
--	ec->t = &t;
--	acpi_ec_write_cmd(ec, command);
--	if (command == ACPI_EC_COMMAND_QUERY)
-+	t->irq_count = 0;
-+	ec->curr = t;
-+	acpi_ec_write_cmd(ec, ec->curr->command);
-+	if (ec->curr->command == ACPI_EC_COMMAND_QUERY)
- 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
--	spin_unlock_irqrestore(&ec->t_lock, tmp);
-+	spin_unlock_irqrestore(&ec->curr_lock, tmp);
- 	/* if we selected poll mode or failed in GPE-mode do a poll loop */
- 	if (force_poll ||
- 	    !test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ||
- 	    acpi_ec_wait(ec))
- 		ret = ec_poll(ec);
- 	pr_debug(PREFIX "transaction end\n");
--	spin_lock_irqsave(&ec->t_lock, tmp);
--	ec->t = NULL;
--	spin_unlock_irqrestore(&ec->t_lock, tmp);
-+	spin_lock_irqsave(&ec->curr_lock, tmp);
-+	ec->curr = NULL;
-+	spin_unlock_irqrestore(&ec->curr_lock, tmp);
- 	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
- 		/* check if we received SCI during transaction */
- 		ec_check_sci(ec, acpi_ec_read_status(ec));
- 		/* it is safe to enable GPE outside of transaction */
- 		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
- 	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
--		   t.irq_count > ACPI_EC_STORM_THRESHOLD) {
-+		   t->irq_count > ACPI_EC_STORM_THRESHOLD) {
- 		pr_debug(PREFIX "GPE storm detected\n");
- 		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
- 	}
-@@ -300,17 +298,15 @@ static int ec_check_ibf0(struct acpi_ec 
- 	return (status & ACPI_EC_FLAG_IBF) == 0;
- }
- 
--static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
--			       const u8 * wdata, unsigned wdata_len,
--			       u8 * rdata, unsigned rdata_len,
-+static int acpi_ec_transaction(struct acpi_ec *ec, struct transaction *t,
- 			       int force_poll)
- {
- 	int status;
- 	u32 glk;
--	if (!ec || (wdata_len && !wdata) || (rdata_len && !rdata))
-+	if (!ec || (!t) || (t->wlen && !t->wdata) || (t->rlen && !t->rdata))
- 		return -EINVAL;
--	if (rdata)
--		memset(rdata, 0, rdata_len);
-+	if (t->rdata)
-+		memset(t->rdata, 0, t->rlen);
- 	mutex_lock(&ec->lock);
- 	if (ec->global_lock) {
- 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
-@@ -326,10 +322,7 @@ static int acpi_ec_transaction(struct ac
- 		status = -ETIME;
- 		goto end;
- 	}
--	status = acpi_ec_transaction_unlocked(ec, command,
--					      wdata, wdata_len,
--					      rdata, rdata_len,
--					      force_poll);
-+	status = acpi_ec_transaction_unlocked(ec, t, force_poll);
- end:
- 	if (ec->global_lock)
- 		acpi_release_global_lock(glk);
-@@ -345,23 +338,32 @@ unlock:
- int acpi_ec_burst_enable(struct acpi_ec *ec)
- {
- 	u8 d;
--	return acpi_ec_transaction(ec, ACPI_EC_BURST_ENABLE, NULL, 0, &d, 1, 0);
-+	struct transaction t = {.command = ACPI_EC_BURST_ENABLE,
-+				.wdata = NULL, .rdata = &d,
-+				.wlen = 0, .rlen = 1};
-+
-+	return acpi_ec_transaction(ec, &t, 0);
- }
- 
- int acpi_ec_burst_disable(struct acpi_ec *ec)
- {
-+	struct transaction t = {.command = ACPI_EC_BURST_DISABLE,
-+				.wdata = NULL, .rdata = NULL,
-+				.wlen = 0, .rlen = 0};
-+
- 	return (acpi_ec_read_status(ec) & ACPI_EC_FLAG_BURST) ?
--		acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE,
--			NULL, 0, NULL, 0, 0) : 0;
-+				acpi_ec_transaction(ec, &t, 0) : 0;
- }
- 
- static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
- {
- 	int result;
- 	u8 d;
-+	struct transaction t = {.command = ACPI_EC_COMMAND_READ,
-+				.wdata = &address, .rdata = &d,
-+				.wlen = 1, .rlen = 1};
- 
--	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_READ,
--				     &address, 1, &d, 1, 0);
-+	result = acpi_ec_transaction(ec, &t, 0);
- 	*data = d;
- 	return result;
- }
-@@ -369,8 +371,11 @@ static int acpi_ec_read(struct acpi_ec *
- static int acpi_ec_write(struct acpi_ec *ec, u8 address, u8 data)
- {
- 	u8 wdata[2] = { address, data };
--	return acpi_ec_transaction(ec, ACPI_EC_COMMAND_WRITE,
--				   wdata, 2, NULL, 0, 0);
-+	struct transaction t = {.command = ACPI_EC_COMMAND_WRITE,
-+				.wdata = wdata, .rdata = NULL,
-+				.wlen = 2, .rlen = 0};
-+
-+	return acpi_ec_transaction(ec, &t, 0);
- }
- 
- /*
-@@ -432,12 +437,13 @@ int ec_transaction(u8 command,
- 		   u8 * rdata, unsigned rdata_len,
- 		   int force_poll)
- {
-+	struct transaction t = {.command = command,
-+				.wdata = wdata, .rdata = rdata,
-+				.wlen = wdata_len, .rlen = rdata_len};
- 	if (!first_ec)
- 		return -ENODEV;
- 
--	return acpi_ec_transaction(first_ec, command, wdata,
--				   wdata_len, rdata, rdata_len,
--				   force_poll);
-+	return acpi_ec_transaction(first_ec, &t, force_poll);
- }
- 
- EXPORT_SYMBOL(ec_transaction);
-@@ -446,7 +452,9 @@ static int acpi_ec_query(struct acpi_ec 
- {
- 	int result;
- 	u8 d;
--
-+	struct transaction t = {.command = ACPI_EC_COMMAND_QUERY,
-+				.wdata = NULL, .rdata = &d,
-+				.wlen = 0, .rlen = 1};
- 	if (!ec || !data)
- 		return -EINVAL;
- 
-@@ -456,7 +464,7 @@ static int acpi_ec_query(struct acpi_ec 
- 	 * bit to be cleared (and thus clearing the interrupt source).
- 	 */
- 
--	result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_QUERY, NULL, 0, &d, 1, 0);
-+	result = acpi_ec_transaction(ec, &t, 0);
- 	if (result)
- 		return result;
- 
-@@ -696,7 +704,7 @@ static struct acpi_ec *make_acpi_ec(void
- 	mutex_init(&ec->lock);
- 	init_waitqueue_head(&ec->wait);
- 	INIT_LIST_HEAD(&ec->list);
--	spin_lock_init(&ec->t_lock);
-+	spin_lock_init(&ec->curr_lock);
- 	return ec;
- }
- 
+ 	reset_value = acpi_gbl_FADT.reset_value;
 
 -- 
