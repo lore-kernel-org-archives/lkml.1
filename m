@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYKDXmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYKDXlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbYKDXmg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbYKDXiX
+	id S1758027AbYKDXlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:41:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbYKDXiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:38:23 -0500
-Received: from mail.suse.de ([195.135.220.2]:47360 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:38:15 -0500
+Received: from mx1.suse.de ([195.135.220.2]:47322 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757259AbYKDXiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:38:22 -0500
-Date: Tue, 4 Nov 2008 15:31:26 -0800
+	id S1756283AbYKDXiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:38:13 -0500
+Date: Tue, 4 Nov 2008 15:31:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Florian Westphal <fw@strlen.de>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 14/57] syncookies: fix inclusion of tcp options in syn-ack
-Message-ID: <20081104233126.GO659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dan Nicholson <dbn.lists@gmail.com>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 12/57] Revert "HID: Invert HWHEEL mappings for some
+	Logitech mice"
+Message-ID: <20081104233122.GM659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0001-syncookies-fix-inclusion-of-tcp-options-in-syn-ack.patch"
+Content-Disposition: inline; filename="revert-hid-invert-hwheel-mappings-for-some-logitech-mice.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,51 +40,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Florian Westphal <fw@strlen.de>
+From: Dan Nicholson <dbn.lists@gmail.com>
 
-[ Upstream commit 8b5f12d04b2e93842f3dda01f029842047bf3f81 ]
+commit 022b7024d4bb1f9a2f30021a2672a0f940ebfa7a upstream.
 
-David Miller noticed that commit
-33ad798c924b4a1afad3593f2796d465040aadd5 '(tcp: options clean up')
-did not move the req->cookie_ts check.
-This essentially disabled commit 4dfc2817025965a2fc78a18c50f540736a6b5c24
-'[Syncookies]: Add support for TCP options via timestamps.'.
+This reverts commit 740f370dc61dc478d891d7d47660bb3ae39ddb4f.
 
-This restores the original logic.
+It turned out to be correct in the first place: a positive value should
+be sent when the wheel is moved to the right, and a negative value when
+moved to the left. This is the behavior expected by the Xorg evdev
+driver. I must have had a remapping somewhere else in my system when
+originally testing this. Testing on another system shows that the
+unpatched kernel is correct.
 
-Signed-off-by: Florian Westphal <fw@strlen.de>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Here is a bug report from Mandriva that brought the problem to my
+attention:
+
+    https://qa.mandriva.com/show_bug.cgi?id=44309#c19
+
+Signed-off-by: Dan Nicholson <dbn.lists@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp_output.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/hid/usbhid/hid-quirks.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
---- a/net/ipv4/tcp_output.c
-+++ b/net/ipv4/tcp_output.c
-@@ -2266,6 +2266,11 @@ struct sk_buff *tcp_make_synack(struct s
- 	}
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -247,8 +247,6 @@
+ #define USB_DEVICE_ID_LD_MACHINETEST	0x2040
  
- 	memset(&opts, 0, sizeof(opts));
-+#ifdef CONFIG_SYN_COOKIES
-+	if (unlikely(req->cookie_ts))
-+		TCP_SKB_CB(skb)->when = cookie_init_timestamp(req);
-+	else
-+#endif
- 	TCP_SKB_CB(skb)->when = tcp_time_stamp;
- 	tcp_header_size = tcp_synack_options(sk, req,
- 					     dst_metric(dst, RTAX_ADVMSS),
-@@ -2292,11 +2297,6 @@ struct sk_buff *tcp_make_synack(struct s
+ #define USB_VENDOR_ID_LOGITECH		0x046d
+-#define USB_DEVICE_ID_LOGITECH_LX3	0xc044
+-#define USB_DEVICE_ID_LOGITECH_V150	0xc047
+ #define USB_DEVICE_ID_LOGITECH_RECEIVER	0xc101
+ #define USB_DEVICE_ID_LOGITECH_HARMONY  0xc110
+ #define USB_DEVICE_ID_LOGITECH_HARMONY_2 0xc111
+@@ -603,8 +601,6 @@ static const struct hid_blacklist {
  
- 	/* RFC1323: The window in SYN & SYN/ACK segments is never scaled. */
- 	th->window = htons(min(req->rcv_wnd, 65535U));
--#ifdef CONFIG_SYN_COOKIES
--	if (unlikely(req->cookie_ts))
--		TCP_SKB_CB(skb)->when = cookie_init_timestamp(req);
--	else
--#endif
- 	tcp_options_write((__be32 *)(th + 1), tp, &opts, &md5_hash_location);
- 	th->doff = (tcp_header_size >> 2);
- 	TCP_INC_STATS(sock_net(sk), TCP_MIB_OUTSEGS);
+ 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_ELITE_KBD, HID_QUIRK_LOGITECH_IGNORE_DOUBLED_WHEEL | HID_QUIRK_LOGITECH_EXPANDED_KEYMAP },
+ 	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_CORDLESS_DESKTOP_LX500, HID_QUIRK_LOGITECH_IGNORE_DOUBLED_WHEEL | HID_QUIRK_LOGITECH_EXPANDED_KEYMAP },
+-	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_LX3, HID_QUIRK_INVERT_HWHEEL },
+-	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_LOGITECH_V150, HID_QUIRK_INVERT_HWHEEL },
+ 
+ 	{ USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_NE4K, HID_QUIRK_MICROSOFT_KEYS },
+ 	{ USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_MS_LK6K, HID_QUIRK_MICROSOFT_KEYS },
 
 -- 
