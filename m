@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbYKDXsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbYKDXs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759330AbYKDXsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbYKDXjZ
+	id S1759400AbYKDXs4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYKDXjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:39:25 -0500
-Received: from mx1.suse.de ([195.135.220.2]:47568 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:39:33 -0500
+Received: from mail.suse.de ([195.135.220.2]:47593 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756838AbYKDXjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:39:24 -0500
-Date: Tue, 4 Nov 2008 15:32:01 -0800
+	id S1757573AbYKDXjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:39:31 -0500
+Date: Tue, 4 Nov 2008 15:32:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Jon Tollefson <kniht@linux.vnet.ibm.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 29/57] powerpc/numa: Make memory reserve code more robust
-Message-ID: <20081104233201.GD659@suse.de>
+Subject: [patch 30/57] powerpc: Dont use a 16G page if beyond mem= limits
+Message-ID: <20081104233203.GE659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-numa-make-memory-reserve-code-more-robust.patch"
+Content-Disposition: inline; filename="powerpc-don-t-use-a-16g-page-if-beyond-mem-limits.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,72 +41,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Jon Tollefson <kniht@us.ibm.com>
 
-commit e81703724a966120ace6504c993bda9e084cbf3e upstream.
+commit 4792adbac9eb41cea77a45ab76258ea10d411173 upstream
 
-Adjust amount to reserve based on previous nodes for reserves spanning
-multiple nodes. Check if the node active range is empty before attempting
-to pass the reserve to bootmem.  In practice the range shouldn't be empty,
-but to be sure we check.
+If mem= is used on the boot command line to limit memory then the memory block where a 16G page resides may not be available.
+
+Thanks to Michael Ellerman for finding the problem.
 
 Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/mm/numa.c |   15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -116,6 +116,7 @@ static int __init get_active_region_work
- 
- /*
-  * get_node_active_region - Return active region containing start_pfn
-+ * Active range returned is empty if none found.
-  * @start_pfn: The page to return the region for.
-  * @node_ar: Returned set to the active region containing start_pfn
-  */
-@@ -126,6 +127,7 @@ static void __init get_node_active_regio
- 
- 	node_ar->nid = nid;
- 	node_ar->start_pfn = start_pfn;
-+	node_ar->end_pfn = start_pfn;
- 	work_with_active_regions(nid, get_active_region_work_fn, node_ar);
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -381,8 +381,10 @@ static int __init htab_dt_scan_hugepage_
+ 	printk(KERN_INFO "Huge page(16GB) memory: "
+ 			"addr = 0x%lX size = 0x%lX pages = %d\n",
+ 			phys_addr, block_size, expected_pages);
+-	lmb_reserve(phys_addr, block_size * expected_pages);
+-	add_gpage(phys_addr, block_size, expected_pages);
++	if (phys_addr + (16 * GB) <= lmb_end_of_DRAM()) {
++		lmb_reserve(phys_addr, block_size * expected_pages);
++		add_gpage(phys_addr, block_size, expected_pages);
++	}
+ 	return 0;
  }
- 
-@@ -888,18 +890,20 @@ void __init do_init_bootmem(void)
- 		struct node_active_region node_ar;
- 
- 		get_node_active_region(start_pfn, &node_ar);
--		while (start_pfn < end_pfn) {
-+		while (start_pfn < end_pfn &&
-+			node_ar.start_pfn < node_ar.end_pfn) {
-+			unsigned long reserve_size = size;
- 			/*
- 			 * if reserved region extends past active region
- 			 * then trim size to active region
- 			 */
- 			if (end_pfn > node_ar.end_pfn)
--				size = (node_ar.end_pfn << PAGE_SHIFT)
-+				reserve_size = (node_ar.end_pfn << PAGE_SHIFT)
- 					- (start_pfn << PAGE_SHIFT);
--			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase, size,
--				node_ar.nid);
-+			dbg("reserve_bootmem %lx %lx nid=%d\n", physbase,
-+				reserve_size, node_ar.nid);
- 			reserve_bootmem_node(NODE_DATA(node_ar.nid), physbase,
--						size, BOOTMEM_DEFAULT);
-+						reserve_size, BOOTMEM_DEFAULT);
- 			/*
- 			 * if reserved region is contained in the active region
- 			 * then done.
-@@ -914,6 +918,7 @@ void __init do_init_bootmem(void)
- 			 */
- 			start_pfn = node_ar.end_pfn;
- 			physbase = start_pfn << PAGE_SHIFT;
-+			size = size - reserve_size;
- 			get_node_active_region(start_pfn, &node_ar);
- 		}
  
 
 -- 
