@@ -1,98 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYKDQ23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYKDQ27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbYKDQ23 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:28:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbYKDQ2U
+	id S1756645AbYKDQ27 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:28:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYKDQ2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:28:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:41760 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbYKDQ2U (ORCPT
+	Tue, 4 Nov 2008 11:28:50 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49387 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753839AbYKDQ2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:28:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type;
-        b=UDWE5rxSzCkcEafQgI9UjoJ+1AcLJOg+aTSWZSg1u06Gw9ZTrwX4bkWgYs77eB5IaQ
-         8FMwsCwA4YpzuXTOTto4+2OwADepbF9YG4xv3DQkn4GidkQvZ2uU+/gplugK6wytXXtf
-         q/aYSRr61RSOByI+wc3OP5ynMIvi/5IpYB7jM=
-Message-ID: <491077E3.4010702@gmail.com>
-Date: Tue, 04 Nov 2008 18:27:15 +0200
-From: Lior Dotan <liodot@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: gregkh@suse.de
-CC: linux-kernel@vger.kernel.org, charrer@alacritech.com
-Subject: [STAGING] slicoss - use kzalloc
-Content-Type: multipart/mixed;
- boundary="------------000701020108000902070909"
+	Tue, 4 Nov 2008 11:28:50 -0500
+Date: Tue, 4 Nov 2008 16:28:20 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Chris Friesen <cfriesen@nortel.com>, Rik van Riel <riel@redhat.com>,
+       "Eugene V. Lyubimkin" <jackyf.devel@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       hugh <hugh@veritas.com>
+Subject: Re: mmap: is default non-populating behavior stable?
+Message-ID: <20081104162820.644b1487@lxorguk.ukuu.org.uk>
+In-Reply-To: <1225814820.7803.1672.camel@twins>
+References: <490F73CD.4010705@gmail.com>
+	<1225752083.7803.1644.camel@twins>
+	<490F8005.9020708@redhat.com>
+	<491070B5.2060209@nortel.com>
+	<1225814820.7803.1672.camel@twins>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000701020108000902070909
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 04 Nov 2008 17:07:00 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-This patch uses kzalloc() where applicable.
+> On Tue, 2008-11-04 at 09:56 -0600, Chris Friesen wrote:
+> > Rik van Riel wrote:
+> > > Peter Zijlstra wrote:
+> > 
+> > >> The exact interaction of mmap() and truncate() I'm not exactly clear on.
+> > > 
+> > > Truncate will reduce the size of the mmaps on the file to
+> > > match the new file size, so processes accessing beyond the
+> > > end of file will get a segmentation fault (SIGSEGV).
+> > 
+> > I suspect Peter was talking about using truncate() to set the initial 
+> > file size, effectively increasing rather than reducing it.
+> 
+> I was thinking of truncate() on an already mmap()'ed region, either
+> increasing or decreasing the size so that part of the mmap becomes
+> (in)valid.
+> 
+> I'm not sure how POSIX speaks of this.
+> 
+> I think Linux does the expected thing.
 
-Signed-off-by: Lior Dotan <liodot@gmail.com>
+I believe our behaviour is correct for mmap/mumap/truncate and it
+certainly used to be and was tested.
 
---------------000701020108000902070909
-Content-Type: text/plain;
- name="slicoss-kzalloc.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="slicoss-kzalloc.patch"
+At the point you do anything involving mremap (which is non posix) our
+behaviour becomes rather bizarre.
 
---- b/drivers/staging/slicoss/slicoss.c	2008-11-04 11:53:12.878116772 +0200
-+++ a/drivers/staging/slicoss/slicoss.c	2008-11-04 12:08:40.800644774 +0200
-@@ -2673,7 +2673,7 @@ static int slic_card_init(struct sliccar
- 
- #if SLIC_DUMP_ENABLED
- 	if (!card->dumpbuffer) {
--		card->dumpbuffer = kmalloc(DUMP_PAGE_SIZE, GFP_ATOMIC);
-+		card->dumpbuffer = kzalloc(DUMP_PAGE_SIZE, GFP_ATOMIC);
- 
- 		ASSERT(card->dumpbuffer);
- 		if (card->dumpbuffer == NULL)
-@@ -2683,7 +2683,6 @@ static int slic_card_init(struct sliccar
- 	 *  Smear the shared memory structure and then obtain
- 	 *  the PHYSICAL address of this structure
- 	 */
--	memset(card->dumpbuffer, 0, DUMP_PAGE_SIZE);
- 	card->dumpbuffer_phys = virt_to_bus(card->dumpbuffer);
- 	card->dumpbuffer_physh = SLIC_GET_ADDR_HIGH(card->dumpbuffer_phys);
- 	card->dumpbuffer_physl = SLIC_GET_ADDR_LOW(card->dumpbuffer_phys);
-@@ -2692,7 +2691,7 @@ static int slic_card_init(struct sliccar
- 	 *  Allocate COMMAND BUFFER
- 	 */
- 	if (!card->cmdbuffer) {
--		card->cmdbuffer = kmalloc(sizeof(struct dump_cmd), GFP_ATOMIC);
-+		card->cmdbuffer = kzalloc(sizeof(struct dump_cmd), GFP_ATOMIC);
- 
- 		ASSERT(card->cmdbuffer);
- 		if (card->cmdbuffer == NULL)
-@@ -2702,7 +2701,6 @@ static int slic_card_init(struct sliccar
- 	 *  Smear the shared memory structure and then obtain
- 	 *  the PHYSICAL address of this structure
- 	 */
--	memset(card->cmdbuffer, 0, sizeof(struct dump_cmd));
- 	card->cmdbuffer_phys = virt_to_bus(card->cmdbuffer);
- 	card->cmdbuffer_physh = SLIC_GET_ADDR_HIGH(card->cmdbuffer_phys);
- 	card->cmdbuffer_physl = SLIC_GET_ADDR_LOW(card->cmdbuffer_phys);
-@@ -2833,9 +2831,8 @@ static u32 slic_card_locate(struct adapt
- 	}
- 	if (!physcard) {
- 		/* no structure allocated for this physical card yet */
--		physcard = kmalloc(sizeof(struct physcard *), GFP_ATOMIC);
-+		physcard = kzalloc(sizeof(struct physcard *), GFP_ATOMIC);
- 		ASSERT(physcard);
--		memset(physcard, 0, sizeof(struct physcard *));
- 
- 		DBG_MSG
- 		    ("\n%s Allocate a PHYSICALcard:\n    PHYSICAL_Card[%p]\n\
-
---------------000701020108000902070909--
+Alan
