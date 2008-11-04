@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYKDWMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbYKDWNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYKDWMS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:12:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYKDWMJ
+	id S1756175AbYKDWNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 17:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYKDWNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:12:09 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41579 "EHLO hera.kernel.org"
+	Tue, 4 Nov 2008 17:13:44 -0500
+Received: from mga09.intel.com ([134.134.136.24]:33431 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753517AbYKDWMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:12:08 -0500
-Message-ID: <4910C845.4060909@kernel.org>
-Date: Tue, 04 Nov 2008 14:10:13 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1752360AbYKDWNn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 17:13:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,545,1220252400"; 
+   d="scan'208";a="459281018"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Shehjar Tikoo <shehjart@cse.unsw.edu.au>,
+       "fujita.tomonori@lab.ntt.co.jp" <fujita.tomonori@lab.ntt.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Date: Tue, 4 Nov 2008 14:13:39 -0800
+Subject: RE: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
+ Mar 28, 2008
+Thread-Topic: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
+ Mar 28, 2008
+Thread-Index: Ack+DEP3w74SxMCKTfO+ptOehbf/wgAufUEg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35BE05F00@orsmsx505.amr.corp.intel.com>
+References: <490F880E.4000801@cse.unsw.edu.au>
+In-Reply-To: <490F880E.4000801@cse.unsw.edu.au>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ben Hutchings <bhutchings@solarflare.com>
-Subject: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Added Cc: linux-ia64 ... more likely to attract attention of HP
+ia64 experts there.
 
+> arch/ia64/hp/common/sba_iommu.c: I/O MMU is out of mapping resources
 
-Impact: so NR_IRQS is bigger enough for system with lots of apic/pins
+Odd ... the code (back to the dawn of git time in 2.6.12-rc1) looks like
 
-Now: if IO_APIC is there, will have big NR_IRQS
+        panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n"
+                ioc->ioc_hpa);
 
-otherwise still use 224
+I wonder why you don't see the "@ HEXADDRESS"?
 
-Signed-off-by: Yinghai <yinghai@kernel.org>
+> Using git-bisect, I've zeroed in on the commit that introduced this.
+> Please see the attached file for the commit.
 
----
- arch/x86/include/asm/irq_vectors.h |   20 ++++++--------------
- 1 file changed, 6 insertions(+), 14 deletions(-)
+Did you confirm that reverting this commit on a recent kernel
+fixes the problem (once in a while git bisect can point to
+the wrong commit ... it seems very likely that it got the
+right one here, but it is always good to check).  When I
+tried to use "patch -R" to revert this it got confused on
+the Kconfig file because the lines that were added were
+subsequently changed ... so you may need to revert that
+by hand ... the sba_iommu.c apparently reverted ok).
 
-Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
-+++ linux-2.6/arch/x86/include/asm/irq_vectors.h
-@@ -101,30 +101,22 @@
- #define LAST_VM86_IRQ		15
- #define invalid_vm86_irq(irq)	((irq) < 3 || (irq) > 15)
- 
--#ifdef CONFIG_X86_64
-+#if defined(CONFIG_X86_IO_APIC) && !defined(CONFIG_PARAVIRT) && !defined(CONFIG_X86_VISWS) && !defined(CONFIG_X86_VOYAGER)
- # if NR_CPUS < MAX_IO_APICS
- #  define NR_IRQS (NR_VECTORS + (32 * NR_CPUS))
- # else
- #  define NR_IRQS (NR_VECTORS + (32 * MAX_IO_APICS))
- # endif
- 
--#elif !defined(CONFIG_X86_VOYAGER)
-+#elif defined(CONFIG_PARAVIRT) || defined(CONFIG_X86_VISWS) || defined(CONFIG_X86_VOYAGER)
- 
--# if defined(CONFIG_X86_IO_APIC) || defined(CONFIG_PARAVIRT) || defined(CONFIG_X86_VISWS)
--
--#  define NR_IRQS		224
--
--# else /* IO_APIC || PARAVIRT */
--
--#  define NR_IRQS		16
--
--# endif
-+# define NR_IRQS		224
- 
--#else /* !VISWS && !VOYAGER */
-+#else /* IO_APIC || PARAVIRT */
- 
--# define NR_IRQS		224
-+# define NR_IRQS		16
- 
--#endif /* VISWS */
-+#endif
- 
- /* Voyager specific defines */
- /* These define the CPIs we use in linux */
+> Other info:
+> System is HP RX6600(16Gb RAM, 16 processors w/ dual cores and HT)
+> 20 SATA disks under software RAID0 with 6 TB capacity.
+> Silicon Image 3124 controller.
+> File system is XFS.
+
+My HP test system is way too small to attempt to recreate
+this (just 2 cpus & 1 disk).  How long does each of your
+tests take to hit the problems ... a few minutes? Or hours?
+
+> I'd much appreciate some help in fixing this because this panic has
+> basically stalled my own work. I'd be willing to run more tests on my
+> setup to test any patches that possibly fix this issue.
+
+Adding some printk() before the panic might give a clue as to what
+is going wrong.  Either a bogus call is trying to allocate far
+too much space, or the bitmap is leaking, or we have a totally
+messed up "ioc" structure.
+
+Printing "pages_needed" the address of "ioc" and some interesting
+fields from ioc (at least ioc->res_size) would help.  I assume
+the the return value from sba_search_bitmap() is ~0x0 ... but
+you should print "pide" just to be sure.
+
+-Tony
