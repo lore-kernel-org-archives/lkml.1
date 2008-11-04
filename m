@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757201AbYKDWI7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYKDWMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757201AbYKDWI7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbYKDWIT
+	id S1756560AbYKDWMS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 17:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754242AbYKDWMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:08:19 -0500
-Received: from mga09.intel.com ([134.134.136.24]:63808 "EHLO mga09.intel.com"
+	Tue, 4 Nov 2008 17:12:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41579 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbYKDWIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:08:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,545,1220252400"; 
-   d="scan'208";a="459279627"
-Message-Id: <20081104215626.751033000@linux-os.sc.intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 04 Nov 2008 13:53:03 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: jens.axboe@oracle.com, mingo@elte.hu, jeremy.fitzhardinge@citrix.com,
-       nickpiggin@yahoo.com.au, torvalds@linux-foundation.org,
-       paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 1/3] generic-ipi: add smp_mb() before sending the IPI
-Content-Disposition: inline; filename=generic_ipi_strengthen_barrier.patch
+	id S1753517AbYKDWMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 17:12:08 -0500
+Message-ID: <4910C845.4060909@kernel.org>
+Date: Tue, 04 Nov 2008 14:10:13 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ben Hutchings <bhutchings@solarflare.com>
+Subject: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-smp_mb() (to make the memory operations visible globally) is needed before
-sending the ipi, if the receiver refers to the data(setup by the sender) in
-a lock-free fashion.
 
-On x86, x2apic mode accesses for sending IPI's don't have serializing
-semantics. So the need for smp_mb() before sending the IPI becomes more
-critical in x2apic mode.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Impact: so NR_IRQS is bigger enough for system with lots of apic/pins
+
+Now: if IO_APIC is there, will have big NR_IRQS
+
+otherwise still use 224
+
+Signed-off-by: Yinghai <yinghai@kernel.org>
+
 ---
+ arch/x86/include/asm/irq_vectors.h |   20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-Index: linux-2.6.git/kernel/smp.c
+Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
 ===================================================================
---- linux-2.6.git.orig/kernel/smp.c	2008-10-31 11:15:11.000000000 -0700
-+++ linux-2.6.git/kernel/smp.c	2008-11-04 09:54:29.000000000 -0800
-@@ -76,6 +76,11 @@
- 	list_add_tail(&data->list, &dst->list);
- 	spin_unlock_irqrestore(&dst->lock, flags);
+--- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
++++ linux-2.6/arch/x86/include/asm/irq_vectors.h
+@@ -101,30 +101,22 @@
+ #define LAST_VM86_IRQ		15
+ #define invalid_vm86_irq(irq)	((irq) < 3 || (irq) > 15)
  
-+	/*
-+	 * Make the list addition visible before sending the ipi.
-+	 */
-+	smp_mb();
-+
- 	if (ipi)
- 		arch_send_call_function_single_ipi(cpu);
+-#ifdef CONFIG_X86_64
++#if defined(CONFIG_X86_IO_APIC) && !defined(CONFIG_PARAVIRT) && !defined(CONFIG_X86_VISWS) && !defined(CONFIG_X86_VOYAGER)
+ # if NR_CPUS < MAX_IO_APICS
+ #  define NR_IRQS (NR_VECTORS + (32 * NR_CPUS))
+ # else
+ #  define NR_IRQS (NR_VECTORS + (32 * MAX_IO_APICS))
+ # endif
  
-@@ -370,6 +375,11 @@
- 	list_add_tail_rcu(&data->csd.list, &call_function_queue);
- 	spin_unlock_irqrestore(&call_function_lock, flags);
+-#elif !defined(CONFIG_X86_VOYAGER)
++#elif defined(CONFIG_PARAVIRT) || defined(CONFIG_X86_VISWS) || defined(CONFIG_X86_VOYAGER)
  
-+	/*
-+	 * Make the list addition visible before sending the ipi.
-+	 */
-+	smp_mb();
-+
- 	/* Send a message to all CPUs in the map */
- 	arch_send_call_function_ipi(mask);
+-# if defined(CONFIG_X86_IO_APIC) || defined(CONFIG_PARAVIRT) || defined(CONFIG_X86_VISWS)
+-
+-#  define NR_IRQS		224
+-
+-# else /* IO_APIC || PARAVIRT */
+-
+-#  define NR_IRQS		16
+-
+-# endif
++# define NR_IRQS		224
  
-
--- 
-
+-#else /* !VISWS && !VOYAGER */
++#else /* IO_APIC || PARAVIRT */
+ 
+-# define NR_IRQS		224
++# define NR_IRQS		16
+ 
+-#endif /* VISWS */
++#endif
+ 
+ /* Voyager specific defines */
+ /* These define the CPIs we use in linux */
