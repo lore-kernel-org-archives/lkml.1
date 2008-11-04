@@ -1,53 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbYKDIEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbYKDIE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbYKDIEY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 03:04:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYKDIEP
+	id S1754860AbYKDIE7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 03:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYKDIEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 03:04:15 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57434 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753298AbYKDIEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 03:04:14 -0500
-Message-ID: <4910014F.4000808@cn.fujitsu.com>
-Date: Tue, 04 Nov 2008 16:01:19 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 4 Nov 2008 03:04:47 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:38366 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753422AbYKDIEp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 03:04:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:cc:subject:references
+         :in-reply-to:content-type:content-transfer-encoding:sender;
+        b=kYmflffGusP1uqN5d8njFFMWwaIiCesyI+df3g2zXYF6kOUorJY0bE20B9oDVOjUkM
+         54mLS0kKiFBDoKBHHQceXj3dhfFYEuvHtm2fBxV/aBhZU1ZNnReOEys4Iv5Sh+pe2TlN
+         WVDHQP83n2dYNz+ZCfrfb4vQ/RpzMihmjYXL4=
+Message-ID: <49100213.6040307@panasas.com>
+Date: Tue, 04 Nov 2008 10:04:35 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 3.0a1 (X11/2008050714)
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Matt Helsley <matthltc@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [RFC][PATCH] freezer_cg: disable writing freezer.state of root
- 	cgroup
-References: <20080811235323.872291138@us.ibm.com>	 <20080811235325.121356317@us.ibm.com>	 <6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>	 <490FE7B5.8020400@cn.fujitsu.com>	 <6599ad830811032240n640f3fao48f1a9f05892b797@mail.gmail.com>	 <490FFB56.7030300@cn.fujitsu.com> <6599ad830811032356g6827a97dq41dec492fed8de15@mail.gmail.com>
-In-Reply-To: <6599ad830811032356g6827a97dq41dec492fed8de15@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+CC: open-osd development <osd-dev@open-osd.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Avishay Traeger <avishay@gmail.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [osd-dev] [RFC 0/9] osdfs
+References: <4909C41A.7000406@panasas.com> <490F6829.3020104@garzik.org>
+In-Reply-To: <490F6829.3020104@garzik.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Mon, Nov 3, 2008 at 11:35 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
->> With this change, the root cgroup is unfreezable, and writing to
->> its freezer.state returns -EIO.
+On Nov. 03, 2008, 23:07 +0200, Jeff Garzik <jeff@garzik.org> wrote:
+> Boaz Harrosh wrote:
+>> Please review an OSD based file system. 
+>>
+>> Given that our OSD initiator library is accepted into Kernel, we would
+>> like to also submit an osdfs. This is the first iteration of this file system.
+>>
+>> The next stage is to make it exportable by the pNFS-over-objects Server.
+>> osdfs is one of the building blocks for a full, end-to-end open source
+>> reference implementation of a Server/Client pNFS-over-objects we
+>> want to have available in Linux. Other parts are the Generic pNFS
+>> client project with the objects-layout-driver, and the generic pNFS
+>> server plus osdfs once it is adapted to be exportable.
+>> (See all about pNFS in Linux at:
+>> http://wiki.linux-nfs.org/wiki/index.php/PNFS_prototype_design)
+>>
+>> osdfs was originally developed by Avishay Traeger <avishay@gmail.com>
+>> from IBM. A very old version of it is hosted on sourceforge as the osdfs
+>> project. It was originally developed for the 2.6.10 Kernel over the old
+>> IBM's osd-initiator Linux driver.
+>>
+>> Since then it was picked by us, open-osd, and was both forward ported to
+>> current Kernel, as well as converted to run over our osd Kernel Library.
+>> The conversion effort, if anyone is interested, is also available as a
+>> patchset here:
+>>   git-clone git://git-open-osd.org/open-osd.git osdfs-devel
+>> or on the web at:
+>>   http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=shortlog;h=refs/heads/osdfs-devel
+>>
+>> The Original code is based on ext2 code from the Kernel at the time.
+>> Further reading is available at the last patch in the osdfs.txt file.
+>>
+>> I have mechanically divided the code in parts, each introducing a
+>> group of vfs function vectors, all tied at the end into a full filesystem.
+>> Each patch can be compiled but it will only run at the very end.
+>> This was done for the hope of easier reviewing.
+>>
+>> Here is the list of patches
+>> [RFC 1/9] osdfs: osd Swiss army knife
+>> [RFC 2/9] osdfs: file and file_inode operations
+>> [RFC 3/9] osdfs: symlink_inode and fast_symlink_inode operations
+>> [RFC 4/9] osdfs: address_space_operations
+>> [RFC 5/9] osdfs: dir_inode and directory operations
+>> [RFC 6/9] osdfs: super_operations and file_system_type
+>> [RFC 7/9] osdfs: mkosdfs
+>> [RFC 8/9] osdfs: Documentation
 > 
-> EINVAL might be more consistent with other systems like cpusets.
+> Pretty cool stuff.
 > 
-
-Because writing FREEZE (or other invalid value) to freezer.state returns EIO..
-
-Or that EIO should be also changed to EINVAL.
-
-> Or maybe just skip populating the file entirely for the root cgroup?
-> It's not useful if it can't be written and always returns the same
-> value.
+> I've been wondering when we would start seeing OSD filesystems make 
+> their appearance.
 > 
+> Random, unordered comments:
+> 
+> * This is important stuff.  Should have been posted to LKML.  Please CC 
+> LKML in the future.
+> 
+> * As discussed at the filesystem summit, OSD use implies a need for an 
+> MD-like layer for OSD objects.  Has anyone even started the design work 
+> for this?
 
-I thought about this. I'll see which way Matt and Cedric prefer.
+Yes.  I have.
+I'm coding a prototype to be used by both this file system and by
+the pnfs objects layout driver.
+Initially it will do striping and mirroring, and RAID-5 parity as a
+stretched goal for the initial release.
 
+> 
+> * I tend to think there is room for more than one OSD filesystem in the 
+> Linux kernel.  Assuming all OSDs will use the same Linux filesystem 
+> driver will lead to bloat, and you potentially "code yourself into a 
+> corner."  Let's not rule out multiple filesystems.
+> 
+> As such, "osdfs" seems like too-generic a name. How about boazfs?  :)
+
+I agree.  osdfs is the name given by Avishay and IBM and we just adopted it.
+I think that obfs (Object-based File System) would better represent
+what it is (although it's still generic compared to boazfs :-)
+
+> 
+> * Get this into the kernel ASAP!  OSD stuff languishes outside the 
+> kernel for _far_ too long.  OSD is a key storage technology that needs 
+> to be developed in the full light of the Linux community, not off in a 
+> dark corner somewhere, where few see progress or discussions.
+
+I completely agree.  We've missed the merge window for 2.6.28 but
+if we can get it into 2.6.29 that would be great!
+
+> 
+> Object-based storage, and its SCSI incarnation OSD, is a MAJOR revision 
+> of the block storage API, moving away from LBA-addressed linear APIs. 
+> That's a big deal, and should be discussed on LKML, IMO...
+
+Absolutely.
+Thanks for your comments!
+
+Benny
+
+> 
+> 	Jeff
+> 
