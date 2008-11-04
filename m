@@ -1,156 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbYKDSkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbYKDSm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbYKDSkM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbYKDSkA
+	id S1755699AbYKDSm4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:42:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbYKDSmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:40:00 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:30485 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYKDSj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:39:59 -0500
-Message-ID: <491096D7.10808@natemccallum.com>
-Date: Tue, 04 Nov 2008 13:39:19 -0500
-From: Nathaniel McCallum <nathaniel@natemccallum.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] [PATCH] Loaded driver modalias
-Content-Type: multipart/mixed;
- boundary="------------080803050700080300000909"
+	Tue, 4 Nov 2008 13:42:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34539 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbYKDSmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 13:42:45 -0500
+Date: Tue, 4 Nov 2008 13:42:35 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [PATCH] lockd: convert reclaimer thread to kthread interface
+Message-ID: <20081104134235.0382c873@tleilax.poochiereds.net>
+In-Reply-To: <1225802508.19864.2.camel@heimdal.trondhjem.org>
+References: <1225278945-15407-1-git-send-email-jlayton@redhat.com>
+	<20081103131215.75a83236.akpm@linux-foundation.org>
+	<20081103191924.16528bfd@tleilax.poochiereds.net>
+	<1225802508.19864.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080803050700080300000909
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 04 Nov 2008 07:41:47 -0500
+Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-Please CC me to responses as I'm not subscribed to LKML.  Also, this is 
-my first kernel patch, advise is certainly welcome.
+> On Mon, 2008-11-03 at 19:19 -0500, Jeff Layton wrote:
+> > On Mon, 3 Nov 2008 13:12:15 -0800
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Wed, 29 Oct 2008 07:15:45 -0400
+> > > Jeff Layton <jlayton@redhat.com> wrote:
+> > > 
+> > > > My understanding is that there is a push to turn the kernel_thread
+> > > > interface into a non-exported symbol and move all kernel threads to use
+> > > > the kthread API. This patch changes lockd to use kthread_run to spawn
+> > > > the reclaimer thread.
+> > > > 
+> > > > I've made the assumption here that the extra module references taken
+> > > > when we spawn this thread are unnecessary and removed them. I've also
+> > > > added a KERN_ERR printk that pops if the thread can't be spawned to warn
+> > > > the admin that the locks won't be reclaimed.
+> > > > 
+> > > > I consider this patch 2.6.29 material.
+> > > > 
+> > > > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > > > ---
+> > > >  fs/lockd/clntlock.c |   14 +++++++++-----
+> > > >  1 files changed, 9 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
+> > > > index 8307dd6..fcc2378 100644
+> > > > --- a/fs/lockd/clntlock.c
+> > > > +++ b/fs/lockd/clntlock.c
+> > > > @@ -14,6 +14,7 @@
+> > > >  #include <linux/sunrpc/svc.h>
+> > > >  #include <linux/lockd/lockd.h>
+> > > >  #include <linux/smp_lock.h>
+> > > > +#include <linux/kthread.h>
+> > > >  
+> > > >  #define NLMDBG_FACILITY		NLMDBG_CLIENT
+> > > >  
+> > > > @@ -191,11 +192,15 @@ __be32 nlmclnt_grant(const struct sockaddr *addr, const struct nlm_lock *lock)
+> > > >  void
+> > > >  nlmclnt_recovery(struct nlm_host *host)
+> > > >  {
+> > > > +	struct task_struct *task;
+> > > > +
+> > > >  	if (!host->h_reclaiming++) {
+> > > >  		nlm_get_host(host);
+> > > > -		__module_get(THIS_MODULE);
+> > > > -		if (kernel_thread(reclaimer, host, CLONE_FS | CLONE_FILES) < 0)
+> > > > -			module_put(THIS_MODULE);
+> > > > +		task = kthread_run(reclaimer, host, "%s-reclaim", host->h_name);
+> > > > +		if (IS_ERR(task))
+> > > > +			printk(KERN_ERR "lockd: unable to spawn reclaimer "
+> > > > +				"thread. Locks for %s won't be reclaimed! "
+> > > > +				"(%ld)\n", host->h_name, PTR_ERR(task));
+> > > >  	}
+> > > >  }
+> > > >  
+> > > > @@ -207,7 +212,6 @@ reclaimer(void *ptr)
+> > > >  	struct file_lock *fl, *next;
+> > > >  	u32 nsmstate;
+> > > >  
+> > > > -	daemonize("%s-reclaim", host->h_name);
+> > > >  	allow_signal(SIGKILL);
+> > > >  
+> > > >  	down_write(&host->h_rwsem);
+> > > > @@ -261,5 +265,5 @@ restart:
+> > > >  	nlm_release_host(host);
+> > > >  	lockd_down();
+> > > >  	unlock_kernel();
+> > > > -	module_put_and_exit(0);
+> > > > +	return 0;
+> > > >  }
+> > > 
+> > > Looks OK to me.  I assume the SIGKILL handling has been carefully tested?
+> > > 
+> > > 
+> > > Is it correct to emit a warning and keep going if the thread didn't
+> > > start?  Or would it be safer&saner to fail the whole mount (or whatever
+> > > syscall we're doing here..)
+> > > 
+> > 
+> > Forgot to answer this part...
+> > 
+> > This thread gets kicked off when the server has rebooted and we need to
+> > reclaim our locks. There isn't a syscall on which we can return an
+> > error to the user.
+> > 
+> > Aside from just warning the admin, I'm not sure what we can do here. We
+> > might be able to start making all syscalls on the mount fail somehow,
+> > but I don't think we have infrastructure for that and that may be
+> > overkill anyway. I suppose we could also go to sleep and try to spawn the
+> > thread again, but there's no guarantee of success there.
+> 
+> We should consider implementing SIGLOST. That is the closest thing that
+> we have to a *NIX standard for signalling that remote filesystem state
+> has been lost.
+> 
 
-For something I'm working on I have the need to answer the question, 
-"given a hardware ID, does Linux distro X have a driver to support this 
-hardware?" and more specifically, "which drivers support this hardware?" 
-I can, generally speaking, get this data from files like 
-/lib/modules/*/modules.alias.  However, this does not work for drivers 
-built into the kernel.  With that in mind, I've cooked up a little proof 
-of concept. Basically, its a sysfs file 
-/sys/modules/$module/drivers/$driver/modalias that, when read, contains 
-modalias-style filters for this driver.
+Very interesting. I hadn't heard of SIGLOST before, but it does seem
+like something we should implement. CIFS might also be able to use it
+too. CIFS doesn't have a grace period, so lock reclaims are always
+iffy...
 
-The attached patch only does this for PCI drivers, each subsystem would 
-need a patch like this.  Is this idea crazy?  Is there a better 
-implementation?
+While we're on the subject of signals...
 
-Thanks!
+Do you have any thoughts/objections to just making the reclaimer thread
+ignore them altogether? That would simplify the code a bit.
 
-Nathaniel McCallum
+I think I may have been wrong before as well. Now that I look closer,
+I'm not sure that we're actually leaking memory if the reclaimer is
+signaled. The file_locks do end up not being on the h_granted list
+anymore, but I think that just keeps the kernel from attempting to
+reclaim them again (for instance, if a new reclaimer thread is spawned
+after this one exits).
 
---------------080803050700080300000909
-Content-Type: text/x-patch;
- name="linux-2.6-pci-driver-modalias.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6-pci-driver-modalias.patch"
-
-diff -Nru linux-2.6.27.orig/drivers/pci/pci-driver.c linux-2.6.27/drivers/pci/pci-driver.c
---- linux-2.6.27.orig/drivers/pci/pci-driver.c	2008-10-09 18:13:53.000000000 -0400
-+++ linux-2.6.27/drivers/pci/pci-driver.c	2008-11-04 08:24:29.000000000 -0500
-@@ -118,6 +118,70 @@
- static inline void pci_remove_newid_file(struct pci_driver *drv) {}
- #endif
- 
-+#define ADD(buf, size, cond, wdata, data, wodata)				\
-+{										\
-+	if (cond) {								\
-+		if (snprintf(buf, size, "%s" wdata, buf, data) >= size)		\
-+			return -ENOMEM;						\
-+	}									\
-+	else {									\
-+		if (snprintf(buf, size, "%s" wodata, buf) >= size)		\
-+			return -ENOMEM;						\
-+	}									\
-+}
-+
-+#define PCI_MODALIAS(buf, size, v, d, sv, sd, c, cm) \
-+{											\
-+ADD(buf, size, 1, "%s", "pci:", "")							\
-+ADD(buf, size,  v != PCI_ANY_ID, "v%08X",  v,  "v*")					\
-+ADD(buf, size,  d != PCI_ANY_ID, "d%08X",  d,  "d*")					\
-+ADD(buf, size, sv != PCI_ANY_ID, "sv%08X", sv, "sv*")					\
-+ADD(buf, size, sd != PCI_ANY_ID, "sd%08X", sd, "sd*")					\
-+ADD(buf, size, ((cm >> 16) & 0xFF) == 0xFF, "bc%02X", ((c >> 16) & 0xFF), "bc*")	\
-+ADD(buf, size, ((cm >>  8) & 0xFF) == 0xFF, "sc%02X", ((c >>  8) & 0xFF), "sc*")	\
-+ADD(buf, size, ((cm >>  0) & 0xFF) == 0xFF, "i%02X*", ((c >>  0) & 0xFF), "i*")		\
-+ADD(buf, size, 1, "%s", "\n", "")							\
-+}
-+
-+static ssize_t
-+show_modaliases(struct device_driver *driver, char *buf)
-+{
-+	struct pci_driver *pdrv = to_pci_driver(driver);
-+	struct list_head *pos;
-+	struct pci_dynid *dynid;
-+	int i;
-+
-+	/* Reset the buffer to be blank */
-+	buf[0] = '\0';
-+
-+	/* List the static ids */
-+	for (i=0 ; pdrv->id_table[i].vendor != 0 &&
-+                   pdrv->id_table[i].device != 0; i++) {
-+		PCI_MODALIAS(buf, PAGE_SIZE,
-+				pdrv->id_table[i].vendor,
-+				pdrv->id_table[i].device,
-+				pdrv->id_table[i].subvendor,
-+				pdrv->id_table[i].subdevice,
-+				pdrv->id_table[i].class,
-+				pdrv->id_table[i].class_mask)
-+	}
-+	
-+	/* List the dynamic ids */
-+	list_for_each(pos, &pdrv->dynids.list) {
-+		dynid = list_entry(pos, struct pci_dynid, node);
-+		PCI_MODALIAS(buf, PAGE_SIZE,
-+				dynid->id.vendor,
-+				dynid->id.device,
-+				dynid->id.subvendor,
-+				dynid->id.subdevice,
-+				dynid->id.class,
-+				dynid->id.class_mask)
-+	}
-+
-+	return strlen(buf);
-+}
-+static DRIVER_ATTR(modaliases, S_IRUGO, show_modaliases, NULL);
-+
- /**
-  * pci_match_id - See if a pci device matches a given pci_id table
-  * @ids: array of PCI device id structures to search in
-@@ -702,9 +766,11 @@
- 		return error;
- 
- 	error = pci_create_newid_file(drv);
--	if (error)
--		driver_unregister(&drv->driver);
-+	if (!error)
-+		error = driver_create_file(&drv->driver, &driver_attr_modaliases);
- 
-+	if (error)
-+		pci_unregister_driver(drv);
- 	return error;
- }
- 
-@@ -722,6 +788,7 @@
- pci_unregister_driver(struct pci_driver *drv)
- {
- 	pci_remove_newid_file(drv);
-+	driver_remove_file(&drv->driver, &driver_attr_modaliases);
- 	driver_unregister(&drv->driver);
- 	pci_free_dynids(drv);
- }
-
---------------080803050700080300000909--
+-- 
+Jeff Layton <jlayton@redhat.com>
