@@ -1,123 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYKDAoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbYKDAsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756041AbYKDAoN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 19:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbYKDAn5
+	id S1756240AbYKDAsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 19:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbYKDAsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 19:43:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43712 "EHLO ogre.sisk.pl"
+	Mon, 3 Nov 2008 19:48:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43737 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbYKDAn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 19:43:57 -0500
+	id S1752702AbYKDAsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 19:48:21 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Smolik <marvin@mydatex.cz>
-Subject: Re: [Bugme-new] [Bug 11886] New: without serial console system doesn't poweroff
-Date: Tue, 4 Nov 2008 01:48:34 +0100
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG: sleeping function called from invalid context at kernel/sched.c:5558
+Date: Tue, 4 Nov 2008 01:53:15 +0100
 User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-References: <bug-11886-10286@http.bugzilla.kernel.org/> <20081103130505.d5b45f87.akpm@linux-foundation.org> <490F726F.6070204@mydatex.cz>
-In-Reply-To: <490F726F.6070204@mydatex.cz>
+Cc: Thomas Meyer <thomas@m3y3r.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>
+References: <1225736361.5126.2.camel@localhost.localdomain> <20081103194721.GA16897@elte.hu>
+In-Reply-To: <20081103194721.GA16897@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811040148.34707.rjw@sisk.pl>
+Message-Id: <200811040153.16514.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of November 2008, Daniel Smolik wrote:
-> Andrew Morton napsal(a):
-> > (switched to email.  Please respond via emailed reply-to-all, not via the
-> > bugzilla web interface).
+On Monday, 3 of November 2008, Ingo Molnar wrote:
+> 
+> * Thomas Meyer <thomas@m3y3r.de> wrote:
+> 
+> > False positive, while suspend/resume-to/from-disk?
 > > 
-> > On Wed, 29 Oct 2008 04:06:11 -0700 (PDT)
-> > bugme-daemon@bugzilla.kernel.org wrote:
-> > 
-> >> http://bugzilla.kernel.org/show_bug.cgi?id=11886
-> >>
-> >>            Summary: without serial console system doesn't  poweroff
-> >>            Product: Power Management
-> >>            Version: 2.5
-> >>      KernelVersion: 2.6.27.4
-> >>           Platform: All
-> >>         OS/Version: Linux
-> >>               Tree: Mainline
-> >>             Status: NEW
-> >>           Severity: normal
-> >>           Priority: P1
-> >>          Component: Other
-> >>         AssignedTo: power-management_other@kernel-bugs.osdl.org
-> >>         ReportedBy: marvin@mydatex.cz
-> >>
-> >>
-> >> Latest working kernel version:
-> >> Earliest failing kernel version:2.6.27.2
-> >> Distribution: Debian Etch
-> >> Hardware Environment: Supermiro C2SBC-Q  Dual Core Intel Cpu 1G RAM
-> >> Software Environment: Debian Etch
-> >> Problem Description: If I does't add serial console to kernel command line
-> >> system doesn't poweroff. Linux hangs there:
-> >>
-> >> e1000e 0000:0d:00.0: PCI INT A disabled
-> >> e1000e 0000:00:19.0: PCI INT A disabled
-> >> ACPI: Preparing to enter system sleep state S5
-> >> Disabling non-boot CPUs ...
-> >>
-> >> If I disable in kernel config Suspend to Ram and Hibernate all works without
-> >> console. But with Suspend and hibernate enabled and serial console  added to
-> >> kernel cmd line all works too:
-> >>
-> >> e1000e 0000:0d:00.0: PCI INT A disabled
-> >> e1000e 0000:00:19.0: PCI INT A disabled
-> >> ACPI: Preparing to enter system sleep state S5
-> >> Disabling non-boot CPUs ...
-> >> CPU 1 is now offline
-> >> SMP alternatives: switching to UP code
-> >> CPU1 is down
-> >> Power down.
-> >> acpi_power_off called
-> >>
-> >> Steps to reproduce:
-> >> Compile kernel with attached config and try poweroff without serial console.
-> >>
-> > 
-> > OK, this is weird.
-> > 
-> > But the good news is that there is a very small number of commits
-> > between 2.6.27.2 and 2.6.27.4.
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.3
-> > ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.4
-> > 
-> > I'd be looking at these:
-> > 
-> > commit 3b987ac961486373f91191b14291b331fa546072
-> > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date:   Sat Sep 6 13:13:01 2008 +0200
-> > 
-> >     ACPI suspend: Always use the 32-bit waking vector
-> >     
-> >     commit a6629105dd03d370fcb31e97bddf223fa4bb651e upstream.
-> > 
-> > 
-> > commit 66036f5862883fcc9f7ff8550685a5a3de1a57e4
-> > Author: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date:   Sat Oct 4 00:05:05 2008 +0200
-> > 
-> >     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-> >     
-> >     commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 upstream.
-> > 
-> > 
-> > 
-> > presumably 2.6.28-rc3 is also broken?
-> I don't know I can test it on Thu. But may be may fault or misunderstanding fist kernel which I test is 2.27.2. I don't 
-> test any kernel before. I don't know if 2.6.26 works.
+> > [19332.352863] BUG: sleeping function called from invalid context at kernel/sched.c:5558
+> > [19332.352866] in_atomic(): 0, irqs_disabled(): 1, pid: 3287, name: pm-hibernate
+> > [19332.352869] Pid: 3287, comm: pm-hibernate Tainted: G        W  2.6.28-rc2 #97
+> > [19332.352871] Call Trace:
+> > [19332.352878]  [<c0436408>] __might_sleep+0xdc/0xe3
+> > [19332.352882]  [<c043bbde>] __cond_resched+0x12/0x36
+> > [19332.352886]  [<c09d29a8>] _cond_resched+0x27/0x32
+> > [19332.352889]  [<c0697d9c>] acpi_ps_complete_op+0x1e0/0x1ef
+> > [19332.352892]  [<c069884e>] ? acpi_ps_alloc_op+0x82/0x84
+> > [19332.352896]  [<c0689814>] ? acpi_ds_exec_end_op+0x30c/0x370
+> > [19332.352899]  [<c069839f>] acpi_ps_parse_loop+0x5f4/0x721
+> > [19332.352902]  [<c069779c>] acpi_ps_parse_aml+0x6d/0x267
+> 
+> Such messages are never false positives, this is a real bug.
 
-Can you try 2.6.26, please?
+Well, not sure.
 
+This is the ACPI AML interpreter executing something with interrupts disabled
+due to resume in progress (effectively atomic context).
+
+Thanks,
 Rafael
