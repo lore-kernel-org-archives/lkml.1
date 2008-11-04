@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbYKDUUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYKDUWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbYKDUUd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 15:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbYKDUUZ
+	id S1755573AbYKDUWX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 15:22:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYKDUWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 15:20:25 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58807 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753981AbYKDUUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 15:20:24 -0500
-Date: Tue, 4 Nov 2008 21:20:11 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: data corruption: revalidating a (removable) hdd/flash on
-	re-insert
-Message-ID: <20081104202011.GA7135@ucw.cz>
-References: <490B2659.9010304@msgid.tls.msk.ru> <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com> <20081104195728.GC5862@ucw.cz> <ac3eb2510811041213l4a20fa12h3c5beb3c2d317574@mail.gmail.com>
-MIME-Version: 1.0
+	Tue, 4 Nov 2008 15:22:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55667 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbYKDUWP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 15:22:15 -0500
+Date: Tue, 4 Nov 2008 21:30:46 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081104203046.GF29626@one.firstfloor.org>
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <491090F3.5020701@zytor.com> <1225824256.28612.1282966677@webmail.messagingengine.com> <4910A390.409@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <ac3eb2510811041213l4a20fa12h3c5beb3c2d317574@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4910A390.409@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Fixing the first of these I think is a no-brainer.  That will cut the
+> size of the existing stub pool by almost half.  The second is more of a
+> judgement call, and I'd like to see performance numbers for it.  Either
+> which way, I think it's worthwhile to consider this as an alternative to
+>   playing segmentation tricks, which I think could have really nasty
+> side effects.
 
-> >> Every access to removable media is guarded by this revalidation check.
-> >> If you don't see these events, you should not trust this reader, and
-> >> at least never change the media while it is connected.
-> >
-> > This is rather nasty data-corrupter.
-> 
-> Sure, it is.
-> 
-> > Could we at least blacklist
-> > broken device, and force revalidation on each close or something like
-> > that?
-> 
-> What's your idea of revalidation if the hardware does not tell you?
-> Get an md5 of the disk content? :)
+Or again just generate them on demand when the interrupt is set up.
+If you really have 240 interrupts sources you can afford the 5k likely,
+but for most there will be only a minimum number of stubs.
 
-Well... you should not eject media while fs is mounted or blockdev is
-open, correct?
+Although frankly I suspect there are far easier ways to save 5k of memory.
 
-So can we simply claim 'media changed' on last close/unmount? Sure,
-sometimes media was not changed, but that only hurts performance, not
-correctness... ?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
