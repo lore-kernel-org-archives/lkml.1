@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbYKDQrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbYKDQst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbYKDQrc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbYKDQqJ
+	id S1757658AbYKDQst (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYKDQqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:46:09 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37573 "EHLO
+	Tue, 4 Nov 2008 11:46:23 -0500
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37592 "EHLO
 	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755169AbYKDQqG (ORCPT
+	with ESMTP id S1757203AbYKDQqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:46:06 -0500
+	Tue, 4 Nov 2008 11:46:15 -0500
 From: Boaz Harrosh <bharrosh@panasas.com>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -19,9 +19,9 @@ To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
        Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 18/18] scsi: Add osd library to build system
-Date: Tue,  4 Nov 2008 18:44:55 +0200
-Message-Id: <1225817095-6293-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 11/18] libosd: OSD Security processing stubs
+Date: Tue,  4 Nov 2008 18:44:49 +0200
+Message-Id: <1225817089-6132-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <491073BB.4000900@panasas.com>
 References: <491073BB.4000900@panasas.com>
@@ -29,65 +29,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OSD in kernel source code is assumed to be at:
-drivers/scsi/osd/ with its own Makefile and Kconfig
-
-Add includes to them from drivers/scsi Makefile and Kconfig
-Add OSD to MAINTAINERS file
+Layout the signing of OSD's CDB and all-data security modes. The actual
+code for signing the data and CDB is missing, but the code flow and the extra
+buffer segments are all in place.
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 ---
- MAINTAINERS           |   10 ++++++++++
- drivers/scsi/Kconfig  |    2 ++
- drivers/scsi/Makefile |    2 ++
- 3 files changed, 14 insertions(+), 0 deletions(-)
+ drivers/scsi/osd/osd_initiator.c |   85 ++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 85 insertions(+), 0 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 355c192..03da1e7 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3153,6 +3153,16 @@ L:	orinoco-devel@lists.sourceforge.net
- W:	http://www.nongnu.org/orinoco/
- S:	Maintained
+diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
+index da0c53c..2ed0429 100644
+--- a/drivers/scsi/osd/osd_initiator.c
++++ b/drivers/scsi/osd/osd_initiator.c
+@@ -109,6 +109,14 @@ static osd_cdb_offset osd_req_encode_offset(struct osd_request *or,
+ 				  OSDv1_OFFSET_MIN_SHIFT, OSD_OFFSET_MAX_SHIFT);
+ }
  
-+OSD LIBRARY
-+P:	Boaz Harrosh
-+M:	bharrosh@panasas.com
-+P:	Benny Halevy
-+M:	bhalevy@panasas.com
-+L:	osd-dev@open-osd.org
-+W:	http://open-osd.org
-+T:	git://git.open-osd.org/osd-lib.git
-+S:	Maintained
++static struct osd_security_parameters *
++_osd_req_sec_params(struct osd_request *or)
++{
++	struct osd_cdb *ocdb = &or->cdb;
 +
- P54 WIRELESS DRIVER
- P:	Michael Wu
- M:	flamingice@sourmilk.net
-diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-index 403ecad..e6af21c 100644
---- a/drivers/scsi/Kconfig
-+++ b/drivers/scsi/Kconfig
-@@ -1780,4 +1780,6 @@ source "drivers/scsi/pcmcia/Kconfig"
- 
- source "drivers/scsi/device_handler/Kconfig"
- 
-+source "drivers/scsi/osd/Kconfig"
++	return &ocdb->v1.sec_params;
++}
 +
- endmenu
-diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
-index 72fd504..1e49632 100644
---- a/drivers/scsi/Makefile
-+++ b/drivers/scsi/Makefile
-@@ -135,6 +135,8 @@ obj-$(CONFIG_CHR_DEV_SG)	+= sg.o
- obj-$(CONFIG_CHR_DEV_SCH)	+= ch.o
- obj-$(CONFIG_SCSI_ENCLOSURE)	+= ses.o
+ void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_dev)
+ {
+ 	memset(osdd, 0, sizeof(*osdd));
+@@ -796,6 +804,64 @@ int _osd_req_finalize_attr_page(struct osd_request *or)
+ 	return ret;
+ }
  
-+obj-$(CONFIG_SCSI_OSD_INITIATOR) += osd/
++int _osd_req_finalize_data_integrity(struct osd_request *or,
++	bool has_in, bool has_out, const u8 *cap_key)
++{
++	struct osd_security_parameters *sec_parms = _osd_req_sec_params(or);
++	int ret;
 +
- # This goes last, so that "real" scsi devices probe earlier
- obj-$(CONFIG_SCSI_DEBUG)	+= scsi_debug.o
++	if (!osd_is_sec_alldata(sec_parms))
++		return 0;
++
++	if (has_out) {
++		struct _osd_req_data_segment seg = {
++			.buff = &or->out_data_integ,
++			.total_bytes = sizeof(or->out_data_integ),
++		};
++		int pad;
++
++		or->out_data_integ.data_bytes = cpu_to_be64(
++			or->out.bio ? or->out.bio->bi_size : 0);
++		or->out_data_integ.set_attributes_bytes = cpu_to_be64(
++			or->set_attr.total_bytes);
++		or->out_data_integ.get_attributes_bytes = cpu_to_be64(
++			or->enc_get_attr.total_bytes);
++
++		sec_parms->data_out_integrity_check_offset =
++			osd_req_encode_offset(or, or->out.total_bytes, &pad);
++
++		ret = _req_append_segment(or, pad, &seg, or->out.last_seg,
++					  &or->out);
++		if (ret)
++			return ret;
++		or->out.last_seg = NULL;
++
++		/* they are now all chained to request sign them all together */
++		osd_sec_sign_data(&or->out_data_integ, or->out.req->bio,
++				  cap_key);
++	}
++
++	if (has_in) {
++		struct _osd_req_data_segment seg = {
++			.buff = &or->in_data_integ,
++			.total_bytes = sizeof(or->in_data_integ),
++		};
++		int pad;
++
++		sec_parms->data_in_integrity_check_offset =
++			osd_req_encode_offset(or, or->in.total_bytes, &pad);
++
++		ret = _req_append_segment(or, pad, &seg, or->in.last_seg,
++					  &or->in);
++		if (ret)
++			return ret;
++
++		or->in.last_seg = NULL;
++	}
++
++	return 0;
++}
++
+ /*
+  * osd_finalize_request and helpers
+  */
+@@ -916,6 +982,12 @@ int osd_finalize_request(struct osd_request *or,
+ 		}
+ 	}
  
++	ret = _osd_req_finalize_data_integrity(or, has_in, has_out, cap_key);
++	if (ret)
++		return ret;
++
++	osd_sec_sign_cdb(&or->cdb, cap_key);
++
+ 	or->request->cmd = or->cdb.buff;
+ 	or->request->cmd_len = _osd_req_cdb_len(or);
+ 
+@@ -981,6 +1053,19 @@ void osd_set_caps(struct osd_cdb *cdb, const void *caps)
+ 	memcpy(&cdb->v1.caps, caps, OSDv1_CAP_LEN);
+ }
+ 
++bool osd_is_sec_alldata(struct osd_security_parameters *sec_parms)
++{
++	return false;
++}
++
++void osd_sec_sign_cdb(struct osd_cdb *ocdb, const u8 *cap_key)
++{
++}
++
++void osd_sec_sign_data(void *data_integ, struct bio *bio, const u8 *cap_key)
++{
++}
++
+ /*
+  * Declared in osd_protocol.h
+  * 4.12.5 Data-In and Data-Out buffer offsets
 -- 
 1.6.0.1
 
