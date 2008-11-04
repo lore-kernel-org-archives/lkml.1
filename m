@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYKDHf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbYKDHg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYKDHf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 02:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYKDHfJ
+	id S1754545AbYKDHg2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 02:36:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYKDHgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 02:35:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54489
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752698AbYKDHfI (ORCPT
+	Tue, 4 Nov 2008 02:36:19 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:46768 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751780AbYKDHgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 02:35:08 -0500
-Date: Mon, 03 Nov 2008 23:34:43 -0800 (PST)
-Message-Id: <20081103.233443.173719917.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 4 Nov 2008 02:36:18 -0500
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+	hotplug
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200811040808.36464.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <1225751665.12673.511.camel@nimitz> <1225771353.6755.16.camel@nigel-laptop>
+	 <200811040808.36464.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 23:36:14 -0800
+Message-Id: <1225784174.12673.547.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-11-04 at 08:08 +0100, Rafael J. Wysocki wrote:
+> A pfn always refers to specific page frame and/or struct page, so yes.
+> However, in one of the nodes these pfns are sort of "invalid" (they point
+> to struct pages belonging to other zones).  AFAICS.
 
-Nothing terribly exciting in here, some small driver fixups,
-a partial revert of a smc91x driver change to fix the build
-on some systems, and some UDP ICMP mib statistic fixes.
+Part of this problem is getting out of the old zone mindset.  It used to
+be that there were one, two, or three zones, set up at boot, with static
+ranges.  These never had holes, never changed, and were always stacked
+up nice and tightly on top of one another.  It ain't that way no more.
 
-Please pull, thanks a lot!
+Now, the zones are much more truly "allocation pools".  They're bunches
+of memory with similar attributes and hypervisors or firmware can hand
+them to the OS in very interesting ways.  This means that the attributes
+that help us pool the memory together have less and less to do with
+physical addresses.  A given physical address a decreasing chance of
+being related to its neighbor.
 
-The following changes since commit 48dcc33e5e11de0f76b65b113988dbc930d17395:
-  Jianjun Kong (1):
-        af_unix: netns: fix problem of return value
+-- Dave
 
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alexey Dobriyan (2):
-      fs_enet: fix polling
-      xfrm: Fix xfrm_policy_gc_lock handling.
-
-Arnaud Ebalard (1):
-      XFRM: copy_to_user_kmaddress() reports local address twice
-
-David S. Miller (2):
-      SMC91x: Fix compilation on some platforms.
-      niu: Use pci_ioremap_bar().
-
-Eilon Greenstein (4):
-      bnx2x: Removing the PMF indication when unloading
-      bnx2x: PCI configuration bug on big-endian
-      bnx2x: Calling netif_carrier_off at the end of the probe
-      bnx2x: Version Update
-
-Jeff Kirsher (1):
-      net: kconfig cleanup
-
-Lennert Buytenhek (1):
-      mv643xx_eth: fix SMI bus access timeouts
-
-Wei Yongjun (2):
-      udp: Fix the SNMP counter of UDP_MIB_INDATAGRAMS
-      udp: Fix the SNMP counter of UDP_MIB_INERRORS
-
-Will Newton (1):
-      drivers/net/smc911x.c: Fix lockdep warning on xmit.
-
- drivers/net/Kconfig                |   18 +++++++++++++++---
- drivers/net/bnx2x_init.h           |    9 +++++----
- drivers/net/bnx2x_main.c           |   10 ++++++----
- drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
- drivers/net/mv643xx_eth.c          |    9 ++++++---
- drivers/net/niu.c                  |    6 +-----
- drivers/net/smc911x.c              |    2 +-
- drivers/net/smc91x.c               |    2 ++
- net/ipv6/udp.c                     |   28 +++++++++++++++++++++-------
- net/xfrm/xfrm_policy.c             |    4 ++--
- net/xfrm/xfrm_user.c               |    2 +-
- 11 files changed, 64 insertions(+), 32 deletions(-)
