@@ -1,52 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYKDT0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbYKDT24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbYKDT0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYKDT0b
+	id S1755465AbYKDT24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYKDT2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:26:31 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:38079 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751152AbYKDT0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:26:30 -0500
-Subject: Re: [PATCH] lockd: convert reclaimer thread to kthread interface
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <20081104134235.0382c873@tleilax.poochiereds.net>
-References: <1225278945-15407-1-git-send-email-jlayton@redhat.com>
-	 <20081103131215.75a83236.akpm@linux-foundation.org>
-	 <20081103191924.16528bfd@tleilax.poochiereds.net>
-	 <1225802508.19864.2.camel@heimdal.trondhjem.org>
-	 <20081104134235.0382c873@tleilax.poochiereds.net>
-Content-Type: text/plain
-Date: Tue, 04 Nov 2008 14:26:21 -0500
-Message-Id: <1225826781.30407.11.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 97D50A38E7EC6D167BCC3D3859B112CE053C7B41
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 172 max/h 9 blacklist 0 greylist 0 ratelimit 0
+	Tue, 4 Nov 2008 14:28:48 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:45439 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYKDT2r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 14:28:47 -0500
+Date: Tue, 4 Nov 2008 13:28:44 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
+       morgan@kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH -v2 3/4] AUDIT: collect info when execve results in
+	caps in pE
+Message-ID: <20081104192844.GA13390@us.ibm.com>
+References: <20081103201742.12059.36030.stgit@paris.rdu.redhat.com> <20081103201753.12059.67262.stgit@paris.rdu.redhat.com> <20081104163540.GA24318@us.ibm.com> <1225825646.4662.22.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225825646.4662.22.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-04 at 13:42 -0500, Jeff Layton wrote:
-> While we're on the subject of signals...
+Quoting Eric Paris (eparis@redhat.com):
+> On Tue, 2008-11-04 at 10:35 -0600, Serge E. Hallyn wrote:
+> > Quoting Eric Paris (eparis@redhat.com):
+> > > diff --git a/security/commoncap.c b/security/commoncap.c
+> > > index 8bb95ed..534abb5 100644
+> > > --- a/security/commoncap.c
+> > > +++ b/security/commoncap.c
+> > > @@ -8,6 +8,7 @@
+> > >   */
+> > > 
+> > >  #include <linux/capability.h>
+> > > +#include <linux/audit.h>
+> > >  #include <linux/module.h>
+> > >  #include <linux/init.h>
+> > >  #include <linux/kernel.h>
+> > > @@ -373,6 +374,9 @@ int cap_bprm_set_security (struct linux_binprm *bprm)
+> > > 
+> > >  void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+> > >  {
+> > > +	kernel_cap_t pP = current->cap_permitted;
+> > > +	kernel_cap_t pE = current->cap_effective;
+> > > +
+> > >  	if (bprm->e_uid != current->uid || bprm->e_gid != current->gid ||
+> > >  	    !cap_issubset(bprm->cap_post_exec_permitted,
+> > >  			  current->cap_permitted)) {
+> > > @@ -407,6 +411,12 @@ void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
+> > >  	}
+> > > 
+> > >  	/* AUD: Audit candidate if current->cap_effective is set */
+> > > +	if (!cap_isclear(current->cap_effective)) {
+> > > +		if (!cap_issubset(current->cap_effective, CAP_FULL_SET) ||
+> > 
+> > Hi Eric,
+> > 
+> > can you explain what the cap_issubset() check is for here?
 > 
-> Do you have any thoughts/objections to just making the reclaimer thread
-> ignore them altogether? That would simplify the code a bit.
+> I'm glad you noticed it, because it is backwards!
+> 
+> should be
+> 
+> if (!cap_issubset(CAP_FULL_SET, current->cap_effective) ||
+> 
+> The idea is that I don't care to audit
+> 1) full set &&
+> 2) this is root &&
+> 3) root should have a full set
 
-How does the administrator then get out of the situation where the
-server dies (permanently) in the middle of a reclaim?
+Cool, that makes sense.
 
-Forced unmounts won't help here, since they only signal the NFS
-requests, and are in any case per-filesystem, not per-server.
+Would you mind adding a trivial patch to your set commenting
+cap_issubset() in capability.h?  If you feel it's too outside the scope
+of this set I'll send such separately.  Every time I see code using
+it, it takes me 5 mins to remember which order they're supposed to be
+in...
 
-I suppose one could use soft RPC calls, but what should the retry policy
-be for that case?
+> This would still consider a root without a full set because the bset had
+> been changed to be an interesting event.  I'm fine with that.
+> 
+> I'll send -v3 once I hear comments on everything else....
+> 
+> -Eric
 
-Trond
-
+thanks,
+-serge
