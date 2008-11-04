@@ -1,54 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYKDJBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872AbYKDJEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbYKDJBd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 04:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbYKDJBY
+	id S1754872AbYKDJEi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 04:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbYKDJEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 04:01:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38278 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753379AbYKDJBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 04:01:24 -0500
-Date: Tue, 4 Nov 2008 10:01:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: signal_64: remove unused code in
-	__setup_rt_frame()
-Message-ID: <20081104090107.GC23790@elte.hu>
-References: <490FC015.7080707@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490FC015.7080707@ct.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0037]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Tue, 4 Nov 2008 04:04:22 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:63193 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753175AbYKDJES (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 04:04:18 -0500
+Date: Tue, 4 Nov 2008 17:54:06 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       hugh@veritas.com, taka@valinux.co.jp, nishimura@mxp.nes.nec.co.jp
+Subject: Re: [RFC][PATCH 3/5] memcg : mem+swap controller kconfig
+Message-Id: <20081104175406.cb46d68d.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081031115510.3ba13f3b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081031115057.6da3dafd.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081031115510.3ba13f3b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-
-> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Fri, 31 Oct 2008 11:55:10 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> Experimental.
 > 
-> sizeof(*set) is always 8 on x86_64.
+> Config and control variable for mem+swap controller.
 > 
-> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-> ---
->  arch/x86/kernel/signal_64.c |    6 +-----
->  1 files changed, 1 insertions(+), 5 deletions(-)
+> This patch adds CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> (memory resource controller swap extension.)
+> 
+> For accounting swap, it's obvious that we have to use additional memory
+> to remember "who uses swap". This adds more overhead.
+> So, it's better to offer "choice" to users. This patch adds 2 choices.
+> 
+> This patch adds 2 parameters to enable swap extension or not.
+>   - CONFIG
+>   - boot option
+> 
+> Changelog: v1 -> v2
+>  - fixed typo.
+>  - make default value of "do_swap_account" to be 0 and turned on 1
+>    later if configured.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> 
+>  Documentation/kernel-parameters.txt |    3 +++
+>  include/linux/memcontrol.h          |    3 +++
+>  init/Kconfig                        |   17 +++++++++++++++++
+>  mm/memcontrol.c                     |   32 ++++++++++++++++++++++++++++++++
+>  4 files changed, 55 insertions(+)
+> 
+> Index: mmotm-2.6.28-rc2+/init/Kconfig
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/init/Kconfig
+> +++ mmotm-2.6.28-rc2+/init/Kconfig
+> @@ -428,6 +428,23 @@ config CGROUP_MEM_RES_CTLR
+>  config MM_OWNER
+>  	bool
+>  
+> +config CGROUP_MEM_RES_CTLR_SWAP
+> +	bool "Memory Resource Controller Swap Extension(EXPERIMENTAL)"
+> +	depends on CGROUP_MEM_RES_CTLR && SWAP && EXPERIMENTAL
+> +	help
+> +	  Add swap management feature to memory resource controller. When you
+> +	  enable this, you can limit mem+swap usage per cgroup. In other words,
+> +	  when you disable this, memory resource controller has no cares to
+> +	  usage of swap...a process can exhaust all of the swap. This extension
+> +	  is useful when you want to avoid exhaustion swap but this itself
+> +	  adds more overheads and consumes memory for remembering information.
+> +	  Especially if you use 32bit system or small memory system, please
+> +	  be careful about enabling this. When memory resource controller
+> +	  is disabled by boot option, this will be automatically disabled and
+> +	  there will be no overhead from this. Even when you set this config=y,
+> +	  if boot option "noswapaccount" is set, swap will not be accounted.
+> +
+> +
+>  endmenu
+>  
+>  config SYSFS_DEPRECATED
+> Index: mmotm-2.6.28-rc2+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.28-rc2+/mm/memcontrol.c
+> @@ -41,6 +41,15 @@
+>  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
+>  #define MEM_CGROUP_RECLAIM_RETRIES	5
+>  
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> +/* Turned on only when memory cgroup is enabled && reallY_do_swap_account = 0 */
+> +int do_swap_account __read_mostly;
+> +static int really_do_swap_account __initdata = 1; /* for remember boot option*/
+> +#else
+> +#define do_swap_account		(0)
+> +#endif
+> +
+> +
+>  /*
+>   * Statistics for memory cgroup.
+>   */
+> @@ -1369,6 +1378,18 @@ static void mem_cgroup_free(struct mem_c
+>  }
+>  
+>  
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> +static void __init enable_swap_cgroup(void)
+> +{
+> +	if (really_do_swap_account)
+> +		do_swap_account = 1;
+> +}
+I think check for !mem_cgroup_subsys.disabled is also needed here.
 
-applied to tip/x86/signal, thanks!
 
-	Ingo
+Thanks,
+Daisuke Nishimura.
+
+> +#else
+> +static void __init enable_swap_cgroup(void)
+> +{
+> +}
+> +#endif
+> +
+>  static struct cgroup_subsys_state *
+>  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+>  {
+> @@ -1377,6 +1398,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>  
+>  	if (unlikely((cont->parent) == NULL)) {
+>  		mem = &init_mem_cgroup;
+> +		enable_swap_cgroup();
+>  	} else {
+>  		mem = mem_cgroup_alloc();
+>  		if (!mem)
+> @@ -1460,3 +1482,13 @@ struct cgroup_subsys mem_cgroup_subsys =
+>  	.attach = mem_cgroup_move_task,
+>  	.early_init = 0,
+>  };
+> +
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> +
+> +static int __init disable_swap_account(char *s)
+> +{
+> +	really_do_swap_account = 0;
+> +	return 1;
+> +}
+> +__setup("noswapaccount", disable_swap_account);
+> +#endif
+> Index: mmotm-2.6.28-rc2+/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/Documentation/kernel-parameters.txt
+> +++ mmotm-2.6.28-rc2+/Documentation/kernel-parameters.txt
+> @@ -1543,6 +1543,9 @@ and is between 256 and 4096 characters. 
+>  
+>  	nosoftlockup	[KNL] Disable the soft-lockup detector.
+>  
+> +	noswapaccount	[KNL] Disable accounting of swap in memory resource
+> +			controller. (See Documentation/controllers/memory.txt)
+> +
+>  	nosync		[HW,M68K] Disables sync negotiation for all devices.
+>  
+>  	notsc		[BUGS=X86-32] Disable Time Stamp Counter
+> Index: mmotm-2.6.28-rc2+/include/linux/memcontrol.h
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/include/linux/memcontrol.h
+> +++ mmotm-2.6.28-rc2+/include/linux/memcontrol.h
+> @@ -77,6 +77,9 @@ extern void mem_cgroup_record_reclaim_pr
+>  extern long mem_cgroup_calc_reclaim(struct mem_cgroup *mem, struct zone *zone,
+>  					int priority, enum lru_list lru);
+>  
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> +extern int do_swap_account;
+> +#endif
+>  
+>  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+>  struct mem_cgroup;
+> 
