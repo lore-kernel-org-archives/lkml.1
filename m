@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757872AbYKDQtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYKDQuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757872AbYKDQtc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYKDQqV
+	id S1757418AbYKDQuL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYKDQql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:46:21 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37588 "EHLO
+	Tue, 4 Nov 2008 11:46:41 -0500
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37589 "EHLO
 	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757198AbYKDQqO (ORCPT
+	with ESMTP id S1757201AbYKDQqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:46:14 -0500
+	Tue, 4 Nov 2008 11:46:15 -0500
 From: Boaz Harrosh <bharrosh@panasas.com>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -19,9 +19,9 @@ To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
        Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 05/18] osd_uld: OSD scsi ULD
-Date: Tue,  4 Nov 2008 18:44:39 +0200
-Message-Id: <1225817079-5992-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 08/18] osd_ktests: Add basic OSD tests
+Date: Tue,  4 Nov 2008 18:44:44 +0200
+Message-Id: <1225817084-6063-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <491073BB.4000900@panasas.com>
 References: <491073BB.4000900@panasas.com>
@@ -29,96 +29,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a Linux driver module that registers as a SCSI ULD and probes
-for OSD type SCSI devices.
+Currently testing what is implemented in the osd_initiator library.
+That is - format, create/remove partition, create/remove object,
+read and write to objects.
 
-When an OSD-type SCSI device is found a character device is created
-in the form of /dev/osdX - where X goes from 0 up to hard coded 64.
-The Major character device number used is *260*, which is free
-(as of Linux v2.6.28-rc3).
-
-A single ioctl is currently supported that will invoke an in-kernel
-test on the specified OSD device (lun).
+This test passes against the IBM-OSD-SIM OSDv1 target.
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 ---
- drivers/scsi/osd/Kbuild       |    7 +
- drivers/scsi/osd/osd_ktests.h |   27 +++
- drivers/scsi/osd/osd_uld.c    |  388 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 422 insertions(+), 0 deletions(-)
- create mode 100644 drivers/scsi/osd/osd_ktests.h
- create mode 100644 drivers/scsi/osd/osd_uld.c
+ drivers/scsi/osd/Kbuild       |    2 +-
+ drivers/scsi/osd/osd_ktests.c |  331 +++++++++++++++++++++++++++++++++++++++++
+ drivers/scsi/osd/osd_ktests.h |    4 +
+ drivers/scsi/osd/osd_uld.c    |    2 +-
+ 4 files changed, 337 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/scsi/osd/osd_ktests.c
 
 diff --git a/drivers/scsi/osd/Kbuild b/drivers/scsi/osd/Kbuild
-index b4678e0..f39f82f 100644
+index f39f82f..da00ddb 100644
 --- a/drivers/scsi/osd/Kbuild
 +++ b/drivers/scsi/osd/Kbuild
-@@ -17,6 +17,9 @@ ifneq ($(OSD_INC),)
- CONFIG_SCSI_OSD_INITIATOR=m
- EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_INITIATOR -DCONFIG_SCSI_OSD_INITIATOR_MODULE
- 
-+CONFIG_SCSI_OSD_ULD=m
-+EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_ULD -DCONFIG_SCSI_OSD_ULD_MODULE
-+
- EXTRA_CFLAGS += -I$(OSD_INC)
- # EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_DEBUG
- 
-@@ -24,3 +27,7 @@ endif
- 
- libosd-objs := osd_initiator.o
+@@ -29,5 +29,5 @@ libosd-objs := osd_initiator.o
  obj-$(CONFIG_SCSI_OSD_INITIATOR) += libosd.o
-+
-+# osd.ko - SCSI ULD and char-device
-+osd-objs := osd_uld.o
-+obj-$(CONFIG_SCSI_OSD_ULD) += osd.o
-diff --git a/drivers/scsi/osd/osd_ktests.h b/drivers/scsi/osd/osd_ktests.h
+ 
+ # osd.ko - SCSI ULD and char-device
+-osd-objs := osd_uld.o
++osd-objs := osd_uld.o osd_ktests.o
+ obj-$(CONFIG_SCSI_OSD_ULD) += osd.o
+diff --git a/drivers/scsi/osd/osd_ktests.c b/drivers/scsi/osd/osd_ktests.c
 new file mode 100644
-index 0000000..a9e5e00
+index 0000000..f620915
 --- /dev/null
-+++ b/drivers/scsi/osd/osd_ktests.h
-@@ -0,0 +1,27 @@
++++ b/drivers/scsi/osd/osd_ktests.c
+@@ -0,0 +1,331 @@
 +/*
-+ * osd_ktests.h - Define the ktests.c API
-+ *
-+ * Copyright (C) 2008 Panasas Inc.  All rights reserved.
-+ *
-+ * Authors:
-+ *   Boaz Harrosh <bharrosh@panasas.com>
-+ *   Benny Halevy <bhalevy@panasas.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ *
-+ */
-+#ifndef __OSD_KTESTS_H__
-+#define __OSD_KTESTS_H__
-+
-+/* Tests from osd_ktests.c */
-+/* TODO: Only one simple test for now. Later I will add a test definition
-+ *	structure that will define what tests to preform and with some
-+ *	parametrization, so concurrent tests could be run on same OSD lun
-+ *	without stepping on each other. (E.g. Format called when other tests
-+ *	are in progress)
-+ */
-+
-+enum { OSD_TEST_ALL = 17 };
-+
-+#endif /*ndef __OSD_KTESTS_H__*/
-diff --git a/drivers/scsi/osd/osd_uld.c b/drivers/scsi/osd/osd_uld.c
-new file mode 100644
-index 0000000..87b4540
---- /dev/null
-+++ b/drivers/scsi/osd/osd_uld.c
-@@ -0,0 +1,388 @@
-+/*
-+ * osd_uld.c - OSD Upper Layer Driver
-+ *
-+ * A Linux driver module that registers as a SCSI ULD and probes
-+ * for OSD type SCSI devices.
-+ * It's main function is to export osd devices to in-kernel users like
-+ * osdfs and pNFS-objects-LD. It also provides one ioctl for running
-+ * in Kernel tests.
++ * osd_ktests.c - An osd_initiator library in-kernel test suite
++ *              called by the osd_uld module
 + *
 + * Copyright (C) 2008 Panasas Inc.  All rights reserved.
 + *
@@ -153,19 +99,11 @@ index 0000000..87b4540
 + * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 + * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
 + */
-+
-+#include <linux/cdev.h>
-+#include <linux/fs.h>
-+#include <linux/module.h>
-+#include <linux/device.h>
-+#include <linux/idr.h>
-+#include <linux/major.h>
-+
-+#include <scsi/scsi.h>
-+#include <scsi/scsi_driver.h>
++#include <asm/unaligned.h>
++#include <linux/vmalloc.h>
 +#include <scsi/scsi_device.h>
-+#include <scsi/scsi_ioctl.h>
 +
 +#include <scsi/osd_initiator.h>
 +#include <scsi/osd_sec.h>
@@ -173,332 +111,314 @@ index 0000000..87b4540
 +#include "osd_ktests.h"
 +#include "osd_debug.h"
 +
-+#ifndef TYPE_OSD
-+#  define TYPE_OSD 0x11
-+#endif
-+
-+#ifndef SCSI_OSD_MAJOR
-+#  define SCSI_OSD_MAJOR 260
-+#endif
-+#define SCSI_OSD_MAX_MINOR 64
-+
-+static const char osd_name[] = "osd";
-+static const char *osd_version_string = "open-osd 0.1.0";
-+const char osd_symlink[] = "scsi_osd";
-+
-+MODULE_AUTHOR("Boaz Harrosh <bharrosh@panasas.com>");
-+MODULE_DESCRIPTION("open-osd Upper-Layer-Driver osd.ko");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS_CHARDEV_MAJOR(SCSI_OSD_MAJOR);
-+MODULE_ALIAS_SCSI_DEVICE(TYPE_OSD);
-+
-+struct osd_uld_device {
-+	int minor;
-+	struct kref kref;
-+	struct cdev cdev;
-+	struct osd_dev od;
-+	struct gendisk *disk;
-+	struct device *class_member;
++enum {
++	K = 1024,
++	M = 1024 * K,
++	G = 1024 * M,
 +};
 +
-+static void __uld_get(struct osd_uld_device *oud);
-+static void __uld_put(struct osd_uld_device *oud);
++const u64 format_total_capacity = 128 * M;
++const osd_id first_par_id = 0x17171717L;
++const osd_id first_obj_id = 0x18181818L;
++const unsigned BUFF_SIZE = PAGE_SIZE;
 +
-+/*
-+ * Char Device operations
-+ */
++const int num_partitions = 1;
++const int num_objects = 2; /* per partition */
 +
-+static int osd_uld_open(struct inode *inode, struct file *file)
++int test_exec(struct osd_request *or, void *caps, const struct osd_obj_id *obj)
 +{
-+	struct osd_uld_device *oud = container_of(inode->i_cdev,
-+					struct osd_uld_device, cdev);
-+
-+	__uld_get(oud);
-+	/* cache osd_uld_device on file handle */
-+	file->private_data = oud;
-+	OSD_DEBUG("osd_uld_open %p\n", oud);
-+	return 0;
-+}
-+
-+static int osd_uld_release(struct inode *inode, struct file *file)
-+{
-+	struct osd_uld_device *oud = file->private_data;
-+
-+	OSD_DEBUG("osd_uld_release %p\n", file->private_data);
-+	file->private_data = NULL;
-+	__uld_put(oud);
-+	return 0;
-+}
-+
-+static long osd_uld_ioctl(struct file *file, unsigned int cmd,
-+	unsigned long arg)
-+{
-+	struct osd_uld_device *oud = file->private_data;
 +	int ret;
 +
-+	switch (cmd) {
-+	case OSD_TEST_ALL:
-+		OSD_DEBUG("Kernel test %d: osd_uld_device=%p\n", cmd, oud);
-+		ret = 0;
-+		break;
-+	default:
-+		OSD_ERR("Unknown osd_uld_ioctl %d\n", cmd);
-+		ret = -ENOIOCTLCMD;
-+	}
++	osd_sec_init_nosec_doall_caps(caps, obj, false, true);
++	ret = osd_finalize_request(or, 0, caps, NULL);
++	if (ret)
++		return ret;
++
++	ret = osd_execute_request(or);
++	/* osd_req_decode_sense(or, ret); */
 +	return ret;
 +}
 +
-+static const struct file_operations osd_fops = {
-+	.owner          = THIS_MODULE,
-+	.open           = osd_uld_open,
-+	.release        = osd_uld_release,
-+	.unlocked_ioctl = osd_uld_ioctl,
-+};
++#define KTEST_START_REQ(osd_dev, or) do { \
++	or = osd_start_request(osd_dev, GFP_KERNEL); \
++	if (!or) { \
++		OSD_ERR("Error @%s:%d: osd_start_request", __func__,\
++			__LINE__); \
++		return -ENOMEM; \
++	} \
++} while (0)
 +
-+/*
-+ * Scsi Device operations
-+ */
++#define KTEST_EXEC_END(or, obj, g_caps, msg) do { \
++	ret = test_exec(or, g_caps, obj); \
++	osd_end_request(or); \
++	if (ret) { \
++		OSD_ERR("Error executing "msg" => %d\n", ret); \
++		return ret; \
++	} \
++	OSD_DEBUG(msg "\n"); \
++} while (0)
 +
-+static int __detect_osd(struct osd_uld_device *oud)
++int ktest_format(struct osd_dev *osd_dev)
 +{
-+	struct scsi_device *scsi_dev = oud->od.scsi_dev;
-+	int error;
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
 +
-+	/* sending a test_unit_ready as first command seems to be needed
-+	 * by some targets
-+	 */
-+	OSD_DEBUG("start scsi_test_unit_ready %p %p %p\n",
-+			oud, scsi_dev, scsi_dev->request_queue);
-+	error = scsi_test_unit_ready(scsi_dev, 10*HZ, 5, NULL);
-+	if (error)
-+		OSD_ERR("warning: scsi_test_unit_ready failed\n");
++	KTEST_START_REQ(osd_dev, or);
++	osd_req_format(or, format_total_capacity);
++	KTEST_EXEC_END(or, &osd_root_object, g_caps, "format");
++	return 0;
++}
++
++int ktest_creat_par(struct osd_dev *osd_dev)
++{
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
++	int p;
++
++	for (p = 0; p < num_partitions; p++) {
++		struct osd_obj_id par = {
++			.partition = first_par_id + p,
++			.id = 0
++		};
++
++		KTEST_START_REQ(osd_dev, or);
++		osd_req_create_partition(or, par.partition);
++		KTEST_EXEC_END(or, &par, g_caps, "create_partition");
++	}
 +
 +	return 0;
 +}
 +
-+static struct class *osd_sysfs_class;
-+static DEFINE_IDA(osd_minor_ida);
-+
-+static int osd_probe(struct device *dev)
++int ktest_creat_obj(struct osd_dev *osd_dev)
 +{
-+	struct scsi_device *scsi_dev = to_scsi_device(dev);
-+	struct gendisk *disk;
-+	struct osd_uld_device *oud;
-+	int minor;
-+	int error;
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
++	int p, o;
 +
-+	if (scsi_dev->type != TYPE_OSD)
-+		return -ENODEV;
++	for (p = 0; p < num_partitions; p++)
++		for (o = 0; o < num_objects; o++) {
++			struct osd_obj_id obj = {
++				.partition = first_par_id + p,
++				.id = first_obj_id + o
++			};
 +
-+	do {
-+		if (!ida_pre_get(&osd_minor_ida, GFP_KERNEL))
-+			return -ENODEV;
++			KTEST_START_REQ(osd_dev, or);
++			osd_req_create_object(or, &obj);
++			KTEST_EXEC_END(or, &obj, g_caps, "create_object");
++		}
 +
-+		error = ida_get_new(&osd_minor_ida, &minor);
-+	} while (error == -EAGAIN);
-+
-+	if (error)
-+		return error;
-+	if (minor >= SCSI_OSD_MAX_MINOR) {
-+		error = -EBUSY;
-+		goto err_retract_minor;
-+	}
-+
-+	error = -ENOMEM;
-+	oud = kzalloc(sizeof(*oud), GFP_KERNEL);
-+	if (NULL == oud)
-+		goto err_retract_minor;
-+
-+	kref_init(&oud->kref);
-+	dev_set_drvdata(dev, oud);
-+	oud->minor = minor;
-+
-+	/* allocate a disk and set it up */
-+	/* FIXME: do we need this since sg has already done that */
-+	disk = alloc_disk(1);
-+	if (!disk) {
-+		OSD_ERR("alloc_disk failed\n");
-+		goto err_free_osd;
-+	}
-+	disk->major = SCSI_OSD_MAJOR;
-+	disk->first_minor = oud->minor;
-+	sprintf(disk->disk_name, "osd%d", oud->minor);
-+	oud->disk = disk;
-+
-+	/* hold one more reference to the scsi_dev that will get released
-+	 * in __release, in case a logout is happening while fs is mounted
-+	 */
-+	scsi_device_get(scsi_dev);
-+	osd_dev_init(&oud->od, scsi_dev);
-+
-+	/* Detect the OSD Version */
-+	error = __detect_osd(oud);
-+	if (error) {
-+		OSD_ERR("osd detection failed, non-compatible OSD device\n");
-+		goto err_put_disk;
-+	}
-+
-+	/* init the char-device for communication with user-mode */
-+	cdev_init(&oud->cdev, &osd_fops);
-+	oud->cdev.owner = THIS_MODULE;
-+	error = cdev_add(&oud->cdev,
-+			 MKDEV(SCSI_OSD_MAJOR, oud->minor), 1);
-+	if (error) {
-+		OSD_ERR("cdev_add failed\n");
-+		goto err_put_disk;
-+	}
-+	kobject_get(&oud->cdev.kobj); /* 2nd ref see osd_remove() */
-+
-+	/* class_member */
-+	oud->class_member = device_create(osd_sysfs_class, dev,
-+		MKDEV(SCSI_OSD_MAJOR, oud->minor), "%s", disk->disk_name);
-+	if (IS_ERR(oud->class_member)) {
-+		OSD_ERR("class_device_create failed\n");
-+		error = PTR_ERR(oud->class_member);
-+		goto err_put_cdev;
-+	}
-+
-+	dev_set_drvdata(oud->class_member, oud);
-+	error = sysfs_create_link(&scsi_dev->sdev_gendev.kobj,
-+				  &oud->class_member->kobj, osd_symlink);
-+	if (error)
-+		OSD_ERR("warning: unable to make symlink\n");
-+
-+	OSD_INFO("osd_probe %s\n", disk->disk_name);
-+	return 0;
-+
-+err_put_cdev:
-+	cdev_del(&oud->cdev);
-+err_put_disk:
-+	scsi_device_put(scsi_dev);
-+	put_disk(disk);
-+err_free_osd:
-+	dev_set_drvdata(dev, NULL);
-+	kfree(oud);
-+err_retract_minor:
-+	ida_remove(&osd_minor_ida, minor);
-+	return error;
-+}
-+
-+static int osd_remove(struct device *dev)
-+{
-+	struct scsi_device *scsi_dev = to_scsi_device(dev);
-+	struct osd_uld_device *oud = dev_get_drvdata(dev);
-+
-+	if (!oud || (oud->od.scsi_dev != scsi_dev)) {
-+		OSD_ERR("Half cooked osd-device %p,%p || %p!=%p",
-+			dev, oud, oud ? oud->od.scsi_dev : NULL,
-+			scsi_dev);
-+	}
-+
-+	sysfs_remove_link(&oud->od.scsi_dev->sdev_gendev.kobj, osd_symlink);
-+
-+	if (oud->class_member)
-+		device_destroy(osd_sysfs_class,
-+			       MKDEV(SCSI_OSD_MAJOR, oud->minor));
-+
-+	/* We have 2 references to the cdev. One is released here
-+	 * and also takes down the /dev/osdX mapping. The second
-+	 * Will be released in __remove() after all users have released
-+	 * the osd_uld_device.
-+	 */
-+	if (oud->cdev.owner)
-+		cdev_del(&oud->cdev);
-+
-+	__uld_put(oud);
 +	return 0;
 +}
 +
-+static void __remove(struct kref *kref)
++int ktest_write_obj(struct osd_dev *osd_dev, void *write_buff)
 +{
-+	struct osd_uld_device *oud = container_of(kref,
-+					struct osd_uld_device, kref);
-+	struct scsi_device *scsi_dev = oud->od.scsi_dev;
++	struct request_queue *req_q = osd_dev->scsi_dev->request_queue;
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
++	int p, o; u64 offset = 0;
++	struct bio *write_bio;
 +
-+	/* now let delete the char_dev */
-+	kobject_put(&oud->cdev.kobj);
++	for (p = 0; p < num_partitions; p++)
++		for (o = 0; o < num_objects; o++) {
++			struct osd_obj_id obj = {
++				.partition = first_par_id + p,
++				.id = first_obj_id + o
++			};
 +
-+	osd_dev_fini(&oud->od);
-+	scsi_device_put(scsi_dev);
++			KTEST_START_REQ(osd_dev, or);
++			write_bio = bio_map_kern(req_q, write_buff,
++						 BUFF_SIZE, GFP_KERNEL);
++			if (!write_bio) {
++				OSD_ERR("!!! Failed to allocate write BIO\n");
++				return -ENOMEM;
++			}
 +
-+	OSD_INFO("osd_remove %s\n",
-+		 oud->disk ? oud->disk->disk_name : NULL);
++			osd_req_write(or, &obj, write_bio, offset);
++			KTEST_EXEC_END(or, &obj, g_caps, "write");
++			write_bio = NULL; /* released by scsi_midlayer */
++			offset += BUFF_SIZE;
++		}
 +
-+	if (oud->disk)
-+		put_disk(oud->disk);
-+
-+	ida_remove(&osd_minor_ida, oud->minor);
-+	kfree(oud);
-+}
-+
-+static void __uld_get(struct osd_uld_device *oud)
-+{
-+	kref_get(&oud->kref);
-+}
-+
-+static void __uld_put(struct osd_uld_device *oud)
-+{
-+	kref_put(&oud->kref, __remove);
-+}
-+
-+/*
-+ * Global driver and scsi registration
-+ */
-+
-+static struct scsi_driver osd_driver = {
-+	.owner			= THIS_MODULE,
-+	.gendrv = {
-+		.name		= osd_name,
-+		.probe		= osd_probe,
-+		.remove		= osd_remove,
-+	}
-+};
-+
-+static int __init osd_uld_init(void)
-+{
-+	int err;
-+
-+	osd_sysfs_class = class_create(THIS_MODULE, osd_symlink);
-+	if (IS_ERR(osd_sysfs_class)) {
-+		OSD_ERR("Unable to register sysfs class => %ld\n",
-+			PTR_ERR(osd_sysfs_class));
-+		return PTR_ERR(osd_sysfs_class);
-+	}
-+
-+	err = register_chrdev_region(MKDEV(SCSI_OSD_MAJOR, 0),
-+				     SCSI_OSD_MAX_MINOR, osd_name);
-+	if (err) {
-+		OSD_ERR("Unable to register major %d for osd ULD => %d\n",
-+			SCSI_OSD_MAJOR, err);
-+		goto err_out;
-+	}
-+
-+	err = scsi_register_driver(&osd_driver.gendrv);
-+	if (err) {
-+		OSD_ERR("scsi_register_driver failed => %d\n", err);
-+		goto err_out_chrdev;
-+	}
-+
-+	OSD_INFO("LOADED %s\n", osd_version_string);
 +	return 0;
-+
-+err_out_chrdev:
-+	unregister_chrdev_region(MKDEV(SCSI_OSD_MAJOR, 0), SCSI_OSD_MAX_MINOR);
-+err_out:
-+	class_destroy(osd_sysfs_class);
-+	return err;
 +}
 +
-+static void __exit osd_uld_exit(void)
++int ktest_read_obj(struct osd_dev *osd_dev, void *write_buff, void *read_buff)
 +{
-+	scsi_unregister_driver(&osd_driver.gendrv);
-+	unregister_chrdev_region(MKDEV(SCSI_OSD_MAJOR, 0), SCSI_OSD_MAX_MINOR);
-+	class_destroy(osd_sysfs_class);
-+	OSD_INFO("UNLOADED %s\n", osd_version_string);
++	struct request_queue *req_q = osd_dev->scsi_dev->request_queue;
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
++	int p, o; u64 offset = 0;
++	struct bio *read_bio;
++
++	for (p = 0; p < num_partitions; p++)
++		for (o = 0; o < num_objects; o++) {
++			struct osd_obj_id obj = {
++				.partition = first_par_id + p,
++				.id = first_obj_id + o
++			};
++
++			KTEST_START_REQ(osd_dev, or);
++			read_bio = bio_map_kern(req_q, read_buff,
++						BUFF_SIZE, GFP_KERNEL);
++			if (!read_bio) {
++				OSD_ERR("!!! Failed to allocate read BIO\n");
++				return -ENOMEM;
++			}
++
++			osd_req_read(or, &obj, read_bio, offset);
++			KTEST_EXEC_END(or, &obj, g_caps, "read");
++			read_bio = NULL;
++			if (memcmp(read_buff, write_buff, BUFF_SIZE))
++				OSD_ERR("!!! Read did not compare");
++			offset += BUFF_SIZE;
++		}
++
++	return 0;
 +}
 +
-+module_init(osd_uld_init);
-+module_exit(osd_uld_exit);
++int ktest_remove_obj(struct osd_dev *osd_dev)
++{
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
++	int p, o;
++
++	for (p = 0; p < num_partitions; p++)
++		for (o = 0; o < num_objects; o++) {
++			struct osd_obj_id obj = {
++				.partition = first_par_id + p,
++				.id = first_obj_id + o
++			};
++
++			KTEST_START_REQ(osd_dev, or);
++			osd_req_remove_object(or, &obj);
++			KTEST_EXEC_END(or, &obj, g_caps, "remove_object");
++		}
++
++	return 0;
++}
++
++int ktest_remove_par(struct osd_dev *osd_dev)
++{
++	struct osd_request *or;
++	u8 g_caps[OSD_CAP_LEN];
++	int ret;
++	int p;
++
++	for (p = 0; p < num_partitions; p++) {
++		struct osd_obj_id par = {
++			.partition = first_par_id + p,
++			.id = 0
++		};
++
++		KTEST_START_REQ(osd_dev, or);
++		osd_req_remove_partition(or, par.partition);
++		KTEST_EXEC_END(or, &par, g_caps, "remove_partition");
++	}
++
++	return 0;
++}
++
++int do_test_17(struct osd_dev *od)
++{
++	void *write_buff = NULL;
++	void *read_buff = NULL;
++	int ret = -ENOMEM, i;
++
++/* osd_format */
++	if (ktest_format(od))
++		goto dev_fini;
++
++/* create some partition */
++	if (ktest_creat_par(od))
++		goto dev_fini;
++/* list partition see if they're all there */
++/* create some objects on some partitions */
++	if (ktest_creat_obj(od))
++		goto dev_fini;
++
++/* Alloc some buffers and bios */
++/*	write_buff = kmalloc(BUFF_SIZE, or->alloc_flags);*/
++/*	read_buff = kmalloc(BUFF_SIZE, or->alloc_flags);*/
++	write_buff = (void *)__get_free_page(GFP_KERNEL);
++	read_buff = (void *)__get_free_page(GFP_KERNEL);
++	if (!write_buff || !read_buff) {
++		OSD_ERR("!!! Failed to allocate memory for test\n");
++		goto dev_fini;
++	}
++	for (i = 0; i < BUFF_SIZE / 4; i++)
++		((int *)write_buff)[i] = i;
++	OSD_DEBUG("allocate buffers\n");
++
++/* write to objects */
++	ret = ktest_write_obj(od, write_buff);
++	if (ret)
++		goto dev_fini;
++
++/* read from objects and compare to write */
++	ret = ktest_read_obj(od, write_buff, read_buff);
++	if (ret)
++		goto dev_fini;
++
++/* List all objects */
++
++/* Write with get_attr */
++/* Write with set_attr */
++/* Write with set_attr + get_attr */
++/* Read with set_attr */
++/* Read with get_attr */
++/* Read with get_attr + set_attr */
++/* remove objects */
++	ret = ktest_remove_obj(od);
++	if (ret)
++		goto dev_fini;
++
++/* remove partitions */
++	ret = ktest_remove_par(od);
++	if (ret)
++		goto dev_fini;
++
++/* good and done */
++	OSD_INFO("test17: All good and done\n");
++dev_fini:
++	if (read_buff)
++		free_page((ulong)read_buff);
++	if (write_buff)
++		free_page((ulong)write_buff);
++
++	return ret;
++}
+diff --git a/drivers/scsi/osd/osd_ktests.h b/drivers/scsi/osd/osd_ktests.h
+index a9e5e00..b625ee5 100644
+--- a/drivers/scsi/osd/osd_ktests.h
++++ b/drivers/scsi/osd/osd_ktests.h
+@@ -24,4 +24,8 @@
+ 
+ enum { OSD_TEST_ALL = 17 };
+ 
++#ifdef __KERNEL__
++extern int do_test_17(struct osd_dev *od);
++#endif /* __KERNEL__ */
++
+ #endif /*ndef __OSD_KTESTS_H__*/
+diff --git a/drivers/scsi/osd/osd_uld.c b/drivers/scsi/osd/osd_uld.c
+index 0229301..1ce5eba 100644
+--- a/drivers/scsi/osd/osd_uld.c
++++ b/drivers/scsi/osd/osd_uld.c
+@@ -127,7 +127,7 @@ static long osd_uld_ioctl(struct file *file, unsigned int cmd,
+ 	switch (cmd) {
+ 	case OSD_TEST_ALL:
+ 		OSD_DEBUG("Kernel test %d: osd_uld_device=%p\n", cmd, oud);
+-		ret = 0;
++		ret = do_test_17(&oud->od);
+ 		break;
+ 	default:
+ 		OSD_ERR("Unknown osd_uld_ioctl %d\n", cmd);
 -- 
 1.6.0.1
 
