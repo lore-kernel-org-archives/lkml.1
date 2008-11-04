@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYKDROR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYKDRPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756632AbYKDROR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYKDROD
+	id S1755336AbYKDRPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYKDRPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:14:03 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:65229 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753579AbYKDROB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:14:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FFgXZccvSghpgMyzbAjhpAgBUnLbmQFa8WqBQY6unIUq+AkuMpiQUxVyRwF5rrS1wH
-         jxdfbL6Ic3uswIKc6uMnnMULIzPJ5RPEuuAghmGDQP+cZMCkJpCp8AK9u7NTj6ggjJEl
-         umOKkr1/TRppOSyErN8Bs+7BLlKybw03He0ns=
-Date: Tue, 4 Nov 2008 20:13:46 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       lguest@ozlabs.org, jeremy@xensource.com,
-       Steven Rostedt <srostedt@redhat.com>, Mike Travis <travis@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-Message-ID: <20081104171346.GF21470@localhost>
-References: <20081104122839.GA22864@mailshack.com> <20081104124242.GA6795@elte.hu> <1225805399.25337.1282903253@webmail.messagingengine.com> <20081104140030.GA16178@elte.hu> <1225815789.30706.1282936457@webmail.messagingengine.com> <20081104164717.GD21470@localhost> <20081104165811.GA1664@elte.hu>
+	Tue, 4 Nov 2008 12:15:05 -0500
+Received: from kroah.org ([198.145.64.141]:43331 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753123AbYKDRPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 12:15:03 -0500
+Date: Tue, 4 Nov 2008 09:11:28 -0800
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tty: Fix close races in USB serial
+Message-ID: <20081104171128.GB630@kroah.com>
+References: <20081104152916.30344.68193.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081104165811.GA1664@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20081104152916.30344.68193.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Tue, Nov 04, 2008 at 05:58:11PM +0100]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > [Alexander van Heukelum - Tue, Nov 04, 2008 at 05:23:09PM +0100]
-| > ...
-| > | 
-| > | I did some timings using the little program below (32-bit only), doing
-| > | 1024 times the same sequence. TEST1 is just pushing a constant onto
-| > | the stack; TEST2 is pushing the cs register; TEST3 is the sequence
-| > | from the patch to extract the vector number from the cs register.
-| > | 
-| > | Opteron    (cycles): 1024 / 1157 / 3527
-| > | Xeon E5345 (cycles): 1092 / 1085 / 6622
-| > | Athlon XP  (cycles): 1028 / 1166 / 5192
-| > 
-| > Xeon is defenitely out of luck :-)
-| 
-| it's still OK - i.e. no outrageous showstopper overhead anywhere in 
-| that instruction sequence. The total round-trip overhead is what will 
-| matter most.
-| 
-| 	Ingo
-| 
+On Tue, Nov 04, 2008 at 03:29:24PM +0000, Alan Cox wrote:
+> From: Alan Cox <alan@redhat.com>
+> 
+> USB serial has always had races where the tty port usage count can hit zero
+> during a receive event. The internal locking is a mutex so we can't use
+> that in the IRQ handlers.
+> 
+> With krefs we can tackle this differently but we still need to be careful.
+> 
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> ---
+> 
+>  drivers/usb/serial/usb-serial.c |   15 ++++++++++-----
+>  1 files changed, 10 insertions(+), 5 deletions(-)
+> 
+> 
+> diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+> index 794b5ff..aafa684 100644
+> --- a/drivers/usb/serial/usb-serial.c
+> +++ b/drivers/usb/serial/usb-serial.c
+> @@ -269,15 +269,19 @@ static void serial_close(struct tty_struct *tty, struct file *filp)
+>  		return;
+>  	}
+>  
+> -	--port->port.count;
+> -	if (port->port.count == 0)
+> +	if (port->port.count == 1)
+>  		/* only call the device specific close if this
+> -		 * port is being closed by the last owner */
+> +		 * port is being closed by the last owner. Ensure we do
+> +		 * this before we drop the port count. The call is protected
+> +		 * by the port mutex
+> +		 */
+>  		port->serial->type->close(tty, port, filp);
+>  
+> -	if (port->port.count == (port->console? 1 : 0)) {
+> +	if (port->port.count == (port->console ? 2 : 1)) {
 
-Don't get me wrong please, I really like what Alexander have done!
-But frankly six time slower is a bit scarying me.
+Why are you testing for 2 here?
 
-		- Cyrill -
+confused,
+
+greg k-h
