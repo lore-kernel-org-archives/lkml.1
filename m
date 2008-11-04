@@ -1,76 +1,473 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYKDXpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYKDXpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757537AbYKDXpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbYKDXiy
+	id S1758684AbYKDXpq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018AbYKDXi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 4 Nov 2008 18:38:57 -0500
+Received: from xenotime.net ([72.52.64.118]:58890 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757477AbYKDXiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 4 Nov 2008 18:38:54 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52005 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757473AbYKDXix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:38:53 -0500
-Date: Tue, 4 Nov 2008 15:31:44 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux1394-devel@lists.sourceforge.net,
-       Jay Fenlason <fenlason@redhat.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [patch 22/57] firewire: Survive more than 256 bus resets
-Message-ID: <20081104233144.GW659@suse.de>
-References: <20081104232144.186593464@mini.kroah.org>
+Message-ID: <4910DA00.3080801@xenotime.net>
+Date: Tue, 04 Nov 2008 15:25:52 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+Organization: YPO4
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="firewire-survive-more-than-256-bus-resets.patch"
-In-Reply-To: <20081104233028.GA659@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: lkml <linux-kernel@vger.kernel.org>
+CC: akpm <akpm@linux-foundation.org>
+Subject: [PATCH] documentation: move ioctl-number.txt to Doc/ioctl/
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-------------------
-From: Jay Fenlason <fenlason@redhat.com>
+Move ioctl-number.txt to Documentation/ioctl/ since it is ioctl-related.
+Add an ioctl/00-INDEX file.
 
-Same as commit 4f9740d4f5a17fa6a1b097fa3ccdfb7246660307 upstream
-
-The "color" is used during the topology building after a bus reset,
-hovever in "struct fw_node"s it is stored in a u8, but in struct fw_card
-it is stored in an int.  When the value wraps in one struct, but not
-the other, disaster strikes.
-
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=10922 -
-machine locks up solid if a series of bus resets occurs.
-
-
-Signed-off-by: Jay Fenlason <fenlason@redhat.com>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/firewire/fw-transaction.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/00-INDEX               |    4 
+ Documentation/ioctl-number.txt       |  201 -----------------------------------
+ Documentation/ioctl/00-INDEX         |   10 +
+ Documentation/ioctl/ioctl-number.txt |  201 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 212 insertions(+), 204 deletions(-)
 
---- a/drivers/firewire/fw-transaction.h
-+++ b/drivers/firewire/fw-transaction.h
-@@ -248,7 +248,7 @@ struct fw_card {
- 	struct fw_node *local_node;
- 	struct fw_node *root_node;
- 	struct fw_node *irm_node;
--	int color;
-+	u8 color; /* must be u8 to match the definition in struct fw_node */
- 	int gap_count;
- 	bool beta_repeaters_present;
- 
-
--- 
+--- lin2628-rc3.orig/Documentation/ioctl-number.txt
++++ /dev/null
+@@ -1,201 +0,0 @@
+-Ioctl Numbers
+-19 October 1999
+-Michael Elizabeth Chastain
+-<mec@shout.net>
+-
+-If you are adding new ioctl's to the kernel, you should use the _IO
+-macros defined in <linux/ioctl.h>:
+-
+-    _IO    an ioctl with no parameters
+-    _IOW   an ioctl with write parameters (copy_from_user)
+-    _IOR   an ioctl with read parameters  (copy_to_user)
+-    _IOWR  an ioctl with both write and read parameters.
+-
+-'Write' and 'read' are from the user's point of view, just like the
+-system calls 'write' and 'read'.  For example, a SET_FOO ioctl would
+-be _IOW, although the kernel would actually read data from user space;
+-a GET_FOO ioctl would be _IOR, although the kernel would actually write
+-data to user space.
+-
+-The first argument to _IO, _IOW, _IOR, or _IOWR is an identifying letter
+-or number from the table below.  Because of the large number of drivers,
+-many drivers share a partial letter with other drivers.
+-
+-If you are writing a driver for a new device and need a letter, pick an
+-unused block with enough room for expansion: 32 to 256 ioctl commands.
+-You can register the block by patching this file and submitting the
+-patch to Linus Torvalds.  Or you can e-mail me at <mec@shout.net> and
+-I'll register one for you.
+-
+-The second argument to _IO, _IOW, _IOR, or _IOWR is a sequence number
+-to distinguish ioctls from each other.  The third argument to _IOW,
+-_IOR, or _IOWR is the type of the data going into the kernel or coming
+-out of the kernel (e.g.  'int' or 'struct foo').  NOTE!  Do NOT use
+-sizeof(arg) as the third argument as this results in your ioctl thinking
+-it passes an argument of type size_t.
+-
+-Some devices use their major number as the identifier; this is OK, as
+-long as it is unique.  Some devices are irregular and don't follow any
+-convention at all.
+-
+-Following this convention is good because:
+-
+-(1) Keeping the ioctl's globally unique helps error checking:
+-    if a program calls an ioctl on the wrong device, it will get an
+-    error rather than some unexpected behaviour.
+-
+-(2) The 'strace' build procedure automatically finds ioctl numbers
+-    defined with _IO, _IOW, _IOR, or _IOWR.
+-
+-(3) 'strace' can decode numbers back into useful names when the
+-    numbers are unique.
+-
+-(4) People looking for ioctls can grep for them more easily when
+-    this convention is used to define the ioctl numbers.
+-
+-(5) When following the convention, the driver code can use generic
+-    code to copy the parameters between user and kernel space.
+-
+-This table lists ioctls visible from user land for Linux/i386.  It contains
+-most drivers up to 2.3.14, but I know I am missing some.
+-
+-Code	Seq#	Include File		Comments
+-========================================================
+-0x00	00-1F	linux/fs.h		conflict!
+-0x00	00-1F	scsi/scsi_ioctl.h	conflict!
+-0x00	00-1F	linux/fb.h		conflict!
+-0x00	00-1F	linux/wavefront.h	conflict!
+-0x02	all	linux/fd.h
+-0x03	all	linux/hdreg.h
+-0x04	D2-DC	linux/umsdos_fs.h	Dead since 2.6.11, but don't reuse these.
+-0x06	all	linux/lp.h
+-0x09	all	linux/md.h
+-0x12	all	linux/fs.h
+-		linux/blkpg.h
+-0x1b	all	InfiniBand Subsystem	<http://www.openib.org/>
+-0x20	all	drivers/cdrom/cm206.h
+-0x22	all	scsi/sg.h
+-'#'	00-3F	IEEE 1394 Subsystem	Block for the entire subsystem
+-'1'	00-1F	<linux/timepps.h>	PPS kit from Ulrich Windl
+-					<ftp://ftp.de.kernel.org/pub/linux/daemons/ntp/PPS/>
+-'8'	all				SNP8023 advanced NIC card
+-					<mailto:mcr@solidum.com>
+-'A'	00-1F	linux/apm_bios.h
+-'B'	C0-FF				advanced bbus
+-					<mailto:maassen@uni-freiburg.de>
+-'C'	all	linux/soundcard.h
+-'D'	all	arch/s390/include/asm/dasd.h
+-'E'	all	linux/input.h
+-'F'	all	linux/fb.h
+-'H'	all	linux/hiddev.h
+-'I'	all	linux/isdn.h
+-'J'	00-1F	drivers/scsi/gdth_ioctl.h
+-'K'	all	linux/kd.h
+-'L'	00-1F	linux/loop.h
+-'L'	20-2F	driver/usb/misc/vstusb.h
+-'L'	E0-FF	linux/ppdd.h		encrypted disk device driver
+-					<http://linux01.gwdg.de/~alatham/ppdd.html>
+-'M'	all	linux/soundcard.h
+-'N'	00-1F	drivers/usb/scanner.h
+-'P'	all	linux/soundcard.h
+-'Q'	all	linux/soundcard.h
+-'R'	00-1F	linux/random.h
+-'S'	all	linux/cdrom.h		conflict!
+-'S'	80-81	scsi/scsi_ioctl.h	conflict!
+-'S'	82-FF	scsi/scsi.h		conflict!
+-'T'	all	linux/soundcard.h	conflict!
+-'T'	all	arch/x86/include/asm/ioctls.h	conflict!
+-'U'	00-EF	linux/drivers/usb/usb.h
+-'V'	all	linux/vt.h
+-'W'	00-1F	linux/watchdog.h	conflict!
+-'W'	00-1F	linux/wanrouter.h	conflict!
+-'X'	all	linux/xfs_fs.h
+-'Y'	all	linux/cyclades.h
+-'['	00-07	linux/usb/usbtmc.h	USB Test and Measurement Devices
+-					<mailto:gregkh@suse.de>
+-'a'	all				ATM on linux
+-					<http://lrcwww.epfl.ch/linux-atm/magic.html>
+-'b'	00-FF				bit3 vme host bridge
+-					<mailto:natalia@nikhefk.nikhef.nl>
+-'c'	00-7F	linux/comstats.h	conflict!
+-'c'	00-7F	linux/coda.h		conflict!
+-'c'	80-9F	arch/s390/include/asm/chsc.h
+-'d'	00-FF	linux/char/drm/drm/h	conflict!
+-'d'	00-DF	linux/video_decoder.h	conflict!
+-'d'	F0-FF	linux/digi1.h
+-'e'	all	linux/digi1.h		conflict!
+-'e'	00-1F	linux/video_encoder.h	conflict!
+-'e'	00-1F	net/irda/irtty.h	conflict!
+-'f'	00-1F	linux/ext2_fs.h
+-'h'	00-7F				Charon filesystem
+-					<mailto:zapman@interlan.net>
+-'i'	00-3F	linux/i2o.h
+-'j'	00-3F	linux/joystick.h
+-'l'	00-3F	linux/tcfs_fs.h		transparent cryptographic file system
+-					<http://mikonos.dia.unisa.it/tcfs>
+-'l'	40-7F	linux/udf_fs_i.h	in development:
+-					<http://sourceforge.net/projects/linux-udf/>
+-'m'	all	linux/mtio.h		conflict!
+-'m'	all	linux/soundcard.h	conflict!
+-'m'	all	linux/synclink.h	conflict!
+-'m'	00-1F	net/irda/irmod.h	conflict!
+-'n'	00-7F	linux/ncp_fs.h
+-'n'	E0-FF	video/matrox.h          matroxfb
+-'o'	00-1F	fs/ocfs2/ocfs2_fs.h	OCFS2
+-'p'	00-0F	linux/phantom.h		conflict! (OpenHaptics needs this)
+-'p'	00-3F	linux/mc146818rtc.h	conflict!
+-'p'	40-7F	linux/nvram.h
+-'p'	80-9F				user-space parport
+-					<mailto:tim@cyberelk.net>
+-'q'	00-1F	linux/serio.h
+-'q'	80-FF				Internet PhoneJACK, Internet LineJACK
+-					<http://www.quicknet.net>
+-'r'	00-1F	linux/msdos_fs.h
+-'s'	all	linux/cdk.h
+-'t'	00-7F	linux/if_ppp.h
+-'t'	80-8F	linux/isdn_ppp.h
+-'u'	00-1F	linux/smb_fs.h
+-'v'	00-1F	linux/ext2_fs.h		conflict!
+-'v'	all	linux/videodev.h	conflict!
+-'w'	all				CERN SCI driver
+-'y'	00-1F				packet based user level communications
+-					<mailto:zapman@interlan.net>
+-'z'	00-3F				CAN bus card
+-					<mailto:hdstich@connectu.ulm.circular.de>
+-'z'	40-7F				CAN bus card
+-					<mailto:oe@port.de>
+-0x80	00-1F	linux/fb.h
+-0x81	00-1F	linux/videotext.h
+-0x89	00-06	arch/x86/include/asm/sockios.h
+-0x89	0B-DF	linux/sockios.h
+-0x89	E0-EF	linux/sockios.h		SIOCPROTOPRIVATE range
+-0x89	F0-FF	linux/sockios.h		SIOCDEVPRIVATE range
+-0x8B	all	linux/wireless.h
+-0x8C	00-3F				WiNRADiO driver
+-					<http://www.proximity.com.au/~brian/winradio/>
+-0x90	00	drivers/cdrom/sbpcd.h
+-0x93	60-7F	linux/auto_fs.h
+-0x99	00-0F				537-Addinboard driver
+-					<mailto:buk@buks.ipn.de>
+-0xA0	all	linux/sdp/sdp.h		Industrial Device Project
+-					<mailto:kenji@bitgate.com>
+-0xA3	80-8F	Port ACL		in development:
+-					<mailto:tlewis@mindspring.com>
+-0xA3	90-9F	linux/dtlk.h
+-0xAB	00-1F	linux/nbd.h
+-0xAC	00-1F	linux/raw.h
+-0xAD	00	Netfilter device	in development:
+-					<mailto:rusty@rustcorp.com.au>	
+-0xAE	all	linux/kvm.h		Kernel-based Virtual Machine
+-					<mailto:kvm-devel@lists.sourceforge.net>
+-0xB0	all	RATIO devices		in development:
+-					<mailto:vgo@ratio.de>
+-0xB1	00-1F	PPPoX			<mailto:mostrows@styx.uwaterloo.ca>
+-0xCB	00-1F	CBM serial IEC bus	in development:
+-					<mailto:michael.klein@puffin.lb.shuttle.de>
+-0xDD	00-3F	ZFCP device driver	see drivers/s390/scsi/
+-					<mailto:aherrman@de.ibm.com>
+-0xF3	00-3F	video/sisfb.h		sisfb (in development)
+-					<mailto:thomas@winischhofer.net>
+-0xF4	00-1F	video/mbxfb.h		mbxfb
+-					<mailto:raph@8d.com>
+--- /dev/null
++++ lin2628-rc3/Documentation/ioctl/ioctl-number.txt
+@@ -0,0 +1,201 @@
++Ioctl Numbers
++19 October 1999
++Michael Elizabeth Chastain
++<mec@shout.net>
++
++If you are adding new ioctl's to the kernel, you should use the _IO
++macros defined in <linux/ioctl.h>:
++
++    _IO    an ioctl with no parameters
++    _IOW   an ioctl with write parameters (copy_from_user)
++    _IOR   an ioctl with read parameters  (copy_to_user)
++    _IOWR  an ioctl with both write and read parameters.
++
++'Write' and 'read' are from the user's point of view, just like the
++system calls 'write' and 'read'.  For example, a SET_FOO ioctl would
++be _IOW, although the kernel would actually read data from user space;
++a GET_FOO ioctl would be _IOR, although the kernel would actually write
++data to user space.
++
++The first argument to _IO, _IOW, _IOR, or _IOWR is an identifying letter
++or number from the table below.  Because of the large number of drivers,
++many drivers share a partial letter with other drivers.
++
++If you are writing a driver for a new device and need a letter, pick an
++unused block with enough room for expansion: 32 to 256 ioctl commands.
++You can register the block by patching this file and submitting the
++patch to Linus Torvalds.  Or you can e-mail me at <mec@shout.net> and
++I'll register one for you.
++
++The second argument to _IO, _IOW, _IOR, or _IOWR is a sequence number
++to distinguish ioctls from each other.  The third argument to _IOW,
++_IOR, or _IOWR is the type of the data going into the kernel or coming
++out of the kernel (e.g.  'int' or 'struct foo').  NOTE!  Do NOT use
++sizeof(arg) as the third argument as this results in your ioctl thinking
++it passes an argument of type size_t.
++
++Some devices use their major number as the identifier; this is OK, as
++long as it is unique.  Some devices are irregular and don't follow any
++convention at all.
++
++Following this convention is good because:
++
++(1) Keeping the ioctl's globally unique helps error checking:
++    if a program calls an ioctl on the wrong device, it will get an
++    error rather than some unexpected behaviour.
++
++(2) The 'strace' build procedure automatically finds ioctl numbers
++    defined with _IO, _IOW, _IOR, or _IOWR.
++
++(3) 'strace' can decode numbers back into useful names when the
++    numbers are unique.
++
++(4) People looking for ioctls can grep for them more easily when
++    this convention is used to define the ioctl numbers.
++
++(5) When following the convention, the driver code can use generic
++    code to copy the parameters between user and kernel space.
++
++This table lists ioctls visible from user land for Linux/i386.  It contains
++most drivers up to 2.3.14, but I know I am missing some.
++
++Code	Seq#	Include File		Comments
++========================================================
++0x00	00-1F	linux/fs.h		conflict!
++0x00	00-1F	scsi/scsi_ioctl.h	conflict!
++0x00	00-1F	linux/fb.h		conflict!
++0x00	00-1F	linux/wavefront.h	conflict!
++0x02	all	linux/fd.h
++0x03	all	linux/hdreg.h
++0x04	D2-DC	linux/umsdos_fs.h	Dead since 2.6.11, but don't reuse these.
++0x06	all	linux/lp.h
++0x09	all	linux/md.h
++0x12	all	linux/fs.h
++		linux/blkpg.h
++0x1b	all	InfiniBand Subsystem	<http://www.openib.org/>
++0x20	all	drivers/cdrom/cm206.h
++0x22	all	scsi/sg.h
++'#'	00-3F	IEEE 1394 Subsystem	Block for the entire subsystem
++'1'	00-1F	<linux/timepps.h>	PPS kit from Ulrich Windl
++					<ftp://ftp.de.kernel.org/pub/linux/daemons/ntp/PPS/>
++'8'	all				SNP8023 advanced NIC card
++					<mailto:mcr@solidum.com>
++'A'	00-1F	linux/apm_bios.h
++'B'	C0-FF				advanced bbus
++					<mailto:maassen@uni-freiburg.de>
++'C'	all	linux/soundcard.h
++'D'	all	arch/s390/include/asm/dasd.h
++'E'	all	linux/input.h
++'F'	all	linux/fb.h
++'H'	all	linux/hiddev.h
++'I'	all	linux/isdn.h
++'J'	00-1F	drivers/scsi/gdth_ioctl.h
++'K'	all	linux/kd.h
++'L'	00-1F	linux/loop.h
++'L'	20-2F	driver/usb/misc/vstusb.h
++'L'	E0-FF	linux/ppdd.h		encrypted disk device driver
++					<http://linux01.gwdg.de/~alatham/ppdd.html>
++'M'	all	linux/soundcard.h
++'N'	00-1F	drivers/usb/scanner.h
++'P'	all	linux/soundcard.h
++'Q'	all	linux/soundcard.h
++'R'	00-1F	linux/random.h
++'S'	all	linux/cdrom.h		conflict!
++'S'	80-81	scsi/scsi_ioctl.h	conflict!
++'S'	82-FF	scsi/scsi.h		conflict!
++'T'	all	linux/soundcard.h	conflict!
++'T'	all	arch/x86/include/asm/ioctls.h	conflict!
++'U'	00-EF	linux/drivers/usb/usb.h
++'V'	all	linux/vt.h
++'W'	00-1F	linux/watchdog.h	conflict!
++'W'	00-1F	linux/wanrouter.h	conflict!
++'X'	all	linux/xfs_fs.h
++'Y'	all	linux/cyclades.h
++'['	00-07	linux/usb/usbtmc.h	USB Test and Measurement Devices
++					<mailto:gregkh@suse.de>
++'a'	all				ATM on linux
++					<http://lrcwww.epfl.ch/linux-atm/magic.html>
++'b'	00-FF				bit3 vme host bridge
++					<mailto:natalia@nikhefk.nikhef.nl>
++'c'	00-7F	linux/comstats.h	conflict!
++'c'	00-7F	linux/coda.h		conflict!
++'c'	80-9F	arch/s390/include/asm/chsc.h
++'d'	00-FF	linux/char/drm/drm/h	conflict!
++'d'	00-DF	linux/video_decoder.h	conflict!
++'d'	F0-FF	linux/digi1.h
++'e'	all	linux/digi1.h		conflict!
++'e'	00-1F	linux/video_encoder.h	conflict!
++'e'	00-1F	net/irda/irtty.h	conflict!
++'f'	00-1F	linux/ext2_fs.h
++'h'	00-7F				Charon filesystem
++					<mailto:zapman@interlan.net>
++'i'	00-3F	linux/i2o.h
++'j'	00-3F	linux/joystick.h
++'l'	00-3F	linux/tcfs_fs.h		transparent cryptographic file system
++					<http://mikonos.dia.unisa.it/tcfs>
++'l'	40-7F	linux/udf_fs_i.h	in development:
++					<http://sourceforge.net/projects/linux-udf/>
++'m'	all	linux/mtio.h		conflict!
++'m'	all	linux/soundcard.h	conflict!
++'m'	all	linux/synclink.h	conflict!
++'m'	00-1F	net/irda/irmod.h	conflict!
++'n'	00-7F	linux/ncp_fs.h
++'n'	E0-FF	video/matrox.h          matroxfb
++'o'	00-1F	fs/ocfs2/ocfs2_fs.h	OCFS2
++'p'	00-0F	linux/phantom.h		conflict! (OpenHaptics needs this)
++'p'	00-3F	linux/mc146818rtc.h	conflict!
++'p'	40-7F	linux/nvram.h
++'p'	80-9F				user-space parport
++					<mailto:tim@cyberelk.net>
++'q'	00-1F	linux/serio.h
++'q'	80-FF				Internet PhoneJACK, Internet LineJACK
++					<http://www.quicknet.net>
++'r'	00-1F	linux/msdos_fs.h
++'s'	all	linux/cdk.h
++'t'	00-7F	linux/if_ppp.h
++'t'	80-8F	linux/isdn_ppp.h
++'u'	00-1F	linux/smb_fs.h
++'v'	00-1F	linux/ext2_fs.h		conflict!
++'v'	all	linux/videodev.h	conflict!
++'w'	all				CERN SCI driver
++'y'	00-1F				packet based user level communications
++					<mailto:zapman@interlan.net>
++'z'	00-3F				CAN bus card
++					<mailto:hdstich@connectu.ulm.circular.de>
++'z'	40-7F				CAN bus card
++					<mailto:oe@port.de>
++0x80	00-1F	linux/fb.h
++0x81	00-1F	linux/videotext.h
++0x89	00-06	arch/x86/include/asm/sockios.h
++0x89	0B-DF	linux/sockios.h
++0x89	E0-EF	linux/sockios.h		SIOCPROTOPRIVATE range
++0x89	F0-FF	linux/sockios.h		SIOCDEVPRIVATE range
++0x8B	all	linux/wireless.h
++0x8C	00-3F				WiNRADiO driver
++					<http://www.proximity.com.au/~brian/winradio/>
++0x90	00	drivers/cdrom/sbpcd.h
++0x93	60-7F	linux/auto_fs.h
++0x99	00-0F				537-Addinboard driver
++					<mailto:buk@buks.ipn.de>
++0xA0	all	linux/sdp/sdp.h		Industrial Device Project
++					<mailto:kenji@bitgate.com>
++0xA3	80-8F	Port ACL		in development:
++					<mailto:tlewis@mindspring.com>
++0xA3	90-9F	linux/dtlk.h
++0xAB	00-1F	linux/nbd.h
++0xAC	00-1F	linux/raw.h
++0xAD	00	Netfilter device	in development:
++					<mailto:rusty@rustcorp.com.au>
++0xAE	all	linux/kvm.h		Kernel-based Virtual Machine
++					<mailto:kvm-devel@lists.sourceforge.net>
++0xB0	all	RATIO devices		in development:
++					<mailto:vgo@ratio.de>
++0xB1	00-1F	PPPoX			<mailto:mostrows@styx.uwaterloo.ca>
++0xCB	00-1F	CBM serial IEC bus	in development:
++					<mailto:michael.klein@puffin.lb.shuttle.de>
++0xDD	00-3F	ZFCP device driver	see drivers/s390/scsi/
++					<mailto:aherrman@de.ibm.com>
++0xF3	00-3F	video/sisfb.h		sisfb (in development)
++					<mailto:thomas@winischhofer.net>
++0xF4	00-1F	video/mbxfb.h		mbxfb
++					<mailto:raph@8d.com>
+--- lin2628-rc3.orig/Documentation/00-INDEX
++++ lin2628-rc3/Documentation/00-INDEX
+@@ -185,9 +185,7 @@ input/
+ io_ordering.txt
+ 	- info on ordering I/O writes to memory-mapped addresses.
+ ioctl/
+-	- directory with documents describing various IOCTL calls.
+-ioctl-number.txt
+-	- how to implement and register device/driver ioctl calls.
++	- documents describing various IOCTL calls and how to implement/register IOCTLs
+ iostats.txt
+ 	- info on I/O statistics Linux kernel provides.
+ irqflags-tracing.txt
+--- /dev/null
++++ lin2628-rc3/Documentation/ioctl/00-INDEX
+@@ -0,0 +1,10 @@
++00-INDEX
++	- this file
++cdrom.txt
++	- summary of CDROM ioctl calls
++hdio.txt
++	- summary of HDIO_ ioctl calls
++ioctl-decoding.txt
++	- how to decode the bits of an IOCTL code
++ioctl-number.txt
++	- how to implement and register device/driver ioctl calls
