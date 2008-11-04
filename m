@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbYKDXnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758288AbYKDXnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbYKDXnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYKDXib
+	id S1758288AbYKDXnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:43:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbYKDXie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:38:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:51896 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:38:34 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:51915 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756833AbYKDXia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:38:30 -0500
-Date: Tue, 4 Nov 2008 15:31:31 -0800
+	id S1757365AbYKDXid (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:38:33 -0500
+Date: Tue, 4 Nov 2008 15:31:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Ilpo =?utf-8?B?SsOD4oKscnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
+       alan@lxorguk.ukuu.org.uk, Jarek Poplawski <jarkao2@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 16/57] tcpv6: fix option space offsets with md5
-Message-ID: <20081104233131.GQ659@suse.de>
+Subject: [patch 17/57] pkt_sched: sch_generic: Fix oops in sch_teql
+Message-ID: <20081104233133.GR659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="0003-tcpv6-fix-option-space-offsets-with-md5.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="0004-pkt_sched-sch_generic-Fix-oops-in-sch_teql.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,31 +39,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+From: Jarek Poplawski <jarkao2@gmail.com>
 
-[ Upstream commit 53b125779fb0b29e5b316bf3dc7d199e6dcea567 ]
+[ Upstream commit 9f3ffae0dbce491a3e9871b686342fd5aa854f05 ]
 
-More breakage :-), part of timestamps just were previously
-overwritten.
+After these commands:
+# modprobe sch_teql
+# tc qdisc add dev eth0 root teql0
+# tc qdisc del dev eth0 root
+we get an oops in teql_destroy() when spin_lock is taken from a null
+qdisc_sleeping pointer. It's because at the moment teql0 dev haven't
+been activated yet, and a qdisc_root_sleeping() is pointing to noop
+qdisc's netdev_queue with qdisc_sleeping uninitialized. This patch
+fixes this both for noop and noqueue netdev_queues to avoid similar
+problems in the future.
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/tcp_ipv6.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/sched/sch_generic.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -1087,7 +1087,7 @@ static void tcp_v6_send_ack(struct sk_bu
- 		*topt++ = htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16) |
- 				(TCPOPT_TIMESTAMP << 8) | TCPOLEN_TIMESTAMP);
- 		*topt++ = htonl(tcp_time_stamp);
--		*topt = htonl(ts);
-+		*topt++ = htonl(ts);
- 	}
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -319,6 +319,7 @@ struct Qdisc_ops noop_qdisc_ops __read_m
  
- #ifdef CONFIG_TCP_MD5SIG
+ static struct netdev_queue noop_netdev_queue = {
+ 	.qdisc		=	&noop_qdisc,
++	.qdisc_sleeping	=	&noop_qdisc,
+ };
+ 
+ struct Qdisc noop_qdisc = {
+@@ -344,6 +345,7 @@ static struct Qdisc_ops noqueue_qdisc_op
+ static struct Qdisc noqueue_qdisc;
+ static struct netdev_queue noqueue_netdev_queue = {
+ 	.qdisc		=	&noqueue_qdisc,
++	.qdisc_sleeping	=	&noqueue_qdisc,
+ };
+ 
+ static struct Qdisc noqueue_qdisc = {
 
 -- 
