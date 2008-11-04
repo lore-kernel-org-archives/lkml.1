@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYKDKgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbYKDKlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309AbYKDKgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 05:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYKDKgI
+	id S1754307AbYKDKlv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 05:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYKDKlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 05:36:08 -0500
-Received: from smtp.zeuux.org ([210.51.160.52]:53985 "EHLO z.billxu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753238AbYKDKgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 05:36:07 -0500
-Date: Tue, 4 Nov 2008 18:35:57 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: dwmw2@infradead.org
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fs: remove duplicated #include
-Message-ID: <20081104103557.GA6854@ubuntu>
-MIME-Version: 1.0
+	Tue, 4 Nov 2008 05:41:40 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:60145 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbYKDKlj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 05:41:39 -0500
+Date: Tue, 4 Nov 2008 12:41:36 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Greg KH <greg@kroah.com>
+cc: Jeff Garzik <jeff@garzik.org>,
+       Subbu Seetharaman <subbus@serverengines.com>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
+In-Reply-To: <20081103201930.GB13299@kroah.com>
+Message-ID: <Pine.LNX.4.64.0811041237400.23792@wrl-59.cs.helsinki.fi>
+References: <20081103122512.06063fc9@mailhost.serverengines.com>
+ <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org>
+ <20081103201930.GB13299@kroah.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 3 Nov 2008, Greg KH wrote:
 
-[PATCH] fs: remove duplicated #include
+> Hm, call me extreemly stupid, but I don't see anything in that branch
+> for this driver.
+> 
+> Here's what I did:
+>   git fetch git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git benet master:jeff
 
-Removed duplicated #include <linux/errno.h> in fs/jffs2/compr_rubin.c
+I suppose you'd have needed instead of "benet master:jeff" just:
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- fs/jffs2/compr_rubin.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+benet:jeff
 
-diff --git a/fs/jffs2/compr_rubin.c b/fs/jffs2/compr_rubin.c
-index c73fa89..2bc0fe4 100644
---- a/fs/jffs2/compr_rubin.c
-+++ b/fs/jffs2/compr_rubin.c
-@@ -24,7 +24,6 @@
- #define BIT_DIVIDER_MIPS 1043
- static int bits_mips[8] = { 277,249,290,267,229,341,212,241}; /* mips32 */
- 
--#include <linux/errno.h>
- 
- struct pushpull {
- 	unsigned char *buf;
+Ie., from benet remote branch to jeff local branch (remote from the given
+repository obviously). ...Then you have that jeff branch and can checkout 
+it.
+
 -- 
-1.5.6.3
-
+ i.
