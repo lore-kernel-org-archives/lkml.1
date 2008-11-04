@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYKDS4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbYKDS4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYKDS4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbYKDS4I
+	id S1756617AbYKDS4f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbYKDS4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:56:08 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:21190 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753109AbYKDS4F (ORCPT
+	Tue, 4 Nov 2008 13:56:17 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:48239 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754730AbYKDS4Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:56:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=LcW6P+NokeukCzD+DgPfM1xLdh4yzgu5SA1KOVWKBjqTpMBVb5awzqGDljihaTwhuh
-         fufWn6oT8SvjmwMn2vQEn66O8IiDNryVJs4n4OMMw7sqiFVUcl/eVVjFzKd4OAOmzZlO
-         aWgHWRHBEN2Q69+sHjdN4y7tXsIXgPD65Olqk=
-Message-ID: <86802c440811041056p631e2dc9i21c4994e3d01cf32@mail.gmail.com>
-Date: Tue, 4 Nov 2008 10:56:05 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: "Ben Hutchings" <bhutchings@solarflare.com>
-Subject: Re: [PATCH] x86: Don't allow nr_irqs > NR_IRQS
-Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <1225823807.3074.24.camel@achroite>
+	Tue, 4 Nov 2008 13:56:16 -0500
+Message-ID: <49109AC9.5090406@ru.mvista.com>
+Date: Tue, 04 Nov 2008 21:56:09 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] rz1000: apply chipset quirks early
+References: <20081103200244.5098.29817.sendpatchset@localhost.localdomain> <20081103200306.5098.41565.sendpatchset@localhost.localdomain> <491083E9.60305@ru.mvista.com>
+In-Reply-To: <491083E9.60305@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225819102.3074.15.camel@achroite>
-	 <20081104180012.GG21470@localhost> <1225823807.3074.24.camel@achroite>
-X-Google-Sender-Auth: d6c695893a75b338
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 4, 2008 at 10:36 AM, Ben Hutchings
-<bhutchings@solarflare.com> wrote:
-> On Tue, 2008-11-04 at 21:00 +0300, Cyrill Gorcunov wrote:
-> [...]
->> | I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
->> | Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
->> | 5 IOAPICs (!) and returns 240.  Here are the log messages:
->> |
->
-> Well there must have been an earlier change that resulted in detecting 5
-> IOAPICs instead of just 1, but that presumably would work as long as the
-> irq_desc array was dynamically allocated.  This reversion breaks that.
->
-> You don't really need to see the config; NR_IRQS is *always* 224 on
-> normal x86-32 systems.
->
+Hello, I wrote:
 
-Yes. it should the same as setting to 64bit. we will cost some extra ram...
+>> Index: b/drivers/ide/rz1000.c
+>> ===================================================================
+>> --- a/drivers/ide/rz1000.c
+>> +++ b/drivers/ide/rz1000.c
+>> @@ -22,34 +22,48 @@
+>>  
+>>  #define DRV_NAME "rz1000"
+>>  
+>> -static void __devinit init_hwif_rz1000 (ide_hwif_t *hwif)
+>> +static unsigned int __devinit rz1000_init_chipset(struct pci_dev *dev)
 
-We can not make sparseirq/dyn_array to 2.6.28..., maybe 2.6.29 later.
+>    Hm, this is not a real init_chipset() method and it does just one 
+> thing -- disables readahead, so rz1000_disable_readahead() or something 
+> of that sort seems like a better name...
 
-Ingo,
-Maybe we can put back dyn_array at first, that will still be 1:1
-mapping..., and not waste memory..
+    Hm, 'unsigned' result type wasn't terribly helpful here as well. :-)
 
-YH
+MBR, Sergei
