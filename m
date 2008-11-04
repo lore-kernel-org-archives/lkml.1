@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbYKDO53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbYKDO5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbYKDO53 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 09:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYKDOxy
+	id S1756289AbYKDO5n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 09:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYKDOx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 09:53:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60546 "EHLO mx2.redhat.com"
+	Tue, 4 Nov 2008 09:53:56 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60568 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753531AbYKDOxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 09:53:42 -0500
+	id S1754711AbYKDOxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 09:53:51 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -18,84 +18,214 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 15/16] kvm: x86: set kdump virt_disable function on initialization
-Date: Tue,  4 Nov 2008 12:52:43 -0200
-Message-Id: <1225810364-8990-16-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 08/16] x86: Emergency virtualization disable function
+Date: Tue,  4 Nov 2008 12:52:36 -0200
+Message-Id: <1225810364-8990-9-git-send-email-ehabkost@redhat.com>
 In-Reply-To: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
 References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Finally implement the virt_disable function for kdump. It will call
-kvm_x86_ops->crash_hardware_disable(), that will disable virtualization
-extensions on the CPU if it is not disabled yet.
+This patch adds an interface to set a function that can be used to
+disable virtualization extensions on the CPU on emergency cases, such
+as on kdump or emergency reboot.
+
+The function will be set by code that enables virtualization extensions
+on the CPUs (i.e. KVM), and should do the very least to disable virt
+extensions on the CPU where it is being called.
+
+The functions that set the function pointer uses RCU synchronization,
+just in case the crash NMI is triggered while KVM is unloading.
+
+We can't just use the same notifiers used at reboot time (that are used
+by non-crash-dump kexec), because at crash time some CPUs may have IRQs
+disabled, so we can't use IPIs. The crash shutdown code use NMIs to tell
+the other CPUs to be halted, so the notifier call will be hooked into
+the CPU halting code that is on the crash shutdown NMI handler.
+
+[v2: drop 'unsigned int cpu' arg from function]
+[v3: make emergency_virt_disable() non-static]
+[v4: add a config option for it: CPU_VIRT_EXTENSIONS]
+[v5: add has_virt_extensions() function]
+[v6: don't define the registering functions if CPU_VIRT_EXTENSIONS is
+ not enabled]
 
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 ---
- arch/x86/kvm/x86.c |   19 ++++++++++++++++++-
- 1 files changed, 18 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/virtext.h |   29 +++++++++++++
+ arch/x86/kernel/Makefile       |    1 +
+ arch/x86/kernel/virtext.c      |   89 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kvm/Kconfig           |    5 ++
+ 4 files changed, 124 insertions(+), 0 deletions(-)
+ create mode 100644 arch/x86/include/asm/virtext.h
+ create mode 100644 arch/x86/kernel/virtext.c
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 049c6a0..9e61baf 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -40,6 +40,7 @@
- #include <asm/msr.h>
- #include <asm/desc.h>
- #include <asm/mtrr.h>
-+#include <asm/virtext.h>
- 
- #define MAX_IO_MSRS 256
- #define CR0_RESERVED_BITS						\
-@@ -2581,6 +2582,13 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct kvm_run *run, int in,
- }
- EXPORT_SYMBOL_GPL(kvm_emulate_pio_string);
- 
-+/* Called at crash time, so we can disable virtualization if needed
+diff --git a/arch/x86/include/asm/virtext.h b/arch/x86/include/asm/virtext.h
+new file mode 100644
+index 0000000..72b7caa
+--- /dev/null
++++ b/arch/x86/include/asm/virtext.h
+@@ -0,0 +1,29 @@
++/* CPU virtualization extensions handling
 + */
-+static void crash_hardware_disable(void)
++#ifndef _ASM_X86_VIRTEX_H
++#define _ASM_X86_VIRTEX_H
++
++#ifdef CONFIG_CPU_VIRT_EXTENSIONS
++
++int set_virt_disable_func(void (*fn)(void));
++void clear_virt_disable_func(void);
++void emergency_virt_disable(void);
++int has_virt_extensions(void);
++
++
++#else /* !CONFIG_CPU_VIRT_EXTENSIONS */
++
++static inline
++void emergency_virt_disable(void)
 +{
-+	kvm_x86_ops->crash_hardware_disable(NULL);
 +}
 +
- int kvm_arch_init(void *opaque)
- {
- 	int r;
-@@ -2605,9 +2613,15 @@ int kvm_arch_init(void *opaque)
- 
- 	kvm_x86_ops = ops;
- 
-+	r = set_virt_disable_func(crash_hardware_disable);
-+	if (r) {
-+		printk(KERN_ERR "kvm: virt_disable function already set?\n");
-+		goto out_clear_ops;
-+	}
++static inline
++int has_virt_extensions(void)
++{
++	return 0;
++}
 +
- 	r = kvm_mmu_module_init();
- 	if (r)
--		goto out_clear_ops;
-+		goto out_clear_crash;
++#endif /* CONFIG_CPU_VIRT_EXTENSIONS */
++
++#endif /* _ASM_X86_VIRTEX_H */
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 58814cc..84a0e23 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -68,6 +68,7 @@ obj-$(CONFIG_X86_REBOOTFIXUPS)	+= reboot_fixups_32.o
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_KEXEC)		+= machine_kexec_$(BITS).o
+ obj-$(CONFIG_KEXEC)		+= relocate_kernel_$(BITS).o crash.o
++obj-$(CONFIG_CPU_VIRT_EXTENSIONS) += virtext.o
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
+ obj-$(CONFIG_X86_NUMAQ)		+= numaq_32.o
+ obj-$(CONFIG_X86_ES7000)	+= es7000_32.o
+diff --git a/arch/x86/kernel/virtext.c b/arch/x86/kernel/virtext.c
+new file mode 100644
+index 0000000..4876253
+--- /dev/null
++++ b/arch/x86/kernel/virtext.c
+@@ -0,0 +1,89 @@
++/* Core CPU virtualization extensions handling
++ *
++ * This should carry the code for handling CPU virtualization extensions
++ * that needs to live in the kernel core.
++ * 
++ * Author: Eduardo Habkost <ehabkost@redhat.com>
++ *
++ * Copyright (C) 2008, Red Hat Inc.
++ */
++
++#include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/rcupdate.h>
++
++static DEFINE_SPINLOCK(virt_disable_lock);
++static void (*virt_disable_fn)(void);
++
++/**	set function to be called to disable virtualization on crash
++ *
++ *	Registers a function to be called when CPUs are being halted at
++ *	machine_crash_shutdown().
++ *
++ *	There is only one function pointer, so the function
++ *	is reserved to be set by the KVM module at load time, before
++ *	enabling virtualization.
++ *
++ *	The function is called once on each online CPU, possibly
++ *	from a NMI handler. It should do the very least to allow the CPU
++ *	to be halted before booting the kdump kernel, as the kernel has
++ *	just crashed.
++ */
++int set_virt_disable_func(void (*fn)(void))
++{
++	int r = 0;
++
++	spin_lock(&virt_disable_lock);
++	if (!virt_disable_fn)
++		rcu_assign_pointer(virt_disable_fn, fn);
++	else
++		r = -EEXIST;
++	spin_unlock(&virt_disable_lock);
++
++	return r;
++}
++EXPORT_SYMBOL(set_virt_disable_func);
++
++/** clear the virt_disable function set by set_virt_disable_func()
++ *
++ * You must call this function only if you sucessfully set
++ * the virt_disable function on a previous set_virt_disable_func()
++ * call.
++ *
++ * This function will use synchronize_sched() to wait until it's safe
++ * to free any data or code related to the previous existing virt_disable
++ * func, before returning.
++ */
++void clear_virt_disable_func(void)
++{
++	spin_lock(&virt_disable_lock);
++	rcu_assign_pointer(virt_disable_fn, NULL);
++	spin_unlock(&virt_disable_lock);
++
++	synchronize_sched();
++}
++EXPORT_SYMBOL(clear_virt_disable_func);
++
++/* Disable virtualization extensions if needed
++ *
++ * Runs thefunction set by set_virt_disable_func()
++ *
++ * Must be called on the CPU that is being halted.
++ */
++void emergency_virt_disable(void)
++{
++	void (*fn)(void);
++	fn = rcu_dereference(virt_disable_fn);
++	if (fn)
++		fn();
++}
++
++/* Returns non-zero if a virt_disable function was set
++ *
++ * The function pointer may be set just after you've called this function.
++ * Use with care.
++ */
++int has_virt_extensions(void)
++{
++	return (rcu_dereference(virt_disable_fn) != NULL);
++}
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index ce3251c..69373cc 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -15,6 +15,10 @@ menuconfig VIRTUALIZATION
  
- 	kvm_init_msr_list();
+ 	  If you say N, all options in this submenu will be skipped and disabled.
  
-@@ -2617,6 +2631,8 @@ int kvm_arch_init(void *opaque)
- 			PT_DIRTY_MASK, PT64_NX_MASK, 0, 0);
- 	return 0;
++# Core code for handling CPU virt extensions
++config CPU_VIRT_EXTENSIONS
++	bool
++
+ if VIRTUALIZATION
  
-+out_clear_crash:
-+	clear_virt_disable_func();
- out_clear_ops:
- 	kvm_x86_ops = NULL;
- out:
-@@ -2625,6 +2641,7 @@ out:
- 
- void kvm_arch_exit(void)
- {
-+	clear_virt_disable_func();
- 	kvm_x86_ops = NULL;
- 	kvm_mmu_module_exit();
- }
+ config KVM
+@@ -23,6 +27,7 @@ config KVM
+ 	select PREEMPT_NOTIFIERS
+ 	select MMU_NOTIFIER
+ 	select ANON_INODES
++	select CPU_VIRT_EXTENSIONS
+ 	---help---
+ 	  Support hosting fully virtualized guest machines using hardware
+ 	  virtualization extensions.  You will need a fairly recent
 -- 
 1.5.5.GIT
 
