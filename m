@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbYKDFC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753222AbYKDFYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbYKDFC7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 00:02:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbYKDFCu
+	id S1753222AbYKDFYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 00:24:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYKDFYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 00:02:50 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:44547 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYKDFCt (ORCPT
+	Tue, 4 Nov 2008 00:24:32 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:59580 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbYKDFYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 00:02:49 -0500
-Date: Tue, 4 Nov 2008 05:02:45 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: linux-pci@vger.kernel.org, kristen.c.accardi@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add option to passively listen for PCIE hotplug events
-Message-ID: <20081104050245.GA13466@srcf.ucam.org>
-References: <20081029200903.GA1678@srcf.ucam.org> <490FAC33.9050808@jp.fujitsu.com> <20081104020700.GA11761@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081104020700.GA11761@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Tue, 4 Nov 2008 00:24:31 -0500
+Date: Mon, 03 Nov 2008 22:24:28 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] improve jbd fsync batching
+In-reply-to: <20081103122729.60582692.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Josef Bacik <jbacik@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       rwheeler@redhat.com
+Message-id: <20081104052428.GP3184@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <20081028201614.GA21600@unused.rdu.redhat.com>
+ <20081103122729.60582692.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 02:07:00AM +0000, Matthew Garrett wrote:
-> On Tue, Nov 04, 2008 at 10:58:11AM +0900, Kenji Kaneshige wrote:
-> > > 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if 
-> > > 	slot is occupied */
-> > >-	if (value && pciehp_force) {
-> > >+	if (value && (pciehp_force || pciehp_passive)) {
-> > > 		rc = pciehp_enable_slot(t_slot);
-> > > 		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
-> > > 			value = 0;
+On Nov 03, 2008  12:27 -0800, Andrew Morton wrote:
+> On Tue, 28 Oct 2008 16:16:15 -0400
+> Josef Bacik <jbacik@redhat.com> wrote:
+> > +		spin_lock(&journal->j_state_lock);
+> > +		commit_time = journal->j_average_commit_time;
+> > +		spin_unlock(&journal->j_state_lock);
 > 
-> This code no longer runs in the pciehp_passive case. However, by the 
-> looks of it it still does in the resume case - that probably wants 
-> fixing.
+> OK, the lock is needed on 32-bit machines, I guess.
 
-Thinking about this - you said that the problem occurs because 
-pciehp_force=1 causes it to try to enable an already enabled slot, and 
-then tries to power down the slot as a result? It sounds like this code 
-should actually be checking whether the return value is ENODEV or 
-EINVAL, and in the latter case not powering the slot down. That sounds 
-like a separate bugfix that I'll send later on.
+Should we pessimize the 64-bit performance in that case, for 32-bit
+increasingly rare 32-bit platforms?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+It might be useful to have a spin_{,un}lock_64bit_word() helper that
+evaluates to a no-op on plaforms that don't need a hammer to do an atomic
+64-bit update.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
