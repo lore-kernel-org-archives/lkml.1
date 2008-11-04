@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbYKDGOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYKDGQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756082AbYKDGOt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 01:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbYKDGKk
+	id S1755922AbYKDGQE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 01:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYKDGPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 01:10:40 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:45519 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754195AbYKDGKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 01:10:38 -0500
-Message-ID: <490FE758.9060102@garzik.org>
-Date: Tue, 04 Nov 2008 01:10:32 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 4 Nov 2008 01:15:51 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:33434 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752938AbYKDGPu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 01:15:50 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=b09A8wXRXPe8k/ZsH1vgjKVec60yXt2aO/orVTRVZH1ZpAvhUSM8LEdG7RCQ5FCao
+	uWhIzHuojHmpfEz1qotgw==
 MIME-Version: 1.0
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Joseph Chan <JosephChan@via.com.tw>, Jeff Garzik <jgarzik@redhat.com>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH] sata_via: restore vt*_prepare_host error handling
-References: <20081102211848.GA20785@joi>
-In-Reply-To: <20081102211848.GA20785@joi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20081031115241.1399d605.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081031115057.6da3dafd.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20081031115241.1399d605.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 3 Nov 2008 22:15:41 -0800
+Message-ID: <6599ad830811032215j3ce5dcc1g6d0c3e9439a004d@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/5] memcg : force_empty to do move account
+From: Paul Menage <menage@google.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       hugh@veritas.com, taka@valinux.co.jp
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcin Slusarz wrote:
-> commit b9d5b89b487517cbd4cb4702da829e07ef9e4432 (sata_via: fix support
-> for 5287) accidently (?) removed vt*_prepare_host error handling - restore it
-> 
-> catched by gcc:
-> drivers/ata/sata_via.c: In function 'svia_init_one':
-> drivers/ata/sata_via.c:567: warning: 'host' may be used uninitialized in this function
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: Joseph Chan <JosephChan@via.com.tw>
-> Cc: Jeff Garzik <jgarzik@redhat.com>
-> ---
->  drivers/ata/sata_via.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/ata/sata_via.c b/drivers/ata/sata_via.c
-> index 62367fe..c18935f 100644
-> --- a/drivers/ata/sata_via.c
-> +++ b/drivers/ata/sata_via.c
-> @@ -602,8 +602,10 @@ static int svia_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
->  		rc = vt8251_prepare_host(pdev, &host);
->  		break;
->  	default:
-> -		return -EINVAL;
-> +		rc = -EINVAL;
->  	}
-> +	if (rc)
-> +		return rc;
+On Thu, Oct 30, 2008 at 6:52 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> This patch provides a function to move account information of a page between
+> mem_cgroups and rewrite force_empty to make use of this.
 
-applied
+One part of this that wasn't clear to me - if a cgroup has a lot of
+unmapped pagecache sitting around but no tasks, and we try to rmdir
+it, then all the pagecache gets moved to the parent too? Or just the
+stray mapped pages?
 
+> @@ -597,7 +709,7 @@ static int mem_cgroup_charge_common(stru
+>        prefetchw(pc);
+>
+>        mem = memcg;
+> -       ret = mem_cgroup_try_charge(mm, gfp_mask, &mem);
+> +       ret = __mem_cgroup_try_charge(mm, gfp_mask, &mem, true);
 
+Isn't this the same as the definition of mem_cgroup_try_charge()? So
+you could leave it as-is?
+
+Paul
