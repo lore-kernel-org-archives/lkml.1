@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbYKDTnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbYKDTps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbYKDTnb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:43:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYKDTnV
+	id S1755038AbYKDTps (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYKDTpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:43:21 -0500
-Received: from lazybastard.de ([212.112.238.170]:51233 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbYKDTnV (ORCPT
+	Tue, 4 Nov 2008 14:45:38 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:60952 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYKDTph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:43:21 -0500
-Date: Tue, 4 Nov 2008 20:42:40 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, James.Bottomley@HansenPartnership.com,
-       michaelc@cs.wisc.edu, fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org,
-       osd-dev@open-osd.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Sami.Iren@seagate.com, pw@padd.com
-Subject: Re: [PATCH 03/18] libosd: OSDv1 Headers
-Message-ID: <20081104194240.GC16036@logfs.org>
-References: <491073BB.4000900@panasas.com> <1225817046-5946-1-git-send-email-bharrosh@panasas.com> <20081104111037.bcae04e5.akpm@linux-foundation.org>
+	Tue, 4 Nov 2008 14:45:37 -0500
+Date: Tue, 4 Nov 2008 20:45:29 +0100
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Message-ID: <20081104194528.GI32133@tekkaman>
+References: <20081103183214.aac32543.sfr@canb.auug.org.au> <20081103155047.GA14489@x200.localdomain> <20081104163038.GF32133@tekkaman> <20081104184334.GA1840@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081104111037.bcae04e5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081104184334.GA1840@suse.de>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: next-20081103: oxu210hp-hcd.c:3849: error: implicit
+	declaration of function 'set_irq_type'
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 November 2008 11:10:37 -0800, Andrew Morton wrote:
+On Tue, Nov 04, 2008 at 10:43:34AM -0800, Greg KH wrote:
+> On Tue, Nov 04, 2008 at 05:30:38PM +0100, Rodolfo Giometti wrote:
+> > On Mon, Nov 03, 2008 at 06:50:47PM +0300, Alexey Dobriyan wrote:
+> > > On sparc:
+> > > 
+> > > drivers/usb/host/oxu210hp-hcd.c:3849: error: implicit declaration of function 'set_irq_type'
+> > > 
+> > > and including linux/irq.h doesn't cut it CONFIG_GENERIC_HARDIRQS aren't set.
+> > 
+> > Should I force CONFIG_GENERIC_HARDIRQS selection?
 > 
-> etc, etc, etc.   Please review all that.
+> Can this hardware work on SPARC?
 
-One easy way to review 98% is to include the header in an otherwise
-empty foo.c and compile that.  The remaining 2% are hidden behind
-different config options and architectures.  Although your header may be
-fine on that front.
+I think so even if on the data sheet is not specified...
 
-Jörn
+Ciao,
+
+Rodolfo
 
 -- 
-He who knows others is wise.
-He who knows himself is enlightened.
--- Lao Tsu
+
+GNU/Linux Solutions                  e-mail: giometti@enneenne.com
+Linux Device Driver                          giometti@linux.it
+Embedded Systems                     phone:  +39 349 2432127
+UNIX programming                     skype:  rodolfo.giometti
