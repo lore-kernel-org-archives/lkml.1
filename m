@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbYKDOzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYKDOzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbYKDOzQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 09:55:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYKDOxn
+	id S1755560AbYKDOzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 09:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbYKDOxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 09:53:43 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60539 "EHLO mx2.redhat.com"
+	Tue, 4 Nov 2008 09:53:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60551 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753307AbYKDOxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 09:53:41 -0500
+	id S1753579AbYKDOxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 09:53:42 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -18,34 +18,36 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 12/16] kvm: svm: set crash_hardware_disable to svm_hardware_disable
-Date: Tue,  4 Nov 2008 12:52:40 -0200
-Message-Id: <1225810364-8990-13-git-send-email-ehabkost@redhat.com>
-In-Reply-To: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
-References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 00/14] x86: disable virt on kdump and emergency_restart
+Date: Tue,  4 Nov 2008 12:52:28 -0200
+Message-Id: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can use it as is, as it is a simple function.
+Hi,
 
-Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
----
- arch/x86/kvm/svm.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+This is a new version of the series to disabling virtualization on kdump,
+now extended to do the same tricks on emergency_restart() if needed.
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index f0ad4d4..6b3a660 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1942,6 +1942,7 @@ static struct kvm_x86_ops svm_x86_ops = {
- 	.check_processor_compatibility = svm_check_processor_compat,
- 	.hardware_enable = svm_hardware_enable,
- 	.hardware_disable = svm_hardware_disable,
-+	.crash_hardware_disable = svm_hardware_disable,
- 	.cpu_has_accelerated_tpr = svm_cpu_has_accelerated_tpr,
- 
- 	.vcpu_create = svm_create_vcpu,
+This series is against linux-next-20081103.
+
+Patches 01-07 simply move the non-kdump-specific parts
+of nmi_shootdown_cpus() to reboot.c, so it can be used by
+emergency_restart(). They should be a no-op in relation to existing code.
+
+Patches 08 adds the virt_disable function registering interface, like
+the previous series.
+
+Patch 09 hooks emergency_virt_disable() into kdump crash_shutdown code.
+
+Patch 10 hooks emergency_virt_disable() into emergency_restart() using
+nmi_shootdown_cpus().
+
+Patches 11-15 change KVM so that it registers a virt_disable function
+when loading.
+
+Finally, patch 16 restore the previous reboot=kbd default.
+
 -- 
-1.5.5.GIT
-
+Eduardo
