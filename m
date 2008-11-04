@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYKDXt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbYKDXua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbYKDXt5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbYKDXjq
+	id S1759786AbYKDXua (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757704AbYKDXjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:39:46 -0500
-Received: from cantor.suse.de ([195.135.220.2]:47649 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:39:51 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52107 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757632AbYKDXjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:39:44 -0500
-Date: Tue, 4 Nov 2008 15:32:44 -0800
+	id S1757696AbYKDXju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:39:50 -0500
+Date: Tue, 4 Nov 2008 15:32:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,56 +22,56 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@perex.cz>, Chris Wedgwood <cw@f00f.org>
-Subject: [patch 33/57] ALSA: use correct lock in snd_ctl_dev_disconnect()
-Message-ID: <20081104233244.GH659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Boris Dores <babal@via.ecp.fr>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Mike Isely <isely@pobox.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 34/57] V4L: pvrusb2: Keep MPEG PTSs from drifting away
+Message-ID: <20081104233247.GI659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-use-correct-lock-in-snd_ctl_dev_disconnect.patch"
+Content-Disposition: inline; filename="v4l-pvrusb2-keep-mpeg-ptss-from-drifting-away.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Takashi Iwai <tiwai@suse.de>
+From: Boris Dores <babal@via.ecp.fr>
 
-commit d8009882e9f5e1a76986c741f071edd2ad760c97 upstream
+cherry picked from commit 3f93d1adca658201c64251c43a147cc79d468c3f
 
-The lock used in snd_ctl_dev_disconnect() should be card->ctl_files_rwlock
-for protection of card->ctl_files entries, instead of card->controls_rwsem.
+V4L: pvrusb2: Keep MPEG PTSs from drifting away
 
-Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Jaroslav Kysela <perex@perex.cz>
-Cc: Chris Wedgwood <cw@f00f.org>
+This change was empirically figured out by Boris Dores after
+empirically comparing against behavior in the Windows driver.
+
+Signed-off-by: Mike Isely <isely@pobox.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/control.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/media/video/pvrusb2/pvrusb2-encoder.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/sound/core/control.c
-+++ b/sound/core/control.c
-@@ -1427,12 +1427,12 @@ static int snd_ctl_dev_disconnect(struct
- 	cardnum = card->number;
- 	snd_assert(cardnum >= 0 && cardnum < SNDRV_CARDS, return -ENXIO);
+--- a/drivers/media/video/pvrusb2/pvrusb2-encoder.c
++++ b/drivers/media/video/pvrusb2/pvrusb2-encoder.c
+@@ -402,6 +402,10 @@ static int pvr2_encoder_prep_config(stru
+ 	ret |= pvr2_encoder_vcmd(hdw, CX2341X_ENC_MISC,4, 0,3,0,0);
+ 	ret |= pvr2_encoder_vcmd(hdw, CX2341X_ENC_MISC,4,15,0,0,0);
  
--	down_read(&card->controls_rwsem);
-+	read_lock(&card->ctl_files_rwlock);
- 	list_for_each_entry(ctl, &card->ctl_files, list) {
- 		wake_up(&ctl->change_sleep);
- 		kill_fasync(&ctl->fasync, SIGIO, POLL_ERR);
- 	}
--	up_read(&card->controls_rwsem);
-+	read_unlock(&card->ctl_files_rwlock);
++	/* prevent the PTSs from slowly drifting away in the generated
++	   MPEG stream */
++	ret |= pvr2_encoder_vcmd(hdw, CX2341X_ENC_MISC, 2, 4, 1);
++
+ 	return ret;
+ }
  
- 	if ((err = snd_unregister_device(SNDRV_DEVICE_TYPE_CONTROL,
- 					 card, -1)) < 0)
 
 -- 
