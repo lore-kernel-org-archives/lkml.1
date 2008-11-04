@@ -1,139 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbYKDAUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYKDAZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbYKDAUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 19:20:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYKDAUG
+	id S1756206AbYKDAZL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 19:25:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbYKDAY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 19:20:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59407 "EHLO mx2.redhat.com"
+	Mon, 3 Nov 2008 19:24:58 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43647 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbYKDAUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 19:20:05 -0500
-Date: Mon, 3 Nov 2008 19:19:24 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: trond.myklebust@fys.uio.no, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [PATCH] lockd: convert reclaimer thread to kthread interface
-Message-ID: <20081103191924.16528bfd@tleilax.poochiereds.net>
-In-Reply-To: <20081103131215.75a83236.akpm@linux-foundation.org>
-References: <1225278945-15407-1-git-send-email-jlayton@redhat.com>
-	<20081103131215.75a83236.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752916AbYKDAY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 19:24:58 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+Date: Tue, 4 Nov 2008 01:29:34 +0100
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <200811040005.12418.rjw@sisk.pl> <1225753819.12673.518.camel@nimitz>
+In-Reply-To: <1225753819.12673.518.camel@nimitz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811040129.35335.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008 13:12:15 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 29 Oct 2008 07:15:45 -0400
-> Jeff Layton <jlayton@redhat.com> wrote:
-> 
-> > My understanding is that there is a push to turn the kernel_thread
-> > interface into a non-exported symbol and move all kernel threads to use
-> > the kthread API. This patch changes lockd to use kthread_run to spawn
-> > the reclaimer thread.
+On Tuesday, 4 of November 2008, Dave Hansen wrote:
+> On Tue, 2008-11-04 at 00:05 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 3 of November 2008, Dave Hansen wrote:
+> > > But, as I think about it, there is another issue that we need to
+> > > address, CONFIG_NODES_SPAN_OTHER_NODES.
+> > > 
+> > > A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
+> > > have only one zone).  But, there may be another node with
+> > > node_start_pfn=10 and a node_end_pfn=20.  This loop:
+> > > 
+> > >         for_each_zone(zone) {
+> > > 		...
+> > >                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+> > >                         if (page_is_saveable(zone, pfn))
+> > >                                 memory_bm_set_bit(orig_bm, pfn);
+> > >         }
+> > > 
+> > > will walk over the smaller node's pfn range multiple times.  Is this OK?
 > > 
-> > I've made the assumption here that the extra module references taken
-> > when we spawn this thread are unnecessary and removed them. I've also
-> > added a KERN_ERR printk that pops if the thread can't be spawned to warn
-> > the admin that the locks won't be reclaimed.
+> > Hm, well, I'm not really sure at the moment.
 > > 
-> > I consider this patch 2.6.29 material.
+> > Does it mean that, in your example, the pfns 10 to 20 from the first node
+> > refer to the same page frames that are referred to by the pfns from the
+> > second node?
+> 
+> Maybe using pfns didn't make for a good example.  I could have used
+> physical addresses as well.
+> 
+> All that I'm saying is that nodes (and zones) can span other nodes (and
+> zones).  This means that the address ranges making up that node can
+> overlap with the address ranges of another node.  This doesn't mean that
+> *each* node has those address ranges.  Each individual address can only
+> be in one node.
+> 
+> Since zone *ranges* overlap, you can't tell to which zone a page belongs
+> simply from its address.  You need to ask the 'struct page'.
+
+Understood.
+
+This means that some zones may contain some ranges of pfns that correspond
+to struct pages in another zone, correct?
+
+> > > I think all you have to do to fix it is check page_zone(page) == zone
+> > > and skip out if they don't match.
 > > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > ---
-> >  fs/lockd/clntlock.c |   14 +++++++++-----
-> >  1 files changed, 9 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
-> > index 8307dd6..fcc2378 100644
-> > --- a/fs/lockd/clntlock.c
-> > +++ b/fs/lockd/clntlock.c
-> > @@ -14,6 +14,7 @@
-> >  #include <linux/sunrpc/svc.h>
-> >  #include <linux/lockd/lockd.h>
-> >  #include <linux/smp_lock.h>
-> > +#include <linux/kthread.h>
-> >  
-> >  #define NLMDBG_FACILITY		NLMDBG_CLIENT
-> >  
-> > @@ -191,11 +192,15 @@ __be32 nlmclnt_grant(const struct sockaddr *addr, const struct nlm_lock *lock)
-> >  void
-> >  nlmclnt_recovery(struct nlm_host *host)
-> >  {
-> > +	struct task_struct *task;
-> > +
-> >  	if (!host->h_reclaiming++) {
-> >  		nlm_get_host(host);
-> > -		__module_get(THIS_MODULE);
-> > -		if (kernel_thread(reclaimer, host, CLONE_FS | CLONE_FILES) < 0)
-> > -			module_put(THIS_MODULE);
-> > +		task = kthread_run(reclaimer, host, "%s-reclaim", host->h_name);
-> > +		if (IS_ERR(task))
-> > +			printk(KERN_ERR "lockd: unable to spawn reclaimer "
-> > +				"thread. Locks for %s won't be reclaimed! "
-> > +				"(%ld)\n", host->h_name, PTR_ERR(task));
-> >  	}
-> >  }
-> >  
-> > @@ -207,7 +212,6 @@ reclaimer(void *ptr)
-> >  	struct file_lock *fl, *next;
-> >  	u32 nsmstate;
-> >  
-> > -	daemonize("%s-reclaim", host->h_name);
-> >  	allow_signal(SIGKILL);
-> >  
-> >  	down_write(&host->h_rwsem);
-> > @@ -261,5 +265,5 @@ restart:
-> >  	nlm_release_host(host);
-> >  	lockd_down();
-> >  	unlock_kernel();
-> > -	module_put_and_exit(0);
-> > +	return 0;
-> >  }
+> > Well, probably.  I need to know exactly what's the relationship between pfns,
+> > pages and physical page frames in that case.
 > 
-> Looks OK to me.  I assume the SIGKILL handling has been carefully tested?
+> 1 pfn == 1 'struct page' == 1 physical page
 > 
-> 
-> Is it correct to emit a warning and keep going if the thread didn't
-> start?  Or would it be safer&saner to fail the whole mount (or whatever
-> syscall we're doing here..)
-> 
+> The only exception to that is that we may have more 'struct pages' than
+> we have actual physical memory due to rounding and so forth.
 
-Forgot to answer this part...
+OK, I think that the appended patch will do the trick (compiled, untested).
 
-This thread gets kicked off when the server has rebooted and we need to
-reclaim our locks. There isn't a syscall on which we can return an
-error to the user.
-
-Aside from just warning the admin, I'm not sure what we can do here. We
-might be able to start making all syscalls on the mount fail somehow,
-but I don't think we have infrastructure for that and that may be
-overkill anyway. I suppose we could also go to sleep and try to spawn the
-thread again, but there's no guarantee of success there.
-
-> 
-> 
-> I see this:
-> 
-> 	/* Why are we leaking memory here? --okir */
-> 	if (signalled())
-> 		continue;
-> 
-> is that still true?  It seems unlikely that what appears to be a pretty
-> gross leak has been around for so long.
-> 
-> This code needs some BKL-removal love.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Thanks,
+Rafael
 
 
--- 
-Jeff Layton <jlayton@redhat.com>
+Not-yet-signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/snapshot.c |   23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -817,8 +817,7 @@ static unsigned int count_free_highmem_p
+  *	We should save the page if it isn't Nosave or NosaveFree, or Reserved,
+  *	and it isn't a part of a free chunk of pages.
+  */
+-
+-static struct page *saveable_highmem_page(unsigned long pfn)
++static struct page *saveable_highmem_page(struct zone *zone, unsigned long pfn)
+ {
+ 	struct page *page;
+ 
+@@ -826,6 +825,8 @@ static struct page *saveable_highmem_pag
+ 		return NULL;
+ 
+ 	page = pfn_to_page(pfn);
++	if (page_zone(page) != zone)
++		return NULL;
+ 
+ 	BUG_ON(!PageHighMem(page));
+ 
+@@ -855,13 +856,16 @@ unsigned int count_highmem_pages(void)
+ 		mark_free_pages(zone);
+ 		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
+ 		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+-			if (saveable_highmem_page(pfn))
++			if (saveable_highmem_page(zone, pfn))
+ 				n++;
+ 	}
+ 	return n;
+ }
+ #else
+-static inline void *saveable_highmem_page(unsigned long pfn) { return NULL; }
++static inline void *saveable_highmem_page(struct zone *z, unsigned long p)
++{
++	return NULL;
++}
+ #endif /* CONFIG_HIGHMEM */
+ 
+ /**
+@@ -872,8 +876,7 @@ static inline void *saveable_highmem_pag
+  *	of pages statically defined as 'unsaveable', and it isn't a part of
+  *	a free chunk of pages.
+  */
+-
+-static struct page *saveable_page(unsigned long pfn)
++static struct page *saveable_page(struct zone *zone, unsigned long pfn)
+ {
+ 	struct page *page;
+ 
+@@ -881,6 +884,8 @@ static struct page *saveable_page(unsign
+ 		return NULL;
+ 
+ 	page = pfn_to_page(pfn);
++	if (page_zone(page) != zone)
++		return NULL;
+ 
+ 	BUG_ON(PageHighMem(page));
+ 
+@@ -912,7 +917,7 @@ unsigned int count_data_pages(void)
+ 		mark_free_pages(zone);
+ 		max_zone_pfn = zone->zone_start_pfn + zone->spanned_pages;
+ 		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+-			if(saveable_page(pfn))
++			if(saveable_page(zone, pfn))
+ 				n++;
+ 	}
+ 	return n;
+@@ -953,7 +958,7 @@ static inline struct page *
+ page_is_saveable(struct zone *zone, unsigned long pfn)
+ {
+ 	return is_highmem(zone) ?
+-			saveable_highmem_page(pfn) : saveable_page(pfn);
++		saveable_highmem_page(zone, pfn) : saveable_page(zone, pfn);
+ }
+ 
+ static void copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
+@@ -984,7 +989,7 @@ static void copy_data_page(unsigned long
+ 	}
+ }
+ #else
+-#define page_is_saveable(zone, pfn)	saveable_page(pfn)
++#define page_is_saveable(zone, pfn)	saveable_page(zone, pfn)
+ 
+ static inline void copy_data_page(unsigned long dst_pfn, unsigned long src_pfn)
+ {
