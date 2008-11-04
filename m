@@ -1,255 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYKDRHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbYKDROR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757519AbYKDRHz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:07:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbYKDRHq
+	id S1756632AbYKDROR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:14:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbYKDROD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:07:46 -0500
-Received: from inca-roads.misterjones.org ([213.251.177.50]:33391 "EHLO
-	inca-roads.misterjones.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754531AbYKDRHp (ORCPT
+	Tue, 4 Nov 2008 12:14:03 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:65229 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbYKDROB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:07:45 -0500
-Date: Tue, 4 Nov 2008 18:07:44 +0100
-From: Marc Zyngier <maz@misterjones.org>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Port Arcom/Eurotech Viper over the
- gpio_request_set API
-Message-ID: <20081104180744.5ce2f360@not-of-this-earth.wild-wind.fr.eu.org>
-In-Reply-To: <20081104175725.1872b4ed@not-of-this-earth.wild-wind.fr.eu.org>
-References: <20081104175725.1872b4ed@not-of-this-earth.wild-wind.fr.eu.org>
-Organization: Metropolis -- Nowhere
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 81.53.103.82
-X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: maz@misterjones.org
-X-SA-Exim-Scanned: No (on inca-roads.misterjones.org); SAEximRunCond expanded to false
+	Tue, 4 Nov 2008 12:14:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FFgXZccvSghpgMyzbAjhpAgBUnLbmQFa8WqBQY6unIUq+AkuMpiQUxVyRwF5rrS1wH
+         jxdfbL6Ic3uswIKc6uMnnMULIzPJ5RPEuuAghmGDQP+cZMCkJpCp8AK9u7NTj6ggjJEl
+         umOKkr1/TRppOSyErN8Bs+7BLlKybw03He0ns=
+Date: Tue, 4 Nov 2008 20:13:46 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       lguest@ozlabs.org, jeremy@xensource.com,
+       Steven Rostedt <srostedt@redhat.com>, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081104171346.GF21470@localhost>
+References: <20081104122839.GA22864@mailshack.com> <20081104124242.GA6795@elte.hu> <1225805399.25337.1282903253@webmail.messagingengine.com> <20081104140030.GA16178@elte.hu> <1225815789.30706.1282936457@webmail.messagingengine.com> <20081104164717.GD21470@localhost> <20081104165811.GA1664@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081104165811.GA1664@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Ingo Molnar - Tue, Nov 04, 2008 at 05:58:11PM +0100]
+| 
+| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > [Alexander van Heukelum - Tue, Nov 04, 2008 at 05:23:09PM +0100]
+| > ...
+| > | 
+| > | I did some timings using the little program below (32-bit only), doing
+| > | 1024 times the same sequence. TEST1 is just pushing a constant onto
+| > | the stack; TEST2 is pushing the cs register; TEST3 is the sequence
+| > | from the patch to extract the vector number from the cs register.
+| > | 
+| > | Opteron    (cycles): 1024 / 1157 / 3527
+| > | Xeon E5345 (cycles): 1092 / 1085 / 6622
+| > | Athlon XP  (cycles): 1028 / 1166 / 5192
+| > 
+| > Xeon is defenitely out of luck :-)
+| 
+| it's still OK - i.e. no outrageous showstopper overhead anywhere in 
+| that instruction sequence. The total round-trip overhead is what will 
+| matter most.
+| 
+| 	Ingo
+| 
 
-As a proof of concept, use the gpio_request_set/gpio_free_set
-functions in place of the open-coded stuff used on the Viper SBC.
+Don't get me wrong please, I really like what Alexander have done!
+But frankly six time slower is a bit scarying me.
 
-Signed-off-by: Marc Zyngier <maz@misterjones.org>
----
- arch/arm/mach-pxa/viper.c     |   87 +++++++++++++----------------------------
- drivers/pcmcia/pxa2xx_viper.c |   49 +++++++++--------------
- 2 files changed, 46 insertions(+), 90 deletions(-)
-
-diff --git a/arch/arm/mach-pxa/viper.c b/arch/arm/mach-pxa/viper.c
-index f5d1757..1355f91 100644
---- a/arch/arm/mach-pxa/viper.c
-+++ b/arch/arm/mach-pxa/viper.c
-@@ -343,35 +343,21 @@ static struct pxafb_mach_info fb_info = {
- 	.lcd_conn		= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL,
- };
- 
-+/* GPIO9 and 10 control FB backlight. Initialise to off */
-+static struct gpio_config viper_backlight_gpio[] = {
-+	{ VIPER_BCKLIGHT_EN_GPIO, "Backlight", GPIO_CONFIG_DIRECTION_OUTPUT, 0 },
-+	{ VIPER_LCD_EN_GPIO, "LCD", GPIO_CONFIG_DIRECTION_OUTPUT, 0 },
-+};
-+
- static int viper_backlight_init(struct device *dev)
- {
- 	int ret;
-+	struct gpio_config *failed;
- 
--	/* GPIO9 and 10 control FB backlight. Initialise to off */
--	ret = gpio_request(VIPER_BCKLIGHT_EN_GPIO, "Backlight");
--	if (ret)
--		goto err_request_bckl;
--
--	ret = gpio_request(VIPER_LCD_EN_GPIO, "LCD");
--	if (ret)
--		goto err_request_lcd;
--
--	ret = gpio_direction_output(VIPER_BCKLIGHT_EN_GPIO, 0);
--	if (ret)
--		goto err_dir;
-+	ret = gpio_request_set(ARRAY_AND_SIZE(viper_backlight_gpio), &failed);
- 
--	ret = gpio_direction_output(VIPER_LCD_EN_GPIO, 0);
- 	if (ret)
--		goto err_dir;
--
--	return 0;
--
--err_dir:
--	gpio_free(VIPER_LCD_EN_GPIO);
--err_request_lcd:
--	gpio_free(VIPER_BCKLIGHT_EN_GPIO);
--err_request_bckl:
--	dev_err(dev, "Failed to setup LCD GPIOs\n");
-+	        dev_err(dev, "Failed to setup %s GPIO\n", failed->label);
- 
- 	return ret;
- }
-@@ -386,8 +372,7 @@ static int viper_backlight_notify(int brightness)
- 
- static void viper_backlight_exit(struct device *dev)
- {
--	gpio_free(VIPER_LCD_EN_GPIO);
--	gpio_free(VIPER_BCKLIGHT_EN_GPIO);
-+	gpio_free_set(ARRAY_AND_SIZE(viper_backlight_gpio));
- }
- 
- static struct platform_pwm_backlight_data viper_backlight_data = {
-@@ -817,51 +802,33 @@ error_tpm:
- 	pr_err("viper: Couldn't %s, giving up\n", errstr);
- }
- 
-+static struct gpio_config __initdata viper_vcore_gpios[] = {
-+	{ VIPER_PSU_DATA_GPIO, "PSU data", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
-+	{ VIPER_PSU_CLK_GPIO, "PSU clock", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
-+	{ VIPER_PSU_nCS_LD_GPIO, "PSU cs", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
-+};
-+
- static void __init viper_init_vcore_gpios(void)
- {
--	if (gpio_request(VIPER_PSU_DATA_GPIO, "PSU data"))
--		goto err_request_data;
--
--	if (gpio_request(VIPER_PSU_CLK_GPIO, "PSU clock"))
--		goto err_request_clk;
-+	struct gpio_config *failed;
- 
--	if (gpio_request(VIPER_PSU_nCS_LD_GPIO, "PSU cs"))
--		goto err_request_cs;
--
--	if (gpio_direction_output(VIPER_PSU_DATA_GPIO, 0) ||
--	    gpio_direction_output(VIPER_PSU_CLK_GPIO, 0) ||
--	    gpio_direction_output(VIPER_PSU_nCS_LD_GPIO, 0))
--		goto err_dir;
-+	if (gpio_request_set(ARRAY_AND_SIZE(viper_vcore_gpios), &failed)) {
-+		pr_err("viper: Failed to setup %s GPIO\n", failed->label);
-+		return;
-+	}
- 
- 	/* c/should assume redboot set the correct level ??? */
- 	viper_set_core_cpu_voltage(get_clk_frequency_khz(0), 1);
--
--	return;
--
--err_dir:
--	gpio_free(VIPER_PSU_nCS_LD_GPIO);
--err_request_cs:
--	gpio_free(VIPER_PSU_CLK_GPIO);
--err_request_clk:
--	gpio_free(VIPER_PSU_DATA_GPIO);
--err_request_data:
--	pr_err("viper: Failed to setup vcore control GPIOs\n");
- }
- 
-+static struct gpio_config __initdata viper_serial_gpio[] = {
-+	{ VIPER_UART_SHDN_GPIO, "UARTs shutdown", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
-+};
-+
- static void __init viper_init_serial_gpio(void)
- {
--	if (gpio_request(VIPER_UART_SHDN_GPIO, "UARTs shutdown"))
--		goto err_request;
--
--	if (gpio_direction_output(VIPER_UART_SHDN_GPIO, 0))
--		goto err_dir;
--
--	return;
--
--err_dir:
--	gpio_free(VIPER_UART_SHDN_GPIO);
--err_request:
--	pr_err("viper: Failed to setup UART shutdown GPIO\n");
-+	if (gpio_request_set(ARRAY_AND_SIZE(viper_serial_gpio), NULL))
-+		pr_err("viper: Failed to setup UART shutdown GPIO\n");
- }
- 
- #ifdef CONFIG_CPU_FREQ
-diff --git a/drivers/pcmcia/pxa2xx_viper.c b/drivers/pcmcia/pxa2xx_viper.c
-index dd10481..0f39558 100644
---- a/drivers/pcmcia/pxa2xx_viper.c
-+++ b/drivers/pcmcia/pxa2xx_viper.c
-@@ -37,44 +37,35 @@ static struct pcmcia_irqs irqs[] = {
- 	{ 0, gpio_to_irq(VIPER_CF_CD_GPIO),  "PCMCIA_CD" }
- };
- 
-+/* GPIO 82 is the CF power enable line. initially off */
-+static struct gpio_config viper_pcmcia_gpios[] = {
-+	{ VIPER_CF_CD_GPIO, "CF detect", GPIO_CONFIG_DIRECTION_INPUT, },
-+	{ VIPER_CF_RDY_GPIO, "CF ready", GPIO_CONFIG_DIRECTION_INPUT, },
-+	{ VIPER_CF_POWER_GPIO, "CF power", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
-+};
-+
- static int viper_pcmcia_hw_init(struct soc_pcmcia_socket *skt)
- {
- 	unsigned long flags;
-+	int ret;
-+	struct gpio_config *failed;
- 
- 	skt->irq = gpio_to_irq(VIPER_CF_RDY_GPIO);
- 
--	if (gpio_request(VIPER_CF_CD_GPIO, "CF detect"))
--		goto err_request_cd;
--
--	if (gpio_request(VIPER_CF_RDY_GPIO, "CF ready"))
--		goto err_request_rdy;
--
--	if (gpio_request(VIPER_CF_POWER_GPIO, "CF power"))
--		goto err_request_pwr;
--
- 	local_irq_save(flags);
- 
--	/* GPIO 82 is the CF power enable line. initially off */
--	if (gpio_direction_output(VIPER_CF_POWER_GPIO, 0) ||
--	    gpio_direction_input(VIPER_CF_CD_GPIO) ||
--	    gpio_direction_input(VIPER_CF_RDY_GPIO)) {
--		local_irq_restore(flags);
--		goto err_dir;
--	}
--
-+	ret = gpio_request_set(viper_pcmcia_gpios,
-+			       ARRAY_SIZE(viper_pcmcia_gpios),
-+			       &failed);
-+	
- 	local_irq_restore(flags);
- 
--	return soc_pcmcia_request_irqs(skt, irqs, ARRAY_SIZE(irqs));
-+	if (ret) {
-+		pr_err("viper: Failed to setup %s GPIOs\n", failed->label);
-+		return ret;
-+	}
- 
--err_dir:
--	gpio_free(VIPER_CF_POWER_GPIO);
--err_request_pwr:
--	gpio_free(VIPER_CF_RDY_GPIO);
--err_request_rdy:
--	gpio_free(VIPER_CF_CD_GPIO);
--err_request_cd:
--	printk(KERN_ERR "viper: Failed to setup PCMCIA GPIOs\n");
--	return -1;
-+	return soc_pcmcia_request_irqs(skt, irqs, ARRAY_SIZE(irqs));
- }
- 
- /*
-@@ -83,9 +74,7 @@ err_request_cd:
- static void viper_pcmcia_hw_shutdown(struct soc_pcmcia_socket *skt)
- {
- 	soc_pcmcia_free_irqs(skt, irqs, ARRAY_SIZE(irqs));
--	gpio_free(VIPER_CF_POWER_GPIO);
--	gpio_free(VIPER_CF_RDY_GPIO);
--	gpio_free(VIPER_CF_CD_GPIO);
-+	gpio_free_set(viper_pcmcia_gpios, ARRAY_SIZE(viper_pcmcia_gpios));
- }
- 
- static void viper_pcmcia_socket_state(struct soc_pcmcia_socket *skt,
--- 
-1.5.4.3
-
-
--- 
-A rat a day keeps the plague away.
+		- Cyrill -
