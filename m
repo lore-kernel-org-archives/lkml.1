@@ -1,50 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbYKDVst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYKDVu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbYKDVst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 16:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYKDVsj
+	id S1756202AbYKDVu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 16:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbYKDVuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 16:48:39 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:23404 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754366AbYKDVsh (ORCPT
+	Tue, 4 Nov 2008 16:50:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60531 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753702AbYKDVuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 16:48:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=mWW1EHgOWGqw9OXuSw9KMNR18ryEfBq9dncCMICj8hrA89SwprTN8e50D33eMtR9zJ
-         bS4DeTgjshymNsYp5/M+prCBKddIDbg2I+CD8SVsF+9K2vAdf8XHzA742b9/x5pAMKCi
-         0vOccZJIygbL9lkXAQe56nPyB5eZd1VazufFM=
-Message-ID: <4910C32F.9060204@gmail.com>
-Date: Tue, 04 Nov 2008 22:48:31 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Adam Nielsen <a.nielsen@shikadi.net>
-CC: LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: led and hid class - hid_device vs led_classdev
-References: <490FFF1B.6050300@shikadi.net>
-In-Reply-To: <490FFF1B.6050300@shikadi.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8
+	Tue, 4 Nov 2008 16:50:19 -0500
+Date: Tue, 4 Nov 2008 13:50:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rientjes@google.com, cl@linux-foundation.org, npiggin@suse.de,
+       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+Message-Id: <20081104135004.f1717fcf.akpm@linux-foundation.org>
+In-Reply-To: <1225833710.7803.1993.camel@twins>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+	<20081104124753.fb1dde5a.akpm@linux-foundation.org>
+	<1225831988.7803.1939.camel@twins>
+	<20081104131637.68fbe055.akpm@linux-foundation.org>
+	<1225833710.7803.1993.camel@twins>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/04/2008 08:51 AM, Adam Nielsen wrote:
-> /* Callback function when user wants to change LED state */
-> static void my_led_set(struct led_classdev *led_cdev,
->   enum led_brightness value)
-> {
->   /* How do I get my_data back? */
-> }
-> 
-> Hopefully this explains what I'm after - if you need me to clarify
-> anything please let me know.
+On Tue, 04 Nov 2008 22:21:50 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-my_led should by part of my_data, then you do
-my_data = container_of(led_cdev, /*typeof(my_data)*/, my_led);
+> On Tue, 2008-11-04 at 13:16 -0800, Andrew Morton wrote:
+> > On Tue, 04 Nov 2008 21:53:08 +0100
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Tue, 2008-11-04 at 12:47 -0800, Andrew Morton wrote:
+> > > > On Thu, 30 Oct 2008 12:23:10 -0700 (PDT)
+> > > > David Rientjes <rientjes@google.com> wrote:
+> > > > 
+> > > > > This is the revised cpuset writeback throttling patchset
+> > > > 
+> > > > I'm all confused about why this is a cpuset thing rather than a cgroups
+> > > > thing.  What are the relationships here?
+> > > > 
+> > > > I mean, writeback throttling _should_ operate upon a control group
+> > > > (more specifically: a memcg), yes?  I guess you're assuming a 1:1
+> > > > relationship here?
+> > > 
+> > > I think the main reason is that we have per-node vmstats so the cpuset
+> > > extention is relatively easy. Whereas we do not currently maintain
+> > > vmstats on a cgroup level - although I imagine that could be remedied.
+> > 
+> > It didn't look easy to me - it added a lot more code in places which are
+> > already wicked complex.
+> > 
+> > I'm trying to understand where this is all coming from and what fits
+> > into where.  Fiddling with a cpuset's mems_allowed for purposes of
+> > memory partitioning is all nasty 2007 technology, isn't it?  Does a raw
+> > cpuset-based control such as this have a future?
+> 
+> Yes, cpusets are making a come-back on the embedded multi-core Real-Time
+> side. Folks love to isolate stuff..
+> 
+> Not saying I really like it...
+> 
+> Also, there seems to be talk about node aware pdflush from the
+> filesystems folks, not sure we need cpusets for that, but this does seem
+> to add some node information into it.
+
+Sorry, but I'm not seeing enough solid justification here for merging a
+fairly large amount of fairly tricksy code into core kernel.  Code
+which, afaict, is heading in the opposite direction from where we've
+all been going for a year or two.
+
+What are the alternatives here?  What do we need to do to make
+throttling a per-memcg thing?
+
+
+The patchset is badly misnamed, btw.  It doesn't throttle writeback -
+in fact several people are working on IO bandwidth controllers and
+calling this thing "writeback throttling" risks confusion.
+
+What we're in fact throttling is rate-of-memory-dirtying.  The last
+thing we want to throttle is writeback - we want it to go as fast as
+possible!
+
+Only I can't think of a suitable handy-dandy moniker for this concept.
