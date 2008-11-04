@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYKDRSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYKDRSx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbYKDRSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYKDRS3
+	id S1757255AbYKDRSx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbYKDRSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:18:29 -0500
-Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:50734 "EHLO
-	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751820AbYKDRS2 (ORCPT
+	Tue, 4 Nov 2008 12:18:41 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:46713 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753560AbYKDRSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:18:28 -0500
-Subject: [PATCH] x86: Don't allow nr_irqs > NR_IRQS
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Organization: Solarflare Communications
-Date: Tue, 04 Nov 2008 17:18:22 +0000
-Message-Id: <1225819102.3074.15.camel@achroite>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
-X-Originating-Smarthost03-IP: [82.69.137.158]
+	Tue, 4 Nov 2008 12:18:39 -0500
+Message-ID: <491083E9.60305@ru.mvista.com>
+Date: Tue, 04 Nov 2008 20:18:33 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/6] rz1000: apply chipset quirks early
+References: <20081103200244.5098.29817.sendpatchset@localhost.localdomain> <20081103200306.5098.41565.sendpatchset@localhost.localdomain>
+In-Reply-To: <20081103200306.5098.41565.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some systems probe_nr_irqs() can return a value larger than
-NR_IRQS.  This will lead to probe_irq_on() overrunning the irq_desc
-array.
+Hello.
 
-Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
----
- arch/x86/kernel/io_apic.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-﻿
-I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
-Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
-5 IOAPICs (!) and returns 240.  Here are the log messages:
+Bartlomiej Zolnierkiewicz wrote:
 
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
-Tue Nov  4 16:53:47 2008 IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x02] address[0xfec81000] gsi_base[24])
-Tue Nov  4 16:53:47 2008 IOAPIC[1]: apic_id 2, version 32, address 0xfec81000, GSI 24-47
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x03] address[0xfec81400] gsi_base[48])
-Tue Nov  4 16:53:47 2008 IOAPIC[2]: apic_id 3, version 32, address 0xfec81400, GSI 48-71
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x04] address[0xfec82000] gsi_base[72])
-Tue Nov  4 16:53:47 2008 IOAPIC[3]: apic_id 4, version 32, address 0xfec82000, GSI 72-95
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x05] address[0xfec82400] gsi_base[96])
-Tue Nov  4 16:53:47 2008 IOAPIC[4]: apic_id 5, version 32, address 0xfec82400, GSI 96-119
-Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
-Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-Tue Nov  4 16:53:47 2008 Enabling APIC mode:  Flat.  Using 5 I/O APICs
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] rz1000: apply chipset quirks early
 
-﻿I think this has become possible since:
+> * Use pci_name(dev) instead of hwif->name in init_hwif_rz1000().
 
-commit d6c88a507ef0b6afdb013cba4e7804ba7324d99a
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Wed Oct 15 15:27:23 2008 +0200
+> * init_hwif_rz1000() -> rz1000_init_chipset().  Update rz1000_init_one()
+>   to use rz1000_init_chipset() and add now required rz1000_remove().
 
-    genirq: revert dynarray
+> * Remove superfluous ide_rz1000 chipset type.
 
-    Revert the dynarray changes. They need more thought and polishing.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Index: b/drivers/ide/rz1000.c
+> ===================================================================
+> --- a/drivers/ide/rz1000.c
+> +++ b/drivers/ide/rz1000.c
+> @@ -22,34 +22,48 @@
+>  
+>  #define DRV_NAME "rz1000"
+>  
+> -static void __devinit init_hwif_rz1000 (ide_hwif_t *hwif)
+> +static unsigned int __devinit rz1000_init_chipset(struct pci_dev *dev)
 
-Ben.
+    Hm, this is not a real init_chipset() method and it does just one thing -- 
+disables readahead, so rz1000_disable_readahead() or something of that sort 
+seems like a better name...
 
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index b764d74..c8482fb 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -3611,6 +3611,8 @@ int __init probe_nr_irqs(void)
- 	/* something wrong ? */
- 	if (nr < nr_min)
- 		nr = nr_min;
-+	if (nr > NR_IRQS)
-+		nr = NR_IRQS;
- 
- 	return nr;
- }
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+MBR, Sergei
