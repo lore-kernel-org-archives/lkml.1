@@ -1,116 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYKDT7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYKDUCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbYKDT7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYKDT7G
+	id S1755488AbYKDUCa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 15:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYKDUCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:59:06 -0500
-Received: from lazybastard.de ([212.112.238.170]:58243 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbYKDT7D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:59:03 -0500
-Date: Tue, 4 Nov 2008 20:58:55 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Matthieu CASTET <matthieu.castet@parrot.com>
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [Patch][Checkstack] Do not hide small stackframes
-Message-ID: <20081104195855.GD16036@logfs.org>
-References: <49107304.2060006@parrot.com> <20081104173524.GB16036@logfs.org>
+	Tue, 4 Nov 2008 15:02:22 -0500
+Received: from gw.goop.org ([64.81.55.164]:39447 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753803AbYKDUCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 15:02:22 -0500
+Message-ID: <4910AA46.909@goop.org>
+Date: Tue, 04 Nov 2008 12:02:14 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081104173524.GB16036@logfs.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       lguest@ozlabs.org, jeremy@xensource.com,
+       Steven Rostedt <srostedt@redhat.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+References: <20081104122839.GA22864@mailshack.com> <20081104124242.GA6795@elte.hu>
+In-Reply-To: <20081104124242.GA6795@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 November 2008 18:35:24 +0100, Jörn Engel wrote:
-> On Tue, 4 November 2008 17:06:28 +0100, Matthieu CASTET wrote:
-> > 
-> > I wonder why the arm version of checkstack only catch stack size >= 300
-> > and < 10000 [1].
-> > Why doesn't it use ".*sub.*sp, sp, #([0-9]{1,8})" to catch all stack usage ?
-> 
-> Looks like a bug.  And it further looks like Holger just copied what
-> everyone else did at the time.  And the one who started this strange
-> pattern was: Arnd.
-> 
-> Arnd, did you have a good reason for choosing the pattern?
+Ingo Molnar wrote:
+> .. which we were able to avoid before. A couple of segment register 
+> accesses, shifts, etc to calculate the vector - each of which can be 
+> quite costly (especially the segment register access - this is a 
+> relatively rare instruction pattern).
+>
+> I'm not unconvicable, but we need to be conservative here: could you 
+> try to measure the full before/after cost of IRQ entry, to the cycle 
+> level? I'm curious what the performance impact is.
+>
+> Also, this makes life probably a bit harder for Xen, which assumes 
+> that the GDT of the guest OS is small-ish. (Jeremy Cc:-ed)
+>   
 
-Assuming you didn't, the patch below should print all(*) stackframes
-for all architectures.
+It doesn't increase the GDT to more than one page, so there's no issue 
+there.  The only reason the GDT uses a whole page is because of Xen's 
+requirements anyway, so if we can make good use of the rest of the 
+entries, so much the better.
 
-(*) Stack frames below 100 bytes are ignored, by virtue of
-		next if ($size < 100);
-    This is imo preferrable as it is architecture-independent and easier
-    to spot.  The fact that noone noticed the 300 byte effect for five
-    years (or thereabout) speaks volumes.
+The other possible concern with Xen is whether Xen will properly load an 
+arbitrary %cs on exception entry, or if it always loads KERNEL_CS; looks 
+like it will load any %cs, so we should be fine there.
 
-Jörn
+Overall the patch looks good.  Saving a segment register should be much 
+faster than loading it, so I don't think the %cs read on entry should 
+cost too much, but reloading %cs with KERNEL_CS might be a bit more of a 
+cost (or does it run the whole exception with the new %cs?).
 
--- 
-You ain't got no problem, Jules. I'm on the motherfucker. Go back in
-there, chill them niggers out and wait for the Wolf, who should be
-coming directly.
--- Marsellus Wallace
-
-The regex for s390 - and several other architectures that copied from
-s390 - silently ignored stack frames below 300 and above 10000 bytes.
-
-Signed-off-by: Jörn Engel <joern@logfs.org>
----
-
- scripts/checkstack.pl |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
---- debuggerhead/scripts/checkstack.pl~checkstack	2008-03-05 12:14:05.000000000 +0100
-+++ debuggerhead/scripts/checkstack.pl	2008-11-04 20:38:08.000000000 +0100
-@@ -38,7 +38,7 @@ my (@stack, $re, $x, $xs);
- 	$xs	= "[0-9a-f ]";	# hex character or space
- 	if ($arch eq 'arm') {
- 		#c0008ffc:	e24dd064	sub	sp, sp, #100	; 0x64
--		$re = qr/.*sub.*sp, sp, #(([0-9]{2}|[3-9])[0-9]{2})/o;
-+		$re = qr/.*sub.*sp, sp, #([0-9]{1,8})/o;
- 	} elsif ($arch eq 'avr32') {
- 		#8000008a:       20 1d           sub sp,4
- 		#80000ca8:       fa cd 05 b0     sub sp,sp,1456
-@@ -51,17 +51,17 @@ my (@stack, $re, $x, $xs);
- 		$re = qr/^.*[as][du][db]    \$(0x$x{1,8}),\%rsp$/o;
- 	} elsif ($arch eq 'ia64') {
- 		#e0000000044011fc:       01 0f fc 8c     adds r12=-384,r12
--		$re = qr/.*adds.*r12=-(([0-9]{2}|[3-9])[0-9]{2}),r12/o;
-+		$re = qr/.*adds.*r12=-([0-9]{1,8}),r12/o;
- 	} elsif ($arch eq 'm68k') {
- 		#    2b6c:       4e56 fb70       linkw %fp,#-1168
- 		#  1df770:       defc ffe4       addaw #-28,%sp
- 		$re = qr/.*(?:linkw %fp,|addaw )#-([0-9]{1,4})(?:,%sp)?$/o;
- 	} elsif ($arch eq 'mips64') {
- 		#8800402c:       67bdfff0        daddiu  sp,sp,-16
--		$re = qr/.*daddiu.*sp,sp,-(([0-9]{2}|[3-9])[0-9]{2})/o;
-+		$re = qr/.*daddiu.*sp,sp,-([0-9]{1,8})/o;
- 	} elsif ($arch eq 'mips') {
- 		#88003254:       27bdffe0        addiu   sp,sp,-32
--		$re = qr/.*addiu.*sp,sp,-(([0-9]{2}|[3-9])[0-9]{2})/o;
-+		$re = qr/.*addiu.*sp,sp,-([0-9]{1,8})/o;
- 	} elsif ($arch eq 'parisc' || $arch eq 'parisc64') {
- 		$re = qr/.*ldo ($x{1,8})\(sp\),sp/o;
- 	} elsif ($arch eq 'ppc') {
-@@ -74,13 +74,13 @@ my (@stack, $re, $x, $xs);
- 		$re = qr/.*st[dw]u.*r1,-($x{1,8})\(r1\)/o;
- 	} elsif ($arch =~ /^s390x?$/) {
- 		#   11160:       a7 fb ff 60             aghi   %r15,-160
--		$re = qr/.*ag?hi.*\%r15,-(([0-9]{2}|[3-9])[0-9]{2})/o;
-+		$re = qr/.*ag?hi.*\%r15,-([0-9]{1,8})/o;
- 	} elsif ($arch =~ /^sh64$/) {
- 		#XXX: we only check for the immediate case presently,
- 		#     though we will want to check for the movi/sub
- 		#     pair for larger users. -- PFM.
- 		#a00048e0:       d4fc40f0        addi.l  r15,-240,r15
--		$re = qr/.*addi\.l.*r15,-(([0-9]{2}|[3-9])[0-9]{2}),r15/o;
-+		$re = qr/.*addi\.l.*r15,-([0-9]{1,8}),r15/o;
- 	} elsif ($arch =~ /^blackfin$/) {
- 		#   0:   00 e8 38 01     LINK 0x4e0;
- 		$re = qr/.*[[:space:]]LINK[[:space:]]*(0x$x{1,8})/o;
+    J
