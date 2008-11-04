@@ -1,98 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbYKDR3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYKDRdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbYKDR3h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbYKDR33
+	id S1756008AbYKDRdc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbYKDRdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:29:29 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:47708 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753778AbYKDR32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:29:28 -0500
-Message-Id: <1225819765.13069.1282952549@webmail.messagingengine.com>
-X-Sasl-Enc: oK9Db5hSai7MXWiroXWUif7wDkK2bRaknXZtQjSEVK+n 1225819765
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>, "Ingo Molnar" <mingo@elte.hu>
-Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
-       jeremy@xensource.com, "Steven Rostedt" <srostedt@redhat.com>,
-       "Mike Travis" <travis@sgi.com>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Andi Kleen" <andi@firstfloor.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 4 Nov 2008 12:33:24 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:56745 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754378AbYKDRdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 12:33:23 -0500
+Date: Tue, 4 Nov 2008 18:33:00 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org, rjw@sisk.pl
+Subject: Bootup time regression from 2.6.27 to 2.6.28-rc3+
+Message-ID: <20081104173300.GF6134@ics.muni.cz>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20081104122839.GA22864@mailshack.com> <20081104124242.GA6795@elte.hu>
- <1225805399.25337.1282903253@webmail.messagingengine.com>
- <20081104140030.GA16178@elte.hu>
- <1225815789.30706.1282936457@webmail.messagingengine.com>
- <20081104164717.GD21470@localhost> <20081104165811.GA1664@elte.hu>
- <20081104171346.GF21470@localhost>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-In-Reply-To: <20081104171346.GF21470@localhost>
-Date: Tue, 04 Nov 2008 18:29:25 +0100
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 04 Nov 2008 18:32:55 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Rafael,
 
-On Tue, 4 Nov 2008 20:13:46 +0300, "Cyrill Gorcunov"
-<gorcunov@gmail.com> said:
-> [Ingo Molnar - Tue, Nov 04, 2008 at 05:58:11PM +0100]
-> | 
-> | * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | 
-> | > [Alexander van Heukelum - Tue, Nov 04, 2008 at 05:23:09PM +0100]
-> | > ...
-> | > | 
-> | > | I did some timings using the little program below (32-bit only),
-> doing
-> | > | 1024 times the same sequence. TEST1 is just pushing a constant onto
-> | > | the stack; TEST2 is pushing the cs register; TEST3 is the sequence
-> | > | from the patch to extract the vector number from the cs register.
-> | > | 
-> | > | Opteron    (cycles): 1024 / 1157 / 3527
-> | > | Xeon E5345 (cycles): 1092 / 1085 / 6622
-> | > | Athlon XP  (cycles): 1028 / 1166 / 5192
-> | > 
-> | > Xeon is defenitely out of luck :-)
-> | 
-> | it's still OK - i.e. no outrageous showstopper overhead anywhere in 
-> | that instruction sequence. The total round-trip overhead is what will 
-> | matter most.
-> | 
-> | 	Ingo
-> | 
-> 
-> Don't get me wrong please, I really like what Alexander have done!
-> But frankly six time slower is a bit scarying me.
+not sure whether this is already reported or not. However, in 2.6.28-rc3
+I discovered about 10 secs delay before mounting the root fs and running init
+(not sure whether the delay is caused by mount or init). It did not appear in
+2.6.27. I did not try any previous 2.6.28-rcX.
 
-Thanks again ;). Now it _is_ six times slower to do this tiny
-piece of code... But please keep in mind all the activity that
-follows to save the current data segment registers (the stack
-segment and code segment are saved automatically), the general
-purpose registers and to load most of the data segments with
-kernel-space values. And looking at it now... do_IRQ is also
-not exactly trivial.
+This is from dmesg in 2.6.28-rc3. 
 
-Also, I kept the information that is saved on the stack
-exactly the same. If this is not a requirement, "push %cs"
-is what is left of this expensive (6 cycle!) sequence.
-Even that could be unnecessary if the stack layout can
-be changed... But I'ld like to consider that separately.
+[    7.880966] IBM TrackPoint firmware: 0x0e, buttons: 3/3
+[    8.103116] input: TPPS/2 IBM TrackPoint as
+/devices/platform/i8042/serio1/serio2/input/input7
+[   28.993523] kjournald starting.  Commit interval 5 seconds
+[   28.993581] EXT3-fs: mounted filesystem with ordered data mode.
+[   28.993638] VFS: Mounted root (ext3 filesystem) readonly.
+[   28.993675] Freeing unused kernel memory: 332k freed
+[   37.697648] uhci_hcd: USB Universal Host Controller Interface driver
+[   37.697740] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ
+20
+[   37.697779] uhci_hcd 0000:00:1a.0: setting latency timer to 64
+[   37.697785] uhci_hcd 0000:00:1a.0: UHCI Host Controller
+[   37.698005] drivers/usb/core/inode.c: creating file 'devices'
+[   37.698008] drivers/usb/core/inode.c: creating file '001'
+[   37.698131] uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus
+number 1
+[   37.698176] uhci_hcd 0000:00:1a.0: detected 2 ports
+[   37.698205] uhci_hcd 0000:00:1a.0: uhci_check_and_reset_hc: cmd = 0x0000
 
-Greetings,
-    Alexander
 
-> 		- Cyrill -
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+This is from 2.6.27 kernel:
+[    8.215972] IBM TrackPoint firmware: 0x0e, buttons: 3/3
+[    8.452174] input: TPPS/2 IBM TrackPoint as /devices/platform/i8042/serio1/serio2/input/input7
+[    9.016605] kjournald starting.  Commit interval 5 seconds
+[    9.016634] EXT3-fs: mounted filesystem with ordered data mode.
+[    9.016663] VFS: Mounted root (ext3 filesystem) readonly.
+[    9.016756] Freeing unused kernel memory: 296k freed
+[   18.963410] HDA Intel 0000:00:1b.0: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+[   18.963461] hda_intel: probe_mask set to 0x1 for device 17aa:20ac
+[   18.969726] USB Universal Host Controller Interface driver v3.0
+[   18.987703] e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+[   18.987732] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+[   19.023978] sdhci: Secure Digital Host Controller Interface driver
+[   19.024017] sdhci: Copyright(c) Pierre Ossman
+[   19.084812] input: PC Speaker as /devices/platform/pcspkr/input/input8
+[   19.366304] e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+[   19.372539] ACPI: WMI: Mapper loaded
+[   19.570065] 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:1a:6b:d2:bd:81
+[   19.570105] 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
+[   19.570172] 0000:00:19.0: eth0: MAC: 4, PHY: 6, PBA No: ffffff-0ff
+[   19.570301] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+[   19.570343] uhci_hcd 0000:00:1a.0: UHCI Host Controller
 
 -- 
-http://www.fastmail.fm - A no graphics, no pop-ups email service
-
+Luká¹ Hejtmánek
