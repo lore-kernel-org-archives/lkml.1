@@ -1,89 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYKDMcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbYKDMci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbYKDMcX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 07:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbYKDMbb
+	id S1753699AbYKDMci (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 07:32:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbYKDMbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 07:31:31 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:37104 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751532AbYKDMb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 07:31:27 -0500
-Message-Id: <20081104122418.842777026@attica.americas.sgi.com>
-User-Agent: quilt/0.47-1
-Date: Tue, 04 Nov 2008 06:24:06 -0600
-From: holt@sgi.com
-To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Cc: Petr Tesarik <ptesarik@suse.cz>, Tony Ernst <tee@sgi.com>,
-       Robin Holt <holt@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [Patch V3 1/3] Factor out #ifdefs from kernel/spinlock.c to LOCK_CONTENDED_FLAGS
-References: <20081104122405.046233722@attica.americas.sgi.com>
-Content-Disposition: inline; filename=rwlocks_1.patch
+	Tue, 4 Nov 2008 07:31:44 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:37468 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753272AbYKDMbm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 07:31:42 -0500
+Message-ID: <491040AA.7010208@euromail.se>
+Date: Tue, 04 Nov 2008 13:31:38 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jiri Kosina <jkosina@suse.cz>
+CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] input: Map missing keys to appropriate functions
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1KxL4O-00084p-3J.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KxL4O-00084p-3J 13167ac479c1987c28129c60fb896ab2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The new macro LOCK_CONTENDED_FLAGS expands to the correct implementation
-depending on the config options, so that IRQ's are re-enabled when
-possible, but they remain disabled if CONFIG_LOCKDEP is set.
+On macbooks there are specific keys for the user-space functions Expose
+and Dashboard, which currently has no counterpart in input.h. This patch
+adds KEY_SCALE and KEY_DASHBOARD, and maps the keyboard accordingly.
 
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
-Signed-off-by: Robin Holt <holt@sgi.com>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 ---
- include/linux/lockdep.h |   17 +++++++++++++++++
- kernel/spinlock.c       |   12 ++----------
- 2 files changed, 19 insertions(+), 10 deletions(-)
+ drivers/hid/hid-apple.c |    5 +++--
+ include/linux/input.h   |    2 ++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Index: rwlock/include/linux/lockdep.h
-===================================================================
---- rwlock.orig/include/linux/lockdep.h	2008-11-04 05:54:18.456411408 -0600
-+++ rwlock/include/linux/lockdep.h	2008-11-04 05:55:43.335302610 -0600
-@@ -376,6 +376,23 @@ do {								\
- 
- #endif /* CONFIG_LOCK_STAT */
- 
-+#ifdef CONFIG_LOCKDEP
-+
-+/*
-+ * On lockdep we dont want the hand-coded irq-enable of
-+ * _raw_*_lock_flags() code, because lockdep assumes
-+ * that interrupts are not re-enabled during lock-acquire:
-+ */
-+#define LOCK_CONTENDED_FLAGS(_lock, try, lock, lockfl, flags) \
-+	LOCK_CONTENDED((_lock), (try), (lock))
-+
-+#else /* CONFIG_LOCKDEP */
-+
-+#define LOCK_CONTENDED_FLAGS(_lock, try, lock, lockfl, flags) \
-+	lockfl((_lock), (flags))
-+
-+#endif /* CONFIG_LOCKDEP */
-+
- #if defined(CONFIG_TRACE_IRQFLAGS) && defined(CONFIG_GENERIC_HARDIRQS)
- extern void early_init_irq_lock_class(void);
- #else
-Index: rwlock/kernel/spinlock.c
-===================================================================
---- rwlock.orig/kernel/spinlock.c	2008-11-04 05:54:18.456411408 -0600
-+++ rwlock/kernel/spinlock.c	2008-11-04 06:00:35.504744806 -0600
-@@ -299,16 +299,8 @@ unsigned long __lockfunc _spin_lock_irqs
- 	local_irq_save(flags);
- 	preempt_disable();
- 	spin_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
--	/*
--	 * On lockdep we dont want the hand-coded irq-enable of
--	 * _raw_spin_lock_flags() code, because lockdep assumes
--	 * that interrupts are not re-enabled during lock-acquire:
--	 */
--#ifdef CONFIG_LOCKDEP
--	LOCK_CONTENDED(lock, _raw_spin_trylock, _raw_spin_lock);
--#else
--	_raw_spin_lock_flags(lock, &flags);
--#endif
-+	LOCK_CONTENDED_FLAGS(lock, _raw_spin_trylock, _raw_spin_lock,
-+				_raw_spin_lock_flags, &flags);
- 	return flags;
- }
- EXPORT_SYMBOL(_spin_lock_irqsave_nested);
+diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+index c6ab4ba..b25d90c 100644
+--- a/drivers/hid/hid-apple.c
++++ b/drivers/hid/hid-apple.c
+@@ -55,10 +55,11 @@ struct apple_key_translation {
+
+ static struct apple_key_translation apple_fn_keys[] = {
+ 	{ KEY_BACKSPACE, KEY_DELETE },
++	{ KEY_ENTER,	KEY_INSERT },
+ 	{ KEY_F1,	KEY_BRIGHTNESSDOWN, APPLE_FLAG_FKEY },
+ 	{ KEY_F2,	KEY_BRIGHTNESSUP,   APPLE_FLAG_FKEY },
+-	{ KEY_F3,	KEY_FN_F5,          APPLE_FLAG_FKEY }, /* Exposé */
+-	{ KEY_F4,	KEY_FN_F4,          APPLE_FLAG_FKEY }, /* Dashboard */
++	{ KEY_F3,	KEY_SCALE,          APPLE_FLAG_FKEY },
++	{ KEY_F4,	KEY_DASHBOARD,      APPLE_FLAG_FKEY },
+ 	{ KEY_F5,	KEY_KBDILLUMDOWN,   APPLE_FLAG_FKEY },
+ 	{ KEY_F6,	KEY_KBDILLUMUP,     APPLE_FLAG_FKEY },
+ 	{ KEY_F7,	KEY_PREVIOUSSONG,   APPLE_FLAG_FKEY },
+diff --git a/include/linux/input.h b/include/linux/input.h
+index b86fb55..5341e82 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -238,6 +238,7 @@ struct input_absinfo {
+ #define KEY_KPEQUAL		117
+ #define KEY_KPPLUSMINUS		118
+ #define KEY_PAUSE		119
++#define KEY_SCALE		120	/* AL Compiz Scale (Expose) */
+
+ #define KEY_KPCOMMA		121
+ #define KEY_HANGEUL		122
+@@ -322,6 +323,7 @@ struct input_absinfo {
+ #define KEY_PAUSECD		201
+ #define KEY_PROG3		202
+ #define KEY_PROG4		203
++#define KEY_DASHBOARD		204	/* AL Dashboard */
+ #define KEY_SUSPEND		205
+ #define KEY_CLOSE		206	/* AC Close */
+ #define KEY_PLAY		207
+-- 
+1.5.6.3
 
