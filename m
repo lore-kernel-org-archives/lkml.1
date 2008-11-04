@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYKDXyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYKDXzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbYKDXyV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbYKDXkg
+	id S1753059AbYKDXzB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYKDXkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:40:36 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52273 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:40:47 -0500
+Received: from mail.suse.de ([195.135.220.2]:47831 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757097AbYKDXke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:40:34 -0500
-Date: Tue, 4 Nov 2008 15:33:12 -0800
+	id S1756991AbYKDXkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:40:45 -0500
+Date: Tue, 4 Nov 2008 15:33:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mikael Pettersson <mikpe@it.uu.se>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 45/57] sata_promise: add ATA engine reset to reset ops
-Message-ID: <20081104233312.GT659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [patch 47/57] ACPI: EC: do transaction from interrupt context
+Message-ID: <20081104233316.GV659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_promise-add-ata-engine-reset-to-reset-ops.patch"
+Content-Disposition: inline; filename="acpi-ec-do-transaction-from-interrupt-context.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,82 +39,535 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mikael Pettersson <mikpe@it.uu.se>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-commit cadef677e4a9b9c1d069675043767df486782986 upstream
+commit 7c6db4e050601f359081fde418ca6dc4fc2d0011 upstream.
 
-Promise ATA engines need to be reset when errors occur.
-That's currently done for errors detected by sata_promise itself,
-but it's not done for errors like timeouts detected outside of
-the low-level driver.
+It is easier and faster to do transaction directly from interrupt context
+rather than waking control thread.
+Also, cleaner GPE storm avoidance is implemented.
+References: 	http://bugzilla.kernel.org/show_bug.cgi?id=9998
+		http://bugzilla.kernel.org/show_bug.cgi?id=10724
+		http://bugzilla.kernel.org/show_bug.cgi?id=10919
+		http://bugzilla.kernel.org/show_bug.cgi?id=11309
+		http://bugzilla.kernel.org/show_bug.cgi?id=11549
 
-The effect of this omission is that a timeout tends to result
-in a sequence of failed COMRESETs after which libata EH gives
-up and disables the port. At that point the port's ATA engine
-hangs and even reloading the driver will not resume it.
-
-To fix this, make sata_promise override ->hardreset on SATA
-ports with code which calls pdc_reset_port() on the port in
-question before calling libata's hardreset. PATA ports don't
-use ->hardreset, so for those we override ->softreset instead.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Tested-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_promise.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/acpi/ec.c |  309 ++++++++++++++++++++++++++----------------------------
+ 1 file changed, 149 insertions(+), 160 deletions(-)
 
---- a/drivers/ata/sata_promise.c
-+++ b/drivers/ata/sata_promise.c
-@@ -153,6 +153,10 @@ static void pdc_freeze(struct ata_port *
- static void pdc_sata_freeze(struct ata_port *ap);
- static void pdc_thaw(struct ata_port *ap);
- static void pdc_sata_thaw(struct ata_port *ap);
-+static int pdc_pata_softreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline);
-+static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline);
- static void pdc_error_handler(struct ata_port *ap);
- static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
- static int pdc_pata_cable_detect(struct ata_port *ap);
-@@ -186,6 +190,7 @@ static struct ata_port_operations pdc_sa
- 	.scr_read		= pdc_sata_scr_read,
- 	.scr_write		= pdc_sata_scr_write,
- 	.port_start		= pdc_sata_port_start,
-+	.hardreset		= pdc_sata_hardreset,
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -1,7 +1,7 @@
+ /*
+- *  ec.c - ACPI Embedded Controller Driver (v2.0)
++ *  ec.c - ACPI Embedded Controller Driver (v2.1)
+  *
+- *  Copyright (C) 2006, 2007 Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>
++ *  Copyright (C) 2006-2008 Alexey Starikovskiy <astarikovskiy@suse.de>
+  *  Copyright (C) 2006 Denis Sadykov <denis.m.sadykov@intel.com>
+  *  Copyright (C) 2004 Luming Yu <luming.yu@intel.com>
+  *  Copyright (C) 2001, 2002 Andy Grover <andrew.grover@intel.com>
+@@ -26,7 +26,7 @@
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+ 
+-/* Uncomment next line to get verbose print outs*/
++/* Uncomment next line to get verbose printout */
+ /* #define DEBUG */
+ 
+ #include <linux/kernel.h>
+@@ -38,6 +38,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/interrupt.h>
+ #include <linux/list.h>
++#include <linux/spinlock.h>
+ #include <asm/io.h>
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
+@@ -65,22 +66,21 @@ enum ec_command {
+ 	ACPI_EC_COMMAND_QUERY = 0x84,
  };
  
- /* First-generation chips need a more restrictive ->check_atapi_dma op */
-@@ -200,6 +205,7 @@ static struct ata_port_operations pdc_pa
- 	.freeze			= pdc_freeze,
- 	.thaw			= pdc_thaw,
- 	.port_start		= pdc_common_port_start,
-+	.softreset		= pdc_pata_softreset,
+-/* EC events */
+-enum ec_event {
+-	ACPI_EC_EVENT_OBF_1 = 1,	/* Output buffer full */
+-	ACPI_EC_EVENT_IBF_0,		/* Input buffer empty */
+-};
+-
+ #define ACPI_EC_DELAY		500	/* Wait 500ms max. during EC ops */
+ #define ACPI_EC_UDELAY_GLK	1000	/* Wait 1ms max. to get global lock */
+ #define ACPI_EC_UDELAY		100	/* Wait 100us before polling EC again */
+ 
++#define ACPI_EC_STORM_THRESHOLD 20	/* number of false interrupts
++					   per one transaction */
++
+ enum {
+-	EC_FLAGS_WAIT_GPE = 0,		/* Don't check status until GPE arrives */
+ 	EC_FLAGS_QUERY_PENDING,		/* Query is pending */
+-	EC_FLAGS_GPE_MODE,		/* Expect GPE to be sent for status change */
++	EC_FLAGS_GPE_MODE,		/* Expect GPE to be sent
++					 * for status change */
+ 	EC_FLAGS_NO_GPE,		/* Don't use GPE mode */
+-	EC_FLAGS_RESCHEDULE_POLL	/* Re-schedule poll */
++	EC_FLAGS_GPE_STORM,		/* GPE storm detected */
++	EC_FLAGS_HANDLERS_INSTALLED	/* Handlers for GPE and
++					 * OpReg are installed */
  };
  
- static const struct ata_port_info pdc_port_info[] = {
-@@ -691,6 +697,20 @@ static void pdc_sata_thaw(struct ata_por
- 	readl(host_mmio + hotplug_offset); /* flush */
+ /* If we find an EC via the ECDT, we need to keep a ptr to its context */
+@@ -95,6 +95,14 @@ struct acpi_ec_query_handler {
+ 	u8 query_bit;
+ };
+ 
++struct transaction_data {
++	const u8 *wdata;
++	u8 *rdata;
++	unsigned short irq_count;
++	u8 wlen;
++	u8 rlen;
++};
++
+ static struct acpi_ec {
+ 	acpi_handle handle;
+ 	unsigned long gpe;
+@@ -105,9 +113,8 @@ static struct acpi_ec {
+ 	struct mutex lock;
+ 	wait_queue_head_t wait;
+ 	struct list_head list;
+-	struct delayed_work work;
+-	atomic_t irq_count;
+-	u8 handlers_installed;
++	struct transaction_data *t;
++	spinlock_t t_lock;
+ } *boot_ec, *first_ec;
+ 
+ /* 
+@@ -150,7 +157,7 @@ static inline u8 acpi_ec_read_data(struc
+ {
+ 	u8 x = inb(ec->data_addr);
+ 	pr_debug(PREFIX "---> data = 0x%2.2x\n", x);
+-	return inb(ec->data_addr);
++	return x;
  }
  
-+static int pdc_pata_softreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline)
-+{
-+	pdc_reset_port(link->ap);
-+	return ata_sff_softreset(link, class, deadline);
-+}
-+
-+static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
-+			      unsigned long deadline)
-+{
-+	pdc_reset_port(link->ap);
-+	return sata_sff_hardreset(link, class, deadline);
-+}
-+
- static void pdc_error_handler(struct ata_port *ap)
+ static inline void acpi_ec_write_cmd(struct acpi_ec *ec, u8 command)
+@@ -165,68 +172,79 @@ static inline void acpi_ec_write_data(st
+ 	outb(data, ec->data_addr);
+ }
+ 
+-static inline int acpi_ec_check_status(struct acpi_ec *ec, enum ec_event event)
++static int ec_transaction_done(struct acpi_ec *ec)
  {
- 	if (!(ap->pflags & ATA_PFLAG_FROZEN))
+-	if (test_bit(EC_FLAGS_WAIT_GPE, &ec->flags))
+-		return 0;
+-	if (event == ACPI_EC_EVENT_OBF_1) {
+-		if (acpi_ec_read_status(ec) & ACPI_EC_FLAG_OBF)
+-			return 1;
+-	} else if (event == ACPI_EC_EVENT_IBF_0) {
+-		if (!(acpi_ec_read_status(ec) & ACPI_EC_FLAG_IBF))
+-			return 1;
+-	}
+-
+-	return 0;
++	unsigned long flags;
++	int ret = 0;
++	spin_lock_irqsave(&ec->t_lock, flags);
++	if (!ec->t || (!ec->t->wlen && !ec->t->rlen))
++		ret = 1;
++	spin_unlock_irqrestore(&ec->t_lock, flags);
++	return ret;
+ }
+ 
+-static void ec_schedule_ec_poll(struct acpi_ec *ec)
++static void gpe_transaction(struct acpi_ec *ec, u8 status)
+ {
+-	if (test_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags))
+-		schedule_delayed_work(&ec->work,
+-				      msecs_to_jiffies(ACPI_EC_DELAY));
++	unsigned long flags;
++	spin_lock_irqsave(&ec->t_lock, flags);
++	if (!ec->t)
++		goto unlock;
++	if (ec->t->wlen > 0) {
++		if ((status & ACPI_EC_FLAG_IBF) == 0) {
++			acpi_ec_write_data(ec, *(ec->t->wdata++));
++			--ec->t->wlen;
++		} else
++			/* false interrupt, state didn't change */
++			++ec->t->irq_count;
++
++	} else if (ec->t->rlen > 0) {
++		if ((status & ACPI_EC_FLAG_OBF) == 1) {
++			*(ec->t->rdata++) = acpi_ec_read_data(ec);
++			--ec->t->rlen;
++		} else
++			/* false interrupt, state didn't change */
++			++ec->t->irq_count;
++	}
++unlock:
++	spin_unlock_irqrestore(&ec->t_lock, flags);
+ }
+ 
+-static void ec_switch_to_poll_mode(struct acpi_ec *ec)
++static int acpi_ec_wait(struct acpi_ec *ec)
+ {
++	if (wait_event_timeout(ec->wait, ec_transaction_done(ec),
++			       msecs_to_jiffies(ACPI_EC_DELAY)))
++		return 0;
++	/* missing GPEs, switch back to poll mode */
++	if (printk_ratelimit())
++		pr_info(PREFIX "missing confirmations, "
++				"switch off interrupt mode.\n");
+ 	set_bit(EC_FLAGS_NO_GPE, &ec->flags);
+ 	clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+-	acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+-	set_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
++	return 1;
+ }
+ 
+-static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, int force_poll)
++static void acpi_ec_gpe_query(void *ec_cxt);
++
++static int ec_check_sci(struct acpi_ec *ec, u8 state)
+ {
+-	atomic_set(&ec->irq_count, 0);
+-	if (likely(test_bit(EC_FLAGS_GPE_MODE, &ec->flags)) &&
+-	    likely(!force_poll)) {
+-		if (wait_event_timeout(ec->wait, acpi_ec_check_status(ec, event),
+-				       msecs_to_jiffies(ACPI_EC_DELAY)))
+-			return 0;
+-		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		if (acpi_ec_check_status(ec, event)) {
+-			/* missing GPEs, switch back to poll mode */
+-			if (printk_ratelimit())
+-				pr_info(PREFIX "missing confirmations, "
+-						"switch off interrupt mode.\n");
+-			ec_switch_to_poll_mode(ec);
+-			ec_schedule_ec_poll(ec);
+-			return 0;
+-		}
+-	} else {
+-		unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+-		clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		while (time_before(jiffies, delay)) {
+-			if (acpi_ec_check_status(ec, event))
+-				return 0;
+-			msleep(1);
+-		}
+-		if (acpi_ec_check_status(ec,event))
++	if (state & ACPI_EC_FLAG_SCI) {
++		if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags))
++			return acpi_os_execute(OSL_EC_BURST_HANDLER,
++				acpi_ec_gpe_query, ec);
++	}
++	return 0;
++}
++
++static int ec_poll(struct acpi_ec *ec)
++{
++	unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
++	msleep(1);
++	while (time_before(jiffies, delay)) {
++		gpe_transaction(ec, acpi_ec_read_status(ec));
++		msleep(1);
++		if (ec_transaction_done(ec))
+ 			return 0;
+ 	}
+-	pr_err(PREFIX "acpi_ec_wait timeout, status = 0x%2.2x, event = %s\n",
+-		acpi_ec_read_status(ec),
+-		(event == ACPI_EC_EVENT_OBF_1) ? "\"b0=1\"" : "\"b1=0\"");
+ 	return -ETIME;
+ }
+ 
+@@ -235,45 +253,51 @@ static int acpi_ec_transaction_unlocked(
+ 					u8 * rdata, unsigned rdata_len,
+ 					int force_poll)
+ {
+-	int result = 0;
+-	set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
++	unsigned long tmp;
++	struct transaction_data t = {.wdata = wdata, .rdata = rdata,
++				     .wlen = wdata_len, .rlen = rdata_len,
++				     .irq_count = 0};
++	int ret = 0;
+ 	pr_debug(PREFIX "transaction start\n");
++	/* disable GPE during transaction if storm is detected */
++	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
++		clear_bit(EC_FLAGS_GPE_MODE, &ec->flags);
++		acpi_disable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
++	}
++	/* start transaction */
++	spin_lock_irqsave(&ec->t_lock, tmp);
++	/* following two actions should be kept atomic */
++	ec->t = &t;
+ 	acpi_ec_write_cmd(ec, command);
+-	for (; wdata_len > 0; --wdata_len) {
+-		result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, force_poll);
+-		if (result) {
+-			pr_err(PREFIX
+-			       "write_cmd timeout, command = %d\n", command);
+-			goto end;
+-		}
+-		set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		acpi_ec_write_data(ec, *(wdata++));
+-	}
+-
+-	if (!rdata_len) {
+-		result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, force_poll);
+-		if (result) {
+-			pr_err(PREFIX
+-			       "finish-write timeout, command = %d\n", command);
+-			goto end;
+-		}
+-	} else if (command == ACPI_EC_COMMAND_QUERY)
++	if (command == ACPI_EC_COMMAND_QUERY)
+ 		clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
+-
+-	for (; rdata_len > 0; --rdata_len) {
+-		result = acpi_ec_wait(ec, ACPI_EC_EVENT_OBF_1, force_poll);
+-		if (result) {
+-			pr_err(PREFIX "read timeout, command = %d\n", command);
+-			goto end;
+-		}
+-		/* Don't expect GPE after last read */
+-		if (rdata_len > 1)
+-			set_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-		*(rdata++) = acpi_ec_read_data(ec);
+-	}
+-      end:
++	spin_unlock_irqrestore(&ec->t_lock, tmp);
++	/* if we selected poll mode or failed in GPE-mode do a poll loop */
++	if (force_poll ||
++	    !test_bit(EC_FLAGS_GPE_MODE, &ec->flags) ||
++	    acpi_ec_wait(ec))
++		ret = ec_poll(ec);
+ 	pr_debug(PREFIX "transaction end\n");
+-	return result;
++	spin_lock_irqsave(&ec->t_lock, tmp);
++	ec->t = NULL;
++	spin_unlock_irqrestore(&ec->t_lock, tmp);
++	if (test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
++		/* check if we received SCI during transaction */
++		ec_check_sci(ec, acpi_ec_read_status(ec));
++		/* it is safe to enable GPE outside of transaction */
++		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
++	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
++		   t.irq_count > ACPI_EC_STORM_THRESHOLD) {
++		pr_debug(PREFIX "GPE storm detected\n");
++		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
++	}
++	return ret;
++}
++
++static int ec_check_ibf0(struct acpi_ec *ec)
++{
++	u8 status = acpi_ec_read_status(ec);
++	return (status & ACPI_EC_FLAG_IBF) == 0;
+ }
+ 
+ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+@@ -283,40 +307,34 @@ static int acpi_ec_transaction(struct ac
+ {
+ 	int status;
+ 	u32 glk;
+-
+ 	if (!ec || (wdata_len && !wdata) || (rdata_len && !rdata))
+ 		return -EINVAL;
+-
+ 	if (rdata)
+ 		memset(rdata, 0, rdata_len);
+-
+ 	mutex_lock(&ec->lock);
+ 	if (ec->global_lock) {
+ 		status = acpi_acquire_global_lock(ACPI_EC_UDELAY_GLK, &glk);
+ 		if (ACPI_FAILURE(status)) {
+-			mutex_unlock(&ec->lock);
+-			return -ENODEV;
++			status = -ENODEV;
++			goto unlock;
+ 		}
+ 	}
+-
+-	status = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, 0);
+-	if (status) {
++	if (!wait_event_timeout(ec->wait, ec_check_ibf0(ec),
++				msecs_to_jiffies(ACPI_EC_DELAY))) {
+ 		pr_err(PREFIX "input buffer is not empty, "
+ 				"aborting transaction\n");
++		status = -ETIME;
+ 		goto end;
+ 	}
+-
+ 	status = acpi_ec_transaction_unlocked(ec, command,
+ 					      wdata, wdata_len,
+ 					      rdata, rdata_len,
+ 					      force_poll);
+-
+-      end:
+-
++end:
+ 	if (ec->global_lock)
+ 		acpi_release_global_lock(glk);
++unlock:
+ 	mutex_unlock(&ec->lock);
+-
+ 	return status;
+ }
+ 
+@@ -332,7 +350,9 @@ int acpi_ec_burst_enable(struct acpi_ec 
+ 
+ int acpi_ec_burst_disable(struct acpi_ec *ec)
+ {
+-	return acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE, NULL, 0, NULL, 0, 0);
++	return (acpi_ec_read_status(ec) & ACPI_EC_FLAG_BURST) ?
++		acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE,
++			NULL, 0, NULL, 0, 0) : 0;
+ }
+ 
+ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
+@@ -513,46 +533,26 @@ static void acpi_ec_gpe_query(void *ec_c
+ 
+ static u32 acpi_ec_gpe_handler(void *data)
+ {
+-	acpi_status status = AE_OK;
+ 	struct acpi_ec *ec = data;
+-	u8 state = acpi_ec_read_status(ec);
++	u8 status;
+ 
+ 	pr_debug(PREFIX "~~~> interrupt\n");
+-	atomic_inc(&ec->irq_count);
+-	if (atomic_read(&ec->irq_count) > 5) {
+-		pr_err(PREFIX "GPE storm detected, disabling EC GPE\n");
+-		ec_switch_to_poll_mode(ec);
+-		goto end;
+-	}
+-	clear_bit(EC_FLAGS_WAIT_GPE, &ec->flags);
+-	if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags))
++	status = acpi_ec_read_status(ec);
++
++	gpe_transaction(ec, status);
++	if (ec_transaction_done(ec) && (status & ACPI_EC_FLAG_IBF) == 0)
+ 		wake_up(&ec->wait);
+ 
+-	if (state & ACPI_EC_FLAG_SCI) {
+-		if (!test_and_set_bit(EC_FLAGS_QUERY_PENDING, &ec->flags))
+-			status = acpi_os_execute(OSL_EC_BURST_HANDLER,
+-				acpi_ec_gpe_query, ec);
+-	} else if (!test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
+-		   !test_bit(EC_FLAGS_NO_GPE, &ec->flags) &&
+-		   in_interrupt()) {
++	ec_check_sci(ec, status);
++	if (!test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
++	    !test_bit(EC_FLAGS_NO_GPE, &ec->flags)) {
+ 		/* this is non-query, must be confirmation */
+ 		if (printk_ratelimit())
+ 			pr_info(PREFIX "non-query interrupt received,"
+ 				" switching to interrupt mode\n");
+ 		set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
+-		clear_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+ 	}
+-end:
+-	ec_schedule_ec_poll(ec);
+-	return ACPI_SUCCESS(status) ?
+-	    ACPI_INTERRUPT_HANDLED : ACPI_INTERRUPT_NOT_HANDLED;
+-}
+-
+-static void do_ec_poll(struct work_struct *work)
+-{
+-	struct acpi_ec *ec = container_of(work, struct acpi_ec, work.work);
+-	atomic_set(&ec->irq_count, 0);
+-	(void)acpi_ec_gpe_handler(ec);
++	return ACPI_INTERRUPT_HANDLED;
+ }
+ 
+ /* --------------------------------------------------------------------------
+@@ -696,8 +696,7 @@ static struct acpi_ec *make_acpi_ec(void
+ 	mutex_init(&ec->lock);
+ 	init_waitqueue_head(&ec->wait);
+ 	INIT_LIST_HEAD(&ec->list);
+-	INIT_DELAYED_WORK_DEFERRABLE(&ec->work, do_ec_poll);
+-	atomic_set(&ec->irq_count, 0);
++	spin_lock_init(&ec->t_lock);
+ 	return ec;
+ }
+ 
+@@ -736,22 +735,15 @@ ec_parse_device(acpi_handle handle, u32 
+ 	return AE_CTRL_TERMINATE;
+ }
+ 
+-static void ec_poll_stop(struct acpi_ec *ec)
+-{
+-	clear_bit(EC_FLAGS_RESCHEDULE_POLL, &ec->flags);
+-	cancel_delayed_work(&ec->work);
+-}
+-
+ static void ec_remove_handlers(struct acpi_ec *ec)
+ {
+-	ec_poll_stop(ec);
+ 	if (ACPI_FAILURE(acpi_remove_address_space_handler(ec->handle,
+ 				ACPI_ADR_SPACE_EC, &acpi_ec_space_handler)))
+ 		pr_err(PREFIX "failed to remove space handler\n");
+ 	if (ACPI_FAILURE(acpi_remove_gpe_handler(NULL, ec->gpe,
+ 				&acpi_ec_gpe_handler)))
+ 		pr_err(PREFIX "failed to remove gpe handler\n");
+-	ec->handlers_installed = 0;
++	clear_bit(EC_FLAGS_HANDLERS_INSTALLED, &ec->flags);
+ }
+ 
+ static int acpi_ec_add(struct acpi_device *device)
+@@ -846,17 +838,15 @@ ec_parse_io_ports(struct acpi_resource *
+ static int ec_install_handlers(struct acpi_ec *ec)
+ {
+ 	acpi_status status;
+-	if (ec->handlers_installed)
++	if (test_bit(EC_FLAGS_HANDLERS_INSTALLED, &ec->flags))
+ 		return 0;
+ 	status = acpi_install_gpe_handler(NULL, ec->gpe,
+-					  ACPI_GPE_EDGE_TRIGGERED,
+-					  &acpi_ec_gpe_handler, ec);
++				  ACPI_GPE_EDGE_TRIGGERED,
++				  &acpi_ec_gpe_handler, ec);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+-
+ 	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+ 	acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+-
+ 	status = acpi_install_address_space_handler(ec->handle,
+ 						    ACPI_ADR_SPACE_EC,
+ 						    &acpi_ec_space_handler,
+@@ -866,7 +856,7 @@ static int ec_install_handlers(struct ac
+ 		return -ENODEV;
+ 	}
+ 
+-	ec->handlers_installed = 1;
++	set_bit(EC_FLAGS_HANDLERS_INSTALLED, &ec->flags);
+ 	return 0;
+ }
+ 
+@@ -887,7 +877,6 @@ static int acpi_ec_start(struct acpi_dev
+ 
+ 	/* EC is fully operational, allow queries */
+ 	clear_bit(EC_FLAGS_QUERY_PENDING, &ec->flags);
+-	ec_schedule_ec_poll(ec);
+ 	return ret;
+ }
+ 
+@@ -906,7 +895,7 @@ static int acpi_ec_stop(struct acpi_devi
+ 
+ int __init acpi_boot_ec_enable(void)
+ {
+-	if (!boot_ec || boot_ec->handlers_installed)
++	if (!boot_ec || test_bit(EC_FLAGS_HANDLERS_INSTALLED, &boot_ec->flags))
+ 		return 0;
+ 	if (!ec_install_handlers(boot_ec)) {
+ 		first_ec = boot_ec;
 
 -- 
