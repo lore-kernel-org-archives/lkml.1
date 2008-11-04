@@ -1,164 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYKDO6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbYKDO64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYKDO6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 09:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbYKDOz0
+	id S1756697AbYKDO64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 09:58:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbYKDOzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 09:55:26 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:51916 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754820AbYKDOzY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 09:55:24 -0500
-Message-ID: <4910634C.1020207@novell.com>
-Date: Tue, 04 Nov 2008 09:59:24 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Dimitri Sivanich <sivanich@sgi.com>
-CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
- no load balance
-References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins> <490FC735.1070405@novell.com> <49105D84.8070108@novell.com> <1225809393.7803.1669.camel@twins> <20081104144017.GB30855@sgi.com>
-In-Reply-To: <20081104144017.GB30855@sgi.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB4EB07801CDB3C3D7394D9B5"
+	Tue, 4 Nov 2008 09:55:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60628 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755486AbYKDOzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 09:55:32 -0500
+From: Eduardo Habkost <ehabkost@redhat.com>
+To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Eduardo Habkost <ehabkost@redhat.com>
+Subject: [PATCH 04/16] x86 kdump: Make kdump_nmi_callback() a function ptr on crash_nmi_callback()
+Date: Tue,  4 Nov 2008 12:52:32 -0200
+Message-Id: <1225810364-8990-5-git-send-email-ehabkost@redhat.com>
+In-Reply-To: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
+References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB4EB07801CDB3C3D7394D9B5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+The reboot code will use a different function on crash_nmi_callback().
+Adding a function pointer parameter to nmi_shootdown_cpus() for that.
 
-Dimitri Sivanich wrote:
-> On Tue, Nov 04, 2008 at 03:36:33PM +0100, Peter Zijlstra wrote:
->  =20
->> On Tue, 2008-11-04 at 09:34 -0500, Gregory Haskins wrote:
->>    =20
->>> Gregory Haskins wrote:
->>>      =20
->>>> Peter Zijlstra wrote:
->>>>  =20
->>>>        =20
->>>>> On Mon, 2008-11-03 at 15:07 -0600, Dimitri Sivanich wrote:
->>>>>  =20
->>>>>    =20
->>>>>          =20
->>>>>> When load balancing gets switched off for a set of cpus via the
->>>>>> sched_load_balance flag in cpusets, those cpus wind up with the
->>>>>> globally defined def_root_domain attached.  The def_root_domain is=
+Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
+---
+ arch/x86/kernel/crash.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
->>>>>> attached when partition_sched_domains calls detach_destroy_domains=
-().
->>>>>> A new root_domain is never allocated or attached as a sched domain=
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 7f6e2b2..ffbe54b 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -29,10 +29,13 @@
+ 
+ #include <mach_ipi.h>
+ 
++typedef void (*nmi_shootdown_cb)(int, struct die_args*);
++
+ #if defined(CONFIG_SMP) && defined(CONFIG_X86_LOCAL_APIC)
+ 
+ /* This keeps a track of which one is crashing cpu. */
+ static int crashing_cpu;
++static nmi_shootdown_cb shootdown_callback;
+ 
+ static atomic_t waiting_for_crash_ipi;
+ 
+@@ -74,7 +77,7 @@ static int crash_nmi_callback(struct notifier_block *self,
+ 		return NOTIFY_STOP;
+ 	local_irq_disable();
+ 
+-	kdump_nmi_callback(cpu, (struct die_args*)data);
++	shootdown_callback(cpu, (struct die_args*)data);
+ 
+ 	atomic_dec(&waiting_for_crash_ipi);
+ 	/* Assume hlt works */
+@@ -94,13 +97,15 @@ static struct notifier_block crash_nmi_nb = {
+ 	.notifier_call = crash_nmi_callback,
+ };
+ 
+-static void nmi_shootdown_cpus(void)
++static void nmi_shootdown_cpus(nmi_shootdown_cb callback)
+ {
+ 	unsigned long msecs;
+ 
+ 	/* Make a note of crashing cpu. Will be used in NMI callback.*/
+ 	crashing_cpu = safe_smp_processor_id();
+ 
++	shootdown_callback = callback;
++
+ 	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
+ 	/* Would it be better to replace the trap vector here? */
+ 	if (register_die_notifier(&crash_nmi_nb))
+@@ -123,7 +128,7 @@ static void nmi_shootdown_cpus(void)
+ 
+ static void kdump_nmi_shootdown_cpus(void)
+ {
+-	nmi_shootdown_cpus();
++	nmi_shootdown_cpus(kdump_nmi_callback);
+ 
+ 	disable_local_APIC();
+ }
+-- 
+1.5.5.GIT
 
->>>>>> will never be attached by __build_sched_domains() for the non-load=
-
->>>>>> balanced processors.
->>>>>>
->>>>>> The problem with this scenario is that on systems with a large num=
-ber
->>>>>> of processors with load balancing switched off, we start to see th=
-e
->>>>>> cpupri->pri_to_cpu->lock in the def_root_domain becoming contended=
-=2E
->>>>>> This starts to become much more apparent above 8 waking RT threads=
-
->>>>>> (with each RT thread running on it's own cpu, blocking and waking =
-up
->>>>>> continuously).
->>>>>>
->>>>>> I'm wondering if this is, in fact, the way things were meant to wo=
-rk,
->>>>>> or should we have a root domain allocated for each cpu that is not=
- to
->>>>>> be part of a sched domain?  Note the the def_root_domain spans all=
- of
->>>>>> the non-load-balanced cpus in this case.  Having it attached to cp=
-us
->>>>>> that should not be load balancing doesn't quite make sense to me.
->>>>>>    =20
->>>>>>      =20
->>>>>>            =20
->>>>> It shouldn't be like that, each load-balance domain (in your case a=
-
->>>>> single cpu) should get its own root domain. Gregory?
->>>>>  =20
->>>>>    =20
->>>>>          =20
->>>> Yeah, this sounds broken.  I know that the root-domain code was bein=
-g
->>>> developed coincident to some upheaval with the cpuset code, so I sus=
-pect
->>>> something may have been broken from the original intent.  I will tak=
-e a
->>>> look.
->>>>
->>>> -Greg
->>>>
->>>>  =20
->>>>        =20
->>> After thinking about it some more, I am not quite sure what to do her=
-e.=20
->>> The root-domain code was really designed to be 1:1 with a disjoint
->>> cpuset.  In this case, it sounds like all the non-balanced cpus are
->>> still in one default cpuset.  In that case, the code is correct to pl=
-ace
->>> all those cores in the singleton def_root_domain.  The question reall=
-y
->>> is: How do we support the sched_load_balance flag better?
->>>
->>> I suppose we could go through the scheduler code and have it check th=
-at
->>> flag before consulting the root-domain.  Another alternative is to ha=
-ve
->>> the sched_load_balance=3Dfalse flag create a disjoint cpuset.  Any th=
-oughts?
->>>      =20
->> Hmm, but you cannot disable load-balance on a cpu without placing it i=
-n
->> an cpuset first, right?
->>
->> Or are folks disabling load-balance bottom-up, instead of top-down?
->>
->> In that case, I think we should dis-allow that.
->>    =20
->
-> When I see this behavior, I am creating cpusets containing these non lo=
-ad balancing cpus.  Whether I create a single cpuset for each one, or one=
- cpuset for all of them, the root domain ends up being the def_root_domai=
-n with no sched domain attached once I set both the root cpuset and creat=
-ed cpuset's sched_load_balance flags to 0.
->
->  =20
-
-If you tried creating different cpusets and it still had them all end up
-in the def_root_domain, something is very broken indeed.  I will take a
-look.
-
--Greg
-
-
-
-
---------------enigB4EB07801CDB3C3D7394D9B5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkkQY0wACgkQlOSOBdgZUxn6eACeJOMxC1jBXb9AwOX5a8hyXHTE
-t0EAn3/WoO2GBJo2Qq89FxvPqOWdedOa
-=jE8q
------END PGP SIGNATURE-----
-
---------------enigB4EB07801CDB3C3D7394D9B5--
