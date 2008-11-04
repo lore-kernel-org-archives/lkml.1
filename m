@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbYKDOyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYKDOyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754885AbYKDOyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 09:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752928AbYKDOxg
+	id S1755195AbYKDOyh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 09:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYKDOxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 09:53:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60507 "EHLO mx2.redhat.com"
+	Tue, 4 Nov 2008 09:53:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60518 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbYKDOxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 09:53:34 -0500
+	id S1752847AbYKDOxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 09:53:36 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -18,135 +18,209 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 10/16] x86: disable virtualization on all CPUs if needed, on emergency_restart
-Date: Tue,  4 Nov 2008 12:52:38 -0200
-Message-Id: <1225810364-8990-11-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 06/16] x86: Move nmi_shootdown_cpus() to reboot.c
+Date: Tue,  4 Nov 2008 12:52:34 -0200
+Message-Id: <1225810364-8990-7-git-send-email-ehabkost@redhat.com>
 In-Reply-To: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
 References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On emergency_restart, we may need to use NMIs to disable virtualization
-on all CPUs. We do that by using nmi_shootdown_cpus(), but only if a
-virt_disable function was set by KVM.
-
-Finding a proper point to hook the nmi_shootdown_cpus() call wasn't
-really easy, as the non-emergency machine_restart() (that doesn't
-need the NMI tricks) uses machine_emergency_restart() directly.
-
-The solution to make this work without adding a new function or argument
-to machine_ops was setting a 'reboot_emergency' flag that tells if
-native_machine_emergency_restart() needs to do the virt cleanup or not.
+Now nmi_shootdown_cpus() is ready to be used by non-kdump code also.
+Move it to reboot.c.
 
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 ---
- arch/x86/kernel/reboot.c |   48 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 46 insertions(+), 2 deletions(-)
+ arch/x86/kernel/crash.c  |   73 ------------------------------------------
+ arch/x86/kernel/reboot.c |   79 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+), 73 deletions(-)
 
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index 84d6338..d84a852 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -32,12 +32,6 @@
+ 
+ #if defined(CONFIG_SMP) && defined(CONFIG_X86_LOCAL_APIC)
+ 
+-/* This keeps a track of which one is crashing cpu. */
+-static int crashing_cpu;
+-static nmi_shootdown_cb shootdown_callback;
+-
+-static atomic_t waiting_for_crash_ipi;
+-
+ static void kdump_nmi_callback(int cpu, struct die_args *args)
+ {
+ 	struct pt_regs *regs;
+@@ -58,73 +52,6 @@ static void kdump_nmi_callback(int cpu, struct die_args *args)
+ 	disable_local_APIC();
+ }
+ 
+-static int crash_nmi_callback(struct notifier_block *self,
+-			unsigned long val, void *data)
+-{
+-	int cpu;
+-
+-	if (val != DIE_NMI_IPI)
+-		return NOTIFY_OK;
+-
+-	cpu = raw_smp_processor_id();
+-
+-	/* Don't do anything if this handler is invoked on crashing cpu.
+-	 * Otherwise, system will completely hang. Crashing cpu can get
+-	 * an NMI if system was initially booted with nmi_watchdog parameter.
+-	 */
+-	if (cpu == crashing_cpu)
+-		return NOTIFY_STOP;
+-	local_irq_disable();
+-
+-	shootdown_callback(cpu, (struct die_args*)data);
+-
+-	atomic_dec(&waiting_for_crash_ipi);
+-	/* Assume hlt works */
+-	halt();
+-	for (;;)
+-		cpu_relax();
+-
+-	return 1;
+-}
+-
+-static void smp_send_nmi_allbutself(void)
+-{
+-	send_IPI_allbutself(NMI_VECTOR);
+-}
+-
+-static struct notifier_block crash_nmi_nb = {
+-	.notifier_call = crash_nmi_callback,
+-};
+-
+-void nmi_shootdown_cpus(nmi_shootdown_cb callback)
+-{
+-	unsigned long msecs;
+-
+-	/* Make a note of crashing cpu. Will be used in NMI callback.*/
+-	crashing_cpu = safe_smp_processor_id();
+-
+-	shootdown_callback = callback;
+-
+-	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
+-	/* Would it be better to replace the trap vector here? */
+-	if (register_die_notifier(&crash_nmi_nb))
+-		return;		/* return what? */
+-	/* Ensure the new callback function is set before sending
+-	 * out the NMI
+-	 */
+-	wmb();
+-
+-	smp_send_nmi_allbutself();
+-
+-	msecs = 1000; /* Wait at most a second for the other cpus to stop */
+-	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
+-		mdelay(1);
+-		msecs--;
+-	}
+-
+-	/* Leave the nmi callback set */
+-}
+-
+ static void kdump_nmi_shootdown_cpus(void)
+ {
+ 	nmi_shootdown_cpus(kdump_nmi_callback);
 diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 80d5e9c..932763f 100644
+index f4c93f1..b65fc86 100644
 --- a/arch/x86/kernel/reboot.c
 +++ b/arch/x86/kernel/reboot.c
-@@ -12,6 +12,7 @@
- #include <asm/proto.h>
- #include <asm/reboot_fixups.h>
- #include <asm/reboot.h>
-+#include <asm/virtext.h>
- 
- #ifdef CONFIG_X86_32
- # include <linux/dmi.h>
-@@ -42,6 +43,12 @@ int reboot_force;
- static int reboot_cpu = -1;
+@@ -21,6 +21,8 @@
+ # include <asm/iommu.h>
  #endif
  
-+/* This is set if we need to go through the 'emergency' path.
-+ * When machine_emergency_restart() is called, we may be on
-+ * an inconsistent state and won't be able to do a clean cleanup
-+ */
-+static int reboot_emergency;
++#include <mach_ipi.h>
 +
- /* reboot=b[ios] | s[mp] | t[riple] | k[bd] | e[fi] [, [w]arm | [c]old]
-    warm   Don't set the cold reboot flag
-    cold   Set the cold reboot flag
-@@ -357,6 +364,33 @@ static inline void kb_wait(void)
- 	}
+ /*
+  * Power off function, if any
+  */
+@@ -518,3 +520,80 @@ void machine_crash_shutdown(struct pt_regs *regs)
+ 	machine_ops.crash_shutdown(regs);
  }
- 
-+static void disable_virt_nmi(int cpu, struct die_args *args)
+ #endif
++
++
++#if defined(CONFIG_SMP) && defined(CONFIG_X86_LOCAL_APIC)
++
++/* This keeps a track of which one is crashing cpu. */
++static int crashing_cpu;
++static nmi_shootdown_cb shootdown_callback;
++
++static atomic_t waiting_for_crash_ipi;
++
++static int crash_nmi_callback(struct notifier_block *self,
++			unsigned long val, void *data)
 +{
-+	emergency_virt_disable();
++	int cpu;
++
++	if (val != DIE_NMI_IPI)
++		return NOTIFY_OK;
++
++	cpu = raw_smp_processor_id();
++
++	/* Don't do anything if this handler is invoked on crashing cpu.
++	 * Otherwise, system will completely hang. Crashing cpu can get
++	 * an NMI if system was initially booted with nmi_watchdog parameter.
++	 */
++	if (cpu == crashing_cpu)
++		return NOTIFY_STOP;
++	local_irq_disable();
++
++	shootdown_callback(cpu, (struct die_args*)data);
++
++	atomic_dec(&waiting_for_crash_ipi);
++	/* Assume hlt works */
++	halt();
++	for (;;)
++		cpu_relax();
++
++	return 1;
 +}
 +
-+/* Use NMIs as IPIs to tell all CPUs to disable virtualization
-+ */
-+static void emergency_virt_disable_all(void)
++static void smp_send_nmi_allbutself(void)
 +{
-+	/* We will do this NMI stuff only when we may have virtualization
-+	 * enabled.
++	send_IPI_allbutself(NMI_VECTOR);
++}
++
++static struct notifier_block crash_nmi_nb = {
++	.notifier_call = crash_nmi_callback,
++};
++
++void nmi_shootdown_cpus(nmi_shootdown_cb callback)
++{
++	unsigned long msecs;
++
++	/* Make a note of crashing cpu. Will be used in NMI callback.*/
++	crashing_cpu = safe_smp_processor_id();
++
++	shootdown_callback = callback;
++
++	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
++	/* Would it be better to replace the trap vector here? */
++	if (register_die_notifier(&crash_nmi_nb))
++		return;		/* return what? */
++	/* Ensure the new callback function is set before sending
++	 * out the NMI
 +	 */
-+	if (has_virt_extensions()) {
-+		/* Kill the other CPUs */
-+		nmi_shootdown_cpus(disable_virt_nmi);
-+		/* Disable virt on this CPU */
-+		emergency_virt_disable();
++	wmb();
++
++	smp_send_nmi_allbutself();
++
++	msecs = 1000; /* Wait at most a second for the other cpus to stop */
++	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
++		mdelay(1);
++		msecs--;
 +	}
 +
-+	/* If another CPU call set_virt_disable_func()
-+	 * here, we will be lost. Unless we want to add the NMI
-+	 * stuff to the reboot path for non-virt users, we will
-+	 * have to live with this (unlikely) possibility.
-+	 */
-+
++	/* Leave the nmi callback set */
 +}
-+
- void __attribute__((weak)) mach_reboot_fixups(void)
- {
- }
-@@ -365,9 +399,13 @@ static void native_machine_emergency_restart(void)
- {
- 	int i;
- 
-+	if (reboot_emergency)
-+		emergency_virt_disable_all();
-+
- 	/* Tell the BIOS if we want cold or warm reboot */
- 	*((unsigned short *)__va(0x472)) = reboot_mode;
- 
-+
- 	for (;;) {
- 		/* Could also try the reset bit in the Hammer NB */
- 		switch (reboot_type) {
-@@ -456,13 +494,19 @@ void native_machine_shutdown(void)
- #endif
- }
- 
-+static void __machine_emergency_restart(int emergency)
-+{
-+	reboot_emergency = emergency;
-+	machine_ops.emergency_restart();
-+}
-+
- static void native_machine_restart(char *__unused)
- {
- 	printk("machine restart\n");
- 
- 	if (!reboot_force)
- 		machine_shutdown();
--	machine_emergency_restart();
-+	__machine_emergency_restart(0);
- }
- 
- static void native_machine_halt(void)
-@@ -501,7 +545,7 @@ void machine_shutdown(void)
- 
- void machine_emergency_restart(void)
- {
--	machine_ops.emergency_restart();
-+	__machine_emergency_restart(1);
- }
- 
- void machine_restart(char *cmd)
++#endif
 -- 
 1.5.5.GIT
 
