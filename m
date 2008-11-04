@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYKDQ4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbYKDQzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbYKDQ4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYKDQ4O
+	id S1757918AbYKDQzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbYKDQzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:56:14 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:51153 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754136AbYKDQ4M convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:56:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=RK+8bcHgBAtvXac/mfoFJGINHcs4ZljBQ0PjCO2Sxkxz/SIJcRC5FsOGZa/jOx5/SU
-         9J5UVg7fpmGumcHgnUp8bule5UKim+bHJ/VDPb1GJwjEE+oNRCKY2HzxJpnU+Kjeo5E8
-         WJi0tjuiqOeOkz8o77oaLgcgTqLcdeuVqYTAo=
-Message-ID: <6b53b1990811040856w684acf92uc87a761a3be4bab7@mail.gmail.com>
-Date: Tue, 4 Nov 2008 14:56:10 -0200
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 1/6] x86: rename __FIXADDR_SIZE and __FIXADDR_BOOT_SIZE
-Cc: linux-kernel@vger.kernel.org, glommer@redhat.com,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20081103091555.GL11730@elte.hu>
+	Tue, 4 Nov 2008 11:55:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52773 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757229AbYKDQzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:55:13 -0500
+Message-ID: <49107E2C.8090803@redhat.com>
+Date: Tue, 04 Nov 2008 18:54:04 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1225592633-9948-1-git-send-email-gustavo@las.ic.unicamp.br>
-	 <1225592633-9948-2-git-send-email-gustavo@las.ic.unicamp.br>
-	 <20081103091555.GL11730@elte.hu>
-X-Google-Sender-Auth: d775cc580267e178
+To: Eduardo Habkost <ehabkost@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/14] x86: disable virt on kdump and emergency_restart
+References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
+In-Reply-To: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 3, 2008 at 7:15 AM, Ingo Molnar <mingo@elte.hu> wrote:
+Eduardo Habkost wrote:
+> Hi,
 >
-> * Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
->
->> Rename __FIXADDR_SIZE to FIXADDR_SIZE
->> and __FIXADDR_BOOT_SIZE to FIXADDR_BOOT_SIZE.
->>
->> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
->> Acked-by: Glauber Costa <gcosta@redhat.com>
->
-> ok, the patches look nice. Could you please rework them against
-> tip/master? We already have a commit in
-> arch/x86/include/asm/fixmap_32.h (the DRM speedup patches) which cause
-> rejects.
+> This is a new version of the series to disabling virtualization on kdump,
+> now extended to do the same tricks on emergency_restart() if needed.
+>   
 
-That's ok.
-
->
->        Ingo
->
-
-
+Looks good.  If you me to push it upstream, I'll need kexec/kdump acks.  
+Otherwise, ack for the kvm bits.
 
 -- 
-----------------------------------------------
-Gustavo Fernando Padovan
-Engenharia de Computação 2006
-LAS - Laboratório de Administração e Segurança de Sistemas
-Instituto de Computação - UNICAMP
+error compiling committee.c: too many arguments to function
 
-gfpadovan@gmail.com
-ra061316@students.ic.unicamp.br
-pao@jabber.org
--------------------------------------------
-
-Seja Livre, use Software Livre
