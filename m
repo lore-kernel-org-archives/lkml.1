@@ -1,242 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbYKDRGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519AbYKDRHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbYKDRGU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbYKDRGI
+	id S1757519AbYKDRHz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:07:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbYKDRHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:06:08 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41681 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbYKDRGH (ORCPT
+	Tue, 4 Nov 2008 12:07:46 -0500
+Received: from inca-roads.misterjones.org ([213.251.177.50]:33391 "EHLO
+	inca-roads.misterjones.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754531AbYKDRHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:06:07 -0500
-Date: Tue, 4 Nov 2008 10:45:29 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
-       morgan@kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH -v2 1/4] CAPABILITIES: add cpu endian vfs caps structure
-Message-ID: <20081104164529.GA24938@us.ibm.com>
-References: <20081103201742.12059.36030.stgit@paris.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081103201742.12059.36030.stgit@paris.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 4 Nov 2008 12:07:45 -0500
+Date: Tue, 4 Nov 2008 18:07:44 +0100
+From: Marc Zyngier <maz@misterjones.org>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Port Arcom/Eurotech Viper over the
+ gpio_request_set API
+Message-ID: <20081104180744.5ce2f360@not-of-this-earth.wild-wind.fr.eu.org>
+In-Reply-To: <20081104175725.1872b4ed@not-of-this-earth.wild-wind.fr.eu.org>
+References: <20081104175725.1872b4ed@not-of-this-earth.wild-wind.fr.eu.org>
+Organization: Metropolis -- Nowhere
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 81.53.103.82
+X-SA-Exim-Rcpt-To: linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: maz@misterjones.org
+X-SA-Exim-Scanned: No (on inca-roads.misterjones.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> This patch add a generic cpu endian caps structure and externally available
-> functions which retrieve fcaps information from disk.  This information is
-> necessary so fcaps information can be collected and recorded by the audit
-> system.
-> 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-Looks good, and seems to make the code a bit easier to read as well.
+As a proof of concept, use the gpio_request_set/gpio_free_set
+functions in place of the open-coded stuff used on the Viper SBC.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Marc Zyngier <maz@misterjones.org>
+---
+ arch/arm/mach-pxa/viper.c     |   87 +++++++++++++----------------------------
+ drivers/pcmcia/pxa2xx_viper.c |   49 +++++++++--------------
+ 2 files changed, 46 insertions(+), 90 deletions(-)
 
-thanks,
--serge
+diff --git a/arch/arm/mach-pxa/viper.c b/arch/arm/mach-pxa/viper.c
+index f5d1757..1355f91 100644
+--- a/arch/arm/mach-pxa/viper.c
++++ b/arch/arm/mach-pxa/viper.c
+@@ -343,35 +343,21 @@ static struct pxafb_mach_info fb_info = {
+ 	.lcd_conn		= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL,
+ };
+ 
++/* GPIO9 and 10 control FB backlight. Initialise to off */
++static struct gpio_config viper_backlight_gpio[] = {
++	{ VIPER_BCKLIGHT_EN_GPIO, "Backlight", GPIO_CONFIG_DIRECTION_OUTPUT, 0 },
++	{ VIPER_LCD_EN_GPIO, "LCD", GPIO_CONFIG_DIRECTION_OUTPUT, 0 },
++};
++
+ static int viper_backlight_init(struct device *dev)
+ {
+ 	int ret;
++	struct gpio_config *failed;
+ 
+-	/* GPIO9 and 10 control FB backlight. Initialise to off */
+-	ret = gpio_request(VIPER_BCKLIGHT_EN_GPIO, "Backlight");
+-	if (ret)
+-		goto err_request_bckl;
+-
+-	ret = gpio_request(VIPER_LCD_EN_GPIO, "LCD");
+-	if (ret)
+-		goto err_request_lcd;
+-
+-	ret = gpio_direction_output(VIPER_BCKLIGHT_EN_GPIO, 0);
+-	if (ret)
+-		goto err_dir;
++	ret = gpio_request_set(ARRAY_AND_SIZE(viper_backlight_gpio), &failed);
+ 
+-	ret = gpio_direction_output(VIPER_LCD_EN_GPIO, 0);
+ 	if (ret)
+-		goto err_dir;
+-
+-	return 0;
+-
+-err_dir:
+-	gpio_free(VIPER_LCD_EN_GPIO);
+-err_request_lcd:
+-	gpio_free(VIPER_BCKLIGHT_EN_GPIO);
+-err_request_bckl:
+-	dev_err(dev, "Failed to setup LCD GPIOs\n");
++	        dev_err(dev, "Failed to setup %s GPIO\n", failed->label);
+ 
+ 	return ret;
+ }
+@@ -386,8 +372,7 @@ static int viper_backlight_notify(int brightness)
+ 
+ static void viper_backlight_exit(struct device *dev)
+ {
+-	gpio_free(VIPER_LCD_EN_GPIO);
+-	gpio_free(VIPER_BCKLIGHT_EN_GPIO);
++	gpio_free_set(ARRAY_AND_SIZE(viper_backlight_gpio));
+ }
+ 
+ static struct platform_pwm_backlight_data viper_backlight_data = {
+@@ -817,51 +802,33 @@ error_tpm:
+ 	pr_err("viper: Couldn't %s, giving up\n", errstr);
+ }
+ 
++static struct gpio_config __initdata viper_vcore_gpios[] = {
++	{ VIPER_PSU_DATA_GPIO, "PSU data", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
++	{ VIPER_PSU_CLK_GPIO, "PSU clock", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
++	{ VIPER_PSU_nCS_LD_GPIO, "PSU cs", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
++};
++
+ static void __init viper_init_vcore_gpios(void)
+ {
+-	if (gpio_request(VIPER_PSU_DATA_GPIO, "PSU data"))
+-		goto err_request_data;
+-
+-	if (gpio_request(VIPER_PSU_CLK_GPIO, "PSU clock"))
+-		goto err_request_clk;
++	struct gpio_config *failed;
+ 
+-	if (gpio_request(VIPER_PSU_nCS_LD_GPIO, "PSU cs"))
+-		goto err_request_cs;
+-
+-	if (gpio_direction_output(VIPER_PSU_DATA_GPIO, 0) ||
+-	    gpio_direction_output(VIPER_PSU_CLK_GPIO, 0) ||
+-	    gpio_direction_output(VIPER_PSU_nCS_LD_GPIO, 0))
+-		goto err_dir;
++	if (gpio_request_set(ARRAY_AND_SIZE(viper_vcore_gpios), &failed)) {
++		pr_err("viper: Failed to setup %s GPIO\n", failed->label);
++		return;
++	}
+ 
+ 	/* c/should assume redboot set the correct level ??? */
+ 	viper_set_core_cpu_voltage(get_clk_frequency_khz(0), 1);
+-
+-	return;
+-
+-err_dir:
+-	gpio_free(VIPER_PSU_nCS_LD_GPIO);
+-err_request_cs:
+-	gpio_free(VIPER_PSU_CLK_GPIO);
+-err_request_clk:
+-	gpio_free(VIPER_PSU_DATA_GPIO);
+-err_request_data:
+-	pr_err("viper: Failed to setup vcore control GPIOs\n");
+ }
+ 
++static struct gpio_config __initdata viper_serial_gpio[] = {
++	{ VIPER_UART_SHDN_GPIO, "UARTs shutdown", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
++};
++
+ static void __init viper_init_serial_gpio(void)
+ {
+-	if (gpio_request(VIPER_UART_SHDN_GPIO, "UARTs shutdown"))
+-		goto err_request;
+-
+-	if (gpio_direction_output(VIPER_UART_SHDN_GPIO, 0))
+-		goto err_dir;
+-
+-	return;
+-
+-err_dir:
+-	gpio_free(VIPER_UART_SHDN_GPIO);
+-err_request:
+-	pr_err("viper: Failed to setup UART shutdown GPIO\n");
++	if (gpio_request_set(ARRAY_AND_SIZE(viper_serial_gpio), NULL))
++		pr_err("viper: Failed to setup UART shutdown GPIO\n");
+ }
+ 
+ #ifdef CONFIG_CPU_FREQ
+diff --git a/drivers/pcmcia/pxa2xx_viper.c b/drivers/pcmcia/pxa2xx_viper.c
+index dd10481..0f39558 100644
+--- a/drivers/pcmcia/pxa2xx_viper.c
++++ b/drivers/pcmcia/pxa2xx_viper.c
+@@ -37,44 +37,35 @@ static struct pcmcia_irqs irqs[] = {
+ 	{ 0, gpio_to_irq(VIPER_CF_CD_GPIO),  "PCMCIA_CD" }
+ };
+ 
++/* GPIO 82 is the CF power enable line. initially off */
++static struct gpio_config viper_pcmcia_gpios[] = {
++	{ VIPER_CF_CD_GPIO, "CF detect", GPIO_CONFIG_DIRECTION_INPUT, },
++	{ VIPER_CF_RDY_GPIO, "CF ready", GPIO_CONFIG_DIRECTION_INPUT, },
++	{ VIPER_CF_POWER_GPIO, "CF power", GPIO_CONFIG_DIRECTION_OUTPUT, 0, },
++};
++
+ static int viper_pcmcia_hw_init(struct soc_pcmcia_socket *skt)
+ {
+ 	unsigned long flags;
++	int ret;
++	struct gpio_config *failed;
+ 
+ 	skt->irq = gpio_to_irq(VIPER_CF_RDY_GPIO);
+ 
+-	if (gpio_request(VIPER_CF_CD_GPIO, "CF detect"))
+-		goto err_request_cd;
+-
+-	if (gpio_request(VIPER_CF_RDY_GPIO, "CF ready"))
+-		goto err_request_rdy;
+-
+-	if (gpio_request(VIPER_CF_POWER_GPIO, "CF power"))
+-		goto err_request_pwr;
+-
+ 	local_irq_save(flags);
+ 
+-	/* GPIO 82 is the CF power enable line. initially off */
+-	if (gpio_direction_output(VIPER_CF_POWER_GPIO, 0) ||
+-	    gpio_direction_input(VIPER_CF_CD_GPIO) ||
+-	    gpio_direction_input(VIPER_CF_RDY_GPIO)) {
+-		local_irq_restore(flags);
+-		goto err_dir;
+-	}
+-
++	ret = gpio_request_set(viper_pcmcia_gpios,
++			       ARRAY_SIZE(viper_pcmcia_gpios),
++			       &failed);
++	
+ 	local_irq_restore(flags);
+ 
+-	return soc_pcmcia_request_irqs(skt, irqs, ARRAY_SIZE(irqs));
++	if (ret) {
++		pr_err("viper: Failed to setup %s GPIOs\n", failed->label);
++		return ret;
++	}
+ 
+-err_dir:
+-	gpio_free(VIPER_CF_POWER_GPIO);
+-err_request_pwr:
+-	gpio_free(VIPER_CF_RDY_GPIO);
+-err_request_rdy:
+-	gpio_free(VIPER_CF_CD_GPIO);
+-err_request_cd:
+-	printk(KERN_ERR "viper: Failed to setup PCMCIA GPIOs\n");
+-	return -1;
++	return soc_pcmcia_request_irqs(skt, irqs, ARRAY_SIZE(irqs));
+ }
+ 
+ /*
+@@ -83,9 +74,7 @@ err_request_cd:
+ static void viper_pcmcia_hw_shutdown(struct soc_pcmcia_socket *skt)
+ {
+ 	soc_pcmcia_free_irqs(skt, irqs, ARRAY_SIZE(irqs));
+-	gpio_free(VIPER_CF_POWER_GPIO);
+-	gpio_free(VIPER_CF_RDY_GPIO);
+-	gpio_free(VIPER_CF_CD_GPIO);
++	gpio_free_set(viper_pcmcia_gpios, ARRAY_SIZE(viper_pcmcia_gpios));
+ }
+ 
+ static void viper_pcmcia_socket_state(struct soc_pcmcia_socket *skt,
+-- 
+1.5.4.3
 
-> ---
-> 
->  include/linux/capability.h |    7 ++
->  security/commoncap.c       |  129 ++++++++++++++++++++++++--------------------
->  2 files changed, 78 insertions(+), 58 deletions(-)
-> 
-> diff --git a/include/linux/capability.h b/include/linux/capability.h
-> index 9d1fe30..9d64a9c 100644
-> --- a/include/linux/capability.h
-> +++ b/include/linux/capability.h
-> @@ -96,6 +96,13 @@ typedef struct kernel_cap_struct {
->  	__u32 cap[_KERNEL_CAPABILITY_U32S];
->  } kernel_cap_t;
-> 
-> +/* exact same as vfs_cap_data but in cpu endian and always filled completely */
-> +struct cpu_vfs_cap_data {
-> +	__u32 magic_etc;
-> +	kernel_cap_t permitted;
-> +	kernel_cap_t inheritable;
-> +};
-> +
->  #define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
->  #define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))
-> 
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 3976613..8bb95ed 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -202,17 +202,70 @@ int cap_inode_killpriv(struct dentry *dentry)
->  	return inode->i_op->removexattr(dentry, XATTR_NAME_CAPS);
->  }
-> 
-> -static inline int cap_from_disk(struct vfs_cap_data *caps,
-> -				struct linux_binprm *bprm, unsigned size)
-> +static inline int bprm_caps_from_vfs_caps(struct cpu_vfs_cap_data *caps,
-> +					  struct linux_binprm *bprm)
->  {
-> +	unsigned i;
-> +	int ret = 0;
-> +
-> +	if (caps->magic_etc & VFS_CAP_FLAGS_EFFECTIVE)
-> +		bprm->cap_effective = true;
-> +	else
-> +		bprm->cap_effective = false;
-> +
-> +	CAP_FOR_EACH_U32(i) {
-> +		__u32 permitted = caps->permitted.cap[i];
-> +		__u32 inheritable = caps->inheritable.cap[i];
-> +
-> +		/*
-> +		 * pP' = (X & fP) | (pI & fI)
-> +		 */
-> +		bprm->cap_post_exec_permitted.cap[i] =
-> +			(current->cap_bset.cap[i] & permitted) |
-> +			(current->cap_inheritable.cap[i] & inheritable);
-> +
-> +		if (permitted & ~bprm->cap_post_exec_permitted.cap[i]) {
-> +			/*
-> +			 * insufficient to execute correctly
-> +			 */
-> +			ret = -EPERM;
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * For legacy apps, with no internal support for recognizing they
-> +	 * do not have enough capabilities, we return an error if they are
-> +	 * missing some "forced" (aka file-permitted) capabilities.
-> +	 */
-> +	return bprm->cap_effective ? ret : 0;
-> +}
-> +
-> +int get_vfs_caps_from_disk(const struct dentry *dentry, struct cpu_vfs_cap_data *cpu_caps)
-> +{
-> +	struct inode *inode = dentry->d_inode;
->  	__u32 magic_etc;
->  	unsigned tocopy, i;
-> -	int ret;
-> +	int size;
-> +	struct vfs_cap_data caps;
-> +
-> +	memset(cpu_caps, 0, sizeof(struct cpu_vfs_cap_data));
-> +
-> +	if (!inode || !inode->i_op || !inode->i_op->getxattr)
-> +		return -ENODATA;
-> +
-> +	size = inode->i_op->getxattr((struct dentry *)dentry, XATTR_NAME_CAPS, &caps,
-> +				   XATTR_CAPS_SZ);
-> +	if (size == -ENODATA || size == -EOPNOTSUPP) {
-> +		/* no data, that's ok */
-> +		return -ENODATA;
-> +	}
-> +	if (size < 0)
-> +		return size;
-> 
->  	if (size < sizeof(magic_etc))
->  		return -EINVAL;
-> 
-> -	magic_etc = le32_to_cpu(caps->magic_etc);
-> +	cpu_caps->magic_etc = magic_etc = le32_to_cpu(caps.magic_etc);
-> 
->  	switch ((magic_etc & VFS_CAP_REVISION_MASK)) {
->  	case VFS_CAP_REVISION_1:
-> @@ -229,46 +282,13 @@ static inline int cap_from_disk(struct vfs_cap_data *caps,
->  		return -EINVAL;
->  	}
-> 
-> -	if (magic_etc & VFS_CAP_FLAGS_EFFECTIVE) {
-> -		bprm->cap_effective = true;
-> -	} else {
-> -		bprm->cap_effective = false;
-> -	}
-> -
-> -	ret = 0;
-> -
->  	CAP_FOR_EACH_U32(i) {
-> -		__u32 value_cpu;
-> -
-> -		if (i >= tocopy) {
-> -			/*
-> -			 * Legacy capability sets have no upper bits
-> -			 */
-> -			bprm->cap_post_exec_permitted.cap[i] = 0;
-> -			continue;
-> -		}
-> -		/*
-> -		 * pP' = (X & fP) | (pI & fI)
-> -		 */
-> -		value_cpu = le32_to_cpu(caps->data[i].permitted);
-> -		bprm->cap_post_exec_permitted.cap[i] =
-> -			(current->cap_bset.cap[i] & value_cpu) |
-> -			(current->cap_inheritable.cap[i] &
-> -				le32_to_cpu(caps->data[i].inheritable));
-> -		if (value_cpu & ~bprm->cap_post_exec_permitted.cap[i]) {
-> -			/*
-> -			 * insufficient to execute correctly
-> -			 */
-> -			ret = -EPERM;
-> -		}
-> +		if (i >= tocopy)
-> +			break;
-> +		cpu_caps->permitted.cap[i] = le32_to_cpu(caps.data[i].permitted);
-> +		cpu_caps->inheritable.cap[i] = le32_to_cpu(caps.data[i].inheritable);
->  	}
-> -
-> -	/*
-> -	 * For legacy apps, with no internal support for recognizing they
-> -	 * do not have enough capabilities, we return an error if they are
-> -	 * missing some "forced" (aka file-permitted) capabilities.
-> -	 */
-> -	return bprm->cap_effective ? ret : 0;
-> +	return 0;
->  }
-> 
->  /* Locate any VFS capabilities: */
-> @@ -276,8 +296,7 @@ static int get_file_caps(struct linux_binprm *bprm)
->  {
->  	struct dentry *dentry;
->  	int rc = 0;
-> -	struct vfs_cap_data vcaps;
-> -	struct inode *inode;
-> +	struct cpu_vfs_cap_data vcaps;
-> 
->  	bprm_clear_caps(bprm);
-> 
-> @@ -285,24 +304,18 @@ static int get_file_caps(struct linux_binprm *bprm)
->  		return 0;
-> 
->  	dentry = dget(bprm->file->f_dentry);
-> -	inode = dentry->d_inode;
-> -	if (!inode->i_op || !inode->i_op->getxattr)
-> -		goto out;
-> 
-> -	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, &vcaps,
-> -				   XATTR_CAPS_SZ);
-> -	if (rc == -ENODATA || rc == -EOPNOTSUPP) {
-> -		/* no data, that's ok */
-> -		rc = 0;
-> +	rc = get_vfs_caps_from_disk(dentry, &vcaps);
-> +	if (rc < 0) {
-> +		if (rc == -EINVAL)
-> +			printk(KERN_NOTICE "%s: get_vfs_caps_from_disk returned %d for %s\n",
-> +				__func__, rc, bprm->filename);
-> +		else if (rc == -ENODATA)
-> +			rc = 0;
->  		goto out;
->  	}
-> -	if (rc < 0)
-> -		goto out;
-> 
-> -	rc = cap_from_disk(&vcaps, bprm, rc);
-> -	if (rc == -EINVAL)
-> -		printk(KERN_NOTICE "%s: cap_from_disk returned %d for %s\n",
-> -		       __func__, rc, bprm->filename);
-> +	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
-> 
->  out:
->  	dput(dentry);
+
+-- 
+A rat a day keeps the plague away.
