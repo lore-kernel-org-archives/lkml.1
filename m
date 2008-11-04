@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbYKDQ4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbYKDQ6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbYKDQ4x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758146AbYKDQ4c
+	id S1756943AbYKDQ6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYKDQ6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:56:32 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52158 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758123AbYKDQ4b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:56:31 -0500
-Date: Tue, 4 Nov 2008 18:05:01 +0100
-From: Andi Kleen <andi@firstfloor.org>
+	Tue, 4 Nov 2008 11:58:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42420 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752404AbYKDQ6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:58:42 -0500
+Date: Tue, 4 Nov 2008 17:58:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
 To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       heukelum@fastmail.fm, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>, Andi Kleen <andi@firstfloor.org>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       lguest@ozlabs.org, jeremy@xensource.com,
+       Steven Rostedt <srostedt@redhat.com>, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>
 Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-Message-ID: <20081104170501.GE29626@one.firstfloor.org>
-References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost>
-Mime-Version: 1.0
+Message-ID: <20081104165811.GA1664@elte.hu>
+References: <20081104122839.GA22864@mailshack.com> <20081104124242.GA6795@elte.hu> <1225805399.25337.1282903253@webmail.messagingengine.com> <20081104140030.GA16178@elte.hu> <1225815789.30706.1282936457@webmail.messagingengine.com> <20081104164717.GD21470@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081104150729.GC21470@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081104164717.GD21470@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> not taking into account the cost of cs reading (which I
-> don't suspect to be that expensive apart from writting,
 
-GDT accesses have an implied LOCK prefix. Especially
-on some older CPUs that could be slow.
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-I don't know if it's a problem or not but it would need
-some careful benchmarking on different systems to make sure interrupt 
-latencies are not impacted.
+> [Alexander van Heukelum - Tue, Nov 04, 2008 at 05:23:09PM +0100]
+> ...
+> | 
+> | I did some timings using the little program below (32-bit only), doing
+> | 1024 times the same sequence. TEST1 is just pushing a constant onto
+> | the stack; TEST2 is pushing the cs register; TEST3 is the sequence
+> | from the patch to extract the vector number from the cs register.
+> | 
+> | Opteron    (cycles): 1024 / 1157 / 3527
+> | Xeon E5345 (cycles): 1092 / 1085 / 6622
+> | Athlon XP  (cycles): 1028 / 1166 / 5192
+> 
+> Xeon is defenitely out of luck :-)
 
-Another reason I would be also careful with this patch is that
-it will likely trigger slow paths in JITs like qemu/vmware/etc.
+it's still OK - i.e. no outrageous showstopper overhead anywhere in 
+that instruction sequence. The total round-trip overhead is what will 
+matter most.
 
-Also code segment switching is likely not something that
-current and future micro architectures will spend a lot of time optimizing.
-
-I'm not sure that risk is worth the small improvement in code
-size.
-
-An alternative BTW to having all the stubs in the executable
-would be to just dynamically generate them when the interrupt
-is set up. Then you would only have the stubs around for the 
-interrupts which are actually used.
-
--Andi
+	Ingo
