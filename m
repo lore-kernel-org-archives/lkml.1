@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbYKDFdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYKDFoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbYKDFdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 00:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbYKDFdD
+	id S1753371AbYKDFoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 00:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYKDFn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 00:33:03 -0500
-Received: from cnmailgate04.alcatel-sbell.com.cn ([211.144.215.47]:51145 "EHLO
-	cnshjsmin03.cn.alcatel-lucent.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753473AbYKDFdA (ORCPT
+	Tue, 4 Nov 2008 00:43:59 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:12142 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbYKDFn6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 00:33:00 -0500
-X-AuditID: ac189297-aa780bb000000fe5-09-490fde3f14b5
-Message-ID: <490FDE57.3070104@alcatel-lucent.com>
-Date: Tue, 04 Nov 2008 13:32:07 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 4 Nov 2008 00:43:58 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=OgzpLQUV2E/t0VkJUTrGyee6NMGbBN1ieWQerPNrjtUEU0LyVAIf+DgRbW4x9u1Zq
+	bP3N8GEmbbfU8vrqNzh4Q==
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: ipv6: disagrees about version of symbol struct_module
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20080811235325.121356317@us.ibm.com>
+References: <20080811235323.872291138@us.ibm.com>
+	 <20080811235325.121356317@us.ibm.com>
+Date: Mon, 3 Nov 2008 21:43:52 -0800
+Message-ID: <6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>
+Subject: Re: [PATCH 3/5] Container Freezer: Implement freezer cgroup subsystem
+From: Paul Menage <menage@google.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Nov 2008 05:31:51.0899 (UTC) FILETIME=[A41C6AB0:01C93E3E]
-X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm using 2.6.21 kernel. When it boots from target board, it always
-complained that "ipv6: disagrees about version of symbol struct_module".
-It seems the modules on target didn't matches the running kernel. I
-probably need to compile all modules together with the kernel and copy
-them to target board. However, I'm not sure there has any way to change
-.config to resolve such kind of problems?
+On Mon, Aug 11, 2008 at 3:53 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> +}
+> +
+> +static void freezer_fork(struct cgroup_subsys *ss, struct task_struct *task)
+> +{
+> +       struct freezer *freezer;
+> +
+> +       task_lock(task);
+> +       freezer = task_freezer(task);
+> +       task_unlock(task);
+> +
+> +       BUG_ON(freezer->state == STATE_FROZEN);
+> +       spin_lock_irq(&freezer->lock);
+> +       /* Locking avoids race with FREEZING -> RUNNING transitions. */
+> +       if (freezer->state == STATE_FREEZING)
+> +               freeze_task(task, true);
+> +       spin_unlock_irq(&freezer->lock);
+> +}
 
-INIT: version 2.86 booting
-Starting the hotplug events dispatcher: udevd.
-Synthesizing the initial hotplug events...done.
-Waiting for /dev to be fully populated...done.
-Activating swap...done.
-Remounting root filesystem...EXT3 FS on hdc5, internal journal
-done.
-/sbin/hotplug is not symlinked to /sbin/uSDE/uSDE-hotplug!
-Calculating module dependencies
-Loading modules:
-Checking all file systems: fsck
-fsck 1.40 (29-Jun-2007)
-Mounting local filesystems: mount nothing was mounted
-Checking SELinux contexts: selinux-basics.
-Setting up networking ....
-Starting network interfaces: done.
-Starting hotplug subsystem:
-   pci     
-   pci      [success]
-   usb     
-   usb      [success]
-   isapnp  
-   isapnp   [success]
-   ide     
-   ide      [success]
-   input   
-   input    [success]
-   scsi    
-   scsi     [success]
-done.
-Starting portmap daemon....
-Cleaning: /tmp /var/lock /var/run find: paths must precede expression
-Usage: find [-H] [-L] [-P] [path...] [expression]
-done.
-Setting pseudo-terminal access permissions...done.
-Updating /etc/motd...done.
-INIT: Entering runlevel: 3
-Starting irqbalance.
-Starting system log daemon: syslogdipv6: disagrees about version of 
-symbol struct_module
- klogd.
-Starting auditd:
-Starting NFS common utilities: statd.
-Starting internet superserver: inetd.
-Starting OpenBSD Secure Shell server: sshdipv6: disagrees about version 
-of symbol struct_module
-ipv6: disagrees about version of symbol struct_module
-.
+Sorry for such a delayed response to this patch, but I just noticed
+(in mainline now)
+the change to move the task_lock() to only encompass the
+task_freezer() call.
+
+That results in absolutely zero protection from the task_lock() - as
+soon as you drop it, then in theory the current task could move cgroup
+and the old freezer structure be freed.
+
+Having said that, I think that in this case any locking my be
+unnecessary since task isn't on the tasklist yet, so can't be selected
+to move cgroups. (Although this does make me wonder whether
+cpuset.c:move_member_tasks_to_cpuset() can fail silently if it races
+with a fork).
+
+On top of that, for a system that configures in the cgroup freezer
+system but doesn't ever use it, every task is in the same freezer
+cgroup (the root cgroup) and task_freezer(task)->lock becomes a global
+spinlock. I think this would certainly show up on some benchmarks
+although I don't know how bad it would be in a practical sense. But it
+might be worth considering making using of the cgroup bind() callback
+to track whether or not the freezer subsystem is in use, and
+short-circuiting this in freezer_fork() without any locking if you're
+not active.
+
+Paul
