@@ -1,67 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbYKDSu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYKDS4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbYKDSu3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:50:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753713AbYKDSuP
+	id S1755385AbYKDS4V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbYKDS4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:50:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45039 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751251AbYKDSuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:50:14 -0500
-Message-ID: <49109946.7020702@redhat.com>
-Date: Tue, 04 Nov 2008 19:49:42 +0100
-From: Ivan Vecera <ivecera@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 4 Nov 2008 13:56:08 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:21190 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbYKDS4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 13:56:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=LcW6P+NokeukCzD+DgPfM1xLdh4yzgu5SA1KOVWKBjqTpMBVb5awzqGDljihaTwhuh
+         fufWn6oT8SvjmwMn2vQEn66O8IiDNryVJs4n4OMMw7sqiFVUcl/eVVjFzKd4OAOmzZlO
+         aWgHWRHBEN2Q69+sHjdN4y7tXsIXgPD65Olqk=
+Message-ID: <86802c440811041056p631e2dc9i21c4994e3d01cf32@mail.gmail.com>
+Date: Tue, 4 Nov 2008 10:56:05 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Ben Hutchings" <bhutchings@solarflare.com>
+Subject: Re: [PATCH] x86: Don't allow nr_irqs > NR_IRQS
+Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <1225823807.3074.24.camel@achroite>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Francois Romieu <romieu@fr.zoreil.com>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: r8169 MAC addresses broken
-References: <490380C8.6070003@simon.arlott.org.uk>	<4903947A.3060206@gmail.com>	<20081025223443.GA30913@electric-eye.fr.zoreil.com>	<4904A7C5.7090801@gmail.com>	<20081026174654.GB24790@electric-eye.fr.zoreil.com>	<4906E4BE.9050304@gmail.com> <m3mygozvd4.fsf@maximus.localdomain> <490718C7.3010501@gmail.com> <490EBE83.7030309@redhat.com> <490F0FCF.4060905@gmail.com>
-In-Reply-To: <490F0FCF.4060905@gmail.com>
-X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1225819102.3074.15.camel@achroite>
+	 <20081104180012.GG21470@localhost> <1225823807.3074.24.camel@achroite>
+X-Google-Sender-Auth: d6c695893a75b338
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> On 11/03/2008 10:04 AM, Ivan Vecera wrote:
->> Jiri Slaby wrote:
->>> On 10/28/2008 02:45 PM, Krzysztof Halasa wrote:
->>>> Jiri Slaby <jirislaby@gmail.com> writes:
->>>>
->>>>>> Same thing if you unplug the battery ?
->>>>> Thanks, now it seems to be OK.
->>>> Well, perhaps reverting that patch was a bit premature?
->>> No, it helped after reverting that patch. I think we don't want defunct 2.6.28
->>> with these nics.
->> I cannot agree.
-> 
-> You want defunct r8169 in 2.6.28? Or cannot agree with what?
-> 
->> IMO the problem was in the first version of the patch that didn't
->> check for invalid (zeroed) MAC address. In this case is necessary to power-off (desktop
->> case) or unplug the battery (notebook case).
-> 
-> I see no updated patch in this thread to test -- am I missing something?
-Francois has fix for this problem (zeroed MAC address) in his repository:
-http://git.kernel.org/?p=linux/kernel/git/romieu/netdev-2.6.git;a=commitdiff;h=9b1abbccf53ef1a1213b159d56257b535c599f07
+On Tue, Nov 4, 2008 at 10:36 AM, Ben Hutchings
+<bhutchings@solarflare.com> wrote:
+> On Tue, 2008-11-04 at 21:00 +0300, Cyrill Gorcunov wrote:
+> [...]
+>> | I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
+>> | Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
+>> | 5 IOAPICs (!) and returns 240.  Here are the log messages:
+>> |
+>
+> Well there must have been an earlier change that resulted in detecting 5
+> IOAPICs instead of just 1, but that presumably would work as long as the
+> irq_desc array was dynamically allocated.  This reversion breaks that.
+>
+> You don't really need to see the config; NR_IRQS is *always* 224 on
+> normal x86-32 systems.
+>
 
-snippet:
-...
--       /* Write MAC address */
--       rtl_rar_set(tp, mac);
-+       if (is_valid_ether_addr(mac))
-+               rtl_rar_set(tp, mac);
-...
+Yes. it should the same as setting to 64bit. we will cost some extra ram...
 
+We can not make sparseirq/dyn_array to 2.6.28..., maybe 2.6.29 later.
 
-When MAC only zeros then it is not assigned. Pulling this commit is better than reverting whole patch.
+Ingo,
+Maybe we can put back dyn_array at first, that will still be 1:1
+mapping..., and not waste memory..
 
-Ivan
+YH
