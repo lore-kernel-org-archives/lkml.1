@@ -1,131 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbYKDMmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbYKDMnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753102AbYKDMmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 07:42:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYKDMmF
+	id S1753540AbYKDMnn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 07:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYKDMne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 07:42:05 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:49543 "EHLO mail-out2.uio.no"
+	Tue, 4 Nov 2008 07:43:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34572 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751612AbYKDMmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 07:42:04 -0500
-Subject: Re: [PATCH] lockd: convert reclaimer thread to kthread interface
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org
-In-Reply-To: <20081103191924.16528bfd@tleilax.poochiereds.net>
-References: <1225278945-15407-1-git-send-email-jlayton@redhat.com>
-	 <20081103131215.75a83236.akpm@linux-foundation.org>
-	 <20081103191924.16528bfd@tleilax.poochiereds.net>
-Content-Type: text/plain
-Date: Tue, 04 Nov 2008 07:41:47 -0500
-Message-Id: <1225802508.19864.2.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, MISSING_SUBJECT=0.001,NO_RECEIVED=-0.001, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 5160CEFB7C361A3CAE0CD2800AF114F1486C09B8
-X-UiO-SPAM-Test: remote_host: 68.40.183.129 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 170 max/h 9 blacklist 0 greylist 0 ratelimit 0
+	id S1751632AbYKDMnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 07:43:33 -0500
+Date: Tue, 4 Nov 2008 13:42:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       lguest@ozlabs.org, jeremy@xensource.com,
+       Steven Rostedt <srostedt@redhat.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Mike Travis <travis@sgi.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081104124242.GA6795@elte.hu>
+References: <20081104122839.GA22864@mailshack.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081104122839.GA22864@mailshack.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-03 at 19:19 -0500, Jeff Layton wrote:
-> On Mon, 3 Nov 2008 13:12:15 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Wed, 29 Oct 2008 07:15:45 -0400
-> > Jeff Layton <jlayton@redhat.com> wrote:
-> > 
-> > > My understanding is that there is a push to turn the kernel_thread
-> > > interface into a non-exported symbol and move all kernel threads to use
-> > > the kthread API. This patch changes lockd to use kthread_run to spawn
-> > > the reclaimer thread.
-> > > 
-> > > I've made the assumption here that the extra module references taken
-> > > when we spawn this thread are unnecessary and removed them. I've also
-> > > added a KERN_ERR printk that pops if the thread can't be spawned to warn
-> > > the admin that the locks won't be reclaimed.
-> > > 
-> > > I consider this patch 2.6.29 material.
-> > > 
-> > > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > > ---
-> > >  fs/lockd/clntlock.c |   14 +++++++++-----
-> > >  1 files changed, 9 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
-> > > index 8307dd6..fcc2378 100644
-> > > --- a/fs/lockd/clntlock.c
-> > > +++ b/fs/lockd/clntlock.c
-> > > @@ -14,6 +14,7 @@
-> > >  #include <linux/sunrpc/svc.h>
-> > >  #include <linux/lockd/lockd.h>
-> > >  #include <linux/smp_lock.h>
-> > > +#include <linux/kthread.h>
-> > >  
-> > >  #define NLMDBG_FACILITY		NLMDBG_CLIENT
-> > >  
-> > > @@ -191,11 +192,15 @@ __be32 nlmclnt_grant(const struct sockaddr *addr, const struct nlm_lock *lock)
-> > >  void
-> > >  nlmclnt_recovery(struct nlm_host *host)
-> > >  {
-> > > +	struct task_struct *task;
-> > > +
-> > >  	if (!host->h_reclaiming++) {
-> > >  		nlm_get_host(host);
-> > > -		__module_get(THIS_MODULE);
-> > > -		if (kernel_thread(reclaimer, host, CLONE_FS | CLONE_FILES) < 0)
-> > > -			module_put(THIS_MODULE);
-> > > +		task = kthread_run(reclaimer, host, "%s-reclaim", host->h_name);
-> > > +		if (IS_ERR(task))
-> > > +			printk(KERN_ERR "lockd: unable to spawn reclaimer "
-> > > +				"thread. Locks for %s won't be reclaimed! "
-> > > +				"(%ld)\n", host->h_name, PTR_ERR(task));
-> > >  	}
-> > >  }
-> > >  
-> > > @@ -207,7 +212,6 @@ reclaimer(void *ptr)
-> > >  	struct file_lock *fl, *next;
-> > >  	u32 nsmstate;
-> > >  
-> > > -	daemonize("%s-reclaim", host->h_name);
-> > >  	allow_signal(SIGKILL);
-> > >  
-> > >  	down_write(&host->h_rwsem);
-> > > @@ -261,5 +265,5 @@ restart:
-> > >  	nlm_release_host(host);
-> > >  	lockd_down();
-> > >  	unlock_kernel();
-> > > -	module_put_and_exit(0);
-> > > +	return 0;
-> > >  }
-> > 
-> > Looks OK to me.  I assume the SIGKILL handling has been carefully tested?
-> > 
-> > 
-> > Is it correct to emit a warning and keep going if the thread didn't
-> > start?  Or would it be safer&saner to fail the whole mount (or whatever
-> > syscall we're doing here..)
-> > 
-> 
-> Forgot to answer this part...
-> 
-> This thread gets kicked off when the server has rebooted and we need to
-> reclaim our locks. There isn't a syscall on which we can return an
-> error to the user.
-> 
-> Aside from just warning the admin, I'm not sure what we can do here. We
-> might be able to start making all syscalls on the mount fail somehow,
-> but I don't think we have infrastructure for that and that may be
-> overkill anyway. I suppose we could also go to sleep and try to spawn the
-> thread again, but there's no guarantee of success there.
 
-We should consider implementing SIGLOST. That is the closest thing that
-we have to a *NIX standard for signalling that remote filesystem state
-has been lost.
+* Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-Cheers
-  Trond
+> Hi all,
+> 
+> An x86 processor handles an interrupt (from an external source, 
+> software generated or due to an exception), depending on the 
+> contents if the IDT. Normally the IDT contains mostly interrupt 
+> gates. Linux points each interrupt gate to a unique function. Some 
+> are specific to some task (handling traps, IPI's, ...), the others 
+> are stubs that push the interrupt number to the stack and jump to 
+> 'common_interrupt'.
+> 
+> This patch removes the need for the stubs.
 
+hm, the cost would be this new code:
+
+> +.p2align
+> +ENTRY(maininterrupt)
+>  	RING0_INT_FRAME
+> -vector=0
+> -.rept NR_VECTORS
+> -	ALIGN
+> - .if vector
+> -	CFI_ADJUST_CFA_OFFSET -4
+> - .endif
+> -1:	pushl $~(vector)
+> -	CFI_ADJUST_CFA_OFFSET 4
+> +	push %eax
+> +	push %eax
+> +	mov %cs,%eax
+> +	shr $3,%eax
+> +	and $0xff,%eax
+> +	not %eax
+> +	mov %eax,4(%esp)
+> +	pop %eax
+>  	jmp common_interrupt
+
+.. which we were able to avoid before. A couple of segment register 
+accesses, shifts, etc to calculate the vector - each of which can be 
+quite costly (especially the segment register access - this is a 
+relatively rare instruction pattern).
+
+I'm not unconvicable, but we need to be conservative here: could you 
+try to measure the full before/after cost of IRQ entry, to the cycle 
+level? I'm curious what the performance impact is.
+
+Also, this makes life probably a bit harder for Xen, which assumes 
+that the GDT of the guest OS is small-ish. (Jeremy Cc:-ed)
+
+	Ingo
