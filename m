@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbYKDL6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbYKDMES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbYKDL6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 06:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYKDL6b
+	id S1752738AbYKDMES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 07:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYKDMEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 06:58:31 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45267 "EHLO mx2.redhat.com"
+	Tue, 4 Nov 2008 07:04:05 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60146 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbYKDL6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 06:58:31 -0500
-Date: Tue, 4 Nov 2008 09:57:41 -0200
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Use BIOS reboot on Toshiba Portege 4000
-Message-ID: <20081104115741.GE23893@blackpad>
-References: <200810312118.45368.arvidjaar@mail.ru> <20081103090843.GI11730@elte.hu> <490ECC4D.9090704@redhat.com> <20081103133306.GZ23893@blackpad> <490F0DA3.4090108@redhat.com> <m1myggdbzg.fsf@frodo.ebiederm.org> <4910283B.4070501@redhat.com> <m163n3burt.fsf@frodo.ebiederm.org>
+	id S1751382AbYKDMEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 07:04:04 -0500
+Date: Tue, 4 Nov 2008 13:03:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: use raw spinlocks instead of spinlocks
+Message-ID: <20081104120355.GA19969@elte.hu>
+References: <490E3F73.1000405@gmail.com> <alpine.DEB.1.10.0811021940030.32371@gandalf.stny.rr.com> <20081103064647.GA4826@elte.hu> <c62985530811031803o6909518ax137d42189dcff0de@mail.gmail.com> <20081104094341.GO23790@elte.hu> <c62985530811040314o13394d43t201ae3fc2f1304be@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <m163n3burt.fsf@frodo.ebiederm.org>
-X-Fnord: you can see the fnord
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530811040314o13394d43t201ae3fc2f1304be@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 03:22:30AM -0800, Eric W. Biederman wrote:
-> Avi Kivity <avi@redhat.com> writes:
-> 
-> > Eric W. Biederman wrote:
-> >> I think we are confusing two issues here.
-> >>
-> >> - Ordinary machine_restart which happens to call emergency_restart.
-> >>   And is proceeded by machine_shutdown.
-> >>
-> >> - And emergency_restart itself.
-> >>
-> >> To some extent I would be a lot happier if Alt-sysrq-r did what
-> >> was necessary to get into a context where it can call machine_restart
-> >> or even better kernel_restart().
-> >> emergency_restart() is a nice idea but is broken by design.
-> >>
-> >>
+
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+
+> 2008/11/4 Ingo Molnar <mingo@elte.hu>:
+> > lockdep works via a completely different principle: it instruments all
+> > the actual lock acquire/release calls and builds a graph of lock
+> > dependencies in the system, as it happens.
 > >
-> > Isn't emergency_restart() equivalent to kexec()?  Both start from indeterminite
-> > conditions.
+> > It also guarantees that all the observed locking rules are followed
+> > (i.e. it proves that as long as you dont get any messages from
+> > lockdep, all the locking patterns are mathematically safe).
+> >
+> > So a lockdep message will most of the time occur much easier than a
+> > real lockup would occur - as lockdep only needs to observe
+> > inconsistent locking patterns to prove that a lockup _could_ occur.
 > 
-> Good point.  That is a reasonable direction to evolve it on x86.
-> Similar to and sharing some of the same code as the kexec on panic path.
 > 
-> We may need to separate out emergency_restart from the normal clean
-> restart to make that happen.  It would be pointless and silly to be
-> sending NMI at other cpus for example if we have cleanly shut them
-> down already.
+> Ok, so if there is such an error, I could (hopefully) see it with
+> early_printk....
+> 
+> 
+> > The NMI watchdog just observes the system and complains if it sees
+> > hardirqs not progressing (i.e. a hard lockup). It will detect anything
+> > that causes a hard lockup. (assuming that the NMI watchdog itself is
+> > not locked up)
+> >
+> > Regarding your lockup ... it's quite hard. Maybe you can get more
+> > output out of the system by using:
+> >
+> >  earlyprintk=vga,keep
+> >
+> > plus disablig regular tty output. (i.e. not passing any 'console=tty'
+> > line to the kernel bootup.)
+> >
+> > this way you wont get any normal printk activities (which might lock
+> > up), you should only get the very simple early-printk output.
+> 
+> 
+> 
+> Good idea. After reading your mail, I had a look on early_printk and 
+> it shoudn't cause any tracing recursion after your patch: the 
+> strings are directly writed to the vga. Great.
 
-When pulling the NMI stuff to the reboot code, I've just hit this issue:
-currently, machine_ops.emergency_restart has two possible semantics:
+just make sure normal printk is totally silent. (otherwise you get 
+double lines on the console plus no reduction in recursion risk)
 
-- The function that should be called to immediately reboot the machine,
-  after the cleanup done by machine_restart()
-- The function that should be called to reboot the machine when we are
-  on a possibly inconsistent state (and will do the vmx-disabling
-  stuff)
+i usually add a return; hack to kernel/printk.c:printk(), to make sure 
+it never executes anything. (and add a notrace to it as well) Maybe we 
+could even make this dependent on early_printk=...,keep.
 
-Currently we don't do anything special on emergency_restart() case,
-so both cases are equivalent. But now we will need to differentiate
-both cases.
-
-
-...all this work because VMX breaks the good old reset lines.  :\
-
--- 
-Eduardo
+	Ingo
