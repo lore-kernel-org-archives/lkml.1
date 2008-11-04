@@ -1,91 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbYKDWNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYKDWR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbYKDWNy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753731AbYKDWNo
+	id S1755250AbYKDWR7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 17:17:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYKDWRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:13:44 -0500
-Received: from mga09.intel.com ([134.134.136.24]:33431 "EHLO mga09.intel.com"
+	Tue, 4 Nov 2008 17:17:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57227 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752360AbYKDWNn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:13:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,545,1220252400"; 
-   d="scan'208";a="459281018"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Shehjar Tikoo <shehjart@cse.unsw.edu.au>,
-       "fujita.tomonori@lab.ntt.co.jp" <fujita.tomonori@lab.ntt.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Tue, 4 Nov 2008 14:13:39 -0800
-Subject: RE: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
- Mar 28, 2008
-Thread-Topic: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
- Mar 28, 2008
-Thread-Index: Ack+DEP3w74SxMCKTfO+ptOehbf/wgAufUEg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA35BE05F00@orsmsx505.amr.corp.intel.com>
-References: <490F880E.4000801@cse.unsw.edu.au>
-In-Reply-To: <490F880E.4000801@cse.unsw.edu.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	id S1754182AbYKDWRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 17:17:47 -0500
+Date: Tue, 4 Nov 2008 23:17:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Greg KH <greg@kroah.com>
+Cc: Vegard Nossum <vegardno@ifi.uio.no>, Dave Airlie <airlied@redhat.com>,
+       Sitsofe Wheeler <sitsofe@yahoo.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drm: fix leak of uninitialized data to userspace
+Message-ID: <20081104221730.GA27635@elte.hu>
+References: <20081010100200.GA752@thuin.ifi.uio.no> <20081010101753.GE15139@elte.hu> <20081104213859.GA3516@kroah.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081104213859.GA3516@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added Cc: linux-ia64 ... more likely to attract attention of HP
-ia64 experts there.
 
-> arch/ia64/hp/common/sba_iommu.c: I/O MMU is out of mapping resources
+* Greg KH <greg@kroah.com> wrote:
 
-Odd ... the code (back to the dawn of git time in 2.6.12-rc1) looks like
+> On Fri, Oct 10, 2008 at 12:17:53PM +0200, Ingo Molnar wrote:
+> > 
+> > * Vegard Nossum <vegardno@ifi.uio.no> wrote:
+> > 
+> > > >From f2e1569413900fa3ce5dad571e1a24d31307ab75 Mon Sep 17 00:00:00 2001
+> > > From: Vegard Nossum <vegardno@thuin.ifi.uio.no>
+> > > Date: Fri, 10 Oct 2008 11:50:57 +0200
+> > > Subject: [PATCH] drm: fix leak of uninitialized data to userspace
+> > > 
+> > > On Fri, Oct 10, 2008 at 10:54 AM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> > > >
+> > > > [  175.375036] WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f65d2294)
+> > > > [  175.375049] 7063693a303030303a30303a30322e3000a76c080800000000a76c080e000000
+> > > > [  175.375096]  i i i i i i i i i i i i i i i i i u u u u u u u u u u u u u u u
+> > > > [  175.375137]                                          ^
+> > > > [  175.375142]
+> > > > [  175.375148] Pid: 2288, comm: Xorg Not tainted (2.6.27-tipskw-00069-g37cb0b7-dirty #81) 900
+> > > > [  175.375155] EIP: 0060:[<c020d283>] EFLAGS: 00003246 CPU: 0
+> > > > [  175.375169] EIP is at __copy_to_user_ll+0x43/0x60
+> > > > [  175.375174] EAX: 00000000 EBX: 00000028 ECX: 00000005 EDX: f65d2280
+> > > > [  175.375180] ESI: f65d2294 EDI: 086cb6b4 EBP: f631bef4 ESP: c055bd68
+> > > > [  175.375186]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> > > > [  175.375191] CR0: 8005003b CR2: f67c1c44 CR3: 36368000 CR4: 000006c0
+> > > > [  175.375197] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> > > > [  175.375202] DR6: ffff4ff0 DR7: 00000400
+> > > > [  175.375206]  [<c020d6f3>] copy_to_user+0x43/0x60
+> > > > [  175.375214]  [<c028df28>] drm_getunique+0x38/0x50
+> > > > [  175.375224]  [<c028d329>] drm_ioctl+0x1b9/0x2f0
+> > > > [  175.375231]  [<c0188a07>] vfs_ioctl+0x67/0x70
+> > > > [  175.375239]  [<c0188a6c>] do_vfs_ioctl+0x5c/0x270
+> > > > [  175.375246]  [<c0188cbe>] sys_ioctl+0x3e/0x60
+> > > > [  175.375253]  [<c010336d>] sysenter_do_call+0x12/0x35
+> > > > [  175.375261]  [<ffffffff>] 0xffffffff
+> > > 
+> > > The hexdump decodes to:
+> > > 
+> > > vegardno@thuin ~ $ ./a.out 7063693a303030303a30303a30322e3000a76c080800000000a76c080e000000
+> > > pci:0000:00:02.0<0><167>l<8><8><0><0><0><0><167>l<8><14><0><0><0>
+> > > 
+> > > ...so drm_getunique() is trying to copy some uninitialized data to
+> > > userspace. The ECX register contains the number of words that are
+> > > left to copy -- so there are 5 * 4 = 20 bytes left. The offset of the
+> > > first uninitialized byte (counting from the start of the string) is
+> > > also 20 (i.e. 0xf65d2294&((1 << 5)-1) == 20). So somebody tried to
+> > > copy 40 bytes when the string was only 19 long.
+> > > 
+> > > In drm_set_busid() we have this code:
+> > > 
+> > >         dev->unique_len = 40;
+> > >         dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
+> > > 	...
+> > >         len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
+> > > 
+> > > ...so it seems that dev->unique is never updated to reflect the
+> > > actual length of the string. The remaining bytes (20 in this case)
+> > > are random uninitialized bytes that are copied into userspace.
+> > > 
+> > > This patch fixes the problem by setting dev->unique_len after the
+> > > snprintf().
+> > > 
+> > > Completely untested.
+> > > 
+> > > Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
+> > > Signed-off-by: Vegard Nossum <vegardno@thuin.ifi.uio.no>
+> > 
+> > i've stuck it into the tip/out-of-tree quick-fixes branch.
+> > 
+> > Sitsofe, could you please check very latest tip/master with 
+> > CONFIG_KMEMCHECK=y, does it find any other uninitialized memory 
+> > access?
+> 
+> What ever happened to this patch?  Did it go into Linus's tree?  If 
+> so, I can't seem to find it :(
 
-        panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n"
-                ioc->ioc_hpa);
+i'm not doing DRM patches - tip/out-of-tree is for pure out-of-tree 
+hotfixes.
 
-I wonder why you don't see the "@ HEXADDRESS"?
-
-> Using git-bisect, I've zeroed in on the commit that introduced this.
-> Please see the attached file for the commit.
-
-Did you confirm that reverting this commit on a recent kernel
-fixes the problem (once in a while git bisect can point to
-the wrong commit ... it seems very likely that it got the
-right one here, but it is always good to check).  When I
-tried to use "patch -R" to revert this it got confused on
-the Kconfig file because the lines that were added were
-subsequently changed ... so you may need to revert that
-by hand ... the sba_iommu.c apparently reverted ok).
-
-> Other info:
-> System is HP RX6600(16Gb RAM, 16 processors w/ dual cores and HT)
-> 20 SATA disks under software RAID0 with 6 TB capacity.
-> Silicon Image 3124 controller.
-> File system is XFS.
-
-My HP test system is way too small to attempt to recreate
-this (just 2 cpus & 1 disk).  How long does each of your
-tests take to hit the problems ... a few minutes? Or hours?
-
-> I'd much appreciate some help in fixing this because this panic has
-> basically stalled my own work. I'd be willing to run more tests on my
-> setup to test any patches that possibly fix this issue.
-
-Adding some printk() before the panic might give a clue as to what
-is going wrong.  Either a bogus call is trying to allocate far
-too much space, or the bitmap is leaking, or we have a totally
-messed up "ioc" structure.
-
-Printing "pages_needed" the address of "ioc" and some interesting
-fields from ioc (at least ioc->res_size) would help.  I assume
-the the return value from sba_search_bitmap() is ~0x0 ... but
-you should print "pide" just to be sure.
-
--Tony
+	Ingo
