@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbYKDVVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbYKDVXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756420AbYKDVVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 16:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbYKDVV3
+	id S1756095AbYKDVXH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 16:23:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbYKDVWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 16:21:29 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:47036 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755100AbYKDVV3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 16:21:29 -0500
-Date: Tue, 4 Nov 2008 15:20:56 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Rientjes <rientjes@google.com>, npiggin@suse.de,
-       peterz@infradead.org, menage@google.com, dfults@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/7] cpusets: add dirty map to struct address_space
-In-Reply-To: <20081104130918.bee16cff.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0811041513490.23418@quilx.com>
-References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
- <alpine.DEB.2.00.0810300310180.18283@chino.kir.corp.google.com>
- <20081104130918.bee16cff.akpm@linux-foundation.org>
+	Tue, 4 Nov 2008 16:22:54 -0500
+Received: from hobbit.corpit.ru ([81.13.33.150]:23728 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753123AbYKDVWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 16:22:54 -0500
+Message-ID: <4910BD2B.1020808@msgid.tls.msk.ru>
+Date: Wed, 05 Nov 2008 00:22:51 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.16 (X11/20080724)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.6
+To: Pavel Machek <pavel@suse.cz>
+CC: Kay Sievers <kay.sievers@vrfy.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: data corruption: revalidating a (removable) hdd/flash on	re-insert
+References: <490B2659.9010304@msgid.tls.msk.ru> <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com> <20081104195728.GC5862@ucw.cz> <ac3eb2510811041213l4a20fa12h3c5beb3c2d317574@mail.gmail.com> <20081104202011.GA7135@ucw.cz>
+In-Reply-To: <20081104202011.GA7135@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Andrew Morton wrote:
+Pavel Machek wrote:
+>>>> Every access to removable media is guarded by this revalidation check.
+>>>> If you don't see these events, you should not trust this reader, and
+>>>> at least never change the media while it is connected.
+>>> This is rather nasty data-corrupter.
+>> Sure, it is.
+>>
+>>> Could we at least blacklist
+>>> broken device, and force revalidation on each close or something like
+>>> that?
+>> What's your idea of revalidation if the hardware does not tell you?
+>> Get an md5 of the disk content? :)
+> 
+> Well... you should not eject media while fs is mounted or blockdev is
+> open, correct?
+> 
+> So can we simply claim 'media changed' on last close/unmount? Sure,
+> sometimes media was not changed, but that only hurts performance, not
+> correctness... ?
 
->> +#ifdef CONFIG_CPUSETS
->> +#if MAX_NUMNODES <= BITS_PER_LONG
->> +	nodemask_t		dirty_nodes;	/* nodes with dirty pages */
->> +#else
->> +	nodemask_t		*dirty_nodes;	/* pointer to mask, if dirty */
->> +#endif
->> +#endif
->>  } __attribute__((aligned(sizeof(long))));
->
-> eek.  Increasing the size of the address_space (and hence of the inode)
-> is a moderately big deal - there can be millions of these in memory.
+Well, that's what my tiny proggy, which I used here to work around the
+problem, does.  It constantly opens/closes the /dev/sdFOO, every 0.5s
+currently (I don't think I will be able to replace a media faster than
+half a second :), in order to catch REMOVALs of media -- because when
+the drive does not see the media anymore, it correctly reports that
+the media has changed...
 
-Well this is adding only a single word to the inode structure.
+I tried to make it to detect CLOSE of the file (either by userspace or
+by kernel on umount), to not waste time when the drive is open/mounted
+as it can't be revalidated anyway, but neither dnotify nor inotify is
+helpful here.
 
->> @@ -72,6 +72,8 @@ struct writeback_control {
->>  	 * so we use a single control to update them
->>  	 */
->>  	unsigned no_nrwrite_index_update:1;
->> +
->> +	nodemask_t *nodes;		/* Nodemask to writeback */
->
-> This one doesn't get ifdefs?
+What is needed is to force "invalidation" on last close, so that on
+next open, kernel thinks it's a shiny new media, never seen before.
+Ie. to force-flush caches, or something like that.  Sure this is not
+as good as my program, which still leaves caches in case media was
+NOT removed.  But my approach is wasteful.  And the data corruption
+is indeed quite bad (we've lost whole gig of photos this way already).
 
-The structure is typically allocated temporarily on the stack.
+But yes, looks like this problem becomes less and less of an issue.
+So for me, it's easy to deal with (not perfect but it works; it'd be
+even better if i will be able to wait for umount using inotify, to
+only wake when really needed), and the real solution is to not use
+cheap broken hardware...  (My unit was about $15, real ones costs
+$25 or so, but that's not the reason I've got it.  Real reason was
+that it was only once than I actually saw such a thing, and it was
+the last one as well... ;)
 
->> +	nodemask_t *nodes = mapping->dirty_nodes;
->> +	int node = page_to_nid(page);
->> +
->> +	if (!nodes) {
->> +		nodes = kmalloc(sizeof(nodemask_t), GFP_ATOMIC);
->
-> erk, OK, called from __set_page_dirty, needs to be atomic.
->
-> What are the consequences when this allocation fails?
+Thanks!
 
-Dirty tracking will not occur. All nodes are assumed to be dirty.
-
-We discussed this earlier 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0709.1/2291.html
-
+/mjt
