@@ -1,136 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbYKDR7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYKDR76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752655AbYKDR7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:59:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbYKDR66
+	id S1755115AbYKDR76 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbYKDR7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:58:58 -0500
-Received: from mga12.intel.com ([143.182.124.36]:13963 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751639AbYKDR65 (ORCPT
+	Tue, 4 Nov 2008 12:59:46 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:65320 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753623AbYKDR7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:58:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,544,1220252400"; 
-   d="scan'208";a="70832057"
-Message-ID: <49108D58.1010908@linux.intel.com>
-Date: Tue, 04 Nov 2008 09:58:48 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 4 Nov 2008 12:59:45 -0500
+Message-ID: <49108D92.9070306@lwfinger.net>
+Date: Tue, 04 Nov 2008 09:59:46 -0800
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: NetDev <netdev@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-scsi@vger.kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
-       tglx@tglx.de
-Subject: Oops/warning report for the week of November 4th, 2008
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Machek <pavel@suse.cz>
+CC: Alan <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: System hang from holding left shift key
+References: <490EAB65.1000908@lwfinger.net> <20081104105600.GA4514@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <20081104105600.GA4514@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Reports prior to 2.6.26 have been omitted in collecting the top 10)
+Pavel Machek wrote:
+>> While absentmindedly holding down the left shift key as I was thinking about my
+>> next input, I froze the keyboard. After 3 seconds, the system sounded a high
+>> beep, and then a low beep after another 3 seconds. At that point, no key entry
+>> had any effect. From the beeps, one might conclude that the input buffer is
+>> full, but a CTRL/U did not clear it. Fortunately, a short press on the power
+>> button shut down the machine cleanly.
+>>
+>> I don't know if this is a regression. I found it in v2.6.28-rc2, but the oldest
+>> kernel that I could test (v2.6.24) already has the problem.
+>>
+>> When the beeps occur, a stack dump is as follows:
+> 
+> What kind of machine is that...? I can't reproduce it here, do I need
+> some accessibility options enabled?
 
-This week, a total of 3780 oopses and warnings have been reported,
-compared to 3157 reports in the previous week.
+It is an HP dv2815nr notebook with an Turion X2 CPU running the x86_64 version
+of openSUSE 11.0.
 
-Per file statistics
-277	drivers/net/r8169.c
-239	fs/jbd/journal.c
-190	drivers/parport/procfs.c
-189	drivers/net/sis900.c
-156	external/fireglx/binary (P)
-137	drivers/base/power/main.c
-124	kernel/timer.c
-115	net/sched/sch_generic.c
-90	include/linux/pagemap.h
-86	drivers/net/wireless/iwlwifi/iwl-3945-rs.c
-80	kernel/power/main.c
-65	drivers/usb/serial/usb-serial.c
+I'm not running any special options that I know about. The only strange thing is
+that the shift keys autorepeat.
 
-
-Items with unmerged fix available
----------------------------------
-Rank 2: journal_update_superblock (warning)
-	Reported 233 times (5565 total reports)
-	Fix is in the -mm tree but not yet in mainline
-	Likely caused by the user removing a USB stick while mounted
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.24-rc6-git1.
-	More info: http://www.kerneloops.org/searchweek.php?search=journal_update_superblock
-
-Rank 14: ext3_commit_super (warning)
-	Reported 50 times (1425 total reports)
-	Fix is in the -mm tree but not yet in mainline
-	Likely caused by the user removing a USB stick while mounted
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.24.
-	More info: http://www.kerneloops.org/searchweek.php?search=ext3_commit_super
-
-
-Unfixed items
--------------
-Rank 1: dev_watchdog(r8169) (warning)
-	Reported 277 times (483 total reports)
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.26.6.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(r8169)
-
-Rank 3: dev_watchdog(sis900) (warning)
-	Reported 189 times (987 total reports)
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.26-rc4-git2.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(sis900)
-
-	Rank 5: kas_GetExecutionLevel (warning)
-	Reported 140 times (331 total reports)
-	[external] Bug in the proprietary fireglx driver
-	warning only shows up in tainted kernels
-	This warning was last seen in version 2.6.27, and first seen in 2.6.26.
-	More info: http://www.kerneloops.org/searchweek.php?search=kas_GetExecutionLevel
-
-Rank 6: run_timer_softirq (oops)
-	Reported 117 times (669 total reports)
-	softlockup
-	This oops was last seen in version 2.6.27.4, and first seen in 2.6.25.
-	More info: http://www.kerneloops.org/searchweek.php?search=run_timer_softirq
-
-Rank 10: rs_get_rate (warning)
-	Reported 85 times (695 total reports)
-	Bug in the Intel IWL wireless drivers
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.25-rc2-git5.
-	More info: http://www.kerneloops.org/searchweek.php?search=rs_get_rate
-
-Rank 11: suspend_test_finish (warning)
-	Reported 80 times (321 total reports)
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.27-rc0-git14.
-	More info: http://www.kerneloops.org/searchweek.php?search=suspend_test_finish
-
-Rank 12: dev_watchdog(cdc_ether) (warning)
-	Reported 59 times (78 total reports)
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.26.6.
-	More info: http://www.kerneloops.org/searchweek.php?search=dev_watchdog(cdc_ether)
-
-Rank 13: ___free_dma_mem_cluster (warning)
-	Reported 55 times (242 total reports)
-	[known issue] bug in the sym53c8xx_2 scsi driver; harmless on x86
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.24-rc8-git5.
-	More info: http://www.kerneloops.org/searchweek.php?search=___free_dma_mem_cluster
-
-
-Fixed items
------------
-Rank 8: device_pm_add (warning)
-	Reported 103 times (683 total reports)
-	This warning was last seen in version 2.6.27-rc4, and first seen in 2.6.26-rc5.
-	"Fixed" by removing the warning to hide the bug.
-	More info: http://www.kerneloops.org/searchweek.php?search=device_pm_add
-
-Rank 9: lock_page (warning)
-	Reported 90 times (362 total reports)
-	The hwclock program causes the kernel to fault due to disabling irqs in userspace
-	Fixed in 2.6.28-rc, should probably be backported to -stable
-	This warning was last seen in version 2.6.27.4, and first seen in 2.6.27-rc1-git2.
-	More info: http://www.kerneloops.org/searchweek.php?search=lock_page
-
-
-
+Larry
 
