@@ -1,156 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbYKDPrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbYKDPsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755711AbYKDPrw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 10:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYKDPrn
+	id S1755843AbYKDPsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 10:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYKDPsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 10:47:43 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:45254 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753549AbYKDPrm (ORCPT
+	Tue, 4 Nov 2008 10:48:32 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35676 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYKDPsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 10:47:42 -0500
-Message-Id: <1225813659.22738.1282932197@webmail.messagingengine.com>
-X-Sasl-Enc: 54mKIBdZy71tszO4LkKndz5FdsHM802Tzjaa+Las5jrN 1225813659
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>,
-       "Alexander van Heukelum" <heukelum@mailshack.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
-       jeremy@xensource.com, "Steven Rostedt" <srostedt@redhat.com>,
-       "Mike Travis" <travis@sgi.com>, "Andi Kleen" <andi@firstfloor.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 4 Nov 2008 10:48:31 -0500
+Date: Tue, 4 Nov 2008 15:48:23 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Koyama, Yoshiya" <Yoshiya.Koyama@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-fsdevel@vger.kernel.org
+Subject: Re: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data
+	to userspace
+Message-ID: <20081104154823.GI28946@ZenIV.linux.org.uk>
+References: <19f34abd0810251014s7968557br38e43aa0b9cdcf09@mail.gmail.com> <200810252241.53601.rjw@sisk.pl> <m163nggvhq.fsf@frodo.ebiederm.org> <19f34abd0810261408w61b1e2dbvb9a0e16ce5a10022@mail.gmail.com> <19f34abd0811040139t8334502i7a5d8501c5fe95ac@mail.gmail.com> <20081104100050.GA10398@x200.localdomain> <m1hc6nbw2c.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20081104122839.GA22864@mailshack.com>
- <20081104150729.GC21470@localhost>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-In-Reply-To: <20081104150729.GC21470@localhost>
-Date: Tue, 04 Nov 2008 16:47:39 +0100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1hc6nbw2c.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 04, 2008 at 02:54:35AM -0800, Eric W. Biederman wrote:
 
-On Tue, 4 Nov 2008 18:07:29 +0300, "Cyrill Gorcunov"
-<gorcunov@gmail.com> said:
-> [Alexander van Heukelum - Tue, Nov 04, 2008 at 01:28:39PM +0100]
-> | Hi all,
-> | 
-> | An x86 processor handles an interrupt (from an external
-> | source, software generated or due to an exception),
-> | depending on the contents if the IDT. Normally the IDT
-> | contains mostly interrupt gates. Linux points each
-> | interrupt gate to a unique function. Some are specific
-> | to some task (handling traps, IPI's, ...), the others
-> | are stubs that push the interrupt number to the stack
-> | and jump to 'common_interrupt'.
-> | 
-> | This patch removes the need for the stubs.
-> | 
-> | An interrupt gate contains a FAR pointer to the interrupt
-> | handler, meaning that the code segment of the interrupt
-> | handler is also reloaded. Instead of pointing each (non-
-> | specific) interrupt gate to a unique handler, we set a
-> | unique code segment and use a common handler. When the
-> | handler finishes the code segment is restored to the
-> | 'normal'/previous one.
-> | 
-> | In order to have a unique code segment for each interrupt
-> | vector, the GDT is extended to 512 entries (1 full page),
-> | and the last half of the page describes identical code
-> | segments (identical, except for the number in the cs
-> | register), which are refered to by the 256 interrupt
-> | gates.
-> | 
-> | In this version, even the specialized handlers get run
-> | with their code segment switched. This is not necessary,
-> | but I like the fact that in a register dump one can now
-> | see from the code segment that the code is ran due to
-> | a (hard) interrupt. The exception I made is the int 0x80
-> | (syscall), which runs with the normal kernel code segment.
-> | 
-> | 
-> | Concluding: changing interrupt handling to this way
-> | removes quite a bit of source code. It also removes the
-> | need for the interrupt stubs and, on i386, pointers to
-> | them. This saves a few kilobytes of code. The page
-> | reserved for the GDT is now fully used. The cs register
-> | indicating directly that code is executed on behalf of
-> | a (hardware) interrupt is a nice debugging aid. This way
-> | of handling interrupts also leads to cleaner code: this
-> | patch already gets rid of some 'ugly' macro magic in
-> | entry_32.S and irqinit_64.c.
-> | 
-> | More cleanup is certainly possible, but I have tried to
-> | keep the changes local and small. If switching code
-> | segments is too expensive for some paths, that can be
-> | fixed by not doing that ;).
-> | 
-> | I'ld welcome some numbers on a few benchmarks on real
-> | hardware (I only tested on qemu: debian runs without
-> | noticable differences before/after this patch).
-> | 
-> | Greetings,
-> |     Alexander
-> | 
-> | P.S. Just in case someone thinks this is a great idea and
-> | testing and benchmarking goes well...
-> |
-> ...
+> does a memcpy of the new name to the target name,
+> but it doesn't do anything with the source name.
+> Then later we swap the name lengths.
 > 
-> Hi Alexander, great done!
+> So the length on the dentry no longer matches the data
+> we put in the buffer.
+
+Aye.  BTW, here's yesterday IRC log, after eparis had pointed to
+" (deleted)" in the ends of two more reproducers (auditd spew after
+crond upgrade, FWIW - same issue with d_path()):
+
+13:48 #sec-eng: < viro> eparis: it's switch_names()
+13:49 #sec-eng: < viro> if both names are internal
+13:49 #sec-eng: < viro> in that case we want to copy ->d_name.len instead of swapping those
+13:50 #sec-eng: < viro> IOW, I understand what's going on; it's not too nasty, fortunately, but it needs fixing
+13:51 #sec-eng: < viro> pathname ends on " (deleted)" and has sane path
+13:51 #sec-eng: < viro> i.e. we have dentry->d_name.{name,len} responsible for everything in between
+13:52 #sec-eng: < viro> and .len is more than it ought to be
+13:52 #sec-eng: < viro> OTOH, it's still within the limit on name length, so it's embedded into struct dentry
+13:53 #sec-eng: < viro> i.e. we had either unlink() doing something _very_ odd or rename() buggering the name/len for (unhashed) target
+13:53 #sec-eng: < viro> rename() => d_move()
+13:54 #sec-eng: < viro> then testing a bit with copying /bin/sh to /tmp/<different names>, starting those and doing mv(1) of one over another had happily reproduced it
+13:55 #sec-eng: < viro> so that was d_move() with short-over-short and source name longer than target one
+13:56 #sec-eng: < viro> since there are only two lines handling d_name there (
+13:56 #sec-eng: < viro>         /* Switch the names.. */
+13:56 #sec-eng: < viro>         switch_names(dentry, target);
+13:56 #sec-eng: < viro>         do_switch(dentry->d_name.len, target->d_name.len);
+13:57 #sec-eng: < viro> and switch_names() is 4-way choice by "is the source name short enough"/"is the target name short enough"...
+13:58 #sec-eng: < viro> IOW, after noticing that " (deleted)" it had been absolutely straightforward
+13:58 #sec-eng: < viro> it's not junk in the end
+13:59 #sec-eng: < viro> it's junk in the _middle_
+
+> Certainly not a resource leak or any kind of deadlock.
+> And the length is right.  But it is an information leak.
 > 
-> not taking into account the cost of cs reading (which I
-> don't suspect to be that expensive apart from writting,
-> on the other hand I guess walking on GDT entries could
-> be not that cheap especially with new segments you propose,
-> I guess cpu internally check for segment to be the same
-> and do not reload it again even if it's described as FAR
-> pointer but I could be wrong so Andi CC'ed :)
+> I suppose a clever person could figure out how to steal
+> information that way.
 
-Thanks! And indeed Andi might know more about this.
-
-I wonder how the time needed for reading the GDT segments
-balances against the time needed due to the extra redirection
-due to running the stubs. I'ld be interested if the difference
-can be measured with the current implementation. (I really
-need to highjack a machine to do some measurements; I hoped
-someone would do it before I got to it ;) )
-
-Even if some CPU's have some internal optimization for the case
-where the gate segment is the same as the current one, I wonder
-if it is really important... Interrupts that occur while the
-processor is running userspace already cause changing segments.
-They are more likely to be in cache, maybe.
-
-Greetings,
-    Alexander
-
-> A small nit in implementation:
-> 
-> entry_32.S:
-> +	push %eax
-> +	push %eax
-> +	mov %cs,%eax
-> +	shr $3,%eax
-> +	and $0xff,%eax
-> +	not %eax
-> +	mov %eax,4(%esp)
-> +	pop %eax
-> 
-> CFI_ADJUST_CFA_OFFSET missed?
-
-Sure, I did just enough to make it work for me ;).
-
-> 		- Cyrill -
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
-
--- 
-http://www.fastmail.fm - IMAP accessible web-mail
-
+Not much, but that certainly needs fixing, leak or not.
