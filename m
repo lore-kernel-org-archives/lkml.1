@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbYKDX6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbYKDX5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbYKDX6E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:58:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbYKDXlT
+	id S1755071AbYKDX5p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:57:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbYKDXlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:41:19 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52345 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:41:15 -0500
+Received: from mx1.suse.de ([195.135.220.2]:47984 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756384AbYKDXlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:41:17 -0500
-Date: Tue, 4 Nov 2008 15:33:34 -0800
+	id S1757053AbYKDXlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:41:13 -0500
+Date: Tue, 4 Nov 2008 15:33:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Eric Sesterhenn <snakebyte@gmx.de>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 55/57] hfsplus: check read_mapping_page() return value
-Message-ID: <20081104233334.GD659@suse.de>
+Subject: [patch 54/57] hfsplus: fix Buffer overflow with a corrupted image
+Message-ID: <20081104233332.GC659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hfsplus-check-read_mapping_page-return-value.patch"
+Content-Disposition: inline; filename="hfsplus-fix-buffer-overflow-with-a-corrupted-image.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,104 +41,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Eric Sesterhenn <snakebyte@gmx.de>
 
-While testing more corrupted images with hfsplus, i came across
-one which triggered the following bug:
+commit efc7ffcb4237f8cb9938909041c4ed38f6e1bf40 upstream
 
-[15840.675016] BUG: unable to handle kernel paging request at fffffffb
-[15840.675016] IP: [<c0116a4f>] kmap+0x15/0x56
-[15840.675016] *pde = 00008067 *pte = 00000000
-[15840.675016] Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-[15840.675016] Modules linked in:
-[15840.675016]
-[15840.675016] Pid: 11575, comm: ln Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #29)
-[15840.675016] EIP: 0060:[<c0116a4f>] EFLAGS: 00010202 CPU: 0
-[15840.675016] EIP is at kmap+0x15/0x56
-[15840.675016] EAX: 00000246 EBX: fffffffb ECX: 00000000 EDX: cab919c0
-[15840.675016] ESI: 000007dd EDI: cab0bcf4 EBP: cab0bc98 ESP: cab0bc94
-[15840.675016]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[15840.675016] Process ln (pid: 11575, ti=cab0b000 task=cab919c0 task.ti=cab0b000)
-[15840.675016] Stack: 00000000 cab0bcdc c0231cfb 00000000 cab0bce0 00000800 ca9290c0 fffffffb
-[15840.675016]        cab145d0 cab919c0 cab15998 22222222 22222222 22222222 00000001 cab15960
-[15840.675016]        000007dd cab0bcf4 cab0bd04 c022cb3a cab0bcf4 cab15a6c ca9290c0 00000000
-[15840.675016] Call Trace:
-[15840.675016]  [<c0231cfb>] ? hfsplus_block_allocate+0x6f/0x2d3
-[15840.675016]  [<c022cb3a>] ? hfsplus_file_extend+0xc4/0x1db
-[15840.675016]  [<c022ce41>] ? hfsplus_get_block+0x8c/0x19d
-[15840.675016]  [<c06adde4>] ? sub_preempt_count+0x9d/0xab
-[15840.675016]  [<c019ece6>] ? __block_prepare_write+0x147/0x311
-[15840.675016]  [<c0161934>] ? __grab_cache_page+0x52/0x73
-[15840.675016]  [<c019ef4f>] ? block_write_begin+0x79/0xd5
-[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[15840.675016]  [<c019f22a>] ? cont_write_begin+0x27f/0x2af
-[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[15840.675016]  [<c0139ebe>] ? tick_program_event+0x28/0x4c
-[15840.675016]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[15840.675016]  [<c022b723>] ? hfsplus_write_begin+0x2d/0x32
-[15840.675016]  [<c022cdb5>] ? hfsplus_get_block+0x0/0x19d
-[15840.675016]  [<c0161988>] ? pagecache_write_begin+0x33/0x107
-[15840.675016]  [<c01879e5>] ? __page_symlink+0x3c/0xae
-[15840.675016]  [<c019ad34>] ? __mark_inode_dirty+0x12f/0x137
-[15840.675016]  [<c0187a70>] ? page_symlink+0x19/0x1e
-[15840.675016]  [<c022e6eb>] ? hfsplus_symlink+0x41/0xa6
-[15840.675016]  [<c01886a9>] ? vfs_symlink+0x99/0x101
-[15840.675016]  [<c018a2f6>] ? sys_symlinkat+0x6b/0xad
-[15840.675016]  [<c018a348>] ? sys_symlink+0x10/0x12
-[15840.675016]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
-[15840.675016]  =======================
-[15840.675016] Code: 00 00 75 10 83 3d 88 2f ec c0 02 75 07 89 d0 e8 12 56 05 00 5d c3 55 ba 06 00 00 00 89 e5 53 89 c3 b8 3d eb 7e c0 e8 16 74 00 00 <8b> 03 c1 e8 1e 69 c0 d8 02 00 00 05 b8 69 8e c0 2b 80 c4 02 00
-[15840.675016] EIP: [<c0116a4f>] kmap+0x15/0x56 SS:ESP 0068:cab0bc94
-[15840.675016] ---[ end trace 4fea40dad6b70e5f ]---
+When an hfsplus image gets corrupted it might happen that the catalog
+namelength field gets b0rked.  If we mount such an image the memcpy() in
+hfsplus_cat_build_key_uni() writes more than the 255 that fit in the name
+field.  Depending on the size of the overwritten data, we either only get
+memory corruption or also trigger an oops like this:
 
-This happens because the return value of read_mapping_page() is passed on
-to kmap unchecked.  The bug is triggered after the first
-read_mapping_page() in hfsplus_block_allocate(), this patch fixes all
-three usages in this functions but leaves the ones further down in the
-file unchanged.
+[  221.628020] BUG: unable to handle kernel paging request at c82b0000
+[  221.629066] IP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151
+[  221.629066] *pde = 0ea29163 *pte = 082b0160
+[  221.629066] Oops: 0002 [#1] PREEMPT DEBUG_PAGEALLOC
+[  221.629066] Modules linked in:
+[  221.629066]
+[  221.629066] Pid: 4845, comm: mount Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #28)
+[  221.629066] EIP: 0060:[<c022d4b1>] EFLAGS: 00010206 CPU: 0
+[  221.629066] EIP is at hfsplus_find_cat+0x10d/0x151
+[  221.629066] EAX: 00000029 EBX: 00016210 ECX: 000042c2 EDX: 00000002
+[  221.629066] ESI: c82d70ca EDI: c82b0000 EBP: c82d1bcc ESP: c82d199c
+[  221.629066]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+[  221.629066] Process mount (pid: 4845, ti=c82d1000 task=c8224060 task.ti=c82d1000)
+[  221.629066] Stack: c080b3c4 c82aa8f8 c82d19c2 00016210 c080b3be c82d1bd4 c82aa8f0 00000300
+[  221.629066]        01000000 750008b1 74006e00 74006900 65006c00 c82d6400 c013bd35 c8224060
+[  221.629066]        00000036 00000046 c82d19f0 00000082 c8224548 c8224060 00000036 c0d653cc
+[  221.629066] Call Trace:
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c01302d2>] ? __kernel_text_address+0x1b/0x27
+[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
+[  221.629066]  [<c0109e32>] ? save_stack_address+0x0/0x2c
+[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
+[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
+[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
+[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
+[  221.629066]  [<c013553d>] ? down+0xc/0x2f
+[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c013da5d>] ? mark_held_locks+0x43/0x5a
+[  221.629066]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
+[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
+[  221.629066]  [<c06abec8>] ? _spin_unlock_irqrestore+0x42/0x58
+[  221.629066]  [<c013555c>] ? down+0x2b/0x2f
+[  221.629066]  [<c022aa68>] ? hfsplus_iget+0xa0/0x154
+[  221.629066]  [<c022b0b9>] ? hfsplus_fill_super+0x280/0x447
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
+[  221.629066]  [<c041c9e4>] ? string+0x2b/0x74
+[  221.629066]  [<c041cd16>] ? vsnprintf+0x2e9/0x512
+[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
+[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
+[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
+[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
+[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
+[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
+[  221.629066]  [<c01354d3>] ? up+0xc/0x2f
+[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
+[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
+[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
+[  221.629066]  [<c041cfb7>] ? snprintf+0x1b/0x1d
+[  221.629066]  [<c01ba466>] ? disk_name+0x25/0x67
+[  221.629066]  [<c0183960>] ? get_sb_bdev+0xcd/0x10b
+[  221.629066]  [<c016ad92>] ? kstrdup+0x2a/0x4c
+[  221.629066]  [<c022a7b3>] ? hfsplus_get_sb+0x13/0x15
+[  221.629066]  [<c022ae39>] ? hfsplus_fill_super+0x0/0x447
+[  221.629066]  [<c0183583>] ? vfs_kern_mount+0x3b/0x76
+[  221.629066]  [<c0183602>] ? do_kern_mount+0x32/0xba
+[  221.629066]  [<c01960d4>] ? do_new_mount+0x46/0x74
+[  221.629066]  [<c0196277>] ? do_mount+0x175/0x193
+[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
+[  221.629066]  [<c01663b2>] ? __get_free_pages+0x1e/0x24
+[  221.629066]  [<c06ac07b>] ? lock_kernel+0x19/0x8c
+[  221.629066]  [<c01962e6>] ? sys_mount+0x51/0x9b
+[  221.629066]  [<c01962f9>] ? sys_mount+0x64/0x9b
+[  221.629066]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
+[  221.629066]  =======================
+[  221.629066] Code: 89 c2 c1 e2 08 c1 e8 08 09 c2 8b 85 e8 fd ff ff 66 89 50 06 89 c7 53 83 c7 08 56 57 68 c4 b3 80 c0 e8 8c 5c ef ff 89 d9 c1 e9 02 <f3> a5 89 d9 83 e1 03 74 02 f3 a4 83 c3 06 8b 95 e8 fd ff ff 0f
+[  221.629066] EIP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151 SS:ESP 0068:c82d199c
+[  221.629066] ---[ end trace e417a1d67f0d0066 ]---
+
+Since hfsplus_cat_build_key_uni() returns void and only has one callsite,
+the check is performed at the callsite.
 
 Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
+Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Roman Zippel <zippel@linux-m68k.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/hfsplus/bitmap.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ fs/hfsplus/catalog.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/fs/hfsplus/bitmap.c
-+++ b/fs/hfsplus/bitmap.c
-@@ -32,6 +32,10 @@ int hfsplus_block_allocate(struct super_
- 	mutex_lock(&HFSPLUS_SB(sb).alloc_file->i_mutex);
- 	mapping = HFSPLUS_SB(sb).alloc_file->i_mapping;
- 	page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS, NULL);
-+	if (IS_ERR(page)) {
-+		start = size;
-+		goto out;
+--- a/fs/hfsplus/catalog.c
++++ b/fs/hfsplus/catalog.c
+@@ -168,6 +168,11 @@ int hfsplus_find_cat(struct super_block 
+ 		return -EIO;
+ 	}
+ 
++	if (be16_to_cpu(tmp.thread.nodeName.length) > 255) {
++		printk(KERN_ERR "hfs: catalog name length corrupted\n");
++		return -EIO;
 +	}
- 	pptr = kmap(page);
- 	curr = pptr + (offset & (PAGE_CACHE_BITS - 1)) / 32;
- 	i = offset % 32;
-@@ -73,6 +77,10 @@ int hfsplus_block_allocate(struct super_
- 			break;
- 		page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS,
- 					 NULL);
-+		if (IS_ERR(page)) {
-+			start = size;
-+			goto out;
-+		}
- 		curr = pptr = kmap(page);
- 		if ((size ^ offset) / PAGE_CACHE_BITS)
- 			end = pptr + PAGE_CACHE_BITS / 32;
-@@ -120,6 +128,10 @@ found:
- 		offset += PAGE_CACHE_BITS;
- 		page = read_mapping_page(mapping, offset / PAGE_CACHE_BITS,
- 					 NULL);
-+		if (IS_ERR(page)) {
-+			start = size;
-+			goto out;
-+		}
- 		pptr = kmap(page);
- 		curr = pptr;
- 		end = pptr + PAGE_CACHE_BITS / 32;
++
+ 	hfsplus_cat_build_key_uni(fd->search_key, be32_to_cpu(tmp.thread.parentID),
+ 				 &tmp.thread.nodeName);
+ 	return hfs_brec_find(fd);
 
 -- 
