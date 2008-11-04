@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759965AbYKDXvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760047AbYKDXvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759965AbYKDXvP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:51:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbYKDXj4
+	id S1760047AbYKDXvd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbYKDXkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:39:56 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52158 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:40:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:52173 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757737AbYKDXjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:39:55 -0500
-Date: Tue, 4 Nov 2008 15:32:51 -0800
+	id S1757777AbYKDXj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:39:59 -0500
+Date: Tue, 4 Nov 2008 15:32:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,12 +27,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Steven Toth <stoth@linuxtv.org>,
        Devin Heitmueller <devin.heitmueller@gmail.com>,
        Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [patch 36/57] DVB: s5h1411: Perform s5h1411 soft reset after tuning
-Message-ID: <20081104233251.GK659@suse.de>
+Subject: [patch 37/57] DVB: s5h1411: Power down s5h1411 when not in use
+Message-ID: <20081104233254.GL659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dvb-s5h1411-perform-s5h1411-soft-reset-after-tuning.patch"
+Content-Disposition: inline; filename="dvb-s5h1411-power-down-s5h1411-when-not-in-use.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,47 +45,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Devin Heitmueller <devin.heitmueller@gmail.com>
 
-cherry picked from commit f0d041e50bc6c8a677922d72b010f80af9b23b18
+cherry picked from commit 11fc9a4a440112b5afc1a99d86ba92d70205a688
 
-DVB: s5h1411: Perform s5h1411 soft reset after tuning
+DVB: s5h1411: Power down s5h1411 when not in use
 
-If you instruct the tuner to change frequencies, it can take up to 2500ms to
-get a demod lock.  By performing a soft reset after the tuning call (which
-is consistent with how the Pinnacle 801e Windows driver behaves), you get
-a demod lock inside of 300ms
+Power down the s5h1411 demodulator when not in use
+(on the Pinnacle 801e, this brings idle power from
+123ma down to 84ma).
 
 Signed-off-by: Devin Heitmueller <devin.heitmueller@gmail.com>
-Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Acked-by: Steven Toth <stoth@linuxtv.org>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/dvb/frontends/s5h1411.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/media/dvb/frontends/s5h1411.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 --- a/drivers/media/dvb/frontends/s5h1411.c
 +++ b/drivers/media/dvb/frontends/s5h1411.c
-@@ -588,9 +588,6 @@ static int s5h1411_set_frontend(struct d
+@@ -549,7 +549,7 @@ static int s5h1411_set_gpio(struct dvb_f
+ 		return s5h1411_writereg(state, S5H1411_I2C_TOP_ADDR, 0xe0, val);
+ }
  
- 	s5h1411_enable_modulation(fe, p->u.vsb.modulation);
+-static int s5h1411_sleep(struct dvb_frontend *fe, int enable)
++static int s5h1411_set_powerstate(struct dvb_frontend *fe, int enable)
+ {
+ 	struct s5h1411_state *state = fe->demodulator_priv;
  
--	/* Allow the demod to settle */
--	msleep(100);
--
- 	if (fe->ops.tuner_ops.set_params) {
- 		if (fe->ops.i2c_gate_ctrl)
- 			fe->ops.i2c_gate_ctrl(fe, 1);
-@@ -601,6 +598,10 @@ static int s5h1411_set_frontend(struct d
- 			fe->ops.i2c_gate_ctrl(fe, 0);
- 	}
- 
-+	/* Issue a reset to the demod so it knows to resync against the
-+	   newly tuned frequency */
-+	s5h1411_softreset(fe);
-+
+@@ -565,6 +565,11 @@ static int s5h1411_sleep(struct dvb_fron
  	return 0;
  }
  
++static int s5h1411_sleep(struct dvb_frontend *fe)
++{
++	return s5h1411_set_powerstate(fe, 1);
++}
++
+ static int s5h1411_register_reset(struct dvb_frontend *fe)
+ {
+ 	struct s5h1411_state *state = fe->demodulator_priv;
+@@ -614,7 +619,7 @@ static int s5h1411_init(struct dvb_front
+ 
+ 	dprintk("%s()\n", __func__);
+ 
+-	s5h1411_sleep(fe, 0);
++	s5h1411_set_powerstate(fe, 0);
+ 	s5h1411_register_reset(fe);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(init_tab); i++)
+@@ -878,6 +883,7 @@ static struct dvb_frontend_ops s5h1411_o
+ 	},
+ 
+ 	.init                 = s5h1411_init,
++	.sleep                = s5h1411_sleep,
+ 	.i2c_gate_ctrl        = s5h1411_i2c_gate_ctrl,
+ 	.set_frontend         = s5h1411_set_frontend,
+ 	.get_frontend         = s5h1411_get_frontend,
 
 -- 
