@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbYKDT5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbYKDT7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbYKDT5r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYKDT5j
+	id S1755856AbYKDT7S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbYKDT7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:57:39 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59835 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752163AbYKDT5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:57:38 -0500
-Date: Tue, 4 Nov 2008 20:57:29 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: data corruption: revalidating a (removable) hdd/flash on
-	re-insert
-Message-ID: <20081104195728.GC5862@ucw.cz>
-References: <490B2659.9010304@msgid.tls.msk.ru> <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com>
+	Tue, 4 Nov 2008 14:59:06 -0500
+Received: from lazybastard.de ([212.112.238.170]:58243 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbYKDT7D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 14:59:03 -0500
+Date: Tue, 4 Nov 2008 20:58:55 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
+Subject: [Patch][Checkstack] Do not hide small stackframes
+Message-ID: <20081104195855.GD16036@logfs.org>
+References: <49107304.2060006@parrot.com> <20081104173524.GB16036@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081104173524.GB16036@logfs.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-10-31 17:10:26, Kay Sievers wrote:
-> On Fri, Oct 31, 2008 at 16:38, Michael Tokarev <mjt@tls.msk.ru> wrote:
-> > To make a long story short: is there a way to force kernel
-> > to re-validate a replaced usb-connected hard drive (or a
-> > flash) *automatically*?
-> >
-> > Because right now, the kernel does not see that the drive
-> > has been replaced, and uses *some* old cached values, which
-> > results in random data corruption here and there, and other
-> > similar odd things.
+On Tue, 4 November 2008 18:35:24 +0100, Jörn Engel wrote:
+> On Tue, 4 November 2008 17:06:28 +0100, Matthieu CASTET wrote:
+> > 
+> > I wonder why the arm version of checkstack only catch stack size >= 300
+> > and < 10000 [1].
+> > Why doesn't it use ".*sub.*sp, sp, #([0-9]{1,8})" to catch all stack usage ?
 > 
-> Maybe your card reader is broken. I can not reproduce this with any of
-> the many readers I have. Usually a media change results in media
-> revalidation with the next access to the device. You can easily
-> reproduce that:
+> Looks like a bug.  And it further looks like Holger just copied what
+> everyone else did at the time.  And the one who started this strange
+> pattern was: Arnd.
 > 
-> Insert the media, and force a validation:
->   $ touch /dev/sdb
-> 
-> Start logging of the kernel uevents to the console:
->   $ udevadm monitor --kernel &
-> 
-> Access the device:
->   $ touch /dev/sdb
-> 
-> Nothing should happen, as the reader/kernel knows it is still valid.
-> 
-> Now remove the media and insert it immediately again.
-> 
-> Access the device:
->   $ touch /dev/sdb
->   UEVENT[1225468868.803950] change
-> /devices/pci0000:00/0000:00:1d.7/usb5/5-2/5-2:1.0/host8/target8:0:0/8:0:0:0
-> (scsi)
-> 
-> and you see the reader told to kernel (scsi unit attention) to
-> revalidate the device.
-> 
-> These events happen only when the device is accessed. That's why
-> distros poll removable devices for media changes.
-> 
-> Every access to removable media is guarded by this revalidation check.
-> If you don't see these events, you should not trust this reader, and
-> at least never change the media while it is connected.
+> Arnd, did you have a good reason for choosing the pattern?
 
-This is rather nasty data-corrupter. Could we at least blacklist
-broken device, and force revalidation on each close or something like
-that?
+Assuming you didn't, the patch below should print all(*) stackframes
+for all architectures.
 
+(*) Stack frames below 100 bytes are ignored, by virtue of
+		next if ($size < 100);
+    This is imo preferrable as it is architecture-independent and easier
+    to spot.  The fact that noone noticed the 300 byte effect for five
+    years (or thereabout) speaks volumes.
+
+Jörn
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+You ain't got no problem, Jules. I'm on the motherfucker. Go back in
+there, chill them niggers out and wait for the Wolf, who should be
+coming directly.
+-- Marsellus Wallace
+
+The regex for s390 - and several other architectures that copied from
+s390 - silently ignored stack frames below 300 and above 10000 bytes.
+
+Signed-off-by: Jörn Engel <joern@logfs.org>
+---
+
+ scripts/checkstack.pl |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+--- debuggerhead/scripts/checkstack.pl~checkstack	2008-03-05 12:14:05.000000000 +0100
++++ debuggerhead/scripts/checkstack.pl	2008-11-04 20:38:08.000000000 +0100
+@@ -38,7 +38,7 @@ my (@stack, $re, $x, $xs);
+ 	$xs	= "[0-9a-f ]";	# hex character or space
+ 	if ($arch eq 'arm') {
+ 		#c0008ffc:	e24dd064	sub	sp, sp, #100	; 0x64
+-		$re = qr/.*sub.*sp, sp, #(([0-9]{2}|[3-9])[0-9]{2})/o;
++		$re = qr/.*sub.*sp, sp, #([0-9]{1,8})/o;
+ 	} elsif ($arch eq 'avr32') {
+ 		#8000008a:       20 1d           sub sp,4
+ 		#80000ca8:       fa cd 05 b0     sub sp,sp,1456
+@@ -51,17 +51,17 @@ my (@stack, $re, $x, $xs);
+ 		$re = qr/^.*[as][du][db]    \$(0x$x{1,8}),\%rsp$/o;
+ 	} elsif ($arch eq 'ia64') {
+ 		#e0000000044011fc:       01 0f fc 8c     adds r12=-384,r12
+-		$re = qr/.*adds.*r12=-(([0-9]{2}|[3-9])[0-9]{2}),r12/o;
++		$re = qr/.*adds.*r12=-([0-9]{1,8}),r12/o;
+ 	} elsif ($arch eq 'm68k') {
+ 		#    2b6c:       4e56 fb70       linkw %fp,#-1168
+ 		#  1df770:       defc ffe4       addaw #-28,%sp
+ 		$re = qr/.*(?:linkw %fp,|addaw )#-([0-9]{1,4})(?:,%sp)?$/o;
+ 	} elsif ($arch eq 'mips64') {
+ 		#8800402c:       67bdfff0        daddiu  sp,sp,-16
+-		$re = qr/.*daddiu.*sp,sp,-(([0-9]{2}|[3-9])[0-9]{2})/o;
++		$re = qr/.*daddiu.*sp,sp,-([0-9]{1,8})/o;
+ 	} elsif ($arch eq 'mips') {
+ 		#88003254:       27bdffe0        addiu   sp,sp,-32
+-		$re = qr/.*addiu.*sp,sp,-(([0-9]{2}|[3-9])[0-9]{2})/o;
++		$re = qr/.*addiu.*sp,sp,-([0-9]{1,8})/o;
+ 	} elsif ($arch eq 'parisc' || $arch eq 'parisc64') {
+ 		$re = qr/.*ldo ($x{1,8})\(sp\),sp/o;
+ 	} elsif ($arch eq 'ppc') {
+@@ -74,13 +74,13 @@ my (@stack, $re, $x, $xs);
+ 		$re = qr/.*st[dw]u.*r1,-($x{1,8})\(r1\)/o;
+ 	} elsif ($arch =~ /^s390x?$/) {
+ 		#   11160:       a7 fb ff 60             aghi   %r15,-160
+-		$re = qr/.*ag?hi.*\%r15,-(([0-9]{2}|[3-9])[0-9]{2})/o;
++		$re = qr/.*ag?hi.*\%r15,-([0-9]{1,8})/o;
+ 	} elsif ($arch =~ /^sh64$/) {
+ 		#XXX: we only check for the immediate case presently,
+ 		#     though we will want to check for the movi/sub
+ 		#     pair for larger users. -- PFM.
+ 		#a00048e0:       d4fc40f0        addi.l  r15,-240,r15
+-		$re = qr/.*addi\.l.*r15,-(([0-9]{2}|[3-9])[0-9]{2}),r15/o;
++		$re = qr/.*addi\.l.*r15,-([0-9]{1,8}),r15/o;
+ 	} elsif ($arch =~ /^blackfin$/) {
+ 		#   0:   00 e8 38 01     LINK 0x4e0;
+ 		$re = qr/.*[[:space:]]LINK[[:space:]]*(0x$x{1,8})/o;
