@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYKDPCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbYKDPD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbYKDPCW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 10:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbYKDPCH
+	id S1755525AbYKDPD4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 10:03:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbYKDPDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 10:02:07 -0500
-Received: from smtp02.zero.jp ([210.157.5.232]:43889 "EHLO smtp.zero.jp"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753134AbYKDPCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 10:02:06 -0500
-X-Spam-Flag: NO
-X-Spam-Score: 2.412
-Message-ID: <491063E5.9060805@ct.jp.nec.com>
-Date: Tue, 04 Nov 2008 10:01:57 -0500
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 4 Nov 2008 10:03:48 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:24798 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbYKDPDr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 10:03:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=SYO/ooJEgjQzaysKvT2oYJkPsn+tAvLMAM+c2a5li0wEvdtK0I8poFACwoBQCvFD8N
+         i1/CRAF5JctgZeDRgWHkLN0WhAGyF1izwaWR+xyV7uO49jp4L2P7eHG1fRsSUkykDYVM
+         q0g3CthAKagu9subF38ULzmc7PO0+eo2fRKSE=
+Message-ID: <cf70f0210811040703j116a54dap576fbaaffd1be2b7@mail.gmail.com>
+Date: Tue, 4 Nov 2008 20:33:45 +0530
+From: "Shivdas Gujare" <shivdas.tech@gmail.com>
+To: beagleboard@googlegroups.com
+Subject: measuring boottime ?
 MIME-Version: 1.0
-To: Nikanth Karthikesan <KNikanth@novell.com>
-CC: nikanth@gmail.com, agk@redhat.com, j-nomura@ce.jp.nec.com,
-       "<Andi Kleen" <andi@firstfloor.org>,
-       James.Bottomley@hansenpartnership.com, jens.axboe@oracle.com,
-       dm-devel@redhat.com, "<Milan Broz" <mbroz@redhat.com>, knikanth@suse.de,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Subject: Re: [dm-devel] [PATCH 10/13] dm: add core functions for request-based
- dm
-References: <20080912.103814.74754581.k-ueda@ct.jp.nec.com> <20080912.104612.115643090.k-ueda@ct.jp.nec.com> <807b3a220810240044v1b9f12e3xc3bd5a429b9d4c5@mail.gmail.com> <490FB852.3FEE.00C5.1@novell.com> <49102C03020000C50002E257@victor.provo.novell.com>
-In-Reply-To: <49102C03020000C50002E257@victor.provo.novell.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nikanth,
+Hi all ,
 
-Nikanth Karthikesan wrote:
-> Hi Kiyoshi
-> 
->>>> On 10/28/2008 at 09:30 PM, Kiyoshi Ueda <k-ueda@ct.jp.nec.com> wrote: 
->> Hi Nikanth,
->>
->> On Fri, 24 Oct 2008 13:14:50 +0530, "Nikanth K" wrote:
->>> On Fri, Sep 12, 2008 at 8:16 PM, Kiyoshi Ueda wrote:
->>> <snip>
->>>
->>>> +static int dm_make_request(struct request_queue *q, struct bio *bio)
->>>> +{
->>>> +       struct mapped_device *md = (struct mapped_device *)q->queuedata;
->>>> +
->>>> +       if (unlikely(bio_barrier(bio))) {
->>>> +               bio_endio(bio, -EOPNOTSUPP);
->>>> +               return 0;
->>>> +       }
->>>> +
->>> <snip>
->>>
->>> Why not add barrier support in the beginning itself, so that targets
->>> can be developed with barriers in mind? At least can we make the target
->>> to return error, instead of the core?
->> Currently, there is no barrier support in dm, not only request-based.
->> Barrier support is a different feature in the next step, I think.
-> 
-> But there are some works in that direction to add support for barriers in dm.
-> That is why I think building request-based dm with barriers from the 
-> ground up might be a good idea.
+I tried to find out another way to measure boottime of beagle board
+(since I am not able to find a solution to
+http://bugzilla.kernel.org/show_bug.cgi?id=10648)
 
-I agree, if I or other people have a time to implement barrier support
-for request-based dm.
-But I think the some works you mentioned above are:
-    - Andi Kleen: barrier support for linear (single device)
-    - Milan Broz: full barrier support in dm core (no target patch)
-so there is no barrier support work for dm-multipath yet.
+I created a custom initrd.img , while creating rootfs, I added
+following lines to /etc/init.d/rcS script,
+"cat /proc/uptime".
 
-Current request-based target is only dm-multipath, so we won't have
-any feature regression even if request-based dm-multipath gets in.
-And I don't have much time to implement barrier support for
-request-based dm-multipath now, so I'd like to consider it as
-the next step.
+I disabled all kernel debug messages and able to get console with
+output of cat /proc/uptime as,
+"1.07 0.38".
 
-Thanks,
-Kiyoshi Ueda
+Does this mean, boottime is 1.07 sec or do I needs to follow another method?
+
+Thanks for any help.
+
+Regards,
+Shivdas
