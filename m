@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYKDVKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbYKDVLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305AbYKDVKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 16:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbYKDVKl
+	id S1756379AbYKDVLc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 16:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYKDVLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 16:10:41 -0500
-Received: from tombstone.ecm.ub.es ([161.116.81.124]:2594 "EHLO
-	tombstone.ecm.ub.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755845AbYKDVKk (ORCPT
+	Tue, 4 Nov 2008 16:11:23 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:32747 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754239AbYKDVLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 16:10:40 -0500
-Message-ID: <4910BA46.5090700@ecm.ub.es>
-Date: Tue, 04 Nov 2008 22:10:30 +0100
-From: Albert Comerma <albert@ecm.ub.es>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 4 Nov 2008 16:11:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=TAsOAcXqoJe6s9Y5nspis7v8PplmndI6+uMbVppAlkqG5XIPBP7XQ+K/02IsmTxoQ
+	Wo82+gFzj4y7dMBGiJqoA==
+Date: Tue, 4 Nov 2008 13:10:57 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
+       npiggin@suse.de, menage@google.com, dfults@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <1225831988.7803.1939.camel@twins>
+Message-ID: <alpine.DEB.2.00.0811041306510.27392@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>  <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SISUSB2VGA driver add 0x0711, 0x0903
-References: <49106D7F.8080902@ecm.ub.es> <20081104104332.eb9f36ca.akpm@linux-foundation.org>
-In-Reply-To: <20081104104332.eb9f36ca.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, but since it was so an "easy" patch I thought it was not needed :P
-I add some more information;
-This adds a new device I bought some time ago from www.compatible.eu, 
-but Its produced by Startech (www.startech.com).
-Looking the device VID and PID it seems the normal evolution of the 
-previous products supported by the linux driver sisusb2vga.
-It permits to add an external display using a normal usb2 port to your 
-computer. Up to 16 displays connected to the usb (in theory) with a 
-maximum resolution of 1280x1024 and 32bits. The only problem is the lack 
-of acceleration and the poor refresh rate, but it works quite well for 
-mostly static display (for example your mail software).
-I've been using it for nearly a year without any problem using xinerama 
-configuration on xorg.
-I've had had also reports from some people using it without problems 
-(see http://www.sidux.com/index.php?module=pnWikka&tag=usb2vga ).
-For more information and pictures just have a look at; 
-http://www.comerma.net/usb2vga_en.html
+On Tue, 4 Nov 2008, Peter Zijlstra wrote:
 
-Albert
+> I think the main reason is that we have per-node vmstats so the cpuset
+> extention is relatively easy. Whereas we do not currently maintain
+> vmstats on a cgroup level - although I imagine that could be remedied.
+> 
 
-En/na Andrew Morton ha escrit:
-> On Tue, 04 Nov 2008 16:42:55 +0100
-> Albert Comerma <albert@ecm.ub.es> wrote:
->
->   
->> After some comments (thanks a lot) I resend the patch, hoping now it 
->> reaches the adequate person.
->>
->> Signed-off-by:  Albert Comerma <albert.comerma@gmail.com>
->>
->>
->> [sisusb.patch  text/x-diff (565B)]
->> diff -r -u linux-2.6.27.4/drivers/usb/misc/sisusbvga/sisusb.c linux-2.6.27.4-new/drivers/usb/misc/sisusbvga/sisusb.c
->> --- linux-2.6.27.4/drivers/usb/misc/sisusbvga/sisusb.c	2008-10-26 00:05:07.000000000 +0200
->> +++ linux-2.6.27.4-new/drivers/usb/misc/sisusbvga/sisusb.c	2008-11-03 15:21:03.000000000 +0100
->> @@ -3270,6 +3270,7 @@
->>  	{ USB_DEVICE(0x0711, 0x0900) },
->>  	{ USB_DEVICE(0x0711, 0x0901) },
->>  	{ USB_DEVICE(0x0711, 0x0902) },
->> +	{ USB_DEVICE(0x0711, 0x0903) },
->>  	{ USB_DEVICE(0x0711, 0x0918) },
->>  	{ USB_DEVICE(0x182d, 0x021c) },
->>  	{ USB_DEVICE(0x182d, 0x0269) },
->>     
->
-> Could we please have some description of this patch?  What device are
-> we supporting here?  Manufacturer/model/etc?  Something.  Anything!
->   
+That's correct, the ZVC values from each node assigned to a particular 
+cpuset is used to determine the dirty ratios.  We don't currently have the 
+infrastructure to do that with any other cgroup.
 
+So extracting this out to a separate cgroup is fine, but it's still only 
+applicable to cpusets at this time.  Let me know what the prerequisites 
+are for -mm inclusion.
