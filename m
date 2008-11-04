@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbYKDX5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbYKDX60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761195AbYKDX5E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:57:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbYKDXlG
+	id S1761389AbYKDX60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbYKDXlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:41:06 -0500
-Received: from mail.suse.de ([195.135.220.2]:47928 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:41:23 -0500
+Received: from ns2.suse.de ([195.135.220.15]:52370 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756947AbYKDXlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:41:05 -0500
-Date: Tue, 4 Nov 2008 15:33:27 -0800
+	id S1757761AbYKDXlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:41:22 -0500
+Date: Tue, 4 Nov 2008 15:33:36 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>,
-       Matthew Garrett <mjg@redhat.com>, Andi Kleen <ak@linux.intel.com>
-Subject: [patch 52/57] ACPI: Clear WAK_STS on resume
-Message-ID: <20081104233327.GA659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Andy Gospodarek <andy@greyhouse.net>,
+       Jay Vosburgh <fubar@us.ibm.com>, Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 56/57] bonding: fix panic when taking bond interface down
+	before removing module
+Message-ID: <20081104233336.GE659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-clear-wak_sts-on-resume.patch"
+Content-Disposition: inline; filename="bonding-fix-panic-when-taking-bond-interface-down-before-removing-module.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,50 +40,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Andy Gospodarek <andy@greyhouse.net>
 
-Subject: [patch 52/57] ACPI: Clear WAK_STS on resume
+commit ce39a800ea87c655de49af021c8b20ee323cb40d upstream.
 
-commit a68823ee5285e65b51ceb96f8b13a5b4f99a6888 upstream.
+A panic was discovered with bonding when using mode 5 or 6 and trying to
+remove the slaves from the bond after the interface was taken down.
+When calling 'ifconfig bond0 down' the following happens:
 
-ACPI: Clear WAK_STS on resume
+    bond_close()
+        bond_alb_deinitialize()
+            tlb_deinitialize()
+		kfree(bond_info->tx_hashtbl)
+                bond_info->tx_hashtbl = NULL
 
-The leading other brand OS appears to clear the WAK_STS flag on resume.
-When rebooted, certain BIOSes assume that the system is actually
-resuming if it's still set and so fail to reboot correctly. Make sure
-that it's cleared at resume time.
+Unfortunately if there are still slaves in the bond, when removing the
+module the following happens:
 
-Comment clarified as suggested by Bob Moore
+    bonding_exit()
+        bond_free_all()
+            bond_release_all()
+                bond_alb_deinit_slave()
+                    tlb_clear_slave()
+                        tx_hash_table = BOND_ALB_INFO(bond).tx_hashtbl
+			u32 next_index = tx_hash_table[index].next
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11634
+As you might guess we panic when trying to access a few entries into the
+table that no longer exists.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Tested-by: Romano Giannetti <romano.giannetti@gmail.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+I experimented with several options (like moving the calls to
+tlb_deinitialize somewhere else), but it really makes the most sense to
+be part of the bond_close routine.  It also didn't seem logical move
+tlb_clear_slave around too much, so the simplest option seems to add a
+check in tlb_clear_slave to make sure we haven't already wiped the
+tx_hashtbl away before searching for all the non-existent hash-table
+entries that used to point to the slave as the output interface.
+
+Signed-off-by: Andy Gospodarek <andy@greyhouse.net>
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/hardware/hwsleep.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/net/bonding/bond_alb.c |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
---- a/drivers/acpi/hardware/hwsleep.c
-+++ b/drivers/acpi/hardware/hwsleep.c
-@@ -612,6 +612,13 @@ acpi_status acpi_leave_sleep_state(u8 sl
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -167,11 +167,14 @@ static void tlb_clear_slave(struct bondi
+ 	/* clear slave from tx_hashtbl */
+ 	tx_hash_table = BOND_ALB_INFO(bond).tx_hashtbl;
+ 
+-	index = SLAVE_TLB_INFO(slave).head;
+-	while (index != TLB_NULL_INDEX) {
+-		u32 next_index = tx_hash_table[index].next;
+-		tlb_init_table_entry(&tx_hash_table[index], save_load);
+-		index = next_index;
++	/* skip this if we've already freed the tx hash table */
++	if (tx_hash_table) {
++		index = SLAVE_TLB_INFO(slave).head;
++		while (index != TLB_NULL_INDEX) {
++			u32 next_index = tx_hash_table[index].next;
++			tlb_init_table_entry(&tx_hash_table[index], save_load);
++			index = next_index;
++		}
  	}
- 	/* TBD: _WAK "sometimes" returns stuff - do we want to look at it? */
  
-+	/*
-+	 * Some BIOSes assume that WAK_STS will be cleared on resume and use
-+	 * it to determine whether the system is rebooting or resuming. Clear
-+	 * it for compatibility.
-+	 */
-+	acpi_set_register(ACPI_BITREG_WAKE_STATUS, 1);
-+
- 	acpi_gbl_system_awake_and_running = TRUE;
- 
- 	/* Enable power button */
+ 	tlb_init_slave(slave);
 
 -- 
