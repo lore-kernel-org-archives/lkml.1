@@ -1,102 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYKDSaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbYKDSaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbYKDSaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYKDSaK
+	id S1755974AbYKDSaj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbYKDSaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:30:10 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:60586 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbYKDSaI (ORCPT
+	Tue, 4 Nov 2008 13:30:18 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:47973 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754109AbYKDSaQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:30:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=W+aHv/19DFniyC+MkUoPmofSxaHvyE/dmUHuieb331/v1xhp6juDN5JdP5J29Nq7um
-         kYz2UFnf1z/vjbgVgFSJjy2gFxzBbVU8V309gVuiijLCEASySdx/K9pAySts5wo757+8
-         9vgbwfIbrzRnNPcrixblSF8uWy0t1sAM2mU1w=
-Date: Tue, 4 Nov 2008 21:00:12 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ben Hutchings <bhutchings@solarflare.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-Subject: Re: [PATCH] x86: Don't allow nr_irqs > NR_IRQS
-Message-ID: <20081104180012.GG21470@localhost>
-References: <1225819102.3074.15.camel@achroite>
+	Tue, 4 Nov 2008 13:30:16 -0500
+Message-ID: <491094B2.4090107@ru.mvista.com>
+Date: Tue, 04 Nov 2008 21:30:10 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1225819102.3074.15.camel@achroite>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] ide: rework handling of serialized ports
+References: <20081103200244.5098.29817.sendpatchset@localhost.localdomain> <20081103200326.5098.2058.sendpatchset@localhost.localdomain>
+In-Reply-To: <20081103200326.5098.2058.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ben Hutchings - Tue, Nov 04, 2008 at 05:18:22PM +0000]
-| On some systems probe_nr_irqs() can return a value larger than
-| NR_IRQS.  This will lead to probe_irq_on() overrunning the irq_desc
-| array.
-| 
-| Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
-| ---
-|  arch/x86/kernel/io_apic.c |    2 ++
-|  1 files changed, 2 insertions(+), 0 deletions(-)
-| ﻿
-| I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
-| Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
-| 5 IOAPICs (!) and returns 240.  Here are the log messages:
-| 
-| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
-| Tue Nov  4 16:53:47 2008 IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
-| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x02] address[0xfec81000] gsi_base[24])
-| Tue Nov  4 16:53:47 2008 IOAPIC[1]: apic_id 2, version 32, address 0xfec81000, GSI 24-47
-| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x03] address[0xfec81400] gsi_base[48])
-| Tue Nov  4 16:53:47 2008 IOAPIC[2]: apic_id 3, version 32, address 0xfec81400, GSI 48-71
-| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x04] address[0xfec82000] gsi_base[72])
-| Tue Nov  4 16:53:47 2008 IOAPIC[3]: apic_id 4, version 32, address 0xfec82000, GSI 72-95
-| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x05] address[0xfec82400] gsi_base[96])
-| Tue Nov  4 16:53:47 2008 IOAPIC[4]: apic_id 5, version 32, address 0xfec82400, GSI 96-119
-| Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
-| Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-| Tue Nov  4 16:53:47 2008 Enabling APIC mode:  Flat.  Using 5 I/O APICs
-| 
-| ﻿I think this has become possible since:
-| 
-| commit d6c88a507ef0b6afdb013cba4e7804ba7324d99a
-| Author: Thomas Gleixner <tglx@linutronix.de>
-| Date:   Wed Oct 15 15:27:23 2008 +0200
-| 
-|     genirq: revert dynarray
-| 
-|     Revert the dynarray changes. They need more thought and polishing.
-| 
-|     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-| 
-| Ben.
-| 
-| diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-| index b764d74..c8482fb 100644
-| --- a/arch/x86/kernel/io_apic.c
-| +++ b/arch/x86/kernel/io_apic.c
-| @@ -3611,6 +3611,8 @@ int __init probe_nr_irqs(void)
-|  	/* something wrong ? */
-|  	if (nr < nr_min)
-|  		nr = nr_min;
-| +	if (nr > NR_IRQS)
-| +		nr = NR_IRQS;
-|  
-|  	return nr;
-|  }
-|
+Bartlomiej Zolnierkiewicz wrote:
 
-Hi Ben,
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: rework handling of serialized ports
 
-I don't think that is because of Thomas' commit. If we've got
-number of pins larger then we expect it means something wrong
-with our NR_IRQS. Is it possible to get your .config?
- 
-		- Cyrill -
+> * hpt366: set IDE_HFLAG_SERIALIZE in hwif->host_flags if needed
+>   in init_hwif_hpt366().  Remove HPT_SERIALIZE_IO while at it.
+
+> * Set IDE_HFLAG_SERIALIZE in hwif->host_flags if needed in
+>   ide_init_port().
+
+> * Convert init_irq() to use IDE_HFLAG_SERIALIZE together with
+>   hwif->host to find out ports which need to be serialized.
+
+> * Remove no longer needed save_match() and ide_hwif_t.serialized.
+
+> This patch should fix the incorrect grouping of port(s) from
+> host(s) that need serialization with port(s) that happen to use
+> the same IRQ(s) but are from the host(s) that don't need it.
+
+> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+>  static int __devinit init_dma_hpt366(ide_hwif_t *hwif,
+> Index: b/drivers/ide/ide-probe.c
+> ===================================================================
+> --- a/drivers/ide/ide-probe.c
+> +++ b/drivers/ide/ide-probe.c
+[...]
+> +			if (hwif->host_flags & IDE_HFLAG_SERIALIZE) {
+> +				if (hwif->host == h->host)
+> +					match = h;
+
+    Can be collapsed into a single *if*, and braces not needed either way.
+
+> @@ -1436,10 +1398,8 @@ static void ide_init_port(ide_hwif_t *hw
+>  	}
+>  
+>  	if ((d->host_flags & IDE_HFLAG_SERIALIZE) ||
+> -	    ((d->host_flags & IDE_HFLAG_SERIALIZE_DMA) && hwif->dma_base)) {
+> -		if (hwif->mate)
+> -			hwif->mate->serialized = hwif->serialized = 1;
+> -	}
+> +	    ((d->host_flags & IDE_HFLAG_SERIALIZE_DMA) && hwif->dma_base))
+> +		hwif->host_flags |= IDE_HFLAG_SERIALIZE;
+
+    I don't see what use is forcing this flag at all here -- it doesn't seem 
+to be checked only in init_irq() now, so this *if* could just be moved there...
+
+MBR, Sergei
