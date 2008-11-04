@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756281AbYKDUNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYKDUPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756281AbYKDUNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 15:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYKDUNQ
+	id S1756456AbYKDUPA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 15:15:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYKDUOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 15:13:16 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:10292 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753290AbYKDUNQ (ORCPT
+	Tue, 4 Nov 2008 15:14:52 -0500
+Received: from jester.euphonynet.be ([212.87.96.13]:50383 "EHLO
+	mailpush2.euphonynet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbYKDUOw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 15:13:16 -0500
-Message-ID: <ac3eb2510811041213l4a20fa12h3c5beb3c2d317574@mail.gmail.com>
-Date: Tue, 4 Nov 2008 21:13:10 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: data corruption: revalidating a (removable) hdd/flash on re-insert
-Cc: "Michael Tokarev" <mjt@tls.msk.ru>,
-       "Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081104195728.GC5862@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 15:14:52 -0500
 Content-Disposition: inline
-References: <490B2659.9010304@msgid.tls.msk.ru>
-	 <ac3eb2510810310910w603d90bai8c23b34fb517f21a@mail.gmail.com>
-	 <20081104195728.GC5862@ucw.cz>
+From: Bart Van Assche <bart.vanassche@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH][RESEND] C99 initializers for DEFINE_RATELIMIT_STATE()
+Date: Tue, 4 Nov 2008 21:14:48 +0100
+User-Agent: KMail/1.10.0 (KDE/4.0.4; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200811042114.48495.bart.vanassche@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 4, 2008 at 20:57, Pavel Machek <pavel@suse.cz> wrote:
-> On Fri 2008-10-31 17:10:26, Kay Sievers wrote:
->> On Fri, Oct 31, 2008 at 16:38, Michael Tokarev <mjt@tls.msk.ru> wrote:
->> > To make a long story short: is there a way to force kernel
->> > to re-validate a replaced usb-connected hard drive (or a
->> > flash) *automatically*?
->> >
->> > Because right now, the kernel does not see that the drive
->> > has been replaced, and uses *some* old cached values, which
->> > results in random data corruption here and there, and other
->> > similar odd things.
->>
->> Maybe your card reader is broken. I can not reproduce this with any of
->> the many readers I have. Usually a media change results in media
->> revalidation with the next access to the device. You can easily
->> reproduce that:
->>
->> Insert the media, and force a validation:
->>   $ touch /dev/sdb
->>
->> Start logging of the kernel uevents to the console:
->>   $ udevadm monitor --kernel &
->>
->> Access the device:
->>   $ touch /dev/sdb
->>
->> Nothing should happen, as the reader/kernel knows it is still valid.
->>
->> Now remove the media and insert it immediately again.
->>
->> Access the device:
->>   $ touch /dev/sdb
->>   UEVENT[1225468868.803950] change
->> /devices/pci0000:00/0000:00:1d.7/usb5/5-2/5-2:1.0/host8/target8:0:0/8:0:0:0
->> (scsi)
->>
->> and you see the reader told to kernel (scsi unit attention) to
->> revalidate the device.
->>
->> These events happen only when the device is accessed. That's why
->> distros poll removable devices for media changes.
->>
->> Every access to removable media is guarded by this revalidation check.
->> If you don't see these events, you should not trust this reader, and
->> at least never change the media while it is connected.
->
-> This is rather nasty data-corrupter.
+A few months ago (July 25, 2008) the printk ratelimiting code has been
+rewritten. This patch added a.o. the new macro DEFINE_RATELIMIT_STATE(). The
+patch below converts the initializers in that macro to C99 style.
 
-Sure, it is.
+For more information about the printk ratelimiting rewrite, see also commit
+717115e1a5856b57af0f71e1df7149108294fc10
+(http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=commit;h=717115e1a5856b57af0f71e1df7149108294fc10).
 
-> Could we at least blacklist
-> broken device, and force revalidation on each close or something like
-> that?
+Impact: cleanup, no functionality changed.
 
-What's your idea of revalidation if the hardware does not tell you?
-Get an md5 of the disk content? :)
+Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
 
-Kay
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 18a5b9b..61cc908 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -13,8 +13,9 @@ struct ratelimit_state {
+ 	unsigned long begin;
+ };
+ 
+-#define DEFINE_RATELIMIT_STATE(name, interval, burst)		\
+-		struct ratelimit_state name = {interval, burst,}
++#define DEFINE_RATELIMIT_STATE(name, interval_value, burst_value)	\
++	struct ratelimit_state name =					\
++		{ .interval = (interval_value), .burst = (burst_value) }
+ 
+ extern int __ratelimit(struct ratelimit_state *rs);
+ 
+
+-------------------------------------------------------
