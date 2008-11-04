@@ -1,84 +1,617 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYKDRdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYKDRec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYKDRdc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbYKDRdY
+	id S1756832AbYKDRec (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 12:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbYKDReT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:33:24 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:56745 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754378AbYKDRdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:33:23 -0500
-Date: Tue, 4 Nov 2008 18:33:00 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: linux-kernel@vger.kernel.org, rjw@sisk.pl
-Subject: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Message-ID: <20081104173300.GF6134@ics.muni.cz>
+	Tue, 4 Nov 2008 12:34:19 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:55786 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862AbYKDReQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 12:34:16 -0500
+Date: Tue, 4 Nov 2008 09:34:14 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Jan-Bernd Themann <THEMANN@de.ibm.com>,
+       netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH RFC v2] net: add PCINet driver
+Message-ID: <20081104173414.GB4641@ovro.caltech.edu>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>, netdev@vger.kernel.org,
+	Stephen Hemminger <shemminger@vyatta.com>,
+	linux-kernel@vger.kernel.org
+References: <20081029202027.GH12879@ovro.caltech.edu> <200811041309.25869.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 04 Nov 2008 18:32:55 +0100 (CET)
+In-Reply-To: <200811041309.25869.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Tue, 04 Nov 2008 09:34:15 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rafael,
+On Tue, Nov 04, 2008 at 01:09:25PM +0100, Arnd Bergmann wrote:
+> On Wednesday 29 October 2008, Ira Snyder wrote:
+> > This adds support to Linux for a virtual ethernet interface which uses the
+> > PCI bus as its transport mechanism. It creates a simple, familiar, and fast
+> > method of communication for two devices connected by a PCI interface.
+> 
+> Very interesting. I have seen multiple such drivers, and still plan to
+> have one as well for the cell/axon platform.
+> 
+> > This is the third posting of this driver. I got some feedback, and have
+> > corrected the problems. Stephen, thanks for the review! I also got some
+> > off-list feedback from a potential user, so I believe this is worth getting
+> > into mainline.
+> 
+> Sorry for not having replied earlier, I did not see first postings.
+> While I did not see any major problems with your code, I think we should
+> actually do it in a different way, which I have talked about at the
+> Linux plumbers conference, and will again at the UKUUG Linux conference
+> this weekend. You can find my slides from the previous talk at
+> http://userweb.kernel.org/%7Earnd/papers/plumbers08/plumbers-slides.pdf
+>  
 
-not sure whether this is already reported or not. However, in 2.6.28-rc3
-I discovered about 10 secs delay before mounting the root fs and running init
-(not sure whether the delay is caused by mount or init). It did not appear in
-2.6.27. I did not try any previous 2.6.28-rcX.
+I'll read through these slides as soon as I'm finished replying to this
+email :)
 
-This is from dmesg in 2.6.28-rc3. 
+> Since you have code and I only have plans, I suppose I can't make you
+> wait for me to get a driver for your platform, but I hope we can join
+> forces in the future and share code in the future.
+> 
 
-[    7.880966] IBM TrackPoint firmware: 0x0e, buttons: 3/3
-[    8.103116] input: TPPS/2 IBM TrackPoint as
-/devices/platform/i8042/serio1/serio2/input/input7
-[   28.993523] kjournald starting.  Commit interval 5 seconds
-[   28.993581] EXT3-fs: mounted filesystem with ordered data mode.
-[   28.993638] VFS: Mounted root (ext3 filesystem) readonly.
-[   28.993675] Freeing unused kernel memory: 332k freed
-[   37.697648] uhci_hcd: USB Universal Host Controller Interface driver
-[   37.697740] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ
-20
-[   37.697779] uhci_hcd 0000:00:1a.0: setting latency timer to 64
-[   37.697785] uhci_hcd 0000:00:1a.0: UHCI Host Controller
-[   37.698005] drivers/usb/core/inode.c: creating file 'devices'
-[   37.698008] drivers/usb/core/inode.c: creating file '001'
-[   37.698131] uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus
-number 1
-[   37.698176] uhci_hcd 0000:00:1a.0: detected 2 ports
-[   37.698205] uhci_hcd 0000:00:1a.0: uhci_check_and_reset_hc: cmd = 0x0000
+I hope so too. I wrote this because I needed something working. I'm
+completely happy to help write code for another implementation.
+
+> My fundamental criticism of your code is that it is not flexible enough.
+> We have a number of platforms that act as a PCI, PCIe or similar kind
+> of device and want to transfer network data. At the same time, some of
+> these want to use the same infrastructure for non-network data like
+> MPI (ibverbs), block device or file system (9p). Even in your limited
+> setup, it seems that you should be able to share more code between the
+> two implementations you have posted here. When looking at the code, I
+> found a lot of duplication between the drivers that you should be able
+> to avoid.
+> 
+
+I completely agree. I made the host and client drivers as similar as
+possible on purpose, to increase my own code sharing. In fact, if you
+diff them, you'll see that they are almost identical.
+
+I decided that it would be better to post them up for review than try to
+fix every little problem.
+
+> My suggestion is to base this on the virtio infrastructure, and some
+> of my colleagues at IBM already implemented a driver that uses
+> virtio-net on a PCIe connection.
+> 
+
+To be honest, I couldn't get that figured out. I looked at that code for
+a couple of weeks and couldn't make a lot of sense out of it. I couldn't
+find much really good documentation, either. I'd love to re-use more
+code than I have.
+
+> 	Arnd <><
+> 
+> Now a few comments on your code:
+> 
+> 
+> > diff --git a/arch/powerpc/boot/dts/mpc834x_mds.dts b/arch/powerpc/boot/dts/mpc834x_mds.dts
+> > index c986c54..3bc8975 100644
+> > --- a/arch/powerpc/boot/dts/mpc834x_mds.dts
+> > +++ b/arch/powerpc/boot/dts/mpc834x_mds.dts
+> > @@ -104,6 +104,13 @@
+> >  			mode = "cpu";
+> >  		};
+> >  
+> > +		message-unit@8030 {
+> > +			compatible = "fsl,mpc8349-mu";
+> > +			reg = <0x8030 0xd0>;
+> > +			interrupts = <69 0x8>;
+> > +			interrupt-parent = <&ipic>;
+> > +		};
+> 
+> What is a message unit? Is this the mailbox you use in the driver?
+> We are facing a similar problem on Axon regarding probing of
+> the virtual device because you can't easily tell from the device
+> tree whether the machine is connected to something that is trying
+> to communicate.
+> 
+> The message-unit does not seem to be network-specific, so it's not
+> particularly nice to have the network unit grab that of_device.
+> 
+
+Yes, the message unit is how the Freescale reference manual describes
+this hardware. It is the mailbox hardware to generate interrupts, plus a
+few registers to transfer data.
+
+The registers aren't network specific, but they are needed for this
+driver. That is how the driver generates PCI interrupts to notify the
+other side of the connection it has new data, etc.
+
+> > +config PCINET_FSL
+> > +	tristate "PCINet Virtual Ethernet over PCI support (Freescale)"
+> > +	depends on MPC834x_MDS && !PCI
+> > +	select DMA_ENGINE
+> > +	select FSL_DMA
+> > +	help
+> > +	  When running as a PCI Agent, this driver will create a virtual
+> > +	  ethernet link running over the PCI bus, allowing simplified
+> > +	  communication with the host system. The host system will need
+> > +	  to use the corresponding driver.
+> > +
+> > +	  If in doubt, say N.
+> 
+> Why 'depends on !PCI'? This means that you cannot build a kernel that
+> is able to run both as host and endpoint for PCInet, right?
+> 
+
+Yes, that is correct. I did this because the Linux PCI code does some
+relatively nasty things in agent mode. One thing that consistently
+crashed my box was running through the quirks list and trying to
+re-initialize an e100 that was in my box.
+
+Remember, this is a PCI agent. It shouldn't be re-initializing the other
+hardware on the PCI bus.
+
+> > +config PCINET_HOST
+> > +	tristate "PCINet Virtual Ethernet over PCI support (Host)"
+> > +	depends on PCI
+> > +	help
+> > +	  This driver will let you communicate with a PCINet client device
+> > +	  using a virtual ethernet link running over the PCI bus. This
+> > +	  allows simplified communication with the client system.
+> > +
+> > +	  This is inteded for use in a system that has a crate full of
+> > +	  computers running Linux, all connected by a PCI backplane.
+> > +
+> > +	  If in doubt, say N.
+> 
+> Is this meant to be portable across different hardware implementations?
+> If the driver can only work with PCINET_FSL on the other side, you
+> should probably mention that in the description.
+> 
+
+I had hoped other people would come along and help port it to other
+hardware, like you yourself are suggesting. :) I'll add to the
+description.
+
+> > +config PCINET_DISABLE_CHECKSUM
+> > +	bool "Disable packet checksumming"
+> > +	depends on PCINET_FSL || PCINET_HOST
+> > +	default n
+> > +	help
+> > +	  Disable packet checksumming on packets received by the PCINet
+> > +	  driver. This gives a possible speed boost.
+> 
+> Why make this one optional? Is there ever a reason to enable checksumming?
+> If there is, how about making it tunable with ethtool?
+> 
+
+I left it optional so I could turn it on and off easily. I have no
+strong feelings on keeping it optional.
+
+Does the PCI bus reliably transfer data? I'm not sure. I left it there
+so that we could at least turn on checksumming if there was a problem.
+
+> > +struct circ_buf_desc {
+> > +	__le32 sc;
+> > +	__le32 len;
+> > +	__le32 addr;
+> > +} __attribute__((__packed__));
+> 
+> It would be useful to always force aligning the desciptors to the whole
+> 32 bit and avoid the packing here. Unaligned accesses are inefficient on
+> many systems.
+> 
+
+I don't really know how to do that. I got a warning here from sparse
+telling me something about expensive pointer subtraction. Adding a dummy
+32bit padding variable got rid of the warning, but I didn't change the
+driver.
+
+> > +typedef struct circ_buf_desc cbd_t;
+> 
+> Also, don't pass structures by value if they don't fit into one or
+> two registers.
+> 
+
+These are only used for pointers to the buffer descriptors (in RAM on
+the Freescale) that hold packet information. I never copy them directly.
+
+> > +/* Buffer Descriptor Accessors */
+> > +#define CBDW_SC(_cbd, _sc) iowrite32((_sc), &(_cbd)->sc)
+> > +#define CBDW_LEN(_cbd, _len) iowrite32((_len), &(_cbd)->len)
+> > +#define CBDW_ADDR(_cbd, _addr) iowrite32((_addr), &(_cbd)->addr)
+> > +
+> > +#define CBDR_SC(_cbd) ioread32(&(_cbd)->sc)
+> > +#define CBDR_LEN(_cbd) ioread32(&(_cbd)->len)
+> > +#define CBDR_ADDR(_cbd) ioread32(&(_cbd)->addr)
+> 
+> We have found that accessing remote descriptors using mmio read is
+> rather slow, and changed the code to always do local reads and
+> remote writes.
+> 
+
+Interesting. I don't know how you would get network speed doing this.
+X86 systems don't have a DMA conttroller. The entire purpose of making
+the Freescale do all the copying was to use its DMA controller.
+
+Using the DMA controller to transfer all of the data took my transfer
+speed from ~3MB/sec to ~45MB/sec. While that is a good increase, it
+could be better. I should be able to hit close to 133MB/sec (the limit
+of PCI)
+
+> On the host side, I would argue that you should use out_le32 rather
+> than iowrite32, because you are not operating on a PCI device but
+> an OF device.
+> 
+
+Yeah, you're probably correct. I can't remember if I tried this and had
+problems or not.
+
+> > +/* IMMR Accessor Helpers */
+> > +#define IMMR_R32(_off) ioread32(priv->immr+(_off))
+> > +#define IMMR_W32(_off, _val) iowrite32((_val), priv->immr+(_off))
+> > +#define IMMR_R32BE(_off) ioread32be(priv->immr+(_off))
+> > +#define IMMR_W32BE(_off, _val) iowrite32be((_val), priv->immr+(_off))
+> 
+> IIRC, the IMMR is a platform resource, so the system should map those
+> registers already and provide accessor functions for the registers
+> you need. Simply allowing to pass an offset in here does not look
+> clean.
+> 
+> 
+
+Correct. This was done to make both sides as identical as possible. The
+Freescale exports the entire 1MB block of IMMR registers at PCI BAR0. So
+I have to use the offsets on the host side.
+
+>From the client side, I could just map what I need, but that would make
+the two drivers diverge. I was trying to keep them the same.
+
+> > +static void wqtuart_rx_char(struct uart_port *port, const char ch);
+> > +static void wqtuart_stop_tx(struct uart_port *port);
+> 
+> You should try to avoid forward declarations for static functions.
+> If you order the function implementation correctly, that will
+> also give you the expected reading order in the driver.
+> 
+
+Yep, I tried to do this. I couldn't figure out a sane ordering that
+would work. I tried to keep the network and uart as seperate as possible
+in the code.
+
+> > +struct wqt_dev;
+> > +typedef void (*wqt_irqhandler_t)(struct wqt_dev *);
+> 
+> Much more importantly, never do forward declarations for
+> global functions!
+> 
+> These belong into a header that is included by both the
+> user and the definition.
+> 
+> 
+
+Ok.
+
+> > +struct wqt_dev {
+> > +	/*--------------------------------------------------------------------*/
+> > +	/* OpenFirmware Infrastructure                                        */
+> > +	/*--------------------------------------------------------------------*/
+> > +	struct of_device *op;
+> > +	struct device *dev;
+> 
+> Why the dev? You can always get that from the of_device, right?
+> 
+
+Yes. I stored it there to make it identical to the host driver. By doing
+this, both drivers have code that says "dev_debug(priv->dev, ...)"
+rather than:
+
+Host:
+dev_debug(&priv->pdev->dev, ...)
+
+Freescale:
+dev_debug(&priv->op->dev, ...)
+
+> > +	int irq;
+> > +	void __iomem *immr;
+> 
+> I don't think immr is device specific.
+> 
+
+Correct, it is not. Both the PCI subsystem and the OF subsystem will
+call probe() when a new device is detected. I stored it here so I could
+ioremap() them at probe() time, and to keep both drivers' code the same.
+
+> > +	struct mutex irq_mutex;
+> > +	int interrupt_count;
+> > +
+> > +	spinlock_t irq_lock;
+> > +	struct wqt_irqhandlers handlers;
+> > +
+> > +	/*--------------------------------------------------------------------*/
+> > +	/* UART Device Infrastructure                                         */
+> > +	/*--------------------------------------------------------------------*/
+> > +	struct uart_port port;
+> > +	bool uart_rx_enabled;
+> > +	bool uart_open;
+> 
+> hmm, if you need a uart, that sounds like it should be a separate driver
+> altogether. What is the relation between the network interface and the UART?
+> 
+
+Yes, I agree. How do you make two Linux drivers that can be loaded for
+the same hardware at the same time? :) AFAIK, you cannot.
+
+I NEED two functions accessible at the same time, network (to transfer
+data) and uart (to control my bootloader).
+
+I use the uart to interact with the bootloader (U-Boot) and tell it
+where to tftp a kernel. I use the network to transfer the kernel.
+
+So you see, I really do need them both at the same time. If you know a
+better way to do this, please let me know!
+
+It was possible to write seperate U-Boot drivers, but only by being
+careful to not conflict in my usage of the hardware.
+
+> > +	struct workqueue_struct *wq;
+> 
+> A per-device pointer to a workqueue_struct is unusual. What are you doing
+> this for? How about using the system work queue?
+> 
+
+Look through the code carefully, especially at uart_tx_work_fn(), which
+calls do_send_message().
+
+do_send_message() can sleep for a long time. If I use the shared
+workqueue, I block ALL OTHER USERS of the queue for the time I am
+asleep. They cannot run.
+
+The LDD3 book says not to use the shared workqueue if you are going to
+sleep for long periods. I followed their advice.
+
+> > +	/*--------------------------------------------------------------------*/
+> > +	/* Ethernet Device Infrastructure                                     */
+> > +	/*--------------------------------------------------------------------*/
+> > +	struct net_device *ndev;
+> 
+> Why make this a separate structure? If you have one of these per net_device,
+> you should embed the net_device into your own structure.
+> 
+
+This structure is embedded in struct net_device! Look at how
+alloc_etherdev() works. You pass it the size of your private data
+structure and it allocates the space for you.
+
+> > +	struct tasklet_struct tx_complete_tasklet;
+> 
+> Using a tasklet for tx processing sounds fishy because most of the
+> network code already runs at softirq time. You do not gain anything
+> by another softirq context.
+> 
+
+I didn't want to run the TX cleanup routine at hard irq time, because it
+can potentially take some time to run. I would rather run it with hard
+interrupts enabled.
+
+This DOES NOT do TX processing, it only frees skbs that have been
+transferred. I used the network stack to do as much as possible, of
+course.
+
+> > +/*----------------------------------------------------------------------------*/
+> > +/* Status Register Helper Operations                                          */
+> > +/*----------------------------------------------------------------------------*/
+> > +
+> > +static DEFINE_SPINLOCK(status_lock);
+> > +
+> > +static void wqtstatus_setbit(struct wqt_dev *priv, u32 bit)
+> > +{
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&status_lock, flags);
+> > +	IMMR_W32(OMR1_OFFSET, IMMR_R32(OMR1_OFFSET) | bit);
+> > +	spin_unlock_irqrestore(&status_lock, flags);
+> > +}
+> > +
+> > +static void wqtstatus_clrbit(struct wqt_dev *priv, u32 bit)
+> > +{
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&status_lock, flags);
+> > +	IMMR_W32(OMR1_OFFSET, IMMR_R32(OMR1_OFFSET) & ~bit);
+> > +	spin_unlock_irqrestore(&status_lock, flags);
+> > +}
+> 
+> This looks misplaced, as mentioned before.
+> 
+
+I used these so I could have some remote status. Remember, this has to
+work for Linux -> U-Boot, not just Linux <-> Linux.
+
+While the board is booting Linux, the RAM I used to hold buffer
+descriptors disappears! I need some shared status to make sure no stray
+accesses happen to random areas of memory.
+
+The case this potentially happens is:
+1) Start Freescale board, do NOT install the driver
+2) Insert the driver into the host system
+
+Now, if the host tries writing to the buffer descriptors, we've
+corrupted memory on the Freescale board.
+
+> > +static int wqtstatus_remote_testbit(struct wqt_dev *priv, u32 bit)
+> > +{
+> > +	return IMMR_R32(IMR1_OFFSET) & bit;
+> > +}
+> 
+> Are you sure that do not need a spinlock here? The lock also
+> prevents reordering the device access arount the code using
+> the mmio data.
+> 
+
+I don't think so. Note that this is a status bit on the remote side of
+the connection. My access ordering means nothing when the remote side is
+setting and clearing the bit.
+
+> > +/*----------------------------------------------------------------------------*/
+> > +/* Message Sending and Processing Operations                                  */
+> > +/*----------------------------------------------------------------------------*/
+> > +
+> > +static irqreturn_t wqt_interrupt(int irq, void *dev_id)
+> > +{
+> > +	struct wqt_dev *priv = dev_id;
+> > +	u32 imisr, idr;
+> > +	unsigned long flags;
+> > +
+> > +	imisr = IMMR_R32(IMISR_OFFSET);
+> > +	idr = IMMR_R32(IDR_OFFSET);
+> > +
+> > +	if (!(imisr & 0x8))
+> > +		return IRQ_NONE;
+> > +
+> > +	/* Clear all of the interrupt sources, we'll handle them next */
+> > +	IMMR_W32(IDR_OFFSET, idr);
+> > +
+> > +	/* Lock over all of the handlers, so they cannot get called when
+> > +	 * the code doesn't expect them to be called */
+> > +	spin_lock_irqsave(&priv->irq_lock, flags);
+> 
+> If this is in an interrupt handler, why disable the interrupts again?
+> The same comment applies to many of the other places where you
+> use spin_lock_irqsave rather than spin_lock or spin_lock_irq.
+> 
+
+I tried to make the locking do only what was needed. I just couldn't get
+it correct unless I used spin_lock_irqsave(). I was able to get the
+system to deadlock otherwise. This is why I posted the driver for
+review, I could use some help here.
+
+It isn't critical anyway. You can always use spin_lock_irqsave(), it is
+just a little slower, but it will always work :)
+
+> > +/* NOTE: All handlers are called with priv->irq_lock held */
+> > +
+> > +static void empty_handler(struct wqt_dev *priv)
+> > +{
+> > +	/* Intentionally left empty */
+> > +}
+> > +
+> > +static void net_start_req_handler(struct wqt_dev *priv)
+> > +{
+> > +	schedule_work(&priv->net_start_work);
+> > +}
+> > +
+> > +static void net_start_ack_handler(struct wqt_dev *priv)
+> > +{
+> > +	complete(&priv->net_start_completion);
+> > +}
+> > +
+> > +static void net_stop_req_handler(struct wqt_dev *priv)
+> > +{
+> > +	schedule_work(&priv->net_stop_work);
+> > +}
+> > +
+> > +static void net_stop_ack_handler(struct wqt_dev *priv)
+> > +{
+> > +	complete(&priv->net_stop_completion);
+> > +}
+> > +
+> > +static void net_tx_complete_handler(struct wqt_dev *priv)
+> > +{
+> > +	tasklet_schedule(&priv->tx_complete_tasklet);
+> > +}
+> > +
+> > +static void net_rx_packet_handler(struct wqt_dev *priv)
+> > +{
+> > +	wqtstatus_setbit(priv, PCINET_NET_RXINT_OFF);
+> > +	netif_rx_schedule(priv->ndev, &priv->napi);
+> > +}
+> > +
+> > +static void uart_rx_ready_handler(struct wqt_dev *priv)
+> > +{
+> > +	wqtuart_rx_char(&priv->port, IMMR_R32(IMR0_OFFSET) & 0xff);
+> > +	IMMR_W32(ODR_OFFSET, UART_TX_EMPTY_DBELL);
+> > +}
+> > +
+> > +static void uart_tx_empty_handler(struct wqt_dev *priv)
+> > +{
+> > +	priv->uart_tx_ready = true;
+> > +	wake_up(&priv->uart_tx_wait);
+> > +}
+> 
+> Since these all seem to be trivial functions, why go through the
+> indirect function pointers at all? It seems that wqt_interrupt
+> could do this just as well.
+> 
+
+I did this so they can be disabled independently. It is VERY tricky to
+get the board started without the chance of corrupting memory. Write the
+code, you'll see :)
+
+You have to deal with two systems that can read/write each other's
+memory, but DO NOT have any synchronization primitives.
+
+> > +
+> > +static int wqt_request_irq(struct wqt_dev *priv)
+> > +{
+> > +	int ret = 0;
+> 
+> no point initializing ret.
+> 
+> > +	mutex_lock(&priv->irq_mutex);
+> 
+> What data does the irq_mutex protect?
+> 
+
+priv->interrupt_count and the indirect handlers.
+
+Note that I have two fundamentally seperate devices here. The network
+and the uart.
+
+What if noone has brought up the network interface? You'd still expect
+the uart to work, right? In this case, I need to call request_irq() in
+TWO places, the network's open() and the uart's open().
+
+There is only a single interrupt for this hardware. When only the uart
+is open, I only want the uart section of the irq handler enabled. This
+is where the indirect handlers come in. On uart open(), I call
+wqt_request_irq(), which will ONLY call request_irq() if it HAS NOT been
+called yet.
+
+Here are a few examples:
+Ex1: uart only
+1) uart open() is called
+2) wqt_request_irq() is called
+3) the uart irq handling functions are enabled
+4) request_irq() is called, hooking up the irq
+5) the uart is started
+
+The network by itself works exactly the same.
+
+Ex2: uart first, then network while uart is open
+1) uart open() is called
+2) wqt_request_irq() is called
+3) the uart irq handling functions are enabled
+4) request_irq() is called, hooking up the irq handler
+5) the uart is started
+6) time passes
+7) network open() is called
+8) wqt_request_irq() is called
+9) request_irq() is NOT CALLED THIS TIME, because it is already enabled
+10) the network irq handling functions are enabled
+11) the network is started
 
 
-This is from 2.6.27 kernel:
-[    8.215972] IBM TrackPoint firmware: 0x0e, buttons: 3/3
-[    8.452174] input: TPPS/2 IBM TrackPoint as /devices/platform/i8042/serio1/serio2/input/input7
-[    9.016605] kjournald starting.  Commit interval 5 seconds
-[    9.016634] EXT3-fs: mounted filesystem with ordered data mode.
-[    9.016663] VFS: Mounted root (ext3 filesystem) readonly.
-[    9.016756] Freeing unused kernel memory: 296k freed
-[   18.963410] HDA Intel 0000:00:1b.0: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-[   18.963461] hda_intel: probe_mask set to 0x1 for device 17aa:20ac
-[   18.969726] USB Universal Host Controller Interface driver v3.0
-[   18.987703] e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
-[   18.987732] e1000e: Copyright (c) 1999-2008 Intel Corporation.
-[   19.023978] sdhci: Secure Digital Host Controller Interface driver
-[   19.024017] sdhci: Copyright(c) Pierre Ossman
-[   19.084812] input: PC Speaker as /devices/platform/pcspkr/input/input8
-[   19.366304] e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-[   19.372539] ACPI: WMI: Mapper loaded
-[   19.570065] 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:1a:6b:d2:bd:81
-[   19.570105] 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
-[   19.570172] 0000:00:19.0: eth0: MAC: 4, PHY: 6, PBA No: ffffff-0ff
-[   19.570301] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-[   19.570343] uhci_hcd 0000:00:1a.0: UHCI Host Controller
 
--- 
-Luká¹ Hejtmánek
+Thanks so much for the review! I hope we can work together to get
+something that can be merged into mainline Linux. I'm willing to write
+code, I just need some direction from more experienced kernel
+developers.
+
+Ira
