@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYKDQuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbYKDQum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757418AbYKDQuL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYKDQql
+	id S1758022AbYKDQum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbYKDQqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:46:41 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37589 "EHLO
+	Tue, 4 Nov 2008 11:46:42 -0500
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37587 "EHLO
 	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757201AbYKDQqP (ORCPT
+	with ESMTP id S1755691AbYKDQqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 4 Nov 2008 11:46:15 -0500
 From: Boaz Harrosh <bharrosh@panasas.com>
@@ -19,9 +19,9 @@ To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
        Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 08/18] osd_ktests: Add basic OSD tests
-Date: Tue,  4 Nov 2008 18:44:44 +0200
-Message-Id: <1225817084-6063-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 10/18] osd_ktests: Test Attribute lists
+Date: Tue,  4 Nov 2008 18:44:48 +0200
+Message-Id: <1225817088-6109-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <491073BB.4000900@panasas.com>
 References: <491073BB.4000900@panasas.com>
@@ -29,396 +29,159 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently testing what is implemented in the osd_initiator library.
-That is - format, create/remove partition, create/remove object,
-read and write to objects.
+Add tests for setting/getting Attribute lists. All combinations
+of read/write with set/get attributes are tested.
+(6 possibilities), So all but data integrity request structure
+layouts are attempted.
 
 This test passes against the IBM-OSD-SIM OSDv1 target.
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 ---
- drivers/scsi/osd/Kbuild       |    2 +-
- drivers/scsi/osd/osd_ktests.c |  331 +++++++++++++++++++++++++++++++++++++++++
- drivers/scsi/osd/osd_ktests.h |    4 +
- drivers/scsi/osd/osd_uld.c    |    2 +-
- 4 files changed, 337 insertions(+), 2 deletions(-)
- create mode 100644 drivers/scsi/osd/osd_ktests.c
+ drivers/scsi/osd/osd_ktests.c |  110 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 110 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/osd/Kbuild b/drivers/scsi/osd/Kbuild
-index f39f82f..da00ddb 100644
---- a/drivers/scsi/osd/Kbuild
-+++ b/drivers/scsi/osd/Kbuild
-@@ -29,5 +29,5 @@ libosd-objs := osd_initiator.o
- obj-$(CONFIG_SCSI_OSD_INITIATOR) += libosd.o
- 
- # osd.ko - SCSI ULD and char-device
--osd-objs := osd_uld.o
-+osd-objs := osd_uld.o osd_ktests.o
- obj-$(CONFIG_SCSI_OSD_ULD) += osd.o
 diff --git a/drivers/scsi/osd/osd_ktests.c b/drivers/scsi/osd/osd_ktests.c
-new file mode 100644
-index 0000000..f620915
---- /dev/null
+index f620915..f0a791f 100644
+--- a/drivers/scsi/osd/osd_ktests.c
 +++ b/drivers/scsi/osd/osd_ktests.c
-@@ -0,0 +1,331 @@
-+/*
-+ * osd_ktests.c - An osd_initiator library in-kernel test suite
-+ *              called by the osd_uld module
-+ *
-+ * Copyright (C) 2008 Panasas Inc.  All rights reserved.
-+ *
-+ * Authors:
-+ *   Boaz Harrosh <bharrosh@panasas.com>
-+ *   Benny Halevy <bhalevy@panasas.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions
-+ * are met:
-+ *
-+ *  1. Redistributions of source code must retain the above copyright
-+ *     notice, this list of conditions and the following disclaimer.
-+ *  2. Redistributions in binary form must reproduce the above copyright
-+ *     notice, this list of conditions and the following disclaimer in the
-+ *     documentation and/or other materials provided with the distribution.
-+ *  3. Neither the name of the Panasas company nor the names of its
-+ *     contributors may be used to endorse or promote products derived
-+ *     from this software without specific prior written permission.
-+ *
-+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
-+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ */
-+#include <asm/unaligned.h>
-+#include <linux/vmalloc.h>
-+#include <scsi/scsi_device.h>
-+
-+#include <scsi/osd_initiator.h>
-+#include <scsi/osd_sec.h>
-+
-+#include "osd_ktests.h"
-+#include "osd_debug.h"
-+
-+enum {
-+	K = 1024,
-+	M = 1024 * K,
-+	G = 1024 * M,
-+};
-+
-+const u64 format_total_capacity = 128 * M;
-+const osd_id first_par_id = 0x17171717L;
-+const osd_id first_obj_id = 0x18181818L;
-+const unsigned BUFF_SIZE = PAGE_SIZE;
-+
-+const int num_partitions = 1;
-+const int num_objects = 2; /* per partition */
-+
-+int test_exec(struct osd_request *or, void *caps, const struct osd_obj_id *obj)
+@@ -43,6 +43,7 @@
+ 
+ #include <scsi/osd_initiator.h>
+ #include <scsi/osd_sec.h>
++#include <scsi/osd_attributes.h>
+ 
+ #include "osd_ktests.h"
+ #include "osd_debug.h"
+@@ -260,6 +261,91 @@ int ktest_remove_par(struct osd_dev *osd_dev)
+ 	return 0;
+ }
+ 
++int ktest_write_read_attr(struct osd_dev *osd_dev, void *buff,
++	bool doread, bool doset, bool doget)
 +{
-+	int ret;
-+
-+	osd_sec_init_nosec_doall_caps(caps, obj, false, true);
-+	ret = osd_finalize_request(or, 0, caps, NULL);
-+	if (ret)
-+		return ret;
-+
-+	ret = osd_execute_request(or);
-+	/* osd_req_decode_sense(or, ret); */
-+	return ret;
-+}
-+
-+#define KTEST_START_REQ(osd_dev, or) do { \
-+	or = osd_start_request(osd_dev, GFP_KERNEL); \
-+	if (!or) { \
-+		OSD_ERR("Error @%s:%d: osd_start_request", __func__,\
-+			__LINE__); \
-+		return -ENOMEM; \
-+	} \
-+} while (0)
-+
-+#define KTEST_EXEC_END(or, obj, g_caps, msg) do { \
-+	ret = test_exec(or, g_caps, obj); \
-+	osd_end_request(or); \
-+	if (ret) { \
-+		OSD_ERR("Error executing "msg" => %d\n", ret); \
-+		return ret; \
-+	} \
-+	OSD_DEBUG(msg "\n"); \
-+} while (0)
-+
-+int ktest_format(struct osd_dev *osd_dev)
-+{
++	struct request_queue *req_q = osd_dev->scsi_dev->request_queue;
 +	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
++	char g_caps[OSD_CAP_LEN];
 +	int ret;
++	struct bio *bio;
++	char *domsg;
++	/* set attrs */
++	static char name[] = "ktest_write_read_attr";
++	__be64 max_len = cpu_to_be64(0x80000000L);
++	struct osd_obj_id obj = {
++		.partition = first_par_id,
++		.id = first_obj_id,
++	};
++	struct osd_attr set_attrs[] = {
++		ATTR_SET(OSD_APAGE_OBJECT_QUOTAS, OSD_ATTR_OQ_MAXIMUM_LENGTH,
++			sizeof(max_len), &max_len),
++		ATTR_SET(OSD_APAGE_OBJECT_INFORMATION, OSD_ATTR_OI_USERNAME,
++			sizeof(name), name),
++	};
++	struct osd_attr get_attrs[] = {
++		ATTR_DEF(OSD_APAGE_OBJECT_INFORMATION,
++			OSD_ATTR_OI_USED_CAPACITY, sizeof(__be64)),
++		ATTR_DEF(OSD_APAGE_OBJECT_INFORMATION,
++			OSD_ATTR_OI_LOGICAL_LENGTH, sizeof(__be64)),
++	};
 +
 +	KTEST_START_REQ(osd_dev, or);
-+	osd_req_format(or, format_total_capacity);
-+	KTEST_EXEC_END(or, &osd_root_object, g_caps, "format");
-+	return 0;
-+}
-+
-+int ktest_creat_par(struct osd_dev *osd_dev)
-+{
-+	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
-+	int ret;
-+	int p;
-+
-+	for (p = 0; p < num_partitions; p++) {
-+		struct osd_obj_id par = {
-+			.partition = first_par_id + p,
-+			.id = 0
-+		};
-+
-+		KTEST_START_REQ(osd_dev, or);
-+		osd_req_create_partition(or, par.partition);
-+		KTEST_EXEC_END(or, &par, g_caps, "create_partition");
++	bio = bio_map_kern(req_q, buff, BUFF_SIZE, GFP_KERNEL);
++	if (!bio) {
++		OSD_ERR("!!! Failed to allocate BIO\n");
++		return -ENOMEM;
 +	}
 +
-+	return 0;
-+}
-+
-+int ktest_creat_obj(struct osd_dev *osd_dev)
-+{
-+	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
-+	int ret;
-+	int p, o;
-+
-+	for (p = 0; p < num_partitions; p++)
-+		for (o = 0; o < num_objects; o++) {
-+			struct osd_obj_id obj = {
-+				.partition = first_par_id + p,
-+				.id = first_obj_id + o
-+			};
-+
-+			KTEST_START_REQ(osd_dev, or);
-+			osd_req_create_object(or, &obj);
-+			KTEST_EXEC_END(or, &obj, g_caps, "create_object");
-+		}
-+
-+	return 0;
-+}
-+
-+int ktest_write_obj(struct osd_dev *osd_dev, void *write_buff)
-+{
-+	struct request_queue *req_q = osd_dev->scsi_dev->request_queue;
-+	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
-+	int ret;
-+	int p, o; u64 offset = 0;
-+	struct bio *write_bio;
-+
-+	for (p = 0; p < num_partitions; p++)
-+		for (o = 0; o < num_objects; o++) {
-+			struct osd_obj_id obj = {
-+				.partition = first_par_id + p,
-+				.id = first_obj_id + o
-+			};
-+
-+			KTEST_START_REQ(osd_dev, or);
-+			write_bio = bio_map_kern(req_q, write_buff,
-+						 BUFF_SIZE, GFP_KERNEL);
-+			if (!write_bio) {
-+				OSD_ERR("!!! Failed to allocate write BIO\n");
-+				return -ENOMEM;
-+			}
-+
-+			osd_req_write(or, &obj, write_bio, offset);
-+			KTEST_EXEC_END(or, &obj, g_caps, "write");
-+			write_bio = NULL; /* released by scsi_midlayer */
-+			offset += BUFF_SIZE;
-+		}
-+
-+	return 0;
-+}
-+
-+int ktest_read_obj(struct osd_dev *osd_dev, void *write_buff, void *read_buff)
-+{
-+	struct request_queue *req_q = osd_dev->scsi_dev->request_queue;
-+	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
-+	int ret;
-+	int p, o; u64 offset = 0;
-+	struct bio *read_bio;
-+
-+	for (p = 0; p < num_partitions; p++)
-+		for (o = 0; o < num_objects; o++) {
-+			struct osd_obj_id obj = {
-+				.partition = first_par_id + p,
-+				.id = first_obj_id + o
-+			};
-+
-+			KTEST_START_REQ(osd_dev, or);
-+			read_bio = bio_map_kern(req_q, read_buff,
-+						BUFF_SIZE, GFP_KERNEL);
-+			if (!read_bio) {
-+				OSD_ERR("!!! Failed to allocate read BIO\n");
-+				return -ENOMEM;
-+			}
-+
-+			osd_req_read(or, &obj, read_bio, offset);
-+			KTEST_EXEC_END(or, &obj, g_caps, "read");
-+			read_bio = NULL;
-+			if (memcmp(read_buff, write_buff, BUFF_SIZE))
-+				OSD_ERR("!!! Read did not compare");
-+			offset += BUFF_SIZE;
-+		}
-+
-+	return 0;
-+}
-+
-+int ktest_remove_obj(struct osd_dev *osd_dev)
-+{
-+	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
-+	int ret;
-+	int p, o;
-+
-+	for (p = 0; p < num_partitions; p++)
-+		for (o = 0; o < num_objects; o++) {
-+			struct osd_obj_id obj = {
-+				.partition = first_par_id + p,
-+				.id = first_obj_id + o
-+			};
-+
-+			KTEST_START_REQ(osd_dev, or);
-+			osd_req_remove_object(or, &obj);
-+			KTEST_EXEC_END(or, &obj, g_caps, "remove_object");
-+		}
-+
-+	return 0;
-+}
-+
-+int ktest_remove_par(struct osd_dev *osd_dev)
-+{
-+	struct osd_request *or;
-+	u8 g_caps[OSD_CAP_LEN];
-+	int ret;
-+	int p;
-+
-+	for (p = 0; p < num_partitions; p++) {
-+		struct osd_obj_id par = {
-+			.partition = first_par_id + p,
-+			.id = 0
-+		};
-+
-+		KTEST_START_REQ(osd_dev, or);
-+		osd_req_remove_partition(or, par.partition);
-+		KTEST_EXEC_END(or, &par, g_caps, "remove_partition");
++	if (doread) {
++		osd_req_read(or, &obj, bio, 0);
++		domsg = "Read-with-attr";
++	} else {
++		osd_req_write(or, &obj, bio, 0);
++		domsg = "Write-with-attr";
 +	}
 +
++	if (doset)
++		osd_req_add_set_attr_list(or, set_attrs, 2);
++	if (doget)
++		osd_req_add_get_attr_list(or, get_attrs, 2);
++
++/*	KTEST_EXEC_END(or, &obj, "");*/
++	ret = test_exec(or, g_caps, &obj);
++	if (!ret && doget) {
++		void *iter = NULL, *pFirst, *pSec;
++		int nelem = 2;
++		u64 capacity_len = ~0;
++		u64 logical_len = ~0;
++
++		osd_req_decode_get_attr_list(or, get_attrs, &nelem, &iter);
++
++		/*FIXME: Std does not guaranty order of return attrs */
++		pFirst = get_attrs[0].val_ptr;
++		if (pFirst)
++			capacity_len = get_unaligned_be64(pFirst);
++		else
++			OSD_ERR("failed to read capacity_used\n");
++		pSec = get_attrs[1].val_ptr;
++		if (pSec)
++			logical_len = get_unaligned_be64(pSec);
++		else
++			OSD_ERR("failed to read logical_length\n");
++		OSD_INFO("%s capacity=%llu len=%llu\n",
++			domsg, capacity_len, logical_len);
++	}
++
++	osd_end_request(or);
++	if (ret) {
++		OSD_ERR("!!! Error executing %s => %d doset=%d doget=%d\n",
++			domsg, ret, doset, doget);
++		return ret;
++	}
++	OSD_DEBUG("%s\n", domsg);
++
 +	return 0;
 +}
 +
-+int do_test_17(struct osd_dev *od)
-+{
-+	void *write_buff = NULL;
-+	void *read_buff = NULL;
-+	int ret = -ENOMEM, i;
-+
-+/* osd_format */
-+	if (ktest_format(od))
-+		goto dev_fini;
-+
-+/* create some partition */
-+	if (ktest_creat_par(od))
-+		goto dev_fini;
-+/* list partition see if they're all there */
-+/* create some objects on some partitions */
-+	if (ktest_creat_obj(od))
-+		goto dev_fini;
-+
-+/* Alloc some buffers and bios */
-+/*	write_buff = kmalloc(BUFF_SIZE, or->alloc_flags);*/
-+/*	read_buff = kmalloc(BUFF_SIZE, or->alloc_flags);*/
-+	write_buff = (void *)__get_free_page(GFP_KERNEL);
-+	read_buff = (void *)__get_free_page(GFP_KERNEL);
-+	if (!write_buff || !read_buff) {
-+		OSD_ERR("!!! Failed to allocate memory for test\n");
-+		goto dev_fini;
-+	}
-+	for (i = 0; i < BUFF_SIZE / 4; i++)
-+		((int *)write_buff)[i] = i;
-+	OSD_DEBUG("allocate buffers\n");
-+
-+/* write to objects */
-+	ret = ktest_write_obj(od, write_buff);
-+	if (ret)
-+		goto dev_fini;
-+
-+/* read from objects and compare to write */
-+	ret = ktest_read_obj(od, write_buff, read_buff);
-+	if (ret)
-+		goto dev_fini;
-+
-+/* List all objects */
-+
-+/* Write with get_attr */
-+/* Write with set_attr */
-+/* Write with set_attr + get_attr */
-+/* Read with set_attr */
-+/* Read with get_attr */
-+/* Read with get_attr + set_attr */
-+/* remove objects */
-+	ret = ktest_remove_obj(od);
-+	if (ret)
-+		goto dev_fini;
-+
-+/* remove partitions */
-+	ret = ktest_remove_par(od);
-+	if (ret)
-+		goto dev_fini;
-+
-+/* good and done */
-+	OSD_INFO("test17: All good and done\n");
-+dev_fini:
-+	if (read_buff)
-+		free_page((ulong)read_buff);
-+	if (write_buff)
-+		free_page((ulong)write_buff);
-+
-+	return ret;
-+}
-diff --git a/drivers/scsi/osd/osd_ktests.h b/drivers/scsi/osd/osd_ktests.h
-index a9e5e00..b625ee5 100644
---- a/drivers/scsi/osd/osd_ktests.h
-+++ b/drivers/scsi/osd/osd_ktests.h
-@@ -24,4 +24,8 @@
+ int do_test_17(struct osd_dev *od)
+ {
+ 	void *write_buff = NULL;
+@@ -304,11 +390,35 @@ int do_test_17(struct osd_dev *od)
+ /* List all objects */
  
- enum { OSD_TEST_ALL = 17 };
- 
-+#ifdef __KERNEL__
-+extern int do_test_17(struct osd_dev *od);
-+#endif /* __KERNEL__ */
+ /* Write with get_attr */
++	ret = ktest_write_read_attr(od, write_buff, false, false, true);
++	if (ret)
++		goto dev_fini;
 +
- #endif /*ndef __OSD_KTESTS_H__*/
-diff --git a/drivers/scsi/osd/osd_uld.c b/drivers/scsi/osd/osd_uld.c
-index 0229301..1ce5eba 100644
---- a/drivers/scsi/osd/osd_uld.c
-+++ b/drivers/scsi/osd/osd_uld.c
-@@ -127,7 +127,7 @@ static long osd_uld_ioctl(struct file *file, unsigned int cmd,
- 	switch (cmd) {
- 	case OSD_TEST_ALL:
- 		OSD_DEBUG("Kernel test %d: osd_uld_device=%p\n", cmd, oud);
--		ret = 0;
-+		ret = do_test_17(&oud->od);
- 		break;
- 	default:
- 		OSD_ERR("Unknown osd_uld_ioctl %d\n", cmd);
+ /* Write with set_attr */
++	ret = ktest_write_read_attr(od, write_buff, false, true, false);
++	if (ret)
++		goto dev_fini;
++
+ /* Write with set_attr + get_attr */
++	ret = ktest_write_read_attr(od, write_buff, false, true, true);
++	if (ret)
++		goto dev_fini;
++
+ /* Read with set_attr */
++	ret = ktest_write_read_attr(od, write_buff, true, true, false);
++	if (ret)
++		goto dev_fini;
++
+ /* Read with get_attr */
++	ret = ktest_write_read_attr(od, write_buff, true, false, true);
++	if (ret)
++		goto dev_fini;
++
+ /* Read with get_attr + set_attr */
++	ret = ktest_write_read_attr(od, write_buff, true, true, true);
++	if (ret)
++		goto dev_fini;
++
+ /* remove objects */
+ 	ret = ktest_remove_obj(od);
+ 	if (ret)
 -- 
 1.6.0.1
 
