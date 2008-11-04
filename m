@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbYKDXh4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYKDXja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbYKDXh4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:37:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbYKDXhd
+	id S1756714AbYKDXja (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbYKDXhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:37:33 -0500
-Received: from ns2.suse.de ([195.135.220.15]:51762 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:37:51 -0500
+Received: from mx1.suse.de ([195.135.220.2]:47208 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755071AbYKDXhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:37:32 -0500
-Date: Tue, 4 Nov 2008 15:30:59 -0800
+	id S1756988AbYKDXhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:37:50 -0500
+Date: Tue, 4 Nov 2008 15:31:09 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jamie Wellnitz <Jamie.Wellnitz@emulex.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 02/57] SCSI: sd: Fix handling of NO_SENSE check condition
-Message-ID: <20081104233059.GC659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 06/57] USB: fix crash when URBs are unlinked after the
+	device is gone
+Message-ID: <20081104233109.GG659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-sd-fix-handling-of-no_sense-check-condition.patch"
+Content-Disposition: inline; filename="usb-fix-crash-when-urbs-are-unlinked-after-the-device-is-gone.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,54 +39,160 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jamie Wellnitz <Jamie.Wellnitz@emulex.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 10dab22664914505dcb804d9ad09cad6bc94d349 upstream
+commit cde217a556ec552d28ac9e136c5a94684a69ae94 upstream
 
-The current handling of NO_SENSE check condition is the same as
-RECOVERED_ERROR, and assumes that in both cases, the I/O was fully
-transferred.
+This patch (as1151) protects usbcore against drivers that try to
+unlink an URB after the URB's device or bus have been removed.  The
+core does not currently check for this, and certain drivers can cause
+a crash if they are running while an HCD is unloaded.
 
-We have seen cases of arrays returning with NO_SENSE (no error), but
-the I/O was not completely transferred, thus residual set.  Thus,
-rather than return good_bytes as the entire transfer, set good_bytes
-to 0, so that the midlayer then applies the residual in calculating
-the transfer, and for sd, will fail the I/O and fall into a retry
-path.
+Certainly it would be best to fix the guilty drivers.  But a little
+defensive programming doesn't hurt, especially since it appears that
+quite a few drivers need to be fixed.
 
-Signed-off-by: Jamie Wellnitz <Jamie.Wellnitz@emulex.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+The patch prevents the problem by grabbing a reference to the device
+while an unlink is in progress and using a new spinlock to synchronize
+unlinks with device removal.  (There's no need to acquire a reference
+to the bus as well, since the device structure itself keeps a
+reference to the bus.)  In addition, the kerneldoc is updated to
+indicate that URBs should not be unlinked after the disconnect method
+returns.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/sd.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/usb/core/hcd.c |   35 ++++++++++++++++++++++++++++++++---
+ drivers/usb/core/hcd.h |    1 +
+ drivers/usb/core/hub.c |    1 +
+ drivers/usb/core/urb.c |   15 +++++++++++++++
+ 4 files changed, 49 insertions(+), 3 deletions(-)
 
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1047,7 +1047,6 @@ static int sd_done(struct scsi_cmnd *SCp
- 		good_bytes = sd_completed_bytes(SCpnt);
- 		break;
- 	case RECOVERED_ERROR:
--	case NO_SENSE:
- 		/* Inform the user, but make sure that it's not treated
- 		 * as a hard error.
- 		 */
-@@ -1056,6 +1055,15 @@ static int sd_done(struct scsi_cmnd *SCp
- 		memset(SCpnt->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
- 		good_bytes = scsi_bufflen(SCpnt);
- 		break;
-+	case NO_SENSE:
-+		/* This indicates a false check condition, so ignore it.  An
-+		 * unknown amount of data was transferred so treat it as an
-+		 * error.
-+		 */
-+		scsi_print_sense("sd", SCpnt);
-+		SCpnt->result = 0;
-+		memset(SCpnt->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
-+		break;
- 	case ABORTED_COMMAND:
- 		if (sshdr.asc == 0x10) { /* DIF: Disk detected corruption */
- 			scsi_print_result(SCpnt);
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -106,6 +106,9 @@ static DEFINE_SPINLOCK(hcd_root_hub_lock
+ /* used when updating an endpoint's URB list */
+ static DEFINE_SPINLOCK(hcd_urb_list_lock);
+ 
++/* used to protect against unlinking URBs after the device is gone */
++static DEFINE_SPINLOCK(hcd_urb_unlink_lock);
++
+ /* wait queue for synchronous unlinks */
+ DECLARE_WAIT_QUEUE_HEAD(usb_kill_urb_queue);
+ 
+@@ -1377,10 +1380,25 @@ static int unlink1(struct usb_hcd *hcd, 
+ int usb_hcd_unlink_urb (struct urb *urb, int status)
+ {
+ 	struct usb_hcd		*hcd;
+-	int			retval;
++	int			retval = -EIDRM;
++	unsigned long		flags;
+ 
+-	hcd = bus_to_hcd(urb->dev->bus);
+-	retval = unlink1(hcd, urb, status);
++	/* Prevent the device and bus from going away while
++	 * the unlink is carried out.  If they are already gone
++	 * then urb->use_count must be 0, since disconnected
++	 * devices can't have any active URBs.
++	 */
++	spin_lock_irqsave(&hcd_urb_unlink_lock, flags);
++	if (atomic_read(&urb->use_count) > 0) {
++		retval = 0;
++		usb_get_dev(urb->dev);
++	}
++	spin_unlock_irqrestore(&hcd_urb_unlink_lock, flags);
++	if (retval == 0) {
++		hcd = bus_to_hcd(urb->dev->bus);
++		retval = unlink1(hcd, urb, status);
++		usb_put_dev(urb->dev);
++	}
+ 
+ 	if (retval == 0)
+ 		retval = -EINPROGRESS;
+@@ -1529,6 +1547,17 @@ void usb_hcd_disable_endpoint(struct usb
+ 		hcd->driver->endpoint_disable(hcd, ep);
+ }
+ 
++/* Protect against drivers that try to unlink URBs after the device
++ * is gone, by waiting until all unlinks for @udev are finished.
++ * Since we don't currently track URBs by device, simply wait until
++ * nothing is running in the locked region of usb_hcd_unlink_urb().
++ */
++void usb_hcd_synchronize_unlinks(struct usb_device *udev)
++{
++	spin_lock_irq(&hcd_urb_unlink_lock);
++	spin_unlock_irq(&hcd_urb_unlink_lock);
++}
++
+ /*-------------------------------------------------------------------------*/
+ 
+ /* called in any context */
+--- a/drivers/usb/core/hcd.h
++++ b/drivers/usb/core/hcd.h
+@@ -232,6 +232,7 @@ extern void usb_hcd_flush_endpoint(struc
+ 		struct usb_host_endpoint *ep);
+ extern void usb_hcd_disable_endpoint(struct usb_device *udev,
+ 		struct usb_host_endpoint *ep);
++extern void usb_hcd_synchronize_unlinks(struct usb_device *udev);
+ extern int usb_hcd_get_frame_number(struct usb_device *udev);
+ 
+ extern struct usb_hcd *usb_create_hcd(const struct hc_driver *driver,
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -1349,6 +1349,7 @@ void usb_disconnect(struct usb_device **
+ 	 */
+ 	dev_dbg (&udev->dev, "unregistering device\n");
+ 	usb_disable_device(udev, 0);
++	usb_hcd_synchronize_unlinks(udev);
+ 
+ 	usb_unlock_device(udev);
+ 
+--- a/drivers/usb/core/urb.c
++++ b/drivers/usb/core/urb.c
+@@ -465,6 +465,12 @@ EXPORT_SYMBOL_GPL(usb_submit_urb);
+  * indicating that the request has been canceled (rather than any other
+  * code).
+  *
++ * Drivers should not call this routine or related routines, such as
++ * usb_kill_urb() or usb_unlink_anchored_urbs(), after their disconnect
++ * method has returned.  The disconnect function should synchronize with
++ * a driver's I/O routines to insure that all URB-related activity has
++ * completed before it returns.
++ *
+  * This request is always asynchronous.  Success is indicated by
+  * returning -EINPROGRESS, at which time the URB will probably not yet
+  * have been given back to the device driver.  When it is eventually
+@@ -541,6 +547,9 @@ EXPORT_SYMBOL_GPL(usb_unlink_urb);
+  * This routine may not be used in an interrupt context (such as a bottom
+  * half or a completion handler), or when holding a spinlock, or in other
+  * situations where the caller can't schedule().
++ *
++ * This routine should not be called by a driver after its disconnect
++ * method has returned.
+  */
+ void usb_kill_urb(struct urb *urb)
+ {
+@@ -568,6 +577,9 @@ EXPORT_SYMBOL_GPL(usb_kill_urb);
+  *
+  * this allows all outstanding URBs to be killed starting
+  * from the back of the queue
++ *
++ * This routine should not be called by a driver after its disconnect
++ * method has returned.
+  */
+ void usb_kill_anchored_urbs(struct usb_anchor *anchor)
+ {
+@@ -597,6 +609,9 @@ EXPORT_SYMBOL_GPL(usb_kill_anchored_urbs
+  * from the back of the queue. This function is asynchronous.
+  * The unlinking is just tiggered. It may happen after this
+  * function has returned.
++ *
++ * This routine should not be called by a driver after its disconnect
++ * method has returned.
+  */
+ void usb_unlink_anchored_urbs(struct usb_anchor *anchor)
+ {
 
 -- 
