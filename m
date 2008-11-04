@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYKDJFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYKDJLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYKDJFc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 04:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYKDJFK
+	id S1754855AbYKDJLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 04:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbYKDJLC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 04:05:10 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38926 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755246AbYKDJFG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 04:05:06 -0500
-Date: Tue, 4 Nov 2008 18:04:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       hugh@veritas.com, taka@valinux.co.jp
-Subject: Re: [RFC][PATCH 2/5] memcg : handle swap cache
-Message-Id: <20081104180429.4e47875e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081104174201.9e2dc44c.nishimura@mxp.nes.nec.co.jp>
-References: <20081031115057.6da3dafd.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081031115411.25478878.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081104174201.9e2dc44c.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Nov 2008 04:11:02 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50138 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753500AbYKDJLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 04:11:00 -0500
+Date: Tue, 4 Nov 2008 10:10:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/3] ftrace: ftrace_preempt_disable
+Message-ID: <20081104091042.GD23790@elte.hu>
+References: <20081104041554.605521183@goodmis.org> <20081104042203.123673140@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081104042203.123673140@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0668]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008 17:42:01 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-> > +#ifdef CONFIG_SWAP
-> > +int mem_cgroup_cache_charge_swapin(struct page *page,
-> > +			struct mm_struct *mm, gfp_t mask)
-> > +{
-> > +	int ret = 0;
-> > +
-> > +	if (mem_cgroup_subsys.disabled)
-> > +		return 0;
-> > +	if (unlikely(!mm))
-> > +		mm = &init_mm;
-> > +
-> > +	ret = mem_cgroup_charge_common(page, mm, mask,
-> > +			MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
-> > +	/*
-> > +	 * The page may be dropped from SwapCache because we don't have
-> > +	 * lock_page().This may cause charge-after-uncharge trouble.
-> > +	 * Fix it up here. (the caller have refcnt to this page and
-> > +	 * page itself is guaranteed not to be freed.)
-> > +	 */
-> > +	if (ret && !PageSwapCache(page))
-> > +		mem_cgroup_uncharge_swapcache(page);
-> > +
-> Hmm.. after [5/5], mem_cgroup_cache_charge_swapin has 'locked' parameter,
-> calls lock_page(if !locked), and checks PageSwapCache under page lock.
-> 
-> Why not doing it in this patch?
-> 
+i've applied your 3 patches to tip/tracing/ftrace:
 
-My intention is to guard swap_cgroup by lock_page() against SwapCache.
-In Mem+Swap controller. we get "memcg" from information in page->private.
-I think we need lock_page(), there. 
+ b2a866f: ftrace: function tracer with irqs disabled
+ 182e9f5: ftrace: insert in the ftrace_preempt_disable()/enable() functions
+ 8f0a056: ftrace: introduce ftrace_preempt_disable()/enable()
 
-But here, we don't refer page->private information. 
-I think we don't need lock_page() because there is no inofrmation we depends on.
+thanks Steve!
 
-Thanks,
--Kame
-
+	Ingo
