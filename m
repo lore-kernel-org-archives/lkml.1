@@ -1,131 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755658AbYKDTD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbYKDTEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755658AbYKDTD6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbYKDTDt
+	id S1756485AbYKDTEV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbYKDTDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:03:49 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:49018 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753015AbYKDTDs (ORCPT
+	Tue, 4 Nov 2008 14:03:51 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:44385 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753751AbYKDTDu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:03:48 -0500
-Subject: Re: 2.6.28-rc3 truncates nfsd results
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Doug Nazar <nazard@dragoninc.ca>,
-       "'J. Bruce Fields'" <bfields@citi.umich.edu>,
-       "'Al Viro'" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <491097DA.9040204@garzik.org>
-References: <000301c93eaa$fae98460$f0bc8d20$@ca>
-	 <491097DA.9040204@garzik.org>
-Content-Type: multipart/mixed; boundary="=-DAMp/5ZxPj/xpeuHZlM6"
-Date: Tue, 04 Nov 2008 19:03:31 +0000
-Message-Id: <1225825411.11230.6.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 4 Nov 2008 14:03:50 -0500
+Message-ID: <49109C91.6090207@euromail.se>
+Date: Tue, 04 Nov 2008 20:03:45 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] hid: Complete support for the new unibody macbooks
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1KxRBq-0007oG-8K.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KxRBq-0007oG-8K 1a99f20bcd82672800fea628379efabc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The unibody MacBook 5 and MacBook Pro 5 come with a new version of
+the bcm5974 trackpad. This patch adds the USB device ids and all
+the appropriate quirks, including hid_blacklist.
 
---=-DAMp/5ZxPj/xpeuHZlM6
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Tue, 2008-11-04 at 13:43 -0500, Jeff Garzik wrote:
-> I'll try reverting this and see if the behavior improves, thanks for the 
-> pointer...
-
-See attached...
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
---=-DAMp/5ZxPj/xpeuHZlM6
-Content-Disposition: inline
-Content-Description: Attached message - [PATCH] nfsd: fix failure to set
-	eof in readdir in some situations
-Content-Type: message/rfc822
-
-Received: from hasmsx413.ger.corp.intel.com ([143.185.64.170]) by
-	swsmsx413.ger.corp.intel.com with Microsoft SMTPSVC(6.0.3790.1830); Thu, 30
-	Oct 2008 21:32:11 +0000
-Received: from orsmsx335.jf.intel.com ([10.22.226.40]) by
-	hasmsx413.ger.corp.intel.com with Microsoft SMTPSVC(6.0.3790.1830); Thu, 30
-	Oct 2008 23:32:10 +0200
-Received: from azsmsx333.amr.corp.intel.com ([10.2.121.77]) by
-	orsmsx335.jf.intel.com with Microsoft SMTPSVC(6.0.3790.1830); Thu, 30 Oct
-	2008 14:31:28 -0700
-Received: from fmsmga002.fm.intel.com ([10.253.24.26]) by
-	azsmsx333.amr.corp.intel.com with Microsoft SMTPSVC(6.0.3790.3959); Thu, 30
-	Oct 2008 14:31:28 -0700
-Received: from fmsmga102.fm.intel.com ([10.1.193.69]) by
-	fmsmga002-1.fm.intel.com with ESMTP; 30 Oct 2008 14:27:40 -0700
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtECAK/ECUlCXQLWgWdsb2JhbACUCwEBFiKtUYpDg1E
-X-IronPort-AV: E=Sophos;i="4.33,518,1220252400";  d="scan'208";a="704586773"
-Received: from mail.fieldses.org (HELO fieldses.org) ([66.93.2.214]) by
-	mga11.intel.com with ESMTP; 30 Oct 2008 14:26:37 -0700
-Received: from bfields by fieldses.org with local (Exim 4.69)
-	(envelope-from <bfields@fieldses.org>) id 1Kvf6z-0006pW-4A; Thu, 30 Oct
-	2008 17:31:25 -0400
-Date: Thu, 30 Oct 2008 17:31:25 -0400
-To: linux-nfs@vger.kernel.org
-Cc: David Woodhouse <David.Woodhouse@intel.com>, Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH] nfsd: fix failure to set eof in readdir in some situations
-Message-ID: <20081030213125.GC24156@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
-Return-Path: bfields@fieldses.org
-X-OriginalArrivalTime: 30 Oct 2008 21:31:28.0771 (UTC)
-	FILETIME=[DE891D30:01C93AD6]
-X-Evolution-Source: imap://GER%5cdwoodhou@imap.intel.com/
-Content-Transfer-Encoding: 7bit
-
-From: J. Bruce Fields <bfields@citi.umich.edu>
-
-Before 14f7dd632011bb89c035722edd6ea0d90ca6b078 "[PATCH] Copy XFS
-readdir hack into nfsd code", readdir_cd->err was reset to eof before
-each call to vfs_readdir; afterwards, it is set only once.  Similarly,
-c002a6c7977320f95b5edede5ce4e0eeecf291ff "[PATCH] Optimise NFS readdir
-hack slightly", can cause us to exit without nfserr_eof set.  Fix this.
-
-This ensures the "eof" bit is set when needed in readdir replies.  (The
-particular case I saw was an nfsv4 readdir of an empty directory, which
-returned with no entries (the protocol requires "." and ".." to be
-filtered out), but with eof unset.)
-
-Cc: David Woodhouse <David.Woodhouse@intel.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 ---
- fs/nfsd/vfs.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/hid/hid-apple.c |    6 ++++++
+ drivers/hid/hid-core.c  |    6 ++++++
+ drivers/hid/hid-ids.h   |    3 +++
+ 3 files changed, 15 insertions(+), 0 deletions(-)
 
-I'm queuing this up for 2.6.28.--b.
-
-diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
-index 0bc56f6..848a03e 100644
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1912,6 +1912,7 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
- 			de = (struct buffered_dirent *)((char *)de + reclen);
- 		}
- 		offset = vfs_llseek(file, 0, SEEK_CUR);
-+		cdp->err = nfserr_eof;
- 		if (!buf.full)
- 			break;
- 	}
+diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+index c6ab4ba..ce3c399 100644
+--- a/drivers/hid/hid-apple.c
++++ b/drivers/hid/hid-apple.c
+@@ -418,6 +418,12 @@ static const struct hid_device_id apple_devices[] = {
+ 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS),
+ 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI),
++		.driver_data = APPLE_HAS_FN },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO),
++		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
++		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
+ 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 1903e75..f5d859e 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1250,6 +1250,9 @@ static const struct hid_device_id hid_blacklist[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_AVERMEDIA, USB_DEVICE_ID_AVER_FM_MR800) },
+@@ -1572,6 +1575,9 @@ static const struct hid_device_id hid_mouse_ignore_list[] = {
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) },
++	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
+ 	{ }
+diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
+index 5cc4042..0e27587 100644
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -82,6 +82,9 @@
+ #define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
+ #define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
+ #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
++#define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
++#define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
++#define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
+ #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
+ #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
+ #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
 -- 
-1.5.5.rc1
-
-
---=-DAMp/5ZxPj/xpeuHZlM6--
+1.5.6.3
 
