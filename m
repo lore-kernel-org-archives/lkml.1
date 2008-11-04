@@ -1,241 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbYKDGKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbYKDGLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbYKDGKe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 01:10:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYKDGJn
+	id S1752474AbYKDGLF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 01:11:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYKDGJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 01:09:43 -0500
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:46027 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752014AbYKDGJl (ORCPT
+	Tue, 4 Nov 2008 01:09:50 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:48344 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbYKDGJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 01:09:41 -0500
-Message-Id: <20081104060934.358544978@nttdata.co.jp>
+	Tue, 4 Nov 2008 01:09:48 -0500
+Message-Id: <20081104060936.021370709@nttdata.co.jp>
 References: <20081104060847.086543472@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Tue, 04 Nov 2008 15:08:48 +0900
+Date: Tue, 04 Nov 2008 15:08:49 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Toshiharu Harada <haradats@nttdata.co.jp>,
        linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
-       Crispin Cowan <crispin@crispincowan.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       James Morris <jmorris@namei.org>
-Subject: [TOMOYO #12 (2.6.28-rc2-mm1) 01/11] Introduce security_path_clear() hook.
-X-OriginalArrivalTime: 04 Nov 2008 06:09:35.0723 (UTC) FILETIME=[E9748BB0:01C93E43]
+       David Howells <dhowells@redhat.com>
+Subject: [TOMOYO #12 (2.6.28-rc2-mm1) 02/11] Add in_execve flag into task_struct.
+X-OriginalArrivalTime: 04 Nov 2008 06:09:46.0098 (UTC) FILETIME=[EFA3A520:01C93E43]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To perform DAC performed in vfs_foo() before MAC, we let security_path_foo()
-save a result into our own hash table and return 0, and let security_inode_foo()
-return the saved result. Since security_inode_foo() is not always called after
-security_path_foo(), we need security_path_clear() to clear the hash table.
+This patch allows LSM modules to determine whether current process is in an
+execve operation or not so that they can behave differently while an execve
+operation is in progress.
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+This allows TOMOYO to dispense with a readability check on a file to be
+executed under the process's current credentials, and to do it instead under
+the proposed credentials.
+
+This is required with the new COW credentials because TOMOYO is no longer
+allowed to mark the state temporarily in the security struct attached to the
+task_struct.
+
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Crispin Cowan <crispin@crispincowan.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Casey Schaufler <casey@schaufler-ca.com>
-Cc: James Morris <jmorris@namei.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
+ fs/compat.c           |    3 +++
+ fs/exec.c             |    3 +++
+ include/linux/sched.h |    2 ++
+ 3 files changed, 8 insertions(+)
 
- fs/namei.c               |    9 +++++++++
- fs/open.c                |    2 ++
- include/linux/security.h |   12 ++++++++++++
- net/unix/af_unix.c       |    1 +
- security/capability.c    |    5 +++++
- security/security.c      |    6 ++++++
- 6 files changed, 35 insertions(+)
-
---- linux-2.6.28-rc2-mm1.orig/fs/namei.c
-+++ linux-2.6.28-rc2-mm1/fs/namei.c
-@@ -1566,6 +1566,7 @@ int may_open(struct nameidata *nd, int a
- 			error = do_truncate(dentry, 0,
- 					    ATTR_MTIME|ATTR_CTIME|ATTR_OPEN,
- 					    NULL);
-+			security_path_clear();
- 		}
- 		put_write_access(inode);
- 		if (error)
-@@ -1594,6 +1595,7 @@ static int __open_namei_create(struct na
- 	if (error)
- 		goto out_unlock;
- 	error = vfs_create(dir->d_inode, path->dentry, mode, nd);
-+	security_path_clear();
+--- linux-2.6.28-rc2-mm1.orig/fs/compat.c
++++ linux-2.6.28-rc2-mm1/fs/compat.c
+@@ -1396,6 +1396,7 @@ int compat_do_execve(char * filename,
+ 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+ 	if (retval < 0)
+ 		goto out_free;
++	current->in_execve = 1;
+ 
+ 	retval = -ENOMEM;
+ 	bprm->cred = prepare_exec_creds();
+@@ -1448,6 +1449,7 @@ int compat_do_execve(char * filename,
+ 		goto out;
+ 
+ 	/* execve succeeded */
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+@@ -1464,6 +1466,7 @@ out_file:
+ 	}
+ 
  out_unlock:
- 	mutex_unlock(&dir->d_inode->i_mutex);
- 	dput(nd->path.dentry);
-@@ -2022,6 +2024,7 @@ asmlinkage long sys_mknodat(int dfd, con
- 			error = vfs_mknod(nd.path.dentry->d_inode,dentry,mode,0);
- 			break;
- 	}
-+	security_path_clear();
- out_drop_write:
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
-@@ -2086,6 +2089,7 @@ asmlinkage long sys_mkdirat(int dfd, con
- 	if (error)
- 		goto out_drop_write;
- 	error = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
-+	security_path_clear();
- out_drop_write:
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
-@@ -2200,6 +2204,7 @@ static long do_rmdir(int dfd, const char
- 	if (error)
- 		goto exit4;
- 	error = vfs_rmdir(nd.path.dentry->d_inode, dentry);
-+	security_path_clear();
- exit4:
- 	mnt_drop_write(nd.path.mnt);
- exit3:
-@@ -2289,6 +2294,7 @@ static long do_unlinkat(int dfd, const c
- 		if (error)
- 			goto exit3;
- 		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
-+		security_path_clear();
- exit3:
- 		mnt_drop_write(nd.path.mnt);
- 	exit2:
-@@ -2374,6 +2380,7 @@ asmlinkage long sys_symlinkat(const char
- 	if (error)
- 		goto out_drop_write;
- 	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from);
-+	security_path_clear();
- out_drop_write:
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
-@@ -2475,6 +2482,7 @@ asmlinkage long sys_linkat(int olddfd, c
- 	if (error)
- 		goto out_drop_write;
- 	error = vfs_link(old_path.dentry, nd.path.dentry->d_inode, new_dentry);
-+	security_path_clear();
- out_drop_write:
- 	mnt_drop_write(nd.path.mnt);
- out_dput:
-@@ -2715,6 +2723,7 @@ asmlinkage long sys_renameat(int olddfd,
- 		goto exit6;
- 	error = vfs_rename(old_dir->d_inode, old_dentry,
- 				   new_dir->d_inode, new_dentry);
-+	security_path_clear();
- exit6:
- 	mnt_drop_write(oldnd.path.mnt);
- exit5:
---- linux-2.6.28-rc2-mm1.orig/fs/open.c
-+++ linux-2.6.28-rc2-mm1/fs/open.c
-@@ -277,6 +277,7 @@ static long do_sys_truncate(const char _
- 	if (!error) {
- 		DQUOT_INIT(inode);
- 		error = do_truncate(path.dentry, length, 0, NULL);
-+		security_path_clear();
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 
+ out_free:
+--- linux-2.6.28-rc2-mm1.orig/fs/exec.c
++++ linux-2.6.28-rc2-mm1/fs/exec.c
+@@ -1301,6 +1301,7 @@ int do_execve(char * filename,
+ 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+ 	if (retval < 0)
+ 		goto out_free;
++	current->in_execve = 1;
+ 
+ 	retval = -ENOMEM;
+ 	bprm->cred = prepare_exec_creds();
+@@ -1354,6 +1355,7 @@ int do_execve(char * filename,
+ 		goto out;
+ 
+ 	/* execve succeeded */
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+@@ -1372,6 +1374,7 @@ out_file:
  	}
  
- put_write_and_out:
-@@ -335,6 +336,7 @@ static long do_sys_ftruncate(unsigned in
- 					       ATTR_MTIME|ATTR_CTIME, file);
- 	if (!error)
- 		error = do_truncate(dentry, length, ATTR_MTIME|ATTR_CTIME, file);
-+	security_path_clear();
- out_putf:
- 	fput(file);
- out:
---- linux-2.6.28-rc2-mm1.orig/include/linux/security.h
-+++ linux-2.6.28-rc2-mm1/include/linux/security.h
-@@ -523,6 +523,12 @@ static inline void security_free_mnt_opt
-  *	@inode contains a pointer to the inode.
-  *	@secid contains a pointer to the location where result will be saved.
-  *	In case of failure, @secid will be set to zero.
-+ * @path_clear:
-+ *	Clear error code stored by security_path_*() in case
-+ *	security_inode_*() was not called when DAC returned an error.
-+ *	This hook allows LSM modules which use security_path_*() defer
-+ *	returning LSM's error code till security_inode_*() is called so that
-+ *	DAC's error (if any) is returned to the caller instead of LSM's error.
-  *
-  * Security hooks for file operations
-  *
-@@ -1398,6 +1404,7 @@ struct security_operations {
- 			  struct dentry *new_dentry);
- 	int (*path_rename) (struct path *old_dir, struct dentry *old_dentry,
- 			    struct path *new_dir, struct dentry *new_dentry);
-+	void (*path_clear) (void);
- #endif
+ out_unlock:
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
  
- 	int (*inode_alloc_security) (struct inode *inode);
-@@ -2778,6 +2785,7 @@ int security_path_link(struct dentry *ol
- 		       struct dentry *new_dentry);
- int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
- 			 struct path *new_dir, struct dentry *new_dentry);
-+void security_path_clear(void);
- #else	/* CONFIG_SECURITY_PATH */
- static inline int security_path_unlink(struct path *dir, struct dentry *dentry)
- {
-@@ -2828,6 +2836,10 @@ static inline int security_path_rename(s
- {
- 	return 0;
- }
-+
-+static inline void security_path_clear(void)
-+{
-+}
- #endif	/* CONFIG_SECURITY_PATH */
+ out_free:
+--- linux-2.6.28-rc2-mm1.orig/include/linux/sched.h
++++ linux-2.6.28-rc2-mm1/include/linux/sched.h
+@@ -1095,6 +1095,8 @@ struct task_struct {
+ 	/* ??? */
+ 	unsigned int personality;
+ 	unsigned did_exec:1;
++	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
++				 * execve */
+ 	pid_t pid;
+ 	pid_t tgid;
  
- #ifdef CONFIG_KEYS
---- linux-2.6.28-rc2-mm1.orig/net/unix/af_unix.c
-+++ linux-2.6.28-rc2-mm1/net/unix/af_unix.c
-@@ -832,6 +832,7 @@ static int unix_bind(struct socket *sock
- 		if (err)
- 			goto out_mknod_drop_write;
- 		err = vfs_mknod(nd.path.dentry->d_inode, dentry, mode, 0);
-+		security_path_clear();
- out_mknod_drop_write:
- 		mnt_drop_write(nd.path.mnt);
- 		if (err)
---- linux-2.6.28-rc2-mm1.orig/security/capability.c
-+++ linux-2.6.28-rc2-mm1/security/capability.c
-@@ -308,6 +308,10 @@ static int cap_path_truncate(struct path
- {
- 	return 0;
- }
-+
-+static void cap_path_clear(void)
-+{
-+}
- #endif
- 
- static int cap_file_permission(struct file *file, int mask)
-@@ -939,6 +943,7 @@ void security_fixup_ops(struct security_
- 	set_to_cap_if_null(ops, path_link);
- 	set_to_cap_if_null(ops, path_rename);
- 	set_to_cap_if_null(ops, path_truncate);
-+	set_to_cap_if_null(ops, path_clear);
- #endif
- 	set_to_cap_if_null(ops, file_permission);
- 	set_to_cap_if_null(ops, file_alloc_security);
---- linux-2.6.28-rc2-mm1.orig/security/security.c
-+++ linux-2.6.28-rc2-mm1/security/security.c
-@@ -414,6 +414,12 @@ int security_path_truncate(struct path *
- 		return 0;
- 	return security_ops->path_truncate(path, length, time_attrs, filp);
- }
-+
-+void security_path_clear(void)
-+{
-+	return security_ops->path_clear();
-+}
-+EXPORT_SYMBOL(security_path_clear);
- #endif
- 
- int security_inode_create(struct inode *dir, struct dentry *dentry, int mode)
 
 --
 
