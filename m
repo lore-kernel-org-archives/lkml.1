@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYKDHbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYKDHf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbYKDHbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 02:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbYKDHbA
+	id S1754067AbYKDHf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 02:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYKDHfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 02:31:00 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:35907 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751780AbYKDHa7 (ORCPT
+	Tue, 4 Nov 2008 02:35:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54489
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752698AbYKDHfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 02:30:59 -0500
-Message-ID: <51443.192.168.10.88.1225783814.squirrel@dbdmail.itg.ti.com>
-In-Reply-To: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-References: <20081029184254.56e05c4f@mjolnir.drzeus.cx>
-Date: Tue, 4 Nov 2008 13:00:14 +0530 (IST)
-Subject: Re: MMC maintainership help needed
-From: "Madhusudhan Chikkature" <madhu.cr@ti.com>
-To: "Pierre Ossman" <drzeus-list@drzeus.cx>
-Cc: "LAK" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Tue, 4 Nov 2008 02:35:08 -0500
+Date: Mon, 03 Nov 2008 23:34:43 -0800 (PST)
+Message-Id: <20081103.233443.173719917.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (This message is cross-posted to linux-arm-kernel which is subscribers
-> only, so edit the cc list if you're not on that list. This was done
-> because most MMC users are on that list.)
->
-> I'm having trouble finding time and energy for handling MMC stuff in a
-> timely manner (as those of you sending patches to me have noticed).
-> Therefore I'm sending out this general plea for assistance.
->
-> If you see any MMC/SD/SDIO patches, bug reports or general questions,
-> don't be afraid to comment and/or ask for more information. Even if you
-> don't feel like you can solve the issue, any help you can provide means
-> that my limited time can be better spent. And you'll probably also get
-> more comfortable with the MMC parts in the process. :)
->
-> On a related note, I see very little comments to my reviews except from
-> the original author. As such I'm having a hard time evaluating my role.
-> Are people satisified with my work as a gatekeeper or am I just being a
-> pain in the ass? I know I can be a bit anal at times. :)
->
-> Thanks
-> --
->      -- Pierre Ossman
 
-I am quite happy with the replies you send on technical queries on MMC/SD
-core/drivers and also the review comments.
+Nothing terribly exciting in here, some small driver fixups,
+a partial revert of a smc91x driver change to fix the build
+on some systems, and some UDP ICMP mib statistic fixes.
 
-Regards,
-Madhusudhan
+Please pull, thanks a lot!
 
+The following changes since commit 48dcc33e5e11de0f76b65b113988dbc930d17395:
+  Jianjun Kong (1):
+        af_unix: netns: fix problem of return value
 
->
->   Linux kernel, MMC maintainer        http://www.kernel.org
->   rdesktop, core developer          http://www.rdesktop.org
->
->   WARNING: This correspondence is being monitored by the
->   Swedish government. Make sure your server uses encryption
->   for SMTP traffic and consider using PGP for end-to-end
->   encryption.
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+are available in the git repository at:
 
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
+Alexey Dobriyan (2):
+      fs_enet: fix polling
+      xfrm: Fix xfrm_policy_gc_lock handling.
 
+Arnaud Ebalard (1):
+      XFRM: copy_to_user_kmaddress() reports local address twice
+
+David S. Miller (2):
+      SMC91x: Fix compilation on some platforms.
+      niu: Use pci_ioremap_bar().
+
+Eilon Greenstein (4):
+      bnx2x: Removing the PMF indication when unloading
+      bnx2x: PCI configuration bug on big-endian
+      bnx2x: Calling netif_carrier_off at the end of the probe
+      bnx2x: Version Update
+
+Jeff Kirsher (1):
+      net: kconfig cleanup
+
+Lennert Buytenhek (1):
+      mv643xx_eth: fix SMI bus access timeouts
+
+Wei Yongjun (2):
+      udp: Fix the SNMP counter of UDP_MIB_INDATAGRAMS
+      udp: Fix the SNMP counter of UDP_MIB_INERRORS
+
+Will Newton (1):
+      drivers/net/smc911x.c: Fix lockdep warning on xmit.
+
+ drivers/net/Kconfig                |   18 +++++++++++++++---
+ drivers/net/bnx2x_init.h           |    9 +++++----
+ drivers/net/bnx2x_main.c           |   10 ++++++----
+ drivers/net/fs_enet/fs_enet-main.c |    6 ++++--
+ drivers/net/mv643xx_eth.c          |    9 ++++++---
+ drivers/net/niu.c                  |    6 +-----
+ drivers/net/smc911x.c              |    2 +-
+ drivers/net/smc91x.c               |    2 ++
+ net/ipv6/udp.c                     |   28 +++++++++++++++++++++-------
+ net/xfrm/xfrm_policy.c             |    4 ++--
+ net/xfrm/xfrm_user.c               |    2 +-
+ 11 files changed, 64 insertions(+), 32 deletions(-)
