@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYKDQsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbYKDQtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYKDQsF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:48:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213AbYKDQqQ
+	id S1755549AbYKDQtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:49:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYKDQq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:46:16 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37574 "EHLO
+	Tue, 4 Nov 2008 11:46:27 -0500
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37593 "EHLO
 	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbYKDQqG (ORCPT
+	with ESMTP id S1756206AbYKDQqT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:46:06 -0500
+	Tue, 4 Nov 2008 11:46:19 -0500
 From: Boaz Harrosh <bharrosh@panasas.com>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -19,9 +19,9 @@ To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
        Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 07/18] osd_test: User-mode application to run the OSD tests
-Date: Tue,  4 Nov 2008 18:44:43 +0200
-Message-Id: <1225817083-6040-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 13/18] libosd: Not implemented commands
+Date: Tue,  4 Nov 2008 18:44:51 +0200
+Message-Id: <1225817091-6178-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <491073BB.4000900@panasas.com>
 References: <491073BB.4000900@panasas.com>
@@ -29,124 +29,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most simple user-app to invoke the in-kernel test ioctl of the
-specified osd device.
-
-Usage: osd_test "/dev/osdX"
-
-Where /dev/osdX is the osd device (lun) to run tests on. The output
-of the tests is in dmesg log file
+Some commands declared in header are not yet implemented. Put them
+as stubs in .c file, just so they take their place in the file
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 ---
- drivers/scsi/osd/Makefile   |   10 +++++-
- drivers/scsi/osd/osd_test.c |   74 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 82 insertions(+), 2 deletions(-)
- create mode 100644 drivers/scsi/osd/osd_test.c
+ drivers/scsi/osd/osd_initiator.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/scsi/osd/Makefile b/drivers/scsi/osd/Makefile
-index d905344..92d8b19 100755
---- a/drivers/scsi/osd/Makefile
-+++ b/drivers/scsi/osd/Makefile
-@@ -28,10 +28,16 @@ V ?= 0
- # this is the basic Kbuild out-of-tree invocation, with the M= option
- KBUILD_BASE = +$(MAKE) -C $(KSRC) M=`pwd` KBUILD_OUTPUT=$(KBUILD_OUTPUT) ARCH=$(ARCH) V=$(V)
+diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
+index 23f7e95..567a2c6 100644
+--- a/drivers/scsi/osd/osd_initiator.c
++++ b/drivers/scsi/osd/osd_initiator.c
+@@ -341,6 +341,9 @@ static void _osd_req_encode_common(struct osd_request *or,
+ /*
+  * Device commands
+  */
++/*TODO: void osd_req_set_master_seed_xchg(struct osd_request *, ...); */
++/*TODO: void osd_req_set_master_key(struct osd_request *, ...); */
++
+ void osd_req_format(struct osd_request *or, u64 tot_capacity)
+ {
+ 	_osd_req_encode_common(or, OSD_ACT_FORMAT_OSD, &osd_root_object, 0,
+@@ -371,6 +374,10 @@ void osd_req_flush_obsd(struct osd_request *or,
+ }
+ EXPORT_SYMBOL(osd_req_flush_obsd);
  
--all: libosd
-+all: libosd osd_test
++/*TODO: void osd_req_perform_scsi_command(struct osd_request *,
++	const u8 *cdb, ...); */
++/*TODO: void osd_req_task_management(struct osd_request *, ...); */
++
+ /*
+  * Partition commands
+  */
+@@ -397,6 +404,10 @@ void osd_req_remove_partition(struct osd_request *or, osd_id partition)
+ }
+ EXPORT_SYMBOL(osd_req_remove_partition);
  
- libosd: ;
- 	$(KBUILD_BASE) OSD_INC=$(OSD_INC) modules
++/*TODO: void osd_req_set_partition_key(struct osd_request *,
++	osd_id partition, u8 new_key_id[OSD_CRYPTO_KEYID_SIZE],
++	u8 seed[OSD_CRYPTO_SEED_SIZE]); */
++
+ static int _osd_req_list_objects(struct osd_request *or,
+ 	__be16 action, const struct osd_obj_id *obj, osd_id initial_id,
+ 	struct osd_obj_id_list *list, unsigned nelem)
+@@ -462,6 +473,11 @@ EXPORT_SYMBOL(osd_req_flush_partition);
+ /*
+  * Collection commands
+  */
++/*TODO: void osd_req_create_collection(struct osd_request *,
++	const struct osd_obj_id *); */
++/*TODO: void osd_req_remove_collection(struct osd_request *,
++	const struct osd_obj_id *); */
++
+ int osd_req_list_collection_objects(struct osd_request *or,
+ 	const struct osd_obj_id *obj, osd_id initial_id,
+ 	struct osd_obj_id_list *list, unsigned nelem)
+@@ -471,6 +487,8 @@ int osd_req_list_collection_objects(struct osd_request *or,
+ }
+ EXPORT_SYMBOL(osd_req_list_collection_objects);
  
--clean:
-+clean: osd_test_clean
- 	$(KBUILD_BASE) clean
++/*TODO: void query(struct osd_request *, ...); V2 */
 +
-+osd_test: osd_test.o
-+	$(CC) -o $@ $<
+ void osd_req_flush_collection(struct osd_request *or,
+ 	const struct osd_obj_id *obj, enum osd_options_flush_scope_values op)
+ {
+@@ -479,6 +497,9 @@ void osd_req_flush_collection(struct osd_request *or,
+ }
+ EXPORT_SYMBOL(osd_req_flush_collection);
+ 
++/*TODO: void get_member_attrs(struct osd_request *, ...); V2 */
++/*TODO: void set_member_attrs(struct osd_request *, ...); V2 */
 +
-+osd_test_clean:
-+	rm -vf osd_test
-diff --git a/drivers/scsi/osd/osd_test.c b/drivers/scsi/osd/osd_test.c
-new file mode 100644
-index 0000000..dc74865
---- /dev/null
-+++ b/drivers/scsi/osd/osd_test.c
-@@ -0,0 +1,74 @@
-+/*
-+ * osd_test.c - A user-mode program that calls into the osd ULD
-+ *
-+ * Copyright (C) 2008 Panasas Inc.  All rights reserved.
-+ *
-+ * Authors:
-+ *   Boaz Harrosh <bharrosh@panasas.com>
-+ *   Benny Halevy <bhalevy@panasas.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions
-+ * are met:
-+ *
-+ *  1. Redistributions of source code must retain the above copyright
-+ *     notice, this list of conditions and the following disclaimer.
-+ *  2. Redistributions in binary form must reproduce the above copyright
-+ *     notice, this list of conditions and the following disclaimer in the
-+ *     documentation and/or other materials provided with the distribution.
-+ *  3. Neither the name of the Panasas company nor the names of its
-+ *     contributors may be used to endorse or promote products derived
-+ *     from this software without specific prior written permission.
-+ *
-+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
-+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
+ /*
+  * Object commands
+  */
+@@ -494,6 +515,11 @@ void osd_req_remove_object(struct osd_request *or, struct osd_obj_id *obj)
+ }
+ EXPORT_SYMBOL(osd_req_remove_object);
+ 
 +
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <sys/ioctl.h>
-+#include <fcntl.h>
++/*TODO: void osd_req_create_multi(struct osd_request *or,
++	struct osd_obj_id *first, struct osd_obj_id_list *list, unsigned nelem);
++*/
 +
-+#include "osd_ktests.h"
+ void osd_req_write(struct osd_request *or,
+ 	const struct osd_obj_id *obj, struct bio *bio, u64 offset)
+ {
+@@ -505,6 +531,15 @@ void osd_req_write(struct osd_request *or,
+ }
+ EXPORT_SYMBOL(osd_req_write);
+ 
++/*TODO: void osd_req_append(struct osd_request *,
++	const struct osd_obj_id *, struct bio *data_out); */
++/*TODO: void osd_req_create_write(struct osd_request *,
++	const struct osd_obj_id *, struct bio *data_out, u64 offset); */
++/*TODO: void osd_req_clear(struct osd_request *,
++	const struct osd_obj_id *, u64 offset, u64 len); */
++/*TODO: void osd_req_punch(struct osd_request *,
++	const struct osd_obj_id *, u64 offset, u64 len); V2 */
 +
-+void usage(void)
-+{
-+	printf("usage: osd_test /dev/osdX testNo\n");
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	int osd_file, ret;
-+
-+	if (argc <= 1) {
-+		usage();
-+		return -2;
-+	}
-+
-+	osd_file = open(argv[1], O_RDWR);
-+	if (osd_file < 0) {
-+		printf("Error opening <%s>\n", argv[1]);
-+		return -3;
-+	}
-+
-+	ret = ioctl(osd_file, OSD_TEST_ALL, 0);
-+	if (ret) {
-+		printf("ioctl 17 returned %d\n", ret);
-+		return ret;
-+	}
-+
-+	close(osd_file);
-+	return 0;
-+}
+ void osd_req_flush_object(struct osd_request *or,
+ 	const struct osd_obj_id *obj, enum osd_options_flush_scope_values op,
+ 	/*V2*/ u64 offset, /*V2*/ u64 len)
 -- 
 1.6.0.1
 
