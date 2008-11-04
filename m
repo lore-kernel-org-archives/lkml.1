@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYKDII1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754481AbYKDISi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbYKDII1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 03:08:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379AbYKDIIT
+	id S1754481AbYKDISi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 03:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYKDIS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 03:08:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54121 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371AbYKDIIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 03:08:18 -0500
-Date: Tue, 4 Nov 2008 09:07:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/3] ftrace: function tracer with irqs disabled
-Message-ID: <20081104080747.GA27075@elte.hu>
-References: <20081104041554.605521183@goodmis.org> <20081104042203.499871423@goodmis.org>
+	Tue, 4 Nov 2008 03:18:29 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58191 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753419AbYKDIS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 03:18:29 -0500
+Message-ID: <491004A9.70803@cn.fujitsu.com>
+Date: Tue, 04 Nov 2008 16:15:37 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081104042203.499871423@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] sched debug: remove sd_level_to_string()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Just use sd->name.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/sched.c |   25 +------------------------
+ 1 files changed, 1 insertions(+), 24 deletions(-)
 
-> Running hackbench 3 times with the irqs disabled and 3 times with 
-> the preempt disabled function tracer yielded:
-> 
-> tracing type       times            entries recorded
-> ------------      --------          ----------------
-> irq disabled      43.393            166433066
->                   43.282            166172618
->                   43.298            166256704
-> 
-> preempt disabled  38.969            159871710
->                   38.943            159972935
->                   39.325            161056510
-
-your numbers might be correct, but i found that hackbench is not 
-reliable boot-to-boot - it can easily produce 10% systematic noise or 
-more. (perhaps depending on how the various socket data structures 
-happen to be allocated)
-
-the really conclusive way to test this would be to add a hack that 
-either does preempt disable or irqs disable, depending on a runtime 
-flag - and then observe how hackbench performance reacts to the value 
-of that flag.
-
-note that preempt-disable will also produce less trace entries, 
-especially in very irq-rich workloads. Hence it will be "faster".
-
-	Ingo
+diff --git a/kernel/sched.c b/kernel/sched.c
+index bf75a5e..baa7e4b 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -6622,28 +6622,6 @@ early_initcall(migration_init);
+ 
+ #ifdef CONFIG_SCHED_DEBUG
+ 
+-static inline const char *sd_level_to_string(enum sched_domain_level lvl)
+-{
+-	switch (lvl) {
+-	case SD_LV_NONE:
+-			return "NONE";
+-	case SD_LV_SIBLING:
+-			return "SIBLING";
+-	case SD_LV_MC:
+-			return "MC";
+-	case SD_LV_CPU:
+-			return "CPU";
+-	case SD_LV_NODE:
+-			return "NODE";
+-	case SD_LV_ALLNODES:
+-			return "ALLNODES";
+-	case SD_LV_MAX:
+-			return "MAX";
+-
+-	}
+-	return "MAX";
+-}
+-
+ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 				  cpumask_t *groupmask)
+ {
+@@ -6663,8 +6641,7 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 		return -1;
+ 	}
+ 
+-	printk(KERN_CONT "span %s level %s\n",
+-		str, sd_level_to_string(sd->level));
++	printk(KERN_CONT "span %s level %s\n", str, sd->name);
+ 
+ 	if (!cpu_isset(cpu, sd->span)) {
+ 		printk(KERN_ERR "ERROR: domain->span does not contain "
+-- 
+1.5.4.rc3
