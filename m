@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYKDAvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbYKDAxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbYKDAvZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 19:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYKDAvO
+	id S1755690AbYKDAxP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 19:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbYKDAw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 19:51:14 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43766 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753128AbYKDAvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 19:51:13 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Nico -telmich- Schottelius" <nico-linux-next@schottelius.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.28-rc3(-next20081103) suspend issues on Lenovo X200
-Date: Tue, 4 Nov 2008 01:55:59 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20081103153945.GA20618@denkbrett.schottelius.org>
-In-Reply-To: <20081103153945.GA20618@denkbrett.schottelius.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 3 Nov 2008 19:52:58 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:54200 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753676AbYKDAw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 19:52:57 -0500
+Subject: Re: [PATCH] hibernation should work ok with memory hotplug
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linux-kernel@vger.kernel.org, linux-pm@lists.osdl.org,
+       Matt Tolentino <matthew.e.tolentino@intel.com>,
+       Dave Hansen <haveblue@us.ibm.com>, linux-mm@kvack.org,
+       Mel Gorman <mel@skynet.ie>, Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <200811040129.35335.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <200811040005.12418.rjw@sisk.pl> <1225753819.12673.518.camel@nimitz>
+	 <200811040129.35335.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 03 Nov 2008 16:52:47 -0800
+Message-Id: <1225759967.12673.521.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811040155.59933.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of November 2008, Nico -telmich- Schottelius wrote:
-> Updating my last post, system now runs with
-> the new Debian xserver-xorg-intel package:
+On Tue, 2008-11-04 at 01:29 +0100, Rafael J. Wysocki wrote:
+> > Since zone *ranges* overlap, you can't tell to which zone a page belongs
+> > simply from its address.  You need to ask the 'struct page'.
 > 
-> 2.6.28-rc3 and 2.6.28-rc3-next-20081103: acpi_sleep=s3_bios
->    - suspend on console works
->    - wakeup on console works
->    - xorg (intel 2.3.2-2+lenny5) works
->    - suspend on xorg works
->    - wakeup on xorg is BROKEN:
->       - console (kernel messages) is seen for a few seconds
->       - kernel switches back to X
->       - screen is partly drawn: X cursor is shown, background, no windows
->       - system hard reboots after about 20 seconds (watchdog?)
+> Understood.
 > 
-> The Debian packages includes the lates G45 bugfix:
-> 
-> http://packages.debian.org/changelogs/pool/main/x/xserver-xorg-video-intel/xserver-xorg-video-intel_2.3.2-2+lenny5/changelog
-> 
-> So I'm waiting for your input on where to update what next ;-)
+> This means that some zones may contain some ranges of pfns that correspond
+> to struct pages in another zone, correct?
 
-Jesse, any ideas?  Can that be related to the DRM problem with radeon?
+Yup, that's correct.
 
-Thanks,
-Rafael
+The patch looks good to me.
+
+-- Dave
+
