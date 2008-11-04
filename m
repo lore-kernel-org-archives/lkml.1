@@ -1,104 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYKDDtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008AbYKDEHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008AbYKDDtc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 22:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYKDDtX
+	id S1754008AbYKDEHa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 23:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753112AbYKDEHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 22:49:23 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:34734 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbYKDDtW (ORCPT
+	Mon, 3 Nov 2008 23:07:16 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:37979 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753065AbYKDEHP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 22:49:22 -0500
-Message-ID: <490FC735.1070405@novell.com>
-Date: Mon, 03 Nov 2008 22:53:25 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Dimitri Sivanich <sivanich@sgi.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>
-Subject: Re: RT sched: cpupri_vec lock contention with def_root_domain and
- no load balance
-References: <20081103210748.GC9937@sgi.com> <1225751603.7803.1640.camel@twins>
-In-Reply-To: <1225751603.7803.1640.camel@twins>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE48413D46071B3255D1178AA"
+	Mon, 3 Nov 2008 23:07:15 -0500
+Date: Mon, 03 Nov 2008 23:07:08 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] intel_menlo: max_state is unsigned, invalid test
+In-reply-to: <20081103143526.375be238.akpm@linux-foundation.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Sujith Thomas <sujith.thomas@intel.com>,
+       Zhang Rui <rui.zhang@intel.com>
+Cc: roel kluin <roel.kluin@gmail.com>, len.brown@intel.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Message-id: <alpine.LFD.2.00.0811032300551.3132@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <4908D067.9080207@gmail.com>
+ <20081103143526.375be238.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE48413D46071B3255D1178AA
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Peter Zijlstra wrote:
-> On Mon, 2008-11-03 at 15:07 -0600, Dimitri Sivanich wrote:
->  =20
->> When load balancing gets switched off for a set of cpus via the
->> sched_load_balance flag in cpusets, those cpus wind up with the
->> globally defined def_root_domain attached.  The def_root_domain is
->> attached when partition_sched_domains calls detach_destroy_domains().
->> A new root_domain is never allocated or attached as a sched domain
->> will never be attached by __build_sched_domains() for the non-load
->> balanced processors.
->>
->> The problem with this scenario is that on systems with a large number
->> of processors with load balancing switched off, we start to see the
->> cpupri->pri_to_cpu->lock in the def_root_domain becoming contended.
->> This starts to become much more apparent above 8 waking RT threads
->> (with each RT thread running on it's own cpu, blocking and waking up
->> continuously).
->>
->> I'm wondering if this is, in fact, the way things were meant to work,
->> or should we have a root domain allocated for each cpu that is not to
->> be part of a sched domain?  Note the the def_root_domain spans all of
->> the non-load-balanced cpus in this case.  Having it attached to cpus
->> that should not be load balancing doesn't quite make sense to me.
->>    =20
->
-> It shouldn't be like that, each load-balance domain (in your case a
-> single cpu) should get its own root domain. Gregory?
->  =20
-
-Yeah, this sounds broken.  I know that the root-domain code was being
-developed coincident to some upheaval with the cpuset code, so I suspect
-something may have been broken from the original intent.  I will take a
-look.
-
--Greg
-
->  =20
->> Here's where we've often seen this lock contention occur:
->>    =20
->
-> what's this horrible output from?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->  =20
 
 
+On Mon, 3 Nov 2008, Andrew Morton wrote:
 
---------------enigE48413D46071B3255D1178AA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+> On Wed, 29 Oct 2008 17:06:47 -0400
+> roel kluin <roel.kluin@gmail.com> wrote:
+> 
+> > max_state is unsigned, so the test is invalid.
+> > 
+> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> > ---
+> > I think max_state can only become -1, no? then probably a different
+> > patch is required.
+> > I may not be able to respond for a few weeks.
+> > 
+> > diff --git a/drivers/misc/intel_menlow.c b/drivers/misc/intel_menlow.c
+> > index e00a275..980171d 100644
+> > --- a/drivers/misc/intel_menlow.c
+> > +++ b/drivers/misc/intel_menlow.c
+> > @@ -121,7 +121,7 @@ static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
+> >  	if (memory_get_int_max_bandwidth(cdev, &max_state))
+> >  		return -EFAULT;
+> >  
+> > -	if (max_state < 0 || state > max_state)
+> > +	if (max_state == -1 || state > max_state)
+> >  		return -EINVAL;
+> >  
+> >  	arg_list.count = 1;
+> > 
+> 
+> hm, maybe.
+> 
+> This can only happen if acpi_evaluate_integer(MEMORY_GET_BANDWIDTH)
+> returned no-error and a bandwidth of zero (I assume).
+> 
+> Is this a special case which the driver really wanted to handle?  If
+> so, why is "0" the only bad value which we're checking for?  Or is this
+> all some big brainfart which should be removed?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+Sujith,
+Please send me a patch to intel_menlo.c that documents the
+legal return values from GTHS.
 
-iEYEARECAAYFAkkPxzUACgkQlOSOBdgZUxlavwCfRjRfXXOvf++JGTtau9Ygc1UD
-k2oAnizpc8fr6oxcgdVBbpjj//tk90g5
-=sSiT
------END PGP SIGNATURE-----
+If 0 is illegal, that is fine, but the upstream driver doesn't
+check for it properl (I like Rui's 9/11 patch better than the above,
+so andrew, you can drop this patch in any case)
 
---------------enigE48413D46071B3255D1178AA--
+thanks,
+-Len
+
+ps.  Sujith, shouldn't there be a MAINTAINERS for this driver with your 
+name on it?
+
+
+
