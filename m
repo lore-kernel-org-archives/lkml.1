@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757122AbYKDVie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYKDVix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757122AbYKDVie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 16:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbYKDViL
+	id S1757233AbYKDVix (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 16:38:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYKDVim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 16:38:11 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:54602 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754898AbYKDViJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 16:38:09 -0500
-Date: Tue, 4 Nov 2008 15:38:05 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC v8][PATCH 0/12] Kernel based checkpoint/restart
-Message-ID: <20081104213805.GA14737@us.ibm.com>
-References: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225374675-22850-1-git-send-email-orenl@cs.columbia.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 4 Nov 2008 16:38:42 -0500
+Received: from gate.crashing.org ([63.228.1.57]:33751 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752472AbYKDVil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 16:38:41 -0500
+Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Paul Collins <paul@burly.ondioline.org>
+Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Krzysztof Halasa <khc@pm.waw.pl>
+In-Reply-To: <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
+References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
+	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
+	 <1225662539.8004.237.camel@pasglop>
+	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
+	 <1225697689.8004.245.camel@pasglop>
+	 <87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
+Content-Type: text/plain
+Date: Wed, 05 Nov 2008 08:33:14 +1100
+Message-Id: <1225834394.8004.273.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@cs.columbia.edu):
-> Basic checkpoint-restart [C/R]: v8 adds support for "external" checkpoint
-> and improves documentation. Older announcements below.
+On Tue, 2008-11-04 at 19:49 +1300, Paul Collins wrote:
+> +               int width = ((image->width - 1) / 32 + 1) * 32;
 
-Finally!
+Heh, it would have been easier to do
 
->From 8edab186b605f7dddd612e581204f1ad8fd766be Mon Sep 17 00:00:00 2001
-From: Serge Hallyn <serue@us.ibm.com>
-Date: Tue, 4 Nov 2008 15:28:01 -0600
-Subject: [PATCH 1/1] cr: fix use of __d_path()
+	width = (image->width | 0x1f) + 1; 
 
-__d_path():
-	1. should be used under dcache_lock
-	2. can change root->{mnt,dentry} without changing refcounts
-The second point was the cause of my BUGs.  The ctx->root was passed
-in, and do_checkpoint() had taken a path_get on the vfsroot.  So now
-at cleanup it was doing path_put() using another mnt+dentry.
+BTW. Does it always lockup or only when using this special font (without
+the hack that is ?)
 
-(Why they are different, I'm not sure - but my guess would be that
-stdin or stdout is inherited from the parent task in parent mntns,
-hence file->mnt is different from root->mnt as it's a different
-namespace.)
+Cheers,
+Ben.
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
----
- checkpoint/checkpoint.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 173b637..7f0c1e7 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -70,9 +70,20 @@ static char *
- cr_fill_fname(struct path *path, struct path *root, char *buf, int *n)
- {
- 	char *fname;
-+	struct path root2;
-+
-+	root2.mnt = root->mnt;
-+	root2.dentry = root->dentry;
- 
- 	BUG_ON(!buf);
--	fname = __d_path(path, root, buf, *n);
-+	spin_lock(&dcache_lock);
-+	fname = __d_path(path, &root2, buf, *n);
-+	spin_unlock(&dcache_lock);
-+	if (root2.mnt != root->mnt)
-+		printk(KERN_NOTICE "%s: mnt changed\n", __func__);
-+	if (root2.dentry != root->dentry)
-+		printk(KERN_NOTICE "%s: dentry changed\n", __func__);
-+	fname = buf+10;
- 	if (!IS_ERR(fname))
- 		*n = (buf + (*n) - fname);
- 	return fname;
--- 
-1.5.6.3
 
