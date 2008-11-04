@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbYKDMX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbYKDMY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752836AbYKDMX3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 07:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYKDMXV
+	id S1753496AbYKDMY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 07:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYKDMYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 07:23:21 -0500
-Received: from hapkido.dreamhost.com ([66.33.216.122]:47129 "EHLO
-	hapkido.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751392AbYKDMXU (ORCPT
+	Tue, 4 Nov 2008 07:24:21 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60067 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751481AbYKDMYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 07:23:20 -0500
-Message-ID: <49103E57.20107@hiramoto.org>
-Date: Tue, 04 Nov 2008 13:21:43 +0100
-From: Karl Hiramoto <karl@hiramoto.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080929)
-MIME-Version: 1.0
-To: Imre Kaloz <kaloz@openwrt.org>
-Cc: =?UTF-8?B?TWlndWVsIMOBbmdlbCDDgWx2YXJleg==?= 
-	<gotzoncabanes@gmail.com>,
-       khc@pm.waw.pl, kernel@wantstofly.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: IXP4XX Maintainer
-References: <b0438a630811032237s1a859a46ic6ee423c670720c1@mail.gmail.com> <op.uj3ft2yq2s3iss@ecaz>
-In-Reply-To: <op.uj3ft2yq2s3iss@ecaz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 4 Nov 2008 07:24:20 -0500
+Message-Id: <20081104122405.046233722@attica.americas.sgi.com>
+User-Agent: quilt/0.47-1
+Date: Tue, 04 Nov 2008 06:24:05 -0600
+From: holt@sgi.com
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Cc: Petr Tesarik <ptesarik@suse.cz>, Tony Ernst <tee@sgi.com>,
+       Robin Holt <holt@sgi.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [Patch V3 0/3] Enable irqs when waiting for rwlocks
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Imre Kaloz wrote:
-> On Tue, 04 Nov 2008 07:37:09 +0100, Miguel Ángel Álvarez
-> <gotzoncabanes@gmail.com> wrote:
->
->> Sorry for the question, but... who is supposed to be the mainteiner
->> for IXP4XX cpus?
->>
->> Thanks
->>
->> Miguel Ángel Álvarez
->
-> I was supposed to pick it up, just Real Life (tm) got in the way..
-> I'll queue up my pending
-> patches during this week, and submit them to the arm-kernel list.
->
+New in V3:
+ * Handle rearrangement of some arch's include/asm directories.
 
-A lot of the stuff in openwrt svn would be nice to see mainline :-)
+New in V2:
+ * get rid of ugly #ifdef's in kernel/spinlock.h
+ * convert __raw_{read|write}_lock_flags to an inline func
 
-I'm most interested in
-https://svn.openwrt.org/openwrt/trunk/target/linux/ixp4xx/patches-2.6.27/2*-npe_driver*
+SGI has observed that on large systems, interrupts are not serviced for
+a long period of time when waiting for a rwlock. The following patch
+series re-enables irqs while waiting for the lock, resembling the code
+which is already there for spinlocks.
 
-I'm using these now on an IXP425 and IXP435 with good results.
---
-karl
+I only made the ia64 version, because the patch adds some overhead to
+the fast path. I assume there is currently no demand to have this for
+other architectures, because the systems are not so large. Of course,
+the possibility to implement raw_{read|write}_lock_flags for any
+architecture is still there.
 
-
-svn
-
+Robin Holt
