@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbYKDPVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbYKDPWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbYKDPVb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 10:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbYKDPVW
+	id S1755144AbYKDPWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 10:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYKDPWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 10:21:22 -0500
-Received: from tombstone.ecm.ub.es ([161.116.81.124]:4455 "EHLO
-	tombstone.ecm.ub.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752442AbYKDPVW (ORCPT
+	Tue, 4 Nov 2008 10:22:09 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50664 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753536AbYKDPWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 10:21:22 -0500
-Message-ID: <49106865.1080009@ecm.ub.es>
-Date: Tue, 04 Nov 2008 16:21:09 +0100
-From: Albert Comerma <albert@ecm.ub.es>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Somebody will apply it?
-Content-Type: multipart/mixed;
- boundary="------------040007060205080104000108"
+	Tue, 4 Nov 2008 10:22:08 -0500
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+	hotplug
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200811040954.34969.rjw@sisk.pl>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <200811040808.36464.rjw@sisk.pl> <1225784174.12673.547.camel@nimitz>
+	 <200811040954.34969.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 04 Nov 2008 07:21:51 -0800
+Message-Id: <1225812111.12673.577.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040007060205080104000108
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 2008-11-04 at 09:54 +0100, Rafael J. Wysocki wrote:
+> To handle this, I need to know two things:
+> 1) what changes of the zones are possible due to memory hotplugging
+> (i.e.    can they grow, shring, change boundaries etc.)
 
-Since my previous message seems did not arrive anyone interested I 
-repeat it, stressing that the maintainer seems not to maintain the 
-driver, so somebody with access should apply the patch. It's a trivial 
-patch...
+All of the above. 
 
--------- Missatge original --------
-Assumpte: 	[PATCH] to SIS USB2VGA DRIVER
-Data: 	Mon, 03 Nov 2008 15:23:46 +0100
-De: 	Albert Comerma <albert@ecm.ub.es>
-A: 	linux-kernel@vger.kernel.org
+> 2) what kind of locking is needed to prevent zones from changing.
 
+The amount of locking is pretty minimal.  We depend on some locking in
+sysfs to keep two attempts to online from stepping on the other.
 
+There is the zone_span_seq*() set of functions.  These are used pretty
+sparsely, but we do use them in page_outside_zone_boundaries() to notice
+when a zone is resized.
 
-Hi list!, first of all I'm not subscrived to the list but would be great 
-if you CC me the answers for this mail.
-I write because a long time ago I detected that just adding a new USB ID 
-to the USB2VGA driver it can work with a new adapter. I contacted the 
-maintainer as appeared in the MAINTAINERS list;
+There are also the pgdat_resize*() locks.  Those are more for internal
+use guarding the sparsemem structures and so forth.
 
-SIS FRAMEBUFFER DRIVER
-P:      Thomas Winischhofer
-M:      thomas@winischhofer.net
-W:      http://www.winischhofer.net/linuxsisvga.shtml
-S:      Maintained
+Could you describe a little more why you need to lock down zone
+resizing?  Do you *really* mean zones, or do you mean "the set of memory
+on the system"?  Why walk zones instead of pgdats?
 
-SIS USB2VGA DRIVER
-P:      Thomas Winischhofer
-M:      thomas@winischhofer.net
-W:      http://www.winischhofer.at/linuxsisusbvga.shtml
-S:      Maintained
+-- Dave
 
-He didn't answered nor added the line, and his web seems down.
-So it would be great if somebody could do this for him.
-I send the patch...
-
-Cheers,
-
-Albert
-
-
-
-
---------------040007060205080104000108
-Content-Type: text/x-diff;
- name="sisusb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="sisusb.patch"
-
-diff -r -u linux-2.6.27.4/drivers/usb/misc/sisusbvga/sisusb.c linux-2.6.27.4-new/drivers/usb/misc/sisusbvga/sisusb.c
---- linux-2.6.27.4/drivers/usb/misc/sisusbvga/sisusb.c	2008-10-26 00:05:07.000000000 +0200
-+++ linux-2.6.27.4-new/drivers/usb/misc/sisusbvga/sisusb.c	2008-11-03 15:21:03.000000000 +0100
-@@ -3270,6 +3270,7 @@
- 	{ USB_DEVICE(0x0711, 0x0900) },
- 	{ USB_DEVICE(0x0711, 0x0901) },
- 	{ USB_DEVICE(0x0711, 0x0902) },
-+	{ USB_DEVICE(0x0711, 0x0903) },
- 	{ USB_DEVICE(0x0711, 0x0918) },
- 	{ USB_DEVICE(0x182d, 0x021c) },
- 	{ USB_DEVICE(0x182d, 0x0269) },
-
-
---------------040007060205080104000108--
