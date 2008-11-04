@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757658AbYKDQst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbYKDQsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757658AbYKDQst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYKDQqX
+	id S1757559AbYKDQsd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757011AbYKDQqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:46:23 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37592 "EHLO
+	Tue, 4 Nov 2008 11:46:19 -0500
+Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37575 "EHLO
 	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757203AbYKDQqP (ORCPT
+	with ESMTP id S1755515AbYKDQqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:46:15 -0500
+	Tue, 4 Nov 2008 11:46:06 -0500
 From: Boaz Harrosh <bharrosh@panasas.com>
 To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -19,9 +19,9 @@ To: James Bottomley <James.Bottomley@HansenPartnership.com>,
        linux-scsi <linux-scsi@vger.kernel.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
        Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 11/18] libosd: OSD Security processing stubs
-Date: Tue,  4 Nov 2008 18:44:49 +0200
-Message-Id: <1225817089-6132-1-git-send-email-bharrosh@panasas.com>
+Subject: [PATCH 15/18] libosd: OSDv2 auto detection
+Date: Tue,  4 Nov 2008 18:44:52 +0200
+Message-Id: <1225817092-6224-1-git-send-email-bharrosh@panasas.com>
 X-Mailer: git-send-email 1.6.0.1
 In-Reply-To: <491073BB.4000900@panasas.com>
 References: <491073BB.4000900@panasas.com>
@@ -29,133 +29,201 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Layout the signing of OSD's CDB and all-data security modes. The actual
-code for signing the data and CDB is missing, but the code flow and the extra
-buffer segments are all in place.
+Auto detect an OSDv2 or OSDv1 target at run time. Note how none
+of the OSD API calls change. The tests do not know what device
+version it is.
+
+This test now passes against both the IBM-OSD-SIM OSD1 target
+as well as OSC's OSD2 target.
 
 Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 ---
- drivers/scsi/osd/osd_initiator.c |   85 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 85 insertions(+), 0 deletions(-)
+ drivers/scsi/osd/osd_initiator.c |  125 ++++++++++++++++++++++++++++++++++++++
+ drivers/scsi/osd/osd_uld.c       |    5 ++
+ include/scsi/osd_initiator.h     |    3 +
+ 3 files changed, 133 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/scsi/osd/osd_initiator.c b/drivers/scsi/osd/osd_initiator.c
-index da0c53c..2ed0429 100644
+index 9127fc4..8e59cdc 100644
 --- a/drivers/scsi/osd/osd_initiator.c
 +++ b/drivers/scsi/osd/osd_initiator.c
-@@ -109,6 +109,14 @@ static osd_cdb_offset osd_req_encode_offset(struct osd_request *or,
- 				  OSDv1_OFFSET_MIN_SHIFT, OSD_OFFSET_MAX_SHIFT);
+@@ -41,6 +41,7 @@
+ 
+ #include <scsi/osd_initiator.h>
+ #include <scsi/osd_sec.h>
++#include <scsi/osd_attributes.h>
+ #include <scsi/scsi_device.h>
+ 
+ #include "osd_debug.h"
+@@ -61,6 +62,130 @@ static inline void build_test(void)
+ 	BUILD_BUG_ON(sizeof(struct osdv1_cdb) != OSDv1_TOTAL_CDB_LEN);
  }
  
-+static struct osd_security_parameters *
-+_osd_req_sec_params(struct osd_request *or)
++static char *_osd_ver_desc(struct osd_request *or)
 +{
-+	struct osd_cdb *ocdb = &or->cdb;
-+
-+	return &ocdb->v1.sec_params;
++	return osd_req_is_ver1(or) ? "OSD1" : "OSD2";
 +}
 +
- void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_dev)
- {
- 	memset(osdd, 0, sizeof(*osdd));
-@@ -796,6 +804,64 @@ int _osd_req_finalize_attr_page(struct osd_request *or)
- 	return ret;
- }
- 
-+int _osd_req_finalize_data_integrity(struct osd_request *or,
-+	bool has_in, bool has_out, const u8 *cap_key)
++#define ATTR_DEF_RI(id, len) ATTR_DEF(OSD_APAGE_ROOT_INFORMATION, id, len)
++
++static int _osd_print_system_info(struct osd_dev *od, void *caps)
 +{
-+	struct osd_security_parameters *sec_parms = _osd_req_sec_params(or);
++	struct osd_request *or;
++	struct osd_attr get_attrs[] = {
++		ATTR_DEF_RI(OSD_ATTR_RI_VENDOR_IDENTIFICATION, 8),
++		ATTR_DEF_RI(OSD_ATTR_RI_PRODUCT_IDENTIFICATION, 16),
++		ATTR_DEF_RI(OSD_ATTR_RI_PRODUCT_MODEL, 32),
++		ATTR_DEF_RI(OSD_ATTR_RI_PRODUCT_REVISION_LEVEL, 4),
++		ATTR_DEF_RI(OSD_ATTR_RI_PRODUCT_SERIAL_NUMBER, 64 /*variable*/),
++		ATTR_DEF_RI(OSD_ATTR_RI_OSD_NAME, 64 /*variable*/),
++		ATTR_DEF_RI(OSD_ATTR_RI_TOTAL_CAPACITY, 8),
++		ATTR_DEF_RI(OSD_ATTR_RI_USED_CAPACITY, 8),
++		ATTR_DEF_RI(OSD_ATTR_RI_NUMBER_OF_PARTITIONS, 8),
++		ATTR_DEF_RI(OSD_ATTR_RI_CLOCK, 6),
++		/* IBM-OSD-SIM Has a bug with this one put it last */
++		ATTR_DEF_RI(OSD_ATTR_RI_OSD_SYSTEM_ID, 20),
++	};
++	void *iter = NULL, *pFirst;
++	int nelem = ARRAY_SIZE(get_attrs), a = 0;
 +	int ret;
 +
-+	if (!osd_is_sec_alldata(sec_parms))
-+		return 0;
++	or = osd_start_request(od, GFP_KERNEL);
++	if (!or)
++		return -ENOMEM;
 +
-+	if (has_out) {
-+		struct _osd_req_data_segment seg = {
-+			.buff = &or->out_data_integ,
-+			.total_bytes = sizeof(or->out_data_integ),
-+		};
-+		int pad;
++	/* get attrs */
++	osd_req_get_attributes(or, &osd_root_object);
++	osd_req_add_get_attr_list(or, get_attrs, ARRAY_SIZE(get_attrs));
 +
-+		or->out_data_integ.data_bytes = cpu_to_be64(
-+			or->out.bio ? or->out.bio->bi_size : 0);
-+		or->out_data_integ.set_attributes_bytes = cpu_to_be64(
-+			or->set_attr.total_bytes);
-+		or->out_data_integ.get_attributes_bytes = cpu_to_be64(
-+			or->enc_get_attr.total_bytes);
++	ret = osd_finalize_request(or, 0, caps, NULL);
++	if (ret)
++		goto out;
 +
-+		sec_parms->data_out_integrity_check_offset =
-+			osd_req_encode_offset(or, or->out.total_bytes, &pad);
-+
-+		ret = _req_append_segment(or, pad, &seg, or->out.last_seg,
-+					  &or->out);
-+		if (ret)
-+			return ret;
-+		or->out.last_seg = NULL;
-+
-+		/* they are now all chained to request sign them all together */
-+		osd_sec_sign_data(&or->out_data_integ, or->out.req->bio,
-+				  cap_key);
++	ret = osd_execute_request(or);
++	if (ret) {
++		OSD_ERR("Failed to detect %s => %d\n", _osd_ver_desc(or), ret);
++		goto out;
 +	}
 +
-+	if (has_in) {
-+		struct _osd_req_data_segment seg = {
-+			.buff = &or->in_data_integ,
-+			.total_bytes = sizeof(or->in_data_integ),
-+		};
-+		int pad;
++	osd_req_decode_get_attr_list(or, get_attrs, &nelem, &iter);
 +
-+		sec_parms->data_in_integrity_check_offset =
-+			osd_req_encode_offset(or, or->in.total_bytes, &pad);
++	OSD_INFO("Detected %s device\n",
++		_osd_ver_desc(or));
 +
-+		ret = _req_append_segment(or, pad, &seg, or->in.last_seg,
-+					  &or->in);
-+		if (ret)
-+			return ret;
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_VENDOR_IDENTIFICATION [%s]\n",
++		(char *)pFirst);
 +
-+		or->in.last_seg = NULL;
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_PRODUCT_IDENTIFICATION [%s]\n",
++		(char *)pFirst);
++
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_PRODUCT_MODEL [%s]\n",
++		(char *)pFirst);
++
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_PRODUCT_REVISION_LEVEL [%u]\n",
++		get_unaligned_be32(pFirst));
++
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_PRODUCT_SERIAL_NUMBER [%s]\n",
++		(char *)pFirst);
++
++	pFirst = get_attrs[a].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_OSD_NAME [%s]\n", (char *)pFirst);
++	a++;
++
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_TOTAL_CAPACITY [0x%llx]\n",
++		get_unaligned_be64(pFirst));
++
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_USED_CAPACITY [0x%llx]\n",
++		get_unaligned_be64(pFirst));
++
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_NUMBER_OF_PARTITIONS [%lld]\n",
++		get_unaligned_be64(pFirst));
++
++	/* FIXME: Where are the time utilities */
++	pFirst = get_attrs[a++].val_ptr;
++	OSD_INFO("OSD_ATTR_RI_CLOCK [0x%02x%02x%02x%02x%02x%02x]\n",
++		((char *)pFirst)[0], ((char *)pFirst)[1],
++		((char *)pFirst)[2], ((char *)pFirst)[3],
++		((char *)pFirst)[4], ((char *)pFirst)[5]);
++
++	if (a < nelem) { /* IBM-OSD-SIM bug, Might not have it */
++		int len = get_attrs[a].len;
++		u8 sid_dump[32*4 + 2]; /* 2nibbles+space+ASCII */
++
++		hex_dump_to_buffer(get_attrs[a].val_ptr, len, 32, 1,
++				   sid_dump, sizeof(sid_dump), true);
++		OSD_INFO("OSD_ATTR_RI_OSD_SYSTEM_ID(%d) [%s]\n", len, sid_dump);
++		a++;
 +	}
-+
-+	return 0;
++out:
++	osd_end_request(or);
++	return ret;
 +}
 +
- /*
-  * osd_finalize_request and helpers
-  */
-@@ -916,6 +982,12 @@ int osd_finalize_request(struct osd_request *or,
- 		}
- 	}
- 
-+	ret = _osd_req_finalize_data_integrity(or, has_in, has_out, cap_key);
-+	if (ret)
-+		return ret;
++int osd_auto_detect_ver(struct osd_dev *od, void *caps)
++{
++	int ret;
 +
-+	osd_sec_sign_cdb(&or->cdb, cap_key);
++	/* Auto-detect the osd version */
++	ret = _osd_print_system_info(od, caps);
++	if (ret) {
++		osd_dev_set_ver(od, OSD_VER1);
++		OSD_DEBUG("converting to OSD1\n");
++		ret = _osd_print_system_info(od, caps);
++	}
 +
- 	or->request->cmd = or->cdb.buff;
- 	or->request->cmd_len = _osd_req_cdb_len(or);
++	return ret;
++}
++EXPORT_SYMBOL(osd_auto_detect_ver);
++
+ static unsigned _osd_req_cdb_len(struct osd_request *or)
+ {
+ 	return osd_req_is_ver1(or) ? OSDv1_TOTAL_CDB_LEN : OSD_TOTAL_CDB_LEN;
+diff --git a/drivers/scsi/osd/osd_uld.c b/drivers/scsi/osd/osd_uld.c
+index 1ce5eba..0f2bea7 100644
+--- a/drivers/scsi/osd/osd_uld.c
++++ b/drivers/scsi/osd/osd_uld.c
+@@ -201,6 +201,7 @@ EXPORT_SYMBOL(osduld_put_device);
+ static int __detect_osd(struct osd_uld_device *oud)
+ {
+ 	struct scsi_device *scsi_dev = oud->od.scsi_dev;
++	char caps[OSD_CAP_LEN];
+ 	int error;
  
-@@ -981,6 +1053,19 @@ void osd_set_caps(struct osd_cdb *cdb, const void *caps)
- 	memcpy(&cdb->v1.caps, caps, OSDv1_CAP_LEN);
+ 	/* sending a test_unit_ready as first command seems to be needed
+@@ -212,6 +213,10 @@ static int __detect_osd(struct osd_uld_device *oud)
+ 	if (error)
+ 		OSD_ERR("warning: scsi_test_unit_ready failed\n");
+ 
++	osd_sec_init_nosec_doall_caps(caps, &osd_root_object, false, true);
++	if (osd_auto_detect_ver(&oud->od, caps))
++		return -ENODEV;
++
+ 	return 0;
  }
  
-+bool osd_is_sec_alldata(struct osd_security_parameters *sec_parms)
-+{
-+	return false;
-+}
+diff --git a/include/scsi/osd_initiator.h b/include/scsi/osd_initiator.h
+index 738312f..4fd5099 100644
+--- a/include/scsi/osd_initiator.h
++++ b/include/scsi/osd_initiator.h
+@@ -62,6 +62,9 @@ void osduld_put_device(struct osd_dev *od);
+ void osd_dev_init(struct osd_dev *, struct scsi_device *scsi_dev);
+ void osd_dev_fini(struct osd_dev *);
+ 
++/* some hi level device operations */
++int osd_auto_detect_ver(struct osd_dev *, void *caps);    /* GFP_KERNEL */
 +
-+void osd_sec_sign_cdb(struct osd_cdb *ocdb, const u8 *cap_key)
-+{
-+}
-+
-+void osd_sec_sign_data(void *data_integ, struct bio *bio, const u8 *cap_key)
-+{
-+}
-+
- /*
-  * Declared in osd_protocol.h
-  * 4.12.5 Data-In and Data-Out buffer offsets
+ /* we might want to use function vector in the future */
+ static inline void osd_dev_set_ver(struct osd_dev *dev, enum osd_std_version v)
+ {
 -- 
 1.6.0.1
 
