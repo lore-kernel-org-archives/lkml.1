@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbYKDCDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbYKDCHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbYKDCDh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 21:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbYKDCD3
+	id S1753454AbYKDCHV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 21:07:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYKDCHH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 21:03:29 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:39868 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751823AbYKDCD2 (ORCPT
+	Mon, 3 Nov 2008 21:07:07 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:48836 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751681AbYKDCHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 21:03:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oZkZmmhmB+P7WAQY1JH/xlEEE0B1JmVHyE1IAV3puQp2hyUjCMeHIKLxCQgdCQNfSU
-         I7saWyLDbJsR/nu4lEp18BWaL59fQtn5nyjowsQtsZ5K4Z9z4K2LSDi4eVCwyaKym5nx
-         tu9+JJkXQjhiSlePss3c3xSyn6jvUXyGM5csI=
-Message-ID: <c62985530811031803o6909518ax137d42189dcff0de@mail.gmail.com>
-Date: Tue, 4 Nov 2008 03:03:27 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] tracing: use raw spinlocks instead of spinlocks
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081103064647.GA4826@elte.hu>
+	Mon, 3 Nov 2008 21:07:06 -0500
+Date: Tue, 4 Nov 2008 02:07:00 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, kristen.c.accardi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add option to passively listen for PCIE hotplug events
+Message-ID: <20081104020700.GA11761@srcf.ucam.org>
+References: <20081029200903.GA1678@srcf.ucam.org> <490FAC33.9050808@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <490E3F73.1000405@gmail.com>
-	 <alpine.DEB.1.10.0811021940030.32371@gandalf.stny.rr.com>
-	 <20081103064647.GA4826@elte.hu>
+In-Reply-To: <490FAC33.9050808@jp.fujitsu.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/3 Ingo Molnar <mingo@elte.hu>:
-> Frederic, do you have trouble finding the source of the deadlock? In
-> theory the NMI watchdog should be able to punch through it. (if not
-> then we need to improve things so that it can)
+On Tue, Nov 04, 2008 at 10:58:11AM +0900, Kenji Kaneshige wrote:
 
-Ok...actually I still have a deadlock. Or it seems to. I launch the
-return tracer and then...the system
-can block after several seconds, typically after I try to write some
-characters on the terminal.
+> - Even with pciehp_passive option, pciehp driver controls hotplug
+>  related registers at the initialization time, enabling software
+>  notification mechanism for hotplug events, trying to turn power
+>  on the slot and so on. Is this your intended behaviour?
 
-It happens more easily on SMP.
+Yes, although the most recent version of the patch doesn't do the 
+forcible power on if no card is detected.
 
-I enabled all I could for lock debugging, but I don't have any errors printed...
-Lockdep uses an NMI wachdog?
+> - Maybe I don't understand what "pciehp will listen for events..."
+>  in your patch description means. But if you expect the pciehp's
+>  interrupts for hotplug events, it would not work properly when
+>  hotplug control is not granted through _OSC or OSHP.
+
+What do you mean by "not work properly"? The hardware we've tested with 
+fires events even without an OSHP method being present. That's the case 
+we're trying to deal with.
+
+> > 	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if 
+> > 	slot is occupied */
+> >-	if (value && pciehp_force) {
+> >+	if (value && (pciehp_force || pciehp_passive)) {
+> > 		rc = pciehp_enable_slot(t_slot);
+> > 		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
+> > 			value = 0;
+
+This code no longer runs in the pciehp_passive case. However, by the 
+looks of it it still does in the resume case - that probably wants 
+fixing.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
