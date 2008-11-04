@@ -1,28 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYKDJQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbYKDJRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbYKDJQZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 04:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbYKDJQN
+	id S1755587AbYKDJRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 04:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYKDJRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 04:16:13 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52870 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Nov 2008 04:17:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55511 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753796AbYKDJQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 04:16:11 -0500
-Date: Tue, 4 Nov 2008 10:15:56 +0100
+	id S1753587AbYKDJRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 04:17:30 -0500
+Date: Tue, 4 Nov 2008 10:16:52 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
-Message-ID: <20081104091556.GG23790@elte.hu>
-References: <4910070C.8010807@cn.fujitsu.com>
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, Greg KH <greg@kroah.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
+	relationship with symlinks in sysfs
+Message-ID: <20081104091652.GH23790@elte.hu>
+References: <20081103234808.GA13716@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4910070C.8010807@cn.fujitsu.com>
+In-Reply-To: <20081103234808.GA13716@us.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,22 +43,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+* Gary Hade <garyhade@us.ibm.com> wrote:
 
-> this fix will increase about several hundred bytes to the kernel 
-> text for rcuclassic.
+> Show node to memory section relationship with symlinks in sysfs
 
-hm, why is that, and is it true for the full vmlinux as well, for a 
-reasonably large .config?
+nice change.
 
-Do you get the size increase even if these two are enabled:
+>  arch/x86/mm/init_32.c                          |    2 
+>  arch/x86/mm/init_64.c                          |    2 
 
- CONFIG_CC_OPTIMIZE_FOR_SIZE=y
- CONFIG_OPTIMIZE_INLINING=y
-
-?
-
-i'd expect the opposite or same-size: given that an ugly 
-quasi-inlining macro is replaced with a shared, out of line function.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 	Ingo
