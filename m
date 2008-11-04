@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbYKDSeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYKDSfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbYKDSeS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYKDSeJ
+	id S1754660AbYKDSfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:35:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYKDSev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:34:09 -0500
-Received: from [74.13.241.36] ([74.13.241.36]:33511 "EHLO slyph.dragoninc.ca"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752273AbYKDSeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:34:08 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Nov 2008 13:34:08 EST
-From: "Doug Nazar" <nazard@dragoninc.ca>
-To: "'J. Bruce Fields'" <bfields@citi.umich.edu>
-Cc: "'David Woodhouse'" <David.Woodhouse@intel.com>,
-       "'Al Viro'" <viro@zeniv.linux.org.uk>, <linux-kernel@vger.kernel.org>
-Subject: 2.6.28-rc3 truncates nfsd results
-Date: Tue, 4 Nov 2008 13:27:23 -0500
-Message-ID: <000301c93eaa$fae98460$f0bc8d20$@ca>
+	Tue, 4 Nov 2008 13:34:51 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:18779 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYKDSeu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 13:34:50 -0500
+X-IronPort-AV: E=Sophos;i="4.33,544,1220227200"; 
+   d="scan'208";a="51504598"
+From: Roland Dreier <rdreier@cisco.com>
+To: jeff@garzik.org
+Cc: "Phillip O'Donnell" <phillip.odonnell@gmail.com>,
+       "Oskar Liljeblad" <oskar@osk.mine.nu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] libata: Avoid overflow in ata_tf_read_block() when tf->hba_lbal > 127
+References: <20081028170105.GA21933@osk.mine.nu>
+	<7a9b5c320810281625kbf8904x9ba432ff0ca8c2f8@mail.gmail.com>
+	<ada4p2wmg5n.fsf_-_@cisco.com>
+	<7a9b5c320810281904x6b8b3226uaba502146be854a7@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 04 Nov 2008 10:34:48 -0800
+In-Reply-To: <7a9b5c320810281904x6b8b3226uaba502146be854a7@mail.gmail.com>
+	(Phillip O'Donnell's message of "Wed, 29 Oct 2008 15:04:17 +1300")
+Message-ID: <adatzantk53.fsf_-_@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: Ack+qqtybXi0WLWcQAqVIbuCgATOvA==
-Content-Language: en-ca
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Nov 2008 18:34:49.0279 (UTC) FILETIME=[04CFBCF0:01C93EAC]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 8d7c4203 "nfsd: fix failure to set eof in readdir in some situations"
-breaks the nfsd server. Bisected it back to this commit and reverting it
-fixes the problem.
+Phillip O'Donnell <phillip.odonnell@gmail.com> pointed out that the same
+sign extension bug that was fixed in commit ba14a9c2 ("libata: Avoid
+overflow in ata_tf_to_lba48() when tf->hba_lbal > 127") also appears to
+exist in ata_tf_read_block().  Fix this by adding a cast to u64.
 
-However, it only happens on certain machines even with the same kernel &
-filesystem (ext3). I've two groups of similar computers, each group running
-identical kernels. The ones listing only ~250 files are of course in error.
-Eldritch is running 2.6.28-rc3 with that commit reverted. With 2.8.28-rc3 it
-showed the incorrect number.
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+I don't have any way to test this -- I guess you would have to get an
+error on a block above 2G (ie data above 1TB)?  But it looks "obviously
+correct" enough to add to -next I guess.
 
+ drivers/ata/libata-core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-[root@dryad - Tue Nov 04 13:15:41]
-[/usr/src/linux] for f in golem eldritch slyph kobold basilisk faun  dryad
-nymph troll ogre banshee cockatrice; do echo $f $(ls -1 /net/$f/usr/bin/ |
-wc -l); done
-
-golem 1082
-eldritch 1644
-slyph 1718
-kobold 1081
-basilisk 267
-faun 265
-
-dryad 1595
-nymph 245
-troll 243
-ogre 243
-banshee 926
-cockatrice 237
-
-
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 622350d..a6ad862 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -612,7 +612,7 @@ u64 ata_tf_read_block(struct ata_taskfile *tf, struct ata_device *dev)
+ 		if (tf->flags & ATA_TFLAG_LBA48) {
+ 			block |= (u64)tf->hob_lbah << 40;
+ 			block |= (u64)tf->hob_lbam << 32;
+-			block |= tf->hob_lbal << 24;
++			block |= (u64)tf->hob_lbal << 24;
+ 		} else
+ 			block |= (tf->device & 0xf) << 24;
+ 
