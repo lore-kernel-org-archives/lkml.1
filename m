@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbYKDTHN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbYKDTHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbYKDTHN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:07:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbYKDTG6
+	id S1751979AbYKDTHj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:07:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbYKDTHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:06:58 -0500
-Received: from kroah.org ([198.145.64.141]:49757 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753134AbYKDTG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:06:57 -0500
-Date: Tue, 4 Nov 2008 09:55:42 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tty: Fix close races in USB serial
-Message-ID: <20081104175542.GA1328@kroah.com>
-References: <20081104152916.30344.68193.stgit@localhost.localdomain> <20081104171128.GB630@kroah.com> <20081104173726.0271939d@lxorguk.ukuu.org.uk>
+	Tue, 4 Nov 2008 14:07:03 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:35583 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753952AbYKDTHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 14:07:00 -0500
+Date: Tue, 4 Nov 2008 10:43:34 -0800
+From: Greg KH <gregkh@suse.de>
+To: Rodolfo Giometti <giometti@enneenne.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: next-20081103: oxu210hp-hcd.c:3849: error: implicit
+	declaration of function 'set_irq_type'
+Message-ID: <20081104184334.GA1840@suse.de>
+References: <20081103183214.aac32543.sfr@canb.auug.org.au> <20081103155047.GA14489@x200.localdomain> <20081104163038.GF32133@tekkaman>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081104173726.0271939d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081104163038.GF32133@tekkaman>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 05:37:26PM +0000, Alan Cox wrote:
-> > > -	if (port->port.count == (port->console? 1 : 0)) {
-> > > +	if (port->port.count == (port->console ? 2 : 1)) {
+On Tue, Nov 04, 2008 at 05:30:38PM +0100, Rodolfo Giometti wrote:
+> On Mon, Nov 03, 2008 at 06:50:47PM +0300, Alexey Dobriyan wrote:
+> > On sparc:
 > > 
-> > Why are you testing for 2 here?
+> > drivers/usb/host/oxu210hp-hcd.c:3849: error: implicit declaration of function 'set_irq_type'
+> > 
+> > and including linux/irq.h doesn't cut it CONFIG_GENERIC_HARDIRQS aren't set.
 > 
-> At the point we enter this routine port->port.count is the number of
-> users of the port. If this is the final close then this is 1 (us), except
-> if it is the USB console (in which case there will be two references).
-> 
-> The old code dropped the reference count first, the new code drops the
-> kref and port->tty first, then shuts down the port and then drops the
-> refcount. That avoids the race where we get the usb serial drivers trying
-> to stuff bytes into a closed port and the ldisc layer in turn trying to
-> echo them
-> - which causes the warnings.
+> Should I force CONFIG_GENERIC_HARDIRQS selection?
 
-Ah, ok, that makes sense, thanks.
-
-You might want to document that in there so that others understand it as
-well.
+Can this hardware work on SPARC?
 
 thanks,
 
