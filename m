@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756943AbYKDQ6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYKDQ7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756943AbYKDQ6w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbYKDQ6n
+	id S1757504AbYKDQ7S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbYKDQ64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:58:43 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42420 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Nov 2008 11:58:56 -0500
+Received: from rtr.ca ([76.10.145.34]:57325 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752404AbYKDQ6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:58:42 -0500
-Date: Tue, 4 Nov 2008 17:58:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       lguest@ozlabs.org, jeremy@xensource.com,
-       Steven Rostedt <srostedt@redhat.com>, Mike Travis <travis@sgi.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-Message-ID: <20081104165811.GA1664@elte.hu>
-References: <20081104122839.GA22864@mailshack.com> <20081104124242.GA6795@elte.hu> <1225805399.25337.1282903253@webmail.messagingengine.com> <20081104140030.GA16178@elte.hu> <1225815789.30706.1282936457@webmail.messagingengine.com> <20081104164717.GD21470@localhost>
+	id S1754098AbYKDQ6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:58:55 -0500
+Message-ID: <49107F76.60107@rtr.ca>
+Date: Tue, 04 Nov 2008 11:59:34 -0500
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081104164717.GD21470@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata hibernation fixes
+References: <20081104062734.GA4420@havoc.gtf.org> <alpine.LFD.2.00.0811040823350.3419@nehalem.linux-foundation.org> <200811041753.53342.rjw@sisk.pl>
+In-Reply-To: <200811041753.53342.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> [Alexander van Heukelum - Tue, Nov 04, 2008 at 05:23:09PM +0100]
-> ...
-> | 
-> | I did some timings using the little program below (32-bit only), doing
-> | 1024 times the same sequence. TEST1 is just pushing a constant onto
-> | the stack; TEST2 is pushing the cs register; TEST3 is the sequence
-> | from the patch to extract the vector number from the cs register.
-> | 
-> | Opteron    (cycles): 1024 / 1157 / 3527
-> | Xeon E5345 (cycles): 1092 / 1085 / 6622
-> | Athlon XP  (cycles): 1028 / 1166 / 5192
+Rafael J. Wysocki wrote:
+> On Tuesday, 4 of November 2008, Linus Torvalds wrote:
+>> On Tue, 4 Nov 2008, Jeff Garzik wrote:
+>>> This adds code at a late stage (heading towards -rc4), but does
+>>> eliminate a particular spin-up overcycling behavior associated with
+>>> hibernation.
+>> What does this have to do with hibernation? 
+>>
+>> If it's a hibernation-only issue, then there is something wrong. 
 > 
-> Xeon is defenitely out of luck :-)
+> No, it is not.  On some machines it is a power-off issue, on the others it is
+> hibernation and power-off issue.
+> 
+>> Also, if it is an issue for normal power-off as well, then I wonder why 
+>> this isn't an issue on Windows. Does windows not spin down disks at all?
+> 
+> In fact, AFAICS, it is an issue on Windows as well, at least if
+> other-than-HP-preloaded version of Windows is used.
+> 
+>> IOW, I really don't think this is correct. 
+>>
+>> I _do_ think that correct might be:
+>>
+>>  - maybe we just do something odd and different, triggering some BIOS 
+>>    behavior that isn't there under Windows.
+>>
+>>    So we should power down thigns differently so that the BIOS.
+>>
+>>  - quite possibly: we just should not spin down disks at all, and just 
+>>    flush them and do the "park" command thing. If we're _really_ powering 
+>>    off, the disks will spin down on their own when power goes away. Maybe 
+>>    that's what Windows does?
+>>
+>> So I really don't want to pull this, because I want to get more of an 
+>> explanation for why we need to do this at all. I also don't think this is 
+>> even appropriate at this stage in -rc.
+>>
+>> Is it a regression? If so, that just strengthens the questions above - 
+>> what did _we_ start doing wrong that this is needed at all? Let's just 
+>> stop doing that, not add some idiotic black-list for somethign that _we_ 
+>> do wrong.
+> 
+> This is a regression, but from something like 2.6.25 or even earlier.
+> I think what happened is we started to power-off disks at one point and these
+> BIOS-es just don't like that.
+> 
+> [Note that the issue only appears in _some_ HP boxes, other vendors don't
+> seem to be affected at all.]
+..
 
-it's still OK - i.e. no outrageous showstopper overhead anywhere in 
-that instruction sequence. The total round-trip overhead is what will 
-matter most.
+So, what happens if we just don't ever spin them down from the kernel?
+Presumably they still spin-down normally (HP or otherwise) when the BIOS
+actually cuts the power at the end of all of this?
 
-	Ingo
+Just curious..
