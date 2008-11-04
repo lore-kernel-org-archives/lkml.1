@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbYKDQbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbYKDQcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbYKDQbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbYKDQau
+	id S1756700AbYKDQcL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYKDQb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:30:50 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:49308 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755257AbYKDQat (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:30:49 -0500
-Date: Tue, 4 Nov 2008 17:30:38 +0100
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de
-Message-ID: <20081104163038.GF32133@tekkaman>
-References: <20081103183214.aac32543.sfr@canb.auug.org.au> <20081103155047.GA14489@x200.localdomain>
+	Tue, 4 Nov 2008 11:31:57 -0500
+Received: from gate.crashing.org ([63.228.1.57]:34849 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754021AbYKDQb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:31:57 -0500
+Date: Tue, 4 Nov 2008 10:31:05 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@blarg.am.freescale.net
+To: Linus Torvalds <torvalds@osdl.org>
+cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/1] irq: Maintain user set affinity
+Message-ID: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081103155047.GA14489@x200.localdomain>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: next-20081103: oxu210hp-hcd.c:3849: error: implicit
-	declaration of function 'set_irq_type'
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 03, 2008 at 06:50:47PM +0300, Alexey Dobriyan wrote:
-> On sparc:
-> 
-> drivers/usb/host/oxu210hp-hcd.c:3849: error: implicit declaration of function 'set_irq_type'
-> 
-> and including linux/irq.h doesn't cut it CONFIG_GENERIC_HARDIRQS aren't set.
+>From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
+From: Kumar Gala <galak@kernel.crashing.org>
+Date: Tue, 4 Nov 2008 10:13:53 -0600
+Subject: [PATCH 1/1] irq: Maintain user set affinity
 
-Should I force CONFIG_GENERIC_HARDIRQS selection?
+This addresses a regression in that if a user specified an affinity
+for an interrupt that affinity information would get reset between
+a request_irq(), free_irq() and request_irq() for the same irq.
 
-Ciao,
+On example of this is bringing up an ethernet interface, taking
+it down and bringing it back up again.
 
-Rodolfo
+Instead of always using the irq_default_affinity we use the
+previous setting of the IRQs affinity with the assumption that
+at boot the IRQs affinity will be set to irq_default_affinity.
+
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ kernel/irq/manage.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index c498a1b..ea7d11b 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -115,9 +115,12 @@ int irq_select_affinity(unsigned int irq)
+ 	if (!irq_can_set_affinity(irq))
+ 		return 0;
+
+-	cpus_and(mask, cpu_online_map, irq_default_affinity);
+-
+ 	desc = irq_to_desc(irq);
++
++	mask = desc->affinity;
++
++	cpus_and(mask, cpu_online_map, mask);
++
+ 	desc->affinity = mask;
+ 	desc->chip->set_affinity(irq, mask);
 
 -- 
+1.5.5.1
 
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
