@@ -1,57 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbYKDTK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYKDTMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbYKDTK5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 14:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbYKDTKl
+	id S1756704AbYKDTMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 14:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbYKDTMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 14:10:41 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:36157 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755130AbYKDTKj (ORCPT
+	Tue, 4 Nov 2008 14:12:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41517 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752326AbYKDTMT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 14:10:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=DIH6qeyGr929vI6J+LawWWN5VCUf3ux6mnItZP4qhZ19S08XRV9tbf+/aqhI9eRL0j
-         XPGFgfqtmHA1Ec3JGxSykxHDsZd8kjywHcVOXdGokfKAn387SOh9iIf00oxS2cDHRQmh
-         EILCZJRccgHLZGFKvVIiYevEc8AZYdSIfEDDY=
-Message-ID: <49109E2B.3030103@gmail.com>
-Date: Tue, 04 Nov 2008 21:10:35 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@ZenIV.linux.org.uk>,
-       srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Identify which executable object the userspace address
- belongs to. Store thread group leader id, and use it to lookup the address
- in the process's map. We could have looked up the address on thread's map,
- but the thread might not exist by the time we are called. The process might
- not exist either, but if you are reading trace_pipe, that is unlikely.
-References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk> <490E1B74.6010904@gmail.com> <20081102214042.GG28946@ZenIV.linux.org.uk> <20081103073257.GA13727@elte.hu> <20081104182628.GA6666@infradead.org> <49109657.3000601@gmail.com> <20081104190909.GA22438@infradead.org>
-In-Reply-To: <20081104190909.GA22438@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Nov 2008 14:12:19 -0500
+Date: Tue, 4 Nov 2008 11:10:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
+       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sami.Iren@seagate.com, pw@padd.com
+Subject: Re: [PATCH 03/18] libosd: OSDv1 Headers
+Message-Id: <20081104111037.bcae04e5.akpm@linux-foundation.org>
+In-Reply-To: <1225817046-5946-1-git-send-email-bharrosh@panasas.com>
+References: <491073BB.4000900@panasas.com>
+	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-11-04 21:09, Christoph Hellwig wrote:
-> On Tue, Nov 04, 2008 at 08:37:11PM +0200, T?r?k Edwin wrote:
->   
->> Hmm, this is just for visualizing things in /sys/kernel/debug/, can't I
->> use something simpler than mangle_path, such as a simple while loop like
->> the one below?
->>     
->
-> Sounds fine to me, although sharing one mangling-scheme for all pathname
-> outputs certainly does have benefits of less confusion for the user.
+On Tue,  4 Nov 2008 18:44:06 +0200
+Boaz Harrosh <bharrosh@panasas.com> wrote:
 
-Indeed. I'll do as you suggested: make mangle_path global and document
-what it does.
+> Headers only patch.
+> 
+> osd_protocol.h
+> 	Contains a C-fied definition of the T10 OSD standard
+> osd_types.h
+> 	Contains CPU order common used types
+> osd_initiator.h
+> 	API definition of the osd_initiator library
+> osd_sec.h
+> 	Contains High level API for the security manager.
+> 
+> [Note that checkpatch spews errors on things that are valid in this context
+> and will not be fixed]
+> 
+> --- /dev/null
+> +++ b/include/scsi/osd_initiator.h
 
-Best regards,
---Edwin
+This header uses quite a few things without including the header files
+which define them.  That's a bit risky - it causes compile breakage
+across architectures, across config changes and across time.
+
+> @@ -0,0 +1,332 @@
+> +/*
+> + * osd_initiator.h - OSD initiator API definition
+> + *
+> + * Copyright (C) 2008 Panasas Inc.  All rights reserved.
+> + *
+> + * Authors:
+> + *   Boaz Harrosh <bharrosh@panasas.com>
+> + *   Benny Halevy <bhalevy@panasas.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2
+> + *
+> + */
+> +#ifndef __OSD_INITIATOR_H__
+> +#define __OSD_INITIATOR_H__
+> +
+> +#include <linux/blkdev.h>
+> +
+> +#include "osd_protocol.h"
+> +#include "osd_types.h"
+> +
+> +/* Note: "NI" in comments below means "Not Implemented yet" */
+> +
+> +/*
+> + * Object-based Storage Device.
+> + * This object represents an OSD device.
+> + * It is not a full linux device in any way. It is only
+> + * a place to hang resources associated with a Linux
+> + * request Q and some default properties.
+> + */
+> +struct osd_dev {
+> +	struct scsi_device *scsi_dev;
+
+scsi_device
+
+> +	unsigned def_timeout;
+> +};
+> +
+> +void osd_dev_init(struct osd_dev *, struct scsi_device *scsi_dev);
+> +void osd_dev_fini(struct osd_dev *);
+> +
+> +struct osd_request;
+> +typedef void (osd_req_done_fn)(struct osd_request *, void *);
+> +
+> +struct osd_request {
+> +	struct osd_cdb cdb;
+> +	struct osd_data_out_integrity_info out_data_integ;
+> +	struct osd_data_in_integrity_info in_data_integ;
+> +
+> +	struct osd_dev *osd_dev;
+> +	struct request *request;
+> +
+> +	struct _osd_req_data_segment {
+> +		void *buff;
+> +		unsigned alloc_size; /* 0 here means not allocated by us */
+> +		unsigned total_bytes;
+> +	} set_attr, enc_get_attr, get_attr;
+> +
+> +	struct _osd_io_info {
+> +		struct bio *bio;
+> +		u64 total_bytes;
+
+u64(!)
+
+> +		struct request *req;
+> +		struct _osd_req_data_segment *last_seg;
+> +		u8 *pad_buff;
+> +	} out, in;
+> +
+> +	gfp_t alloc_flags;
+
+gfp_t
+
+> +	unsigned timeout;
+> +	unsigned retries;
+> +	u8 sense[OSD_MAX_SENSE_LEN];
+> +	enum osd_attributes_mode attributes_mode;
+> +
+> +	osd_req_done_fn *async_done;
+> +	void *async_private;
+> +	int async_error;
+> +};
+
+etc, etc, etc.   Please review all that.
+
+> +struct osd_request *osd_start_request(struct osd_dev *, gfp_t gfp);
+> +int osd_finalize_request(struct osd_request *or,
+> +	u8 options, const void *cap, const u8 *cap_key);
+> +void osd_req_set_master_seed_xchg(struct osd_request *, ...);/* NI */
+> +void osd_req_set_master_key(struct osd_request *, ...);/* NI */
+> +void osd_req_format(struct osd_request *, u64 tot_capacity);
+> +int osd_req_list_dev_partitions(struct osd_request *,
+> +	osd_id initial_id, struct osd_obj_id_list *list, unsigned nelem);
+
+hm.  It appears that someone made the decision to omit the name from
+the `struct osd_request *' parameter in the prototypes and to include
+the argument names for all other arguments.
+
+Not a bad idea, really.
+
