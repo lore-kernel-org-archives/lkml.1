@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYKDXtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759488AbYKDXtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbYKDXtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbYKDXjh
+	id S1759488AbYKDXtk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757606AbYKDXjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:39:37 -0500
-Received: from ns2.suse.de ([195.135.220.15]:52067 "EHLO mx2.suse.de"
+	Tue, 4 Nov 2008 18:39:41 -0500
+Received: from mx1.suse.de ([195.135.220.2]:47625 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757010AbYKDXjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:39:36 -0500
-Date: Tue, 4 Nov 2008 15:32:05 -0800
+	id S1757443AbYKDXjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:39:40 -0500
+Date: Tue, 4 Nov 2008 15:32:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,140 +22,50 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 31/57] i2c: The i2c mailing list is moving
-Message-ID: <20081104233205.GF659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Len Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 32/57] scx200_i2c: Add missing class parameter
+Message-ID: <20081104233207.GG659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2c-the-i2c-mailing-list-is-moving.patch"
+Content-Disposition: inline; filename="scx200_i2c-add-missing-class-parameter.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
 
-commit 846557d3ceb6c7493e090921db5d6158ec237228 upstream
+commit 4a029abee0f1d69cb0445657d6fa5a38597bd17d upstream
 
-Replace all references to the old i2c mailing list.
+The scx200_i2c driver is missing the .class parameter, which means no
+i2c drivers are willing to probe for devices on the bus and attach to
+them.
 
-This isn't a bug fix, but I would hate to miss bug reports because
-they're sent to a dead mailing list.
-
+Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- Documentation/i2c/busses/i2c-sis96x |    2 +-
- MAINTAINERS                         |   20 ++++++++++----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
 
---- a/Documentation/i2c/busses/i2c-sis96x
-+++ b/Documentation/i2c/busses/i2c-sis96x
-@@ -42,7 +42,7 @@ I suspect that this driver could be made
- chipsets as well: 635, and 635T. If anyone owns a board with those chips
- AND is willing to risk crashing & burning an otherwise well-behaved kernel
- in the name of progress... please contact me at <mhoffman@lightlink.com> or
--via the project's mailing list: <i2c@lm-sensors.org>.  Please send bug
-+via the linux-i2c mailing list: <linux-i2c@vger.kernel.org>.  Please send bug
- reports and/or success stories as well.
+---
+ drivers/i2c/busses/scx200_i2c.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/i2c/busses/scx200_i2c.c
++++ b/drivers/i2c/busses/scx200_i2c.c
+@@ -81,6 +81,7 @@ static struct i2c_algo_bit_data scx200_i
  
- 
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -360,7 +360,7 @@ S:	Maintained
- ALI1563 I2C DRIVER
- P:	Rudolf Marek
- M:	r.marek@assembler.cz
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- ALPHA PORT
-@@ -1681,7 +1681,7 @@ FREESCALE I2C CPM DRIVER
- P:	Jochen Friedrich
- M:	jochen@scram.de
- L:	linuxppc-dev@ozlabs.org
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- FREESCALE SOC FS_ENET DRIVER
-@@ -1982,7 +1982,7 @@ S:	Maintained
- I2C/SMBUS STUB DRIVER
- P:	Mark M. Hoffman
- M:	mhoffman@lightlink.com
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- I2C SUBSYSTEM
-@@ -1990,14 +1990,14 @@ P:	Jean Delvare (PC drivers, core)
- M:	khali@linux-fr.org
- P:	Ben Dooks (embedded platforms)
- M:	ben-linux@fluff.org
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- T:	quilt http://khali.linux-fr.org/devel/linux-2.6/jdelvare-i2c/
- S:	Maintained
- 
- I2C-TINY-USB DRIVER
- P:	Till Harbaum
- M:	till@harbaum.org
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- T:	http://www.harbaum.org/till/i2c_tiny_usb
- S:	Maintained
- 
-@@ -3070,7 +3070,7 @@ S:	Maintained
- OPENCORES I2C BUS DRIVER
- P:	Peter Korsgaard
- M:	jacmet@sunsite.dk
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- ORACLE CLUSTER FILESYSTEM 2 (OCFS2)
-@@ -3144,7 +3144,7 @@ S:	Maintained
- PA SEMI SMBUS DRIVER
- P:	Olof Johansson
- M:	olof@lixom.net
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- PARALLEL PORT SUPPORT
-@@ -3280,7 +3280,7 @@ S:	Maintained
- PNXxxxx I2C DRIVER
- P:	Vitaly Wool
- M:	vitalywool@gmail.com
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- PPP PROTOCOL DRIVERS AND COMPRESSORS
-@@ -3725,7 +3725,7 @@ S:	Maintained
- SIS 96X I2C/SMBUS DRIVER
- P:	Mark M. Hoffman
- M:	mhoffman@lightlink.com
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- SIS FRAMEBUFFER DRIVER
-@@ -4445,7 +4445,7 @@ S:	Maintained
- VIAPRO SMBUS DRIVER
- P:	Jean Delvare
- M:	khali@linux-fr.org
--L:	i2c@lm-sensors.org
-+L:	linux-i2c@vger.kernel.org
- S:	Maintained
- 
- VIA VELOCITY NETWORK DRIVER
+ static struct i2c_adapter scx200_i2c_ops = {
+ 	.owner		   = THIS_MODULE,
++	.class             = I2C_CLASS_HWMON | I2C_CLASS_SPD,
+ 	.id		   = I2C_HW_B_SCX200,
+ 	.algo_data	   = &scx200_i2c_data,
+ 	.name	= "NatSemi SCx200 I2C",
 
 -- 
