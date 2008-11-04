@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYKDQn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756527AbYKDQpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbYKDQn7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbYKDQns
+	id S1756527AbYKDQpF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:45:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYKDQoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:43:48 -0500
-Received: from DSL212-235-53-3.bb.netvision.net.il ([212.235.53.3]:37357 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752207AbYKDQnr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:43:47 -0500
-X-Greylist: delayed 1423 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Nov 2008 11:43:46 EST
-From: Boaz Harrosh <bharrosh@panasas.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Tue, 4 Nov 2008 11:44:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54576 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751007AbYKDQoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:44:54 -0500
+Date: Tue, 4 Nov 2008 17:43:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, open-osd ml <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>
-Subject: [PATCH 02/18] scsi: OSD_TYPE
-Date: Tue,  4 Nov 2008 18:42:17 +0200
-Message-Id: <1225816937-5909-1-git-send-email-bharrosh@panasas.com>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <491073BB.4000900@panasas.com>
-References: <491073BB.4000900@panasas.com>
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 3/3] ftrace: function tracer with irqs disabled
+Message-ID: <20081104164358.GB27339@elte.hu>
+References: <20081104041554.605521183@goodmis.org> <20081104042203.499871423@goodmis.org> <20081104080747.GA27075@elte.hu> <20081104090405.GA507@elte.hu> <alpine.DEB.1.10.0811040919060.4140@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811040919060.4140@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Define the OSD_TYPE scsi device and let it show up in scans
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/scsi/scsi_scan.c |    1 +
- include/scsi/scsi.h      |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index b14dc02..633cb87 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -783,6 +783,7 @@ static int scsi_add_lun(struct scsi_device *sdev, unsigned char *inq_result,
- 	case TYPE_ENCLOSURE:
- 	case TYPE_COMM:
- 	case TYPE_RAID:
-+	case TYPE_OSD:
- 		sdev->writeable = 1;
- 		break;
- 	case TYPE_ROM:
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index a109165..de1cef2 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -263,6 +263,7 @@ static inline int scsi_status_is_good(int status)
- #define TYPE_RAID           0x0c
- #define TYPE_ENCLOSURE      0x0d    /* Enclosure Services Device */
- #define TYPE_RBC	    0x0e
-+#define TYPE_OSD            0x11
- #define TYPE_NO_LUN         0x7f
- 
- /* SCSI protocols; these are taken from SPC-3 section 7.5 */
--- 
-1.6.0.1
+> > > > tracing type       times            entries recorded
+> > > > ------------      --------          ----------------
+> > > > irq disabled      43.393            166433066
+> > > >                   43.282            166172618
+> > > >                   43.298            166256704
+> > > > 
+> > > > preempt disabled  38.969            159871710
+> > > >                   38.943            159972935
+> > > >                   39.325            161056510
 
+> When we used the preempt disabled version, we lost 5 million traces, 
+> as suppose to the irq disabled which was only 1,150 traces lost.
+> 
+> Considering that we had 166,256,704 traces total, that 5 million is 
+> only 4% lost of traces. Still quite a lot. But again, this is an 
+> extreme, because we are tracing hackbench.
+
+there's about 10% difference between the two hackbench results - so 
+the lack of 5% of the traces could make up for about half of that 
+overhead.
+
+anyway, that still leaves the other 5% as the _true_ overhead of IRQ 
+disable.
+
+is there some other workload that does not lose this many trace 
+entries, making it easier to compare irqs-off against preempt-off?
+
+	Ingo
