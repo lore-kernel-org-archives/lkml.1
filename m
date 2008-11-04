@@ -1,110 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752778AbYKDBlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYKDB7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752778AbYKDBlp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 20:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYKDBle
+	id S1753384AbYKDB7w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 20:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYKDB7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 20:41:34 -0500
-Received: from mga09.intel.com ([134.134.136.24]:17302 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751162AbYKDBld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 20:41:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,540,1220252400"; 
-   d="asc'?scan'208";a="355818940"
-Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
-From: Huang Ying <ying.huang@intel.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <490F468B.4040602@redhat.com>
-References: <1225268796.24095.48.camel@yhuang-dev.sh.intel.com>
-	 <49087871.3010303@redhat.com>
-	 <1225332179.24095.61.camel@yhuang-dev.sh.intel.com>
-	 <490B3574.1060501@redhat.com>
-	 <1225677161.24095.169.camel@yhuang-dev.sh.intel.com>
-	 <490F468B.4040602@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-bAVSkyEKaoVPqo/SdBYg"
-Date: Tue, 04 Nov 2008 09:41:17 +0800
-Message-Id: <1225762877.27266.22.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 3 Nov 2008 20:59:44 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35242 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbYKDB7n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 20:59:43 -0500
+Message-ID: <490FAC33.9050808@jp.fujitsu.com>
+Date: Tue, 04 Nov 2008 10:58:11 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: linux-pci@vger.kernel.org, kristen.c.accardi@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add option to passively listen for PCIE hotplug events
+References: <20081029200903.GA1678@srcf.ucam.org>
+In-Reply-To: <20081029200903.GA1678@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matthew Garrett wrote:
+> Various pieces of hardware (such as the Acer Aspire One and Asus EEE) 
+> use PCIE hotplug to change the state of devices in response to events 
+> such as the removal of SD cards or disabling the wireless radio. 
+> However, they do not provide firmware support for this. As a consequence 
+> pciehp will refuse to load and various things break.
+> 
+> The existing workaround has been to use the pciehp_force option. This is 
+> undesirable as there is little guarantee that manipulating the power 
+> file in the slot directory will actually result in anything happening, 
+> leading to potential user confusion and hardware damage. This patch adds 
+> a new option, pciehp_passive. In this configuration pciehp will listen 
+> for events and notify the PCI core appropriately. However, it will not 
+> provide any user controllable sysfs attributes and so the risk of 
+> confusion or damage is averted. Any system slots that do have firmware 
+> support will continue to provide full functionality.
+> 
 
---=-bAVSkyEKaoVPqo/SdBYg
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I have several comments/questions below.
 
-On Tue, 2008-11-04 at 02:44 +0800, Chris Snook wrote:
-> Huang Ying wrote:
-> > On Sat, 2008-11-01 at 00:42 +0800, Chris Snook wrote:
-> >> Huang Ying wrote:
-> >>> Hi, Chris,
-> >>>
-> >>> On Wed, 2008-10-29 at 08:51 -0600, Chris Snook wrote:
-> >>>> Huang Ying wrote:
-> >>>>> Fix a race condition accessing oops_in_progress.  Which may be chan=
-ged on
-> >>>>> multiple CPU simultaneously, but it is changed via non-atomic opera=
-tion
-> >>>>> ++/--.  This patch changes the definition of oops_in_process from i=
-nt to
-> >>>>> atomic_t, and accessing method to atomic operations.
-> >>>> You also need barriers.  I believe rmb() before atomic_read() and wm=
-b() after=20
-> >>>> atomic_set() should suffice.
-> >>> I don't think that is necessary. I haven't found there is particular
-> >>> consistent requirement about oops_in_progress.
-> >> atomic_read() and atomic_set() don't inherently cause changes to be vi=
-sible on=20
-> >> other CPUs any faster than ++ and -- operators.  Sometimes it happens =
-to work=20
-> >> out that way as a result of how the compiler and the CPU order operati=
-ons, but=20
-> >> there's no semantic guarantee, and it could even take arbitrarily long=
- under=20
-> >> some circumstances.  If you want to use atomic ops to close the race, =
-you need=20
-> >> to use barriers.
-> >=20
-> > As far as I know, barriers don't cause changes to be visible on other
-> > CPUs faster too. It just guarantees corresponding operations after will
-> > not get executed until that before have finished. And, I don't think we
-> > need make changes to be visible on other CPUs faster.
->=20
-> You're correct that barrier() has no impact on other CPUs.  wmb() and rmb=
-() do.=20
->   If we don't need to make changes visible any faster, what's the point i=
-n using=20
-> atomic_set()?  It's not any less racy.  atomic_inc() and atomic_dec() wou=
-ld be=20
-> less racy, but you're not using those.
+- Even with pciehp_passive option, pciehp driver controls hotplug
+  related registers at the initialization time, enabling software
+  notification mechanism for hotplug events, trying to turn power
+  on the slot and so on. Is this your intended behaviour?
 
-In default bust_spinlocks() implementation in lib/bust_spinlocks.c,
-atomic_inc() and atomic_dec_and_test() is used. Which is used by x86
-too. In some other architecture, atomic_set() is used to replace
-"oops_in_progress =3D <xxx>". So this patch fixes architectures which use
-default bust_spinlocks(), other architectures can be fixed by
-corresponding architecture developers.
+- Maybe I don't understand what "pciehp will listen for events..."
+  in your patch description means. But if you expect the pciehp's
+  interrupts for hotplug events, it would not work properly when
+  hotplug control is not granted through _OSC or OSHP.
 
-Best Regards,
-Huang Ying
+- Using pciehp_passive or pciehp_force option causes system reset
+  on my system because of Master-Abort. I think it is an already
+  existing problem with pciehp_force option. The cause of this
+  problem is the code below.
+
+>  	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
+> -	if (value && pciehp_force) {
+> +	if (value && (pciehp_force || pciehp_passive)) {
+>  		rc = pciehp_enable_slot(t_slot);
+>  		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
+>  			value = 0;
+
+  The pciehp_enable_slot() here returns error on my system because
+  it detects the slot is already powered on state when it tries to
+  turn power on the slot. As a result 'value' is set with 0. After
+  that, pciehp turn power off the slot by the following code even
+  though the adapter card on the slot is currently working, and it
+  caused Master-Abort.
+
+        if ((POWER_CTRL(ctrl)) && !value) {
+                rc = t_slot->hpc_ops->power_off_slot(t_slot); /* Power off slot
+if not occupied*/
+                if (rc)
+                        goto err_out_free_ctrl_slot;
+        }
+
+  I guess the reason why you didn't encounter this problem is that
+  your laptop doesn't have power controller on hotplug controller.
+  I'll try to make a patch to fix this problem soon.
+
+Thanks,
+Kenji Kaneshige
 
 
---=-bAVSkyEKaoVPqo/SdBYg
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAkkPqDgACgkQKhFGF+eHlpgQ/wCfQTzIk6+D/mLYXcsolP8Rx36J
-jbMAn16Sojnk456yPGp0P+xf2qpUOL+G
-=t+5i
------END PGP SIGNATURE-----
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> 
+> ---
+> 
+> diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
+> index 4b23bc3..b878432 100644
+> --- a/drivers/pci/hotplug/pciehp_core.c
+> +++ b/drivers/pci/hotplug/pciehp_core.c
+> @@ -41,6 +41,7 @@ int pciehp_debug;
+>  int pciehp_poll_mode;
+>  int pciehp_poll_time;
+>  int pciehp_force;
+> +int pciehp_passive;
+>  struct workqueue_struct *pciehp_wq;
+>  
+>  #define DRIVER_VERSION	"0.4"
+> @@ -55,10 +56,12 @@ module_param(pciehp_debug, bool, 0644);
+>  module_param(pciehp_poll_mode, bool, 0644);
+>  module_param(pciehp_poll_time, int, 0644);
+>  module_param(pciehp_force, bool, 0644);
+> +module_param(pciehp_passive, bool, 0644);
+>  MODULE_PARM_DESC(pciehp_debug, "Debugging mode enabled or not");
+>  MODULE_PARM_DESC(pciehp_poll_mode, "Using polling mechanism for hot-plug events or not");
+>  MODULE_PARM_DESC(pciehp_poll_time, "Polling mechanism frequency, in seconds");
+>  MODULE_PARM_DESC(pciehp_force, "Force pciehp, even if _OSC and OSHP are missing");
+> +MODULE_PARM_DESC(pciehp_passive, "Listen for pciehp events, even if _OSC and OSHP are missing");
+>  
+>  #define PCIE_MODULE_NAME "pciehp"
+>  
+> @@ -85,6 +88,13 @@ static struct hotplug_slot_ops pciehp_hotplug_slot_ops = {
+>    	.get_cur_bus_speed =	get_cur_bus_speed,
+>  };
+>  
+> +static struct hotplug_slot_ops pciehp_passive_hotplug_slot_ops = {
+> +	.owner =		THIS_MODULE,
+> +	.get_adapter_status =	get_adapter_status,
+> +  	.get_max_bus_speed =	get_max_bus_speed,
+> +  	.get_cur_bus_speed =	get_cur_bus_speed,
+> +};
+> +
+>  /*
+>   * Check the status of the Electro Mechanical Interlock (EMI)
+>   */
+> @@ -212,7 +222,11 @@ static int init_slots(struct controller *ctrl)
+>  		hotplug_slot->info = info;
+>  		hotplug_slot->private = slot;
+>  		hotplug_slot->release = &release_slot;
+> -		hotplug_slot->ops = &pciehp_hotplug_slot_ops;
+> +		if (pciehp_passive &&
+> +		    pciehp_get_hp_hw_control_from_firmware(ctrl->pci_dev))
+> +			hotplug_slot->ops = &pciehp_passive_hotplug_slot_ops;
+> +		else
+> +			hotplug_slot->ops = &pciehp_hotplug_slot_ops;
+>  		slot->hotplug_slot = hotplug_slot;
+>  		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
+>  
+> @@ -407,7 +421,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
+>  	u8 value;
+>  	struct pci_dev *pdev = dev->port;
+>  
+> -	if (pciehp_force)
+> +	if (pciehp_force || pciehp_passive)
+>  		dev_info(&dev->device,
+>  			 "Bypassing BIOS check for pciehp use on %s\n",
+>  			 pci_name(pdev));
+> @@ -435,7 +449,7 @@ static int pciehp_probe(struct pcie_device *dev, const struct pcie_port_service_
+>  	t_slot = pciehp_find_slot(ctrl, ctrl->slot_device_offset);
+>  
+>  	t_slot->hpc_ops->get_adapter_status(t_slot, &value); /* Check if slot is occupied */
+> -	if (value && pciehp_force) {
+> +	if (value && (pciehp_force || pciehp_passive)) {
+>  		rc = pciehp_enable_slot(t_slot);
+>  		if (rc)	/* -ENODEV: shouldn't happen, but deal with it */
+>  			value = 0;
+> @@ -474,7 +488,7 @@ static int pciehp_suspend (struct pcie_device *dev, pm_message_t state)
+>  static int pciehp_resume (struct pcie_device *dev)
+>  {
+>  	dev_info(&dev->device, "%s ENTRY\n", __func__);
+> -	if (pciehp_force) {
+> +	if (pciehp_force || pciehp_passive) {
+>  		struct controller *ctrl = get_service_data(dev);
+>  		struct slot *t_slot;
+>  		u8 status;
+> 
 
---=-bAVSkyEKaoVPqo/SdBYg--
 
