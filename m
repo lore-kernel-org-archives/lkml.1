@@ -1,86 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYKDSHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYKDSHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbYKDSHT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYKDSHG
+	id S1755309AbYKDSHl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYKDSHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:07:06 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60388 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751543AbYKDSHE (ORCPT
+	Tue, 4 Nov 2008 13:07:10 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:59264 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbYKDSHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:07:04 -0500
-Message-Id: <1225822006.21441.1282961299@webmail.messagingengine.com>
-X-Sasl-Enc: bXtuxm9+CXclAEK1gvFiuoB+PZiYbz97+TiDY+KxQ/Cb 1225822006
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Andi Kleen" <andi@firstfloor.org>, "Cyrill Gorcunov" <gorcunov@gmail.com>
-Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
-       jeremy@xensource.com, "Steven Rostedt" <srostedt@redhat.com>,
-       "Mike Travis" <travis@sgi.com>, "Andi Kleen" <andi@firstfloor.org>
+	Tue, 4 Nov 2008 13:07:08 -0500
+Date: Tue, 4 Nov 2008 19:03:47 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, open-osd ml <osd-dev@open-osd.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
+       Pete Wyckoff <pw@padd.com>
+Subject: Re: [PATCH 04/18] libosd: OSDv1 preliminary implementation
+Message-ID: <20081104180347.GA9818@uranus.ravnborg.org>
+References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20081104122839.GA22864@mailshack.com> 
- <20081104150729.GC21470@localhost> 
- <20081104170501.GE29626@one.firstfloor.org>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-In-Reply-To: <20081104170501.GE29626@one.firstfloor.org>
-Date: Tue, 04 Nov 2008 19:06:46 +0100
+In-Reply-To: <1225817069-5969-1-git-send-email-bharrosh@panasas.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008 18:05:01 +0100, "Andi Kleen" <andi@firstfloor.org>
-said:
-> > not taking into account the cost of cs reading (which I
-> > don't suspect to be that expensive apart from writting,
+On Tue, Nov 04, 2008 at 06:44:29PM +0200, Boaz Harrosh wrote:
+> Implementation of the most basic OSD functionality and
+> infrastructure. Mainly Format, Create/Remove Partition,
+> Create/Remove Object, and read/write.
 > 
-> GDT accesses have an implied LOCK prefix. Especially
-> on some older CPUs that could be slow.
+> - Add Makefile and Kbuild to compile libosd.ko
+> - osd_initiator.c Implementation file for osd_initiator.h
+>   and osd_sec.h APIs
+> - osd_debug.h - Some kprintf macro definitions
+
+A few comments below.
+
+	Sam
+
+
 > 
-> I don't know if it's a problem or not but it would need
-> some careful benchmarking on different systems to make sure interrupt 
-> latencies are not impacted.
-
-That's good to know. I assume this LOCKed bus cycle only occurs
-if the (hidden) segment information is not cached in some way?
-How many segments are typically cached? In particular, does it
-optimize switching between two segments?
-
-> Another reason I would be also careful with this patch is that
-> it will likely trigger slow paths in JITs like qemu/vmware/etc.
-
-Software can be fixed ;).
-
-> Also code segment switching is likely not something that
-> current and future micro architectures will spend a lot of time
-> optimizing.
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> Reviewed-by: Benny Halevy <bhalevy@panasas.com>
+> ---
+>  drivers/scsi/osd/Kbuild          |   26 +++
+>  drivers/scsi/osd/Makefile        |   37 +++
+>  drivers/scsi/osd/osd_debug.h     |   27 +++
+>  drivers/scsi/osd/osd_initiator.c |  450 ++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 540 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/scsi/osd/Kbuild
+>  create mode 100755 drivers/scsi/osd/Makefile
+>  create mode 100644 drivers/scsi/osd/osd_debug.h
+>  create mode 100644 drivers/scsi/osd/osd_initiator.c
 > 
-> I'm not sure that risk is worth the small improvement in code
-> size.
+> diff --git a/drivers/scsi/osd/Kbuild b/drivers/scsi/osd/Kbuild
+> new file mode 100644
+> index 0000000..b4678e0
+> --- /dev/null
+> +++ b/drivers/scsi/osd/Kbuild
+> @@ -0,0 +1,26 @@
+> +#
+> +# Kbuild for the OSD modules
+> +#
+> +# Copyright (C) 2008 Panasas Inc.  All rights reserved.
+> +#
+> +# Authors:
+> +#   Boaz Harrosh <bharrosh@panasas.com>
+> +#   Benny Halevy <bhalevy@panasas.com>
+> +#
+> +# This program is free software; you can redistribute it and/or modify
+> +# it under the terms of the GNU General Public License version 2
+> +#
+> +
+> +ifneq ($(OSD_INC),)
+> +# we are built out-of-tree Kconfigure everything as on
+> +
+> +CONFIG_SCSI_OSD_INITIATOR=m
+> +EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_INITIATOR -DCONFIG_SCSI_OSD_INITIATOR_MODULE
+> +
+> +EXTRA_CFLAGS += -I$(OSD_INC)
+> +# EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_DEBUG
+> +
+> +endif
+> +
+> +libosd-objs := osd_initiator.o
+> +obj-$(CONFIG_SCSI_OSD_INITIATOR) += libosd.o
 
-I think it is worth exploring a bit more. I feel it should be
-a neutral change worst-case performance-wise, but I really
-think the new code is more readable/understandable.
+When you submit for inclusion please clean this up.
+1) use ccflags-y as replacement for EXTRA_CFLAGS
+2) use libosd-y as replacement for libosd-objs
 
-> An alternative BTW to having all the stubs in the executable
-> would be to just dynamically generate them when the interrupt
-> is set up. Then you would only have the stubs around for the 
-> interrupts which are actually used.
+> +
+> +#ifdef CONFIG_SCSI_OSD_INITIATOR_MODULE
+> +MODULE_AUTHOR("Boaz Harrosh <bharrosh@panasas.com>");
+> +MODULE_DESCRIPTION("open-osd initiator library libosd.ko");
+> +MODULE_LICENSE("GPL");
+> +#endif
 
-I was trying to simplify things, not make it even less
-transparent ;).
+no ifdef around here.
 
-> -Andi
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+> +void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_dev)
+> +{
+> +	memset(osdd, 0, sizeof(*osdd));
+> +	osdd->scsi_dev = scsi_dev;
+> +	osdd->def_timeout = BLK_DEFAULT_SG_TIMEOUT;
+> +	/* TODO: Allocate pools for osd_request attributes ... */
+> +}
+> +EXPORT_SYMBOL(osd_dev_init);
+kernel-doc comments for all exported funtions / variables.
 
--- 
-http://www.fastmail.fm - A no graphics, no pop-ups email service
 
