@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbYKDAsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbYKDAvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756240AbYKDAsf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Nov 2008 19:48:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753630AbYKDAsW
+	id S1755416AbYKDAvZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Nov 2008 19:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbYKDAvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Nov 2008 19:48:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43737 "EHLO ogre.sisk.pl"
+	Mon, 3 Nov 2008 19:51:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43766 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752702AbYKDAsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Nov 2008 19:48:21 -0500
+	id S1753128AbYKDAvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Nov 2008 19:51:13 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: BUG: sleeping function called from invalid context at kernel/sched.c:5558
-Date: Tue, 4 Nov 2008 01:53:15 +0100
+To: "Nico -telmich- Schottelius" <nico-linux-next@schottelius.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: 2.6.28-rc3(-next20081103) suspend issues on Lenovo X200
+Date: Tue, 4 Nov 2008 01:55:59 +0100
 User-Agent: KMail/1.9.9
-Cc: Thomas Meyer <thomas@m3y3r.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, "Moore, Robert" <robert.moore@intel.com>
-References: <1225736361.5126.2.camel@localhost.localdomain> <20081103194721.GA16897@elte.hu>
-In-Reply-To: <20081103194721.GA16897@elte.hu>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <20081103153945.GA20618@denkbrett.schottelius.org>
+In-Reply-To: <20081103153945.GA20618@denkbrett.schottelius.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811040153.16514.rjw@sisk.pl>
+Message-Id: <200811040155.59933.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 3 of November 2008, Ingo Molnar wrote:
+On Monday, 3 of November 2008, Nico -telmich- Schottelius wrote:
+> Updating my last post, system now runs with
+> the new Debian xserver-xorg-intel package:
 > 
-> * Thomas Meyer <thomas@m3y3r.de> wrote:
+> 2.6.28-rc3 and 2.6.28-rc3-next-20081103: acpi_sleep=s3_bios
+>    - suspend on console works
+>    - wakeup on console works
+>    - xorg (intel 2.3.2-2+lenny5) works
+>    - suspend on xorg works
+>    - wakeup on xorg is BROKEN:
+>       - console (kernel messages) is seen for a few seconds
+>       - kernel switches back to X
+>       - screen is partly drawn: X cursor is shown, background, no windows
+>       - system hard reboots after about 20 seconds (watchdog?)
 > 
-> > False positive, while suspend/resume-to/from-disk?
-> > 
-> > [19332.352863] BUG: sleeping function called from invalid context at kernel/sched.c:5558
-> > [19332.352866] in_atomic(): 0, irqs_disabled(): 1, pid: 3287, name: pm-hibernate
-> > [19332.352869] Pid: 3287, comm: pm-hibernate Tainted: G        W  2.6.28-rc2 #97
-> > [19332.352871] Call Trace:
-> > [19332.352878]  [<c0436408>] __might_sleep+0xdc/0xe3
-> > [19332.352882]  [<c043bbde>] __cond_resched+0x12/0x36
-> > [19332.352886]  [<c09d29a8>] _cond_resched+0x27/0x32
-> > [19332.352889]  [<c0697d9c>] acpi_ps_complete_op+0x1e0/0x1ef
-> > [19332.352892]  [<c069884e>] ? acpi_ps_alloc_op+0x82/0x84
-> > [19332.352896]  [<c0689814>] ? acpi_ds_exec_end_op+0x30c/0x370
-> > [19332.352899]  [<c069839f>] acpi_ps_parse_loop+0x5f4/0x721
-> > [19332.352902]  [<c069779c>] acpi_ps_parse_aml+0x6d/0x267
+> The Debian packages includes the lates G45 bugfix:
 > 
-> Such messages are never false positives, this is a real bug.
+> http://packages.debian.org/changelogs/pool/main/x/xserver-xorg-video-intel/xserver-xorg-video-intel_2.3.2-2+lenny5/changelog
+> 
+> So I'm waiting for your input on where to update what next ;-)
 
-Well, not sure.
-
-This is the ACPI AML interpreter executing something with interrupts disabled
-due to resume in progress (effectively atomic context).
+Jesse, any ideas?  Can that be related to the DRM problem with radeon?
 
 Thanks,
 Rafael
