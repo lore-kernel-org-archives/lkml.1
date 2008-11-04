@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbYKDX4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbYKDX50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbYKDX4p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757930AbYKDXlD
+	id S1761254AbYKDX50 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:57:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757038AbYKDXlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:41:03 -0500
-Received: from mail.suse.de ([195.135.220.2]:47900 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:41:10 -0500
+Received: from ns1.suse.de ([195.135.220.2]:47956 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757924AbYKDXlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:41:01 -0500
-Date: Tue, 4 Nov 2008 15:33:25 -0800
+	id S1756947AbYKDXlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:41:08 -0500
+Date: Tue, 4 Nov 2008 15:33:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,96 +22,76 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>,
-       Zhao Yakui <yakui.zhao@intel.com>
-Subject: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using ACPI
-	reset mechanism
-Message-ID: <20081104233325.GZ659@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dmitry Torokhov <dtor@mail.ru>,
+       Matthew Garrett <mjg@redhat.com>
+Subject: [patch 53/57] Input: atkbd - expand Latitudes force release quirk
+	to other Dells
+Message-ID: <20081104233330.GB659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-ingore-the-reset_reg_sup-bit-when-using-acpi-reset-mechanism.patch"
+Content-Disposition: inline; filename="input-atkbd-expand-latitude-s-force-release-quirk-to-other-dells.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 
-Subject: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using ACPI reset mechanism
+commit 61579ba83934d397a4fa2bb7372de9ae112587d5 upstream.
 
-commit 8fd145917fb62368a9b80db59562c20576238f5a upstream
+Input: atkbd - expand Latitude's force release quirk to other Dells
 
-ACPI: Ingore the RESET_REG_SUP bit when using ACPI reset mechanism
+Dell laptops fail to send key up events for several of their special
+keys. There's an existing quirk in the kernel to handle this, but it's
+limited to the Latitude range. This patch extends it to cover all
+portable Dells.
 
-According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
-whether the ACPI reboot mechanism is supported.
-
-However, some boxes have this bit clear, have a valid
-ACPI_RESET_REG & RESET_VALUE, and ACPI reboot is the only
-mechanism that works for them after S3.
-
-This suggests that other operating systems may not be checking
-the RESET_REG_SUP bit, and are using other means to decide
-whether to use the ACPI reboot mechanism or not.
-
-Here we stop checking RESET_REG_SUP.
-Instead, When acpi reboot is requested,
-only the reset_register is checked. If the following
-conditions are met, it indicates that the reset register is supported.
-	a. reset_register is not zero
-	b. the access width is eight
-	c. the bit_offset is zero
-
-http://bugzilla.kernel.org/show_bug.cgi?id=7299
-http://bugzilla.kernel.org/show_bug.cgi?id=1148
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/reboot.c |   25 ++++++++++++++++++++++---
- 1 file changed, 22 insertions(+), 3 deletions(-)
+ drivers/input/keyboard/atkbd.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/drivers/acpi/reboot.c
-+++ b/drivers/acpi/reboot.c
-@@ -15,9 +15,28 @@ void acpi_reboot(void)
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -834,10 +834,10 @@ static void atkbd_disconnect(struct seri
+ }
  
- 	rr = &acpi_gbl_FADT.reset_register;
+ /*
+- * Most special keys (Fn+F?) on Dell Latitudes do not generate release
++ * Most special keys (Fn+F?) on Dell laptops do not generate release
+  * events so we have to do it ourselves.
+  */
+-static void atkbd_latitude_keymap_fixup(struct atkbd *atkbd)
++static void atkbd_dell_laptop_keymap_fixup(struct atkbd *atkbd)
+ {
+ 	const unsigned int forced_release_keys[] = {
+ 		0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8f, 0x93,
+@@ -1461,13 +1461,13 @@ static int __init atkbd_setup_fixup(cons
  
--	/* Is the reset register supported? */
--	if (!(acpi_gbl_FADT.flags & ACPI_FADT_RESET_REGISTER) ||
--	    rr->bit_width != 8 || rr->bit_offset != 0)
-+	/*
-+	 * Is the ACPI reset register supported?
-+	 *
-+	 * According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
-+	 * whether the ACPI reset mechanism is supported.
-+	 *
-+	 * However, some boxes have this bit clear, yet a valid
-+	 * ACPI_RESET_REG & RESET_VALUE, and ACPI reboot is the only
-+	 * mechanism that works for them after S3.
-+	 *
-+	 * This suggests that other operating systems may not be checking
-+	 * the RESET_REG_SUP bit, and are using other means to decide
-+	 * whether to use the ACPI reboot mechanism or not.
-+	 *
-+	 * So when acpi reboot is requested,
-+	 * only the reset_register is checked. If the following
-+	 * conditions are met, it indicates that the reset register is supported.
-+	 * 	a. reset_register is not zero
-+	 * 	b. the access width is eight
-+	 * 	c. the bit_offset is zero
-+	 */
-+	if (!(rr->address) || rr->bit_width != 8 || rr->bit_offset != 0)
- 		return;
- 
- 	reset_value = acpi_gbl_FADT.reset_value;
+ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
+ 	{
+-		.ident = "Dell Latitude series",
++		.ident = "Dell Laptop",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "Latitude"),
++			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
+ 		},
+ 		.callback = atkbd_setup_fixup,
+-		.driver_data = atkbd_latitude_keymap_fixup,
++		.driver_data = atkbd_dell_laptop_keymap_fixup,
+ 	},
+ 	{
+ 		.ident = "HP 2133",
 
 -- 
