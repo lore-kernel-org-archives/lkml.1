@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbYKDHJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYKDHWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbYKDHJq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 02:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYKDHJh
+	id S1754045AbYKDHWh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 02:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbYKDHW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 02:09:37 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60129 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbYKDHJg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 02:09:36 -0500
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
-	hotplug
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1225771353.6755.16.camel@nigel-laptop>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <20081103125108.46d0639e.akpm@linux-foundation.org>
-	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
-	 <1225751665.12673.511.camel@nimitz> <1225771353.6755.16.camel@nigel-laptop>
-Content-Type: text/plain
-Date: Mon, 03 Nov 2008 23:09:32 -0800
-Message-Id: <1225782572.12673.540.camel@nimitz>
+	Tue, 4 Nov 2008 02:22:28 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:35712 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753035AbYKDHW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 02:22:27 -0500
+Date: Tue, 4 Nov 2008 18:22:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: no release today - 20081104
+Message-Id: <20081104182216.0e64ae88.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__4_Nov_2008_18_22_16_+1100_PQqYHBzpTN/VYCID"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-04 at 15:02 +1100, Nigel Cunningham wrote:
-> On Mon, 2008-11-03 at 14:34 -0800, Dave Hansen wrote:
-> > A node might have a node_start_pfn=0 and a node_end_pfn=100 (and it may
-> > have only one zone).  But, there may be another node with
-> > node_start_pfn=10 and a node_end_pfn=20.  This loop:
-> > 
-> >         for_each_zone(zone) {
-> >               ...
-> >                 for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
-> >                         if (page_is_saveable(zone, pfn))
-> >                                 memory_bm_set_bit(orig_bm, pfn);
-> >         }
-> > 
-> > will walk over the smaller node's pfn range multiple times.  Is this OK?
-> > 
-> > I think all you have to do to fix it is check page_zone(page) == zone
-> > and skip out if they don't match.
-> 
-> So pfn 10 in the first node refers to the same memory as pfn 10 in the
-> second node?
+--Signature=_Tue__4_Nov_2008_18_22_16_+1100_PQqYHBzpTN/VYCID
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sure.  But, remember that the pfns (and the entire physical address
-space) is consistent across the entire system.  It's not like both nodes
-have an address and the kernel only "gives" it to one of them.
+There will be no linux-next release today as it is a public holiday here
+in Canberra.
 
-There's real confusion about zone->zone_start/end_pfn, I think.  *All*
-that they mean is this:
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-- zone_start_pfn is the lowest physical address present in the zone. 
-- zone_end_pfn is the highest physical address present in the zone
+--Signature=_Tue__4_Nov_2008_18_22_16_+1100_PQqYHBzpTN/VYCID
+Content-Type: application/pgp-signature
 
-That's *it*.  Those numbers imply *nothing* about the pages between
-them, except that there might be 0 or more pages in there belonging to
-the same zone.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-"All pages in this zone lie between these two physical addresses." is
-all they say.
+iEYEARECAAYFAkkP+CgACgkQjjKRsyhoI8w79wCeKAZ/F6PebQ95lkrwOEe2s6qB
+gTwAn3+21P82U4Sm4+iehfaYz4/5ybL1
+=LsL3
+-----END PGP SIGNATURE-----
 
--- Dave
-
+--Signature=_Tue__4_Nov_2008_18_22_16_+1100_PQqYHBzpTN/VYCID--
