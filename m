@@ -1,120 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYKDHvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbYKDHwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbYKDHvw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 02:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYKDHvl
+	id S1754820AbYKDHwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 02:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbYKDHv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 02:51:41 -0500
-Received: from the.earth.li ([217.147.81.2]:56366 "EHLO the.earth.li"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752367AbYKDHvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 02:51:40 -0500
-Date: Tue, 4 Nov 2008 07:51:38 +0000
-From: Jonathan McDowell <noodles@earth.li>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes for 2.6.28-rc
-Message-ID: <20081104075138.GA2096@earth.li>
+	Tue, 4 Nov 2008 02:51:58 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:4942 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754437AbYKDHv5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 02:51:57 -0500
+Message-ID: <490FFF1B.6050300@shikadi.net>
+Date: Tue, 04 Nov 2008 17:51:55 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.16) Gecko/20080727 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+Subject: led and hid class - hid_device vs led_classdev
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-In article <490F824E.3070809@garzik.org> (earth.lists.linux-kernel) you wrote:
-> Marcel Holtmann wrote:
-> > are you also queuing patches for drivers/net/usb/hso.c, because the 
-> > current state of that driver is fully broken. It oopses and shows up 
-> > with a WLAN RFKILL switch instead of WWAN. Also it has some weird 
-> > disconnect race with the TTY layer. Some patches have been posted, but 
-> > seems that nobody has picked them up so far.
+I'm writing a driver for a USB HID device (using the new hid class), but 
+I'm a bit confused about how the hid_device structure relates to the 
+other driver-information structures.
 
-> Last patch sent me was sent on 9/16 by Denis Joseph Barrow; I replied 
-> and never received a response after that.
+One of the functions the device implements is a LED.  This is pretty 
+simple to control (basic on/off), so I'd like to implement a device in 
+the "led" class that controls this led.
 
-> Patches welcome...
+In my hid driver's probe function I'm given a struct hid_device* which 
+is used with functions like hid_hw_start().
 
-> I don't see any hso patches on
-> http://patchwork.ozlabs.org/project/netdev/list/ nor in my inbox, so I'm 
-> guessing that no one sent me or netdev any hso patches.
+I then need to call led_classdev_register() to register my led device. 
+At the moment I pass this function hid_device.dev
 
-I sent the below to netdev@, Greg K-H and Andrew Bird (the people listed
-in hso.c). I can't see it in the netdev archives but it did hit lkml ok
-at:
+Then I set my custom driver data with hid_set_drvdata().
 
-http://lkml.org/lkml/2008/10/30/92
+Later on, when the user wants to switch the LED on or off, a function in 
+my driver gets called, with a struct led_classdev* parameter.
 
-A subsequent fix for the rfkill layer has also been sent (and that did
-hit netdev ok and got acked), but this hso cleanup is still appropriate.
+I'm stuck trying to figure out how to convert this led_classdev 
+parameter back into a hid_device, so that I can extract the custom data 
+I set with hid_set_drvdata().
 
-The WLAN/WWAN change is obviously a one line fix but I didn't see any
-point sending a patch for it until I knew I was going to get some sort
-of response about it; I can knock one up if that's helpful.
+Some of the led drivers use platform_set_drvdata() in their probe 
+functions to get their custom data instead, but I'm afraid if I do this 
+I'll overwrite any hid-related data that hid_set_drvdata() might tack on 
+to my custom data.
 
-Original message:
+Some pseudocode to help illustrate:
 
-[PATCH] Cleanup hso rfkill error handling
+static int my_probe(struct hid_device *hid,
+   const struct hid_device_id *id)
+{
+   hid_parse(hid);
+   hid_hw_start(hid, HID_CONNECT_DEFAULT);
 
-Yup, this appears to be the problem, thanks. I think &hso_net->net->dev
-is more intuitive for the error message, so I've used that. I've also
-added missing line endings on the error messages and set our local
-rfkill structure element to NULL on failure so we don't try to call
-rfkill_unregister on driver removal if we failed to register at all.
+   led_classdev_register(&hid->dev, &my_led);
 
-The patch below Works For Me (TM); the device is detected fine, can be
-removed without problems and connects ok. I'll have a prod at why the
-rfkill stuff isn't working next, but I believe this cleanup of the error
-handling is appropriate no matter what the issue with registration is.
+   hid_set_drvdata(hid, my_data);
 
-Signed-Off-By: Jonathan McDowell <noodles@earth.li>
+   /* Don't want to use this, in case it overwrites something that
+      hid_set_drvdata() includes. */
+   /*platform_set_drvdata(&hid->dev, my_data);*/
+}
 
------
-diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
-index 1164c52..9d9622b 100644
---- a/drivers/net/usb/hso.c
-+++ b/drivers/net/usb/hso.c
-@@ -2184,19 +2184,20 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
- 			     struct usb_interface *interface)
- {
- 	struct hso_net *hso_net = dev2net(hso_dev);
--	struct device *dev = hso_dev->dev;
-+	struct device *dev = &hso_net->net->dev;
- 	char *rfkn;
- 
- 	hso_net->rfkill = rfkill_allocate(&interface_to_usbdev(interface)->dev,
- 				 RFKILL_TYPE_WLAN);
- 	if (!hso_net->rfkill) {
--		dev_err(dev, "%s - Out of memory", __func__);
-+		dev_err(dev, "%s - Out of memory\n", __func__);
- 		return;
- 	}
- 	rfkn = kzalloc(20, GFP_KERNEL);
- 	if (!rfkn) {
- 		rfkill_free(hso_net->rfkill);
--		dev_err(dev, "%s - Out of memory", __func__);
-+		hso_net->rfkill = NULL;
-+		dev_err(dev, "%s - Out of memory\n", __func__);
- 		return;
- 	}
- 	snprintf(rfkn, 20, "hso-%d",
-@@ -2209,7 +2210,8 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
- 		kfree(rfkn);
- 		hso_net->rfkill->name = NULL;
- 		rfkill_free(hso_net->rfkill);
--		dev_err(dev, "%s - Failed to register rfkill", __func__);
-+		hso_net->rfkill = NULL;
-+		dev_err(dev, "%s - Failed to register rfkill\n", __func__);
- 		return;
- 	}
- }
------
+/* Callback function when user wants to change LED state */
+static void my_led_set(struct led_classdev *led_cdev,
+   enum led_brightness value)
+{
+   /* How do I get my_data back? */
+}
 
-J.
+Hopefully this explains what I'm after - if you need me to clarify 
+anything please let me know.
 
--- 
-Web [     101 things you can't have too much of : 42 - Pepsi.      ]
-site: http:// [                                          ]       Made by
-www.earth.li/~noodles/  [                      ]         HuggieTag 0.0.23
+Many thanks,
+Adam.
