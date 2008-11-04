@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYKDQ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbYKDQ7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYKDQ7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbYKDQ64
+	id S1757889AbYKDQ7d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:59:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbYKDQ7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:58:56 -0500
-Received: from rtr.ca ([76.10.145.34]:57325 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbYKDQ6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:58:55 -0500
-Message-ID: <49107F76.60107@rtr.ca>
-Date: Tue, 04 Nov 2008 11:59:34 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata hibernation fixes
-References: <20081104062734.GA4420@havoc.gtf.org> <alpine.LFD.2.00.0811040823350.3419@nehalem.linux-foundation.org> <200811041753.53342.rjw@sisk.pl>
-In-Reply-To: <200811041753.53342.rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 4 Nov 2008 11:59:22 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:49066 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757590AbYKDQ7W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 11:59:22 -0500
+Message-Id: <1225817939.6422.1282948693@webmail.messagingengine.com>
+X-Sasl-Enc: tHFxzWVjAPOtRKDe0dU3BBDHT3lLuHwim3RHorXEnl+5 1225817939
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
+       jeremy@xensource.com, "Steven Rostedt" <srostedt@redhat.com>,
+       "Mike Travis" <travis@sgi.com>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+In-Reply-To: <20081104165409.GA511@elte.hu>
+Date: Tue, 04 Nov 2008 17:58:59 +0100
+References: <20081104122839.GA22864@mailshack.com>
+ <20081104150729.GC21470@localhost>
+ <1225813659.22738.1282932197@webmail.messagingengine.com>
+ <20081104163636.GA20534@elte.hu>
+ <1225817106.2795.1282945873@webmail.messagingengine.com>
+ <20081104165409.GA511@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Tuesday, 4 of November 2008, Linus Torvalds wrote:
->> On Tue, 4 Nov 2008, Jeff Garzik wrote:
->>> This adds code at a late stage (heading towards -rc4), but does
->>> eliminate a particular spin-up overcycling behavior associated with
->>> hibernation.
->> What does this have to do with hibernation? 
->>
->> If it's a hibernation-only issue, then there is something wrong. 
-> 
-> No, it is not.  On some machines it is a power-off issue, on the others it is
-> hibernation and power-off issue.
-> 
->> Also, if it is an issue for normal power-off as well, then I wonder why 
->> this isn't an issue on Windows. Does windows not spin down disks at all?
-> 
-> In fact, AFAICS, it is an issue on Windows as well, at least if
-> other-than-HP-preloaded version of Windows is used.
-> 
->> IOW, I really don't think this is correct. 
->>
->> I _do_ think that correct might be:
->>
->>  - maybe we just do something odd and different, triggering some BIOS 
->>    behavior that isn't there under Windows.
->>
->>    So we should power down thigns differently so that the BIOS.
->>
->>  - quite possibly: we just should not spin down disks at all, and just 
->>    flush them and do the "park" command thing. If we're _really_ powering 
->>    off, the disks will spin down on their own when power goes away. Maybe 
->>    that's what Windows does?
->>
->> So I really don't want to pull this, because I want to get more of an 
->> explanation for why we need to do this at all. I also don't think this is 
->> even appropriate at this stage in -rc.
->>
->> Is it a regression? If so, that just strengthens the questions above - 
->> what did _we_ start doing wrong that this is needed at all? Let's just 
->> stop doing that, not add some idiotic black-list for somethign that _we_ 
->> do wrong.
-> 
-> This is a regression, but from something like 2.6.25 or even earlier.
-> I think what happened is we started to power-off disks at one point and these
-> BIOS-es just don't like that.
-> 
-> [Note that the issue only appears in _some_ HP boxes, other vendors don't
-> seem to be affected at all.]
-..
 
-So, what happens if we just don't ever spin them down from the kernel?
-Presumably they still spin-down normally (HP or otherwise) when the BIOS
-actually cuts the power at the end of all of this?
+On Tue, 4 Nov 2008 17:54:09 +0100, "Ingo Molnar" <mingo@elte.hu> said:
+> 
+> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+> 
+> > > My estimation is that if we do it right, your approach will behave 
+> > > better on modern CPUs (which is what matters most for such 
+> > > things), especially on real workloads where there's a considerable 
+> > > instruction-cache pressure. But it should be measured in any case.
+> > 
+> > Fully agreed. I will do some measurements in the near future, maybe 
+> > next week. At least noone came up with an absolutely blocking 
+> > problem with this approach ;).
+> 
+> how about "it does not build with lguest enabled" as a blocking 
+> problem? ;-)
 
-Just curious..
+Blocking for applying the patch as is, sure... As a proof of concept
+it is still fine ;).
+
+>   arch/x86/lguest/built-in.o: In function `lguest_init_IRQ':
+>   boot.c:(.init.text+0x33f): undefined reference to `interrupt'
+
+It just needs to be fixed. I guess similar problems are to
+be expected with xen or um.
+
+Thanks,
+    Alexander
+
+> config attached.
+> 
+> 	Ingo
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - mmm... Fastmail...
+
