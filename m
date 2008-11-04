@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYKDW6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbYKDXBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756694AbYKDW6B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:58:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYKDW5w
+	id S1756389AbYKDXBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbYKDXBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:57:52 -0500
-Received: from mga10.intel.com ([192.55.52.92]:48632 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753804AbYKDW5w (ORCPT
+	Tue, 4 Nov 2008 18:01:05 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:9456 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753859AbYKDXBE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:57:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,545,1220252400"; 
-   d="scan'208";a="635551898"
-Message-ID: <4910D37E.7030706@linux.intel.com>
-Date: Tue, 04 Nov 2008 23:58:06 +0100
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 4 Nov 2008 18:01:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Yb+pWKBR3Fs3V2Mc6k1NQ0TvroIeKkhNKE5ePrNPwdaBClieiNwWy5jZH/YLRNXpnP
+         fY89cU3f5QFmo0sC9ejSY6E0KZE7OBH9JaTFh6BHUIqqd47/TZjX2KZTO8kepUN2rX0d
+         YkvSl7tbRnIhd7OByMLdpd/XxOzGsQtI1obIk=
+Message-ID: <e9c3a7c20811041501r7800233dm5ba3877c883f0cbd@mail.gmail.com>
+Date: Tue, 4 Nov 2008 16:01:03 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Subject: Re: dmaengine: struct device - replace bus_id with dev_name(), dev_set_name()
+Cc: "Maciej Sosnowski" <maciej.sosnowski@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <1225326543.5970.25.camel@nga.site>
 MIME-Version: 1.0
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-CC: Robert Richter <robert.richter@amd.com>, Andi Kleen <andi@firstfloor.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1225326543.5970.25.camel@nga.site>
+X-Google-Sender-Auth: 75e398ca59ab747e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka J Enberg wrote:
-> Hi Robert,
-> 
-> On Tue, 4 Nov 2008, Robert Richter wrote:
->> your patchset breaks oprofile on Intel Core 2 cpus. I could bisect the
->> bug for c493756..5951290. Please take a look at this and send me a fix.
-> 
-> Unfortunately I don't have my machine with me right now so I can't test 
-> this, but don't we want something like this? Andi?
+On Wed, Oct 29, 2008 at 5:29 PM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> We need to get rid of all occurrences of bus_id in the entire tree
+> to be able to enable the new interface. Please apply this patch,
+> and possibly convert any remaining remaining occurrences of bus_id.
+>
 
-The patch is not the correct fix to whatever the problem is.
-arch perfmon is not Nehalem specific.
-
--Andi
+Applied to async_tx.git#next.
