@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYKDWTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYKDWVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYKDWTq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:19:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYKDWTg
+	id S1756795AbYKDWVL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 17:21:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYKDWU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:19:36 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:50020 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755965AbYKDWTg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:19:36 -0500
-Date: Tue, 4 Nov 2008 16:17:52 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>, rientjes@google.com,
-       npiggin@suse.de, menage@google.com, dfults@sgi.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch 0/7] cpuset writeback throttling
-In-Reply-To: <20081104135004.f1717fcf.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0811041601100.5077@quilx.com>
-References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
- <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
- <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins>
- <20081104135004.f1717fcf.akpm@linux-foundation.org>
+	Tue, 4 Nov 2008 17:20:56 -0500
+Received: from kroah.org ([198.145.64.141]:36899 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751888AbYKDWU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 17:20:56 -0500
+Date: Tue, 4 Nov 2008 14:07:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: stable@kernel.org, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [stable] 16G related patches for stable kernel 2.6.27
+Message-ID: <20081104220743.GE3516@kroah.com>
+References: <4908CE18.3030205@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4908CE18.3030205@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Andrew Morton wrote:
+On Wed, Oct 29, 2008 at 03:56:56PM -0500, Jon Tollefson wrote:
+> Please consider the following patches for the 2.6.27 stable tree.
+> 
+> The first two allow a powerpc machine with more then 2 numa nodes
+> to boot when 16G pages are enabled.  The third one allows a powerpc
+> machine to boot if using 16G pages and the mem= boot param.
+> 
+> thanks,
+> Jon
+> 
+> 
+> powerpc: Reserve in bootmem lmb reserved regions that cross NUMA nodes
+>     commit 8f64e1f2d1e09267ac926e15090fd505c1c0cbcb
+> powerpc/numa: Make memory reserve code more robust
+>     commit e81703724a966120ace6504c993bda9e084cbf3e
+> powerpc: Don't use a 16G page if beyond mem= limits
+>     commit 4792adbac9eb41cea77a45ab76258ea10d411173
 
-> What are the alternatives here?  What do we need to do to make
-> throttling a per-memcg thing?
+I've queued up all of these.
 
-Add statistics to the memcg lru and then you need some kind of sets of 
-memcgs that are represented by bitmaps or so attached to an inode.
+thanks,
 
-> The patchset is badly misnamed, btw.  It doesn't throttle writeback -
-> in fact several people are working on IO bandwidth controllers and
-> calling this thing "writeback throttling" risks confusion.
-
-It is limiting dirty pages and throttling the dirty rate of applications 
-in a  NUMA system (same procedure as we do in non NUMA). The excessive 
-dirtying without this patchset can cause OOMs to occur on NUMA systems.
-
-> What we're in fact throttling is rate-of-memory-dirtying.  The last
-> thing we want to throttle is writeback - we want it to go as fast as
-> possible!
-
-We want to limit the amount of dirty pages such that I/O is progressing 
-with optimal speeds for an application that significantly dirties memory. 
-Other processes need to be still able to do their work without being 
-swapped out because of excessive memory use for dirty pages by the first 
-process.
+greg k-h
