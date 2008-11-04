@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYKDR76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbYKDSHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbYKDR76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 12:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbYKDR7q
+	id S1754786AbYKDSHT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:07:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYKDSHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 12:59:46 -0500
-Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:65320 "EHLO
-	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753623AbYKDR7p (ORCPT
+	Tue, 4 Nov 2008 13:07:06 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60388 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751543AbYKDSHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 12:59:45 -0500
-Message-ID: <49108D92.9070306@lwfinger.net>
-Date: Tue, 04 Nov 2008 09:59:46 -0800
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Alan <alan@lxorguk.ukuu.org.uk>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: System hang from holding left shift key
-References: <490EAB65.1000908@lwfinger.net> <20081104105600.GA4514@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20081104105600.GA4514@atrey.karlin.mff.cuni.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Nov 2008 13:07:04 -0500
+Message-Id: <1225822006.21441.1282961299@webmail.messagingengine.com>
+X-Sasl-Enc: bXtuxm9+CXclAEK1gvFiuoB+PZiYbz97+TiDY+KxQ/Cb 1225822006
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Andi Kleen" <andi@firstfloor.org>, "Cyrill Gorcunov" <gorcunov@gmail.com>
+Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
+       jeremy@xensource.com, "Steven Rostedt" <srostedt@redhat.com>,
+       "Mike Travis" <travis@sgi.com>, "Andi Kleen" <andi@firstfloor.org>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20081104122839.GA22864@mailshack.com> 
+ <20081104150729.GC21470@localhost> 
+ <20081104170501.GE29626@one.firstfloor.org>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+In-Reply-To: <20081104170501.GE29626@one.firstfloor.org>
+Date: Tue, 04 Nov 2008 19:06:46 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->> While absentmindedly holding down the left shift key as I was thinking about my
->> next input, I froze the keyboard. After 3 seconds, the system sounded a high
->> beep, and then a low beep after another 3 seconds. At that point, no key entry
->> had any effect. From the beeps, one might conclude that the input buffer is
->> full, but a CTRL/U did not clear it. Fortunately, a short press on the power
->> button shut down the machine cleanly.
->>
->> I don't know if this is a regression. I found it in v2.6.28-rc2, but the oldest
->> kernel that I could test (v2.6.24) already has the problem.
->>
->> When the beeps occur, a stack dump is as follows:
+On Tue, 4 Nov 2008 18:05:01 +0100, "Andi Kleen" <andi@firstfloor.org>
+said:
+> > not taking into account the cost of cs reading (which I
+> > don't suspect to be that expensive apart from writting,
 > 
-> What kind of machine is that...? I can't reproduce it here, do I need
-> some accessibility options enabled?
+> GDT accesses have an implied LOCK prefix. Especially
+> on some older CPUs that could be slow.
+> 
+> I don't know if it's a problem or not but it would need
+> some careful benchmarking on different systems to make sure interrupt 
+> latencies are not impacted.
 
-It is an HP dv2815nr notebook with an Turion X2 CPU running the x86_64 version
-of openSUSE 11.0.
+That's good to know. I assume this LOCKed bus cycle only occurs
+if the (hidden) segment information is not cached in some way?
+How many segments are typically cached? In particular, does it
+optimize switching between two segments?
 
-I'm not running any special options that I know about. The only strange thing is
-that the shift keys autorepeat.
+> Another reason I would be also careful with this patch is that
+> it will likely trigger slow paths in JITs like qemu/vmware/etc.
 
-Larry
+Software can be fixed ;).
+
+> Also code segment switching is likely not something that
+> current and future micro architectures will spend a lot of time
+> optimizing.
+> 
+> I'm not sure that risk is worth the small improvement in code
+> size.
+
+I think it is worth exploring a bit more. I feel it should be
+a neutral change worst-case performance-wise, but I really
+think the new code is more readable/understandable.
+
+> An alternative BTW to having all the stubs in the executable
+> would be to just dynamically generate them when the interrupt
+> is set up. Then you would only have the stubs around for the 
+> interrupts which are actually used.
+
+I was trying to simplify things, not make it even less
+transparent ;).
+
+> -Andi
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - A no graphics, no pop-ups email service
 
