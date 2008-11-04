@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbYKDXyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYKDXyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbYKDXyh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503AbYKDXkk
+	id S1760673AbYKDXyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 18:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbYKDXkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:40:40 -0500
-Received: from mx1.suse.de ([195.135.220.2]:47812 "EHLO mx1.suse.de"
+	Tue, 4 Nov 2008 18:40:36 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:52273 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757853AbYKDXki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:40:38 -0500
-Date: Tue, 4 Nov 2008 15:33:14 -0800
+	id S1757097AbYKDXke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 18:40:34 -0500
+Date: Tue, 4 Nov 2008 15:33:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       alan@lxorguk.ukuu.org.uk, Mikael Pettersson <mikpe@it.uu.se>,
        Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 46/57] sata_nv: fix generic, nf2/3 detection regression
-Message-ID: <20081104233314.GU659@suse.de>
+Subject: [patch 45/57] sata_promise: add ATA engine reset to reset ops
+Message-ID: <20081104233312.GT659@suse.de>
 References: <20081104232144.186593464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_nv-fix-generic-nf2-3-detection-regression.patch"
+Content-Disposition: inline; filename="sata_promise-add-ata-engine-reset-to-reset-ops.patch"
 In-Reply-To: <20081104233028.GA659@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,149 +39,82 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <tj@kernel.org>
+From: Mikael Pettersson <mikpe@it.uu.se>
 
-commit 3c324283e6cdb79210cf7975c3e40d3ba3e672b2 upstream
+commit cadef677e4a9b9c1d069675043767df486782986 upstream
 
-All three flavors of sata_nv's are different in how their hardreset
-behaves.
+Promise ATA engines need to be reset when errors occur.
+That's currently done for errors detected by sata_promise itself,
+but it's not done for errors like timeouts detected outside of
+the low-level driver.
 
-* generic: Hardreset is not reliable.  Link often doesn't come online
-  after hardreset.
+The effect of this omission is that a timeout tends to result
+in a sequence of failed COMRESETs after which libata EH gives
+up and disables the port. At that point the port's ATA engine
+hangs and even reloading the driver will not resume it.
 
-* nf2/3: A little bit better - link comes online with longer debounce
-  timing.  However, nf2/3 can't reliable wait for the first D2H
-  Register FIS, so it can't wait for device readiness or classify the
-  device after hardreset.  Follow-up SRST required.
+To fix this, make sata_promise override ->hardreset on SATA
+ports with code which calls pdc_reset_port() on the port in
+question before calling libata's hardreset. PATA ports don't
+use ->hardreset, so for those we override ->softreset instead.
 
-* ck804: Hardreset finally works.
-
-The core layer change to prefer hardreset and follow up changes
-exposed the above issues and caused various detection regressions for
-all three flavors.  This patch, hopefully, fixes all the known issues
-and should make sata_nv error handling more reliable.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_nv.c |   53 +++++++++++++++++++++++---------------------------
- 1 file changed, 25 insertions(+), 28 deletions(-)
+ drivers/ata/sata_promise.c |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -307,10 +307,10 @@ static int nv_scr_write(struct ata_port 
- 
- static void nv_nf2_freeze(struct ata_port *ap);
- static void nv_nf2_thaw(struct ata_port *ap);
-+static int nv_nf2_hardreset(struct ata_link *link, unsigned int *class,
-+			    unsigned long deadline);
- static void nv_ck804_freeze(struct ata_port *ap);
- static void nv_ck804_thaw(struct ata_port *ap);
--static int nv_hardreset(struct ata_link *link, unsigned int *class,
--			unsigned long deadline);
- static int nv_adma_slave_config(struct scsi_device *sdev);
- static int nv_adma_check_atapi_dma(struct ata_queued_cmd *qc);
- static void nv_adma_qc_prep(struct ata_queued_cmd *qc);
-@@ -405,17 +405,8 @@ static struct scsi_host_template nv_swnc
- 	.slave_configure	= nv_swncq_slave_config,
+--- a/drivers/ata/sata_promise.c
++++ b/drivers/ata/sata_promise.c
+@@ -153,6 +153,10 @@ static void pdc_freeze(struct ata_port *
+ static void pdc_sata_freeze(struct ata_port *ap);
+ static void pdc_thaw(struct ata_port *ap);
+ static void pdc_sata_thaw(struct ata_port *ap);
++static int pdc_pata_softreset(struct ata_link *link, unsigned int *class,
++			      unsigned long deadline);
++static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
++			      unsigned long deadline);
+ static void pdc_error_handler(struct ata_port *ap);
+ static void pdc_post_internal_cmd(struct ata_queued_cmd *qc);
+ static int pdc_pata_cable_detect(struct ata_port *ap);
+@@ -186,6 +190,7 @@ static struct ata_port_operations pdc_sa
+ 	.scr_read		= pdc_sata_scr_read,
+ 	.scr_write		= pdc_sata_scr_write,
+ 	.port_start		= pdc_sata_port_start,
++	.hardreset		= pdc_sata_hardreset,
  };
  
--/* OSDL bz3352 reports that some nv controllers can't determine device
-- * signature reliably and nv_hardreset is implemented to work around
-- * the problem.  This was reported on nf3 and it's unclear whether any
-- * other controllers are affected.  However, the workaround has been
-- * applied to all variants and there isn't much to gain by trying to
-- * find out exactly which ones are affected at this point especially
-- * because NV has moved over to ahci for newer controllers.
-- */
- static struct ata_port_operations nv_common_ops = {
- 	.inherits		= &ata_bmdma_port_ops,
--	.hardreset		= nv_hardreset,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- };
-@@ -429,12 +420,22 @@ static struct ata_port_operations nv_gen
- 	.hardreset		= ATA_OP_NULL,
+ /* First-generation chips need a more restrictive ->check_atapi_dma op */
+@@ -200,6 +205,7 @@ static struct ata_port_operations pdc_pa
+ 	.freeze			= pdc_freeze,
+ 	.thaw			= pdc_thaw,
+ 	.port_start		= pdc_common_port_start,
++	.softreset		= pdc_pata_softreset,
  };
  
-+/* OSDL bz3352 reports that nf2/3 controllers can't determine device
-+ * signature reliably.  Also, the following thread reports detection
-+ * failure on cold boot with the standard debouncing timing.
-+ *
-+ * http://thread.gmane.org/gmane.linux.ide/34098
-+ *
-+ * Debounce with hotplug timing and request follow-up SRST.
-+ */
- static struct ata_port_operations nv_nf2_ops = {
- 	.inherits		= &nv_common_ops,
- 	.freeze			= nv_nf2_freeze,
- 	.thaw			= nv_nf2_thaw,
-+	.hardreset		= nv_nf2_hardreset,
- };
- 
-+/* CK804 finally gets hardreset right */
- static struct ata_port_operations nv_ck804_ops = {
- 	.inherits		= &nv_common_ops,
- 	.freeze			= nv_ck804_freeze,
-@@ -443,7 +444,7 @@ static struct ata_port_operations nv_ck8
- };
- 
- static struct ata_port_operations nv_adma_ops = {
--	.inherits		= &nv_common_ops,
-+	.inherits		= &nv_ck804_ops,
- 
- 	.check_atapi_dma	= nv_adma_check_atapi_dma,
- 	.sff_tf_read		= nv_adma_tf_read,
-@@ -467,7 +468,7 @@ static struct ata_port_operations nv_adm
- };
- 
- static struct ata_port_operations nv_swncq_ops = {
--	.inherits		= &nv_common_ops,
-+	.inherits		= &nv_generic_ops,
- 
- 	.qc_defer		= ata_std_qc_defer,
- 	.qc_prep		= nv_swncq_qc_prep,
-@@ -1553,6 +1554,17 @@ static void nv_nf2_thaw(struct ata_port 
- 	iowrite8(mask, scr_addr + NV_INT_ENABLE);
+ static const struct ata_port_info pdc_port_info[] = {
+@@ -691,6 +697,20 @@ static void pdc_sata_thaw(struct ata_por
+ 	readl(host_mmio + hotplug_offset); /* flush */
  }
  
-+static int nv_nf2_hardreset(struct ata_link *link, unsigned int *class,
-+			    unsigned long deadline)
++static int pdc_pata_softreset(struct ata_link *link, unsigned int *class,
++			      unsigned long deadline)
 +{
-+	bool online;
-+	int rc;
-+
-+	rc = sata_link_hardreset(link, sata_deb_timing_hotplug, deadline,
-+				 &online, NULL);
-+	return online ? -EAGAIN : rc;
++	pdc_reset_port(link->ap);
++	return ata_sff_softreset(link, class, deadline);
 +}
 +
- static void nv_ck804_freeze(struct ata_port *ap)
++static int pdc_sata_hardreset(struct ata_link *link, unsigned int *class,
++			      unsigned long deadline)
++{
++	pdc_reset_port(link->ap);
++	return sata_sff_hardreset(link, class, deadline);
++}
++
+ static void pdc_error_handler(struct ata_port *ap)
  {
- 	void __iomem *mmio_base = ap->host->iomap[NV_MMIO_BAR];
-@@ -1605,21 +1617,6 @@ static void nv_mcp55_thaw(struct ata_por
- 	ata_sff_thaw(ap);
- }
- 
--static int nv_hardreset(struct ata_link *link, unsigned int *class,
--			unsigned long deadline)
--{
--	int rc;
--
--	/* SATA hardreset fails to retrieve proper device signature on
--	 * some controllers.  Request follow up SRST.  For more info,
--	 * see http://bugzilla.kernel.org/show_bug.cgi?id=3352
--	 */
--	rc = sata_sff_hardreset(link, class, deadline);
--	if (rc)
--		return rc;
--	return -EAGAIN;
--}
--
- static void nv_adma_error_handler(struct ata_port *ap)
- {
- 	struct nv_adma_port_priv *pp = ap->private_data;
+ 	if (!(ap->pflags & ATA_PFLAG_FROZEN))
 
 -- 
