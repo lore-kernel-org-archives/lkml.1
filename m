@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbYKDJ3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYKDJha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754267AbYKDJ3R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 04:29:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbYKDJ3E
+	id S1754015AbYKDJha (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 04:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbYKDJhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 04:29:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50828 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411AbYKDJ3C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 04:29:02 -0500
-Date: Tue, 4 Nov 2008 10:28:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] sched: add sanity check in partition_sched_domains()
-Message-ID: <20081104092848.GM23790@elte.hu>
-References: <491005C7.2080608@cn.fujitsu.com>
+	Tue, 4 Nov 2008 04:37:20 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:58969 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010AbYKDJhS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 04:37:18 -0500
+Date: Tue, 4 Nov 2008 10:37:10 +0100
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Mattia Dongili <malattia@linux.it>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: usb device not showing up
+Message-ID: <20081104093710.GC15846@gamma.logic.tuwien.ac.at>
+References: <20081103153118.GA27552@gamma.logic.tuwien.ac.at> <Pine.LNX.4.44L0.0811031403180.2194-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <491005C7.2080608@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.3
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.3 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE,SUBJECT_FUZZY_TION autolearn=no SpamAssassin version=3.2.3
-	0.2 SUBJECT_FUZZY_TION     Attempt to obfuscate words in Subject:
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <Pine.LNX.4.44L0.0811031403180.2194-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alan,
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+On Mo, 03 Nov 2008, Alan Stern wrote:
+> What happens if you leave the modem turned off until after Linux is 
+> running?  If it does not show up then a usbmon trace would be helpful 
+> (see Documentation/usb/usbmon.txt for instructions).
 
-> It's wrong to make dattr_new = NULL if doms_new == NULL, it introduces
-> memory leak if dattr_new != NULL. Fortunately dattr_new is always NULL
-> in this case. So remove the code and add a sanity check.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/sched.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+I can run usbmon, but I am not sure what you mean with "leave the modem
+turned off until after Linux is running".
 
-applied to tip/sched/core, thanks!
+If I start from turned off state of the laptop and boot into linux the
+device is not showing up. Is it that state you are interested in getting
+the usbmon output?
 
-a small detail, i changed this:
+Best wishes
 
-> +		BUG_ON(dattr_new);
+Norbert
 
-to WARN_ON_ONCE().
-
-If there's a rare setup-time memory leak we dont want to crash the box 
-via a BUG_ON(), as that only results in unhappy users. We want a 
-WARN_ON_ONCE() so that we get nice bugreports and kerneloops.org 
-coverage as well instead.
-
-We use BUG_ON() in new code only in the rarest of circumstances: if we 
-absolutely want to bring down the box right there - because there's a 
-serious risk of data corruption, security breach, etc.
-
-	Ingo
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+BARSTIBLEY
+A humorous device such as a china horse or small naked porcelain
+infant which jocular hosts use of piss water into your Scotch with.
+			--- Douglas Adams, The Meaning of Liff
