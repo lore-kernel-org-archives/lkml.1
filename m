@@ -1,106 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbYKDWT2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYKDWTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756422AbYKDWT2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 17:19:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYKDWTU
+	id S1756911AbYKDWTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 17:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbYKDWTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 17:19:20 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44114 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753067AbYKDWTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 17:19:19 -0500
-Message-ID: <4910CA5A.2000209@linux.vnet.ibm.com>
-Date: Tue, 04 Nov 2008 15:19:06 -0700
-From: Chris J Arges <arges@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Tue, 4 Nov 2008 17:19:36 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:50020 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755965AbYKDWTg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 17:19:36 -0500
+Date: Tue, 4 Nov 2008 16:17:52 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>, rientjes@google.com,
+       npiggin@suse.de, menage@google.com, dfults@sgi.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <20081104135004.f1717fcf.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0811041601100.5077@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+ <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
+ <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins>
+ <20081104135004.f1717fcf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       kgdb-bugreport@lists.sourceforge.net
-Subject: [PATCH 2.6.28-rc3] pmac_zilog: console polling support
-Content-Type: multipart/mixed;
- boundary="------------060201080701010006090103"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060201080701010006090103
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 4 Nov 2008, Andrew Morton wrote:
 
-This patch adds console polling support for the pmac_zilog serial driver.
+> What are the alternatives here?  What do we need to do to make
+> throttling a per-memcg thing?
 
+Add statistics to the memcg lru and then you need some kind of sets of 
+memcgs that are represented by bitmaps or so attached to an inode.
 
+> The patchset is badly misnamed, btw.  It doesn't throttle writeback -
+> in fact several people are working on IO bandwidth controllers and
+> calling this thing "writeback throttling" risks confusion.
 
---------------060201080701010006090103
-Content-Type: text/x-patch;
- name="0001-pmac_zilog-console-polling-support.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-pmac_zilog-console-polling-support.patch"
+It is limiting dirty pages and throttling the dirty rate of applications 
+in a  NUMA system (same procedure as we do in non NUMA). The excessive 
+dirtying without this patchset can cause OOMs to occur on NUMA systems.
 
->From e768d25cfa8e1f4a1eebb8fb69930c2ef64da2cb Mon Sep 17 00:00:00 2001
-From: Chris J Arges <arges@linux.vnet.ibm.com>
-Date: Tue, 4 Nov 2008 15:10:37 -0600
-Subject: [PATCH] pmac_zilog console polling support
+> What we're in fact throttling is rate-of-memory-dirtying.  The last
+> thing we want to throttle is writeback - we want it to go as fast as
+> possible!
 
-Implemented poll_get_char and poll_put_char for console polling which then
-enables kgdb to work on machines (for example the Apple PowerMac G5) that use
-the pmac_zilog serial driver.
----
- drivers/serial/pmac_zilog.c |   27 +++++++++++++++++++++++++++
- 1 files changed, 27 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
-index 317b061..ad34885 100644
---- a/drivers/serial/pmac_zilog.c
-+++ b/drivers/serial/pmac_zilog.c
-@@ -1383,6 +1383,29 @@ static int pmz_verify_port(struct uart_port *port, struct serial_struct *ser)
- 	return -EINVAL;
- }
- 
-+#ifdef CONFIG_CONSOLE_POLL
-+
-+static int pmz_poll_get_char(struct uart_port *port)
-+{
-+	struct uart_pmac_port *uap = (struct uart_pmac_port *)port;
-+
-+	while ((read_zsreg(uap, R0) & Rx_CH_AV) == 0)
-+		udelay(5);
-+	return read_zsdata(uap);
-+}
-+
-+static void pmz_poll_put_char(struct uart_port *port, unsigned char c)
-+{
-+	struct uart_pmac_port *uap = (struct uart_pmac_port *)port;
-+
-+	/* Wait for the transmit buffer to empty. */
-+	while ((read_zsreg(uap, R0) & Tx_BUF_EMP) == 0)
-+		udelay(5);
-+	write_zsdata(uap, c);
-+}
-+
-+#endif
-+
- static struct uart_ops pmz_pops = {
- 	.tx_empty	=	pmz_tx_empty,
- 	.set_mctrl	=	pmz_set_mctrl,
-@@ -1400,6 +1423,10 @@ static struct uart_ops pmz_pops = {
- 	.request_port	=	pmz_request_port,
- 	.config_port	=	pmz_config_port,
- 	.verify_port	=	pmz_verify_port,
-+#ifdef CONFIG_CONSOLE_POLL
-+	.poll_get_char	=	pmz_poll_get_char,
-+	.poll_put_char	=	pmz_poll_put_char,
-+#endif
- };
- 
- /*
--- 
-1.5.4.5
-
-Signed-off-by: Chris J Arges <arges@linux.vnet.ibm.com>
-
-
---------------060201080701010006090103--
+We want to limit the amount of dirty pages such that I/O is progressing 
+with optimal speeds for an application that significantly dirties memory. 
+Other processes need to be still able to do their work without being 
+swapped out because of excessive memory use for dirty pages by the first 
+process.
