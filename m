@@ -1,123 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbYKDLOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbYKDLXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102AbYKDLOn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 06:14:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYKDLOf
+	id S1754040AbYKDLXf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 06:23:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYKDLX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 06:14:35 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:34139 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707AbYKDLOe (ORCPT
+	Tue, 4 Nov 2008 06:23:26 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62913 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbYKDLXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 06:14:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=rValyCWSXgnG3/OLgx6b60qHIajb13eZXE/18s5x+tJ+6mDSvvL/sYeLm8RAlOKejB
-         Sk7J085TkaIO2NBCrQEkebDLbQBKx7R5x2JnZMcdZocEozIu9fsh9UUJA0fwLfgjQq23
-         uIl3b8lDLVKUWho5e3P0e58dNyyG2hXjMjdBs=
-Message-ID: <c62985530811040314o13394d43t201ae3fc2f1304be@mail.gmail.com>
-Date: Tue, 4 Nov 2008 12:14:33 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] tracing: use raw spinlocks instead of spinlocks
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081104094341.GO23790@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 4 Nov 2008 06:23:25 -0500
+Date: Tue, 4 Nov 2008 19:28:22 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       hugh@veritas.com, taka@valinux.co.jp, nishimura@mxp.nes.nec.co.jp
+Subject: Re: [RFC][PATCH 2/5] memcg : handle swap cache
+Message-Id: <20081104192822.fc87868b.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081104180429.4e47875e.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081031115057.6da3dafd.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081031115411.25478878.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081104174201.9e2dc44c.nishimura@mxp.nes.nec.co.jp>
+	<20081104180429.4e47875e.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <490E3F73.1000405@gmail.com>
-	 <alpine.DEB.1.10.0811021940030.32371@gandalf.stny.rr.com>
-	 <20081103064647.GA4826@elte.hu>
-	 <c62985530811031803o6909518ax137d42189dcff0de@mail.gmail.com>
-	 <20081104094341.GO23790@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/4 Ingo Molnar <mingo@elte.hu>:
-> lockdep works via a completely different principle: it instruments all
-> the actual lock acquire/release calls and builds a graph of lock
-> dependencies in the system, as it happens.
->
-> It also guarantees that all the observed locking rules are followed
-> (i.e. it proves that as long as you dont get any messages from
-> lockdep, all the locking patterns are mathematically safe).
->
-> So a lockdep message will most of the time occur much easier than a
-> real lockup would occur - as lockdep only needs to observe
-> inconsistent locking patterns to prove that a lockup _could_ occur.
+On Tue, 4 Nov 2008 18:04:29 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 4 Nov 2008 17:42:01 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > > +#ifdef CONFIG_SWAP
+> > > +int mem_cgroup_cache_charge_swapin(struct page *page,
+> > > +			struct mm_struct *mm, gfp_t mask)
+> > > +{
+> > > +	int ret = 0;
+> > > +
+> > > +	if (mem_cgroup_subsys.disabled)
+> > > +		return 0;
+> > > +	if (unlikely(!mm))
+> > > +		mm = &init_mm;
+> > > +
+> > > +	ret = mem_cgroup_charge_common(page, mm, mask,
+> > > +			MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
+> > > +	/*
+> > > +	 * The page may be dropped from SwapCache because we don't have
+> > > +	 * lock_page().This may cause charge-after-uncharge trouble.
+> > > +	 * Fix it up here. (the caller have refcnt to this page and
+> > > +	 * page itself is guaranteed not to be freed.)
+> > > +	 */
+> > > +	if (ret && !PageSwapCache(page))
+> > > +		mem_cgroup_uncharge_swapcache(page);
+> > > +
+> > Hmm.. after [5/5], mem_cgroup_cache_charge_swapin has 'locked' parameter,
+> > calls lock_page(if !locked), and checks PageSwapCache under page lock.
+> > 
+> > Why not doing it in this patch?
+> > 
+> 
+> My intention is to guard swap_cgroup by lock_page() against SwapCache.
+> In Mem+Swap controller. we get "memcg" from information in page->private.
+> I think we need lock_page(), there. 
+> 
+> But here, we don't refer page->private information. 
+> I think we don't need lock_page() because there is no inofrmation we depends on.
+> 
+I just thought it would be simpler to check PageSwapCache after holding
+page lock rather than to handle the case that the page might be removed from
+swap cache.
+
+And to be honest, I can't understand the "charge-after-uncharge trouble".
+Could you explain more?
 
 
-Ok, so if there is such an error, I could (hopefully) see it with
-early_printk....
+Thanks,
+Dasiuke Nishimura.
 
-
-> The NMI watchdog just observes the system and complains if it sees
-> hardirqs not progressing (i.e. a hard lockup). It will detect anything
-> that causes a hard lockup. (assuming that the NMI watchdog itself is
-> not locked up)
->
-> Regarding your lockup ... it's quite hard. Maybe you can get more
-> output out of the system by using:
->
->  earlyprintk=vga,keep
->
-> plus disablig regular tty output. (i.e. not passing any 'console=tty'
-> line to the kernel bootup.)
->
-> this way you wont get any normal printk activities (which might lock
-> up), you should only get the very simple early-printk output.
-
-
-
-Good idea. After reading your mail, I had a look on early_printk and
-it shoudn't cause any tracing recursion after
-your patch: the strings are directly writed to the vga. Great.
-
-
-> ... but that's still not a guarantee that you'll be able to debug it
-> this way :-/ Bootstrapping something this intrusive and wide is one of
-> the hardest kernel development activities possible.
-
-
-I've been on it for two weeks now. Yes it's very hard. But exciting!
-
->        Ingo
->
-> ---------------->
-> From 6cf87efbc7a3676e0ad7c9622ec6aec244a593bc Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 4 Nov 2008 10:42:23 +0100
-> Subject: [PATCH] x86 debug: mark early_printk.o as notrace
->
-> Impact: do not do function-tracing in the early-printk code
->
-> this is useful when earlyprintk=vga,keep is used to debug tracer
-> plugins.
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/Makefile |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-> index e489ff9..943fe60 100644
-> --- a/arch/x86/kernel/Makefile
-> +++ b/arch/x86/kernel/Makefile
-> @@ -12,6 +12,7 @@ CFLAGS_REMOVE_tsc.o = -pg
->  CFLAGS_REMOVE_rtc.o = -pg
->  CFLAGS_REMOVE_paravirt-spinlocks.o = -pg
->  CFLAGS_REMOVE_ftrace.o = -pg
-> +CFLAGS_REMOVE_early_printk.o = -pg
->  endif
->
->  #
->
-
-I will test your advices this evening and pull latest -tip to get this
-patch. Thanks!
