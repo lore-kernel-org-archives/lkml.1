@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYKDH0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbYKDH2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbYKDH0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 02:26:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYKDH0D
+	id S1754519AbYKDH2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 02:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYKDH17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 02:26:03 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:20698 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbYKDH0B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 02:26:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=ZEnC6gZaa3CdMhnCPV0w4WdTKvrmK4c2/0qfE3WM7MYtQKALV9cre/8hve0QkBXh/C
-         XE8gnI2frIsZdXy3cMuDIXZrVAMmKY87c7WF1zZv6HBuHGP8xJbJTnANsNNAB0e9I4H2
-         hBD0ab9q3oVC71D2o+pS2oAdU+P4kjAXwZatg=
-From: "Richard A. Holden III" <aciddeath@gmail.com>
-To: linux-next@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Jan Harkes <jaharkes@cs.cmu.edu>,
-       coda@cs.cmu.edu, codalist@coda.cs.cmu.ed
-Subject: [PATCH] Fix fs/coda/sysctl.c build warnings when !CONFIG_SYSCTL
-Date: Tue,  4 Nov 2008 01:27:19 -0700
-Message-Id: <1225787239-25429-1-git-send-email-aciddeath@gmail.com>
-X-Mailer: git-send-email 1.5.6.4
+	Tue, 4 Nov 2008 02:27:59 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53632 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751541AbYKDH17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 02:27:59 -0500
+Message-ID: <490FF8D0.1070607@cn.fujitsu.com>
+Date: Tue, 04 Nov 2008 15:25:04 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: Matt Helsley <matthltc@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [PATCH 3/5] Container Freezer: Implement freezer cgroup subsystem
+References: <20080811235323.872291138@us.ibm.com>	 <20080811235325.121356317@us.ibm.com>	 <6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>	 <490FE7B5.8020400@cn.fujitsu.com> <6599ad830811032240n640f3fao48f1a9f05892b797@mail.gmail.com>
+In-Reply-To: <6599ad830811032240n640f3fao48f1a9f05892b797@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix
-fs/coda/sysctl.c:14: warning: 'fs_table_header' defined but not used
-fs/coda/sysctl.c:44: warning: 'fs_table' defined but not used
+Paul Menage wrote:
+> On Mon, Nov 3, 2008 at 10:12 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>> I think another reasonable and easier way is to disable writing freezer.state
+>> of top cgroup, so we can skip checks in freezer_fork() for tasks in top cgroup.
+>>
+> 
+> Yes, if freezing the root cgroup isn't needed then that is definitely
+> simpler - I wasn't sure if Matt wanted to be able to freeze the root
+> group with this subsystem.
+> 
 
-these are only used when CONFIG_SYSCTL is defined.
+If someone just mounts the freezer subsystem and freeze the root cgroup,
+all the tasks will be freezed, and then seems all he can do is reset the
+machine (or do a suspend/resume).
 
-Signed-off-by: Richard A. Holden III <aciddeath@gmail.com>
----
- fs/coda/sysctl.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/fs/coda/sysctl.c b/fs/coda/sysctl.c
-index 81b7771..43c96ce 100644
---- a/fs/coda/sysctl.c
-+++ b/fs/coda/sysctl.c
-@@ -11,7 +11,9 @@
- 
- #include "coda_int.h"
- 
-+#ifdef CONFIG_SYSCTL
- static struct ctl_table_header *fs_table_header;
-+#endif
- 
- static ctl_table coda_table[] = {
- 	{
-@@ -41,6 +43,7 @@ static ctl_table coda_table[] = {
- 	{}
- };
- 
-+#ifdef CONFIG_SYSCTL
- static ctl_table fs_table[] = {
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-@@ -50,7 +53,7 @@ static ctl_table fs_table[] = {
- 	},
- 	{}
- };
--
-+#endif
- 
- void coda_sysctl_init(void)
- {
--- 
-1.5.6.4
-
+That's why I think it's reasonable to disable it.
