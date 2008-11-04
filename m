@@ -1,69 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYKDQ27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbYKDQ3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645AbYKDQ27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 11:28:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYKDQ2u
+	id S1756730AbYKDQ3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 11:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649AbYKDQ3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 11:28:50 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49387 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753839AbYKDQ2u (ORCPT
+	Tue, 4 Nov 2008 11:29:00 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:20358 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756632AbYKDQ27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 11:28:50 -0500
-Date: Tue, 4 Nov 2008 16:28:20 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Chris Friesen <cfriesen@nortel.com>, Rik van Riel <riel@redhat.com>,
-       "Eugene V. Lyubimkin" <jackyf.devel@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       hugh <hugh@veritas.com>
-Subject: Re: mmap: is default non-populating behavior stable?
-Message-ID: <20081104162820.644b1487@lxorguk.ukuu.org.uk>
-In-Reply-To: <1225814820.7803.1672.camel@twins>
-References: <490F73CD.4010705@gmail.com>
-	<1225752083.7803.1644.camel@twins>
-	<490F8005.9020708@redhat.com>
-	<491070B5.2060209@nortel.com>
-	<1225814820.7803.1672.camel@twins>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Nov 2008 11:28:59 -0500
+Message-ID: <49107844.8070509@mimas.ru>
+Date: Tue, 04 Nov 2008 20:28:52 +0400
+From: Constantin Baranov <const@mimas.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080930 SeaMonkey/1.1.12
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.28-rc3] x86: make CONFIG_SWIOTLB configurable
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Nov 2008 17:07:00 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+Make it possible to enable individually the CONFIG_SWIOTLB option.
+This is useful for Intel x86_64 systems without DMAR support.
 
-> On Tue, 2008-11-04 at 09:56 -0600, Chris Friesen wrote:
-> > Rik van Riel wrote:
-> > > Peter Zijlstra wrote:
-> > 
-> > >> The exact interaction of mmap() and truncate() I'm not exactly clear on.
-> > > 
-> > > Truncate will reduce the size of the mmaps on the file to
-> > > match the new file size, so processes accessing beyond the
-> > > end of file will get a segmentation fault (SIGSEGV).
-> > 
-> > I suspect Peter was talking about using truncate() to set the initial 
-> > file size, effectively increasing rather than reducing it.
-> 
-> I was thinking of truncate() on an already mmap()'ed region, either
-> increasing or decreasing the size so that part of the mmap becomes
-> (in)valid.
-> 
-> I'm not sure how POSIX speaks of this.
-> 
-> I think Linux does the expected thing.
+Signed-off-by: Constantin Baranov <const@mimas.ru>
+---
+Tested on my system based on Gigabyte GA-EP45-DS3 mainboard
+(P45 chipset) with 8 GiB of RAM.
+Currently I need to enable either CONFIG_GART_IOMMU or
+CONFIG_AMD_IOMMU for proper work. Both are AMD specific.
+When the patch applied, just CONFIG_SWIOTLB is sufficient.
 
-I believe our behaviour is correct for mmap/mumap/truncate and it
-certainly used to be and was tested.
+ arch/x86/Kconfig |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-At the point you do anything involving mremap (which is non posix) our
-behaviour becomes rather bizarre.
-
-Alan
+--- linux-2.6.28-rc3/arch/x86/Kconfig	2008-11-04 17:32:29.846408880 +0400
++++ linux-2.6.28-rc3-swiotlb/arch/x86/Kconfig	2008-11-04 18:11:47.796408084 +0400
+@@ -566,7 +566,9 @@ config AMD_IOMMU
+ 
+ # need this always selected by IOMMU for the VIA workaround
+ config SWIOTLB
+-	bool
++	bool "Support for software bounce buffers"
++	depends on X86_64 && EXPERIMENTAL
++	default n
+ 	help
+ 	  Support for software bounce buffers used on x86-64 systems
+ 	  which don't have a hardware IOMMU (e.g. the current generation
