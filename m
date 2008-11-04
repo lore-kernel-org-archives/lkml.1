@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYKDShB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754310AbYKDShj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbYKDShB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 13:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYKDSgx
+	id S1754310AbYKDShj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 13:37:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbYKDShb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 13:36:53 -0500
-Received: from smarthost02.mail.zen.net.uk ([212.23.3.141]:38521 "EHLO
-	smarthost02.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752123AbYKDSgw (ORCPT
+	Tue, 4 Nov 2008 13:37:31 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:59941 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752528AbYKDSha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 13:36:52 -0500
-Subject: Re: [PATCH] x86: Don't allow nr_irqs > NR_IRQS
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-In-Reply-To: <20081104180012.GG21470@localhost>
-References: <1225819102.3074.15.camel@achroite>
-	 <20081104180012.GG21470@localhost>
-Content-Type: text/plain; charset=utf-8
-Organization: Solarflare Communications
-Date: Tue, 04 Nov 2008 18:36:47 +0000
-Message-Id: <1225823807.3074.24.camel@achroite>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
-X-Originating-Smarthost02-IP: [82.69.137.158]
+	Tue, 4 Nov 2008 13:37:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=IMcVz0wWPglt/TSjb/MsKJvozZgMV64qfDz3xUs/jp+LvIiePz/M+v4DZvVqKPupVL
+         lJKSVYnv1qZpYOlte7RFRoqMbGCRwfiV/F7keJTTcemy7X3hAPG/jFRcmxECwVfKqgPk
+         VQXBOwThwhaPGK0SQBQ2uWQWMbXYT6RK2dkh0=
+Message-ID: <49109657.3000601@gmail.com>
+Date: Tue, 04 Nov 2008 20:37:11 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@ZenIV.linux.org.uk>,
+       srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+ belongs to. Store thread group leader id, and use it to lookup the address
+ in the process's map. We could have looked up the address on thread's map,
+ but the thread might not exist by the time we are called. The process might
+ not exist either, but if you are reading trace_pipe, that is unlikely.
+References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk> <490E1B74.6010904@gmail.com> <20081102214042.GG28946@ZenIV.linux.org.uk> <20081103073257.GA13727@elte.hu> <20081104182628.GA6666@infradead.org>
+In-Reply-To: <20081104182628.GA6666@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-04 at 21:00 +0300, Cyrill Gorcunov wrote:
-[...]
-> | I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
-> | Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
-> | 5 IOAPICs (!) and returns 240.  Here are the log messages:
-> | 
-> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
-> | Tue Nov  4 16:53:47 2008 IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
-> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x02] address[0xfec81000] gsi_base[24])
-> | Tue Nov  4 16:53:47 2008 IOAPIC[1]: apic_id 2, version 32, address 0xfec81000, GSI 24-47
-> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x03] address[0xfec81400] gsi_base[48])
-> | Tue Nov  4 16:53:47 2008 IOAPIC[2]: apic_id 3, version 32, address 0xfec81400, GSI 48-71
-> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x04] address[0xfec82000] gsi_base[72])
-> | Tue Nov  4 16:53:47 2008 IOAPIC[3]: apic_id 4, version 32, address 0xfec82000, GSI 72-95
-> | Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x05] address[0xfec82400] gsi_base[96])
-> | Tue Nov  4 16:53:47 2008 IOAPIC[4]: apic_id 5, version 32, address 0xfec82400, GSI 96-119
-> | Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
-> | Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-> | Tue Nov  4 16:53:47 2008 Enabling APIC mode:  Flat.  Using 5 I/O APICs
-> | 
-> | ﻿I think this has become possible since:
-> | 
-> | commit d6c88a507ef0b6afdb013cba4e7804ba7324d99a
-> | Author: Thomas Gleixner <tglx@linutronix.de>
-> | Date:   Wed Oct 15 15:27:23 2008 +0200
-> | 
-> |     genirq: revert dynarray
-> | 
-> |     Revert the dynarray changes. They need more thought and polishing.
-> | 
-> |     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[...]
-> Hi Ben,
-> 
-> I don't think that is because of Thomas' commit. If we've got
-> number of pins larger then we expect it means something wrong
-> with our NR_IRQS. Is it possible to get your .config?
+On 2008-11-04 20:26, Christoph Hellwig wrote:
+> On Mon, Nov 03, 2008 at 08:32:57AM +0100, Ingo Molnar wrote:
+>   
+>> could you please help out with such a helper? This is really about 
+>> visualization, not to rely on it.
+>>     
+>
+> Is this kindergarten?  Take a look at seq_path - what you want
+> is the combination of d_path + mangle_path and the combination of two
+> would be rather trivial.  In fact I'd say you don't even need the helper
+> but just make mangle_path global (and document it while you're at it)
+> and then use it.
 
-Well there must have been an earlier change that resulted in detecting 5
-IOAPICs instead of just 1, but that presumably would work as long as the
-irq_desc array was dynamically allocated.  This reversion breaks that.
+Hmm, this is just for visualizing things in /sys/kernel/debug/, can't I
+use something simpler than mangle_path, such as a simple while loop like
+the one below?
 
-You don't really need to see the config; NR_IRQS is *always* 224 on
-normal x86-32 systems.
-
-Ben.
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
++ static int
++trace_seq_path(struct trace_seq *s, struct path *path)
++{
++       char *p;
++
++       if (s->len >= (PAGE_SIZE - 1))
++               return 0;
++       p = d_path(path, s->buffer + s->len, PAGE_SIZE - s->len);
++       if (!IS_ERR(p)) {
++               size_t i = s->len;
++               char c;
++               while ((c = *p++)) {
++                       if (c != '\n')
++                               s->buffer[i++] = c;
++               }
++               s->len = i;
++               return 1;
++       } else {
++               s->buffer[s->len++] = '?';
++               return 1;
++       }
++
++       return 0;
++}
