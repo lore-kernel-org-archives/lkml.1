@@ -1,87 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYKEN5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbYKEN6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYKEN5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 08:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbYKEN5G
+	id S1756592AbYKEN6z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 08:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbYKEN6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 08:57:06 -0500
-Received: from qb-out-0506.google.com ([72.14.204.226]:5671 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755185AbYKEN5E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 08:57:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=eY4B1NaIP2BRyGJTMTe7o9YLXaehb8PFRD0eg/q6eDS8tciOlg5gzC1d9MyILoBx91
-         OIaICO6QsUkF21BJvTeNZ6sMskTv1Ybd9Ei7PuGVa3Eu1TEiSKLdFnv1PqqXT1PVdo8Z
-         4QFESa9TgKAs/sffXb4OHYzKmw861+4eOPq8M=
-Message-ID: <4911A628.6000504@panasas.com>
-Date: Wed, 05 Nov 2008 15:56:56 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: James.Bottomley@HansenPartnership.com, michaelc@cs.wisc.edu,
-       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
-       linux-scsi@vger.kernel.org, Sami.Iren@seagate.com, pw@padd.com,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
-References: <48876009.8010701@panasas.com>	<491073BB.4000900@panasas.com> <20081104111923.bb19c238.akpm@linux-foundation.org>
-In-Reply-To: <20081104111923.bb19c238.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 08:58:46 -0500
+Received: from verein.lst.de ([213.95.11.210]:52744 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751335AbYKEN6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 08:58:45 -0500
+Date: Wed, 5 Nov 2008 14:58:42 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: viro@zeniv.linux.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] kill FMODE_NDELAY_NOW
+Message-ID: <20081105135842.GB4393@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 04 Nov 2008 18:09:31 +0200
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->> Please consider for inclusion, an in-kernel OSD initiator
->> library. Its main users are planned to be various OSD based file
->> systems and the pNFS-Objects Layout Driver. (To be submitted soon)
->>  
->> To try out and run the library please visit
->> http://open-osd.org and follow the instructions there.
->>
->> The submitted patchset is also available via git at:
->>    git://git.open-osd.org/linux-open-osd.git osd
->>    http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=osd
->>
->> Or a compact out-of-tree repository that includes sources 
->> and some extras:
->>    git://git.open-osd.org/open-osd.git master
->>    http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary
->>
->> ...
->>
->> We would like this to sit in -mm tree for a while to make sure it is compilable
->> on all platform.
-> 
-> The best way to do that is to include your git tree in linux-next.  If
-> this code has a probably-will-be-merged-in-2.6.29 status then please
-> prepare a branch for Stephen to include in the linux-next lineup.
-> 
+Update FMODE_NDELAY before each ioctl call so that we can kill the
+magic FMODE_NDELAY_NOW.  It would be even better to do this directly
+in setfl(), but for that we'd need to have FMODE_NDELAY for all files,
+not just block special files.
 
-Thanks Andrew
-I was thinking this code would eventually go into Linux-next threw
-James tree. But thought if there was a way for some exposure, so to
-give James some confidence in the code before he commits to it. But
-this way it could be perfect, thanks.
 
-Stephen Hi
-I have just that branch ready it is:
-git://git.open-osd.org/linux-open-osd.git osd
-Note the "osd" branch. Do I need to call it something special like
-"linux-next"? (Give me 24 hours to fix all current comments)
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Also one more question. This tree is based on latest scsi-misc-2.6.git,
-Because it is destined to go threw James tree at the end. Do I need
-to prepare a special tree based on Linus-latest?
-
-Thanks in advance
-Boaz
+Index: linux-2.6/block/compat_ioctl.c
+===================================================================
+--- linux-2.6.orig/block/compat_ioctl.c	2008-11-02 19:47:40.000000000 +0100
++++ linux-2.6/block/compat_ioctl.c	2008-11-02 19:48:07.000000000 +0100
+@@ -699,8 +699,14 @@ long compat_blkdev_ioctl(struct file *fi
+ 	struct backing_dev_info *bdi;
+ 	loff_t size;
+ 
++	/*
++	 * O_NDELAY can be altered using fcntl(.., F_SETFL, ..), so we have
++	 * to updated it before every ioctl.
++	 */
+ 	if (file->f_flags & O_NDELAY)
+-		mode |= FMODE_NDELAY_NOW;
++		mode |= FMODE_NDELAY;
++	else
++		mode &= ~FMODE_NDELAY;
+ 
+ 	switch (cmd) {
+ 	case HDIO_GETGEO:
+Index: linux-2.6/drivers/scsi/sd.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/sd.c	2008-11-02 19:47:20.000000000 +0100
++++ linux-2.6/drivers/scsi/sd.c	2008-11-02 19:48:11.000000000 +0100
+@@ -757,7 +757,7 @@ static int sd_ioctl(struct block_device 
+ 	 * access to the device is prohibited.
+ 	 */
+ 	error = scsi_nonblockable_ioctl(sdp, cmd, p,
+-					(mode & FMODE_NDELAY_NOW) != 0);
++					(mode & FMODE_NDELAY) != 0);
+ 	if (!scsi_block_when_processing_errors(sdp) || !error)
+ 		return error;
+ 
+Index: linux-2.6/drivers/scsi/sr.c
+===================================================================
+--- linux-2.6.orig/drivers/scsi/sr.c	2008-11-02 19:47:03.000000000 +0100
++++ linux-2.6/drivers/scsi/sr.c	2008-11-02 19:47:18.000000000 +0100
+@@ -521,7 +521,7 @@ static int sr_block_ioctl(struct block_d
+ 	 * if it doesn't recognise the ioctl
+ 	 */
+ 	ret = scsi_nonblockable_ioctl(sdev, cmd, argp,
+-					(mode & FMODE_NDELAY_NOW) != 0);
++					(mode & FMODE_NDELAY) != 0);
+ 	if (ret != -ENODEV)
+ 		return ret;
+ 	return scsi_ioctl(sdev, cmd, argp);
+Index: linux-2.6/fs/block_dev.c
+===================================================================
+--- linux-2.6.orig/fs/block_dev.c	2008-11-02 19:45:01.000000000 +0100
++++ linux-2.6/fs/block_dev.c	2008-11-02 19:48:05.000000000 +0100
+@@ -1207,8 +1207,16 @@ static long block_ioctl(struct file *fil
+ {
+ 	struct block_device *bdev = I_BDEV(file->f_mapping->host);
+ 	fmode_t mode = file->f_mode;
++
++	/*
++	 * O_NDELAY can be altered using fcntl(.., F_SETFL, ..), so we have
++	 * to updated it before every ioctl.
++	 */
+ 	if (file->f_flags & O_NDELAY)
+-		mode |= FMODE_NDELAY_NOW;
++		mode |= FMODE_NDELAY;
++	else
++		mode &= ~FMODE_NDELAY;
++
+ 	return blkdev_ioctl(bdev, mode, cmd, arg);
+ }
+ 
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2008-11-02 19:48:13.000000000 +0100
++++ linux-2.6/include/linux/fs.h	2008-11-02 19:48:24.000000000 +0100
+@@ -79,7 +79,6 @@ extern int dir_notify_enable;
+ #define FMODE_NDELAY	((__force fmode_t)32)
+ #define FMODE_EXCL	((__force fmode_t)64)
+ #define FMODE_WRITE_IOCTL	((__force fmode_t)128)
+-#define FMODE_NDELAY_NOW	((__force fmode_t)256)
+ 
+ #define RW_MASK		1
+ #define RWA_MASK	2
