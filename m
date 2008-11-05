@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYKEUgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYKEUjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756621AbYKEUgz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbYKEUgi
+	id S1757321AbYKEUjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:39:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYKEUjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 15:36:38 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:16331 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756768AbYKEUgh (ORCPT
+	Wed, 5 Nov 2008 15:39:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:4189 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbYKEUjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 15:36:37 -0500
+	Wed, 5 Nov 2008 15:39:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type;
-        b=JKnQBfYv+b6jC7eHNyRAdUTPBvWPEAX1umXKmiPACcQlz58AiY0pcWrSV3EWWGTwDO
-         CVjLrJ9zg3b9A6IhguQgDZuvTT1W+LkYC4JFQjzLGPOAYuOSHzBlTb5NQqRi2ci71Hqz
-         hCwEQsWKrGhfzIJHuzrKEUyafffvdS32UWGXg=
-Message-ID: <cd73a99e0811051236x3c852ce7w5d16a695d8efb9c6@mail.gmail.com>
-Date: Wed, 5 Nov 2008 22:36:35 +0200
-From: "Andrew Victor" <avictor.za@gmail.com>
-To: wim@iguana.be, "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] SAM9 watchdog - supported on all SAM9 and CAP9 processors
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=YBJAKs+5JDw+DKooK8n0cHIWy5QtFU0C3hzx/3otjUUMh8k3kOnFsX9IVWngl464sK
+         1tpf9sMssPwZRstRd5u4E7QKCWTSUlZamu/AkeF6Sv2PqrQCgD/FztuGCksDxR37M6OG
+         LWxakGnIbckZYVL7kBbrvg9Rb1oeneHWnECE8=
+Date: Wed, 5 Nov 2008 23:32:12 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] Always include <linux/types.h>
+Message-ID: <20081105203212.GA11910@x200.localdomain>
+References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com> <20081104180347.GA9818@uranus.ravnborg.org> <20081105163941.GB6561@logfs.org> <20081105172312.GA10585@x200.localdomain> <20081105191628.GC6561@logfs.org> <20081105200216.GD6561@logfs.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_32765_7117469.1225917395505"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081105200216.GD6561@logfs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_32765_7117469.1225917395505
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Wed, Nov 05, 2008 at 09:02:17PM +0100, Jörn Engel wrote:
+> On Wed, 5 November 2008 20:16:28 +0100, Jörn Engel wrote:
+> > 
+> > My hope was actually to speed up compilation.  If the average c file
+> > includes 10 headers, on types.h will get included by most of them,
+> > possibly multiple times.  Each run after the first still has to parse
+> > the whole file, just to drop everything between  #ifndef _LINUX_TYPES_H
+> > and #endif.
+> > 
+> > By passing types.h on the command line we can drop it from all headers
+> > and only have to parse it once.  Just the intermediate step of parsing
+> > types.h 11 times instead of 10 will slow things down.  By about .4% on
+> > my not very beefy notebook.
+> > 
+> > Before:
+> > real    4m33.241s
+> > user    3m58.524s
+> > sys     0m18.539s
+> > 
+> > After:
+> > real    4m29.707s
+> > user    3m59.674s
+> > sys     0m18.182s
+> 
+> And after removing all explicit #include <linux/types.h> from headers:
+> real    4m31.946s
+> user    3m59.521s
+> sys     0m18.752s
+> 
+> All this may be lost in the noise.  The build machine wasn't completely
+> idle and the variation in system time is rather random.  So it neither
+> helps nor hurts much.  Nor does it solve any real problem.
+> 
+> We might just as well drop it, I guess.
 
-The SAM9 watchdog driver is usable on the whole family of AT91SAM9 and
-CAP9 processors.
-Update the configuration to indicate this and allow the driver to be selected.
-
-Signed-off-by: Andrew Victor <linux@maxim.org.za>
-
-------=_Part_32765_7117469.1225917395505
-Content-Type: text/x-patch; name=sam9_wdt_config.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fn6f507u1
-Content-Disposition: attachment; filename=sam9_wdt_config.patch
-
-ZGlmZiAtdXJOIC14IENWUyBsaW51eC0yLjYuMjgtcmMzL2RyaXZlcnMvd2F0Y2hkb2cvS2NvbmZp
-ZyBsaW51eC0yLjYvZHJpdmVycy93YXRjaGRvZy9LY29uZmlnCi0tLSBsaW51eC0yLjYuMjgtcmMz
-L2RyaXZlcnMvd2F0Y2hkb2cvS2NvbmZpZwkyMDA4LTExLTA1IDIyOjIxOjAxLjAwMDAwMDAwMCAr
-MDIwMAorKysgbGludXgtMi42L2RyaXZlcnMvd2F0Y2hkb2cvS2NvbmZpZwkyMDA4LTExLTA1IDIy
-OjIzOjA3LjAwMDAwMDAwMCArMDIwMApAQCAtNjcsMTEgKzY3LDExIEBACiAJICBzeXN0ZW0gd2hl
-biB0aGUgdGltZW91dCBpcyByZWFjaGVkLgogCiBjb25maWcgQVQ5MVNBTTlYX1dBVENIRE9HCi0J
-dHJpc3RhdGUgIkFUOTFTQU05WCB3YXRjaGRvZyIKLQlkZXBlbmRzIG9uIFdBVENIRE9HICYmIChB
-UkNIX0FUOTFTQU05MjYwIHx8IEFSQ0hfQVQ5MVNBTTkyNjEpCisJdHJpc3RhdGUgIkFUOTFTQU05
-WCAvIEFUOTFDQVA5IHdhdGNoZG9nIgorCWRlcGVuZHMgb24gQVJDSF9BVDkxICYmICFBUkNIX0FU
-OTFSTTkyMDAKIAloZWxwCi0JICBXYXRjaGRvZyB0aW1lciBlbWJlZGRlZCBpbnRvIEFUOTFTQU05
-WCBjaGlwcy4gVGhpcyB3aWxsIHJlYm9vdCB5b3VyCi0JICBzeXN0ZW0gd2hlbiB0aGUgdGltZW91
-dCBpcyByZWFjaGVkLgorCSAgV2F0Y2hkb2cgdGltZXIgZW1iZWRkZWQgaW50byBBVDkxU0FNOVgg
-YW5kIEFUOTFDQVA5IGNoaXBzLiBUaGlzIHdpbGwKKwkgIHJlYm9vdCB5b3VyIHN5c3RlbSB3aGVu
-IHRoZSB0aW1lb3V0IGlzIHJlYWNoZWQuCiAKIGNvbmZpZyAyMTI4NV9XQVRDSERPRwogCXRyaXN0
-YXRlICJEQzIxMjg1IHdhdGNoZG9nIgo=
-------=_Part_32765_7117469.1225917395505--
+If you are working on improving compile times, it's better concentrate
+on removing unneeded includes. If just removing "extern"s from prototypes
+can reliably save several seconds, reducing headers can do wonders.
