@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbYKECm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYKECqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbYKECm4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 21:42:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYKECmp
+	id S1755218AbYKECqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 21:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYKECqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 21:42:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46363 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753601AbYKECmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 21:42:44 -0500
-Message-ID: <49110817.60000@kernel.org>
-Date: Wed, 05 Nov 2008 11:42:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Tue, 4 Nov 2008 21:46:45 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:58435 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753375AbYKECqp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 21:46:45 -0500
+Date: Tue, 4 Nov 2008 20:45:17 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: peterz@infradead.org, rientjes@google.com, npiggin@suse.de,
+       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0811042036000.31167@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+ <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
+ <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins>
+ <20081104135004.f1717fcf.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041601100.5077@quilx.com>
+ <20081104143534.b5c16147.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041648350.6254@quilx.com>
+ <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata hibernation fixes
-References: <20081104062734.GA4420@havoc.gtf.org> <alpine.LFD.2.00.0811040823350.3419@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811040823350.3419@nehalem.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Nov 2008 02:42:35 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
->  - maybe we just do something odd and different, triggering some BIOS 
->    behavior that isn't there under Windows.
->    So we should power down thigns differently so that the BIOS.
+On Tue, 4 Nov 2008, Andrew Morton wrote:
 
-These HP machines require patched storage driver to avoid the same
-problem, so it's not a generic problem and Windows is doing its own
-blacklisting in its own way.
+> In a memcg implementation what we would implement is "throttle
+> page-dirtying tasks in this memcg when the memcg's dirty memory reaches
+> 40% of its total".
 
->  - quite possibly: we just should not spin down disks at all, and just 
->    flush them and do the "park" command thing. If we're _really_ powering 
->    off, the disks will spin down on their own when power goes away. Maybe 
->    that's what Windows does?
+Right that is similar to what this patch does for cpusets. A memcg 
+implementation would need to figure out if we are currently part of a 
+memcg and then determine the percentage of memory that is dirty.
 
-I'm fairly sure they do about the same thing we do (FLUSH followed by
-STANDBY_IMMEDIATE).  The only problem we've seen regarding harddrive
-shutdown or suspend sequence is a BIOS wrongfully assuming the
-controller is turned on and goes bonkers on suspend (this, we might want
-to change, not much point in turning off all the PCI controllers before
-entering suspend, is there?) and these HP machines which like to issue
-STANDBY_IMMEDIATE of its own and also breaks on stock Windows.
+That is one aspect. When performing writeback then we need to figure out 
+which inodes have dirty pages in the memcg and we need to start writeout 
+on those inodes and not on others that have their dirty pages elsewhere. 
+There are two components of this that are in this patch and that would 
+also have to be implemented for a memcg.
 
-> So I really don't want to pull this, because I want to get more of an 
-> explanation for why we need to do this at all. I also don't think this is 
-> even appropriate at this stage in -rc.
+> But that doesn't solve the problem which this patchset is trying to
+> solve, which is "don't let all the memory in all this group of nodes
+> get dirty".
 
-They were supposed to go in during -rc1 but there was a misunderstanding
-while handing off patches I collected during Jeff's vacation and they
-got lost inbetween.  I apologize for the late submission but this
-problem can shorten life span of hard drives considerably && applies
-only to a small set of machines, so I hope this can go in for 2.6.28.
+This patch would solve the problem if the calculation of the dirty pages 
+would consider the active memcg and be able to determine the amount of 
+dirty pages (through some sort of additional memcg counters). That is just 
+the first part though. The second part of finding the inodes that have 
+dirty pages for writeback would require an association between memcgs and 
+inodes.
 
-> Is it a regression? If so, that just strengthens the questions above - 
-> what did _we_ start doing wrong that this is needed at all? Let's just 
-> stop doing that, not add some idiotic black-list for somethign that _we_ 
-> do wrong.
+> What happens if cpuset A uses nodes 0,1,2,3,4,5,6,7,8,9 and cpuset B
+> uses nodes 0,1?  Can activity in cpuset A cause ooms in cpuset B?
 
-It's a regression in a sense that a long while ago, libata didn't do any
-spindown at all, which, again, was a regression from drivers/ide.  So,
-the question whether this problem is a regression or not is sort of
-irrelevant here.  It's plainly a ugly workaround for ugly hardware
-situation and Windows does it in even uglier way.
+Yes if the activities of cpuset A cause all pages to be dirtied in cpuset 
+B and then cpuset B attempts to do writeback. This will fail to acquire 
+enough memory for writeback and make reclaim impossible.
 
-Thanks.
+Typically cpusets are not overlapped like that but used to segment the 
+system.
 
--- 
-tejun
+The system would work correctly if the dirty ratio calculation would be 
+done on all overlapping cpusets/memcg groups that contain nodes from 
+which allocations are permitted.
