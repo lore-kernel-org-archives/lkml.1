@@ -1,300 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbYKETuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYKETtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbYKETuU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbYKETsR
+	id S1757206AbYKETtv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:49:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbYKETsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:48:17 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:19427 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755555AbYKETsO (ORCPT
+	Wed, 5 Nov 2008 14:48:04 -0500
+Received: from gv-out-0910.google.com ([216.239.58.190]:23526 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756934AbYKETsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:48:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:subject:to:date:message-id:in-reply-to:references:user-agent
-         :mime-version:content-type:content-transfer-encoding;
-        b=m/tFj52CU3Pi7gjLcjaQjKKnCt9f6PvqfNuB7i2sP2SYSVWk5qpFjhg8bIOTnFWRT6
-         Fl+gfPgITKc+0VfzdGghXf2SuDRJm+yu1VivETKIwcLFVZxXBrtANBtiE+kfm0yOyf+v
-         lp6BQvGrMajGa2Q2eGypkpGkvT92tlWEXK26g=
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [RFC PATCH V4 4/6] GPT driver for in-kernel IR support.
-To: linux-kernel@vger.kernel.org
-Date: Wed, 05 Nov 2008 14:47:44 -0500
-Message-ID: <20081105194744.19407.53271.stgit@localhost>
-In-Reply-To: <20081105194640.19407.19682.stgit@localhost>
-References: <20081105194640.19407.19682.stgit@localhost>
-User-Agent: StGit/0.14.3.275.gdc7f
+	Wed, 5 Nov 2008 14:48:03 -0500
+Message-ID: <4911F872.8010400@colorfullife.com>
+Date: Wed, 05 Nov 2008 20:48:02 +0100
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: paulmck@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, cl@linux-foundation.org, mingo@elte.hu,
+       akpm@linux-foundation.org, dipankar@in.ibm.com,
+       josht@linux.vnet.ibm.com, schamp@sgi.com, niv@us.ibm.com,
+       dvhltc@us.ibm.com, ego@in.ibm.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, penberg@cs.helsinki.fi,
+       andi@firstfloor.org, tglx@linutronix.de
+Subject: Re: [PATCH, RFC] v7 scalable classic RCU implementation
+References: <20080821234318.GA1754@linux.vnet.ibm.com> <20080825000738.GA24339@linux.vnet.ibm.com> <20080830004935.GA28548@linux.vnet.ibm.com> <20080905152930.GA8124@linux.vnet.ibm.com> <20080915160221.GA9660@linux.vnet.ibm.com> <20080923235340.GA12166@linux.vnet.ibm.com> <20081010160930.GA9777@linux.vnet.ibm.com> <490E094F.7090007@colorfullife.com> <20081103203336.GG6792@linux.vnet.ibm.com>
+In-Reply-To: <20081103203336.GG6792@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GPT is a GPIO pin that is cable able of measuring the lenght of pulses.
-GPTs are common on embedded systems
----
- drivers/input/ir/Kconfig  |    6 +
- drivers/input/ir/Makefile |    3 +
- drivers/input/ir/ir-gpt.c |  224 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 233 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/ir/ir-gpt.c
+Paul E. McKenney wrote:
+>
+>> Attached is a hack that I use right now for myself.
+>> Btw - on my 4-cpu system, the average latency from call_rcu() to the rcu 
+>> callback is 4-5 milliseconds, (CONFIG_HZ_1000).
+>>     
+>
+> Hmmm...  I would expect that if you have some CPUs in dyntick idle mode.
+> But if I run treercu on an CONFIG_HZ_250 8-CPU Power box, I see 2.5
+> jiffies per grace period if CPUs are kept out of dyntick idle mode, and
+> 4 jiffies per grace period if CPUs are allowed to enter dyntick idle mode.
+>
+> Alternatively, if you were testing with multiple concurrent
+> synchronize_rcu() invocations, you can also see longer grace-period
+> latencies due to the fact that a new synchronize_rcu() must wait for an
+> earlier grace period to complete before starting a new one.
+>   
+That's the reason why I decided to measure the real latency, from 
+call_rcu() to the final callback. It includes the delays for waiting 
+until the current grace period completes, until the softirq is 
+scheduled, etc.
+Probably one cpu was not in user space when the timer interrupt arrived.
+I'll continue to investigate that. Unfortunately, my first attempt 
+failed: adding too many printk's results in too much time spent within 
+do_syslog(). And then the timer interrupt always arrives on the 
+spin_unlock_irqrestore in do_syslog()....
 
-diff --git a/drivers/input/ir/Kconfig b/drivers/input/ir/Kconfig
-index a6f3f25..172c0c6 100644
---- a/drivers/input/ir/Kconfig
-+++ b/drivers/input/ir/Kconfig
-@@ -12,4 +12,10 @@ menuconfig INPUT_IR
- 
- if INPUT_IR
- 
-+config IR_GPT
-+	tristate "GPT Based IR Receiver"
-+	default m
-+	help
-+	  Driver for GPT-based IR receiver found on Digispeaker
-+
- endif
-diff --git a/drivers/input/ir/Makefile b/drivers/input/ir/Makefile
-index 2ccdda3..ab0da3f 100644
---- a/drivers/input/ir/Makefile
-+++ b/drivers/input/ir/Makefile
-@@ -6,3 +6,6 @@
- obj-$(CONFIG_INPUT_IR)		+= ir.o
- ir-objs := ir-core.o ir-configfs.o
- 
-+
-+obj-$(CONFIG_IR_GPT)		+= ir-gpt.o
-+
-diff --git a/drivers/input/ir/ir-gpt.c b/drivers/input/ir/ir-gpt.c
-new file mode 100644
-index 0000000..ab83d89
---- /dev/null
-+++ b/drivers/input/ir/ir-gpt.c
-@@ -0,0 +1,224 @@
-+/*
-+ * GPT timer based IR device
-+ *
-+ * Copyright (C) 2008 Jon Smirl <jonsmirl@gmail.com>
-+ */
-+
-+#define DEBUG
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/device.h>
-+#include <linux/of_device.h>
-+#include <linux/of_platform.h>
-+#include <linux/input.h>
-+#include <asm/io.h>
-+#include <asm/mpc52xx.h>
-+
-+#define MAX_SAMPLES 200
-+
-+struct ir_gpt {
-+	int irq;
-+	struct mpc52xx_gpt __iomem *regs;
-+	spinlock_t lock;
-+	struct work_struct queue;
-+	int head, tail, previous;
-+	unsigned int samples[MAX_SAMPLES];
-+	struct input_dev *input;
-+};
-+
-+static void ir_event(struct work_struct *work)
-+{
-+	unsigned long flags;
-+	int delta, count;
-+	unsigned int sample, wrap, bit;
-+	struct ir_gpt *ir_gpt = container_of(work, struct ir_gpt, queue);
-+
-+	while (1) {
-+		spin_lock_irqsave(ir_gpt->lock, flags);
-+		if (ir_gpt->tail == ir_gpt->head) {
-+			spin_unlock_irqrestore(ir_gpt->lock, flags);
-+			break;
-+		}
-+		sample = ir_gpt->samples[ir_gpt->tail];
-+
-+		ir_gpt->tail++;
-+		if (ir_gpt->tail >= MAX_SAMPLES)
-+			ir_gpt->tail = 0;
-+
-+		spin_unlock_irqrestore(ir_gpt->lock, flags);
-+
-+		count = sample >> 16;
-+		wrap = (sample >> 12) & 7;
-+		bit = (sample >> 8) & 1;
-+
-+		delta = count - ir_gpt->previous;
-+		delta += wrap * 0x10000;
-+
-+		ir_gpt->previous = count;
-+
-+		input_ir_decode(ir_gpt->input, delta, bit);
-+	}
-+}
-+
-+/*
-+ * Interrupt handlers
-+ */
-+static irqreturn_t dpeak_ir_irq(int irq, void *_ir)
-+{
-+	unsigned long flags;
-+	unsigned int sample, next;
-+	struct ir_gpt *ir_gpt = _ir;
-+
-+	sample = in_be32(&ir_gpt->regs->status);
-+	out_be32(&ir_gpt->regs->status, 0xF);
-+
-+	spin_lock_irqsave(ir_gpt->lock, flags);
-+	ir_gpt->samples[ir_gpt->head] = sample;
-+	next = ir_gpt->head + 1;
-+	ir_gpt->head = (next >= MAX_SAMPLES ? 0 : next);
-+	spin_unlock_irqrestore(ir_gpt->lock, flags);
-+
-+	schedule_work(&ir_gpt->queue);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+/* ---------------------------------------------------------------------
-+ * OF platform bus binding code:
-+ * - Probe/remove operations
-+ * - OF device match table
-+ */
-+static int __devinit ir_gpt_of_probe(struct of_device *op,
-+				      const struct of_device_id *match)
-+{
-+	struct ir_gpt *ir_gpt;
-+	struct resource res;
-+	int ret, rc;
-+
-+	dev_dbg(&op->dev, "ir_gpt_of_probe\n");
-+
-+	/* Allocate and initialize the driver private data */
-+	ir_gpt = kzalloc(sizeof *ir_gpt, GFP_KERNEL);
-+	if (!ir_gpt)
-+		return -ENOMEM;
-+
-+	ir_gpt->input = input_allocate_device();
-+	if (!ir_gpt->input) {
-+		ret = -ENOMEM;
-+		goto free_mem;
-+	}
-+	ret = input_ir_create(ir_gpt->input, ir_gpt, NULL);
-+	if (ret)
-+		goto free_input;
-+
-+	ir_gpt->input->id.bustype = BUS_HOST;
-+	ir_gpt->input->name = "GPT IR Receiver";
-+
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_36K);
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_38K);
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_40K);
-+	ir_gpt->input->irbit[0] |= BIT_MASK(IR_CAP_RECEIVE_RAW);
-+
-+	ret = input_register_device(ir_gpt->input);
-+	if (ret)
-+		goto free_input;
-+	ret = input_ir_register(ir_gpt->input);
-+	if (ret)
-+		goto free_input;
-+
-+	spin_lock_init(&ir_gpt->lock);
-+	INIT_WORK (&ir_gpt->queue, ir_event);
-+
-+	/* Fetch the registers and IRQ of the GPT */
-+	if (of_address_to_resource(op->node, 0, &res)) {
-+		dev_err(&op->dev, "Missing reg property\n");
-+		ret = -ENODEV;
-+		goto free_input;
-+	}
-+	ir_gpt->regs = ioremap(res.start, 1 + res.end - res.start);
-+	if (!ir_gpt->regs) {
-+		dev_err(&op->dev, "Could not map registers\n");
-+		ret = -ENODEV;
-+		goto free_input;
-+	}
-+	ir_gpt->irq = irq_of_parse_and_map(op->node, 0);
-+	if (ir_gpt->irq == NO_IRQ) {
-+		ret = -ENODEV;
-+		goto free_input;
-+	}
-+	dev_dbg(&op->dev, "ir_gpt_of_probe irq=%d\n", ir_gpt->irq);
-+
-+	rc = request_irq(ir_gpt->irq, &dpeak_ir_irq, IRQF_SHARED,
-+			 "gpt-ir", ir_gpt);
-+	dev_dbg(&op->dev, "ir_gpt_of_probe request irq rc=%d\n", rc);
-+
-+	/* set prescale to ? */
-+	out_be32(&ir_gpt->regs->count, 0x00870000);
-+
-+	/* Select input capture, enable the counter, and interrupt */
-+	out_be32(&ir_gpt->regs->mode, 0x0);
-+	out_be32(&ir_gpt->regs->mode, 0x00000501);
-+
-+	/* Save what we've done so it can be found again later */
-+	dev_set_drvdata(&op->dev, ir_gpt);
-+
-+	printk("GPT IR Receiver driver\n");
-+
-+	return 0;
-+
-+free_input:
-+	input_ir_destroy(ir_gpt->input);
-+	input_free_device(ir_gpt->input);
-+free_mem:
-+	kfree(ir_gpt);
-+	return ret;
-+}
-+
-+static int __devexit ir_gpt_of_remove(struct of_device *op)
-+{
-+	struct ir_gpt *ir_gpt = dev_get_drvdata(&op->dev);
-+
-+	dev_dbg(&op->dev, "ir_gpt_remove()\n");
-+
-+	input_ir_destroy(ir_gpt->input);
-+	input_free_device(ir_gpt->input);
-+	kfree(ir_gpt);
-+	dev_set_drvdata(&op->dev, NULL);
-+
-+	return 0;
-+}
-+
-+/* Match table for of_platform binding */
-+static struct of_device_id ir_gpt_match[] __devinitdata = {
-+	{ .compatible = "gpt-ir", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, ir_gpt_match);
-+
-+static struct of_platform_driver ir_gpt_driver = {
-+	.match_table = ir_gpt_match,
-+	.probe = ir_gpt_of_probe,
-+	.remove = __devexit_p(ir_gpt_of_remove),
-+	.driver = {
-+		.name = "ir-gpt",
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+/* ---------------------------------------------------------------------
-+ * Module setup and teardown; simply register the of_platform driver
-+ */
-+static int __init ir_gpt_init(void)
-+{
-+	return of_register_platform_driver(&ir_gpt_driver);
-+}
-+module_init(ir_gpt_init);
-+
-+static void __exit ir_gpt_exit(void)
-+{
-+	of_unregister_platform_driver(&ir_gpt_driver);
-+}
-+module_exit(ir_gpt_exit);
+--
+    Manfred
 
