@@ -1,104 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYKEUff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYKEUgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbYKEUff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbYKEUf1
+	id S1757405AbYKEUgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYKEUgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 15:35:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:54075 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755408AbYKEUf0 (ORCPT
+	Wed, 5 Nov 2008 15:36:32 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36933 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755791AbYKEUgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 15:35:26 -0500
-Date: Wed, 5 Nov 2008 12:36:04 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081105123604.633105ca@infradead.org>
-In-Reply-To: <20081105194326.GA5839@joi>
-References: <20081105094902.27ec4b39@infradead.org>
-	<20081105194326.GA5839@joi>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+	Wed, 5 Nov 2008 15:36:31 -0500
+Date: Wed, 5 Nov 2008 12:36:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
+       pbadari@us.ibm.com, mel@csn.ul.ie, lcm@us.ibm.com, garyhade@us.ibm.com,
+       mingo@elte.hu, greg@kroah.com, dave@linux.vnet.ibm.com,
+       nish.aravamudan@gmail.com
+Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
+ relationship with symlinks in sysfs
+Message-Id: <20081105123609.878085be.akpm@linux-foundation.org>
+In-Reply-To: <20081103234808.GA13716@us.ibm.com>
+References: <20081103234808.GA13716@us.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Nov 2008 20:43:31 +0100
-Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-
-> On Wed, Nov 05, 2008 at 09:49:02AM -0800, Arjan van de Ven wrote:
-> > --- /dev/null
-> > +++ b/kernel/trace/trace_fsync.c
-> > @@ -0,0 +1,165 @@
-> > +/*
-> > + * trace fsync calls
-> > + * Copyright (C) 2008 Intel Corporation
-> > + *
-> > + * Based extensively on trace_sched_switch.c
-> > + * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
-> > + *
-> > + */
-> > +#include <linux/module.h>
-> > +#include <linux/fs.h>
-> > +#include <linux/debugfs.h>
-> > +#include <linux/kallsyms.h>
-> > +#include <linux/uaccess.h>
-> > +#include <linux/ftrace.h>
-> > +#include <trace/fs.h>
-> > +
-> > +#include "trace.h"
-> > +
-> > +static struct trace_array	*ctx_trace;
-> > +static int __read_mostly	tracer_enabled;
-> > +static atomic_t			fsync_ref;
-> > +
-> > +static void
-> > +probe_do_fsync(struct file *file, int datasync)
-> > +{
-> > +	char *buffer;
-> > +	char *err;
-> > +
-> > +	if (!atomic_read(&fsync_ref))
-> > +		return;
-> > +
-> > +	if (!tracer_enabled)
-> > +		return;
-> > +
-> > +	buffer = kmalloc(4096, GFP_KERNEL);
-> > +	if (!buffer)
-> > +		return;
-> > +
-> > +	memset(buffer, 0, 4096);
-> 
-> kzalloc?
-
-could do I suppose
+On Mon, 3 Nov 2008 15:48:08 -0800
+Gary Hade <garyhade@us.ibm.com> wrote:
 
 > 
-> > +	err = d_path(&file->f_path, buffer, 4096);
-> > +
-> > +	if (IS_ERR(err))
-> > +		goto out;
-> > +
-> > +	ftrace_printk("Process %s is calling fsync on %s\n",
-> > +			current->comm, err);
+> Show node to memory section relationship with symlinks in sysfs
 > 
-> err? not buffer?
+> Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> the memory sections located on nodeX.  For example:
+> /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> indicates that memory section 135 resides on node1.
+> 
+> Also revises documentation to cover this change as well as updating
+> Documentation/ABI/testing/sysfs-devices-memory to include descriptions
+> of memory hotremove files 'phys_device', 'phys_index', and 'state'
+> that were previously not described there.
+> 
+> In addition to it always being a good policy to provide users with
+> the maximum possible amount of physical location information for
+> resources that can be hot-added and/or hot-removed, the following
+> are some (but likely not all) of the user benefits provided by
+> this change.
+> Immediate:
+>   - Provides information needed to determine the specific node
+>     on which a defective DIMM is located.  This will reduce system
+>     downtime when the node or defective DIMM is swapped out.
+>   - Prevents unintended onlining of a memory section that was 
+>     previously offlined due to a defective DIMM.  This could happen
+>     during node hot-add when the user or node hot-add assist script
+>     onlines _all_ offlined sections due to user or script inability
+>     to identify the specific memory sections located on the hot-added
+>     node.  The consequences of reintroducing the defective memory
+>     could be ugly.
+>   - Provides information needed to vary the amount and distribution
+>     of memory on specific nodes for testing or debugging purposes.
+> Future:
+>   - Will provide information needed to identify the memory
+>     sections that need to be offlined prior to physical removal
+>     of a specific node.
+> 
+> Symlink creation during boot was tested on 2-node x86_64, 2-node
+> ppc64, and 2-node ia64 systems.  Symlink creation during physical
+> memory hot-add tested on a 2-node x86_64 system.
+> 
+> Supersedes the "mm: show memory section to node relationship in sysfs"
+> patch posted on 05 Sept 2008 which created node ID containing 'node'
+> files in /sys/devices/system/memory/memoryX instead of symlinks.
+> Changed from files to symlinks due to feedback that symlinks were
+> more consistent with the sysfs way.
+> 
+> ...
+>
+>  Documentation/ABI/testing/sysfs-devices-memory |   51 +++++++
+>  Documentation/memory-hotplug.txt               |   16 +-
+>  arch/ia64/mm/init.c                            |    2 
+>  arch/powerpc/mm/mem.c                          |    2 
+>  arch/s390/mm/init.c                            |    2 
+>  arch/sh/mm/init.c                              |    3 
+>  arch/x86/mm/init_32.c                          |    2 
+>  arch/x86/mm/init_64.c                          |    2 
+>  drivers/base/memory.c                          |   19 +-
+>  drivers/base/node.c                            |  100 +++++++++++++++
+>  include/linux/memory.h                         |    6 
+>  include/linux/memory_hotplug.h                 |    2 
+>  include/linux/node.h                           |   13 +
+>  mm/memory_hotplug.c                            |    9 -
+>  14 files changed, 205 insertions(+), 24 deletions(-)
 
-correct, not buffer
+Dumb question: why do this with a symlink forest instead of, say, cat
+/proc/sys/vm/mem-sections?
 
-it won't work if you use buffer.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
