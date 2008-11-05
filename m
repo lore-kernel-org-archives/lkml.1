@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYKEFP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYKEFbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbYKEFP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 00:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbYKEFPD
+	id S1754783AbYKEFbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 00:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYKEFbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 00:15:03 -0500
-Received: from kroah.org ([198.145.64.141]:42013 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750743AbYKEFPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 00:15:00 -0500
-Date: Tue, 4 Nov 2008 21:02:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Subbu Seetharaman <subbus@serverengines.com>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND] benet: BladeEngine 10Gb NIC driver
-Message-ID: <20081105050209.GC3730@kroah.com>
-References: <20081103122512.06063fc9@mailhost.serverengines.com> <20081103193641.GA12552@kroah.com> <490F5667.3080904@garzik.org> <20081103201930.GB13299@kroah.com> <Pine.LNX.4.64.0811041237400.23792@wrl-59.cs.helsinki.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0811041237400.23792@wrl-59.cs.helsinki.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 5 Nov 2008 00:31:22 -0500
+Received: from casper.infradead.org ([85.118.1.10]:48618 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbYKEFbV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 00:31:21 -0500
+Date: Tue, 4 Nov 2008 21:31:41 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+Subject: [PATCH] vfs: expand some comments (d_path / seq_path)
+Message-ID: <20081104213141.61fbc6bd@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 12:41:36PM +0200, Ilpo Järvinen wrote:
-> On Mon, 3 Nov 2008, Greg KH wrote:
-> 
-> > Hm, call me extreemly stupid, but I don't see anything in that branch
-> > for this driver.
-> > 
-> > Here's what I did:
-> >   git fetch git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git benet master:jeff
-> 
-> I suppose you'd have needed instead of "benet master:jeff" just:
-> 
-> benet:jeff
-> 
-> Ie., from benet remote branch to jeff local branch (remote from the given
-> repository obviously). ...Then you have that jeff branch and can checkout 
-> it.
+>From b533b9b615b9d7eb865d63165b29cf7773fa2856 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Tue, 4 Nov 2008 21:29:34 -0800
+Subject: [PATCH] vfs: expand some comments (d_path / seq_path)
 
-Ah, thanks, I'll try that next time.
+explain that you really need to use the return value of d_path rather
+than the buffer you passed into it.
 
-greg k-h
+Also fix the comment for seq_path(), the function arguments changed
+recently but the comment hadn't been updated in sync.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ fs/dcache.c   |    8 ++++++--
+ fs/seq_file.c |   10 ++++++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/fs/dcache.c b/fs/dcache.c
+index a1d86c7..77e7723 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1911,7 +1911,8 @@ static int prepend_name(char **buffer, int *buflen, struct qstr *name)
+  * Convert a dentry into an ASCII path name. If the entry has been deleted
+  * the string " (deleted)" is appended. Note that this is ambiguous.
+  *
+- * Returns the buffer or an error code if the path was too long.
++ * Returns a pointer into the buffer or an error code if the 
++ * path was too long.
+  *
+  * "buflen" should be positive. Caller holds the dcache_lock.
+  *
+@@ -1987,7 +1988,10 @@ Elong:
+  * Convert a dentry into an ASCII path name. If the entry has been deleted
+  * the string " (deleted)" is appended. Note that this is ambiguous.
+  *
+- * Returns the buffer or an error code if the path was too long.
++ * Returns a pointer into the buffer or an error code if the path was 
++ * too long. Note: Callers should use the returned pointer, not the passed
++ * in buffer, to use the name! The implementation often starts at an offset
++ * into the buffer, and may leave 0 bytes at the start.
+  *
+  * "buflen" should be positive.
+  */
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index eba2eab..9e1c051 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -377,8 +377,14 @@ static char *mangle_path(char *s, char *p, char *esc)
+ 	return NULL;
+ }
+ 
+-/*
+- * return the absolute path of 'dentry' residing in mount 'mnt'.
++/**
++ * seq_path - seq_file interface to print a pathname
++ * @m: the seq_file handle
++ * @path: the struct path to print
++ * @esc: set of characters to escape in the output
++ *
++ * return the absolute path of 'path', as represented by the
++ * dentry / mnt pair in the path parameter.
+  */
+ int seq_path(struct seq_file *m, struct path *path, char *esc)
+ {
+-- 
+1.6.0.3
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
