@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYKENJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYKENKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbYKENJr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 08:09:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYKENJj
+	id S1754929AbYKENKJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 08:10:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbYKENJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 08:09:39 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:48523 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640AbYKENJi (ORCPT
+	Wed, 5 Nov 2008 08:09:47 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33209 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755068AbYKENJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 08:09:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=elQq7CIIfde5gCmR/L6O0bP8o1INGDmoR8mjYb5Wk3ehv9FMEx2NuKG6+fsmdWJznG
-         NEqq0zw1d9cDgnelexJ8mWjfoHrdBELSYO8hIEcX+pABN9X7LSn13EYilLr7YiaHRN6v
-         k843Wh0HokM5ul93j4NDxOqGaO3E67Eyi1oWs=
-Message-ID: <c4e36d110811050509t51719671saa7eb337fca39656@mail.gmail.com>
-Date: Wed, 5 Nov 2008 14:09:36 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: sys_sched_yield keeps locked irq before call of schedule()
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <20081105130113.GB29548@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Nov 2008 08:09:46 -0500
+Subject: Re: [PATCH 03/18] libosd: OSDv1 Headers
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, michaelc@cs.wisc.edu,
+       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sami.Iren@seagate.com, pw@padd.com
+In-Reply-To: <49119774.10706@panasas.com>
+References: <491073BB.4000900@panasas.com>
+	 <1225817046-5946-1-git-send-email-bharrosh@panasas.com>
+	 <20081104111037.bcae04e5.akpm@linux-foundation.org>
+	 <49119774.10706@panasas.com>
+Content-Type: text/plain
+Date: Wed, 05 Nov 2008 08:09:32 -0500
+Message-Id: <1225890572.4703.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110811050457m36346fe1m63ffbb143f684637@mail.gmail.com>
-	 <20081105130113.GB29548@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/5 Ingo Molnar <mingo@elte.hu>:
->
-> * Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
->
->> Hi
->>
->> With recent 2.6.28-rc3 kernel I've noticed that schedule() is
->> sometime being called with locked IRQ
->>
->> Call Trace:
->>  [<ffffffff81334592>] _spin_lock_irq+0x92/0xa0
->>  [<ffffffff8133126b>] schedule+0x13b/0x4cb
->>  [<ffffffff81013c10>] ? native_sched_clock+0x70/0xa0
->>  [<ffffffff81040930>] ? sys_sched_yield+0x0/0x80
->>  [<ffffffff810409a5>] sys_sched_yield+0x75/0x80
->>  [<ffffffff8100c6bb>] system_call_fastpath+0x16/0x1b
->
-> is this some special warning you added? The stock kernel certainly
-> does not emit this warning.
+On Wed, 2008-11-05 at 14:54 +0200, Boaz Harrosh wrote:
+> >> +    struct _osd_io_info {
+> >> +            struct bio *bio;
+> >> +            u64 total_bytes;
+> > 
+> > u64(!)
+> > 
+> 
+> Do you mean that I need to use __u64? or what do you mean?
 
-Yes - it's my personal debug checker that tries to watch wether irq &
-irqsafe are running in pair.
-So it shows a warning if there is a call of spin_lock_irq and irq is
-already dissabled.
+He means you've used u64 in a header without actually including any file
+that defines the typedef.  Linux header files aren't supposed to depend
+on include order.  They're supposed to stand alone.  The point is that
+if I include just #include osd_initiator.h into an empty kernel file
+it's not supposed to spit undefined errors.
 
->
->> Which is a result of the function sys_sched_yield() that calls
->> schedule() while it keeps irq.
->>
->> Is it correct to call the function schedule() which 'usually'
->> expects irq being unlocked and do some 'lenghty' operations (i.e.
->> debug statistics) which do not need to keep irq locked for such a
->> long time?
->
-> the debug statistics are all fast and we disable interrupts straight
-> away when entering the schedule().
+Right at the moment the u64 probably works because blkdev.h #includes
+the file which defines it, but you're not supposed to rely on that.
 
-IRQ is disabled with spin_lock_irc() inside schedule() and it looks
-like there is quite a few lines above which receive 'extra' bonus with
-being run without enabled irq, but as I said - I'm just checking
-whether this is intentional or not.
+James
 
-Zdenek
+
