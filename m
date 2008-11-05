@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYKEKVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbYKEKVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbYKEKVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 05:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYKEKUk
+	id S1755956AbYKEKVz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 05:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbYKEKVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 05:20:40 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:36254 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbYKEKUi (ORCPT
+	Wed, 5 Nov 2008 05:21:45 -0500
+Received: from mga01.intel.com ([192.55.52.88]:40786 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754508AbYKEKVo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 05:20:38 -0500
-Message-ID: <4911730E.2050900@fr.ibm.com>
-Date: Wed, 05 Nov 2008 11:18:54 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Wed, 5 Nov 2008 05:21:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,550,1220252400"; 
+   d="scan'208";a="400156492"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>, Matt Helsley <matthltc@us.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [RFC][PATCH] freezer_cg: disable writing freezer.state of root
- 	cgroup
-References: <20080811235323.872291138@us.ibm.com>	 <20080811235325.121356317@us.ibm.com>	 <6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>	 <490FE7B5.8020400@cn.fujitsu.com>	 <6599ad830811032240n640f3fao48f1a9f05892b797@mail.gmail.com>	 <490FFB56.7030300@cn.fujitsu.com> <6599ad830811032356g6827a97dq41dec492fed8de15@mail.gmail.com> <4910014F.4000808@cn.fujitsu.com>
-In-Reply-To: <4910014F.4000808@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] intel_menlo: max_state is unsigned, invalid test
+Date: Wed, 5 Nov 2008 15:50:37 +0530
+Message-ID: <7D0189F5BE1DF549A570B212D1D5612182AEA5@bgsmsx412.gar.corp.intel.com>
+In-Reply-To: <alpine.LFD.2.00.0811032300551.3132@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] intel_menlo: max_state is unsigned, invalid test
+Thread-Index: Ack+MtSl7UHNAU32QR2FCCTBC9DUbAA/I9cQ
+References: <4908D067.9080207@gmail.com> <20081103143526.375be238.akpm@linux-foundation.org> <alpine.LFD.2.00.0811032300551.3132@localhost.localdomain>
+From: "Thomas, Sujith" <sujith.thomas@intel.com>
+To: "Len Brown" <lenb@kernel.org>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Zhang, Rui" <rui.zhang@intel.com>
+Cc: "roel kluin" <roel.kluin@gmail.com>, "Brown, Len" <len.brown@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>
+X-OriginalArrivalTime: 05 Nov 2008 10:20:42.0021 (UTC) FILETIME=[2814ED50:01C93F30]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello !
 
->> Or maybe just skip populating the file entirely for the root cgroup?
->> It's not useful if it can't be written and always returns the same
->> value.
-> 
-> I thought about this. I'll see which way Matt and Cedric prefer.
 
-I think that Paul's suggestion of disabling the root freezer makes sense.
+>-----Original Message-----
+>From: Len Brown [mailto:lenb@kernel.org]
+>Sent: Tuesday, November 04, 2008 9:37 AM
+>To: Andrew Morton; Thomas, Sujith; Zhang, Rui
+>Cc: roel kluin; Brown, Len; Linux Kernel Mailing List; linux-
+>acpi@vger.kernel.org
+>Subject: Re: [PATCH] intel_menlo: max_state is unsigned, invalid test
+>
+>
+>
+>On Mon, 3 Nov 2008, Andrew Morton wrote:
+>
+>> On Wed, 29 Oct 2008 17:06:47 -0400
+>> roel kluin <roel.kluin@gmail.com> wrote:
+>>
+>> > max_state is unsigned, so the test is invalid.
+>> >
+>> > Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>> > ---
+>> > I think max_state can only become -1, no? then probably a different
+>> > patch is required.
+>> > I may not be able to respond for a few weeks.
+>> >
+>> > diff --git a/drivers/misc/intel_menlow.c
+b/drivers/misc/intel_menlow.c
+>> > index e00a275..980171d 100644
+>> > --- a/drivers/misc/intel_menlow.c
+>> > +++ b/drivers/misc/intel_menlow.c
+>> > @@ -121,7 +121,7 @@ static int memory_set_cur_bandwidth(struct
+>thermal_cooling_device *cdev,
+>> >  	if (memory_get_int_max_bandwidth(cdev, &max_state))
+>> >  		return -EFAULT;
+>> >
+>> > -	if (max_state < 0 || state > max_state)
+>> > +	if (max_state == -1 || state > max_state)
+>> >  		return -EINVAL;
+>> >
+>> >  	arg_list.count = 1;
+>> >
+>>
+>> hm, maybe.
+>>
+>> This can only happen if acpi_evaluate_integer(MEMORY_GET_BANDWIDTH)
+>> returned no-error and a bandwidth of zero (I assume).
+>>
+>> Is this a special case which the driver really wanted to handle?  If
+>> so, why is "0" the only bad value which we're checking for?  Or is
+this
+>> all some big brainfart which should be removed?
+>
+>Sujith,
+>Please send me a patch to intel_menlo.c that documents the
+>legal return values from GTHS.
+>
+>If 0 is illegal, that is fine, but the upstream driver doesn't
+>check for it properl (I like Rui's 9/11 patch better than the above,
+>so andrew, you can drop this patch in any case)
+>
+>thanks,
+>-Len
+>
+>ps.  Sujith, shouldn't there be a MAINTAINERS for this driver with your
+>name on it?
+>
+>
+Hi Len,
+I am also in agreement that Rui's 9/11 patch is the solution.
+I'll be sending out patches you requested.
+These can be applied over Rui's 9/11 patch.
 
-Thanks,
-
-C.
-
+Regards,
+Sujith
+	
