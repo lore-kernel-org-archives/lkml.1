@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYKETst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbYKETtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757354AbYKETst (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYKETrw
+	id S1757044AbYKETtP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:49:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbYKETrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:47:52 -0500
-Received: from rn-out-0910.google.com ([64.233.170.188]:13187 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756651AbYKETru (ORCPT
+	Wed, 5 Nov 2008 14:47:53 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:12406 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756737AbYKETrv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:47:50 -0500
+	Wed, 5 Nov 2008 14:47:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:subject:to:date:message-id:in-reply-to:references:user-agent
          :mime-version:content-type:content-transfer-encoding;
-        b=XMTn0BiQCB74nZUBQVeua7GTqEr+jgE5/UGS637TVkisU3tXVjIJiNxmCkdu+xB/N7
-         spguDsQQVKOqNxwb5LLjoPjQ6tKrVv78dcpDSw4LshjtK/UDN7ETidVdjtvf2SjXOJhB
-         yH6Ak2cYyxiGNGhjSr0lLPLMIJU20FmSrEA5Y=
+        b=Dldqq3VdSg9Noxe/LUYPEHt2/bIxMHf9rK/yJHf2oaad2IeeGL889JXPxBTHKzsHSf
+         mIbdY4YVqlghBi8P/tAfwMRTkF/Qiaaorf9Wanuex8U/lE4cEEMhAhHWRtHN+/FLuUlC
+         CTWxZNS4i+zKxOihdZdJq24kxHdyTdk5ZKWB8=
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [RFC PATCH V4 1/6] Minimal changes to the core input system
+Subject: [RFC PATCH V4 5/6] Example of PowerPC device tree support for GPT
+	based IR
 To: linux-kernel@vger.kernel.org
-Date: Wed, 05 Nov 2008 14:47:38 -0500
-Message-ID: <20081105194738.19407.31117.stgit@localhost>
+Date: Wed, 05 Nov 2008 14:47:46 -0500
+Message-ID: <20081105194746.19407.45683.stgit@localhost>
 In-Reply-To: <20081105194640.19407.19682.stgit@localhost>
 References: <20081105194640.19407.19682.stgit@localhost>
 User-Agent: StGit/0.14.3.275.gdc7f
@@ -32,348 +33,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minimal changes to the core input system. The bulk of IR support loads as a module. These changes are passive if the rest of IR isn't loaded.
 
-Jon Smirl
-<jonsmirl@gmail.com>
 ---
- drivers/input/evdev.c           |   55 +++++++++++++++++++++++++++++
- drivers/input/input.c           |   17 +++++++++
- include/linux/input.h           |   75 +++++++++++++++++++++++++++++++++++++++
- include/linux/mod_devicetable.h |    3 ++
- 4 files changed, 150 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/dspeak01.dts |   19 ++++++++-----------
+ 1 files changed, 8 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
-index 1070db3..33a01dc 100644
---- a/drivers/input/evdev.c
-+++ b/drivers/input/evdev.c
-@@ -328,6 +328,14 @@ struct ff_effect_compat {
- 	} u;
- };
+diff --git a/arch/powerpc/boot/dts/dspeak01.dts b/arch/powerpc/boot/dts/dspeak01.dts
+index ec163c0..bde6b79 100644
+--- a/arch/powerpc/boot/dts/dspeak01.dts
++++ b/arch/powerpc/boot/dts/dspeak01.dts
+@@ -131,16 +131,6 @@
+ 			#gpio-cells = <2>;
+ 		};
  
-+struct ir_command_compat {
-+	__u32 protocol;
-+	__u32 device;
-+	__u32 command;
-+	__u32 transmitters;
-+};
+-		gpt7: timer@670 { /* General Purpose Timer in GPIO mode */
+-			compatible = "fsl,mpc5200b-gpt-gpio","fsl,mpc5200-gpt-gpio";
+-			cell-index = <7>;
+-			reg = <0x670 0x10>;
+-			interrupts = <0x1 0x10 0x0>;
+-			interrupt-parent = <&mpc5200_pic>;
+-			gpio-controller;
+-			#gpio-cells = <2>;
+-		};
+-
+ 		rtc@800 {	// Real time clock
+ 			compatible = "fsl,mpc5200b-rtc","fsl,mpc5200-rtc";
+ 			device_type = "rtc";
+@@ -333,6 +323,14 @@
+ 			clock-handle = <&clock0>;
+ 		};
+ 
++		ir0@670 { /* General Purpose Timer 6 in Input mode */
++			compatible = "gpt-ir";
++			cell-index = <7>;
++			reg = <0x670 0x10>;
++			interrupts = <0x1 0x10 0x0>;
++			interrupt-parent = <&mpc5200_pic>;
++		};
 +
-+
- /* Note to the author of this code: did it ever occur to
-    you why the ifdefs are needed? Think about it again. -AK */
- #ifdef CONFIG_X86_64
-@@ -432,6 +440,32 @@ static int evdev_ff_effect_from_user(const char __user *buffer, size_t size,
- 	return 0;
- }
- 
-+static int evdev_ir_send_from_user(const char __user *buffer, size_t size,
-+				     struct ir_command *ir_command)
-+{
-+	if (COMPAT_TEST) {
-+		struct ir_command_compat *compat_ir_command;
-+
-+		if (size != sizeof(struct ir_command_compat))
-+			return -EINVAL;
-+
-+		compat_ir_command = (struct ir_command_compat *)ir_command;
-+
-+		if (copy_from_user(compat_ir_command, buffer,
-+				   sizeof(struct ir_command_compat)))
-+			return -EFAULT;
-+
-+	} else {
-+		if (size != sizeof(struct ir_command))
-+			return -EINVAL;
-+
-+		if (copy_from_user(ir_command, buffer, sizeof(struct ir_command)))
-+			return -EFAULT;
-+	}
-+
-+	return 0;
-+}
-+
- #else
- 
- static inline size_t evdev_event_size(void)
-@@ -469,6 +503,18 @@ static int evdev_ff_effect_from_user(const char __user *buffer, size_t size,
- 	return 0;
- }
- 
-+static int evdev_ir_send_from_user(const char __user *buffer, size_t size,
-+				     struct ir_command *ir_command)
-+{
-+	if (size != sizeof(struct ir_command))
-+		return -EINVAL;
-+
-+	if (copy_from_user(ir_command, buffer, sizeof(struct ir_command)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- #endif /* CONFIG_COMPAT */
- 
- static ssize_t evdev_write(struct file *file, const char __user *buffer,
-@@ -695,6 +741,7 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
- 	struct input_dev *dev = evdev->handle.dev;
- 	struct input_absinfo abs;
- 	struct ff_effect effect;
-+	struct ir_command ir_command;
- 	int __user *ip = (int __user *)p;
- 	int i, t, u, v;
- 	int error;
-@@ -859,6 +906,14 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
- 
- 				return 0;
- 			}
-+
-+			if (_IOC_NR(cmd) == _IOC_NR(EVIOIRSEND)) {
-+
-+				if (evdev_ir_send_from_user(p, _IOC_SIZE(cmd), &ir_command))
-+					return -EFAULT;
-+
-+				return input_ir_send(dev, &ir_command, file);
-+			}
- 		}
- 	}
- 	return -EINVAL;
-diff --git a/drivers/input/input.c b/drivers/input/input.c
-index c13ced3..0a9b15a 100644
---- a/drivers/input/input.c
-+++ b/drivers/input/input.c
-@@ -240,6 +240,10 @@ static void input_handle_event(struct input_dev *dev,
- 	case EV_PWR:
- 		disposition = INPUT_PASS_TO_ALL;
- 		break;
-+
-+	case EV_IR:
-+		disposition = INPUT_PASS_TO_ALL;
-+		break;
- 	}
- 
- 	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
-@@ -693,6 +697,7 @@ static const struct input_device_id *input_match_device(const struct input_devic
- 		MATCH_BIT(sndbit, SND_MAX);
- 		MATCH_BIT(ffbit,  FF_MAX);
- 		MATCH_BIT(swbit,  SW_MAX);
-+		MATCH_BIT(irbit,  IR_MAX);
- 
- 		return id;
- 	}
-@@ -815,6 +820,8 @@ static int input_devices_seq_show(struct seq_file *seq, void *v)
- 		input_seq_print_bitmap(seq, "FF", dev->ffbit, FF_MAX);
- 	if (test_bit(EV_SW, dev->evbit))
- 		input_seq_print_bitmap(seq, "SW", dev->swbit, SW_MAX);
-+	if (test_bit(EV_IR, dev->evbit))
-+		input_seq_print_bitmap(seq, "IR", dev->irbit, IR_MAX);
- 
- 	seq_putc(seq, '\n');
- 
-@@ -992,6 +999,8 @@ static int input_print_modalias(char *buf, int size, struct input_dev *id,
- 				'f', id->ffbit, 0, FF_MAX);
- 	len += input_print_modalias_bits(buf + len, size - len,
- 				'w', id->swbit, 0, SW_MAX);
-+	len += input_print_modalias_bits(buf + len, size - len,
-+				'i', id->irbit, 0, IR_MAX);
- 
- 	if (add_cr)
- 		len += snprintf(buf + len, max(size - len, 0), "\n");
-@@ -1093,6 +1102,7 @@ INPUT_DEV_CAP_ATTR(LED, led);
- INPUT_DEV_CAP_ATTR(SND, snd);
- INPUT_DEV_CAP_ATTR(FF, ff);
- INPUT_DEV_CAP_ATTR(SW, sw);
-+INPUT_DEV_CAP_ATTR(IR, ir);
- 
- static struct attribute *input_dev_caps_attrs[] = {
- 	&dev_attr_ev.attr,
-@@ -1104,6 +1114,7 @@ static struct attribute *input_dev_caps_attrs[] = {
- 	&dev_attr_snd.attr,
- 	&dev_attr_ff.attr,
- 	&dev_attr_sw.attr,
-+	&dev_attr_ir.attr,
- 	NULL
- };
- 
-@@ -1221,6 +1232,8 @@ static int input_dev_uevent(struct device *device, struct kobj_uevent_env *env)
- 		INPUT_ADD_HOTPLUG_BM_VAR("FF=", dev->ffbit, FF_MAX);
- 	if (test_bit(EV_SW, dev->evbit))
- 		INPUT_ADD_HOTPLUG_BM_VAR("SW=", dev->swbit, SW_MAX);
-+	if (test_bit(EV_IR, dev->evbit))
-+		INPUT_ADD_HOTPLUG_BM_VAR("IR=", dev->irbit, IR_MAX);
- 
- 	INPUT_ADD_HOTPLUG_MODALIAS_VAR(dev);
- 
-@@ -1333,6 +1346,10 @@ void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int
- 		__set_bit(code, dev->ffbit);
- 		break;
- 
-+	case EV_IR:
-+		__set_bit(code, dev->irbit);
-+		break;
-+
- 	case EV_PWR:
- 		/* do nothing */
- 		break;
-diff --git a/include/linux/input.h b/include/linux/input.h
-index b86fb55..95e385f 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -79,6 +79,8 @@ struct input_absinfo {
- #define EVIOCRMFF		_IOW('E', 0x81, int)			/* Erase a force effect */
- #define EVIOCGEFFECTS		_IOR('E', 0x84, int)			/* Report number of effects playable at the same time */
- 
-+#define EVIOIRSEND		_IOC(_IOC_WRITE, 'E', 0x80, sizeof(struct ir_command))	/* send an IR command */
-+
- #define EVIOCGRAB		_IOW('E', 0x90, int)			/* Grab/Release device */
- 
- /*
-@@ -97,6 +99,7 @@ struct input_absinfo {
- #define EV_FF			0x15
- #define EV_PWR			0x16
- #define EV_FF_STATUS		0x17
-+#define EV_IR			0x18
- #define EV_MAX			0x1f
- #define EV_CNT			(EV_MAX+1)
- 
-@@ -959,6 +962,56 @@ struct ff_effect {
- #define FF_MAX		0x7f
- #define FF_CNT		(FF_MAX+1)
- 
-+/*
-+ * IR Support
-+ */
-+
-+#define IR_PROTOCOL_RESERVED 0
-+#define IR_PROTOCOL_JVC 1
-+#define IR_PROTOCOL_NEC 2
-+#define IR_PROTOCOL_NOKIA 3
-+#define IR_PROTOCOL_SHARP 4
-+#define IR_PROTOCOL_SONY_12 5
-+#define IR_PROTOCOL_SONY_15 6
-+#define IR_PROTOCOL_SONY_20 7
-+#define IR_PROTOCOL_PHILIPS_RC5 8
-+#define IR_PROTOCOL_PHILIPS_RC6 9
-+#define IR_PROTOCOL_PHILIPS_RCMM 10
-+#define IR_PROTOCOL_PHILIPS_RECS80 11
-+#define IR_PROTOCOL_RCA 12
-+#define IR_PROTOCOL_ITT 13
-+
-+#define IR_PROTOCOL 1
-+#define IR_DEVICE 2
-+#define IR_COMMAND 3
-+
-+#define IR_CAP_RECEIVE_BASEBAND 0
-+#define IR_CAP_RECEIVE_36K 1
-+#define IR_CAP_RECEIVE_38K 2
-+#define IR_CAP_RECEIVE_40K 3
-+#define IR_CAP_RECEIVE_56K 4
-+#define IR_CAP_SEND_BASEBAND 5
-+#define IR_CAP_SEND_36K 6
-+#define IR_CAP_SEND_38K 7
-+#define IR_CAP_SEND_40K 8
-+#define IR_CAP_SEND_56K 9
-+#define IR_CAP_XMITTER_1 10
-+#define IR_CAP_XMITTER_2 11
-+#define IR_CAP_XMITTER_3 12
-+#define IR_CAP_XMITTER_4 13
-+#define IR_CAP_RECEIVE_RAW 14
-+#define IR_CAP_SEND_RAW 15
-+#define IR_MAX 0x0f
-+#define IR_CNT IR_MAX + 1
-+
-+struct ir_command {
-+	__u32 protocol;
-+	__u32 device;
-+	__u32 command;
-+	__u32 transmitters;
-+};
-+
-+
- #ifdef __KERNEL__
- 
- /*
-@@ -986,6 +1039,7 @@ struct ff_effect {
-  * @sndbit: bitmap of sound effects supported by the device
-  * @ffbit: bitmap of force feedback effects supported by the device
-  * @swbit: bitmap of switches present on the device
-+ * @irbit: bitmap of capabilies of the IR hardware
-  * @keycodemax: size of keycode table
-  * @keycodesize: size of elements in keycode table
-  * @keycode: map of scancodes to keycodes for this device
-@@ -1058,6 +1112,7 @@ struct input_dev {
- 	unsigned long sndbit[BITS_TO_LONGS(SND_CNT)];
- 	unsigned long ffbit[BITS_TO_LONGS(FF_CNT)];
- 	unsigned long swbit[BITS_TO_LONGS(SW_CNT)];
-+	unsigned long irbit[BITS_TO_LONGS(IR_CNT)];
- 
- 	unsigned int keycodemax;
- 	unsigned int keycodesize;
-@@ -1066,6 +1121,7 @@ struct input_dev {
- 	int (*getkeycode)(struct input_dev *dev, int scancode, int *keycode);
- 
- 	struct ff_device *ff;
-+	struct ir_device *ir;
- 
- 	unsigned int repeat_key;
- 	struct timer_list timer;
-@@ -1301,6 +1357,11 @@ static inline void input_report_switch(struct input_dev *dev, unsigned int code,
- 	input_event(dev, EV_SW, code, !!value);
- }
- 
-+static inline void input_report_ir(struct input_dev *dev, unsigned int code, int value)
-+{
-+	input_event(dev, EV_IR, code, value);
-+}
-+
- static inline void input_sync(struct input_dev *dev)
- {
- 	input_event(dev, EV_SYN, SYN_REPORT, 0);
-@@ -1379,5 +1440,19 @@ int input_ff_erase(struct input_dev *dev, int effect_id, struct file *file);
- int input_ff_create_memless(struct input_dev *dev, void *data,
- 		int (*play_effect)(struct input_dev *, void *, struct ff_effect *));
- 
-+/**
-+ * IR support functions
-+ */
-+
-+typedef int (*send_func)(void *private, unsigned int *buffer, unsigned int count,
-+		unsigned int frequency, unsigned int xmitters);
-+
-+int input_ir_create(struct input_dev *dev, void *private, send_func send);
-+void input_ir_destroy(struct input_dev *dev);
-+
-+void input_ir_decode(struct input_dev *dev, unsigned int delta, unsigned int bit);
-+int input_ir_send(struct input_dev *dev, struct ir_command *ir_command, struct file *file);
-+int input_ir_register(struct input_dev *dev);
-+
- #endif
- #endif
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index 97b91d1..ea35367 100644
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -293,6 +293,7 @@ struct pcmcia_device_id {
- #define INPUT_DEVICE_ID_SND_MAX		0x07
- #define INPUT_DEVICE_ID_FF_MAX		0x7f
- #define INPUT_DEVICE_ID_SW_MAX		0x0f
-+#define INPUT_DEVICE_ID_IR_MAX		0x0f
- 
- #define INPUT_DEVICE_ID_MATCH_BUS	1
- #define INPUT_DEVICE_ID_MATCH_VENDOR	2
-@@ -308,6 +309,7 @@ struct pcmcia_device_id {
- #define INPUT_DEVICE_ID_MATCH_SNDBIT	0x0400
- #define INPUT_DEVICE_ID_MATCH_FFBIT	0x0800
- #define INPUT_DEVICE_ID_MATCH_SWBIT	0x1000
-+#define INPUT_DEVICE_ID_MATCH_IRBIT	0x2000
- 
- struct input_device_id {
- 
-@@ -327,6 +329,7 @@ struct input_device_id {
- 	kernel_ulong_t sndbit[INPUT_DEVICE_ID_SND_MAX / BITS_PER_LONG + 1];
- 	kernel_ulong_t ffbit[INPUT_DEVICE_ID_FF_MAX / BITS_PER_LONG + 1];
- 	kernel_ulong_t swbit[INPUT_DEVICE_ID_SW_MAX / BITS_PER_LONG + 1];
-+	kernel_ulong_t irbit[INPUT_DEVICE_ID_IR_MAX / BITS_PER_LONG + 1];
- 
- 	kernel_ulong_t driver_info;
- };
+ 		/* This is only an example device to show the usage of gpios. It maps all available
+ 		 * gpios to the "gpio-provider" device.
+ 		 */
+@@ -350,7 +348,6 @@
+ 				 &gpt4		0 0 /* timer4		61c		x2-16	   */
+ 				 &gpt5		0 0 /* timer5		44c		x7-11	   */
+ 				 &gpt6		0 0 /* timer6		60c		x8-15	   */
+-				 &gpt7		0 0 /* timer7		36a		x17-9	   */
+ 				 >;
+ 		};
+ 	};
 
