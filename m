@@ -1,85 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbYKFARS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYKFAVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754398AbYKFARS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 19:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYKFARI
+	id S1754228AbYKFAVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 19:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYKFAVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 19:17:08 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60691 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752977AbYKFARH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 19:17:07 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm <linux-mm@kvack.org>
-Subject: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu,  6 Nov 2008 09:16:58 +0900 (JST)
+	Wed, 5 Nov 2008 19:21:39 -0500
+Received: from cmpxchg.org ([85.214.51.133]:40800 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752812AbYKFAVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 19:21:38 -0500
+X-Greylist: delayed 1361 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Nov 2008 19:21:38 EST
+Date: Thu, 6 Nov 2008 00:58:42 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       travis@sgi.com
+Subject: Re: Git next: Second stage of cpu_alloc patches
+Message-ID: <20081105235842.GB10909@cmpxchg.org>
+References: <Pine.LNX.4.64.0811042053510.31638@quilx.com> <20081104195205.fe1bf62b.akpm@linux-foundation.org> <Pine.LNX.4.64.0811050753120.11867@quilx.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0811050753120.11867@quilx.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MIGRATE_RESERVE mean that the page is for emergency.
-So it shouldn't be cached in pcp.
+On Wed, Nov 05, 2008 at 07:54:39AM -0600, Christoph Lameter wrote:
+> Ok so post a patchset to lkml and at the same time offer a git tree?
 
-otherwise, the system have unnecessary memory starvation risk
-because other cpu can't use this emergency pages.
+Git is perhaps a more convenient way to pick up changesets compared to
+extracting them from emails but review and discussion should still
+happen by Email, no?
 
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Mel Gorman <mel@csn.ul.ie>
-CC: Christoph Lameter <cl@linux-foundation.org>
-
----
- mm/page_alloc.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-Index: b/mm/page_alloc.c
-===================================================================
---- a/mm/page_alloc.c	2008-11-06 06:01:15.000000000 +0900
-+++ b/mm/page_alloc.c	2008-11-06 06:27:41.000000000 +0900
-@@ -1002,6 +1002,7 @@ static void free_hot_cold_page(struct pa
- 	struct zone *zone = page_zone(page);
- 	struct per_cpu_pages *pcp;
- 	unsigned long flags;
-+	int migratetype = get_pageblock_migratetype(page);
- 
- 	if (PageAnon(page))
- 		page->mapping = NULL;
-@@ -1018,16 +1019,25 @@ static void free_hot_cold_page(struct pa
- 	pcp = &zone_pcp(zone, get_cpu())->pcp;
- 	local_irq_save(flags);
- 	__count_vm_event(PGFREE);
-+
-+	set_page_private(page, migratetype);
-+
-+	/* the page for emergency shouldn't be cached */
-+	if (migratetype == MIGRATE_RESERVE) {
-+		free_one_page(zone, page, 0);
-+		goto out;
-+	}
- 	if (cold)
- 		list_add_tail(&page->lru, &pcp->list);
- 	else
- 		list_add(&page->lru, &pcp->list);
--	set_page_private(page, get_pageblock_migratetype(page));
- 	pcp->count++;
- 	if (pcp->count >= pcp->high) {
- 		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
- 		pcp->count -= pcp->batch;
- 	}
-+
-+out:
- 	local_irq_restore(flags);
- 	put_cpu();
- }
-
-
+	Hannes
