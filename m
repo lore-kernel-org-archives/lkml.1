@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYKEMfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYKEMhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbYKEMfc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 07:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYKEMfU
+	id S1755731AbYKEMhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 07:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYKEMhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 07:35:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33106 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbYKEMfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 07:35:19 -0500
-Date: Wed, 5 Nov 2008 13:35:06 +0100
-From: Michal Schmidt <mschmidt@redhat.com>
-To: James Morris <jmorris@namei.org>
-Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       netdev@vger.kernel.org
-Subject: [PATCH] selinux: recognize netlink messages for 'ip addrlabel'
-Message-ID: <20081105133506.203b48d6@leela>
-Organization: Red Hat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 07:37:24 -0500
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:48451 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbYKEMhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 07:37:23 -0500
+Date: Wed, 5 Nov 2008 13:37:14 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: bug: ftrace & lockdep badness
+Message-ID: <20081105123714.GA23504@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In enforcing mode '/sbin/ip addrlabel' results in a SELinux error:
-type=SELINUX_ERR msg=audit(1225698822.073:42): SELinux:  unrecognized
-netlink message type=74 for sclass=43
+Hi Steven,
 
-The problem is missing RTM_*ADDRLABEL entries in SELinux's netlink
-message types table.
+enabling preemptirqsoff tracing gives me this on a lockdep enabled kernel:
 
-Reported in https://bugzilla.redhat.com/show_bug.cgi?id=469423
+Badness at kernel/lockdep.c:2894
+Modules linked in:
+CPU: 0 Not tainted 2.6.28-rc3-00031-ga75952b-dirty #72
+Process sshd (pid: 2542, task: 000000003397d7a8, ksp: 0000000033abb618)
+Krnl PSW : 0404c00180000000 0000000000078770 (check_flags+0x12c/0x160)
+           R:0 T:1 IO:0 EX:0 Key:0 M:1 W:0 P:0 AS:3 CC:0 PM:0 EA:3
+Krnl GPRS: 0000000000000000 0000000000dcda88 0000000000000000 000000000000000f
+           0000000000000000 0000000000000000 0000000000000002 0000000000000000
+           0000000000000000 0000000000000000 000000003fe7d428 0000000033abb170
+           0000000000557fb8 000000000038b210 0000000000078758 0000000033abb170
+Krnl Code: 0000000000078764: bf2f1000           icm     %r2,15,0(%r1)
+           0000000000078768: a774ffa7           brc     7,786b6
+           000000000007876c: a7f40001           brc     15,7876e
+          >0000000000078770: a7f4ffa3           brc     15,786b6
+           0000000000078774: c0e5000a53ea       brasl   %r14,1c2f48
+           000000000007877a: 1222               ltr     %r2,%r2
+           000000000007877c: a784000b           brc     8,78792
+           0000000000078780: c010006aa984       larl    %r1,dcda88
+Call Trace:
+([<0000000033abb188>] 0x33abb188)
+ [<000000000007e76a>] lock_acquire+0x52/0xbc
+ [<000000000037618c>] _spin_lock_irqsave+0x6c/0xb0
+ [<000000000009d52e>] ring_buffer_reset_cpu+0x6e/0x114
+ [<00000000000a46c0>] tracing_reset+0x84/0xe8
+ [<00000000000a5632>] trace_preempt_off+0x112/0x178
+ [<0000000000378888>] add_preempt_count+0xa4/0x130
+ [<00000000000539e0>] __local_bh_disable+0x54/0xcc
+ [<0000000000053a82>] local_bh_disable+0x2a/0x38
+ [<0000000000376002>] _spin_lock_bh+0x2e/0xa4
+ [<00000000002a1baa>] lock_sock_nested+0x4a/0x118
+ [<00000000002e9e86>] tcp_sendmsg+0x42/0xdc0
+ [<000000000029cd3c>] sock_aio_write+0x130/0x180
+ [<00000000000ea36c>] do_sync_write+0xdc/0x134
+ [<00000000000eafe8>] vfs_write+0x154/0x15c
+ [<00000000000eb106>] sys_write+0x52/0xa8
+ [<000000000002a950>] sys32_write+0x2c/0x4c
+ [<0000000000026f80>] sysc_noemu+0x10/0x16
+ [<0000000077c5c186>] 0x77c5c186
+INFO: lockdep is turned off.
 
-Signed-off-by: Michal Schmidt <mschmidt@redhat.com>
----
- security/selinux/nlmsgtab.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Seems to be that the following happens:
 
-diff --git a/security/selinux/nlmsgtab.c b/security/selinux/nlmsgtab.c
-index ff59c0c..4ed7bab 100644
---- a/security/selinux/nlmsgtab.c
-+++ b/security/selinux/nlmsgtab.c
-@@ -63,6 +63,9 @@ static struct nlmsg_perm nlmsg_route_perms[] =
- 	{ RTM_GETANYCAST,	NETLINK_ROUTE_SOCKET__NLMSG_READ  },
- 	{ RTM_GETNEIGHTBL,	NETLINK_ROUTE_SOCKET__NLMSG_READ  },
- 	{ RTM_SETNEIGHTBL,	NETLINK_ROUTE_SOCKET__NLMSG_WRITE },
-+	{ RTM_NEWADDRLABEL,	NETLINK_ROUTE_SOCKET__NLMSG_WRITE },
-+	{ RTM_DELADDRLABEL,	NETLINK_ROUTE_SOCKET__NLMSG_WRITE },
-+	{ RTM_GETADDRLABEL,	NETLINK_ROUTE_SOCKET__NLMSG_READ  },
- };
- 
- static struct nlmsg_perm nlmsg_firewall_perms[] =
--- 
-1.6.0.3
+__local_bh_disable() calls add_preempt_count() which adds something to
+preempt_count().
+After this addition softirq_count() will return something != 0.
+However current->softirqs_enabled is still 1 since we haven't called
+trace_softirqs_off() yet.
+But we call trace_preempt_off() instead which will grab a lock in the
+ringbuffer code and that will trigger this check in lockdep.c:
 
+        if (!hardirq_count()) {
+                if (softirq_count())
+                        DEBUG_LOCKS_WARN_ON(current->softirqs_enabled);
+
+I assume this is a known bug. Is there any fix available?
