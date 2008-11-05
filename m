@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757775AbYKETum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbYKETzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757775AbYKETum (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbYKETsk
+	id S1756807AbYKETzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbYKETzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:48:40 -0500
-Received: from ns.suse.de ([195.135.220.2]:52679 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756965AbYKETsj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:48:39 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Always include <linux/types.h>
-References: <491073BB.4000900@panasas.com>
-	<1225817069-5969-1-git-send-email-bharrosh@panasas.com>
-	<20081104180347.GA9818@uranus.ravnborg.org>
-	<20081105163941.GB6561@logfs.org>
-	<20081105172312.GA10585@x200.localdomain>
-	<20081105191628.GC6561@logfs.org>
-X-Yow: All right, you degenerates!  I want this place evacuated in 20 seconds!
-Date: Wed, 05 Nov 2008 20:48:36 +0100
-In-Reply-To: <20081105191628.GC6561@logfs.org> (=?iso-8859-1?Q?=22J=F6rn?=
- Engel"'s message of
-	"Wed, 5 Nov 2008 20:16:29 +0100")
-Message-ID: <je7i7ilzsb.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	Wed, 5 Nov 2008 14:55:44 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:27180 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbYKETzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 14:55:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=uElyE5viQ+1Ku0gIJJrYdVrYSlUJ0Koy/u607ReW6GhH/N4wkiIPOpLGZXSY+fcd+Q
+         Nn0V1EBrqj2hYcX/X/4AE0CYNr8SWUQqwn7sUCBHUXDg7ACXd/SLjYAVFcSO6/n8nINO
+         oW1Jjdq19i9wFjDa8smZEtiZYXW1Cj5VXGAtE=
+Message-ID: <a4e6962a0811051155y2c9a0f2p93772b69f7dd1bfa@mail.gmail.com>
+Date: Wed, 5 Nov 2008 13:55:42 -0600
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
+Subject: [GIT PULL] 9p bug fixes for 2.6.28-rc3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel <joern@logfs.org> writes:
+The following changes since commit 75fa67706cce5272bcfc51ed646f2da21f3bdb6e:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
 
-> My hope was actually to speed up compilation.  If the average c file
-> includes 10 headers, on types.h will get included by most of them,
-> possibly multiple times.  Each run after the first still has to parse
-> the whole file, just to drop everything between  #ifndef _LINUX_TYPES_H
-> and #endif.
+are available in the git repository at:
 
-Actually GCC is smart enought to note the bracketing and avoid even
-looking at it a second time.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
 
-Andreas.
+Huang Weiyi (1):
+      9p: rdma: remove duplicated #include
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Randy Dunlap (1):
+      net/9p: fix printk format warnings
+
+Roel Kluin (1):
+      unsigned fid->fid cannot be negative
+
+Tom Tucker (4):
+      9p: rdma: Set trans prior to requesting async connection ops
+      9p: Make all client spin locks IRQ safe
+      9p: Remove unneeded free of fcall for Flush
+      p9: Fix leak of waitqueue in request allocation path
+
+ net/9p/client.c     |   59 +++++++++++++++++++++++++++++---------------------
+ net/9p/trans_rdma.c |    5 ++-
+ 2 files changed, 37 insertions(+), 27 deletions(-)
+
+        Thanks,
+             -eric
