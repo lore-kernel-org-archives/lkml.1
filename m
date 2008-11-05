@@ -1,75 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbYKESjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYKESiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757733AbYKESjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 13:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757307AbYKESg6
+	id S1756614AbYKESiu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbYKESft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 13:36:58 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:17653 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbYKESg5 (ORCPT
+	Wed, 5 Nov 2008 13:35:49 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:10710 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756302AbYKESfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 13:36:57 -0500
+	Wed, 5 Nov 2008 13:35:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=lhMXAzKbCPhlxv7U3vDmJV4CxINQHkaWMZ5HoLCy76eMemmyQZ8v9GJSwicK03NnEb
-         YzasMjNeNjtfcw6HnTpxoGvofIa7nUoFu7diQtdjH7mROj7hTTQxXS1szOLpFLnIyqe7
-         XGh09AA6Bd8bBeQYL2Xd88v0svl6MWDvussaY=
-Message-ID: <8bd0f97a0811051036w32717036k337f3ce1b3194198@mail.gmail.com>
-Date: Wed, 5 Nov 2008 13:36:56 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH] UIO: only call pgprot_noncached if defined
-Cc: "Greg KH" <gregkh@suse.de>, "Mike Frysinger" <vapier@gentoo.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081105182743.GE6382@local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=t3AyuKOfXm6rHNgNrhZ9FReYYUG7AGyhcqGJP36qxWmIKTYJpy5IOe/I+FcHko4qf9
+         12sknt8Hj7asN/7nPYA9RF/tP3Jge6zHW4x/gR90DB4uXMpjVJ4vqsilBhlwcQx6M5WC
+         HYpPE7TqVaJc+UlvNAJRXHpQVR0KCcoX3vhqo=
+Subject: [PATCH 10/10] xtensa: use the new byteorder headers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 05 Nov 2008 10:35:31 -0800
+Message-Id: <1225910131.5991.230.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1225301177-21406-1-git-send-email-vapier@gentoo.org>
-	 <20081105113610.GA6382@local> <20081105163334.GA8473@suse.de>
-	 <8bd0f97a0811050933m13addb7eiddb963bfdf4d7416@mail.gmail.com>
-	 <20081105182743.GE6382@local>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 5, 2008 at 13:27, Hans J. Koch wrote:
-> On Wed, Nov 05, 2008 at 12:33:37PM -0500, Mike Frysinger wrote:
->> On Wed, Nov 5, 2008 at 11:33, Greg KH wrote:
->> > On Wed, Nov 05, 2008 at 12:36:11PM +0100, Hans J. Koch wrote:
->> >> There seem to be archs that cannot easily implement a sensible
->> >> pgprot_noncached() function, so we should merge this patch. UIO doesn't
->> >> compile on these archs right now.
->> >
->> > No, we should fix those arches to have that function at least NULLed
->> > out.  Isn't there only one, Blackfin?  Putting #ifdefs in .c files is
->> > not something we really want to do if at all possible.
->>
->> that was my question.  this function isnt documented.  if the hardware
->> doesnt support it, is the right thing really for the arch to lie to
->> drivers and not actually give back cached settings even though it
->> asked for non-cached ?
->
-> Well, if there's no possibility to map device memory in a non-cached
-> way, it's very likely you don't want to use UIO at all. If there's a few
-> seconds between a write and the value actually appearing in the hardware
-> register, you will certainly don't see the results you expect.
->
-> If Blackfin can't mmap non-cached memory, we should make UIO depend on
-> !BLACKFIN.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ include/asm-xtensa/byteorder.h |   32 +++++++++++++++-----------------
+ 1 files changed, 15 insertions(+), 17 deletions(-)
 
-if it wasnt usable on the Blackfin arch, i wouldnt have been looking
-at it in the first place.  there is some usage where merely hooking up
-an interrupt is the only thing that is needed by userspace.
+diff --git a/include/asm-xtensa/byteorder.h b/include/asm-xtensa/byteorder.h
+index 765edf1..07d10ad 100644
+--- a/include/asm-xtensa/byteorder.h
++++ b/include/asm-xtensa/byteorder.h
+@@ -14,7 +14,17 @@
+ #include <asm/types.h>
+ #include <linux/compiler.h>
+ 
+-static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
++#ifdef __XTENSA_EL__
++# define __LITTLE_ENDIAN
++#elif defined(__XTENSA_EB__)
++# define __BIG_ENDIAN
++#else
++# error processor byte order undefined!
++#endif
++
++#define __SWAB_64_THRU_32__
++
++static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
+ {
+     __u32 res;
+     /* instruction sequence from Xtensa ISA release 2/2000 */
+@@ -28,8 +38,9 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+ 	    );
+     return res;
+ }
++#define __arch_swab32 __arch_swab32
+ 
+-static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
++static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
+ {
+     /* Given that 'short' values are signed (i.e., can be negative),
+      * we cannot assume that the upper 16-bits of the register are
+@@ -62,21 +73,8 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
+ 
+     return res;
+ }
++#define __arch_swab16 __arch_swab16
+ 
+-#define __arch__swab32(x) ___arch__swab32(x)
+-#define __arch__swab16(x) ___arch__swab16(x)
+-
+-#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __BYTEORDER_HAS_U64__
+-#  define __SWAB_64_THRU_32__
+-#endif
+-
+-#ifdef __XTENSA_EL__
+-# include <linux/byteorder/little_endian.h>
+-#elif defined(__XTENSA_EB__)
+-# include <linux/byteorder/big_endian.h>
+-#else
+-# error processor byte order undefined!
+-#endif
++#include <linux/byteorder.h>
+ 
+ #endif /* _XTENSA_BYTEORDER_H */
+-- 
+1.6.0.3.756.gb776d
 
-the only memory regions where a device would be hooked up are never
-marked as cachable.  so if this function is only for mapping addresses
-where device registers would live, then a stub pgprot_noncached()
-would be fine.  but we cant do non-cached access on external memory
-(e.g. SDRAM / DDR) if the device wanted coherent memory for dma.
--mike
