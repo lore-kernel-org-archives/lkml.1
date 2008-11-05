@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYKEJyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbYKEJ4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYKEJyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbYKEJyh
+	id S1755867AbYKEJ4N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYKEJz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 04:54:37 -0500
-Received: from styx.suse.cz ([82.119.242.94]:39566 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750754AbYKEJyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:54:36 -0500
-Subject: RE: [PATCH V2 0/2] enable irqs when waiting for rwlocks
-From: Petr Tesarik <ptesarik@suse.cz>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA35BE0554D@orsmsx505.amr.corp.intel.com>
-References: <1224777451.11530.52.camel@elijah.suse.cz>
-	 <1225443142.6825.4.camel@elijah.suse.cz>
-	 <57C9024A16AD2D4C97DC78E552063EA35A7ED9D3@orsmsx505.amr.corp.intel.com>
-	 <20081103114638.GD8483@sgi.com>
-	 <57C9024A16AD2D4C97DC78E552063EA35BE0554D@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain
-Organization: SUSE LINUX
-Date: Wed, 05 Nov 2008 10:54:33 +0100
-Message-Id: <1225878873.3033.1.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Wed, 5 Nov 2008 04:55:58 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53472 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbYKEJz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 04:55:57 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use schedule_on_each_cpu()
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
+       npiggin@suse.de, linux-kernel@vger.kernel.org, hugh@veritas.com,
+       torvalds@linux-foundation.org, riel@redhat.com, lee.schermerhorn@hp.com,
+       linux-mm@kvack.org
+In-Reply-To: <1225878704.7803.2771.camel@twins>
+References: <2f11576a0810290020i362441edkb494b10c10b17401@mail.gmail.com> <1225878704.7803.2771.camel@twins>
+Message-Id: <20081105185458.968B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed,  5 Nov 2008 18:55:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-03 at 13:47 -0800, Luck, Tony wrote:
-> > Just a few years of experiencal evidence.  The equivalent of this patch
-> > has been in the SuSE SLES10 kernel for years and not been detected as
-> > being negative.
+> On Wed, 2008-10-29 at 16:20 +0900, KOSAKI Motohiro wrote:
+> > > I guess we should document our newly discovered schedule_on_each_cpu()
+> > > problems before we forget about it and later rediscover it.
+> > 
+> > Now, schedule_on_each_cpu() is only used by lru_add_drain_all().
+> > and smp_call_function() is better way for cross call.
+> > 
+> > So I propose
+> >    1. lru_add_drain_all() use smp_call_function()
+> >    2. remove schedule_on_each_cpu()
+> > 
+> > 
+> > Thought?
 > 
-> That's good to know.
-> 
-> Petr: I tried to apply these ... but the patches seem corrupted
-> (leading spaces dropped? ... I checked in the marc.info archive
-> and they seem broken there too).  Can you regenerate them and
-> repost (attachments are ok).
+> At the very least that will not solve the problem on -rt where a lot of
+> the smp_call_function() users are converted to schedule_on_each_cpu().
 
-Oops. Interesting.
+yup.
+Now, I testing "simple dropping lru_add_drain_all() in mlock path" patch.
 
-Anyway, I can see that Robin Holt has already regenerated the patches
-against the latest directory structure, so I assume there's nothing more
-to be done.
+Thanks.
 
-Petr
 
