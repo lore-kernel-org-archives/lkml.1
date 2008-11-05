@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbYKEP70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbYKEQEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbYKEP70 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 10:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYKEP7Q
+	id S1754979AbYKEQEt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 11:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbYKEQEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 10:59:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:16323 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbYKEP7Q (ORCPT
+	Wed, 5 Nov 2008 11:04:41 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46515 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbYKEQEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 10:59:16 -0500
-Message-ID: <4911C2CB.8010206@mimas.ru>
-Date: Wed, 05 Nov 2008 19:59:07 +0400
-From: Constantin Baranov <const@mimas.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.17) Gecko/20080930 SeaMonkey/1.1.12
+	Wed, 5 Nov 2008 11:04:40 -0500
+Date: Wed, 5 Nov 2008 11:04:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: bug: ftrace & lockdep badness
+In-Reply-To: <20081105123714.GA23504@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.DEB.1.10.0811051054430.11900@gandalf.stny.rr.com>
+References: <20081105123714.GA23504@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28-rc3] x86: make CONFIG_SWIOTLB configurable
-References: <49107844.8070509@mimas.ru> <20081105102126.GC1424@ucw.cz>
-In-Reply-To: <20081105102126.GC1424@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2008-11-04 20:28:52, Constantin Baranov wrote:
->> Make it possible to enable individually the CONFIG_SWIOTLB option.
->> This is useful for Intel x86_64 systems without DMAR support.
->>
->> Signed-off-by: Constantin Baranov <const@mimas.ru>
->> ---
->> Tested on my system based on Gigabyte GA-EP45-DS3 mainboard
->> (P45 chipset) with 8 GiB of RAM.
->> Currently I need to enable either CONFIG_GART_IOMMU or
->> CONFIG_AMD_IOMMU for proper work. Both are AMD specific.
->> When the patch applied, just CONFIG_SWIOTLB is sufficient.
->>
->>  arch/x86/Kconfig |    4 +++-
->>  1 file changed, 3 insertions(+), 1 deletion(-)
->>
->> --- linux-2.6.28-rc3/arch/x86/Kconfig	2008-11-04 17:32:29.846408880 +0400
->> +++ linux-2.6.28-rc3-swiotlb/arch/x86/Kconfig	2008-11-04 18:11:47.796408084 +0400
->> @@ -566,7 +566,9 @@ config AMD_IOMMU
->>  
->>  # need this always selected by IOMMU for the VIA workaround
->>  config SWIOTLB
->> -	bool
->> +	bool "Support for software bounce buffers"
->> +	depends on X86_64 && EXPERIMENTAL
->> +	default n
->>  	help
->>  	  Support for software bounce buffers used on x86-64 systems
->>  	  which don't have a hardware IOMMU (e.g. the current generation
-> 
-> Why experimental?
-> 
 
-As far as I understood, the comment before config SWIOTLB ('need this always selected by IOMMU for the VIA workaround') stands that voluntary enabling SWIOTLB may cause problems. Although I'm not sure that EXPERIMENTAL is really needed, or may be something else is better to prevent catastrophes.
+
+On Wed, 5 Nov 2008, Heiko Carstens wrote:
+
+> Hi Steven,
+> 
+> enabling preemptirqsoff tracing gives me this on a lockdep enabled kernel:
+> 
+> Badness at kernel/lockdep.c:2894
+
+[...]
+
+> Call Trace:
+> ([<0000000033abb188>] 0x33abb188)
+>  [<000000000007e76a>] lock_acquire+0x52/0xbc
+>  [<000000000037618c>] _spin_lock_irqsave+0x6c/0xb0
+>  [<000000000009d52e>] ring_buffer_reset_cpu+0x6e/0x114
+>  [<00000000000a46c0>] tracing_reset+0x84/0xe8
+>  [<00000000000a5632>] trace_preempt_off+0x112/0x178
+>  [<0000000000378888>] add_preempt_count+0xa4/0x130
+>  [<00000000000539e0>] __local_bh_disable+0x54/0xcc
+>  [<0000000000053a82>] local_bh_disable+0x2a/0x38
+
+[...]
+
+> Seems to be that the following happens:
+> 
+> __local_bh_disable() calls add_preempt_count() which adds something to
+> preempt_count().
+> After this addition softirq_count() will return something != 0.
+> However current->softirqs_enabled is still 1 since we haven't called
+> trace_softirqs_off() yet.
+> But we call trace_preempt_off() instead which will grab a lock in the
+> ringbuffer code and that will trigger this check in lockdep.c:
+> 
+>         if (!hardirq_count()) {
+>                 if (softirq_count())
+>                         DEBUG_LOCKS_WARN_ON(current->softirqs_enabled);
+> 
+> I assume this is a known bug. Is there any fix available?
+
+Yes, this does seem to be the case.
+
+Perhaps Peter or Ingo can come up with some ideas on how to solve this. 
+Let me try to rephrase the problem.
+
+In __local_bh_disable() we call add_preempt_count(SOFTIRQ_OFFSET)
+
+in add_preempt_count (in sched.c)
+
+  preempt_count() += val;
+  if (preempt_count() == val)
+	trace_preempt_off(...)
+
+in trace_preempt_off we record into the ring buffer. But the ring buffer 
+will call spin_lock_irqsave (it use to be raw_spin_lock, where this was 
+not an issue). Note, there is development to make the ring buffer 
+lockless, but until that time, we need to come up with a real solution.
+
+Now we enter the lockdep code, but we are not in a full state transition 
+and we get a WARN_ON triggered by the lockdep code (have SOFTIRQ_OFFSET 
+set but we did not yet tell lockdep we are in a softirq).
+
+This is the type of problems we deal with when we have the tracer tracing 
+lockdep code at the same time the lockdep code is checking the tracer.
+
+-- Steve
