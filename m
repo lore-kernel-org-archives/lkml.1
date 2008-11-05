@@ -1,130 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYKEWqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbYKEWu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755428AbYKEWqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 17:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYKEWqM
+	id S1753241AbYKEWu3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 17:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYKEWuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 17:46:12 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:37128 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866AbYKEWqL (ORCPT
+	Wed, 5 Nov 2008 17:50:21 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:48181 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751504AbYKEWuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 17:46:11 -0500
-Message-ID: <4912222F.9040605@ct.jp.nec.com>
-Date: Wed, 05 Nov 2008 14:46:07 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 5 Nov 2008 17:50:19 -0500
+Date: Wed, 5 Nov 2008 14:50:06 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Gary Hade <garyhade@us.ibm.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
+       pbadari@us.ibm.com, mel@csn.ul.ie, lcm@us.ibm.com, mingo@elte.hu,
+       greg@kroah.com, nish.aravamudan@gmail.com
+Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
+	relationship with symlinks in sysfs
+Message-ID: <20081105225006.GA14663@us.ibm.com>
+References: <20081103234808.GA13716@us.ibm.com> <20081105123609.878085be.akpm@linux-foundation.org> <1225919024.11514.4.camel@nimitz>
 MIME-Version: 1.0
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com,
-       David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kprobes: disable preempt for module_text_address()
-References: <490FE405.1000105@cn.fujitsu.com> <4910F697.2050203@redhat.com> <4910FB3D.4020805@cn.fujitsu.com> <491212C0.4030900@redhat.com>
-In-Reply-To: <491212C0.4030900@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225919024.11514.4.camel@nimitz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Lai Jiangshan wrote:
->> actually, calling __module_text_address() in __register_kprobe() is
->> better after my fix applied. but I found that a line have exceed
->> 80 characters, so I don't use __module_text_address().
+On Wed, Nov 05, 2008 at 01:03:44PM -0800, Dave Hansen wrote:
+> On Wed, 2008-11-05 at 12:36 -0800, Andrew Morton wrote:
+> > Dumb question: why do this with a symlink forest instead of, say, cat
+> > /proc/sys/vm/mem-sections?
 > 
-> I don't think that coding style is a good reason not to fix it...:(
+> The basic problem is that we on/offline memory based on sections and not
+> nodes.  But, physically, people care about nodes.
 > 
-> Anyway, I think the issue that you pointed must be fixed.
-> I found there were same kind of issues in kprobes and updated
-> your patch. This includes fixes which Hiroshi pointed out.
+> So, the question we're answering is "to which sections does this node's
+> memory belong?".  We could just put all this data in one big file and
+> have:
 > 
-> Thanks a lot! :)
+> $ cat /proc/sys/vm/mem-sections?
+> node: section numbers
+> 0: 1 2 3 4 5
+> 1: 5 6 7 8
+> 2: 99 100 101 102
 > 
-> __register_kprobe() can be preempted after checking probing address
-> but before try_module_get() or module_put(), and in this interval the
-> module can be unloaded. In that case, try_module_get(probed_mod) or
-> module_put(mod) will access to invalid address, or kprobe will probe
-> invalid address.
+> But, we have the nodes in sysfs and we also have the sections in sysfs
+> and I don't want Greg to be mean to me.  He's scary.  We could simply
+> dump the section numbers in sysfs, but the first thing userspace is
+> going to do is:
 > 
-> this patch uses preempt_disable() to protect it and use
-> __module_text_address() and __kernel_text_address().
+> for section in /sys/devices/system/node/node1/memory*; do
+> 	nr=$(cat $section)
+> 	cat foo > /sys/devices/system/memory/memory$nr/bar
+> done
 > 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> ---
->  kernel/kprobes.c |   21 +++++++++++++++------
->  1 file changed, 15 insertions(+), 6 deletions(-)
-> 
-> Index: 2.6.28-rc3/kernel/kprobes.c
-> ===================================================================
-> --- 2.6.28-rc3.orig/kernel/kprobes.c
-> +++ 2.6.28-rc3/kernel/kprobes.c
-> @@ -613,30 +613,37 @@ static int __kprobes __register_kprobe(s
->  		return -EINVAL;
->  	p->addr = addr;
-> 
-> -	if (!kernel_text_address((unsigned long) p->addr) ||
-> -	    in_kprobes_functions((unsigned long) p->addr))
-> +	preempt_disable();
-> +	if (!__kernel_text_address((unsigned long) p->addr) ||
-> +	    in_kprobes_functions((unsigned long) p->addr)) {
-> +		preempt_enable();
->  		return -EINVAL;
-> +	}
-> 
->  	p->mod_refcounted = 0;
-> 
->  	/*
->  	 * Check if are we probing a module.
->  	 */
-> -	probed_mod = module_text_address((unsigned long) p->addr);
-> +	probed_mod = __module_text_address((unsigned long) p->addr);
->  	if (probed_mod) {
-> -		struct module *calling_mod = module_text_address(called_from);
-> +		struct module *calling_mod;
-> +		calling_mod = __module_text_address(called_from);
->  		/*
->  		 * We must allow modules to probe themself and in this case
->  		 * avoid incrementing the module refcount, so as to allow
->  		 * unloading of self probing modules.
->  		 */
->  		if (calling_mod && calling_mod != probed_mod) {
+> Making the symlinks makes it harder for us to screw this process up,
+> both in the kernel and in userspace.  Plus, symlinks are easy to code up
+> in sysfs. 
 
-One question, off topic.
-If calling_mod is NULL, no try_module_get(), is that OK?
+The new symlinks to the mem sections directories from within
+the node directories are also consistent with the presidence set
+by symlinks to the CPU directories from these same locations.
 
-thanks,
-Hiroshi Shimamoto
+Gary
 
-> -			if (unlikely(!try_module_get(probed_mod)))
-> +			if (unlikely(!try_module_get(probed_mod))) {
-> +				preempt_enable();
->  				return -EINVAL;
-> +			}
->  			p->mod_refcounted = 1;
->  		} else
->  			probed_mod = NULL;
->  	}
-> +	preempt_enable();
-> 
->  	p->nmissed = 0;
->  	INIT_LIST_HEAD(&p->list);
-> @@ -718,9 +725,11 @@ static void __kprobes __unregister_kprob
->  	struct kprobe *old_p;
-> 
->  	if (p->mod_refcounted) {
-> -		mod = module_text_address((unsigned long)p->addr);
-> +		preempt_disable();
-> +		mod = __module_text_address((unsigned long)p->addr);
->  		if (mod)
->  			module_put(mod);
-> +		preempt_enable();
->  	}
-> 
->  	if (list_empty(&p->list) || list_is_singular(&p->list)) {
-> 
-> 
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
