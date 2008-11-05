@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbYKERxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYKERxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756498AbYKERxX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 12:53:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYKERxN
+	id S1756767AbYKERxk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 12:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbYKERx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 12:53:13 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43741 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752478AbYKERxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 12:53:12 -0500
-Date: Wed, 5 Nov 2008 15:52:35 -0200
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/16] x86: Emergency virtualization disable function
-Message-ID: <20081105175235.GJ5247@blackpad>
-References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com> <1225810364-8990-9-git-send-email-ehabkost@redhat.com> <m1bpwu3wod.fsf@frodo.ebiederm.org>
+	Wed, 5 Nov 2008 12:53:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:36790 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756531AbYKERxY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 12:53:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=NGlz9FeRQfnvLSMdb/Ovseb+u/Ep59u/0gqnBFjVsuD87kf1+WnZqytu17lqfdF6dG
+         zMSog5p3DDw56787xvDDwR5TusQC0ghfrAAUZk9Td7ogcwlfdlZbVJyflP/w2n7otS5T
+         agliLoIxY3aNQ6gLfVGZKz5ls3moNaUMFmo1A=
+Date: Wed, 5 Nov 2008 20:53:18 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081105175318.GD7286@localhost>
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <20081104212933.GA11050@elte.hu> <4910C014.9070805@zytor.com> <20081104215245.GC17775@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1bpwu3wod.fsf@frodo.ebiederm.org>
-X-Fnord: you can see the fnord
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081104215245.GC17775@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 09:33:06AM -0800, Eric W. Biederman wrote:
-> Eduardo Habkost <ehabkost@redhat.com> writes:
-> 
-> > +int set_virt_disable_func(void (*fn)(void))
-> > +{
-> > +	int r = 0;
-> > +
-> > +	spin_lock(&virt_disable_lock);
-> > +	if (!virt_disable_fn)
-> > +		rcu_assign_pointer(virt_disable_fn, fn);
-> > +	else
-> > +		r = -EEXIST;
-> > +	spin_unlock(&virt_disable_lock);
-> > +
-> > +	return r;
-> > +}
-> > +EXPORT_SYMBOL(set_virt_disable_func);
-> 
-> EXPORT_SYMBOL_GPL?
-> 
-> > +EXPORT_SYMBOL(clear_virt_disable_func);
-> EXPORT_SYMBOL_GPL?
-> 
-> We are talking a core internal api that should not even
-> be exported if KVM is compiled into the kernel.
-> 
-> I have had to tell people NO too many times by that
-> wanted to shove code on the kexec on panic path that
-> had no business there.  I do not want to give
-> the least little impression that this is an ok hook
-> for the to use.  The very specific name helps in
-> that regard thank you for that.  Having the symbol
-> exported GPL would help even more.
+[Ingo Molnar - Tue, Nov 04, 2008 at 10:52:45PM +0100]
+| 
+| * H. Peter Anvin <hpa@zytor.com> wrote:
+| 
+| > Ingo Molnar wrote:
+| > > * Ingo Molnar <mingo@elte.hu> wrote:
+| > > 
+| > >> And as hpa's comments point it out, compressing the rather stupid 
+| > >> irq stubs might be a third option that looks promising as well.
+| > > 
+| > > ... and we should try and see how far we can compress those stubs, 
+| > > before we do any segment register based tricks.
+| > > 
+| > 
+| > Using the techniques previously mentioned, for 224 vectors:
+| > 
+| > 1792 bytes ( 8 bytes/stub) - trivial.
+| > 1568 bytes ( 7 bytes/stub) - same without alignment.
+| >  952 bytes (~4 bytes/stub) - extra jump needed.
+| > 
+| > For comparison, the IDT itself is 2048 bytes on x86-32 and 4096 bytes on
+| > x86-64.
+| 
+| sounds like a plan :)
+| 
+| 	Ingo
+| 
 
-Agreed. I will change that if nobody else objects.
+Ingo, what the conclusion is? As I understand from the thread --
 
-> 
-> Overall I think the code is just barely ok.
-> 
-> I don't like the fact that to run 2-3 instructions per cpu we are two
-> function pointers deep.  It feels like we have an excess of
-> abstraction here on the kvm side.
-> 
-> Is it possible to have the individual kvm modules call
-> set_virt_disable_func and clear_virt_disable_func?  Instead
-> of going through the x86_kvm_ops?
-> 
-> It really feels like we have an excess of abstraction here.
+1) Implement Peter's proposed cleanup/compress.
+2) Test Alexander's patche.
 
-We could move the set_virt_disable_func() calls to vmx.c and svm.c (on
-hardware_setup/hardware_unsetup). One could argue that it is sort of a
-coincidence that we need the code for both vmx and svm.
+Did I miss something?
 
-Avi, what do you think?
-
--- 
-Eduardo
+		- Cyrill -
