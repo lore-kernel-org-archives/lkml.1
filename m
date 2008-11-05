@@ -1,288 +1,468 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbYKEX2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYKEX3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbYKEX2l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 18:28:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYKEX2d
+	id S1756025AbYKEX3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 18:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbYKEX3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 18:28:33 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:46726 "EHLO
+	Wed, 5 Nov 2008 18:29:11 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:47573 "EHLO
 	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbYKEX2c (ORCPT
+	with ESMTP id S1752761AbYKEX3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 18:28:32 -0500
-Message-Id: <20081105231648.462808759@quilx.com>
+	Wed, 5 Nov 2008 18:29:08 -0500
+Message-Id: <20081105231650.526116017@quilx.com>
 References: <20081105231634.133252042@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Nov 2008 17:16:38 -0600
+Date: Wed, 05 Nov 2008 17:16:41 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: akpm@linux-foundation.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>
 Cc: linux-kernel@vger.kernel.org
 Cc: linux-mm@kvack.org
 Cc: travis@sgi.com
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Subject: [patch 4/7] cpu ops: Core piece for generic atomic per cpu operations
-Content-Disposition: inline; filename=cpu_alloc_ops_base
+Subject: [patch 7/7] cpu alloc: page allocator conversion
+Content-Disposition: inline; filename=cpu_alloc_page_allocator_conversion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the per cpu subsystem is not able to use the atomic capabilities
-that are provided by many of the available processors.
+Use the new cpu_alloc functionality to avoid per cpu arrays in struct zone.
+This drastically reduces the size of struct zone for systems with a large
+amounts of processors and allows placement of critical variables of struct
+zone in one cacheline even on very large systems.
 
-This patch adds new functionality that allows the optimizing of per cpu
-variable handling. In particular it provides a simple way to exploit
-atomic operations in order to avoid having to disable interrupts or
-performing address calculation to access per cpu data.
+Another effect is that the pagesets of one processor are placed near one
+another. If multiple pagesets from different zones fit into one cacheline
+then additional cacheline fetches can be avoided on the hot paths when
+allocating memory from multiple zones.
 
-F.e. Using our current methods we may do
+Surprisingly this clears up much of the painful NUMA bringup. Bootstrap
+becomes simpler if we use the same scheme for UP, SMP, NUMA. #ifdefs are
+reduced and we can drop the zone_pcp macro.
 
-	unsigned long flags;
-	struct stat_struct *p;
+Hotplug handling is also simplified since cpu alloc can bring up and
+shut down cpu areas for a specific cpu as a whole. So there is no need to
+allocate or free individual pagesets.
 
-	local_irq_save(flags);
-	/* Calculate address of per processor area */
-	p = CPU_PTR(stat, smp_processor_id());
-	p->counter++;
-	local_irq_restore(flags);
-
-The segment can be replaced by a single atomic CPU operation:
-
-	CPU_INC(stat->counter);
-
-Most processors have instructions to perform the increment using a
-a single atomic instruction. Processors may have segment registers,
-global registers or per cpu mappings of per cpu areas that can be used
-to generate atomic instructions that combine the following in a single
-operation:
-
-1. Adding of an offset / register to a base address
-2. Read modify write operation on the address calculated by
-   the instruction.
-
-If 1+2 are combined in an instruction then the instruction is atomic
-vs interrupts. This means that percpu atomic operations do not need
-to disable interrupts to increments counters etc.
-
-The existing methods in use in the kernel cannot utilize the power of
-these atomic instructions. local_t is not really addressing the issue
-since the offset calculation performed before the atomic operation. The
-operation is therefor not atomic. Disabling interrupt or preemption is
-required in order to use local_t.
-
-local_t is also very specific to the x86 processor. The solution here can
-utilize other methods than just those provided by the x86 instruction set.
-
-
-
-On x86 the above CPU_INC translated into a single instruction:
-
-	inc %%gs:(&stat->counter)
-
-This instruction is interrupt safe since it can either be completed
-or not. Both adding of the offset and the read modify write are combined
-in one instruction.
-
-The determination of the correct per cpu area for the current processor
-does not require access to smp_processor_id() (expensive...). The gs
-register is used to provide a processor specific offset to the respective
-per cpu area where the per cpu variable resides.
-
-Note that the counter offset into the struct was added *before* the segment
-selector was added. This is necessary to avoid calculations.  In the past
-we first determine the address of the stats structure on the respective
-processor and then added the field offset. However, the offset may as
-well be added earlier. The adding of the per cpu offset (here through the
-gs register) must be done by the instruction used for atomic per cpu
-access.
-
-
-
-If "stat" was declared via DECLARE_PER_CPU then this patchset is capable of
-convincing the linker to provide the proper base address. In that case
-no calculations are necessary.
-
-Should the stat structure be reachable via a register then the address
-calculation capabilities can be leveraged to avoid calculations.
-
-On IA64 we can get the same combination of operations in a single instruction
-by using the virtual address that always maps to the local per cpu area:
-
-	fetchadd &stat->counter + (VCPU_BASE - __per_cpu_start)
-
-The access is forced into the per cpu address reachable via the virtualized
-address. IA64 allows the embedding of an offset into the instruction. So the
-fetchadd can perform both the relocation of the pointer into the per cpu
-area as well as the atomic read modify write cycle.
-
-
-
-In order to be able to exploit the atomicity of these instructions we
-introduce a series of new functions that take either:
-
-1. A per cpu pointer as returned by cpu_alloc() or CPU_ALLOC().
-
-2. A per cpu variable address as returned by per_cpu_var(<percpuvarname>).
-
-CPU_READ()
-CPU_WRITE()
-CPU_INC
-CPU_DEC
-CPU_ADD
-CPU_SUB
-CPU_XCHG
-CPU_CMPXCHG
-
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/percpu.h |  135 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 135 insertions(+)
+ include/linux/mm.h     |    4 -
+ include/linux/mmzone.h |   12 ---
+ mm/page_alloc.c        |  162 +++++++++++++++++++------------------------------
+ mm/vmstat.c            |   15 ++--
+ 4 files changed, 74 insertions(+), 119 deletions(-)
 
-Index: linux-2.6/include/linux/percpu.h
+Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2008-11-03 13:27:57.000000000 -0600
-+++ linux-2.6/include/linux/percpu.h	2008-11-03 13:28:00.000000000 -0600
-@@ -162,4 +162,139 @@
- #define CPU_FREE(pointer)	cpu_free((pointer), sizeof(*(pointer)))
+--- linux-2.6.orig/include/linux/mm.h	2008-11-04 14:39:18.000000000 -0600
++++ linux-2.6/include/linux/mm.h	2008-11-04 14:39:20.000000000 -0600
+@@ -1042,11 +1042,7 @@
+ extern void si_meminfo_node(struct sysinfo *val, int nid);
+ extern int after_bootmem;
  
+-#ifdef CONFIG_NUMA
+ extern void setup_per_cpu_pageset(void);
+-#else
+-static inline void setup_per_cpu_pageset(void) {}
+-#endif
  
+ /* prio_tree.c */
+ void vma_prio_tree_add(struct vm_area_struct *, struct vm_area_struct *old);
+Index: linux-2.6/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.orig/include/linux/mmzone.h	2008-11-04 14:39:18.000000000 -0600
++++ linux-2.6/include/linux/mmzone.h	2008-11-04 14:39:20.000000000 -0600
+@@ -182,13 +182,7 @@
+ 	s8 stat_threshold;
+ 	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
+ #endif
+-} ____cacheline_aligned_in_smp;
+-
+-#ifdef CONFIG_NUMA
+-#define zone_pcp(__z, __cpu) ((__z)->pageset[(__cpu)])
+-#else
+-#define zone_pcp(__z, __cpu) (&(__z)->pageset[(__cpu)])
+-#endif
++};
+ 
+ #endif /* !__GENERATING_BOUNDS.H */
+ 
+@@ -283,10 +277,8 @@
+ 	 */
+ 	unsigned long		min_unmapped_pages;
+ 	unsigned long		min_slab_pages;
+-	struct per_cpu_pageset	*pageset[NR_CPUS];
+-#else
+-	struct per_cpu_pageset	pageset[NR_CPUS];
+ #endif
++	struct per_cpu_pageset	*pageset;
+ 	/*
+ 	 * free areas of different sizes
+ 	 */
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2008-11-04 14:39:18.000000000 -0600
++++ linux-2.6/mm/page_alloc.c	2008-11-04 15:32:17.000000000 -0600
+@@ -903,7 +903,7 @@
+ 		if (!populated_zone(zone))
+ 			continue;
+ 
+-		pset = zone_pcp(zone, cpu);
++		pset = CPU_PTR(zone->pageset, cpu);
+ 
+ 		pcp = &pset->pcp;
+ 		local_irq_save(flags);
+@@ -986,7 +986,7 @@
+ 	arch_free_page(page, 0);
+ 	kernel_map_pages(page, 1, 0);
+ 
+-	pcp = &zone_pcp(zone, get_cpu())->pcp;
++	pcp = &THIS_CPU(zone->pageset)->pcp;
+ 	local_irq_save(flags);
+ 	__count_vm_event(PGFREE);
+ 	if (cold)
+@@ -1000,7 +1000,6 @@
+ 		pcp->count -= pcp->batch;
+ 	}
+ 	local_irq_restore(flags);
+-	put_cpu();
+ }
+ 
+ void free_hot_page(struct page *page)
+@@ -1042,15 +1041,13 @@
+ 	unsigned long flags;
+ 	struct page *page;
+ 	int cold = !!(gfp_flags & __GFP_COLD);
+-	int cpu;
+ 	int migratetype = allocflags_to_migratetype(gfp_flags);
+ 
+ again:
+-	cpu  = get_cpu();
+ 	if (likely(order == 0)) {
+ 		struct per_cpu_pages *pcp;
+ 
+-		pcp = &zone_pcp(zone, cpu)->pcp;
++		pcp = &THIS_CPU(zone->pageset)->pcp;
+ 		local_irq_save(flags);
+ 		if (!pcp->count) {
+ 			pcp->count = rmqueue_bulk(zone, 0,
+@@ -1090,7 +1087,6 @@
+ 	__count_zone_vm_events(PGALLOC, zone, 1 << order);
+ 	zone_statistics(preferred_zone, zone);
+ 	local_irq_restore(flags);
+-	put_cpu();
+ 
+ 	VM_BUG_ON(bad_range(zone, page));
+ 	if (prep_new_page(page, order, gfp_flags))
+@@ -1099,7 +1095,6 @@
+ 
+ failed:
+ 	local_irq_restore(flags);
+-	put_cpu();
+ 	return NULL;
+ }
+ 
+@@ -1854,7 +1849,7 @@
+ 		for_each_online_cpu(cpu) {
+ 			struct per_cpu_pageset *pageset;
+ 
+-			pageset = zone_pcp(zone, cpu);
++			pageset = CPU_PTR(zone->pageset, cpu);
+ 
+ 			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
+ 			       cpu, pageset->pcp.high,
+@@ -2714,82 +2709,33 @@
+ 		pcp->batch = PAGE_SHIFT * 8;
+ }
+ 
+-
+-#ifdef CONFIG_NUMA
+-/*
+- * Boot pageset table. One per cpu which is going to be used for all
+- * zones and all nodes. The parameters will be set in such a way
+- * that an item put on a list will immediately be handed over to
+- * the buddy list. This is safe since pageset manipulation is done
+- * with interrupts disabled.
+- *
+- * Some NUMA counter updates may also be caught by the boot pagesets.
+- *
+- * The boot_pagesets must be kept even after bootup is complete for
+- * unused processors and/or zones. They do play a role for bootstrapping
+- * hotplugged processors.
+- *
+- * zoneinfo_show() and maybe other functions do
+- * not check if the processor is online before following the pageset pointer.
+- * Other parts of the kernel may not check if the zone is available.
+- */
+-static struct per_cpu_pageset boot_pageset[NR_CPUS];
+-
+ /*
+- * Dynamically allocate memory for the
+- * per cpu pageset array in struct zone.
++ * Configure pageset array in struct zone.
+  */
+-static int __cpuinit process_zones(int cpu)
++static void __cpuinit process_zones(int cpu)
+ {
+-	struct zone *zone, *dzone;
++	struct zone *zone;
+ 	int node = cpu_to_node(cpu);
+ 
+ 	node_set_state(node, N_CPU);	/* this node has a cpu */
+ 
+ 	for_each_zone(zone) {
++		struct per_cpu_pageset *pcp =
++				CPU_PTR(zone->pageset, cpu);
+ 
+ 		if (!populated_zone(zone))
+ 			continue;
+ 
+-		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
+-					 GFP_KERNEL, node);
+-		if (!zone_pcp(zone, cpu))
+-			goto bad;
+-
+-		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
++		setup_pageset(pcp, zone_batchsize(zone));
+ 
+ 		if (percpu_pagelist_fraction)
+-			setup_pagelist_highmark(zone_pcp(zone, cpu),
+-			 	(zone->present_pages / percpu_pagelist_fraction));
+-	}
++			setup_pagelist_highmark(pcp, zone->present_pages /
++						percpu_pagelist_fraction);
+ 
+-	return 0;
+-bad:
+-	for_each_zone(dzone) {
+-		if (!populated_zone(dzone))
+-			continue;
+-		if (dzone == zone)
+-			break;
+-		kfree(zone_pcp(dzone, cpu));
+-		zone_pcp(dzone, cpu) = NULL;
+-	}
+-	return -ENOMEM;
+-}
+-
+-static inline void free_zone_pagesets(int cpu)
+-{
+-	struct zone *zone;
+-
+-	for_each_zone(zone) {
+-		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
+-
+-		/* Free per_cpu_pageset if it is slab allocated */
+-		if (pset != &boot_pageset[cpu])
+-			kfree(pset);
+-		zone_pcp(zone, cpu) = NULL;
+ 	}
+ }
+ 
++#ifdef CONFIG_SMP
+ static int __cpuinit pageset_cpuup_callback(struct notifier_block *nfb,
+ 		unsigned long action,
+ 		void *hcpu)
+@@ -2800,14 +2746,7 @@
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (process_zones(cpu))
+-			ret = NOTIFY_BAD;
+-		break;
+-	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+-	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+-		free_zone_pagesets(cpu);
++		process_zones(cpu);
+ 		break;
+ 	default:
+ 		break;
+@@ -2817,21 +2756,15 @@
+ 
+ static struct notifier_block __cpuinitdata pageset_notifier =
+ 	{ &pageset_cpuup_callback, NULL, 0 };
++#endif
+ 
+ void __init setup_per_cpu_pageset(void)
+ {
+-	int err;
+-
+-	/* Initialize per_cpu_pageset for cpu 0.
+-	 * A cpuup callback will do this for every cpu
+-	 * as it comes online
+-	 */
+-	err = process_zones(smp_processor_id());
+-	BUG_ON(err);
++	process_zones(smp_processor_id());
++#ifdef CONFIG_SMP
+ 	register_cpu_notifier(&pageset_notifier);
+-}
+-
+ #endif
++}
+ 
+ static noinline __init_refok
+ int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
+@@ -2876,23 +2809,35 @@
+ 	return 0;
+ }
+ 
+-static __meminit void zone_pcp_init(struct zone *zone)
++static inline void alloc_pageset(struct zone *zone)
+ {
+-	int cpu;
+ 	unsigned long batch = zone_batchsize(zone);
+ 
+-	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-#ifdef CONFIG_NUMA
+-		/* Early boot. Slab allocator not functional yet */
+-		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+-		setup_pageset(&boot_pageset[cpu],0);
+-#else
+-		setup_pageset(zone_pcp(zone,cpu), batch);
+-#endif
+-	}
++	zone->pageset = CPU_ALLOC(struct per_cpu_pageset, GFP_KERNEL);
++	setup_pageset(THIS_CPU(zone->pageset), batch);
++}
 +/*
-+ * Fast atomic per cpu operations.
-+ *
-+ * The following operations can be overridden by arches to implement fast
-+ * and efficient operations. The operations are atomic meaning that the
-+ * determination of the processor, the calculation of the address and the
-+ * operation on the data is an atomic operation.
-+ *
-+ * The parameter passed to the atomic per cpu operations is an lvalue not a
-+ * pointer to the object.
++ * Allocate and initialize pcp structures
 + */
-+#ifndef CONFIG_HAVE_CPU_OPS
++static __meminit void zone_pcp_init(struct zone *zone)
++{
++	if (slab_is_available())
++		alloc_pageset(zone);
+ 	if (zone->present_pages)
+-		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
+-			zone->name, zone->present_pages, batch);
++		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%u\n",
++			zone->name, zone->present_pages,
++			zone_batchsize(zone));
++}
 +
 +/*
-+ * Fallback in case the arch does not provide for atomic per cpu operations.
-+ *
-+ * The first group of macros is used when it is safe to update the per
-+ * cpu variable because preemption is off (per cpu variables that are not
-+ * updated from interrupt context) or because interrupts are already off.
++ * Allocate pcp structures that we were unable to allocate during early boot.
 + */
-+#define __CPU_READ(var)				\
-+({						\
-+	(*THIS_CPU(&(var)));			\
-+})
++void __init allocate_pagesets(void)
++{
++	struct zone *zone;
 +
-+#define __CPU_WRITE(var, value)			\
-+({						\
-+	*THIS_CPU(&(var)) = (value);		\
-+})
++	for_each_zone(zone)
++		alloc_pageset(zone);
+ }
+ 
+ __meminit int init_currently_empty_zone(struct zone *zone,
+@@ -3438,6 +3383,8 @@
+ 		unsigned long size, realsize, memmap_pages;
+ 		enum lru_list l;
+ 
++		printk("+++ Free area init core for zone %p\n", zone);
 +
-+#define __CPU_ADD(var, value)			\
-+({						\
-+	*THIS_CPU(&(var)) += (value);		\
-+})
+ 		size = zone_spanned_pages_in_node(nid, j, zones_size);
+ 		realsize = size - zone_absent_pages_in_node(nid, j,
+ 								zholes_size);
+@@ -4438,11 +4385,13 @@
+ 	ret = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+ 	if (!write || (ret == -EINVAL))
+ 		return ret;
+-	for_each_zone(zone) {
+-		for_each_online_cpu(cpu) {
++	for_each_online_cpu(cpu) {
++		for_each_zone(zone) {
+ 			unsigned long  high;
 +
-+#define __CPU_INC(var) __CPU_ADD((var), 1)
-+#define __CPU_DEC(var) __CPU_ADD((var), -1)
-+#define __CPU_SUB(var, value) __CPU_ADD((var), -(value))
+ 			high = zone->present_pages / percpu_pagelist_fraction;
+-			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
++			setup_pagelist_highmark(CPU_PTR(zone->pageset, cpu),
++									high);
+ 		}
+ 	}
+ 	return 0;
+Index: linux-2.6/mm/vmstat.c
+===================================================================
+--- linux-2.6.orig/mm/vmstat.c	2008-11-04 14:39:18.000000000 -0600
++++ linux-2.6/mm/vmstat.c	2008-11-04 14:39:20.000000000 -0600
+@@ -143,7 +143,8 @@
+ 		threshold = calculate_threshold(zone);
+ 
+ 		for_each_online_cpu(cpu)
+-			zone_pcp(zone, cpu)->stat_threshold = threshold;
++			CPU_PTR(zone->pageset, cpu)->stat_threshold
++							= threshold;
+ 	}
+ }
+ 
+@@ -153,7 +154,8 @@
+ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
+ 				int delta)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
 +
-+#define __CPU_CMPXCHG(var, old, new)		\
-+({						\
-+	typeof(obj) x;				\
-+	typeof(obj) *p = THIS_CPU(&(obj));	\
-+	x = *p;					\
-+	if (x == (old))				\
-+		*p = (new);			\
-+	(x);					\
-+})
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 	long x;
+ 
+@@ -206,7 +208,7 @@
+  */
+ void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 
+ 	(*p)++;
+@@ -227,7 +229,7 @@
+ 
+ void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = THIS_CPU(zone->pageset);
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 
+ 	(*p)--;
+@@ -307,7 +309,7 @@
+ 		if (!populated_zone(zone))
+ 			continue;
+ 
+-		p = zone_pcp(zone, cpu);
++		p = CPU_PTR(zone->pageset, cpu);
+ 
+ 		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
+ 			if (p->vm_stat_diff[i]) {
+@@ -759,7 +761,7 @@
+ 	for_each_online_cpu(i) {
+ 		struct per_cpu_pageset *pageset;
+ 
+-		pageset = zone_pcp(zone, i);
++		pageset = CPU_PTR(zone->pageset, i);
+ 		seq_printf(m,
+ 			   "\n    cpu: %i"
+ 			   "\n              count: %i"
+Index: linux-2.6/mm/cpu_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/cpu_alloc.c	2008-11-04 15:26:36.000000000 -0600
++++ linux-2.6/mm/cpu_alloc.c	2008-11-04 15:26:45.000000000 -0600
+@@ -189,6 +189,8 @@
+ 
+ void __init cpu_alloc_init(void)
+ {
++	extern void allocate_pagesets(void);
 +
-+#define __CPU_XCHG(obj, new)			\
-+({						\
-+	typeof(obj) x;				\
-+	typeof(obj) *p = THIS_CPU(&(obj));	\
-+	x = *p;					\
-+	*p = (new);				\
-+	(x);					\
-+})
-+
-+/*
-+ * Second group used for per cpu variables that are not updated from an
-+ * interrupt context. In that case we can simply disable preemption which
-+ * may be free if the kernel is compiled without support for preemption.
-+ */
-+#define _CPU_READ __CPU_READ
-+#define _CPU_WRITE __CPU_WRITE
-+
-+#define _CPU_ADD(var, value)			\
-+({						\
-+	preempt_disable();			\
-+	__CPU_ADD((var), (value));		\
-+	preempt_enable();			\
-+})
-+
-+#define _CPU_INC(var) _CPU_ADD((var), 1)
-+#define _CPU_DEC(var) _CPU_ADD((var), -1)
-+#define _CPU_SUB(var, value) _CPU_ADD((var), -(value))
-+
-+#define _CPU_CMPXCHG(var, old, new)		\
-+({						\
-+	typeof(addr) x;				\
-+	preempt_disable();			\
-+	x = __CPU_CMPXCHG((var), (old), (new));	\
-+	preempt_enable();			\
-+	(x);					\
-+})
-+
-+#define _CPU_XCHG(var, new)			\
-+({						\
-+	typeof(var) x;				\
-+	preempt_disable();			\
-+	x = __CPU_XCHG((var), (new));		\
-+	preempt_enable();			\
-+	(x);					\
-+})
-+
-+/*
-+ * Third group: Interrupt safe CPU functions
-+ */
-+#define CPU_READ __CPU_READ
-+#define CPU_WRITE __CPU_WRITE
-+
-+#define CPU_ADD(var, value)			\
-+({						\
-+	unsigned long flags;			\
-+	local_irq_save(flags);			\
-+	__CPU_ADD((var), (value));		\
-+	local_irq_restore(flags);		\
-+})
-+
-+#define CPU_INC(var) CPU_ADD((var), 1)
-+#define CPU_DEC(var) CPU_ADD((var), -1)
-+#define CPU_SUB(var, value) CPU_ADD((var), -(value))
-+
-+#define CPU_CMPXCHG(var, old, new)		\
-+({						\
-+	unsigned long flags;			\
-+	typeof(var) x;				\
-+	local_irq_save(flags);			\
-+	x = __CPU_CMPXCHG((var), (old), (new));	\
-+	local_irq_restore(flags);		\
-+	(x);					\
-+})
-+
-+#define CPU_XCHG(var, new)			\
-+({						\
-+	unsigned long flags;			\
-+	typeof(var) x;				\
-+	local_irq_save(flags);			\
-+	x = __CPU_XCHG((var), (new));		\
-+	local_irq_restore(flags);		\
-+	(x);					\
-+})
-+
-+#endif /* CONFIG_HAVE_CPU_OPS */
-+
- #endif /* __LINUX_PERCPU_H */
+ #ifdef CONFIG_SMP
+ 	base_percpu_in_units = (__per_cpu_end - __per_cpu_start
+ 					+ UNIT_SIZE - 1) / UNIT_SIZE;
+@@ -199,5 +201,7 @@
+ #ifndef CONFIG_SMP
+ 	cpu_alloc_start = alloc_bootmem(nr_units * UNIT_SIZE);
+ #endif
++	/* Allocate pagesets whose allocation was deferred */
++	allocate_pagesets();
+ }
+ 
 
 -- 
