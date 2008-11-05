@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYKDX6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbYKEABL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbYKDX6p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 18:58:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757781AbYKDXl1
+	id S1758155AbYKEABL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 19:01:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbYKEAAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 18:41:27 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52384 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757473AbYKDXlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 18:41:25 -0500
-Date: Tue, 4 Nov 2008 15:33:40 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Serge Hallyn <serue@us.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>
-Subject: [patch 57/57] file caps: always start with clear bprm->caps_*
-Message-ID: <20081104233340.GF659@suse.de>
-References: <20081104232144.186593464@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="file-caps-always-start-with-clear-bprm-caps_.patch"
-In-Reply-To: <20081104233028.GA659@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 4 Nov 2008 19:00:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59296 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755257AbYKEAAy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 19:00:54 -0500
+Date: Tue, 4 Nov 2008 16:00:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Viktor Rosendahl <Viktor.Rosendahl@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 1/1] Make sure that any oops is flushed to the mtdoops
+ console
+Message-Id: <20081104160027.d80249fb.akpm@linux-foundation.org>
+In-Reply-To: <1225458328.16867.23.camel@viktor.research.nokia.com>
+References: <1224688588-2665-1-git-send-email-viktor.rosendahl@nokia.com>
+	<1224688588-2665-2-git-send-email-viktor.rosendahl@nokia.com>
+	<20081030131734.c74e614d.akpm@linux-foundation.org>
+	<1225458328.16867.23.camel@viktor.research.nokia.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On Fri, 31 Oct 2008 15:05:28 +0200
+Viktor Rosendahl <Viktor.Rosendahl@nokia.com> wrote:
 
-------------------
-From: Serge Hallyn <serue@us.ibm.com>
+> On Thu, 2008-10-30 at 13:17 -0700, ext Andrew Morton wrote: 
+> > On Wed, 22 Oct 2008 18:16:28 +0300
+> > Viktor Rosendahl <viktor.rosendahl@nokia.com> wrote:
+> <clip> 
+> > >  void __attribute__((weak)) bust_spinlocks(int yes)
+> > > @@ -22,6 +23,7 @@ void __attribute__((weak)) bust_spinlocks(int yes)
+> > >  #ifdef CONFIG_VT
+> > >  		unblank_screen();
+> > >  #endif
+> > > +		console_unblank();
+> > >  		if (--oops_in_progress == 0)
+> > >  			wake_up_klogd();
+> > >  	}
+> > 
+> > That looks logical.  From my reading we can now remove that
+> > unblank_screen(), because the console_unblank() will call
+> > vt_console_driver.unblank() for us?
+> 
+> For some reason, we did not think about it here when the N810 kernel was
+> fixed. It looks good to me but if you do it, then there will be a slight
+> difference in behavior, since console_unblank() will call
+> vt_console_driver.unblank() only if the console_sem can be acquired,
+> otherwise it just returns without doing anything.
+> 
+> Maybe console_unblank() should be changed to not care too much about the
+> console_sem if an oops is in progress? 
+> 
 
-commit 3318a386e4ca68c76e0294363d29bdc46fcad670 upstream
+hm, yeah.  Things get messy if we take an oops with console_sem held.
 
-While Linux doesn't honor setuid on scripts.  However, it mistakenly
-behaves differently for file capabilities.
+I'll drop the cleanup patch - I don't have time to think about and test
+anything useful like that :(
 
-This patch fixes that behavior by making sure that get_file_caps()
-begins with empty bprm->caps_*.  That way when a script is loaded,
-its bprm->caps_* may be filled when binfmt_misc calls prepare_binprm(),
-but they will be cleared again when binfmt_elf calls prepare_binprm()
-next to read the interpreter's file capabilities.
 
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: David Howells <dhowells@redhat.com>
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- security/commoncap.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -279,10 +279,10 @@ static int get_file_caps(struct linux_bi
- 	struct vfs_cap_data vcaps;
- 	struct inode *inode;
- 
--	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
--		bprm_clear_caps(bprm);
-+	bprm_clear_caps(bprm);
-+
-+	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
- 		return 0;
--	}
- 
- 	dentry = dget(bprm->file->f_dentry);
- 	inode = dentry->d_inode;
-
--- 
