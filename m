@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbYKEN7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbYKEN7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbYKEN7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 08:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbYKEN66
+	id S1756917AbYKEN7t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 08:59:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755953AbYKEN73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 08:58:58 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:22063 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756599AbYKEN64 (ORCPT
+	Wed, 5 Nov 2008 08:59:29 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:37870 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756766AbYKEN71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 08:58:56 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] Inline double_unlock_balance()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Sripathi Kodi <sripathik@in.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200811051857.14944.sripathik@in.ibm.com>
-References: <200811051857.14944.sripathik@in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 05 Nov 2008 14:59:36 +0100
-Message-Id: <1225893576.7803.3021.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 08:59:27 -0500
+Date: Wed, 5 Nov 2008 07:59:01 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Vegard Nossum <vegard.nossum@gmail.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       travis@sgi.com, linux-next@vger.kernel.org
+Subject: Re: Git next: Second stage of cpu_alloc patches
+In-Reply-To: <19f34abd0811042352q2df6ed0r6c92a35159d2b04c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811050757360.11867@quilx.com>
+References: <Pine.LNX.4.64.0811042053510.31638@quilx.com> 
+ <20081104195205.fe1bf62b.akpm@linux-foundation.org> 
+ <20081105182642.8497301a.sfr@canb.auug.org.au>
+ <19f34abd0811042352q2df6ed0r6c92a35159d2b04c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-05 at 18:57 +0530, Sripathi Kodi wrote:
-> Hi,
-> 
-> We have a test case which measures the variation in the amount of time 
-> needed to perform a fixed amount of work on the preempt_rt kernel. We 
-> started seeing deterioration in it's performance recently. The test 
-> should never take more than 10 microseconds, but we started 5-10% 
-> failure rate. Using elimination method, we traced the problem to commit 
-> 1b12bbc747560ea68bcc132c3d05699e52271da0 (lockdep: re-annotate 
-> scheduler runqueues). When LOCKDEP is disabled, this patch only adds an 
-> additional function call to double_unlock_balance(). Hence I inlined 
-> double_unlock_balance() and the problem went away. Here is a patch to 
-> make this change.
-> 
-> Thanks,
-> Sripathi.
-> 
-> lockdep: Inline double_unlock_balance()
-> 
-> Additional function call for double_unlock_balance() causes latency 
-> problems for some test cases on the preempt_rt kernel.
-> 
-> Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
+On Wed, 5 Nov 2008, Vegard Nossum wrote:
 
-Acked-by; Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Just in case it helps track down the problem: Adding percpu=100000 to
+> the kernel command line got the thing booting for me. The number
+> itself was picked at random, but it worked on the first try. The
+> machine is a single-core P4 3.0 GHz with HT, 1G RAM, using slightly
+> modified F9 config.
 
-> Index: linux-2.6.27.4/kernel/sched.c
-> ===================================================================
-> --- linux-2.6.27.4.orig/kernel/sched.c	2008-11-05 05:01:01.000000000 -0800
-> +++ linux-2.6.27.4/kernel/sched.c	2008-11-05 05:01:20.000000000 -0800
-> @@ -2812,7 +2812,7 @@
->  	return ret;
->  }
->  
-> -static void double_unlock_balance(struct rq *this_rq, struct rq *busiest)
-> +static inline void double_unlock_balance(struct rq *this_rq, struct rq *busiest)
->  	__releases(busiest->lock)
->  {
->  	spin_unlock(&busiest->lock);
+Its only happening if !CONFIG_MODULES because then the reserve size is 
+zero. The second stage patches fix that because there will then be other 
+uses of the allocator so that reserves are always needed. This hunk from 
+the second stage fixes the !CONFIG_MODULES issue.
 
+
+Index: linux-2.6/include/linux/percpu.h
+===================================================================
+--- linux-2.6.orig/include/linux/percpu.h	2008-11-05 07:41:22.134646124 -0600
++++ linux-2.6/include/linux/percpu.h	2008-11-05 07:44:28.603155403 -0600
+@@ -44,11 +44,7 @@
+  extern unsigned int percpu_reserve;
+  /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
+  #ifndef PERCPU_AREA_SIZE
+-#ifdef CONFIG_MODULES
+  #define PERCPU_RESERVE_SIZE	8192
+-#else
+-#define PERCPU_RESERVE_SIZE	0
+-#endif
+
+  #define PERCPU_AREA_SIZE						\
+  	(__per_cpu_end - __per_cpu_start + percpu_reserve)
