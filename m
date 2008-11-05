@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYKEKta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYKEKuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYKEKta (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 05:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYKEKtU
+	id S1756205AbYKEKuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 05:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYKEKub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 05:49:20 -0500
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:56166 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYKEKtT (ORCPT
+	Wed, 5 Nov 2008 05:50:31 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:48802 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752966AbYKEKua (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 05:49:19 -0500
-Subject: Re: [PATCH 1/3] block: add queue flag for paravirt frontend drivers
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org, jeremy@xensource.com
-In-Reply-To: <20081105092016.GD21867@kernel.dk>
-References: <1219754894.7235.44.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20080826143900.GM20055@kernel.dk>
-	 <1219814047.18991.52.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1225100686.7370.79.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20081027125624.GA22217@kernel.dk> <4910D97E.2030203@goop.org>
-	 <20081105092016.GD21867@kernel.dk>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Wed, 05 Nov 2008 19:49:17 +0900
-Message-Id: <1225882157.16917.29.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 5 Nov 2008 05:50:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RVa+q6yAP4QdKHtADroMvquP3UtLb3dy+GkpU6MydhqPa0fevRLXmQ0xuVq499ITVy
+         qUw+fEeU8bq5DKHPjxIt2bZqhNZrlNZpst3Ao2jwd24KWu2dc2/Dsug/ssH70PzBYcB9
+         ixhVL/OXd1Z+Swc8JfoABDAPOI4w4MLFsfedA=
+Message-ID: <c62985530811050250u638c8f95j7d80a13f834b06bf@mail.gmail.com>
+Date: Wed, 5 Nov 2008 11:50:29 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH] tracing: use raw spinlocks instead of spinlocks
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081104120355.GA19969@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <490E3F73.1000405@gmail.com>
+	 <alpine.DEB.1.10.0811021940030.32371@gandalf.stny.rr.com>
+	 <20081103064647.GA4826@elte.hu>
+	 <c62985530811031803o6909518ax137d42189dcff0de@mail.gmail.com>
+	 <20081104094341.GO23790@elte.hu>
+	 <c62985530811040314o13394d43t201ae3fc2f1304be@mail.gmail.com>
+	 <20081104120355.GA19969@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-05 at 10:20 +0100, Jens Axboe wrote: 
-> On Tue, Nov 04 2008, Jeremy Fitzhardinge wrote:
-> > Jens Axboe wrote:
-> > >On Mon, Oct 27 2008, Fernando Luis Vázquez Cao wrote:
-> > >
-> > >>As is the case with SSD devices, we do not want to idle in AS/CFQ when
-> > >>the block device is a paravirt front-end driver. This patch adds a flag
-> > >>(QUEUE_FLAG_VIRT) which should be used by front-end drivers such as
-> > >>virtio_blk and xen-blkfront to indicate a paravirtualized device.
-> > >>
-> > >
-> > >All three patches look fine, although we could just reuse
-> > >QUEUE_FLAG_NONROT directly. But I agree it makes sense to make the
-> > >distinction, so I've just applied 1-3.
-> > >
-> > 
-> > I guess in theory you could imagine that the virtual device is mapped
-> > directly onto a physical device, and the host OS does no scheduling, in
-> > which case it would be appropriate for the guest do the work.  But I
-> > think otherwise this makes sense.
-> 
-> For that specific case, it should just not set the flag.
+2008/11/4 Ingo Molnar <mingo@elte.hu>:
+> just make sure normal printk is totally silent. (otherwise you get
+> double lines on the console plus no reduction in recursion risk)
+>
+> i usually add a return; hack to kernel/printk.c:printk(), to make sure
+> it never executes anything. (and add a notrace to it as well) Maybe we
+> could even make this dependent on early_printk=...,keep.
 
-When the virtual device is mapped directly onto a physical device the
-host OS or the hypervisor could notify this fact to the guest using the
-PCI configuration space (the bytes reserved for vendor-defined purposes
-look like a good candidate to me). In such a case, on the guest side the
-driver should just check the configuration space and set/unset the flag
-accordingly.
+Thanks for your help!
 
-The good thing about this approach is that it can be used with both
-paravirt drivers and regular drivers (which is important for fully
-virtualized guests).
+I tried the earlyprintk=vga,keep and I thought that the normal printk
+output would
+be replaced by early_printk output but that's not the case...
+So I replaced the content of printk by this of early_printk and it worked.
+But it seems that after the setting of the console, the early_printk
+doesn't work anymore.
 
-I have just started to implement this idea but I would be great it you
-let me know your take on this issue.
+Should I disable something else? I haven't any console=.... parameter
+but I guess I missed
+something there...
 
-- Fernando
+But, I set the parameter nmi_watchdog=2 (I didn't know I had to start
+explicitly the nmi watchdog)
+and at last... I had my backtraces :-)
 
+All these backtraces were related to time function. And one of the
+special things of the time functions
+is that they often manipulate 64 bits numbers. Actually I totally
+forgot that a function could return a
+long long, so I had to save edx register in the return handler to
+restore it in its end because 64 bits
+numbers are returned as a couple into eax and edx in x86-32.
+
+So the main problem is now solved. But it remains a last (but more
+rare) deadlock somewhere. I don't
+know why at this time and the nmi watchdog doesn't tell anything. So I
+will have to use early_printk
+to see the last functions traced. But the problem is that it doesn't
+print on the console...
