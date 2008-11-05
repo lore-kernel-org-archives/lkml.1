@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbYKEUCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYKEUC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbYKEUCW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757271AbYKET60
+	id S1757506AbYKEUC6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbYKET63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:58:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41443 "EHLO mx2.redhat.com"
+	Wed, 5 Nov 2008 14:58:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41449 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756994AbYKET6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:58:09 -0500
+	id S1757089AbYKET6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 14:58:10 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -18,105 +18,58 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 14/15] kvm: vmx: crash_hardware_disable function
-Date: Wed,  5 Nov 2008 17:56:57 -0200
-Message-Id: <1225915018-6548-15-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 02/15] x86 kdump: Move crashing_cpu assignment to nmi_shootdown_cpus()
+Date: Wed,  5 Nov 2008 17:56:45 -0200
+Message-Id: <1225915018-6548-3-git-send-email-ehabkost@redhat.com>
 In-Reply-To: <1225915018-6548-1-git-send-email-ehabkost@redhat.com>
 References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to first check if virtualization was enabled. We do this by
-checking CR4.VMXE. If it is set, run vmxoff and clear CR4.VMXE.
-
-Register it using set_virt_disable_func() on hardware_setup, and
-unregister it on hardware_unsetup.
+This variable will be moved to non-kdump-specific code.
 
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 ---
- arch/x86/kvm/vmx.c |   40 +++++++++++++++++++++++++++++++++++-----
- 1 files changed, 35 insertions(+), 5 deletions(-)
+ arch/x86/kernel/crash.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index ece9cb7..4b10768 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -31,6 +31,7 @@
+diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
+index d82ac72..a70c1c6 100644
+--- a/arch/x86/kernel/crash.c
++++ b/arch/x86/kernel/crash.c
+@@ -29,10 +29,11 @@
  
- #include <asm/io.h>
- #include <asm/desc.h>
-+#include <asm/virtext.h>
+ #include <mach_ipi.h>
  
- #define __ex(x) __kvm_handle_fault_on_reboot(x)
++#if defined(CONFIG_SMP) && defined(CONFIG_X86_LOCAL_APIC)
++
+ /* This keeps a track of which one is crashing cpu. */
+ static int crashing_cpu;
  
-@@ -1091,13 +1092,24 @@ static void vmclear_local_vcpus(void)
- 		__vcpu_clear(vmx);
- }
+-#if defined(CONFIG_SMP) && defined(CONFIG_X86_LOCAL_APIC)
+ static atomic_t waiting_for_crash_ipi;
  
--static void hardware_disable(void *garbage)
-+static void __hardware_disable(void)
+ static void kdump_nmi_callback(int cpu, struct die_args *args)
+@@ -97,6 +98,9 @@ static void nmi_shootdown_cpus(void)
  {
--	vmclear_local_vcpus();
- 	asm volatile (__ex(ASM_VMX_VMXOFF) : : : "cc");
- 	write_cr4(read_cr4() & ~X86_CR4_VMXE);
- }
+ 	unsigned long msecs;
  
-+static void hardware_disable(void *garbage)
-+{
-+	vmclear_local_vcpus();
-+	__hardware_disable();
-+}
++	/* Make a note of crashing cpu. Will be used in NMI callback.*/
++	crashing_cpu = safe_smp_processor_id();
 +
-+static void crash_hardware_disable(void)
-+{
-+	if (read_cr4() & X86_CR4_VMXE)
-+		__hardware_disable();
-+}
-+
- static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
- 				      u32 msr, u32 *result)
- {
-@@ -1281,18 +1293,36 @@ static __init int alloc_kvm_area(void)
+ 	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
+ 	/* Would it be better to replace the trap vector here? */
+ 	if (register_die_notifier(&crash_nmi_nb))
+@@ -137,8 +141,6 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
+ 	/* The kernel is broken so disable interrupts */
+ 	local_irq_disable();
  
- static __init int hardware_setup(void)
- {
--	if (setup_vmcs_config(&vmcs_config) < 0)
--		return -EIO;
-+	int r;
-+
-+	r = set_virt_disable_func(crash_hardware_disable);
-+	if (r)
-+		goto err;
-+
-+	if (setup_vmcs_config(&vmcs_config) < 0) {
-+		r = -EIO;
-+		goto err_clear_virt_disable;
-+	}
- 
- 	if (boot_cpu_has(X86_FEATURE_NX))
- 		kvm_enable_efer_bits(EFER_NX);
- 
--	return alloc_kvm_area();
-+	r = alloc_kvm_area();
-+	if (r)
-+		goto err_clear_virt_disable;
-+
-+	return 0;
-+
-+err_clear_virt_disable:
-+	clear_virt_disable_func();
-+err:
-+	return r;
- }
- 
- static __exit void hardware_unsetup(void)
- {
- 	free_kvm_area();
-+	clear_virt_disable_func();
- }
- 
- static void fix_pmode_dataseg(int seg, struct kvm_save_segment *save)
+-	/* Make a note of crashing cpu. Will be used in NMI callback.*/
+-	crashing_cpu = safe_smp_processor_id();
+ 	nmi_shootdown_cpus();
+ 	lapic_shutdown();
+ #if defined(CONFIG_X86_IO_APIC)
 -- 
 1.5.5.GIT
 
