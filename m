@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYKEWLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755465AbYKEWSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYKEWLQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 17:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbYKEWLA
+	id S1755465AbYKEWSf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 17:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbYKEWSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 17:11:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50110 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbYKEWK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 17:10:59 -0500
-Subject: Re: bdi: register sysfs bdi device only once per queue
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, kay.sievers@vrfy.org,
-       folkert@vanheusden.com, jacmet@sunsite.dk, linux-kernel@vger.kernel.org
-In-Reply-To: <20081105121015.75f497d1.akpm@linux-foundation.org>
-References: <1225727635.6009.9.camel@linux>
-	 <1225728530.7803.1630.camel@twins>
-	 <20081105121015.75f497d1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 05 Nov 2008 23:10:40 +0100
-Message-Id: <1225923040.3882.0.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Wed, 5 Nov 2008 17:18:23 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:39318 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752879AbYKEWSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 17:18:22 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:Content-Type:Content-Transfer-Encoding;
+	b=bcHM9T+7xXaa7fkvnoec2/bLngSDKOpqO/g21Z/qgkJ9h6kbxV8XTP5K5lFLG2+8WtWQCiST0NVY0MoVl9UQrPu7tKPjhnr06QvcVEKnOlX+YKSchNtSLSMnJg0FsJmT;
+Message-ID: <49121BAB.3030403@simon.arlott.org.uk>
+Date: Wed, 05 Nov 2008 22:18:19 +0000
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080928)
+MIME-Version: 1.0
+To: trivial@kernel.org
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Kconfig: SLUB is the default slab allocator
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-05 at 12:10 -0800, Andrew Morton wrote:
-> > > Devices which share the same queue, like floppies and mtd devices,
-> > > get registered multiple times in the bdi interface, but bdi accounts
-> > > only the last registered device of the devices sharing one queue.
-> > 
-> > David, is there any reason the mtd devices do this?
-> 
-> [tap tap - is this thing turned on?]
+In 2007, a0acd820807680d2ccc4ef3448387fcdbf152c73 changed the default 
+slab allocator to SLUB, but the SLAB help text still says SLAB is the 
+default. This change fixes that.
 
-No particular reason. It's been done that way since the dawn of time,
-when it was perfectly normal. Nobody's yet bothered to change that, when
-changing the rules.
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+ init/Kconfig |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 86b00c5..226da27 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -771,8 +771,7 @@ config SLAB
+ 	help
+ 	  The regular slab allocator that is established and known to work
+ 	  well in all environments. It organizes cache hot objects in
+-	  per cpu and per node queues. SLAB is the default choice for
+-	  a slab allocator.
++	  per cpu and per node queues.
+ 
+ config SLUB
+ 	bool "SLUB (Unqueued Allocator)"
+@@ -781,7 +780,8 @@ config SLUB
+ 	   instead of managing queues of cached objects (SLAB approach).
+ 	   Per cpu caching is realized using slabs of objects instead
+ 	   of queues of objects. SLUB can use memory efficiently
+-	   and has enhanced diagnostics.
++	   and has enhanced diagnostics. SLUB is the default choice for
++	   a slab allocator.
+ 
+ config SLOB
+ 	depends on EMBEDDED
+-- 
+1.6.0.3
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Simon Arlott
