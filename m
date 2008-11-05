@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYKENJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbYKENJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbYKENJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 08:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbYKENIy
+	id S1756402AbYKENJr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 08:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648AbYKENJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 08:08:54 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:44660 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754686AbYKENIy (ORCPT
+	Wed, 5 Nov 2008 08:09:39 -0500
+Received: from rv-out-0506.google.com ([209.85.198.224]:48523 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754640AbYKENJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 08:08:54 -0500
-Date: Wed, 5 Nov 2008 14:08:52 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
-Message-ID: <20081105130852.GB30758@dose.home.local>
-Mail-Followup-To: ibm-acpi-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61> <20081105122632.GC14931@khazad-dum.debian.net>
+	Wed, 5 Nov 2008 08:09:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=elQq7CIIfde5gCmR/L6O0bP8o1INGDmoR8mjYb5Wk3ehv9FMEx2NuKG6+fsmdWJznG
+         NEqq0zw1d9cDgnelexJ8mWjfoHrdBELSYO8hIEcX+pABN9X7LSn13EYilLr7YiaHRN6v
+         k843Wh0HokM5ul93j4NDxOqGaO3E67Eyi1oWs=
+Message-ID: <c4e36d110811050509t51719671saa7eb337fca39656@mail.gmail.com>
+Date: Wed, 5 Nov 2008 14:09:36 +0100
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: sys_sched_yield keeps locked irq before call of schedule()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+In-Reply-To: <20081105130113.GB29548@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081105122632.GC14931@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <c4e36d110811050457m36346fe1m63ffbb143f684637@mail.gmail.com>
+	 <20081105130113.GB29548@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 10:26:32 -0200, Henrique de Moraes Holschuh wrote:
-> On Wed, 05 Nov 2008, Tino Keitel wrote:
-> > On Wed, Nov 05, 2008 at 08:33:08 +0100, Tino Keitel wrote:
-> > > I tried 2.6.28-rc3 (git a75952b) on my ThinkPad X61s, and now the fan
-> > > runs at full speed after resume from suspend:
-> > 
-> > I forgot to look into the kernel logs for more info. Well, I found this
-> > line:
-> > 
-> > thinkpad_acpi: restoring fan level to 0x07
-> > 
-> > So I guess that according to
-> > 
-> > ACPI: thinkpad-acpi: attempt to preserve fan state on resume
-> > 
-> > the attempt failed. :-)
-> 
-> Indeed.  Please send the full kernel output of thinkpad-acpi, showing boot,
-> suspend and resume messages from the driver, please?
+2008/11/5 Ingo Molnar <mingo@elte.hu>:
+>
+> * Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
+>
+>> Hi
+>>
+>> With recent 2.6.28-rc3 kernel I've noticed that schedule() is
+>> sometime being called with locked IRQ
+>>
+>> Call Trace:
+>>  [<ffffffff81334592>] _spin_lock_irq+0x92/0xa0
+>>  [<ffffffff8133126b>] schedule+0x13b/0x4cb
+>>  [<ffffffff81013c10>] ? native_sched_clock+0x70/0xa0
+>>  [<ffffffff81040930>] ? sys_sched_yield+0x0/0x80
+>>  [<ffffffff810409a5>] sys_sched_yield+0x75/0x80
+>>  [<ffffffff8100c6bb>] system_call_fastpath+0x16/0x1b
+>
+> is this some special warning you added? The stock kernel certainly
+> does not emit this warning.
 
-See http://tikei.de/kernel.log
+Yes - it's my personal debug checker that tries to watch wether irq &
+irqsafe are running in pair.
+So it shows a warning if there is a call of spin_lock_irq and irq is
+already dissabled.
 
-> Also, please tell me what is the contents of /proc/acpi/ibm/fan (and if
+>
+>> Which is a result of the function sys_sched_yield() that calls
+>> schedule() while it keeps irq.
+>>
+>> Is it correct to call the function schedule() which 'usually'
+>> expects irq being unlocked and do some 'lenghty' operations (i.e.
+>> debug statistics) which do not need to keep irq locked for such a
+>> long time?
+>
+> the debug statistics are all fast and we disable interrupts straight
+> away when entering the schedule().
 
-See the first mail. I don't touch any fan settings, everything is at
-the default value.
+IRQ is disabled with spin_lock_irc() inside schedule() and it looks
+like there is quite a few lines above which receive 'extra' bonus with
+being run without enabled irq, but as I said - I'm just checking
+whether this is intentional or not.
 
-> possible, the contents of /proc/acpi/ibm/ecdump) before you issue the
-> suspend command.
-
-See http://tikei.de/ecdump (however, this was taken with 2.6.27.4).
-
-Regards,
-Tino
+Zdenek
