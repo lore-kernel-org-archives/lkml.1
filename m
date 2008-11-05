@@ -1,175 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbYKEHNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbYKEH1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbYKEHNa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 02:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKEHNR
+	id S1754720AbYKEH1I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 02:27:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYKEH0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 02:13:17 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59734 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbYKEHNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 02:13:15 -0500
-Date: Wed, 5 Nov 2008 12:43:06 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, mel@csn.ul.ie, peterz@infradead.org
-Subject: next-20081103 - possible circular locking dependency detected
-	while bring up eth1
-Message-ID: <20081105071306.GB10881@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20081103183214.aac32543.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20081103183214.aac32543.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 5 Nov 2008 02:26:54 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43810 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750807AbYKEH0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 02:26:54 -0500
+Date: Wed, 5 Nov 2008 18:26:42 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       travis@sgi.com, "Vegard Nossum" <vegard.nossum@gmail.com>,
+       linux-next@vger.kernel.org
+Subject: Re: Git next: Second stage of cpu_alloc patches
+Message-Id: <20081105182642.8497301a.sfr@canb.auug.org.au>
+In-Reply-To: <20081104195205.fe1bf62b.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0811042053510.31638@quilx.com>
+	<20081104195205.fe1bf62b.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__5_Nov_2008_18_26_42_+1100_BWO+Dqj1GfLWqE2s"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While booting with the next-20081103 kernel on x86 box, circular locking
-dependency is detected.
+--Signature=_Wed__5_Nov_2008_18_26_42_+1100_BWO+Dqj1GfLWqE2s
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Bringing up interface eth1:  [   31.988230] 
-[   31.988234] =======================================================
-[   31.989072] [ INFO: possible circular locking dependency detected ]
-[   31.989072] 2.6.28-rc3-next-20081103-autotest #1
-[   31.989072] -------------------------------------------------------
-[   31.989072] events/3/18 is trying to acquire lock:
-[   32.074777] ADDRCONF(NETDEV_UP): eth1: link is not ready
-[   31.989072]  (rtnl_mutex){--..}, at: [<c05e8ef5>] rtnl_lock+0xf/0x11
-[   31.989072] 
-[   31.989072] but task is already holding lock:
-[   31.989072]  ((linkwatch_work).work){--..}, at: [<c04367bf>] run_workqueue+0x80/0x189
-[   31.989072] 
-[   31.989072] which lock already depends on the new lock.
-[   31.989072] 
-[   31.989072] 
-[   31.989072] the existing dependency chain (in reverse order) is:
-[   31.989072] 
-[   31.989072] -> #4 ((linkwatch_work).work){--..}:
-[   31.989072]        [<c0445edb>] validate_chain+0x86e/0xb35
-[   31.989072]        [<c0446822>] __lock_acquire+0x680/0x70e
-[   31.989072]        [<c044690d>] lock_acquire+0x5d/0x7a
-[   31.989072]        [<c04367f8>] run_workqueue+0xb9/0x189
-[   31.989072]        [<c04371f3>] worker_thread+0xb4/0xbf
-[   31.989072]        [<c04396a6>] kthread+0x3b/0x61
-[   31.989072]        [<c040481b>] kernel_thread_helper+0x7/0x10
-[   31.989072]        [<ffffffff>] 0xffffffff
-[   31.989072] 
-[   31.989072] -> #3 (events){--..}:
-[   31.989072]        [<c0445edb>] validate_chain+0x86e/0xb35
-[   31.989072]        [<c0446822>] __lock_acquire+0x680/0x70e
-[   31.989072]        [<c044690d>] lock_acquire+0x5d/0x7a
-[   31.989072]        [<c0436e21>] flush_work+0x45/0xb6
-[   31.989072]        [<c043729a>] schedule_on_each_cpu+0x9c/0xca
-[   31.989072]        [<c0466c97>] lru_add_drain_all+0xd/0xf
-[   31.989072]        [<c046f1b6>] __mlock_vma_pages_range+0x96/0x1e5
-[   31.989072]        [<c046f43a>] mlock_fixup+0x135/0x199
-[   31.989072]        [<c046f50b>] do_mlockall+0x6d/0x82
-[   31.989072]        [<c046f839>] sys_mlockall+0x7b/0x9e
-[   31.989072]        [<c040398d>] sysenter_do_call+0x12/0x31
-[   31.989072]        [<ffffffff>] 0xffffffff
-[   31.989072] 
-[   31.989072] -> #2 (&mm->mmap_sem){----}:
-[   31.989072]        [<c0445edb>] validate_chain+0x86e/0xb35
-[   31.989072]        [<c0446822>] __lock_acquire+0x680/0x70e
-[   31.989072]        [<c044690d>] lock_acquire+0x5d/0x7a
-[   31.989072]        [<c046e570>] might_fault+0x53/0x73
-[   31.989072]        [<c0508bf5>] copy_to_user+0x28/0x3f
-[   31.989072]        [<c048cd11>] filldir+0x88/0xc8
-[   31.989072]        [<c04bee82>] sysfs_readdir+0x11d/0x156
-[   31.989072]        [<c048cdb9>] vfs_readdir+0x68/0x94
-[   31.989072]        [<c048d00b>] sys_getdents+0x5f/0xa0
-[   31.989072]        [<c0403a66>] syscall_call+0x7/0xb
-[   31.989072]        [<ffffffff>] 0xffffffff
-[   31.989072] 
-[   31.989072] -> #1 (sysfs_mutex){--..}:
-[   31.989072]        [<c0445edb>] validate_chain+0x86e/0xb35
-[   31.989072]        [<c0446822>] __lock_acquire+0x680/0x70e
-[   31.989072]        [<c044690d>] lock_acquire+0x5d/0x7a
-[   31.989072]        [<c0651c04>] mutex_lock_nested+0xdf/0x251
-[   31.989072]        [<c04bf039>] sysfs_addrm_start+0x23/0x90
-[   31.989072]        [<c04bf4af>] create_dir+0x3a/0x72
-[   31.989072]        [<c04bf514>] sysfs_create_dir+0x2d/0x41
-[   31.989072]        [<c0503e05>] kobject_add_internal+0xe5/0x189
-[   31.989072]        [<c0503f54>] kobject_add_varg+0x35/0x41
-[   31.989072]        [<c05042f7>] kobject_add+0x49/0x4f
-[   31.989072]        [<c05777e1>] device_add+0x76/0x4c8
-[   31.989072]        [<c05eb70e>] netdev_register_kobject+0x64/0x69
-[   31.989072]        [<c05e1581>] register_netdevice+0x1fe/0x274
-[   31.989072]        [<c05e1629>] register_netdev+0x32/0x3f
-[   31.989072]        [<c07fa965>] loopback_net_init+0x2e/0x5d
-[   31.989072]        [<c05de93b>] register_pernet_operations+0x13/0x15
-[   31.989072]        [<c05de9a4>] register_pernet_device+0x1f/0x4c
-[   31.989072]        [<c07fa935>] loopback_init+0xd/0xf
-[   31.989072]        [<c0401130>] _stext+0x48/0x10d
-[   31.989072]        [<c07db530>] kernel_init+0xf1/0x142
-[   31.989072]        [<c040481b>] kernel_thread_helper+0x7/0x10
-[   31.989072]        [<ffffffff>] 0xffffffff
-[   31.989072] 
-[   31.989072] -> #0 (rtnl_mutex){--..}:
-[   31.989072]        [<c0445c10>] validate_chain+0x5a3/0xb35
-[   31.989072]        [<c0446822>] __lock_acquire+0x680/0x70e
-[   31.989072]        [<c044690d>] lock_acquire+0x5d/0x7a
-[   31.989072]        [<c0651c04>] mutex_lock_nested+0xdf/0x251
-[   31.989072]        [<c05e8ef5>] rtnl_lock+0xf/0x11
-[   31.989072]        [<c05ea07a>] linkwatch_event+0x8/0x27
-[   31.989072]        [<c04367fd>] run_workqueue+0xbe/0x189
-[   31.989072]        [<c04371f3>] worker_thread+0xb4/0xbf
-[   31.989072]        [<c04396a6>] kthread+0x3b/0x61
-[   31.989072]        [<c040481b>] kernel_thread_helper+0x7/0x10
-[   31.989072]        [<ffffffff>] 0xffffffff
-[   31.989072] 
-[   31.989072] other info that might help us debug this:
-[   31.989072] 
-[   31.989072] 2 locks held by events/3/18:
-[   31.989072]  #0:  (events){--..}, at: [<c04367bf>] run_workqueue+0x80/0x189
-[   31.989072]  #1:  ((linkwatch_work).work){--..}, at: [<c04367bf>] run_workqueue+0x80/0x189
-[   31.989072] 
-[   31.989072] stack backtrace:
-[   31.989072] Pid: 18, comm: events/3 Not tainted 2.6.28-rc3-next-20081103-autotest #1
-[   31.989072] Call Trace:
-[   31.989072]  [<c0445662>] print_circular_bug_tail+0xa4/0xaf
-[   31.989072]  [<c0445c10>] validate_chain+0x5a3/0xb35
-[   31.989072]  [<c0446822>] __lock_acquire+0x680/0x70e
-[   31.989072]  [<c04367bf>] ? run_workqueue+0x80/0x189
-[   31.989072]  [<c044690d>] lock_acquire+0x5d/0x7a
-[   31.989072]  [<c05e8ef5>] ? rtnl_lock+0xf/0x11
-[   31.989072]  [<c0651c04>] mutex_lock_nested+0xdf/0x251
-[   31.989072]  [<c05e8ef5>] ? rtnl_lock+0xf/0x11
-[   31.989072]  [<c05e8ef5>] ? rtnl_lock+0xf/0x11
-[   31.989072]  [<c05e8ef5>] rtnl_lock+0xf/0x11
-[   31.989072]  [<c05ea07a>] linkwatch_event+0x8/0x27
-[   31.989072]  [<c04367fd>] run_workqueue+0xbe/0x189
-[   31.989072]  [<c04367bf>] ? run_workqueue+0x80/0x189
-[   31.989072]  [<c05ea072>] ? linkwatch_event+0x0/0x27
-[   31.989072]  [<c043713f>] ? worker_thread+0x0/0xbf
-[   31.989072]  [<c04371f3>] worker_thread+0xb4/0xbf
-[   31.989072]  [<c0439765>] ? autoremove_wake_function+0x0/0x33
-[   31.989072]  [<c04396a6>] kthread+0x3b/0x61
-[   33.690691] tg3: eth1: Link is up at 100 Mbps, full duplex.
-[   33.690696] tg3: eth1: Flow control is off for TX and off for RX.
-[   31.989072]  [<c043966b>] ? kthread+0x0/0x61
-[   31.989072]  [<c040481b>] kernel_thread_helper+0x7/0x10
-[   33.762336] ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-[  OK  ]
+Hi Christoph,
 
-0xc05e8ef5 is in rtnl_lock (net/core/rtnetlink.c:67).
-62	static DEFINE_MUTEX(rtnl_mutex);
-63	
-64	void rtnl_lock(void)
-65	{
-66		mutex_lock(&rtnl_mutex);
-67	}
-68	
-69	void __rtnl_unlock(void)
-70	{
-71		mutex_unlock(&rtnl_mutex);
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+On Tue, 4 Nov 2008 19:52:05 -0800 Andrew Morton <akpm@linux-foundation.org>=
+ wrote:
+>
+> On Tue, 4 Nov 2008 20:56:52 -0600 (CST) Christoph Lameter <cl@linux-found=
+ation.org> wrote:
+>=20
+> > The second stage of the cpu_alloc patchset can be pulled from
+> >=20
+> > kernel.org/pub/scm/linux/kernel/git/christoph/work.git cpu_alloc_stage2
+>=20
+> Please send the patches for review.  Always.
+
+And I would like to see a bit of positive feedback from the first set
+(given we have boot failures bisected down to this stuff) before we add
+more on top.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__5_Nov_2008_18_26_42_+1100_BWO+Dqj1GfLWqE2s
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkRSrIACgkQjjKRsyhoI8xuRwCdHfN1ZdNogm1ixVFLmSDSaDBS
+FawAoLPem5ouN5nt9cre/oG2cNn9n5nU
+=hvVH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Nov_2008_18_26_42_+1100_BWO+Dqj1GfLWqE2s--
