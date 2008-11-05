@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYKEQp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYKEQsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbYKEQp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 11:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYKEQpQ
+	id S1755483AbYKEQsF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 11:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYKEQry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 11:45:16 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53975 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751688AbYKEQpO (ORCPT
+	Wed, 5 Nov 2008 11:47:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50801 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbYKEQry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 11:45:14 -0500
-Date: Wed, 5 Nov 2008 16:42:22 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: "Eugene V. Lyubimkin" <jackyf.devel@gmail.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
-       Chris Friesen <cfriesen@nortel.com>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>
-Subject: Re: mmap: is default non-populating behavior stable?
-In-Reply-To: <49107D98.9080201@gmail.com>
-Message-ID: <Pine.LNX.4.64.0811051613400.21353@blonde.site>
-References: <490F73CD.4010705@gmail.com> <1225752083.7803.1644.camel@twins>
- <490F8005.9020708@redhat.com> <491070B5.2060209@nortel.com>
- <1225814820.7803.1672.camel@twins> <20081104162820.644b1487@lxorguk.ukuu.org.uk>
- <49107D98.9080201@gmail.com>
+	Wed, 5 Nov 2008 11:47:54 -0500
+Date: Wed, 5 Nov 2008 11:47:52 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: bug: ftrace & lockdep badness
+In-Reply-To: <20081105163052.GA28884@elte.hu>
+Message-ID: <alpine.DEB.1.10.0811051143420.11900@gandalf.stny.rr.com>
+References: <20081105123714.GA23504@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811051054430.11900@gandalf.stny.rr.com> <20081105163052.GA28884@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Eugene V. Lyubimkin wrote:
-> Alan Cox wrote:
-> > 
-> > I believe our behaviour is correct for mmap/mumap/truncate and it
-> > certainly used to be and was tested.
 
-Agreed.
-
-> > 
-> > At the point you do anything involving mremap (which is non posix) our
-> > behaviour becomes rather bizarre.
-
-Certainly mremap is non-POSIX, but I can't think of any way in which
-it would interfere with Eugene's assumptions about population.
-
-(Every year or so we do wonder whether to change an extending mremap
-of a MAP_SHARED|MAP_ANONYMOUS object to extend the object itself instead
-of just SIGBUSing on the extension: but I've so far remained conservative
-about that, and Eugene appears to be thinking of more ordinary files.)
+On Wed, 5 Nov 2008, Ingo Molnar wrote:
 
 > 
-> Thanks to all for answers. I have made the conclusion that doing "open() new
-> file, truncate(<big size>), mmap(<the same big size>), write/read some memory
-> pages" should not populate other, untouched by write/read pages (until
-> MAP_POPULATE given), right?
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > This is the type of problems we deal with when we have the tracer 
+> > tracing lockdep code at the same time the lockdep code is checking 
+> > the tracer.
+> 
+> ok ... you are right, i guess we need to go back to raw locks after 
+> all?
 
-That is a reasonable description of how the kernel tries and will always
-try to handle it, approximately; but I don't think you can rely upon it
-absolutely.
+I do like the fact that lockdep checks it too. But there's times that we 
+can not do that.
 
-For a start, it depends on the filesystem: I believe that vfat, for
-example, does not support the concept of sparse files (files with holes
-in), so its truncate(<big size>) will allocate the whole of that big
-size initially.
+Perhaps we can do something in between.
 
-I'm not sure what you mean by "populate": in mm, as in MAP_POPULATE,
-we're thinking of prefaulting pages into the user address space; but
-you're probably thinking of whether the blocks are allocated on disk?
+Make a rb_spin_lock macro inside ring_buffer.c that can be either a 
+spin_lock or a raw_spin_lock.  There are some tracers that must have this 
+as a raw (function trace, irqsoff and preemptoff), but the rest should be 
+fine. We can make it where the rb_spin_lock is a raw lock when any of 
+those three tracers are configured, and make it into a normal lock when 
+they are not.
 
-Prefaulting hole pages into the user address space may imply allocating
-blocks on disk, or it may not: likely to depend on filesystem again.
+This way we can still test the integrity of the ring_buffer for other 
+tracers. We just need to be careful when we are using function tracing or 
+irqs/preempt off tracing. But we need to be careful with those anyway.
 
->From time to time we toy with prefaulting adjacent pages when a fault
-occurs (though IIRC tests have proved disappointing in the past): we'd
-like to keep that option open, but it would go against your guidelines
-above to some extent.
+-- Steve
 
-Hugh
