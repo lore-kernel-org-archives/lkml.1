@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYKEB4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbYKEB5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbYKEB4i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 20:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbYKEB4a
+	id S1755882AbYKEB5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 20:57:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYKEB45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 20:56:30 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41220 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752538AbYKEB4a (ORCPT
-	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 20:56:30 -0500
-Message-ID: <4910FCF8.5080802@sgi.com>
-Date: Wed, 05 Nov 2008 12:55:04 +1100
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Tue, 4 Nov 2008 20:56:57 -0500
+Received: from cantor.suse.de ([195.135.220.2]:54185 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752966AbYKEB44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 20:56:56 -0500
+Date: Tue, 4 Nov 2008 17:02:05 -0800
+From: Greg KH <gregkh@suse.de>
+To: Zhao Yakui <yakui.zhao@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "Brown, Len" <len.brown@intel.com>
+Subject: Re: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using
+	ACPI reset mechanism
+Message-ID: <20081105010205.GA26202@suse.de>
+References: <20081104232144.186593464@mini.kroah.org> <20081104233325.GZ659@suse.de> <1225846092.26020.89.camel@yakui_zhao.sh.intel.com>
 MIME-Version: 1.0
-To: Steven Noonan <steven@uplinklabs.net>
-CC: david@lang.hm, torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.28
-References: <20081031045737.ECE0E58AE1E9@chook.melbourne.sgi.com>	 <alpine.DEB.1.10.0810302201030.3116@asgard.lang.hm> <f488382f0810302253l6e8b2705u29582f348256a91a@mail.gmail.com>
-In-Reply-To: <f488382f0810302253l6e8b2705u29582f348256a91a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225846092.26020.89.camel@yakui_zhao.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Noonan wrote:
-> On Thu, Oct 30, 2008 at 10:02 PM,  <david@lang.hm> wrote:
->> On Fri, 31 Oct 2008, Lachlan McIlroy wrote:
->>
->>> The following changes since commit
->>> 721d5dfe7e516954c501d5e9d0dfab379cf4241a:
->>>  Linus Torvalds (1):
->>>       Merge branch 'for-linus' of git://neil.brown.name/md
->> I am a fairly heavy user of XFS and am as eager as anyone to see cleanups
->> and improvements, but 102 commits to go into -rc3????
->>
->> David Lang
->>
-> 
-> I'm pretty sure these won't be accepted until 2.6.29's merge window
-> opens. The merge window for 2.6.28 has closed, and due to the sheer
-> number of commits, at least -one- is bound to cause a regression.
+On Wed, Nov 05, 2008 at 08:48:12AM +0800, Zhao Yakui wrote:
+> On Wed, 2008-11-05 at 07:33 +0800, Greg KH wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> Please don't apply this patch.And this causes the reboot regression on
+> AMD chipset. (Bug11942)
+>     Now the default reboot type is changed from BOOT_KBD to BOOT_ACPI.
+>       
+> On the AMD box there exists the definition of RESET_REG &RESET_VALUE,
+> which is identical to the definition in Intel Chipset. After the
+> RESET_REG_SUP is ignored, the AMD box can't be rebooted by writing the
+> RESET_VALUE to RESET_REG I/O port.
 
-Okay, that's fine.  The tree was too unstable to request a pull any earlier
-and we're still chasing some issues.  We should be well and truly ready for
-2.6.29.
+Was there a follow-on patch that fixes the regression that has gone into
+Linus's tree?  If so, wouldn't it be better to apply that as well?
 
-> 
-> - Steven
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Len, what do you advise here?
+
+thanks,
+
+greg k-h
