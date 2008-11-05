@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbYKET2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbYKETaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbYKET2k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYKET2c
+	id S1756612AbYKETaG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbYKET3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:28:32 -0500
-Received: from cerberus.snarc.org ([212.85.155.21]:55184 "EHLO
-	cerberus.snarc.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbYKET2c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:28:32 -0500
-Date: Wed, 5 Nov 2008 19:32:46 +0000
-From: Vincent Hanquez <tab@snarc.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
-       Henrik Rydberg <rydberg@euromail.se>
-Subject: Re: [PATCH] hid update for macbook brick fn key
-Message-ID: <20081105193246.GA4634@snarc.org>
-References: <20081105190143.GA4529@snarc.org> <4911F363.1070208@gmail.com>
-MIME-Version: 1.0
+	Wed, 5 Nov 2008 14:29:54 -0500
+Received: from mail.tnnet.fi ([217.112.240.26]:51241 "EHLO mail.tnnet.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752910AbYKET3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 14:29:54 -0500
+Message-ID: <4911F429.17BD536B@users.sourceforge.net>
+Date: Wed, 05 Nov 2008 21:29:45 +0200
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: linux-crypto@nl.linux.org
+CC: linux-kernel@vger.kernel.org
+Subject: Announce loop-AES-v3.2e file/swap crypto package
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4911F363.1070208@gmail.com>
-X-Warning: Email may contain unsmilyfied humor and/or satire.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 08:26:27PM +0100, Jiri Slaby wrote:
-> On 11/05/2008 08:01 PM, Vincent Hanquez wrote:
-> > The following patch add support for late 2008 macbook (apparently
-> > codename 'brick') keyboard that was missing the fn key behavior.
-> 
-> Unfortunately similar patch was already sent by Henrik few days ago:
-> http://lkml.org/lkml/2008/11/4/331
+loop-AES changes since previous release:
+- Fix null pointer dereference when loop was used to mount iso9660 CD-ROM
+  image. This new bug was introduced in loop-AES-v3.2d, earlier versions are
+  ok. Thanks to Peter Koek for reporting this issue.
 
-ah well, nevermind.
-i guess that's good they are exactly the same patch :)
+bzip2 compressed tarball is here:
 
-Thanks,
+    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2e.tar.bz2
+    md5sum bfc75a2bec78dbd5c8b5096bf06716d5
+
+    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2e.tar.bz2.sign
+
 -- 
-Vincent
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
