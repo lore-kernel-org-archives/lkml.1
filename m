@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYKERFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYKERIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbYKERFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 12:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYKERFY
+	id S1755825AbYKERIW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 12:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYKERIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 12:05:24 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:30439 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752020AbYKERFY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 12:05:24 -0500
-Date: Wed, 5 Nov 2008 09:04:49 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Peter Teoh <htmldeveloper@gmail.com>
-Subject: Re: make htmldocs errors
-Message-Id: <20081105090449.9701af72.randy.dunlap@oracle.com>
-In-Reply-To: <4911CB47.6030809@oracle.com>
-References: <804dabb00811050825td613b25lf400f4963e83e78c@mail.gmail.com>
-	<4911CB47.6030809@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 5 Nov 2008 12:08:13 -0500
+Received: from www.tglx.de ([62.245.132.106]:48845 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752139AbYKERIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 12:08:12 -0500
+Date: Wed, 5 Nov 2008 18:08:00 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Greg KH <gregkh@suse.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Mike Frysinger <vapier@gentoo.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UIO: only call pgprot_noncached if defined
+Message-ID: <20081105170800.GD6382@local>
+References: <1225301177-21406-1-git-send-email-vapier@gentoo.org> <20081105113610.GA6382@local> <20081105163334.GA8473@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081105163334.GA8473@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 05 Nov 2008 08:35:19 -0800 Randy Dunlap wrote:
-
-> Peter Teoh wrote:
-> > This is on the latest linus tree (75fa67706cce5272bcfc51ed646f2da21f3bdb6e):
-> > 
-> > /mnt/hd0/download/linux-2.6-latest>make htmldocs
-> > make[1]: *** No rule to make target `include/asm-x86/io_32.h', needed
-> > by `Documentation/DocBook/deviceiobook.xml'.  Stop.
-> > make: *** [htmldocs] Error 2
+On Wed, Nov 05, 2008 at 08:33:34AM -0800, Greg KH wrote:
+> On Wed, Nov 05, 2008 at 12:36:11PM +0100, Hans J. Koch wrote:
+> > There seem to be archs that cannot easily implement a sensible
+> > pgprot_noncached() function, so we should merge this patch. UIO doesn't
+> > compile on these archs right now.
 > 
-> Hi,
-> I thought that I had already fixed that, but I'll take another look
-> at it.
+> No, we should fix those arches to have that function at least NULLed
+> out.  Isn't there only one, Blackfin?  Putting #ifdefs in .c files is
+> not something we really want to do if at all possible.
 
-Peter,
-Please check again.  I suspect some files or the git tree is not current.
+Yep, 5 minutes after I sent the mail I regretted it. Blackfin could
+easily implement an "empty" macro that just returns its parameter.
 
-> git describe
-v2.6.28-rc3-54-g75fa677
+I hereby revoke my Signed-off-by, you're right.
 
-> grep asm-x86 Documentation/DocBook/deviceiobook.tmpl
-# finds nothing
+Thanks,
+Hans
 
-and I fixed this error here (in Linus's git tree):
-
-commit a1a739c56ad031b8bf8b3804f568ac88899f8dd7
-Author: Randy Dunlap <randy.dunlap@oracle.com>
-Date:   Sat Oct 25 17:24:36 2008 -0700
-
-    docbooks: fix fatal filename errors
-
----
-~Randy
+> 
+> thanks,
+> 
+> greg k-h
