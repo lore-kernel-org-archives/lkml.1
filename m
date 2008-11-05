@@ -1,111 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbYKEUSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbYKEUS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757210AbYKEUSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYKEUS0
+	id S1757728AbYKEUS5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbYKEUSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 15:18:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40093 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754673AbYKEUSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 15:18:25 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: trond.myklebust@fys.uio.no
-Cc: akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] lockd: convert reclaimer thread to kthread interface
-Date: Wed,  5 Nov 2008 15:17:42 -0500
-Message-Id: <1225916262-18112-1-git-send-email-jlayton@redhat.com>
+	Wed, 5 Nov 2008 15:18:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:64364 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755487AbYKEUSo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 15:18:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=H8x1msFX527NWSalxWvkjLyrkbvQ5UGTQzLm5hFtgm7alsEtZcS6F9HosiXsZZQPIH
+         85mA5AzoLbSCC2j1DT75WRG0Iu99EjKSXctOEH0Ckqex+THzseX86IjoaZX00nFs/buk
+         V7YYjPH/OrbaaJJH4IZiJ4aPHcR/ikiTAPyu0=
+Message-ID: <cd73a99e0811051218w77c4f9cagb76a51695b3ce0dc@mail.gmail.com>
+Date: Wed, 5 Nov 2008 22:18:41 +0200
+From: "Andrew Victor" <avictor.za@gmail.com>
+To: wim@iguana.be, "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SAM9 watchdog - update for moved headers
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_32329_5720762.1225916321390"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My understanding is that there is a push to turn the kernel_thread
-interface into a non-exported symbol and move all kernel threads to use
-the kthread API. This patch changes lockd to use kthread_run to spawn
-the reclaimer thread.
+------=_Part_32329_5720762.1225916321390
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I've made the assumption here that the extra module references taken
-when we spawn this thread are unnecessary and removed them. I've also
-added a KERN_ERR printk that pops if the thread can't be spawned to warn
-the admin that the locks won't be reclaimed.
+The architecture header files were recently moved from
+include/asm-arm/mach-at91/ to arch/arm/mach-at91/include/mach/.
+The SAM9 watchdog driver still includes a header from the old location.
 
-In the future, it would be nice to be able to notify userspace that
-locks have been lost (probably by implementing SIGLOST), and adding some
-good policies about how long we should reattempt to reclaim the locks.
+Signed-off-by: Andrew Victor <linux@maxim.org.za>
 
-Finally, I removed a comment about memory leaks that I believe is
-obsolete and added a new one to clarify the result of sending a SIGKILL
-to the reclaimer thread. As best I can tell, doing so doesn't actually
-cause a memory leak.
+------=_Part_32329_5720762.1225916321390
+Content-Type: text/x-patch; name=sam9_wdt_headerfix.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fn6eiorq0
+Content-Disposition: attachment; filename=sam9_wdt_headerfix.patch
 
-I consider this patch 2.6.29 material.
+ZGlmZiAtdXJOIC14IENWUyBsaW51eC0yLjYuMjgtcmMzL2RyaXZlcnMvd2F0Y2hkb2cvYXQ5MXNh
+bTlfd2R0LmMgbGludXgtMi42L2RyaXZlcnMvd2F0Y2hkb2cvYXQ5MXNhbTlfd2R0LmMKLS0tIGxp
+bnV4LTIuNi4yOC1yYzMvZHJpdmVycy93YXRjaGRvZy9hdDkxc2FtOV93ZHQuYwkyMDA4LTExLTA1
+IDIxOjM1OjQ5LjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42L2RyaXZlcnMvd2F0Y2hkb2cv
+YXQ5MXNhbTlfd2R0LmMJMjAwOC0xMS0wNSAyMTowOTo1OS4wMDAwMDAwMDAgKzAyMDAKQEAgLTMw
+LDcgKzMwLDcgQEAKICNpbmNsdWRlIDxsaW51eC9iaXRvcHMuaD4KICNpbmNsdWRlIDxsaW51eC91
+YWNjZXNzLmg+CiAKLSNpbmNsdWRlIDxhc20vYXJjaC9hdDkxX3dkdC5oPgorI2luY2x1ZGUgPG1h
+Y2gvYXQ5MV93ZHQuaD4KIAogI2RlZmluZSBEUlZfTkFNRSAiQVQ5MVNBTTkgV2F0Y2hkb2ciCiAK
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/lockd/clntlock.c |   21 +++++++++++++++------
- 1 files changed, 15 insertions(+), 6 deletions(-)
-
-diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
-index 8307dd6..94d42cc 100644
---- a/fs/lockd/clntlock.c
-+++ b/fs/lockd/clntlock.c
-@@ -14,6 +14,7 @@
- #include <linux/sunrpc/svc.h>
- #include <linux/lockd/lockd.h>
- #include <linux/smp_lock.h>
-+#include <linux/kthread.h>
- 
- #define NLMDBG_FACILITY		NLMDBG_CLIENT
- 
-@@ -191,11 +192,15 @@ __be32 nlmclnt_grant(const struct sockaddr *addr, const struct nlm_lock *lock)
- void
- nlmclnt_recovery(struct nlm_host *host)
- {
-+	struct task_struct *task;
-+
- 	if (!host->h_reclaiming++) {
- 		nlm_get_host(host);
--		__module_get(THIS_MODULE);
--		if (kernel_thread(reclaimer, host, CLONE_FS | CLONE_FILES) < 0)
--			module_put(THIS_MODULE);
-+		task = kthread_run(reclaimer, host, "%s-reclaim", host->h_name);
-+		if (IS_ERR(task))
-+			printk(KERN_ERR "lockd: unable to spawn reclaimer "
-+				"thread. Locks for %s won't be reclaimed! "
-+				"(%ld)\n", host->h_name, PTR_ERR(task));
- 	}
- }
- 
-@@ -207,7 +212,6 @@ reclaimer(void *ptr)
- 	struct file_lock *fl, *next;
- 	u32 nsmstate;
- 
--	daemonize("%s-reclaim", host->h_name);
- 	allow_signal(SIGKILL);
- 
- 	down_write(&host->h_rwsem);
-@@ -233,7 +237,12 @@ restart:
- 	list_for_each_entry_safe(fl, next, &host->h_reclaim, fl_u.nfs_fl.list) {
- 		list_del_init(&fl->fl_u.nfs_fl.list);
- 
--		/* Why are we leaking memory here? --okir */
-+		/*
-+		 * sending this thread a SIGKILL will result in any unreclaimed
-+		 * locks being removed from the h_granted list. This means that
-+		 * the kernel will not attempt to reclaim them again if a new
-+		 * reclaimer thread is spawned for this host.
-+		 */
- 		if (signalled())
- 			continue;
- 		if (nlmclnt_reclaim(host, fl) != 0)
-@@ -261,5 +270,5 @@ restart:
- 	nlm_release_host(host);
- 	lockd_down();
- 	unlock_kernel();
--	module_put_and_exit(0);
-+	return 0;
- }
--- 
-1.5.5.1
-
+------=_Part_32329_5720762.1225916321390--
