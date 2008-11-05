@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbYKEJbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYKEJd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755560AbYKEJbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYKEJba
+	id S1755837AbYKEJd7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYKEJdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 04:31:30 -0500
-Received: from nebensachen.de ([195.34.83.29]:60158 "EHLO mail.nebensachen.de"
+	Wed, 5 Nov 2008 04:33:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39416 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753585AbYKEJb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:31:28 -0500
-X-Hashcash: 1:20:081105:tj@kernel.org::3ZZlUCqAKwUEfUvW:00000bRK
-X-Hashcash: 1:20:081105:hancockr@shaw.ca::XYScl36SDzajtX1L:04tv7
-X-Hashcash: 1:20:081105:liml@rtr.ca::iiUE3mlccOPFA4Qz:0000000eDx
-X-Hashcash: 1:20:081105:rjw@sisk.pl::83EBzNOMlyXj6wH5:0000003mIz
-X-Hashcash: 1:20:081105:torvalds@linux-foundation.org::04g3mtJ2/225qXMw:000000000000000000000000000000008amd
-X-Hashcash: 1:20:081105:jeff@garzik.org::0u0/sOm198qelL3b:003XJo
-X-Hashcash: 1:20:081105:akpm@linux-foundation.org::rwQL9lhhZ9slkIpa:0000000000000000000000000000000000003NTD
-X-Hashcash: 1:20:081105:linux-ide@vger.kernel.org::qxL0heLM5rC1/QWJ:0000000000000000000000000000000000000xuN
-X-Hashcash: 1:20:081105:linux-kernel@vger.kernel.org::WrMWTMmH2pHWMXYv:0000000000000000000000000000000004h2J
-From: Elias Oltmanns <eo@nebensachen.de>
-To: Tejun Heo <tj@kernel.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, Mark Lord <liml@rtr.ca>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata hibernation fixes
-References: <fa.Ast7pgG6P20u1PcyOsfgzoaX5YA@ifi.uio.no>
-	<fa.1+JQHm7yjIiZJxAzR0eBPn39a9M@ifi.uio.no>
-	<fa.+bfipgmFkcLlZMtnFL0Ks2zyN8Q@ifi.uio.no>
-	<fa.Iek0GbTZLinM2sOi6+b7bsCgnfs@ifi.uio.no> <4910E240.4000801@shaw.ca>
-	<87abcfdmpp.fsf@denkblock.local> <4911053E.9070103@kernel.org>
-Date: Wed, 05 Nov 2008 10:31:08 +0100
-In-Reply-To: <4911053E.9070103@kernel.org> (Tejun Heo's message of "Wed, 05
-	Nov 2008 11:30:22 +0900")
-Message-ID: <874p2mecyr.fsf@denkblock.local>
-User-Agent: Gnus/5.110011 (No Gnus v0.11)
+	id S1753670AbYKEJdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 04:33:50 -0500
+Date: Wed, 5 Nov 2008 10:33:44 +0100
+From: Karel Zak <kzak@redhat.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc3: kernel mounts the same device twice? Or
+	/proc/mounts lies?
+Message-ID: <20081105093344.GA7791@nb.net.home>
+References: <200811041213.07717.arvidjaar@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811041213.07717.arvidjaar@mail.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> wrote:
-> Elias Oltmanns wrote:
->>> On these systems, not spinning the disk down is fine because the BIOS
->
->>> does it. However this would cause problems on systems where the BIOS
->>> doesn't do so as it will cause an emergency unload on power-down.
->> 
->> Ah, but do BIOSes just cut power without spinning disks down first?
->> Pressing the power button on my laptop either at the prompt for the HD
->> password or in GRUB's menu spins the disk down properly. Isn't that the
->> BIOS doing its job?
->
-> Drives don't like emergency unloads but they are designed to take
-> some.
+On Tue, Nov 04, 2008 at 12:13:07PM +0300, Andrey Borzenkov wrote:
+> And according to /proc/mounts both are mounted at the same time:
+> 
+> {pts/0}% cat /proc/mounts
+> rootfs / rootfs rw 0 0
+> /dev/root / reiserfs rw 0 0
+> /dev /dev tmpfs rw 0 0
+> /proc /proc proc rw 0 0
+> /sys /sys sysfs rw 0 0
+> /proc/bus/usb /proc/bus/usb usbfs rw,devgid=43,devmode=664 0 0
+> none /dev/pts devpts rw,mode=620 0 0
+> none /dev/shm tmpfs rw 0 0
+> none /tmp tmpfs rw 0 0
+> none /proc/sys/fs/binfmt_misc binfmt_misc rw 0 0
+> /dev/sda2 /media/hd reiserfs rw 0 0
+> {pts/0}% ll /dev/root
+> brw------- 1 root root 8, 2 2008-11-04 12:01 /dev/root
+> {pts/0}% ll /dev/sda2
+> brw-rw---- 1 root disk 8, 2 2008-11-04 12:01 /dev/sda2
+> 
+> Bug or feature?
 
-In the situations I mentioned above, the drive definitely is not
-performing an emergency unload. On the other hand, the BIOS hasn't
-handed over control to the OS at this stage, so it would make sense if
-the BIOS behaved differently once the OS has taken over. BTW, what
-exactly will happen if I install an ancient OS like DOS on my
-(reasonably) modern laptop? I've never tried that but I don't see how
-the OS would even have a chance to spin the disk down befor power off
-since there is no way for the user to initiate power off in the OS. Is
-that anything to do with ACPI support?
+ Feature. This is typical FAQ-like question.
 
-Regards,
+ # mount /dev/sda2 /mnt/test
+ # mount /dev/sda2 /mnt/test2
 
-Elias
+ # df | grep sda2
+ /dev/sda2             14877092    168740  13940448   2% /mnt/test
+ /dev/sda2             14877092    168740  13940448   2% /mnt/test2
+
+    Karel
+
+-- 
+ Karel Zak  <kzak@redhat.com>
