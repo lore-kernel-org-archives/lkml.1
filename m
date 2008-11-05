@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYKEMSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYKEM0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbYKEMSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 07:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYKEMS3
+	id S1755548AbYKEM0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 07:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbYKEM0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 07:18:29 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:60029 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbYKEMS2 (ORCPT
+	Wed, 5 Nov 2008 07:26:36 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:40842 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754276AbYKEM0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 07:18:28 -0500
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: Fix some whitespace issues
-Date: Wed, 5 Nov 2008 13:18:21 +0100
-User-Agent: KMail/1.9.9
-Organization: IBM
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
-       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
-       osstklei@de.ibm.com
+	Wed, 5 Nov 2008 07:26:36 -0500
+X-Sasl-enc: mNYARLHYJyN4EW+ZLVx9QwyTtWlMEDzL8bx/vURtgfhp 1225887994
+Date: Wed, 5 Nov 2008 10:26:32 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
+Message-ID: <20081105122632.GC14931@khazad-dum.debian.net>
+References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811051318.21579.hannes.hering@linux.vnet.ibm.com>
+In-Reply-To: <20081105074712.GA2816@x61>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes some trailing whitespaces and spaces before tabs.
+On Wed, 05 Nov 2008, Tino Keitel wrote:
+> On Wed, Nov 05, 2008 at 08:33:08 +0100, Tino Keitel wrote:
+> > I tried 2.6.28-rc3 (git a75952b) on my ThinkPad X61s, and now the fan
+> > runs at full speed after resume from suspend:
+> 
+> I forgot to look into the kernel logs for more info. Well, I found this
+> line:
+> 
+> thinkpad_acpi: restoring fan level to 0x07
+> 
+> So I guess that according to
+> 
+> ACPI: thinkpad-acpi: attempt to preserve fan state on resume
+> 
+> the attempt failed. :-)
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
----
-diff -Nurp -X dontdiff linux-2.6.28-rc3/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.28-rc3/drivers/net/ehea/ehea.h	2008-11-02 23:17:19.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea.h	2008-11-05 10:10:14.563107976 +0100
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0095"
-+#define DRV_VERSION	"EHEA_0096"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff -Nurp -X dontdiff linux-2.6.28-rc3/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
---- linux-2.6.28-rc3/drivers/net/ehea/ehea_qmr.c	2008-11-02 23:17:19.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-11-05 10:10:14.563107976 +0100
-@@ -653,7 +653,7 @@ static int ehea_update_busmap(unsigned l
- 		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
- 		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
- 		int idx = i & EHEA_INDEX_MASK;
--		
-+
- 		if (add) {
- 			int ret = ehea_init_bmap(ehea_bmap, top, dir);
- 			if (ret)
-@@ -780,7 +780,7 @@ void ehea_destroy_busmap(void)
- 
- 	kfree(ehea_bmap);
- 	ehea_bmap = NULL;
--out_destroy:	
-+out_destroy:
- 	mutex_unlock(&ehea_busmap_mutex);
- }
- 
-@@ -858,10 +858,10 @@ static u64 ehea_reg_mr_sections(int top,
- 	for (idx = 0; idx < EHEA_MAP_ENTRIES; idx++) {
- 		if (!ehea_bmap->top[top]->dir[dir]->ent[idx])
- 			continue;
--		
-+
- 		hret = ehea_reg_mr_section(top, dir, idx, pt, adapter, mr);
- 		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
--			    	return hret;
-+			return hret;
- 	}
- 	return hret;
- }
-@@ -879,7 +879,7 @@ static u64 ehea_reg_mr_dir_sections(int 
- 
- 		hret = ehea_reg_mr_sections(top, dir, pt, adapter, mr);
- 		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
--			    	return hret;
-+			return hret;
- 	}
- 	return hret;
- }
+Indeed.  Please send the full kernel output of thinkpad-acpi, showing boot,
+suspend and resume messages from the driver, please?
+
+Also, please tell me what is the contents of /proc/acpi/ibm/fan (and if
+possible, the contents of /proc/acpi/ibm/ecdump) before you issue the
+suspend command.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
