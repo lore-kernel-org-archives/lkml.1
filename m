@@ -1,85 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbYKEEcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYKEEsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755489AbYKEEcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 23:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164AbYKEEci
+	id S1755505AbYKEEsH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 23:48:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbYKEEry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 23:32:38 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38770 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734AbYKEEch (ORCPT
+	Tue, 4 Nov 2008 23:47:54 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:29210 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYKEErx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 23:32:37 -0500
-Date: Wed, 5 Nov 2008 13:31:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>, peterz@infradead.org,
-       rientjes@google.com, npiggin@suse.de, menage@google.com, dfults@sgi.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       righi.andrea@gmail.com
-Subject: Re: [patch 0/7] cpuset writeback throttling
-Message-Id: <20081105133157.db8bae72.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081104190505.769b93ec.akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
-	<20081104124753.fb1dde5a.akpm@linux-foundation.org>
-	<1225831988.7803.1939.camel@twins>
-	<20081104131637.68fbe055.akpm@linux-foundation.org>
-	<1225833710.7803.1993.camel@twins>
-	<20081104135004.f1717fcf.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0811041601100.5077@quilx.com>
-	<20081104143534.b5c16147.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0811041648350.6254@quilx.com>
-	<20081104153610.bbfd5ed8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0811042036000.31167@quilx.com>
-	<20081104190505.769b93ec.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 4 Nov 2008 23:47:53 -0500
+Date: Tue, 4 Nov 2008 20:46:46 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, Eric Van Hensbergen <ericvh@gmail.com>,
+       davem@davemloft.net
+Subject: [PATCH] net/9p: fix printk format warnings
+Message-Id: <20081104204646.977cecad.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008 19:05:05 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> Generally, I worry that this is a specific fix to a specific problem
-> encountered on specific machines with specific setups and specific
-> workloads, and that it's just all too low-level and myopic.
-> 
-> And now we're back in the usual position where there's existing code and
-> everyone says it's terribly wonderful and everyone is reluctant to step
-> back and look at the big picture.  Am I wrong?
-> 
-> 
-> Plus: we need per-memcg dirty-memory throttling, and this is more
-> important than per-cpuset, I suspect.  How will the (already rather
-> buggy) code look once we've stuffed both of them in there?
-> 
-> 
-IIUC, Andrea Righ posted 2 patches around dirty_ratio. (added him to CC:)
-in early October.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-  (1) patch for adding dirty_ratio_pcm. (1/100000)
-  (2) per-memcg dirty ratio. (maybe this..http://lkml.org/lkml/2008/9/12/121)
+Fix printk format warnings in net/9p.
+Built cleanly on 7 arches.
+
+net/9p/client.c:820: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:820: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:867: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:867: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:932: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:932: warning: format '%llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+net/9p/client.c:982: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:982: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:1025: warning: format '%llx' expects type 'long long unsigned int', but argument 4 has type 'u64'
+net/9p/client.c:1025: warning: format '%llx' expects type 'long long unsigned int', but argument 5 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 12 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 8 has type 'u64'
+net/9p/client.c:1227: warning: format '%llx' expects type 'long long unsigned int', but argument 13 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 7 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 12 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 8 has type 'u64'
+net/9p/client.c:1252: warning: format '%llx' expects type 'long long unsigned int', but argument 13 has type 'u64'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Eric Van Hensbergen <ericvh@gmail.com>
+---
+ net/9p/client.c |   31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
+
+--- lin2628-rc3.orig/net/9p/client.c
++++ lin2628-rc3/net/9p/client.c
+@@ -818,7 +818,9 @@ struct p9_fid *p9_client_attach(struct p
+ 	}
  
-(1) should be just posted again.
-
-Because we have changed page_cgroup implementation, (2) should be reworked.
-"rework" itself will not be very difficult.
-(.... we tend to be stick to "what interface is the best" discussion ;) 
-
-But memcg itself is not so weak against dirty_pages because we don't call
-try_to_free_pages() becasue of memory shortage but because of memory limitation.
-
-BTW, in my current stack, followings are queued.
-   a. handle SwapCache in proper way in memcg.
-   b. handle swap_cgroup (if configured)
-   c. make LRU handling easier
-
-For making per-memcg dirty_ratio sane, (a) should go ahead. I do (a) now.
-If Andrea seems to be too busy, I'll schedule dirty_ratio-for-memcg as my work.
-
-Thanks,
--Kame
-
+ 	P9_DPRINTK(P9_DEBUG_9P, "<<< RATTACH qid %x.%llx.%x\n",
+-					qid.type, qid.path, qid.version);
++					qid.type,
++					(unsigned long long)qid.path,
++					qid.version);
+ 
+ 	memmove(&fid->qid, &qid, sizeof(struct p9_qid));
+ 
+@@ -865,7 +867,9 @@ p9_client_auth(struct p9_client *clnt, c
+ 	}
+ 
+ 	P9_DPRINTK(P9_DEBUG_9P, "<<< RAUTH qid %x.%llx.%x\n",
+-					qid.type, qid.path, qid.version);
++					qid.type,
++					(unsigned long long)qid.path,
++					qid.version);
+ 
+ 	memmove(&afid->qid, &qid, sizeof(struct p9_qid));
+ 	p9_free_req(clnt, req);
+@@ -930,7 +934,8 @@ struct p9_fid *p9_client_walk(struct p9_
+ 
+ 	for (count = 0; count < nwqids; count++)
+ 		P9_DPRINTK(P9_DEBUG_9P, "<<<     [%d] %x.%llx.%x\n",
+-			count, wqids[count].type, wqids[count].path,
++			count, wqids[count].type,
++			(unsigned long long)wqids[count].path,
+ 			wqids[count].version);
+ 
+ 	if (nwname)
+@@ -980,7 +985,9 @@ int p9_client_open(struct p9_fid *fid, i
+ 	}
+ 
+ 	P9_DPRINTK(P9_DEBUG_9P, "<<< ROPEN qid %x.%llx.%x iounit %x\n",
+-				qid.type, qid.path, qid.version, iounit);
++				qid.type,
++				(unsigned long long)qid.path,
++				qid.version, iounit);
+ 
+ 	fid->mode = mode;
+ 	fid->iounit = iounit;
+@@ -1023,7 +1030,9 @@ int p9_client_fcreate(struct p9_fid *fid
+ 	}
+ 
+ 	P9_DPRINTK(P9_DEBUG_9P, "<<< RCREATE qid %x.%llx.%x iounit %x\n",
+-				qid.type, qid.path, qid.version, iounit);
++				qid.type,
++				(unsigned long long)qid.path,
++				qid.version, iounit);
+ 
+ 	fid->mode = mode;
+ 	fid->iounit = iounit;
+@@ -1230,9 +1239,9 @@ struct p9_wstat *p9_client_stat(struct p
+ 		"<<<    name=%s uid=%s gid=%s muid=%s extension=(%s)\n"
+ 		"<<<    uid=%d gid=%d n_muid=%d\n",
+ 		ret->size, ret->type, ret->dev, ret->qid.type,
+-		ret->qid.path, ret->qid.version, ret->mode,
+-		ret->atime, ret->mtime, ret->length, ret->name,
+-		ret->uid, ret->gid, ret->muid, ret->extension,
++		(unsigned long long)ret->qid.path, ret->qid.version, ret->mode,
++		ret->atime, ret->mtime, (unsigned long long)ret->length,
++		ret->name, ret->uid, ret->gid, ret->muid, ret->extension,
+ 		ret->n_uid, ret->n_gid, ret->n_muid);
+ 
+ free_and_error:
+@@ -1255,9 +1264,9 @@ int p9_client_wstat(struct p9_fid *fid, 
+ 		"     name=%s uid=%s gid=%s muid=%s extension=(%s)\n"
+ 		"     uid=%d gid=%d n_muid=%d\n",
+ 		wst->size, wst->type, wst->dev, wst->qid.type,
+-		wst->qid.path, wst->qid.version, wst->mode,
+-		wst->atime, wst->mtime, wst->length, wst->name,
+-		wst->uid, wst->gid, wst->muid, wst->extension,
++		(unsigned long long)wst->qid.path, wst->qid.version, wst->mode,
++		wst->atime, wst->mtime, (unsigned long long)wst->length,
++		wst->name, wst->uid, wst->gid, wst->muid, wst->extension,
+ 		wst->n_uid, wst->n_gid, wst->n_muid);
+ 	err = 0;
+ 	clnt = fid->clnt;
