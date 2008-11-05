@@ -1,90 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbYKEKyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYKEK4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbYKEKyT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 05:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYKEKyJ
+	id S1756230AbYKEK4P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 05:56:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbYKEKz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 05:54:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51903 "EHLO ogre.sisk.pl"
+	Wed, 5 Nov 2008 05:55:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57277 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754768AbYKEKyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 05:54:07 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Nigel Cunningham <ncunningham@crca.org.au>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with =?iso-8859-15?q?memory=09hotplug?=
-Date: Wed, 5 Nov 2008 11:58:42 +0100
-User-Agent: KMail/1.9.9
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz> <1225785224.12673.564.camel@nimitz> <1225876205.6755.55.camel@nigel-laptop>
-In-Reply-To: <1225876205.6755.55.camel@nigel-laptop>
+	id S1754774AbYKEKz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 05:55:59 -0500
+Date: Wed, 5 Nov 2008 11:55:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: use raw spinlocks instead of spinlocks
+Message-ID: <20081105105541.GB19361@elte.hu>
+References: <490E3F73.1000405@gmail.com> <alpine.DEB.1.10.0811021940030.32371@gandalf.stny.rr.com> <20081103064647.GA4826@elte.hu> <c62985530811031803o6909518ax137d42189dcff0de@mail.gmail.com> <20081104094341.GO23790@elte.hu> <c62985530811040314o13394d43t201ae3fc2f1304be@mail.gmail.com> <20081104120355.GA19969@elte.hu> <c62985530811050250u638c8f95j7d80a13f834b06bf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200811051158.43457.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530811050250u638c8f95j7d80a13f834b06bf@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 5 of November 2008, Nigel Cunningham wrote:
-> Hi.
-> 
-> On Mon, 2008-11-03 at 23:53 -0800, Dave Hansen wrote:
-> > On Tue, 2008-11-04 at 18:30 +1100, Nigel Cunningham wrote:
-> > > One other question, if I may. Would you please explain (or point me to
-> > > an explanation) of PHYS_PFN_OFFSET/ARCH_PFN_OFFSET? I've been dealing
-> > > occasionally with people wanting to have hibernation on arm, and I don't
-> > > really get the concept or the implementation (particularly when it comes
-> > > to trying to do the sort of iterating over zones and pfns that was being
-> > > discussed in previous messages in this thread.
-> > 
-> > First of all, I think PHYS_PFN_OFFSET is truly an arch-dependent
-> > construct.  It only appears in arm an avr32.  I'll tell you only how
-> > ARCH_PFN_OFFSET looks to me.  My guess is that those two arches need to
-> > reconcile themselves and start using ARCH_PFN_OFFSET instead.
-> > 
-> > In the old days, we only had memory that started at physical address 0x0
-> > and went up to some larger address.  We allocated a mem_map[] of 'struct
-> > pages' in one big chunk, one for each address.  mem_map[0] was for
-> > physical address 0x0 and mem_map[1] was for 0x1000, mem_map[2] was for
-> > 0x2000 and so on...
-> > 
-> > If a machine didn't have a physical address 0x0, we allocated mem_map[]
-> > for it anyway and just wasted that entry.  What ARCH_PFN_OFFSET does is
-> > let us bias the mem_map[] structure so that mem_map[0] does not
-> > represent 0x0.
-> > 
-> > If ARCH_PFN_OFFSET is 1, then mem_map[0] actually represents the
-> > physical address 0x1000.  If it is 2, then mem_map[0] represents
-> > physical addr 0x2000.  ARCH_PFN_OFFSET means that the first physical
-> > address on the machine is at ARCH_PFN_OFFSET*PAGE_SIZE.  We bias all
-> > lookups into the mem_map[] so that we don't waste space in it.  There
-> > will never be a zone_start_pfn lower than ARCH_PFN_OFFSET, for instance.
-> > 
-> > What does that mean for walking zones?  Nothing.  It only has meaning
-> > for how we allocate and do lookups into the mem_map[].  But, since
-> > everyone uses pfn_to_page() and friends, you don't ever see this.
-> > 
-> > I'm curious why you think you need to be concerned with it.
-> 
-> Sorry for the delay in replying.
-> 
-> It's because I'm looking at old patches for arm support for TuxOnIce and
-> because of the way TuxOnIce records what pages need attention:
-> 
-> My method of recording what needs doing is different to Rafael's. I use
-> per zone bitmaps (constructed out of order 0 allocations) and therefore
-> look at zone_start_pfn in calculating what bit within the zone needs to
-> be set/cleared/tested.
 
-Well, the mainline does pretty much the same at the moment, but the bitmaps
-are probably different.
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-Thanks,
-Rafael
+> 2008/11/4 Ingo Molnar <mingo@elte.hu>:
+> > just make sure normal printk is totally silent. (otherwise you get
+> > double lines on the console plus no reduction in recursion risk)
+> >
+> > i usually add a return; hack to kernel/printk.c:printk(), to make sure
+> > it never executes anything. (and add a notrace to it as well) Maybe we
+> > could even make this dependent on early_printk=...,keep.
+> 
+> Thanks for your help!
+> 
+> I tried the earlyprintk=vga,keep and I thought that the normal printk
+> output would
+> be replaced by early_printk output but that's not the case...
+> So I replaced the content of printk by this of early_printk and it worked.
+> But it seems that after the setting of the console, the early_printk
+> doesn't work anymore.
+> 
+> Should I disable something else? I haven't any console=.... parameter
+> but I guess I missed
+> something there...
+
+perhaps try a "console=tty 3" bootup - to boot into non-graphics 
+initlevel 3, and to have a vga tty set up. Then comment out the 
+regular printk(), to make sure it never tries to output to the regular 
+tty.
+
+does earlyprintk=vga,keep work in that case?
+
+> But, I set the parameter nmi_watchdog=2 (I didn't know I had to 
+> start explicitly the nmi watchdog) and at last... I had my 
+> backtraces :-)
+
+heh :-)
+
+> All these backtraces were related to time function. And one of the 
+> special things of the time functions is that they often manipulate 
+> 64 bits numbers. Actually I totally forgot that a function could 
+> return a long long, so I had to save edx register in the return 
+> handler to restore it in its end because 64 bits numbers are 
+> returned as a couple into eax and edx in x86-32.
+> 
+> So the main problem is now solved. But it remains a last (but more 
+> rare) deadlock somewhere. I don't know why at this time and the nmi 
+> watchdog doesn't tell anything. So I will have to use early_printk 
+> to see the last functions traced. But the problem is that it doesn't 
+> print on the console...
+
+hm. Let me know if you cannot get this to work. I regularly use 
+earlyprintk=serial,...,keep myself, and it works there - but i dont 
+use earlyprintk=vga,keep that often.
+
+	Ingo
