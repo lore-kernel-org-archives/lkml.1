@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbYKEMFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYKEMSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756375AbYKEMFF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 07:05:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbYKEMEz
+	id S1755385AbYKEMSl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 07:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYKEMS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 07:04:55 -0500
-Received: from smarthost02.mail.zen.net.uk ([212.23.3.141]:59317 "EHLO
-	smarthost02.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755360AbYKEMEy (ORCPT
+	Wed, 5 Nov 2008 07:18:29 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:60029 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbYKEMS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 07:04:54 -0500
-Subject: [PATCH v2] x86: Don't allow nr_irqs > NR_IRQS
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1225819102.3074.15.camel@achroite>
-References: <1225819102.3074.15.camel@achroite>
-Content-Type: text/plain; charset=UTF-8
-Organization: Solarflare Communications
-Date: Wed, 05 Nov 2008 12:04:46 +0000
-Message-Id: <1225886687.3074.59.camel@achroite>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
-X-Originating-Smarthost02-IP: [82.69.137.158]
+	Wed, 5 Nov 2008 07:18:28 -0500
+From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: Fix some whitespace issues
+Date: Wed, 5 Nov 2008 13:18:21 +0100
+User-Agent: KMail/1.9.9
+Organization: IBM
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
+       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       osstklei@de.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811051318.21579.hannes.hering@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On some systems probe_nr_irqs() can return a value larger than
-NR_IRQS.  This will lead to probe_irq_on() overrunning the irq_desc
-array.
+This patch removes some trailing whitespaces and spaces before tabs.
 
-Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+Signed-off-by: Hannes Hering <hering2@de.ibm.com>
 ---
- arch/x86/kernel/io_apic.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-﻿
-I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
-Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
-5 IOAPICs and returns 240.  Here are the log messages:
-
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
-Tue Nov  4 16:53:47 2008 IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x02] address[0xfec81000] gsi_base[24])
-Tue Nov  4 16:53:47 2008 IOAPIC[1]: apic_id 2, version 32, address 0xfec81000, GSI 24-47
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x03] address[0xfec81400] gsi_base[48])
-Tue Nov  4 16:53:47 2008 IOAPIC[2]: apic_id 3, version 32, address 0xfec81400, GSI 48-71
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x04] address[0xfec82000] gsi_base[72])
-Tue Nov  4 16:53:47 2008 IOAPIC[3]: apic_id 4, version 32, address 0xfec82000, GSI 72-95
-Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x05] address[0xfec82400] gsi_base[96])
-Tue Nov  4 16:53:47 2008 IOAPIC[4]: apic_id 5, version 32, address 0xfec82400, GSI 96-119
-Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
-Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-Tue Nov  4 16:53:47 2008 Enabling APIC mode:  Flat.  Using 5 I/O APICs
-
-I have added a WARN_ON() as suggested by Yinghai Lu.
-
-Ben.
-
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -3611,6 +3611,8 @@ int __init probe_nr_irqs(void)
- 	/* something wrong ? */
- 	if (nr < nr_min)
- 		nr = nr_min;
-+	if (WARN_ON(nr > NR_IRQS))
-+		nr = NR_IRQS;
+diff -Nurp -X dontdiff linux-2.6.28-rc3/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
+--- linux-2.6.28-rc3/drivers/net/ehea/ehea.h	2008-11-02 23:17:19.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea.h	2008-11-05 10:10:14.563107976 +0100
+@@ -40,7 +40,7 @@
+ #include <asm/io.h>
  
- 	return nr;
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0095"
++#define DRV_VERSION	"EHEA_0096"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff -Nurp -X dontdiff linux-2.6.28-rc3/drivers/net/ehea/ehea_qmr.c patched_kernel/drivers/net/ehea/ehea_qmr.c
+--- linux-2.6.28-rc3/drivers/net/ehea/ehea_qmr.c	2008-11-02 23:17:19.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea_qmr.c	2008-11-05 10:10:14.563107976 +0100
+@@ -653,7 +653,7 @@ static int ehea_update_busmap(unsigned l
+ 		int top = ehea_calc_index(i, EHEA_TOP_INDEX_SHIFT);
+ 		int dir = ehea_calc_index(i, EHEA_DIR_INDEX_SHIFT);
+ 		int idx = i & EHEA_INDEX_MASK;
+-		
++
+ 		if (add) {
+ 			int ret = ehea_init_bmap(ehea_bmap, top, dir);
+ 			if (ret)
+@@ -780,7 +780,7 @@ void ehea_destroy_busmap(void)
+ 
+ 	kfree(ehea_bmap);
+ 	ehea_bmap = NULL;
+-out_destroy:	
++out_destroy:
+ 	mutex_unlock(&ehea_busmap_mutex);
  }
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
-They asked us to note that Solarflare product names are trademarked.
-
+ 
+@@ -858,10 +858,10 @@ static u64 ehea_reg_mr_sections(int top,
+ 	for (idx = 0; idx < EHEA_MAP_ENTRIES; idx++) {
+ 		if (!ehea_bmap->top[top]->dir[dir]->ent[idx])
+ 			continue;
+-		
++
+ 		hret = ehea_reg_mr_section(top, dir, idx, pt, adapter, mr);
+ 		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
+-			    	return hret;
++			return hret;
+ 	}
+ 	return hret;
+ }
+@@ -879,7 +879,7 @@ static u64 ehea_reg_mr_dir_sections(int 
+ 
+ 		hret = ehea_reg_mr_sections(top, dir, pt, adapter, mr);
+ 		if ((hret != H_SUCCESS) && (hret != H_PAGE_REGISTERED))
+-			    	return hret;
++			return hret;
+ 	}
+ 	return hret;
+ }
