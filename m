@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbYKEV2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbYKEV3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbYKEV2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 16:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbYKEV2A
+	id S1756457AbYKEV3U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 16:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYKEV3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 16:28:00 -0500
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:54230 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754799AbYKEV17 (ORCPT
+	Wed, 5 Nov 2008 16:29:11 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:54720 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753166AbYKEV3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 16:27:59 -0500
-Date: Wed, 5 Nov 2008 22:27:48 +0100
-From: Sebastian Andrzej Siewior <bigeasy@breakpoint.cc>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: herbert@gondor.apana.org.au, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] crypto: add test vectors for skein256/512/1024
-Message-ID: <20081105212748.GA4990@Chamillionaire.breakpoint.cc>
-References: <20081102161506.GA21940@havoc.gtf.org> <20081102201518.GA23620@Chamillionaire.breakpoint.cc> <490E5788.4080300@garzik.org>
+	Wed, 5 Nov 2008 16:29:11 -0500
+Date: Wed, 5 Nov 2008 15:28:31 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: peterz@infradead.org, rientjes@google.com, npiggin@suse.de,
+       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, travis@sgi.com, steiner@sgi.com
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <20081105125603.36d0c222.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0811051526050.5132@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+ <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
+ <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins>
+ <20081104135004.f1717fcf.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041601100.5077@quilx.com>
+ <20081104143534.b5c16147.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041648350.6254@quilx.com>
+ <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811042036000.31167@quilx.com> <20081104190505.769b93ec.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811050747040.11867@quilx.com> <20081105104145.abd6fc91.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811051415360.31450@quilx.com> <20081105123150.d6628805.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811051434300.31450@quilx.com> <20081105125603.36d0c222.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <490E5788.4080300@garzik.org>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeff Garzik | 2008-11-02 20:44:40 [-0500]:
+On Wed, 5 Nov 2008, Andrew Morton wrote:
 
-> Sebastian Andrzej Siewior wrote:
->> I grabed them from http://www.schneier.com/skein.html. The last test 
->> vector
->> (3) in every category is currently deactivated because it failed always.
->> It is unlikely that I made a type because I copy+pasted the tables + vim
->> magiced them. So maybe code may missbehave on requests lengths which are
->> not a multiple of 4 or the vectors can not be used due to some other
->> limitations that I've overseen.
+> See, here's my problem: we have a pile of new code which fixes some
+> problem.  But the problem seems to be fairly small - it only affects a
+> small number of sophisticated users and they already have workarounds
+> in place.
 
-Okay, that was a false positive :)
-The "untouched" reference implementation outputs the same hash. The
-additional information (tree, ...) is part of the third argument in
-Skein_XXX_InitExt() which isn't used. So we can safely drop the third
-test vector.
+Well yes... Great situation with those workarounds.
 
+> So the world wouldn't end if we just didn't merge it.  Those users
+> stick with their workarounds and the kernel remains simpler and
+> smaller.
 >
-> 	Jeff
+> How do we work out which is the best choice here?  I don't have enough
+> information to do this.
 
-Sebastian
+Not sure how to treat this. I am not involved with large NUMA at this
+point. So the people who are interested need to speak up if they want
+this.
+
