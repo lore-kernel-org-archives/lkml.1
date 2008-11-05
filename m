@@ -1,68 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbYKES0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYKES11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbYKES0k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 13:26:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYKES0c
+	id S1756714AbYKES11 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYKES1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 13:26:32 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:40983 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbYKES0b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 13:26:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=B5Bryh921XPl6GB4Z1fiy1gzVxvO0EqZFYRq2AhsQe0jMXpqWmjQIzLHNAxlN7DzA1
-         tgabsnobg/0yBkoZ6X1k1ELoZQxABLgoUGh2iTWb3dCzZK7Fr9cFnXaL4QEYlw6DElRY
-         EAq5eJNWXhvainP/9gMq/yVXnk++rFfLmp+io=
-Date: Wed, 5 Nov 2008 21:26:15 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
-       Andi Kleen <andi@firstfloor.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-Message-ID: <20081105182615.GG7286@localhost>
-References: <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <20081104212933.GA11050@elte.hu> <4910C014.9070805@zytor.com> <20081104215245.GC17775@elte.hu> <20081105175318.GD7286@localhost> <4911E042.8040404@zytor.com> <20081105181405.GE7286@localhost> <4911E3E7.6090109@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4911E3E7.6090109@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 5 Nov 2008 13:27:18 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49438 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753674AbYKES1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 13:27:17 -0500
+Date: Thu, 6 Nov 2008 03:26:31 +0900
+To: shehjart@cse.unsw.edu.au
+Cc: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
+       tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       linux-parisc@vger.kernel.org
+Subject: Re: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
+ Mar 28, 2008
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <490F880E.4000801@cse.unsw.edu.au>
+References: <490F880E.4000801@cse.unsw.edu.au>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081106032605J.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Wed, Nov 05, 2008 at 10:20:23AM -0800]
-| Cyrill Gorcunov wrote:
-| > 
-| > I see. Thanks! Btw Peter, I remember I read long time ago about
-| > segment caches (well... in time of DOS programming actually). But
-| > there was only 'common' words like this cache exist. But maybe
-| > it's possible to know what exactly size of such a cache is?
-| > You mentoined number 32. (heh... I hadn't remember it until
-| > you mentoined about such a cache :-)
-| > 
-| 
-| As with any other caching structure, you can discover its size,
-| associativity, and replacement policy by artificially trying to provoke
-| patterns that produce pathological timings.
-| 
-| At Transmeta, at one time we used a 32-entry direct-mapped cache, which
-| ended up with a ~96% hit rate on common Win95 benchmarks.
-| 
-| I should, however, make it clear that there are other alternatives for
-| speeding up segment descriptor loading, and not all of them rely on a cache.
-| 
-| 	-hpa
-| 
+Sorry for the delay.
 
-Thanks a lot for explanation!
+CC'ed linux-parisc since the same problem could happen to parisc.
 
-		- Cyrill -
+On Tue, 04 Nov 2008 10:23:58 +1100
+Shehjar Tikoo <shehjart@cse.unsw.edu.au> wrote:
+
+> I've been observing kernel panics for the past week on
+> kernel versions 2.6.26, 2.6.27 but not on 2.6.24 and 2.6.25.
+> 
+> The panic message says:
+> 
+> arch/ia64/hp/common/sba_iommu.c: I/O MMU is out of mapping resources
+> 
+> Using git-bisect, I've zeroed in on the commit that introduced this.
+> Please see the attached file for the commit.
+> 
+> The workload consists of 2 tests:
+> 1. Single fio process writing a 1 TB file.
+> 2. 15 fio processes writing 15GB files each.
+> 
+> The panic happens on both workloads. There is no stack trace after
+> the above message.
+> 
+> Other info:
+> System is HP RX6600(16Gb RAM, 16 processors w/ dual cores and HT)
+> 20 SATA disks under software RAID0 with 6 TB capacity.
+> Silicon Image 3124 controller.
+> File system is XFS.
+> 
+> I'd much appreciate some help in fixing this because this panic has
+> basically stalled my own work. I'd be willing to run more tests on my
+> setup to test any patches that possibly fix this issue.
+
+This patch modified the sba IOMMU driver to support LLDs' segment
+boundary limits properly.
+
+ATA hardware has poor segment boundary limit, 64KB. In addition, sba
+IOMMU driver uses size-aligned allocation algorithm. It means that
+it's difficult for the IOMMU driver to find an appropriate I/O address
+space. I think that you hit the allocation failure due to this problem
+(of course, it's possible that my change breaks the IOMMU driver but I
+can't find a problem so far).
+
+To make matters worse, sba IOMMU driver panic when the allocation
+fails. IIRC, only IA64 and parisc IOMMU drivers panic by default in
+the case of the allocation failure. I think that we need to change
+them to handle the failure properly.
+
+Can you try this? I've not fixed map_single failure yet but I think
+that you hit the failure allocation in map_sg path.
+
+
+diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
+index d98f0f4..8f44dc8 100644
+--- a/arch/ia64/hp/common/sba_iommu.c
++++ b/arch/ia64/hp/common/sba_iommu.c
+@@ -676,12 +676,19 @@ sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
+ 			spin_unlock_irqrestore(&ioc->saved_lock, flags);
+ 
+ 			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
+-			if (unlikely(pide >= (ioc->res_size << 3)))
+-				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
+-				      ioc->ioc_hpa);
++			if (unlikely(pide >= (ioc->res_size << 3))) {
++				printk(KERN_WARNING "%s: I/O MMU @ %p is"
++				       "out of mapping resources, %u %u %lx\n",
++				       __func__, ioc->ioc_hpa, ioc->res_size,
++				       pages_needed, dma_get_seg_boundary(dev));
++				return -1;
++			}
+ #else
+-			panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
+-			      ioc->ioc_hpa);
++			printk(KERN_WARNING "%s: I/O MMU @ %p is"
++			       "out of mapping resources, %u %u %lx\n",
++			       __func__, ioc->ioc_hpa, ioc->res_size,
++			       pages_needed, dma_get_seg_boundary(dev));
++			return -1;
+ #endif
+ 		}
+ 	}
+@@ -962,6 +969,7 @@ sba_map_single_attrs(struct device *dev, void *addr, size_t size, int dir,
+ #endif
+ 
+ 	pide = sba_alloc_range(ioc, dev, size);
++	BUG_ON(pide < 0);
+ 
+ 	iovp = (dma_addr_t) pide << iovp_shift;
+ 
+@@ -1304,6 +1312,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
+ 	unsigned long dma_offset, dma_len; /* start/len of DMA stream */
+ 	int n_mappings = 0;
+ 	unsigned int max_seg_size = dma_get_max_seg_size(dev);
++	int idx;
+ 
+ 	while (nents > 0) {
+ 		unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
+@@ -1402,9 +1411,13 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
+ 		vcontig_sg->dma_length = vcontig_len;
+ 		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
+ 		ASSERT(dma_len <= DMA_CHUNK_SIZE);
+-		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
+-			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
+-			| dma_offset);
++		idx = sba_alloc_range(ioc, dev, dma_len);
++		if (idx < 0) {
++			dma_sg->dma_length = 0;
++			return -1;
++		}
++		dma_sg->dma_address = (dma_addr_t)(PIDE_FLAG | (idx << iovp_shift)
++						   | dma_offset);
+ 		n_mappings++;
+ 	}
+ 
+@@ -1476,6 +1489,10 @@ int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist, int nents,
+ 	** Access to the virtual address is what forces a two pass algorithm.
+ 	*/
+ 	coalesced = sba_coalesce_chunks(ioc, dev, sglist, nents);
++	if (coalesced < 0) {
++		sba_unmap_sg_attrs(dev, sglist, nents, dir, attrs);
++		return 0;
++	}
+ 
+ 	/*
+ 	** Program the I/O Pdir
+
