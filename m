@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYKEDee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbYKEDe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbYKEDee (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 22:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbYKEDeX
+	id S1756336AbYKEDe6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 22:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbYKEDes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 22:34:23 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59053 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754307AbYKEDeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 22:34:22 -0500
-Message-ID: <49111394.1070304@cn.fujitsu.com>
-Date: Wed, 05 Nov 2008 11:31:32 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 4 Nov 2008 22:34:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41207 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754307AbYKEDer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 22:34:47 -0500
+Message-ID: <4911144E.3030404@kernel.org>
+Date: Wed, 05 Nov 2008 12:34:38 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, bharata@linux.vnet.ibm.com,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting	controller
-References: <20081023054335.GC3280@in.ibm.com> <6599ad830810230849x71961a0asd7f00d3baa2f2271@mail.gmail.com> <20081024050830.GA4387@in.ibm.com> <6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com> <20081025060157.GA4614@in.ibm.com> <6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com> <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com> <20081027044319.GA4386@in.ibm.com> <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com> <49057ADD.1050705@cn.fujitsu.com> <20081030171622.GA19872@linux.vnet.ibm.com>
-In-Reply-To: <20081030171622.GA19872@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] Block: use round_jiffies_up()
+References: <Pine.LNX.4.44L0.0811041114180.3614-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0811041114180.3614-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Nov 2008 03:34:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> cpuacct was designed to count cpu usage of a group of tasks, and now some people
->> want it to also take child group's usage into account, so I think this is a feature
->> request but not a bug fix.
->>
-> 
-> I disagree. The child is a part of the parent's hierarchy, and therefore
-> its usage should reflect in the parent's usage.
-> 
+Hello,
 
-In memcg the child's usage doesn't reflect in its parent's usage. ;)
+Alan Stern wrote:
+> @@ -78,13 +78,14 @@ void blk_delete_timer(struct request *re
+>  	/*
+>  	 * Nothing to detach
+>  	 */
+> -	if (!q->rq_timed_out_fn || !req->deadline)
+> +	if (!req->deadline)
+>  		return;
+>  
+>  	list_del_init(&req->timeout_list);
+>  
+>  	if (list_empty(&q->timeout_list))
+>  		del_timer(&q->timeout);
+> +	req->deadline = 0;
+>  }
 
-Balbir just posted a patchset to add hierarchy support in memcg, and added memory.feature
-to disable/enable this feature. Is it for performance only or also for keeping the user
-interface/behavior unchanged?
+Actually, this can just be
+
+blk_delete_timer()
+{
+	list_del_init(&req->timeout_list);
+	if (list_empty(&q->timeout_list))
+		del_timer(&q->timeout);
+}
+
+and none of req->deadline trick is necessary.
+
+Thanks.
+
+-- 
+tejun
