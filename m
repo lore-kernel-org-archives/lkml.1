@@ -1,50 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbYKEUsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbYKEU5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbYKEUsJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:48:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYKEUry
+	id S1756827AbYKEU5A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbYKEU4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 15:47:54 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:30057 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755326AbYKEUry (ORCPT
+	Wed, 5 Nov 2008 15:56:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54012 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755838AbYKEU4u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 15:47:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Q468q/Js5e++aE/0hbPxkyScnJlgYHW+oq4I03ox/n5Iej97vt01i9bAwjcvjkQwcK
-         B459MQzaUfgQryz6A23kJZraxGidGRB61fvHGh4sXPNiTiF/pAsq/8QmMtyhCphVzwky
-         IjTRINavHzT7zF1W6qCSKJQKJVP+hyJehUw2E=
-Message-ID: <9e4733910811051247t1af88c09kb57cb7145816b2ab@mail.gmail.com>
-Date: Wed, 5 Nov 2008 15:47:53 -0500
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "J.R. Mauro" <jrm8005@gmail.com>
-Subject: Re: [RFC PATCH V4 0/6] In-kernel IR remote control support
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3aaafc130811051215v6a66e9f6n125ffd3727c5a6ed@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Nov 2008 15:56:50 -0500
+Date: Wed, 5 Nov 2008 12:56:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: peterz@infradead.org, rientjes@google.com, npiggin@suse.de,
+       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+Message-Id: <20081105125603.36d0c222.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0811051434300.31450@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+	<20081104124753.fb1dde5a.akpm@linux-foundation.org>
+	<1225831988.7803.1939.camel@twins>
+	<20081104131637.68fbe055.akpm@linux-foundation.org>
+	<1225833710.7803.1993.camel@twins>
+	<20081104135004.f1717fcf.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811041601100.5077@quilx.com>
+	<20081104143534.b5c16147.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811041648350.6254@quilx.com>
+	<20081104153610.bbfd5ed8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811042036000.31167@quilx.com>
+	<20081104190505.769b93ec.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811050747040.11867@quilx.com>
+	<20081105104145.abd6fc91.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811051415360.31450@quilx.com>
+	<20081105123150.d6628805.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0811051434300.31450@quilx.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081105194640.19407.19682.stgit@localhost>
-	 <3aaafc130811051159y1e2fb70fg6b1b915a07daf58e@mail.gmail.com>
-	 <9e4733910811051207w4e57086eq3c02f96c9530add6@mail.gmail.com>
-	 <3aaafc130811051215v6a66e9f6n125ffd3727c5a6ed@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 5, 2008 at 3:15 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
-> What's involved in converting an LIRC driver into something usable
-> with your framework?
+On Wed, 5 Nov 2008 14:40:05 -0600 (CST)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Look at either of the two drivers I posted. It is actually very
-simple. Drivers just send/receive arrays of pulse timings in
-milliseconds.
+> On Wed, 5 Nov 2008, Andrew Morton wrote:
+> 
+> > > That means running reclaim. But we are only interested in getting rid of
+> > > dirty pages. Plus the filesystem guys have repeatedly pointed out that
+> > > page sized I/O to random places in a file is not a good thing to do. There
+> > > was actually talk of stopping kswapd from writing out pages!
+> >
+> > They don't have to be reclaimed.
+> 
+> Well the LRU is used for reclaim. If you step over it then its using the
+> existing reclaim logic in vmscan.c right?
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Only if you use it that way.
+
+I imagine that a suitable implementation would start IO on the page
+then move it to the other end of the LRU.  ie: treat it as referenced. 
+Pretty simple stuff.
+
+If we were to do writeout on the page's inode instead then we'd need
+to move the page out of the way somehow, presumably by rotating it.
+
+It's all workable outable.
+
+> > > > There would probably be performance benefits in doing
+> > > > address_space-ordered writeback, so the dirty-memory throttling could
+> > > > pick a dirty page off the LRU, go find its inode and then feed that
+> > > > into __sync_single_inode().
+> > >
+> > > We cannot call into the writeback functions for an inode from a reclaim
+> > > context. We can write back single pages but not a range of pages from an
+> > > inode due to various locking issues (see discussion on slab defrag
+> > > patchset).
+> >
+> > We're not in a reclaim context.  We're in sys_write() context.
+> 
+> Dirtying a page can occur from a variety of kernel contexts.
+
+This writeback will occur from one quite specific place:
+balance_dirty_pages().  That's called from sys_write() and pagefaults. 
+Other scruffy places like splice too.
+
+But none of that matters - the fact is that we're _already_ doing
+writeback from balance_dirty_pages().  All we're talking about here is
+alternative schemes for looking up the pages to write.
+
+> > > > But _are_ people hitting this problem?  I haven't seen any real-looking
+> > > > reports in ages.  Is there some workaround?  If so, what is it?  How
+> > > > serious is this problem now?
+> > >
+> > > Are there people who are actually having memcg based solutions deployed?
+> > > No enterprise release includes it yet so I guess that there is not much of
+> > > a use yet.
+> >
+> > If you know the answer then please provide it.  If you don't, please
+> > say "I don't know".
+> 
+> I thought we were talking about memcg related reports. I have dealt with
+> scores of the cpuset related ones in my prior job.
+> 
+> Workarounds are:
+> 
+> 1. Reduce the global dirty ratios so that the number of dirty pages in a
+> cpuset cannot become too high.
+
+That would be less than the smallest node's memory capacity, I guess.
+
+> 2. Do not create small cpusets where the system can dirty all pages.
+> 
+> 3. Find other ways to limit the dirty pages (run sync once in a while or
+> so).
+
+hm, OK.
+
+
+See, here's my problem: we have a pile of new code which fixes some
+problem.  But the problem seems to be fairly small - it only affects a
+small number of sophisticated users and they already have workarounds
+in place.
+
+So the world wouldn't end if we just didn't merge it.  Those users
+stick with their workarounds and the kernel remains simpler and
+smaller.
+
+How do we work out which is the best choice here?  I don't have enough
+information to do this.
+
+
