@@ -1,73 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYKESOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYKESQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbYKESOV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 13:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYKESOM
+	id S1756073AbYKESQj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753017AbYKESQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 13:14:12 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:26421 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbYKESOL (ORCPT
+	Wed, 5 Nov 2008 13:16:24 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:48654 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbYKESQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 13:14:11 -0500
+	Wed, 5 Nov 2008 13:16:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jn3WzouPZZJnbKqGO56Q5d5cub4yAgZOzVel7j+Cib9q/AZ1gTzUN+6+Djvujj+qcP
-         2JXPm0970LpcUJVjhrKTD+6QzUDCh52RogDO+VHqVzESWBLipzGkCcuIa8I6/SeoHvPM
-         OSd27cHh2nA7Yn5bpl7W+3z9SXYBMYrmFHn3w=
-Date: Wed, 5 Nov 2008 21:14:05 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
-       Andi Kleen <andi@firstfloor.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=wXbrXv3aoxRTShBkdF0qZJB/6zn5pcSye377JIOlhUBlB/X34pGqBNAcG7XQBq9fV5
+         NnmYFpwqXC7KCG/bgcF96ATsqFql6IZcAqW33ZCUMtmJ10tlkMMICAsSSzK5Gm6B7aBu
+         BUz3qtHj887HbDncwuBCJUT7agCD22uFoVSwM=
+Subject: [RFC-PATCH 1/5] unaligned: introduce common header
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-arch <linux-arch@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-Message-ID: <20081105181405.GE7286@localhost>
-References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <20081104212933.GA11050@elte.hu> <4910C014.9070805@zytor.com> <20081104215245.GC17775@elte.hu> <20081105175318.GD7286@localhost> <4911E042.8040404@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4911E042.8040404@zytor.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+       Russell King <rmk@arm.linux.org.uk>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Yoshinori Sato <ysato@users.sourceforge.jp>,
+       Chris Zankel <chris@zankel.net>
+Content-Type: text/plain
+Date: Wed, 05 Nov 2008 10:16:16 -0800
+Message-Id: <1225908976.5991.180.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Wed, Nov 05, 2008 at 10:04:50AM -0800]
-| Cyrill Gorcunov wrote:
-| > 
-| > Ingo, what the conclusion is? As I understand from the thread --
-| > 
-| > 1) Implement Peter's proposed cleanup/compress.
-| > 2) Test Alexander's patche.
-| > 
-| > Did I miss something?
-| > 
-| 
-| Nope, that's pretty much it.
-| 
-| However, there are good reason to believe that using this kind of
-| segment selector tricks is probably a bad idea in the long term,
-| especially since CPU vendors have strong incentives to reduce the size
-| of the segment descriptor cache now when none of the mainstream OSes
-| rely on more than a small handful of segments.
-| 
-| I was planning to look at doing the obvious stub shrink today.
-| 
-| 	-hpa
-| 
+There are two common cases in the kernel, one where unaligned access
+is OK for an arch and one where the arch uses a packed-struct for
+the native endianness and opencoded C byteshifting for the other
+endianness.  Consolidate these two implementations in asm-generic/unaligned.h
 
-I see. Thanks! Btw Peter, I remember I read long time ago about
-segment caches (well... in time of DOS programming actually). But
-there was only 'common' words like this cache exist. But maybe
-it's possible to know what exactly size of such a cache is?
-You mentoined number 32. (heh... I hadn't remember it until
-you mentoined about such a cache :-)
+Arches that require no special handling of unaligned access can define
+_UNALIGNED_ACCESS_OK in their asm/unaligned.h before including the generic
+version.
 
-		- Cyrill -
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Patches 1-3 will have _zero_ functional change, it just consolidates the implementation
+in one header rather than the many under linux/unaligned/* and only moves the arches
+for which unaligned access is OK or is already using the packed-struct implementation.
+
+Patch 4 will need input from the arch maintainers and isn't meant to be applied immediately,
+
+The memmove-based arches (m32r, xtensa, h8300) are likely going to be fine with this change
+barring compiler bugs that made them go with memmove in the first place.
+
+ARM still needs further investigation as to the impact on code generation, but is included
+here so that people can try it if possible
+
+Patch 5 is just a removal of the old headers.
+
+ include/asm-generic/unaligned.h |  323 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 323 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
+new file mode 100644
+index 0000000..583433f
+--- /dev/null
++++ b/include/asm-generic/unaligned.h
+@@ -0,0 +1,323 @@
++#ifndef _ASM_GENERIC_UNALIGNED_H
++#define _ASM_GENERIC_UNALIGNED_H
++
++#include <linux/types.h>
++#include <asm/byteorder.h>
++
++#ifdef _UNALIGNED_ACCESS_OK
++
++static inline u16 get_unaligned_le16(const void *p)
++{
++	return le16_to_cpup(p);
++}
++
++static inline u32 get_unaligned_le32(const void *p)
++{
++	return le32_to_cpup(p);
++}
++
++static inline u64 get_unaligned_le64(const void *p)
++{
++	return le64_to_cpup(p);
++}
++
++static inline u16 get_unaligned_be16(const void *p)
++{
++	return be16_to_cpup(p);
++}
++
++static inline u32 get_unaligned_be32(const void *p)
++{
++	return be32_to_cpup(p);
++}
++
++static inline u64 get_unaligned_be64(const void *p)
++{
++	return be64_to_cpup(p);
++}
++
++static inline void put_unaligned_le16(u16 val, void *p)
++{
++	*(__le16 *)p = cpu_to_le16(val);
++}
++
++static inline void put_unaligned_le32(u32 val, void *p)
++{
++	*(__le32 *)p = cpu_to_le32(val);
++}
++
++static inline void put_unaligned_le64(u64 val, void *p)
++{
++	*(__le64 *)p = cpu_to_le64(val);
++}
++
++static inline void put_unaligned_be16(u16 val, void *p)
++{
++	*(__be16 *)p = cpu_to_be16(val);
++}
++
++static inline void put_unaligned_be32(u32 val, void *p)
++{
++	*(__be32 *)p = cpu_to_be32(val);
++}
++
++static inline void put_unaligned_be64(u64 val, void *p)
++{
++	*(__be64 *)p = cpu_to_be64(val);
++}
++
++#else /* _UNALIGNED_ACCESS_OK */
++
++struct __una_u16 { u16 x __attribute__((packed)); };
++struct __una_u32 { u32 x __attribute__((packed)); };
++struct __una_u64 { u64 x __attribute__((packed)); };
++
++static inline u16 __get_una_le16(const u8 *p)
++{
++	return p[0] | p[1] << 8;
++}
++
++static inline u32 __get_una_le32(const u8 *p)
++{
++	return p[0] | p[1] << 8 | p[2] << 16 | p[3] << 24;
++}
++
++static inline u64 __get_una_le64(const u8 *p)
++{
++	return ((u64)__get_una_le32(p + 4) << 32) | __get_una_le32(p);
++}
++
++static inline u16 __get_una_be16(const u8 *p)
++{
++	return p[0] << 8 | p[1];
++}
++
++static inline u32 __get_una_be32(const u8 *p)
++{
++	return p[0] << 24 | p[1] << 16 | p[2] << 8 | p[3];
++}
++
++static inline u64 __get_una_be64(const u8 *p)
++{
++	return ((u64)__get_una_be32(p) << 32) | __get_una_be32(p + 4);
++}
++
++static inline u16 get_unaligned_le16(const void *p)
++{
++#ifdef __LITTLE_ENDIAN
++	return ((const struct __una_u16 *)p)->x;
++#else
++	return __get_una_le16(p);
++#endif
++}
++
++static inline u32 get_unaligned_le32(const void *p)
++{
++#ifdef __LITTLE_ENDIAN
++	return ((const struct __una_u32 *)p)->x;
++#else
++	return __get_una_le32(p);
++#endif
++}
++
++static inline u16 get_unaligned_le64(const void *p)
++{
++#ifdef __LITTLE_ENDIAN
++	return ((const struct __una_u64 *)p)->x;
++#else
++	return __get_una_le64(p);
++#endif
++}
++
++static inline u16 get_unaligned_be16(const void *p)
++{
++#ifdef __BIG_ENDIAN
++	return ((const struct __una_u16 *)p)->x;
++#else
++	return __get_una_be16(p);
++#endif
++}
++
++static inline u32 get_unaligned_be32(const void *p)
++{
++#ifdef __BIG_ENDIAN
++	return ((const struct __una_u32 *)p)->x;
++#else
++	return __get_una_be32(p);
++#endif
++}
++
++static inline u16 get_unaligned_be64(const void *p)
++{
++#ifdef __BIG_ENDIAN
++	return ((const struct __una_u64 *)p)->x;
++#else
++	return __get_una_be64(p);
++#endif
++}
++
++static inline void __put_una_le16(u8 *p, u16 val)
++{
++	*p++ = val;
++	*p++ = val >> 8;
++}
++
++static inline void __put_una_le32(u8 *p, u32 val)
++{
++	__put_una_le16(p + 2, val >> 16);
++	__put_una_le16(p, val);
++}
++
++static inline void __put_una_le64(u8 *p, u64 val)
++{
++	__put_una_le32(p + 4, val >> 32);
++	__put_una_le32(p, val);
++}
++
++static inline void __put_una_be16(u8 *p, u16 val)
++{
++	*p++ = val >> 8;
++	*p++ = val;
++}
++
++static inline void __put_una_be32(u8 *p, u32 val)
++{
++	__put_una_be16(p, val >> 16);
++	__put_una_be16(p + 2, val);
++}
++
++static inline void __put_una_be64(u8 *p, u64 val)
++{
++	__put_una_be32(p, val >> 32);
++	__put_una_be32(p + 4, val);
++}
++
++static inline void put_unaligned_le16(u16 val, void *p)
++{
++#ifdef __LITTLE_ENDIAN
++	((struct __una_u16 *)p)->x = val;
++#else
++	__put_una_le16(p, val);
++#endif
++}
++
++static inline void put_unaligned_le32(u32 val, void *p)
++{
++#ifdef __LITTLE_ENDIAN
++	((struct __una_u32 *)p)->x = val;
++#else
++	__put_una_le32(p, val);
++#endif
++}
++
++static inline void put_unaligned_le64(u64 val, void *p)
++{
++#ifdef __LITTLE_ENDIAN
++	((struct __una_u64 *)p)->x = val;
++#else
++	__put_una_le64(p, val);
++#endif
++}
++
++static inline void put_unaligned_be16(u16 val, void *p)
++{
++#ifdef __BIG_ENDIAN
++	((struct __una_u16 *)p)->x = val;
++#else
++	__put_una_be16(p, val);
++#endif
++}
++
++static inline void put_unaligned_be32(u32 val, void *p)
++{
++#ifdef __BIG_ENDIAN
++	((struct __una_u32 *)p)->x = val;
++#else
++	__put_una_be32(p, val);
++#endif
++}
++
++static inline void put_unaligned_be64(u64 val, void *p)
++{
++#ifdef __BIG_ENDIAN
++	((struct __una_u64 *)p)->x = val;
++#else
++	__put_una_be64(p, val);
++#endif
++}
++
++#endif /* _UNALIGNED_ACCESS_OK */
++
++/*
++ * Cause a link-time error if we try an unaligned access other than
++ * 1,2,4 or 8 bytes long
++ */
++extern void __bad_unaligned_access_size(void);
++
++#define __get_unaligned_le(ptr) ((__force typeof(*(ptr)))({			\
++	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
++	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_le16((ptr)),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 4, get_unaligned_le32((ptr)),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 8, get_unaligned_le64((ptr)),	\
++	__bad_unaligned_access_size()))));					\
++	}))
++
++#define __get_unaligned_be(ptr) ((__force typeof(*(ptr)))({			\
++	__builtin_choose_expr(sizeof(*(ptr)) == 1, *(ptr),			\
++	__builtin_choose_expr(sizeof(*(ptr)) == 2, get_unaligned_be16((ptr)),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 4, get_unaligned_be32((ptr)),	\
++	__builtin_choose_expr(sizeof(*(ptr)) == 8, get_unaligned_be64((ptr)),	\
++	__bad_unaligned_access_size()))));					\
++	}))
++
++#define __put_unaligned_le(val, ptr) ({					\
++	void *__gu_p = (ptr);						\
++	switch (sizeof(*(ptr))) {					\
++	case 1:								\
++		*(u8 *)__gu_p = (__force u8)(val);			\
++		break;							\
++	case 2:								\
++		put_unaligned_le16((__force u16)(val), __gu_p);		\
++		break;							\
++	case 4:								\
++		put_unaligned_le32((__force u32)(val), __gu_p);		\
++		break;							\
++	case 8:								\
++		put_unaligned_le64((__force u64)(val), __gu_p);		\
++		break;							\
++	default:							\
++		__bad_unaligned_access_size();				\
++		break;							\
++	}								\
++	(void)0; })
++
++#define __put_unaligned_be(val, ptr) ({					\
++	void *__gu_p = (ptr);						\
++	switch (sizeof(*(ptr))) {					\
++	case 1:								\
++		*(u8 *)__gu_p = (__force u8)(val);			\
++		break;							\
++	case 2:								\
++		put_unaligned_be16((__force u16)(val), __gu_p);		\
++		break;							\
++	case 4:								\
++		put_unaligned_be32((__force u32)(val), __gu_p);		\
++		break;							\
++	case 8:								\
++		put_unaligned_be64((__force u64)(val), __gu_p);		\
++		break;							\
++	default:							\
++		__bad_unaligned_access_size();				\
++		break;							\
++	}								\
++	(void)0; })
++
++#ifdef __LITTLE_ENDIAN
++# define get_unaligned __get_unaligned_le
++# define put_unaligned __put_unaligned_le
++#else
++# define get_unaligned __get_unaligned_be
++# define put_unaligned __put_unaligned_be
++#endif
++
++#endif /* _ASM_GENERIC_UNALIGNED_H */
+-- 
+1.6.0.3.756.gb776d
+
+
