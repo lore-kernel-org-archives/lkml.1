@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbYKEK2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbYKEKrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbYKEK2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 05:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYKEK2H
+	id S1755807AbYKEKrJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 05:47:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbYKEKqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 05:28:07 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:59513 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754164AbYKEK2G (ORCPT
+	Wed, 5 Nov 2008 05:46:55 -0500
+Received: from mga03.intel.com ([143.182.124.21]:20250 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750812AbYKEKqy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 05:28:06 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: benh@kernel.crashing.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       James Cloos <cloos@jhcloos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-	<871vxtthr3.fsf@burly.wgtn.ondioline.org>
-	<1225874361.13603.12.camel@pasglop>
-Date: Wed, 05 Nov 2008 23:28:01 +1300
-In-Reply-To: <1225874361.13603.12.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Wed, 05 Nov 2008 19:39:21 +1100")
-Message-ID: <87skq6sc0e.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Wed, 5 Nov 2008 05:46:54 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,550,1220252400"; 
+   d="scan'208";a="71368294"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH]1/3 intel_menlow:Adding comment for GTHS legal values
+Date: Wed, 5 Nov 2008 16:15:13 +0530
+Message-ID: <7D0189F5BE1DF549A570B212D1D5612182AF02@bgsmsx412.gar.corp.intel.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH]1/3 intel_menlow:Adding comment for GTHS legal values
+Thread-Index: Ack/M5T0rMgyJgTPQmWdX8AutIXceA==
+From: "Thomas, Sujith" <sujith.thomas@intel.com>
+To: "Len Brown" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>,
+       "Thomas, Sujith" <sujith.thomas@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+X-OriginalArrivalTime: 05 Nov 2008 10:45:19.0288 (UTC) FILETIME=[9899FB80:01C93F33]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+Documentation of legal values for GTHS
+To be patched over Rui's 09/11 bug fix patch
 
-> On Mon, 2008-11-03 at 20:01 +1300, Paul Collins wrote:
->> I am also experiencing this problem on a PowerBook G4 with an M10.
->>
->> 0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
->> 
->> Here are the fonts I'm using:
->> 
->>         http://ondioline.org/~paul/consolefonts/
->
-> For some reason, that font gives me "Bad font file format". 
+Signed-off-by: Sujith Thomas <sujith.thomas@intel.com>
+---
+ drivers/misc/intel_menlow.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Odd.  I'm using setfont from Debian's kbd 1.14.1-4 to load it.
-
-P.S. I haven't had time to play with the 32-roundup thing any further yet.
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+Index: linux-2.6.27/drivers/misc/intel_menlow.c
+===================================================================
+--- linux-2.6.27.orig/drivers/misc/intel_menlow.c
++++ linux-2.6.27/drivers/misc/intel_menlow.c
+@@ -52,6 +52,11 @@ MODULE_LICENSE("GPL");
+ #define MEMORY_ARG_CUR_BANDWIDTH 1
+ #define MEMORY_ARG_MAX_BANDWIDTH 0
+ 
++/*
++ * GTHS returning 'n' would mean that [0,n-1] states are supported
++ * In that case max_cstate would be n-1
++ * GTHS returning '0' would mean that no bandwidth control states are
+supported
++ */
+ static int memory_get_int_max_bandwidth(struct thermal_cooling_device
+*cdev,
+ 					unsigned long *max_state)
+ {
