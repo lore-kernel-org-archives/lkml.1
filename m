@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbYKEJBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYKEJCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbYKEJBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYKEJBY
+	id S1755505AbYKEJCb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYKEJCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 04:01:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43859 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752898AbYKEJBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:01:23 -0500
-Date: Wed, 5 Nov 2008 10:01:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Keith Packard <keithp@keithp.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Dave Airlie <airlied@linux.ie>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] IO mappings, #2
-Message-ID: <20081105090102.GB9141@elte.hu>
-References: <20081022093615.GF12453@elte.hu> <1224746087-13991-1-git-send-email-keithp@keithp.com> <20081023080553.GB14714@elte.hu> <1224776350.6738.14.camel@koto.keithp.com> <21d7e9970811022300o2576b437kb35a55e2751889f6@mail.gmail.com> <alpine.LFD.2.00.0811030833340.3459@nehalem.linux-foundation.org> <20081103165319.GA27433@elte.hu> <20081103172951.GA7929@elte.hu> <20081104153653.4b785480@bike.lwn.net>
+	Wed, 5 Nov 2008 04:02:18 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:26551 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752207AbYKEJCQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 04:02:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QpJAdga385wusjZCG3lezNgCCCTi+AgLRjM3XO97U+JFHWidv7xiYC88PAKVqMeNP5
+         78Uop+gG4aHaHvs4tvqCGUz2Y8IFQgW0/Xtfh96e1fIjEqRLKXCsdzIGZxKG9bCsfqwi
+         f5jxZz2Xf/Z2VhkAxF6ABlUoWe4eAYAO0bvR8=
+Date: Wed, 5 Nov 2008 12:05:22 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.28-rc3: kernel mounts the same device twice? Or
+	/proc/mounts lies?
+Message-ID: <20081105090522.GB3570@x200.localdomain>
+References: <200811041213.07717.arvidjaar@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081104153653.4b785480@bike.lwn.net>
+In-Reply-To: <200811041213.07717.arvidjaar@mail.ru>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.1 required=5.9 tests=DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	0.1 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jonathan Corbet <corbet@lwn.net> wrote:
-
-> Having looked at this some, I have one, tiny little suggestion:
+On Tue, Nov 04, 2008 at 12:13:07PM +0300, Andrey Borzenkov wrote:
+> Out of some infinite wisdom something on my system decided to add
+> fstab entry for "new" device after switching from IDE to PATA:
 > 
-> > +With this mapping object, individual pages can be mapped either
-> > atomically +or not, depending on the necessary scheduling
-> > environment. Of course, atomic +maps are more efficient:
-> > +
-> > +	void *io_mapping_map_atomic_wc(struct io_mapping *mapping,
-> > +				       unsigned long offset)
+> # Entry for /dev/LABEL=/ :
+> LABEL=/ / reiserfs relatime,tail 1 1
+> none /proc proc defaults 0 0
+> none /sys sysfs defaults 0 0
+> none /tmp tmpfs defaults 0 0
+> # Entry for /dev/LABEL=swap :
+> LABEL=swap swap swap defaults 0 0
+> # Entry for /dev/sda2 :
+> UUID=72973377-c299-4ca6-ae94-2022b7dca58f /media/hd reiserfs defaults 0 0
 > 
-> Should the documentation for this function (perhaps the 
-> certainly-forthcoming kerneldoc comments :) mention loudly that this 
-> function uses KM_USER0?  This isn't kmap(), and doesn't look much 
-> like it; someday some developer might get an ugly surprise when they 
-> try to use that slot simultaneously for something else.
+> Note that both / and /media/hd refer to the same device:
+> 
+> {pts/0}% sudo blkid
+> /dev/sda1: TYPE="swap" LABEL="swap" UUID="3b4dc82c-a6e6-4609-be9e-16d9206ab7fd"
+> /dev/sda2: UUID="72973377-c299-4ca6-ae94-2022b7dca58f" LABEL="/" TYPE="reiserfs"
+> 
+> And according to /proc/mounts both are mounted at the same time:
+> 
+> {pts/0}% cat /proc/mounts
+> rootfs / rootfs rw 0 0
+> /dev/root / reiserfs rw 0 0
+> /dev /dev tmpfs rw 0 0
+> /proc /proc proc rw 0 0
+> /sys /sys sysfs rw 0 0
+> /proc/bus/usb /proc/bus/usb usbfs rw,devgid=43,devmode=664 0 0
+> none /dev/pts devpts rw,mode=620 0 0
+> none /dev/shm tmpfs rw 0 0
+> none /tmp tmpfs rw 0 0
+> none /proc/sys/fs/binfmt_misc binfmt_misc rw 0 0
+> /dev/sda2 /media/hd reiserfs rw 0 0
+> {pts/0}% ll /dev/root
+> brw------- 1 root root 8, 2 2008-11-04 12:01 /dev/root
+> {pts/0}% ll /dev/sda2
+> brw-rw---- 1 root disk 8, 2 2008-11-04 12:01 /dev/sda2
+> 
+> Bug or feature?
 
-definitely worth a comment.
-
-	Ingo
+bind mount or some userspace from LinuxOnDesktop crowd is actually mounted it second time.
