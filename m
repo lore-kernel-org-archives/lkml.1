@@ -1,131 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbYKEVlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbYKEVrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbYKEVlp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 16:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYKEVlh
+	id S1755203AbYKEVrS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 16:47:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKEVrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 16:41:37 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52032 "EHLO mx2.redhat.com"
+	Wed, 5 Nov 2008 16:47:08 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:46692 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbYKEVlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 16:41:36 -0500
-Message-ID: <491212C0.4030900@redhat.com>
-Date: Wed, 05 Nov 2008 16:40:16 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1751115AbYKEVrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 16:47:07 -0500
+Date: Wed, 5 Nov 2008 16:46:55 -0500
+To: Doug Nazar <nazard@dragoninc.ca>
+Cc: "'David Woodhouse'" <David.Woodhouse@intel.com>,
+       "'Al Viro'" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.28-rc3 truncates nfsd results
+Message-ID: <20081105214655.GK1455@fieldses.org>
+References: <000301c93eaa$fae98460$f0bc8d20$@ca> <20081104223000.GG10974@fieldses.org> <004a01c93f37$f2a09090$d7e1b1b0$@ca>
 MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com
-CC: David Miller <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       h-shimamoto@ct.jp.nec.com
-Subject: Re: [PATCH] kprobes: disable preempt for module_text_address()
-References: <490FE405.1000105@cn.fujitsu.com> <4910F697.2050203@redhat.com> <4910FB3D.4020805@cn.fujitsu.com>
-In-Reply-To: <4910FB3D.4020805@cn.fujitsu.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <004a01c93f37$f2a09090$d7e1b1b0$@ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
-> actually, calling __module_text_address() in __register_kprobe() is
-> better after my fix applied. but I found that a line have exceed
-> 80 characters, so I don't use __module_text_address().
+On Wed, Nov 05, 2008 at 06:16:28AM -0500, Doug Nazar wrote:
+> 
+> 
+> > From: J. Bruce Fields [mailto:bfields@fieldses.org]
+> > On Tue, Nov 04, 2008 at 01:27:23PM -0500, Doug Nazar wrote:
+> > > Commit 8d7c4203 "nfsd: fix failure to set eof in readdir in some situations"
+> > > breaks the nfsd server. Bisected it back to this commit and reverting it
+> > > fixes the problem.
+> > >
+> > > However, it only happens on certain machines even with the same kernel &
+> > > filesystem (ext3). I've two groups of similar computers, each group running
+> > > identical kernels. The ones listing only ~250 files are of course in error.
+> > > Eldritch is running 2.6.28-rc3 with that commit reverted. With 2.8.28-rc3 it
+> > > showed the incorrect number.
+> > 
+> > Well, that's strange; it must be staring me in the face, but I don't see
+> > the problem (and can't reproduce it).  Can you watch for the readdir
+> > with wireshark and see if it's returning an error on the readdir?  Or is
+> > it  just returning succesfully with eof set after the first ~250
+> > entries?
+> 
+> Ok, think I've figured it out. 
 
-I don't think that coding style is a good reason not to fix it...:(
+Awesome, good job working this out.
 
-Anyway, I think the issue that you pointed must be fixed.
-I found there were same kind of issues in kprobes and updated
-your patch. This includes fixes which Hiroshi pointed out.
+Anyone know where to find the best documentation of the vfs_readdir
+semantics?  I obviously didn't understand it as well as I should.
 
-Thanks a lot! :)
+> The computers showing the issue are not using dir_index. This causes
+> ext3 to read a block at a time, which then means we can end up with
+> buf.full==0 but not finished reading the directory. Before 8d7c4203,
+> we'd always get called again because we never set nfserr_eof which
+> papered over it.
 
-__register_kprobe() can be preempted after checking probing address
-but before try_module_get() or module_put(), and in this interval the
-module can be unloaded. In that case, try_module_get(probed_mod) or
-module_put(mod) will access to invalid address, or kprobe will probe
-invalid address.
+OK, so if I'm understanding you correctly: there was also (as of
+c002a6c797 "Optimise NFS readdir hack slightly"?) a performance
+regression which could force the client to do more round trips to the
+server to read the whole directory?
 
-this patch uses preempt_disable() to protect it and use
-__module_text_address() and __kernel_text_address().
+> I think the correct solution is to move nfserr_eof into the loop and
+> remove the buf.full check so that we loop until buf.used==0.  The
+> following seems to do the right thing and reduces the network traffic
+> since we now ensure each buffer is full.
+> 
+> Tested on an empty directory & large directory, eof is properly sent
+> and no short buffers.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
----
- kernel/kprobes.c |   21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+Thanks, looking....
 
-Index: 2.6.28-rc3/kernel/kprobes.c
-===================================================================
---- 2.6.28-rc3.orig/kernel/kprobes.c
-+++ 2.6.28-rc3/kernel/kprobes.c
-@@ -613,30 +613,37 @@ static int __kprobes __register_kprobe(s
- 		return -EINVAL;
- 	p->addr = addr;
+--b.
 
--	if (!kernel_text_address((unsigned long) p->addr) ||
--	    in_kprobes_functions((unsigned long) p->addr))
-+	preempt_disable();
-+	if (!__kernel_text_address((unsigned long) p->addr) ||
-+	    in_kprobes_functions((unsigned long) p->addr)) {
-+		preempt_enable();
- 		return -EINVAL;
-+	}
-
- 	p->mod_refcounted = 0;
-
- 	/*
- 	 * Check if are we probing a module.
- 	 */
--	probed_mod = module_text_address((unsigned long) p->addr);
-+	probed_mod = __module_text_address((unsigned long) p->addr);
- 	if (probed_mod) {
--		struct module *calling_mod = module_text_address(called_from);
-+		struct module *calling_mod;
-+		calling_mod = __module_text_address(called_from);
- 		/*
- 		 * We must allow modules to probe themself and in this case
- 		 * avoid incrementing the module refcount, so as to allow
- 		 * unloading of self probing modules.
- 		 */
- 		if (calling_mod && calling_mod != probed_mod) {
--			if (unlikely(!try_module_get(probed_mod)))
-+			if (unlikely(!try_module_get(probed_mod))) {
-+				preempt_enable();
- 				return -EINVAL;
-+			}
- 			p->mod_refcounted = 1;
- 		} else
- 			probed_mod = NULL;
- 	}
-+	preempt_enable();
-
- 	p->nmissed = 0;
- 	INIT_LIST_HEAD(&p->list);
-@@ -718,9 +725,11 @@ static void __kprobes __unregister_kprob
- 	struct kprobe *old_p;
-
- 	if (p->mod_refcounted) {
--		mod = module_text_address((unsigned long)p->addr);
-+		preempt_disable();
-+		mod = __module_text_address((unsigned long)p->addr);
- 		if (mod)
- 			module_put(mod);
-+		preempt_enable();
- 	}
-
- 	if (list_empty(&p->list) || list_is_singular(&p->list)) {
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
-
+> 
+> diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+> index 848a03e..4433c8f 100644
+> --- a/fs/nfsd/vfs.c
+> +++ b/fs/nfsd/vfs.c
+> @@ -1875,11 +1875,11 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+>  		return -ENOMEM;
+>  
+>  	offset = *offsetp;
+> -	cdp->err = nfserr_eof; /* will be cleared on successful read */
+>  
+>  	while (1) {
+>  		unsigned int reclen;
+>  
+> +		cdp->err = nfserr_eof; /* will be cleared on successful read */
+>  		buf.used = 0;
+>  		buf.full = 0;
+>  
+> @@ -1912,9 +1912,6 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+>  			de = (struct buffered_dirent *)((char *)de + reclen);
+>  		}
+>  		offset = vfs_llseek(file, 0, SEEK_CUR);
+> -		cdp->err = nfserr_eof;
+> -		if (!buf.full)
+> -			break;
+>  	}
+>  
+>   done:
+> 
+> 
+> 
