@@ -1,156 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756714AbYKES11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbYKES2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756714AbYKES11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 13:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbYKES1S
+	id S1756823AbYKES2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYKES2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 13:27:18 -0500
-Received: from sh.osrg.net ([192.16.179.4]:49438 "EHLO sh.osrg.net"
+	Wed, 5 Nov 2008 13:28:00 -0500
+Received: from www.tglx.de ([62.245.132.106]:41414 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbYKES1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 13:27:17 -0500
-Date: Thu, 6 Nov 2008 03:26:31 +0900
-To: shehjart@cse.unsw.edu.au
-Cc: fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org,
-       tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       linux-parisc@vger.kernel.org
-Subject: Re: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
- Mar 28, 2008
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <490F880E.4000801@cse.unsw.edu.au>
-References: <490F880E.4000801@cse.unsw.edu.au>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081106032605J.fujita.tomonori@lab.ntt.co.jp>
+	id S1752597AbYKES17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 13:27:59 -0500
+Date: Wed, 5 Nov 2008 19:27:44 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, "Hans J. Koch" <hjk@linutronix.de>,
+       Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UIO: only call pgprot_noncached if defined
+Message-ID: <20081105182743.GE6382@local>
+References: <1225301177-21406-1-git-send-email-vapier@gentoo.org> <20081105113610.GA6382@local> <20081105163334.GA8473@suse.de> <8bd0f97a0811050933m13addb7eiddb963bfdf4d7416@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0811050933m13addb7eiddb963bfdf4d7416@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the delay.
-
-CC'ed linux-parisc since the same problem could happen to parisc.
-
-On Tue, 04 Nov 2008 10:23:58 +1100
-Shehjar Tikoo <shehjart@cse.unsw.edu.au> wrote:
-
-> I've been observing kernel panics for the past week on
-> kernel versions 2.6.26, 2.6.27 but not on 2.6.24 and 2.6.25.
+On Wed, Nov 05, 2008 at 12:33:37PM -0500, Mike Frysinger wrote:
+> On Wed, Nov 5, 2008 at 11:33, Greg KH wrote:
+> > On Wed, Nov 05, 2008 at 12:36:11PM +0100, Hans J. Koch wrote:
+> >> There seem to be archs that cannot easily implement a sensible
+> >> pgprot_noncached() function, so we should merge this patch. UIO doesn't
+> >> compile on these archs right now.
+> >
+> > No, we should fix those arches to have that function at least NULLed
+> > out.  Isn't there only one, Blackfin?  Putting #ifdefs in .c files is
+> > not something we really want to do if at all possible.
 > 
-> The panic message says:
-> 
-> arch/ia64/hp/common/sba_iommu.c: I/O MMU is out of mapping resources
-> 
-> Using git-bisect, I've zeroed in on the commit that introduced this.
-> Please see the attached file for the commit.
-> 
-> The workload consists of 2 tests:
-> 1. Single fio process writing a 1 TB file.
-> 2. 15 fio processes writing 15GB files each.
-> 
-> The panic happens on both workloads. There is no stack trace after
-> the above message.
-> 
-> Other info:
-> System is HP RX6600(16Gb RAM, 16 processors w/ dual cores and HT)
-> 20 SATA disks under software RAID0 with 6 TB capacity.
-> Silicon Image 3124 controller.
-> File system is XFS.
-> 
-> I'd much appreciate some help in fixing this because this panic has
-> basically stalled my own work. I'd be willing to run more tests on my
-> setup to test any patches that possibly fix this issue.
+> that was my question.  this function isnt documented.  if the hardware
+> doesnt support it, is the right thing really for the arch to lie to
+> drivers and not actually give back cached settings even though it
+> asked for non-cached ?
 
-This patch modified the sba IOMMU driver to support LLDs' segment
-boundary limits properly.
+Well, if there's no possibility to map device memory in a non-cached
+way, it's very likely you don't want to use UIO at all. If there's a few
+seconds between a write and the value actually appearing in the hardware
+register, you will certainly don't see the results you expect.
 
-ATA hardware has poor segment boundary limit, 64KB. In addition, sba
-IOMMU driver uses size-aligned allocation algorithm. It means that
-it's difficult for the IOMMU driver to find an appropriate I/O address
-space. I think that you hit the allocation failure due to this problem
-(of course, it's possible that my change breaks the IOMMU driver but I
-can't find a problem so far).
+If Blackfin can't mmap non-cached memory, we should make UIO depend on
+!BLACKFIN.
 
-To make matters worse, sba IOMMU driver panic when the allocation
-fails. IIRC, only IA64 and parisc IOMMU drivers panic by default in
-the case of the allocation failure. I think that we need to change
-them to handle the failure properly.
-
-Can you try this? I've not fixed map_single failure yet but I think
-that you hit the failure allocation in map_sg path.
-
-
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index d98f0f4..8f44dc8 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -676,12 +676,19 @@ sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
- 			spin_unlock_irqrestore(&ioc->saved_lock, flags);
- 
- 			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
--			if (unlikely(pide >= (ioc->res_size << 3)))
--				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
--				      ioc->ioc_hpa);
-+			if (unlikely(pide >= (ioc->res_size << 3))) {
-+				printk(KERN_WARNING "%s: I/O MMU @ %p is"
-+				       "out of mapping resources, %u %u %lx\n",
-+				       __func__, ioc->ioc_hpa, ioc->res_size,
-+				       pages_needed, dma_get_seg_boundary(dev));
-+				return -1;
-+			}
- #else
--			panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
--			      ioc->ioc_hpa);
-+			printk(KERN_WARNING "%s: I/O MMU @ %p is"
-+			       "out of mapping resources, %u %u %lx\n",
-+			       __func__, ioc->ioc_hpa, ioc->res_size,
-+			       pages_needed, dma_get_seg_boundary(dev));
-+			return -1;
- #endif
- 		}
- 	}
-@@ -962,6 +969,7 @@ sba_map_single_attrs(struct device *dev, void *addr, size_t size, int dir,
- #endif
- 
- 	pide = sba_alloc_range(ioc, dev, size);
-+	BUG_ON(pide < 0);
- 
- 	iovp = (dma_addr_t) pide << iovp_shift;
- 
-@@ -1304,6 +1312,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 	unsigned long dma_offset, dma_len; /* start/len of DMA stream */
- 	int n_mappings = 0;
- 	unsigned int max_seg_size = dma_get_max_seg_size(dev);
-+	int idx;
- 
- 	while (nents > 0) {
- 		unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
-@@ -1402,9 +1411,13 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
- 		vcontig_sg->dma_length = vcontig_len;
- 		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
- 		ASSERT(dma_len <= DMA_CHUNK_SIZE);
--		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
--			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
--			| dma_offset);
-+		idx = sba_alloc_range(ioc, dev, dma_len);
-+		if (idx < 0) {
-+			dma_sg->dma_length = 0;
-+			return -1;
-+		}
-+		dma_sg->dma_address = (dma_addr_t)(PIDE_FLAG | (idx << iovp_shift)
-+						   | dma_offset);
- 		n_mappings++;
- 	}
- 
-@@ -1476,6 +1489,10 @@ int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist, int nents,
- 	** Access to the virtual address is what forces a two pass algorithm.
- 	*/
- 	coalesced = sba_coalesce_chunks(ioc, dev, sglist, nents);
-+	if (coalesced < 0) {
-+		sba_unmap_sg_attrs(dev, sglist, nents, dir, attrs);
-+		return 0;
-+	}
- 
- 	/*
- 	** Program the I/O Pdir
-
+Hans
