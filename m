@@ -1,96 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYKEJKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYKEJNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbYKEJKd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:10:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYKEJKO
+	id S1755238AbYKEJNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYKEJNT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 04:10:14 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:47922 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbYKEJKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:10:12 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with
-	memory	hotplug
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1225785224.12673.564.camel@nimitz>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <20081103125108.46d0639e.akpm@linux-foundation.org>
-	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
-	 <1225751665.12673.511.camel@nimitz> <1225771353.6755.16.camel@nigel-laptop>
-	 <1225782572.12673.540.camel@nimitz> <1225783837.6755.33.camel@nigel-laptop>
-	 <1225785224.12673.564.camel@nimitz>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Wed, 05 Nov 2008 20:10:05 +1100
-Message-Id: <1225876205.6755.55.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 04:13:19 -0500
+Received: from smtp-vbr8.xs4all.nl ([194.109.24.28]:1438 "EHLO
+	smtp-vbr8.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbYKEJNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 04:13:17 -0500
+Date: Wed, 5 Nov 2008 10:13:14 +0100
+From: Folkert van Heusden <folkert@vanheusden.com>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6.18] BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug()
+Message-ID: <20081105091314.GQ23232@vanheusden.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: www.unixexpert.nl
+X-Chameleon-Return-To: folkert@vanheusden.com
+X-Xfmail-Return-To: folkert@vanheusden.com
+X-Phonenumber: +31-6-41278122
+X-URL: http://www.vanheusden.com/
+X-PGP-KeyID: 1F28D8AE
+X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
+X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
+Read-Receipt-To: <folkert@vanheusden.com>
+Reply-By: Wed Nov  5 16:29:01 CET 2008
+X-Message-Flag: MultiTail - tail on steroids
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Hi,
 
-On Mon, 2008-11-03 at 23:53 -0800, Dave Hansen wrote:
-> On Tue, 2008-11-04 at 18:30 +1100, Nigel Cunningham wrote:
-> > One other question, if I may. Would you please explain (or point me to
-> > an explanation) of PHYS_PFN_OFFSET/ARCH_PFN_OFFSET? I've been dealing
-> > occasionally with people wanting to have hibernation on arm, and I don't
-> > really get the concept or the implementation (particularly when it comes
-> > to trying to do the sort of iterating over zones and pfns that was being
-> > discussed in previous messages in this thread.
-> 
-> First of all, I think PHYS_PFN_OFFSET is truly an arch-dependent
-> construct.  It only appears in arm an avr32.  I'll tell you only how
-> ARCH_PFN_OFFSET looks to me.  My guess is that those two arches need to
-> reconcile themselves and start using ARCH_PFN_OFFSET instead.
-> 
-> In the old days, we only had memory that started at physical address 0x0
-> and went up to some larger address.  We allocated a mem_map[] of 'struct
-> pages' in one big chunk, one for each address.  mem_map[0] was for
-> physical address 0x0 and mem_map[1] was for 0x1000, mem_map[2] was for
-> 0x2000 and so on...
-> 
-> If a machine didn't have a physical address 0x0, we allocated mem_map[]
-> for it anyway and just wasted that entry.  What ARCH_PFN_OFFSET does is
-> let us bias the mem_map[] structure so that mem_map[0] does not
-> represent 0x0.
-> 
-> If ARCH_PFN_OFFSET is 1, then mem_map[0] actually represents the
-> physical address 0x1000.  If it is 2, then mem_map[0] represents
-> physical addr 0x2000.  ARCH_PFN_OFFSET means that the first physical
-> address on the machine is at ARCH_PFN_OFFSET*PAGE_SIZE.  We bias all
-> lookups into the mem_map[] so that we don't waste space in it.  There
-> will never be a zone_start_pfn lower than ARCH_PFN_OFFSET, for instance.
-> 
-> What does that mean for walking zones?  Nothing.  It only has meaning
-> for how we allocate and do lookups into the mem_map[].  But, since
-> everyone uses pfn_to_page() and friends, you don't ever see this.
-> 
-> I'm curious why you think you need to be concerned with it.
+While running 2.6.18 on an IBM x3650 with nothing but setiathome (there
+are 2 quadcores and 10GB ram in this device) I get the following errors:
 
-Sorry for the delay in replying.
+BUG: warning at kernel/cpu.c:51/unlock_cpu_hotplug()
 
-It's because I'm looking at old patches for arm support for TuxOnIce and
-because of the way TuxOnIce records what pages need attention:
+Call Trace:
+ [<ffffffff80293ed7>] unlock_cpu_hotplug+0x3f/0x6c
+ [<ffffffff8822f2a7>] :cpufreq_ondemand:do_dbs_timer+0x119/0x171
+ [<ffffffff80249150>] run_workqueue+0x94/0xe5
+ [<ffffffff80245b22>] worker_thread+0x0/0x122
+ [<ffffffff8028f8fc>] keventd_create_kthread+0x0/0x61
+ [<ffffffff80245c12>] worker_thread+0xf0/0x122
+ [<ffffffff8027c9b3>] default_wake_function+0x0/0xe
+ [<ffffffff8028f8fc>] keventd_create_kthread+0x0/0x61
+ [<ffffffff8028f8fc>] keventd_create_kthread+0x0/0x61
+ [<ffffffff802305dc>] kthread+0xd4/0x107
+ [<ffffffff80258aa0>] child_rip+0xa/0x12
+ [<ffffffff8028f8fc>] keventd_create_kthread+0x0/0x61
+ [<ffffffff80230508>] kthread+0x0/0x107
+ [<ffffffff80258a96>] child_rip+0x0/0x12
 
-My method of recording what needs doing is different to Rafael's. I use
-per zone bitmaps (constructed out of order 0 allocations) and therefore
-look at zone_start_pfn in calculating what bit within the zone needs to
-be set/cleared/tested.
+errors: they come by regularly, like 25 times in the 56 minutes this
+system has been up.
 
-In your example above, zone_start_pfn will be 1, won't it? If that's the
-case, I shouldn't need to subtract ARCH_PFN_OFFSET to get the right
-index within the zone and avoid the same wastage that ARCH_PFN_OFFSET
-avoids with mem_map.
 
-Nigel
+Folkert van Heusden
 
+-- 
+                     www.ishetweekend.nl
+----------------------------------------------------------------------
+Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
