@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbYKEJvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbYKEJwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbYKEJvy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbYKEJvm
+	id S1755606AbYKEJwQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYKEJvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 5 Nov 2008 04:51:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35468 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754414AbYKEJvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Nov 2008 04:51:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55444 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754302AbYKEJvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:51:42 -0500
-Subject: Re: [RFC][PATCH] lru_add_drain_all() don't use
- schedule_on_each_cpu()
-From: Peter Zijlstra <peterz@infradead.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, heiko.carstens@de.ibm.com,
-       npiggin@suse.de, linux-kernel@vger.kernel.org, hugh@veritas.com,
-       torvalds@linux-foundation.org, riel@redhat.com, lee.schermerhorn@hp.com,
-       linux-mm@kvack.org
-In-Reply-To: <2f11576a0810290020i362441edkb494b10c10b17401@mail.gmail.com>
-References: <2f11576a0810210851g6e0d86benef5d801871886dd7@mail.gmail.com>
-	 <2f11576a0810211018g5166c1byc182f1194cfdd45d@mail.gmail.com>
-	 <20081023235425.9C40.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <20081027145509.ebffcf0e.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0810280914010.15939@quilx.com>
-	 <20081028134536.9a7a5351.akpm@linux-foundation.org>
-	 <2f11576a0810290020i362441edkb494b10c10b17401@mail.gmail.com>
-Content-Type: text/plain
+Message-ID: <49116C98.8010304@redhat.com>
+Date: Wed, 05 Nov 2008 10:51:20 +0100
+From: Ivan Vecera <ivecera@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Francois Romieu <romieu@fr.zoreil.com>,
+       Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Edward Hsu <edward_hsu@realtek.com.tw>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: r8169 MAC addresses broken
+References: <490380C8.6070003@simon.arlott.org.uk>	<4903947A.3060206@gmail.com>	<20081025223443.GA30913@electric-eye.fr.zoreil.com>	<4904A7C5.7090801@gmail.com>	<20081026174654.GB24790@electric-eye.fr.zoreil.com>	<4906E4BE.9050304@gmail.com> <m3mygozvd4.fsf@maximus.localdomain> <490718C7.3010501@gmail.com> <490EBE83.7030309@redhat.com> <490F0FCF.4060905@gmail.com> <49109946.7020702@redhat.com> <4910BA41.5020709@gmail.com>
+In-Reply-To: <4910BA41.5020709@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=Big5
 Content-Transfer-Encoding: 7bit
-Date: Wed, 05 Nov 2008 10:51:44 +0100
-Message-Id: <1225878704.7803.2771.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-29 at 16:20 +0900, KOSAKI Motohiro wrote:
-> > I guess we should document our newly discovered schedule_on_each_cpu()
-> > problems before we forget about it and later rediscover it.
+Jiri Slaby wrote:
+> Ivan Vecera napsal(a):
+>> Francois has fix for this problem (zeroed MAC address) in his repository:
+>> http://git.kernel.org/?p=linux/kernel/git/romieu/netdev-2.6.git;a=commitdiff;h=9b1abbccf53ef1a1213b159d56257b535c599f07
 > 
-> Now, schedule_on_each_cpu() is only used by lru_add_drain_all().
-> and smp_call_function() is better way for cross call.
-> 
-> So I propose
->    1. lru_add_drain_all() use smp_call_function()
->    2. remove schedule_on_each_cpu()
-> 
-> 
-> Thought?
+> I've applied the 2 patches with this result:
+> r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+> r8169 0000:06:00.0: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+> r8169 0000:06:00.0: setting latency timer to 64
+> r8169 0000:06:00.0: irq 43 for MSI/MSI-X
+> r8169 0000:06:00.0: Missing EEPROM signature: 00000000
+> eth0: RTL8168b/8111b at 0xffffc20000038000, 00:18:f3:f8:e1:ca, XID 38000000
+> IRQ 43
+So, no MAC was read from EEPROM but it's is correct. Please try to change
+MAC address by ifconfig or ip and then reboot (no power-off). What's in dmesg
+now?
 
-At the very least that will not solve the problem on -rt where a lot of
-the smp_call_function() users are converted to schedule_on_each_cpu().
-
-
+Ivan
