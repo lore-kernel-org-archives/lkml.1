@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbYKEFbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbYKEFxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbYKEFbb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 00:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYKEFbW
+	id S1754689AbYKEFxY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 00:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbYKEFxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 00:31:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48618 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751425AbYKEFbV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 00:31:21 -0500
-Date: Tue, 4 Nov 2008 21:31:41 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Subject: [PATCH] vfs: expand some comments (d_path / seq_path)
-Message-ID: <20081104213141.61fbc6bd@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 5 Nov 2008 00:53:14 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61961 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750701AbYKEFxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 00:53:14 -0500
+Message-ID: <4911341C.7020207@cn.fujitsu.com>
+Date: Wed, 05 Nov 2008 13:50:20 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: rewrite SCHED_CPUMASK_ALLOC
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b533b9b615b9d7eb865d63165b29cf7773fa2856 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Tue, 4 Nov 2008 21:29:34 -0800
-Subject: [PATCH] vfs: expand some comments (d_path / seq_path)
+The #if/#endif is ugly. Let SCHED_CPUMASK_ALLOC do kmalloc().
 
-explain that you really need to use the return value of d_path rather
-than the buffer you passed into it.
+Also remove unnecessary pointer casting.
 
-Also fix the comment for seq_path(), the function arguments changed
-recently but the comment hadn't been updated in sync.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- fs/dcache.c   |    8 ++++++--
- fs/seq_file.c |   10 ++++++++--
- 2 files changed, 14 insertions(+), 4 deletions(-)
+ kernel/sched.c |   21 ++++++++++-----------
+ 1 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index a1d86c7..77e7723 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1911,7 +1911,8 @@ static int prepend_name(char **buffer, int *buflen, struct qstr *name)
-  * Convert a dentry into an ASCII path name. If the entry has been deleted
-  * the string " (deleted)" is appended. Note that this is ambiguous.
-  *
-- * Returns the buffer or an error code if the path was too long.
-+ * Returns a pointer into the buffer or an error code if the 
-+ * path was too long.
-  *
-  * "buflen" should be positive. Caller holds the dcache_lock.
-  *
-@@ -1987,7 +1988,10 @@ Elong:
-  * Convert a dentry into an ASCII path name. If the entry has been deleted
-  * the string " (deleted)" is appended. Note that this is ambiguous.
-  *
-- * Returns the buffer or an error code if the path was too long.
-+ * Returns a pointer into the buffer or an error code if the path was 
-+ * too long. Note: Callers should use the returned pointer, not the passed
-+ * in buffer, to use the name! The implementation often starts at an offset
-+ * into the buffer, and may leave 0 bytes at the start.
-  *
-  * "buflen" should be positive.
-  */
-diff --git a/fs/seq_file.c b/fs/seq_file.c
-index eba2eab..9e1c051 100644
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -377,8 +377,14 @@ static char *mangle_path(char *s, char *p, char *esc)
- 	return NULL;
- }
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e8819bc..dee79ad 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7318,13 +7318,13 @@ struct allmasks {
+ };
  
--/*
-- * return the absolute path of 'dentry' residing in mount 'mnt'.
-+/**
-+ * seq_path - seq_file interface to print a pathname
-+ * @m: the seq_file handle
-+ * @path: the struct path to print
-+ * @esc: set of characters to escape in the output
-+ *
-+ * return the absolute path of 'path', as represented by the
-+ * dentry / mnt pair in the path parameter.
-  */
- int seq_path(struct seq_file *m, struct path *path, char *esc)
- {
+ #if	NR_CPUS > 128
+-#define	SCHED_CPUMASK_ALLOC		1
+-#define	SCHED_CPUMASK_FREE(v)		kfree(v)
+-#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
++#define SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
++#define SCHED_CPUMASK_ALLOC(v)		v = kmalloc(sizeof(*v), GFP_KERNEL)
++#define SCHED_CPUMASK_FREE(v)		kfree(v)
+ #else
+-#define	SCHED_CPUMASK_ALLOC		0
+-#define	SCHED_CPUMASK_FREE(v)
+-#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
++#define SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
++#define SCHED_CPUMASK_ALLOC(v)
++#define SCHED_CPUMASK_FREE(v)
+ #endif
+ 
+ #define	SCHED_CPUMASK_VAR(v, a) 	cpumask_t *v = (cpumask_t *) \
+@@ -7400,9 +7400,8 @@ static int __build_sched_domains(const cpumask_t *cpu_map,
+ 		return -ENOMEM;
+ 	}
+ 
+-#if SCHED_CPUMASK_ALLOC
+ 	/* get space for all scratch cpumask variables */
+-	allmasks = kmalloc(sizeof(*allmasks), GFP_KERNEL);
++	SCHED_CPUMASK_ALLOC(allmasks);
+ 	if (!allmasks) {
+ 		printk(KERN_WARNING "Cannot alloc cpumask array\n");
+ 		kfree(rd);
+@@ -7411,7 +7410,7 @@ static int __build_sched_domains(const cpumask_t *cpu_map,
+ #endif
+ 		return -ENOMEM;
+ 	}
+-#endif
++
+ 	tmpmask = (cpumask_t *)allmasks;
+ 
+ 
+@@ -7665,13 +7664,13 @@ static int __build_sched_domains(const cpumask_t *cpu_map,
+ 		cpu_attach_domain(sd, rd, i);
+ 	}
+ 
+-	SCHED_CPUMASK_FREE((void *)allmasks);
++	SCHED_CPUMASK_FREE(allmasks);
+ 	return 0;
+ 
+ #ifdef CONFIG_NUMA
+ error:
+ 	free_sched_groups(cpu_map, tmpmask);
+-	SCHED_CPUMASK_FREE((void *)allmasks);
++	SCHED_CPUMASK_FREE(allmasks);
+ 	return -ENOMEM;
+ #endif
+ }
 -- 
-1.6.0.3
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.4.rc3
