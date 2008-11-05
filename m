@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbYKEJPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbYKEJUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbYKEJPI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYKEJOt
+	id S1755238AbYKEJUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbYKEJUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 04:14:49 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43220 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbYKEJOr (ORCPT
+	Wed, 5 Nov 2008 04:20:12 -0500
+Received: from hs-out-0708.google.com ([64.233.178.245]:59344 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbYKEJUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:14:47 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: next-20081103 - possible circular locking dependency detected while bring up eth1
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       mel@csn.ul.ie
-In-Reply-To: <1225871332.7803.2626.camel@twins>
-References: <20081105071306.GB10881@linux.vnet.ibm.com> <1225871332.7803.2626.camel@twins>
-Message-Id: <20081105181242.9688.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 5 Nov 2008 04:20:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=VeROcq5+78ME4Xl9Mfk7dA9hDHz9teQ5Zs5/atEBP/8mS39I8f+QFksG9jVE+E0O9G
+         CB2AH8is8+p9ZnKykLpdppLQgWQk8AA8yFtIOKtiL7X1ZVygmwtjhv0Yi9rPH56eNgfi
+         BstCg5vKHs/jsjPfVGwZdNFTPH8/nc3A6Xr0Q=
+Message-ID: <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
+Date: Wed, 5 Nov 2008 14:50:01 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: sharing interrupt between PCI device
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       "Robert Hancock" <hancockr@shaw.ca>
+In-Reply-To: <49115AFC.2030400@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed,  5 Nov 2008 18:14:43 +0900 (JST)
+Content-Disposition: inline
+References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
+	 <4910E8AC.7050407@shaw.ca>
+	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
+	 <49115AFC.2030400@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > [   31.989072] 2 locks held by events/3/18:
-> > [   31.989072]  #0:  (events){--..}, at: [<c04367bf>] run_workqueue+0x80/0x189
-> > [   31.989072]  #1:  ((linkwatch_work).work){--..}, at: [<c04367bf>] run_workqueue+0x80/0x189
-> > [   31.989072] 
-> > [   31.989072] stack backtrace:
-> > [   31.989072] Pid: 18, comm: events/3 Not tainted 2.6.28-rc3-next-20081103-autotest #1
-> > [   31.989072] Call Trace:
-> > [   31.989072]  [<c0445662>] print_circular_bug_tail+0xa4/0xaf
-> > [   31.989072]  [<c0445c10>] validate_chain+0x5a3/0xb35
-> > [   31.989072]  [<c0446822>] __lock_acquire+0x680/0x70e
-> > [   31.989072]  [<c04367bf>] ? run_workqueue+0x80/0x189
-> > [   31.989072]  [<c044690d>] lock_acquire+0x5d/0x7a
-> > [   31.989072]  [<c05e8ef5>] ? rtnl_lock+0xf/0x11
-> > [   31.989072]  [<c0651c04>] mutex_lock_nested+0xdf/0x251
-> > [   31.989072]  [<c05e8ef5>] ? rtnl_lock+0xf/0x11
-> > [   31.989072]  [<c05e8ef5>] ? rtnl_lock+0xf/0x11
-> > [   31.989072]  [<c05e8ef5>] rtnl_lock+0xf/0x11
-> > [   31.989072]  [<c05ea07a>] linkwatch_event+0x8/0x27
-> > [   31.989072]  [<c04367fd>] run_workqueue+0xbe/0x189
-> > [   31.989072]  [<c04367bf>] ? run_workqueue+0x80/0x189
-> > [   31.989072]  [<c05ea072>] ? linkwatch_event+0x0/0x27
-> > [   31.989072]  [<c043713f>] ? worker_thread+0x0/0xbf
-> > [   31.989072]  [<c04371f3>] worker_thread+0xb4/0xbf
-> > [   31.989072]  [<c0439765>] ? autoremove_wake_function+0x0/0x33
-> > [   31.989072]  [<c04396a6>] kthread+0x3b/0x61
-> > [   33.690691] tg3: eth1: Link is up at 100 Mbps, full duplex.
-> > [   33.690696] tg3: eth1: Flow control is off for TX and off for RX.
-> > [   31.989072]  [<c043966b>] ? kthread+0x0/0x61
-> > [   31.989072]  [<c040481b>] kernel_thread_helper+0x7/0x10
-> > [   33.762336] ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-> > [  OK  ]
-> 
-> I think we have to go with Kosaki-san's vm workqueue...
-
-Very sorry for my lazyness.
-akpm did nak vm workqueue patch.
-
-So I prepare new patch now. (it is under testing now)
-I expect I can post it tommorow.
-
-Thanks.
+Hi
 
 
+Code is here
+first one USB Virual input devices
+
+http://lxr.linux.no/linux+v2.6.27.4/drivers/usb/core/hcd-pci.c
+
+Second one is hp-ilo driver
+
+http://lxr.linux.no/linux+v2.6.27.4/drivers/misc/hpilo.c
 
 
+Thanks
+Nobin Mathew.
+
+
+On Wed, Nov 5, 2008 at 2:06 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 11/05/2008 08:49 AM, Nobin Mathew wrote:
+>> Hi
+>>
+>> This is the system information X86_64 platform Xeon dual core processor.
+>>
+>> I saw the pci_disable_device () it is calling pcibios_disable_device
+>> () and this is is defined as
+>>
+>> void pcibios_disable_device (struct pci_dev *dev)
+>> {
+>>         pcibios_disable_resources(dev);
+>>         if (pcibios_disable_irq)
+>>                 pcibios_disable_irq(dev);
+>> }
+>>
+>> In i386 platform, I could not find a definition for these calls in
+>> x86_64 platform, i think it is using i386 platform code.
+>
+> Well, will you show us the code, so that we needn't to crystal gaze? It's pretty
+> hard to say what happens, if we don't see what you do in the driver...
+>
