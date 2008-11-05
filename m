@@ -1,69 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbYKEABL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbYKEAB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbYKEABL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 19:01:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbYKEAAz
+	id S1759562AbYKEAB3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 19:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572AbYKEABK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 19:00:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59296 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755257AbYKEAAy (ORCPT
+	Tue, 4 Nov 2008 19:01:10 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:21293 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757988AbYKEABI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 19:00:54 -0500
-Date: Tue, 4 Nov 2008 16:00:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Viktor Rosendahl <Viktor.Rosendahl@nokia.com>
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 1/1] Make sure that any oops is flushed to the mtdoops
- console
-Message-Id: <20081104160027.d80249fb.akpm@linux-foundation.org>
-In-Reply-To: <1225458328.16867.23.camel@viktor.research.nokia.com>
-References: <1224688588-2665-1-git-send-email-viktor.rosendahl@nokia.com>
-	<1224688588-2665-2-git-send-email-viktor.rosendahl@nokia.com>
-	<20081030131734.c74e614d.akpm@linux-foundation.org>
-	<1225458328.16867.23.camel@viktor.research.nokia.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Nov 2008 19:01:08 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=_1xi8uX4wxalnw9Fj0gA:9 a=1SMxgIzKM6L2yTW5wZhspzjcEMIA:4 a=j0CMlSstq6wA:10 a=eNxp2uuuQYoA:10
+Message-ID: <4910E240.4000801@shaw.ca>
+Date: Tue, 04 Nov 2008 18:01:04 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata hibernation fixes
+References: <fa.Ast7pgG6P20u1PcyOsfgzoaX5YA@ifi.uio.no> <fa.1+JQHm7yjIiZJxAzR0eBPn39a9M@ifi.uio.no> <fa.+bfipgmFkcLlZMtnFL0Ks2zyN8Q@ifi.uio.no> <fa.Iek0GbTZLinM2sOi6+b7bsCgnfs@ifi.uio.no>
+In-Reply-To: <fa.Iek0GbTZLinM2sOi6+b7bsCgnfs@ifi.uio.no>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Oct 2008 15:05:28 +0200
-Viktor Rosendahl <Viktor.Rosendahl@nokia.com> wrote:
-
-> On Thu, 2008-10-30 at 13:17 -0700, ext Andrew Morton wrote: 
-> > On Wed, 22 Oct 2008 18:16:28 +0300
-> > Viktor Rosendahl <viktor.rosendahl@nokia.com> wrote:
-> <clip> 
-> > >  void __attribute__((weak)) bust_spinlocks(int yes)
-> > > @@ -22,6 +23,7 @@ void __attribute__((weak)) bust_spinlocks(int yes)
-> > >  #ifdef CONFIG_VT
-> > >  		unblank_screen();
-> > >  #endif
-> > > +		console_unblank();
-> > >  		if (--oops_in_progress == 0)
-> > >  			wake_up_klogd();
-> > >  	}
-> > 
-> > That looks logical.  From my reading we can now remove that
-> > unblank_screen(), because the console_unblank() will call
-> > vt_console_driver.unblank() for us?
+Mark Lord wrote:
+> Rafael J. Wysocki wrote:
+>> On Tuesday, 4 of November 2008, Linus Torvalds wrote:
+>>> On Tue, 4 Nov 2008, Jeff Garzik wrote:
+>>>> This adds code at a late stage (heading towards -rc4), but does
+>>>> eliminate a particular spin-up overcycling behavior associated with
+>>>> hibernation.
+>>> What does this have to do with hibernation?
+>>> If it's a hibernation-only issue, then there is something wrong. 
+>>
+>> No, it is not.  On some machines it is a power-off issue, on the 
+>> others it is
+>> hibernation and power-off issue.
+>>
+>>> Also, if it is an issue for normal power-off as well, then I wonder 
+>>> why this isn't an issue on Windows. Does windows not spin down disks 
+>>> at all?
+>>
+>> In fact, AFAICS, it is an issue on Windows as well, at least if
+>> other-than-HP-preloaded version of Windows is used.
+>>
+>>> IOW, I really don't think this is correct.
+>>> I _do_ think that correct might be:
+>>>
+>>>  - maybe we just do something odd and different, triggering some BIOS 
+>>>    behavior that isn't there under Windows.
+>>>
+>>>    So we should power down thigns differently so that the BIOS.
+>>>
+>>>  - quite possibly: we just should not spin down disks at all, and 
+>>> just    flush them and do the "park" command thing. If we're _really_ 
+>>> powering    off, the disks will spin down on their own when power 
+>>> goes away. Maybe    that's what Windows does?
+>>>
+>>> So I really don't want to pull this, because I want to get more of an 
+>>> explanation for why we need to do this at all. I also don't think 
+>>> this is even appropriate at this stage in -rc.
+>>>
+>>> Is it a regression? If so, that just strengthens the questions above 
+>>> - what did _we_ start doing wrong that this is needed at all? Let's 
+>>> just stop doing that, not add some idiotic black-list for somethign 
+>>> that _we_ do wrong.
+>>
+>> This is a regression, but from something like 2.6.25 or even earlier.
+>> I think what happened is we started to power-off disks at one point 
+>> and these
+>> BIOS-es just don't like that.
+>>
+>> [Note that the issue only appears in _some_ HP boxes, other vendors don't
+>> seem to be affected at all.]
+> .
 > 
-> For some reason, we did not think about it here when the N810 kernel was
-> fixed. It looks good to me but if you do it, then there will be a slight
-> difference in behavior, since console_unblank() will call
-> vt_console_driver.unblank() only if the console_sem can be acquired,
-> otherwise it just returns without doing anything.
+> So, what happens if we just don't ever spin them down from the kernel?
+> Presumably they still spin-down normally (HP or otherwise) when the BIOS
+> actually cuts the power at the end of all of this?
 > 
-> Maybe console_unblank() should be changed to not care too much about the
-> console_sem if an oops is in progress? 
-> 
+> Just curious..
 
-hm, yeah.  Things get messy if we take an oops with console_sem held.
+On many disks (especially laptops) just cutting the power without 
+spinning the disk down is a bad thing to do, as it causes an emergency 
+head unload which causes much more disk wear than a normal controlled 
+unload (which a commanded spindown causes). This is much worse than the 
+problem here, where the disk is spun down, spun up and down again.
 
-I'll drop the cleanup patch - I don't have time to think about and test
-anything useful like that :(
+On these systems, not spinning the disk down is fine because the BIOS 
+does it. However this would cause problems on systems where the BIOS 
+doesn't do so as it will cause an emergency unload on power-down.
 
-
+ From what I have heard, the problem on the HP laptops is thought to be 
+something to do with the disk spinning up and back down when it gets an 
+IDLE IMMEDIATE command (from the BIOS' SMI code, or whatever it is) when 
+it's already spun down (by the kernel). If that's truly the case it's 
+pretty retarded behavior on the disk's part..
