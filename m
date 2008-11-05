@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYKEHaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYKEHdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbYKEHaA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 02:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKEH3q
+	id S1754788AbYKEHdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 02:33:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYKEHdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 02:29:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49833
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750910AbYKEH3p (ORCPT
+	Wed, 5 Nov 2008 02:33:11 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:37511 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYKEHdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 02:29:45 -0500
-Date: Tue, 04 Nov 2008 23:29:20 -0800 (PST)
-Message-Id: <20081104.232920.150683916.davem@davemloft.net>
-To: mchan@broadcom.com
-Cc: linux-kernel@blueteddy.net, daniel.blueman@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-net@vger.kernel.org
-Subject: Re: time for TCP ECN defaulting to on?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <C27F8246C663564A84BB7AB343977242151F4B18B4@IRVEXCHCCR01.corp.ad.broadcom.com>
-References: <20081104.215839.132524253.davem@davemloft.net>
-	<C27F8246C663564A84BB7AB343977242151F4B18B4@IRVEXCHCCR01.corp.ad.broadcom.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 02:33:10 -0500
+Date: Wed, 5 Nov 2008 08:33:08 +0100
+From: Tino Keitel <tino.keitel@tikei.de>
+To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Fan level 7 after resume wit 2.6.28-rc3
+Message-ID: <20081105073306.GA3132@x61>
+Mail-Followup-To: ibm-acpi-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael Chan" <mchan@broadcom.com>
-Date: Tue, 4 Nov 2008 22:31:00 -0800
+Hi,
 
-> Assuming ECE and CWR are set infrequently on TSO frames, we still
-> benefit from hardware TSO most of the time.  Why is it the wrong
-> thing to do?
+I tried 2.6.28-rc3 (git a75952b) on my ThinkPad X61s, and now the fan
+runs at full speed after resume from suspend:
 
-I had forgotten about that aspect, and yes this is a
-good tradeoff considering that.
+$ cat /proc/acpi/ibm/fan
+status:		enabled
+speed:		0
+level:		auto
+commands:	level <level> (<level> is 0-7, auto, disengaged,
+full-speed)
+commands:	enable, disable
+commands:	watchdog <timeout> (<timeout> is 0 (off), 1-120
+(seconds))
+$ echo mem > /sys/power/state
+
+After resume:
+
+$ cat /proc/acpi/ibm/fan
+status:		enabled
+speed:		4796
+level:		7
+commands:	level <level> (<level> is 0-7, auto, disengaged,
+full-speed)
+commands:	enable, disable
+commands:	watchdog <timeout> (<timeout> is 0 (off), 1-120
+(seconds))
+
+Setting it back again to "auto" works. After the next suspend cycle, it
+is back to level 7.
+
+This doesn't happen with 2.6.27.
+
+Regards,
+Tino
