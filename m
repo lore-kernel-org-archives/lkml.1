@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbYKENvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbYKENx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755144AbYKENvp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 08:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbYKENve
+	id S1756293AbYKENx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 08:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbYKENxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 08:51:34 -0500
-Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:37807 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756249AbYKENvd (ORCPT
+	Wed, 5 Nov 2008 08:53:22 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:52115 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751939AbYKENxV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 08:51:33 -0500
-Message-ID: <4911A4D8.4010402@linux.vnet.ibm.com>
-Date: Wed, 05 Nov 2008 19:21:20 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Wed, 5 Nov 2008 08:53:21 -0500
+Date: Wed, 5 Nov 2008 07:52:44 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: peterz@infradead.org, rientjes@google.com, npiggin@suse.de,
+       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <20081104190505.769b93ec.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0811050747040.11867@quilx.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
+ <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
+ <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins>
+ <20081104135004.f1717fcf.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041601100.5077@quilx.com>
+ <20081104143534.b5c16147.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041648350.6254@quilx.com>
+ <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811042036000.31167@quilx.com> <20081104190505.769b93ec.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm][PATCH 0/4] Memory cgroup hierarchy introduction
-References: <20081101184812.2575.68112.sendpatchset@balbir-laptop> <20081104091510.01cf3a1e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081104091510.01cf3a1e.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sun, 02 Nov 2008 00:18:12 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> This patch follows several iterations of the memory controller hierarchy
->> patches. The hardwall approach by Kamezawa-San[1]. Version 1 of this patchset
->> at [2].
->>
->> The current approach is based on [2] and has the following properties
->>
->> 1. Hierarchies are very natural in a filesystem like the cgroup filesystem.
->>    A multi-tree hierarchy has been supported for a long time in filesystems.
->>    When the feature is turned on, we honor hierarchies such that the root
->>    accounts for resource usage of all children and limits can be set at
->>    any point in the hierarchy. Any memory cgroup is limited by limits
->>    along the hierarchy. The total usage of all children of a node cannot
->>    exceed the limit of the node.
->> 2. The hierarchy feature is selectable and off by default
->> 3. Hierarchies are expensive and the trade off is depth versus performance.
->>    Hierarchies can also be completely turned off.
->>
->> The patches are against 2.6.28-rc2-mm1 and were tested in a KVM instance
->> with SMP and swap turned on.
->>
-> 
-> As first impression, I think hierarchical LRU management is not good...means
-> not fair from viewpoint of memory management.
+On Tue, 4 Nov 2008, Andrew Morton wrote:
 
-Could you elaborate on this further? Is scanning of children during reclaim the
-issue? Do you want weighted reclaim for each of the children?
+>> That is one aspect. When performing writeback then we need to figure out
+>> which inodes have dirty pages in the memcg and we need to start writeout
+>> on those inodes and not on others that have their dirty pages elsewhere.
+>> There are two components of this that are in this patch and that would
+>> also have to be implemented for a memcg.
+>
+> Doable.  lru->page->mapping->host is a good start.
 
-> I'd like to show some other possible implementation of
-> try_to_free_mem_cgroup_pages() if I can.
-> 
+The block layer has a list of inodes that are dirty. From that we need to 
+select ones that will improve the situation from the cpuset/memcg. How 
+does the LRU come into this?
 
-Elaborate please!
+>> This patch would solve the problem if the calculation of the dirty pages
+>> would consider the active memcg and be able to determine the amount of
+>> dirty pages (through some sort of additional memcg counters). That is just
+>> the first part though. The second part of finding the inodes that have
+>> dirty pages for writeback would require an association between memcgs and
+>> inodes.
+>
+> We presently have that via the LRU.  It has holes, but so does this per-cpuset
+> scheme.
 
-> Anyway, I have to merge this with mem+swap controller. 
+How do I get to the LRU from the dirtied list of inodes?
 
-Cool! I'll send you an updated version.
+> Generally, I worry that this is a specific fix to a specific problem
+> encountered on specific machines with specific setups and specific
+> workloads, and that it's just all too low-level and myopic.
+>
+> And now we're back in the usual position where there's existing code and
+> everyone says it's terribly wonderful and everyone is reluctant to step
+> back and look at the big picture.  Am I wrong?
 
--- 
-	Balbir
+Well everyone is just reluctant to do work it seems. Thus they fall back 
+to a solution that I provided when memcg groups were not yet available. It 
+would be best if someone could find a general scheme or generalize this 
+patchset.
+
+> Plus: we need per-memcg dirty-memory throttling, and this is more
+> important than per-cpuset, I suspect.  How will the (already rather
+> buggy) code look once we've stuffed both of them in there?
+
+The basics will still be the same
+
+1. One need to establish the dirty ratio of memcgs and monitor them.
+2. There needs to be mechanism to perform writeout on the right inodes.
+
+> I agree that there's a problem here, although given the amount of time
+> that it's been there, I suspect that it is a very small problem.
+
+It used to be only a problem for NUMA systems. Now its also a problem for 
+memcgs.
+
+> Someone please convince me that in three years time we will agree that
+> merging this fix to that problem was a correct decision?
+
+At the mininum: It provides a basis on top of which memcg support 
+can be developed. There are likely major modifications needed to VM 
+statistics to get there for memcg groups.
+
+
+
+
