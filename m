@@ -1,103 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbYKEUgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756621AbYKEUgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbYKEUgl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYKEUgc
+	id S1756621AbYKEUgz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbYKEUgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 15:36:32 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36933 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755791AbYKEUgb (ORCPT
+	Wed, 5 Nov 2008 15:36:38 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:16331 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756768AbYKEUgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 15:36:31 -0500
-Date: Wed, 5 Nov 2008 12:36:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com,
-       pbadari@us.ibm.com, mel@csn.ul.ie, lcm@us.ibm.com, garyhade@us.ibm.com,
-       mingo@elte.hu, greg@kroah.com, dave@linux.vnet.ibm.com,
-       nish.aravamudan@gmail.com
-Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
- relationship with symlinks in sysfs
-Message-Id: <20081105123609.878085be.akpm@linux-foundation.org>
-In-Reply-To: <20081103234808.GA13716@us.ibm.com>
-References: <20081103234808.GA13716@us.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 15:36:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type;
+        b=JKnQBfYv+b6jC7eHNyRAdUTPBvWPEAX1umXKmiPACcQlz58AiY0pcWrSV3EWWGTwDO
+         CVjLrJ9zg3b9A6IhguQgDZuvTT1W+LkYC4JFQjzLGPOAYuOSHzBlTb5NQqRi2ci71Hqz
+         hCwEQsWKrGhfzIJHuzrKEUyafffvdS32UWGXg=
+Message-ID: <cd73a99e0811051236x3c852ce7w5d16a695d8efb9c6@mail.gmail.com>
+Date: Wed, 5 Nov 2008 22:36:35 +0200
+From: "Andrew Victor" <avictor.za@gmail.com>
+To: wim@iguana.be, "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SAM9 watchdog - supported on all SAM9 and CAP9 processors
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_32765_7117469.1225917395505"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008 15:48:08 -0800
-Gary Hade <garyhade@us.ibm.com> wrote:
+------=_Part_32765_7117469.1225917395505
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> 
-> Show node to memory section relationship with symlinks in sysfs
-> 
-> Add /sys/devices/system/node/nodeX/memoryY symlinks for all
-> the memory sections located on nodeX.  For example:
-> /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
-> indicates that memory section 135 resides on node1.
-> 
-> Also revises documentation to cover this change as well as updating
-> Documentation/ABI/testing/sysfs-devices-memory to include descriptions
-> of memory hotremove files 'phys_device', 'phys_index', and 'state'
-> that were previously not described there.
-> 
-> In addition to it always being a good policy to provide users with
-> the maximum possible amount of physical location information for
-> resources that can be hot-added and/or hot-removed, the following
-> are some (but likely not all) of the user benefits provided by
-> this change.
-> Immediate:
->   - Provides information needed to determine the specific node
->     on which a defective DIMM is located.  This will reduce system
->     downtime when the node or defective DIMM is swapped out.
->   - Prevents unintended onlining of a memory section that was 
->     previously offlined due to a defective DIMM.  This could happen
->     during node hot-add when the user or node hot-add assist script
->     onlines _all_ offlined sections due to user or script inability
->     to identify the specific memory sections located on the hot-added
->     node.  The consequences of reintroducing the defective memory
->     could be ugly.
->   - Provides information needed to vary the amount and distribution
->     of memory on specific nodes for testing or debugging purposes.
-> Future:
->   - Will provide information needed to identify the memory
->     sections that need to be offlined prior to physical removal
->     of a specific node.
-> 
-> Symlink creation during boot was tested on 2-node x86_64, 2-node
-> ppc64, and 2-node ia64 systems.  Symlink creation during physical
-> memory hot-add tested on a 2-node x86_64 system.
-> 
-> Supersedes the "mm: show memory section to node relationship in sysfs"
-> patch posted on 05 Sept 2008 which created node ID containing 'node'
-> files in /sys/devices/system/memory/memoryX instead of symlinks.
-> Changed from files to symlinks due to feedback that symlinks were
-> more consistent with the sysfs way.
-> 
-> ...
->
->  Documentation/ABI/testing/sysfs-devices-memory |   51 +++++++
->  Documentation/memory-hotplug.txt               |   16 +-
->  arch/ia64/mm/init.c                            |    2 
->  arch/powerpc/mm/mem.c                          |    2 
->  arch/s390/mm/init.c                            |    2 
->  arch/sh/mm/init.c                              |    3 
->  arch/x86/mm/init_32.c                          |    2 
->  arch/x86/mm/init_64.c                          |    2 
->  drivers/base/memory.c                          |   19 +-
->  drivers/base/node.c                            |  100 +++++++++++++++
->  include/linux/memory.h                         |    6 
->  include/linux/memory_hotplug.h                 |    2 
->  include/linux/node.h                           |   13 +
->  mm/memory_hotplug.c                            |    9 -
->  14 files changed, 205 insertions(+), 24 deletions(-)
+The SAM9 watchdog driver is usable on the whole family of AT91SAM9 and
+CAP9 processors.
+Update the configuration to indicate this and allow the driver to be selected.
 
-Dumb question: why do this with a symlink forest instead of, say, cat
-/proc/sys/vm/mem-sections?
+Signed-off-by: Andrew Victor <linux@maxim.org.za>
 
+------=_Part_32765_7117469.1225917395505
+Content-Type: text/x-patch; name=sam9_wdt_config.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fn6f507u1
+Content-Disposition: attachment; filename=sam9_wdt_config.patch
 
+ZGlmZiAtdXJOIC14IENWUyBsaW51eC0yLjYuMjgtcmMzL2RyaXZlcnMvd2F0Y2hkb2cvS2NvbmZp
+ZyBsaW51eC0yLjYvZHJpdmVycy93YXRjaGRvZy9LY29uZmlnCi0tLSBsaW51eC0yLjYuMjgtcmMz
+L2RyaXZlcnMvd2F0Y2hkb2cvS2NvbmZpZwkyMDA4LTExLTA1IDIyOjIxOjAxLjAwMDAwMDAwMCAr
+MDIwMAorKysgbGludXgtMi42L2RyaXZlcnMvd2F0Y2hkb2cvS2NvbmZpZwkyMDA4LTExLTA1IDIy
+OjIzOjA3LjAwMDAwMDAwMCArMDIwMApAQCAtNjcsMTEgKzY3LDExIEBACiAJICBzeXN0ZW0gd2hl
+biB0aGUgdGltZW91dCBpcyByZWFjaGVkLgogCiBjb25maWcgQVQ5MVNBTTlYX1dBVENIRE9HCi0J
+dHJpc3RhdGUgIkFUOTFTQU05WCB3YXRjaGRvZyIKLQlkZXBlbmRzIG9uIFdBVENIRE9HICYmIChB
+UkNIX0FUOTFTQU05MjYwIHx8IEFSQ0hfQVQ5MVNBTTkyNjEpCisJdHJpc3RhdGUgIkFUOTFTQU05
+WCAvIEFUOTFDQVA5IHdhdGNoZG9nIgorCWRlcGVuZHMgb24gQVJDSF9BVDkxICYmICFBUkNIX0FU
+OTFSTTkyMDAKIAloZWxwCi0JICBXYXRjaGRvZyB0aW1lciBlbWJlZGRlZCBpbnRvIEFUOTFTQU05
+WCBjaGlwcy4gVGhpcyB3aWxsIHJlYm9vdCB5b3VyCi0JICBzeXN0ZW0gd2hlbiB0aGUgdGltZW91
+dCBpcyByZWFjaGVkLgorCSAgV2F0Y2hkb2cgdGltZXIgZW1iZWRkZWQgaW50byBBVDkxU0FNOVgg
+YW5kIEFUOTFDQVA5IGNoaXBzLiBUaGlzIHdpbGwKKwkgIHJlYm9vdCB5b3VyIHN5c3RlbSB3aGVu
+IHRoZSB0aW1lb3V0IGlzIHJlYWNoZWQuCiAKIGNvbmZpZyAyMTI4NV9XQVRDSERPRwogCXRyaXN0
+YXRlICJEQzIxMjg1IHdhdGNoZG9nIgo=
+------=_Part_32765_7117469.1225917395505--
