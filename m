@@ -1,73 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbYKEURZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbYKEUSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755664AbYKEURZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 15:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYKEURQ
+	id S1757210AbYKEUSf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 15:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbYKEUS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 15:17:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:49382 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756013AbYKEURP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 15:17:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=cyvlVDaDRhcgWxpV4350Clsu3sMrD5y2R89jYLXWQXC+td76hEKiwcEntBGKPVVeLK
-         gufyGE+Ce5WjIOjfWcZeuhzJ+5cYRARss4+kKtzPkXU47pD/u8kVjbBu+BXoY10sd5dt
-         yGqCtr7QKwpsjC0XD+yCbDmIgiGYFKgsniO7g=
-Date: Wed, 5 Nov 2008 23:20:15 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Always include <linux/types.h>
-Message-ID: <20081105202014.GA11782@x200.localdomain>
-References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com> <20081104180347.GA9818@uranus.ravnborg.org> <20081105163941.GB6561@logfs.org> <20081105172312.GA10585@x200.localdomain> <20081105191628.GC6561@logfs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081105191628.GC6561@logfs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 5 Nov 2008 15:18:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40093 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754673AbYKEUSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 15:18:25 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: trond.myklebust@fys.uio.no
+Cc: akpm@linux-foundation.org, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] lockd: convert reclaimer thread to kthread interface
+Date: Wed,  5 Nov 2008 15:17:42 -0500
+Message-Id: <1225916262-18112-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 08:16:29PM +0100, Jörn Engel wrote:
-> [ Threading should have been broken.  Doh! ]
-> 
-> On Wed, 5 November 2008 20:23:12 +0300, Alexey Dobriyan wrote:
-> > On Wed, Nov 05, 2008 at 05:39:41PM +0100, Jörn Engel wrote:
-> > > Hardly any file in the kernel can be compiled without including
-> > > <linux/types.h>, directly or indirectly.  And I'd wager a beer that
-> > > noone can find a non-trivial example.  I couldn't.
-> > 
-> > This is only going to slow down compilation and types.h is not causing much
-> > compilation problems, in fact, I can't recall a compilation problem due to
-> > types.h. Contary to config.h situation which was a pain.
-> 
-> My hope was actually to speed up compilation.  If the average c file
-> includes 10 headers, on types.h will get included by most of them,
-> possibly multiple times.  Each run after the first still has to parse
-> the whole file, just to drop everything between  #ifndef _LINUX_TYPES_H
-> and #endif.
-> 
-> By passing types.h on the command line we can drop it from all headers
-> and only have to parse it once.  Just the intermediate step of parsing
-> types.h 11 times instead of 10 will slow things down.  By about .4% on
-> my not very beefy notebook.
-> 
-> Before:
-> real    4m33.241s
-> user    3m58.524s
-> sys     0m18.539s
-> 
-> After:
-> real    4m29.707s
-> user    3m59.674s
-> sys     0m18.182s
+My understanding is that there is a push to turn the kernel_thread
+interface into a non-exported symbol and move all kernel threads to use
+the kthread API. This patch changes lockd to use kthread_run to spawn
+the reclaimer thread.
 
-Could be anything.
+I've made the assumption here that the extra module references taken
+when we spawn this thread are unnecessary and removed them. I've also
+added a KERN_ERR printk that pops if the thread can't be spawned to warn
+the admin that the locks won't be reclaimed.
+
+In the future, it would be nice to be able to notify userspace that
+locks have been lost (probably by implementing SIGLOST), and adding some
+good policies about how long we should reattempt to reclaim the locks.
+
+Finally, I removed a comment about memory leaks that I believe is
+obsolete and added a new one to clarify the result of sending a SIGKILL
+to the reclaimer thread. As best I can tell, doing so doesn't actually
+cause a memory leak.
+
+I consider this patch 2.6.29 material.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/lockd/clntlock.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/fs/lockd/clntlock.c b/fs/lockd/clntlock.c
+index 8307dd6..94d42cc 100644
+--- a/fs/lockd/clntlock.c
++++ b/fs/lockd/clntlock.c
+@@ -14,6 +14,7 @@
+ #include <linux/sunrpc/svc.h>
+ #include <linux/lockd/lockd.h>
+ #include <linux/smp_lock.h>
++#include <linux/kthread.h>
+ 
+ #define NLMDBG_FACILITY		NLMDBG_CLIENT
+ 
+@@ -191,11 +192,15 @@ __be32 nlmclnt_grant(const struct sockaddr *addr, const struct nlm_lock *lock)
+ void
+ nlmclnt_recovery(struct nlm_host *host)
+ {
++	struct task_struct *task;
++
+ 	if (!host->h_reclaiming++) {
+ 		nlm_get_host(host);
+-		__module_get(THIS_MODULE);
+-		if (kernel_thread(reclaimer, host, CLONE_FS | CLONE_FILES) < 0)
+-			module_put(THIS_MODULE);
++		task = kthread_run(reclaimer, host, "%s-reclaim", host->h_name);
++		if (IS_ERR(task))
++			printk(KERN_ERR "lockd: unable to spawn reclaimer "
++				"thread. Locks for %s won't be reclaimed! "
++				"(%ld)\n", host->h_name, PTR_ERR(task));
+ 	}
+ }
+ 
+@@ -207,7 +212,6 @@ reclaimer(void *ptr)
+ 	struct file_lock *fl, *next;
+ 	u32 nsmstate;
+ 
+-	daemonize("%s-reclaim", host->h_name);
+ 	allow_signal(SIGKILL);
+ 
+ 	down_write(&host->h_rwsem);
+@@ -233,7 +237,12 @@ restart:
+ 	list_for_each_entry_safe(fl, next, &host->h_reclaim, fl_u.nfs_fl.list) {
+ 		list_del_init(&fl->fl_u.nfs_fl.list);
+ 
+-		/* Why are we leaking memory here? --okir */
++		/*
++		 * sending this thread a SIGKILL will result in any unreclaimed
++		 * locks being removed from the h_granted list. This means that
++		 * the kernel will not attempt to reclaim them again if a new
++		 * reclaimer thread is spawned for this host.
++		 */
+ 		if (signalled())
+ 			continue;
+ 		if (nlmclnt_reclaim(host, fl) != 0)
+@@ -261,5 +270,5 @@ restart:
+ 	nlm_release_host(host);
+ 	lockd_down();
+ 	unlock_kernel();
+-	module_put_and_exit(0);
++	return 0;
+ }
+-- 
+1.5.5.1
+
