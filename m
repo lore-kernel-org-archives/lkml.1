@@ -1,152 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbYKENMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbYKENUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbYKENMa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 08:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYKENMU
+	id S1756001AbYKENUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 08:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYKENUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 08:12:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:51391 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750793AbYKENMT (ORCPT
+	Wed, 5 Nov 2008 08:20:13 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:58848 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbYKENUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 08:12:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=IYjKENFaRJQ5h/iwAbEYIGK0+dYITCpsav20ptcRcTnNCv8LZ7BNUMNr0/2QXByMQi
-         6JlHTAcBp7jmPoqNqY3rPbFirznjg0dce4HhuoFSq/Jvp2AiyQsDfa8jbCXQs8N8VrXF
-         6aLvzfmC3KD7R8BOEjjVF0YQAtQG3hJJMtMz4=
-Message-ID: <49119BAF.6040603@panasas.com>
-Date: Wed, 05 Nov 2008 15:12:15 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Wed, 5 Nov 2008 08:20:11 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH RFC v2] net: add PCINet driver
+Date: Wed, 5 Nov 2008 14:19:52 +0100
+User-Agent: KMail/1.9.9
+Cc: linuxppc-dev@ozlabs.org, Stephen Hemminger <shemminger@vyatta.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>
+References: <20081029202027.GH12879@ovro.caltech.edu> <200811042123.03819.arnd@arndb.de> <20081104222927.GE4641@ovro.caltech.edu>
+In-Reply-To: <20081104222927.GE4641@ovro.caltech.edu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, open-osd ml <osd-dev@open-osd.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>
-Subject: Re: [PATCH 04/18] libosd: OSDv1 preliminary implementation
-References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com> <20081104180347.GA9818@uranus.ravnborg.org>
-In-Reply-To: <20081104180347.GA9818@uranus.ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811051419.53194.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19ynv+5/kfcc9Vgrnxym7KBrbIYaHJIZktKLeM
+ omO/1GPv+6HL1nUU3WRvdY0waxb8ZF1tfbksfQMe+HCjuMar4z
+ a2m+ch+s7DWLaxT2YnXHw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+On Tuesday 04 November 2008, Ira Snyder wrote:
 
-> On Tue, Nov 04, 2008 at 06:44:29PM +0200, Boaz Harrosh wrote:
->> Implementation of the most basic OSD functionality and
->> infrastructure. Mainly Format, Create/Remove Partition,
->> Create/Remove Object, and read/write.
->>
->> - Add Makefile and Kbuild to compile libosd.ko
->> - osd_initiator.c Implementation file for osd_initiator.h
->>   and osd_sec.h APIs
->> - osd_debug.h - Some kprintf macro definitions
+> So, since interrupts are disabled while my interrupt handler is running,
+> I think I should be able to use spin_lock() and spin_unlock(), correct?
+
+yes.
+
+> But sparse gives me the following warning:
+> wqt.c:185:9: warning: context imbalance in 'wqt_interrupt': wrong count at exit
+> wqt.c:185:9:    context 'lock': wanted 0, got 1
 > 
-> A few comments below.
-> 
-> 	Sam
-> 
+> If I'm using spin_lock_irqsave() and spin_lock_irqrestore() I do not get
+> the same warnings. Therefore I must have some misunderstanding :)
 
-Thanks Sam for looking
 
-> 
->> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
->> Reviewed-by: Benny Halevy <bhalevy@panasas.com>
->> ---
->>  drivers/scsi/osd/Kbuild          |   26 +++
->>  drivers/scsi/osd/Makefile        |   37 +++
->>  drivers/scsi/osd/osd_debug.h     |   27 +++
->>  drivers/scsi/osd/osd_initiator.c |  450 ++++++++++++++++++++++++++++++++++++++
->>  4 files changed, 540 insertions(+), 0 deletions(-)
->>  create mode 100644 drivers/scsi/osd/Kbuild
->>  create mode 100755 drivers/scsi/osd/Makefile
->>  create mode 100644 drivers/scsi/osd/osd_debug.h
->>  create mode 100644 drivers/scsi/osd/osd_initiator.c
->>
->> diff --git a/drivers/scsi/osd/Kbuild b/drivers/scsi/osd/Kbuild
->> new file mode 100644
->> index 0000000..b4678e0
->> --- /dev/null
->> +++ b/drivers/scsi/osd/Kbuild
->> @@ -0,0 +1,26 @@
->> +#
->> +# Kbuild for the OSD modules
->> +#
->> +# Copyright (C) 2008 Panasas Inc.  All rights reserved.
->> +#
->> +# Authors:
->> +#   Boaz Harrosh <bharrosh@panasas.com>
->> +#   Benny Halevy <bhalevy@panasas.com>
->> +#
->> +# This program is free software; you can redistribute it and/or modify
->> +# it under the terms of the GNU General Public License version 2
->> +#
->> +
->> +ifneq ($(OSD_INC),)
->> +# we are built out-of-tree Kconfigure everything as on
->> +
->> +CONFIG_SCSI_OSD_INITIATOR=m
->> +EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_INITIATOR -DCONFIG_SCSI_OSD_INITIATOR_MODULE
->> +
->> +EXTRA_CFLAGS += -I$(OSD_INC)
->> +# EXTRA_CFLAGS += -DCONFIG_SCSI_OSD_DEBUG
->> +
->> +endif
->> +
->> +libosd-objs := osd_initiator.o
->> +obj-$(CONFIG_SCSI_OSD_INITIATOR) += libosd.o
-> 
-> When you submit for inclusion please clean this up.
-> 1) use ccflags-y as replacement for EXTRA_CFLAGS
-> 2) use libosd-y as replacement for libosd-objs
-> 
+I've seen something like that before, I think it was a bug either in
+sparse or in the powerpc platform code. Try updating both the kernel
+and sparse and see if it still happens.
 
-This is a most valuable information thanks. I have copy
-pasted these stuff, while learning. I guess from the wrong
-example. Thanks it looks much more logical that way.
-
->> +
->> +#ifdef CONFIG_SCSI_OSD_INITIATOR_MODULE
->> +MODULE_AUTHOR("Boaz Harrosh <bharrosh@panasas.com>");
->> +MODULE_DESCRIPTION("open-osd initiator library libosd.ko");
->> +MODULE_LICENSE("GPL");
->> +#endif
-> 
-> no ifdef around here.
-> 
-
-Grate, thanks. Again the wrong copy-paste.
-
->> +void osd_dev_init(struct osd_dev *osdd, struct scsi_device *scsi_dev)
->> +{
->> +	memset(osdd, 0, sizeof(*osdd));
->> +	osdd->scsi_dev = scsi_dev;
->> +	osdd->def_timeout = BLK_DEFAULT_SG_TIMEOUT;
->> +	/* TODO: Allocate pools for osd_request attributes ... */
->> +}
->> +EXPORT_SYMBOL(osd_dev_init);
-> kernel-doc comments for all exported funtions / variables.
-> 
-
-I have some kernel-doc comments of exported functions in the Header
-file. I have not yet finished all of them. (Laziness on my part).
-
-Are kernel-doc comments in headers a big NO-NO. I like it this way,
-so when I have to learn a new Library all the information
-I need to know is in the header. Also the header is a much better place
-when you do programing by shopping, that is you don't know what you need
-and you look for what's available.
-
-Thanks
-Boaz
+	Arnd <><
