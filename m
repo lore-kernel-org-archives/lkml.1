@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbYKEJFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbYKEJKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbYKEJFR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 04:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754210AbYKEJE4
+	id S1754726AbYKEJKd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 04:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYKEJKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 04:04:56 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:51751 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754124AbYKEJEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 04:04:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent:from;
-        b=hffDb3xsZ5k4S9RIuV9AqLHj7SVAoZ+ZKU09Mx1LB8eUUkFvGq8xIH4J41lGiSc6G3
-         REgzuxdb5ak7BIy3Q+pB3Mv20m9Z45ALTNGSyvd5GY3iB7SeO5FTkU8DaKhYook3aI5S
-         iV+D3Tw1WNIVqiGqN6/oYA0OdJMV9yZ7jjYDQ=
-Date: Wed, 5 Nov 2008 10:04:50 +0100
-To: Tejun Heo <tj@kernel.org>
-Cc: axboe@kernel.dk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Subject: [PATCH] block: fix __blkdev_get() for removable
-	devices
-Message-ID: <20081105090449.GA9269@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
-	axboe@kernel.dk, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20081029071319.GA9205@gollum.tnic> <20081101201419.GA29462@gollum.tnic> <490F1AC6.8000109@kernel.org> <9ea470500811030956k209b2f2ci10bcde1ea4ac7334@mail.gmail.com> <490FCC87.1070205@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <490FCC87.1070205@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+	Wed, 5 Nov 2008 04:10:14 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:47922 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbYKEJKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 04:10:12 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with
+	memory	hotplug
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1225785224.12673.564.camel@nimitz>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <20081103125108.46d0639e.akpm@linux-foundation.org>
+	 <1225747308.12673.486.camel@nimitz>  <200811032324.02163.rjw@sisk.pl>
+	 <1225751665.12673.511.camel@nimitz> <1225771353.6755.16.camel@nigel-laptop>
+	 <1225782572.12673.540.camel@nimitz> <1225783837.6755.33.camel@nigel-laptop>
+	 <1225785224.12673.564.camel@nimitz>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Wed, 05 Nov 2008 20:10:05 +1100
+Message-Id: <1225876205.6755.55.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 01:16:07PM +0900, Tejun Heo wrote:
-> Commit 0762b8bde9729f10f8e6249809660ff2ec3ad735 moved disk_get_part()
-> in front of recursive get on the whole disk, which caused removable
-> devices to try disk_get_part() before rescanning after a new media is
-> inserted, which might fail legit open attempts or give the old
-> partition.
-> 
-> This patch fixes the problem by moving disk_get_part() after
-> __blkdev_get() on the whole disk.
-> 
-> This problem was spotted by Borislav Petkov.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: <Borislav Petkov> petkovbb@googlemail.com
-> ---
-> Borislav, can you please verify this patch?  Thanks.
+Hi.
 
-Yep, it works. Thanks.
+On Mon, 2008-11-03 at 23:53 -0800, Dave Hansen wrote:
+> On Tue, 2008-11-04 at 18:30 +1100, Nigel Cunningham wrote:
+> > One other question, if I may. Would you please explain (or point me to
+> > an explanation) of PHYS_PFN_OFFSET/ARCH_PFN_OFFSET? I've been dealing
+> > occasionally with people wanting to have hibernation on arm, and I don't
+> > really get the concept or the implementation (particularly when it comes
+> > to trying to do the sort of iterating over zones and pfns that was being
+> > discussed in previous messages in this thread.
+> 
+> First of all, I think PHYS_PFN_OFFSET is truly an arch-dependent
+> construct.  It only appears in arm an avr32.  I'll tell you only how
+> ARCH_PFN_OFFSET looks to me.  My guess is that those two arches need to
+> reconcile themselves and start using ARCH_PFN_OFFSET instead.
+> 
+> In the old days, we only had memory that started at physical address 0x0
+> and went up to some larger address.  We allocated a mem_map[] of 'struct
+> pages' in one big chunk, one for each address.  mem_map[0] was for
+> physical address 0x0 and mem_map[1] was for 0x1000, mem_map[2] was for
+> 0x2000 and so on...
+> 
+> If a machine didn't have a physical address 0x0, we allocated mem_map[]
+> for it anyway and just wasted that entry.  What ARCH_PFN_OFFSET does is
+> let us bias the mem_map[] structure so that mem_map[0] does not
+> represent 0x0.
+> 
+> If ARCH_PFN_OFFSET is 1, then mem_map[0] actually represents the
+> physical address 0x1000.  If it is 2, then mem_map[0] represents
+> physical addr 0x2000.  ARCH_PFN_OFFSET means that the first physical
+> address on the machine is at ARCH_PFN_OFFSET*PAGE_SIZE.  We bias all
+> lookups into the mem_map[] so that we don't waste space in it.  There
+> will never be a zone_start_pfn lower than ARCH_PFN_OFFSET, for instance.
+> 
+> What does that mean for walking zones?  Nothing.  It only has meaning
+> for how we allocate and do lookups into the mem_map[].  But, since
+> everyone uses pfn_to_page() and friends, you don't ever see this.
+> 
+> I'm curious why you think you need to be concerned with it.
 
-Tested-by: Borislav Petkov <petkovbb@gmail.com>
+Sorry for the delay in replying.
 
--- 
-Regards/Gruss,
-    Boris.
+It's because I'm looking at old patches for arm support for TuxOnIce and
+because of the way TuxOnIce records what pages need attention:
+
+My method of recording what needs doing is different to Rafael's. I use
+per zone bitmaps (constructed out of order 0 allocations) and therefore
+look at zone_start_pfn in calculating what bit within the zone needs to
+be set/cleared/tested.
+
+In your example above, zone_start_pfn will be 1, won't it? If that's the
+case, I shouldn't need to subtract ARCH_PFN_OFFSET to get the right
+index within the zone and avoid the same wastage that ARCH_PFN_OFFSET
+avoids with mem_map.
+
+Nigel
+
