@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYKERB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbYKERFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbYKERB3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 12:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYKERBV
+	id S1755306AbYKERFc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 12:05:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYKERFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 12:01:21 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:51056 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752185AbYKERBU (ORCPT
+	Wed, 5 Nov 2008 12:05:24 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:30439 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbYKERFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 12:01:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=BrmQ2OWYJdYisRLdpWl1XovpqhREcdd/KNozcCOw+Plz/mxQ+YBjVhD9y40tZ3Q7mG
-         ftQmud+TZpzjW3avGCUoeJgErS8u9Pq3jRtn2iLCo3sVyD8l1DV++Jn2WADog3VwuEy6
-         ypoPIACwpf+OmiLWwz1QX3PVr0aKk17B1+m/s=
-Message-ID: <c62985530811050901w2feeee37r65af91657cfbd9b6@mail.gmail.com>
-Date: Wed, 5 Nov 2008 18:01:18 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: bug: ftrace & lockdep badness
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.10.0811051143420.11900@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 5 Nov 2008 12:05:24 -0500
+Date: Wed, 5 Nov 2008 09:04:49 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Peter Teoh <htmldeveloper@gmail.com>
+Subject: Re: make htmldocs errors
+Message-Id: <20081105090449.9701af72.randy.dunlap@oracle.com>
+In-Reply-To: <4911CB47.6030809@oracle.com>
+References: <804dabb00811050825td613b25lf400f4963e83e78c@mail.gmail.com>
+	<4911CB47.6030809@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081105123714.GA23504@osiris.boeblingen.de.ibm.com>
-	 <alpine.DEB.1.10.0811051054430.11900@gandalf.stny.rr.com>
-	 <20081105163052.GA28884@elte.hu>
-	 <alpine.DEB.1.10.0811051143420.11900@gandalf.stny.rr.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/5 Steven Rostedt <rostedt@goodmis.org>:
-> I do like the fact that lockdep checks it too. But there's times that we
-> can not do that.
->
-> Perhaps we can do something in between.
->
-> Make a rb_spin_lock macro inside ring_buffer.c that can be either a
-> spin_lock or a raw_spin_lock.  There are some tracers that must have this
-> as a raw (function trace, irqsoff and preemptoff), but the rest should be
-> fine. We can make it where the rb_spin_lock is a raw lock when any of
-> those three tracers are configured, and make it into a normal lock when
-> they are not.
+On Wed, 05 Nov 2008 08:35:19 -0800 Randy Dunlap wrote:
 
+> Peter Teoh wrote:
+> > This is on the latest linus tree (75fa67706cce5272bcfc51ed646f2da21f3bdb6e):
+> > 
+> > /mnt/hd0/download/linux-2.6-latest>make htmldocs
+> > make[1]: *** No rule to make target `include/asm-x86/io_32.h', needed
+> > by `Documentation/DocBook/deviceiobook.xml'.  Stop.
+> > make: *** [htmldocs] Error 2
+> 
+> Hi,
+> I thought that I had already fixed that, but I'll take another look
+> at it.
 
-But this way we won't be able to have lockdep checks when only one of
-those "raw-need" tracers are
-configured. Wouldn't it better to set it as a function pointer? It
-would dynamically reference spin_lock or
-raw_spin_lock functions depending on what tracer is currently
-selected. I think that wouldn't hardly impact
-the performances....
+Peter,
+Please check again.  I suspect some files or the git tree is not current.
+
+> git describe
+v2.6.28-rc3-54-g75fa677
+
+> grep asm-x86 Documentation/DocBook/deviceiobook.tmpl
+# finds nothing
+
+and I fixed this error here (in Linus's git tree):
+
+commit a1a739c56ad031b8bf8b3804f568ac88899f8dd7
+Author: Randy Dunlap <randy.dunlap@oracle.com>
+Date:   Sat Oct 25 17:24:36 2008 -0700
+
+    docbooks: fix fatal filename errors
+
+---
+~Randy
