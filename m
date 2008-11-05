@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYKETQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYKETSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbYKETQu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:16:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYKETQl
+	id S1756833AbYKETSz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYKETSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:16:41 -0500
-Received: from lazybastard.de ([212.112.238.170]:51273 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755053AbYKETQk (ORCPT
+	Wed, 5 Nov 2008 14:18:44 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:41974 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752828AbYKETSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:16:40 -0500
-Date: Wed, 5 Nov 2008 20:16:29 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Patch] Always include <linux/types.h>
-Message-ID: <20081105191628.GC6561@logfs.org>
-References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com> <20081104180347.GA9818@uranus.ravnborg.org> <20081105163941.GB6561@logfs.org> <20081105172312.GA10585@x200.localdomain>
+	Wed, 5 Nov 2008 14:18:43 -0500
+Date: Wed, 5 Nov 2008 11:18:41 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Stephen Hemminger <shemminger@vyatta.com>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>
+Subject: Re: [PATCH RFC v2] net: add PCINet driver
+Message-ID: <20081105191841.GB31188@ovro.caltech.edu>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Jan-Bernd Themann <THEMANN@de.ibm.com>
+References: <20081029202027.GH12879@ovro.caltech.edu> <200811042123.03819.arnd@arndb.de> <20081104222927.GE4641@ovro.caltech.edu> <200811051419.53194.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081105172312.GA10585@x200.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200811051419.53194.arnd@arndb.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 05 Nov 2008 11:18:42 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Threading should have been broken.  Doh! ]
-
-On Wed, 5 November 2008 20:23:12 +0300, Alexey Dobriyan wrote:
-> On Wed, Nov 05, 2008 at 05:39:41PM +0100, Jörn Engel wrote:
-> > Hardly any file in the kernel can be compiled without including
-> > <linux/types.h>, directly or indirectly.  And I'd wager a beer that
-> > noone can find a non-trivial example.  I couldn't.
+On Wed, Nov 05, 2008 at 02:19:52PM +0100, Arnd Bergmann wrote:
+> On Tuesday 04 November 2008, Ira Snyder wrote:
 > 
-> This is only going to slow down compilation and types.h is not causing much
-> compilation problems, in fact, I can't recall a compilation problem due to
-> types.h. Contary to config.h situation which was a pain.
+> > So, since interrupts are disabled while my interrupt handler is running,
+> > I think I should be able to use spin_lock() and spin_unlock(), correct?
+> 
+> yes.
+> 
+> > But sparse gives me the following warning:
+> > wqt.c:185:9: warning: context imbalance in 'wqt_interrupt': wrong count at exit
+> > wqt.c:185:9:    context 'lock': wanted 0, got 1
+> > 
+> > If I'm using spin_lock_irqsave() and spin_lock_irqrestore() I do not get
+> > the same warnings. Therefore I must have some misunderstanding :)
+> 
+> 
+> I've seen something like that before, I think it was a bug either in
+> sparse or in the powerpc platform code. Try updating both the kernel
+> and sparse and see if it still happens.
+> 
 
-My hope was actually to speed up compilation.  If the average c file
-includes 10 headers, on types.h will get included by most of them,
-possibly multiple times.  Each run after the first still has to parse
-the whole file, just to drop everything between  #ifndef _LINUX_TYPES_H
-and #endif.
+Ok, I had the latest sparse, but I've been developing the host driver
+against Ubuntu 8.04's kernel, which is based on 2.6.24. Using Linus' git
+tree resolved the errors from sparse.
 
-By passing types.h on the command line we can drop it from all headers
-and only have to parse it once.  Just the intermediate step of parsing
-types.h 11 times instead of 10 will slow things down.  By about .4% on
-my not very beefy notebook.
+I ended up finding that the dma_mapping_error() API has changed, and so
+I updated the driver for that. It should build against 2.6.28-rc now.
+I'll post it in a little while.
 
-Before:
-real    4m33.241s
-user    3m58.524s
-sys     0m18.539s
-
-After:
-real    4m29.707s
-user    3m59.674s
-sys     0m18.182s
-
-And while testing this I noticed that a_flags shouldn't include the
-file.  Updated patch below.
-
-Jörn
-
--- 
-to show off how geeky they were.
--- Rob Enderle
-
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index ea48b82..328f345 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -121,7 +121,8 @@ endif
- 
- c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
- 		 $(__c_flags) $(modkern_cflags) \
--		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags)
-+		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags) \
-+                 -include include/linux/types.h
- 
- a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
- 		 $(__a_flags) $(modkern_aflags)
+Ira
