@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYKEKUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYKEKVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYKEKUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 05:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbYKEKUf
+	id S1756126AbYKEKVA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 05:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbYKEKUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 05:20:35 -0500
-Received: from [69.90.0.18] ([69.90.0.18]:41065 "EHLO mtl.rackplans.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753751AbYKEKUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 05:20:35 -0500
-X-Greylist: delayed 500 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Nov 2008 05:20:34 EST
-Date: Wed, 5 Nov 2008 05:12:51 -0500 (EST)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: linux-kernel@vger.kernel.org
-Subject: Broadcom mini PCI-E card free to a good developer
-Message-ID: <alpine.DEB.1.10.0811050507150.27574@mtl.rackplans.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 5 Nov 2008 05:20:40 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:36254 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754763AbYKEKUi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 05:20:38 -0500
+Message-ID: <4911730E.2050900@fr.ibm.com>
+Date: Wed, 05 Nov 2008 11:18:54 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Paul Menage <menage@google.com>, Matt Helsley <matthltc@us.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: [RFC][PATCH] freezer_cg: disable writing freezer.state of root
+ 	cgroup
+References: <20080811235323.872291138@us.ibm.com>	 <20080811235325.121356317@us.ibm.com>	 <6599ad830811032143h51eae533k5b0c17e65a7fa675@mail.gmail.com>	 <490FE7B5.8020400@cn.fujitsu.com>	 <6599ad830811032240n640f3fao48f1a9f05892b797@mail.gmail.com>	 <490FFB56.7030300@cn.fujitsu.com> <6599ad830811032356g6827a97dq41dec492fed8de15@mail.gmail.com> <4910014F.4000808@cn.fujitsu.com>
+In-Reply-To: <4910014F.4000808@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hello,
+Hello !
 
-I have a Broadcom Mini PCI-E card with no kernel drivers pulled from my 
-Dell Vostro 1000.
+>> Or maybe just skip populating the file entirely for the root cgroup?
+>> It's not useful if it can't be written and always returns the same
+>> value.
+> 
+> I thought about this. I'll see which way Matt and Cedric prefer.
 
-I have replaced it with an Atheros so if any kernel hackers want the thing 
-they are welcome to it.
+I think that Paul's suggestion of disabling the root freezer makes sense.
 
-It's currently in Madrid, Spain but I'm willing to ship it anywhere as 
-long as you have either worked on drivers in the past or someone who is well 
-known vouches for you.
+Thanks,
 
-	Gerhard
+C.
 
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
