@@ -1,87 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbYKETHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYKETLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbYKETHZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYKETHN
+	id S1756245AbYKETLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbYKETLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:07:13 -0500
-Received: from cerberus.snarc.org ([212.85.155.21]:44188 "EHLO
-	cerberus.snarc.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbYKETHM (ORCPT
+	Wed, 5 Nov 2008 14:11:31 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:60712 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbYKETLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:07:12 -0500
-X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Nov 2008 14:07:11 EST
-Date: Wed, 5 Nov 2008 19:01:43 +0000
-From: Vincent Hanquez <tab@snarc.org>
-To: Jiri Kosina <jkosina@suse.cz>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] hid update for macbook brick fn key
-Message-ID: <20081105190143.GA4529@snarc.org>
+	Wed, 5 Nov 2008 14:11:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=jMoKYwuvE+yArIYKMmmw+xTgAH6k23FIx20gTV3ZENQHJiOUQW49l7W+l0uYd3tsk8
+         5YMkBww6+QsHPY4fTNmOSCzja2MxzZK0PbHeZ4dfaGfOp1QQp/l5H4mRYkDREO1QIslu
+         curOjItfqdXDiLVIUbb5AZpTUP+ir8rTQ3Eo4=
+Date: Wed, 5 Nov 2008 22:11:26 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v2] x86: Don't allow nr_irqs > NR_IRQS
+Message-ID: <20081105191126.GA23548@localhost>
+References: <1225819102.3074.15.camel@achroite> <1225886687.3074.59.camel@achroite>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Warning: Email may contain unsmilyfied humor and/or satire.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1225886687.3074.59.camel@achroite>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri and LKML,
+[Ben Hutchings - Wed, Nov 05, 2008 at 12:04:46PM +0000]
+| On some systems probe_nr_irqs() can return a value larger than
+| NR_IRQS.  This will lead to probe_irq_on() overrunning the irq_desc
+| array.
+| 
+| Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+| ---
+|  arch/x86/kernel/io_apic.c |    2 ++
+|  1 files changed, 2 insertions(+), 0 deletions(-)
+| 
+| I hit this when running net-next-2.6 (close to 2.6.28-rc3) on a
+| Supermicro dual Xeon system.  NR_IRQS is 224 but probe_nr_irqs() detects
+| 5 IOAPICs and returns 240.  Here are the log messages:
+| 
+| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x01] address[0xfec00000] gsi_base[0])
+| Tue Nov  4 16:53:47 2008 IOAPIC[0]: apic_id 1, version 32, address 0xfec00000, GSI 0-23
+| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x02] address[0xfec81000] gsi_base[24])
+| Tue Nov  4 16:53:47 2008 IOAPIC[1]: apic_id 2, version 32, address 0xfec81000, GSI 24-47
+| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x03] address[0xfec81400] gsi_base[48])
+| Tue Nov  4 16:53:47 2008 IOAPIC[2]: apic_id 3, version 32, address 0xfec81400, GSI 48-71
+| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x04] address[0xfec82000] gsi_base[72])
+| Tue Nov  4 16:53:47 2008 IOAPIC[3]: apic_id 4, version 32, address 0xfec82000, GSI 72-95
+| Tue Nov  4 16:53:47 2008 ACPI: IOAPIC (id[0x05] address[0xfec82400] gsi_base[96])
+| Tue Nov  4 16:53:47 2008 IOAPIC[4]: apic_id 5, version 32, address 0xfec82400, GSI 96-119
+| Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+| Tue Nov  4 16:53:47 2008 ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+| Tue Nov  4 16:53:47 2008 Enabling APIC mode:  Flat.  Using 5 I/O APICs
+| 
+| I have added a WARN_ON() as suggested by Yinghai Lu.
+| 
+| Ben.
+| 
+| diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+| --- a/arch/x86/kernel/io_apic.c
+| +++ b/arch/x86/kernel/io_apic.c
+| @@ -3611,6 +3611,8 @@ int __init probe_nr_irqs(void)
+|  	/* something wrong ? */
+|  	if (nr < nr_min)
+|  		nr = nr_min;
+| +	if (WARN_ON(nr > NR_IRQS))
+| +		nr = NR_IRQS;
+|  
+|  	return nr;
+|  }
+| 
+| -- 
+| Ben Hutchings, Senior Software Engineer, Solarflare Communications
+| Not speaking for my employer; that's the marketing department's job.
+| They asked us to note that Solarflare product names are trademarked.
+| 
 
-The following patch add support for late 2008 macbook (apparently
-codename 'brick') keyboard that was missing the fn key behavior.
+My Ack if you need it, Ingo CC'ed
+Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-I only have and tested the _ISO flavor, but i've added ANSI (usa) and
-RIS (japan) keyboard ids too, by following the same order as all previous
-apple keyboard quirks.
+---
 
------
+Ben I didn't manage to get a look over ACPI related changes
+(ie to find the reason why the kernel is able to reveal 5 IO-APICs
+ now but this patch is needed anyway as Yinghai already mentioned
+ and should solve your problem. FWIW, I don't see neither apics on
+ my laptop by lspci except that ICH is notified so I suspect the
+ ACPI parsing is right)
 
-add HID support for fn key on late2008 macbook.
-
-Signed-off-by: Vincent Hanquez <tab@snarc.org>
-
-diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
-index c6ab4ba..d7c6a4c 100644
---- a/drivers/hid/hid-apple.c
-+++ b/drivers/hid/hid-apple.c
-@@ -418,6 +418,12 @@ static const struct hid_device_id apple_devices[] = {
- 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS),
- 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_BRICK_ANSI),
-+		.driver_data = APPLE_HAS_FN },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_BRICK_ISO),
-+		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_BRICK_JIS),
-+		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
-diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 1903e75..9e58950 100644
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1250,6 +1250,9 @@ static const struct hid_device_id hid_blacklist[] = {
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_ISO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING2_JIS) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_BRICK_ANSI) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_BRICK_ISO) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_BRICK_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_AVERMEDIA, USB_DEVICE_ID_AVER_FM_MR800) },
-diff --git a/drivers/hid/hid-ids.h b/drivers/hid/hid-ids.h
-index 5cc4042..98b090e 100644
---- a/drivers/hid/hid-ids.h
-+++ b/drivers/hid/hid-ids.h
-@@ -82,6 +82,9 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
-+#define USB_DEVICE_ID_APPLE_BRICK_ANSI		0x0236
-+#define USB_DEVICE_ID_APPLE_BRICK_ISO		0x0237
-+#define USB_DEVICE_ID_APPLE_BRICK_JIS		0x0238
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
- #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
+		- Cyrill -
