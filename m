@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbYKETsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757354AbYKETst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755613AbYKETsd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYKETrs
+	id S1757354AbYKETst (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbYKETrw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:47:48 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:23363 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755836AbYKETrr (ORCPT
+	Wed, 5 Nov 2008 14:47:52 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:13187 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756651AbYKETru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:47:47 -0500
+	Wed, 5 Nov 2008 14:47:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:subject:to:date:message-id:in-reply-to:references:user-agent
          :mime-version:content-type:content-transfer-encoding;
-        b=Lpki+00xez6VFeAlI4q1DjLL4QRqZmGDSWec+4VWrg7bPORoYK8zu4beNRsp0B3z+M
-         iHoHoeJBIqmtWKpfY35VqXvdk17qyynkvoONHXESlzyDt1RGGYTmggudfNTlds+ZcUwy
-         W30eFaMvlpMmPtvQB0MNYRCiF0EslpqQ8+WTE=
+        b=XMTn0BiQCB74nZUBQVeua7GTqEr+jgE5/UGS637TVkisU3tXVjIJiNxmCkdu+xB/N7
+         spguDsQQVKOqNxwb5LLjoPjQ6tKrVv78dcpDSw4LshjtK/UDN7ETidVdjtvf2SjXOJhB
+         yH6Ak2cYyxiGNGhjSr0lLPLMIJU20FmSrEA5Y=
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [RFC PATCH V4 3/6] Configfs support for IR
+Subject: [RFC PATCH V4 1/6] Minimal changes to the core input system
 To: linux-kernel@vger.kernel.org
-Date: Wed, 05 Nov 2008 14:47:42 -0500
-Message-ID: <20081105194742.19407.35855.stgit@localhost>
+Date: Wed, 05 Nov 2008 14:47:38 -0500
+Message-ID: <20081105194738.19407.31117.stgit@localhost>
 In-Reply-To: <20081105194640.19407.19682.stgit@localhost>
 References: <20081105194640.19407.19682.stgit@localhost>
 User-Agent: StGit/0.14.3.275.gdc7f
@@ -32,403 +32,348 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now uses configfs to build mappings from remote buttons to key strokes. When ir-core loads it creates /config/remotes. Make a directory for each remote you have; this will cause a new input devices to be created. Inside these directories make a directory for each key on the remote. In the key directory attributes fill in the protocol, device, command, keycode. Since this is configfs all of this can be easily scripted.
+Minimal changes to the core input system. The bulk of IR support loads as a module. These changes are passive if the rest of IR isn't loaded.
 
-Now when a key is pressed on a remote, the configfs directories are searched for a match on protocol, device, command. If a matches is found, a key stroke corresponding to keycode is created and sent on the input device that was created when the directory for the remote was made.
-
-The configfs directories are pretty flexible. You can use them to map multiple remotes to the same key stroke, or send a single button push to multiple apps.
+Jon Smirl
+<jonsmirl@gmail.com>
 ---
- drivers/input/ir/Makefile      |    2 
- drivers/input/ir/ir-configfs.c |  333 ++++++++++++++++++++++++++++++++++++++++
- drivers/input/ir/ir-core.c     |   15 +-
- 3 files changed, 339 insertions(+), 11 deletions(-)
- create mode 100644 drivers/input/ir/ir-configfs.c
+ drivers/input/evdev.c           |   55 +++++++++++++++++++++++++++++
+ drivers/input/input.c           |   17 +++++++++
+ include/linux/input.h           |   75 +++++++++++++++++++++++++++++++++++++++
+ include/linux/mod_devicetable.h |    3 ++
+ 4 files changed, 150 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/input/ir/Makefile b/drivers/input/ir/Makefile
-index 6acb665..2ccdda3 100644
---- a/drivers/input/ir/Makefile
-+++ b/drivers/input/ir/Makefile
-@@ -4,5 +4,5 @@
- # Each configuration option enables a list of files.
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index 1070db3..33a01dc 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -328,6 +328,14 @@ struct ff_effect_compat {
+ 	} u;
+ };
  
- obj-$(CONFIG_INPUT_IR)		+= ir.o
--ir-objs := ir-core.o
-+ir-objs := ir-core.o ir-configfs.o
++struct ir_command_compat {
++	__u32 protocol;
++	__u32 device;
++	__u32 command;
++	__u32 transmitters;
++};
++
++
+ /* Note to the author of this code: did it ever occur to
+    you why the ifdefs are needed? Think about it again. -AK */
+ #ifdef CONFIG_X86_64
+@@ -432,6 +440,32 @@ static int evdev_ff_effect_from_user(const char __user *buffer, size_t size,
+ 	return 0;
+ }
  
-diff --git a/drivers/input/ir/ir-configfs.c b/drivers/input/ir/ir-configfs.c
-new file mode 100644
-index 0000000..0fec855
---- /dev/null
-+++ b/drivers/input/ir/ir-configfs.c
-@@ -0,0 +1,333 @@
-+/*
-+ * Configfs routines for IR support
-+ *
-+ *   configfs root
-+ *   --remotes
-+ *   ----specific remote
-+ *   ------keymap
-+ *   --------protocol
-+ *   --------device
-+ *   --------command
-+ *   --------keycode
-+ *   ------repeat keymaps
-+ *   --------....
-+ *   ----another remote
-+ *   ------more keymaps
-+ *   --------....
-+ *
-+ * Copyright (C) 2008 Jon Smirl <jonsmirl@gmail.com>
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/input.h>
-+
-+#include "ir.h"
-+
-+static void remote_release(struct config_item *remote);
-+
-+struct keymap {
-+	struct config_item item;
-+	int protocol;
-+	int device;
-+	int command;
-+	int keycode;
-+};
-+
-+static inline struct keymap *to_keymap(struct config_item *item)
++static int evdev_ir_send_from_user(const char __user *buffer, size_t size,
++				     struct ir_command *ir_command)
 +{
-+	return item ? container_of(item, struct keymap, item) : NULL;
++	if (COMPAT_TEST) {
++		struct ir_command_compat *compat_ir_command;
++
++		if (size != sizeof(struct ir_command_compat))
++			return -EINVAL;
++
++		compat_ir_command = (struct ir_command_compat *)ir_command;
++
++		if (copy_from_user(compat_ir_command, buffer,
++				   sizeof(struct ir_command_compat)))
++			return -EFAULT;
++
++	} else {
++		if (size != sizeof(struct ir_command))
++			return -EINVAL;
++
++		if (copy_from_user(ir_command, buffer, sizeof(struct ir_command)))
++			return -EFAULT;
++	}
++
++	return 0;
 +}
 +
-+struct remote {
-+	struct config_group group;
-+	struct input_dev *input;
-+};
-+
-+static inline struct remote *to_remote(struct config_group *group)
+ #else
+ 
+ static inline size_t evdev_event_size(void)
+@@ -469,6 +503,18 @@ static int evdev_ff_effect_from_user(const char __user *buffer, size_t size,
+ 	return 0;
+ }
+ 
++static int evdev_ir_send_from_user(const char __user *buffer, size_t size,
++				     struct ir_command *ir_command)
 +{
-+	return group ? container_of(group, struct remote, group) : NULL;
-+}
-+
-+
-+static struct configfs_attribute item_protocol = {
-+	.ca_owner = THIS_MODULE,
-+	.ca_name = "protocol",
-+	.ca_mode = S_IRUGO | S_IWUSR,
-+};
-+
-+static struct configfs_attribute item_device = {
-+	.ca_owner = THIS_MODULE,
-+	.ca_name = "device",
-+	.ca_mode = S_IRUGO | S_IWUSR,
-+};
-+
-+static struct configfs_attribute item_command = {
-+	.ca_owner = THIS_MODULE,
-+	.ca_name = "command",
-+	.ca_mode = S_IRUGO | S_IWUSR,
-+};
-+
-+static struct configfs_attribute item_keycode = {
-+	.ca_owner = THIS_MODULE,
-+	.ca_name = "keycode",
-+	.ca_mode = S_IRUGO | S_IWUSR,
-+};
-+
-+static ssize_t item_show(struct config_item *item,
-+				      struct configfs_attribute *attr,
-+				      char *page)
-+{
-+	struct keymap *keymap = to_keymap(item);
-+
-+	if (attr == &item_protocol)
-+		return sprintf(page, "%d\n", keymap->protocol);
-+	if (attr == &item_device)
-+		return sprintf(page, "%d\n", keymap->device);
-+	if (attr == &item_command)
-+		return sprintf(page, "%d\n", keymap->command);
-+	return sprintf(page, "%d\n", keymap->keycode);
-+}
-+
-+static ssize_t item_store(struct config_item *item,
-+				       struct configfs_attribute *attr,
-+				       const char *page, size_t count)
-+{
-+	struct keymap *keymap = to_keymap(item);
-+	struct remote *remote;
-+	unsigned long tmp;
-+	char *p = (char *) page;
-+
-+	tmp = simple_strtoul(p, &p, 10);
-+	if (!p || (*p && (*p != '\n')))
++	if (size != sizeof(struct ir_command))
 +		return -EINVAL;
 +
-+	if (tmp > INT_MAX)
-+		return -ERANGE;
++	if (copy_from_user(ir_command, buffer, sizeof(struct ir_command)))
++		return -EFAULT;
 +
-+	if (attr == &item_protocol)
-+		keymap->protocol = tmp;
-+	else if (attr == &item_device)
-+		keymap->device = tmp;
-+	else if (attr == &item_command)
-+		keymap->command = tmp;
-+	else {
-+		if (tmp < KEY_MAX) {
-+			remote = to_remote(to_config_group(item->ci_parent));
-+			set_bit(tmp, remote->input->keybit);
-+			keymap->keycode = tmp;
-+		}
-+	}
-+	return count;
++	return 0;
 +}
 +
-+static void keymap_release(struct config_item *item)
-+{
-+	struct keymap *keymap = to_keymap(item);
-+	struct remote *remote = to_remote(to_config_group(item->ci_parent));
+ #endif /* CONFIG_COMPAT */
+ 
+ static ssize_t evdev_write(struct file *file, const char __user *buffer,
+@@ -695,6 +741,7 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
+ 	struct input_dev *dev = evdev->handle.dev;
+ 	struct input_absinfo abs;
+ 	struct ff_effect effect;
++	struct ir_command ir_command;
+ 	int __user *ip = (int __user *)p;
+ 	int i, t, u, v;
+ 	int error;
+@@ -859,6 +906,14 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
+ 
+ 				return 0;
+ 			}
 +
-+	printk("keymap release\n");
-+	clear_bit(keymap->keycode, remote->input->keybit);
-+	kfree(keymap);
-+}
++			if (_IOC_NR(cmd) == _IOC_NR(EVIOIRSEND)) {
 +
-+static struct configfs_item_operations keymap_ops = {
-+	.release = keymap_release,
-+	.show_attribute = item_show,
-+	.store_attribute = item_store,
-+};
++				if (evdev_ir_send_from_user(p, _IOC_SIZE(cmd), &ir_command))
++					return -EFAULT;
 +
-+/* Start the definition of the all of the attributes
-+ * in a single keymap directory
-+ */
-+static struct configfs_attribute *keymap_attrs[] = {
-+	&item_protocol,
-+	&item_device,
-+	&item_command,
-+	&item_keycode,
-+	NULL,
-+};
++				return input_ir_send(dev, &ir_command, file);
++			}
+ 		}
+ 	}
+ 	return -EINVAL;
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index c13ced3..0a9b15a 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -240,6 +240,10 @@ static void input_handle_event(struct input_dev *dev,
+ 	case EV_PWR:
+ 		disposition = INPUT_PASS_TO_ALL;
+ 		break;
 +
-+static struct config_item_type keymap_type = {
-+	.ct_item_ops = &keymap_ops,
-+	.ct_attrs	= keymap_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
++	case EV_IR:
++		disposition = INPUT_PASS_TO_ALL;
++		break;
+ 	}
+ 
+ 	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
+@@ -693,6 +697,7 @@ static const struct input_device_id *input_match_device(const struct input_devic
+ 		MATCH_BIT(sndbit, SND_MAX);
+ 		MATCH_BIT(ffbit,  FF_MAX);
+ 		MATCH_BIT(swbit,  SW_MAX);
++		MATCH_BIT(irbit,  IR_MAX);
+ 
+ 		return id;
+ 	}
+@@ -815,6 +820,8 @@ static int input_devices_seq_show(struct seq_file *seq, void *v)
+ 		input_seq_print_bitmap(seq, "FF", dev->ffbit, FF_MAX);
+ 	if (test_bit(EV_SW, dev->evbit))
+ 		input_seq_print_bitmap(seq, "SW", dev->swbit, SW_MAX);
++	if (test_bit(EV_IR, dev->evbit))
++		input_seq_print_bitmap(seq, "IR", dev->irbit, IR_MAX);
+ 
+ 	seq_putc(seq, '\n');
+ 
+@@ -992,6 +999,8 @@ static int input_print_modalias(char *buf, int size, struct input_dev *id,
+ 				'f', id->ffbit, 0, FF_MAX);
+ 	len += input_print_modalias_bits(buf + len, size - len,
+ 				'w', id->swbit, 0, SW_MAX);
++	len += input_print_modalias_bits(buf + len, size - len,
++				'i', id->irbit, 0, IR_MAX);
+ 
+ 	if (add_cr)
+ 		len += snprintf(buf + len, max(size - len, 0), "\n");
+@@ -1093,6 +1102,7 @@ INPUT_DEV_CAP_ATTR(LED, led);
+ INPUT_DEV_CAP_ATTR(SND, snd);
+ INPUT_DEV_CAP_ATTR(FF, ff);
+ INPUT_DEV_CAP_ATTR(SW, sw);
++INPUT_DEV_CAP_ATTR(IR, ir);
+ 
+ static struct attribute *input_dev_caps_attrs[] = {
+ 	&dev_attr_ev.attr,
+@@ -1104,6 +1114,7 @@ static struct attribute *input_dev_caps_attrs[] = {
+ 	&dev_attr_snd.attr,
+ 	&dev_attr_ff.attr,
+ 	&dev_attr_sw.attr,
++	&dev_attr_ir.attr,
+ 	NULL
+ };
+ 
+@@ -1221,6 +1232,8 @@ static int input_dev_uevent(struct device *device, struct kobj_uevent_env *env)
+ 		INPUT_ADD_HOTPLUG_BM_VAR("FF=", dev->ffbit, FF_MAX);
+ 	if (test_bit(EV_SW, dev->evbit))
+ 		INPUT_ADD_HOTPLUG_BM_VAR("SW=", dev->swbit, SW_MAX);
++	if (test_bit(EV_IR, dev->evbit))
++		INPUT_ADD_HOTPLUG_BM_VAR("IR=", dev->irbit, IR_MAX);
+ 
+ 	INPUT_ADD_HOTPLUG_MODALIAS_VAR(dev);
+ 
+@@ -1333,6 +1346,10 @@ void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int
+ 		__set_bit(code, dev->ffbit);
+ 		break;
+ 
++	case EV_IR:
++		__set_bit(code, dev->irbit);
++		break;
 +
-+static struct config_item *make_keymap(struct config_group *group, const char *name)
-+{
-+	struct keymap *keymap;
+ 	case EV_PWR:
+ 		/* do nothing */
+ 		break;
+diff --git a/include/linux/input.h b/include/linux/input.h
+index b86fb55..95e385f 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -79,6 +79,8 @@ struct input_absinfo {
+ #define EVIOCRMFF		_IOW('E', 0x81, int)			/* Erase a force effect */
+ #define EVIOCGEFFECTS		_IOR('E', 0x84, int)			/* Report number of effects playable at the same time */
+ 
++#define EVIOIRSEND		_IOC(_IOC_WRITE, 'E', 0x80, sizeof(struct ir_command))	/* send an IR command */
 +
-+	keymap = kzalloc(sizeof(*keymap), GFP_KERNEL);
-+	if (!keymap)
-+		return ERR_PTR(-ENOMEM);
-+
-+	config_item_init_type_name(&keymap->item, name, &keymap_type);
-+	return &keymap->item;
-+}
-+
+ #define EVIOCGRAB		_IOW('E', 0x90, int)			/* Grab/Release device */
+ 
+ /*
+@@ -97,6 +99,7 @@ struct input_absinfo {
+ #define EV_FF			0x15
+ #define EV_PWR			0x16
+ #define EV_FF_STATUS		0x17
++#define EV_IR			0x18
+ #define EV_MAX			0x1f
+ #define EV_CNT			(EV_MAX+1)
+ 
+@@ -959,6 +962,56 @@ struct ff_effect {
+ #define FF_MAX		0x7f
+ #define FF_CNT		(FF_MAX+1)
+ 
 +/*
-+ * Note that, since no extra work is required on ->drop_item(),
-+ * no ->drop_item() is provided.
++ * IR Support
 + */
-+static struct configfs_group_operations remote_group_ops = {
-+	.make_item = make_keymap,
++
++#define IR_PROTOCOL_RESERVED 0
++#define IR_PROTOCOL_JVC 1
++#define IR_PROTOCOL_NEC 2
++#define IR_PROTOCOL_NOKIA 3
++#define IR_PROTOCOL_SHARP 4
++#define IR_PROTOCOL_SONY_12 5
++#define IR_PROTOCOL_SONY_15 6
++#define IR_PROTOCOL_SONY_20 7
++#define IR_PROTOCOL_PHILIPS_RC5 8
++#define IR_PROTOCOL_PHILIPS_RC6 9
++#define IR_PROTOCOL_PHILIPS_RCMM 10
++#define IR_PROTOCOL_PHILIPS_RECS80 11
++#define IR_PROTOCOL_RCA 12
++#define IR_PROTOCOL_ITT 13
++
++#define IR_PROTOCOL 1
++#define IR_DEVICE 2
++#define IR_COMMAND 3
++
++#define IR_CAP_RECEIVE_BASEBAND 0
++#define IR_CAP_RECEIVE_36K 1
++#define IR_CAP_RECEIVE_38K 2
++#define IR_CAP_RECEIVE_40K 3
++#define IR_CAP_RECEIVE_56K 4
++#define IR_CAP_SEND_BASEBAND 5
++#define IR_CAP_SEND_36K 6
++#define IR_CAP_SEND_38K 7
++#define IR_CAP_SEND_40K 8
++#define IR_CAP_SEND_56K 9
++#define IR_CAP_XMITTER_1 10
++#define IR_CAP_XMITTER_2 11
++#define IR_CAP_XMITTER_3 12
++#define IR_CAP_XMITTER_4 13
++#define IR_CAP_RECEIVE_RAW 14
++#define IR_CAP_SEND_RAW 15
++#define IR_MAX 0x0f
++#define IR_CNT IR_MAX + 1
++
++struct ir_command {
++	__u32 protocol;
++	__u32 device;
++	__u32 command;
++	__u32 transmitters;
 +};
 +
-+static ssize_t remote_show_description(struct config_item *item,
-+					 struct configfs_attribute *attr,
-+					 char *page)
++
+ #ifdef __KERNEL__
+ 
+ /*
+@@ -986,6 +1039,7 @@ struct ff_effect {
+  * @sndbit: bitmap of sound effects supported by the device
+  * @ffbit: bitmap of force feedback effects supported by the device
+  * @swbit: bitmap of switches present on the device
++ * @irbit: bitmap of capabilies of the IR hardware
+  * @keycodemax: size of keycode table
+  * @keycodesize: size of elements in keycode table
+  * @keycode: map of scancodes to keycodes for this device
+@@ -1058,6 +1112,7 @@ struct input_dev {
+ 	unsigned long sndbit[BITS_TO_LONGS(SND_CNT)];
+ 	unsigned long ffbit[BITS_TO_LONGS(FF_CNT)];
+ 	unsigned long swbit[BITS_TO_LONGS(SW_CNT)];
++	unsigned long irbit[BITS_TO_LONGS(IR_CNT)];
+ 
+ 	unsigned int keycodemax;
+ 	unsigned int keycodesize;
+@@ -1066,6 +1121,7 @@ struct input_dev {
+ 	int (*getkeycode)(struct input_dev *dev, int scancode, int *keycode);
+ 
+ 	struct ff_device *ff;
++	struct ir_device *ir;
+ 
+ 	unsigned int repeat_key;
+ 	struct timer_list timer;
+@@ -1301,6 +1357,11 @@ static inline void input_report_switch(struct input_dev *dev, unsigned int code,
+ 	input_event(dev, EV_SW, code, !!value);
+ }
+ 
++static inline void input_report_ir(struct input_dev *dev, unsigned int code, int value)
 +{
-+	return sprintf(page,
-+"Map for a specific remote\n"
-+"Remote signals matching this map will be translated into keyboard/mouse events\n");
++	input_event(dev, EV_IR, code, value);
 +}
 +
-+static struct configfs_item_operations remote_item_ops = {
-+	.release	= remote_release,
-+	.show_attribute	= remote_show_description,
-+};
-+
-+static struct configfs_attribute remote_attr_description = {
-+	.ca_owner = THIS_MODULE,
-+	.ca_name = "description",
-+	.ca_mode = S_IRUGO,
-+};
-+
-+static struct configfs_attribute *remote_attrs[] = {
-+	&remote_attr_description,
-+	NULL,
-+};
-+
-+static struct config_item_type remote_type = {
-+	.ct_item_ops	= &remote_item_ops,
-+	.ct_group_ops	= &remote_group_ops,
-+	.ct_attrs	= remote_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
-+
-+/* Top level remotes directory for all remotes */
-+
-+/* Create a new remote group */
-+static struct config_group *make_remote(struct config_group *parent, const char *name)
-+{
-+	struct remote *remote;
-+	int ret;
-+
-+	remote = kzalloc(sizeof(*remote), GFP_KERNEL);
-+	if (!remote)
-+		return ERR_PTR(-ENOMEM);
-+
-+	remote->input = input_allocate_device();
-+	if (!remote->input) {
-+		ret = -ENOMEM;
-+		goto free_mem;
-+	}
-+	remote->input->id.bustype = BUS_VIRTUAL;
-+	remote->input->name = name;
-+	remote->input->phys = "remotes";
-+
-+	remote->input->evbit[0] = BIT_MASK(EV_KEY);
-+
-+	ret = input_register_device(remote->input);
-+	if (ret)
-+		goto free_input;
-+
-+	config_group_init_type_name(&remote->group, name, &remote_type);
-+	return &remote->group;
-+
-+ free_input:
-+	input_free_device(remote->input);
-+ free_mem:
-+	kfree(remote);
-+	return ERR_PTR(ret);
-+}
-+
-+static void remote_release(struct config_item *item)
-+{
-+	struct config_group *group = to_config_group(item);
-+	struct remote *remote  = to_remote(group);
-+
-+	input_free_device(remote->input);
-+	kfree(remote);
-+}
-+
-+static ssize_t remotes_show_description(struct config_item *item,
-+					struct configfs_attribute *attr,
-+					char *page)
-+{
-+	return sprintf(page,
-+"This subsystem allows the creation of IR remote control maps.\n"
-+"Maps allow IR signals to be mapped into key strokes or mouse events.\n");
-+}
-+
-+static struct configfs_item_operations remotes_item_ops = {
-+	.show_attribute	= remotes_show_description,
-+	.release = remote_release,
-+};
-+
-+static struct configfs_attribute remotes_attr_description = {
-+	.ca_owner = THIS_MODULE,
-+	.ca_name = "description",
-+	.ca_mode = S_IRUGO,
-+};
-+
-+static struct configfs_attribute *remotes_attrs[] = {
-+	&remotes_attr_description,
-+	NULL,
-+};
-+
-+/*
-+ * Note that, since no extra work is required on ->drop_item(),
-+ * no ->drop_item() is provided.
+ static inline void input_sync(struct input_dev *dev)
+ {
+ 	input_event(dev, EV_SYN, SYN_REPORT, 0);
+@@ -1379,5 +1440,19 @@ int input_ff_erase(struct input_dev *dev, int effect_id, struct file *file);
+ int input_ff_create_memless(struct input_dev *dev, void *data,
+ 		int (*play_effect)(struct input_dev *, void *, struct ff_effect *));
+ 
++/**
++ * IR support functions
 + */
-+static struct configfs_group_operations remotes_group_ops = {
-+	.make_group	= make_remote,
-+};
 +
-+static struct config_item_type remotes_type = {
-+	.ct_item_ops	= &remotes_item_ops,
-+	.ct_group_ops	= &remotes_group_ops,
-+	.ct_attrs	= remotes_attrs,
-+	.ct_owner	= THIS_MODULE,
-+};
++typedef int (*send_func)(void *private, unsigned int *buffer, unsigned int count,
++		unsigned int frequency, unsigned int xmitters);
 +
-+struct configfs_subsystem input_ir_remotes = {
-+	.su_group = {
-+		.cg_item = {
-+			.ci_namebuf = "remotes",
-+			.ci_type = &remotes_type,
-+		},
-+	},
-+};
++int input_ir_create(struct input_dev *dev, void *private, send_func send);
++void input_ir_destroy(struct input_dev *dev);
 +
-+void input_ir_translate(struct input_dev *dev, int protocol, int device, int command)
-+{
-+	struct config_item *i, *j;
-+	struct config_group *g;
-+	struct remote *remote;
-+	struct keymap *keymap;
++void input_ir_decode(struct input_dev *dev, unsigned int delta, unsigned int bit);
++int input_ir_send(struct input_dev *dev, struct ir_command *ir_command, struct file *file);
++int input_ir_register(struct input_dev *dev);
 +
-+	/* generate the IR format event */
-+	input_report_ir(dev, IR_PROTOCOL, protocol);
-+	input_report_ir(dev, IR_DEVICE, device);
-+	input_report_ir(dev, IR_COMMAND, command);
-+	input_sync(dev);
-+
-+    mutex_lock(&input_ir_remotes.su_mutex);
-+
-+    /* search the translation maps to translate into key stroke */
-+    list_for_each_entry(i, &input_ir_remotes.su_group.cg_children, ci_entry) {
-+    	g = to_config_group(i);
-+        list_for_each_entry(j, &g->cg_children, ci_entry) {
-+        	keymap = to_keymap(j);
-+        	if ((keymap->protocol == protocol) && (keymap->device == device)
-+        			&& (keymap->command == command)) {
-+				remote = to_remote(g);
-+				input_report_key(remote->input, keymap->keycode, 1);
-+				input_sync(remote->input);
-+        	}
-+        }
-+    }
-+    mutex_unlock(&input_ir_remotes.su_mutex);
-+}
-diff --git a/drivers/input/ir/ir-core.c b/drivers/input/ir/ir-core.c
-index 3a309fa..8e08f3f 100644
---- a/drivers/input/ir/ir-core.c
-+++ b/drivers/input/ir/ir-core.c
-@@ -10,15 +10,6 @@
+ #endif
+ #endif
+diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+index 97b91d1..ea35367 100644
+--- a/include/linux/mod_devicetable.h
++++ b/include/linux/mod_devicetable.h
+@@ -293,6 +293,7 @@ struct pcmcia_device_id {
+ #define INPUT_DEVICE_ID_SND_MAX		0x07
+ #define INPUT_DEVICE_ID_FF_MAX		0x7f
+ #define INPUT_DEVICE_ID_SW_MAX		0x0f
++#define INPUT_DEVICE_ID_IR_MAX		0x0f
  
- #include "ir.h"
+ #define INPUT_DEVICE_ID_MATCH_BUS	1
+ #define INPUT_DEVICE_ID_MATCH_VENDOR	2
+@@ -308,6 +309,7 @@ struct pcmcia_device_id {
+ #define INPUT_DEVICE_ID_MATCH_SNDBIT	0x0400
+ #define INPUT_DEVICE_ID_MATCH_FFBIT	0x0800
+ #define INPUT_DEVICE_ID_MATCH_SWBIT	0x1000
++#define INPUT_DEVICE_ID_MATCH_IRBIT	0x2000
  
--void input_ir_translate(struct input_dev *dev, int protocol, int device, int command)
--{
--	/* generate the IR format event */
--	input_report_ir(dev, IR_PROTOCOL, protocol);
--	input_report_ir(dev, IR_DEVICE, device);
--	input_report_ir(dev, IR_COMMAND, command);
--	input_sync(dev);
--}
--
- static int encode_sony(struct ir_device *ir, struct ir_command *command)
- {
- 	/* Sony SIRC IR code */
-@@ -673,11 +664,15 @@ EXPORT_SYMBOL_GPL(input_ir_destroy);
+ struct input_device_id {
  
- static int __init input_ir_init(void)
- {
--	return 0;
-+	config_group_init(&input_ir_remotes.su_group);
-+	mutex_init(&input_ir_remotes.su_mutex);
-+
-+	return configfs_register_subsystem(&input_ir_remotes);
- }
- module_init(input_ir_init);
+@@ -327,6 +329,7 @@ struct input_device_id {
+ 	kernel_ulong_t sndbit[INPUT_DEVICE_ID_SND_MAX / BITS_PER_LONG + 1];
+ 	kernel_ulong_t ffbit[INPUT_DEVICE_ID_FF_MAX / BITS_PER_LONG + 1];
+ 	kernel_ulong_t swbit[INPUT_DEVICE_ID_SW_MAX / BITS_PER_LONG + 1];
++	kernel_ulong_t irbit[INPUT_DEVICE_ID_IR_MAX / BITS_PER_LONG + 1];
  
- static void __exit input_ir_exit(void)
- {
-+	configfs_unregister_subsystem(&input_ir_remotes);
- }
- module_exit(input_ir_exit);
+ 	kernel_ulong_t driver_info;
+ };
 
