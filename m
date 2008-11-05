@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbYKESVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756425AbYKESYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbYKESVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 13:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbYKESVF
+	id S1756425AbYKESYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbYKESYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 13:21:05 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47446 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbYKESVE (ORCPT
+	Wed, 5 Nov 2008 13:24:07 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:53702 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbYKESYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 13:21:04 -0500
-Message-ID: <4911E3E7.6090109@zytor.com>
-Date: Wed, 05 Nov 2008 10:20:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
-       Andi Kleen <andi@firstfloor.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <20081104212933.GA11050@elte.hu> <4910C014.9070805@zytor.com> <20081104215245.GC17775@elte.hu> <20081105175318.GD7286@localhost> <4911E042.8040404@zytor.com> <20081105181405.GE7286@localhost>
-In-Reply-To: <20081105181405.GE7286@localhost>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 5 Nov 2008 13:24:06 -0500
+Date: Wed, 5 Nov 2008 10:23:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How do I printk <type> correctly?
+Message-Id: <20081105102335.b1fd995d.randy.dunlap@oracle.com>
+In-Reply-To: <20081023114133.GA30187@x200.localdomain>
+References: <20081023114133.GA30187@x200.localdomain>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
+On Thu, 23 Oct 2008 15:41:33 +0400 Alexey Dobriyan wrote:
+
+> If variable is of Type	use	printk format specifier.
+> ---------------------------------------------------------
+> 		int			%d or %x
+> 		unsigned int		%u or %x
+> 		long			%ld ot %lx
+> 		unsigned long		%lu or %lx
+> 		long long		%lld or %llx
+> 		unsigned long long	%llu or %llx
+> 		size_t			%zu or %zx
+> 		ssize_t			%zd or %zx
+
+Add, or is this one too infrequent to be listed here?
+
+		tcflag_t		%lu or %lx or %lo
+
+Since tcflag_t is unsigned int (on most $ARCH-es) or unsigned long (on sparc32),
+use a cast to (unsigned long)flag when printing it.
+
+[Yes, a sparc32 build gets lots of printk format warnings when printing tcflag_t
+values.]
+
+
+> Raw pointer value SHOULD be printed with %p.
 > 
-> I see. Thanks! Btw Peter, I remember I read long time ago about
-> segment caches (well... in time of DOS programming actually). But
-> there was only 'common' words like this cache exist. But maybe
-> it's possible to know what exactly size of such a cache is?
-> You mentoined number 32. (heh... I hadn't remember it until
-> you mentoined about such a cache :-)
+> u64 SHOULD be printed with %llu/%llx, (unsigned long long):
 > 
+> 	printk("%llu", (unsigned long long)u64_var);
+> 
+> s64 SHOULD be printed with %lld/%llx, (long long):
+> 
+> 	printk("%lld", (long long)s64_var);
+> 
+> If type is dependent on config option (sector_t), use format specifier
+> of biggest type and explicitly cast to it.
+> 
+> Reminder: sizeof() result is of type size_t.
+> 
+> Thank you for your cooperation.
+> --
 
-As with any other caching structure, you can discover its size,
-associativity, and replacement policy by artificially trying to provoke
-patterns that produce pathological timings.
-
-At Transmeta, at one time we used a 32-entry direct-mapped cache, which
-ended up with a ~96% hit rate on common Win95 benchmarks.
-
-I should, however, make it clear that there are other alternatives for
-speeding up segment descriptor loading, and not all of them rely on a cache.
-
-	-hpa
+---
+~Randy
