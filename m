@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbYKECqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYKECsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbYKECqx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 21:46:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbYKECqp
+	id S1755478AbYKECsd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 21:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYKECsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 21:46:45 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:58435 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbYKECqp (ORCPT
+	Tue, 4 Nov 2008 21:48:25 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56085 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752915AbYKECsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 21:46:45 -0500
-Date: Tue, 4 Nov 2008 20:45:17 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
+	Tue, 4 Nov 2008 21:48:25 -0500
+Date: Tue, 4 Nov 2008 18:48:54 -0800
+From: Arjan van de Ven <arjan@infradead.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: peterz@infradead.org, rientjes@google.com, npiggin@suse.de,
-       menage@google.com, dfults@sgi.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [patch 0/7] cpuset writeback throttling
-In-Reply-To: <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0811042036000.31167@quilx.com>
-References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com>
- <20081104124753.fb1dde5a.akpm@linux-foundation.org> <1225831988.7803.1939.camel@twins>
- <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins>
- <20081104135004.f1717fcf.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041601100.5077@quilx.com>
- <20081104143534.b5c16147.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041648350.6254@quilx.com>
- <20081104153610.bbfd5ed8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Spam-Score: -2.6
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PATCH: __bprm_mm_init(): remove uneeded goto
+Message-ID: <20081104184854.72044220@infradead.org>
+In-Reply-To: <20081104114703.c950f078.akpm@linux-foundation.org>
+References: <20081104140314.1b196764@doriath.conectiva>
+	<20081104105707.39dc5e30.akpm@linux-foundation.org>
+	<20081104171414.6c1a8b52@doriath.conectiva>
+	<20081104114703.c950f078.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Andrew Morton wrote:
+On Tue, 4 Nov 2008 11:47:03 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> In a memcg implementation what we would implement is "throttle
-> page-dirtying tasks in this memcg when the memcg's dirty memory reaches
-> 40% of its total".
+> We used to do this trick a *lot* in the kernel (back in the 2.2 days?)
+> for this performance reason.  Nowdays gcc is a lot more complex and we
+> hope that it can sometimes work these things out for itself and we
+> hope that `unlikely' might cause the compiler to move the unlikely
+> code out of line.  But I don't know how successful the compiler is at
+> doing this, and it'll be dependent upon the gcc version, the wind
+> direction, etc.
+> 
 
-Right that is similar to what this patch does for cpusets. A memcg 
-implementation would need to figure out if we are currently part of a 
-memcg and then determine the percentage of memory that is dirty.
+as far as I know, gcc tends to consider NULL pointer checks as unlikely
+by default.
 
-That is one aspect. When performing writeback then we need to figure out 
-which inodes have dirty pages in the memcg and we need to start writeout 
-on those inodes and not on others that have their dirty pages elsewhere. 
-There are two components of this that are in this patch and that would 
-also have to be implemented for a memcg.
+(but we can always tell it so if we think we know better..)
 
-> But that doesn't solve the problem which this patchset is trying to
-> solve, which is "don't let all the memory in all this group of nodes
-> get dirty".
-
-This patch would solve the problem if the calculation of the dirty pages 
-would consider the active memcg and be able to determine the amount of 
-dirty pages (through some sort of additional memcg counters). That is just 
-the first part though. The second part of finding the inodes that have 
-dirty pages for writeback would require an association between memcgs and 
-inodes.
-
-> What happens if cpuset A uses nodes 0,1,2,3,4,5,6,7,8,9 and cpuset B
-> uses nodes 0,1?  Can activity in cpuset A cause ooms in cpuset B?
-
-Yes if the activities of cpuset A cause all pages to be dirtied in cpuset 
-B and then cpuset B attempts to do writeback. This will fail to acquire 
-enough memory for writeback and make reclaim impossible.
-
-Typically cpusets are not overlapped like that but used to segment the 
-system.
-
-The system would work correctly if the dirty ratio calculation would be 
-done on all overlapping cpusets/memcg groups that contain nodes from 
-which allocations are permitted.
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
