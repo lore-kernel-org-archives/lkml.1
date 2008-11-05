@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbYKEQN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbYKEQSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbYKEQN4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 11:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYKEQNp
+	id S1755247AbYKEQSh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 11:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYKEQS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 11:13:45 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:34020 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753786AbYKEQNn (ORCPT
+	Wed, 5 Nov 2008 11:18:28 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:1721 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbYKEQS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 11:13:43 -0500
-Date: Wed, 5 Nov 2008 11:13:41 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Norbert Preining <preining@logic.at>
-cc: Mattia Dongili <malattia@linux.it>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usb device not showing up
-In-Reply-To: <20081104215829.GA2880@gamma.logic.tuwien.ac.at>
-Message-ID: <Pine.LNX.4.44L0.0811051102010.2573-100000@iolanthe.rowland.org>
+	Wed, 5 Nov 2008 11:18:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tf5Kl5c64xWw/Vb3QGsNonSWNjONY60FLC2HFhwiDdFVRgBKSC8CLH8ZD33l8AhhrI
+         dCD+HtFbr4GhZR3PgFyoxqyrDXok9Vq+0alofMvUXBqCB935OGrJsJBy6jo/XkAcKpyF
+         xSOH82F3PI2FCNGJzxAP2OitzDPj7X6Ueg7UU=
+Date: Wed, 5 Nov 2008 19:11:51 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Yinghai Lu <yinghai@kernel.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.28-rc2: REGRESSION in early boot
+Message-ID: <20081105161151.GA7286@localhost>
+References: <20081104224510.GA7672@mit.edu> <86802c440811041614i5ab5e7f5hf910211ef57423e7@mail.gmail.com> <20081105153508.GB22998@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081105153508.GB22998@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Norbert Preining wrote:
+[Theodore Tso - Wed, Nov 05, 2008 at 10:35:08AM -0500]
+| On Tue, Nov 04, 2008 at 04:14:14PM -0800, Yinghai Lu wrote:
+| > 
+| > please check http://lkml.org/lkml/2008/11/4/431
+| > 
+| 
+| So do you believe that applying this fix will address the failure I
+| was seeing?  In a follow up to your thread you replyed to Ben
+| Hurchings saying:
+| 
+| >your patch is still needed...
+| >also please add one WARN_ON when nr > NR_IRQS.
+| >YH
+| 
+| Is there some other patch I should look at as well?
 
-> On Di, 04 Nov 2008, Alan Stern wrote:
-> > > > If you can't boot with the modem off, then try this instead: Unload 
-> > > > ehci-hcd, uhci-hcd, and ohci-hcd, then start up usbmon (copy the 0u 
-> > > > file) and reload whichever driver the modem attaches to.
-> 
-> Ok, here it is. Booted with init=/bin/bash, no modules loaded, mounted
-> /sys and debugfs, cat u0 > usbmon.txt. Then load uhci-hcd, then load hso
-> modules.
-> 
-> Finally, kill the cat process.
-> 
-> Output is the attached usmon.txt file. 
+I suppose Yinghai meant this one
 
-Well, this is a little odd.  The trace shows the modem was detected and
-enumerated correctly.  But there's nothing corresponding to when you
-loaded the hso driver.  In fact, there's nothing after uhci-hcd 
-finished starting up and the unconnected root hubs were suspended.
+	http://lkml.org/lkml/2008/11/5/81
 
-Did you look in /proc/bus/usb/devices at this point?  And what about
-the files in /sys/bus/usb/drivers/hso/?
+ie WARN if we exceed NR_IRQS and abate to the array bound.
 
-This suggests the problem may lie in the hso driver itself, or in a
-failure to bind the driver to the device.
-
-Alan Stern
-
+| 
+| What is your theory for why this was causing a failure in the timer
+| subsystem?  Were we overrunning the end of irq_desc array and stomping
+| on some other data structure?
+| 
+| Thanks, regards,
+| 
+| 						- Ted
+| 
+		- Cyrill -
