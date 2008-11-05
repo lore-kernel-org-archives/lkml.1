@@ -1,67 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYKEQUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbYKEQUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYKEQUW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 11:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYKEQUI
+	id S1755935AbYKEQUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 11:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYKEQUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 11:20:08 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:45655 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751480AbYKEQUH (ORCPT
+	Wed, 5 Nov 2008 11:20:34 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33233 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbYKEQUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 11:20:07 -0500
-Date: Wed, 5 Nov 2008 11:20:06 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <tj@kernel.org>
-cc: Jens Axboe <jens.axboe@oracle.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] Add round_jiffies_up and related routines
-In-Reply-To: <491113FF.9070007@kernel.org>
-Message-ID: <Pine.LNX.4.44L0.0811051115370.2573-100000@iolanthe.rowland.org>
+	Wed, 5 Nov 2008 11:20:33 -0500
+Message-ID: <45571.10.75.179.62.1225902029.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <4911A0FC.9@linux.vnet.ibm.com>
+References: <20081101184812.2575.68112.sendpatchset@balbir-laptop>
+    <20081101184849.2575.37734.sendpatchset@balbir-laptop>
+    <20081102143707.1bf7e2d0.kamezawa.hiroyu@jp.fujitsu.com>
+    <490D3E50.9070606@linux.vnet.ibm.com>
+    <20081104111751.51ea897b.kamezawa.hiroyu@jp.fujitsu.com>
+    <4911A0FC.9@linux.vnet.ibm.com>
+Date: Thu, 6 Nov 2008 01:20:29 +0900 (JST)
+Subject: Re: [mm] [PATCH 3/4] Memory cgroup hierarchical reclaim
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       "Paul Menage" <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "David Rientjes" <rientjes@google.com>,
+       "Pavel Emelianov" <xemul@openvz.org>,
+       "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Nov 2008, Tejun Heo wrote:
+Balbir Singh said:
+>>>>> +	list_for_each_entry_safe_from(cgroup, cg,
+>>>>> &cg_current->parent->children,
+>>>>> +						 sibling) {
+>>>>> +		mem_child = mem_cgroup_from_cont(cgroup);
+>>>>> +
+>>>>> +		/*
+>>>>> +		 * Move beyond last scanned child
+>>>>> +		 */
+>>>>> +		if (mem_child == mem->last_scanned_child)
+>>>>> +			continue;
+>>>>> +
+>>>>> +		ret = try_to_free_mem_cgroup_pages(mem_child, gfp_mask);
+>>>>> +		mem->last_scanned_child = mem_child;
+>>>>> +
+>>>>> +		if (res_counter_check_under_limit(&mem->res)) {
+>>>>> +			ret = 0;
+>>>>> +			goto done;
+>>>>> +		}
+>>>>> +	}
+>>>> Is this safe against cgroup create/remove ? cgroup_mutex is held ?
+>>> Yes, I thought about it, but with the setup, each parent will be busy
+>>> since they
+>>> have children and hence cannot be removed. The leaf child itself has
+>>> tasks, so
+>>> it cannot be removed. IOW, it should be safe against removal.
+>>>
+>> I'm sorry if I misunderstand something. could you explain folloing ?
+>>
+>> In following tree,
+>>
+>>     level-1
+>>          -  level-2
+>>                 -  level-3
+>>                        -  level-4
+>> level-1's usage = level-1 + level-2 + level-3 + level-4
+>> level-2's usage = level-2 + level-3 + level-4
+>> level-3's usage = level-3 + level-4
+>> level-4's usage = level-4
+>>
+>> Assume that a task in level-2 hits its limit. It has to reclaim memory
+>> from
+>> level-2 and level-3, level-4.
+>>
+>> How can we guarantee level-4 has a task in this case ?
+>
+> Good question. If there is no task, the LRU's will be empty and reclaim
+> will
+> return. We could also add other checks if needed.
+>
+If needed ?, yes, you need.
+The problem is that you are walking a list in usual way without any lock
+or guarantee that the list will never be modified.
 
-> Alan Stern wrote:
-> > This patch (as1158) adds round_jiffies_up() and friends.  These
-> > routines work like the analogous round_jiffies() functions, except
-> > that they will never round down.
-> > 
-> > The new routines will be useful for timeouts where we don't care
-> > exactly when the timer expires, provided it doesn't expire too soon.
-> > 
-> > Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-> 
-> Heh... I have exactly the same patches but mines were named
-> round_up_jiffies().
+My quick idea is following.
+==
+Before start reclaim.
+ 1. take lock_cgroup()
+ 2. scan the tree and create "private" list as snapshot of tree to be
+    scanned.
+ 3. unlock_cgroup().
+ 4. start reclaim.
 
-To an American, "round_up_jiffies" sounds like something a cowboy might 
-do.  :-)
+Adding refcnt to memcg to delay freeing memcg control area is necessary.
+(mem+swap controller have function to do this and you may be able to
+ reuse it.)
 
-I haven't bothered to look throughout the kernel to see where 
-round_jiffies_up() could be used.  Have you done this?
+Thanks,
+-Kame
 
-> > +	unsigned long j0 = jiffies;
-> > +
-> > +	barrier();	/* Prevent the compiler from aliasing j0 and jiffies */
-> > +	return round_jiffies_common(j + j0, cpu, false) - j0;
-> 
-> jiffies is volatile.  No need for explicit barrier,
-
-I didn't realize that.  Good, it makes things easier.
-
-> but this part is
-> necessary for correct operation as if jiffies go up by two the
-> calculation will wrap and the returned value will be very large.  I
-> think this fix deserves a separate patch and proper explanation.
-
-How about if I remove the barrier() call?  Should this new code still
-go in a separate patch?
-
-Alan Stern
 
