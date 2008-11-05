@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753118AbYKEXY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbYKEXYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753118AbYKEXY2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 18:24:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYKEXX5
+	id S1753224AbYKEXYn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 18:24:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbYKEXYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 18:23:57 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:40678 "EHLO
+	Wed, 5 Nov 2008 18:24:21 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:41114 "EHLO
 	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752662AbYKEXXz (ORCPT
+	with ESMTP id S1752797AbYKEXYS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 18:23:55 -0500
-Message-Id: <20081105231647.841683554@quilx.com>
+	Wed, 5 Nov 2008 18:24:18 -0500
+Message-Id: <20081105231649.108433550@quilx.com>
 References: <20081105231634.133252042@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 05 Nov 2008 17:16:37 -0600
+Date: Wed, 05 Nov 2008 17:16:39 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: akpm@linux-foundation.org
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
@@ -22,233 +22,147 @@ Cc: linux-mm@kvack.org
 Cc: travis@sgi.com
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Subject: [patch 3/7] cpu alloc: Remove slub fields
-Content-Disposition: inline; filename=cpu_alloc_remove_slub_fields
+Subject: [patch 5/7] x86_64: Support for cpu ops
+Content-Disposition: inline; filename=cpu_alloc_ops_x86
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the fields in kmem_cache_cpu that were used to cache data from
-kmem_cache when they were in different cachelines. The cacheline that holds
-the per cpu array pointer now also holds these values. We can cut down the
-struct kmem_cache_cpu size to almost half.
+Support fast cpu ops in x86_64 by providing a series of functions that
+generate the proper instructions.
 
-The get_freepointer() and set_freepointer() functions that used to be only
-intended for the slow path now are also useful for the hot path since access
-to the field does not require accessing an additional cacheline anymore. This
-results in consistent use of setting the freepointer for objects throughout
-SLUB.
-
-Also we initialize all possible kmem_cache_cpu structures when a slab is
-created. No need to initialize them when a processor or node comes online.
-And all fields are set to zero. So just use __GFP_ZERO on cpu alloc.
+Define CONFIG_HAVE_CPU_OPS so that core code
+can exploit the availability of fast per cpu operations.
 
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
----
- include/linux/slub_def.h |    2 --
- mm/slub.c                |   39 +++++++++++----------------------------
- 2 files changed, 11 insertions(+), 30 deletions(-)
 
-Index: linux-2.6/include/linux/slub_def.h
+---
+ arch/x86/Kconfig         |    9 +++++++++
+ include/asm-x86/percpu.h |   40 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 49 insertions(+)
+
+Index: linux-2.6/arch/x86/Kconfig
 ===================================================================
---- linux-2.6.orig/include/linux/slub_def.h	2008-10-23 15:30:26.000000000 -0500
-+++ linux-2.6/include/linux/slub_def.h	2008-10-23 15:30:30.000000000 -0500
-@@ -36,8 +36,6 @@
- 	void **freelist;	/* Pointer to first free per cpu object */
- 	struct page *page;	/* The slab from which we are allocating */
- 	int node;		/* The node of the page (or -1 for debug) */
--	unsigned int offset;	/* Freepointer offset (in word units) */
--	unsigned int objsize;	/* Size of an object (from kmem_cache) */
- #ifdef CONFIG_SLUB_STATS
- 	unsigned stat[NR_SLUB_STAT_ITEMS];
- #endif
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2008-10-23 15:30:26.000000000 -0500
-+++ linux-2.6/mm/slub.c	2008-10-23 15:30:30.000000000 -0500
-@@ -245,13 +245,6 @@
- 	return 1;
- }
+--- linux-2.6.orig/arch/x86/Kconfig	2008-10-23 15:21:50.000000000 -0500
++++ linux-2.6/arch/x86/Kconfig	2008-10-23 15:32:18.000000000 -0500
+@@ -164,6 +164,15 @@
+ 	depends on GENERIC_HARDIRQS && SMP
+ 	default y
  
--/*
-- * Slow version of get and set free pointer.
-- *
-- * This version requires touching the cache lines of kmem_cache which
-- * we avoid to do in the fast alloc free paths. There we obtain the offset
-- * from the page struct.
-- */
- static inline void *get_freepointer(struct kmem_cache *s, void *object)
- {
- 	return *(void **)(object + s->offset);
-@@ -1416,10 +1409,10 @@
- 
- 		/* Retrieve object from cpu_freelist */
- 		object = c->freelist;
--		c->freelist = c->freelist[c->offset];
-+		c->freelist = get_freepointer(s, c->freelist);
- 
- 		/* And put onto the regular freelist */
--		object[c->offset] = page->freelist;
-+		set_freepointer(s, object, page->freelist);
- 		page->freelist = object;
- 		page->inuse--;
- 	}
-@@ -1515,7 +1508,7 @@
- 	if (unlikely(SLABDEBUG && PageSlubDebug(c->page)))
- 		goto debug;
- 
--	c->freelist = object[c->offset];
-+	c->freelist = get_freepointer(s, object);
- 	c->page->inuse = c->page->objects;
- 	c->page->freelist = NULL;
- 	c->node = page_to_nid(c->page);
-@@ -1559,7 +1552,7 @@
- 		goto another_slab;
- 
- 	c->page->inuse++;
--	c->page->freelist = object[c->offset];
-+	c->page->freelist = get_freepointer(s, object);
- 	c->node = -1;
- 	goto unlock_out;
- }
-@@ -1589,7 +1582,7 @@
- 		object = __slab_alloc(s, gfpflags, node, addr, c);
- 
- 	else {
--		c->freelist = object[c->offset];
-+		c->freelist = get_freepointer(s, object);
- 		stat(c, ALLOC_FASTPATH);
- 	}
- 	local_irq_restore(flags);
-@@ -1623,7 +1616,7 @@
-  * handling required then we can return immediately.
-  */
- static void __slab_free(struct kmem_cache *s, struct page *page,
--				void *x, void *addr, unsigned int offset)
-+				void *x, void *addr)
- {
- 	void *prior;
- 	void **object = (void *)x;
-@@ -1637,7 +1630,8 @@
- 		goto debug;
- 
- checks_ok:
--	prior = object[offset] = page->freelist;
-+	prior = page->freelist;
-+	set_freepointer(s, object, prior);
- 	page->freelist = object;
- 	page->inuse--;
- 
-@@ -1701,15 +1695,15 @@
- 
- 	local_irq_save(flags);
- 	c = __THIS_CPU(s->cpu_slab);
--	debug_check_no_locks_freed(object, c->objsize);
-+	debug_check_no_locks_freed(object, s->objsize);
- 	if (!(s->flags & SLAB_DEBUG_OBJECTS))
- 		debug_check_no_obj_freed(object, s->objsize);
- 	if (likely(page == c->page && c->node >= 0)) {
--		object[c->offset] = c->freelist;
-+		set_freepointer(s, object, c->freelist);
- 		c->freelist = object;
- 		stat(c, FREE_FASTPATH);
- 	} else
--		__slab_free(s, page, x, addr, c->offset);
-+		__slab_free(s, page, x, addr);
- 
- 	local_irq_restore(flags);
- }
-@@ -1890,19 +1884,6 @@
- 	return ALIGN(align, sizeof(void *));
- }
- 
--static void init_kmem_cache_cpu(struct kmem_cache *s,
--			struct kmem_cache_cpu *c)
--{
--	c->page = NULL;
--	c->freelist = NULL;
--	c->node = 0;
--	c->offset = s->offset / sizeof(void *);
--	c->objsize = s->objsize;
--#ifdef CONFIG_SLUB_STATS
--	memset(c->stat, 0, NR_SLUB_STAT_ITEMS * sizeof(unsigned));
--#endif
--}
--
- static void
- init_kmem_cache_node(struct kmem_cache_node *n, struct kmem_cache *s)
- {
-@@ -1927,20 +1908,6 @@
- #endif
- }
- 
--static int alloc_kmem_cache_cpus(struct kmem_cache *s, gfp_t flags)
--{
--	int cpu;
--
--	s->cpu_slab = CPU_ALLOC(struct kmem_cache_cpu, flags);
--
--	if (!s->cpu_slab)
--		return 0;
--
--	for_each_possible_cpu(cpu)
--		init_kmem_cache_cpu(s, CPU_PTR(s->cpu_slab, cpu));
--	return 1;
--}
--
- #ifdef CONFIG_NUMA
- /*
-  * No kmalloc_node yet so do it by hand. We know that this is the first
-@@ -2197,8 +2164,11 @@
- 	if (!init_kmem_cache_nodes(s, gfpflags & ~SLUB_DMA))
- 		goto error;
- 
--	if (alloc_kmem_cache_cpus(s, gfpflags & ~SLUB_DMA))
-+	s->cpu_slab = CPU_ALLOC(struct kmem_cache_cpu,
-+				(flags & ~SLUB_DMA) | __GFP_ZERO);
-+	if (s->cpu_slab)
- 		return 1;
++#
++# X86_64's spare segment register points to the PDA instead of the per
++# cpu area. Therefore x86_64 is not able to generate atomic vs. interrupt
++# per cpu instructions.
++#
++config HAVE_CPU_OPS
++	def_bool y
++	depends on X86_32
 +
- 	free_kmem_cache_nodes(s);
- error:
- 	if (flags & SLAB_PANIC)
-@@ -2978,8 +2948,6 @@
- 	down_write(&slub_lock);
- 	s = find_mergeable(size, align, flags, name, ctor);
- 	if (s) {
--		int cpu;
--
- 		s->refcount++;
- 		/*
- 		 * Adjust the object sizes so that we clear
-@@ -2987,13 +2955,6 @@
- 		 */
- 		s->objsize = max(s->objsize, (int)size);
+ config X86_SMP
+ 	bool
+ 	depends on SMP && ((X86_32 && !X86_VOYAGER) || X86_64)
+Index: linux-2.6/arch/x86/include/asm/percpu.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/percpu.h	2008-10-23 15:21:50.000000000 -0500
++++ linux-2.6/arch/x86/include/asm/percpu.h	2008-10-23 15:33:55.000000000 -0500
+@@ -162,6 +162,53 @@
+ 	ret__;						\
+ })
  
--		/*
--		 * And then we need to update the object size in the
--		 * per cpu structures
--		 */
--		for_each_online_cpu(cpu)
--			CPU_PTR(s->cpu_slab, cpu)->objsize = s->objsize;
--
- 		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
- 		up_write(&slub_lock);
++#define percpu_addr_op(op, var)				\
++({							\
++	switch (sizeof(var)) {				\
++	case 1:						\
++		asm(op "b "__percpu_seg"%0"		\
++				: : "m"(var));		\
++		break;					\
++	case 2:						\
++		asm(op "w "__percpu_seg"%0"		\
++				: : "m"(var));		\
++		break;					\
++	case 4:						\
++		asm(op "l "__percpu_seg"%0"		\
++				: : "m"(var));		\
++	break;					\
++		default: __bad_percpu_size();			\
++	}						\
++})
++
++#define percpu_cmpxchg_op(var, old, new)				\
++({									\
++	typeof(var) prev;						\
++	switch (sizeof(var)) {						\
++	case 1:								\
++		asm("cmpxchgb %b1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "q"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	case 2:								\
++		asm("cmpxchgw %w1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "r"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	case 4:								\
++		asm("cmpxchgl %k1, "__percpu_seg"%2"			\
++				     : "=a"(prev)			\
++				     : "r"(new), "m"(var), "0"(old)	\
++				     : "memory");			\
++		break;							\
++	default:							\
++		__bad_percpu_size();					\
++	}								\
++	return prev;							\
++})
++
+ #define x86_read_percpu(var) percpu_from_op("mov", per_cpu__##var)
+ #define x86_write_percpu(var, val) percpu_to_op("mov", per_cpu__##var, val)
+ #define x86_add_percpu(var, val) percpu_to_op("add", per_cpu__##var, val)
+@@ -215,4 +262,44 @@
  
-@@ -3038,14 +2999,6 @@
- 	unsigned long flags;
+ #endif	/* !CONFIG_SMP */
  
- 	switch (action) {
--	case CPU_UP_PREPARE:
--	case CPU_UP_PREPARE_FROZEN:
--		down_read(&slub_lock);
--		list_for_each_entry(s, &slab_caches, list)
--			init_kmem_cache_cpu(s, CPU_PTR(s->cpu_slab, cpu));
--		up_read(&slub_lock);
--		break;
--
- 	case CPU_UP_CANCELED:
- 	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
++/*
++ * x86_64 uses available segment register for pda instead of per cpu access.
++ * Therefore we cannot generate these atomic vs. interrupt instructions
++ * on x86_64.
++ */
++#ifdef CONFIG_X86_32
++
++#define CPU_READ(obj)		percpu_from_op("mov", obj)
++#define CPU_WRITE(obj,val)	percpu_to_op("mov", obj, val)
++#define CPU_ADD(obj,val)	percpu_to_op("add", obj, val)
++#define CPU_SUB(obj,val)	percpu_to_op("sub", obj, val)
++#define CPU_INC(obj)		percpu_addr_op("inc", obj)
++#define CPU_DEC(obj)		percpu_addr_op("dec", obj)
++#define CPU_XCHG(obj,val)	percpu_to_op("xchg", var, val)
++#define CPU_CMPXCHG(obj, old, new) percpu_cmpxchg_op(var, old, new)
++
++/*
++ * All cpu operations are interrupt safe and do not need to disable
++ * preempt. So the other variants all reduce to the same instruction.
++ */
++#define _CPU_READ CPU_READ
++#define _CPU_WRITE CPU_WRITE
++#define _CPU_ADD CPU_ADD
++#define _CPU_SUB CPU_SUB
++#define _CPU_INC CPU_INC
++#define _CPU_DEC CPU_DEC
++#define _CPU_XCHG CPU_XCHG
++#define _CPU_CMPXCHG CPU_CMPXCHG
++
++#define __CPU_READ CPU_READ
++#define __CPU_WRITE CPU_WRITE
++#define __CPU_ADD CPU_ADD
++#define __CPU_SUB CPU_SUB
++#define __CPU_INC CPU_INC
++#define __CPU_DEC CPU_DEC
++#define __CPU_XCHG CPU_XCHG
++#define __CPU_CMPXCHG CPU_CMPXCHG
++
++#endif /* CONFIG_X86_32 */
++
+ #endif /* _ASM_X86_PERCPU_H */
 
 -- 
