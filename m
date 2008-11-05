@@ -1,118 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbYKER41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYKESGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787AbYKER41 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 12:56:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYKER4R
+	id S1755540AbYKESGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYKESGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 12:56:17 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:20706 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYKER4Q (ORCPT
+	Wed, 5 Nov 2008 13:06:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:51507 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752390AbYKESGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 12:56:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=JU5PlJU8lD8oHTq+zo+DqJVU79vQR3sxiXAoHQ/5Pd0IZL325vYf0A1wt79tkjHDFm
-         f7t1E+s50iE2cBmmnmG+cYeJ5IA/ENtylgE3hhpd2qwf9CGPPLsAlzY60Wd3K2ldsV9n
-         ySxdo168eBwAq1QjkcLLMBFsGDms9xOjrmQ4c=
-Message-ID: <4911DE36.6050706@gmail.com>
-Date: Wed, 05 Nov 2008 19:56:06 +0200
-From: =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Wed, 5 Nov 2008 13:06:39 -0500
+Message-ID: <4911E042.8040404@zytor.com>
+Date: Wed, 05 Nov 2008 10:04:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: /proc/pid/maps containg anonymous maps that have PROT_NONE
-References: <49118010.20202@gmail.com> <Pine.LNX.4.64.0811051541470.19714@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0811051541470.19714@blonde.site>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <20081104212933.GA11050@elte.hu> <4910C014.9070805@zytor.com> <20081104215245.GC17775@elte.hu> <20081105175318.GD7286@localhost>
+In-Reply-To: <20081105175318.GD7286@localhost>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-11-05 18:12, Hugh Dickins wrote:
-> On Wed, 5 Nov 2008, Török Edwin wrote:
->   
->> I noticed that there are (quite large) entries in /proc/pid/maps that
->> have PROT_NONE, right after an existing mapping:
->> 7fffe4000000-7fffe406a000 rw-p 7fffe4000000 00:00 0
->> 7fffe406a000-7fffe8000000 ---p 7fffe406a000 00:00 0
->> 7ffff76d1000-7ffff76e0000 r-xp 00000000 09:03 260750                    
->> /lib/libbz2.so.1.0.4
->> 7ffff76e0000-7ffff78df000 ---p 0000f000 09:03 260750                    
->> /lib/libbz2.so.1.0.4
->>
->> I don't mind that 2Mb map, but what is 7fffe406a000-7fffe8000000 ---p ?
->> (63M)
->>
->> Is it coming from glibc mapping memory as PROT_NONE, and using
->> mprotect/madvise to make it writable, and then
->> caching the mappings for future use, rather than freeing them?
->>     
->
-> mmap PROT_NONE to reserve an arena, munmap to trim off top and bottom,
-> mprotect to make areas read+writable, madvise 0x4 to say MADV_DONTNEED
-> on some parts.  gcc?  Or the application itself (clamd) and its libs?
->
->   
->> I straced the program creating these, and I couldn't find anything with
->> 7fffe406a000, but only before that address:
->>
->> [pid 31928] mprotect(0x7fffe4000000, 135168, PROT_READ|PROT_WRITE) = 0
->>     
-> [snipped]
->   
->> [pid 31928] madvise(0x7fffe4021000, 4096, 0x4 /* MADV_??? */) = 0
->>
->> There is an mprotect and madvise that end at 0x7fffe406a000.
->> Those mprotects and madvise are coming from glibc. Its strange that I
->> don't see the mmap only the mprotect, but I used strace -f.
->>
->> This happens on:
->> Linux debian 2.6.26-1-amd64 #1 SMP Thu Oct 9 14:16:53 UTC 2008 x86_64
->> GNU/Linux
->>
->> strace is here:
->> http://edwintorok.googlepages.com/log2.bz2
->>     
->
-> Just before your first mprotect above there's:
->
-> [pid 31928] mmap(NULL, 134217728, PROT_NONE, MAP_PRIVATE|MAP_ANONYMOUS|MAP_NORESERVE, -1, 0 <unfinished ...>
-> [pid 31938] futex(0x7ffff6e489e0, FUTEX_WAKE_PRIVATE, 1 <unfinished ...>
-> [pid 31928] <... mmap resumed> )        = 0x7fffe2bd3000
->
->   which maps 7fffe2bd3000-7fffeabd3000; then
->
-> [pid 31928] munmap(0x7fffe2bd3000, 21155840 <unfinished ...>
-> [pid 31938] <... futex resumed> )       = 0
-> [pid 31928] <... munmap resumed> )      = 0
->
->   which unmaps 7fffe2bd3000-7fffe4000000; and then
->
-> [pid 31928] munmap(0x7fffe8000000, 45953024) = 0
->
->   which unmaps 7fffe8000000-7fffeabd3000.
->
-> So it's trimming off the rough edges to leave 7fffe4000000-7fffe8000000
-> mapped PROT_NONE, then mprotecting what it needs of that.
->
->   
+Cyrill Gorcunov wrote:
+> 
+> Ingo, what the conclusion is? As I understand from the thread --
+> 
+> 1) Implement Peter's proposed cleanup/compress.
+> 2) Test Alexander's patche.
+> 
+> Did I miss something?
+> 
 
-Thanks I completely missed the mmap, because I grepped for 7fffe4000000.
+Nope, that's pretty much it.
 
-> Why does it mmap too much then trim it down?  Perhaps it's trying to
-> minimize pagetable usage, perhaps it's internally convenient to base
-> on rounded addresses, I don't know.
->
-> But the mmap is there: just easily overlooked because of the way it
-> munmaps too (with strace showing hex addresses but decimal sizes).
+However, there are good reason to believe that using this kind of
+segment selector tricks is probably a bad idea in the long term,
+especially since CPU vendors have strong incentives to reduce the size
+of the segment descriptor cache now when none of the mainstream OSes
+rely on more than a small handful of segments.
 
-I will get some stacktraces and figure out, know that I know which mmap
-to look for (the one with MAP_NORESERVE).
+I was planning to look at doing the obvious stub shrink today.
 
-Best regards,
---Edwin
+	-hpa
