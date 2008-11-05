@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbYKETrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbYKETsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756312AbYKETrx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:47:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYKETrm
+	id S1757096AbYKETsO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756049AbYKETrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:47:42 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:12406 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755218AbYKETrl (ORCPT
+	Wed, 5 Nov 2008 14:47:48 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:19427 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755668AbYKETrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:47:41 -0500
+	Wed, 5 Nov 2008 14:47:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:subject:to:date:message-id:user-agent:mime-version
-         :content-type:content-transfer-encoding;
-        b=MKCgSBTnOnxBf6WjBiiTqwIqEWr1zYs96wqjeQEmjYZcxWhDVWlRK/5PGS/iOVPCnG
-         4fb91NJE/eiGfYjAairJuDPgs+1oQqSiw0dhUb7mEbf5fWemAgSX3Uy4N1AvQUEEfXY0
-         BCnVpcFpV+PuqhGYnWgAmDLiE4lngTEPjg93Y=
+        h=from:subject:to:date:message-id:in-reply-to:references:user-agent
+         :mime-version:content-type:content-transfer-encoding;
+        b=vynjNjGALssaKd0mkGuOVWD33ISUXCKexlc9SvlTOnKOJScQbbzbe9qA2iHmsMccct
+         L8P/jyztjC9kFv1ItuL+wvA5etfsToODyt0m6bH91MmbFrrl8MNjOBpZtXTWzkcU1bpJ
+         DTj/Z99knlkwRokeEulCbQn0nATvjnuij0I54=
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [RFC PATCH V4 0/6] In-kernel IR remote control support
+Subject: [RFC PATCH V4 2/6] Core IR module
 To: linux-kernel@vger.kernel.org
-Date: Wed, 05 Nov 2008 14:47:36 -0500
-Message-ID: <20081105194640.19407.19682.stgit@localhost>
+Date: Wed, 05 Nov 2008 14:47:40 -0500
+Message-ID: <20081105194740.19407.91024.stgit@localhost>
+In-Reply-To: <20081105194640.19407.19682.stgit@localhost>
+References: <20081105194640.19407.19682.stgit@localhost>
 User-Agent: StGit/0.14.3.275.gdc7f
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -30,70 +32,824 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-New release of in-kernel IR support implementing evdev support. The goal of in-kernel IR is to integrate IR events into the evdev input event queue and maintain ordering of events from all input devices. Still looking for help with this project.
+Changes to core input subsystem to allow send and receive of IR messages. Encode and decode state machines are provided for common IR porotocols such as Sony, JVC, NEC, Philips, etc.
 
-Git tree: git://github.com/jonsmirl/digispeaker.git
-
-ir-core is now a module. Minimal IR code is built into input, that code can't be separated from input. The rest of the core IR code is moved to a module. The IR code in input will be passive if IR-core isn't loaded.
-
-Now uses configfs to build mappings from remote buttons to key strokes. When ir-core loads it creates /config/remotes. Make a directory for each remote you have; this will cause a new input devices to be created. Inside these directories make a directory for each key on the remote. In the key directory attributes fill in the protocol, device, command, keycode. Since this is configfs all of this can be easily scripted.
-
-Now when a key is pressed on a remote, the configfs directories are searched for a match on protocol, device, command. If a matches is found, a key stroke corresponding to keycode is created and sent on the input device that was created when the directory for the remote was made.
-
-The configfs directories are pretty flexible. You can use them to map multiple remotes to the same key stroke, or send a single button push to multiple apps.
-
->From last release...
-
-Raw mode. There are three sysfs attributes - ir_raw, ir_carrier, ir_xmitter. Read from ir_raw to get the raw timing data from the IR device. Set carrier and active xmitters and then copy raw data to ir_raw to send. These attributes may be better on a debug switch. You would use raw mode when decoding a new protocol. After you figure out the new protocol, write an in-kernel encoder/decoder for it.
-
-The in-kernel code is tiny, about 20K including a driver.
-
->From last post...
-Note that user space IR device drivers can use the existing support in evdev to inject events into the input queue.
-
-Send and receive are implemented. Received IR messages are decoded and sent to user space as input messages. Send is done via an IOCTL on the input device.
-
-Two drivers are supplied. mceusb2 implements send and receive support for the Microsoft USB IR dongle.
-
-The GPT driver implements receive only support for a GPT pin - GPT is a GPIO with a timer attached.
-
-Code is only lightly tested. Encoders and decoders have not been written for all protocols.
-Repeat is not handled for any protocol. I'm looking for help. There are 15 more existing LIRC drivers.
-
+Received IR messages generate event in the input queue.
+IR messages are sent using an input IOCTL.
 ---
-
-Jon Smirl (6):
-      Microsoft mceusb2 driver for in-kernel IR subsystem
-      Example of PowerPC device tree support for GPT based IR
-      GPT driver for in-kernel IR support.
-      Configfs support for IR
-      Core IR module
-      Minimal changes to the core input system
-
-
- arch/powerpc/boot/dts/dspeak01.dts |   19 -
- drivers/input/Kconfig              |    2 
- drivers/input/Makefile             |    1 
- drivers/input/evdev.c              |   55 +++
- drivers/input/input.c              |   17 +
- drivers/input/ir/Kconfig           |   27 +
- drivers/input/ir/Makefile          |   12 +
- drivers/input/ir/ir-configfs.c     |  333 ++++++++++++++++
- drivers/input/ir/ir-core.c         |  678 +++++++++++++++++++++++++++++++++
- drivers/input/ir/ir-gpt.c          |  224 +++++++++++
- drivers/input/ir/ir-mceusb2.c      |  744 ++++++++++++++++++++++++++++++++++++
- drivers/input/ir/ir.h              |   48 ++
- include/linux/input.h              |   75 ++++
- include/linux/mod_devicetable.h    |    3 
- 14 files changed, 2227 insertions(+), 11 deletions(-)
+ drivers/input/Kconfig      |    2 
+ drivers/input/Makefile     |    1 
+ drivers/input/ir/Kconfig   |   15 +
+ drivers/input/ir/Makefile  |    8 +
+ drivers/input/ir/ir-core.c |  683 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/input/ir/ir.h      |   48 +++
+ 6 files changed, 757 insertions(+), 0 deletions(-)
  create mode 100644 drivers/input/ir/Kconfig
  create mode 100644 drivers/input/ir/Makefile
- create mode 100644 drivers/input/ir/ir-configfs.c
  create mode 100644 drivers/input/ir/ir-core.c
- create mode 100644 drivers/input/ir/ir-gpt.c
- create mode 100644 drivers/input/ir/ir-mceusb2.c
  create mode 100644 drivers/input/ir/ir.h
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+diff --git a/drivers/input/Kconfig b/drivers/input/Kconfig
+index 747633c..780d321 100644
+--- a/drivers/input/Kconfig
++++ b/drivers/input/Kconfig
+@@ -172,6 +172,8 @@ source "drivers/input/touchscreen/Kconfig"
+ 
+ source "drivers/input/misc/Kconfig"
+ 
++source "drivers/input/ir/Kconfig"
++
+ endif
+ 
+ menu "Hardware I/O ports"
+diff --git a/drivers/input/Makefile b/drivers/input/Makefile
+index 6a1049b..85f5ef3 100644
+--- a/drivers/input/Makefile
++++ b/drivers/input/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_INPUT_JOYSTICK)	+= joystick/
+ obj-$(CONFIG_INPUT_TABLET)	+= tablet/
+ obj-$(CONFIG_INPUT_TOUCHSCREEN)	+= touchscreen/
+ obj-$(CONFIG_INPUT_MISC)	+= misc/
++obj-$(CONFIG_INPUT_IR)		+= ir/
+ 
+ obj-$(CONFIG_INPUT_APMPOWER)	+= apm-power.o
+ 
+diff --git a/drivers/input/ir/Kconfig b/drivers/input/ir/Kconfig
+new file mode 100644
+index 0000000..a6f3f25
+--- /dev/null
++++ b/drivers/input/ir/Kconfig
+@@ -0,0 +1,15 @@
++#
++# LIRC driver(s) configuration
++#
++menuconfig INPUT_IR
++	select CONFIGFS_FS
++	tristate "Infrared Remote (IR) receiver/transmitter drivers"
++	default n
++	help
++	  Say Y here, and all supported Infrared Remote Control IR
++	  receiver and transmitter drivers will be displayed. The receiver drivers
++	  allow control of your Linux system via remote control.
++
++if INPUT_IR
++
++endif
+diff --git a/drivers/input/ir/Makefile b/drivers/input/ir/Makefile
+new file mode 100644
+index 0000000..6acb665
+--- /dev/null
++++ b/drivers/input/ir/Makefile
+@@ -0,0 +1,8 @@
++# Makefile for the ir drivers.
++#
++
++# Each configuration option enables a list of files.
++
++obj-$(CONFIG_INPUT_IR)		+= ir.o
++ir-objs := ir-core.o
++
+diff --git a/drivers/input/ir/ir-core.c b/drivers/input/ir/ir-core.c
+new file mode 100644
+index 0000000..3a309fa
+--- /dev/null
++++ b/drivers/input/ir/ir-core.c
+@@ -0,0 +1,683 @@
++/*
++ * Core routines for IR support
++ *
++ * Copyright (C) 2008 Jon Smirl <jonsmirl@gmail.com>
++ */
++
++#include <linux/kernel.h>
++#include <linux/device.h>
++#include <linux/input.h>
++
++#include "ir.h"
++
++void input_ir_translate(struct input_dev *dev, int protocol, int device, int command)
++{
++	/* generate the IR format event */
++	input_report_ir(dev, IR_PROTOCOL, protocol);
++	input_report_ir(dev, IR_DEVICE, device);
++	input_report_ir(dev, IR_COMMAND, command);
++	input_sync(dev);
++}
++
++static int encode_sony(struct ir_device *ir, struct ir_command *command)
++{
++	/* Sony SIRC IR code */
++	/* http://www.sbprojects.com/knowledge/ir/sirc.htm */
++	int i, bit, dev, cmd, total;
++
++	ir->send.count = 0;
++	switch (command->protocol) {
++	case IR_PROTOCOL_SONY_20:
++		dev = 10; cmd = 10; break;
++	case IR_PROTOCOL_SONY_15:
++		dev = 8; cmd = 7; break;
++	default:
++	case IR_PROTOCOL_SONY_12:
++		dev = 5; cmd = 7; break;
++	}
++	ir->send.buffer[ir->send.count++] = 2400;
++	ir->send.buffer[ir->send.count++] = 600;
++
++	for (i = 0; i < cmd; i++) {
++		bit = command->command & 1;
++		command->command >>= 1;
++		ir->send.buffer[ir->send.count++] = (bit ? 1200 : 600);
++		ir->send.buffer[ir->send.count++] = 600;
++	}
++	for (i = 0; i < dev; i++) {
++		bit = command->device & 1;
++		command->device >>= 1;
++		ir->send.buffer[ir->send.count++] = (bit ? 1200 : 600);
++		ir->send.buffer[ir->send.count++] = 600;
++	}
++	total = 0;
++	for (i = 0; i < ir->send.count; i++)
++		total += ir->send.buffer[i];
++	ir->send.buffer[ir->send.count++] = 45000 - total;
++
++	memcpy(&ir->send.buffer[ir->send.count], &ir->send.buffer[0], ir->send.count * sizeof ir->send.buffer[0]);
++	ir->send.count += ir->send.count;
++	memcpy(&ir->send.buffer[ir->send.count], &ir->send.buffer[0], ir->send.count * sizeof ir->send.buffer[0]);
++	ir->send.count += ir->send.count;
++
++	return 0;
++}
++
++static int decode_sony(struct input_dev *dev, struct ir_protocol *sony, unsigned int d, unsigned int bit)
++{
++	/* Sony SIRC IR code */
++	/* http://www.sbprojects.com/knowledge/ir/sirc.htm */
++	/* based on a 600us cadence */
++	int ret = 0, delta = d;
++	int protocol, device, command;
++
++	delta = (delta + 300) / 600;
++
++	if ((bit == 0) && (delta > 22)) {
++		PDEBUG("SIRC state 1\n");
++		if ((sony->state == 26) || (sony->state == 32) || (sony->state == 42)) {
++			if (sony->good && (sony->good == sony->code)) {
++
++				protocol = (sony->state == 26) ? IR_PROTOCOL_SONY_12 :
++					(sony->state == 32) ? IR_PROTOCOL_SONY_15 : IR_PROTOCOL_SONY_20;
++
++				if (sony->state == 26) {
++					device = sony->code & 0x1F;
++					command = sony->code >> 5;
++				} else {
++					device = sony->code & 0xFF;
++					command = sony->code >> 8;
++				}
++				input_ir_translate(dev, protocol, device, command);
++				sony->good = 0;
++				ret = 1;
++			} else {
++				PDEBUG("SIRC - Saving %d bit %05x\n", (sony->state - 2) / 2, sony->code);
++				sony->good = sony->code;
++			}
++		}
++		sony->state = 1;
++		sony->code = 0;
++		return ret;
++	}
++	if ((sony->state == 1) && (bit == 1) && (delta == 4)) {
++		sony->state = 2;
++		PDEBUG("SIRC state 2\n");
++		return 0;
++	}
++	if ((sony->state == 2) && (bit == 0) && (delta == 1)) {
++		sony->state = 3;
++		PDEBUG("SIRC state 3\n");
++		return 0;
++	}
++	if ((sony->state >= 3) && (sony->state & 1) && (bit == 1) && ((delta == 1) || (delta == 2))) {
++		sony->state++;
++		sony->code |= ((delta - 1) << ((sony->state - 4) / 2));
++		PDEBUG("SIRC state %d bit %d\n", sony->state, delta - 1);
++		return 0;
++	}
++	if ((sony->state >= 3) && !(sony->state & 1) && (bit == 0) && (delta == 1)) {
++		sony->state++;
++		PDEBUG("SIRC state %d\n", sony-> state);
++		return 0;
++	}
++	sony->state = 0;
++	return 0;
++}
++
++
++static int encode_jvc(struct ir_device *ir, struct ir_command *command)
++{
++	/* JVC IR code */
++	/* http://www.sbprojects.com/knowledge/ir/jvc.htm */
++	int i, bit, total;
++
++	ir->send.count = 0;
++
++	ir->send.buffer[ir->send.count++] = 8400;
++	ir->send.buffer[ir->send.count++] = 4200;
++
++	for (i = 0; i < 8; i++) {
++		bit = command->device & 1;
++		command->device >>= 1;
++		ir->send.buffer[ir->send.count++] = 525;
++		ir->send.buffer[ir->send.count++] = (bit ? 1575 : 525);
++	}
++	for (i = 0; i < 8; i++) {
++		bit = command->command & 1;
++		command->command >>= 1;
++		ir->send.buffer[ir->send.count++] = 525;
++		ir->send.buffer[ir->send.count++] = (bit ? 1575 : 525);
++	}
++	ir->send.buffer[ir->send.count++] = 525;
++
++	total = 0;
++	for (i = 0; i < ir->send.count; i++)
++		total += ir->send.buffer[i];
++	ir->send.buffer[ir->send.count] = 55000 - total;
++
++	return 0;
++}
++
++static int decode_jvc(struct input_dev *dev, struct ir_protocol *jvc, unsigned int d, unsigned int bit)
++{
++	/* JVC IR code */
++	/* http://www.sbprojects.com/knowledge/ir/jvc.htm */
++	/* based on a 525us cadence */
++	int ret = 0, delta = d;
++
++	delta = (delta + 263) / 525;
++
++	if ((bit == 0) && (delta > 22)) {
++		PDEBUG("JVC state 1\n");
++		jvc->state = 1;
++		jvc->code = 0;
++		return ret;
++	}
++	if ((jvc->state == 1) && (bit == 1) && (delta == 16)) {
++		jvc->state = 2;
++		PDEBUG("JVC state 2\n");
++		return 0;
++	}
++	if ((jvc->state == 2) && (bit == 0) && (delta == 8)) {
++		jvc->state = 3;
++		PDEBUG("JVC state 3\n");
++		return 0;
++	}
++	if ((jvc->state >= 3) && (jvc->state & 1) && (bit == 1) && (delta == 1)) {
++		jvc->state++;
++		PDEBUG("JVC state %d\n", jvc-> state);
++		return 0;
++	}
++	if ((jvc->state >= 3) && !(jvc->state & 1) && (bit == 0) && ((delta == 1) || (delta == 3))) {
++		if (delta == 3)
++			jvc->code |= 1 << ((jvc->state - 4) / 2);
++		jvc->state++;
++		PDEBUG("JVC state %d bit %d\n", jvc->state, delta - 1);
++		if (jvc->state == 34) {
++			jvc->state = 3;
++			if (jvc->good && (jvc->good == jvc->code)) {
++				input_ir_translate(dev, IR_PROTOCOL_JVC, jvc->code >> 8, jvc->code & 0xFF);
++				jvc->good = 0;
++				ret = 1;
++			} else {
++				PDEBUG("JVC - Saving 16 bit %05x\n", jvc->code);
++				jvc->good = jvc->code;
++			}
++			jvc->code = 0;
++		}
++		return 0;
++	}
++	jvc->state = 0;
++	return 0;
++}
++
++
++static int encode_nec(struct ir_device *ir, struct ir_command *command)
++{
++	/* NEC IR code */
++	/* http://www.sbprojects.com/knowledge/ir/nec.htm */
++	int i, bit, total;
++
++	ir->send.count = 0;
++
++	ir->send.buffer[ir->send.count++] = 9000;
++	ir->send.buffer[ir->send.count++] = 4500;
++
++	for (i = 0; i < 8; i++) {
++		bit = command->device & 1;
++		command->device >>= 1;
++		ir->send.buffer[ir->send.count++] = 563;
++		ir->send.buffer[ir->send.count++] = (bit ? 1687 : 562);
++	}
++	for (i = 0; i < 8; i++) {
++		bit = command->command & 1;
++		command->command >>= 1;
++		ir->send.buffer[ir->send.count++] = 563;
++		ir->send.buffer[ir->send.count++] = (bit ? 1687 : 562);
++	}
++	ir->send.buffer[ir->send.count++] = 562;
++
++	total = 0;
++	for (i = 0; i < ir->send.count; i++)
++		total += ir->send.buffer[i];
++	ir->send.buffer[ir->send.count] = 110000 - total;
++
++	return 0;
++}
++
++static int decode_nec(struct input_dev *dev, struct ir_protocol *nec, unsigned int d, unsigned int bit)
++{
++	/* NEC IR code */
++	/* http://www.sbprojects.com/knowledge/ir/nec.htm */
++	/* based on a 560us cadence */
++	int delta = d;
++
++	delta = (delta + 280) / 560;
++
++	if ((bit == 0) && (delta > 22)) {
++		PDEBUG("nec state 1\n");
++		nec->state = 1;
++		nec->code = 0;
++		return 0;
++	}
++	if ((nec->state == 1) && (bit == 1) && (delta == 16)) {
++		nec->state = 2;
++		PDEBUG("nec state 2\n");
++		return 0;
++	}
++	if ((nec->state == 2) && (bit == 0) && (delta == 8)) {
++		nec->state = 3;
++		PDEBUG("nec state 3\n");
++		return 0;
++	}
++	if ((nec->state >= 3) && (nec->state & 1) && (bit == 1) && (delta == 1)) {
++		nec->state++;
++		PDEBUG("nec state %d\n", nec-> state);
++		if (nec->state == 68) {
++			input_ir_translate(dev, IR_PROTOCOL_NEC, nec->code >> 16, nec->code & 0xFFFF);
++			return 1;
++		}
++		return 0;
++	}
++	if ((nec->state >= 3) && !(nec->state & 1) && (bit == 0) && ((delta == 1) || (delta == 3))) {
++		if (delta == 3)
++			nec->code |= 1 << ((nec->state - 4) / 2);
++		nec->state++;
++		PDEBUG("nec state %d bit %d\n", nec->state, delta - 1);
++		return 0;
++	}
++	nec->state = 0;
++	nec->code = 0;
++	return 0;
++}
++
++
++static int encode_rc5(struct ir_device *ir, struct ir_command *command)
++{
++	/* Philips RC-5 IR code */
++	/* http://www.sbprojects.com/knowledge/ir/rc5.htm */
++	return 0;
++}
++
++static int decode_rc5(struct input_dev *dev, struct ir_protocol *rc5, unsigned int d, unsigned int bit)
++{
++	/* Philips RC-5 IR code */
++	/* http://www.sbprojects.com/knowledge/ir/rc5.htm */
++	/* based on a 889us cadence */
++	int delta = d;
++
++	delta = (delta + 444) / 889;
++
++	return 0;
++}
++
++
++static int encode_rc6(struct ir_device *ir, struct ir_command *command)
++{
++	/* Philips RC-6 IR code */
++	/* http://www.sbprojects.com/knowledge/ir/rc6.htm */
++	int i, bit, last;
++
++	ir->send.count = 0;
++
++	ir->send.buffer[ir->send.count++] = 2666;
++	ir->send.buffer[ir->send.count++] = 889;
++
++	ir->send.buffer[ir->send.count++] = 444;
++	ir->send.buffer[ir->send.count++] = 444;
++
++	last = 1;
++	for (i = 0; i < 8; i++) {
++		bit = command->device & 1;
++		command->device >>= 1;
++
++		if (last != bit)
++			ir->send.buffer[ir->send.count - 1] += 444;
++		else
++			ir->send.buffer[ir->send.count++] = 444;
++		ir->send.buffer[ir->send.count++] = 444;
++		last = bit;
++	}
++	for (i = 0; i < 8; i++) {
++		bit = command->command & 1;
++		command->command >>= 1;
++
++		if (last != bit)
++			ir->send.buffer[ir->send.count - 1] += 444;
++		else
++			ir->send.buffer[ir->send.count++] = 444;
++		ir->send.buffer[ir->send.count++] = 444;
++		last = bit;
++	}
++	ir->send.buffer[ir->send.count] = 2666;
++
++	return 0;
++}
++
++static void decode_rc6_bit(struct input_dev *dev, struct ir_protocol *rc6, unsigned int bit)
++{
++	/* bits come in one at a time */
++	/* when two are collected look for a symbol */
++	/* rc6->bits == 1 is a zero symbol */
++	/* rc6->bits == 2 is a one symbol */
++	rc6->count++;
++	rc6->bits <<= 1;
++	rc6->bits |= bit;
++	if (rc6->count == 2) {
++		if ((rc6->bits == 0) || (rc6->bits == 3)) {
++			rc6->mode = rc6->code;
++			rc6->code = 0;
++		} else {
++			rc6->code <<= 1;
++			if (rc6->bits == 2)
++				rc6->code |= 1;
++		}
++		rc6->count = 0;
++		if (rc6->state == 23) {
++			input_ir_translate(dev, IR_PROTOCOL_PHILIPS_RC6, rc6->code >> 8, rc6->code & 0xFF);
++			rc6->state = 0;
++		} else
++			rc6->state++;
++		PDEBUG("rc6 state %d bit %d\n", rc6->state, rc6->bits == 2);
++		rc6->bits = 0;
++	}
++}
++
++static int decode_rc6(struct input_dev *dev, struct ir_protocol *rc6, unsigned int d, unsigned int bit)
++{
++	/* Philips RC-6 IR code */
++	/* http://www.sbprojects.com/knowledge/ir/rc6.htm */
++	/* based on a 444us cadence */
++
++	int delta = d;
++
++	delta = (delta + 222) / 444;
++
++	if ((bit == 0) && (delta > 19)) {
++		rc6->count = 0;
++		rc6->bits = 0;
++		rc6->state = 1;
++		rc6->code = 0;
++		PDEBUG("rc6 state 1\n");
++		return 0;
++	}
++	if ((rc6->state == 1) && (bit == 1) && (delta == 6)) {
++		rc6->state = 2;
++		PDEBUG("rc6 state 2\n");
++		return 0;
++	}
++	if ((rc6->state == 2) && (bit == 0) && (delta == 2)) {
++		rc6->state = 3;
++		PDEBUG("rc6 state 3\n");
++		return 0;
++	}
++	if (rc6->state >= 3) {
++		if ((delta >= 1) || (delta <= 3)) {
++			while (delta-- >= 1)
++				decode_rc6_bit(dev, rc6, bit);
++			return 0;
++		}
++	}
++	rc6->state = 0;
++	rc6->code = 0;
++	return 0;
++}
++
++static void record_raw(struct input_dev *dev, unsigned int delta, unsigned int bit)
++{
++	int head = dev->ir->raw.head;
++	if (bit)
++		delta = -delta;
++
++	head += 1;
++	if (head > ARRAY_SIZE(dev->ir->raw.buffer))
++		head = 0;
++
++	if (head != dev->ir->raw.tail) {
++		dev->ir->raw.buffer[dev->ir->raw.head] = delta;
++		dev->ir->raw.head = head;
++	}
++}
++
++void input_ir_decode(struct input_dev *dev, unsigned int delta, unsigned int bit)
++{
++	PDEBUG("IR bit %d %d\n", delta, bit);
++	record_raw(dev, delta, bit);
++	decode_sony(dev, &dev->ir->sony, delta, bit);
++	decode_jvc(dev, &dev->ir->jvc, delta, bit);
++	decode_nec(dev, &dev->ir->nec, delta, bit);
++	decode_rc5(dev, &dev->ir->rc5, delta, bit);
++	decode_rc6(dev, &dev->ir->rc6, delta, bit);
++}
++EXPORT_SYMBOL_GPL(input_ir_decode);
++
++int input_ir_send(struct input_dev *dev, struct ir_command *ir_command, struct file *file)
++{
++	unsigned freq, xmit = 0;
++	int ret;
++
++	mutex_lock(&dev->ir->lock);
++
++	switch (ir_command->protocol) {
++	case IR_PROTOCOL_PHILIPS_RC5:
++		freq = 36000;
++		encode_rc5(dev->ir, ir_command);
++		break;
++	case IR_PROTOCOL_PHILIPS_RC6:
++		freq = 36000;
++		encode_rc6(dev->ir, ir_command);
++		break;
++	case IR_PROTOCOL_PHILIPS_RCMM:
++		freq = 36000;
++		encode_rc5(dev->ir, ir_command);
++		break;
++	case IR_PROTOCOL_JVC:
++		freq = 38000;
++		encode_jvc(dev->ir, ir_command);
++		break;
++	case IR_PROTOCOL_NEC:
++		freq = 38000;
++		encode_nec(dev->ir, ir_command);
++		break;
++	case IR_PROTOCOL_NOKIA:
++	case IR_PROTOCOL_SHARP:
++	case IR_PROTOCOL_PHILIPS_RECS80:
++		freq = 38000;
++		break;
++	case IR_PROTOCOL_SONY_12:
++	case IR_PROTOCOL_SONY_15:
++	case IR_PROTOCOL_SONY_20:
++		encode_sony(dev->ir, ir_command);
++		freq = 40000;
++		break;
++	case IR_PROTOCOL_RCA:
++		freq = 56000;
++		break;
++	case IR_PROTOCOL_ITT:
++		freq = 0;
++		break;
++	default:
++		ret = -ENODEV;
++		goto exit;
++	}
++
++	if (dev->ir && dev->ir->xmit)
++		ret = dev->ir->xmit(dev->ir->private, dev->ir->send.buffer, dev->ir->send.count, freq, xmit);
++	else
++		ret = -ENODEV;
++
++exit:
++	mutex_unlock(&dev->ir->lock);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(input_ir_send);
++
++static ssize_t ir_raw_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct input_dev *input_dev = to_input_dev(dev);
++	unsigned int i, count = 0;
++
++	for (i = input_dev->ir->raw.tail; i != input_dev->ir->raw.head; ) {
++
++		count += snprintf(&buf[count], PAGE_SIZE - 1, "%i\n", input_dev->ir->raw.buffer[i++]);
++		if (i > ARRAY_SIZE(input_dev->ir->raw.buffer))
++			i = 0;
++		if (count >= PAGE_SIZE - 1) {
++			input_dev->ir->raw.tail = i;
++			return PAGE_SIZE - 1;
++		}
++	}
++	input_dev->ir->raw.tail = i;
++	return count;
++}
++
++static ssize_t ir_raw_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t count)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++	long delta;
++	int i = count;
++	int first = 0;
++
++	if (!ir->xmit)
++		return count;
++	ir->send.count = 0;
++
++	while (i > 0) {
++		i -= strict_strtoul(&buf[i], i, &delta);
++		while ((buf[i] != '\n') && (i > 0))
++			i--;
++		i--;
++		/* skip leading zeros */
++		if ((delta > 0) && !first)
++			continue;
++
++		ir->send.buffer[ir->send.count++] = abs(delta);
++	}
++
++	ir->xmit(ir->private, ir->send.buffer, ir->send.count, ir->raw.carrier, ir->raw.xmitter);
++
++	return count;
++}
++
++static ssize_t ir_carrier_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++
++	return sprintf(buf, "%i\n", ir->raw.carrier);
++}
++
++static ssize_t ir_carrier_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t count)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++
++	ir->raw.carrier = simple_strtoul(buf, NULL, 0);
++	return count;
++}
++
++static ssize_t ir_xmitter_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++
++	return sprintf(buf, "%i\n", ir->raw.xmitter);
++}
++
++static ssize_t ir_xmitter_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t count)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++
++	ir->raw.xmitter = simple_strtoul(buf, NULL, 0);
++	return count;
++}
++
++static ssize_t ir_debug_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++
++	return sprintf(buf, "%i\n", ir->raw.xmitter);
++}
++
++static ssize_t ir_debug_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t count)
++{
++	struct ir_device *ir = to_input_dev(dev)->ir;
++
++	ir->raw.xmitter = simple_strtoul(buf, NULL, 0);
++	return count;
++}
++
++static DEVICE_ATTR(raw, S_IRUGO | S_IWUSR, ir_raw_show, ir_raw_store);
++static DEVICE_ATTR(carrier, S_IRUGO | S_IWUSR, ir_carrier_show, ir_carrier_store);
++static DEVICE_ATTR(xmitter, S_IRUGO | S_IWUSR, ir_xmitter_show, ir_xmitter_store);
++static DEVICE_ATTR(debug, S_IRUGO | S_IWUSR, ir_debug_show, ir_debug_store);
++
++static struct attribute *input_ir_attrs[] = {
++		&dev_attr_raw.attr,
++		&dev_attr_carrier.attr,
++		&dev_attr_xmitter.attr,
++		&dev_attr_debug.attr,
++		NULL
++	};
++
++static struct attribute_group input_ir_group = {
++	.name	= "ir",
++	.attrs	= input_ir_attrs,
++};
++
++int input_ir_register(struct input_dev *dev)
++{
++	if (!dev->ir)
++		return 0;
++
++	return sysfs_create_group(&dev->dev.kobj, &input_ir_group);
++}
++
++int input_ir_create(struct input_dev *dev, void *private, send_func xmit)
++{
++	dev->ir = kzalloc(sizeof(struct ir_device), GFP_KERNEL);
++	if (!dev->ir)
++		return -ENOMEM;
++
++	dev->evbit[0] = BIT_MASK(EV_IR);
++	dev->ir->private = private;
++	dev->ir->xmit = xmit;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(input_ir_create);
++
++void input_ir_destroy(struct input_dev *dev)
++{
++	if (dev->ir) {
++		kfree(dev->ir);
++		dev->ir = NULL;
++		sysfs_remove_group(&dev->dev.kobj, &input_ir_group);
++	}
++}
++EXPORT_SYMBOL_GPL(input_ir_destroy);
++
++static int __init input_ir_init(void)
++{
++	return 0;
++}
++module_init(input_ir_init);
++
++static void __exit input_ir_exit(void)
++{
++}
++module_exit(input_ir_exit);
+diff --git a/drivers/input/ir/ir.h b/drivers/input/ir/ir.h
+new file mode 100644
+index 0000000..fbc1345
+--- /dev/null
++++ b/drivers/input/ir/ir.h
+@@ -0,0 +1,48 @@
++/*
++ * Private defines for IR support
++ *
++ * Copyright (C) 2008 Jon Smirl <jonsmirl@gmail.com>
++ */
++
++#include <linux/configfs.h>
++
++#undef IR_PROTOCOL_DEBUG
++#ifdef IR_PROTOCOL_DEBUG
++#define PDEBUG( format, arg... ) \
++	printk(KERN_DEBUG format , ## arg);
++#else
++#define PDEBUG(format, arg...) \
++	({ if (0) printk(KERN_DEBUG format , ## arg); 0; })
++#endif
++
++struct ir_protocol {
++	unsigned int state, code, good, count, bits, mode;
++};
++
++struct ir_device {
++	struct ir_protocol sony;
++	struct ir_protocol jvc;
++	struct ir_protocol nec;
++	struct ir_protocol rc5;
++	struct ir_protocol rc6;
++	struct mutex lock;
++	void *private;
++	send_func xmit;
++	struct {
++		unsigned int buffer[200];
++		unsigned int count;
++	} send;
++	struct {
++		int buffer[200];
++		unsigned int head;
++		unsigned int tail;
++		unsigned int carrier;
++		unsigned int xmitter;
++	} raw;
++};
++
++extern struct configfs_subsystem input_ir_remotes;
++void input_ir_translate(struct input_dev *dev, int protocol, int device, int command);
++
++
++
+
