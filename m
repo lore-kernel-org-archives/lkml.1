@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756287AbYKESsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbYKESw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756287AbYKESsP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 13:48:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYKESr6
+	id S1756608AbYKESw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 13:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753137AbYKESwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 13:47:58 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:39979 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbYKESr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 13:47:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=KoGIU5yMP5WITRav637GdovXw0JALtIdxEM+HRz3wQMcHKt7p1nvjGIlRUAg8ntios
-         VS88+wKQgaEBWzKJPCcUT7nWF6Hx+uwWhePBdxSHeXeI7ic+tJt5CHEztclKECqeprOu
-         zdD7wIfkxe/qF6bDb+L17YTLAIkaxKrneKq6k=
-Message-ID: <4911EA50.30905@gmail.com>
-Date: Wed, 05 Nov 2008 20:47:44 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Wed, 5 Nov 2008 13:52:20 -0500
+Received: from gw.goop.org ([64.81.55.164]:55256 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbYKESwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 13:52:20 -0500
+Message-ID: <4911EB5C.4030901@goop.org>
+Date: Wed, 05 Nov 2008 10:52:12 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: /proc/pid/maps containg anonymous maps that have PROT_NONE
-References: <49118010.20202@gmail.com> <Pine.LNX.4.64.0811051541470.19714@blonde.site> <4911DE36.6050706@gmail.com>
-In-Reply-To: <4911DE36.6050706@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/2] vmap: cope with vm_unmap_aliases before vmalloc_init()
+References: <49010D41.1080305@goop.org> <200810281619.10388.nickpiggin@yahoo.com.au> <4906CBCA.6060908@goop.org>
+In-Reply-To: <4906CBCA.6060908@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008-11-05 19:56, Török Edwin wrote:
-> On 2008-11-05 18:12, Hugh Dickins wrote:
->   
->>>    
->>>       
->> mmap PROT_NONE to reserve an arena, munmap to trim off top and bottom,
->> mprotect to make areas read+writable, madvise 0x4 to say MADV_DONTNEED
->> on some parts.  gcc?  Or the application itself (clamd) and its libs?
->>
->>   
->>     
->   
->> Why does it mmap too much then trim it down?  Perhaps it's trying to
->> minimize pagetable usage, perhaps it's internally convenient to base
->> on rounded addresses, I don't know.
->>
->> But the mmap is there: just easily overlooked because of the way it
->> munmaps too (with strace showing hex addresses but decimal sizes).
->>     
+Jeremy Fitzhardinge wrote:
+> Xen can end up calling vm_unmap_aliases() before vmalloc_init() has
+> been called.  In this case its safe to make it a simple no-op.
 >
-> I will get some stacktraces and figure out, know that I know which mmap
-> to look for (the one with MAP_NORESERVE).
->   
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-I found it, glibc: arena.c:669 does it, there's a comment explaining why:
+Ping?  Nick, Ingo: do you want to pick these up, or shall I send them to 
+Linus myself?
 
-/* If consecutive mmap (0, HEAP_MAX_SIZE << 1, ...) calls return decreasing
-   addresses as opposed to increasing, new_heap would badly fragment the
-   address space.  In that case remember the second HEAP_MAX_SIZE part
-   aligned to HEAP_MAX_SIZE from last mmap (0, HEAP_MAX_SIZE << 1, ...)
-   call (if it is already aligned) and try to reuse it next time.  We need
-   no locking for it, as kernel ensures the atomicity for us - worst case
-   we'll call mmap (addr, HEAP_MAX_SIZE, ...) for some value of addr in
-   multiple threads, but only one will succeed.  */
+Thanks,
+    J
 
-Anyway it is MAP_NORESERVE, and PROT_NONE so it doesn't waste physical
-or swap memory.
+> ---
+> mm/vmalloc.c |    7 +++++++
+> 1 file changed, 7 insertions(+)
+>
+> ===================================================================
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -592,6 +592,8 @@
+>
+> #define VMAP_BLOCK_SIZE        (VMAP_BBMAP_BITS * PAGE_SIZE)
+>
+> +static bool vmap_initialized __read_mostly = false;
+> +
+> struct vmap_block_queue {
+>     spinlock_t lock;
+>     struct list_head free;
+> @@ -828,6 +830,9 @@
+>     int cpu;
+>     int flush = 0;
+>
+> +    if (unlikely(!vmap_initialized))
+> +        return;
+> +
+>     for_each_possible_cpu(cpu) {
+>         struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
+>         struct vmap_block *vb;
+> @@ -941,6 +946,8 @@
+>         INIT_LIST_HEAD(&vbq->dirty);
+>         vbq->nr_dirty = 0;
+>     }
+> +
+> +    vmap_initialized = true;
+> }
+>
+> void unmap_kernel_range(unsigned long addr, unsigned long size)
+>
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Best regards,
---Edwin
