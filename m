@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYKETSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbYKET0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756833AbYKETSz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 14:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYKETSo
+	id S1756296AbYKET0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 14:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752687AbYKET01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 14:18:44 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:41974 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752828AbYKETSn (ORCPT
+	Wed, 5 Nov 2008 14:26:27 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:60997 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbYKET00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 14:18:43 -0500
-Date: Wed, 5 Nov 2008 11:18:41 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Stephen Hemminger <shemminger@vyatta.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>
-Subject: Re: [PATCH RFC v2] net: add PCINet driver
-Message-ID: <20081105191841.GB31188@ovro.caltech.edu>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Stephen Hemminger <shemminger@vyatta.com>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>
-References: <20081029202027.GH12879@ovro.caltech.edu> <200811042123.03819.arnd@arndb.de> <20081104222927.GE4641@ovro.caltech.edu> <200811051419.53194.arnd@arndb.de>
+	Wed, 5 Nov 2008 14:26:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rod6yCm0uzNKtwTm3Dy8gWqSDTGnSaLHdS1e1pWNEp42polDesntve4tbccMYgPsvF
+         7gZ5CHZ9IWMzEDzMUDl99NgOZwDyVsfqHXREUeZj3AMbSYL2vnuurS5upj+rMLWRKUsq
+         JZUV+9eC+9mPNg4hLOmMK9GXSl992SnfUeotw=
+Date: Wed, 5 Nov 2008 22:26:22 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH v2] x86: Don't allow nr_irqs > NR_IRQS
+Message-ID: <20081105192622.GC23548@localhost>
+References: <1225819102.3074.15.camel@achroite> <1225886687.3074.59.camel@achroite> <20081105191126.GA23548@localhost> <1225912531.3074.73.camel@achroite>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200811051419.53194.arnd@arndb.de>
+In-Reply-To: <1225912531.3074.73.camel@achroite>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 05 Nov 2008 11:18:42 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 02:19:52PM +0100, Arnd Bergmann wrote:
-> On Tuesday 04 November 2008, Ira Snyder wrote:
-> 
-> > So, since interrupts are disabled while my interrupt handler is running,
-> > I think I should be able to use spin_lock() and spin_unlock(), correct?
-> 
-> yes.
-> 
-> > But sparse gives me the following warning:
-> > wqt.c:185:9: warning: context imbalance in 'wqt_interrupt': wrong count at exit
-> > wqt.c:185:9:    context 'lock': wanted 0, got 1
-> > 
-> > If I'm using spin_lock_irqsave() and spin_lock_irqrestore() I do not get
-> > the same warnings. Therefore I must have some misunderstanding :)
-> 
-> 
-> I've seen something like that before, I think it was a bug either in
-> sparse or in the powerpc platform code. Try updating both the kernel
-> and sparse and see if it still happens.
-> 
+[Ben Hutchings - Wed, Nov 05, 2008 at 07:15:31PM +0000]
+| On Wed, 2008-11-05 at 22:11 +0300, Cyrill Gorcunov wrote:
+| [...]
+| > Ben I didn't manage to get a look over ACPI related changes
+| > (ie to find the reason why the kernel is able to reveal 5 IO-APICs
+| >  now
+| [...]
+| 
+| I was mistaken; that *isn't* a recent change.  A default RHEL 5 kernel
+| (based on 2.6.18) also finds 5 IOAPICs.
+| 
+| Ben.
+|
 
-Ok, I had the latest sparse, but I've been developing the host driver
-against Ubuntu 8.04's kernel, which is based on 2.6.24. Using Linus' git
-tree resolved the errors from sparse.
+So, these io-apics was there for a long time :) and recent dyn-irq
+tricks just bared the problem of NR_IRQS for which Yinghai already
+sent a patch. Lets wait until they're merged.
 
-I ended up finding that the dma_mapping_error() API has changed, and so
-I updated the driver for that. It should build against 2.6.28-rc now.
-I'll post it in a little while.
-
-Ira
+		- Cyrill -
