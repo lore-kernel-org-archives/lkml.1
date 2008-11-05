@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbYKEXNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbYKEXNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbYKEXNQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 18:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbYKEXMa
+	id S1756577AbYKEXNt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 18:13:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYKEXMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 18:12:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48305 "EHLO
+	Wed, 5 Nov 2008 18:12:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55136 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752876AbYKEXMY (ORCPT
+	by vger.kernel.org with ESMTP id S1753576AbYKEXMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 18:12:24 -0500
-Date: Wed, 5 Nov 2008 15:12:17 -0800
+	Wed, 5 Nov 2008 18:12:30 -0500
+Date: Wed, 5 Nov 2008 15:12:21 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Kentaro Takeda <takedakn@nttdata.co.jp>
 Cc: haradats@nttdata.co.jp, linux-security-module@vger.kernel.org,
        linux-kernel@vger.kernel.org, takedakn@nttdata.co.jp,
        penguin-kernel@I-love.SAKURA.ne.jp
-Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 05/11] Memory and pathname
- management functions.
-Message-Id: <20081105151217.4e8d11a9.akpm@linux-foundation.org>
-In-Reply-To: <20081104060949.942652091@nttdata.co.jp>
+Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 06/11] Common functions for TOMOYO
+ Linux.
+Message-Id: <20081105151221.d605226f.akpm@linux-foundation.org>
+In-Reply-To: <20081104060951.618445959@nttdata.co.jp>
 References: <20081104060847.086543472@nttdata.co.jp>
-	<20081104060949.942652091@nttdata.co.jp>
+	<20081104060951.618445959@nttdata.co.jp>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,636 +30,2104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Nov 2008 15:08:52 +0900
+On Tue, 04 Nov 2008 15:08:53 +0900
 Kentaro Takeda <takedakn@nttdata.co.jp> wrote:
 
-> TOMOYO Linux performs pathname based access control.
-> To remove factors that make pathname based access control difficult
-> (e.g. symbolic links, "..", "//" etc.), TOMOYO Linux derives realpath
-> of requested pathname from "struct dentry" and "struct vfsmount".
+> This file contains common functions (e.g. policy I/O, pattern matching).
 > 
-> The maximum length of string data is limited to 4000 including trailing '\0'.
-> Since TOMOYO Linux uses '\ooo' style representation for non ASCII printable
-> characters, may be TOMOYO Linux should be able to support 16336 (which means
-> (NAME_MAX * (PATH_MAX / (NAME_MAX + 1)) * 4 + (PATH_MAX / (NAME_MAX + 1)))
-> including trailing '\0'), but I think 4000 is enough for practical use.
-> 
-
-This code does look a bit hacky.
-
-> 
-> --- /dev/null
-> +++ linux-2.6.28-rc2-mm1/security/tomoyo/realpath.c
-> @@ -0,0 +1,540 @@
-> +/*
-> + * security/tomoyo/realpath.c
-> + *
-> + * Get the canonicalized absolute pathnames. The basis for TOMOYO.
-> + *
-> + * Copyright (C) 2005-2008  NTT DATA CORPORATION
-> + *
-> + * Version: 2.2.0-pre   2008/10/10
-> + *
-> + */
 > +
-> +#include <linux/types.h>
-> +#include <linux/mount.h>
-> +#include <linux/magic.h>
-> +#include <linux/sysctl.h>
-> +#include "common.h"
+> +#include <linux/uaccess.h>
+> +#include <linux/security.h>
+> +#include <linux/hardirq.h>
 > +#include "realpath.h"
+> +#include "common.h"
+> +#include "tomoyo.h"
+> +
+> +/* Set default specified by the kernel config. */
+> +#define MAX_ACCEPT_ENTRY 2048
+> +
+> +/* Has /sbin/init started? */
+> +bool sbin_init_started;
+> +
+> +/* String table for functionality that takes 4 modes. */
+> +static const char *mode_4[4] = {
+> +	"disabled", "learning", "permissive", "enforcing"
+> +};
+> +/* String table for functionality that takes 2 modes. */
+> +static const char *mode_2[4] = {
+> +	"disabled", "enabled", "enabled", "enabled"
+> +};
+> +
+> +/* Table for profile. */
+> +static struct {
+> +	const char *keyword;
+> +	unsigned int current_value;
+> +	const unsigned int max_value;
+> +} tmy_control_array[TMY_MAX_CONTROL_INDEX] = {
+> +	[TMY_TOMOYO_MAC_FOR_FILE]        = { "MAC_FOR_FILE",        0, 3 },
+> +	[TMY_TOMOYO_MAX_ACCEPT_ENTRY]
+> +	= { "MAX_ACCEPT_ENTRY",    MAX_ACCEPT_ENTRY, INT_MAX },
+> +	[TMY_TOMOYO_VERBOSE]             = { "TOMOYO_VERBOSE",      1, 1 },
+> +};
+> +
+> +/* Profile table. Memory is allocated as needed. */
+> +static struct profile {
+> +	unsigned int value[TMY_MAX_CONTROL_INDEX];
+> +	const struct path_info *comment;
+> +} *profile_ptr[MAX_PROFILES];
+> +
+> +/* Permit policy management by non-root user? */
+> +static bool manage_by_non_root;
+> +
+> +/* Utility functions. */
+> +
+> +/* Open operation for /sys/kernel/security/tomoyo/ interface. */
+> +static int tmy_open_control(const u8 type, struct file *file);
+> +/* Close /sys/kernel/security/tomoyo/ interface. */
+> +static int tmy_close_control(struct file *file);
+> +/* Read operation for /sys/kernel/security/tomoyo/ interface. */
+> +static int tmy_read_control(struct file *file, char __user *buffer,
+> +			    const int buffer_len);
+> +/* Write operation for /sys/kernel/security/tomoyo/ interface. */
+> +static int tmy_write_control(struct file *file, const char __user *buffer,
+> +			     const int buffer_len);
 > +
 > +/**
-> + * tmy_realpath_from_path2 - Returns realpath(3) of the given dentry but ignores chroot'ed root.
+> + * is_byte_range - Check whether the string isa \ooo style octal value.
 > + *
-> + * @path:        Pointer to "struct path".
-> + * @newname:     Pointer to buffer to return value in.
-> + * @newname_len: Size of @newname.
+> + * @str: Pointer to the string.
 > + *
-> + * Returns 0 on success, negative value otherwise.
-> + *
-> + * If dentry is a directory, trailing '/' is appended.
-> + * Characters out of 0x20 < c < 0x7F range are converted to
-> + * \ooo style octal string.
-> + * Character \ is converted to \\ string.
+> + * Returns true if @str is a \ooo style octal value, false otherwise.
 > + */
-> +int tmy_realpath_from_path2(struct path *path, char *newname, int newname_len)
+> +static bool is_byte_range(const char *str)
 > +{
-> +	int error = -ENOMEM;
-> +	struct dentry *dentry = path->dentry;
-> +	char *sp;
+> +	return *str >= '0' && *str++ <= '3' &&
+> +		*str >= '0' && *str++ <= '7' &&
+> +		*str >= '0' && *str <= '7';
+> +}
+
+Well... why?
+
+I cannot think of any kernel interfaces which use octal strings.  What
+is special about Tomoyo?
+
+> +/**
+> + * is_decimal - Check whether the character is a decimal character.
+> + *
+> + * @c: The character to check.
+> + *
+> + * Returns true if @c is a decimal character, false otherwise.
+> + */
+> +static bool is_decimal(const char c)
+> +{
+> +	return c >= '0' && c <= '9';
+> +}
+
+This duplicates a standard ctype.h function.
+
+> +/**
+> + * is_hexadecimal - Check whether the character is a hexadecimal character.
+> + *
+> + * @c: The character to check.
+> + *
+> + * Returns true if @c is a hexadecimal character, false otherwise.
+> + */
+> +static bool is_hexadecimal(const char c)
+> +{
+> +	return (c >= '0' && c <= '9') ||
+> +		(c >= 'A' && c <= 'F') ||
+> +		(c >= 'a' && c <= 'f');
+> +}
+
+And so does this.
+
+> +/**
+> + * is_alphabet_char - Check whether the character is an alphabet.
+> + *
+> + * @c: The character to check.
+> + *
+> + * Returns true if @c is an alphabet character, false otherwise.
+> + */
+> +static bool is_alphabet_char(const char c)
+> +{
+> +	return (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f');
+> +}
+
+As does this.
+
+> +/**
+> + * make_byte - Make byte value from three octal characters.
+> + *
+> + * @c1: The first character.
+> + * @c2: The second character.
+> + * @c3: The third character.
+> + *
+> + * Returns byte value.
+> + */
+> +static u8 make_byte(const u8 c1, const u8 c2, const u8 c3)
+> +{
+> +	return ((c1 - '0') << 6) + ((c2 - '0') << 3) + (c3 - '0');
+> +}
 > +
-> +	if (!dentry || !path->mnt || !newname || newname_len <= 2048)
-> +		return -EINVAL;
-> +	if (dentry->d_op && dentry->d_op->d_dname) {
-> +		/* For "socket:[\$]" and "pipe:[\$]". */
-> +		static const int offset = 1536;
-> +		sp = dentry->d_op->d_dname(dentry, newname + offset,
-> +					   newname_len - offset);
-> +	} else {
-> +		path_get(path);
-> +		sp = d_realpath(path, newname, newname_len);
-> +		path_put(path);
+> +/**
+> + * str_starts - Check whether the given string starts with the given keyword.
+> + *
+> + * @src:  Pointer to pointer to the string.
+> + * @find: Pointer to the keyword.
+> + *
+> + * Returns true if @src starts with @find, false otherwise.
+> + *
+> + * The @src is updated to point the first character after the @find
+> + * if @src starts with @find.
+> + */
+> +static bool str_starts(char **src, const char *find)
+> +{
+> +	const int len = strlen(find);
+> +	char *tmp = *src;
+> +
+> +	if (strncmp(tmp, find, len))
+> +		return false;
+> +	tmp += len;
+> +	*src = tmp;
+> +	return true;
+> +}
+
+hrm.  Isn't there a standard string.h way of doing this?
+
+If not, it looks like a pretty common thing.  I'd suggest that it a) be
+coded to not do two passes across the input and b) proposed as a
+generic addition to the kernel's string library functions.
+
+> +/**
+> + * normalize_line - Format string.
+> + *
+> + * @buffer: The line to normalize.
+> + *
+> + * Leading and trailing whitespaces are removed.
+> + * Multiple whitespaces are packed into single space.
+> + *
+> + * Returns nothing.
+> + */
+> +static void normalize_line(unsigned char *buffer)
+> +{
+> +	unsigned char *sp = buffer;
+> +	unsigned char *dp = buffer;
+> +	bool first = true;
+> +
+> +	while (*sp && (*sp <= ' ' || *sp >= 127))
+> +		sp++;
+> +	while (*sp) {
+> +		if (!first)
+> +			*dp++ = ' ';
+> +		first = false;
+> +		while (*sp > ' ' && *sp < 127)
+> +			*dp++ = *sp++;
+> +		while (*sp && (*sp <= ' ' || *sp >= 127))
+> +			sp++;
 > +	}
-> +	if (IS_ERR(sp)) {
-> +		error = PTR_ERR(sp);
-> +	} else {
-> +		char *dp = newname;
-> +		newname += newname_len - 5;
-> +		while (dp <= newname) {
-> +			const unsigned char c = *(unsigned char *) sp++;
-> +			*dp++ = c;
-> +			if (c == '\\') {
-> +				*dp++ = '\\';
-> +			} else if (c > ' ' && c < 127) {
+> +	*dp = '\0';
+> +}
+
+that looks pretty generic as well.
+
+It seems to have duplicated isprint() in lots of places.
+
+> +/**
+> + * tmy_is_correct_path - Validate a pathname.
+> + * @filename:     The pathname to check.
+> + * @start_type:   Should the pathname start with '/'?
+> + *                1 = must / -1 = must not / 0 = don't care
+> + * @pattern_type: Can the pathname contain a wildcard?
+> + *                1 = must / -1 = must not / 0 = don't care
+> + * @end_type:     Should the pathname end with '/'?
+> + *                1 = must / -1 = must not / 0 = don't care
+> + * @function:     The name of function calling me.
+> + *
+> + * Check whether the given filename follows the naming rules.
+> + * Returns true if @filename follows the naming rules, false otherwise.
+> + */
+> +bool tmy_is_correct_path(const char *filename, const s8 start_type,
+> +			 const s8 pattern_type, const s8 end_type,
+> +			 const char *function)
+> +{
+> +	bool contains_pattern = false;
+> +	unsigned char c;
+> +	unsigned char d;
+> +	unsigned char e;
+> +	const char *original_filename = filename;
+> +
+> +	if (!filename)
+> +		goto out;
+> +	c = *filename;
+> +	if (start_type == 1) { /* Must start with '/' */
+> +		if (c != '/')
+> +			goto out;
+> +	} else if (start_type == -1) { /* Must not start with '/' */
+> +		if (c == '/')
+> +			goto out;
+> +	}
+> +	if (c)
+> +		c = *(strchr(filename, '\0') - 1);
+> +	if (end_type == 1) { /* Must end with '/' */
+> +		if (c != '/')
+> +			goto out;
+> +	} else if (end_type == -1) { /* Must not end with '/' */
+> +		if (c == '/')
+> +			goto out;
+> +	}
+> +	while ((c = *filename++) != '\0') {
+> +		if (c == '\\') {
+> +			switch ((c = *filename++)) {
+> +			case '\\':  /* "\\" */
 > +				continue;
-> +			} else if (!c) {
-> +				error = 0;
-> +				break;
-> +			} else {
-> +				*dp++ = '\\';
-> +				*dp++ = (c >> 6) + '0';
-> +				*dp++ = ((c >> 3) & 7) + '0';
-> +				*dp++ = (c & 7) + '0';
+> +			case '$':   /* "\$" */
+> +			case '+':   /* "\+" */
+> +			case '?':   /* "\?" */
+> +			case '*':   /* "\*" */
+> +			case '@':   /* "\@" */
+> +			case 'x':   /* "\x" */
+> +			case 'X':   /* "\X" */
+> +			case 'a':   /* "\a" */
+> +			case 'A':   /* "\A" */
+> +			case '-':   /* "\-" */
+> +				if (pattern_type == -1)
+> +					break; /* Must not contain pattern */
+> +				contains_pattern = true;
+> +				continue;
+> +			case '0':   /* "\ooo" */
+> +			case '1':
+> +			case '2':
+> +			case '3':
+> +				d = *filename++;
+> +				if (d < '0' || d > '7')
+> +					break;
+> +				e = *filename++;
+> +				if (e < '0' || e > '7')
+> +					break;
+> +				c = make_byte(c, d, e);
+> +				if (c && (c <= ' ' || c >= 127))
+> +					continue; /* pattern is not \000 */
+> +			}
+> +			goto out;
+> +		} else if (c <= ' ' || c >= 127) {
+> +			goto out;
+> +		}
+> +	}
+> +	if (pattern_type == 1) { /* Must contain pattern */
+> +		if (!contains_pattern)
+> +			goto out;
+> +	}
+> +	return true;
+> +out:
+> +	printk(KERN_DEBUG "%s: Invalid pathname '%s'\n", function,
+> +	       original_filename);
+> +	return false;
+> +}
+> +
+> +/**
+> + * tmy_is_correct_domain - Check whether the given domainname follows the naming rules.
+> + * @domainname:   The domainname to check.
+> + * @function:     The name of function calling me.
+> + *
+> + * Returns true if @domainname follows the naming rules, false otherwise.
+> + */
+> +bool tmy_is_correct_domain(const unsigned char *domainname,
+> +			   const char *function)
+> +{
+> +	unsigned char c;
+> +	unsigned char d;
+> +	unsigned char e;
+> +	const char *org_domainname = domainname;
+> +
+> +	if (!domainname || strncmp(domainname, ROOT_NAME, ROOT_NAME_LEN))
+> +		goto out;
+> +	domainname += ROOT_NAME_LEN;
+> +	if (!*domainname)
+> +		return true;
+> +	do {
+> +		if (*domainname++ != ' ')
+> +			goto out;
+> +		if (*domainname++ != '/')
+> +			goto out;
+> +		while ((c = *domainname) != '\0' && c != ' ') {
+> +			domainname++;
+> +			if (c == '\\') {
+> +				c = *domainname++;
+> +				switch ((c)) {
+> +				case '\\':  /* "\\" */
+> +					continue;
+> +				case '0':   /* "\ooo" */
+> +				case '1':
+> +				case '2':
+> +				case '3':
+> +					d = *domainname++;
+> +					if (d < '0' || d > '7')
+> +						break;
+> +					e = *domainname++;
+> +					if (e < '0' || e > '7')
+> +						break;
+> +					c = make_byte(c, d, e);
+> +					if (c && (c <= ' ' || c >= 127))
+
+isprint?
+
+> +						/* pattern is not \000 */
+> +						continue;
+> +				}
+> +				goto out;
+> +			} else if (c < ' ' || c >= 127) {
+> +				goto out;
 > +			}
 > +		}
-> +	}
-> +	if (error)
-> +		printk(KERN_WARNING "tmy_realpath: Pathname too long.\n");
-> +	return error;
+> +	} while (*domainname);
+> +	return true;
+> +out:
+> +	printk(KERN_DEBUG "%s: Invalid domainname '%s'\n", function,
+> +	       org_domainname);
+> +	return false;
+> +}
+
+Tomoyo does an *amazing* amount of string hacking.  It's weird.
+
+What happens if I have a filename which includes a character in the
+128->255 range?
+
+> +/**
+> + * tmy_is_domain_def - Check whether the given token can be a domainname.
+> + *
+> + * @buffer: The token to check.
+> + *
+> + * Returns true if @buffer possibly be a domainname, false otherwise.
+> + */
+> +bool tmy_is_domain_def(const unsigned char *buffer)
+> +{
+> +	return !strncmp(buffer, ROOT_NAME, ROOT_NAME_LEN);
 > +}
 > +
 > +/**
-> + * tmy_realpath_from_path - Returns realpath(3) of the given pathname but ignores chroot'ed root.
+> + * tmy_find_domain - Find a domain by the given name.
 > + *
-> + * @path: Pointer to "struct path".
+> + * @domainname: The domainname to find.
 > + *
-> + * Returns the realpath of the given @path on success, NULL otherwise.
-> + *
-> + * These functions use tmy_alloc(), so the caller must call tmy_free()
-> + * if these functions didn't return NULL.
+> + * Returns pointer to "struct domain_info" if found, NULL otherwise.
 > + */
-> +char *tmy_realpath_from_path(struct path *path)
+> +struct domain_info *tmy_find_domain(const char *domainname)
 > +{
-> +	char *buf = tmy_alloc(sizeof(struct tmy_page_buffer));
+> +	struct domain_info *domain;
+> +	struct path_info name;
 > +
-> +	if (buf && tmy_realpath_from_path2(path, buf,
-> +					     TMY_MAX_PATHNAME_LEN - 1) == 0)
-> +		return buf;
-> +	tmy_free(buf);
-> +	return NULL;
-> +}
-> +
-> +/**
-> + * tmy_realpath - Get realpath of a pathname.
-> + *
-> + * @pathname: The pathname to solve.
-> + *
-> + * Returns the realpath of @pathname on success, NULL otherwise.
-> + */
-> +char *tmy_realpath(const char *pathname)
-> +{
-> +	struct nameidata nd;
-> +
-> +	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
-> +		char *buf = tmy_realpath_from_path(&nd.path);
-> +		path_put(&nd.path);
-> +		return buf;
-> +	}
-> +	return NULL;
-> +}
-> +
-> +/**
-> + * tmy_realpath_nofollow - Get realpath of a pathname.
-> + *
-> + * @pathname: The pathname to solve.
-> + *
-> + * Returns the realpath of @pathname on success, NULL otherwise.
-> + */
-> +char *tmy_realpath_nofollow(const char *pathname)
-> +{
-> +	struct nameidata nd;
-> +
-> +	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
-> +		char *buf = tmy_realpath_from_path(&nd.path);
-> +		path_put(&nd.path);
-> +		return buf;
+> +	name.name = domainname;
+> +	tmy_fill_path_info(&name);
+> +	list1_for_each_entry(domain, &domain_list, list) {
+> +		if (!domain->is_deleted &&
+> +		    !tmy_pathcmp(&name, domain->domainname))
+> +			return domain;
 > +	}
 > +	return NULL;
 > +}
-> +
+
+No lock was taken to protect that list.
+
+If the caller must take some lock then that precondition should be
+documented in the function's comment.
+
 > +/**
-> + * round_up - Round up an integer so that the returned pointers are appropriately aligned.
+> + * path_depth - Evaluate the number of '/' in a string.
 > + *
-> + * @size: Size in bytes.
+> + * @pathname: The string to evaluate.
 > + *
-> + * Returns rounded value of @size.
+> + * Returns path depth of the string.
 > + *
-> + * FIXME: Are there more requirements that is needed for assigning value
-> + * atomically?
+> + * I score 2 for each of the '/' in the @pathname
+> + * and score 1 if the @pathname ends with '/'.
 > + */
-> +static inline unsigned int round_up(const unsigned int size)
+> +static int path_depth(const char *pathname)
 > +{
-> +	if (sizeof(void *) >= sizeof(long))
-> +		return ((size + sizeof(void *) - 1)
-> +			/ sizeof(void *)) * sizeof(void *);
-> +	else
-> +		return ((size + sizeof(long) - 1)
-> +			/ sizeof(long)) * sizeof(long);
+> +	int i = 0;
+> +
+> +	if (pathname) {
+> +		char *ep = strchr(pathname, '\0');
+
+what?  Does that even work?  strchr(p, 0) should always return NULL:
+
+RETURN VALUE
+       The strchr() and strrchr() functions return a pointer  to  the  matched
+       character or NULL if the character is not found.
+
+
+Using
+
+	pathname + strlen(pathname)
+
+would be saner, no?
+
+> +		if (pathname < ep--) {
+> +			if (*ep != '/')
+> +				i++;
+> +			while (pathname <= ep)
+> +				if (*ep-- == '/')
+> +					i += 2;
+> +		}
+> +	}
+> +	return i;
 > +}
 
-Can PTR_ALIGN be used?
+I cannot imagine why this function exists :(
 
-If not, please prefer to avoid implementing generic helpers down in
-specific code.  It is better to add the helpers in a kernel-wide
-fashion in an early patch, then to use those halpers in the
-subsyste-specific patches.
+> [vast amounts of string hacking snipped]
 
+This seems like madness, sorry.
 
-> +/* Memory allocated for non-string data. */
-> +static unsigned int allocated_memory_for_elements;
-> +/* Quota for holding non-string data. */
-> +static unsigned int quota_for_elements;
+Why the heck is so much string bashing going on in here???
+
+> +/**
+> + * tmy_io_printf - Transactional printf() to "struct tmy_io_buffer" structure.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + * @fmt:  The printf()'s format string, followed by parameters.
+> + *
+> + * Returns true on success, false otherwise.
+
+This comment should explain what the terms "success" and "failure"
+refer to.  Perhaps "success"=="the output didn't overflow" or something.
+
+> + * The snprintf() will truncate, but tmy_io_printf() won't.
+> + */
+> +bool tmy_io_printf(struct tmy_io_buffer *head, const char *fmt, ...)
+> +{
+> +	va_list args;
+> +	int len;
+> +	int pos = head->read_avail;
+> +	int size = head->readbuf_size - pos;
+> +
+> +	if (size <= 0)
+> +		return false;
+> +	va_start(args, fmt);
+> +	len = vsnprintf(head->read_buf + pos, size, fmt, args);
+> +	va_end(args);
+> +	if (pos + len >= head->readbuf_size)
+> +		return false;
+> +	head->read_avail += len;
+> +	return true;
+> +}
 > +
 > +/**
-> + * tmy_alloc_element - Allocate permanent memory for structures.
+> + * tmy_get_exe - Get tmy_realpath() of current process.
 > + *
-> + * @size: Size in bytes.
+> + * Returns the tmy_realpath() of current process on success, NULL otherwise.
 > + *
-> + * Returns pointer to allocated memory on success, NULL otherwise.
-> + *
-> + * The RAM is chunked, so NEVER try to kfree() the returned pointer.
+> + * This function uses tmy_alloc(), so the caller must call tmy_free()
+> + * if this function didn't return NULL.
 > + */
-> +void *tmy_alloc_element(const unsigned int size)
+> +static const char *tmy_get_exe(void)
 > +{
-> +	static char *buf;
-> +	static DEFINE_MUTEX(lock);
-> +	static unsigned int buf_used_len = PAGE_SIZE;
-> +	char *ptr = NULL;
-> +	const unsigned int word_aligned_size = round_up(size);
+> +	struct mm_struct *mm = current->mm;
+> +	struct vm_area_struct *vma;
+> +	const char *cp = NULL;
 > +
-> +	if (word_aligned_size > PAGE_SIZE)
+> +	if (!mm)
 > +		return NULL;
+> +	down_read(&mm->mmap_sem);
+> +	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+> +		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file) {
+> +			cp = tmy_realpath_from_path(&vma->vm_file->f_path);
+> +			break;
+> +		}
+> +	}
+> +	up_read(&mm->mmap_sem);
+> +	return cp;
+> +}
+
+What guarantees that the first executable mapping in the mapping list
+is the correct one for the executable?
+
+What prevents us from accidentally breaking that guarantee in the
+future?  I wasn't even aware that this was the case.
+
+What happens if the executable was unlinked?
+
+
+> +/**
+> + * tmy_get_msg - Get warning message.
+> + *
+> + * @is_enforce: Is it enforcing mode?
+> + *
+> + * Returns "ERROR" or "WARNING".
+> + */
+> +const char *tmy_get_msg(const bool is_enforce)
+> +{
+> +	if (is_enforce)
+> +		return "ERROR";
+> +	else
+> +		return "WARNING";
+> +}
+> +
+> +/**
+> + * tmy_check_flags - Check mode for specified functionality.
+> + *
+> + * @domain: Pointer to "struct domain_info".
+> + * @index:  The functionality to check mode.
+> + *
+> + * Returns the mode of specified functionality.
+
+That description is rather meaningless.
+
+> + */
+> +unsigned int tmy_check_flags(const struct domain_info *domain, const u8 index)
+> +{
+> +	const u8 profile = domain->profile;
+> +
+> +	if (unlikely(in_interrupt())) {
+> +		static u8 count = 20;
+> +		if (count) {
+> +			count--;
+> +			printk(KERN_ERR "BUG: sleeping function called "
+> +			       "from invalid context.\n");
+> +			dump_stack();
+> +		}
+> +		return 0;
+> +	}
+
+a) WARN_ON is preferred
+
+b) WARN_ON_ONCE might be usable here
+
+c) what on earth is this code doing??
+
+> +	return sbin_init_started && index < TMY_MAX_CONTROL_INDEX
+> +#if MAX_PROFILES != 256
+> +		&& profile < MAX_PROFILES
+> +#endif
+> +		&& profile_ptr[profile] ?
+> +		profile_ptr[profile]->value[index] : 0;
+> +}
+
+And this.  I cannot imagine why Tomoyo cares whether /sbin/init has
+started yet.  This sort of thing should be commented!
+
+What happens in a cgroups environment where there will be multiple
+/sbin/inits running?
+
+> +/**
+> + * tmy_verbose_mode - Check whether TOMOYO is verbose mode.
+> + *
+> + * @domain: Pointer to "struct domain_info".
+> + *
+> + * Returns true if domain policy violation warning should be printed to
+> + * console.
+> + */
+> +bool tmy_verbose_mode(const struct domain_info *domain)
+> +{
+> +	return tmy_check_flags(domain, TMY_TOMOYO_VERBOSE) != 0;
+> +}
+> +
+> +/**
+> + * tmy_check_domain_quota - Check for domain's quota.
+> + *
+> + * @domain: Pointer to "struct domain_info".
+> + *
+> + * Returns true if the domain is not exceeded quota, false otherwise.
+> + */
+> +bool tmy_check_domain_quota(struct domain_info * const domain)
+> +{
+> +	unsigned int count = 0;
+> +	struct acl_info *ptr;
+> +
+> +	if (!domain)
+> +		return true;
+> +	list1_for_each_entry(ptr, &domain->acl_info_list, list) {
+> +		if (ptr->type & ACL_DELETED)
+> +			continue;
+> +		switch (tmy_acl_type2(ptr)) {
+> +			struct single_path_acl_record *acl1;
+> +			struct double_path_acl_record *acl2;
+> +			u16 perm;
+> +		case TYPE_SINGLE_PATH_ACL:
+> +			acl1 = container_of(ptr, struct single_path_acl_record,
+> +					    head);
+> +			perm = acl1->perm;
+> +			if (perm & (1 << TMY_TYPE_EXECUTE_ACL))
+> +				count++;
+> +			if (perm &
+> +			    ((1 << TMY_TYPE_READ_ACL) |
+> +			     (1 << TMY_TYPE_WRITE_ACL)))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_CREATE_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_UNLINK_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_MKDIR_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_RMDIR_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_MKFIFO_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_MKSOCK_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_MKBLOCK_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_MKCHAR_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_TRUNCATE_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_SYMLINK_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_REWRITE_ACL))
+> +				count++;
+> +			break;
+> +		case TYPE_DOUBLE_PATH_ACL:
+> +			acl2 = container_of(ptr, struct double_path_acl_record,
+> +					    head);
+> +			perm = acl2->perm;
+> +			if (perm & (1 << TMY_TYPE_LINK_ACL))
+> +				count++;
+> +			if (perm & (1 << TMY_TYPE_RENAME_ACL))
+> +				count++;
+> +			break;
+> +		}
+> +	}
+> +	if (count < tmy_check_flags(domain, TMY_TOMOYO_MAX_ACCEPT_ENTRY))
+> +		return true;
+> +	if (!domain->quota_warned) {
+> +		domain->quota_warned = true;
+> +		printk(KERN_WARNING "TOMOYO-WARNING: "
+> +		       "Domain '%s' has so many ACLs to hold. "
+> +		       "Stopped learning mode.\n", domain->domainname->name);
+> +	}
+> +	return false;
+> +}
+
+This function is poorly named.
+
+If I see code such as
+
+	if (tmy_check_domain_quota(...))
+		<something>
+
+then I cannot tell whether <something> will be called when the quota is
+exceeded, or whether it is called when the quota is _not_ exceeded. 
+This is because the term "check" carries no information about the
+results of that check.
+
+Now, if the code was:
+
+	if (tmy_domain_quota_exceeded(...))
+		<something>
+
+then I would immediately know what caused <something> to be called.
+
+see?
+
+> +/**
+> + * tmy_find_or_assign_new_profile - Create a new profile.
+> + *
+> + * @profile: Profile number to create.
+> + *
+> + * Returns pointer to "struct profile" on success, NULL otherwise.
+> + */
+> +static struct profile *tmy_find_or_assign_new_profile(const unsigned int
+> +						      profile)
+> +{
+> +	static DEFINE_MUTEX(lock);
+> +	struct profile *ptr = NULL;
+> +
 > +	/***** EXCLUSIVE SECTION START *****/
 > +	mutex_lock(&lock);
-> +	if (buf_used_len + word_aligned_size > PAGE_SIZE) {
-> +		if (!quota_for_elements || allocated_memory_for_elements
-> +		    + PAGE_SIZE <= quota_for_elements)
-> +			ptr = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> +		if (!ptr) {
-> +			printk(KERN_WARNING "ERROR: Out of memory "
-> +			       "for tmy_alloc_element().\n");
-> +			if (!sbin_init_started)
-> +				panic("MAC Initialization failed.\n");
-> +		} else {
-> +			buf = ptr;
-> +			allocated_memory_for_elements += PAGE_SIZE;
-> +			buf_used_len = word_aligned_size;
-> +			ptr = buf;
-> +		}
-> +	} else if (word_aligned_size) {
-> +		int i;
-> +		ptr = buf + buf_used_len;
-> +		buf_used_len += word_aligned_size;
-> +		for (i = 0; i < word_aligned_size; i++) {
-> +			if (!ptr[i])
-> +				continue;
-> +			printk(KERN_ERR "WARNING: Reserved memory was tainted! "
-> +			       "The system might go wrong.\n");
-> +			ptr[i] = '\0';
+> +	if (profile < MAX_PROFILES) {
+
+This check didn't need to be inside the lock.
+
+> +		ptr = profile_ptr[profile];
+> +		if (ptr)
+> +			goto ok;
+> +		ptr = tmy_alloc_element(sizeof(*ptr));
+> +		if (ptr) {
+> +			int i;
+> +			for (i = 0; i < TMY_MAX_CONTROL_INDEX; i++)
+> +				ptr->value[i]
+> +					= tmy_control_array[i].current_value;
+> +			mb(); /* Avoid out-of-order execution. */
+
+hm.
+
+> +			profile_ptr[profile] = ptr;
 > +		}
 > +	}
+> +ok:
 > +	mutex_unlock(&lock);
 > +	/***** EXCLUSIVE SECTION END *****/
 > +	return ptr;
 > +}
 > +
-> +/* Memory allocated for string data. */
-> +static unsigned int allocated_memory_for_savename;
-> +/* Quota for holding string data. */
-> +static unsigned int quota_for_savename;
-> +
-> +/*
-> + * TOMOYO uses this hash only when appending a string into the string
-> + * table. Frequency of appending strings is very low. So we don't need
-> + * large (e.g. 64k) hash size. 256 will be sufficient.
-> + */
-> +#define MAX_HASH 256
-> +
-> +/* Structure for string data. */
-> +struct name_entry {
-> +	struct list1_head list;
-> +	struct path_info entry;
-> +};
-> +
-> +/* Structure for available memory region. */
-> +struct free_memory_block_list {
-> +	struct list_head list;
-> +	char *ptr;             /* Pointer to a free area. */
-> +	int len;               /* Length of the area.     */
-> +};
-
-You didn't need to invent list1_head for this application.  This is
-*exactly* what the existing hlist_head is designed for.
-
-> +/*
-> + * The list for "struct name_entry".
-> + *
-> + * This list is updated only inside tmy_save_name(), thus
-> + * no global mutex exists.
-> + */
-> +static struct list1_head name_list[MAX_HASH];
-> +
 > +/**
-> + * tmy_save_name - Allocate permanent memory for string data.
+> + * write_profile - Write profile table.
+
+where to?
+
+> + * @head: Pointer to "struct tmy_io_buffer"
 > + *
-> + * @name: The string to store into the permernent memory.
-> + *
-> + * Returns pointer to "struct path_info" on success, NULL otherwise.
-> + *
-> + * The RAM is shared, so NEVER try to modify or kfree() the returned name.
+> + * Returns 0 on success, negative value otherwise.
 > + */
-> +const struct path_info *tmy_save_name(const char *name)
+> +static int write_profile(struct tmy_io_buffer *head)
 > +{
-> +	static LIST_HEAD(fmb_list);
-> +	static DEFINE_MUTEX(lock);
-> +	struct name_entry *ptr;
-> +	unsigned int hash;
-> +	struct free_memory_block_list *fmb;
-> +	int len;
+> +	char *data = head->write_buf;
+> +	unsigned int i;
+> +	unsigned int value;
 > +	char *cp;
+> +	struct profile *profile;
+> +	unsigned long num;
 > +
-> +	if (!name)
-> +		return NULL;
-> +	len = strlen(name) + 1;
-> +	if (len > TMY_MAX_PATHNAME_LEN) {
-> +		printk(KERN_WARNING "ERROR: Name too long "
-> +		       "for tmy_save_name().\n");
-> +		return NULL;
+> +	cp = strchr(data, '-');
+> +	if (cp)
+> +		*cp = '\0';
+> +	if (strict_strtoul(data, 10, &num))
+> +		return -EINVAL;
+> +	if (cp)
+> +		data = cp + 1;
+> +	profile = tmy_find_or_assign_new_profile(num);
+> +	if (!profile)
+> +		return -EINVAL;
+> +	cp = strchr(data, '=');
+> +	if (!cp)
+> +		return -EINVAL;
+> +	*cp = '\0';
+> +	tmy_update_counter(TMY_UPDATES_COUNTER_PROFILE);
+> +	if (!strcmp(data, "COMMENT")) {
+> +		profile->comment = tmy_save_name(cp + 1);
+> +		return 0;
 > +	}
-> +	hash = full_name_hash((const unsigned char *) name, len - 1);
-> +	/***** EXCLUSIVE SECTION START *****/
-> +	mutex_lock(&lock);
-> +	list1_for_each_entry(ptr, &name_list[hash % MAX_HASH], list) {
-> +		if (hash == ptr->entry.hash && !strcmp(name, ptr->entry.name))
-> +			goto out;
+> +	for (i = 0; i < TMY_MAX_CONTROL_INDEX; i++) {
+> +		if (strcmp(data, tmy_control_array[i].keyword))
+> +			continue;
+> +		if (sscanf(cp + 1, "%u", &value) != 1) {
+> +			int j;
+> +			const char **modes;
+> +			switch (i) {
+> +			case TMY_TOMOYO_VERBOSE:
+> +				modes = mode_2;
+> +				break;
+> +			default:
+> +				modes = mode_4;
+> +				break;
+> +			}
+> +			for (j = 0; j < 4; j++) {
+> +				if (strcmp(cp + 1, modes[j]))
+> +					continue;
+> +				value = j;
+> +				break;
+> +			}
+> +			if (j == 4)
+> +				return -EINVAL;
+> +		} else if (value > tmy_control_array[i].max_value) {
+> +			value = tmy_control_array[i].max_value;
+> +		}
+> +		profile->value[i] = value;
+> +		return 0;
 > +	}
-> +	list_for_each_entry(fmb, &fmb_list, list) {
-> +		if (len <= fmb->len)
-> +			goto ready;
-> +	}
-> +	if (!quota_for_savename || allocated_memory_for_savename + PAGE_SIZE
-> +	    <= quota_for_savename)
-> +		cp = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> +	else
-> +		cp = NULL;
-> +	fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
-> +	if (!cp || !fmb) {
-> +		kfree(cp);
-> +		kfree(fmb);
-> +		printk(KERN_WARNING "ERROR: Out of memory "
-> +		       "for tmy_save_name().\n");
-> +		if (!sbin_init_started)
-> +			panic("MAC Initialization failed.\n");
-> +		ptr = NULL;
-> +		goto out;
-> +	}
-> +	allocated_memory_for_savename += PAGE_SIZE;
-> +	list_add(&fmb->list, &fmb_list);
-> +	fmb->ptr = cp;
-> +	fmb->len = PAGE_SIZE;
-> +ready:
-> +	ptr = tmy_alloc_element(sizeof(*ptr));
-> +	if (!ptr)
-> +		goto out;
-> +	ptr->entry.name = fmb->ptr;
-> +	memmove(fmb->ptr, name, len);
-> +	tmy_fill_path_info(&ptr->entry);
-> +	fmb->ptr += len;
-> +	fmb->len -= len;
-> +	list1_add_tail(&ptr->list, &name_list[hash % MAX_HASH]);
-> +	if (fmb->len == 0) {
-> +		list_del(&fmb->list);
-> +		kfree(fmb);
-> +	}
-> +out:
-> +	mutex_unlock(&lock);
-> +	/***** EXCLUSIVE SECTION END *****/
-> +	return ptr ? &ptr->entry : NULL;
+> +	return -EINVAL;
 > +}
-
-Nothing ever gets removed from fmb_list.  How odd.
-
-If this is not a bug, I'd suggest that a code comment be added
-explaining what all this code does and why it does it and how it does
-it.
-
+> +
 > +/**
-> + * tmy_realpath_init - Initialize realpath related code.
+> + * read_profile - Read profile table.
+
+Where from?
+
+> + * @head: Pointer to "struct tmy_io_buffer"
 > + *
 > + * Returns 0.
 > + */
-> +static int __init tmy_realpath_init(void)
+> +static int read_profile(struct tmy_io_buffer *head)
 > +{
-> +	int i;
+> +	static const int total = TMY_MAX_CONTROL_INDEX + 1;
+> +	int step;
 > +
-> +	if (TMY_MAX_PATHNAME_LEN > PAGE_SIZE)
-> +		panic("Bad size.");
-> +	for (i = 0; i < MAX_HASH; i++)
-> +		INIT_LIST1_HEAD(&name_list[i]);
-> +	INIT_LIST1_HEAD(&KERNEL_DOMAIN.acl_info_list);
-> +	KERNEL_DOMAIN.domainname = tmy_save_name(ROOT_NAME);
-> +	list1_add_tail(&KERNEL_DOMAIN.list, &domain_list);
-> +	if (tmy_find_domain(ROOT_NAME) != &KERNEL_DOMAIN)
-> +		panic("Can't register KERNEL_DOMAIN");
+> +	if (head->read_eof)
+> +		return 0;
+> +	for (step = head->read_step; step < MAX_PROFILES * total; step++) {
+> +		const u8 index = step / total;
+> +		u8 type = step % total;
+> +		const struct profile *profile = profile_ptr[index];
+> +		head->read_step = step;
+> +		if (!profile)
+> +			continue;
+> +		if (!type) { /* Print profile' comment tag. */
+> +			if (!tmy_io_printf(head, "%u-COMMENT=%s\n",
+> +					   index, profile->comment ?
+> +					   profile->comment->name : ""))
+> +				break;
+> +			continue;
+> +		}
+> +		type--;
+> +		if (type < TMY_MAX_CONTROL_INDEX) {
+> +			const unsigned int value = profile->value[type];
+> +			const char **modes = NULL;
+> +			const char *keyword = tmy_control_array[type].keyword;
+> +			switch (tmy_control_array[type].max_value) {
+> +			case 3:
+> +				modes = mode_4;
+> +				break;
+> +			case 1:
+> +				modes = mode_2;
+> +				break;
+> +			}
+> +			if (modes) {
+> +				if (!tmy_io_printf(head, "%u-%s=%s\n", index,
+> +						   keyword, modes[value]))
+> +					break;
+> +			} else {
+> +				if (!tmy_io_printf(head, "%u-%s=%u\n", index,
+> +						   keyword, value))
+> +					break;
+> +			}
+> +		}
+> +	}
+> +	if (step == MAX_PROFILES * total)
+> +		head->read_eof = true;
+> +	return 0;
+> +}
+
+These functions appear to be implementing more userspace interfaces.
+
+The userspace interface is the most important part of any kernel code. 
+We can change all the internal details, but the interfaces will live
+forever.
+
+Hence we should review the proposed interfaces before even looking at
+the code.  Indeed, before even writing the code.
+
+What are the Tomoyo kernel interfaces?
+
+
+> +/* Structure for policy manager. */
+> +struct policy_manager_entry {
+> +	struct list1_head list;
+> +	/* A path to program or a domainname. */
+> +	const struct path_info *manager;
+> +	bool is_domain;  /* True if manager is a domainname. */
+> +	bool is_deleted; /* True if this entry is deleted. */
+> +};
+> +
+> +/*
+> + * The list for "struct policy_manager_entry".
+> + *
+> + * This list is updated only inside update_manager_entry(), thus
+> + * no global mutex exists.
+> + */
+> +static LIST1_HEAD(policy_manager_list);
+> +
+> +/**
+> + * update_manager_entry - Add a manager entry.
+> + *
+> + * @manager:   The path to manager or the domainnamme.
+> + * @is_delete: True if it is a delete request.
+> + *
+> + * Returns 0 on success, negative value otherwise.
+> + */
+> +static int update_manager_entry(const char *manager, const bool is_delete)
+> +{
+> +	struct policy_manager_entry *new_entry;
+> +	struct policy_manager_entry *ptr;
+> +	static DEFINE_MUTEX(lock);
+> +	const struct path_info *saved_manager;
+> +	int error = -ENOMEM;
+> +	bool is_domain = false;
+> +
+> +	if (tmy_is_domain_def(manager)) {
+> +		if (!tmy_is_correct_domain(manager, __func__))
+> +			return -EINVAL;
+> +		is_domain = true;
+> +	} else {
+> +		if (!tmy_is_correct_path(manager, 1, -1, -1, __func__))
+> +			return -EINVAL;
+> +	}
+> +	saved_manager = tmy_save_name(manager);
+> +	if (!saved_manager)
+> +		return -ENOMEM;
+> +	/***** EXCLUSIVE SECTION START *****/
+> +	mutex_lock(&lock);
+> +	list1_for_each_entry(ptr, &policy_manager_list, list) {
+> +		if (ptr->manager != saved_manager)
+> +			continue;
+> +		ptr->is_deleted = is_delete;
+> +		error = 0;
+> +		goto out;
+> +	}
+> +	if (is_delete) {
+> +		error = -ENOENT;
+> +		goto out;
+> +	}
+> +	new_entry = tmy_alloc_element(sizeof(*new_entry));
+> +	if (!new_entry)
+> +		goto out;
+> +	new_entry->manager = saved_manager;
+> +	new_entry->is_domain = is_domain;
+> +	list1_add_tail(&new_entry->list, &policy_manager_list);
+> +	error = 0;
+> +out:
+> +	mutex_unlock(&lock);
+> +	/***** EXCLUSIVE SECTION END *****/
+> +	if (!error)
+> +		tmy_update_counter(TMY_UPDATES_COUNTER_MANAGER);
+> +	return error;
+> +}
+
+eh?  So deleted entries get their "is_deleted" flag set but they are
+never actually removed from the list nor freed?  So over time the list
+gets longer and longer and consumes more and more memory?
+
+> +/**
+> + * write_manager_policy - Write manager policy.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer"
+> + *
+> + * Returns 0 on success, negative value otherwise.
+> + */
+> +static int write_manager_policy(struct tmy_io_buffer *head)
+> +{
+> +	char *data = head->write_buf;
+> +	bool is_delete = str_starts(&data, KEYWORD_DELETE);
+> +
+> +	if (!strcmp(data, "manage_by_non_root")) {
+> +		manage_by_non_root = !is_delete;
+> +		return 0;
+> +	}
+> +	return update_manager_entry(data, is_delete);
+> +}
+
+More userspace ABI proposals?
+
+> +/**
+> + * read_manager_policy - Read manager policy.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer"
+> + *
+> + * Returns 0.
+> + */
+> +static int read_manager_policy(struct tmy_io_buffer *head)
+> +{
+> +	struct list1_head *pos;
+> +
+> +	if (head->read_eof)
+> +		return 0;
+> +	list1_for_each_cookie(pos, head->read_var2, &policy_manager_list) {
+> +		struct policy_manager_entry *ptr;
+> +		ptr = list1_entry(pos, struct policy_manager_entry, list);
+> +		if (ptr->is_deleted)
+> +			continue;
+> +		if (!tmy_io_printf(head, "%s\n", ptr->manager->name))
+> +			return 0;
+> +	}
+> +	head->read_eof = true;
 > +	return 0;
 > +}
 > +
-> +security_initcall(tmy_realpath_init);
-> +
-> +/* Memory allocated for temporal purpose. */
-> +static atomic_t dynamic_memory_size;
-
-The correct word is "temporary".  This needs fixing in at least one
-other place.
-
-Is this counter really useful?  If not, I'd suggest that it be removed
-and that all calls to tmy_alloc() simply be replaced by calls to
-kmalloc().
-
-A better way to perform memory accounting would be to create slab
-caches for commonly-used objects and to reply uponthe existing
-accounting in /proc/slabinfo.
-
 > +/**
-> + * tmy_alloc - Allocate memory for temporal purpose.
+> + * is_policy_manager - Check whether the current process is a policy manager.
 > + *
-> + * @size: Size in bytes.
-> + *
-> + * Returns pointer to allocated memory on success, NULL otherwise.
+> + * Returns true if the current process is permitted to modify policy
+> + * via /sys/kernel/security/tomoyo/ interface.
 > + */
-> +void *tmy_alloc(const size_t size)
+> +static bool is_policy_manager(void)
 > +{
-> +	void *p = kzalloc(size, GFP_KERNEL);
-> +	if (p)
-> +		atomic_add(ksize(p), &dynamic_memory_size);
-> +	return p;
-> +}
+> +	struct policy_manager_entry *ptr;
+> +	const char *exe;
+> +	const struct task_struct *task = current;
+> +	const struct path_info *domainname = tmy_domain()->domainname;
+> +	bool found = false;
+> +
+> +	if (!sbin_init_started)
+> +		return true;
+> +	if (!manage_by_non_root && (task->cred->uid || task->cred->euid))
+> +		return false;
 
-Note that I said "kmalloc", not "kzalloc".  This function zeroes
-everything all the time, and surely that is not necessary.  It's just a
-waste of CPU time.
+What happens in a containerised environment where uids are non-unique
+and where there are multiple /sbin/inits?
 
-> +/**
-> + * tmy_free - Release memory allocated by tmy_alloc().
-> + *
-> + * @p: Pointer returned by tmy_alloc(). May be NULL.
-> + *
-> + * Returns nothing.
-> + */
-> +void tmy_free(const void *p)
-> +{
-> +	if (p)
-> +		atomic_sub(ksize(p), &dynamic_memory_size);
-> +	kfree(p);
-> +}
-> +
-> +static int tmy_print_ascii(const char *sp, const char *cp,
-> +			   int *buflen0, char **end0)
-> +{
-> +	int error = -ENOMEM;
-> +	int buflen = *buflen0;
-> +	char *end = *end0;
-> +
-> +	while (sp <= cp) {
-> +		unsigned char c;
-> +
-> +		c = *(unsigned char *) cp;
-> +		if (c == '\\') {
-> +			buflen -= 2;
-> +			if (buflen < 0)
-> +				goto out;
-> +			*--end = '\\';
-> +			*--end = '\\';
-> +		} else if (c > ' ' && c < 127) {
-> +			if (--buflen < 0)
-> +				goto out;
-> +			*--end = (char) c;
-> +		} else {
-> +			buflen -= 4;
-> +			if (buflen < 0)
-> +				goto out;
-> +			*--end = (c & 7) + '0';
-> +			*--end = ((c >> 3) & 7) + '0';
-> +			*--end = (c >> 6) + '0';
-> +			*--end = '\\';
-> +		}
-> +		cp--;
+> +	list1_for_each_entry(ptr, &policy_manager_list, list) {
+> +		if (!ptr->is_deleted && ptr->is_domain
+> +		    && !tmy_pathcmp(domainname, ptr->manager))
+> +			return true;
 > +	}
-> +
-> +	*buflen0 = buflen;
-> +	*end0 = end;
-> +	error = 0;
-> +out:
-> +	return error;
-> +}
-
-I look at this and wonder "hm, does that duplicate any facility which
-the kernel provides"?  But I can't tell, because I don't know what this
-function does, and I shouldn't have to sit down with a pencil and paper
-decrypting it.
-
-A function like this should have a comment explaining what it does.
-
-> +
-> +/* tmy_realpath_from_path2() for "struct ctl_table". */
-> +static int tmy_sysctl_path(struct ctl_table *table, char *buffer, int buflen)
-> +{
-> +	int error = -ENOMEM;
-> +	char *end = buffer + buflen;
-> +
-> +	if (buflen < 256)
-> +		goto out;
-> +
-> +	*--end = '\0';
-> +	buflen--;
-> +
-> +	buflen -= 9; /* for "/proc/sys" prefix */
-> +
-> +	while (table) {
-> +		char buf[32];
-> +		const char *sp = table->procname;
-> +		const char *cp;
-> +
-> +		if (!sp) {
-> +			memset(buf, 0, sizeof(buf));
-> +			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
-> +			sp = buf;
+> +	exe = tmy_get_exe();
+> +	if (!exe)
+> +		return false;
+> +	list1_for_each_entry(ptr, &policy_manager_list, list) {
+> +		if (!ptr->is_deleted && !ptr->is_domain
+> +		    && !strcmp(exe, ptr->manager->name)) {
+> +			found = true;
+> +			break;
 > +		}
-> +		cp = strchr(sp, '\0') - 1;
-> +
-> +		if (tmy_print_ascii(sp, cp, &buflen, &end))
-> +			goto out;
-> +
-> +		if (--buflen < 0)
-> +			goto out;
-> +
-> +		*--end = '/';
-> +		table = table->parent;
 > +	}
-> +
-> +	/* Move the pathname to the top of the buffer. */
-> +	memmove(buffer, "/proc/sys", 9);
-> +	memmove(buffer + 9, end, strlen(end) + 1);
-> +	error = 0;
-> +out:
-> +	return error;
+> +	if (!found) { /* Reduce error messages. */
+> +		static pid_t last_pid;
+> +		const pid_t pid = current->pid;
+> +		if (last_pid != pid) {
+> +			printk(KERN_WARNING "%s ( %s ) is not permitted to "
+> +			       "update policies.\n", domainname->name, exe);
+
+It appears that unprivileged userspace can cause this messge to be
+printed at will.  That can cause the logs to fill and is considered to
+be a small denial of service security hole.
+
+> +			last_pid = pid;
+> +		}
+> +	}
+> +	tmy_free(exe);
+> +	return found;
 > +}
-
-Is this needed if CONFIG_SYSCTL=n?  Does it compile if CONFIG_SYSCTL=n?
-
+> +
 > +/**
-> + * sysctlpath_from_table - return the realpath of a ctl_table.
-> + * @table: pointer to "struct ctl_table".
+> + * is_select_one - Parse select command.
 > + *
-> + * Returns realpath(3) of the @table on success.
-> + * Returns NULL on failure.
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + * @data: String to parse.
 > + *
-> + * This function uses tmy_alloc(), so the caller must call tmy_free()
-> + * if this function didn't return NULL.
+> + * Returns true on success, false otherwise.
 > + */
-> +char *sysctlpath_from_table(struct ctl_table *table)
+> +static bool is_select_one(struct tmy_io_buffer *head, const char *data)
 > +{
-> +	char *buf = tmy_alloc(TMY_MAX_PATHNAME_LEN);
+> +	unsigned int pid;
+> +	struct domain_info *domain = NULL;
 > +
-> +	if (buf && tmy_sysctl_path(table, buf, TMY_MAX_PATHNAME_LEN - 1) == 0)
-> +		return buf;
-> +	tmy_free(buf);
-> +	return NULL;
+> +	if (sscanf(data, "pid=%u", &pid) == 1) {
+
+PIDs are no longer system-wide unique, and here we appear to be
+implementing new userspace ABIs using PIDs.
+
+> +		struct task_struct *p;
+> +		/***** CRITICAL SECTION START *****/
+> +		read_lock(&tasklist_lock);
+> +		p = find_task_by_vpid(pid);
+> +		if (p)
+> +			domain = tmy_real_domain(p);
+> +		read_unlock(&tasklist_lock);
+> +		/***** CRITICAL SECTION END *****/
+> +	} else if (!strncmp(data, "domain=", 7)) {
+> +		if (tmy_is_domain_def(data + 7))
+> +			domain = tmy_find_domain(data + 7);
+> +	} else
+> +		return false;
+> +	head->read_avail = 0;
+> +	tmy_io_printf(head, "# select %s\n", data);
+> +	head->read_single_domain = true;
+> +	head->read_eof = !domain;
+> +	if (domain) {
+> +		struct domain_info *d;
+> +		head->read_var1 = NULL;
+> +		list1_for_each_entry(d, &domain_list, list) {
+> +			if (d == domain)
+> +				break;
+> +			head->read_var1 = &d->list;
+> +		}
+> +		head->read_var2 = NULL;
+> +		head->read_bit = 0;
+> +		head->read_step = 0;
+> +		if (domain->is_deleted)
+> +			tmy_io_printf(head, "# This is a deleted domain.\n");
+> +	}
+> +	head->write_var1 = domain;
+> +	return true;
 > +}
-
-ditto
-
+> +
 > +/**
-> + * tmy_read_memory_counter - Check for memory usage.
+> + * write_domain_policy - Write domain policy.
 > + *
 > + * @head: Pointer to "struct tmy_io_buffer".
 > + *
-> + * Returns memory usage.
-
-In what units?  Megabytes?
-
+> + * Returns 0 on success, negative value otherwise.
 > + */
-> +int tmy_read_memory_counter(struct tmy_io_buffer *head)
+> +static int write_domain_policy(struct tmy_io_buffer *head)
 > +{
-> +	if (!head->read_eof) {
-> +		const unsigned int shared = allocated_memory_for_savename;
-> +		const unsigned int private = allocated_memory_for_elements;
-> +		const unsigned int dynamic = atomic_read(&dynamic_memory_size);
-> +		char buffer[64];
+> +	char *data = head->write_buf;
+> +	struct domain_info *domain = head->write_var1;
+> +	bool is_delete = false;
+> +	bool is_select = false;
+> +	bool is_undelete = false;
+> +	unsigned int profile;
 > +
-> +		memset(buffer, 0, sizeof(buffer));
-> +		if (quota_for_savename)
-> +			snprintf(buffer, sizeof(buffer) - 1,
-> +				 "   (Quota: %10u)", quota_for_savename);
+> +	if (str_starts(&data, KEYWORD_DELETE))
+> +		is_delete = true;
+> +	else if (str_starts(&data, KEYWORD_SELECT))
+> +		is_select = true;
+> +	else if (str_starts(&data, KEYWORD_UNDELETE))
+> +		is_undelete = true;
+> +	if (is_select && is_select_one(head, data))
+> +		return 0;
+> +	/* Don't allow updating policies by non manager programs. */
+> +	if (!is_policy_manager())
+> +		return -EPERM;
+> +	if (tmy_is_domain_def(data)) {
+> +		domain = NULL;
+> +		if (is_delete)
+> +			tmy_delete_domain(data);
+> +		else if (is_select)
+> +			domain = tmy_find_domain(data);
+> +		else if (is_undelete)
+> +			domain = tmy_undelete_domain(data);
 > +		else
-> +			buffer[0] = '\0';
-> +		tmy_io_printf(head, "Shared:  %10u%s\n", shared, buffer);
-> +		if (quota_for_elements)
-> +			snprintf(buffer, sizeof(buffer) - 1,
-> +				 "   (Quota: %10u)", quota_for_elements);
-> +		else
-> +			buffer[0] = '\0';
-> +		tmy_io_printf(head, "Private: %10u%s\n", private, buffer);
-> +		tmy_io_printf(head, "Dynamic: %10u\n", dynamic);
-> +		tmy_io_printf(head, "Total:   %10u\n",
-> +			      shared + private + dynamic);
+> +			domain = tmy_find_or_assign_new_domain(data, 0);
+> +		head->write_var1 = domain;
+> +		tmy_update_counter(TMY_UPDATES_COUNTER_DOMAIN_POLICY);
+> +		return 0;
+> +	}
+> +	if (!domain)
+> +		return -EINVAL;
+> +
+> +	if (sscanf(data, KEYWORD_USE_PROFILE "%u", &profile) == 1
+> +	    && profile < MAX_PROFILES) {
+> +		if (profile_ptr[profile] || !sbin_init_started)
+> +			domain->profile = (u8) profile;
+> +		return 0;
+> +	}
+> +	if (!strcmp(data, KEYWORD_IGNORE_GLOBAL_ALLOW_READ)) {
+> +		tmy_set_domain_flag(domain, is_delete,
+> +				    DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_READ);
+> +		return 0;
+> +	}
+> +	return tmy_write_file_policy(data, domain, is_delete);
+> +}
+> +
+> +/**
+> + * print_single_path_acl - Print a single path ACL entry.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + * @ptr:  Pointer to "struct single_path_acl_record".
+> + *
+> + * Returns true on success, false otherwise.
+> + */
+> +static bool print_single_path_acl(struct tmy_io_buffer *head,
+> +				  struct single_path_acl_record *ptr)
+> +{
+> +	int pos;
+> +	u8 bit;
+> +	const char *atmark = "";
+> +	const char *filename;
+> +	const u16 perm = ptr->perm;
+> +
+> +	filename = ptr->filename->name;
+> +	for (bit = head->read_bit; bit < MAX_SINGLE_PATH_OPERATION; bit++) {
+> +		const char *msg;
+> +		if (!(perm & (1 << bit)))
+> +			continue;
+> +		/* Print "read/write" instead of "read" and "write". */
+> +		if ((bit == TMY_TYPE_READ_ACL || bit == TMY_TYPE_WRITE_ACL)
+> +		    && (perm & (1 << TMY_TYPE_READ_WRITE_ACL)))
+> +			continue;
+> +		msg = tmy_sp2keyword(bit);
+> +		pos = head->read_avail;
+> +		if (!tmy_io_printf(head, "allow_%s %s%s\n", msg,
+> +				   atmark, filename))
+> +			goto out;
+> +	}
+> +	head->read_bit = 0;
+> +	return true;
+> +out:
+> +	head->read_bit = bit;
+> +	head->read_avail = pos;
+> +	return false;
+> +}
+> +
+> +/**
+> + * print_double_path_acl - Print a double path ACL entry.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + * @ptr:  Pointer to "struct double_path_acl_record".
+> + *
+> + * Returns true on success, false otherwise.
+> + */
+> +static bool print_double_path_acl(struct tmy_io_buffer *head,
+> +				  struct double_path_acl_record *ptr)
+> +{
+> +	int pos;
+> +	const char *atmark1 = "";
+> +	const char *atmark2 = "";
+> +	const char *filename1;
+> +	const char *filename2;
+> +	const u8 perm = ptr->perm;
+> +	u8 bit;
+> +
+> +	filename1 = ptr->filename1->name;
+> +	filename2 = ptr->filename2->name;
+> +	for (bit = head->read_bit; bit < MAX_DOUBLE_PATH_OPERATION; bit++) {
+> +		const char *msg;
+> +		if (!(perm & (1 << bit)))
+> +			continue;
+> +		msg = tmy_dp2keyword(bit);
+> +		pos = head->read_avail;
+> +		if (!tmy_io_printf(head, "allow_%s %s%s %s%s\n", msg,
+> +				   atmark1, filename1, atmark2, filename2))
+> +			goto out;
+> +	}
+> +	head->read_bit = 0;
+> +	return true;
+> +out:
+> +	head->read_bit = bit;
+> +	head->read_avail = pos;
+> +	return false;
+> +}
+> +
+> +/**
+> + * print_entry - Print an ACL entry.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + * @ptr:  Pointer to an ACL entry.
+> + *
+> + * Returns true on success, false otherwise.
+> + */
+> +static bool print_entry(struct tmy_io_buffer *head, struct acl_info *ptr)
+> +{
+> +	const u8 acl_type = tmy_acl_type2(ptr);
+> +
+> +	if (acl_type & ACL_DELETED)
+> +		return true;
+> +	if (acl_type == TYPE_SINGLE_PATH_ACL) {
+> +		struct single_path_acl_record *acl
+> +			= container_of(ptr, struct single_path_acl_record,
+> +				       head);
+> +		return print_single_path_acl(head, acl);
+> +	}
+> +	if (acl_type == TYPE_DOUBLE_PATH_ACL) {
+> +		struct double_path_acl_record *acl
+> +			= container_of(ptr, struct double_path_acl_record,
+> +				       head);
+> +		return print_double_path_acl(head, acl);
+> +	}
+> +	BUG(); /* This must not happen. */
+> +	return false;
+> +}
+> +
+> +/**
+> + * read_domain_policy - Read domain policy.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns 0.
+> + */
+> +static int read_domain_policy(struct tmy_io_buffer *head)
+> +{
+> +	struct list1_head *dpos;
+> +	struct list1_head *apos;
+> +
+> +	if (head->read_eof)
+> +		return 0;
+> +	if (head->read_step == 0)
+> +		head->read_step = 1;
+> +	list1_for_each_cookie(dpos, head->read_var1, &domain_list) {
+> +		struct domain_info *domain;
+> +		const char *quota_exceeded = "";
+> +		const char *transition_failed = "";
+> +		const char *ignore_global_allow_read = "";
+> +		domain = list1_entry(dpos, struct domain_info, list);
+> +		if (head->read_step != 1)
+> +			goto acl_loop;
+> +		if (domain->is_deleted && !head->read_single_domain)
+> +			continue;
+> +		/* Print domainname and flags. */
+> +		if (domain->quota_warned)
+> +			quota_exceeded = "quota_exceeded\n";
+> +		if (domain->flags & DOMAIN_FLAGS_TRANSITION_FAILED)
+> +			transition_failed = "transition_failed\n";
+> +		if (domain->flags & DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_READ)
+> +			ignore_global_allow_read
+> +				= KEYWORD_IGNORE_GLOBAL_ALLOW_READ "\n";
+> +		if (!tmy_io_printf(head, "%s\n" KEYWORD_USE_PROFILE "%u\n"
+> +				   "%s%s%s\n", domain->domainname->name,
+> +				   domain->profile, quota_exceeded,
+> +				   transition_failed, ignore_global_allow_read))
+> +			return 0;
+> +		head->read_step = 2;
+> +acl_loop:
+> +		if (head->read_step == 3)
+> +			goto tail_mark;
+> +		/* Print ACL entries in the domain. */
+> +		list1_for_each_cookie(apos, head->read_var2,
+> +				      &domain->acl_info_list) {
+> +			struct acl_info *ptr
+> +				= list1_entry(apos, struct acl_info, list);
+> +			if (!print_entry(head, ptr))
+> +				return 0;
+> +		}
+> +		head->read_step = 3;
+> +tail_mark:
+> +		if (!tmy_io_printf(head, "\n"))
+> +			return 0;
+> +		head->read_step = 1;
+> +		if (head->read_single_domain)
+> +			break;
+> +	}
+> +	head->read_eof = true;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * write_domain_profile - Assign profile for specified domain.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns 0 on success, -EINVAL otherwise.
+> + *
+> + * This is equivalent to doing
+> + *
+> + *     ( echo "select " $domainname; echo "use_profile " $profile ) |
+> + *     /usr/lib/ccs/loadpolicy -d
+> + */
+> +static int write_domain_profile(struct tmy_io_buffer *head)
+> +{
+> +	char *data = head->write_buf;
+> +	char *cp = strchr(data, ' ');
+> +	struct domain_info *domain;
+> +	unsigned long profile;
+> +
+> +	if (!cp)
+> +		return -EINVAL;
+> +	*cp = '\0';
+> +	domain = tmy_find_domain(cp + 1);
+> +	strict_strtoul(data, 10, &profile);
+
+Unchecked return value?
+
+> +	if (domain && profile < MAX_PROFILES
+> +	    && (profile_ptr[profile] || !sbin_init_started))
+> +		domain->profile = (u8) profile;
+> +	tmy_update_counter(TMY_UPDATES_COUNTER_DOMAIN_POLICY);
+> +	return 0;
+> +}
+> +
+> +/**
+> + * read_domain_profile - Read only domainname and profile.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns list of profile number and domainname pairs.
+> + *
+> + * This is equivalent to doing
+> + *
+> + *     grep -A 1 '^<kernel>' /sys/kernel/security/tomoyo/domain_policy |
+> + *     awk ' { if ( domainname == "" ) { if ( $1 == "<kernel>" )
+> + *     domainname = $0; } else if ( $1 == "use_profile" ) {
+> + *     print $2 " " domainname; domainname = ""; } } ; '
+> + */
+> +static int read_domain_profile(struct tmy_io_buffer *head)
+> +{
+> +	struct list1_head *pos;
+> +
+> +	if (head->read_eof)
+> +		return 0;
+> +	list1_for_each_cookie(pos, head->read_var1, &domain_list) {
+> +		struct domain_info *domain;
+> +		domain = list1_entry(pos, struct domain_info, list);
+> +		if (domain->is_deleted)
+> +			continue;
+> +		if (!tmy_io_printf(head, "%u %s\n", domain->profile,
+> +				   domain->domainname->name))
+> +			return 0;
+> +	}
+> +	head->read_eof = true;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * write_pid: Specify PID to obtain domainname.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns 0.
+> + */
+> +static int write_pid(struct tmy_io_buffer *head)
+> +{
+> +	unsigned long pid;
+> +	strict_strtoul(head->write_buf, 10, &pid);
+> +	head->read_step = (int) pid;
+> +	head->read_eof = false;
+> +	return 0;
+> +}
+
+Again, PIDs are not reliable when used for userspace ABI purposes.
+
+> +/**
+> + * read_pid - Get domainname of the specified PID.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns the domainname which the specified PID is in on success,
+> + * empty string otherwise.
+> + * The PID is specified by write_pid() so that the user can obtain
+> + * using read()/write() interface rather than sysctl() interface.
+> + */
+> +static int read_pid(struct tmy_io_buffer *head)
+> +{
+> +	if (head->read_avail == 0 && !head->read_eof) {
+> +		const int pid = head->read_step;
+> +		struct task_struct *p;
+> +		struct domain_info *domain = NULL;
+> +		/***** CRITICAL SECTION START *****/
+> +		read_lock(&tasklist_lock);
+> +		p = find_task_by_vpid(pid);
+> +		if (p)
+> +			domain = tmy_real_domain(p);
+> +		read_unlock(&tasklist_lock);
+> +		/***** CRITICAL SECTION END *****/
+> +		if (domain)
+> +			tmy_io_printf(head, "%d %u %s", pid, domain->profile,
+> +				      domain->domainname->name);
 > +		head->read_eof = true;
 > +	}
 > +	return 0;
 > +}
-
-This (I assume) is part of an implementation of a userspace interface. 
-We care a lot about userspace interfaces.  Please describe the Tomoyo
-userspace interfaces so that we can review them for suitability and
-maintainability.
-
-Surely this function should return a 64-bit quantity?
-
+> +
 > +/**
-> + * tmy_write_memory_quota - Set memory quota.
+> + * write_exception_policy - Write exception policy.
 > + *
 > + * @head: Pointer to "struct tmy_io_buffer".
 > + *
-> + * Returns 0.
+> + * Returns 0 on success, negative value otherwise.
 > + */
-> +int tmy_write_memory_quota(struct tmy_io_buffer *head)
+> +static int write_exception_policy(struct tmy_io_buffer *head)
 > +{
 > +	char *data = head->write_buf;
-> +	unsigned int size;
+> +	bool is_delete = str_starts(&data, KEYWORD_DELETE);
 > +
-> +	if (sscanf(data, "Shared: %u", &size) == 1)
-> +		quota_for_savename = size;
-> +	else if (sscanf(data, "Private: %u", &size) == 1)
-> +		quota_for_elements = size;
+> +	if (str_starts(&data, KEYWORD_KEEP_DOMAIN))
+> +		return tmy_write_domain_keeper_policy(data, false, is_delete);
+> +	if (str_starts(&data, KEYWORD_NO_KEEP_DOMAIN))
+> +		return tmy_write_domain_keeper_policy(data, true, is_delete);
+> +	if (str_starts(&data, KEYWORD_INITIALIZE_DOMAIN))
+> +		return tmy_write_domain_initializer_policy(data, false,
+> +							   is_delete);
+> +	if (str_starts(&data, KEYWORD_NO_INITIALIZE_DOMAIN))
+> +		return tmy_write_domain_initializer_policy(data, true,
+> +							   is_delete);
+> +	if (str_starts(&data, KEYWORD_ALIAS))
+> +		return tmy_write_alias_policy(data, is_delete);
+> +	if (str_starts(&data, KEYWORD_ALLOW_READ))
+> +		return tmy_write_globally_readable_policy(data, is_delete);
+> +	if (str_starts(&data, KEYWORD_FILE_PATTERN))
+> +		return tmy_write_pattern_policy(data, is_delete);
+> +	if (str_starts(&data, KEYWORD_DENY_REWRITE))
+> +		return tmy_write_no_rewrite_policy(data, is_delete);
+> +	return -EINVAL;
+> +}
+> +
+> +/**
+> + * read_exception_policy - Read exception policy.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns 0 on success, -EINVAL otherwise.
+> + */
+> +static int read_exception_policy(struct tmy_io_buffer *head)
+> +{
+> +	if (!head->read_eof) {
+> +		switch (head->read_step) {
+> +		case 0:
+> +			head->read_var2 = NULL;
+> +			head->read_step = 1;
+> +		case 1:
+> +			if (!tmy_read_domain_keeper_policy(head))
+> +				break;
+> +			head->read_var2 = NULL;
+> +			head->read_step = 2;
+> +		case 2:
+> +			if (!tmy_read_globally_readable_policy(head))
+> +				break;
+> +			head->read_var2 = NULL;
+> +			head->read_step = 3;
+> +		case 3:
+> +			head->read_var2 = NULL;
+> +			head->read_step = 4;
+> +		case 4:
+> +			if (!tmy_read_domain_initializer_policy(head))
+> +				break;
+> +			head->read_var2 = NULL;
+> +			head->read_step = 5;
+> +		case 5:
+> +			if (!tmy_read_alias_policy(head))
+> +				break;
+> +			head->read_var2 = NULL;
+> +			head->read_step = 6;
+> +		case 6:
+> +			head->read_var2 = NULL;
+> +			head->read_step = 7;
+> +		case 7:
+> +			if (!tmy_read_file_pattern(head))
+> +				break;
+> +			head->read_var2 = NULL;
+> +			head->read_step = 8;
+> +		case 8:
+> +			if (!tmy_read_no_rewrite_policy(head))
+> +				break;
+> +			head->read_var2 = NULL;
+> +			head->read_step = 9;
+> +		case 9:
+> +			head->read_eof = true;
+> +			break;
+> +		default:
+> +			return -EINVAL;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +/* path to policy loader */
+> +static const char *tmy_loader = "/sbin/tomoyo-init";
+
+hm, hard-wired knowledge of filesytem layout.
+
+We did this in a few places already, reluctantly.  We did at least make
+them configurable (eg: /proc/sys/kernel/modprobe).
+
+It's rather ugly to be doing this sort of thing.
+
+> +/**
+> + * policy_loader_exists - Check whether /sbin/tomoyo-init exists.
+> + *
+> + * Returns true if /sbin/tomoyo-init exists, false otherwise.
+> + */
+> +static bool policy_loader_exists(void)
+> +{
+> +	/*
+> +	 * Don't activate MAC if the policy loader doesn't exist.
+> +	 * If the initrd includes /sbin/init but real-root-dev has not
+> +	 * mounted on / yet, activating MAC will block the system since
+> +	 * policies are not loaded yet.
+> +	 * Thus, let do_execve() call this function everytime.
+> +	 */
+> +	struct nameidata nd;
+> +
+> +	if (path_lookup(tmy_loader, LOOKUP_FOLLOW, &nd)) {
+> +		printk(KERN_INFO "Not activating Mandatory Access Control now "
+> +		       "since %s doesn't exist.\n", tmy_loader);
+> +		return false;
+> +	}
+> +	path_put(&nd.path);
+> +	return true;
+> +}
+
+If you really really have to do this then a simple call to sys_access()
+might suffice.
+
+But it is of course racy against concurrent rename, unlink, etc.
+
+> +/**
+> + * tmy_load_policy - Run external policy loader to load policy.
+> + *
+> + * @filename: The program about to start.
+> + *
+> + * This function checks whether @filename is /sbin/init , and if so
+> + * invoke /sbin/tomoyo-init and wait for the termination of /sbin/tomoyo-init
+> + * and then continues invocation of /sbin/init.
+> + * /sbin/tomoyo-init reads policy files in /etc/tomoyo/ directory and
+> + * writes to /sys/kernel/security/tomoyo/ interfaces.
+> + *
+> + * Returns nothing.
+> + */
+> +void tmy_load_policy(const char *filename)
+> +{
+> +	char *argv[2];
+> +	char *envp[3];
+> +
+> +	if (sbin_init_started)
+> +		return;
+> +	/*
+> +	 * Check filename is /sbin/init or /sbin/tomoyo-start.
+> +	 * /sbin/tomoyo-start is a dummy filename in case where /sbin/init can't
+> +	 * be passed.
+> +	 * You can create /sbin/tomoyo-start by
+> +	 * "ln -s /bin/true /sbin/tomoyo-start".
+> +	 */
+> +	if (strcmp(filename, "/sbin/init") &&
+> +	    strcmp(filename, "/sbin/tomoyo-start"))
+> +		return;
+> +	if (!policy_loader_exists())
+> +		return;
+
+Why do this?  call_usermodehelper() will simply fail if the file isn't here.
+
+> +	printk(KERN_INFO "Calling %s to load policy. Please wait.\n",
+> +	       tmy_loader);
+> +	argv[0] = (char *) tmy_loader;
+> +	argv[1] = NULL;
+> +	envp[0] = "HOME=/";
+> +	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
+> +	envp[2] = NULL;
+> +	call_usermodehelper(argv[0], argv, envp, 1);
+> +
+> +	printk(KERN_INFO "TOMOYO: 2.2.0-pre   2008/10/10\n");
+> +	printk(KERN_INFO "Mandatory Access Control activated.\n");
+> +	sbin_init_started = true;
+> +	{ /* Check all profiles currently assigned to domains are defined. */
+> +		struct domain_info *domain;
+> +		list1_for_each_entry(domain, &domain_list, list) {
+> +			const u8 profile = domain->profile;
+> +			if (profile_ptr[profile])
+> +				continue;
+> +			panic("Profile %u (used by '%s') not defined.\n",
+> +			      profile, domain->domainname->name);
+> +		}
+> +	}
+> +}
+> +
+> +/* Policy updates counter. */
+> +static atomic_t updates_counter[MAX_TMY_UPDATES_COUNTER];
+> +
+> +/**
+> + * tmy_update_counter - Increment policy change counter.
+> + *
+> + * @index: Type of policy.
+> + *
+> + * Returns nothing.
+> + */
+> +void tmy_update_counter(const unsigned char index)
+> +{
+> +	if (index < MAX_TMY_UPDATES_COUNTER)
+> +		atomic_inc(&updates_counter[index]);
+> +}
+> +
+> +/**
+> + * read_updates_counter - Check for policy change counter.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns how many times policy has changed since the previous check.
+> + */
+> +static int read_updates_counter(struct tmy_io_buffer *head)
+> +{
+> +	if (head->read_eof)
+> +		return 0;
+> +	tmy_io_printf(head,
+> +		      "/sys/kernel/security/tomoyo/domain_policy:    %10u\n"
+> +		      "/sys/kernel/security/tomoyo/exception_policy: %10u\n"
+> +		      "/sys/kernel/security/tomoyo/profile:          %10u\n"
+> +		      "/sys/kernel/security/tomoyo/manager:          %10u\n",
+> +		      atomic_xchg(&updates_counter
+> +				  [TMY_UPDATES_COUNTER_DOMAIN_POLICY], 0),
+> +		      atomic_xchg(&updates_counter
+> +				  [TMY_UPDATES_COUNTER_EXCEPTION_POLICY], 0),
+> +		      atomic_xchg(&updates_counter
+> +				  [TMY_UPDATES_COUNTER_PROFILE], 0),
+> +		      atomic_xchg(&updates_counter
+> +				  [TMY_UPDATES_COUNTER_MANAGER], 0));
+> +	head->read_eof = true;
 > +	return 0;
 > +}
 
-Again, we would like to see a complete decription of the proposed
-userspace ABI.  This one looks fairly ugly.  Do I really have to write
-'S' 'h' 'a' 'r' 'e' 'd' ':' ' ' into some pseudo file?
+What is this doing?  We print the absolute pathnames of sysfs files via
+another sysfs file?
 
-A better interface would be two suitably-named pseudo files each of
-which takes a bare integer string.  None of this funny colon-based
-prefixing stuff.
-
-> --- /dev/null
-> +++ linux-2.6.28-rc2-mm1/security/tomoyo/realpath.h
-> @@ -0,0 +1,60 @@
-> +/*
-> + * security/tomoyo/realpath.h
+> +/**
+> + * read_version: Get version.
 > + *
-> + * Get the canonicalized absolute pathnames. The basis for TOMOYO.
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns version information.
+> + */
+> +static int read_version(struct tmy_io_buffer *head)
+> +{
+> +	if (!head->read_eof) {
+> +		tmy_io_printf(head, "2.2.0-pre");
+> +		head->read_eof = true;
+> +	}
+> +	return 0;
+> +}
+> +
+> +/**
+> + * read_self_domain - Get the current process's domainname.
+> + *
+> + * @head: Pointer to "struct tmy_io_buffer".
+> + *
+> + * Returns the current process's domainname.
+> + */
+> +static int read_self_domain(struct tmy_io_buffer *head)
+> +{
+> +	if (!head->read_eof) {
+> +		/*
+> +		 * tmy_domain()->domainname != NULL
+> +		 * because every process belongs to a domain and
+> +		 * the domain's name cannot be NULL.
+> +		 */
+> +		tmy_io_printf(head, "%s", tmy_domain()->domainname->name);
+> +		head->read_eof = true;
+> +	}
+> +	return 0;
+> +}
+> +
+> +/**
+> + * tmy_open_control - open() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @type: Type of interface.
+> + * @file: Pointer to "struct file".
+> + *
+> + * Associates policy handler and returns 0 on success, -ENOMEM otherwise.
+> + */
+> +static int tmy_open_control(const u8 type, struct file *file)
+> +{
+> +	struct tmy_io_buffer *head = tmy_alloc(sizeof(*head));
+> +
+> +	if (!head)
+> +		return -ENOMEM;
+> +	mutex_init(&head->io_sem);
+> +	switch (type) {
+> +	case TMY_DOMAINPOLICY:
+> +		/* /sys/kernel/security/tomoyo/domain_policy */
+> +		head->write = write_domain_policy;
+> +		head->read = read_domain_policy;
+> +		break;
+> +	case TMY_EXCEPTIONPOLICY:
+> +		/* /sys/kernel/security/tomoyo/exception_policy */
+> +		head->write = write_exception_policy;
+> +		head->read = read_exception_policy;
+> +		break;
+> +	case TMY_SELFDOMAIN:
+> +		/* /sys/kernel/security/tomoyo/self_domain */
+> +		head->read = read_self_domain;
+> +		break;
+> +	case TMY_DOMAIN_STATUS:
+> +		/* /sys/kernel/security/tomoyo/.domain_status */
+> +		head->write = write_domain_profile;
+> +		head->read = read_domain_profile;
+> +		break;
+> +	case TMY_PROCESS_STATUS:
+> +		/* /sys/kernel/security/tomoyo/.process_status */
+> +		head->write = write_pid;
+> +		head->read = read_pid;
+> +		break;
+> +	case TMY_VERSION:
+> +		/* /sys/kernel/security/tomoyo/version */
+> +		head->read = read_version;
+> +		head->readbuf_size = 128;
+> +		break;
+> +	case TMY_MEMINFO:
+> +		/* /sys/kernel/security/tomoyo/meminfo */
+> +		head->write = tmy_write_memory_quota;
+> +		head->read = tmy_read_memory_counter;
+> +		head->readbuf_size = 512;
+> +		break;
+> +	case TMY_PROFILE:
+> +		/* /sys/kernel/security/tomoyo/profile */
+> +		head->write = write_profile;
+> +		head->read = read_profile;
+> +		break;
+> +	case TMY_MANAGER:
+> +		/* /sys/kernel/security/tomoyo/manager */
+> +		head->write = write_manager_policy;
+> +		head->read = read_manager_policy;
+> +		break;
+> +	case TMY_UPDATESCOUNTER:
+> +		/* /sys/kernel/security/tomoyo/.updates_counter */
+> +		head->read = read_updates_counter;
+> +		break;
+> +	}
+> +	if (!(file->f_mode & FMODE_READ)) {
+> +		/*
+> +		 * No need to allocate read_buf since it is not opened
+> +		 * for reading.
+> +		 */
+> +		head->read = NULL;
+> +	} else {
+> +		if (!head->readbuf_size)
+> +			head->readbuf_size = 4096 * 2;
+> +		head->read_buf = tmy_alloc(head->readbuf_size);
+> +		if (!head->read_buf) {
+> +			tmy_free(head);
+> +			return -ENOMEM;
+> +		}
+> +	}
+> +	if (!(file->f_mode & FMODE_WRITE)) {
+> +		/*
+> +		 * No need to allocate write_buf since it is not opened
+> +		 * for writing.
+> +		 */
+> +		head->write = NULL;
+> +	} else if (head->write) {
+> +		head->writebuf_size = 4096 * 2;
+> +		head->write_buf = tmy_alloc(head->writebuf_size);
+> +		if (!head->write_buf) {
+> +			tmy_free(head->read_buf);
+> +			tmy_free(head);
+> +			return -ENOMEM;
+> +		}
+> +	}
+> +	file->private_data = head;
+> +	/*
+> +	 * Call the handler now if the file is
+> +	 * /sys/kernel/security/tomoyo/self_domain
+> +	 * so that the user can use
+> +	 * cat < /sys/kernel/security/tomoyo/self_domain"
+> +	 * to know the current process's domainname.
+> +	 */
+> +	if (type == TMY_SELFDOMAIN)
+> +		tmy_read_control(file, NULL, 0);
+> +	return 0;
+> +}
+> +
+> +/**
+> + * tmy_read_control - read() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @file:       Pointer to "struct file".
+> + * @buffer:     Poiner to buffer to write to.
+> + * @buffer_len: Size of @buffer.
+> + *
+> + * Returns bytes read on success, negative value otherwise.
+> + */
+> +static int tmy_read_control(struct file *file, char __user *buffer,
+> +			    const int buffer_len)
+> +{
+> +	int len = 0;
+> +	struct tmy_io_buffer *head = file->private_data;
+> +	char *cp;
+> +
+> +	if (!head->read)
+> +		return -ENOSYS;
+> +	if (!access_ok(VERIFY_WRITE, buffer, buffer_len))
+
+Unneeded - copy_to_user() checks this.
+
+> +		return -EFAULT;
+> +	if (mutex_lock_interruptible(&head->io_sem))
+> +		return -EINTR;
+> +	/* Call the policy handler. */
+> +	len = head->read(head);
+> +	if (len < 0)
+> +		goto out;
+> +	/* Write to buffer. */
+> +	len = head->read_avail;
+> +	if (len > buffer_len)
+> +		len = buffer_len;
+> +	if (!len)
+> +		goto out;
+> +	/* head->read_buf changes by some functions. */
+> +	cp = head->read_buf;
+> +	if (copy_to_user(buffer, cp, len)) {
+> +		len = -EFAULT;
+> +		goto out;
+> +	}
+> +	head->read_avail -= len;
+> +	memmove(cp, cp + len, head->read_avail);
+> +out:
+> +	mutex_unlock(&head->io_sem);
+> +	return len;
+> +}
+> +
+> +/**
+> + * tmy_write_control - write() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @file:       Pointer to "struct file".
+> + * @buffer:     Pointer to buffer to read from.
+> + * @buffer_len: Size of @buffer.
+> + *
+> + * Returns @buffer_len on success, negative value otherwise.
+> + */
+> +static int tmy_write_control(struct file *file, const char __user *buffer,
+> +			     const int buffer_len)
+> +{
+> +	struct tmy_io_buffer *head = file->private_data;
+> +	int error = buffer_len;
+> +	int avail_len = buffer_len;
+> +	char *cp0 = head->write_buf;
+> +
+> +	if (!head->write)
+> +		return -ENOSYS;
+> +	if (!access_ok(VERIFY_READ, buffer, buffer_len))
+
+Unneeded.
+
+> +		return -EFAULT;
+> +	/* Don't allow updating policies by non manager programs. */
+> +	if (head->write != write_pid && head->write != write_domain_policy &&
+> +	    !is_policy_manager())
+> +		return -EPERM;
+> +	if (mutex_lock_interruptible(&head->io_sem))
+> +		return -EINTR;
+> +	/* Read a line and dispatch it to the policy handler. */
+> +	while (avail_len > 0) {
+> +		char c;
+> +		if (head->write_avail >= head->writebuf_size - 1) {
+> +			error = -ENOMEM;
+> +			break;
+> +		} else if (get_user(c, buffer)) {
+> +			error = -EFAULT;
+> +			break;
+> +		}
+> +		buffer++;
+> +		avail_len--;
+> +		cp0[head->write_avail++] = c;
+> +		if (c != '\n')
+> +			continue;
+> +		cp0[head->write_avail - 1] = '\0';
+> +		head->write_avail = 0;
+> +		normalize_line(cp0);
+> +		head->write(head);
+> +	}
+> +	mutex_unlock(&head->io_sem);
+> +	return error;
+> +}
+> +
+> +/**
+> + * tmy_close_control - close() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @file: Pointer to "struct file".
+> + *
+> + * Releases memory and returns 0.
+> + */
+> +static int tmy_close_control(struct file *file)
+> +{
+> +	struct tmy_io_buffer *head = file->private_data;
+> +
+> +	/* Release memory used for policy I/O. */
+> +	tmy_free(head->read_buf);
+> +	head->read_buf = NULL;
+> +	tmy_free(head->write_buf);
+> +	head->write_buf = NULL;
+> +	tmy_free(head);
+> +	head = NULL;
+> +	file->private_data = NULL;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * tmy_alloc_acl_element - Allocate permanent memory for ACL entry.
+> + *
+> + * @acl_type:  Type of ACL entry.
+> + *
+> + * Returns pointer to the ACL entry on success, NULL otherwise.
+> + */
+> +void *tmy_alloc_acl_element(const u8 acl_type)
+> +{
+> +	int len;
+> +	struct acl_info *ptr;
+> +
+> +	switch (acl_type) {
+> +	case TYPE_SINGLE_PATH_ACL:
+> +		len = sizeof(struct single_path_acl_record);
+> +		break;
+> +	case TYPE_DOUBLE_PATH_ACL:
+> +		len = sizeof(struct double_path_acl_record);
+> +		break;
+> +	default:
+> +		return NULL;
+> +	}
+> +	ptr = tmy_alloc_element(len);
+> +	if (!ptr)
+> +		return NULL;
+> +	ptr->type = acl_type;
+> +	return ptr;
+> +}
+> +
+> +/**
+> + * tmy_open - open() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @inode: Pointer to "struct inode".
+> + * @file:  Pointer to "struct file".
+> + *
+> + * Returns 0 on success, negative value otherwise.
+> + */
+> +static int tmy_open(struct inode *inode, struct file *file)
+> +{
+> +	return tmy_open_control(((u8 *) file->f_path.dentry->d_inode->i_private)
+> +				- ((u8 *) NULL), file);
+> +}
+> +
+> +/**
+> + * tmy_release - close() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @inode: Pointer to "struct inode".
+> + * @file:  Pointer to "struct file".
+> + *
+> + * Returns 0 on success, negative value otherwise.
+> + */
+> +static int tmy_release(struct inode *inode, struct file *file)
+> +{
+> +	return tmy_close_control(file);
+> +}
+> +
+> +/**
+> + * tmy_read - read() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @file:  Pointer to "struct file".
+> + * @buf:   Pointer to buffer.
+> + * @count: Size of @buf.
+> + * @ppos:  Unused.
+> + *
+> + * Returns bytes read on success, negative value otherwise.
+> + */
+> +static ssize_t tmy_read(struct file *file, char __user *buf, size_t count,
+> +			loff_t *ppos)
+> +{
+> +	return tmy_read_control(file, buf, count);
+> +}
+> +
+> +/**
+> + * tmy_write - write() for /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * @file:  Pointer to "struct file".
+> + * @buf:   Pointer to buffer.
+> + * @count: Size of @buf.
+> + * @ppos:  Unused.
+> + *
+> + * Returns @count on success, negative value otherwise.
+> + */
+> +static ssize_t tmy_write(struct file *file, const char __user *buf,
+> +			 size_t count, loff_t *ppos)
+> +{
+> +	return tmy_write_control(file, buf, count);
+> +}
+> +
+> +/* Operations for /sys/kernel/security/tomoyo/ interface. */
+> +static struct file_operations tmy_operations = {
+> +	.open    = tmy_open,
+> +	.release = tmy_release,
+> +	.read    = tmy_read,
+> +	.write   = tmy_write,
+> +};
+> +
+> +/**
+> + * create_entry - Create interface files under /sys/kernel/security/tomoyo/ directory.
+> + *
+> + * @name:   The name of the interface file.
+> + * @mode:   The permission of the interface file.
+> + * @parent: The parent directory.
+> + * @key:    Type of interface.
+> + *
+> + * Returns nothing.
+> + */
+> +static void __init create_entry(const char *name, const mode_t mode,
+> +				struct dentry *parent, const u8 key)
+> +{
+> +	securityfs_create_file(name, mode, parent, ((u8 *) NULL) + key,
+> +			       &tmy_operations);
+> +}
+> +
+> +/**
+> + * tmy_initerface_init - Initialize /sys/kernel/security/tomoyo/ interface.
+> + *
+> + * Returns 0.
+> + */
+> +static int __init tmy_initerface_init(void)
+> +{
+> +	struct dentry *tmy_dir;
+> +
+> +	tmy_dir = securityfs_create_dir("tomoyo", NULL);
+> +	create_entry("domain_policy",    0600, tmy_dir, TMY_DOMAINPOLICY);
+> +	create_entry("exception_policy", 0600, tmy_dir, TMY_EXCEPTIONPOLICY);
+> +	create_entry("self_domain",      0400, tmy_dir, TMY_SELFDOMAIN);
+> +	create_entry(".domain_status",   0600, tmy_dir, TMY_DOMAIN_STATUS);
+> +	create_entry(".process_status",  0600, tmy_dir, TMY_PROCESS_STATUS);
+> +	create_entry("meminfo",          0600, tmy_dir, TMY_MEMINFO);
+> +	create_entry("profile",          0600, tmy_dir, TMY_PROFILE);
+> +	create_entry("manager",          0600, tmy_dir, TMY_MANAGER);
+> +	create_entry(".updates_counter", 0400, tmy_dir, TMY_UPDATESCOUNTER);
+> +	create_entry("version",          0400, tmy_dir, TMY_VERSION);
+> +	return 0;
+> +}
+> +
+> +fs_initcall(tmy_initerface_init);
+> --- /dev/null
+> +++ linux-2.6.28-rc2-mm1/security/tomoyo/common.h
+> @@ -0,0 +1,320 @@
+> +/*
+> + * security/tomoyo/common.h
+> + *
+> + * Common functions for TOMOYO.
 > + *
 > + * Copyright (C) 2005-2008  NTT DATA CORPORATION
 > + *
@@ -667,53 +2135,328 @@ prefixing stuff.
 > + *
 > + */
 > +
-> +#ifndef _SECURITY_TOMOYO_REALPATH_H
-> +#define _SECURITY_TOMOYO_REALPATH_H
+> +#ifndef _SECURITY_TOMOYO_COMMON_H
+> +#define _SECURITY_TOMOYO_COMMON_H
 > +
-> +struct path;
-> +struct condition_list;
-> +struct path_info;
-> +struct tmy_io_buffer;
+> +#include <linux/string.h>
+> +#include <linux/mm.h>
+> +#include <linux/file.h>
+> +#include <linux/kmod.h>
+> +#include <linux/fs.h>
+> +#include <linux/sched.h>
+> +#include <linux/namei.h>
+> +#include <linux/mount.h>
+> +#include <linux/list1.h>
 > +
-> +/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-> +int tmy_realpath_from_path2(struct path *path, char *newname, int newname_len);
+> +struct dentry;
+> +struct vfsmount;
 > +
-> +/*
-> + * Returns realpath(3) of the given pathname but ignores chroot'ed root.
-> + * These functions use tmy_alloc(), so the caller must call tmy_free()
-> + * if these functions didn't return NULL.
-> + */
-> +char *tmy_realpath(const char *pathname);
-> +/* Same with tmy_realpath() except that it doesn't follow the final symlink. */
-> +char *tmy_realpath_nofollow(const char *pathname);
-> +/* Same with tmy_realpath() except that the pathname is already solved. */
-> +char *tmy_realpath_from_path(struct path *path);
-> +/* Same with tmy_realpath() except that it uses struct ctl_table. */
-> +char *sysctlpath_from_table(struct ctl_table *table);
-> +
-> +/*
-> + * Allocate memory for ACL entry.
-> + * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-> + */
-> +void *tmy_alloc_element(const unsigned int size);
-> +
-> +/*
-> + * Keep the given name on the RAM.
-> + * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-> + */
-> +const struct path_info *tmy_save_name(const char *name);
-> +
-> +/* Allocate memory for temporary use (e.g. permission checks). */
-> +void *tmy_alloc(const size_t size);
-> +
-> +/* Free memory allocated by tmy_alloc(). */
-> +void tmy_free(const void *p);
-> +
-> +/* Check for memory usage. */
-> +int tmy_read_memory_counter(struct tmy_io_buffer *head);
-> +
-> +/* Set memory quota. */
-> +int tmy_write_memory_quota(struct tmy_io_buffer *head);
-> +
-> +#endif /* !defined(_SECURITY_TOMOYO_REALPATH_H) */
+> +#define false 0
+> +#define true 1
 
+The kernel already defines true and false.
+
+> +/* Temporary buffer for holding pathnames. */
+> +struct tmy_page_buffer {
+> +	char buffer[4096];
+> +};
+> +
+> +/* Structure for attribute checks in addition to pathname checks. */
+> +struct obj_info {
+> +	struct tmy_page_buffer *tmp;
+> +};
+> +
+> +/* Structure for holding a token. */
+> +struct path_info {
+> +	const char *name;
+> +	u32 hash;          /* = full_name_hash(name, strlen(name)) */
+> +	u16 total_len;     /* = strlen(name)                       */
+> +	u16 const_len;     /* = const_part_length(name)            */
+> +	bool is_dir;       /* = strendswith(name, "/")             */
+> +	bool is_patterned; /* = path_contains_pattern(name)        */
+> +	u16 depth;         /* = path_depth(name)                   */
+> +};
+> +
+> +/*
+> + * This is the max length of a token.
+> + *
+> + * A token consists of only ASCII printable characters.
+> + * Non printable characters in a token is represented in \ooo style
+> + * octal string. Thus, \ itself is represented as \\.
+> + */
+> +#define TMY_MAX_PATHNAME_LEN 4000
+> +
+> +/* Structure for holding requested pathname. */
+> +struct path_info_with_data {
+> +	/* Keep "head" first, for this pointer is passed to tmy_free(). */
+> +	struct path_info head;
+> +	char bariier1[16]; /* Safeguard for overrun. */
+> +	char body[TMY_MAX_PATHNAME_LEN];
+> +	char barrier2[16]; /* Safeguard for overrun. */
+> +};
+> +
+> +/* Common header for holding ACL entries. */
+> +struct acl_info {
+> +	struct list1_head list;
+> +	/*
+> +	 * Type of this ACL entry.
+> +	 *
+> +	 * MSB is is_deleted flag.
+> +	 */
+> +	u8 type;
+> +} __attribute__((__packed__));
+
+I cannot tell from reading the code why this is packed.  Hence a comment
+is needed.
+
+Please use __packed.
+
+> +/* This ACL entry is deleted.           */
+> +#define ACL_DELETED        0x80
+> +
+> +/* Structure for domain information. */
+> +struct domain_info {
+> +	struct list1_head list;
+> +	struct list1_head acl_info_list;
+> +	/* Name of this domain. Never NULL.          */
+> +	const struct path_info *domainname;
+> +	u8 profile;        /* Profile number to use. */
+> +	u8 is_deleted;     /* Delete flag.
+> +			      0 = active.
+> +			      1 = deleted but undeletable.
+> +			      255 = deleted and no longer undeletable. */
+> +	bool quota_warned; /* Quota warnning flag.   */
+> +	/* DOMAIN_FLAGS_*. Use tmy_set_domain_flag() to modify. */
+> +	u8 flags;
+> +};
+> +
+> +/* Profile number is an integer between 0 and 255. */
+> +#define MAX_PROFILES 256
+> +
+> +/* Ignore "allow_read" directive in exception policy. */
+> +#define DOMAIN_FLAGS_IGNORE_GLOBAL_ALLOW_READ 1
+> +/*
+> + * This domain was unable to create a new domain at tmy_find_next_domain()
+> + * because the name of the domain to be created was too long or
+> + * it could not allocate memory.
+> + * More than one process continued execve() without domain transition.
+> + */
+> +#define DOMAIN_FLAGS_TRANSITION_FAILED        2
+> +
+> +/*
+> + * Structure for "allow_read/write", "allow_execute", "allow_read",
+> + * "allow_write", "allow_create", "allow_unlink", "allow_mkdir", "allow_rmdir",
+> + * "allow_mkfifo", "allow_mksock", "allow_mkblock", "allow_mkchar",
+> + * "allow_truncate", "allow_symlink" and "allow_rewrite" directive.
+> + */
+> +struct single_path_acl_record {
+> +	struct acl_info head; /* type = TYPE_SINGLE_PATH_ACL */
+> +	u16 perm;
+> +	/* Pointer to single pathname. */
+> +	const struct path_info *filename;
+> +};
+> +
+> +/* Structure for "allow_rename" and "allow_link" directive. */
+> +struct double_path_acl_record {
+> +	struct acl_info head; /* type = TYPE_DOUBLE_PATH_ACL */
+> +	u8 perm;
+> +	/* Pointer to single pathname. */
+> +	const struct path_info *filename1;
+> +	/* Pointer to single pathname. */
+> +	const struct path_info *filename2;
+> +};
+> +
+> +/* Keywords for ACLs. */
+> +#define KEYWORD_ALIAS                     "alias "
+> +#define KEYWORD_ALLOW_READ                "allow_read "
+> +#define KEYWORD_DELETE                    "delete "
+> +#define KEYWORD_DENY_REWRITE              "deny_rewrite "
+> +#define KEYWORD_FILE_PATTERN              "file_pattern "
+> +#define KEYWORD_INITIALIZE_DOMAIN         "initialize_domain "
+> +#define KEYWORD_KEEP_DOMAIN               "keep_domain "
+> +#define KEYWORD_NO_INITIALIZE_DOMAIN      "no_initialize_domain "
+> +#define KEYWORD_NO_KEEP_DOMAIN            "no_keep_domain "
+> +#define KEYWORD_SELECT                    "select "
+> +#define KEYWORD_UNDELETE                  "undelete "
+> +#define KEYWORD_USE_PROFILE               "use_profile "
+> +#define KEYWORD_IGNORE_GLOBAL_ALLOW_READ  "ignore_global_allow_read"
+> +/* A domain definition starts with <kernel>. */
+> +#define ROOT_NAME                         "<kernel>"
+> +#define ROOT_NAME_LEN                     (sizeof(ROOT_NAME) - 1)
+> +
+> +/* Index numbers for Access Controls. */
+> +#define TMY_TOMOYO_MAC_FOR_FILE                  0  /* domain_policy.conf */
+> +#define TMY_TOMOYO_MAX_ACCEPT_ENTRY              1
+> +#define TMY_TOMOYO_VERBOSE                       2
+> +#define TMY_MAX_CONTROL_INDEX                    3
+> +
+> +/* Index numbers for updates counter. */
+> +#define TMY_UPDATES_COUNTER_DOMAIN_POLICY    0
+> +#define TMY_UPDATES_COUNTER_EXCEPTION_POLICY 1
+> +#define TMY_UPDATES_COUNTER_PROFILE          2
+> +#define TMY_UPDATES_COUNTER_MANAGER          3
+> +#define MAX_TMY_UPDATES_COUNTER              4
+> +
+> +/* Structure for reading/writing policy via securityfs interfaces. */
+> +struct tmy_io_buffer {
+> +	int (*read) (struct tmy_io_buffer *);
+> +	int (*write) (struct tmy_io_buffer *);
+> +	/* Exclusive lock for this structure.   */
+> +	struct mutex io_sem;
+> +	/* The position currently reading from. */
+> +	struct list1_head *read_var1;
+> +	/* Extra variables for reading.         */
+> +	struct list1_head *read_var2;
+> +	/* The position currently writing to.   */
+> +	struct domain_info *write_var1;
+> +	/* The step for reading.                */
+> +	int read_step;
+> +	/* Buffer for reading.                  */
+> +	char *read_buf;
+> +	/* EOF flag for reading.                */
+> +	bool read_eof;
+> +	/* Read domain ACL of specified PID?    */
+> +	bool read_single_domain;
+> +	/* Extra variable for reading.          */
+> +	u8 read_bit;
+> +	/* Bytes available for reading.         */
+> +	int read_avail;
+> +	/* Size of read buffer.                 */
+> +	int readbuf_size;
+> +	/* Buffer for writing.                  */
+> +	char *write_buf;
+> +	/* Bytes available for writing.         */
+> +	int write_avail;
+> +	/* Size of write buffer.                */
+> +	int writebuf_size;
+> +};
+> +
+> +/* Check whether the domain has too many ACL entries to hold. */
+> +bool tmy_check_domain_quota(struct domain_info * const domain);
+> +/* Transactional sprintf() for policy dump. */
+> +bool tmy_io_printf(struct tmy_io_buffer *head, const char *fmt, ...)
+> +	__attribute__ ((format(printf, 2, 3)));
+> +/* Check whether the domainname is correct. */
+> +bool tmy_is_correct_domain(const unsigned char *domainname,
+> +			   const char *function);
+> +/* Check whether the token is correct. */
+> +bool tmy_is_correct_path(const char *filename, const s8 start_type,
+> +			 const s8 pattern_type, const s8 end_type,
+> +			 const char *function);
+> +/* Check whether the token can be a domainname. */
+> +bool tmy_is_domain_def(const unsigned char *buffer);
+> +/* Check whether the given filename matches the given pattern. */
+> +bool tmy_path_matches_pattern(const struct path_info *filename,
+> +			      const struct path_info *pattern);
+> +/* Read "alias" entry in exception policy. */
+> +bool tmy_read_alias_policy(struct tmy_io_buffer *head);
+> +/*
+> + * Read "initialize_domain" and "no_initialize_domain" entry
+> + * in exception policy.
+> + */
+> +bool tmy_read_domain_initializer_policy(struct tmy_io_buffer *head);
+> +/* Read "keep_domain" and "no_keep_domain" entry in exception policy. */
+> +bool tmy_read_domain_keeper_policy(struct tmy_io_buffer *head);
+> +/* Read "file_pattern" entry in exception policy. */
+> +bool tmy_read_file_pattern(struct tmy_io_buffer *head);
+> +/* Read "allow_read" entry in exception policy. */
+> +bool tmy_read_globally_readable_policy(struct tmy_io_buffer *head);
+> +/* Read "deny_rewrite" entry in exception policy. */
+> +bool tmy_read_no_rewrite_policy(struct tmy_io_buffer *head);
+> +/* Write domain policy violation warning message to console? */
+> +bool tmy_verbose_mode(const struct domain_info *domain);
+> +/* Convert double path operation to operation name. */
+> +const char *tmy_dp2keyword(const u8 operation);
+> +/* Get the last component of the given domainname. */
+> +const char *tmy_get_last_name(const struct domain_info *domain);
+> +/* Get warning message. */
+> +const char *tmy_get_msg(const bool is_enforce);
+> +/* Convert single path operation to operation name. */
+> +const char *tmy_sp2keyword(const u8 operation);
+> +/* Delete a domain. */
+> +int tmy_delete_domain(char *data);
+> +/* Create "alias" entry in exception policy. */
+> +int tmy_write_alias_policy(char *data, const bool is_delete);
+> +/*
+> + * Create "initialize_domain" and "no_initialize_domain" entry
+> + * in exception policy.
+> + */
+> +int tmy_write_domain_initializer_policy(char *data, const bool is_not,
+> +					const bool is_delete);
+> +/* Create "keep_domain" and "no_keep_domain" entry in exception policy. */
+> +int tmy_write_domain_keeper_policy(char *data, const bool is_not,
+> +				   const bool is_delete);
+> +/*
+> + * Create "allow_read/write", "allow_execute", "allow_read", "allow_write",
+> + * "allow_create", "allow_unlink", "allow_mkdir", "allow_rmdir",
+> + * "allow_mkfifo", "allow_mksock", "allow_mkblock", "allow_mkchar",
+> + * "allow_truncate", "allow_symlink", "allow_rewrite", "allow_rename" and
+> + * "allow_link" entry in domain policy.
+> + */
+> +int tmy_write_file_policy(char *data, struct domain_info *domain,
+> +			  const bool is_delete);
+> +/* Create "allow_read" entry in exception policy. */
+> +int tmy_write_globally_readable_policy(char *data, const bool is_delete);
+> +/* Create "deny_rewrite" entry in exception policy. */
+> +int tmy_write_no_rewrite_policy(char *data, const bool is_delete);
+> +/* Create "file_pattern" entry in exception policy. */
+> +int tmy_write_pattern_policy(char *data, const bool is_delete);
+> +/* Find a domain by the given name. */
+> +struct domain_info *tmy_find_domain(const char *domainname);
+> +/* Find or create a domain by the given name. */
+> +struct domain_info *tmy_find_or_assign_new_domain(const char *domainname,
+> +						  const u8 profile);
+> +/* Undelete a domain. */
+> +struct domain_info *tmy_undelete_domain(const char *domainname);
+> +/* Check mode for specified functionality. */
+> +unsigned int tmy_check_flags(const struct domain_info *domain, const u8 index);
+> +/* Allocate memory for structures. */
+> +void *tmy_alloc_acl_element(const u8 acl_type);
+> +/* Fill in "struct path_info" members. */
+> +void tmy_fill_path_info(struct path_info *ptr);
+> +/* Run policy loader when /sbin/init starts. */
+> +void tmy_load_policy(const char *filename);
+> +/* Change "struct domain_info"->flags. */
+> +void tmy_set_domain_flag(struct domain_info *domain, const bool is_delete,
+> +			 const u8 flags);
+> +/* Update the policy change counter. */
+> +void tmy_update_counter(const unsigned char index);
+> +
+> +/* strcmp() for "struct path_info" structure. */
+> +static inline bool tmy_pathcmp(const struct path_info *a,
+> +			       const struct path_info *b)
+> +{
+> +	return a->hash != b->hash || strcmp(a->name, b->name);
+> +}
+> +
+> +/* Get type of an ACL entry. */
+> +static inline u8 tmy_acl_type1(struct acl_info *ptr)
+> +{
+> +	return ptr->type & ~ACL_DELETED;
+> +}
+> +
+> +/* Get type of an ACL entry. */
+> +static inline u8 tmy_acl_type2(struct acl_info *ptr)
+> +{
+> +	return ptr->type;
+> +}
+> +
+> +/* The list for "struct domain_info". */
+> +extern struct list1_head domain_list;
+> +
+> +/* Has /sbin/init started? */
+> +extern bool sbin_init_started;
+> +
+> +/* The kernel's domain. */
+> +extern struct domain_info KERNEL_DOMAIN;
+
+Why upper-case?
+
+> +#endif /* !defined(_SECURITY_TOMOYO_COMMON_H) */
+
+Many of the symbols which this header defines have quite
+generic-sounding names.  it would be better if their names were to
+identify the symbols as being part of Tomoyo.
+
+
+(That's two hours of tomoyo-reading for me.  I need to stop now)
