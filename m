@@ -1,343 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbYKEAlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYKEAld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbYKEAlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Nov 2008 19:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbYKEAlJ
+	id S1757557AbYKEAld (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Nov 2008 19:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbYKEAlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Nov 2008 19:41:09 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:43127 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754595AbYKEAlH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Nov 2008 19:41:07 -0500
-Date: Wed, 5 Nov 2008 01:41:00 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Mark Jackson <mpfj@mimc.co.uk>
-Cc: dbrownell@users.sourceforge.net, lkml <linux-kernel@vger.kernel.org>,
-       rtc-linux@googlegroups.com, spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH v5] Add Dallas DS1390/93/94 RTC chips
-Message-ID: <20081105014100.419e22fd@i1501.lan.towertech.it>
-In-Reply-To: <491079DB.4030904@mimc.co.uk>
-References: <491079DB.4030904@mimc.co.uk>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
+	Tue, 4 Nov 2008 19:41:15 -0500
+Received: from mga11.intel.com ([192.55.52.93]:19309 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755325AbYKEAlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Nov 2008 19:41:14 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,546,1220252400"; 
+   d="scan'208";a="635587925"
+Subject: Re: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using
+	ACPI reset mechanism
+From: Zhao Yakui <yakui.zhao@intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "Brown, Len" <len.brown@intel.com>
+In-Reply-To: <20081104233325.GZ659@suse.de>
+References: <20081104232144.186593464@mini.kroah.org>
+	 <20081104233325.GZ659@suse.de>
+Content-Type: text/plain
+Date: Wed, 05 Nov 2008 08:48:12 +0800
+Message-Id: <1225846092.26020.89.camel@yakui_zhao.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Nov 2008 16:35:39 +0000
-Mark Jackson <mpfj@mimc.co.uk> wrote:
+On Wed, 2008-11-05 at 07:33 +0800, Greg KH wrote:
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+Please don't apply this patch.And this causes the reboot regression on
+AMD chipset. (Bug11942)
+    Now the default reboot type is changed from BOOT_KBD to BOOT_ACPI.
+      
+On the AMD box there exists the definition of RESET_REG &RESET_VALUE,
+which is identical to the definition in Intel Chipset. After the
+RESET_REG_SUP is ignored, the AMD box can't be rebooted by writing the
+RESET_VALUE to RESET_REG I/O port.
 
-> v5 of this patch with even more code tidying as per previous comments.
-> Also only a single tx/rx buffer is used.
-> Now uses spi_write_then_read()
-> Comments changed to include extra chips in the family
+Thanks.
+   Yakui
+    
 > 
-> This patch adds support for the Dallas DS1390/93/94 SPI RTC chip.
-
- Hi Mark, almost ok, it fails checkpatch.pl on a couple of points .
- 
- please find some notes below:
- 
-
-> Signed-off-by: Mark Jackson <mpfj@mimc.co.uk>
+> ------------------
+> From: Zhao Yakui <yakui.zhao@intel.com>
+> 
+> Subject: [patch 51/57] ACPI: Ingore the RESET_REG_SUP bit when using ACPI reset mechanism
+> 
+> commit 8fd145917fb62368a9b80db59562c20576238f5a upstream
+> 
+> ACPI: Ingore the RESET_REG_SUP bit when using ACPI reset mechanism
+> 
+> According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
+> whether the ACPI reboot mechanism is supported.
+> 
+> However, some boxes have this bit clear, have a valid
+> ACPI_RESET_REG & RESET_VALUE, and ACPI reboot is the only
+> mechanism that works for them after S3.
+> 
+> This suggests that other operating systems may not be checking
+> the RESET_REG_SUP bit, and are using other means to decide
+> whether to use the ACPI reboot mechanism or not.
+> 
+> Here we stop checking RESET_REG_SUP.
+> Instead, When acpi reboot is requested,
+> only the reset_register is checked. If the following
+> conditions are met, it indicates that the reset register is supported.
+> 	a. reset_register is not zero
+> 	b. the access width is eight
+> 	c. the bit_offset is zero
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=7299
+> http://bugzilla.kernel.org/show_bug.cgi?id=1148
+> 
+> Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Cc: Chuck Ebbert <cebbert@redhat.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
 > ---
->  drivers/rtc/Kconfig      |   11 +++
->  drivers/rtc/Makefile     |    1 +
->  drivers/rtc/rtc-ds1390.c |  217 ++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 229 insertions(+), 0 deletions(-)
+>  drivers/acpi/reboot.c |   25 ++++++++++++++++++++++---
+>  1 file changed, 22 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-> index 814f49f..4e10716 100644
-> --- a/drivers/rtc/Kconfig
-> +++ b/drivers/rtc/Kconfig
-> @@ -292,6 +292,17 @@ config RTC_DRV_DS1305
->  	  This driver can also be built as a module. If so, the module
->  	  will be called rtc-ds1305.
+> --- a/drivers/acpi/reboot.c
+> +++ b/drivers/acpi/reboot.c
+> @@ -15,9 +15,28 @@ void acpi_reboot(void)
 >  
-> +config RTC_DRV_DS1390
-> +	tristate "Dallas/Maxim DS1390/93/94"
-> +	help
-> +	  If you say yes here you get support for the DS1390/93/94 chips.
-> +	  
-> +	  This driver only supports the RTC feature, and not other chip
-> +	  features such as alarms and trickle charging.
-> +
-> +	  This driver can also be built as a module. If so, the module
-> +	  will be called rtc-ds1390.
-> +
->  config RTC_DRV_MAX6902
->  	tristate "Maxim MAX6902"
->  	help
-> diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-> index d6a9ac7..316c3ce 100644
-> --- a/drivers/rtc/Makefile
-> +++ b/drivers/rtc/Makefile
-> @@ -28,6 +28,7 @@ obj-$(CONFIG_RTC_DRV_DS1302)	+= rtc-ds1302.o
->  obj-$(CONFIG_RTC_DRV_DS1305)	+= rtc-ds1305.o
->  obj-$(CONFIG_RTC_DRV_DS1307)	+= rtc-ds1307.o
->  obj-$(CONFIG_RTC_DRV_DS1374)	+= rtc-ds1374.o
-> +obj-$(CONFIG_RTC_DRV_DS1390)	+= rtc-ds1390.o
->  obj-$(CONFIG_RTC_DRV_DS1511)	+= rtc-ds1511.o
->  obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
->  obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
-> diff --git a/drivers/rtc/rtc-ds1390.c b/drivers/rtc/rtc-ds1390.c
-> new file mode 100644
-> index 0000000..4ba9b02
-> --- /dev/null
-> +++ b/drivers/rtc/rtc-ds1390.c
-> @@ -0,0 +1,217 @@
-> +/*
-> + * rtc-ds1390.c -- driver for DS1390/93/94
-> + *
-> + * Copyright (C) 2008 Mercury IMC Ltd
-> + * Written by Mark Jackson <mpfj@mimc.co.uk>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * NOTE : Currently this driver only supports the bare minimum for read
-> + * and write the RTC.  The extra features provided by the chip family
-> + * (alarms, trickle charger, different control registers) are unavailable.
-> + */
-> +
-> +#include <linux/platform_device.h>
-> +#include <linux/rtc.h>
-> +#include <linux/spi/spi.h>
-> +#include <linux/bcd.h>
-
- I think you need at least linux/module.h for the MODULE_XXX macros
- and linux/init.h for __devinit . they are probably included along
- the way, but it's more correct to declare includes for the things
- you are going to use.
-
-
-> +#define DS1390_REG_100THS		0x00
-> +#define DS1390_REG_SECONDS		0x01
-> +#define DS1390_REG_MINUTES		0x02
-> +#define DS1390_REG_HOURS		0x03
-> +#define DS1390_REG_DAY			0x04
-> +#define DS1390_REG_DATE			0x05
-> +#define DS1390_REG_MONTH_CENT		0x06
-> +#define DS1390_REG_YEAR			0x07
-> +
-> +#define DS1390_REG_ALARM_100THS		0x08
-> +#define DS1390_REG_ALARM_SECONDS	0x09
-> +#define DS1390_REG_ALARM_MINUTES	0x0A
-> +#define DS1390_REG_ALARM_HOURS		0x0B
-> +#define DS1390_REG_ALARM_DAY_DATE	0x0C
-> +
-> +#define DS1390_REG_CONTROL		0x0D
-> +#define DS1390_REG_STATUS		0x0E
-> +#define DS1390_REG_TRICKLE		0x0F
-> +
-> +struct ds1390 {
-> +	struct rtc_device *rtc;
-> +	u8 txrx_buf[9];	/* cmd + 8 registers */
-> +};
-> +
-> +static void ds1390_set_reg(struct device *dev, unsigned char address,
-> +				unsigned char data)
-> +{
-> +	struct spi_device *spi = to_spi_device(dev);
-> +	struct ds1390 *chip = dev_get_drvdata(dev);
-> +
-> +	/* Set MSB to indicate write */
-> +	chip->txrx_buf[0] = address | 0x80;
-> +	chip->txrx_buf[1] = data;
-> +
-> +	/* do the i/o */
-> +	spi_write_then_read(spi, chip->txrx_buf, 2, NULL, 0);
-> +}
-> +
-> +static int ds1390_get_reg(struct device *dev, unsigned char address,
-> +				unsigned char *data)
-> +{
-> +	struct spi_device *spi = to_spi_device(dev);
-> +	struct ds1390 *chip = dev_get_drvdata(dev);
-> +	int status;
-> +
-> +	/* Clear MSB to indicate read */
-> +	chip->txrx_buf[0] = address & 0x7f;
-> +	/* do the i/o */
-> +	status = spi_write_then_read(spi, chip->txrx_buf, 1, chip->txrx_buf, 1);
-> +	if (status != 0)
-> +		return status;
-> +
-> +	*data = chip->txrx_buf[1];
-> +
-> +	return 0;
-> +}
-> +
-> +static int ds1390_get_datetime(struct device *dev, struct rtc_time *dt)
-> +{
-> +	struct spi_device *spi = to_spi_device(dev);
-> +	struct ds1390 *chip = dev_get_drvdata(dev);
-> +	int status;
-> +
-> +	/* build the message */
-> +	chip->txrx_buf[0] = DS1390_REG_SECONDS;
-> +
-> +	/* do the i/o */
-> +	status = spi_write_then_read(spi, chip->txrx_buf, 1, chip->txrx_buf, 8);
-> +	if (status != 0)
-> +		return status;
-> +
-> +	/* The chip sends data in this order:
-> +	 * Seconds, Minutes, Hours, Day, Date, Month / Century, Year */
-> +	dt->tm_sec	= bcd2bin(chip->txrx_buf[0]);
-> +	dt->tm_min	= bcd2bin(chip->txrx_buf[1]);
-> +	dt->tm_hour	= bcd2bin(chip->txrx_buf[2]);
-> +	dt->tm_wday	= bcd2bin(chip->txrx_buf[3]);
-> +	dt->tm_mday	= bcd2bin(chip->txrx_buf[4]);
-> +	/* mask off century bit */
-> +	dt->tm_mon	= bcd2bin(chip->txrx_buf[5] & 0x7f) - 1;
-> +	/* adjust for century bit */
-> +	dt->tm_year = bcd2bin(chip->txrx_buf[6]) + ((chip->txrx_buf[5] & 0x80) ? 100 : 0);
-> +
-> +	return rtc_valid_tm(dt);
-> +}
-> +
-> +static int ds1390_set_datetime(struct device *dev, struct rtc_time *dt)
-> +{
-> +	struct spi_device *spi = to_spi_device(dev);
-> +	struct ds1390 *chip = dev_get_drvdata(dev);
-> +
-> +	/* build the message */
-> +	chip->txrx_buf[0] = DS1390_REG_SECONDS | 0x80;
-> +	chip->txrx_buf[1] = bin2bcd(dt->tm_sec);
-> +	chip->txrx_buf[2] = bin2bcd(dt->tm_min);
-> +	chip->txrx_buf[3] = bin2bcd(dt->tm_hour);
-> +	chip->txrx_buf[4] = bin2bcd(dt->tm_wday);
-> +	chip->txrx_buf[5] = bin2bcd(dt->tm_mday);
-> +	chip->txrx_buf[6] = bin2bcd(dt->tm_mon + 1) |
-> +				((dt->tm_year > 99) ? 0x80 : 0x00);
-> +	chip->txrx_buf[7] = bin2bcd(dt->tm_year % 100);
-> +
-> +	/* do the i/o */
-> +	return spi_write_then_read(spi, chip->txrx_buf, 8, NULL, 0);
-> +}
-> +
-> +static int ds1390_read_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	return ds1390_get_datetime(dev, tm);
-> +}
-> +
-> +static int ds1390_set_time(struct device *dev, struct rtc_time *tm)
-> +{
-> +	return ds1390_set_datetime(dev, tm);
-> +}
-> +
-> +static const struct rtc_class_ops ds1390_rtc_ops = {
-> +	.read_time	= ds1390_read_time,
-> +	.set_time	= ds1390_set_time,
-> +};
-> +
-> +static int __devinit ds1390_probe(struct spi_device *spi)
-> +{
-> +	struct rtc_device *rtc;
-> +	unsigned char tmp;
-> +	struct ds1390 *chip;
-> +	int res;
-> +
-> +	printk(KERN_INFO "DS1390 SPI RTC driver\n");
-> +
-> +	rtc = rtc_device_register("ds1390",
-> +				&spi->dev, &ds1390_rtc_ops, THIS_MODULE);
-> +	if (IS_ERR(rtc)) {
-> +		printk(KERN_ALERT "DS1390: unable to register device\n");
-
- please use dev_err instead of printk.
-
-> +		return PTR_ERR(rtc);
-> +	}
-> +
-> +	spi->mode = SPI_MODE_3;
-> +	spi->bits_per_word = 8;
-> +	spi_setup(spi);
-> +
-> +	chip = kzalloc(sizeof *chip, GFP_KERNEL);
-> +	if (!chip) {
-> +		printk(KERN_ALERT "DS1390: unable to allocate device memory\n");
-> +		rtc_device_unregister(rtc);
-> +		return -ENOMEM;
-> +	}
-> +	chip->rtc = rtc;
-> +	dev_set_drvdata(&spi->dev, chip);
-> +	res = ds1390_get_reg(&spi->dev, DS1390_REG_SECONDS, &tmp);
-> +	if (res) {
-> +		printk(KERN_ALERT "DS1390: unable to read device\n");
-
- dev_err
-
-> +		rtc_device_unregister(rtc);
-> +		return res;
-
-  you need to kfree(chip) here.
-
-  you might want to allocate chip at the beginning of this function,
-  initialize your chip structure, check that you are able to read and only
-  then you should register the rtc.
-
-  
-
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int __devexit ds1390_remove(struct spi_device *spi)
-> +{
-> +	struct ds1390 *chip = platform_get_drvdata(spi);
-> +	struct rtc_device *rtc = chip->rtc;
-> +
-> +	if (rtc)
- 
- no need to check rtc here
-
-> +		rtc_device_unregister(rtc);
-> +
-> +	kfree(chip);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct spi_driver ds1390_driver = {
-> +	.driver = {
-> +		.name	= "rtc-ds1390",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe	= ds1390_probe,
-> +	.remove = __devexit_p(ds1390_remove),
-> +};
-> +
-> +static __init int ds1390_init(void)
-> +{
-> +	return spi_register_driver(&ds1390_driver);
-> +}
-> +module_init(ds1390_init);
-> +
-> +static __exit void ds1390_exit(void)
-> +{
-> +	spi_unregister_driver(&ds1390_driver);
-> +}
-> +module_exit(ds1390_exit);
-> +
-> +MODULE_DESCRIPTION("DS1390/93/94 SPI RTC driver");
-> +MODULE_AUTHOR("Mark Jackson <mpfj@mimc.co.uk>");
-> +MODULE_LICENSE("GPL");
-
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
+>  	rr = &acpi_gbl_FADT.reset_register;
+>  
+> -	/* Is the reset register supported? */
+> -	if (!(acpi_gbl_FADT.flags & ACPI_FADT_RESET_REGISTER) ||
+> -	    rr->bit_width != 8 || rr->bit_offset != 0)
+> +	/*
+> +	 * Is the ACPI reset register supported?
+> +	 *
+> +	 * According to ACPI 3.0, FADT.flags.RESET_REG_SUP indicates
+> +	 * whether the ACPI reset mechanism is supported.
+> +	 *
+> +	 * However, some boxes have this bit clear, yet a valid
+> +	 * ACPI_RESET_REG & RESET_VALUE, and ACPI reboot is the only
+> +	 * mechanism that works for them after S3.
+> +	 *
+> +	 * This suggests that other operating systems may not be checking
+> +	 * the RESET_REG_SUP bit, and are using other means to decide
+> +	 * whether to use the ACPI reboot mechanism or not.
+> +	 *
+> +	 * So when acpi reboot is requested,
+> +	 * only the reset_register is checked. If the following
+> +	 * conditions are met, it indicates that the reset register is supported.
+> +	 * 	a. reset_register is not zero
+> +	 * 	b. the access width is eight
+> +	 * 	c. the bit_offset is zero
+> +	 */
+> +	if (!(rr->address) || rr->bit_width != 8 || rr->bit_offset != 0)
+>  		return;
+>  
+>  	reset_value = acpi_gbl_FADT.reset_value;
+> 
 
