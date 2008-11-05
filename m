@@ -1,85 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbYKEXR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbYKEXS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754041AbYKEXR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 18:17:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYKEXRr
+	id S1755527AbYKEXS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 18:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYKEXSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 18:17:47 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:54944 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752608AbYKEXRq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 18:17:46 -0500
-Date: Wed, 5 Nov 2008 15:17:44 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
-       Arnd Bergmann <arnd@arndb.de>, Jan-Bernd Themann <THEMANN@de.ibm.com>
-Subject: Re: [RFC v3] net: add PCINet driver
-Message-ID: <20081105231744.GB17821@ovro.caltech.edu>
-Mail-Followup-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	netdev@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Jan-Bernd Themann <THEMANN@de.ibm.com>
-References: <20081105212225.GA17821@ovro.caltech.edu>
+	Wed, 5 Nov 2008 18:18:13 -0500
+Received: from tundra.namei.org ([65.99.196.166]:45753 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752803AbYKEXSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 18:18:12 -0500
+Date: Thu, 6 Nov 2008 10:18:10 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] file capabilities: add no_file_caps switch (v4)
+In-Reply-To: <20081105220852.GA1622@us.ibm.com>
+Message-ID: <alpine.LRH.1.10.0811061017360.6690@tundra.namei.org>
+References: <20081105220852.GA1622@us.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081105212225.GA17821@ovro.caltech.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 05 Nov 2008 15:17:45 -0800 (PST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 01:22:25PM -0800, Ira Snyder wrote:
+On Wed, 5 Nov 2008, Serge E. Hallyn wrote:
 
-Despite my best efforts at testing this version, a bug slipped past.
-There is some problem with this driver, nfsroot, and Linux routing. If
-you do not apply the fix below, udp packets sent by the nfsroot code
-have corrupted checksums after they get routed across the network to
-another host.
+> Hi James, do you mind adding this to the security-testing tree?
+> 
+> (It needs the recent file-caps-always-start-with-clear-bprm-caps patch
+> which is upstream but not in security-testing:next - if it's more
+> convenient for you I can resend that)
 
-If I boot both hosts to Linux via other means, the driver works fine
-with no issues. It only happens for nfsroot.
+I merged the tree with Linus and applied the patch to:
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
-If I run an nfs server on the PCINET_HOST computer, removing the
-routing, it also works fine.
-
-Remove the following line from pcinet_host.c and pcinet_fsl.c:
-ndev->features         |= NETIF_F_NO_CSUM; /* No checksum needed */
-
-In case anyone knows offhand what might be causing this, my setup is as
-follows:
-
-   cPCI Crate
-|-------------------------|
-| PCINET_FSL              |
-|-------------------------|
-|          ^ 10.0.0.2     |
-|          |              |
-| PCINet Driver Link here |
-|          |              |
-|          v 10.0.0.1     |
-|-------------------------|
-| PCINET_HOST             |
-|-------------------------|
-           ^ 192.168.17.14
-           |
- Normal ethernet link here
-           |
-           v
-|-------------------------|
-| Ethernet switch         |
-|-------------------------|
-           ^
-           |
- Normal ethernet link here
-           |
-           v 192.168.17.59
-|-------------------------|
-| NFS Server              |
-|-------------------------|
-
-
-Ira
+-- 
+James Morris
+<jmorris@namei.org>
