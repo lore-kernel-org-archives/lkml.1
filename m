@@ -1,49 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756664AbYKERts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYKERwD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756664AbYKERts (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 12:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYKERtj
+	id S1756117AbYKERwD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 12:52:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbYKERvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 12:49:39 -0500
-Received: from mx2.suse.de ([195.135.220.15]:59613 "EHLO mx2.suse.de"
+	Wed, 5 Nov 2008 12:51:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43701 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbYKERti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 12:49:38 -0500
-Date: Wed, 5 Nov 2008 09:42:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Mike Frysinger <vapier@gentoo.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UIO: only call pgprot_noncached if defined
-Message-ID: <20081105174234.GA10223@suse.de>
-References: <1225301177-21406-1-git-send-email-vapier@gentoo.org> <20081105113610.GA6382@local> <20081105163334.GA8473@suse.de> <8bd0f97a0811050933m13addb7eiddb963bfdf4d7416@mail.gmail.com>
+	id S1752434AbYKERvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 12:51:50 -0500
+Date: Wed, 5 Nov 2008 15:50:05 -0200
+From: Eduardo Habkost <ehabkost@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/16] kvm: x86: set kdump virt_disable function on
+	initialization
+Message-ID: <20081105175004.GI5247@blackpad>
+References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com> <1225810364-8990-16-git-send-email-ehabkost@redhat.com> <m1od0u3wyq.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8bd0f97a0811050933m13addb7eiddb963bfdf4d7416@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <m1od0u3wyq.fsf@frodo.ebiederm.org>
+X-Fnord: you can see the fnord
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 12:33:37PM -0500, Mike Frysinger wrote:
-> On Wed, Nov 5, 2008 at 11:33, Greg KH wrote:
-> > On Wed, Nov 05, 2008 at 12:36:11PM +0100, Hans J. Koch wrote:
-> >> There seem to be archs that cannot easily implement a sensible
-> >> pgprot_noncached() function, so we should merge this patch. UIO doesn't
-> >> compile on these archs right now.
-> >
-> > No, we should fix those arches to have that function at least NULLed
-> > out.  Isn't there only one, Blackfin?  Putting #ifdefs in .c files is
-> > not something we really want to do if at all possible.
+On Wed, Nov 05, 2008 at 09:26:53AM -0800, Eric W. Biederman wrote:
+> Eduardo Habkost <ehabkost@redhat.com> writes:
 > 
-> that was my question.  this function isnt documented.  if the hardware
-> doesnt support it, is the right thing really for the arch to lie to
-> drivers and not actually give back cached settings even though it
-> asked for non-cached ?
+> > Finally implement the virt_disable function for kdump. It will call
+> > kvm_x86_ops->crash_hardware_disable(), that will disable virtualization
+> > extensions on the CPU if it is not disabled yet.
+> >
+> > Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
+> > ---
+> >  arch/x86/kvm/x86.c |   19 ++++++++++++++++++-
+> >  1 files changed, 18 insertions(+), 1 deletions(-)
+> >
+> > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> > index 049c6a0..9e61baf 100644
+> > --- a/arch/x86/kvm/x86.c
+> > +++ b/arch/x86/kvm/x86.c
+> > @@ -40,6 +40,7 @@
+> >  #include <asm/msr.h>
+> >  #include <asm/desc.h>
+> >  #include <asm/mtrr.h>
+> > +#include <asm/virtext.h>
+> >  
+> >  #define MAX_IO_MSRS 256
+> >  #define CR0_RESERVED_BITS						\
+> > @@ -2581,6 +2582,13 @@ int kvm_emulate_pio_string(struct kvm_vcpu *vcpu, struct
+> > kvm_run *run, int in,
+> >  }
+> >  EXPORT_SYMBOL_GPL(kvm_emulate_pio_string);
+> >  
+> > +/* Called at crash time, so we can disable virtualization if needed
+> > + */
+> > +static void crash_hardware_disable(void)
+> > +{
+> > +	kvm_x86_ops->crash_hardware_disable(NULL);
+> > +}
+> > +
+> >  int kvm_arch_init(void *opaque)
+> >  {
+> >  	int r;
+> > @@ -2605,9 +2613,15 @@ int kvm_arch_init(void *opaque)
+> >  
+> >  	kvm_x86_ops = ops;
+> >  
+> > +	r = set_virt_disable_func(crash_hardware_disable);
+> 
+> Can we make this say:
+> set_virt_disable_func(kvm_x86_ops->crash_hardware_disable);
+> 
+> So we can avoid going through 2 levels of function pointers?
+> I find that a little scary in code that might be running
+> at the edge of stack overflow.
 
-Probably not, it sounds like the arch needs to be fixed :)
+When I've checked this (on x86_64), gcc did tail recursion optimization
+and the call was just a jump to the function, so stack usage shouldn't
+be a problem.
 
-thanks,
+But I am inclined to agree with you about the excess of abstraction.
 
-greg k-h
+-- 
+Eduardo
