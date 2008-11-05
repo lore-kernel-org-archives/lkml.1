@@ -1,485 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYKEVeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756470AbYKEVhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbYKEVeu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 16:34:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbYKEVeN
+	id S1756470AbYKEVhM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 16:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbYKEVg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 16:34:13 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40047 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbYKEVeJ (ORCPT
+	Wed, 5 Nov 2008 16:36:59 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55279 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752720AbYKEVg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 16:34:09 -0500
-Message-Id: <20081105213406.884121126@goodmis.org>
-References: <20081105212428.148612398@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 05 Nov 2008 16:24:31 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/3] ftrace: restructure tracing start/stop infrastructure
-Content-Disposition: inline; filename=0003-ftrace-restructure-tracing-start-stop-infrastructur.patch
+	Wed, 5 Nov 2008 16:36:58 -0500
+Date: Wed, 5 Nov 2008 22:38:28 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH V4 1/6] Minimal changes to the core input system
+Message-ID: <20081105213828.GA3966@elf.ucw.cz>
+References: <20081105194640.19407.19682.stgit@localhost> <20081105194738.19407.31117.stgit@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081105194738.19407.31117.stgit@localhost>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: change where tracing is started up and stopped
+On Wed 2008-11-05 14:47:38, Jon Smirl wrote:
+> Minimal changes to the core input system. The bulk of IR support loads as a module. These changes are passive if the rest of IR isn't loaded.
+> 
+> Jon Smirl
+> <jonsmirl@gmail.com>
 
-Currently, when a new tracer is selected via echo'ing a tracer name into
-the current_tracer file, the startup is only done if tracing_enabled is
-set to one. If tracing_enabled is changed to zero (by echo'ing 0 into
-the tracing_enabled file) a full shutdown is performed.
+Apart from too long lines in changelog and missed Signed-off-by: it
+looks okay to me ;-).
 
-The full startup and shutdown of a tracer can be expensive and the
-user can lose out traces when echo'ing in 0 to the tracing_enabled file,
-because the process takes too long. There can also be places that
-the user would like to start and stop the tracer several times and
-doing the full startup and shutdown of a tracer might be too expensive.
-
-This patch performs the full startup and shutdown when a tracer is
-selected. It also adds a way to do a quick start or stop of a tracer.
-The quick version is just a flag that prevents the tracing from
-taking place, but the overhead of the code is still there.
-
-For example, the startup of a tracer may enable tracepoints, or enable
-the function tracer.  The stop and start will just set a flag to
-have the tracer ignore the calls when the tracepoint or function trace
-is called.  The overhead of the tracer may still be present when
-the tracer is stopped, but no tracing will occur. Setting the tracer
-to the 'nop' tracer (or any other tracer) will perform the shutdown
-of the tracer which will disable the tracepoint or disable the
-function tracer.
-
-The tracing_enabled file will simply start or stop tracing.
-
-This change is all internal. The end result for the user should be the same
-as before. If tracing_enabled is not set, no trace will happen.
-If tracing_enabled is set, then the trace will happen. The tracing_enabled
-variable is static between tracers. Enabling  tracing_enabled and
-going to another tracer will keep tracing_enabled enabled. Same
-is true with disabling tracing_enabled.
-
-This patch will now provide a fast start/stop method to the users
-for enabling or disabling tracing.
-
-Note: There were two methods to the struct tracer that were never
- used: The methods start and stop. These were to be used as a hook
- to the reading of the trace output, but ended up not being
- necessary. These two methods are now used to enable the start
- and stop of each tracer, in case the tracer needs to do more than
- just not write into the buffer. For example, the irqsoff tracer
- must stop recording max latencies when tracing is stopped.
-
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace.c              |   64 ++++++++++++++++---------------------
- kernel/trace/trace.h              |    5 ++-
- kernel/trace/trace_functions.c    |    6 +++
- kernel/trace/trace_irqsoff.c      |   41 +++++++++++++++++++++---
- kernel/trace/trace_sched_switch.c |   13 +++++++
- kernel/trace/trace_sched_wakeup.c |   39 +++++++++++++++++++---
- 6 files changed, 120 insertions(+), 48 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 411ab5c..fe458e4 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -150,6 +150,19 @@ static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
- /* tracer_enabled is used to toggle activation of a tracer */
- static int			tracer_enabled = 1;
- 
-+/**
-+ * tracing_is_enabled - return tracer_enabled status
-+ *
-+ * This function is used by other tracers to know the status
-+ * of the tracer_enabled flag.  Tracers may use this function
-+ * to know if it should enable their features when starting
-+ * up. See irqsoff tracer for an example (start_irqsoff_tracer).
-+ */
-+int tracing_is_enabled(void)
-+{
-+	return tracer_enabled;
-+}
-+
- /* function tracing enabled */
- int				ftrace_function_enabled;
- 
-@@ -1041,8 +1054,7 @@ void tracing_start_function_trace(void)
- 		trace_ops.func = function_trace_call;
- 
- 	register_ftrace_function(&trace_ops);
--	if (tracer_enabled)
--		ftrace_function_enabled = 1;
-+	ftrace_function_enabled = 1;
- }
- 
- void tracing_stop_function_trace(void)
-@@ -1189,10 +1201,6 @@ static void *s_start(struct seq_file *m, loff_t *pos)
- 
- 	atomic_inc(&trace_record_cmdline_disabled);
- 
--	/* let the tracer grab locks here if needed */
--	if (current_trace->start)
--		current_trace->start(iter);
--
- 	if (*pos != iter->pos) {
- 		iter->ent = NULL;
- 		iter->cpu = 0;
-@@ -1219,14 +1227,7 @@ static void *s_start(struct seq_file *m, loff_t *pos)
- 
- static void s_stop(struct seq_file *m, void *p)
- {
--	struct trace_iterator *iter = m->private;
--
- 	atomic_dec(&trace_record_cmdline_disabled);
--
--	/* let the tracer release locks here if needed */
--	if (current_trace && current_trace == iter->trace && iter->trace->stop)
--		iter->trace->stop(iter);
--
- 	mutex_unlock(&trace_types_lock);
- }
- 
-@@ -2059,10 +2060,7 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
- 	m->private = iter;
- 
- 	/* stop the trace while dumping */
--	if (iter->tr->ctrl) {
--		tracer_enabled = 0;
--		ftrace_function_enabled = 0;
--	}
-+	tracing_stop();
- 
- 	if (iter->trace && iter->trace->open)
- 			iter->trace->open(iter);
-@@ -2107,14 +2105,7 @@ int tracing_release(struct inode *inode, struct file *file)
- 		iter->trace->close(iter);
- 
- 	/* reenable tracing if it was previously enabled */
--	if (iter->tr->ctrl) {
--		tracer_enabled = 1;
--		/*
--		 * It is safe to enable function tracing even if it
--		 * isn't used
--		 */
--		ftrace_function_enabled = 1;
--	}
-+	tracing_start();
- 	mutex_unlock(&trace_types_lock);
- 
- 	seq_release(inode, file);
-@@ -2452,11 +2443,10 @@ static ssize_t
- tracing_ctrl_read(struct file *filp, char __user *ubuf,
- 		  size_t cnt, loff_t *ppos)
- {
--	struct trace_array *tr = filp->private_data;
- 	char buf[64];
- 	int r;
- 
--	r = sprintf(buf, "%ld\n", tr->ctrl);
-+	r = sprintf(buf, "%u\n", tracer_enabled);
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
- }
- 
-@@ -2484,16 +2474,18 @@ tracing_ctrl_write(struct file *filp, const char __user *ubuf,
- 	val = !!val;
- 
- 	mutex_lock(&trace_types_lock);
--	if (tr->ctrl ^ val) {
--		if (val)
-+	if (tracer_enabled ^ val) {
-+		if (val) {
- 			tracer_enabled = 1;
--		else
-+			if (current_trace->start)
-+				current_trace->start(tr);
-+			tracing_start();
-+		} else {
- 			tracer_enabled = 0;
--
--		tr->ctrl = val;
--
--		if (current_trace && current_trace->ctrl_update)
--			current_trace->ctrl_update(tr);
-+			tracing_stop();
-+			if (current_trace->stop)
-+				current_trace->stop(tr);
-+		}
- 	}
- 	mutex_unlock(&trace_types_lock);
- 
-@@ -3375,7 +3367,7 @@ __init static int tracer_alloc_buffers(void)
- #endif
- 
- 	/* All seems OK, enable tracing */
--	global_trace.ctrl = tracer_enabled;
-+	global_trace.ctrl = 1;
- 	tracing_disabled = 0;
- 
- 	atomic_notifier_chain_register(&panic_notifier_list,
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index cc14a6b..3422489 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -237,11 +237,11 @@ struct tracer {
- 	const char		*name;
- 	void			(*init)(struct trace_array *tr);
- 	void			(*reset)(struct trace_array *tr);
-+	void			(*start)(struct trace_array *tr);
-+	void			(*stop)(struct trace_array *tr);
- 	void			(*open)(struct trace_iterator *iter);
- 	void			(*pipe_open)(struct trace_iterator *iter);
- 	void			(*close)(struct trace_iterator *iter);
--	void			(*start)(struct trace_iterator *iter);
--	void			(*stop)(struct trace_iterator *iter);
- 	ssize_t			(*read)(struct trace_iterator *iter,
- 					struct file *filp, char __user *ubuf,
- 					size_t cnt, loff_t *ppos);
-@@ -282,6 +282,7 @@ struct trace_iterator {
- 	long			idx;
- };
- 
-+int tracing_is_enabled(void);
- void trace_wake_up(void);
- void tracing_reset(struct trace_array *tr, int cpu);
- int tracing_open_generic(struct inode *inode, struct file *filp);
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index 0f85a64..9f1b0de 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -62,11 +62,17 @@ static void function_trace_ctrl_update(struct trace_array *tr)
- 		stop_function_trace(tr);
- }
- 
-+static void function_trace_start(struct trace_array *tr)
-+{
-+	function_reset(tr);
-+}
-+
- static struct tracer function_trace __read_mostly =
- {
- 	.name	     = "function",
- 	.init	     = function_trace_init,
- 	.reset	     = function_trace_reset,
-+	.start	     = function_trace_start,
- 	.ctrl_update = function_trace_ctrl_update,
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest    = trace_selftest_startup_function,
-diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
-index 9c74071..a87a20f 100644
---- a/kernel/trace/trace_irqsoff.c
-+++ b/kernel/trace/trace_irqsoff.c
-@@ -353,15 +353,28 @@ void trace_preempt_off(unsigned long a0, unsigned long a1)
- }
- #endif /* CONFIG_PREEMPT_TRACER */
- 
-+/*
-+ * save_tracer_enabled is used to save the state of the tracer_enabled
-+ * variable when we disable it when we open a trace output file.
-+ */
-+static int save_tracer_enabled;
-+
- static void start_irqsoff_tracer(struct trace_array *tr)
- {
- 	register_ftrace_function(&trace_ops);
--	tracer_enabled = 1;
-+	if (tracing_is_enabled()) {
-+		tracer_enabled = 1;
-+		save_tracer_enabled = 1;
-+	} else {
-+		tracer_enabled = 0;
-+		save_tracer_enabled = 0;
-+	}
- }
- 
- static void stop_irqsoff_tracer(struct trace_array *tr)
- {
- 	tracer_enabled = 0;
-+	save_tracer_enabled = 0;
- 	unregister_ftrace_function(&trace_ops);
- }
- 
-@@ -389,17 +402,29 @@ static void irqsoff_tracer_ctrl_update(struct trace_array *tr)
- 		stop_irqsoff_tracer(tr);
- }
- 
-+static void irqsoff_tracer_start(struct trace_array *tr)
-+{
-+	irqsoff_tracer_reset(tr);
-+	tracer_enabled = 1;
-+	save_tracer_enabled = 1;
-+}
-+
-+static void irqsoff_tracer_stop(struct trace_array *tr)
-+{
-+	tracer_enabled = 0;
-+	save_tracer_enabled = 0;
-+}
-+
- static void irqsoff_tracer_open(struct trace_iterator *iter)
- {
- 	/* stop the trace while dumping */
--	if (iter->tr->ctrl)
--		stop_irqsoff_tracer(iter->tr);
-+	tracer_enabled = 0;
- }
- 
- static void irqsoff_tracer_close(struct trace_iterator *iter)
- {
--	if (iter->tr->ctrl)
--		start_irqsoff_tracer(iter->tr);
-+	/* restart tracing */
-+	tracer_enabled = save_tracer_enabled;
- }
- 
- #ifdef CONFIG_IRQSOFF_TRACER
-@@ -414,6 +439,8 @@ static struct tracer irqsoff_tracer __read_mostly =
- 	.name		= "irqsoff",
- 	.init		= irqsoff_tracer_init,
- 	.reset		= irqsoff_tracer_reset,
-+	.start		= irqsoff_tracer_start,
-+	.stop		= irqsoff_tracer_stop,
- 	.open		= irqsoff_tracer_open,
- 	.close		= irqsoff_tracer_close,
- 	.ctrl_update	= irqsoff_tracer_ctrl_update,
-@@ -440,6 +467,8 @@ static struct tracer preemptoff_tracer __read_mostly =
- 	.name		= "preemptoff",
- 	.init		= preemptoff_tracer_init,
- 	.reset		= irqsoff_tracer_reset,
-+	.start		= irqsoff_tracer_start,
-+	.stop		= irqsoff_tracer_stop,
- 	.open		= irqsoff_tracer_open,
- 	.close		= irqsoff_tracer_close,
- 	.ctrl_update	= irqsoff_tracer_ctrl_update,
-@@ -468,6 +497,8 @@ static struct tracer preemptirqsoff_tracer __read_mostly =
- 	.name		= "preemptirqsoff",
- 	.init		= preemptirqsoff_tracer_init,
- 	.reset		= irqsoff_tracer_reset,
-+	.start		= irqsoff_tracer_start,
-+	.stop		= irqsoff_tracer_stop,
- 	.open		= irqsoff_tracer_open,
- 	.close		= irqsoff_tracer_close,
- 	.ctrl_update	= irqsoff_tracer_ctrl_update,
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index 888944d..91c699b 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -186,11 +186,24 @@ static void sched_switch_trace_ctrl_update(struct trace_array *tr)
- 		stop_sched_trace(tr);
- }
- 
-+static void sched_switch_trace_start(struct trace_array *tr)
-+{
-+	sched_switch_reset(tr);
-+	tracing_start_sched_switch();
-+}
-+
-+static void sched_switch_trace_stop(struct trace_array *tr)
-+{
-+	tracing_stop_sched_switch();
-+}
-+
- struct tracer sched_switch_trace __read_mostly =
- {
- 	.name		= "sched_switch",
- 	.init		= sched_switch_trace_init,
- 	.reset		= sched_switch_trace_reset,
-+	.start		= sched_switch_trace_start,
-+	.stop		= sched_switch_trace_stop,
- 	.ctrl_update	= sched_switch_trace_ctrl_update,
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest    = trace_selftest_startup_sched_switch,
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index 7bc4abf..240577b 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -262,6 +262,12 @@ out:
- 	atomic_dec(&wakeup_trace->data[cpu]->disabled);
- }
- 
-+/*
-+ * save_tracer_enabled is used to save the state of the tracer_enabled
-+ * variable when we disable it when we open a trace output file.
-+ */
-+static int save_tracer_enabled;
-+
- static void start_wakeup_tracer(struct trace_array *tr)
- {
- 	int ret;
-@@ -300,7 +306,13 @@ static void start_wakeup_tracer(struct trace_array *tr)
- 
- 	register_ftrace_function(&trace_ops);
- 
--	tracer_enabled = 1;
-+	if (tracing_is_enabled()) {
-+		tracer_enabled = 1;
-+		save_tracer_enabled = 1;
-+	} else {
-+		tracer_enabled = 0;
-+		save_tracer_enabled = 0;
-+	}
- 
- 	return;
- fail_deprobe_wake_new:
-@@ -312,6 +324,7 @@ fail_deprobe:
- static void stop_wakeup_tracer(struct trace_array *tr)
- {
- 	tracer_enabled = 0;
-+	save_tracer_enabled = 0;
- 	unregister_ftrace_function(&trace_ops);
- 	unregister_trace_sched_switch(probe_wakeup_sched_switch);
- 	unregister_trace_sched_wakeup_new(probe_wakeup);
-@@ -343,18 +356,32 @@ static void wakeup_tracer_ctrl_update(struct trace_array *tr)
- 		stop_wakeup_tracer(tr);
- }
- 
-+static void wakeup_tracer_start(struct trace_array *tr)
-+{
-+	wakeup_reset(tr);
-+	tracer_enabled = 1;
-+	save_tracer_enabled = 1;
-+}
-+
-+static void wakeup_tracer_stop(struct trace_array *tr)
-+{
-+	tracer_enabled = 0;
-+	save_tracer_enabled = 0;
-+}
-+
- static void wakeup_tracer_open(struct trace_iterator *iter)
- {
- 	/* stop the trace while dumping */
--	if (iter->tr->ctrl)
--		stop_wakeup_tracer(iter->tr);
-+	tracer_enabled = 0;
- }
- 
- static void wakeup_tracer_close(struct trace_iterator *iter)
- {
- 	/* forget about any processes we were recording */
--	if (iter->tr->ctrl)
--		start_wakeup_tracer(iter->tr);
-+	if (save_tracer_enabled) {
-+		wakeup_reset(iter->tr);
-+		tracer_enabled = 1;
-+	}
- }
- 
- static struct tracer wakeup_tracer __read_mostly =
-@@ -362,6 +389,8 @@ static struct tracer wakeup_tracer __read_mostly =
- 	.name		= "wakeup",
- 	.init		= wakeup_tracer_init,
- 	.reset		= wakeup_tracer_reset,
-+	.start		= wakeup_tracer_start,
-+	.stop		= wakeup_tracer_stop,
- 	.open		= wakeup_tracer_open,
- 	.close		= wakeup_tracer_close,
- 	.ctrl_update	= wakeup_tracer_ctrl_update,
--- 
-1.5.6.5
+> ---
+>  drivers/input/evdev.c           |   55 +++++++++++++++++++++++++++++
+>  drivers/input/input.c           |   17 +++++++++
+>  include/linux/input.h           |   75 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/mod_devicetable.h |    3 ++
+>  4 files changed, 150 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+> index 1070db3..33a01dc 100644
+> --- a/drivers/input/evdev.c
+> +++ b/drivers/input/evdev.c
+> @@ -328,6 +328,14 @@ struct ff_effect_compat {
+>  	} u;
+>  };
+>  
+> +struct ir_command_compat {
+> +	__u32 protocol;
+> +	__u32 device;
+> +	__u32 command;
+> +	__u32 transmitters;
+> +};
+> +
+> +
+>  /* Note to the author of this code: did it ever occur to
+>     you why the ifdefs are needed? Think about it again. -AK */
+>  #ifdef CONFIG_X86_64
+> @@ -432,6 +440,32 @@ static int evdev_ff_effect_from_user(const char __user *buffer, size_t size,
+>  	return 0;
+>  }
+>  
+> +static int evdev_ir_send_from_user(const char __user *buffer, size_t size,
+> +				     struct ir_command *ir_command)
+> +{
+> +	if (COMPAT_TEST) {
+> +		struct ir_command_compat *compat_ir_command;
+> +
+> +		if (size != sizeof(struct ir_command_compat))
+> +			return -EINVAL;
+> +
+> +		compat_ir_command = (struct ir_command_compat *)ir_command;
+> +
+> +		if (copy_from_user(compat_ir_command, buffer,
+> +				   sizeof(struct ir_command_compat)))
+> +			return -EFAULT;
+> +
+> +	} else {
+> +		if (size != sizeof(struct ir_command))
+> +			return -EINVAL;
+> +
+> +		if (copy_from_user(ir_command, buffer, sizeof(struct ir_command)))
+> +			return -EFAULT;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  #else
+>  
+>  static inline size_t evdev_event_size(void)
+> @@ -469,6 +503,18 @@ static int evdev_ff_effect_from_user(const char __user *buffer, size_t size,
+>  	return 0;
+>  }
+>  
+> +static int evdev_ir_send_from_user(const char __user *buffer, size_t size,
+> +				     struct ir_command *ir_command)
+> +{
+> +	if (size != sizeof(struct ir_command))
+> +		return -EINVAL;
+> +
+> +	if (copy_from_user(ir_command, buffer, sizeof(struct ir_command)))
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
+> +
+>  #endif /* CONFIG_COMPAT */
+>  
+>  static ssize_t evdev_write(struct file *file, const char __user *buffer,
+> @@ -695,6 +741,7 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
+>  	struct input_dev *dev = evdev->handle.dev;
+>  	struct input_absinfo abs;
+>  	struct ff_effect effect;
+> +	struct ir_command ir_command;
+>  	int __user *ip = (int __user *)p;
+>  	int i, t, u, v;
+>  	int error;
+> @@ -859,6 +906,14 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
+>  
+>  				return 0;
+>  			}
+> +
+> +			if (_IOC_NR(cmd) == _IOC_NR(EVIOIRSEND)) {
+> +
+> +				if (evdev_ir_send_from_user(p, _IOC_SIZE(cmd), &ir_command))
+> +					return -EFAULT;
+> +
+> +				return input_ir_send(dev, &ir_command, file);
+> +			}
+>  		}
+>  	}
+>  	return -EINVAL;
+> diff --git a/drivers/input/input.c b/drivers/input/input.c
+> index c13ced3..0a9b15a 100644
+> --- a/drivers/input/input.c
+> +++ b/drivers/input/input.c
+> @@ -240,6 +240,10 @@ static void input_handle_event(struct input_dev *dev,
+>  	case EV_PWR:
+>  		disposition = INPUT_PASS_TO_ALL;
+>  		break;
+> +
+> +	case EV_IR:
+> +		disposition = INPUT_PASS_TO_ALL;
+> +		break;
+>  	}
+>  
+>  	if (disposition != INPUT_IGNORE_EVENT && type != EV_SYN)
+> @@ -693,6 +697,7 @@ static const struct input_device_id *input_match_device(const struct input_devic
+>  		MATCH_BIT(sndbit, SND_MAX);
+>  		MATCH_BIT(ffbit,  FF_MAX);
+>  		MATCH_BIT(swbit,  SW_MAX);
+> +		MATCH_BIT(irbit,  IR_MAX);
+>  
+>  		return id;
+>  	}
+> @@ -815,6 +820,8 @@ static int input_devices_seq_show(struct seq_file *seq, void *v)
+>  		input_seq_print_bitmap(seq, "FF", dev->ffbit, FF_MAX);
+>  	if (test_bit(EV_SW, dev->evbit))
+>  		input_seq_print_bitmap(seq, "SW", dev->swbit, SW_MAX);
+> +	if (test_bit(EV_IR, dev->evbit))
+> +		input_seq_print_bitmap(seq, "IR", dev->irbit, IR_MAX);
+>  
+>  	seq_putc(seq, '\n');
+>  
+> @@ -992,6 +999,8 @@ static int input_print_modalias(char *buf, int size, struct input_dev *id,
+>  				'f', id->ffbit, 0, FF_MAX);
+>  	len += input_print_modalias_bits(buf + len, size - len,
+>  				'w', id->swbit, 0, SW_MAX);
+> +	len += input_print_modalias_bits(buf + len, size - len,
+> +				'i', id->irbit, 0, IR_MAX);
+>  
+>  	if (add_cr)
+>  		len += snprintf(buf + len, max(size - len, 0), "\n");
+> @@ -1093,6 +1102,7 @@ INPUT_DEV_CAP_ATTR(LED, led);
+>  INPUT_DEV_CAP_ATTR(SND, snd);
+>  INPUT_DEV_CAP_ATTR(FF, ff);
+>  INPUT_DEV_CAP_ATTR(SW, sw);
+> +INPUT_DEV_CAP_ATTR(IR, ir);
+>  
+>  static struct attribute *input_dev_caps_attrs[] = {
+>  	&dev_attr_ev.attr,
+> @@ -1104,6 +1114,7 @@ static struct attribute *input_dev_caps_attrs[] = {
+>  	&dev_attr_snd.attr,
+>  	&dev_attr_ff.attr,
+>  	&dev_attr_sw.attr,
+> +	&dev_attr_ir.attr,
+>  	NULL
+>  };
+>  
+> @@ -1221,6 +1232,8 @@ static int input_dev_uevent(struct device *device, struct kobj_uevent_env *env)
+>  		INPUT_ADD_HOTPLUG_BM_VAR("FF=", dev->ffbit, FF_MAX);
+>  	if (test_bit(EV_SW, dev->evbit))
+>  		INPUT_ADD_HOTPLUG_BM_VAR("SW=", dev->swbit, SW_MAX);
+> +	if (test_bit(EV_IR, dev->evbit))
+> +		INPUT_ADD_HOTPLUG_BM_VAR("IR=", dev->irbit, IR_MAX);
+>  
+>  	INPUT_ADD_HOTPLUG_MODALIAS_VAR(dev);
+>  
+> @@ -1333,6 +1346,10 @@ void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int
+>  		__set_bit(code, dev->ffbit);
+>  		break;
+>  
+> +	case EV_IR:
+> +		__set_bit(code, dev->irbit);
+> +		break;
+> +
+>  	case EV_PWR:
+>  		/* do nothing */
+>  		break;
+> diff --git a/include/linux/input.h b/include/linux/input.h
+> index b86fb55..95e385f 100644
+> --- a/include/linux/input.h
+> +++ b/include/linux/input.h
+> @@ -79,6 +79,8 @@ struct input_absinfo {
+>  #define EVIOCRMFF		_IOW('E', 0x81, int)			/* Erase a force effect */
+>  #define EVIOCGEFFECTS		_IOR('E', 0x84, int)			/* Report number of effects playable at the same time */
+>  
+> +#define EVIOIRSEND		_IOC(_IOC_WRITE, 'E', 0x80, sizeof(struct ir_command))	/* send an IR command */
+> +
+>  #define EVIOCGRAB		_IOW('E', 0x90, int)			/* Grab/Release device */
+>  
+>  /*
+> @@ -97,6 +99,7 @@ struct input_absinfo {
+>  #define EV_FF			0x15
+>  #define EV_PWR			0x16
+>  #define EV_FF_STATUS		0x17
+> +#define EV_IR			0x18
+>  #define EV_MAX			0x1f
+>  #define EV_CNT			(EV_MAX+1)
+>  
+> @@ -959,6 +962,56 @@ struct ff_effect {
+>  #define FF_MAX		0x7f
+>  #define FF_CNT		(FF_MAX+1)
+>  
+> +/*
+> + * IR Support
+> + */
+> +
+> +#define IR_PROTOCOL_RESERVED 0
+> +#define IR_PROTOCOL_JVC 1
+> +#define IR_PROTOCOL_NEC 2
+> +#define IR_PROTOCOL_NOKIA 3
+> +#define IR_PROTOCOL_SHARP 4
+> +#define IR_PROTOCOL_SONY_12 5
+> +#define IR_PROTOCOL_SONY_15 6
+> +#define IR_PROTOCOL_SONY_20 7
+> +#define IR_PROTOCOL_PHILIPS_RC5 8
+> +#define IR_PROTOCOL_PHILIPS_RC6 9
+> +#define IR_PROTOCOL_PHILIPS_RCMM 10
+> +#define IR_PROTOCOL_PHILIPS_RECS80 11
+> +#define IR_PROTOCOL_RCA 12
+> +#define IR_PROTOCOL_ITT 13
+> +
+> +#define IR_PROTOCOL 1
+> +#define IR_DEVICE 2
+> +#define IR_COMMAND 3
+> +
+> +#define IR_CAP_RECEIVE_BASEBAND 0
+> +#define IR_CAP_RECEIVE_36K 1
+> +#define IR_CAP_RECEIVE_38K 2
+> +#define IR_CAP_RECEIVE_40K 3
+> +#define IR_CAP_RECEIVE_56K 4
+> +#define IR_CAP_SEND_BASEBAND 5
+> +#define IR_CAP_SEND_36K 6
+> +#define IR_CAP_SEND_38K 7
+> +#define IR_CAP_SEND_40K 8
+> +#define IR_CAP_SEND_56K 9
+> +#define IR_CAP_XMITTER_1 10
+> +#define IR_CAP_XMITTER_2 11
+> +#define IR_CAP_XMITTER_3 12
+> +#define IR_CAP_XMITTER_4 13
+> +#define IR_CAP_RECEIVE_RAW 14
+> +#define IR_CAP_SEND_RAW 15
+> +#define IR_MAX 0x0f
+> +#define IR_CNT IR_MAX + 1
+> +
+> +struct ir_command {
+> +	__u32 protocol;
+> +	__u32 device;
+> +	__u32 command;
+> +	__u32 transmitters;
+> +};
+> +
+> +
+>  #ifdef __KERNEL__
+>  
+>  /*
+> @@ -986,6 +1039,7 @@ struct ff_effect {
+>   * @sndbit: bitmap of sound effects supported by the device
+>   * @ffbit: bitmap of force feedback effects supported by the device
+>   * @swbit: bitmap of switches present on the device
+> + * @irbit: bitmap of capabilies of the IR hardware
+>   * @keycodemax: size of keycode table
+>   * @keycodesize: size of elements in keycode table
+>   * @keycode: map of scancodes to keycodes for this device
+> @@ -1058,6 +1112,7 @@ struct input_dev {
+>  	unsigned long sndbit[BITS_TO_LONGS(SND_CNT)];
+>  	unsigned long ffbit[BITS_TO_LONGS(FF_CNT)];
+>  	unsigned long swbit[BITS_TO_LONGS(SW_CNT)];
+> +	unsigned long irbit[BITS_TO_LONGS(IR_CNT)];
+>  
+>  	unsigned int keycodemax;
+>  	unsigned int keycodesize;
+> @@ -1066,6 +1121,7 @@ struct input_dev {
+>  	int (*getkeycode)(struct input_dev *dev, int scancode, int *keycode);
+>  
+>  	struct ff_device *ff;
+> +	struct ir_device *ir;
+>  
+>  	unsigned int repeat_key;
+>  	struct timer_list timer;
+> @@ -1301,6 +1357,11 @@ static inline void input_report_switch(struct input_dev *dev, unsigned int code,
+>  	input_event(dev, EV_SW, code, !!value);
+>  }
+>  
+> +static inline void input_report_ir(struct input_dev *dev, unsigned int code, int value)
+> +{
+> +	input_event(dev, EV_IR, code, value);
+> +}
+> +
+>  static inline void input_sync(struct input_dev *dev)
+>  {
+>  	input_event(dev, EV_SYN, SYN_REPORT, 0);
+> @@ -1379,5 +1440,19 @@ int input_ff_erase(struct input_dev *dev, int effect_id, struct file *file);
+>  int input_ff_create_memless(struct input_dev *dev, void *data,
+>  		int (*play_effect)(struct input_dev *, void *, struct ff_effect *));
+>  
+> +/**
+> + * IR support functions
+> + */
+> +
+> +typedef int (*send_func)(void *private, unsigned int *buffer, unsigned int count,
+> +		unsigned int frequency, unsigned int xmitters);
+> +
+> +int input_ir_create(struct input_dev *dev, void *private, send_func send);
+> +void input_ir_destroy(struct input_dev *dev);
+> +
+> +void input_ir_decode(struct input_dev *dev, unsigned int delta, unsigned int bit);
+> +int input_ir_send(struct input_dev *dev, struct ir_command *ir_command, struct file *file);
+> +int input_ir_register(struct input_dev *dev);
+> +
+>  #endif
+>  #endif
+> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+> index 97b91d1..ea35367 100644
+> --- a/include/linux/mod_devicetable.h
+> +++ b/include/linux/mod_devicetable.h
+> @@ -293,6 +293,7 @@ struct pcmcia_device_id {
+>  #define INPUT_DEVICE_ID_SND_MAX		0x07
+>  #define INPUT_DEVICE_ID_FF_MAX		0x7f
+>  #define INPUT_DEVICE_ID_SW_MAX		0x0f
+> +#define INPUT_DEVICE_ID_IR_MAX		0x0f
+>  
+>  #define INPUT_DEVICE_ID_MATCH_BUS	1
+>  #define INPUT_DEVICE_ID_MATCH_VENDOR	2
+> @@ -308,6 +309,7 @@ struct pcmcia_device_id {
+>  #define INPUT_DEVICE_ID_MATCH_SNDBIT	0x0400
+>  #define INPUT_DEVICE_ID_MATCH_FFBIT	0x0800
+>  #define INPUT_DEVICE_ID_MATCH_SWBIT	0x1000
+> +#define INPUT_DEVICE_ID_MATCH_IRBIT	0x2000
+>  
+>  struct input_device_id {
+>  
+> @@ -327,6 +329,7 @@ struct input_device_id {
+>  	kernel_ulong_t sndbit[INPUT_DEVICE_ID_SND_MAX / BITS_PER_LONG + 1];
+>  	kernel_ulong_t ffbit[INPUT_DEVICE_ID_FF_MAX / BITS_PER_LONG + 1];
+>  	kernel_ulong_t swbit[INPUT_DEVICE_ID_SW_MAX / BITS_PER_LONG + 1];
+> +	kernel_ulong_t irbit[INPUT_DEVICE_ID_IR_MAX / BITS_PER_LONG + 1];
+>  
+>  	kernel_ulong_t driver_info;
+>  };
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
