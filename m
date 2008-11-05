@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYKEVOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbYKEVOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbYKEVOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 16:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYKEVOJ
+	id S1755860AbYKEVOx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 16:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbYKEVOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 16:14:09 -0500
-Received: from nn7.de ([85.214.94.156]:34118 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbYKEVOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 16:14:08 -0500
-Subject: Re: [2.6.28-rc2 regression] hangs on wakeup from s2ram
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Carlos R\. Mafra" <crmafra2@gmail.com>, Jiri Slaby <jirislaby@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081027141042.GA7104@localhost.aei.mpg.de>
-References: <1225106897.5125.6.camel@localhost>
-	 <20081027141042.GA7104@localhost.aei.mpg.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 05 Nov 2008 22:14:05 +0100
-Message-Id: <1225919645.5644.11.camel@localhost>
+	Wed, 5 Nov 2008 16:14:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50188 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752066AbYKEVOn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 16:14:43 -0500
+Date: Wed, 5 Nov 2008 13:14:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew Victor" <avictor.za@gmail.com>
+Cc: wim@iguana.be, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SAM9 watchdog - supported on all SAM9 and CAP9
+ processors
+Message-Id: <20081105131429.536748d2.akpm@linux-foundation.org>
+In-Reply-To: <cd73a99e0811051258v7c5c8bd8qf82f4e5a81068c85@mail.gmail.com>
+References: <cd73a99e0811051236x3c852ce7w5d16a695d8efb9c6@mail.gmail.com>
+	<20081105124543.7679a313.akpm@linux-foundation.org>
+	<cd73a99e0811051258v7c5c8bd8qf82f4e5a81068c85@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-10-27 at 15:10 +0100, Carlos R. Mafra wrote:
-> On Mon 27.Oct'08 at 12:28:17 +0100, Soeren Sonnenburg wrote:
-> > Dear all,
-> > 
-> > my macbook pro 1,1 suspends nicely (s2ram) but on wakeup I see a black
-> > screen...
-> > 
-> > Does anyone else observe this? As this was from within X (and it still
-> > works in .27) I cannot give more details without further investigations
-> > from the cmdline...
-> 
-> This is also happening with my Vaio, and 2.6.27 works fine suspending
-> to RAM from inside X.
-> 
-> I was silent about this issue (it happened before -rc1) because I really
-> did not have the time to bisect it, which I think is the best way to
-> solve this issues quickly.
-> 
-> I will try to bisect it in the next days, but I can't promiss anything.
+On Wed, 5 Nov 2008 22:58:45 +0200
+"Andrew Victor" <avictor.za@gmail.com> wrote:
 
-I still have this hang in resume -rc3+git current, but I don't have the
-time to dig into this for the next 3 weeks :(
+> > sylpheed mucks that up.  text/plain attachments would be preferred,
+> > please.  Inlined non-wordwrapped, non-tab-replaced, non-space-stuffed
+> > text would of course be even better.
+> 
+> Unfortunately, gmail seems to mess up (ie, corrupt the whitespace of)
+> the inlined patches.
 
-Soeren
+trust me, I noticed ;)
+
+
+I have this queued:
+
+From: Tim Hockin <thockin@google.com>
+
+Signed-off-by: Tim Hockin <thockin@google.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ Documentation/email-clients.txt |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff -puN Documentation/email-clients.txt~documentation-email-clientstxt-add-some-info-about-gmail Documentation/email-clients.txt
+--- a/Documentation/email-clients.txt~documentation-email-clientstxt-add-some-info-about-gmail
++++ a/Documentation/email-clients.txt
+@@ -213,4 +213,29 @@ TkRat (GUI)
+ 
+ Works.  Use "Insert file..." or external editor.
+ 
++~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++Gmail (Web GUI)
++
++If you just have to use Gmail to send patches, it CAN be made to work.  It
++requires a bit of external help, though.
++
++The first problem is that Gmail converts tabs to spaces.  This will
++totally break your patches.  To prevent this, you have to use a different
++editor.  There is a firefox extension called "ViewSourceWith"
++(https://addons.mozilla.org/en-US/firefox/addon/394) which allows you to
++edit any text box in the editor of your choice.  Configure it to launch
++your favorite editor.  When you want to send a patch, use this technique.
++Once you have crafted your messsage + patch, save and exit the editor,
++which should reload the Gmail edit box.  GMAIL WILL PRESERVE THE TABS.
++Hoorah.  Apparently you can cut-n-paste literal tabs, but Gmail will
++convert those to spaces upon sending!
++
++The second problem is that Gmail converts tabs to spaces on replies.  If
++you reply to a patch, don't expect to be able to apply it as a patch.
++
++The last problem is that Gmail will base64-encode any message that has a
++non-ASCII character.  That includes things like European names.  Be aware.
++
++Gmail is not convenient for lkml patches, but CAN be made to work.
++
+                                 ###
+_
+
