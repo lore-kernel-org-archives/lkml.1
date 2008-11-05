@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896AbYKEIk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYKEInl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755896AbYKEIk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 03:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYKEIjx
+	id S1755548AbYKEInl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 03:43:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbYKEInc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 03:39:53 -0500
-Received: from gate.crashing.org ([63.228.1.57]:34132 "EHLO gate.crashing.org"
+	Wed, 5 Nov 2008 03:43:32 -0500
+Received: from mga09.intel.com ([134.134.136.24]:31476 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750894AbYKEIjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 03:39:51 -0500
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       James Cloos <cloos@jhcloos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-In-Reply-To: <871vxtthr3.fsf@burly.wgtn.ondioline.org>
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	 <1225152347.8004.49.camel@pasglop> <m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	 <1225662539.8004.237.camel@pasglop>
-	 <871vxtthr3.fsf@burly.wgtn.ondioline.org>
+	id S1753619AbYKEInc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 03:43:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,549,1220252400"; 
+   d="scan'208";a="356379084"
+Subject: [PATCH 2.6.28-rc3] ACPI: fix inconsistent acpi event format
+From: Yi Yang <yi.y.yang@intel.com>
+Reply-To: yi.y.yang@intel.com
+To: lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain
-Date: Wed, 05 Nov 2008 19:39:21 +1100
-Message-Id: <1225874361.13603.12.camel@pasglop>
+Organization: Intel
+Date: Thu, 06 Nov 2008 00:42:52 +0800
+Message-Id: <1225903372.17794.63.camel@yangyi-dev>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-03 at 20:01 +1300, Paul Collins wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> > Now, the problem is ... My second son was just born last wed. so I'm
-> > pretty unavailable right now. Thus, for .29, I'm tempted to go for the
-> > simpler approach which is to blacklist M7's from imageblit acceleration.
-> 
-> I am also experiencing this problem on a PowerBook G4 with an M10.
-> 
-> 0000:00:10.0 VGA compatible controller [0300]: ATI Technologies Inc RV350 [Mobility Radeon 9600 M10] [1002:4e50]
-> 
-> Here are the fonts I'm using:
-> 
->         http://ondioline.org/~paul/consolefonts/
-> 
+Subject: ACPI: fix inconsistent acpi event format
+From: Yi Yang <yi.y.yang@intel.com>
 
-For some reason, that font gives me "Bad font file format". 
+Event format acpi generates for /proc/acpi/event is different from
+that for generic netlink interface. Here are i got:
 
-Cheers,
-Ben.
+>From /proc/acpi/event, i got the following events when i suspend and
+resume Acer's Aspire One:
+
+battery BAT1 00000080 00000000
+battery BAT1 00000081 00000000
+ac_adapter ACAD 00000080 00000001
+battery BAT1 00000080 00000000
+
+But from generic netlink socket, i got the following events when i suspend
+and resume Acer's Aspire One:
+
+battery PNP0C0A:00 00000080 00000000
+battery PNP0C0A:00 00000081 00000000
+ac_adapter ACPI0003:00 00000080 00000001
+battery PNP0C0A:00 00000080 00000000
+
+Such inconsistent event format will make acpid or hald confused, this patch
+fixes this issue, it makes acpid or hald see the same thing no matter they use
+/proc/acpi/event or generic netlink interface.
+
+After applying this patch, event format i got from /proc/acpi/event and generic
+netlink interface is same, all of them are:
+
+battery BAT1 00000080 00000000
+battery BAT1 00000081 00000000
+ac_adapter ACAD 00000080 00000001
+battery BAT1 00000080 00000000
+
+Please consider applying, thanks.
+
+Signed-off-by: Yi Yang <yi.y.yang@intel.com>
+---
+ battery.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index b2133e8..e52b336 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -782,7 +782,7 @@ static void acpi_battery_notify(acpi_handle handle, u32 event, void *data)
+ 	acpi_bus_generate_proc_event(device, event,
+ 				     acpi_battery_present(battery));
+ 	acpi_bus_generate_netlink_event(device->pnp.device_class,
+-					device->dev.bus_id, event,
++					device->pnp.bus_id, event,
+ 					acpi_battery_present(battery));
+ #ifdef CONFIG_ACPI_SYSFS_POWER
+ 	/* acpi_batter_update could remove power_supply object */
+
 
