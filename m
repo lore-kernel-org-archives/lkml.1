@@ -1,54 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYKFPhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYKFPgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbYKFPhF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbYKFPg2
+	id S1754838AbYKFPgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYKFPfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:36:28 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46144 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754688AbYKFPg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:36:27 -0500
-Date: Thu, 6 Nov 2008 10:36:00 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       T?r?k Edwin <edwintorok@gmail.com>, srostedt@redhat.com,
-       a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Identify which executable object the userspace address
-	belongs to. Store thread group leader id, and use it to lookup the
-	address in the process's map. We could have looked up the address
-	on thread's map, but the thread might not exist by the time we are
-	called. The process might not exist either, but if you are reading
-	trace_pipe, that is unlikely.
-Message-ID: <20081106153600.GA12523@infradead.org>
-References: <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk> <490E1B74.6010904@gmail.com> <20081102214042.GG28946@ZenIV.linux.org.uk> <20081103073257.GA13727@elte.hu> <20081104182628.GA6666@infradead.org> <20081106095547.GK4890@elte.hu> <20081106122650.GA23474@infradead.org> <20081106153238.GD1644@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106153238.GD1644@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 6 Nov 2008 10:35:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37354 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbYKFPfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:35:45 -0500
+Message-Id: <20081106153135.743458085@redhat.com>
+References: <20081106153022.215696930@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 06 Nov 2008 10:30:23 -0500
+From: vgoyal@redhat.com
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
+Cc: fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       ngupta@google.com, Rik van Riel <riel@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: [patch 1/4] io controller: documentation
+Content-Disposition: inline; filename=bio-group-documentation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 04:32:38PM +0100, Ingo Molnar wrote:
-> the timeline i quoted shows that it was a 2 days process, not 2 
-> minutes.
 
-Honestly I'm not sure what this timeline stuff should mean. People are
-busy, and for many of us kernel hacking is only or at least outside
-of very narrow areas a spare time activicty, so you really can't expect
-answers in the next minute.  There might be a lot of real life stuff
-that's a lot more important as it pais the bills and deals with family,
-etc.
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-But that wasn't my point anyway.  Al told no to seq_path, and just
-the contents of it without the interface that is tied to seq_files.
-Doing so is trivial by looking at seq_path so I really don't understand
-your odd reaction to it.
+Index: linux17/Documentation/controllers/io-controller.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux17/Documentation/controllers/io-controller.txt	2008-11-06 09:12:44.000000000 -0500
+@@ -0,0 +1,172 @@
++				IO Controller
++				============
++
++Design
++=====
++This patchset implements a basic version of proportional weight IO controller.
++It is heavily derived from dm-ioband IO controller with one key difference
++and that is, there is no separate device mapper driver and there is no
++need to create a dm-ioband device on top of every block device which needs
++to do the IO control. In this implementation, all the control logic has
++been internalized and has been made per request queue. Enabling or disabling
++IO control on a block device is just a matter of writing a 0 or 1 in
++appropriate sysfs file.
++
++This is a proportional weight controller and that means various cgroups
++are assigned shares and tasks in those cgroups get to dispatch the bio
++in proportion to their cgroup share.
++
++All the contending cgroups are assigned tokens proportionate to their
++weights. One token is charged for one sector of IO. Once all the contending
++cgroups have consumed their tokens, fresh token allocation takes place and
++this is how disk bandwidth allocation proportion to weight is achieved.
++
++The bigger picture is that all the bios being submitted to a block device
++are first inspected by IO controller logic (bio_group_controller()), only if
++IO controller has been enabled on that device. The cgroup of the bio is
++determined and controller checks if this cgroup has sufficient tokens to
++dispatch the bio. If sufficient tokens are there, bio submitting thread
++continues to dispatch the bio through normal path otherwise IO controller
++buffers the bio and submitting thread returns back. These buffered bios
++are dispatched to lower layers later once the associate group (bio group)
++has sufficient tokens to dispatch the bios. This delayed dispatching is
++done with the help of a worker thread (biogroup).
++
++IO control can be enabled/disabled dynamically on any of the block device
++through sysfs file system. For example, to enable IO control on a device
++do following.
++
++echo 1 > /sys/block/sda/biogroup
++
++To disable IO control write 0.
++
++echo 0 > /sys/block/sda/biogroup
++
++This should be doable for any of the block device in the stack. Currently this
++patch places the hooks only for device mapper driver and still need to tweak
++md.
++
++For example, assume there are two cgroups A and B with weights 1024 and 2048
++in the system. Tasks in two cgroups A and B are doing IO to two disks sda and
++sdb in the system. A user has enabled IO control on both sda and sdb. Now on
++both sda and sdb, tasks in cgroup B will get to use 2/3 of disk BW and
++tasks in cgroup A will get to use 1/3 of disk bandwidth, only in case of
++contention. If tasks in any of the groups stop doing IO to a particular disk,
++task in other group will get to use full disk BW for that duration.
++
++
++HOWTO
++====
++- Enable cgroup, memory controller and block IO controller in kernel config
++  file.
++
++- Boot into the kernel and mount io controller.
++
++  mount -t cgroup -o bio none /cgroup/bio/
++
++- Create two cgroups test1 and test2
++
++  cd /cgroup/bio
++  mkdir test1 test2
++
++- Allocate weight 4096 to test1 and weight 2048 to test2
++
++  echo 4096 > /cgroup/bio/test1/bio.shares
++  echo 2048 > /cgroup/bio/test1/bio.shares
++
++- Launch "dd" operations in cgroup test1 and test2.
++
++  echo $$ > /cgroup/bio/test1/tasks
++  dd if=/somefile1 of=/dev/null
++  echo $$ > /cgroup/bio/test2/tasks
++  dd if=/somefile2 of=/dev/null
++
++Job in cgroup test1 should finish before job in cgroup test2. To verify
++that "dd" in cgroup test1 got to dispatch more bio as compared to "dd" in
++test2, look at "bio.aggregate_tokens" in both the cgroup (At same time). At
++any point of time when both the dd's are running, aggregate_tokens in cgroup
++test1 should be approximately double of aggregate_tokens in cgroup test2
++(Because weight of cgroup test1 is double of weight of cgroup test2).
++
++Some Tunables
++=============
++Some tunables appear in cgroup file system and in sysfs for respective
++device for debug and for configuration. Here is a brief description.
++
++Cgroup Files
++============
++bio.shares
++	Specifies the weight of the cgroup.
++
++bio.aggregate_tokens
++	Specifies total number of tokens dispatched by this cgroup. One token
++	represents one sector of IO.
++
++bio.jiffies
++	What was the jiffies values when last bio from this cgroup was released.
++
++bio.nr_token_slices
++	How many times this cgroup got the token allocation done from token
++	slice. We kind of create a token slice and every contending cgroup
++	gets the pie out of the slice based on the share.
++
++bio.nr_off_the_tree
++	How many times this bio group went off the list of contending groups.
++	We maintain an rb-tree of biogroups contending for IO and token
++	allocation takes place to these groups regularly. If some group stops
++	doing IO then it is considered to be idle and removed from the tree
++	and added back later when group has IO to perform. This file just
++	counts how many times this bio group went off the tree.
++
++Sysfs Tunabels
++==============
++/sys/block/{deice name}/biogroup
++	Whether IO controller (bio groups) are active on this device or not.
++
++/sys/block/{deice name}/deftoken
++	Default number of tokens which are given to a bio group upon start
++	if all the bio groups were of same weight. token slice is of dynamic
++	length. So if there are 3 cgroups contending and deftoken is 100 then
++	token slice lenght will be 100*3 = 300 and now out of this slice
++	three groups will get the tokens based on their weights.
++
++/sys/block/{deice name}/idletime
++	The time after which if a bio group does not generate the bio, it is
++	considered idle and removed from the rb-tree. Currently by default it
++	is 8ms.
++
++/sys/block/{deice name}/newslice_count
++	How many times new token allocation took place on this queue.
++
++TODO
++====
++- Do extensive testing in various scenarios and do performance optimization
++  and fix the things where broken.
++
++- IO schedulers derive context information from "current". This assumption
++  will be broken if bios are being submitted by a worker thread (biogroup).
++  Probably we need to put io context pointer in bio itself to get rid of
++  this dependency.
++
++- Allocating tokens for per sector of IO is crude approximation and will lead
++  to unfair bandwidth allocation in case task in cgroup is doing sequential IO
++  and task in other group is doing random IO. Rik Van Riel, suggested that
++  probably we should switch to time based scheme. Keep a track of average time
++  it takes to complete IO from a cgroup and do the allocation accordingly.
++
++- Currently this controller is dependent on memory controller being enabled.
++  Try to reduce this coupling.
++
++ISSUES
++======
++- IO controller can buffer the bios if suffcient tokens were not available
++  at the time of bio submission. Once the tokens are available, these bios
++  are dispatched to elevator/lower layers in first come first serve manner.
++  And this has potential to break CFQ where a RT tasks should be able to
++  dispatch the bio first or a high priority task should be able to release
++  more bio as compared to low priority task in same cgroup.
++
++  Not sure how to fix it. May be we need to maintain another rb-tree and
++  keep track of RT tasks and tasks priorities and dispatch accordingly. This
++  is equivalent of duplicating lots of CFQ logic and not sure how would it
++  impact AS behaviour.
+
+-- 
 
