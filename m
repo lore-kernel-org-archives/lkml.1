@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYKFAB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYKFAIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbYKFAB6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 19:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbYKFABs
+	id S1753704AbYKFAIY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 19:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbYKFAIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 19:01:48 -0500
-Received: from sh.osrg.net ([192.16.179.4]:34861 "EHLO sh.osrg.net"
+	Wed, 5 Nov 2008 19:08:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42979 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752799AbYKFABr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 19:01:47 -0500
-Date: Thu, 6 Nov 2008 09:01:09 +0900
-To: jens.axboe@oracle.com
-Cc: stern@rowland.harvard.edu, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Problems with the block-layer timeouts
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081103085247.GO31673@kernel.dk>
-References: <Pine.LNX.4.44L0.0811011214470.21703-100000@netrider.rowland.org>
-	<20081103085247.GO31673@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751568AbYKFAIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 19:08:15 -0500
+Message-ID: <49123521.6020608@redhat.com>
+Date: Wed, 05 Nov 2008 19:06:57 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>, David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] kprobes: bugfix: try_module_get even if calling_mod is NULL
+References: <490FE405.1000105@cn.fujitsu.com> <4910F697.2050203@redhat.com> <4910FB3D.4020805@cn.fujitsu.com> <491212C0.4030900@redhat.com> <4912222F.9040605@ct.jp.nec.com> <49122745.4090004@redhat.com>
+In-Reply-To: <49122745.4090004@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081106090117U.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Nov 2008 09:52:48 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Get probed module even if the caller is in the kernel core code.
 
-> > In blk_del_timer(), there's no reason to test q->rq_timed_out_fn.  If 
-> > the method pointer is NULL then req->deadline would be 0 anyway.  In 
-> > addition, req->deadline should be set to 0 and the end of the routine, 
-> > just in case req gets requeued.
-> > 
-> > In blk_add_timer(), the line
-> > 
-> > 	expiry = round_jiffies(req->deadline);
-> > 
-> > is not optimal.  round_jiffies() will sometimes round a value _down_ to
-> > the nearest second.  But blk_rq_timed_out_timer() tests whether
-> > req->deadline is in the past -- and if the deadline was rounded down
-> > then this won't be true the first time through.  You wind up getting an
-> > unnecessary timer interrupt.  Instead there should be a
-> > round_jiffies_up() utility routine, and it should be used in both
-> > blk_add_timer() and blk_rq_timed_out_timer().
-> 
-> Very good point, we do indeed want a round_jiffies_up() for this!
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
 
-Just out of curiosity, why do we need to use round_jiffies here? We
-didn't do that for SCSI, right?
+>> One question, off topic.
+>> If calling_mod is NULL, no try_module_get(), is that OK?
+>
+> Good question. Currently, kprobes is called only from kernel modules,
+> so calling_mod should be always !NULL.
+> However, it should be fixed, because the logic is not correct.
+
+Thank you so much. So here is the additional bugfix patch.
+
+ kernel/kprobes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: 2.6.28-rc3/kernel/kprobes.c
+===================================================================
+--- 2.6.28-rc3.orig/kernel/kprobes.c
++++ 2.6.28-rc3/kernel/kprobes.c
+@@ -634,7 +634,7 @@ static int __kprobes __register_kprobe(s
+ 		 * avoid incrementing the module refcount, so as to allow
+ 		 * unloading of self probing modules.
+ 		 */
+-		if (calling_mod && calling_mod != probed_mod) {
++		if (calling_mod != probed_mod) {
+ 			if (unlikely(!try_module_get(probed_mod))) {
+ 				preempt_enable();
+ 				return -EINVAL;
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
