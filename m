@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbYKFBsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755466AbYKFBtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbYKFBsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 20:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbYKFBsL
+	id S1755466AbYKFBtR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 20:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbYKFBs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 20:48:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:49777 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299AbYKFBsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 20:48:10 -0500
-Message-ID: <49124C2C.9080300@cn.fujitsu.com>
-Date: Thu, 06 Nov 2008 09:45:16 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 5 Nov 2008 20:48:58 -0500
+Received: from mms1.broadcom.com ([216.31.210.17]:4654 "EHLO mms1.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752464AbYKFBs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 20:48:57 -0500
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: [BUG] linux-2.6.28-rc3 regression: IRQ smp_affinities not
+ respected
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+cc: "linux kernel" <linux-kernel@vger.kernel.org>,
+       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <491154C8.3040401@cosmosbay.com>
+References: <C27F8246C663564A84BB7AB343977242151F4B18B5@IRVEXCHCCR01.corp.ad.broadcom.com>
+ <491154C8.3040401@cosmosbay.com>
+Date: Wed, 05 Nov 2008 17:46:28 -0800
+Message-ID: <1225935988.12402.1.camel@HP1>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, suresh.b.siddha@intel.com
-Subject: [PATCH] sched: fix a bug in sched domain degenerate
-Content-Type: text/plain; charset=UTF-8
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5)
+X-WSS-ID: 650C928A61S5235387-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(1) on i386 with SCHED_SMT and SCHED_MC enabled
-	# mount -t cgroup -o cpuset xxx /mnt
-	# echo 0 > /mnt/cpuset.sched_load_balance
-	# mkdir /mnt/0
-	# echo 0 > /mnt/0/cpuset.cpus
-	# dmesg
-	CPU0 attaching sched-domain:
-	 domain 0: span 0 level CPU
-	  groups: 0
 
-(2) on i386 with SCHED_MC enabled but SCHED_SMT disabled
-	# same with (1)
-	# dmesg
-	CPU0 attaching NULL sched-domain.
+On Wed, 2008-11-05 at 00:09 -0800, Eric Dumazet wrote:
+> Thanks Michael for your fast answer
+> 
+> 
+> I tried this MSI disabling and yes, it now works.
+> 
+>  16:      42726        128        105        106         89         89
+> 145        152   IO-APIC-fasteoi   uhci_hcd:usb1, eth0, eth1
+> 
+> But I now have same interrupt used on two NIC, so I cannot split the
+> load on two CPUS, unless
+> using a smp_affinity with 2 CPUS on it. Not exactly what I wanted to
+> do..
+> 
+> Do you know if BCM5715S (tg3 driver) have same problem ?
 
-The bug is some sched domains may be skipped unintentionally when
-doing sched domain degenerating.
+Eric, I believe the 5715 should be OK.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/sched.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index dee79ad..b13f45a 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6875,15 +6875,17 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
- 	struct sched_domain *tmp;
- 
- 	/* Remove the sched domains which do not contribute to scheduling. */
--	for (tmp = sd; tmp; tmp = tmp->parent) {
-+	for (tmp = sd; tmp; ) {
- 		struct sched_domain *parent = tmp->parent;
- 		if (!parent)
- 			break;
-+
- 		if (sd_parent_degenerate(tmp, parent)) {
- 			tmp->parent = parent->parent;
- 			if (parent->parent)
- 				parent->parent->child = tmp;
--		}
-+		} else
-+			tmp = tmp->parent;
- 	}
- 
- 	if (sd && sd_degenerate(sd)) {
--- 
-1.5.4.rc3
 
