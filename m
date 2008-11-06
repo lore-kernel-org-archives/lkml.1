@@ -1,102 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYKFVVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYKFVVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbYKFVVX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYKFVUo
+	id S1754690AbYKFVVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:21:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYKFVVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:20:44 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63798 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752698AbYKFVUn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:20:43 -0500
-Message-Id: <20081106212041.790862958@goodmis.org>
-References: <20081106211949.320119144@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 06 Nov 2008 16:19:50 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/1] ftrace: split out hardirq ftrace code into own header
-Content-Disposition: inline; filename=0001-ftrace-split-out-hardirq-ftrace-code-into-own-heade.patch
+	Thu, 6 Nov 2008 16:21:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58804 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753998AbYKFVVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:21:01 -0500
+Date: Thu, 6 Nov 2008 16:20:50 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
+Subject: Re: [PATCH] ftrace: add an fsync tracer
+Message-ID: <20081106212049.GC20928@redhat.com>
+References: <1225976138.7803.4485.camel@twins> <20081106060624.58a0f967@infradead.org> <1225981141.7803.4577.camel@twins> <20081106063108.02b4813d@infradead.org> <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org> <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com> <20081106094558.50d94bcc@infradead.org> <y0mej1ofvyz.fsf@ton.toronto.redhat.com> <20081106131348.68f8858e@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081106131348.68f8858e@infradead.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: moving of function prototypes into own header file
+Hi -
 
-ftrace.h is too big of a file for hardirq.h, and some archs will fail
-to build because of the include dependencies not being met.
+On Thu, Nov 06, 2008 at 01:13:48PM -0800, Arjan van de Ven wrote:
+> [...]
+> fche@redhat.com (Frank Ch. Eigler) wrote:
+> 
+> > Arjan van de Ven <arjan@infradead.org> writes:
+> > 
+> > > [...]
+> > > what is the real need is
+> > > 1) Have a trace point in the source
+> > > 2) Associate a "formatting function" with that point 
+> > >    (which basically transforms the trace parameters to, say, a
+> > > string) 3) A way to turn the trace point on/off.
+> > 
+> > For 1 and 2, it may be worth considering a plain trace_mark() in
+> > do_sync().  The complication that makes this uglier than a one-liner
+> 
+> no why is that?
+> 
+> what you really need is to be able to provide a callback function
+> pointer that will do the formatting, or as Peter wants it, a format string.
+> [...]
+> Doing this like you propose is just too complex and too specialistic;
+> the reality is that merely formatting the arguments of a trace point is
+> the common case, and I suspect for 99.9% of the cases we can get away
+> with a standard default formatting.
 
-This patch pulls out the required prototypes for hardirq.h into a smaller
-and safer ftrace_irq.h file.
+I don't understand what you're arguing against.  If formatting strings
+learn to deal with struct files, then the marker approach would be
+even simpler, and the fsync "tracer" would consist of this single line:
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/ftrace.h     |    5 -----
- include/linux/ftrace_irq.h |   13 +++++++++++++
- include/linux/hardirq.h    |    2 +-
- 3 files changed, 14 insertions(+), 6 deletions(-)
- create mode 100644 include/linux/ftrace_irq.h
+   trace_mark (fsync, "process %s fsyncd file %pF\n", comm->execname, file);
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 41054a3..1f5608c 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -134,9 +134,6 @@ extern void ftrace_release(void *start, unsigned long size);
- 
- extern void ftrace_disable_daemon(void);
- extern void ftrace_enable_daemon(void);
--extern void ftrace_nmi_enter(void);
--extern void ftrace_nmi_exit(void);
--
- #else
- # define skip_trace(ip)				({ 0; })
- # define ftrace_force_update()			({ 0; })
-@@ -144,8 +141,6 @@ extern void ftrace_nmi_exit(void);
- # define ftrace_disable_daemon()		do { } while (0)
- # define ftrace_enable_daemon()			do { } while (0)
- static inline void ftrace_release(void *start, unsigned long size) { }
--static inline void ftrace_nmi_enter(void) { }
--static inline void ftrace_nmi_exit(void) { }
- #endif /* CONFIG_DYNAMIC_FTRACE */
- 
- /* totally disable ftrace - can not re-enable after this */
-diff --git a/include/linux/ftrace_irq.h b/include/linux/ftrace_irq.h
-new file mode 100644
-index 0000000..b1299d6
---- /dev/null
-+++ b/include/linux/ftrace_irq.h
-@@ -0,0 +1,13 @@
-+#ifndef _LINUX_FTRACE_IRQ_H
-+#define _LINUX_FTRACE_IRQ_H
-+
-+
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+extern void ftrace_nmi_enter(void);
-+extern void ftrace_nmi_exit(void);
-+#else
-+static inline void ftrace_nmi_enter(void) { }
-+static inline void ftrace_nmi_exit(void) { }
-+#endif
-+
-+#endif /* _LINUX_FTRACE_IRQ_H */
-diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-index ffc16ab..89a56d7 100644
---- a/include/linux/hardirq.h
-+++ b/include/linux/hardirq.h
-@@ -4,7 +4,7 @@
- #include <linux/preempt.h>
- #include <linux/smp_lock.h>
- #include <linux/lockdep.h>
--#include <linux/ftrace.h>
-+#include <linux/ftrace_irq.h>
- #include <asm/hardirq.h>
- #include <asm/system.h>
- 
--- 
-1.5.6.5
+Via some simple additional generic code (the generic marker->ftrace
+backend), that would turn into exactly the "merely formatting the
+arguments ... 99.9% of the cases" you're talking about.
 
--- 
+
+- FChE
