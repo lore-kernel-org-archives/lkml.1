@@ -1,40 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYKFXvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYKFX5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbYKFXvQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 18:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbYKFXu5
+	id S1754319AbYKFX5A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 18:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbYKFX4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 18:50:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52667
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751481AbYKFXu4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 18:50:56 -0500
-Date: Thu, 06 Nov 2008 15:50:55 -0800 (PST)
-Message-Id: <20081106.155055.158286541.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes for 2.6.28-rc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081106065003.GA19105@havoc.gtf.org>
-References: <20081106065003.GA19105@havoc.gtf.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 18:56:50 -0500
+Received: from sous-sol.org ([216.99.217.87]:51085 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751844AbYKFX4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 18:56:49 -0500
+Date: Thu, 6 Nov 2008 15:54:06 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Greg KH <greg@kroah.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, H L <swdevyid@yahoo.com>,
+       Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
+       grundler@parisc-linux.org, achiang@hp.com, linux-pci@vger.kernel.org,
+       rdreier@cisco.com, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, mingo@elte.hu, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Message-ID: <20081106235406.GB30790@sequoia.sous-sol.org>
+References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <20081106174741.GC11773@parisc-linux.org> <20081106175308.GA17027@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081106175308.GA17027@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Thu, 6 Nov 2008 01:50:03 -0500
+* Greg KH (greg@kroah.com) wrote:
+> On Thu, Nov 06, 2008 at 10:47:41AM -0700, Matthew Wilcox wrote:
+> > On Thu, Nov 06, 2008 at 08:49:19AM -0800, Greg KH wrote:
+> > > On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
+> > > > I have not modified any existing drivers, but instead I threw together
+> > > > a bare-bones module enabling me to make a call to pci_iov_register()
+> > > > and then poke at an SR-IOV adapter's /sys entries for which no driver
+> > > > was loaded.
+> > > > 
+> > > > It appears from my perusal thus far that drivers using these new
+> > > > SR-IOV patches will require modification; i.e. the driver associated
+> > > > with the Physical Function (PF) will be required to make the
+> > > > pci_iov_register() call along with the requisite notify() function.
+> > > > Essentially this suggests to me a model for the PF driver to perform
+> > > > any "global actions" or setup on behalf of VFs before enabling them
+> > > > after which VF drivers could be associated.
+> > > 
+> > > Where would the VF drivers have to be associated?  On the "pci_dev"
+> > > level or on a higher one?
+> > > 
+> > > Will all drivers that want to bind to a "VF" device need to be
+> > > rewritten?
+> > 
+> > The current model being implemented by my colleagues has separate
+> > drivers for the PF (aka native) and VF devices.  I don't personally
+> > believe this is the correct path, but I'm reserving judgement until I
+> > see some code.
+> 
+> Hm, I would like to see that code before we can properly evaluate this
+> interface.  Especially as they are all tightly tied together.
+> 
+> > I don't think we really know what the One True Usage model is for VF
+> > devices.  Chris Wright has some ideas, I have some ideas and Yu Zhao has
+> > some ideas.  I bet there's other people who have other ideas too.
+> 
+> I'd love to hear those ideas.
 
-> Mark McLoughlin (2):
->       virtio_net: don't set NETIF_F_FRAGLIST
->       tun: don't set NETIF_F_FRAGLIST
+First there's the question of how to represent the VF on the host.
+Ideally (IMO) this would show up as a normal interface so that normal tools
+can configure the interface.  This is not exactly how the first round of
+patches were designed.
 
-These patches aren't correct, the drivers do in fact handle fragment
-lists properly as was discussed in the threads where these patches
-were posted.
+Second there's the question of reserving the BDF on the host such that
+we don't have two drivers (one in the host and one in a guest) trying to
+drive the same device (an issue that shows up for device assignment as
+well as VF assignment).
 
-Please pull these changes out and resend your pull request, thanks Jeff!
+Third there's the question of whether the VF can be used in the host at
+all.
+
+Fourth there's the question of whether the VF and PF drivers are the
+same or separate.
+
+The typical usecase is assigning the VF to the guest directly, so
+there's only enough functionality in the host side to allocate a VF,
+configure it, and assign it (and propagate AER).  This is with separate
+PF and VF driver.
+
+As Anthony mentioned, we are interested in allowing the host to use the
+VF.  This could be useful for containers as well as dedicating a VF (a
+set of device resources) to a guest w/out passing it through.
+
+thanks,
+-chris
