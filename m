@@ -1,105 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbYKFVLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYKFVNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752864AbYKFVLl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYKFVLc
+	id S1753183AbYKFVNg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYKFVN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:11:32 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:2600 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750932AbYKFVLb (ORCPT
+	Thu, 6 Nov 2008 16:13:27 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38377 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbYKFVN0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:11:31 -0500
-Subject: Re: [PATCH] cciss: firmware version is invalid
-From: "Stillwell, Bryan" <bryan.stillwell@hp.com>
-To: Tim Gardner <timg@tpi.com>
-Cc: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       ISS StorageDev <iss_storagedev@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081106201204.9C2AEF8A65@sepang.rtg.net>
-References: <20081106201204.9C2AEF8A65@sepang.rtg.net>
-Content-Type: text/plain
-Date: Thu, 06 Nov 2008 14:11:30 -0700
-Message-Id: <1226005890.13433.390.camel@aki.stillwell>
+	Thu, 6 Nov 2008 16:13:26 -0500
+Date: Thu, 6 Nov 2008 13:13:48 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: fche@redhat.com (Frank Ch. Eigler)
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
+Subject: Re: [PATCH] ftrace: add an fsync tracer
+Message-ID: <20081106131348.68f8858e@infradead.org>
+In-Reply-To: <y0mej1ofvyz.fsf@ton.toronto.redhat.com>
+References: <20081105094902.27ec4b39@infradead.org>
+	<1225976138.7803.4485.camel@twins>
+	<20081106060624.58a0f967@infradead.org>
+	<1225981141.7803.4577.camel@twins>
+	<20081106063108.02b4813d@infradead.org>
+	<1225983052.7803.4623.camel@twins>
+	<20081106070157.065b2dcc@infradead.org>
+	<alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com>
+	<20081106094558.50d94bcc@infradead.org>
+	<y0mej1ofvyz.fsf@ton.toronto.redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim,
+On Thu, 06 Nov 2008 15:19:48 -0500
+fche@redhat.com (Frank Ch. Eigler) wrote:
 
-Thanks for getting this merged, but I believe this patch is preferred
-over the original one I attached:
-
-http://userweb.kernel.org/~akpm/mmotm/broken-out/cciss-fix-regression-firmware-not-displayed-in-procfs-again-and-again.patch
-
-The reason for this according to Mike Miller is: "The first fix could be
-called anytime something changed on the controller such as number of
-logical volumes, etc.  This patch will get called only once for each
-controller."
-
-Thanks,
-Bryan
-
-On Thu, 2008-11-06 at 20:12 +0000, Tim Gardner wrote:
-> >From b659b0b0e14f5e3c049bf5c8d2883587cdbfe344 Mon Sep 17 00:00:00 2001
-> From: Tim Gardner <tim.gardner@canonical.com>
-> Date: Thu, 6 Nov 2008 12:34:25 -0700
-> Subject: [PATCH] cciss: Firmware Version is invalid
->  OriginalAuthor: bryan.stillwell@hp.com
->  OriginalLocation: http://launchpadlibrarian.net/18582511/cciss_firmware_version_fix.patch
->  Bug: https://bugs.launchpad.net/bugs/284031
+> Arjan van de Ven <arjan@infradead.org> writes:
 > 
-> Emit a CISS_INQUIRY command to read the firmware version.
+> > [...]
+> > what is the real need is
+> > 1) Have a trace point in the source
+> > 2) Associate a "formatting function" with that point 
+> >    (which basically transforms the trace parameters to, say, a
+> > string) 3) A way to turn the trace point on/off.
 > 
-> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-> Cc: stable@kernel.org
-> ---
->  drivers/block/cciss.c |   21 +++++++++++++++++++++
->  1 files changed, 21 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> index b73116e..844b806 100644
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -1631,6 +1631,7 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
->         int ctlr = h->ctlr;
->         int num_luns;
->         ReportLunData_struct *ld_buff = NULL;
-> +       InquiryData_struct *inq_buff = NULL;
->         int return_code;
->         int listlength = 0;
->         int i;
-> @@ -1651,6 +1652,26 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
->         h->busy_configuring = 1;
->         spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
-> 
-> +       inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
-> +       if (inq_buff == NULL) {
-> +               printk(KERN_ERR "cciss: out of memory\n");
-> +               return ENOMEM;
-> +       }
-> +
-> +       /* Get the firmware version */
-> +       return_code = sendcmd_withirq(CISS_INQUIRY, ctlr, inq_buff,
-> +               sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
-> +       if (return_code == IO_OK) {
-> +               h->firm_ver[0] = inq_buff->data_byte[32];
-> +               h->firm_ver[1] = inq_buff->data_byte[33];
-> +               h->firm_ver[2] = inq_buff->data_byte[34];
-> +               h->firm_ver[3] = inq_buff->data_byte[35];
-> +       } else {         /* send command failed */
-> +               printk(KERN_WARNING "cciss: unable to determine firmware"
-> +                       " version of controller\n");
-> +       }
-> +
-> +       /* Get the number of logical volumes */
->         ld_buff = kzalloc(sizeof(ReportLunData_struct), GFP_KERNEL);
->         if (ld_buff == NULL)
->                 goto mem_msg;
-> --
-> 1.5.6.3
-> 
+> For 1 and 2, it may be worth considering a plain trace_mark() in
+> do_sync().  The complication that makes this uglier than a one-liner
 
+no why is that?
+
+what you really need is to be able to provide a callback function
+pointer that will do the formatting,
+or as Peter wants it, a format string.
+
+(and we can easily make a format string that knows how to print a
+struct file, no big deal, I suspect that is a common thing actually)
+
+Doing this like you propose is just too complex and too specialistic;
+the reality is that merely formatting the arguments of a trace point is
+the common case, and I suspect for 99.9% of the cases we can get away
+with a standard default formatting.
+
+We should make THAT easy. Not complex or ugly. But easy.
+
+And then if I or some tool wants to see a tracepoint, we have some
+standard way to enumerate them and turn individual ones on with their
+standard formatting ... and that's it.
+no iffs or buts
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
