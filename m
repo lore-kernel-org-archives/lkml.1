@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYKFPgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYKFPhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbYKFPgo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbYKFPfr
+	id S1754618AbYKFPhd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbYKFPgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:35:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37354 "EHLO mx2.redhat.com"
+	Thu, 6 Nov 2008 10:36:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41741 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbYKFPfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:35:45 -0500
-Message-Id: <20081106153135.743458085@redhat.com>
+	id S1754770AbYKFPgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:36:35 -0500
+Message-Id: <20081106153135.790621895@redhat.com>
 References: <20081106153022.215696930@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Nov 2008 10:30:23 -0500
+Date: Thu, 06 Nov 2008 10:30:24 -0500
 From: vgoyal@redhat.com
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
@@ -23,192 +23,918 @@ Cc: fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
        Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
        ngupta@google.com, Rik van Riel <riel@redhat.com>,
        Jeff Moyer <jmoyer@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 1/4] io controller: documentation
-Content-Disposition: inline; filename=bio-group-documentation.patch
+Subject: [patch 2/4] io controller: biocgroup implementation
+Content-Disposition: inline; filename=bio-cgroup-implementation
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+o biocgroup functionality.
+o Implemented new controller "bio"
+o Most of it picked from dm-ioband biocgroup implementation patches.
+
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-Index: linux17/Documentation/controllers/io-controller.txt
+Index: linux17/include/linux/cgroup_subsys.h
+===================================================================
+--- linux17.orig/include/linux/cgroup_subsys.h	2008-10-09 18:13:53.000000000 -0400
++++ linux17/include/linux/cgroup_subsys.h	2008-11-05 18:12:32.000000000 -0500
+@@ -43,6 +43,12 @@ SUBSYS(mem_cgroup)
+ 
+ /* */
+ 
++#ifdef CONFIG_CGROUP_BIO
++SUBSYS(bio_cgroup)
++#endif
++
++/* */
++
+ #ifdef CONFIG_CGROUP_DEVICE
+ SUBSYS(devices)
+ #endif
+Index: linux17/init/Kconfig
+===================================================================
+--- linux17.orig/init/Kconfig	2008-10-09 18:13:53.000000000 -0400
++++ linux17/init/Kconfig	2008-11-05 18:12:32.000000000 -0500
+@@ -408,6 +408,13 @@ config CGROUP_MEM_RES_CTLR
+ 	  This config option also selects MM_OWNER config option, which
+ 	  could in turn add some fork/exit overhead.
+ 
++config CGROUP_BIO
++	bool "Block I/O cgroup subsystem"
++	depends on CGROUP_MEM_RES_CTLR
++	select MM_OWNER
++	help
++	  A generic proportinal weight IO controller.
++
+ config SYSFS_DEPRECATED
+ 	bool
+ 
+Index: linux17/mm/biocontrol.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux17/Documentation/controllers/io-controller.txt	2008-11-06 09:12:44.000000000 -0500
-@@ -0,0 +1,172 @@
-+				IO Controller
-+				============
++++ linux17/mm/biocontrol.c	2008-11-05 18:12:44.000000000 -0500
+@@ -0,0 +1,409 @@
++/* biocontrol.c - Block I/O Controller
++ *
++ * Copyright IBM Corporation, 2007
++ * Author Balbir Singh <balbir@linux.vnet.ibm.com>
++ *
++ * Copyright 2007 OpenVZ SWsoft Inc
++ * Author: Pavel Emelianov <xemul@openvz.org>
++ *
++ * Copyright VA Linux Systems Japan, 2008
++ * Author Hirokazu Takahashi <taka@valinux.co.jp>
++ *
++ * Copyright RedHat Inc, 2008
++ * Author Vivek Goyal <vgoyal@redhat.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+Design
-+=====
-+This patchset implements a basic version of proportional weight IO controller.
-+It is heavily derived from dm-ioband IO controller with one key difference
-+and that is, there is no separate device mapper driver and there is no
-+need to create a dm-ioband device on top of every block device which needs
-+to do the IO control. In this implementation, all the control logic has
-+been internalized and has been made per request queue. Enabling or disabling
-+IO control on a block device is just a matter of writing a 0 or 1 in
-+appropriate sysfs file.
-+
-+This is a proportional weight controller and that means various cgroups
-+are assigned shares and tasks in those cgroups get to dispatch the bio
-+in proportion to their cgroup share.
-+
-+All the contending cgroups are assigned tokens proportionate to their
-+weights. One token is charged for one sector of IO. Once all the contending
-+cgroups have consumed their tokens, fresh token allocation takes place and
-+this is how disk bandwidth allocation proportion to weight is achieved.
-+
-+The bigger picture is that all the bios being submitted to a block device
-+are first inspected by IO controller logic (bio_group_controller()), only if
-+IO controller has been enabled on that device. The cgroup of the bio is
-+determined and controller checks if this cgroup has sufficient tokens to
-+dispatch the bio. If sufficient tokens are there, bio submitting thread
-+continues to dispatch the bio through normal path otherwise IO controller
-+buffers the bio and submitting thread returns back. These buffered bios
-+are dispatched to lower layers later once the associate group (bio group)
-+has sufficient tokens to dispatch the bios. This delayed dispatching is
-+done with the help of a worker thread (biogroup).
-+
-+IO control can be enabled/disabled dynamically on any of the block device
-+through sysfs file system. For example, to enable IO control on a device
-+do following.
-+
-+echo 1 > /sys/block/sda/biogroup
-+
-+To disable IO control write 0.
-+
-+echo 0 > /sys/block/sda/biogroup
-+
-+This should be doable for any of the block device in the stack. Currently this
-+patch places the hooks only for device mapper driver and still need to tweak
-+md.
-+
-+For example, assume there are two cgroups A and B with weights 1024 and 2048
-+in the system. Tasks in two cgroups A and B are doing IO to two disks sda and
-+sdb in the system. A user has enabled IO control on both sda and sdb. Now on
-+both sda and sdb, tasks in cgroup B will get to use 2/3 of disk BW and
-+tasks in cgroup A will get to use 1/3 of disk bandwidth, only in case of
-+contention. If tasks in any of the groups stop doing IO to a particular disk,
-+task in other group will get to use full disk BW for that duration.
++#include <linux/module.h>
++#include <linux/cgroup.h>
++#include <linux/mm.h>
++#include <linux/blkdev.h>
++#include <linux/smp.h>
++#include <linux/bit_spinlock.h>
++#include <linux/idr.h>
++#include <linux/err.h>
++#include <linux/biocontrol.h>
 +
 +
-+HOWTO
-+====
-+- Enable cgroup, memory controller and block IO controller in kernel config
-+  file.
++/* return corresponding bio_cgroup object of a cgroup */
++static inline struct bio_cgroup *cgroup_bio(struct cgroup *cgrp)
++{
++	return container_of(cgroup_subsys_state(cgrp, bio_cgroup_subsys_id),
++			    struct bio_cgroup, css);
++}
 +
-+- Boot into the kernel and mount io controller.
++static inline void bio_list_add_head(struct bio_list *bl, struct bio *bio)
++{
++	bio->bi_next = NULL;
 +
-+  mount -t cgroup -o bio none /cgroup/bio/
++	if (bl->head)
++		bio->bi_next = bl->head;
++	else
++		bl->tail = bio;
 +
-+- Create two cgroups test1 and test2
++	bl->head = bio;
++}
 +
-+  cd /cgroup/bio
-+  mkdir test1 test2
++void __bio_group_queue_bio_head(struct bio_group *biog, struct bio *bio)
++{
++	bio_list_add_head(&biog->bio_queue, bio);
++}
 +
-+- Allocate weight 4096 to test1 and weight 2048 to test2
++void bio_group_queue_bio_head(struct bio_group *biog, struct bio *bio)
++{
++	unsigned long flags;
 +
-+  echo 4096 > /cgroup/bio/test1/bio.shares
-+  echo 2048 > /cgroup/bio/test1/bio.shares
++	spin_lock_irqsave(&biog->bio_group_lock, flags);
++	 __bio_group_queue_bio_head(biog, bio);
++	spin_unlock_irqrestore(&biog->bio_group_lock, flags);
++}
 +
-+- Launch "dd" operations in cgroup test1 and test2.
++void  __bio_group_queue_bio_tail(struct bio_group *biog, struct bio *bio)
++{
++	bio_list_add(&biog->bio_queue, bio);
++}
 +
-+  echo $$ > /cgroup/bio/test1/tasks
-+  dd if=/somefile1 of=/dev/null
-+  echo $$ > /cgroup/bio/test2/tasks
-+  dd if=/somefile2 of=/dev/null
++void bio_group_queue_bio_tail(struct bio_group *biog, struct bio *bio)
++{
++	unsigned long flags;
 +
-+Job in cgroup test1 should finish before job in cgroup test2. To verify
-+that "dd" in cgroup test1 got to dispatch more bio as compared to "dd" in
-+test2, look at "bio.aggregate_tokens" in both the cgroup (At same time). At
-+any point of time when both the dd's are running, aggregate_tokens in cgroup
-+test1 should be approximately double of aggregate_tokens in cgroup test2
-+(Because weight of cgroup test1 is double of weight of cgroup test2).
++	spin_lock_irqsave(&biog->bio_group_lock, flags);
++	 __bio_group_queue_bio_tail(biog, bio);
++	spin_unlock_irqrestore(&biog->bio_group_lock, flags);
++}
 +
-+Some Tunables
-+=============
-+Some tunables appear in cgroup file system and in sysfs for respective
-+device for debug and for configuration. Here is a brief description.
++/* Removes first request from the bio-cgroup request list */
++struct bio* __bio_group_dequeue_bio(struct bio_group *biog)
++{
++       struct bio *bio = NULL;
 +
-+Cgroup Files
-+============
-+bio.shares
-+	Specifies the weight of the cgroup.
++	if (bio_list_empty(&biog->bio_queue))
++		return NULL;
++	bio = bio_list_pop(&biog->bio_queue);
++	return bio;
++}
 +
-+bio.aggregate_tokens
-+	Specifies total number of tokens dispatched by this cgroup. One token
-+	represents one sector of IO.
++struct bio* bio_group_dequeue_bio(struct bio_group *biog)
++{
++	unsigned long flags;
++	struct bio *bio;
++	spin_lock_irqsave(&biog->bio_group_lock, flags);
++		bio = __bio_group_dequeue_bio(biog);
++	spin_unlock_irqrestore(&biog->bio_group_lock, flags);
++	return bio;
++}
 +
-+bio.jiffies
-+	What was the jiffies values when last bio from this cgroup was released.
++/* Traverse through all the active bio_group list of this cgroup and see
++ * if there is an active bio_group for the request queue. */
++struct bio_group* bio_group_from_cgroup(struct bio_cgroup *biocg,
++						struct request_queue *q)
++{
++	unsigned long flags;
++	struct bio_group *biog = NULL;
 +
-+bio.nr_token_slices
-+	How many times this cgroup got the token allocation done from token
-+	slice. We kind of create a token slice and every contending cgroup
-+	gets the pie out of the slice based on the share.
++	spin_lock_irqsave(&biocg->biog_list_lock, flags);
++		if (list_empty(&biocg->bio_group_list))
++			goto out;
++		list_for_each_entry(biog, &biocg->bio_group_list, next) {
++			if (biog->q == q) {
++				bio_group_get(biog);
++				goto out;
++			}
++		}
 +
-+bio.nr_off_the_tree
-+	How many times this bio group went off the list of contending groups.
-+	We maintain an rb-tree of biogroups contending for IO and token
-+	allocation takes place to these groups regularly. If some group stops
-+	doing IO then it is considered to be idle and removed from the tree
-+	and added back later when group has IO to perform. This file just
-+	counts how many times this bio group went off the tree.
++	/* did not find biog */
++	spin_unlock_irqrestore(&biocg->biog_list_lock, flags);
++	return NULL;
++out:
++	spin_unlock_irqrestore(&biocg->biog_list_lock, flags);
++	return biog;
++}
 +
-+Sysfs Tunabels
-+==============
-+/sys/block/{deice name}/biogroup
-+	Whether IO controller (bio groups) are active on this device or not.
++struct bio_cgroup *bio_cgroup_from_bio(struct bio *bio)
++{
++	struct page_cgroup *pc;
++	struct bio_cgroup *biocg = NULL;
++	struct page *page = bio_iovec_idx(bio, 0)->bv_page;
 +
-+/sys/block/{deice name}/deftoken
-+	Default number of tokens which are given to a bio group upon start
-+	if all the bio groups were of same weight. token slice is of dynamic
-+	length. So if there are 3 cgroups contending and deftoken is 100 then
-+	token slice lenght will be 100*3 = 300 and now out of this slice
-+	three groups will get the tokens based on their weights.
++	lock_page_cgroup(page);
++	pc = page_get_page_cgroup(page);
++	if (pc)
++		biocg = pc->bio_cgroup;
++	if (!biocg)
++		biocg = bio_cgroup_from_task(rcu_dereference(init_mm.owner));
++	unlock_page_cgroup(page);
++	return biocg;
++}
 +
-+/sys/block/{deice name}/idletime
-+	The time after which if a bio group does not generate the bio, it is
-+	considered idle and removed from the rb-tree. Currently by default it
-+	is 8ms.
++static struct cgroup_subsys_state * bio_cgroup_create(struct cgroup_subsys *ss,
++							 struct cgroup *cgrp)
++{
++	struct bio_cgroup *biocg;
++	int error;
 +
-+/sys/block/{deice name}/newslice_count
-+	How many times new token allocation took place on this queue.
++	if (!cgrp->parent) {
++		static struct bio_cgroup default_bio_cgroup;
 +
-+TODO
-+====
-+- Do extensive testing in various scenarios and do performance optimization
-+  and fix the things where broken.
++		biocg = &default_bio_cgroup;
++	} else {
++		biocg = kzalloc(sizeof(*biocg), GFP_KERNEL);
++		if (!biocg) {
++			error = -ENOMEM;
++			goto out;
++		}
++	}
 +
-+- IO schedulers derive context information from "current". This assumption
-+  will be broken if bios are being submitted by a worker thread (biogroup).
-+  Probably we need to put io context pointer in bio itself to get rid of
-+  this dependency.
++	/* Bind the cgroup to bio_cgroup object we just created */
++	biocg->css.cgroup = cgrp;
++	spin_lock_init(&biocg->biog_list_lock);
++	spin_lock_init(&biocg->page_list_lock);
++	/* Assign default shares */
++	biocg->shares = 1024;
++	INIT_LIST_HEAD(&biocg->bio_group_list);
++	INIT_LIST_HEAD(&biocg->page_list);
 +
-+- Allocating tokens for per sector of IO is crude approximation and will lead
-+  to unfair bandwidth allocation in case task in cgroup is doing sequential IO
-+  and task in other group is doing random IO. Rik Van Riel, suggested that
-+  probably we should switch to time based scheme. Keep a track of average time
-+  it takes to complete IO from a cgroup and do the allocation accordingly.
++	return &biocg->css;
++out:
++	kfree(biocg);
++	return ERR_PTR(error);
++}
 +
-+- Currently this controller is dependent on memory controller being enabled.
-+  Try to reduce this coupling.
++void free_biog_elements(struct bio_cgroup *biocg)
++{
++	unsigned long flags, flags1;
++	struct bio_group *biog = NULL;
 +
-+ISSUES
-+======
-+- IO controller can buffer the bios if suffcient tokens were not available
-+  at the time of bio submission. Once the tokens are available, these bios
-+  are dispatched to elevator/lower layers in first come first serve manner.
-+  And this has potential to break CFQ where a RT tasks should be able to
-+  dispatch the bio first or a high priority task should be able to release
-+  more bio as compared to low priority task in same cgroup.
++	spin_lock_irqsave(&biocg->biog_list_lock, flags);
++	while (1) {
++		if (list_empty(&biocg->bio_group_list))
++			goto out;
 +
-+  Not sure how to fix it. May be we need to maintain another rb-tree and
-+  keep track of RT tasks and tasks priorities and dispatch accordingly. This
-+  is equivalent of duplicating lots of CFQ logic and not sure how would it
-+  impact AS behaviour.
++		list_for_each_entry(biog, &biocg->bio_group_list, next) {
++			spin_lock_irqsave(&biog->bio_group_lock, flags1);
++			if (!atomic_read(&biog->refcnt)) {
++				list_del(&biog->next);
++				BUG_ON(bio_group_on_queue(biog));
++				spin_unlock_irqrestore(&biog->bio_group_lock,
++								flags1);
++				kfree(biog);
++				break;
++			} else {
++				/* Drop the locks and schedule out. */
++				spin_unlock_irqrestore(&biog->bio_group_lock,
++								flags1);
++				spin_unlock_irqrestore(&biocg->biog_list_lock,
++								flags);
++				msleep(1);
++
++				/* Re-acquire the lock */
++				spin_lock_irqsave(&biocg->biog_list_lock,
++							flags);
++				break;
++			}
++		}
++	}
++
++out:
++	spin_unlock_irqrestore(&biocg->biog_list_lock, flags);
++	return;
++}
++
++void free_bio_cgroup(struct bio_cgroup *biocg)
++{
++	free_biog_elements(biocg);
++}
++
++static void __clear_bio_cgroup(struct page_cgroup *pc)
++{
++	struct bio_cgroup *biocg = pc->bio_cgroup;
++	pc->bio_cgroup = NULL;
++	/* Respective bio group got deleted hence reference to
++	 * bio cgroup removed from page during force empty. But page
++	 * is being freed now. Igonore it. */
++	if (!biocg)
++		return;
++	put_bio_cgroup(biocg);
++}
++
++void clear_bio_cgroup(struct page_cgroup *pc)
++{
++	__clear_bio_cgroup(pc);
++}
++
++#define FORCE_UNCHARGE_BATCH	(128)
++void bio_cgroup_force_empty(struct bio_cgroup *biocg)
++{
++	struct page_cgroup *pc;
++	struct page *page;
++	int count = FORCE_UNCHARGE_BATCH;
++	struct list_head *list = &biocg->page_list;
++	unsigned long flags;
++
++	spin_lock_irqsave(&biocg->page_list_lock, flags);
++	while (!list_empty(list)) {
++		pc = list_entry(list->prev, struct page_cgroup, blist);
++		page = pc->page;
++		get_page(page);
++		__bio_cgroup_remove_page(pc);
++		__clear_bio_cgroup(pc);
++		spin_unlock_irqrestore(&biocg->page_list_lock, flags);
++		put_page(page);
++		if (--count <= 0) {
++			count = FORCE_UNCHARGE_BATCH;
++			cond_resched();
++		}
++		spin_lock_irqsave(&biocg->page_list_lock, flags);
++	}
++	spin_unlock_irqrestore(&biocg->page_list_lock, flags);
++	/* Now free up all the bio groups releated to cgroup */
++	free_bio_cgroup(biocg);
++	return;
++}
++
++static void bio_cgroup_pre_destroy(struct cgroup_subsys *ss,
++						struct cgroup *cgrp)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++	bio_cgroup_force_empty(biocg);
++}
++
++static void bio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++	kfree(biocg);
++}
++
++static u64 bio_shares_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct bio_cgroup *biog = cgroup_bio(cgrp);
++
++	return (u64) biog->shares;
++}
++
++static int bio_shares_write(struct cgroup *cgrp, struct cftype *cft, u64 val)
++{
++	struct bio_cgroup *biog = cgroup_bio(cgrp);
++
++	biog->shares = val;
++	return 0;
++}
++
++static u64 bio_aggregate_tokens_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	return (u64) biocg->aggregate_tokens;
++}
++
++static int bio_aggregate_tokens_write(struct cgroup *cgrp, struct cftype *cft,
++						u64 val)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	biocg->aggregate_tokens = val;
++	return 0;
++}
++
++static u64 bio_jiffies_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	return (u64) biocg->jiffies;
++}
++
++static u64 bio_nr_off_the_tree_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	return (u64) biocg->nr_off_the_tree;
++}
++
++static int bio_nr_off_the_tree_write(struct cgroup *cgrp, struct cftype *cft,
++						u64 val)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	biocg->nr_off_the_tree = val;
++	return 0;
++}
++
++static u64 bio_nr_token_slices_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	return (u64) biocg->nr_token_slices;
++}
++
++static int bio_nr_token_slices_write(struct cgroup *cgrp,
++						struct cftype *cft, u64 val)
++{
++	struct bio_cgroup *biocg = cgroup_bio(cgrp);
++
++	biocg->nr_token_slices = val;
++	return 0;
++}
++
++
++
++static struct cftype bio_files[] = {
++	{
++		.name = "shares",
++		.read_u64 = bio_shares_read,
++		.write_u64 = bio_shares_write,
++	},
++	{
++		.name = "aggregate_tokens",
++		.read_u64 = bio_aggregate_tokens_read,
++		.write_u64 = bio_aggregate_tokens_write,
++	},
++	{
++		.name = "jiffies",
++		.read_u64 = bio_jiffies_read,
++	},
++	{
++		.name = "nr_off_the_tree",
++		.read_u64 = bio_nr_off_the_tree_read,
++		.write_u64 = bio_nr_off_the_tree_write,
++	},
++	{
++		.name = "nr_token_slices",
++		.read_u64 = bio_nr_token_slices_read,
++		.write_u64 = bio_nr_token_slices_write,
++	},
++};
++
++static int bio_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	if (bio_cgroup_disabled())
++		return 0;
++	return cgroup_add_files(cont, ss, bio_files, ARRAY_SIZE(bio_files));
++}
++
++static void bio_cgroup_move_task(struct cgroup_subsys *ss,
++				struct cgroup *cont,
++				struct cgroup *old_cont,
++				struct task_struct *p)
++{
++	/* do nothing */
++}
++
++
++struct cgroup_subsys bio_cgroup_subsys = {
++	.name           = "bio",
++	.subsys_id      = bio_cgroup_subsys_id,
++	.create         = bio_cgroup_create,
++	.destroy        = bio_cgroup_destroy,
++	.pre_destroy	= bio_cgroup_pre_destroy,
++	.populate       = bio_cgroup_populate,
++	.attach		= bio_cgroup_move_task,
++	.early_init	= 0,
++};
+Index: linux17/include/linux/biocontrol.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux17/include/linux/biocontrol.h	2008-11-05 18:12:44.000000000 -0500
+@@ -0,0 +1,174 @@
++#include <linux/cgroup.h>
++#include <linux/mm.h>
++#include <linux/memcontrol.h>
++#include <linux/blkdev.h>
++#include "../../drivers/md/dm-bio-list.h"
++
++#ifndef _LINUX_BIOCONTROL_H
++#define _LINUX_BIOCONTROL_H
++
++#ifdef	CONFIG_CGROUP_BIO
++
++struct io_context;
++struct block_device;
++
++struct bio_cgroup {
++	struct cgroup_subsys_state css;
++	/* Share/weight of the cgroup */
++	unsigned long		shares;
++
++	/* list of bio-groups associated with this cgroup. */
++	struct list_head	bio_group_list;
++	spinlock_t		biog_list_lock;
++
++	/* list of pages associated with this bio cgroup */
++	spinlock_t		page_list_lock;
++	struct list_head	page_list;
++
++	/* Debug Aid */
++	unsigned long 		aggregate_tokens;
++	unsigned long 		jiffies;
++	unsigned long 		nr_off_the_tree;
++	unsigned long 		nr_token_slices;
++};
++
++static inline int bio_cgroup_disabled(void)
++{
++	return bio_cgroup_subsys.disabled;
++}
++
++static inline struct bio_cgroup *bio_cgroup_from_task(struct task_struct *p)
++{
++	return container_of(task_subsys_state(p, bio_cgroup_subsys_id),
++				struct bio_cgroup, css);
++}
++
++static inline void get_bio_cgroup(struct bio_cgroup *biocg)
++{
++	css_get(&biocg->css);
++}
++
++static inline void put_bio_cgroup(struct bio_cgroup *biocg)
++{
++	css_put(&biocg->css);
++}
++
++static inline void set_bio_cgroup(struct page_cgroup *pc,
++					struct bio_cgroup *biog)
++{
++	pc->bio_cgroup = biog;
++}
++
++static inline struct bio_cgroup *get_bio_page_cgroup(struct page_cgroup *pc)
++{
++	struct bio_cgroup *biog = pc->bio_cgroup;
++	get_bio_cgroup(biog);
++	return biog;
++}
++
++/* This sould be called in an RCU-protected section. */
++static inline struct bio_cgroup *mm_get_bio_cgroup(struct mm_struct *mm)
++{
++	struct bio_cgroup *biog;
++	biog = bio_cgroup_from_task(rcu_dereference(mm->owner));
++	get_bio_cgroup(biog);
++	return biog;
++}
++
++static inline void __bio_cgroup_add_page(struct page_cgroup *pc)
++{
++	struct bio_cgroup *biocg = pc->bio_cgroup;
++	list_add(&pc->blist, &biocg->page_list);
++}
++
++static inline void bio_cgroup_add_page(struct page_cgroup *pc)
++{
++	struct bio_cgroup *biocg = pc->bio_cgroup;
++	unsigned long flags;
++	spin_lock_irqsave(&biocg->page_list_lock, flags);
++	__bio_cgroup_add_page(pc);
++	spin_unlock_irqrestore(&biocg->page_list_lock, flags);
++}
++
++static inline void __bio_cgroup_remove_page(struct page_cgroup *pc)
++{
++	list_del_init(&pc->blist);
++}
++
++static inline void bio_cgroup_remove_page(struct page_cgroup *pc)
++{
++	struct bio_cgroup *biocg = pc->bio_cgroup;
++	unsigned long flags;
++
++	/* Respective bio group got deleted hence reference to
++	 * bio cgroup removed from page during force empty. But page
++	 * is being freed now. Igonore it. */
++	if (!biocg)
++		return;
++	spin_lock_irqsave(&biocg->page_list_lock, flags);
++	__bio_cgroup_remove_page(pc);
++	spin_unlock_irqrestore(&biocg->page_list_lock, flags);
++}
++
++extern void clear_bio_cgroup(struct page_cgroup *pc);
++
++extern int bio_group_controller(struct request_queue *q, struct bio *bio);
++extern void blk_biogroup_work(struct work_struct *work);
++#else	/* CONFIG_CGROUP_BIO */
++
++struct bio_cgroup;
++
++static inline int bio_cgroup_disabled(void)
++{
++	return 1;
++}
++
++static inline void get_bio_cgroup(struct bio_cgroup *biocg)
++{
++}
++
++static inline void put_bio_cgroup(struct bio_cgroup *biocg)
++{
++}
++
++static inline void set_bio_cgroup(struct page_cgroup *pc,
++					struct bio_cgroup *biog)
++{
++}
++
++static inline void clear_bio_cgroup(struct page_cgroup *pc)
++{
++}
++
++static inline struct bio_cgroup *get_bio_page_cgroup(struct page_cgroup *pc)
++{
++	return NULL;
++}
++
++static inline struct bio_cgroup *mm_get_bio_cgroup(struct mm_struct *mm)
++{
++	return NULL;
++}
++
++static inline void bio_cgroup_add_page(struct page_cgroup *pc)
++{
++	return;
++}
++
++static inline void bio_cgroup_remove_page(struct page_cgroup *pc)
++{
++	return;
++}
++
++static inline int bio_group_controller(struct request_queue *q, struct bio *bio)
++{
++	return 0;
++}
++static inline void blk_biogroup_work(struct work_struct *work)
++{
++}
++
++
++#endif	/* CONFIG_CGROUP_BIO */
++
++#endif /* _LINUX_BIOCONTROL_H */
+Index: linux17/mm/Makefile
+===================================================================
+--- linux17.orig/mm/Makefile	2008-10-09 18:13:53.000000000 -0400
++++ linux17/mm/Makefile	2008-11-05 18:12:32.000000000 -0500
+@@ -34,4 +34,5 @@ obj-$(CONFIG_MIGRATION) += migrate.o
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_CGROUP_BIO) += biocontrol.o
+ 
+Index: linux17/mm/memcontrol.c
+===================================================================
+--- linux17.orig/mm/memcontrol.c	2008-10-09 18:13:53.000000000 -0400
++++ linux17/mm/memcontrol.c	2008-11-05 18:12:32.000000000 -0500
+@@ -32,6 +32,7 @@
+ #include <linux/fs.h>
+ #include <linux/seq_file.h>
+ #include <linux/vmalloc.h>
++#include <linux/biocontrol.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -144,30 +145,6 @@ struct mem_cgroup {
+ };
+ static struct mem_cgroup init_mem_cgroup;
+ 
+-/*
+- * We use the lower bit of the page->page_cgroup pointer as a bit spin
+- * lock.  We need to ensure that page->page_cgroup is at least two
+- * byte aligned (based on comments from Nick Piggin).  But since
+- * bit_spin_lock doesn't actually set that lock bit in a non-debug
+- * uniprocessor kernel, we should avoid setting it here too.
+- */
+-#define PAGE_CGROUP_LOCK_BIT 	0x0
+-#if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
+-#define PAGE_CGROUP_LOCK 	(1 << PAGE_CGROUP_LOCK_BIT)
+-#else
+-#define PAGE_CGROUP_LOCK	0x0
+-#endif
+-
+-/*
+- * A page_cgroup page is associated with every page descriptor. The
+- * page_cgroup helps us identify information about the cgroup
+- */
+-struct page_cgroup {
+-	struct list_head lru;		/* per cgroup LRU list */
+-	struct page *page;
+-	struct mem_cgroup *mem_cgroup;
+-	int flags;
+-};
+ #define PAGE_CGROUP_FLAG_CACHE	(0x1)	/* charged as cache */
+ #define PAGE_CGROUP_FLAG_ACTIVE (0x2)	/* page is active in this cgroup */
+ 
+@@ -278,21 +255,6 @@ struct page_cgroup *page_get_page_cgroup
+ 	return (struct page_cgroup *) (page->page_cgroup & ~PAGE_CGROUP_LOCK);
+ }
+ 
+-static void lock_page_cgroup(struct page *page)
+-{
+-	bit_spin_lock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
+-}
+-
+-static int try_lock_page_cgroup(struct page *page)
+-{
+-	return bit_spin_trylock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
+-}
+-
+-static void unlock_page_cgroup(struct page *page)
+-{
+-	bit_spin_unlock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
+-}
+-
+ static void __mem_cgroup_remove_list(struct mem_cgroup_per_zone *mz,
+ 			struct page_cgroup *pc)
+ {
+@@ -535,14 +497,15 @@ unsigned long mem_cgroup_isolate_pages(u
+  * < 0 if the cgroup is over its limit
+  */
+ static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
+-				gfp_t gfp_mask, enum charge_type ctype,
+-				struct mem_cgroup *memcg)
++			gfp_t gfp_mask, enum charge_type ctype,
++			struct mem_cgroup *memcg, struct bio_cgroup *biocg)
+ {
+ 	struct mem_cgroup *mem;
+ 	struct page_cgroup *pc;
+ 	unsigned long flags;
+ 	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+ 	struct mem_cgroup_per_zone *mz;
++	struct bio_cgroup *biocg_temp;
+ 
+ 	pc = kmem_cache_alloc(page_cgroup_cache, gfp_mask);
+ 	if (unlikely(pc == NULL))
+@@ -572,6 +535,10 @@ static int mem_cgroup_charge_common(stru
+ 		css_get(&memcg->css);
+ 	}
+ 
++	rcu_read_lock();
++	biocg_temp = biocg ? biocg : mm_get_bio_cgroup(mm);
++	rcu_read_unlock();
++
+ 	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
+ 		if (!(gfp_mask & __GFP_WAIT))
+ 			goto out;
+@@ -597,6 +564,7 @@ static int mem_cgroup_charge_common(stru
+ 
+ 	pc->mem_cgroup = mem;
+ 	pc->page = page;
++	set_bio_cgroup(pc, biocg_temp);
+ 	/*
+ 	 * If a page is accounted as a page cache, insert to inactive list.
+ 	 * If anon, insert to active list.
+@@ -611,21 +579,22 @@ static int mem_cgroup_charge_common(stru
+ 		unlock_page_cgroup(page);
+ 		res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 		css_put(&mem->css);
++		clear_bio_cgroup(pc);
+ 		kmem_cache_free(page_cgroup_cache, pc);
+ 		goto done;
+ 	}
+ 	page_assign_page_cgroup(page, pc);
+-
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	__mem_cgroup_add_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+-
++	bio_cgroup_add_page(pc);
+ 	unlock_page_cgroup(page);
+ done:
+ 	return 0;
+ out:
+ 	css_put(&mem->css);
++	put_bio_cgroup(biocg_temp);
+ 	kmem_cache_free(page_cgroup_cache, pc);
+ err:
+ 	return -ENOMEM;
+@@ -648,7 +617,7 @@ int mem_cgroup_charge(struct page *page,
+ 	if (unlikely(!mm))
+ 		mm = &init_mm;
+ 	return mem_cgroup_charge_common(page, mm, gfp_mask,
+-				MEM_CGROUP_CHARGE_TYPE_MAPPED, NULL);
++				MEM_CGROUP_CHARGE_TYPE_MAPPED, NULL, NULL);
+ }
+ 
+ int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
+@@ -684,7 +653,7 @@ int mem_cgroup_cache_charge(struct page 
+ 		mm = &init_mm;
+ 
+ 	return mem_cgroup_charge_common(page, mm, gfp_mask,
+-				MEM_CGROUP_CHARGE_TYPE_CACHE, NULL);
++				MEM_CGROUP_CHARGE_TYPE_CACHE, NULL, NULL);
+ }
+ 
+ /*
+@@ -720,14 +689,14 @@ __mem_cgroup_uncharge_common(struct page
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+ 	__mem_cgroup_remove_list(mz, pc);
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+-
++	bio_cgroup_remove_page(pc);
+ 	page_assign_page_cgroup(page, NULL);
+ 	unlock_page_cgroup(page);
+ 
+ 	mem = pc->mem_cgroup;
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 	css_put(&mem->css);
+-
++	clear_bio_cgroup(pc);
+ 	kmem_cache_free(page_cgroup_cache, pc);
+ 	return;
+ unlock:
+@@ -754,6 +723,7 @@ int mem_cgroup_prepare_migration(struct 
+ 	struct mem_cgroup *mem = NULL;
+ 	enum charge_type ctype = MEM_CGROUP_CHARGE_TYPE_MAPPED;
+ 	int ret = 0;
++	struct bio_cgroup *biocg = NULL;
+ 
+ 	if (mem_cgroup_subsys.disabled)
+ 		return 0;
+@@ -765,12 +735,15 @@ int mem_cgroup_prepare_migration(struct 
+ 		css_get(&mem->css);
+ 		if (pc->flags & PAGE_CGROUP_FLAG_CACHE)
+ 			ctype = MEM_CGROUP_CHARGE_TYPE_CACHE;
++		biocg = get_bio_page_cgroup(pc);
+ 	}
+ 	unlock_page_cgroup(page);
+ 	if (mem) {
+ 		ret = mem_cgroup_charge_common(newpage, NULL, GFP_KERNEL,
+-			ctype, mem);
++			ctype, mem, biocg);
+ 		css_put(&mem->css);
++		if (biocg)
++			put_bio_cgroup(biocg);
+ 	}
+ 	return ret;
+ }
+Index: linux17/include/linux/memcontrol.h
+===================================================================
+--- linux17.orig/include/linux/memcontrol.h	2008-10-09 18:13:53.000000000 -0400
++++ linux17/include/linux/memcontrol.h	2008-11-05 18:12:32.000000000 -0500
+@@ -17,16 +17,47 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/bit_spinlock.h>
++#include <linux/mm_types.h>
++
+ #ifndef _LINUX_MEMCONTROL_H
+ #define _LINUX_MEMCONTROL_H
+ 
+ struct mem_cgroup;
+-struct page_cgroup;
+ struct page;
+ struct mm_struct;
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 
++/*
++ * We use the lower bit of the page->page_cgroup pointer as a bit spin
++ * lock.  We need to ensure that page->page_cgroup is at least two
++ * byte aligned (based on comments from Nick Piggin).  But since
++ * bit_spin_lock doesn't actually set that lock bit in a non-debug
++ * uniprocessor kernel, we should avoid setting it here too.
++ */
++#define PAGE_CGROUP_LOCK_BIT 	0x0
++#if defined(CONFIG_SMP) || defined(CONFIG_DEBUG_SPINLOCK)
++#define PAGE_CGROUP_LOCK 	(1 << PAGE_CGROUP_LOCK_BIT)
++#else
++#define PAGE_CGROUP_LOCK	0x0
++#endif
++
++/*
++ * A page_cgroup page is associated with every page descriptor. The
++ * page_cgroup helps us identify information about the cgroup
++ */
++struct page_cgroup {
++	struct list_head lru;		/* per cgroup LRU list */
++	struct page *page;
++	struct mem_cgroup *mem_cgroup;
++	int flags;
++#ifdef CONFIG_CGROUP_BIO
++	struct list_head blist;		/* for bio_cgroup page list */
++	struct bio_cgroup *bio_cgroup;
++#endif
++};
++
+ #define page_reset_bad_cgroup(page)	((page)->page_cgroup = 0)
+ 
+ extern struct page_cgroup *page_get_page_cgroup(struct page *page);
+@@ -74,6 +105,20 @@ extern long mem_cgroup_calc_reclaim_acti
+ extern long mem_cgroup_calc_reclaim_inactive(struct mem_cgroup *mem,
+ 				struct zone *zone, int priority);
+ 
++static inline void lock_page_cgroup(struct page *page)
++{
++	bit_spin_lock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++}
++
++static inline int try_lock_page_cgroup(struct page *page)
++{
++	return bit_spin_trylock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++}
++
++static inline void unlock_page_cgroup(struct page *page)
++{
++	bit_spin_unlock(PAGE_CGROUP_LOCK_BIT, &page->page_cgroup);
++}
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ static inline void page_reset_bad_cgroup(struct page *page)
+ {
 
 -- 
 
