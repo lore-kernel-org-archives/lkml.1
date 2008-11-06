@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbYKFHZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYKFHZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbYKFHZW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 02:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYKFHZI
+	id S1754645AbYKFHZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 02:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbYKFHZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 02:25:08 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:33465 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752690AbYKFHZG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 02:25:06 -0500
-Message-ID: <4912951D.60301@linux.vnet.ibm.com>
-Date: Thu, 06 Nov 2008 12:26:29 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 6 Nov 2008 02:25:22 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:47175 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753569AbYKFHZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 02:25:20 -0500
+Date: Thu, 6 Nov 2008 08:23:54 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: stern@rowland.harvard.edu, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Problems with the block-layer timeouts
+Message-ID: <20081106072352.GR21867@kernel.dk>
+References: <Pine.LNX.4.44L0.0811011214470.21703-100000@netrider.rowland.org> <20081103085247.GO31673@kernel.dk> <20081106090117U.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm] [PATCH 4/4] Memory cgroup hierarchy feature selector
-References: <20081101184812.2575.68112.sendpatchset@balbir-laptop> <20081101184902.2575.11443.sendpatchset@balbir-laptop> <20081102143817.99edca6d.kamezawa.hiroyu@jp.fujitsu.com> <490D42C7.4000301@linux.vnet.ibm.com> <20081102152412.2af29a1b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081102152412.2af29a1b.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081106090117U.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sun, 02 Nov 2008 11:33:51 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Thu, Nov 06 2008, FUJITA Tomonori wrote:
+> On Mon, 3 Nov 2008 09:52:48 +0100
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
->> KAMEZAWA Hiroyuki wrote:
->>> On Sun, 02 Nov 2008 00:19:02 +0530
->>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>>
->>>> Don't enable multiple hierarchy support by default. This patch introduces
->>>> a features element that can be set to enable the nested depth hierarchy
->>>> feature. This feature can only be enabled when there is just one cgroup
->>>> (the root cgroup).
->>>>
->>> Why the flag is for the whole system ?
->>> flag-per-subtree is of no use ?
->> Flag per subtree might not be useful, since we charge all the way up to root,
-> Ah, what I said is "How about enabling/disabling hierarhcy support per subtree ?"
-> Sorry for bad text.
+> > > In blk_del_timer(), there's no reason to test q->rq_timed_out_fn.  If 
+> > > the method pointer is NULL then req->deadline would be 0 anyway.  In 
+> > > addition, req->deadline should be set to 0 and the end of the routine, 
+> > > just in case req gets requeued.
+> > > 
+> > > In blk_add_timer(), the line
+> > > 
+> > > 	expiry = round_jiffies(req->deadline);
+> > > 
+> > > is not optimal.  round_jiffies() will sometimes round a value _down_ to
+> > > the nearest second.  But blk_rq_timed_out_timer() tests whether
+> > > req->deadline is in the past -- and if the deadline was rounded down
+> > > then this won't be true the first time through.  You wind up getting an
+> > > unnecessary timer interrupt.  Instead there should be a
+> > > round_jiffies_up() utility routine, and it should be used in both
+> > > blk_add_timer() and blk_rq_timed_out_timer().
+> > 
+> > Very good point, we do indeed want a round_jiffies_up() for this!
 > 
-> like this.
->   - you can set hierarchy mode of a cgroup turned on/off when...
->     * you don't have any tasks under it && it doesn't have any child cgroup.
+> Just out of curiosity, why do we need to use round_jiffies here? We
+> didn't do that for SCSI, right?
 
-I see.. the presence of tasks don't matter, since the root cgroup will always
-have tasks. Presence of child groups does matter.
+We don't have to, but given that we don't care about exact timeouts, we
+may as well. It's not a new thing, we've done that since pretty much the
+beginning of the generic timeout development.
 
 -- 
-	Balbir
+Jens Axboe
+
