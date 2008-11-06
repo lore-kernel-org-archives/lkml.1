@@ -1,26 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbYKFBtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYKFBzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbYKFBtx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 20:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYKFBtm
+	id S1753845AbYKFBzk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 20:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbYKFBzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 20:49:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41689 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753060AbYKFBtl (ORCPT
+	Wed, 5 Nov 2008 20:55:32 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41094 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389AbYKFBzb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 20:49:41 -0500
-Date: Wed, 5 Nov 2008 17:49:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Brian Kysela <bkysela@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       linux-usb@vger.kernel.org
-Subject: Re: [BUG] usb-storage: Error in queuecommand: us->srb =
- ffff88006a338480
-Message-Id: <20081105174905.27194494.akpm@linux-foundation.org>
-In-Reply-To: <20081030213557.GA6767@ezra.hsd1.tn.comcast.net>
-References: <20081030213557.GA6767@ezra.hsd1.tn.comcast.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 5 Nov 2008 20:55:31 -0500
+Date: Thu, 6 Nov 2008 10:54:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+ hotplug
+Message-Id: <20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1225935787.6216.12.camel@nigel-laptop>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	<1225817945.12673.602.camel@nimitz>
+	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
+	<200811051208.26628.rjw@sisk.pl>
+	<20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
+	<1225935787.6216.12.camel@nigel-laptop>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,49 +40,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Oct 2008 17:35:57 -0400
-Brian Kysela <bkysela@gmail.com> wrote:
+On Thu, 06 Nov 2008 12:43:07 +1100
+Nigel Cunningham <ncunningham@crca.org.au> wrote:
 
-> On kernels ranging from 2.6.26 - 2.6.28-rc2
-
-So 2.6.25 was OK?
-
-> on an Intel P4 3.2GHz HT x86-64
-> cpu, I am seeing a bug that occurs about half the time when copying ~300MB
-> data from a usb flash drive (FAT) to hard drive (XFS). There are three
-> possible outcomes, so far, when I hit the bug:
+> Hi.
 > 
->     (1) The copy process hangs, cpu wait hits 100% and load avg climbs until
->         reboot;
->     (2) The copy process hangs and then recovers and then one of:
->         (a) the cpu wait & load avg both decline to normal; or
->         (b) cpu wait hovers at 100% and the load avg slowly climbs until reboot;
->     (3) Kernel bug reported and machine locks up.
+> On Thu, 2008-11-06 at 10:17 +0900, KAMEZAWA Hiroyuki wrote:
+> > On Thu, 6 Nov 2008 09:14:41 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > > Ok, please consider "when memory hotplug happens." 
+> > > 
+> > > In general, it happens when
+> > >   1. memory is inserted to slot.
+> > >   2. the firmware notifes the system to enable already inserted memory.
+> > > 
+> > > To trigger "1", you have to open cover of server/pc. Do you open pc while the system
+> > > starts hibernation ? for usual people, no.
+> > > 
+> > > To trigger "2", the user have special console to tell firmware "enable this memory".
+> > > Such firmware console or users have to know "the system works well." And, more important,
+> > > when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
+> > > So, such firmware console or operator have to know the system status.
+> > > 
+> > > Am I missing some ? Current linux can know PCI/USB hotplug while the system is suspended ?
+> > > 
+> > *OFFTOPIC*
+> > 
+> > I hear following answer from my friend.
+> > 
+> >   - hibernate the system
+> > 	=> plug USB memory
+> > 		=> wake up the system
+> > 			=> panic.
+> >   - hibernate the system
+> > 	=> unplug USB memory
+> > 		=> wake up the sytem
+> > 			=> panic.
 > 
-> Result (1) is the most frequent. Result (3) happened only twice out of about 40
-> tests. I lose the full traces, but here are two relevant lines that I see on
-> screen before the machine locks up:
+> We currently check that the number of physical pages is the same when
+> starting to load the image, so neither of these issues cause real
+> problems.
 > 
-> kernel BUG at /home/brian/linux-2.6/block/elevator.c:841!
-> invalid opcode: 0000 [#1] PREMPT SMP
+Hmm? this doesn't come from lost of hotplug interrupt ?
+the memory plugged while the system is sleeping can be recognized when the system wakes up ?
 
-It is unclear what kernel version produced that message, and that is
-important information.  In 2.6.28-rc2, block/elevator.c:841 is
+My point is the firmware/operator has to know "the system is sleeping or not" to do *any* hotplug.
+(I'm not sure but removing a cpu while the system is under hibernation may cause panic, too.)
+In my point of view, this is operator's problem, not hibernation's.
 
-    void elv_dequeue_request(struct request_queue *q, struct request *rq)
-    {
--->>	BUG_ON(list_empty(&rq->queuelist));
-	BUG_ON(ELV_ON_HASH(rq));
+If you want to fix the small race really, please add(or export) some mutex or notifier. like
 
-please confirm that I have the correct line there.
+  NOTIFY_HIBERNATION_START
+  NOTIFY_HIBERNATION_END
+  NOTIFY_HIBERNATION_RESUME
+
+other pepole will make use of this.
+I think __add_memory called by interrupt can be executed in some kernel thread.
+
+Thanks,
+-Kame
 
 
-I assume that you're hitting a bug in the USB storage code and this is
-triggering consistency-checking code in the block layer.
-
-> When (1) or (2b) occurs I pull the usb drive to see what happens. In two cases
-> (3) occurred, but more often I get this in /var/log/syslog:
-
-The other things you saw were most likely a consequence of the
-BUG_ON().
 
