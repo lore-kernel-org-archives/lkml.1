@@ -1,100 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYKFVob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbYKFVpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbYKFVob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYKFVoN
+	id S1752146AbYKFVpK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYKFVoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:44:13 -0500
-Received: from mail.queued.net ([207.210.101.209]:4016 "EHLO mail.queued.net"
+	Thu, 6 Nov 2008 16:44:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54624 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754000AbYKFVoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:44:12 -0500
-Date: Thu, 6 Nov 2008 16:44:08 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: jayakumar.alsa@gmail.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH 3/14] ALSA: cs5535audio: invert EAPD for OLPC (newer than
- B3)
-Message-ID: <20081106164408.38241426@ephemeral>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751300AbYKFVox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:44:53 -0500
+Date: Thu, 6 Nov 2008 22:44:34 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
+       roland@redhat.com, adobriyan@gmail.com, akpm@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] revert: timers: fix itimer/many thread hang
+Message-ID: <20081106214434.GA5999@elte.hu>
+References: <1224694989.8431.23.camel@oberon> <1225132746.14792.13.camel@bobble.smo.corp.google.com> <1225219114.24204.37.camel@oberon> <1225936715.27507.44.camel@bobble.smo.corp.google.com> <1225969420.7803.4366.camel@twins> <1225989102.7803.4749.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225989102.7803.4749.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix an audible pop described in <http://dev.laptop.org/ticket/977>.  Originally
-based upon fixes by Mitch Bradley and Chris Ball.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- sound/pci/cs5535audio/cs5535audio.c      |    3 +++
- sound/pci/cs5535audio/cs5535audio.h      |   11 +++++++++--
- sound/pci/cs5535audio/cs5535audio_olpc.c |   11 +++++++++++
- 3 files changed, 23 insertions(+), 2 deletions(-)
+> This patch reverts all the itimer/many thread patches:
+> 
+> 7086efe1c1536f6bc160e7d60a9bfd645b91f279
+> bb34d92f643086d546b49cef680f6f305ed84414
+> 5ce73a4a5a4893a1aa4cdeed1b1a5a6de42c43b6
+> 0a8eaa4f9b58759595a1bfe13a1295fdc25ba026
+> f06febc96ba8e0af80bcc3eaec0a109e88275fac
+> 
+> Because I think the per-cpu accounting approach is wrong and makes 
+> things worse for people with a machine that has more than a 
+> hand-full of CPUs.
 
-diff --git a/sound/pci/cs5535audio/cs5535audio.c b/sound/pci/cs5535audio/cs5535audio.c
-index cddfa54..0f5ce36 100644
---- a/sound/pci/cs5535audio/cs5535audio.c
-+++ b/sound/pci/cs5535audio/cs5535audio.c
-@@ -164,6 +164,9 @@ static int __devinit snd_cs5535audio_mixer(struct cs5535audio *cs5535au)
- 	ac97.private_data = cs5535au;
- 	ac97.pci = cs5535au->pci;
- 
-+	/* set any OLPC-specific scaps */
-+	olpc_prequirks(card, &ac97);
-+
- 	if ((err = snd_ac97_mixer(pbus, &ac97, &cs5535au->ac97)) < 0) {
- 		snd_printk(KERN_ERR "mixer failed\n");
- 		return err;
-diff --git a/sound/pci/cs5535audio/cs5535audio.h b/sound/pci/cs5535audio/cs5535audio.h
-index c67e62f..93602cf 100644
---- a/sound/pci/cs5535audio/cs5535audio.h
-+++ b/sound/pci/cs5535audio/cs5535audio.h
-@@ -103,9 +103,16 @@ int snd_cs5535audio_resume(struct pci_dev *pci);
- #endif
- 
- #ifdef CONFIG_OLPC
--int olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97);
-+void __devinit olpc_prequirks(struct snd_card *card,
-+		struct snd_ac97_template *ac97);
-+int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97);
- #else
--#define olpc_quirks(arg,arg2) (0)
-+static inline void olpc_prequirks(struct snd_card *card,
-+		struct snd_ac97_template *ac97) { }
-+static inline int olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
-+{
-+	return 0;
-+}
- #endif
- 
- int __devinit snd_cs5535audio_pcm(struct cs5535audio *cs5535audio);
-diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
-index c088eef..adc10a3 100644
---- a/sound/pci/cs5535audio/cs5535audio_olpc.c
-+++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
-@@ -103,6 +103,17 @@ static struct snd_kcontrol_new snd_cs5535audio_controls __devinitdata =
- 	.private_value = 0
- };
- 
-+void __devinit olpc_prequirks(struct snd_card *card,
-+		struct snd_ac97_template *ac97)
-+{
-+	if (!machine_is_olpc())
-+		return;
-+
-+	/* invert EAPD if on an OLPC B3 or higher */
-+	if (olpc_board_at_least(olpc_board_pre(0xb3)))
-+		ac97->scaps |= AC97_SCAP_INV_EAPD;
-+}
-+
- int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
- {
- 	if (!machine_is_olpc())
--- 
-1.5.6.5
+hm, the revert is rather large but i guess the best way forward. 
+Unless we can avoid this loop:
 
+-       for_each_possible_cpu(i) {
+-               tot = per_cpu_ptr(tsk->signal->cputime.totals, i);
+-               times->utime = cputime_add(times->utime, tot->utime);
+-               times->stime = cputime_add(times->stime, tot->stime);
+-               times->sum_exec_runtime += tot->sum_exec_runtime;
+-       }
+
+we have to revert it.
+
+That loop could _perhaps_ be avoided by maintaining the sums from the 
+scheduler tick: by just adding the latest delta values for the current 
+task to times->*time. Plus at exit time cleaning up the remaining 
+delta. That would be a far smaller patch.
+
+	Ingo
