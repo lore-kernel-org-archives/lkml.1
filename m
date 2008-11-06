@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbYKFTxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbYKFTyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752265AbYKFTxy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 14:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYKFTxj
+	id S1752973AbYKFTyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 14:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYKFTxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 14:53:39 -0500
+	Thu, 6 Nov 2008 14:53:45 -0500
 Received: from vms042pub.verizon.net ([206.46.252.42]:60863 "EHLO
 	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbYKFTxi (ORCPT
+	with ESMTP id S1751175AbYKFTxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 14:53:38 -0500
-Date: Thu, 06 Nov 2008 14:17:36 -0500 (EST)
+	Thu, 6 Nov 2008 14:53:40 -0500
+Date: Thu, 06 Nov 2008 14:18:55 -0500 (EST)
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2.6.27.stable] ACPI: dock: avoid check _STA method
+Subject: [PATCH 2.6.25,26.stable] ACPI: dock: avoid check _STA method
 X-X-Sender: lenb@localhost.localdomain
 To: stable@kernel.org
 Cc: linux-acpi@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Shaohua Li <shaohua.li@intel.com>
-Message-id: <alpine.LFD.2.00.0811061413560.3106@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0811061417380.3106@localhost.localdomain>
 MIME-version: 1.0
 Content-type: TEXT/PLAIN; charset=US-ASCII
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
@@ -42,11 +42,11 @@ Date:   Thu Aug 28 10:02:03 2008 +0800
     Signed-off-by: Shaohua Li <shaohua.li@intel.com>
     Signed-off-by: Len Brown <len.brown@intel.com>
 
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index 7d2edf1..25d2161 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -604,14 +604,17 @@ static int handle_eject_request(struct dock_station *ds, u32 event)
+Index: linux-2.6.25.y/drivers/acpi/dock.c
+===================================================================
+--- linux-2.6.25.y.orig/drivers/acpi/dock.c
++++ linux-2.6.25.y/drivers/acpi/dock.c
+@@ -599,14 +599,17 @@ static int handle_eject_request(struct d
  static void dock_notify(acpi_handle handle, u32 event, void *data)
  {
  	struct dock_station *ds = data;
