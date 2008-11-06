@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbYKFMlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYKFMof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754278AbYKFMlj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 07:41:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbYKFMlb
+	id S1754537AbYKFMof (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 07:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYKFMo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 07:41:31 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44821 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753380AbYKFMla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 07:41:30 -0500
-Date: Thu, 6 Nov 2008 10:40:31 -0200
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
-Message-ID: <20081106124031.GO5247@blackpad>
-References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com> <1225915018-6548-16-git-send-email-ehabkost@redhat.com> <20081106071445.GI15731@elte.hu>
+	Thu, 6 Nov 2008 07:44:26 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40715 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753453AbYKFMoZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 07:44:25 -0500
+Message-ID: <29542.10.75.179.61.1225975461.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20081106202534.80e5cf0a.nishimura@mxp.nes.nec.co.jp>
+References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com><20081105172141.1a12dc23.kamezawa.hiroyu@jp.fujitsu.com>
+    <20081106202534.80e5cf0a.nishimura@mxp.nes.nec.co.jp>
+Date: Thu, 6 Nov 2008 21:44:21 +0900 (JST)
+Subject: Re: [RFC][PATCH 4/6] memcg : swap cgroup
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>, nishimura@mxp.nes.nec.co.jp
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106071445.GI15731@elte.hu>
-X-Fnord: you can see the fnord
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 08:14:45AM +0100, Ingo Molnar wrote:
-> 
-> * Eduardo Habkost <ehabkost@redhat.com> wrote:
-> 
-> > This reverts commit c7ffa6c26277b403920e2255d10df849bd613380.
-> > 
-> > Now that we have the hooks to disable virtualization on
-> > emergency_restart(), we can get back to the BOOT_KBD reboot_type default.
-> > 
-> > Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
-> 
-> hm, why revert this? There's nothing wrong with the ACPI reboot 
-> method, it's just that we surprise the BIOS by exiting with an unclean 
-> VMX state in certain circumstances.
-> 
-> if the ACPI reboot method does not work we do the KBD method as the 
-> next thing in the reboot chain.
+Daisuke Nishimura said:
+> On Wed, 5 Nov 2008 17:21:41 +0900, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> Note1: In this, we use pointer to record information and this means
+>>       8bytes per swap entry. I think we can reduce this when we
+>>       create "id of cgroup" in the range of 0-65535 or 0-255.
+>>
+>> Note2: array of swap_cgroup is allocated from HIGHMEM. maybe good for
+>> x86-32.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>>  include/linux/page_cgroup.h |   35 +++++++
+>>  mm/page_cgroup.c            |  201
+>> ++++++++++++++++++++++++++++++++++++++++++++
+>>  mm/swapfile.c               |    8 +
+>>  3 files changed, 244 insertions(+)
+>>
+> Is there any reason why they are defined not in memcontrol.[ch]
+> but in page_cgroup.[ch]?
+>
+no strong reason. just because this is not core logic for acccounting.
+do you want to see this in memcontrol.c ?
 
-I suppose there are cases where the new default broke without KVM, and
-the suggestion was to disable VMX before rebooting instead of changing
-the default.
+>> +void swap_cgroup_swapoff(int type)
+>> +{
+>> +	int i;
+>> +	struct swap_cgroup_ctrl *ctrl;
+>> +
+>> +	if (!do_swap_account)
+>> +		return;
+>> +
+>> +	mutex_lock(&swap_cgroup_mutex);
+>> +	if (ctrl->map) {
+>> +		ctrl = &swap_cgroup_ctrl[type];
+> This line should be before "if (ctrl->map)"(otherwise "ctrl" will be
+> undefined!).
+>
+Oh....maybe refresh mis...brame me.
 
-Avi changed the default because on some machines reboot=kbd breaks when
-VMX is enabled, but the regressions caused by the new default doesn't
-necessarily involve VMX.
+Thanks,
+-Kame
 
-Andrey Borzenkov's patch, for example, adds a new DMI entry because
-reboot=acpi breaks his keyboard (even without KVM, I guess). Andrey,
-was that the case?
 
--- 
-Eduardo
