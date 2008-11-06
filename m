@@ -1,221 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbYKFVxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751434AbYKFVxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbYKFVxU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYKFVxI
+	id S1751434AbYKFVxh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:53:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYKFVxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:53:08 -0500
-Received: from mail.queued.net ([207.210.101.209]:2007 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750784AbYKFVxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:53:07 -0500
-Date: Thu, 6 Nov 2008 16:53:03 -0500
-From: Andres Salomon <dilinger@queued.net>
-To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH 10/14] ALSA: cs5535audio: rename V_REFOUT control to MIC
- Bias
-Message-ID: <20081106165303.073670cb@ephemeral>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Thu, 6 Nov 2008 16:53:14 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:53048 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751422AbYKFVxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:53:13 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtcEALTzEklMQWxa/2dsb2JhbACBdspNg1Y
+Date: Thu, 6 Nov 2008 16:53:11 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
+Subject: Re: [PATCH] ftrace: add an fsync tracer
+Message-ID: <20081106215310.GA15163@Krystal>
+References: <1225976138.7803.4485.camel@twins> <20081106060624.58a0f967@infradead.org> <1225981141.7803.4577.camel@twins> <20081106063108.02b4813d@infradead.org> <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org> <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com> <20081106094558.50d94bcc@infradead.org> <y0mej1ofvyz.fsf@ton.toronto.redhat.com> <1226003343.31966.43.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1226003343.31966.43.camel@lappy.programming.kicks-ass.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 16:50:28 up 155 days,  2:30,  5 users,  load average: 4.26, 2.90,
+	1.72
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Thu, 2008-11-06 at 15:19 -0500, Frank Ch. Eigler wrote:
+> > Arjan van de Ven <arjan@infradead.org> writes:
+> > 
+> > > [...]
+> > > what is the real need is
+> > > 1) Have a trace point in the source
+> > > 2) Associate a "formatting function" with that point 
+> > >    (which basically transforms the trace parameters to, say, a string)
+> > > 3) A way to turn the trace point on/off.
+> > 
+> > For 1 and 2, it may be worth considering a plain trace_mark() in
+> > do_sync().  The complication that makes this uglier than a one-liner
+> > is d_path()'s buffer and error handling.
+> > 
+> >     {
+> >     char *buffer = kzalloc (4096, GFP_KERNEL);
+> >     trace_mark(fsync, "Process %s is calling fsync on %s\n",
+> >                        current->comm,
+> >                        ({char *err = d_path (...);
+> >                          IS_ERR(err) ? "?" : err;}));
+> >     kfree (buffer);
+> >     }
+> > 
+> > With a bit of extension on the marker front, the allocation could be
+> > made conditional on the marker being enabled.
+> > 
+> > 
+> > For 3, the kernel could merge a backend that connects arbitrary
+> > markers to an ftrace (or whatever) buffer.  Several compact prototypes
+> > for the latter exist.
+> 
+> 
+> I prefer we keep using trace points but do what jason has been proposing
+> for a while, which is add a format and arg list to the trace point
+> definition.
+> 
+> Something like
+> 
+> DEFINE_TRACE_FMT(sched_switch,
+> 	TPPROTO(struct rq *rq, struct task_struct *prev,
+> 		 struct task_struct *next),
+> 	TPARGS(rq, prev, next),
+> 	TPFMT("%d to %d\n", prev->pid, next->pid));
+> 
+> Which would be similar to attaching a trace_mark() to the trace point
+> and can in these cases save a lot of lines of code.
+> 
+> Both lttng and the ftrace event tracer can use these default text
+> strings.
+> 
+> 
 
-This drops the AD1888 V_REFOUT control, and replaces it with a MIC Bias
-Enable control.  It also moves the MIC bias enabling into a separate
-function.
+Argh. No, please. Doing this would end up exposing the inner kernel API
+(the tracepoints) directly to userspace.
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- sound/pci/cs5535audio/cs5535audio.h      |   16 +++++++
- sound/pci/cs5535audio/cs5535audio_olpc.c |   73 ++++++++++++++++++++++++++++--
- sound/pci/cs5535audio/cs5535audio_pcm.c  |   17 +------
- 3 files changed, 87 insertions(+), 19 deletions(-)
+I've done an addition to the markers which does approximately the same.
+It's in the -lttng tree now, I should post it soon.
 
-diff --git a/sound/pci/cs5535audio/cs5535audio.h b/sound/pci/cs5535audio/cs5535audio.h
-index 22737fc..63190cd 100644
---- a/sound/pci/cs5535audio/cs5535audio.h
-+++ b/sound/pci/cs5535audio/cs5535audio.h
-@@ -104,6 +104,19 @@ void __devinit olpc_prequirks(struct snd_card *card,
- 		struct snd_ac97_template *ac97);
- int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97);
- void olpc_analog_input(struct snd_ac97 *ac97, int on);
-+void olpc_mic_bias(struct snd_ac97 *ac97, int on);
-+
-+static inline void olpc_capture_open(struct snd_ac97 *ac97)
-+{
-+	/* enable MIC Bias for recording */
-+	olpc_mic_bias(ac97, 1);
-+}
-+
-+static inline void olpc_capture_close(struct snd_ac97 *ac97)
-+{
-+	/* disable the MIC Bias (so the recording LED turns off) */
-+	olpc_mic_bias(ac97, 0);
-+}
- #else
- static inline void olpc_prequirks(struct snd_card *card,
- 		struct snd_ac97_template *ac97) { }
-@@ -112,6 +125,9 @@ static inline int olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
- 	return 0;
- }
- static inline void olpc_analog_input(struct snd_ac97 *ac97, int on) { }
-+static inline void olpc_mic_bias(struct snd_ac97 *ac97, int on) { }
-+static inline void olpc_capture_open(struct snd_ac97 *ac97) { }
-+static inline void olpc_capture_close(struct snd_ac97 *ac97) { }
- #endif
- 
- int __devinit snd_cs5535audio_pcm(struct cs5535audio *cs5535audio);
-diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
-index f59af91..73811e0 100644
---- a/sound/pci/cs5535audio/cs5535audio_olpc.c
-+++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
-@@ -31,6 +31,20 @@ void olpc_analog_input(struct snd_ac97 *ac97, int on)
- 		geode_gpio_clear(OLPC_GPIO_MIC_AC, GPIO_OUTPUT_VAL);
- }
- 
-+/*
-+ * OLPC XO-1's V_REFOUT is a mic bias enable.
-+ */
-+void olpc_mic_bias(struct snd_ac97 *ac97, int on)
-+{
-+	int err;
-+
-+	on = on ? 0 : 1;
-+	err = snd_ac97_update_bits(ac97, AC97_AD_MISC,
-+			1 << AC97_AD_VREFD_SHIFT, on << AC97_AD_VREFD_SHIFT);
-+	if (err < 0)
-+		snd_printk(KERN_ERR "setting MIC Bias - %d\n", err);
-+}
-+
- static int olpc_dc_info(struct snd_kcontrol *kctl,
- 		struct snd_ctl_elem_info *uinfo)
- {
-@@ -56,7 +70,36 @@ static int olpc_dc_put(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *v)
- 	return 1;
- }
- 
--static struct snd_kcontrol_new snd_cs5535audio_controls __devinitdata = 
-+static int olpc_mic_info(struct snd_kcontrol *kctl,
-+		struct snd_ctl_elem_info *uinfo)
-+{
-+	uinfo->type = SNDRV_CTL_ELEM_TYPE_BOOLEAN;
-+	uinfo->count = 1;
-+	uinfo->value.integer.min = 0;
-+	uinfo->value.integer.max = 1;
-+	return 0;
-+}
-+
-+static int olpc_mic_get(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *v)
-+{
-+	struct cs5535audio *cs5535au = snd_kcontrol_chip(kctl);
-+	struct snd_ac97 *ac97 = cs5535au->ac97;
-+	int i;
-+
-+	i = (snd_ac97_read(ac97, AC97_AD_MISC) >> AC97_AD_VREFD_SHIFT) & 0x1;
-+	v->value.integer.value[0] = i ? 0 : 1;
-+	return 0;
-+}
-+
-+static int olpc_mic_put(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *v)
-+{
-+	struct cs5535audio *cs5535au = snd_kcontrol_chip(kctl);
-+
-+	olpc_mic_bias(cs5535au->ac97, v->value.integer.value[0]);
-+	return 1;
-+}
-+
-+static struct snd_kcontrol_new olpc_cs5535audio_ctls[] __devinitdata = {
- {
- 	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
- 	.name = "DC Mode Enable",
-@@ -64,6 +107,15 @@ static struct snd_kcontrol_new snd_cs5535audio_controls __devinitdata =
- 	.get = olpc_dc_get,
- 	.put = olpc_dc_put,
- 	.private_value = 0
-+},
-+{
-+	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
-+	.name = "MIC Bias Enable",
-+	.info = olpc_mic_info,
-+	.get = olpc_mic_get,
-+	.put = olpc_mic_put,
-+	.private_value = 0,
-+},
- };
- 
- void __devinit olpc_prequirks(struct snd_card *card,
-@@ -80,6 +132,7 @@ void __devinit olpc_prequirks(struct snd_card *card,
- int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
- {
- 	struct snd_ctl_elem_id elem;
-+	int i, err;
- 
- 	if (!machine_is_olpc())
- 		return 0;
-@@ -90,8 +143,20 @@ int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
- 	strncpy(elem.name, "High Pass Filter Enable", sizeof(elem.name));
- 	snd_ctl_remove_id(card, &elem);
- 
--	/* add the override for OLPC's HPF */
--	return snd_ctl_add(card, snd_ctl_new1(&snd_cs5535audio_controls, 
--						ac97->private_data));
-+	/* drop the original V_REFOUT control */
-+	memset(&elem, 0, sizeof(elem));
-+	elem.iface = SNDRV_CTL_ELEM_IFACE_MIXER;
-+	strncpy(elem.name, "V_REFOUT Enable", sizeof(elem.name));
-+	snd_ctl_remove_id(card, &elem);
-+
-+	/* add the OLPC-specific controls */
-+	for (i = 0; i < ARRAY_SIZE(olpc_cs5535audio_ctls); i++) {
-+		err = snd_ctl_add(card, snd_ctl_new1(&olpc_cs5535audio_ctls[i],
-+				ac97->private_data));
-+		if (err < 0)
-+			return err;
-+	}
-+
-+	return 0;
- }
- 
-diff --git a/sound/pci/cs5535audio/cs5535audio_pcm.c b/sound/pci/cs5535audio/cs5535audio_pcm.c
-index fa2a6b1..0f48a87 100644
---- a/sound/pci/cs5535audio/cs5535audio_pcm.c
-+++ b/sound/pci/cs5535audio/cs5535audio_pcm.c
-@@ -363,27 +363,14 @@ static int snd_cs5535audio_capture_open(struct snd_pcm_substream *substream)
- 	if ((err = snd_pcm_hw_constraint_integer(runtime,
- 					 SNDRV_PCM_HW_PARAM_PERIODS)) < 0)
- 		return err;
--
--#ifdef CONFIG_OLPC
--	/* Enable the V_ref bias only while recording. */
--	err = snd_ac97_update_bits(cs5535au->ac97, AC97_AD_MISC,
--			1 << AC97_AD_VREFD_SHIFT, 0);
--	if (err < 0)
--		snd_printk(KERN_ERR "Error updating AD_MISC %d\n", err);
--#endif
-+	olpc_capture_open(cs5535au->ac97);
- 	return 0;
- }
- 
- static int snd_cs5535audio_capture_close(struct snd_pcm_substream *substream)
- {
--	int err;
- 	struct cs5535audio *cs5535au = snd_pcm_substream_chip(substream);
--
--#ifdef CONFIG_OLPC
--	/* Disable V_ref bias. */
--	err = snd_ac97_update_bits(cs5535au->ac97, AC97_AD_MISC,
--			1 << AC97_AD_VREFD_SHIFT, 1 << AC97_AD_VREFD_SHIFT);
--#endif
-+	olpc_capture_close(cs5535au->ac97);
- 	return 0;
- }
- 
+A new marker type, trace_mark_tp() also takes a tracepoint name as
+parameter. When the tracepoint is enabled, it also enables the
+associated tracepoint. And it makes sure tracepoints are not exposed to
+userspace.
+
+Mathieu
+
+
+
 -- 
-1.5.6.5
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
