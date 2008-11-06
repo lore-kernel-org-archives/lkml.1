@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbYKFVVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbYKFVVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbYKFVVj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:21:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYKFVVE
+	id S1754787AbYKFVVz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYKFVVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:21:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58804 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753998AbYKFVVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:21:01 -0500
-Date: Thu, 6 Nov 2008 16:20:50 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081106212049.GC20928@redhat.com>
-References: <1225976138.7803.4485.camel@twins> <20081106060624.58a0f967@infradead.org> <1225981141.7803.4577.camel@twins> <20081106063108.02b4813d@infradead.org> <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org> <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com> <20081106094558.50d94bcc@infradead.org> <y0mej1ofvyz.fsf@ton.toronto.redhat.com> <20081106131348.68f8858e@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106131348.68f8858e@infradead.org>
-User-Agent: Mutt/1.4.1i
+	Thu, 6 Nov 2008 16:21:23 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43816 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754098AbYKFVVW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:21:22 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: access to efi reserved memory type
+Cc: mingo@elte.hu
+Message-Id: <E1KyCJW-0002lH-08@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Thu, 06 Nov 2008 15:22:50 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
+From: Cliff Wickman <cpw@sgi.com>
 
-On Thu, Nov 06, 2008 at 01:13:48PM -0800, Arjan van de Ven wrote:
-> [...]
-> fche@redhat.com (Frank Ch. Eigler) wrote:
-> 
-> > Arjan van de Ven <arjan@infradead.org> writes:
-> > 
-> > > [...]
-> > > what is the real need is
-> > > 1) Have a trace point in the source
-> > > 2) Associate a "formatting function" with that point 
-> > >    (which basically transforms the trace parameters to, say, a
-> > > string) 3) A way to turn the trace point on/off.
-> > 
-> > For 1 and 2, it may be worth considering a plain trace_mark() in
-> > do_sync().  The complication that makes this uglier than a one-liner
-> 
-> no why is that?
-> 
-> what you really need is to be able to provide a callback function
-> pointer that will do the formatting, or as Peter wants it, a format string.
-> [...]
-> Doing this like you propose is just too complex and too specialistic;
-> the reality is that merely formatting the arguments of a trace point is
-> the common case, and I suspect for 99.9% of the cases we can get away
-> with a standard default formatting.
+Give drivers addresses of memory type EFI_RESERVED_TYPE.
+This supports drivers that use vendor-specific memory, available
+only to special devices.
 
-I don't understand what you're arguing against.  If formatting strings
-learn to deal with struct files, then the marker approach would be
-even simpler, and the fsync "tracer" would consist of this single line:
+The walk() function scans the EFI memory map and does a callback to a
+specified function for each memory area of a specified type.
+efi_memmap_walk_reserved() provides a scan for type EFI_RESERVED_TYPE.
 
-   trace_mark (fsync, "process %s fsyncd file %pF\n", comm->execname, file);
+(an earlier version of this patch had proposed a new EFI type, but
+ EFI_RESERVED_TYPE should be sufficient, given that the firmware follows
+ the standard and does not use such memory for its own purposes)
 
-Via some simple additional generic code (the generic marker->ftrace
-backend), that would turn into exactly the "merely formatting the
-arguments ... 99.9% of the cases" you're talking about.
+A UV driver will be posted to the community in the future that will use
+these routines.
 
+Diffed against 2.6.27-rc6
 
-- FChE
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+---
+ arch/x86/kernel/efi.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
+
+Index: linux/arch/x86/kernel/efi.c
+===================================================================
+--- linux.orig/arch/x86/kernel/efi.c
++++ linux/arch/x86/kernel/efi.c
+@@ -572,3 +572,39 @@ u64 efi_mem_attributes(unsigned long phy
+ 	}
+ 	return 0;
+ }
++
++static void
++walk(efi_freemem_callback_t callback, void *arg, int type)
++{
++	efi_memory_desc_t *md;
++	void *p;
++	int size;
++
++	/*
++	 * memmap.map is zeroed in efi_enter_virtual_mode()
++	 * but we can use the physical address (phys_map)
++	 */
++	size = memmap.nr_map*memmap.desc_size;
++	for (p = memmap.phys_map; p < memmap.phys_map+size;
++						p += memmap.desc_size) {
++		md = (efi_memory_desc_t *)__va(p);
++		if (md->type != type)
++			continue;
++		if ((*callback)(md->phys_addr,
++		     md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT) - 1,
++		     arg) < 0)
++			return;
++	}
++}
++
++/*
++ * Walk the EFI memory map and call "callback" once for each EFI memory
++ * descriptor of type EFI_RESERVED_TYPE.
++ */
++void
++efi_memmap_walk_reserved(efi_freemem_callback_t callback, void *arg)
++{
++	walk(callback, arg, EFI_RESERVED_TYPE);
++}
++
++EXPORT_SYMBOL(efi_memmap_walk_reserved);
