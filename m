@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYKFGxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbYKFG4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbYKFGxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYKFGw7
+	id S1753953AbYKFG4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbYKFG4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:52:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34702 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751609AbYKFGw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:52:58 -0500
-Date: Thu, 6 Nov 2008 07:52:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] ftrace: start stop infrastructure changes
-Message-ID: <20081106065240.GC15731@elte.hu>
-References: <20081105212428.148612398@goodmis.org>
+	Thu, 6 Nov 2008 01:56:13 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45536 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751824AbYKFG4M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:56:12 -0500
+Message-ID: <4912943C.2090801@zytor.com>
+Date: Wed, 05 Nov 2008 22:52:44 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081105212428.148612398@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ben Hutchings <bhutchings@solarflare.com>
+Subject: Re: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
+References: <4910C845.4060909@kernel.org> <20081106062608.GC6384@elte.hu> <86802c440811052242taefec24ndf661b1c65ca457e@mail.gmail.com>
+In-Reply-To: <86802c440811052242taefec24ndf661b1c65ca457e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
->  Note, I'm now trying to learn to use git. I am experimenting with
->  using a combination of quilt and git. I set up a git repo at:
+Yinghai Lu wrote:
+>>
+>> Clean-up sidenote: i think we can now remove the VISWS #ifdef portion
+>> for good? Mind sending a patch for that too?
 > 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> could remove CONFIG_PARAVIRT too.. Jeremy?
 > 
->  This series is in the tip/devel branch.
-> 
->  I'll put my changes in that branch and then send out the patches
->  as I have always done. But the introduction will list the shortlog
->  of the changes, then followed by the patches themselves.
-> 
->  I do this by using git format-patch and then having quilt send
->  out the queue that was produced.
-> 
->  I plan on automating a lot of this, but for this run, it was
->  done manually.
 
-Worked fine on my side - and it's easier than processing patches in 
-email: the ordering and dependencies are more obvious.
+This seems like a bad idea, especially for the embedded guys.
 
-The only flip side is that it's harder to fix small details in commit 
-logs in an ad-hoc way. So be prepared to see more nitpicking from me 
-for such details :-)
-
-	Ingo
+	-hpa
