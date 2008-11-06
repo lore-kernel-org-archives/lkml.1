@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYKFKtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKFKtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbYKFKtE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 05:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbYKFKsv
+	id S1753900AbYKFKtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 05:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYKFKtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 05:48:51 -0500
-Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:21539 "HELO
-	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753466AbYKFKsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 05:48:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=buON7wD23exuIjMy9eh9spOH6psdJdbJ3FOzqo0GZ+H5OI7UO2o3f0pYnztbm2HZY0qoMABortwHXTC/AynVTWfJYrN7jydocRz/wdfnr9MGos728CktO3pIVgNaodiiWdkOFWuUjsr2FYBhFglKTg4LE+1eM0ypviityHRXthU=  ;
-X-YMail-OSG: JQ8lH08VM1k9xwZpBSuUMvaWOQGolXzy9NNBvFuEMo9a9NW.jFRQuDr32RBfMGLizCBONniQt8FJ8PqaqVPUykmSH4P.fY_37y3Y9d6f2xeraAZmLZORkWUIrRyi919Voqb8As8K7hFCa7JYxnisUUOVgepW3JlPQtGqkg7mByXxTlBYIictwfa_AyTI
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Subject: Re: WARNING: at fs/buffer.c:1186 mark_buffer_dirty+0x51/0x66()
-Date: Thu, 6 Nov 2008 21:48:39 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org
-References: <4901F375.3020202@vlnb.net> <200810291125.31547.nickpiggin@yahoo.com.au> <490B4A6A.7020200@vlnb.net>
-In-Reply-To: <490B4A6A.7020200@vlnb.net>
+	Thu, 6 Nov 2008 05:49:04 -0500
+Received: from ns1.suse.de ([195.135.220.2]:59500 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754501AbYKFKtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 05:49:03 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix msr check in compat_sys_swapcontext
+References: <jeprlabbi6.fsf@sykes.suse.de>
+	<18706.16317.759662.855430@cargo.ozlabs.ibm.com>
+	<jey6zx9piz.fsf@sykes.suse.de>
+	<18706.51381.987014.370948@cargo.ozlabs.ibm.com>
+X-Yow: This is my WILLIAM BENDIX memorial CORNER where I worship William
+ Bendix like a GOD!!
+Date: Thu, 06 Nov 2008 11:49:00 +0100
+In-Reply-To: <18706.51381.987014.370948@cargo.ozlabs.ibm.com> (Paul
+	Mackerras's message of "Thu, 6 Nov 2008 21:36:37 +1100")
+Message-ID: <jek5bh9lk3.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811062148.39713.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 01 November 2008 05:11, Vladislav Bolkhovitin wrote:
-> Nick Piggin wrote:
-> > On Wednesday 29 October 2008 06:38, Vladislav Bolkhovitin wrote:
-> >> Nick Piggin wrote:
-> >>> On Saturday 25 October 2008 03:10, Vladislav Bolkhovitin wrote:
-> >>>> Hi,
-> >>>>
-> >>>> During recent debugging session of my SCSI target SCST
-> >>>> (http://scst.sf.net) I noticed many
-> >>>>
-> >>>> WARNING: at fs/buffer.c:1186 mark_buffer_dirty+0x51/0x66()
-> >>>>
-> >>>> messages in kernel log on the initiator. I attached the full log of
-> >>>> several of them.
-> >>>>
-> >>>> My target was buggy and I was working on fixing it, but I suppose
-> >>>> Linux should handle such failures more gracefully. In all the cases
-> >>>> the target had one type of failure: it "ate" a SCSI command and never
-> >>>> returned result of it.
-> >>>
-> >>> Right. This is one of the warnings I see in my fault-injection testing.
-> >>> It is fixed by my patch to clean up and improve the page and buffer
-> >>> error handling in the vm/fs.
-> >>
-> >> Can you specify which patch you referring? Is it in 2.6.27?
-> >
-> > It's just an RFC at the moment which I posted to fsdevel. Not in 2.6.27.
+Paul Mackerras <paulus@samba.org> writes:
+
+> Andreas Schwab writes:
 >
-> I see. I'm looking forward to see it in 2.6.28 or .29. This is really a
-> needed work.
+>> Paul Mackerras <paulus@samba.org> writes:
+>> 
+>> > we need to use get_user, not __get_user, since we haven't done an
+>> > access_ok() check on the address.
+>> 
+>> The address is always ok since its a compat pointer, see do_setcontext.
+>
+> OK, since it's inside a CONFIG_PPC64 block.  I'll add a paragraph to
+> the patch description pointing that out.
 
-Hopefully. Unfortunately it doesn't exactly make the filesystems
-themselves more robust against failure. That needs to be done on
-a case by case basis.
+How about this:
 
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index a6a4310..b13abf3 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -941,9 +941,21 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
+ #ifdef CONFIG_PPC64
+ 	unsigned long new_msr = 0;
+ 
+-	if (new_ctx &&
+-	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
+-		return -EFAULT;
++	if (new_ctx) {
++		struct mcontext __user *mcp;
++		u32 cmcp;
++
++		/*
++		 * Get pointer to the real mcontext.  No need for
++		 * access_ok since we are dealing with compat
++		 * pointers.
++		 */
++		if (__get_user(cmcp, &new_ctx->uc_regs))
++			return -EFAULT;
++		mcp = (struct mcontext __user *)(u64)cmcp;
++		if (__get_user(new_msr, &mcp->mc_gregs[PT_MSR]))
++			return -EFAULT;
++	}
+ 	/*
+ 	 * Check that the context is not smaller than the original
+ 	 * size (with VMX but without VSX)
 
-> BTW, have you even seen in your fault-injection testing that after
-> receiving a failure from a SCSI device during heavy load ext3 file
-> system mounted on it gets corrupted and journal replay on remount
-> doesn't repair it, only manual e2fsck helps? I've many times seen that,
-> including cases when the target was remaining up and fully functional.
-> See, e.g., "MOANING MODE ON" part in
-> http://marc.info/?l=linux-scsi&m=121932252324432&w=2. I haven't checked
-> that case since then, although I see such corruptions quite often. But
-> in all them I can't so clearly say that it isn't a target's failure.
+Andreas.
 
-I haven't seen that, but I'm not exactly testing for filesystem
-robustness to errors, but more of core vm/fs layer robustness, so
-I'm mainly trying to inject errors into data portion of inodes.
-
-I think the ext3 development list should be interested in your
-report.
-
-Thanks,
-Nick
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
