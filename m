@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYKFMrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbYKFMzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYKFMrf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 07:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbYKFMr1
+	id S1754212AbYKFMzI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 07:55:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYKFMy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 07:47:27 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40773 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366AbYKFMr1 (ORCPT
+	Thu, 6 Nov 2008 07:54:57 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:41190 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753450AbYKFMy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 07:47:27 -0500
-Message-ID: <30704.10.75.179.61.1225975644.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0811061151130.26541@blonde.site>
-References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com><49129493.9070103@linux.vnet.ibm.com>
-    <20081106194153.220157ec.kamezawa.hiroyu@jp.fujitsu.com>
-    <Pine.LNX.4.64.0811061151130.26541@blonde.site>
-Date: Thu, 6 Nov 2008 21:47:24 +0900 (JST)
-Subject: Re: [RFC][PATCH 7/6] memcg: add atribute (for change bahavior 
-     ofrmdir)
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Hugh Dickins" <hugh@veritas.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
-MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 6 Nov 2008 07:54:56 -0500
+Subject: Re: [PATCH] ftrace: add an fsync tracer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+In-Reply-To: <20081105094902.27ec4b39@infradead.org>
+References: <20081105094902.27ec4b39@infradead.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Nov 2008 13:55:38 +0100
+Message-Id: <1225976138.7803.4485.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins said:
-> On Thu, 6 Nov 2008, KAMEZAWA Hiroyuki wrote:
->> On Thu, 06 Nov 2008 12:24:11 +0530
->> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->> > KAMEZAWA Hiroyuki wrote:
->> > >
->> > > 1. change force_empty to do move account rather than forget all
->> >
->> > I would like this to be selectable, please. We don't want to break
->> behaviour and
->> > not everyone would like to pay the cost of movement.
->>
->> How about a patch like this ? I'd like to move this as [2/7], if
->> possible.
->> It obviously needs painful rework. If I found it difficult, schedule
->> this as [7/7].
->>
->> BTW, cost of movement itself is not far from cost for force_empty.
->>
->> If you can't find why "forget" is bad, please consider one more day.
->
-> My recollection from a year ago is that force_empty totally violated
-> the rules established elsewhere, making a nonsense of it all: once a
-> force_empty had been done, you couldn't really be sure of anything
-> (perhaps it deserved a Taint flag).
->
-yes. that was terrible. (but necessary to do so because we accounted
-pages not on LRU or some other reason.)
+On Wed, 2008-11-05 at 09:49 -0800, Arjan van de Ven wrote:
+> From 63c1b869d94eb31a98015af09fb24e22151f2f00 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Tue, 4 Nov 2008 21:08:11 -0800
+> Subject: [PATCH] ftrace: add an fsync tracer
+> 
+> fsync() (and its cousin, fdatasync()) are important chokepoints in the
+> kernel as they imply very expensive operations, both in terms of filesystem
+> operations (ext3 writes back its entire journal) as well as the block layer
+> (fsync() implies sending a cache flushing barrier to the SATA/SCSI disk).
+> 
+> This tracer makes a log of which application calls fsync() on which file,
+> so that developers and others interested in finding these choke points
+> can locate them and fix them in the apps that call this function.
 
-> Without studying your proposals at all, I do believe you've a good
-> chance of creating a sensible and consistent force_empty by moving
-> account, and abandoning the old "forget all" approach completely.
->
+Sorry, but I have to object to such single purpose tracers..
 
-yes. I'm very encouraged. thanks!
-After patch [1/6]
-  -> move all at force empty
-After this
-  -> move all or free (not forget) all.
+If we go this way we'll end up with a gazillion little tracers, non of
+which are really useful.
 
--Kame
+Please work on getting something like a syscall tracer, or lttng like
+event tracer.
+
+Both of those should be able to find such badness, but are also able to
+diagnose many more issues.
+
+Also, sure fsync() is expensive, but you make it sound like its a bad
+thing. Lets not teach people to ignore data integrity just because ext3
+is such a massive piece of shit.
 
 
