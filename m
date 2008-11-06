@@ -1,109 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKFPBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbYKFPBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYKFPBS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYKFPA6
+	id S1754216AbYKFPBe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:01:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYKFPBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:00:58 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:63457 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYKFPA4 (ORCPT
+	Thu, 6 Nov 2008 10:01:13 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:52264 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752916AbYKFPBM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:00:56 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: linux-ext4@vger.kernel.org
-Subject: EXT4-fs: not enough memory for 522250 flex groups
-Date: Thu, 6 Nov 2008 16:00:54 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+	Thu, 6 Nov 2008 10:01:12 -0500
+Message-ID: <49130694.7000007@cosmosbay.com>
+Date: Thu, 06 Nov 2008 16:00:36 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811061600.54264.borntraeger@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Robert Richter <robert.richter@amd.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
+References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com>
+In-Reply-To: <49113894.5040806@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 06 Nov 2008 16:00:51 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Eric Dumazet a écrit :
+> Eric Dumazet a écrit :
+>> Pekka J Enberg a écrit :
+>>> Hi Robert,
+>>>
+>>> On Tue, 4 Nov 2008, Robert Richter wrote:
+>>>> your patchset breaks oprofile on Intel Core 2 cpus. I could bisect the
+>>>> bug for c493756..5951290. Please take a look at this and send me a fix.
+>>>
+>>> Unfortunately I don't have my machine with me right now so I can't 
+>>> test this, but don't we want something like this? Andi?
+>>
+>> Thanks a lot Pekka, this patch restores oprofile on my HP BL460c G1
+>>
+>> Tested-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+> Update :
+> 
+> After a while, no more NMI are delivered. No anymore samples.
+> 
 
-I tried to use ext4 on my s390 system. Converting the old ext3 file systems 
-(tune2fs -O extents) worked fine. When I tried to create a new ext4 file 
-system on a logical volume I got the "EXT4-fs: not enough memory for 522250 
-flex groups" error messageduring mount:
+Ingo asked me to test a revert of b99170288421c79f0c2efa8b33e26e65f4bb7fb8
+(oprofile: Implement Intel architectural perfmon support)
 
+Same problem than previous patch.
 
-# mke2fs -t ext4 /dev/mapper/space-test
-mke2fs 1.41.3 (12-Oct-2008)
-Filesystem label=
-OS type: Linux
-Block size=4096 (log=2)
-Fragment size=4096 (log=2)
-262144 inodes, 1048576 blocks
-52428 blocks (5.00%) reserved for the super user
-First data block=0
-Maximum filesystem blocks=1073741824
-32 block groups
-32768 blocks per group, 32768 fragments per group
-8192 inodes per group
-Superblock backups stored on blocks:
-        32768, 98304, 163840, 229376, 294912, 819200, 884736
-Writing inode tables: done
-Creating journal (32768 blocks): done
-Writing superblocks and filesystem accounting information: done
-This filesystem will be automatically checked every 22 mounts or
-180 days, whichever comes first.  Use tune2fs -c or -i to override.
+(doing a tbench 8 in background)
 
+oprofile works a few seconds, then no more NMI / samples
 
-# mount -t ext4 /dev/mapper/space-test /mnt/
-mount: wrong fs type, bad option, bad superblock on /dev/mapper/space-test,
-       missing codepage or helper program, or other error
-       In some cases useful info is found in syslog - try
-       dmesg | tail  or so
+# opcontrol --vmlinux=vmlinux --start
+Using 2.6+ OProfile kernel interface.
+Reading module info.
+Using log file /var/lib/oprofile/samples/oprofiled.log
+Daemon started.
+Profiler running.
+# grep NMI /proc/interrupts
+NMI:    3102535    1009518     733819    2088857    1414146     703880    1229563     473603   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3490492    1009518     767878    2212917    1812791    1654826    2151141     473603   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3490492    1009518     767878    2212917    1812791    2188653    2671979     473603   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3490492    1009518     767878    2212917    1812791    2612789    2671979     473603   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3490492    1009518     767878    2212917    1812791    2612789    2671979     473603   Non-maskable interrupts
+# opcontrol --deinit
+Stopping profiling.
+Killing daemon.
+# grep NMI /proc/interrupts
+NMI:    3490492    1009518     767878    2212917    1812791    2612789    2671979     473603   Non-maskable interrupts
+# opcontrol --vmlinux=vmlinux --start
+Using 2.6+ OProfile kernel interface.
+Reading module info.
+Using log file /var/lib/oprofile/samples/oprofiled.log
+Daemon started.
+Profiler running.
+# grep NMI /proc/interrupts
+NMI:    3730357    1265822    1174545    2485635    2257881    3082318    3078445     931068   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3730357    1265822    1573509    2485635    2469701    3512810    3477233    1143043   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3730357    1265822    2069149    2485635    2469701    3512810    3511350    1143043   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3730357    1265822    2069149    2485635    2469701    3512810    3511350    1143043   Non-maskable interrupts
+# grep NMI /proc/interrupts
+NMI:    3730357    1265822    2069149    2485635    2469701    3512810    3511350    1143043   Non-maskable interrupts
 
+# grep . /dev/oprofile/*/* /dev/oprofile/*
+/dev/oprofile/0/count:10000
+/dev/oprofile/0/enabled:1
+/dev/oprofile/0/event:60
+/dev/oprofile/0/kernel:1
+/dev/oprofile/0/unit_mask:0
+/dev/oprofile/0/user:1
+/dev/oprofile/1/count:0
+/dev/oprofile/1/enabled:0
+/dev/oprofile/1/event:0
+/dev/oprofile/1/kernel:0
+/dev/oprofile/1/unit_mask:0
+/dev/oprofile/1/user:0
+/dev/oprofile/stats/bt_lost_no_mapping:0
+/dev/oprofile/stats/event_lost_overflow:83466
+/dev/oprofile/stats/sample_lost_no_mapping:19174
+/dev/oprofile/stats/sample_lost_no_mm:0
+/dev/oprofile/backtrace_depth:0
+grep: /dev/oprofile/buffer: Device or resource busy
+/dev/oprofile/buffer_size:131072
+/dev/oprofile/buffer_watershed:32768
+/dev/oprofile/cpu_buffer_size:8192
+/dev/oprofile/cpu_type:i386/core_2
+grep: /dev/oprofile/dump: Invalid argument
+/dev/oprofile/enable:1
+/dev/oprofile/pointer_size:4
 
+I tried with bigger buffer_size, same problem
 
-# dmesg
-[...]
-[6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
-[6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
+opcontrol --vmlinux=vmlinux --cpu-buffer-size=65536 --buffer-size=1048576 --start
 
+# grep . /dev/oprofile/*/* /dev/oprofile/*
+/dev/oprofile/0/count:10000
+/dev/oprofile/0/enabled:1
+/dev/oprofile/0/event:60
+/dev/oprofile/0/kernel:1
+/dev/oprofile/0/unit_mask:0
+/dev/oprofile/0/user:1
+/dev/oprofile/1/count:0
+/dev/oprofile/1/enabled:0
+/dev/oprofile/1/event:0
+/dev/oprofile/1/kernel:0
+/dev/oprofile/1/unit_mask:0
+/dev/oprofile/1/user:0
+/dev/oprofile/stats/bt_lost_no_mapping:0
+/dev/oprofile/stats/event_lost_overflow:1465392
+/dev/oprofile/stats/sample_lost_no_mapping:117498
+/dev/oprofile/stats/sample_lost_no_mm:20
+/dev/oprofile/backtrace_depth:0
+grep: /dev/oprofile/buffer: Device or resource busy
+/dev/oprofile/buffer_size:1048576
+/dev/oprofile/buffer_watershed:32768
+/dev/oprofile/cpu_buffer_size:65536
+/dev/oprofile/cpu_type:i386/core_2
+grep: /dev/oprofile/dump: Invalid argument
+/dev/oprofile/enable:1
+/dev/oprofile/pointer_size:4
 
-
-# lvdisplay
-  --- Logical volume ---
-  LV Name                /dev/space/test
-  VG Name                space
-  LV UUID                FPhFLU-1xTK-XtG4-STmI-u3D5-KhCR-FmlcCO
-  LV Write Access        read/write
-  LV Status              available
-  # open                 0
-  LV Size                4.00 GB
-  Current LE             1024
-  Segments               1
-  Allocation             inherit
-  Read ahead sectors     auto
-  - currently set to     256
-  Block device           253:54
-
-
-
-# free
-             total       used       free     shared    buffers     cached
-Mem:       3081168     822972    2258196          0     154784     445420
--/+ buffers/cache:     222768    2858400
-Swap:      9615904          0    9615904
-
-
-# uname -a
-Linux 2.6.28-rc2 #64 SMP Thu Nov 6 15:22:04 CET 2008 s390x s390x s390x 
-GNU/Linux
-
-
-
-# git describe
-kvm-78-2-g6e6c459
-
-
-Any ideas?
