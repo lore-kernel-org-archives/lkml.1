@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYKFEtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYKFEud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbYKFEtl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 23:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbYKFEtd
+	id S1755864AbYKFEud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 23:50:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYKFEuY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 23:49:33 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:59481 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677AbYKFEtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 23:49:32 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: benh@kernel.crashing.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       James Cloos <cloos@jhcloos.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-	<871vxtthr3.fsf@burly.wgtn.ondioline.org>
-	<1225874361.13603.12.camel@pasglop>
-	<87skq6sc0e.fsf@burly.wgtn.ondioline.org>
-	<1225943357.13603.41.camel@pasglop>
-Date: Thu, 06 Nov 2008 17:49:31 +1300
-In-Reply-To: <1225943357.13603.41.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Thu, 06 Nov 2008 14:49:17 +1100")
-Message-ID: <87od0tsbl0.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Wed, 5 Nov 2008 23:50:24 -0500
+Received: from kroah.org ([198.145.64.141]:38260 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753060AbYKFEuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 23:50:23 -0500
+Date: Wed, 5 Nov 2008 20:48:28 -0800
+From: Greg KH <greg@kroah.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: linux-pci@vger.kernel.org, achiang@hp.com, grundler@parisc-linux.org,
+       mingo@elte.hu, jbarnes@virtuousgeek.org, matthew@wil.cx,
+       randy.dunlap@oracle.com, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Message-ID: <20081106044828.GA30417@kroah.com>
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022083809.GA3757@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Wed, Oct 22, 2008 at 04:38:09PM +0800, Yu Zhao wrote:
+> Greetings,
+> 
+> Following patches are intended to support SR-IOV capability in the
+> Linux kernel. With these patches, people can turn a PCI device with
+> the capability into multiple ones from software perspective, which
+> will benefit KVM and achieve other purposes such as QoS, security,
+> and etc.
 
-> Ok so I can't get it to die on my M9 (rv250) tipb here, I can try next
-> week on a albook with an M10 (rv350). Just to make sure I'm doing the
-> same as you, does it boot fine if you don't change the font and does it
-> lockup if, after it's fully booted, you do a setfont neepalt10x20.psf ?
+Is there any actual users of this API around yet?  How was it tested as
+there is no hardware to test on?  Which drivers are going to have to be
+rewritten to take advantage of this new interface?
 
-Yes.  It boots fine with the regular 8x16 font and locks up when I do
-"setfont neepalt10x20.psf".
+thanks,
 
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+greg k-h
