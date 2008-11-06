@@ -1,130 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbYKFIPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbYKFIX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbYKFIPY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 03:15:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbYKFIPK
+	id S1753645AbYKFIX1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 03:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbYKFIXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 03:15:10 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:65195 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbYKFIPJ (ORCPT
+	Thu, 6 Nov 2008 03:23:18 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:45501 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752329AbYKFIXR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 03:15:09 -0500
-Message-ID: <4912A73C.4080308@fr.ibm.com>
-Date: Thu, 06 Nov 2008 09:13:48 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 6 Nov 2008 03:23:17 -0500
+Date: Thu, 6 Nov 2008 09:23:14 +0100
+From: Tino Keitel <tino.keitel@tikei.de>
+To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
+Message-ID: <20081106082314.GA18430@x61>
+Mail-Followup-To: ibm-acpi-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61> <20081105122632.GC14931@khazad-dum.debian.net> <20081105130852.GB30758@dose.home.local> <20081105162401.GF14931@khazad-dum.debian.net> <20081106003543.GA14766@x61>
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Paul Menage <menage@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: Re: [PATCH -last version] freezer_cg: disable writing freezer.state
- of root  cgroup
-References: <491245F1.5070707@cn.fujitsu.com> <6599ad830811051724p1f97026fl96be5efe38b33152@mail.gmail.com> <49124DFF.1090702@cn.fujitsu.com> <49125006.4050206@cn.fujitsu.com>
-In-Reply-To: <49125006.4050206@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="YiEDa0DAkWCtVeE4"
+Content-Disposition: inline
+In-Reply-To: <20081106003543.GA14766@x61>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Li ! 
 
-Li Zefan wrote:
-> Li Zefan wrote:
->>> Acked-by: Paul Menage <menage@google.com>
->>>
->>> I might use the term "non-freezable" rather than "unfreezable".
->>>
->> My bad English :(
->>
->> patch updated. (some annoying leading tabs are also removed in the doc)
->>
+--YiEDa0DAkWCtVeE4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, Nov 06, 2008 at 01:35:44 +0100, Tino Keitel wrote:
+
+[...]
+
+> I tried to write a correct patch, but I got lost in all that
+> fan_control_desired_level, fan_control_initial_status and
+> tp_features.fan_ctrl_status_undef stuff.
 > 
-> And I forgot to s/EIO/EINVAL in the document..
+> My brain says that one would just read the current fan settings from
+> the EC at initialization. Then, after resume, this setting is restored
+> unconditionally, or at least if it differs from current_level. The
+> attached patch works for me. However, I don't have all the knowledge
+> about older models and their specific behaviour.
 > 
-> This patch should be the last version.. Sorry for the bothering.
-> 
-> 
-> ======================
-> 
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> Date: Tue, 4 Nov 2008 15:26:29 +0800
-> Subject: [PATCH] freezer_cg: disable writing freezer.state of root cgroup
-> 
-> With this change, control file 'freezer.state' doesn't exist in root
-> cgroup, making root cgroup unfreezable.
-> 
-> I think it's reasonable to disallow freeze tasks in the root cgroup.
-> And then we can avoid fork overhead when freezer subsystem is
-> compiled but not used.
-> 
-> Also make writing invalid value to freezer.state returns EINVAL
-> rather than EIO. This is more consistent with other cgroup subsystem.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Acked-by: Paul Menage <menage@google.com>
+> Correction: I just tested a bit further, and it doesn't work. If I set
+> fan level to 3, suspend, resume, set fan level to auto, and
+> resume/suspend again, fan level is restored to 3. This is because
+> fan_control_desired_level isn't updated by fan_update_desired_level()
+> if it is set back to auto, but kept at the old value. So, my impression
+> is that all the values and states should be cleaned up a bit and
+> simplified. In the current state, there are a lot of strage checks and
+> quirks that have side effects when other parts are changed.
 
-It looks fine 
+The whole fan level stuff looks a bit complicated to me. Especially the
+fan_control_desired_level handling is somethat strange because it
+considers values as invalid that are written by fan_set_level() before.
+It ignores the TP_EC_FAN_FULLSPEED and TP_EC_FAN_AUTO values. Now, in
+fan_resume(), this value is checked against TP_EC_FAN_FULLSPEED which
+makes no sense to me.
 
-Acked-by: Cedric Le Goater <clg@fr.ibm.com>
+The attached patch tries to simplify this a bit. It sets
+fan_control_desired_level to the current EC value in fan_init(), and
+also tries to keep fan_control_desired_level and the real EC value in
+sync. I also removed the checks against 7 and TP_EC_FAN_FULLSPEED in
+fan_resume() as they made no sense to me. This works as intended on my
+X61s after rmmod/insmod and suspend/resume.
 
-I've also tested it.
+Regards,
+Tino
 
-here's a minor comment,
+--YiEDa0DAkWCtVeE4
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="thinkpad-acpi_fan-level-restore-fix_v2.diff"
 
-I would make a small macro is_root_freezer() to show explicitly
-what we are testing and use the CSS_ROOT bit to test. That's what
-the CSS_ROOT bit is for Paul ?
-
-if yes, here's a possible result is below. 
-
-C.
-
-Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
----
- kernel/cgroup_freezer.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
-
-Index: 2.6.27-lxc/kernel/cgroup_freezer.c
-===================================================================
---- 2.6.27-lxc.orig/kernel/cgroup_freezer.c
-+++ 2.6.27-lxc/kernel/cgroup_freezer.c
-@@ -47,6 +47,11 @@ static inline struct freezer *task_freez
- 			    struct freezer, css);
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 4db1cf9..7f095c4 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -5329,13 +5329,8 @@ TPACPI_HANDLE(sfan, ec, "SFAN",	/* 570 */
+  */
+ static void fan_update_desired_level(u8 status)
+ {
+-	if ((status &
+-	     (TP_EC_FAN_AUTO | TP_EC_FAN_FULLSPEED)) == 0) {
+-		if (status > 7)
+-			fan_control_desired_level = 7;
+-		else
+-			fan_control_desired_level = status;
+-	}
++	fan_control_desired_level = status &
++		(TP_EC_FAN_AUTO | TP_EC_FAN_FULLSPEED | 7);
  }
  
-+static inline int is_root_freezer(struct freezer *freezer)
-+{
-+	return test_bit(CSS_ROOT, &freezer->css.flags);
-+}
-+
- int cgroup_frozen(struct task_struct *task)
- {
- 	struct freezer *freezer;
-@@ -190,6 +195,13 @@ static void freezer_fork(struct cgroup_s
- 	freezer = task_freezer(task);
- 	task_unlock(task);
+ static int fan_get_status(u8 *status)
+@@ -5886,6 +5881,7 @@ static int __init fan_init(struct ibm_init_struct *iibm)
+ 		if (likely(acpi_ec_read(fan_status_offset,
+ 					&fan_control_initial_status))) {
+ 			fan_status_access_mode = TPACPI_FAN_RD_TPEC;
++			fan_update_desired_level(fan_control_initial_status);
  
-+	/*
-+	 * The root cgroup is non-freezable, so we can skip the
-+	 * following check.
-+	 */
-+	if (is_root_freezer(freezer))
-+		return;
-+
- 	BUG_ON(freezer->state == CGROUP_FROZEN);
- 	spin_lock_irq(&freezer->lock);
- 	/* Locking avoids race with FREEZING -> THAWED transitions. */
-@@ -363,6 +375,9 @@ static struct cftype files[] = {
- 
- static int freezer_populate(struct cgroup_subsys *ss, struct cgroup *cgroup)
- {
-+	if (is_root_freezer(cgroup_freezer(cgroup)))
-+		return 0;
-+
- 	return cgroup_add_files(cgroup, ss, files, ARRAY_SIZE(files));
- }
+ 			/* In some ThinkPads, neither the EC nor the ACPI
+ 			 * DSDT initialize the fan status, and it ends up
+@@ -6025,9 +6021,8 @@ static void fan_resume(void)
+ 		break;
+ 	case TPACPI_FAN_WR_ACPI_FANS:
+ 	case TPACPI_FAN_WR_TPEC:
+-		do_set = ((saved_fan_level & TP_EC_FAN_FULLSPEED) ||
+-			  (saved_fan_level == 7 &&
+-			   !(current_level & TP_EC_FAN_FULLSPEED)));
++		do_set = (current_level != saved_fan_level) && 
++			!(current_level & TP_EC_FAN_FULLSPEED);
+ 		break;
+ 	default:
+ 		return;
+
+--YiEDa0DAkWCtVeE4--
