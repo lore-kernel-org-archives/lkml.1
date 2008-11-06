@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbYKFRnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbYKFRnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbYKFRnF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 12:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYKFRmy
+	id S1752859AbYKFRnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 12:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbYKFRnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 12:42:54 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:60563 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751225AbYKFRmy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 12:42:54 -0500
-Date: Thu, 6 Nov 2008 18:42:46 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: mpfj@mimc.co.uk, dbrownell@users.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [rtc-linux] [PATCH v6] Add Dallas DS1390/93/94 RTC chips
-Message-ID: <20081106184246.53950fa0@i1501.lan.towertech.it>
-In-Reply-To: <4912B459.2020704@mimc.co.uk>
-References: <4912B459.2020704@mimc.co.uk>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
+	Thu, 6 Nov 2008 12:43:43 -0500
+Received: from willie.n0ano.com ([64.66.241.76]:41312 "EHLO xolotl.n0ano.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750917AbYKFRnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 12:43:43 -0500
+From: n0ano@n0ano.com
+Date: Thu, 6 Nov 2008 10:43:41 -0700
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Is the PCI serial driver code GPL v2 or v3
+Message-ID: <20081106174341.GA8155@xolotl.n0ano.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 09:09:45 +0000
-Mark Jackson <mpfj@mimc.co.uk> wrote:
+I notice that many of the files that make up the serial driver
+are licensed as "either version 2 of the License, or (at your
+option) any later version".  Unfortunatley, I would like to use
+some of the code from `drivers/serial/8250_pci.c' in grub2,
+which is a GPL v3 project, but the copyright for this file
+says:
 
-> v6 (!!) of this patch with even more code tidying as per previous comments.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License.
 
- I know.. I'm becoming stricter and stricter as the time goes by.. 
+The `either' in that sentence would lead me to believe that there
+was a typo and the `or later' clause was dropped off but, as it
+stands, it's just bad English that says version 2 only.
 
-> Also only a single tx/rx buffer is used.
-> Now uses spi_write_then_read()
-> Comments changed to include extra chips in the family
-> 
-> This patch adds support for the Dallas DS1390/93/94 SPI RTC chip.
-
- There's still one printk left that you can avoid :)
+Anyone know what the true intent was and how to resolve this?
 
 -- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Don Dugger
+"Censeo Toto nos in Kansa esse decisse." - D. Gale
+n0ano@n0ano.com
+Ph: 303/443-3786
