@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYKFEYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbYKFEZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755870AbYKFEYr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 23:24:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYKFEYj
+	id S1756103AbYKFEZT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 23:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYKFEZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 23:24:39 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41898 "EHLO smtps.tip.net.au"
+	Wed, 5 Nov 2008 23:25:05 -0500
+Received: from mail.ocs.com.au ([202.134.241.204]:15259 "EHLO mail.ocs.com.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752943AbYKFEYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 23:24:38 -0500
-Date: Thu, 6 Nov 2008 15:24:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "William L. Irwin" <wli@holomorphy.com>, <sparclinux@vger.kernel.org>
-Subject: tty warning
-Message-Id: <20081106152421.a9cf964f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	id S1753202AbYKFEZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 23:25:04 -0500
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Nov 2008 23:25:03 EST
+X-Mailer: exmh version 2.7.2 01/07/2005 (debian 1:2.7.2-16) with nmh-1.2
+From: Keith Owens <kaos@ocs.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, mingo@elte.hu,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] scripts: script from kerneloops.org to pretty print oops dumps 
+In-reply-to: Your message of "Wed, 05 Nov 2008 19:07:26 -0800."
+             <20081105190726.31952581@infradead.org> 
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD="
+Content-Type: text/plain; charset=us-ascii
+Date: Thu, 06 Nov 2008 15:15:22 +1100
+Message-ID: <11403.1225944922@ocs10w>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Arjan van de Ven (on Wed, 5 Nov 2008 19:07:26 -0800) wrote:
+>I had this script lying around (used on kerneloops.org in a slightly modified form, 
+>where I use a database as input rather than stdin). I think it's a useful tool,
+>at least I find it extremely useful in turning oopses into an "oh duh yes there"
+>experience...
+>
+>Caveats:
+>* It only works for oopses not-in-modules
+>* It only works nicely for kernels compiled with CONFIG_DEBUG_INFO
+>* It's not very fast.
 
-Hi Alan,
+Another caveat: "if ($_ =~ /EIP: 0060:\[\<([a-z0-9]+)\>\]/)" means that
+it only works on x86_32.
 
-A sparc allmodconfig build gives these warnings:
-
-drivers/char/n_tty.c: In function 'n_tty_poll':
-drivers/char/n_tty.c:1592: warning: array subscript is above array bounds
-drivers/char/n_tty.c:1601: warning: array subscript is above array bounds
-drivers/char/n_tty.c: In function 'n_tty_read':
-drivers/char/n_tty.c:1306: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c: In function 'set_termios':
-drivers/char/tty_ioctl.c:574: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c:578: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c: In function 'tty_mode_ioctl':
-drivers/char/tty_ioctl.c:729: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c:963: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c:969: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c:618: warning: array subscript is above array bounds
-drivers/char/tty_ioctl.c:1007: warning: array subscript is above array boun=
-ds
-drivers/char/tty_ioctl.c:1015: warning: array subscript is above array boun=
-ds
-
-These are things like:
-
-                termios->c_cc[VTIME] =3D 0;
-
-termios is a (struct ktermios *) which has "cc_t c_cc[NCCS];".  NCCS is
-17 and VTIME is also 17.  I assume the intention is to actually fill in
-_x_cc[0], but why is it done this way and not more directly?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkScXUACgkQjjKRsyhoI8zjOACfaIsrUtauz/vDsOusCC4UOmrS
-DkYAniz2cV2d8H0c0eFJAL2RORS1o9c8
-=eQ5O
------END PGP SIGNATURE-----
-
---Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD=--
