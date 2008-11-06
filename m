@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbYKFE0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYKFEeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756042AbYKFE0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 23:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYKFEZ7
+	id S1753982AbYKFEeo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 23:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbYKFEed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 23:25:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57924
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753107AbYKFEZ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 23:25:58 -0500
-Date: Wed, 05 Nov 2008 20:25:57 -0800 (PST)
-Message-Id: <20081105.202557.233628145.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       sparclinux@vger.kernel.org
-Subject: Re: tty warning
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081106152421.a9cf964f.sfr@canb.auug.org.au>
-References: <20081106152421.a9cf964f.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 23:34:33 -0500
+Received: from kroah.org ([198.145.64.141]:36304 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751504AbYKFEec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 23:34:32 -0500
+Date: Wed, 5 Nov 2008 20:32:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+Message-ID: <20081106043235.GA30292@kroah.com>
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081022084531.GP3773@yzhao12-linux.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 6 Nov 2008 15:24:21 +1100
-
-> These are things like:
+On Wed, Oct 22, 2008 at 04:45:31PM +0800, Yu Zhao wrote:
+> Document the new PCI[x86] boot parameters.
 > 
->                 termios->c_cc[VTIME] = 0;
+> Cc: Alex Chiang <achiang@hp.com>
+> Cc: Grant Grundler <grundler@parisc-linux.org>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Cc: Matthew Wilcox <matthew@wil.cx>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: Roland Dreier <rdreier@cisco.com>
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 > 
-> termios is a (struct ktermios *) which has "cc_t c_cc[NCCS];".  NCCS is
-> 17 and VTIME is also 17.  I assume the intention is to actually fill in
-> _x_cc[0], but why is it done this way and not more directly?
+> ---
+>  Documentation/kernel-parameters.txt |   10 ++++++++++
+>  1 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index 53ba7c7..5482ae0 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is defined in the file
+>  		cbmemsize=nn[KMG]	The fixed amount of bus space which is
+>  				reserved for the CardBus bridge's memory
+>  				window. The default value is 64 megabytes.
+> +		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
+> +				devices under bus [dddd:]bb (dddd is the domain
+> +				number and bb is the bus number).
+> +		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
+> +				devices under bus [dddd:]bb (dddd is the domain
+> +				number and bb is the bus number).
+> +		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
+> +				device to minimum PAGE_SIZE alignment (dddd is
+> +				the domain number and bb, dd and f is the bus,
+> +				device and function number).
 
-It's just some historical stuff.
+This seems like a big problem.  How are we going to know to add these
+command line options for devices we haven't even seen/known about yet?
 
-I've tried to rectify it, but it is non-trivial to fix and
-all it does is pacify a warning rather than fix a real problem
-so... ;-)
+How do we know the bus ids aren't going to change between boots (hint,
+they are, pci bus ids change all the time...)
 
-This has been brought up perhaps 5 or 6 times in the past half
-year :)
+We need to be able to do this kind of thing dynamically, not fixed at
+boot time, which seems way to early to even know about this, right?
+
+thanks,
+
+greg k-h
