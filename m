@@ -1,87 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYKFPg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYKFPhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbYKFPg3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYKFPfj
+	id S1754955AbYKFPhF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbYKFPg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:35:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37345 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752770AbYKFPfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:35:37 -0500
-Date: Thu, 6 Nov 2008 13:34:05 -0200
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/15] x86: Emergency virtualization disable function
-Message-ID: <20081106153405.GS5247@blackpad>
-References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com> <1225915018-6548-10-git-send-email-ehabkost@redhat.com> <20081105222731.GA14202@elf.ucw.cz>
+	Thu, 6 Nov 2008 10:36:28 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46144 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754688AbYKFPg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:36:27 -0500
+Date: Thu, 6 Nov 2008 10:36:00 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       T?r?k Edwin <edwintorok@gmail.com>, srostedt@redhat.com,
+       a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Identify which executable object the userspace address
+	belongs to. Store thread group leader id, and use it to lookup the
+	address in the process's map. We could have looked up the address
+	on thread's map, but the thread might not exist by the time we are
+	called. The process might not exist either, but if you are reading
+	trace_pipe, that is unlikely.
+Message-ID: <20081106153600.GA12523@infradead.org>
+References: <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk> <490E1B74.6010904@gmail.com> <20081102214042.GG28946@ZenIV.linux.org.uk> <20081103073257.GA13727@elte.hu> <20081104182628.GA6666@infradead.org> <20081106095547.GK4890@elte.hu> <20081106122650.GA23474@infradead.org> <20081106153238.GD1644@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081105222731.GA14202@elf.ucw.cz>
-X-Fnord: you can see the fnord
+In-Reply-To: <20081106153238.GD1644@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 11:27:32PM +0100, Pavel Machek wrote:
-> On Wed 2008-11-05 17:56:52, Eduardo Habkost wrote:
-> > This patch adds an interface to set a function that can be used to
-> > disable virtualization extensions on the CPU on emergency cases, such
-> > as on kdump or emergency reboot.
-> > 
-> > The function will be set by code that enables virtualization extensions
-> > on the CPUs (i.e. KVM), and should do the very least to disable virt
-> > extensions on the CPU where it is being called.
-> > 
-> > The functions that set the function pointer uses RCU synchronization,
-> > just in case the crash NMI is triggered while KVM is unloading.
-> > 
-> > We can't just use the same notifiers used at reboot time (that are used
-> > by non-crash-dump kexec), because at crash time some CPUs may have IRQs
-> > disabled, so we can't use IPIs. The crash shutdown code use NMIs to tell
-> > the other CPUs to be halted, so the notifier call will be hooked into
-> > the CPU halting code that is on the crash shutdown NMI handler.
-> > 
-> > [v2: drop 'unsigned int cpu' arg from function]
-> > [v3: make emergency_virt_disable() non-static]
-> > [v4: add a config option for it: CPU_VIRT_EXTENSIONS]
-> > [v5: add has_virt_extensions() function]
-> > [v6: don't define the registering functions if CPU_VIRT_EXTENSIONS is
-> >  not enabled]
-> > [v7: use EXPORT_SYMBOL_GPL]
-> > 
-> 
-> > --- /dev/null
-> > +++ b/arch/x86/kernel/virtext.c
-> > @@ -0,0 +1,89 @@
-> > +/* Core CPU virtualization extensions handling
-> > + *
-> > + * This should carry the code for handling CPU virtualization extensions
-> > + * that needs to live in the kernel core.
-> > + *
-> > + * Author: Eduardo Habkost <ehabkost@redhat.com>
-> > + *
-> > + * Copyright (C) 2008, Red Hat Inc.
-> > + */
-> 
-> GPL?
+On Thu, Nov 06, 2008 at 04:32:38PM +0100, Ingo Molnar wrote:
+> the timeline i quoted shows that it was a 2 days process, not 2 
+> minutes.
 
-Yes, of course.
+Honestly I'm not sure what this timeline stuff should mean. People are
+busy, and for many of us kernel hacking is only or at least outside
+of very narrow areas a spare time activicty, so you really can't expect
+answers in the next minute.  There might be a lot of real life stuff
+that's a lot more important as it pais the bills and deals with family,
+etc.
 
-As IANAL, I used a similar .c file as reference for the author/copyright
-info header, and used arch/x86/kernel/crash.c, that doesn't refer to
-the GPL also. I think I chose a bad example as reference.
+But that wasn't my point anyway.  Al told no to seq_path, and just
+the contents of it without the interface that is tied to seq_files.
+Doing so is trivial by looking at seq_path so I really don't understand
+your odd reaction to it.
 
-arch/x86/kernel/crash.c even has "All rights reserved". Ouch.
-
--- 
-Eduardo
