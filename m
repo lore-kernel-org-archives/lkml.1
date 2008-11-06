@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbYKFBSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYKFBTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbYKFBSl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 20:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYKFBSd
+	id S1755514AbYKFBTr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 20:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYKFBTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 20:18:33 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39378 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbYKFBSc (ORCPT
+	Wed, 5 Nov 2008 20:19:38 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:16371 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbYKFBTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 20:18:32 -0500
-Date: Thu, 6 Nov 2008 10:17:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
- hotplug
-Message-Id: <20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<1225817945.12673.602.camel@nimitz>
-	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
-	<200811051208.26628.rjw@sisk.pl>
-	<20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Nov 2008 20:19:37 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	content-type:content-transfer-encoding;
+	b=mG/BZrxg4rMAVU1xC4LERBi/vIALqkCF0Z4IfWhU8Rv7aNM/YpAKcsHYAeAQfudJs
+	qQ/20pXsq2DRJlCoPBK1Q==
+MIME-Version: 1.0
+In-Reply-To: <20081102224513.GH19509@disturbed>
+References: <1786ab030810311354h1a7c8fb0q1267969d432f521c@mail.gmail.com>
+	 <20081102224513.GH19509@disturbed>
+Date: Wed, 5 Nov 2008 17:19:20 -0800
+Message-ID: <1786ab030811051719w63ada9c8ldf75f15367adbb8b@mail.gmail.com>
+Subject: Re: Metadata in sys_sync_file_range and fadvise(DONTNEED)
+From: Chad Talbott <ctalbott@google.com>
+To: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@google.com>, Michael Rubin <mrubin@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 09:14:41 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Sun, Nov 2, 2008 at 2:45 PM, Dave Chinner <david@fromorbit.com> wrote:
+> On Fri, Oct 31, 2008 at 01:54:14PM -0700, Chad Talbott wrote:
+>> We are looking at adding calls to posix_fadvise(DONTNEED) to various
+>> data logging routines.  This has two benefits:
+>>
+>>   - frequent write-out -> shorter queues give lower latency, also disk
+>>     is more utilized as writeout begins immediately
+>>
+>>   - less useless stuff in page cache
+>>
+>> One problem with fadvise() (and ext2, at least) is that associated
+>> metadata isn't scheduled with the data. So, for a large log file with
+>> a high append rate, hundreds of indirect blocks are left to be written
+>> out by periodic writeback.  This metadata consists of single blocks
+>> spaced by 4MB, leading to spikes of very inefficient disk utilization,
+>> deep queues and high latency.
+>
+> Sounds like a filesystem bug to me, not a problem with
+> posix_fadvise(DONTNEED).
 
-> Ok, please consider "when memory hotplug happens." 
-> 
-> In general, it happens when
->   1. memory is inserted to slot.
->   2. the firmware notifes the system to enable already inserted memory.
-> 
-> To trigger "1", you have to open cover of server/pc. Do you open pc while the system
-> starts hibernation ? for usual people, no.
-> 
-> To trigger "2", the user have special console to tell firmware "enable this memory".
-> Such firmware console or users have to know "the system works well." And, more important,
-> when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
-> So, such firmware console or operator have to know the system status.
-> 
-> Am I missing some ? Current linux can know PCI/USB hotplug while the system is suspended ?
-> 
-*OFFTOPIC*
+Agreed that the right fix is not to hack fadvise().  If the boundary
+page mechanism can't be made to work, It looks like right thing might
+be to modify ext2_writepages to opportunistically write dirty metadata
+in holes between dirty data.  For post-ext2 filesystems which attempt
+to provide transactional semantics, this is probably not acceptable.
 
-I hear following answer from my friend.
+>> Andrew suggests a new SYNC_FILE_RANGE_METADATA flag for
+>> sys_sync_file_range(), and leaving posix_fadvise() alone.
+>
+> What is the interface that a filesystem will see? No filesystem has
+> a "metadata sync" method - is this going to fall through to some new
+> convoluted combination of writeback flags to an inode/mapping
+> that more filesystems than not can get wrong?
 
-  - hibernate the system
-	=> plug USB memory
-		=> wake up the system
-			=> panic.
-  - hibernate the system
-	=> unplug USB memory
-		=> wake up the sytem
-			=> panic.
+Good point, coupled with metadata/data ordering and your argument
+below, a decent argument against exposing this interface.
 
-Thanks,
--Kame
+> FWIW, sys_sync_file_range() is fundamentally broken for data
+> integrity writeback - at no time does it call a filesystem method
+> that can result in a barrier I/O being issued to disk after
+> writeback is complete. So, unlike fsync() or fdatasync(), the data
+> can still be lost after completion due to power failure on drives
+> with volatile write caches....
 
+Seems to be true.  I'm not currently concerned with sync_file_range
+for data integrity, so I'm going to punt on this issue.
+
+If the consensus is against exposing a "sync metadata" interface, I'm
+fine with ext2 silently updating metadata alongside neighboring data
+in *either* posix_fadvise() or sync_file_range.   Either way, does it
+seem reasonable for posix_fadvise(DONTNEED) to call
+__filemap_fdatawrite_range to do its work?  This is the same path that
+sync_file_range uses.  I prefer this to the current behavior of
+ignoring the passed range and initiating writeback on the entire file.
+
+Chad
