@@ -1,27 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYKFV4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYKFWBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYKFV4v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYKFV4m
+	id S1753381AbYKFWBo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbYKFWBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:56:42 -0500
-Received: from waste.org ([66.93.16.53]:51612 "EHLO waste.org"
+	Thu, 6 Nov 2008 17:01:35 -0500
+Received: from waste.org ([66.93.16.53]:42791 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbYKFV4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:56:41 -0500
-Subject: Re: [patch] sched: fix single-depth wchan output
+	id S1750932AbYKFWBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 17:01:34 -0500
+Subject: Re: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
 From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <20081106061125.GA6384@elte.hu>
-References: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com>
-	 <20081106061125.GA6384@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ben Hutchings <bhutchings@solarflare.com>
+In-Reply-To: <4912943C.2090801@zytor.com>
+References: <4910C845.4060909@kernel.org> <20081106062608.GC6384@elte.hu>
+	 <86802c440811052242taefec24ndf661b1c65ca457e@mail.gmail.com>
+	 <4912943C.2090801@zytor.com>
 Content-Type: text/plain
-Date: Thu, 06 Nov 2008 15:56:11 -0600
-Message-Id: <1226008571.3023.20.camel@calx>
+Date: Thu, 06 Nov 2008 15:59:58 -0600
+Message-Id: <1226008798.3023.23.camel@calx>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,41 +32,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 07:11 +0100, Ingo Molnar wrote:
-> * Ken Chen <kenchen@google.com> wrote:
-> 
-> > To get a meaningful /proc/<pid>/wchan, one is required to turn on 
-> > full frame pointer when compile kernel/sched.c on x86 arch.  The 
-> > enabling of frame pointer applies to entire kernel/sched.c and 
-> > affects lots of other core scheduler functions that aren't related 
-> > to wchan's call stack unwind.  This causes unnecessary expansion of 
-> > stack pointer push and pop on the stack for scheduler functions.  To 
-> > cut down the cost of frame pointer push/pop, one can use compile 
-> > time config option 'single-depth wchan'.  However, the 
-> > 'single-depth' option is broken on x86 due to lack of stack frame 
-> > marker and simple stack unwind doesn't work, i.e., wchan always 
-> > produces '0'.
+On Wed, 2008-11-05 at 22:52 -0800, H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+> >>
+> >> Clean-up sidenote: i think we can now remove the VISWS #ifdef portion
+> >> for good? Mind sending a patch for that too?
 > > 
-> > This patch adds call site location explicitly in thread_struct for 
-> > schedule() function so that get_wchan() can reliably get the data 
-> > and at the same time not to overly burden the entire kernel/sched.c 
-> > with frame pointer generation.  The remove of frame pointer 
-> > dependency allows compiler to generate better and faster core 
-> > scheduler code on x86_64.
+> > could remove CONFIG_PARAVIRT too.. Jeremy?
+> > 
 > 
-> hm, this adds overhead - and the thing is that WCHAN is rather 
-> uninformative to begin with (because it's a single dimension), so we 
-> should phase it out, not expand it.
+> This seems like a bad idea, especially for the embedded guys.
 
-WCHAN is a long-standing public interface and isn't a Linuxism. I don't
-think phasing it out is a good idea.
-
-> How about adding a /proc/<PID>/stacktrace file that gives us the stack 
-> trace of any task in the system? That would be useful for a number of 
-> other purposes as well, and about 100 times more useful than wchan. 
-> (often it would be more useful than sysrq-t dumps)
-
-But this is a great idea, of course.
+I'd actually really like to see us move to dynamically-allocated irq
+tables as they're currently huge. But I haven't dug into it deeply
+enough to see what sort of gotchas are involved.
 
 -- 
 Mathematics is the supreme nostalgia of our time.
