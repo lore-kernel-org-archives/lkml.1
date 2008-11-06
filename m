@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbYKFQ73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYKFQ7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbYKFQ73 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:59:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYKFQ7G
+	id S1752641AbYKFQ7n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYKFQ7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:59:06 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:50358 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751690AbYKFQ7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:59:04 -0500
-Date: Thu, 6 Nov 2008 11:59:00 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH]: ext4: fix big endian  (was: not enough memory for
-	522250 flex groups)
-Message-ID: <20081106165900.GC18939@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Christian Borntraeger <borntraeger@de.ibm.com>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <200811061600.54264.borntraeger@de.ibm.com> <200811061651.49602.borntraeger@de.ibm.com>
+	Thu, 6 Nov 2008 11:59:23 -0500
+Received: from kroah.org ([198.145.64.141]:39204 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753269AbYKFQ7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:59:22 -0500
+Date: Thu, 6 Nov 2008 08:59:14 -0800
+From: Greg KH <greg@kroah.com>
+To: H L <swdevyid@yahoo.com>
+Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
+       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
+Subject: Re: git repository for SR-IOV development?
+Message-ID: <20081106165914.GA13476@kroah.com>
+References: <20081106154351.GA30459@kroah.com> <1374.36291.qm@web45108.mail.sp1.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200811061651.49602.borntraeger@de.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <1374.36291.qm@web45108.mail.sp1.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 04:51:49PM +0100, Christian Borntraeger wrote:
-> Ok, I think I found it:
+On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
 > 
-> On big endianess plattforms newly created ext4 file systems cannot be mounted
-> and show messages like:
-> [6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
-> [6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
-> 
-> We have to access s_reserved_gdb_blocks with le16_to_cpu.
+> Has anyone initiated or given consideration to the creation of a git
+> repository (say, on kernel.org) for SR-IOV development?
 
-Aneesh has already submitted a patch to fix this; I'll be pushing it
-to Linus shortly.
+Why?  It's only a few patches, right?  Why would it need a whole new git
+tree?
 
-						- Ted
+thanks,
+
+greg k-h
