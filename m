@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbYKFQ7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbYKFQ73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbYKFQ7G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYKFQ6x
+	id S1753336AbYKFQ73 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:59:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYKFQ7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:58:53 -0500
-Received: from kroah.org ([198.145.64.141]:39191 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750920AbYKFQ6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:58:52 -0500
-Date: Thu, 6 Nov 2008 08:49:19 -0800
-From: Greg KH <greg@kroah.com>
-To: H L <swdevyid@yahoo.com>
-Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
-       linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081106164919.GA4099@kroah.com>
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com>
+	Thu, 6 Nov 2008 11:59:06 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:50358 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751690AbYKFQ7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:59:04 -0500
+Date: Thu, 6 Nov 2008 11:59:00 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH]: ext4: fix big endian  (was: not enough memory for
+	522250 flex groups)
+Message-ID: <20081106165900.GC18939@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christian Borntraeger <borntraeger@de.ibm.com>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <200811061600.54264.borntraeger@de.ibm.com> <200811061651.49602.borntraeger@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <894107.30288.qm@web45108.mail.sp1.yahoo.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200811061651.49602.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-A: No.
-Q: Should I include quotations after my reply?
-
-On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
-> I have not modified any existing drivers, but instead I threw together
-> a bare-bones module enabling me to make a call to pci_iov_register()
-> and then poke at an SR-IOV adapter's /sys entries for which no driver
-> was loaded.
+On Thu, Nov 06, 2008 at 04:51:49PM +0100, Christian Borntraeger wrote:
+> Ok, I think I found it:
 > 
-> It appears from my perusal thus far that drivers using these new
-> SR-IOV patches will require modification; i.e. the driver associated
-> with the Physical Function (PF) will be required to make the
-> pci_iov_register() call along with the requisite notify() function.
-> Essentially this suggests to me a model for the PF driver to perform
-> any "global actions" or setup on behalf of VFs before enabling them
-> after which VF drivers could be associated.
+> On big endianess plattforms newly created ext4 file systems cannot be mounted
+> and show messages like:
+> [6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
+> [6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
+> 
+> We have to access s_reserved_gdb_blocks with le16_to_cpu.
 
-Where would the VF drivers have to be associated?  On the "pci_dev"
-level or on a higher one?
+Aneesh has already submitted a patch to fix this; I'll be pushing it
+to Linus shortly.
 
-Will all drivers that want to bind to a "VF" device need to be
-rewritten?
-
-> I have so far only seen Yu Zhao's "7-patch" set.  I've not yet looked
-> at his subsequently tendered "15-patch" set so I don't know what has
-> changed.    The hardware/firmware implementation for any given SR-IOV
-> compatible device, will determine the extent of differences required
-> between a PF driver and a VF driver.
-
-Yeah, that's what I'm worried/curious about.  Without seeing the code
-for such a driver, how can we properly evaluate if this infrastructure
-is the correct one and the proper way to do all of this?
-
-thanks,
-
-greg k-h
+						- Ted
