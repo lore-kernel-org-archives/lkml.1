@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYKFOS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYKFOVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbYKFOS0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 09:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbYKFOSS
+	id S1753993AbYKFOVW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 09:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYKFOVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 09:18:18 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42673 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750886AbYKFOSR (ORCPT
+	Thu, 6 Nov 2008 09:21:13 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:51431 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750913AbYKFOVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 09:18:17 -0500
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-In-Reply-To: <20081106060624.58a0f967@infradead.org>
-References: <20081105094902.27ec4b39@infradead.org>
-	 <1225976138.7803.4485.camel@twins>  <20081106060624.58a0f967@infradead.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Nov 2008 15:19:01 +0100
-Message-Id: <1225981141.7803.4577.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 6 Nov 2008 09:21:13 -0500
+X-Sasl-enc: lWuxxyInemX9IzEut4M+EJxLEgt2S/tfgqSKikzErTo6 1225981271
+Date: Thu, 6 Nov 2008 12:21:07 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
+Message-ID: <20081106142107.GC23278@khazad-dum.debian.net>
+References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61> <20081105122632.GC14931@khazad-dum.debian.net> <20081105130852.GB30758@dose.home.local> <20081105162401.GF14931@khazad-dum.debian.net> <20081106003543.GA14766@x61> <20081106082314.GA18430@x61>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081106082314.GA18430@x61>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 06:06 -0800, Arjan van de Ven wrote:
-> On Thu, 06 Nov 2008 13:55:38 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Wed, 2008-11-05 at 09:49 -0800, Arjan van de Ven wrote:
-> > > From 63c1b869d94eb31a98015af09fb24e22151f2f00 Mon Sep 17 00:00:00
-> > > 2001 From: Arjan van de Ven <arjan@linux.intel.com>
-> > > Date: Tue, 4 Nov 2008 21:08:11 -0800
-> > > Subject: [PATCH] ftrace: add an fsync tracer
-> > > 
-> > > fsync() (and its cousin, fdatasync()) are important chokepoints in
-> > > the kernel as they imply very expensive operations, both in terms
-> > > of filesystem operations (ext3 writes back its entire journal) as
-> > > well as the block layer (fsync() implies sending a cache flushing
-> > > barrier to the SATA/SCSI disk).
-> > > 
-> > > This tracer makes a log of which application calls fsync() on which
-> > > file, so that developers and others interested in finding these
-> > > choke points can locate them and fix them in the apps that call
-> > > this function.
-> > 
-> > Sorry, but I have to object to such single purpose tracers..
-> > 
-> > If we go this way we'll end up with a gazillion little tracers, non of
-> > which are really useful.
-> 
-> If we go this way we'll end up with a bunch of little tracers, all of
-> which will be useful in their area, and people can also make "super
-> tracers" out of the useful trace points.
+On Thu, 06 Nov 2008, Tino Keitel wrote:
+> The whole fan level stuff looks a bit complicated to me. Especially the
 
-I don't think: 
+It is.  The sysfs hwmon interface does not map 1:1 with the three possible
+thinkpad fan control interfaces.  fan_control_desired_level is used for that
+interface mainly, since I have to remember the last state used that was in
+the set of 0-7, ignoring AUTO (which is a separate pwm control mode for
+hwmon) and full-speed (which is a separate pwm control mode for hwmon).
 
-# cat available_tracers | wc -l
-500
+It is hijacked by fan_suspend/fan_resume to store state between
+sleep/resume, because that was convenient.  Too bad I failed to notice it
+would not work properly for that.
 
-will do much good for people.
+> The attached patch tries to simplify this a bit. It sets
 
-Also, I don't think do_fsync() is the right place to catch what you're
-trying to catch.
+NAK, it would break a lot of stuff.   See my previous reply on this thread
+for *some* of the stuff it would break.
 
-> > 
-> > Please work on getting something like a syscall tracer,
-> 
-> a syscall tracer will exactly not tell you which file(name) was being
-> fsync()'d which was the whole point.
+I will have a proper patch out probably within 24h but most certainly before
+next Monday.
 
-It will tell you the process and the fd, and when you have those two its
-a simple step to find the actual file.
+Meanwhile, I suggest you just remove the calls to fan_suspend and fan_resume
+as a workaround.
 
-> LatencyTOP already KNOWS that fsync is the problem. What it doesn't
-> know is which file is being fsync()d.
-> 
-> fsync is a problem when used incorrectly, not just for ext3 but also
-> due to barriers. That's why it's important to be able to find who calls
-> it when it impacts interactive performance.
-
-Which suggests you want a tracer that gives more information about who
-generates barriers, not specifically fsync().
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
