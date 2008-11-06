@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYKFHbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYKFHci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbYKFHbR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 02:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYKFHbA
+	id S1754547AbYKFHci (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 02:32:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYKFHca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 02:31:00 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51836 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752865AbYKFHa7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 02:30:59 -0500
-Date: Thu, 6 Nov 2008 16:30:21 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [mm] [PATCH 4/4] Memory cgroup hierarchy feature selector
-Message-Id: <20081106163021.93f3cbe2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4912951D.60301@linux.vnet.ibm.com>
-References: <20081101184812.2575.68112.sendpatchset@balbir-laptop>
-	<20081101184902.2575.11443.sendpatchset@balbir-laptop>
-	<20081102143817.99edca6d.kamezawa.hiroyu@jp.fujitsu.com>
-	<490D42C7.4000301@linux.vnet.ibm.com>
-	<20081102152412.2af29a1b.kamezawa.hiroyu@jp.fujitsu.com>
-	<4912951D.60301@linux.vnet.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 02:32:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57977 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752865AbYKFHca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 02:32:30 -0500
+Date: Thu, 6 Nov 2008 08:32:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Sripathi Kodi <sripathik@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] Inline double_unlock_balance()
+Message-ID: <20081106073214.GA8459@elte.hu>
+References: <200811051857.14944.sripathik@in.ibm.com> <1225893576.7803.3021.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225893576.7803.3021.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 12:26:29 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Sun, 02 Nov 2008 11:33:51 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Wed, 2008-11-05 at 18:57 +0530, Sripathi Kodi wrote:
+> > Hi,
 > > 
-> >> KAMEZAWA Hiroyuki wrote:
-> >>> On Sun, 02 Nov 2008 00:19:02 +0530
-> >>> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> >>>
-> >>>> Don't enable multiple hierarchy support by default. This patch introduces
-> >>>> a features element that can be set to enable the nested depth hierarchy
-> >>>> feature. This feature can only be enabled when there is just one cgroup
-> >>>> (the root cgroup).
-> >>>>
-> >>> Why the flag is for the whole system ?
-> >>> flag-per-subtree is of no use ?
-> >> Flag per subtree might not be useful, since we charge all the way up to root,
-> > Ah, what I said is "How about enabling/disabling hierarhcy support per subtree ?"
-> > Sorry for bad text.
+> > We have a test case which measures the variation in the amount of time 
+> > needed to perform a fixed amount of work on the preempt_rt kernel. We 
+> > started seeing deterioration in it's performance recently. The test 
+> > should never take more than 10 microseconds, but we started 5-10% 
+> > failure rate. Using elimination method, we traced the problem to commit 
+> > 1b12bbc747560ea68bcc132c3d05699e52271da0 (lockdep: re-annotate 
+> > scheduler runqueues). When LOCKDEP is disabled, this patch only adds an 
+> > additional function call to double_unlock_balance(). Hence I inlined 
+> > double_unlock_balance() and the problem went away. Here is a patch to 
+> > make this change.
 > > 
-> > like this.
-> >   - you can set hierarchy mode of a cgroup turned on/off when...
-> >     * you don't have any tasks under it && it doesn't have any child cgroup.
+> > Thanks,
+> > Sripathi.
+> > 
+> > lockdep: Inline double_unlock_balance()
+> > 
+> > Additional function call for double_unlock_balance() causes latency 
+> > problems for some test cases on the preempt_rt kernel.
+> > 
+> > Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
 > 
-> I see.. the presence of tasks don't matter, since the root cgroup will always
-> have tasks. Presence of child groups does matter.
-> 
-yes. you're right.
+> Acked-by; Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Thanks,
--Kame
+hm, i'm not sure why it makes such a difference. Possibly cache 
+alignment or code generation details pushing the critical path just 
+beyond the L1 cache limit and causing thrashing?
 
+Anyway, i've applied it to tip/sched/rt, as we generally want to 
+inline such short locking ops.
+
+	Ingo
