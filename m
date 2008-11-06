@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYKFQRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbYKFQZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754494AbYKFQRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYKFQRE
+	id S1752106AbYKFQZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbYKFQZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:17:04 -0500
-Received: from mtagate8.uk.ibm.com ([195.212.29.141]:53443 "EHLO
-	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbYKFQRD (ORCPT
+	Thu, 6 Nov 2008 11:25:29 -0500
+Received: from host254-130-static.190-82-b.business.telecomitalia.it ([82.190.130.254]:60539
+	"EHLO nausicaa2.coritel.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750733AbYKFQZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:17:03 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Peter Staubach <staubach@redhat.com>
-Subject: Re: [PATCH]: ext4: fix big endian
-Date: Thu, 6 Nov 2008 17:15:53 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-References: <200811061600.54264.borntraeger@de.ibm.com> <200811061651.49602.borntraeger@de.ibm.com> <49131601.50407@redhat.com>
-In-Reply-To: <49131601.50407@redhat.com>
+	Thu, 6 Nov 2008 11:25:28 -0500
+Message-ID: <49131A80.3000402@coritel.it>
+Date: Thu, 06 Nov 2008 17:25:36 +0100
+From: Marco Stornelli <marco.stornelli@coritel.it>
+Organization: CoRiTeL
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: mtk.manpages@gmail.com
+Cc: rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [RESEND] documentation: xip documentation update
+References: <49130E3C.5040203@coritel.it> <cfd18e0f0811060742v46dd3f9eod624954cd9dcda3d@mail.gmail.com>
+In-Reply-To: <cfd18e0f0811060742v46dd3f9eod624954cd9dcda3d@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811061715.53593.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag, 6. November 2008 schrieb Peter Staubach:
-> >  	/* We allocate both existing and potentially added groups */
-> >  	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
-> > -			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
-> > +			    (le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks + 1) <<
-> >   
+
+Michael Kerrisk wrote:
+> Marco,
 > 
-> I suspect that you want to do the le16_to_cpu() and _then_
-> add the 1.  Otherwise, adding 1 to a different byte order
-> value won't do quite what is expected or hoped for...
+> A few comments below.
+> 
+> On Thu, Nov 6, 2008 at 10:33 AM, Marco Stornelli
+> <marco.stornelli@coritel.it> wrote:
+>> From: Marco Stornelli <marco.stornelli@gmail.com>
+>>
+>> xip documentation updated
+>> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+>> ---
+>>
+>> --- a/Documentation/filesystems/xip.txt.orig    2008-08-20 20:11:37.000000000 +0200
+>> +++ b/Documentation/filesystems/xip.txt 2008-11-06 12:47:48.000000000 +0200
+>> @@ -39,10 +39,11 @@ The block device operation is optional,
+>>  today:
+>>  - dcssblk: s390 dcss block device driver
+>>
+>> -An address space operation named get_xip_page is used to retrieve reference
+>> -to a struct page. To address the target page, a reference to an address_space,
+>> -and a sector number is provided. A 3rd argument indicates whether the
+> 
+>> -function should allocate blocks if needed.
+>> +An address space operation named get_xip_mem is used to retrieve reference
+> 
+> s/reference/a reference/?
 
-errm. Right.
-Something like this maybe?
+Ok, it should actually be "references".
 
-[PATCH]: ext4: fix big endian access for flex groups
+> 
+>> +to a page frame number and a kernel address. To obtain these values a reference
+>> +to an address_space is provided. This function assigns values to the kmem and
+>> +pfn parameters. The 3rd argument indicates whether the function should allocate
+> 
+> It's a taste thing, but I would write "third" not "3rd".  (I
+> appreciate that the existing text already used "3rd", but maybe that
+> should be fixed.)
 
-On big endianess plattforms newly created ext4 file systems cannot be mounted
-and show messages like:
-[6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
-[6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
+Ok.
 
-We have to access s_reserved_gdb_blocks with le16_to_cpu.
+> 
+>> +blocks if needed.
+>>
+>>  This address space operation is mutually exclusive with readpage&writepage that
+>>  do page cache read/write operations.
+> 
+> Cheers,
+> 
+> Michael
+> 
 
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
----
- fs/ext4/super.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: kvm/fs/ext4/super.c
-===================================================================
---- kvm.orig/fs/ext4/super.c
-+++ kvm/fs/ext4/super.c
-@@ -1455,8 +1455,8 @@ static int ext4_fill_flex_info(struct su
- 
- 	/* We allocate both existing and potentially added groups */
- 	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
--			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
--			      EXT4_DESC_PER_BLOCK_BITS(sb))) /
-+			    ((le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks) +
-+			      1) << EXT4_DESC_PER_BLOCK_BITS(sb))) /
- 			   groups_per_flex;
- 	sbi->s_flex_groups = kzalloc(flex_group_count *
- 				     sizeof(struct flex_groups), GFP_KERNEL);
+I wait for other comments before re-send the patch.
