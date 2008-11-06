@@ -1,479 +1,410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbYKFKz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYKFK4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753935AbYKFKz4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 05:55:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYKFKzR
+	id S1755146AbYKFK4f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 05:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbYKFK4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 05:55:17 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:58886 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753497AbYKFKzN (ORCPT
+	Thu, 6 Nov 2008 05:56:25 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:47741 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753389AbYKFK4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 05:55:13 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Linux Containers <containers@lists.osdl.org>
-References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
-	<m1abcd2kqk.fsf@frodo.ebiederm.org>
-	<m163n12ko9.fsf_-_@frodo.ebiederm.org>
-Date: Thu, 06 Nov 2008 02:53:08 -0800
-In-Reply-To: <m163n12ko9.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
-	message of "Thu, 06 Nov 2008 02:49:58 -0800")
-Message-ID: <m1y6zx15yj.fsf_-_@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH 4/7] proc: Make /proc/net it's own filesystem
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Thu, 6 Nov 2008 05:56:24 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] watchdog: Add support for the WM8350 watchdog
+Date: Thu,  6 Nov 2008 10:56:21 +0000
+Message-Id: <1225968981-25971-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This driver implements support for the watchdog functionality provided
+by the Wolfson Microelectronics WM8350, a multi-function audio and
+power management subsystem intended for use in embedded systems. It is
+based on a driver originally written by Graeme Gregory, though it has
+been extensively modified since then.
 
-Make the VFS happy with /proc/net by making it it's own
-filesystem avoiding issues with hard links to directories
-and other silliness that confuse the vfs today.
+Use of a GPIO to kick the watchdog is not yet supported.
 
-We preserve backwards compatibility by automatically
-mounting /proc/self/net and marking it as a shrinkable
-mount so userspace doesn't need to care about it.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- fs/proc/base.c              |    6 +-
- fs/proc/proc_net.c          |  212 +++++++++++++++++++++++++++++++------------
- include/linux/magic.h       |    1 +
- include/net/net_namespace.h |    1 +
- security/selinux/hooks.c    |   28 +++++-
- 5 files changed, 183 insertions(+), 65 deletions(-)
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 486cf3f..9a68fa4 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -128,6 +128,10 @@ struct pid_entry {
- 	NOD(NAME, (S_IFREG|(MODE)), 			\
- 		NULL, &proc_single_file_operations,	\
- 		{ .proc_show = &proc_##OTYPE } )
-+#define MNT(NAME, MODE, OTYPE) 				\
-+	NOD(NAME, (S_IFDIR|(MODE)), 			\
-+		&proc_##OTYPE##_inode_operations, NULL,	\
-+		{} )
+Since last submission the driver has been changed to use bit zero rather
+than bit 1 when using test_and_set_bit() to ensure that we only have
+one user.
+
+ drivers/watchdog/Kconfig      |    7 +
+ drivers/watchdog/Makefile     |    1 +
+ drivers/watchdog/wm8350_wdt.c |  329 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 337 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/watchdog/wm8350_wdt.c
+
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 4fd3fa5..d5bc085 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -55,6 +55,13 @@ config SOFT_WATCHDOG
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called softdog.
  
- /*
-  * Count the number of hardlinks for the pid_entry table, excluding the .
-@@ -2453,7 +2457,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	DIR("fd",         S_IRUSR|S_IXUSR, fd),
- 	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
- #ifdef CONFIG_NET
--	DIR("net",        S_IRUGO|S_IXUGO, net),
-+	MNT("net",        S_IRUGO|S_IXUGO, net),
- #endif
- 	REG("environ",    S_IRUSR, environ),
- 	INF("auxv",       S_IRUSR, pid_auxv),
-diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
-index 7bc296f..57e0f22 100644
---- a/fs/proc/proc_net.c
-+++ b/fs/proc/proc_net.c
-@@ -21,11 +21,13 @@
- #include <linux/smp_lock.h>
- #include <linux/mount.h>
- #include <linux/nsproxy.h>
-+#include <linux/namei.h>
- #include <net/net_namespace.h>
- #include <linux/seq_file.h>
++config WM8350_WATCHDOG
++	tristate "WM8350 watchdog"
++	depends on MFD_WM8350
++	help
++	  Support for the watchdog in the WM8350 AudioPlus PMIC.  When
++	  the watchdog triggers the system will be reset.
++
+ # ALPHA Architecture
  
- #include "internal.h"
+ # ARM Architecture
+diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+index e352bbb..c3b8db3 100644
+--- a/drivers/watchdog/Makefile
++++ b/drivers/watchdog/Makefile
+@@ -134,3 +134,4 @@ obj-$(CONFIG_WATCHDOG_CP1XXX)		+= cpwd.o
  
-+static struct file_system_type proc_net_fs_type;
- 
- static struct net *get_proc_net(const struct inode *inode)
- {
-@@ -118,65 +120,60 @@ static struct net *get_proc_task_net(struct inode *dir)
- 	return net;
- }
- 
--static struct dentry *proc_tgid_net_lookup(struct inode *dir,
--		struct dentry *dentry, struct nameidata *nd)
-+void *proc_net_follow_link(struct dentry *dentry, struct nameidata *nd)
- {
--	struct dentry *de;
-+	/* Follow to a mount point of the proper network namespace.
-+	 */
-+	struct vfsmount *mnt;
- 	struct net *net;
--
--	de = ERR_PTR(-ENOENT);
--	net = get_proc_task_net(dir);
--	if (net != NULL) {
--		de = proc_lookup_de(net->proc_net, dir, dentry);
--		put_net(net);
-+	int err = -ENOENT;
+ # Architecture Independant
+ obj-$(CONFIG_SOFT_WATCHDOG) += softdog.o
++obj-$(CONFIG_WM8350_WATCHDOG) += wm8350_wdt.o
+diff --git a/drivers/watchdog/wm8350_wdt.c b/drivers/watchdog/wm8350_wdt.c
+new file mode 100644
+index 0000000..d7b8ad4
+--- /dev/null
++++ b/drivers/watchdog/wm8350_wdt.c
+@@ -0,0 +1,329 @@
++/*
++ * Watchdog driver for the wm8350
++ *
++ * Copyright (C) 2007, 2008 Wolfson Microelectronics <linux@wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation
++ */
 +
-+	/* Which network namespace? */
-+	net = get_proc_task_net(dentry->d_inode);
-+	if (!net)
-+		goto out_err;
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/miscdevice.h>
++#include <linux/platform_device.h>
++#include <linux/watchdog.h>
++#include <linux/uaccess.h>
++#include <linux/mfd/wm8350/core.h>
 +
-+	/* Create a new mount. */
-+	mnt = kern_mount_data(&proc_net_fs_type, net);
-+	if (IS_ERR(mnt))
-+		goto out_err;
++static int nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout,
++		 "Watchdog cannot be stopped once started (default="
++		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
 +
-+	dput(nd->path.dentry);
-+	nd->path.dentry = dget(dentry);
++static unsigned long wm8350_wdt_users;
++static struct miscdevice wm8350_wdt_miscdev;
++static int wm8350_wdt_expect_close;
++static DEFINE_MUTEX(wdt_mutex);
 +
-+	/* Add mnt the mount namespace */
-+	err = do_add_mount(mntget(mnt), &nd->path, MNT_SHRINKABLE,
-+			   &proc_automounts);
-+	if (err < 0) {
-+		mntput(mnt);
-+		if (err == -EBUSY)
-+			goto out_follow;
-+		goto out_err;
- 	}
--	return de;
--}
--
--static int proc_tgid_net_getattr(struct vfsmount *mnt, struct dentry *dentry,
--		struct kstat *stat)
--{
--	struct inode *inode = dentry->d_inode;
--	struct net *net;
--
--	net = get_proc_task_net(inode);
--
--	generic_fillattr(inode, stat);
--
--	if (net != NULL) {
--		stat->nlink = net->proc_net->nlink;
--		put_net(net);
--	}
--
--	return 0;
-+	/* Place the mnt on path and return it to the caller */
-+	err = 0;
-+	path_put(&nd->path);
-+	nd->path.mnt = mnt;
-+	nd->path.dentry = dget(mnt->mnt_root);
-+	put_net(net);
-+out:
-+	return ERR_PTR(err);
-+out_err:
-+	path_put(&nd->path);
-+	goto out;
-+out_follow:
-+	/* We raced with ourselves so just walk the mounts */
-+	while (d_mountpoint(nd->path.dentry) &&
-+		follow_down(&nd->path.mnt, &nd->path.dentry))
-+		;
-+	err = 0;
-+	goto out;
- }
- 
- const struct inode_operations proc_net_inode_operations = {
--	.lookup		= proc_tgid_net_lookup,
--	.getattr	= proc_tgid_net_getattr,
--};
--
--static int proc_tgid_net_readdir(struct file *filp, void *dirent,
--		filldir_t filldir)
--{
--	int ret;
--	struct net *net;
--
--	ret = -EINVAL;
--	net = get_proc_task_net(filp->f_path.dentry->d_inode);
--	if (net != NULL) {
--		ret = proc_readdir_de(net->proc_net, filp, dirent, filldir);
--		put_net(net);
--	}
--	return ret;
--}
--
--const struct file_operations proc_net_operations = {
--	.read		= generic_read_dir,
--	.readdir	= proc_tgid_net_readdir,
-+	.follow_link	= proc_net_follow_link,
- };
- 
--
- struct proc_dir_entry *proc_net_fops_create(struct net *net,
- 	const char *name, mode_t mode, const struct file_operations *fops)
- {
-@@ -190,21 +187,95 @@ void proc_net_remove(struct net *net, const char *name)
- }
- EXPORT_SYMBOL_GPL(proc_net_remove);
- 
-+
-+static int proc_net_fill_super(struct super_block *sb)
-+{
-+	struct net *net = sb->s_fs_info;
-+	struct proc_dir_entry *netd = net->proc_net;
-+	struct inode *root_inode = NULL;
-+
-+	sb->s_flags |= MS_NODIRATIME | MS_NOSUID | MS_NOEXEC;
-+	sb->s_blocksize = PAGE_SIZE;
-+	sb->s_blocksize_bits = PAGE_SHIFT;
-+	sb->s_magic = PROC_NET_SUPER_MAGIC;
-+	sb->s_op = &proc_sops;
-+	sb->s_time_gran = 1;
-+
-+	de_get(netd);
-+	root_inode = proc_get_inode(sb, netd->low_ino, netd);
-+	if (!root_inode)
-+		goto out_no_root;
-+	root_inode->i_uid = 0;
-+	root_inode->i_gid = 0;
-+	sb->s_root = d_alloc_root(root_inode);
-+	if (!sb->s_root)
-+		goto out_no_root;
-+	return 0;
-+
-+out_no_root:
-+	printk("%s: get root inode failed\n", __func__);
-+	iput(root_inode);
-+	de_put(netd);
-+	return -ENOMEM;
-+}
-+
-+static int proc_net_test_super(struct super_block *sb, void *data)
-+{
-+	return sb->s_fs_info == data;
-+}
-+
-+static int proc_net_set_super(struct super_block *sb, void *data)
-+{
-+	sb->s_fs_info = data;
-+	return set_anon_super(sb, NULL);
-+}
-+
-+static int proc_net_get_sb(struct file_system_type *fs_type,
-+	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
-+{
-+	struct super_block *sb;
-+
-+	if (!(flags & MS_KERNMOUNT))
-+		data = current->nsproxy->net_ns;
-+
-+	sb = sget(fs_type, proc_net_test_super, proc_net_set_super, data);
-+	if (IS_ERR(sb))
-+		return PTR_ERR(sb);
-+
-+	if (!sb->s_root) {
-+		int err;
-+		sb->s_flags = flags;
-+		err = proc_net_fill_super(sb);
-+		if (err) {
-+			up_write(&sb->s_umount);
-+			deactivate_super(sb);
-+			return err;
-+		}
-+
-+		sb->s_flags |= MS_ACTIVE;
-+	}
-+
-+	return simple_set_mnt(mnt, sb);
-+}
-+
-+static struct file_system_type proc_net_fs_type = {
-+	.name		= "proc/net",
-+	.get_sb		= proc_net_get_sb,
-+	.kill_sb	= kill_litter_super,
++static struct {
++	int time;  /* Seconds */
++	u16 val;   /* To be set in WM8350_SYSTEM_CONTROL_2 */
++} wm8350_wdt_cfgs[] = {
++	{ 1, 0x02 },
++	{ 2, 0x04 },
++	{ 4, 0x05 },
 +};
 +
- static __net_init int proc_net_ns_init(struct net *net)
- {
- 	struct proc_dir_entry *netd, *net_statd;
-+	struct vfsmount *mnt;
- 	int err;
- 
- 	err = -ENOMEM;
--	netd = kzalloc(sizeof(*netd), GFP_KERNEL);
-+	netd = proc_create_root();
- 	if (!netd)
- 		goto out;
- 
- 	netd->data = net;
--	netd->nlink = 2;
--	netd->name = "net";
--	netd->namelen = 3;
--	netd->parent = &proc_root;
- 
- 	err = -EEXIST;
- 	net_statd = proc_net_mkdir(net, "stat", netd);
-@@ -213,8 +284,17 @@ static __net_init int proc_net_ns_init(struct net *net)
- 
- 	net->proc_net = netd;
- 	net->proc_net_stat = net_statd;
++static struct wm8350 *get_wm8350(void)
++{
++	return dev_get_drvdata(wm8350_wdt_miscdev.parent);
++}
 +
-+	mnt = kern_mount_data(&proc_net_fs_type, net);
-+	if (IS_ERR(mnt))
-+		goto free_stat;
++static int wm8350_wdt_set_timeout(struct wm8350 *wm8350, u16 value)
++{
++	int ret;
++	u16 reg;
 +
-+	net->proc_mnt = mnt;
++	mutex_lock(&wdt_mutex);
++	wm8350_reg_unlock(wm8350);
 +
- 	return 0;
- 
-+free_stat:
-+	remove_proc_entry("stat", netd);
- free_net:
- 	kfree(netd);
- out:
-@@ -224,7 +304,14 @@ out:
- static __net_exit void proc_net_ns_exit(struct net *net)
- {
- 	remove_proc_entry("stat", net->proc_net);
--	kfree(net->proc_net);
-+	release_proc_entry(net->proc_net);
-+	/* We won't be looking up this super block
-+	 * any more so set s_fs_info to NULL to ensure
-+	 * it doesn't conflict with network namespaces
-+	 * allocated in the future at the same address.
-+	 */
-+	net->proc_mnt->mnt_sb->s_fs_info = NULL;
-+	mntput(net->proc_mnt);
- }
- 
- static struct pernet_operations __net_initdata proc_net_ns_ops = {
-@@ -234,7 +321,16 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
- 
- int __init proc_net_init(void)
- {
--	proc_symlink("net", NULL, "self/net");
-+	struct proc_dir_entry *ent;
-+	int err;
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	reg &= ~WM8350_WDOG_TO_MASK;
++	reg |= value;
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
 +
-+	ent = proc_symlink("net", NULL, "self/net");
-+	if (!ent)
-+		return -EEXIST;
++	wm8350_reg_lock(wm8350);
++	mutex_unlock(&wdt_mutex);
 +
-+	err = register_filesystem(&proc_net_fs_type);
-+	if (err)
-+		return err;
- 
- 	return register_pernet_subsys(&proc_net_ns_ops);
- }
-diff --git a/include/linux/magic.h b/include/linux/magic.h
-index f7f3fdd..2b31c02 100644
---- a/include/linux/magic.h
-+++ b/include/linux/magic.h
-@@ -30,6 +30,7 @@
- #define NFS_SUPER_MAGIC		0x6969
- #define OPENPROM_SUPER_MAGIC	0x9fa1
- #define PROC_SUPER_MAGIC	0x9fa0
-+#define PROC_NET_SUPER_MAGIC	0x706e6574
- #define QNX4_SUPER_MAGIC	0x002f		/* qnx4 fs detection */
- 
- #define REISERFS_SUPER_MAGIC	0x52654973	/* used by gcc */
-diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
-index 700c53a..77aba2b 100644
---- a/include/net/net_namespace.h
-+++ b/include/net/net_namespace.h
-@@ -40,6 +40,7 @@ struct net {
- 
- 	struct proc_dir_entry 	*proc_net;
- 	struct proc_dir_entry 	*proc_net_stat;
-+	struct vfsmount		*proc_mnt;
- 
- #ifdef CONFIG_SYSCTL
- 	struct ctl_table_set	sysctls;
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index f85597a..b38a2df 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -667,7 +667,7 @@ static int selinux_set_mnt_opts(struct super_block *sb,
- 		goto out;
- 	}
- 
--	if (strcmp(sb->s_type->name, "proc") == 0)
-+	if (strncmp(sb->s_type->name, "proc", 4) == 0)
- 		sbsec->proc = 1;
- 
- 	/* Determine the labeling behavior to use for this filesystem type. */
-@@ -1116,16 +1116,18 @@ static inline u16 socket_type_to_security_class(int family, int type, int protoc
- }
- 
- #ifdef CONFIG_PROC_FS
--static int selinux_proc_get_sid(struct proc_dir_entry *de,
-+static int selinux_proc_get_sid(struct super_block *sb,
-+				struct proc_dir_entry *de,
- 				u16 tclass,
- 				u32 *sid)
- {
- 	int buflen, rc;
- 	char *buffer, *path, *end;
- 
-+	rc = -ENOMEM;
- 	buffer = (char *)__get_free_page(GFP_KERNEL);
- 	if (!buffer)
--		return -ENOMEM;
-+		goto out;
- 
- 	buflen = PAGE_SIZE;
- 	end = buffer+buflen;
-@@ -1136,19 +1138,32 @@ static int selinux_proc_get_sid(struct proc_dir_entry *de,
- 	while (de && de != de->parent) {
- 		buflen -= de->namelen + 1;
- 		if (buflen < 0)
--			break;
-+			goto out_free;
- 		end -= de->namelen;
- 		memcpy(end, de->name, de->namelen);
- 		*--end = '/';
- 		path = end;
- 		de = de->parent;
- 	}
-+	if (strcmp(sb->type->name, "proc") != 0) {
-+		const char *name = sb->type->name + 4;
-+		int namelen = strlen(name);
-+		buflen -= namelen;
-+		if (buflen < 0)
-+			goto out_free;
-+		end -= namelen;
-+		memcpy(end, name);
-+		path = end;
++	return ret;
++}
++
++static int wm8350_wdt_start(struct wm8350 *wm8350)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++	wm8350_reg_unlock(wm8350);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	reg &= ~WM8350_WDOG_MODE_MASK;
++	reg |= 0x20;
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	wm8350_reg_lock(wm8350);
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_stop(struct wm8350 *wm8350)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++	wm8350_reg_unlock(wm8350);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	reg &= ~WM8350_WDOG_MODE_MASK;
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	wm8350_reg_lock(wm8350);
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_kick(struct wm8350 *wm8350)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_open(struct inode *inode, struct file *file)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++	int ret;
++
++	if (!wm8350)
++		return -ENODEV;
++
++	if (test_and_set_bit(0, &wm8350_wdt_users))
++		return -EBUSY;
++
++	ret = wm8350_wdt_start(wm8350);
++	if (ret != 0)
++		return ret;
++
++	return nonseekable_open(inode, file);
++}
++
++static int wm8350_wdt_release(struct inode *inode, struct file *file)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++
++	if (wm8350_wdt_expect_close)
++		wm8350_wdt_stop(wm8350);
++	else {
++		dev_warn(wm8350->dev, "Watchdog device closed uncleanly\n");
++		wm8350_wdt_kick(wm8350);
 +	}
- 	rc = security_genfs_sid("proc", path, tclass, sid);
-+out_free:
- 	free_page((unsigned long)buffer);
-+out:
- 	return rc;
- }
- #else
--static int selinux_proc_get_sid(struct proc_dir_entry *de,
-+static int selinux_proc_get_sid(struct super_block *sb,
-+				struct proc_dir_entry *de,
- 				u16 tclass,
- 				u32 *sid)
- {
-@@ -1297,7 +1312,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
- 			struct proc_inode *proci = PROC_I(inode);
- 			if (proci->pde) {
- 				isec->sclass = inode_mode_to_security_class(inode->i_mode);
--				rc = selinux_proc_get_sid(proci->pde,
-+				rc = selinux_proc_get_sid(inode->i_sb,
-+							  proci->pde,
- 							  isec->sclass,
- 							  &sid);
- 				if (rc)
++
++	clear_bit(0, &wm8350_wdt_users);
++
++	return 0;
++}
++
++static ssize_t wm8350_wdt_write(struct file *file,
++				const char __user *data, size_t count,
++				loff_t *ppos)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++	size_t i;
++
++	if (count) {
++		wm8350_wdt_kick(wm8350);
++
++		if (!nowayout) {
++			/* In case it was set long ago */
++			wm8350_wdt_expect_close = 0;
++
++			/* scan to see whether or not we got the magic
++			   character */
++			for (i = 0; i != count; i++) {
++				char c;
++				if (get_user(c, data + i))
++					return -EFAULT;
++				if (c == 'V')
++					wm8350_wdt_expect_close = 42;
++			}
++		}
++	}
++	return count;
++}
++
++static struct watchdog_info ident = {
++	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
++	.identity = "WM8350 Watchdog",
++};
++
++static long wm8350_wdt_ioctl(struct file *file, unsigned int cmd,
++			     unsigned long arg)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++	int ret = -ENOTTY, time, i;
++	void __user *argp = (void __user *)arg;
++	int __user *p = argp;
++	u16 reg;
++
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		ret = copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
++		break;
++
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		ret = put_user(0, p);
++		break;
++
++	case WDIOC_SETTIMEOUT:
++		ret = get_user(time, p);
++		if (ret)
++			break;
++
++		if (time == 0) {
++			if (nowayout)
++				ret = -EINVAL;
++			else
++				wm8350_wdt_stop(wm8350);
++			break;
++		}
++
++		for (i = 0; i < ARRAY_SIZE(wm8350_wdt_cfgs); i++)
++			if (wm8350_wdt_cfgs[i].time == time)
++				break;
++		if (i == ARRAY_SIZE(wm8350_wdt_cfgs))
++			ret = -EINVAL;
++		else
++			ret = wm8350_wdt_set_timeout(wm8350,
++						     wm8350_wdt_cfgs[i].val);
++		break;
++
++	case WDIOC_GETTIMEOUT:
++		reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++		reg &= WM8350_WDOG_TO_MASK;
++		for (i = 0; i < ARRAY_SIZE(wm8350_wdt_cfgs); i++)
++			if (wm8350_wdt_cfgs[i].val == reg)
++				break;
++		if (i == ARRAY_SIZE(wm8350_wdt_cfgs)) {
++			dev_warn(wm8350->dev,
++				 "Unknown watchdog configuration: %x\n", reg);
++			ret = -EINVAL;
++		} else
++			ret = put_user(wm8350_wdt_cfgs[i].time, p);
++		break;
++
++	case WDIOC_KEEPALIVE:
++		ret = wm8350_wdt_kick(wm8350);
++		break;
++
++	case WDIOC_SETOPTIONS:
++	{
++		int options;
++
++		if (get_user(options, p))
++			return -EFAULT;
++
++		ret = -EINVAL;
++
++		/* Setting both simultaneously means at least one must fail */
++		if (options == WDIOS_DISABLECARD)
++			ret = wm8350_wdt_start(wm8350);
++
++		if (options == WDIOS_ENABLECARD)
++			ret = wm8350_wdt_stop(wm8350);
++	}
++
++	}
++
++	return ret;
++}
++
++static const struct file_operations wm8350_wdt_fops = {
++	.owner = THIS_MODULE,
++	.llseek = no_llseek,
++	.write = wm8350_wdt_write,
++	.unlocked_ioctl = wm8350_wdt_ioctl,
++	.open = wm8350_wdt_open,
++	.release = wm8350_wdt_release,
++};
++
++static struct miscdevice wm8350_wdt_miscdev = {
++	.minor = WATCHDOG_MINOR,
++	.name = "watchdog",
++	.fops = &wm8350_wdt_fops,
++};
++
++static int wm8350_wdt_probe(struct platform_device *pdev)
++{
++	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
++
++	if (!wm8350) {
++		dev_err(wm8350->dev, "No driver data supplied\n");
++		return -ENODEV;
++	}
++
++	/* Default to 4s timeout */
++	wm8350_wdt_set_timeout(wm8350, 0x05);
++
++	wm8350_wdt_miscdev.parent = &pdev->dev;
++
++	return misc_register(&wm8350_wdt_miscdev);
++}
++
++static int __exit wm8350_wdt_remove(struct platform_device *pdev)
++{
++	misc_deregister(&wm8350_wdt_miscdev);
++
++	return 0;
++}
++
++static struct platform_driver wm8350_wdt_driver = {
++	.probe = wm8350_wdt_probe,
++	.remove = wm8350_wdt_remove,
++	.driver = {
++		.name = "wm8350-wdt",
++	},
++};
++
++static int __init wm8350_wdt_init(void)
++{
++	return platform_driver_register(&wm8350_wdt_driver);
++}
++module_init(wm8350_wdt_init);
++
++static void __exit wm8350_wdt_exit(void)
++{
++	platform_driver_unregister(&wm8350_wdt_driver);
++}
++module_exit(wm8350_wdt_exit);
++
++MODULE_AUTHOR("Mark Brown");
++MODULE_DESCRIPTION("WM8350 Watchdog");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:wm8350-wdt");
 -- 
-1.5.3.rc6.17.g1911
+1.5.6.5
 
