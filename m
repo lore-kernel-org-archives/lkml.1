@@ -1,156 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbYKFVhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750733AbYKFVnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754062AbYKFVhb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYKFVhT
+	id S1750733AbYKFVnw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYKFVnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:37:19 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:25290 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751388AbYKFVhR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:37:17 -0500
-From: "Fischer, Anna" <anna.fischer@hp.com>
-To: Greg KH <greg@kroah.com>, H L <swdevyid@yahoo.com>
-CC: "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Date: Thu, 6 Nov 2008 21:35:57 +0000
-Subject: RE: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Thread-Topic: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Thread-Index: AclAPvKtRKsTjjwkSHiVnONPsOZ8eQAEEXjg
-Message-ID: <0199E0D51A61344794750DC57738F58E5E26F99718@GVW1118EXC.americas.hpqcorp.net>
-References: <20081106164919.GA4099@kroah.com>
-	<392264.50990.qm@web45103.mail.sp1.yahoo.com>
- <20081106182443.GB17782@kroah.com>
-In-Reply-To: <20081106182443.GB17782@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 6 Nov 2008 16:43:42 -0500
+Received: from mail.queued.net ([207.210.101.209]:4005 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751225AbYKFVnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:43:41 -0500
+Date: Thu, 6 Nov 2008 16:43:34 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: jayakumar.alsa@gmail.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH 1/14] ALSA: cs5535audio: OLPC analog input support
+Message-ID: <20081106164334.1fb8e4f4@ephemeral>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
->
-> On Thu, Nov 06, 2008 at 10:05:39AM -0800, H L wrote:
-> >
-> > --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
-> >
-> > > On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
-> > > > I have not modified any existing drivers, but instead
-> > > I threw together
-> > > > a bare-bones module enabling me to make a call to
-> > > pci_iov_register()
-> > > > and then poke at an SR-IOV adapter's /sys entries
-> > > for which no driver
-> > > > was loaded.
-> > > >
-> > > > It appears from my perusal thus far that drivers using
-> > > these new
-> > > > SR-IOV patches will require modification; i.e. the
-> > > driver associated
-> > > > with the Physical Function (PF) will be required to
-> > > make the
-> > > > pci_iov_register() call along with the requisite
-> > > notify() function.
-> > > > Essentially this suggests to me a model for the PF
-> > > driver to perform
-> > > > any "global actions" or setup on behalf of
-> > > VFs before enabling them
-> > > > after which VF drivers could be associated.
-> > >
-> > > Where would the VF drivers have to be associated?  On the
-> > > "pci_dev"
-> > > level or on a higher one?
-> >
-> >
-> > I have not yet fully grocked Yu Zhao's model to answer this.  That
-> > said, I would *hope* to find it on the "pci_dev" level.
->
-> Me too.
->
-> > > Will all drivers that want to bind to a "VF"
-> > > device need to be
-> > > rewritten?
-> >
-> > Not necessarily, or perhaps minimally; depends on hardware/firmware
-> > and actions the driver wants to take.  An example here might assist.
-> > Let's just say someone has created, oh, I don't know, maybe an SR-IOV
-> > NIC.  Now, for 'general' I/O operations to pass network traffic back
-> > and forth there would ideally be no difference in the actions and
-> > therefore behavior of a PF driver and a VF driver.  But, what do you
-> > do in the instance a VF wants to change link-speed?  As that physical
-> > characteristic affects all VFs, how do you handle that?  This is
-> where
-> > the hardware/firmware implementation part comes to play.  If a VF
-> > driver performs some actions to initiate the change in link speed,
-> the
-> > logic in the adapter could be anything like:
->
-> <snip>
->
-> Yes, I agree that all of this needs to be done, somehow.
->
-> It's that "somehow" that I am interested in trying to see how it works
-> out.
->
-> > >
-> > > > I have so far only seen Yu Zhao's
-> > > "7-patch" set.  I've not yet looked
-> > > > at his subsequently tendered "15-patch" set
-> > > so I don't know what has
-> > > > changed.    The hardware/firmware implementation for
-> > > any given SR-IOV
-> > > > compatible device, will determine the extent of
-> > > differences required
-> > > > between a PF driver and a VF driver.
-> > >
-> > > Yeah, that's what I'm worried/curious about.
-> > > Without seeing the code
-> > > for such a driver, how can we properly evaluate if this
-> > > infrastructure
-> > > is the correct one and the proper way to do all of this?
-> >
-> >
-> > As the example above demonstrates, that's a tough question to answer.
-> > Ideally, in my view, there would only be one driver written per SR-
-> IOV
-> > device and it would contain the logic to "do the right things" based
-> > on whether its running as a PF or VF with that determination easily
-> > accomplished by testing the existence of the SR-IOV extended
-> > capability.    Then, in an effort to minimize (if not eliminate) the
-> > complexities of driver-to-driver actions for fielding "global
-> events",
-> > contain as much of the logic as is possible within the adapter.
-> > Minimizing the efforts required for the device driver writers in my
-> > opinion paves the way to greater adoption of this technology.
->
-> Yes, making things easier is the key here.
->
-> Perhaps some of this could be hidden with a new bus type for these
-> kinds
-> of devices?  Or a "virtual" bus of pci devices that the original SR-IOV
-> device creates that corrispond to the individual virtual PCI devices?
-> If that were the case, then it might be a lot easier in the end.
+From: Jaya Kumar <jayakumar.lkml@gmail.com>
 
-I think a standard communication channel in Linux for SR-IOV devices
-would be a good start, and help to adopt the technology. Something
-like the virtual bus you are describing. It means that vendors do
-not need to write their own communication channel in the drivers.
-It would need to have well defined APIs though, as I guess that
-devices will have very different capabilities and hardware
-implementations for PFs and VFs, and so they might have very
-different events and information to propagate.
+This is a 2nd cut at adding support for OLPC analog input.
 
-Anna
+Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ sound/pci/cs5535audio/Makefile           |    4 +
+ sound/pci/cs5535audio/cs5535audio.c      |    6 ++
+ sound/pci/cs5535audio/cs5535audio.h      |    9 +++
+ sound/pci/cs5535audio/cs5535audio_olpc.c |  113 ++++++++++++++++++++++++++++++
+ 4 files changed, 132 insertions(+), 0 deletions(-)
+ create mode 100644 sound/pci/cs5535audio/cs5535audio_olpc.c
+
+diff --git a/sound/pci/cs5535audio/Makefile b/sound/pci/cs5535audio/Makefile
+index bb3d57e..3e41fd3 100644
+--- a/sound/pci/cs5535audio/Makefile
++++ b/sound/pci/cs5535audio/Makefile
+@@ -5,5 +5,9 @@
+ snd-cs5535audio-y := cs5535audio.o cs5535audio_pcm.o
+ snd-cs5535audio-$(CONFIG_PM) += cs5535audio_pm.o
+ 
++ifdef CONFIG_OLPC
++snd-cs5535audio-objs += cs5535audio_olpc.o
++endif
++
+ # Toplevel Module Dependency
+ obj-$(CONFIG_SND_CS5535AUDIO) += snd-cs5535audio.o
+diff --git a/sound/pci/cs5535audio/cs5535audio.c b/sound/pci/cs5535audio/cs5535audio.c
+index 6c886ed..cddfa54 100644
+--- a/sound/pci/cs5535audio/cs5535audio.c
++++ b/sound/pci/cs5535audio/cs5535audio.c
+@@ -171,6 +171,12 @@ static int __devinit snd_cs5535audio_mixer(struct cs5535audio *cs5535au)
+ 
+ 	snd_ac97_tune_hardware(cs5535au->ac97, ac97_quirks, ac97_quirk);
+ 
++	/* olpc_quirks is dummied out if not olpc */
++	if (( err = olpc_quirks(card, cs5535au->ac97)) < 0) {
++		snd_printk(KERN_ERR "olpc quirks failed\n");
++		return err;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/sound/pci/cs5535audio/cs5535audio.h b/sound/pci/cs5535audio/cs5535audio.h
+index 1aa1e2b..c67e62f 100644
+--- a/sound/pci/cs5535audio/cs5535audio.h
++++ b/sound/pci/cs5535audio/cs5535audio.h
+@@ -92,6 +92,9 @@ struct cs5535audio {
+ 	struct snd_pcm_substream *playback_substream;
+ 	struct snd_pcm_substream *capture_substream;
+ 	struct cs5535audio_dma dmas[NUM_CS5535AUDIO_DMAS];
++#ifdef CONFIG_OLPC
++	int ec_analog_input_mode;
++#endif
+ };
+ 
+ #ifdef CONFIG_PM
+@@ -99,6 +102,12 @@ int snd_cs5535audio_suspend(struct pci_dev *pci, pm_message_t state);
+ int snd_cs5535audio_resume(struct pci_dev *pci);
+ #endif
+ 
++#ifdef CONFIG_OLPC
++int olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97);
++#else
++#define olpc_quirks(arg,arg2) (0)
++#endif
++
+ int __devinit snd_cs5535audio_pcm(struct cs5535audio *cs5535audio);
+ 
+ #endif /* __SOUND_CS5535AUDIO_H */
+diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
+new file mode 100644
+index 0000000..6d3ccb9
+--- /dev/null
++++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
+@@ -0,0 +1,113 @@
++#include <linux/olpc.h>
++#include <sound/driver.h>
++#include <sound/core.h>
++#include <sound/info.h>
++#include <sound/control.h>
++#include <sound/ac97_codec.h>
++#include "cs5535audio.h"
++
++/* OLPC has an additional feature on top of regular AD1888 codec
++features. This is support for an analog input mode. This is a 
++2 step process. First, to turn off the AD1888 codec bias voltage
++and high pass filter. Second, to tell the embedded controller to
++reroute from a capacitive trace to a direct trace using an analog
++switch. The *_ec()s are what talk to that controller */
++
++static int snd_cs5535audio_ctl_info(struct snd_kcontrol *kcontrol, 
++					struct snd_ctl_elem_info *uinfo)
++{
++	uinfo->type = SNDRV_CTL_ELEM_TYPE_BOOLEAN;
++	uinfo->count = 1;
++	uinfo->value.integer.min = 0;
++	uinfo->value.integer.max = 1;
++	return 0;
++}
++
++#define AD1888_VREFOUT_EN_BIT (1 << 2)
++#define AD1888_HPF_EN_BIT (1 << 12)
++static int snd_cs5535audio_ctl_get(struct snd_kcontrol *kcontrol, 
++					struct snd_ctl_elem_value *ucontrol)
++{
++	struct cs5535audio *cs5535au = snd_kcontrol_chip(kcontrol);
++	u16 reg1, reg2;
++
++	/* if either AD1888 VRef Bias and High Pass Filter are enabled
++	or the EC is not in analog mode then flag as not in analog mode.
++	No EC command to read current analog state so we cache that. */
++	reg1 = snd_ac97_read(cs5535au->ac97, AC97_AD_MISC);
++	reg2 = snd_ac97_read(cs5535au->ac97, AC97_AD_TEST2);
++
++	if ((reg1 & AD1888_VREFOUT_EN_BIT) && (reg2 & AD1888_HPF_EN_BIT) &&
++		cs5535au->ec_analog_input_mode)
++		ucontrol->value.integer.value[0] = 1;
++	else
++		ucontrol->value.integer.value[0] = 0;
++
++	return 0;
++}
++
++static int snd_cs5535audio_ctl_put(struct snd_kcontrol *kcontrol, 
++					struct snd_ctl_elem_value *ucontrol)
++{
++	int err;
++	struct cs5535audio *cs5535au = snd_kcontrol_chip(kcontrol);
++	u8 value;
++	struct snd_ac97 *ac97 = cs5535au->ac97;
++
++	/* value is 1 if analog input is desired */
++	value = ucontrol->value.integer.value[0];
++
++	/* use ec mode as flag to determine if any change needed */
++	if (cs5535au->ec_analog_input_mode == value) 
++		return 0;
++
++	/* sets High Z on VREF Bias if 1 */
++	if (value) 
++		err = snd_ac97_update_bits(ac97, AC97_AD_MISC, 
++				AD1888_VREFOUT_EN_BIT, AD1888_VREFOUT_EN_BIT);
++	else
++		err = snd_ac97_update_bits(ac97, AC97_AD_MISC, 
++				AD1888_VREFOUT_EN_BIT, 0);
++	if (err < 0)
++		snd_printk(KERN_ERR "Error updating AD_MISC %d\n", err);
++
++	/* turns off High Pass Filter if 1 */
++	if (value)
++		err = snd_ac97_update_bits(ac97, AC97_AD_TEST2, 
++				AD1888_HPF_EN_BIT, AD1888_HPF_EN_BIT);
++	else
++		err = snd_ac97_update_bits(ac97, AC97_AD_TEST2, 
++				AD1888_HPF_EN_BIT, 0);
++	if (err < 0)
++		snd_printk(KERN_ERR "Error updating AD_TEST2 %d\n", err);
++
++	if (value)
++		err = write_ec_command(0x01); /* activate MIC_AC_OFF */
++	else 
++		err = write_ec_command(0x02); /* deactivates MIC_AC_OFF */
++
++	if (err < 0)
++		snd_printk(KERN_ERR "Error talking to EC %d\n", err);
++
++	cs5535au->ec_analog_input_mode = value;
++
++	return 1;
++}
++
++static struct snd_kcontrol_new snd_cs5535audio_controls __devinitdata = 
++{
++	.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
++	.name = "Analog Input Switch",
++	.info = snd_cs5535audio_ctl_info,
++	.get = snd_cs5535audio_ctl_get,
++	.put = snd_cs5535audio_ctl_put,
++	.private_value = 0
++};
++
++int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
++{
++	/* setup callback for mixer control that does analog input mode */	
++	return snd_ctl_add(card, snd_ctl_new1(&snd_cs5535audio_controls, 
++						ac97->private_data));
++}
++
+-- 
+1.5.6.5
+
