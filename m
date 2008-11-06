@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYKFPez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYKFPfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbYKFPez (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYKFPeo
+	id S1753974AbYKFPfQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:35:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbYKFPeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 6 Nov 2008 10:34:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37306 "EHLO mx2.redhat.com"
+Received: from mx2.redhat.com ([66.187.237.31]:37307 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbYKFPen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751818AbYKFPen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 6 Nov 2008 10:34:43 -0500
-Message-Id: <20081106153022.215696930@redhat.com>
+Message-Id: <20081106153135.944900461@redhat.com>
+References: <20081106153022.215696930@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 06 Nov 2008 10:30:22 -0500
+Date: Thu, 06 Nov 2008 10:30:26 -0500
 From: vgoyal@redhat.com
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
@@ -22,38 +23,87 @@ Cc: fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
        Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
        ngupta@google.com, Rik van Riel <riel@redhat.com>,
        Jeff Moyer <jmoyer@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: [patch 0/4] [RFC] Another proportional weight IO controller 
+Subject: [patch 4/4] io controller: Put IO controller to use in device mapper and standard make_request() function
+Content-Disposition: inline; filename=bio-cgroup-tweak-make-request-functions.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-If you are not already tired of so many io controller implementations, here
-is another one.
+o Tweak standard make_request() function and also the device mapper make
+  request functions to enable use of IO controller.
 
-This is a very eary very crude implementation to get early feedback to see
-if this approach makes any sense or not.
+Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 
-This controller is a proportional weight IO controller primarily
-based on/inspired by dm-ioband. One of the things I personally found little
-odd about dm-ioband was need of a dm-ioband device for every device we want
-to control.  I thought that probably we can make this control per request
-queue and get rid of device mapper driver. This should make configuration
-aspect easy.
-
-I have picked up quite some amount of code from dm-ioband especially for
-biocgroup implementation.
-
-I have done very basic testing and that is running 2-3 dd commands in different
-cgroups on x86_64. Wanted to throw out the code early to get some feedback.
-
-More details about the design and how to are in documentation patch.
-
-Your comments are welcome.
-
-Thanks
-Vivek
+Index: linux17/drivers/md/dm.c
+===================================================================
+--- linux17.orig/drivers/md/dm.c	2008-11-05 18:12:42.000000000 -0500
++++ linux17/drivers/md/dm.c	2008-11-06 09:16:32.000000000 -0500
+@@ -22,6 +22,7 @@
+ #include <linux/hdreg.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/smp_lock.h>
++#include <linux/biocontrol.h>
+ 
+ #define DM_MSG_PREFIX "core"
+ 
+@@ -885,6 +886,7 @@ static int dm_request(struct request_que
+ 	int r = -EIO;
+ 	int rw = bio_data_dir(bio);
+ 	struct mapped_device *md = q->queuedata;
++	int ret;
+ 
+ 	/*
+ 	 * There is no use in forwarding any barrier request since we can't
+@@ -895,6 +897,13 @@ static int dm_request(struct request_que
+ 		return 0;
+ 	}
+ 
++	if (!bio_cgroup_disabled() && blk_queue_bio_group_enabled(q)) {
++		ret = bio_group_controller(q, bio);
++		if (ret)
++			/* Either bio got buffered for bio_endio() done */
++			return 0;
++	}
++
+ 	down_read(&md->io_lock);
+ 
+ 	disk_stat_inc(dm_disk(md), ios[rw]);
+@@ -1081,6 +1090,10 @@ static struct mapped_device *alloc_dev(i
+ 	md->queue->unplug_fn = dm_unplug_all;
+ 	blk_queue_merge_bvec(md->queue, dm_merge_bvec);
+ 
++	/* Initialize queue spin lock */
++	md->queue->queue_lock = &md->queue->__queue_lock;
++	spin_lock_init(md->queue->queue_lock);
++
+ 	md->io_pool = mempool_create_slab_pool(MIN_IOS, _io_cache);
+ 	if (!md->io_pool)
+ 		goto bad_io_pool;
+Index: linux17/block/blk-core.c
+===================================================================
+--- linux17.orig/block/blk-core.c	2008-11-06 09:14:20.000000000 -0500
++++ linux17/block/blk-core.c	2008-11-06 09:16:32.000000000 -0500
+@@ -1117,10 +1117,18 @@ static int __make_request(struct request
+ 	int el_ret, nr_sectors, barrier, err;
+ 	const unsigned short prio = bio_prio(bio);
+ 	const int sync = bio_sync(bio);
+-	int rw_flags;
++	int rw_flags, ret;
+ 
+ 	nr_sectors = bio_sectors(bio);
+ 
++	if (!bio_cgroup_disabled() && blk_queue_bio_group_enabled(q)) {
++		ret = bio_group_controller(q, bio);
++		if (ret) {
++			/* Either bio got buffered for bio_endio() done */
++			return 0;
++		}
++	}
++
+ 	/*
+ 	 * low level driver can indicate that it wants pages above a
+ 	 * certain limit bounced to low memory (ie for highmem, or even
 
 -- 
 
