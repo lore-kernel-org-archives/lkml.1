@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbYKFCAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYKFCDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756245AbYKFCAw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 21:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755822AbYKFCAj
+	id S1754809AbYKFCDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 21:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYKFCDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 21:00:39 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:18823 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755720AbYKFCAi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 21:00:38 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:from:to:cc:in-reply-to:references:content-type:
-	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=OoCxHr0p96tOohrD2D45kSEIDGw/fWQA3ddlqLM33pZA0SGmDVFxHVxycsijQtzS1
-	0Ykf10JH3dJhtaRqJlIdA==
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-From: Frank Mayhar <fmayhar@google.com>
-To: Doug Chapman <doug.chapman@hp.com>
-Cc: mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
-       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1225219114.24204.37.camel@oberon>
-References: <1224694989.8431.23.camel@oberon>
-	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
-	 <1225219114.24204.37.camel@oberon>
+	Wed, 5 Nov 2008 21:03:15 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:45872 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752334AbYKFCDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 21:03:14 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+	hotplug
+From: Nigel Cunningham <ncunningham@crca.org.au>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>,
+       linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>,
+       Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, pavel@suse.cz,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20081106095314.8e65f443.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
+	 <1225817945.12673.602.camel@nimitz>
+	 <20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
+	 <200811051208.26628.rjw@sisk.pl>
+	 <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1225931281.11514.27.camel@nimitz>
+	 <20081106095314.8e65f443.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain
-Organization: Google, Inc.
-Date: Wed, 05 Nov 2008 17:58:35 -0800
-Message-Id: <1225936715.27507.44.camel@bobble.smo.corp.google.com>
+Organization: Christian Reformed Churches of Australia
+Date: Thu, 06 Nov 2008 13:03:06 +1100
+Message-Id: <1225936986.6216.23.camel@nigel-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-10-28 at 14:38 -0400, Doug Chapman wrote:
-> On Mon, 2008-10-27 at 11:39 -0700, Frank Mayhar wrote:
-> > On Wed, 2008-10-22 at 13:03 -0400, Doug Chapman wrote:
-> > > Unable to handle kernel paging request at virtual address
-> > > 94949494949494a4
-> > 
-> > I take it this can be read as an uninitialized (or cleared) pointer?
-> > 
-> > It certainly looks like this is a race in thread (process?) teardown.  I
-> > don't have hardware on which to reproduce this but _looks_ like another
-> > thread has gotten in and torn down the process while we've been busy.
+Hi.
+
+On Thu, 2008-11-06 at 09:53 +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 05 Nov 2008 16:28:01 -0800
+> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 > 
-> I finally managed to get kdump working and caught this in the act.  I
-> still need to dig into this more but I think these 2 threads will show
-> us the race condition.  Note that this is a slightly hacked kernel in
-> that I removed "static" from a few functions to better see what was
-> going on but no real functional changes when compared to a recent (day
-> old or so) git pull from Linus's tree.
+> > On Thu, 2008-11-06 at 09:14 +0900, KAMEZAWA Hiroyuki wrote:
+> > > Ok, please consider "when memory hotplug happens." 
+> > > 
+> > > In general, it happens when
+> > >   1. memory is inserted to slot.
+> > >   2. the firmware notifes the system to enable already inserted memory.
+> > > 
+> > > To trigger "1", you have to open cover of server/pc. Do you open pc while the system
+> > > starts hibernation ? for usual people, no.
+> > 
+> > You're right, this won't happen very often.  We're trying to close a
+> > theoretical hole that hasn't ever been observed in practice.  But, we
+> > don't exactly leave races in code just because we haven't observed them.
+> > I think this is a classic race.
+> > 
+> > If we don't close it now, then someone doing some really weirdo hotplug
+> > is going to run into it at some point.  Who knows what tomorrow's
+> > hardware/firmware will do?
+> > 
+> Hmm, people tend to make crazy hardware, oh yes. the pc may fly in the sky with rocket engine.
 
-After digging through this a bit, I've concluded that it's probably a
-race between process reap and the dequeue_entity() call to update_curr()
-combined with a side effect of the slab debug stuff.  The
-account_group_exec_runtime() routine (like the rest of these routines)
-checks tsk->signal and tsk->signal->cputime.totals for NULL to make sure
-they're still valid.  It looks like at this point tsk->signal is valid
-(since the tsk->signal->cputime dereference succeeded) but
-tsk->signal->cputime.totals is invalid.  That can't happen unless the
-process is being reaped, and in fact can only happen in a narrow window
-in __cleanup_signal() between the call to thread_group_cputime_free()
-and the kmem_cache_free() of the signal struct itself.  Without the slab
-debug stuff it would either skip the update (by noticing that pointers
-were NULL) or blithely update freed structures.
+It doesn't even have to be crazy. Just imagine someone bumping a button
+on the case while plugging in the memory and that button being
+configured to make the machine hibernate.
 
-I can't see anything that would prevent this from happening in the
-general case.  I don't see what would stop the parent from coming in on
-another CPU and reaping the process after schedule() has picked it off
-the rq but before the deactivate_task->dequeue_task->dequeue_entity->
-update_curr chain completes.  I see that schedule() disables preemption
-on that CPU but will that really do the job?  I also suspect that with
-hyperthreading both of these processes are on the same silicon, meaning
-that one can be unexpectedly suspended while the other runs, thereby
-making the window wider.
+Regards,
 
-Unfortunately I don't know the code well enough to know what the right
-fix is.  Maybe account_group_exec_runtime() should check for PF_EXITED?
-Maybe update_curr() should do that?  I think that it makes more sense
-for dequeue_entity() to do the check and then not call update_curr() if
-the task is exiting but I defer to others with more knowledge of this
-area.
--- 
-Frank Mayhar <fmayhar@google.com>
-Google, Inc.
+Nigel
 
