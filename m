@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbYKFOGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbYKFOGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbYKFOGO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 09:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbYKFOF6
+	id S1754654AbYKFOGr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 09:06:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbYKFOGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 09:05:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43348 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbYKFOF5 (ORCPT
+	Thu, 6 Nov 2008 09:06:38 -0500
+Received: from rv-out-0506.google.com ([209.85.198.235]:53086 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753240AbYKFOGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 09:05:57 -0500
-Date: Thu, 6 Nov 2008 06:06:24 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081106060624.58a0f967@infradead.org>
-In-Reply-To: <1225976138.7803.4485.camel@twins>
-References: <20081105094902.27ec4b39@infradead.org>
-	<1225976138.7803.4485.camel@twins>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 6 Nov 2008 09:06:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=x9aAnV3AXomp6WNCUMbgvHlUnQPVKBi39CDjMr3Trg9rLyYiXEBBD8RAkpcpw/GsWT
+         gh0nTSJgjW+win5OuvbYPTaNVNsjINQSWDK2vUHYdI6Ovww5kk8qqPAaQlDCjQnS4q0G
+         sNZoBAOxOR+uqrhAYOCY4qiSAIH38VMv5hLEM=
+Message-ID: <3aaafc130811060606p1dfbf12cr8c0dc8cd310d0279@mail.gmail.com>
+Date: Thu, 6 Nov 2008 09:06:36 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: sparc/staging compile error
+Cc: "Greg KH" <greg@kroah.com>, "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "William L. Irwin" <wli@holomorphy.com>, sparclinux@vger.kernel.org
+In-Reply-To: <18706.51153.342079.586525@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+References: <20081106163626.2306ad75.sfr@canb.auug.org.au>
+	 <20081106063709.GB7728@kroah.com>
+	 <18706.51153.342079.586525@cargo.ozlabs.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 13:55:38 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+On Thu, Nov 6, 2008 at 5:32 AM, Paul Mackerras <paulus@samba.org> wrote:
+> Greg KH writes:
+>
+>> On Thu, Nov 06, 2008 at 04:36:26PM +1100, Stephen Rothwell wrote:
+>> > Hi Greg,
+>> >
+>> > Today's tree from Linus gets the following error from a sparc
+>> > allmodconfig build:
+>> >
+>> > ERROR: "___f_flush_cache_range" [drivers/staging/poch/poch.ko] undefined!
+>>
+>> Odd, is flush_cache_range() not allowed on the sparc platform?
+>
+> I'm curious, what is a driver doing calling flush_cache_range()?
+> What does it expect it to do precisely?
 
-> On Wed, 2008-11-05 at 09:49 -0800, Arjan van de Ven wrote:
-> > From 63c1b869d94eb31a98015af09fb24e22151f2f00 Mon Sep 17 00:00:00
-> > 2001 From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Tue, 4 Nov 2008 21:08:11 -0800
-> > Subject: [PATCH] ftrace: add an fsync tracer
-> > 
-> > fsync() (and its cousin, fdatasync()) are important chokepoints in
-> > the kernel as they imply very expensive operations, both in terms
-> > of filesystem operations (ext3 writes back its entire journal) as
-> > well as the block layer (fsync() implies sending a cache flushing
-> > barrier to the SATA/SCSI disk).
-> > 
-> > This tracer makes a log of which application calls fsync() on which
-> > file, so that developers and others interested in finding these
-> > choke points can locate them and fix them in the apps that call
-> > this function.
-> 
-> Sorry, but I have to object to such single purpose tracers..
-> 
-> If we go this way we'll end up with a gazillion little tracers, non of
-> which are really useful.
+It's part of the driver's ioctl. Relevant lines:
 
-If we go this way we'll end up with a bunch of little tracers, all of
-which will be useful in their area, and people can also make "super
-tracers" out of the useful trace points.
+static int poch_ioctl(struct inode *inode, struct file *filp,
+                      unsigned int cmd, unsigned long arg)
+{
+/* ---snip---*/
+        case POCH_IOC_SYNC_GROUP_FOR_USER:
+        case POCH_IOC_SYNC_GROUP_FOR_DEVICE:
+                vms = find_vma(current->mm, arg);
+                if (!vms)
+                        /* Address not mapped. */
+                        return -EINVAL;
+                if (vms->vm_file != filp)
+                        /* Address mapped from different device/file. */
+                        return -EINVAL;
 
-> 
-> Please work on getting something like a syscall tracer,
-
-a syscall tracer will exactly not tell you which file(name) was being
-fsync()'d which was the whole point.
-LatencyTOP already KNOWS that fsync is the problem. What it doesn't
-know is which file is being fsync()d.
-
-fsync is a problem when used incorrectly, not just for ext3 but also
-due to barriers. That's why it's important to be able to find who calls
-it when it impacts interactive performance.
+                flush_cache_range(vms, arg, arg + channel->group_size);
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+>
+> Paul.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
