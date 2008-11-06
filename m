@@ -1,265 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbYKFGfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751491AbYKFGhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbYKFGfk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYKFGfa
+	id S1751491AbYKFGhK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:37:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYKFGg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:35:30 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53340 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYKFGf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:35:29 -0500
-Date: Thu, 6 Nov 2008 15:34:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: gerald.schaefer@de.ibm.com
-Cc: ncunningham@crca.org.au, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>,
-       linux-pm@lists.osdl.org, Matt@smtp1.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Dave@smtp1.linux-foundation.org, Mel Gorman <mel@skynet.ie>,
-       Andy@smtp1.linux-foundation.org, Whitcroft <apw@shadowen.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, pavel@suse.cz,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC][PATCH] add mutex and hibernation notifier to memory hotplug.
-Message-Id: <20081106153444.33af7019.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 6 Nov 2008 01:36:58 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41954 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751145AbYKFGg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:36:56 -0500
+Date: Thu, 6 Nov 2008 17:36:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 6
+Message-Id: <20081106173645.e7e79071.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__6_Nov_2008_17_36_45_+1100_oiEBakU0XpvxZaaS"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, I can't test this now but I post this while discussion is hot.
+--Signature=_Thu__6_Nov_2008_17_36_45_+1100_oiEBakU0XpvxZaaS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'll test this with CONFIG_PM_DEBUG's hibernation test mode if I can.
-(But may take a long time..) 
+Hi all,
 
-Any feedback is welcome.
+Changes since 20081105:
 
-Thanks,
--Kame
-==
-Now, MEMORY_HOTPLUG and HIBERNATION is mutually exclusive in Kconfig.
-That's because
-	- memory hotplug changes pgdat/zone/memmap range.
-	- hibernation countes # of memory based on pgdate/zone/memmap.
+New tree:
+	perfmon3
 
-This patch adds mutex for disallowing them to run simultaneously.
+Dropped trees (temporarily):
+	cpus4096 (to test an alternate approach)
+	v4l-dvb (due to an unfixed build failure)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	firmware (unfixed build failure)
+	creds (non obvious conflict)
+	userns (because it depends on the creds tree)
 
-IIUC, add_memory() is called from following places.
-    - probe interface
-    - acpi handler
-It seems both can sleep. (acpi handler uses sleepable memory allocator etc...)
-online/offline handlers can sleep.
-hibernation notifier can sleep, too.
+I remerged the powerpc-merge tree as it had two of the patches I have
+been carrying added to it after I had taken today's snapshot.
 
-This also makes all memory hotplug event not to happen at the same time.
-(memory hotplug is not busy code.)
+I have also applied the following patches for known problems:
 
-Anyway, the most difficult thing is how to test this.
+	cpu_alloc: per_cpu_offset is already defined for !CONFIG_SMP
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+----------------------------------------------------------------------------
 
- mm/Kconfig          |    5 ----
- mm/memory_hotplug.c |   60 +++++++++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 53 insertions(+), 12 deletions(-)
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-Index: linux-2.6.27.4/mm/memory_hotplug.c
-===================================================================
---- linux-2.6.27.4.orig/mm/memory_hotplug.c
-+++ linux-2.6.27.4/mm/memory_hotplug.c
-@@ -31,6 +31,8 @@
- 
- #include "internal.h"
- 
-+DEFINE_MUTEX(memhp_mutex);
-+
- /* add this memory to iomem resource */
- static struct resource *register_memory_resource(u64 start, u64 size)
- {
-@@ -381,6 +383,7 @@ int online_pages(unsigned long pfn, unsi
- 	int ret;
- 	struct memory_notify arg;
- 
-+	mutex_lock(&memhp_mutex);
- 	arg.start_pfn = pfn;
- 	arg.nr_pages = nr_pages;
- 	arg.status_change_nid = -1;
-@@ -392,6 +395,7 @@ int online_pages(unsigned long pfn, unsi
- 	ret = memory_notify(MEM_GOING_ONLINE, &arg);
- 	ret = notifier_to_errno(ret);
- 	if (ret) {
-+		mutex_unlock(&memhp_mutex);
- 		memory_notify(MEM_CANCEL_ONLINE, &arg);
- 		return ret;
- 	}
-@@ -415,6 +419,7 @@ int online_pages(unsigned long pfn, unsi
- 		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
- 			nr_pages, pfn);
- 		memory_notify(MEM_CANCEL_ONLINE, &arg);
-+		mutex_unlock(&memhp_mutex);
- 		return ret;
- 	}
- 
-@@ -436,7 +441,7 @@ int online_pages(unsigned long pfn, unsi
- 
- 	if (onlined_pages)
- 		memory_notify(MEM_ONLINE, &arg);
--
-+	mutex_unlock(&memhp_mutex);
- 	return 0;
- }
- #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-@@ -477,14 +482,18 @@ int add_memory(int nid, u64 start, u64 s
- 	struct resource *res;
- 	int ret;
- 
-+	mutex_lock(&memhp_mutex);
- 	res = register_memory_resource(start, size);
--	if (!res)
-+	if (!res) {
-+		mutex_unlock(&memhp_mutex);
- 		return -EEXIST;
--
-+	}
- 	if (!node_online(nid)) {
- 		pgdat = hotadd_new_pgdat(nid, start);
--		if (!pgdat)
-+		if (!pgdat) {
-+			mutex_unlock(&memhp_mutex);
- 			return -ENOMEM;
-+		}
- 		new_pgdat = 1;
- 	}
- 
-@@ -508,7 +517,7 @@ int add_memory(int nid, u64 start, u64 s
- 		 */
- 		BUG_ON(ret);
- 	}
--
-+	mutex_unlock(&memhp_mutex);
- 	return ret;
- error:
- 	/* rollback pgdat allocation and others */
-@@ -517,10 +526,12 @@ error:
- 	if (res)
- 		release_memory_resource(res);
- 
-+	mutex_unlock(&memhp_mutex);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(add_memory);
- 
-+
- #ifdef CONFIG_MEMORY_HOTREMOVE
- /*
-  * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
-@@ -750,20 +761,23 @@ int offline_pages(unsigned long start_pf
- 		return -EINVAL;
- 	if (!IS_ALIGNED(end_pfn, pageblock_nr_pages))
- 		return -EINVAL;
-+
- 	/* This makes hotplug much easier...and readable.
- 	   we assume this for now. .*/
- 	if (!test_pages_in_a_zone(start_pfn, end_pfn))
- 		return -EINVAL;
- 
-+	mutex_lock(&memhp_mutex);
- 	zone = page_zone(pfn_to_page(start_pfn));
- 	node = zone_to_nid(zone);
- 	nr_pages = end_pfn - start_pfn;
- 
- 	/* set above range as isolated */
- 	ret = start_isolate_page_range(start_pfn, end_pfn);
--	if (ret)
-+	if (ret) {
-+		mutex_unlock(&memhp_mutex);
- 		return ret;
--
-+	}
- 	arg.start_pfn = start_pfn;
- 	arg.nr_pages = nr_pages;
- 	arg.status_change_nid = -1;
-@@ -838,6 +852,7 @@ repeat:
- 	writeback_set_ratelimit();
- 
- 	memory_notify(MEM_OFFLINE, &arg);
-+	mutex_unlock(&memhp_mutex);
- 	return 0;
- 
- failed_removal:
-@@ -846,7 +861,7 @@ failed_removal:
- 	memory_notify(MEM_CANCEL_OFFLINE, &arg);
- 	/* pushback to free area */
- 	undo_isolate_page_range(start_pfn, end_pfn);
--
-+	mutex_unlock(&memhp_mutex);
- 	return ret;
- }
- #else
-@@ -856,3 +871,43 @@ int remove_memory(u64 start, u64 size)
- }
- EXPORT_SYMBOL_GPL(remove_memory);
- #endif /* CONFIG_MEMORY_HOTREMOVE */
-+
-+
-+#ifdef CONFIG_HIBERNATION
-+
-+int memhp_hibenation_callback(struct notifier_block *self,
-+			      unsigned long action,
-+			      void *arg)
-+{
-+	switch(action) {
-+	case PM_HIBERNATION_PREPARE:
-+		mutex_lock(&memhp_mutex);
-+		break;
-+	case PM_POST_HIBERNATION:
-+		mutex_unlock(&memhp_mutex);
-+		break;
-+	case PM_RESTORE_PREPARE:
-+		mutex_lock(&memhp_mutex);
-+		break;
-+	case PM_POST_RESTORE:
-+		mutex_unlock(&memhp_mutex);
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+static struct notifier_block memhp_notifier {
-+	.notifier_call = memhp_hibernation_callback,
-+};
-+
-+static int __init memhp_hibernation_notifier_init(void)
-+{
-+	register_pm_notifier(&memhp_notifier);
-+	return 0;
-+}
-+__initcall(&memhp_hibernation_notifier_init);
-+
-+#endif
-+
-+
-Index: linux-2.6.27.4/mm/Kconfig
-===================================================================
---- linux-2.6.27.4.orig/mm/Kconfig
-+++ linux-2.6.27.4/mm/Kconfig
-@@ -128,12 +128,9 @@ config SPARSEMEM_VMEMMAP
- config MEMORY_HOTPLUG
- 	bool "Allow for memory hot-add"
- 	depends on SPARSEMEM || X86_64_ACPI_NUMA
--	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
-+	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
- 	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
- 
--comment "Memory hotplug is currently incompatible with Software Suspend"
--	depends on SPARSEMEM && HOTPLUG && HIBERNATION
--
- config MEMORY_HOTPLUG_SPARSE
- 	def_bool y
- 	depends on SPARSEMEM && MEMORY_HOTPLUG
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
 
+Below is a summary of the state of the merge.
+
+We are up to 123 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/powerpc-next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Applying fs: xfs needs inode_wait to be exported
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+CONFLICT (delete/modify): Documentation/DocBook/wanbook.tmpl deleted in hdl=
+c/hdlc-next and modified in HEAD. Version HEAD of Documentation/DocBook/wan=
+book.tmpl left in tree.
+CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
+xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
+tree.
+$ git rm -f drivers/net/wan/syncppp.c Documentation/DocBook/wanbook.tmpl
+Merging drm/drm-next
+Merging voltage/for-linus
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cpu_alloc/cpu_alloc
+CONFLICT (content): Merge conflict in kernel/lockdep.c
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging cputime/cputime
+Merging perfmon3/master
+Merging scsi-post-merge/master
+Merging powerpc-merge/merge
+Applying cpu_alloc: per_cpu_offset is already defined for !CONFIG_SMP
+
+--Signature=_Thu__6_Nov_2008_17_36_45_+1100_oiEBakU0XpvxZaaS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkSkH0ACgkQjjKRsyhoI8xG4ACggcTpyzb4vFiuaxm3RUQBQfbm
+ukcAni5H42epMi5BP/qd2tlFiv31SDvx
+=tE++
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Nov_2008_17_36_45_+1100_oiEBakU0XpvxZaaS--
