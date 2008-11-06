@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYKFEXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755870AbYKFEYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbYKFEXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 23:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbYKFEXe
+	id S1755870AbYKFEYr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 23:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYKFEYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 23:23:34 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:20218 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752943AbYKFEXd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 23:23:33 -0500
-Date: Thu, 6 Nov 2008 15:20:54 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Chad Talbott <ctalbott@google.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@google.com>,
-       Michael Rubin <mrubin@google.com>
-Subject: Re: Metadata in sys_sync_file_range and fadvise(DONTNEED)
-Message-ID: <20081106042054.GB2373@disturbed>
-Mail-Followup-To: Chad Talbott <ctalbott@google.com>,
-	linux-kernel@vger.kernel.org, Andrew Morton <akpm@google.com>,
-	Michael Rubin <mrubin@google.com>
-References: <1786ab030810311354h1a7c8fb0q1267969d432f521c@mail.gmail.com> <20081102224513.GH19509@disturbed> <1786ab030811051719w63ada9c8ldf75f15367adbb8b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1786ab030811051719w63ada9c8ldf75f15367adbb8b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 5 Nov 2008 23:24:39 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:41898 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752943AbYKFEYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 23:24:38 -0500
+Date: Thu, 6 Nov 2008 15:24:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "William L. Irwin" <wli@holomorphy.com>, <sparclinux@vger.kernel.org>
+Subject: tty warning
+Message-Id: <20081106152421.a9cf964f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD="
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 05:19:20PM -0800, Chad Talbott wrote:
-> On Sun, Nov 2, 2008 at 2:45 PM, Dave Chinner <david@fromorbit.com> wrote:
-> > On Fri, Oct 31, 2008 at 01:54:14PM -0700, Chad Talbott wrote:
-> >> Andrew suggests a new SYNC_FILE_RANGE_METADATA flag for
-> >> sys_sync_file_range(), and leaving posix_fadvise() alone.
-> >
-> > What is the interface that a filesystem will see? No filesystem has
-> > a "metadata sync" method - is this going to fall through to some new
-> > convoluted combination of writeback flags to an inode/mapping
-> > that more filesystems than not can get wrong?
-> 
-> Good point, coupled with metadata/data ordering and your argument
-> below, a decent argument against exposing this interface.
-> 
-> > FWIW, sys_sync_file_range() is fundamentally broken for data
-> > integrity writeback - at no time does it call a filesystem method
-> > that can result in a barrier I/O being issued to disk after
-> > writeback is complete. So, unlike fsync() or fdatasync(), the data
-> > can still be lost after completion due to power failure on drives
-> > with volatile write caches....
-> 
-> Seems to be true.  I'm not currently concerned with sync_file_range
-> for data integrity, so I'm going to punt on this issue.
+--Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-;)
+Hi Alan,
 
-> If the consensus is against exposing a "sync metadata" interface, I'm
-> fine with ext2 silently updating metadata alongside neighboring data
-> in *either* posix_fadvise() or sync_file_range.
+A sparc allmodconfig build gives these warnings:
 
-I think that sync_file_range is the better choice for "correct"
-behaviour. There is the assumption with syncing data explicitly
-that the metadata needs to reference that data is written to disk
-as well.
+drivers/char/n_tty.c: In function 'n_tty_poll':
+drivers/char/n_tty.c:1592: warning: array subscript is above array bounds
+drivers/char/n_tty.c:1601: warning: array subscript is above array bounds
+drivers/char/n_tty.c: In function 'n_tty_read':
+drivers/char/n_tty.c:1306: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c: In function 'set_termios':
+drivers/char/tty_ioctl.c:574: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c:578: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c: In function 'tty_mode_ioctl':
+drivers/char/tty_ioctl.c:729: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c:963: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c:969: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c:618: warning: array subscript is above array bounds
+drivers/char/tty_ioctl.c:1007: warning: array subscript is above array boun=
+ds
+drivers/char/tty_ioctl.c:1015: warning: array subscript is above array boun=
+ds
 
-> Either way, does it
-> seem reasonable for posix_fadvise(DONTNEED) to call
-> __filemap_fdatawrite_range to do its work?
+These are things like:
 
->From a kernel perspective, I don't think it really matters.  To an
-application, it could. e.g. If you're calling posix_fadvise on a
-large range, then the I/O patterns will be the same either way. If
-you're calling posix_fadvise() on small, sparse ranges of the file,
-then you'll turn one large, fast writeout into lots of small random
-writes. i.e. upgrade the kernel and the application goes much
-slower....
+                termios->c_cc[VTIME] =3D 0;
 
-I guess this all depends on whether this would be considered a
-regression or a stupid application ;)
+termios is a (struct ktermios *) which has "cc_t c_cc[NCCS];".  NCCS is
+17 and VTIME is also 17.  I assume the intention is to actually fill in
+_x_cc[0], but why is it done this way and not more directly?
 
+--=20
 Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+--Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkScXUACgkQjjKRsyhoI8zjOACfaIsrUtauz/vDsOusCC4UOmrS
+DkYAniz2cV2d8H0c0eFJAL2RORS1o9c8
+=eQ5O
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Nov_2008_15_24_21_+1100_Z0wfL10ez+IsTWD=--
