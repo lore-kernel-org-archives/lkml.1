@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYKFPt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbYKFPua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbYKFPt5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYKFPts
+	id S1754283AbYKFPua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:50:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYKFPuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:49:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59603 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbYKFPtr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:49:47 -0500
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Peter Zijlstra <peterz@infradead.org>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
-       Jeff Moyer <jmoyer@redhat.com>
-In-Reply-To: <20081106153022.215696930@redhat.com>
-References: <20081106153022.215696930@redhat.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Nov 2008 16:49:53 +0100
-Message-Id: <1225986593.7803.4688.camel@twins>
+	Thu, 6 Nov 2008 10:50:11 -0500
+Received: from gold.linx.net ([195.66.232.40]:58864 "EHLO gold.linx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751264AbYKFPuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:50:09 -0500
+X-Greylist: delayed 585 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Nov 2008 10:50:09 EST
+Subject: Re: Long delays and keystrokes required - related to
+	disk	encryption?
+From: Tony Vroon <tony@linx.net>
+Reply-To: tony@linx.net
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Bernhard Schmidt <berni@birkenwald.de>,
+       Yves-Alexis Perez <corsac@debian.org>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, "Carlos R. Mafra" <crmafra2@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4911B829.8040701@linux.intel.com>
+References: <20081105020340.GA6399@schleppi.birkenwald.de>
+	 <4911B829.8040701@linux.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-OCuy3a7WEMGUlvEIre+B"
+Organization: London Internet Exchange (LINX; AS5459)
+Date: Thu, 06 Nov 2008 15:41:03 +0000
+Message-Id: <1225986063.4234.10.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 10:30 -0500, vgoyal@redhat.com wrote:
-> Hi,
-> 
-> If you are not already tired of so many io controller implementations, here
-> is another one.
-> 
-> This is a very eary very crude implementation to get early feedback to see
-> if this approach makes any sense or not.
-> 
-> This controller is a proportional weight IO controller primarily
-> based on/inspired by dm-ioband. One of the things I personally found little
-> odd about dm-ioband was need of a dm-ioband device for every device we want
-> to control.  I thought that probably we can make this control per request
-> queue and get rid of device mapper driver. This should make configuration
-> aspect easy.
-> 
-> I have picked up quite some amount of code from dm-ioband especially for
-> biocgroup implementation.
-> 
-> I have done very basic testing and that is running 2-3 dd commands in different
-> cgroups on x86_64. Wanted to throw out the code early to get some feedback.
-> 
-> More details about the design and how to are in documentation patch.
-> 
-> Your comments are welcome.
 
-please include
+--=-OCuy3a7WEMGUlvEIre+B
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-QUILT_REFRESH_ARGS="--diffstat --strip-trailing-whitespace"
+On Wed, 2008-11-05 at 07:13 -0800, Arjan van de Ven wrote:
+> I assume that if you add that return it also works?
+> (if not you have a totally unrelated issue)
 
-in your environment or .quiltrc
+Another report of the same problem.
+Yes, adding a return there fixes everything.
 
-I would expect all those bio* files to be placed in block/ not mm/
+> one request to the folks on the mail who know it's fixed by the return;
+> can you send me your .config and dmesg and name of the machine?
+> (eg vendor/model)
 
-Does this still require I use dm, or does it also work on regular block
-devices? Patch 4/4 isn't quite clear on this.
+I have seen this on two of our laptop types so far:
+Fujitsu-Siemens Lifebook E8410 (BIOS 1.30)
+ICH8M-based Centrino
+
+Fujitsu-Siemens Lifebook E8420 (BIOS 1.14)
+ICH9M-based Centrino2
+
+> I'm failing to reproduce and would like to get as exactly the same as you=
+ guys as possible...
+
+As an observation, things seem to slow down as the init process in
+initramfs is loaded. First I thought it was waiting for user input in
+the initramfs that slowed down, but it turned out I needed to hit Ctrl
+once to get to even get to the input prompt.
+Enabling an initramfs and sticking a simple script in there may suffice.
+All machines affected appear to be recent (ICH7/8/9) Centrino laptops
+with HPET enabled, if that helps.
+
+Whatever goes wrong that early in boot intermittently manifests as long
+as the system is running, and seems to interfere with HD Audio here (I
+get spurious timeouts, first the driver switches to polling mode and I
+lose unsollicited event support entirely, then it switches into single
+command mode and I lose all audio functionality)
+
+Regards,
+Tony V.
+
+--=-OCuy3a7WEMGUlvEIre+B
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkkTEA8ACgkQp5vW4rUFj5qC4ACfVC2eMjxih8Wau4WaZSDarKSU
+v/AAoIgBx18DP2TbL/NAo3dTAh4cqRAn
+=WtZe
+-----END PGP SIGNATURE-----
+
+--=-OCuy3a7WEMGUlvEIre+B--
+
