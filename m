@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYKFPk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYKFPmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYKFPk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752577AbYKFPkP
+	id S1754103AbYKFPmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYKFPmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:40:15 -0500
-Received: from n67.bullet.mail.sp1.yahoo.com ([98.136.44.47]:47167 "HELO
-	n67.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752367AbYKFPkN (ORCPT
+	Thu, 6 Nov 2008 10:42:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:1140 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751818AbYKFPmG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:40:13 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 143223.79281.bm@omp403.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=J5rfChVZbcjGRceyZ7CdVUcnLAuP3qYtQlegzXgikEnHAsJ181KVIO2/IC30y2SWVhsE+Q+sSxMaVO+7h/LXSgIY6bfVciLALQQjP/iS6b1KuEx+8MzgHLEn+YL0av6ltX25C5eJezhBFYzUDNdfa9YBTQpWSm7hwR02pVqNXx0=;
-X-YMail-OSG: KC7O.PcVM1k6DYw8wsfscceK0bWfc_S7amfouv072Ehpyb12S.ZA_L3IswU7Ja99wfskOnwr1RXz8zUDkMCP0Rn4MWqq6YX4cJ0VJ.mqboFqF.15_AnY.qitW1Z7H9rqfkRnaCJhMKFj2FO4esdF6dvzkamv
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Thu, 6 Nov 2008 07:40:12 -0800 (PST)
-From: H L <swdevyid@yahoo.com>
-Reply-To: swdevyid@yahoo.com
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-To: Yu Zhao <yu.zhao@intel.com>, Greg KH <greg@kroah.com>
-Cc: randy.dunlap@oracle.com, grundler@parisc-linux.org, achiang@hp.com,
-       matthew@wil.cx, linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu
-In-Reply-To: <20081106044828.GA30417@kroah.com>
+	Thu, 6 Nov 2008 10:42:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=bzCYdIAoBVdYuAu040ZnMqZ9/myCgIA/43GgTAQynyCQBYF+Gb5j/1evXYE6fO1lLF
+         t94W+AVDsdFddb2cUlAMzJGPX5ySHVbbqkj6/7QSeLZYOpYj9mFiJPRHxWIJonwU7EpD
+         CMpXm/myLH25dKsVFv7QJ5KJ5JaGDLWgoMk8E=
+Message-ID: <cfd18e0f0811060742v46dd3f9eod624954cd9dcda3d@mail.gmail.com>
+Date: Thu, 6 Nov 2008 10:42:03 -0500
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Marco Stornelli" <marco.stornelli@coritel.it>
+Subject: Re: [PATCH] [RESEND] documentation: xip documentation update
+Cc: rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <49130E3C.5040203@coritel.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <909674.99469.qm@web45112.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <49130E3C.5040203@coritel.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Marco,
 
-Greetings (from a new lurker to the list),
+A few comments below.
 
-To your question Greg, "yes" and "sort of" ;-).  I have started taking a look at these patches with a strong interest in understanding how they work.  I've built a kernel with them and tried out a few things with real SR-IOV hardware.
+On Thu, Nov 6, 2008 at 10:33 AM, Marco Stornelli
+<marco.stornelli@coritel.it> wrote:
+> From: Marco Stornelli <marco.stornelli@gmail.com>
+>
+> xip documentation updated
+> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+> ---
+>
+> --- a/Documentation/filesystems/xip.txt.orig    2008-08-20 20:11:37.000000000 +0200
+> +++ b/Documentation/filesystems/xip.txt 2008-11-06 12:47:48.000000000 +0200
+> @@ -39,10 +39,11 @@ The block device operation is optional,
+>  today:
+>  - dcssblk: s390 dcss block device driver
+>
+> -An address space operation named get_xip_page is used to retrieve reference
+> -to a struct page. To address the target page, a reference to an address_space,
+> -and a sector number is provided. A 3rd argument indicates whether the
 
---
-Lance Hartmann
+> -function should allocate blocks if needed.
+> +An address space operation named get_xip_mem is used to retrieve reference
 
+s/reference/a reference/?
 
+> +to a page frame number and a kernel address. To obtain these values a reference
+> +to an address_space is provided. This function assigns values to the kmem and
+> +pfn parameters. The 3rd argument indicates whether the function should allocate
 
+It's a taste thing, but I would write "third" not "3rd".  (I
+appreciate that the existing text already used "3rd", but maybe that
+should be fixed.)
 
---- On Wed, 11/5/08, Greg KH <greg@kroah.com> wrote:
-> 
-> Is there any actual users of this API around yet?  How was
-> it tested as
-> there is no hardware to test on?  Which drivers are going
-> to have to be
-> rewritten to take advantage of this new interface?
-> 
-> thanks,
-> 
-> greg k-h
-> _______________________________________________
-> Virtualization mailing list
-> Virtualization@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/virtualization
+> +blocks if needed.
+>
+>  This address space operation is mutually exclusive with readpage&writepage that
+>  do page cache read/write operations.
 
+Cheers,
 
-      
+Michael
 
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
