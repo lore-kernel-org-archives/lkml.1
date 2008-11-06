@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbYKFXYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbYKFXZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbYKFXYx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 18:24:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbYKFXYk
+	id S1754505AbYKFXZl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 18:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbYKFXZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 18:24:40 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:49715 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbYKFXYj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 18:24:39 -0500
-Date: Thu, 6 Nov 2008 23:24:19 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Andrey Borzenkov <arvidjaar@mail.ru>, Ingo Molnar <mingo@elte.hu>,
-       Eduardo Habkost <ehabkost@redhat.com>, Avi Kivity <avi@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kexec@lists.infradead.org, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
-Message-ID: <20081106232419.GA8007@srcf.ucam.org>
-References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com> <20081106143021.GD13023@elte.hu> <20081106150610.GA1644@elte.hu> <200811061853.08003.arvidjaar@mail.ru> <alpine.LFD.2.00.0811061442590.3106@localhost.localdomain> <20081106215011.GA6391@srcf.ucam.org> <alpine.LFD.2.00.0811061716420.3106@localhost.localdomain>
-MIME-Version: 1.0
+	Thu, 6 Nov 2008 18:25:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52703 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752107AbYKFXZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 18:25:31 -0500
+Date: Thu, 6 Nov 2008 18:25:06 -0500
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
+Subject: Re: [PATCH] ftrace: add an fsync tracer
+Message-ID: <20081106232506.GF20928@redhat.com>
+References: <20081106063108.02b4813d@infradead.org> <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org> <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com> <20081106094558.50d94bcc@infradead.org> <y0mej1ofvyz.fsf@ton.toronto.redhat.com> <1226003343.31966.43.camel@lappy.programming.kicks-ass.net> <20081106215310.GA15163@Krystal> <20081106221426.GD20928@redhat.com> <20081106222529.GA17528@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811061716420.3106@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20081106222529.GA17528@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 05:17:25PM -0500, Len Brown wrote:
-> > Does Windows default to using the ACPI method now?
+Hi -
+
+On Thu, Nov 06, 2008 at 05:25:29PM -0500, Mathieu Desnoyers wrote:
+> [...]
+> > Arjan asked for something to send formatted strings to tracing buffers
+> > that are consumed by user space.  Whether internally that is done by
+> > markers, or by tracepoints converted to markers, or by tracepoints
+> > with custom ftrace_printf-y code, is indistinguishable to the user.
+> > 
+> > Can you be specific in what way any of that is exposing an "API
+> > directly to userspace"?
 > 
-> That is my guess, based on the fact that we've seen
-> newer machines that don't reboot w/o using the ACPI reset reg.
+> The tracepoint declaration is linked to the kernel code that is meant to
+> be traced. Given this code will change over time, it will be more
+> difficult to perform those changes if it is in any way coupled with
+> format strings exported to userspace via traced.  [...]
 
-We've seen machines that won't reboot for a variety of reasons in the 
-past. In some cases this has seemed to be due to hardware being in a 
-state that the BIOS didn't expect. Hitting the SMI trap behind the ACPI 
-register might work around this, but I suspect that in many cases we 
-could achieve the same effect by spending more time trying to work out 
-whether there's any common themes in the failures.
+The userspace interface to all the various tracing widgets consists of
+the textual formatted trace data stream.  ** IF ** these streams are
+to represent a long-term interface, can you elaborate why you believe
+it would be harder to generate identical text in the future with
+markers rather than another technique with more internal layers?  Can
+you work out an example?  
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+(BTW, is "traced" a typo?)
+
+And as to that ** IF **: is there actually consensus that the format
+of tracing data generated by e.g.  ftrace engines are supposed to be
+preserved into the future versions, just as if they were a user-space
+interface like /proc files?  (That's certainly not my impression.)
+
+
+- FChE
