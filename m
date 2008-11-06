@@ -1,53 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYKFQNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYKFQQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753743AbYKFQNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYKFQND
+	id S1753390AbYKFQQP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKFQP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:13:03 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:60489 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbYKFQND (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:13:03 -0500
-Date: Thu, 6 Nov 2008 10:11:49 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: akpm@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, travis@sgi.com,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [patch 5/7] x86_64: Support for cpu ops
-In-Reply-To: <20081106151558.GB1644@elte.hu>
-Message-ID: <Pine.LNX.4.64.0811061009260.5349@quilx.com>
-References: <20081105231634.133252042@quilx.com> <20081105231649.108433550@quilx.com>
- <20081106071206.GH15731@elte.hu> <Pine.LNX.4.64.0811060907570.3595@quilx.com>
- <20081106151558.GB1644@elte.hu>
+	Thu, 6 Nov 2008 11:15:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56933 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490AbYKFQP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:15:58 -0500
+Date: Thu, 6 Nov 2008 11:15:36 -0500
+From: Neil Horman <nhorman@redhat.com>
+To: Ivan Vecera <ivecera@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, nhorman@redhat.com,
+       jmarchan@redhat.com
+Subject: Re: [PATCH] x86: call machine_shutdown and stop all CPUs in	native_machine_halt
+Message-ID: <20081106161536.GJ5228@hmsendeavour.rdu.redhat.com>
+References: <1224504787-11403-1-git-send-email-ivecera@redhat.com> <20081020160058.GB22779@elte.hu> <48FDCCCB.2080103@redhat.com> <491316D9.20206@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <491316D9.20206@redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008, Ingo Molnar wrote:
+On Thu, Nov 06, 2008 at 05:10:01PM +0100, Ivan Vecera wrote:
+> Any comments?
+> 
+> Ivan
+> 
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-> But it's not actually utilized on x86. AFAICS you guys never came back
-> with working patches for that (tip/x86/percpu is empty currently), and
-> now i see something related on lkml on a separate track not Cc:-ed to
-> the x86 folks so i thought i'd ask whether more coordination is
-> desired here.
+> ---
+> Ivan Vecera wrote:
+> > Ingo Molnar wrote:
+> >> the code in arch/x86/kernel/smp.c::stop_this_cpu() is very similar to 
+> >> this and could be shared. You could move the stop_this_cpu() function to 
+> >> arch/x86/kernel/process.c (out of smp.c), so that it can be used by 
+> >> reboot.c.
+> >>
+> > Yes, this make sense. Here is the patch.
+> > 
+> > Ivan
+> > 
+> > ---
+> >  arch/x86/kernel/process.c |   16 ++++++++++++++++
+> >  arch/x86/kernel/reboot.c  |    5 +++++
+> >  arch/x86/kernel/smp.c     |   13 -------------
+> >  include/asm-x86/system.h  |    2 ++
+> >  4 files changed, 23 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> > index c622772..af6904e 100644
+> > --- a/arch/x86/kernel/process.c
+> > +++ b/arch/x86/kernel/process.c
+> > @@ -8,6 +8,7 @@
+> >  #include <linux/pm.h>
+> >  #include <linux/clockchips.h>
+> >  #include <asm/system.h>
+> > +#include <asm/apic.h>
+> >  
+> >  unsigned long idle_halt;
+> >  EXPORT_SYMBOL(idle_halt);
+> > @@ -122,6 +123,21 @@ void default_idle(void)
+> >  EXPORT_SYMBOL(default_idle);
+> >  #endif
+> >  
+> > +void stop_this_cpu(void *dummy)
+> > +{
+> > +	local_irq_disable();
+> > +	/*
+> > +	 * Remove this CPU:
+> > +	 */
+> > +	cpu_clear(smp_processor_id(), cpu_online_map);
+> > +#ifdef CONFIG_X86_LOCAL_APIC
+> > +	disable_local_APIC();
+> > +#endif
+> > +	if (hlt_works(smp_processor_id()))
+> > +		for (;;) halt();
+> > +	for (;;);
+> > +}
+> > +
+> >  static void do_nothing(void *unused)
+> >  {
+> >  }
+> > diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+> > index f4c93f1..3113d9e 100644
+> > --- a/arch/x86/kernel/reboot.c
+> > +++ b/arch/x86/kernel/reboot.c
+> > @@ -465,6 +465,11 @@ static void native_machine_restart(char *__unused)
+> >  
+> >  static void native_machine_halt(void)
+> >  {
+> > +	/* stop other cpus and apics */
+> > +	machine_shutdown();
+> > +
+> > +	/* stop this cpu */
+> > +	stop_this_cpu(NULL);
+> >  }
+> >  
+> >  static void native_machine_power_off(void)
+> > diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
+> > index 18f9b19..3f92b13 100644
+> > --- a/arch/x86/kernel/smp.c
+> > +++ b/arch/x86/kernel/smp.c
+> > @@ -140,19 +140,6 @@ void native_send_call_func_ipi(cpumask_t mask)
+> >  		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
+> >  }
+> >  
+> > -static void stop_this_cpu(void *dummy)
+> > -{
+> > -	local_irq_disable();
+> > -	/*
+> > -	 * Remove this CPU:
+> > -	 */
+> > -	cpu_clear(smp_processor_id(), cpu_online_map);
+> > -	disable_local_APIC();
+> > -	if (hlt_works(smp_processor_id()))
+> > -		for (;;) halt();
+> > -	for (;;);
+> > -}
+> > -
+> >  /*
+> >   * this function calls the 'stop' function on all other CPUs in the system.
+> >   */
+> > diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+> > index b20c894..17ac753 100644
+> > --- a/include/asm-x86/system.h
+> > +++ b/include/asm-x86/system.h
+> > @@ -314,6 +314,8 @@ extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
+> >  
+> >  void default_idle(void);
+> >  
+> > +void stop_this_cpu(void *dummy);
+> > +
+> >  /*
+> >   * Force strict CPU ordering.
+> >   * And yes, this is required on UP too when we're talking
+> 
 
-We should definitely look into this but my priorities have changed a bit.
-32 bit is far more significant for me now.
-
-Could you point me to a post that describes the currently open issues with
-x86_64? Mike handled that before.
-
-> So ... what's the merge plan here? I like your fundamental idea, it's
-> a nice improvement in a couple of areas and i'd like to help out make
-> it happen. Also, the new per-cpu allocator would be nice for the
-> sparseirq code.
-
-Right. Its good in many areas.
+-- 
+/***************************************************
+ *Neil Horman
+ *Senior Software Engineer
+ *Red Hat, Inc.
+ *nhorman@redhat.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
