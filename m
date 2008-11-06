@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbYKFVui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYKFVu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbYKFVui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbYKFVty
+	id S1754362AbYKFVu5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:50:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYKFVt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:49:54 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:55958 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753955AbYKFVtw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:49:52 -0500
-Date: Thu, 6 Nov 2008 22:48:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Takashi Iwai <tiwai@suse.de>, Tony Luck <tony.luck@intel.com>,
-       Isaku Yamahata <yamahata@valinux.co.jp>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix section type conflict in arch/ia64/xen/xen_pv_ops.c
-Message-ID: <20081106214848.GA3579@uranus.ravnborg.org>
-References: <s5h1vxou7gf.wl%tiwai@suse.de> <49133E11.8050607@goop.org>
+	Thu, 6 Nov 2008 16:49:59 -0500
+Received: from mail.queued.net ([207.210.101.209]:1272 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754174AbYKFVt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:49:58 -0500
+Date: Thu, 6 Nov 2008 16:49:55 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH 8/14] ALSA: cs5535audio: check OLPC's Analog Input status
+ vis GPIO
+Message-ID: <20081106164955.507e05a2@ephemeral>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49133E11.8050607@goop.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 10:57:21AM -0800, Jeremy Fitzhardinge wrote:
-> Takashi Iwai wrote:
-> >__initdata and const cannot be always a happy pair, as gcc-4.3.3 gives
-> >the compile errors like:
-> >
-> >  arch/ia64/xen/xen_pv_ops.c:156: error: xen_init_ops causes a section 
-> >  type conflict
-> >  arch/ia64/xen/xen_pv_ops.c:340: error: xen_iosapic_ops causes a section 
-> >  type conflict
-> >
-> >This patch simply removes const from data with __initdata.
-> >  
-> 
-> Yeah, I've seen these sort of messages before, but I don't see why 
-> there's an inherent problem with having const __initdata.
-> 
-> Sam?
 
-The root problem here is that in some cases gcc will stuff this into
-a section marked CONST and in other cases not.
-So when we manually specify the section we better not mix const and
-non-const stuff in the same section.
-The problem is that it is very gcc dependent. I have with powerpc
-seen that the same code was not put in CONST with a 32 bit build,
-but with the 64 bit build it was.
-The only cure was to remove the const and use initdata.
-You can try to play with initconst - and it may work.
-But you need to have pretty good build coverage to be sure.
+Checking the HPF register is irrelevant; HPF is secondary to the AI mode.
+Instead, check for Analog Input mode via GPIO.
 
-	Sam
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ sound/pci/cs5535audio/cs5535audio_olpc.c |    9 ++-------
+ 1 files changed, 2 insertions(+), 7 deletions(-)
+
+diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
+index 2c148b9..f59af91 100644
+--- a/sound/pci/cs5535audio/cs5535audio_olpc.c
++++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
+@@ -43,13 +43,8 @@ static int olpc_dc_info(struct snd_kcontrol *kctl,
+ 
+ static int olpc_dc_get(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *v)
+ {
+-	struct cs5535audio *cs5535au = snd_kcontrol_chip(kctl);
+-	u8 val;
+-
+-	val = snd_ac97_read(cs5535au->ac97, AC97_AD_TEST2);
+-	val >>= AC97_AD_HPFD_SHIFT;
+-	v->value.integer.value[0] = val & 0x1;
+-
++	v->value.integer.value[0] = geode_gpio_isset(OLPC_GPIO_MIC_AC,
++			GPIO_OUTPUT_VAL);
+ 	return 0;
+ }
+ 
+-- 
+1.5.6.5
+
