@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYKFQC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbYKFQDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753482AbYKFQC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYKFQCr
+	id S1753689AbYKFQDY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:03:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYKFQDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:02:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55029 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750816AbYKFQCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:02:46 -0500
-Date: Thu, 6 Nov 2008 11:01:54 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
-       Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081106160154.GA7461@redhat.com>
-References: <20081106153022.215696930@redhat.com> <1225986593.7803.4688.camel@twins>
+	Thu, 6 Nov 2008 11:03:13 -0500
+Received: from host254-130-static.190-82-b.business.telecomitalia.it ([82.190.130.254]:60116
+	"EHLO nausicaa2.coritel.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751227AbYKFQDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:03:12 -0500
+X-Greylist: delayed 1798 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Nov 2008 11:03:12 EST
+Message-ID: <49130E3C.5040203@coritel.it>
+Date: Thu, 06 Nov 2008 16:33:16 +0100
+From: Marco Stornelli <marco.stornelli@coritel.it>
+Organization: CoRiTeL
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225986593.7803.4688.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: mtk.manpages@gmail.com, rdunlap@xenotime.net, linux-doc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] [RESEND] documentation: xip documentation update
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 04:49:53PM +0100, Peter Zijlstra wrote:
-> On Thu, 2008-11-06 at 10:30 -0500, vgoyal@redhat.com wrote:
-> > Hi,
-> > 
-> > If you are not already tired of so many io controller implementations, here
-> > is another one.
-> > 
-> > This is a very eary very crude implementation to get early feedback to see
-> > if this approach makes any sense or not.
-> > 
-> > This controller is a proportional weight IO controller primarily
-> > based on/inspired by dm-ioband. One of the things I personally found little
-> > odd about dm-ioband was need of a dm-ioband device for every device we want
-> > to control.  I thought that probably we can make this control per request
-> > queue and get rid of device mapper driver. This should make configuration
-> > aspect easy.
-> > 
-> > I have picked up quite some amount of code from dm-ioband especially for
-> > biocgroup implementation.
-> > 
-> > I have done very basic testing and that is running 2-3 dd commands in different
-> > cgroups on x86_64. Wanted to throw out the code early to get some feedback.
-> > 
-> > More details about the design and how to are in documentation patch.
-> > 
-> > Your comments are welcome.
-> 
-> please include
-> 
-> QUILT_REFRESH_ARGS="--diffstat --strip-trailing-whitespace"
-> 
-> in your environment or .quiltrc
-> 
+From: Marco Stornelli <marco.stornelli@gmail.com>
 
-Sure, I will do. First time user of quilt. :-)
+xip documentation updated
+Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
+---
 
-> I would expect all those bio* files to be placed in block/ not mm/
-> 
+--- a/Documentation/filesystems/xip.txt.orig	2008-08-20 20:11:37.000000000 +0200
++++ b/Documentation/filesystems/xip.txt	2008-11-06 12:47:48.000000000 +0200
+@@ -39,10 +39,11 @@ The block device operation is optional,
+ today:
+ - dcssblk: s390 dcss block device driver
+ 
+-An address space operation named get_xip_page is used to retrieve reference
+-to a struct page. To address the target page, a reference to an address_space,
+-and a sector number is provided. A 3rd argument indicates whether the
+-function should allocate blocks if needed.
++An address space operation named get_xip_mem is used to retrieve reference
++to a page frame number and a kernel address. To obtain these values a reference
++to an address_space is provided. This function assigns values to the kmem and
++pfn parameters. The 3rd argument indicates whether the function should allocate
++blocks if needed.
+ 
+ This address space operation is mutually exclusive with readpage&writepage that
+ do page cache read/write operations.
 
-Thinking more about it, probably block/ will be more appropriate place.
-I will do that.
 
-> Does this still require I use dm, or does it also work on regular block
-> devices? Patch 4/4 isn't quite clear on this.
-
-No. You don't have to use dm. It will simply work on regular devices. We
-shall have to put few lines of code for it to work on devices which don't
-make use of standard __make_request() function and provide their own
-make_request function. 
-
-Hence for example, I have put that few lines of code so that it can work
-with dm device. I shall have to do something similar for md too.
-
-Though, I am not very sure why do I need to do IO control on higher level
-devices. Will it be sufficient if we just control only bottom most
-physical block devices?
-
-Anyway, this approach should work at any level.
-
-Thanks
-Vivek
