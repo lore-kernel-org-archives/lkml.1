@@ -1,327 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbYKFRUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751505AbYKFRcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751467AbYKFRUT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 12:20:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYKFRUE
+	id S1751505AbYKFRcg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 12:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbYKFRc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 12:20:04 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:36143 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbYKFRUC (ORCPT
+	Thu, 6 Nov 2008 12:32:26 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:37056 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbYKFRcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 12:20:02 -0500
-Date: Thu, 6 Nov 2008 18:19:58 +0100
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Mattia Dongili <malattia@linux.it>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usb device not showing up
-Message-ID: <20081106171958.GA17270@gamma.logic.tuwien.ac.at>
-References: <20081106150031.GI2395@gamma.logic.tuwien.ac.at> <Pine.LNX.4.44L0.0811061022140.2568-100000@iolanthe.rowland.org>
+	Thu, 6 Nov 2008 12:32:25 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 6 Nov 2008 18:31:50 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] ieee1394 updates
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
+Message-ID: <tkrat.b1f97f6a2ed64d76@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="G4iJoqBmSsgzjUCe"
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0811061022140.2568-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from the for-linus branch at
 
---G4iJoqBmSsgzjUCe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-On Do, 06 Nov 2008, Alan Stern wrote:
-> > Well, the point is that under these circumstances, as I explained,
-> > *there*is*no*problem*, I can use the device without any problems.
-> 
-> Oh.  Well, you should rerun the test under circumstances in which there 
-> _is_ a problem.
+to receive one post .27 regression fix, one fix for an old corner-case
+bug, and two things that may be questionable for a pull request in the
+-rc phase but I'd like to get rid of:
 
-Here it is. Sequence of events:
-- turn off the laptop, physically
-- turn it on
-- boot in to linux with modular usb and init=/bin/bash
-- mount /proc, /sys, /sys/kernel/debug
-- modprobe usbmon (file /sys/kernel/debug/usbmon/{0s,0u} are present)
-- start some getty to have more terminals, mount / rw
+Kay Sievers (2):
+      firewire: struct device - replace bus_id with dev_name(), dev_set_name()
+      ieee1394: struct device - replace bus_id with dev_name(), dev_set_name()
 
-- cat /sys/kernel/debug/usbmon/0u > usbmon-bad.txt
-- modprobe uhci-hcd
-- modprobe hso
+Stefan Richter (2):
+      ieee1394: raw1394: fix possible deadlock in multithreaded clients
+      ieee1394: dv1394: fix possible deadlock in multithreaded clients
 
-The device does not show up in /proc/bus/usb/devices (mounted before
-probing and debugging), only bus 4 hub is there.
+ drivers/firewire/fw-device.c |   14 ++++++--------
+ drivers/firewire/fw-ohci.c   |    2 +-
+ drivers/firewire/fw-sbp2.c   |    2 +-
+ drivers/ieee1394/dv1394.c    |   10 ++++++++--
+ drivers/ieee1394/hosts.c     |    4 ++--
+ drivers/ieee1394/nodemgr.c   |   14 +++++---------
+ drivers/ieee1394/raw1394.c   |    9 ++++++---
+ 7 files changed, 29 insertions(+), 26 deletions(-)
 
-/sys/bus/usb/drivers/hso/ shows
-	bind  module  new_id  uevent  unbind
 
-- sync
-- cat process
+commit 8449fc3ae58bf8ee5acbd2280754cde67b5db128
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sun Oct 26 12:02:03 2008 +0100
 
-Outcome is the attached usbmon-bad.txt
+    ieee1394: dv1394: fix possible deadlock in multithreaded clients
+    
+    Fix a possible though highly unlikely deadlock:
+    
+    Thread A:                  Thread B:
+     - acquire mmap_sem         - dv1394_ioctl/read/write()
+     - dv1394_mmap()            - acquire video->mtx
+     - acquire video->mtx       - copy_to/from_user(), possible page fault:
+                                  acquire mmap_sem
+    
+    The simplest fix is to use mutex_trylock() instead of mutex_lock() in
+    dv1394_mmap().  This changes the behavior under contention in a way
+    which is visible to userspace clients.  However, my guess is that no
+    clients exist which use mmap vs. ioctl/read/write on the dv1394
+    character device file interface in concurrent threads.
+    
+    Reported-by: Johannes Weiner <hannes@saeurebad.de>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-This is the one where the device does not show up.
+diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
+index df70f51..5332997 100644
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -1270,8 +1270,14 @@ static int dv1394_mmap(struct file *file, struct vm_area_struct *vma)
+ 	struct video_card *video = file_to_video_card(file);
+ 	int retval = -EINVAL;
+ 
+-	/* serialize mmap */
+-	mutex_lock(&video->mtx);
++	/*
++	 * We cannot use the blocking variant mutex_lock here because .mmap
++	 * is called with mmap_sem held, while .ioctl, .read, .write acquire
++	 * video->mtx and subsequently call copy_to/from_user which will
++	 * grab mmap_sem in case of a page fault.
++	 */
++	if (!mutex_trylock(&video->mtx))
++		return -EAGAIN;
+ 
+ 	if ( ! video_card_initialized(video) ) {
+ 		retval = do_dv1394_init_default(video);
 
-Best wishes
+commit 638570b54346f140bc09b986d93e76025d35180f
+Author: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Date:   Sun Oct 26 12:03:37 2008 +0100
 
-Norbert
+    ieee1394: raw1394: fix possible deadlock in multithreaded clients
+    
+    Regression in 2.6.28-rc1:  When I added the new state_mutex which
+    prevents corruption of raw1394's internal state when accessed by
+    multithreaded client applications, the following possible though
+    highly unlikely deadlock slipped in:
+    
+    Thread A:                  Thread B:
+     - acquire mmap_sem         - raw1394_write() or raw1394_ioctl()
+     - raw1394_mmap()           - acquire state_mutex
+     - acquire state_mutex      - copy_to/from_user(), possible page fault:
+                                  acquire mmap_sem
+    
+    The simplest fix is to use mutex_trylock() instead of mutex_lock() in
+    raw1394_mmap().  This changes the behavior under contention in a way
+    which is visible to userspace clients.  However, since multithreaded
+    access was entirely buggy before state_mutex was added and libraw1394's
+    documentation advised application programmers to use a handle only in a
+    single thread, this change in behaviour should not be an issue in
+    practice at all.
+    
+    Since we have to use mutex_trylock() in raw1394_mmap() regardless
+    whether /dev/raw1394 was opened with O_NONBLOCK or not, we now use
+    mutex_trylock() unconditionally everywhere for state_mutex, just to have
+    consistent behavior.
+    
+    Reported-by: Johannes Weiner <hannes@saeurebad.de>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-VANCOUVER (n.)
-The technical name for one of those huge trucks with whirling brushes
-on the bottom used to clean streets.
-			--- Douglas Adams, The Meaning of Liff
+diff --git a/drivers/ieee1394/raw1394.c b/drivers/ieee1394/raw1394.c
+index 2cf4ae7..4bdfff0 100644
+--- a/drivers/ieee1394/raw1394.c
++++ b/drivers/ieee1394/raw1394.c
+@@ -2268,7 +2268,8 @@ static ssize_t raw1394_write(struct file *file, const char __user * buffer,
+ 		return -EFAULT;
+ 	}
+ 
+-	mutex_lock(&fi->state_mutex);
++	if (!mutex_trylock(&fi->state_mutex))
++		return -EAGAIN;
+ 
+ 	switch (fi->state) {
+ 	case opened:
+@@ -2548,7 +2549,8 @@ static int raw1394_mmap(struct file *file, struct vm_area_struct *vma)
+ 	struct file_info *fi = file->private_data;
+ 	int ret;
+ 
+-	mutex_lock(&fi->state_mutex);
++	if (!mutex_trylock(&fi->state_mutex))
++		return -EAGAIN;
+ 
+ 	if (fi->iso_state == RAW1394_ISO_INACTIVE)
+ 		ret = -EINVAL;
+@@ -2669,7 +2671,8 @@ static long raw1394_ioctl(struct file *file, unsigned int cmd,
+ 		break;
+ 	}
+ 
+-	mutex_lock(&fi->state_mutex);
++	if (!mutex_trylock(&fi->state_mutex))
++		return -EAGAIN;
+ 
+ 	switch (fi->iso_state) {
+ 	case RAW1394_ISO_INACTIVE:
 
---G4iJoqBmSsgzjUCe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="usbmon-bad.txt"
+commit 233976e539a93de1320fc7625b24076b1f9e2c9c
+Author: Kay Sievers <kay.sievers@vrfy.org>
+Date:   Thu Oct 30 01:49:20 2008 +0100
 
-ffff88013d810ec0 4284545648 S Ci:1:001:0 s 80 06 0100 0000 0012 18 <
-ffff88013d810ec0 4284545661 C Ci:1:001:0 0 18 = 12011001 09000040 6b1d0100 06020302 0101
-ffff88013d810ec0 4284545665 S Ci:1:001:0 s 80 06 0200 0000 0009 9 <
-ffff88013d810ec0 4284545666 C Ci:1:001:0 0 9 = 09021900 010100e0 00
-ffff88013d810ec0 4284545668 S Ci:1:001:0 s 80 06 0200 0000 0019 25 <
-ffff88013d810ec0 4284545669 C Ci:1:001:0 0 25 = 09021900 010100e0 00090400 00010900 00000705 81030200 ff
-ffff88013d810ec0 4284545673 S Ci:1:001:0 s 80 06 0300 0000 00ff 255 <
-ffff88013d810ec0 4284545674 C Ci:1:001:0 0 4 = 04030904
-ffff88013d810ec0 4284545676 S Ci:1:001:0 s 80 06 0302 0409 00ff 255 <
-ffff88013d810ec0 4284545677 C Ci:1:001:0 0 43 = 2a035500 48004300 49002000 48006f00 73007400 20004300 6f006e00 74007200
-ffff88013d810ec0 4284545679 S Ci:1:001:0 s 80 06 0303 0409 00ff 255 <
-ffff88013d810ec0 4284545681 C Ci:1:001:0 0 65 = 40034c00 69006e00 75007800 20003200 2e003600 2e003200 38002d00 72006300
-ffff88013d810ec0 4284545682 S Ci:1:001:0 s 80 06 0301 0409 00ff 255 <
-ffff88013d810ec0 4284545684 C Ci:1:001:0 0 27 = 1a033000 30003000 30003a00 30003000 3a003100 61002e00 300000
-ffff88013d810ec0 4284545787 S Co:1:001:0 s 00 09 0001 0000 0000 0
-ffff88013d810ec0 4284545788 C Co:1:001:0 0 0
-ffff88013d810ec0 4284545879 S Ci:1:001:0 s a0 06 2900 0000 000f 15 <
-ffff88013d810ec0 4284545881 C Ci:1:001:0 0 15 = 0929020a 00010000 ff092180 ffffff
-ffff88013d810ec0 4284545924 S Ci:1:001:0 s 80 00 0000 0000 0002 2 <
-ffff88013d810ec0 4284545926 C Ci:1:001:0 0 2 = 0300
-ffff88013d810ec0 4284545927 S Ci:1:001:0 s a0 00 0000 0000 0004 4 <
-ffff88013d810ec0 4284545929 C Ci:1:001:0 0 4 = 00000000
-ffff88013d810e00 4284545930 S Co:1:001:0 s 23 03 0008 0001 0000 0
-ffff88013d810e00 4284545933 C Co:1:001:0 0 0
-ffff88013d810e00 4284545934 S Co:1:001:0 s 23 03 0008 0002 0000 0
-ffff88013d810e00 4284545935 C Co:1:001:0 0 0
-ffff88013d810d40 4284546744 S Ci:2:001:0 s 80 06 0100 0000 0012 18 <
-ffff88013d810d40 4284546745 C Ci:2:001:0 0 18 = 12011001 09000040 6b1d0100 06020302 0101
-ffff88013d810d40 4284546748 S Ci:2:001:0 s 80 06 0200 0000 0009 9 <
-ffff88013d810d40 4284546749 C Ci:2:001:0 0 9 = 09021900 010100e0 00
-ffff88013d810d40 4284546750 S Ci:2:001:0 s 80 06 0200 0000 0019 25 <
-ffff88013d810d40 4284546751 C Ci:2:001:0 0 25 = 09021900 010100e0 00090400 00010900 00000705 81030200 ff
-ffff88013d810d40 4284546754 S Ci:2:001:0 s 80 06 0300 0000 00ff 255 <
-ffff88013d810d40 4284546755 C Ci:2:001:0 0 4 = 04030904
-ffff88013d810d40 4284546756 S Ci:2:001:0 s 80 06 0302 0409 00ff 255 <
-ffff88013d810d40 4284546758 C Ci:2:001:0 0 43 = 2a035500 48004300 49002000 48006f00 73007400 20004300 6f006e00 74007200
-ffff88013d810d40 4284546759 S Ci:2:001:0 s 80 06 0303 0409 00ff 255 <
-ffff88013d810d40 4284546761 C Ci:2:001:0 0 65 = 40034c00 69006e00 75007800 20003200 2e003600 2e003200 38002d00 72006300
-ffff88013d810d40 4284546763 S Ci:2:001:0 s 80 06 0301 0409 00ff 255 <
-ffff88013d810d40 4284546764 C Ci:2:001:0 0 27 = 1a033000 30003000 30003a00 30003000 3a003100 61002e00 310000
-ffff88013d810d40 4284546894 S Co:2:001:0 s 00 09 0001 0000 0000 0
-ffff88013d810d40 4284546895 C Co:2:001:0 0 0
-ffff88013d810d40 4284546993 S Ci:2:001:0 s a0 06 2900 0000 000f 15 <
-ffff88013d810d40 4284546995 C Ci:2:001:0 0 15 = 0929020a 00010000 ff092180 ffffff
-ffff88013d810d40 4284547048 S Ci:2:001:0 s 80 00 0000 0000 0002 2 <
-ffff88013d810d40 4284547050 C Ci:2:001:0 0 2 = 0300
-ffff88013d810d40 4284547052 S Ci:2:001:0 s a0 00 0000 0000 0004 4 <
-ffff88013d810d40 4284547053 C Ci:2:001:0 0 4 = 00000000
-ffff88013d810c80 4284547055 S Co:2:001:0 s 23 03 0008 0001 0000 0
-ffff88013d810c80 4284547056 C Co:2:001:0 0 0
-ffff88013d810c80 4284547057 S Co:2:001:0 s 23 03 0008 0002 0000 0
-ffff88013d810c80 4284547059 C Co:2:001:0 0 0
-ffff88013d810bc0 4284547823 S Ci:3:001:0 s 80 06 0100 0000 0012 18 <
-ffff88013d810bc0 4284547824 C Ci:3:001:0 0 18 = 12011001 09000040 6b1d0100 06020302 0101
-ffff88013d810bc0 4284547826 S Ci:3:001:0 s 80 06 0200 0000 0009 9 <
-ffff88013d810bc0 4284547828 C Ci:3:001:0 0 9 = 09021900 010100e0 00
-ffff88013d810bc0 4284547829 S Ci:3:001:0 s 80 06 0200 0000 0019 25 <
-ffff88013d810bc0 4284547830 C Ci:3:001:0 0 25 = 09021900 010100e0 00090400 00010900 00000705 81030200 ff
-ffff88013d810bc0 4284547832 S Ci:3:001:0 s 80 06 0300 0000 00ff 255 <
-ffff88013d810bc0 4284547834 C Ci:3:001:0 0 4 = 04030904
-ffff88013d810bc0 4284547835 S Ci:3:001:0 s 80 06 0302 0409 00ff 255 <
-ffff88013d810bc0 4284547836 C Ci:3:001:0 0 43 = 2a035500 48004300 49002000 48006f00 73007400 20004300 6f006e00 74007200
-ffff88013d810bc0 4284547838 S Ci:3:001:0 s 80 06 0303 0409 00ff 255 <
-ffff88013d810bc0 4284547840 C Ci:3:001:0 0 65 = 40034c00 69006e00 75007800 20003200 2e003600 2e003200 38002d00 72006300
-ffff88013d810bc0 4284547841 S Ci:3:001:0 s 80 06 0301 0409 00ff 255 <
-ffff88013d810bc0 4284547843 C Ci:3:001:0 0 27 = 1a033000 30003000 30003a00 30003000 3a003100 61002e00 320000
-ffff88013d810bc0 4284547971 S Co:3:001:0 s 00 09 0001 0000 0000 0
-ffff88013d810bc0 4284547974 C Co:3:001:0 0 0
-ffff88013d810bc0 4284548072 S Ci:3:001:0 s a0 06 2900 0000 000f 15 <
-ffff88013d810bc0 4284548073 C Ci:3:001:0 0 15 = 0929020a 00010000 ff092180 ffffff
-ffff88013d810bc0 4284548127 S Ci:3:001:0 s 80 00 0000 0000 0002 2 <
-ffff88013d810bc0 4284548128 C Ci:3:001:0 0 2 = 0300
-ffff88013d810bc0 4284548129 S Ci:3:001:0 s a0 00 0000 0000 0004 4 <
-ffff88013d810bc0 4284548130 C Ci:3:001:0 0 4 = 00000000
-ffff88013d810b00 4284548132 S Co:3:001:0 s 23 03 0008 0001 0000 0
-ffff88013d810b00 4284548133 C Co:3:001:0 0 0
-ffff88013d810b00 4284548135 S Co:3:001:0 s 23 03 0008 0002 0000 0
-ffff88013d810b00 4284548136 C Co:3:001:0 0 0
-ffff88013d810a40 4284548923 S Ci:4:001:0 s 80 06 0100 0000 0012 18 <
-ffff88013d810a40 4284548925 C Ci:4:001:0 0 18 = 12011001 09000040 6b1d0100 06020302 0101
-ffff88013d810a40 4284548927 S Ci:4:001:0 s 80 06 0200 0000 0009 9 <
-ffff88013d810a40 4284548928 C Ci:4:001:0 0 9 = 09021900 010100e0 00
-ffff88013d810a40 4284548929 S Ci:4:001:0 s 80 06 0200 0000 0019 25 <
-ffff88013d810a40 4284548931 C Ci:4:001:0 0 25 = 09021900 010100e0 00090400 00010900 00000705 81030200 ff
-ffff88013d810a40 4284548933 S Ci:4:001:0 s 80 06 0300 0000 00ff 255 <
-ffff88013d810a40 4284548934 C Ci:4:001:0 0 4 = 04030904
-ffff88013d810a40 4284548935 S Ci:4:001:0 s 80 06 0302 0409 00ff 255 <
-ffff88013d810a40 4284548937 C Ci:4:001:0 0 43 = 2a035500 48004300 49002000 48006f00 73007400 20004300 6f006e00 74007200
-ffff88013d810a40 4284548938 S Ci:4:001:0 s 80 06 0303 0409 00ff 255 <
-ffff88013d810a40 4284548941 C Ci:4:001:0 0 65 = 40034c00 69006e00 75007800 20003200 2e003600 2e003200 38002d00 72006300
-ffff88013d810a40 4284548943 S Ci:4:001:0 s 80 06 0301 0409 00ff 255 <
-ffff88013d810a40 4284548944 C Ci:4:001:0 0 27 = 1a033000 30003000 30003a00 30003000 3a003100 64002e00 300000
-ffff88013d810a40 4284549075 S Co:4:001:0 s 00 09 0001 0000 0000 0
-ffff88013d810a40 4284549076 C Co:4:001:0 0 0
-ffff88013d810680 4284645743 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284645750 C Ci:1:001:0 0 4 = 01010300
-ffff88013d810680 4284645753 S Co:1:001:0 s 23 01 0010 0001 0000 0
-ffff88013d810680 4284645757 C Co:1:001:0 0 0
-ffff88013d810680 4284645760 S Co:1:001:0 s 23 01 0011 0001 0000 0
-ffff88013d810680 4284645765 C Co:1:001:0 0 0
-ffff88013d810680 4284645767 S Ci:1:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d810680 4284645772 C Ci:1:001:0 0 4 = 01010100
-ffff88013d810680 4284645775 S Co:1:001:0 s 23 01 0010 0002 0000 0
-ffff88013d810680 4284645779 C Co:1:001:0 0 0
-ffff88013d810680 4284645781 S Ci:2:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284645787 C Ci:2:001:0 0 4 = 00010000
-ffff88013d810680 4284645789 S Ci:2:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d810680 4284645795 C Ci:2:001:0 0 4 = 00010000
-ffff88013d810d40 4284645796 S Ii:2:001:1 -115:128 2 <
-ffff88013d810680 4284645800 S Ci:3:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284645805 C Ci:3:001:0 0 4 = 00010000
-ffff88013d810680 4284645810 S Ci:3:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d810680 4284645815 C Ci:3:001:0 0 4 = 00010000
-ffff88013d810bc0 4284645817 S Ii:3:001:1 -115:128 2 <
-ffff88013d810680 4284645818 S Ci:4:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284645823 C Ci:4:001:0 0 4 = 00010000
-ffff88013d810680 4284645825 S Ci:4:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d810680 4284645830 C Ci:4:001:0 0 4 = 00010000
-ffff88013d810a40 4284645833 S Ii:4:001:1 -115:128 2 <
-ffff88013d810680 4284649695 S Ci:5:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284649702 C Ci:5:001:0 0 4 = 00010000
-ffff88013d810680 4284649705 S Ci:5:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d810680 4284649711 C Ci:5:001:0 0 4 = 00010000
-ffff88013d8108c0 4284649713 S Ii:5:001:1 -115:128 2 <
-ffff88013d810680 4284649716 S Ci:6:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284649721 C Ci:6:001:0 0 4 = 00010000
-ffff88013d810680 4284649723 S Ci:6:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d810680 4284649728 C Ci:6:001:0 0 4 = 01010300
-ffff88013d810680 4284649730 S Co:6:001:0 s 23 01 0010 0002 0000 0
-ffff88013d810680 4284649734 C Co:6:001:0 0 0
-ffff88013d810680 4284649736 S Co:6:001:0 s 23 01 0011 0002 0000 0
-ffff88013d810680 4284649739 C Co:6:001:0 0 0
-ffff88013d810ec0 4284744722 S Ii:1:001:1 -115:128 2 <
-ffff88013d810680 4284744729 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284744734 C Ci:1:001:0 0 4 = 01010000
-ffff88013d810680 4284744740 S Co:1:001:0 s 23 03 0004 0001 0000 0
-ffff88013d810680 4284744745 C Co:1:001:0 0 0
-ffff88013d810740 4284749721 S Ii:6:001:1 -115:128 2 <
-ffff88013d810680 4284800720 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284800745 C Ci:1:001:0 0 4 = 03010000
-ffff88013d810680 4284856717 S Co:1:001:0 s 23 01 0014 0001 0000 0
-ffff88013d810680 4284856721 C Co:1:001:0 0 0
-ffff88013d810680 4284856800 S Ci:1:000:0 s 80 06 0100 0000 0040 64 <
-ffff88013d810680 4284860685 C Ci:1:000:0 0 8 = 12010001 00000008
-ffff88013d810680 4284860715 S Co:1:001:0 s 23 03 0004 0001 0000 0
-ffff88013d810680 4284860730 C Co:1:001:0 0 0
-ffff88013d810ec0 4284880754 C Ii:1:001:1 0:128 1 = 02
-ffff88013d810ec0 4284880757 S Ii:1:001:1 -115:128 2 <
-ffff88013d810680 4284916716 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013d810680 4284916750 C Ci:1:001:0 0 4 = 03010000
-ffff88013d810680 4284972714 S Co:1:001:0 s 23 01 0014 0001 0000 0
-ffff88013d810680 4284972728 C Co:1:001:0 0 0
-ffff88013d810680 4284972739 S Co:1:000:0 s 00 05 0002 0000 0000 0
-ffff88013d810680 4284975667 C Co:1:000:0 0 0
-ffff88013d810680 4284992713 S Ci:1:002:0 s 80 06 0100 0000 0012 18 <
-ffff88013d810680 4284998668 C Ci:1:002:0 0 18 = 12010001 00000008 7e140010 33000102 0001
-ffff88013d810680 4284998694 S Ci:1:002:0 s 80 06 0200 0000 0009 9 <
-ffff88013d810680 4285003663 C Ci:1:002:0 0 9 = 09022700 010100a0 32
-ffff88013d810680 4285003701 S Ci:1:002:0 s 80 06 0200 0000 0027 39 <
-ffff88013d810680 4285011667 C Ci:1:002:0 0 39 = 09022700 010100a0 32090400 0003ff00 00000705 81024000 00070502 02400000
-ffff88013d8105c0 4285011695 S Ci:1:002:0 s 80 06 0300 0000 00ff 255 <
-ffff88013d8105c0 4285014662 C Ci:1:002:0 0 4 = 04030904
-ffff88013d8105c0 4285014699 S Ci:1:002:0 s 80 06 0302 0409 00ff 255 <
-ffff88013d8105c0 4285024663 C Ci:1:002:0 0 44 = 2c034600 69006e00 67006500 72007000 72006900 6e007400 20005300 65006e00
-ffff88013d8105c0 4285024677 S Ci:1:002:0 s 80 06 0301 0409 00ff 255 <
-ffff88013d8105c0 4285033665 C Ci:1:002:0 0 38 = 26035400 6f007500 63006800 53007400 72006900 70002000 20002000 20002000
-ffff88013d8105c0 4285033896 S Co:1:002:0 s 00 09 0001 0000 0000 0
-ffff88013d8105c0 4285035658 C Co:1:002:0 0 0
-ffff88013d8105c0 4285036234 S Ci:1:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d8105c0 4285036242 C Ci:1:001:0 0 4 = 01010000
-ffff88013d8105c0 4285036245 S Co:1:001:0 s 23 03 0004 0002 0000 0
-ffff88013d8105c0 4285036250 C Co:1:001:0 0 0
-ffff88013d8105c0 4285088702 S Ci:1:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d8105c0 4285088727 C Ci:1:001:0 0 4 = 03010000
-ffff88013d8105c0 4285144700 S Co:1:001:0 s 23 01 0014 0002 0000 0
-ffff88013d8105c0 4285144703 C Co:1:001:0 0 0
-ffff88013d8105c0 4285144776 S Ci:1:000:0 s 80 06 0100 0000 0040 64 <
-ffff88013d8105c0 4285148659 C Ci:1:000:0 0 18 = 12010002 ef020140 ca05b018 07020100 0001
-ffff88013d8105c0 4285148684 S Co:1:001:0 s 23 03 0004 0002 0000 0
-ffff88013d8105c0 4285148699 C Co:1:001:0 0 0
-ffff88013d8105c0 4285204708 S Ci:1:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d8105c0 4285204756 C Ci:1:001:0 0 4 = 03010000
-ffff88013d8105c0 4285260705 S Co:1:001:0 s 23 01 0014 0002 0000 0
-ffff88013d8105c0 4285260719 C Co:1:001:0 0 0
-ffff88013d8105c0 4285260730 S Co:1:000:0 s 00 05 0003 0000 0000 0
-ffff88013d8105c0 4285263658 C Co:1:000:0 0 0
-ffff88013d8105c0 4285280705 S Ci:1:003:0 s 80 06 0100 0000 0012 18 <
-ffff88013d8105c0 4285284657 C Ci:1:003:0 0 18 = 12010002 ef020140 ca05b018 07020100 0001
-ffff88013d8105c0 4285284684 S Ci:1:003:0 s 80 06 0200 0000 0009 9 <
-ffff88013d8105c0 4285287654 C Ci:1:003:0 0 9 = 0902d300 02010080 32
-ffff88013d8105c0 4285287692 S Ci:1:003:0 s 80 06 0200 0000 00d3 211 <
-ffff88013d8105c0 4285294658 C Ci:1:003:0 0 211 = 0902d300 02010080 32080b00 020e0300 02090400 00010e01 00020d24 0100014d
-ffff88013d8105c0 4285294688 S Ci:1:003:0 s 80 06 0300 0000 00ff 255 <
-ffff88013d8105c0 4285297653 C Ci:1:003:0 0 4 = 04030904
-ffff88013d8105c0 4285297698 S Ci:1:003:0 s 80 06 0301 0409 00ff 255 <
-ffff88013d8105c0 4285302653 C Ci:1:003:0 0 30 = 1e035200 69006300 6f006800 20006300 6f002e00 20004c00 74006400 2e00
-ffff88013d8105c0 4285302863 S Co:1:003:0 s 00 09 0001 0000 0000 0
-ffff88013d8105c0 4285305653 C Co:1:003:0 0 0
-ffff88013d8105c0 4285305785 S Ci:1:003:0 s 80 06 0302 0409 00ff 255 <
-ffff88013d8105c0 4285308651 C Ci:1:003:0 0 66 = 42035300 6f006e00 79002000 56006900 73007500 61006c00 20004300 6f006d00
-ffff88013d8105c0 4285309010 S Ci:6:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d8105c0 4285309016 C Ci:6:001:0 0 4 = 01010000
-ffff88013d8105c0 4285309020 S Co:6:001:0 s 23 03 0004 0002 0000 0
-ffff88013d8105c0 4285309033 C Co:6:001:0 0 0
-ffff88013d8105c0 4285365692 S Ci:6:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d8105c0 4285365717 C Ci:6:001:0 0 4 = 03010000
-ffff88013d8105c0 4285421690 S Co:6:001:0 s 23 01 0014 0002 0000 0
-ffff88013d8105c0 4285421693 C Co:6:001:0 0 0
-ffff88013d8105c0 4285421763 S Ci:6:000:0 s 80 06 0100 0000 0040 64 <
-ffff88013d8105c0 4285425112 C Ci:6:000:0 0 18 = 12010002 e0010140 4e041730 18020102 0301
-ffff88013d8105c0 4285425143 S Co:6:001:0 s 23 03 0004 0002 0000 0
-ffff88013d8105c0 4285425150 C Co:6:001:0 0 0
-ffff88013d8105c0 4285480710 S Ci:6:001:0 s a3 00 0000 0002 0004 4 <
-ffff88013d8105c0 4285480734 C Ci:6:001:0 0 4 = 03010000
-ffff88013d8105c0 4285536724 S Co:6:001:0 s 23 01 0014 0002 0000 0
-ffff88013d8105c0 4285536726 C Co:6:001:0 0 0
-ffff88013d8105c0 4285536729 S Co:6:000:0 s 00 05 0002 0000 0000 0
-ffff88013d8105c0 4285539091 C Co:6:000:0 0 0
-ffff88013f329600 4285556720 S Ci:6:002:0 s 80 06 0100 0000 0012 18 <
-ffff88013f329600 4285560110 C Ci:6:002:0 0 18 = 12010002 e0010140 4e041730 18020102 0301
-ffff88013f329600 4285560134 S Ci:6:002:0 s 80 06 0200 0000 0009 9 <
-ffff88013f329600 4285563112 C Ci:6:002:0 0 9 = 0902d800 040100c0 32
-ffff88013f329600 4285563145 S Ci:6:002:0 s 80 06 0200 0000 00d8 216 <
-ffff88013f329600 4285570111 C Ci:6:002:0 0 216 = 0902d800 040100c0 32090400 0003e001 01000705 81031000 01070582 02400001
-ffff88013f3290c0 4285570143 S Ci:6:002:0 s 80 06 0300 0000 00ff 255 <
-ffff88013f3290c0 4285573111 C Ci:6:002:0 0 4 = 04030904
-ffff88013f3290c0 4285573132 S Ci:6:002:0 s 80 06 0302 0409 00ff 255 <
-ffff88013f3290c0 4285578111 C Ci:6:002:0 0 50 = 32034200 43004d00 32003000 34003600 20004200 6c007500 65007400 6f006f00
-ffff88013f3290c0 4285578134 S Ci:6:002:0 s 80 06 0301 0409 00ff 255 <
-ffff88013f3290c0 4285581110 C Ci:6:002:0 0 28 = 1c034200 72006f00 61006400 63006f00 6d002000 43006f00 72007000
-ffff88013f3290c0 4285581133 S Ci:6:002:0 s 80 06 0303 0409 00ff 255 <
-ffff88013f3290c0 4285584111 C Ci:6:002:0 0 26 = 1a033000 30003100 45003300 44004600 38003600 46004300 3800
-ffff88013f3290c0 4285584366 S Co:6:002:0 s 00 09 0001 0000 0000 0
-ffff88013f3290c0 4285586108 C Co:6:002:0 0 0
-ffff88013f3290c0 4285587207 S Ci:1:001:0 s a3 00 0000 0001 0004 4 <
-ffff88013f3290c0 4285587215 C Ci:1:001:0 0 4 = 03010000
-ffff88013d810d40 4286644759 C Ii:2:001:1 -2:128 0
-ffff88013d810bc0 4286644788 C Ii:3:001:1 -2:128 0
-ffff88013d810a40 4286644814 C Ii:4:001:1 -2:128 0
-ffff88013d8108c0 4286649754 C Ii:5:001:1 -2:128 0
+    ieee1394: struct device - replace bus_id with dev_name(), dev_set_name()
+    
+    Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+    Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
---G4iJoqBmSsgzjUCe--
+diff --git a/drivers/ieee1394/hosts.c b/drivers/ieee1394/hosts.c
+index 8dd09d8..237d0c9 100644
+--- a/drivers/ieee1394/hosts.c
++++ b/drivers/ieee1394/hosts.c
+@@ -155,11 +155,11 @@ struct hpsb_host *hpsb_alloc_host(struct hpsb_host_driver *drv, size_t extra,
+ 	memcpy(&h->device, &nodemgr_dev_template_host, sizeof(h->device));
+ 	h->device.parent = dev;
+ 	set_dev_node(&h->device, dev_to_node(dev));
+-	snprintf(h->device.bus_id, BUS_ID_SIZE, "fw-host%d", h->id);
++	dev_set_name(&h->device, "fw-host%d", h->id);
+ 
+ 	h->host_dev.parent = &h->device;
+ 	h->host_dev.class = &hpsb_host_class;
+-	snprintf(h->host_dev.bus_id, BUS_ID_SIZE, "fw-host%d", h->id);
++	dev_set_name(&h->host_dev, "fw-host%d", h->id);
+ 
+ 	if (device_register(&h->device))
+ 		goto fail;
+diff --git a/drivers/ieee1394/nodemgr.c b/drivers/ieee1394/nodemgr.c
+index 2376b72..9e39f73 100644
+--- a/drivers/ieee1394/nodemgr.c
++++ b/drivers/ieee1394/nodemgr.c
+@@ -826,13 +826,11 @@ static struct node_entry *nodemgr_create_node(octlet_t guid,
+ 	memcpy(&ne->device, &nodemgr_dev_template_ne,
+ 	       sizeof(ne->device));
+ 	ne->device.parent = &host->device;
+-	snprintf(ne->device.bus_id, BUS_ID_SIZE, "%016Lx",
+-		 (unsigned long long)(ne->guid));
++	dev_set_name(&ne->device, "%016Lx", (unsigned long long)(ne->guid));
+ 
+ 	ne->node_dev.parent = &ne->device;
+ 	ne->node_dev.class = &nodemgr_ne_class;
+-	snprintf(ne->node_dev.bus_id, BUS_ID_SIZE, "%016Lx",
+-		(unsigned long long)(ne->guid));
++	dev_set_name(&ne->node_dev, "%016Lx", (unsigned long long)(ne->guid));
+ 
+ 	if (device_register(&ne->device))
+ 		goto fail_devreg;
+@@ -932,13 +930,11 @@ static void nodemgr_register_device(struct node_entry *ne,
+ 
+ 	ud->device.parent = parent;
+ 
+-	snprintf(ud->device.bus_id, BUS_ID_SIZE, "%s-%u",
+-		 ne->device.bus_id, ud->id);
++	dev_set_name(&ud->device, "%s-%u", dev_name(&ne->device), ud->id);
+ 
+ 	ud->unit_dev.parent = &ud->device;
+ 	ud->unit_dev.class = &nodemgr_ud_class;
+-	snprintf(ud->unit_dev.bus_id, BUS_ID_SIZE, "%s-%u",
+-		 ne->device.bus_id, ud->id);
++	dev_set_name(&ud->unit_dev, "%s-%u", dev_name(&ne->device), ud->id);
+ 
+ 	if (device_register(&ud->device))
+ 		goto fail_devreg;
+@@ -953,7 +949,7 @@ static void nodemgr_register_device(struct node_entry *ne,
+ fail_classdevreg:
+ 	device_unregister(&ud->device);
+ fail_devreg:
+-	HPSB_ERR("Failed to create unit %s", ud->device.bus_id);
++	HPSB_ERR("Failed to create unit %s", dev_name(&ud->device));
+ }	
+ 
+ 
+
+commit a1f64819fe9f136c98d572794a35a7e377c951ef
+Author: Kay Sievers <kay.sievers@vrfy.org>
+Date:   Thu Oct 30 01:41:56 2008 +0100
+
+    firewire: struct device - replace bus_id with dev_name(), dev_set_name()
+    
+    Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+    Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+    Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+
+diff --git a/drivers/firewire/fw-device.c b/drivers/firewire/fw-device.c
+index 3fccdd4..6b9be42 100644
+--- a/drivers/firewire/fw-device.c
++++ b/drivers/firewire/fw-device.c
+@@ -587,8 +587,7 @@ static void create_units(struct fw_device *device)
+ 		unit->device.bus = &fw_bus_type;
+ 		unit->device.type = &fw_unit_type;
+ 		unit->device.parent = &device->device;
+-		snprintf(unit->device.bus_id, sizeof(unit->device.bus_id),
+-			 "%s.%d", device->device.bus_id, i++);
++		dev_set_name(&unit->device, "%s.%d", dev_name(&device->device), i++);
+ 
+ 		init_fw_attribute_group(&unit->device,
+ 					fw_unit_attributes,
+@@ -711,8 +710,7 @@ static void fw_device_init(struct work_struct *work)
+ 	device->device.type = &fw_device_type;
+ 	device->device.parent = device->card->device;
+ 	device->device.devt = MKDEV(fw_cdev_major, minor);
+-	snprintf(device->device.bus_id, sizeof(device->device.bus_id),
+-		 "fw%d", minor);
++	dev_set_name(&device->device, "fw%d", minor);
+ 
+ 	init_fw_attribute_group(&device->device,
+ 				fw_device_attributes,
+@@ -741,13 +739,13 @@ static void fw_device_init(struct work_struct *work)
+ 		if (device->config_rom_retries)
+ 			fw_notify("created device %s: GUID %08x%08x, S%d00, "
+ 				  "%d config ROM retries\n",
+-				  device->device.bus_id,
++				  dev_name(&device->device),
+ 				  device->config_rom[3], device->config_rom[4],
+ 				  1 << device->max_speed,
+ 				  device->config_rom_retries);
+ 		else
+ 			fw_notify("created device %s: GUID %08x%08x, S%d00\n",
+-				  device->device.bus_id,
++				  dev_name(&device->device),
+ 				  device->config_rom[3], device->config_rom[4],
+ 				  1 << device->max_speed);
+ 		device->config_rom_retries = 0;
+@@ -883,12 +881,12 @@ static void fw_device_refresh(struct work_struct *work)
+ 		    FW_DEVICE_RUNNING) == FW_DEVICE_SHUTDOWN)
+ 		goto gone;
+ 
+-	fw_notify("refreshed device %s\n", device->device.bus_id);
++	fw_notify("refreshed device %s\n", dev_name(&device->device));
+ 	device->config_rom_retries = 0;
+ 	goto out;
+ 
+  give_up:
+-	fw_notify("giving up on refresh of device %s\n", device->device.bus_id);
++	fw_notify("giving up on refresh of device %s\n", dev_name(&device->device));
+  gone:
+ 	atomic_set(&device->state, FW_DEVICE_SHUTDOWN);
+ 	fw_device_shutdown(work);
+diff --git a/drivers/firewire/fw-ohci.c b/drivers/firewire/fw-ohci.c
+index 8e16bfb..46610b0 100644
+--- a/drivers/firewire/fw-ohci.c
++++ b/drivers/firewire/fw-ohci.c
+@@ -2468,7 +2468,7 @@ pci_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 		goto fail_self_id;
+ 
+ 	fw_notify("Added fw-ohci device %s, OHCI version %x.%x\n",
+-		  dev->dev.bus_id, version >> 16, version & 0xff);
++		  dev_name(&dev->dev), version >> 16, version & 0xff);
+ 	return 0;
+ 
+  fail_self_id:
+diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+index d334cac..97df6da 100644
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -1135,7 +1135,7 @@ static int sbp2_probe(struct device *dev)
+ 	tgt->unit = unit;
+ 	kref_init(&tgt->kref);
+ 	INIT_LIST_HEAD(&tgt->lu_list);
+-	tgt->bus_id = unit->device.bus_id;
++	tgt->bus_id = dev_name(&unit->device);
+ 	tgt->guid = (u64)device->config_rom[3] << 32 | device->config_rom[4];
+ 
+ 	if (fw_device_enable_phys_dma(device) < 0)
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--- =-== --==-
+http://arcgraph.de/sr/
+
