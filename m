@@ -1,108 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbYKFAyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbYKFAy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbYKFAyF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 19:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYKFAxy
+	id S1755477AbYKFAy3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 19:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYKFAyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 19:53:54 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38025 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752432AbYKFAxx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 19:53:53 -0500
-Date: Thu, 6 Nov 2008 09:53:14 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
- hotplug
-Message-Id: <20081106095314.8e65f443.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1225931281.11514.27.camel@nimitz>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<1225817945.12673.602.camel@nimitz>
-	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
-	<200811051208.26628.rjw@sisk.pl>
-	<20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-	<1225931281.11514.27.camel@nimitz>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 5 Nov 2008 19:54:18 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60478 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752432AbYKFAyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 19:54:17 -0500
+Date: Thu, 6 Nov 2008 09:53:49 +0900
+To: const@mimas.ru
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.28-rc3] x86: make CONFIG_SWIOTLB configurable
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <49107844.8070509@mimas.ru>
+References: <49107844.8070509@mimas.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081106095402X.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 05 Nov 2008 16:28:01 -0800
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+On Tue, 04 Nov 2008 20:28:52 +0400
+Constantin Baranov <const@mimas.ru> wrote:
 
-> On Thu, 2008-11-06 at 09:14 +0900, KAMEZAWA Hiroyuki wrote:
-> > Ok, please consider "when memory hotplug happens." 
-> > 
-> > In general, it happens when
-> >   1. memory is inserted to slot.
-> >   2. the firmware notifes the system to enable already inserted memory.
-> > 
-> > To trigger "1", you have to open cover of server/pc. Do you open pc while the system
-> > starts hibernation ? for usual people, no.
+> Make it possible to enable individually the CONFIG_SWIOTLB option.
+> This is useful for Intel x86_64 systems without DMAR support.
 > 
-> You're right, this won't happen very often.  We're trying to close a
-> theoretical hole that hasn't ever been observed in practice.  But, we
-> don't exactly leave races in code just because we haven't observed them.
-> I think this is a classic race.
+> Signed-off-by: Constantin Baranov <const@mimas.ru>
+> ---
+> Tested on my system based on Gigabyte GA-EP45-DS3 mainboard
+> (P45 chipset) with 8 GiB of RAM.
+> Currently I need to enable either CONFIG_GART_IOMMU or
+> CONFIG_AMD_IOMMU for proper work. Both are AMD specific.
+> When the patch applied, just CONFIG_SWIOTLB is sufficient.
 > 
-> If we don't close it now, then someone doing some really weirdo hotplug
-> is going to run into it at some point.  Who knows what tomorrow's
-> hardware/firmware will do?
+>  arch/x86/Kconfig |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-Hmm, people tend to make crazy hardware, oh yes. the pc may fly in the sky with rocket engine.
+> --- linux-2.6.28-rc3/arch/x86/Kconfig	2008-11-04 17:32:29.846408880 +0400
+> +++ linux-2.6.28-rc3-swiotlb/arch/x86/Kconfig	2008-11-04 18:11:47.796408084 +0400
+> @@ -566,7 +566,9 @@ config AMD_IOMMU
+>  
+>  # need this always selected by IOMMU for the VIA workaround
+>  config SWIOTLB
+> -	bool
+> +	bool "Support for software bounce buffers"
+> +	depends on X86_64 && EXPERIMENTAL
+> +	default n
+>  	help
+>  	  Support for software bounce buffers used on x86-64 systems
+>  	  which don't have a hardware IOMMU (e.g. the current generation
 
-My answer to this was "add mutex used in hibernation to memory hotplug interface".
-When the mutex blocks ONLINE/OFFLINE memory, the memory range which hibernation should save
-will not change. 
-
-Possible solution for this interrupt handling is to do __add_memory() operation
-in some kernel thread. Then, we can wait the mutex. 
-
-> > To trigger "2", the user have special console to tell firmware "enable this memory".
-> > Such firmware console or users have to know "the system works well." And, more important,
-> > when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
-> > So, such firmware console or operator have to know the system status.
-> > 
-> > Am I missing some ? Current linux can know PCI/USB hotplug while the
-> > system is suspended ?
-> 
-> * echo 'disk' > /sys/power/state
-> * count number of pages to write to disk
-> * turn all interrupts off
-> * copy pages to disk
-> * power down
-> 
-> I think the race we're trying to close is the one between when we count
-> pages and when we turn interrupts off.  I assume that there is a reason
-> that we don't do the *entire* hibernation process with interrupts off,
-> probably because it would "lock" the system up for too long, and can
-> even possibly fail.
-> 
-Hmm, while interrupts off, lru_add_drain_all() or some smp_call_function() will be blocked.
-Can't we do 
-    while(..){
-            go to next mem_section
-            if (!section_is_available)
-		continue;
-            freeze this mem_section.
-	    count pages should be saved.
-    	    write it to disk
-    }
-per mem_section ? (maybe addling lock bit in mem_section->section_mem_map is enough.)
-
-Hmm? 
-
--Kame
-
+IMHO, it's better to always enable SWIOTLB for X86_64 (the description
+is a bit misleading; even with a hardware IOMMU, SWIOTLB is
+necessary).
