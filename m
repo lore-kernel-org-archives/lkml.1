@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYKFKzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753935AbYKFKz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbYKFKzn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 05:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYKFKzN
+	id S1753935AbYKFKz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 05:55:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbYKFKzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 05:55:13 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:47892 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753389AbYKFKzL (ORCPT
+	Thu, 6 Nov 2008 05:55:17 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:58886 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753497AbYKFKzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 05:55:11 -0500
+	Thu, 6 Nov 2008 05:55:13 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
@@ -17,10 +17,11 @@ Cc: <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
        Linux Containers <containers@lists.osdl.org>
 References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
 	<m1abcd2kqk.fsf@frodo.ebiederm.org>
-Date: Thu, 06 Nov 2008 02:49:58 -0800
-In-Reply-To: <m1abcd2kqk.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
-	of "Thu, 06 Nov 2008 02:48:35 -0800")
-Message-ID: <m163n12ko9.fsf_-_@frodo.ebiederm.org>
+	<m163n12ko9.fsf_-_@frodo.ebiederm.org>
+Date: Thu, 06 Nov 2008 02:53:08 -0800
+In-Reply-To: <m163n12ko9.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
+	message of "Thu, 06 Nov 2008 02:49:58 -0800")
+Message-ID: <m1y6zx15yj.fsf_-_@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -33,11 +34,12 @@ X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0001]
+	*      [score: 0.0000]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
 	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.4 FVGT_m_MULTI_ODD Contains multiple odd letter combinations
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH 3/7] proc: Support multiple filesystems using the proc generic infrastructure
+Subject: [PATCH 4/7] proc: Make /proc/net it's own filesystem
 X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
 X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -45,121 +47,433 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-- Implement proc_create_root to create a generic root directory.
-- Factor out release_proc_entry so that we can free a generic root directory.
-- Remove static from proc_sops so that we can access it in other files
-  implementing a proc generic filesystem.
+Make the VFS happy with /proc/net by making it it's own
+filesystem avoiding issues with hard links to directories
+and other silliness that confuse the vfs today.
+
+We preserve backwards compatibility by automatically
+mounting /proc/self/net and marking it as a shrinkable
+mount so userspace doesn't need to care about it.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/proc/generic.c  |   30 +++++++++++++++++++++++++++---
- fs/proc/inode.c    |    2 +-
- fs/proc/internal.h |    3 +++
- 3 files changed, 31 insertions(+), 4 deletions(-)
+ fs/proc/base.c              |    6 +-
+ fs/proc/proc_net.c          |  212 +++++++++++++++++++++++++++++++------------
+ include/linux/magic.h       |    1 +
+ include/net/net_namespace.h |    1 +
+ security/selinux/hooks.c    |   28 +++++-
+ 5 files changed, 183 insertions(+), 65 deletions(-)
 
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 60a359b..8669cf6 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -532,7 +532,6 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
- 			dp->proc_fops = &proc_dir_operations;
- 			dp->proc_iops = &proc_dir_inode_operations;
- 		}
--		dir->nlink++;
- 	} else if (S_ISLNK(dp->mode)) {
- 		if (dp->proc_iops == NULL)
- 			dp->proc_iops = &proc_link_inode_operations;
-@@ -555,6 +554,8 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
- 	dp->next = dir->subdir;
- 	dp->parent = dir;
- 	dir->subdir = dp;
-+	if (S_ISDIR(dp->mode))
-+		dir->nlink++;
- 	spin_unlock(&proc_subdir_lock);
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 486cf3f..9a68fa4 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -128,6 +128,10 @@ struct pid_entry {
+ 	NOD(NAME, (S_IFREG|(MODE)), 			\
+ 		NULL, &proc_single_file_operations,	\
+ 		{ .proc_show = &proc_##OTYPE } )
++#define MNT(NAME, MODE, OTYPE) 				\
++	NOD(NAME, (S_IFDIR|(MODE)), 			\
++		&proc_##OTYPE##_inode_operations, NULL,	\
++		{} )
  
- 	return 0;
-@@ -599,6 +600,24 @@ static struct proc_dir_entry *__proc_create(struct proc_dir_entry **parent,
- 	return ent;
- }
+ /*
+  * Count the number of hardlinks for the pid_entry table, excluding the .
+@@ -2453,7 +2457,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	DIR("fd",         S_IRUSR|S_IXUSR, fd),
+ 	DIR("fdinfo",     S_IRUSR|S_IXUSR, fdinfo),
+ #ifdef CONFIG_NET
+-	DIR("net",        S_IRUGO|S_IXUGO, net),
++	MNT("net",        S_IRUGO|S_IXUGO, net),
+ #endif
+ 	REG("environ",    S_IRUSR, environ),
+ 	INF("auxv",       S_IRUSR, pid_auxv),
+diff --git a/fs/proc/proc_net.c b/fs/proc/proc_net.c
+index 7bc296f..57e0f22 100644
+--- a/fs/proc/proc_net.c
++++ b/fs/proc/proc_net.c
+@@ -21,11 +21,13 @@
+ #include <linux/smp_lock.h>
+ #include <linux/mount.h>
+ #include <linux/nsproxy.h>
++#include <linux/namei.h>
+ #include <net/net_namespace.h>
+ #include <linux/seq_file.h>
  
-+struct proc_dir_entry *proc_create_root(void)
-+{
-+	struct proc_dir_entry *ent, *parent = NULL;
-+
-+	ent = __proc_create(&parent, "..", S_IFDIR | S_IRUGO | S_IXUGO, 2);
-+	if (ent) {
-+		ent->proc_fops = &proc_dir_operations;
-+		ent->proc_iops = &proc_dir_inode_operations;
-+		ent->low_ino = get_inode_number();
-+		ent->parent = ent;
-+		if (!ent->low_ino) {
-+			kfree(ent);
-+			ent = NULL;
-+		}
-+	}
-+	return ent;
-+}
-+
- struct proc_dir_entry *proc_symlink(const char *name,
- 		struct proc_dir_entry *parent, const char *dest)
+ #include "internal.h"
+ 
++static struct file_system_type proc_net_fs_type;
+ 
+ static struct net *get_proc_net(const struct inode *inode)
  {
-@@ -758,6 +777,8 @@ void remove_proc_entry(const char *name, struct proc_dir_entry *parent)
- 			de = *p;
- 			*p = de->next;
- 			de->next = NULL;
-+			if (S_ISDIR(de->mode))
-+				parent->nlink--;
- 			break;
- 		}
- 	}
-@@ -765,6 +786,11 @@ void remove_proc_entry(const char *name, struct proc_dir_entry *parent)
- 	if (!de)
- 		return;
- 
-+	release_proc_entry(de);
-+}
-+
-+void release_proc_entry(struct proc_dir_entry *de)
-+{
- 	spin_lock(&de->pde_unload_lock);
- 	/*
- 	 * Stop accepting new callers into module. If you're
-@@ -800,8 +826,6 @@ continue_removing:
- 	}
- 	spin_unlock(&de->pde_unload_lock);
- 
--	if (S_ISDIR(de->mode))
--		parent->nlink--;
- 	de->nlink = 0;
- 	WARN(de->subdir, KERN_WARNING "%s: removing non-empty directory "
- 			"'%s/%s', leaking at least '%s'\n", __func__,
-diff --git a/fs/proc/inode.c b/fs/proc/inode.c
-index 2543fd0..f3f81e2 100644
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -115,7 +115,7 @@ void __init proc_init_inodecache(void)
- 					     init_once);
+@@ -118,65 +120,60 @@ static struct net *get_proc_task_net(struct inode *dir)
+ 	return net;
  }
  
--static const struct super_operations proc_sops = {
-+const struct super_operations proc_sops = {
- 	.alloc_inode	= proc_alloc_inode,
- 	.destroy_inode	= proc_destroy_inode,
- 	.drop_inode	= generic_delete_inode,
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 2a8eabb..6fe00ff 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -86,6 +86,9 @@ struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *ino,
- 		struct dentry *dentry);
- int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
- 		filldir_t filldir);
-+struct proc_dir_entry *proc_create_root(void);
-+void release_proc_entry(struct proc_dir_entry *de);
-+extern const struct super_operations proc_sops;
+-static struct dentry *proc_tgid_net_lookup(struct inode *dir,
+-		struct dentry *dentry, struct nameidata *nd)
++void *proc_net_follow_link(struct dentry *dentry, struct nameidata *nd)
+ {
+-	struct dentry *de;
++	/* Follow to a mount point of the proper network namespace.
++	 */
++	struct vfsmount *mnt;
+ 	struct net *net;
+-
+-	de = ERR_PTR(-ENOENT);
+-	net = get_proc_task_net(dir);
+-	if (net != NULL) {
+-		de = proc_lookup_de(net->proc_net, dir, dentry);
+-		put_net(net);
++	int err = -ENOENT;
++
++	/* Which network namespace? */
++	net = get_proc_task_net(dentry->d_inode);
++	if (!net)
++		goto out_err;
++
++	/* Create a new mount. */
++	mnt = kern_mount_data(&proc_net_fs_type, net);
++	if (IS_ERR(mnt))
++		goto out_err;
++
++	dput(nd->path.dentry);
++	nd->path.dentry = dget(dentry);
++
++	/* Add mnt the mount namespace */
++	err = do_add_mount(mntget(mnt), &nd->path, MNT_SHRINKABLE,
++			   &proc_automounts);
++	if (err < 0) {
++		mntput(mnt);
++		if (err == -EBUSY)
++			goto out_follow;
++		goto out_err;
+ 	}
+-	return de;
+-}
+-
+-static int proc_tgid_net_getattr(struct vfsmount *mnt, struct dentry *dentry,
+-		struct kstat *stat)
+-{
+-	struct inode *inode = dentry->d_inode;
+-	struct net *net;
+-
+-	net = get_proc_task_net(inode);
+-
+-	generic_fillattr(inode, stat);
+-
+-	if (net != NULL) {
+-		stat->nlink = net->proc_net->nlink;
+-		put_net(net);
+-	}
+-
+-	return 0;
++	/* Place the mnt on path and return it to the caller */
++	err = 0;
++	path_put(&nd->path);
++	nd->path.mnt = mnt;
++	nd->path.dentry = dget(mnt->mnt_root);
++	put_net(net);
++out:
++	return ERR_PTR(err);
++out_err:
++	path_put(&nd->path);
++	goto out;
++out_follow:
++	/* We raced with ourselves so just walk the mounts */
++	while (d_mountpoint(nd->path.dentry) &&
++		follow_down(&nd->path.mnt, &nd->path.dentry))
++		;
++	err = 0;
++	goto out;
+ }
  
- struct pde_opener {
- 	struct inode *inode;
+ const struct inode_operations proc_net_inode_operations = {
+-	.lookup		= proc_tgid_net_lookup,
+-	.getattr	= proc_tgid_net_getattr,
+-};
+-
+-static int proc_tgid_net_readdir(struct file *filp, void *dirent,
+-		filldir_t filldir)
+-{
+-	int ret;
+-	struct net *net;
+-
+-	ret = -EINVAL;
+-	net = get_proc_task_net(filp->f_path.dentry->d_inode);
+-	if (net != NULL) {
+-		ret = proc_readdir_de(net->proc_net, filp, dirent, filldir);
+-		put_net(net);
+-	}
+-	return ret;
+-}
+-
+-const struct file_operations proc_net_operations = {
+-	.read		= generic_read_dir,
+-	.readdir	= proc_tgid_net_readdir,
++	.follow_link	= proc_net_follow_link,
+ };
+ 
+-
+ struct proc_dir_entry *proc_net_fops_create(struct net *net,
+ 	const char *name, mode_t mode, const struct file_operations *fops)
+ {
+@@ -190,21 +187,95 @@ void proc_net_remove(struct net *net, const char *name)
+ }
+ EXPORT_SYMBOL_GPL(proc_net_remove);
+ 
++
++static int proc_net_fill_super(struct super_block *sb)
++{
++	struct net *net = sb->s_fs_info;
++	struct proc_dir_entry *netd = net->proc_net;
++	struct inode *root_inode = NULL;
++
++	sb->s_flags |= MS_NODIRATIME | MS_NOSUID | MS_NOEXEC;
++	sb->s_blocksize = PAGE_SIZE;
++	sb->s_blocksize_bits = PAGE_SHIFT;
++	sb->s_magic = PROC_NET_SUPER_MAGIC;
++	sb->s_op = &proc_sops;
++	sb->s_time_gran = 1;
++
++	de_get(netd);
++	root_inode = proc_get_inode(sb, netd->low_ino, netd);
++	if (!root_inode)
++		goto out_no_root;
++	root_inode->i_uid = 0;
++	root_inode->i_gid = 0;
++	sb->s_root = d_alloc_root(root_inode);
++	if (!sb->s_root)
++		goto out_no_root;
++	return 0;
++
++out_no_root:
++	printk("%s: get root inode failed\n", __func__);
++	iput(root_inode);
++	de_put(netd);
++	return -ENOMEM;
++}
++
++static int proc_net_test_super(struct super_block *sb, void *data)
++{
++	return sb->s_fs_info == data;
++}
++
++static int proc_net_set_super(struct super_block *sb, void *data)
++{
++	sb->s_fs_info = data;
++	return set_anon_super(sb, NULL);
++}
++
++static int proc_net_get_sb(struct file_system_type *fs_type,
++	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	struct super_block *sb;
++
++	if (!(flags & MS_KERNMOUNT))
++		data = current->nsproxy->net_ns;
++
++	sb = sget(fs_type, proc_net_test_super, proc_net_set_super, data);
++	if (IS_ERR(sb))
++		return PTR_ERR(sb);
++
++	if (!sb->s_root) {
++		int err;
++		sb->s_flags = flags;
++		err = proc_net_fill_super(sb);
++		if (err) {
++			up_write(&sb->s_umount);
++			deactivate_super(sb);
++			return err;
++		}
++
++		sb->s_flags |= MS_ACTIVE;
++	}
++
++	return simple_set_mnt(mnt, sb);
++}
++
++static struct file_system_type proc_net_fs_type = {
++	.name		= "proc/net",
++	.get_sb		= proc_net_get_sb,
++	.kill_sb	= kill_litter_super,
++};
++
+ static __net_init int proc_net_ns_init(struct net *net)
+ {
+ 	struct proc_dir_entry *netd, *net_statd;
++	struct vfsmount *mnt;
+ 	int err;
+ 
+ 	err = -ENOMEM;
+-	netd = kzalloc(sizeof(*netd), GFP_KERNEL);
++	netd = proc_create_root();
+ 	if (!netd)
+ 		goto out;
+ 
+ 	netd->data = net;
+-	netd->nlink = 2;
+-	netd->name = "net";
+-	netd->namelen = 3;
+-	netd->parent = &proc_root;
+ 
+ 	err = -EEXIST;
+ 	net_statd = proc_net_mkdir(net, "stat", netd);
+@@ -213,8 +284,17 @@ static __net_init int proc_net_ns_init(struct net *net)
+ 
+ 	net->proc_net = netd;
+ 	net->proc_net_stat = net_statd;
++
++	mnt = kern_mount_data(&proc_net_fs_type, net);
++	if (IS_ERR(mnt))
++		goto free_stat;
++
++	net->proc_mnt = mnt;
++
+ 	return 0;
+ 
++free_stat:
++	remove_proc_entry("stat", netd);
+ free_net:
+ 	kfree(netd);
+ out:
+@@ -224,7 +304,14 @@ out:
+ static __net_exit void proc_net_ns_exit(struct net *net)
+ {
+ 	remove_proc_entry("stat", net->proc_net);
+-	kfree(net->proc_net);
++	release_proc_entry(net->proc_net);
++	/* We won't be looking up this super block
++	 * any more so set s_fs_info to NULL to ensure
++	 * it doesn't conflict with network namespaces
++	 * allocated in the future at the same address.
++	 */
++	net->proc_mnt->mnt_sb->s_fs_info = NULL;
++	mntput(net->proc_mnt);
+ }
+ 
+ static struct pernet_operations __net_initdata proc_net_ns_ops = {
+@@ -234,7 +321,16 @@ static struct pernet_operations __net_initdata proc_net_ns_ops = {
+ 
+ int __init proc_net_init(void)
+ {
+-	proc_symlink("net", NULL, "self/net");
++	struct proc_dir_entry *ent;
++	int err;
++
++	ent = proc_symlink("net", NULL, "self/net");
++	if (!ent)
++		return -EEXIST;
++
++	err = register_filesystem(&proc_net_fs_type);
++	if (err)
++		return err;
+ 
+ 	return register_pernet_subsys(&proc_net_ns_ops);
+ }
+diff --git a/include/linux/magic.h b/include/linux/magic.h
+index f7f3fdd..2b31c02 100644
+--- a/include/linux/magic.h
++++ b/include/linux/magic.h
+@@ -30,6 +30,7 @@
+ #define NFS_SUPER_MAGIC		0x6969
+ #define OPENPROM_SUPER_MAGIC	0x9fa1
+ #define PROC_SUPER_MAGIC	0x9fa0
++#define PROC_NET_SUPER_MAGIC	0x706e6574
+ #define QNX4_SUPER_MAGIC	0x002f		/* qnx4 fs detection */
+ 
+ #define REISERFS_SUPER_MAGIC	0x52654973	/* used by gcc */
+diff --git a/include/net/net_namespace.h b/include/net/net_namespace.h
+index 700c53a..77aba2b 100644
+--- a/include/net/net_namespace.h
++++ b/include/net/net_namespace.h
+@@ -40,6 +40,7 @@ struct net {
+ 
+ 	struct proc_dir_entry 	*proc_net;
+ 	struct proc_dir_entry 	*proc_net_stat;
++	struct vfsmount		*proc_mnt;
+ 
+ #ifdef CONFIG_SYSCTL
+ 	struct ctl_table_set	sysctls;
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index f85597a..b38a2df 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -667,7 +667,7 @@ static int selinux_set_mnt_opts(struct super_block *sb,
+ 		goto out;
+ 	}
+ 
+-	if (strcmp(sb->s_type->name, "proc") == 0)
++	if (strncmp(sb->s_type->name, "proc", 4) == 0)
+ 		sbsec->proc = 1;
+ 
+ 	/* Determine the labeling behavior to use for this filesystem type. */
+@@ -1116,16 +1116,18 @@ static inline u16 socket_type_to_security_class(int family, int type, int protoc
+ }
+ 
+ #ifdef CONFIG_PROC_FS
+-static int selinux_proc_get_sid(struct proc_dir_entry *de,
++static int selinux_proc_get_sid(struct super_block *sb,
++				struct proc_dir_entry *de,
+ 				u16 tclass,
+ 				u32 *sid)
+ {
+ 	int buflen, rc;
+ 	char *buffer, *path, *end;
+ 
++	rc = -ENOMEM;
+ 	buffer = (char *)__get_free_page(GFP_KERNEL);
+ 	if (!buffer)
+-		return -ENOMEM;
++		goto out;
+ 
+ 	buflen = PAGE_SIZE;
+ 	end = buffer+buflen;
+@@ -1136,19 +1138,32 @@ static int selinux_proc_get_sid(struct proc_dir_entry *de,
+ 	while (de && de != de->parent) {
+ 		buflen -= de->namelen + 1;
+ 		if (buflen < 0)
+-			break;
++			goto out_free;
+ 		end -= de->namelen;
+ 		memcpy(end, de->name, de->namelen);
+ 		*--end = '/';
+ 		path = end;
+ 		de = de->parent;
+ 	}
++	if (strcmp(sb->type->name, "proc") != 0) {
++		const char *name = sb->type->name + 4;
++		int namelen = strlen(name);
++		buflen -= namelen;
++		if (buflen < 0)
++			goto out_free;
++		end -= namelen;
++		memcpy(end, name);
++		path = end;
++	}
+ 	rc = security_genfs_sid("proc", path, tclass, sid);
++out_free:
+ 	free_page((unsigned long)buffer);
++out:
+ 	return rc;
+ }
+ #else
+-static int selinux_proc_get_sid(struct proc_dir_entry *de,
++static int selinux_proc_get_sid(struct super_block *sb,
++				struct proc_dir_entry *de,
+ 				u16 tclass,
+ 				u32 *sid)
+ {
+@@ -1297,7 +1312,8 @@ static int inode_doinit_with_dentry(struct inode *inode, struct dentry *opt_dent
+ 			struct proc_inode *proci = PROC_I(inode);
+ 			if (proci->pde) {
+ 				isec->sclass = inode_mode_to_security_class(inode->i_mode);
+-				rc = selinux_proc_get_sid(proci->pde,
++				rc = selinux_proc_get_sid(inode->i_sb,
++							  proci->pde,
+ 							  isec->sclass,
+ 							  &sid);
+ 				if (rc)
 -- 
 1.5.3.rc6.17.g1911
 
