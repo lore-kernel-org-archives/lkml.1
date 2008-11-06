@@ -1,113 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZDGQRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbZD3Pmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZDGQRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 12:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZDGQRB
+	id S932292AbZD3Pmc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Apr 2009 11:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932287AbZD3PmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 12:17:01 -0400
-Received: from gimli.pxnet.com ([195.227.45.7]:40220 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755172AbZDGQRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 12:17:01 -0400
-From: Tilman Schmidt <tilman@imap.cc>
-To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Date: Mon, 17 Nov 2008 14:01:32 +0100
-Subject: [PATCH v2] update Documentation/isdn/00-INDEX
-Message-Id: <20090407161650.51200111811@xenon.ts.pxnet.com>
+	Thu, 30 Apr 2009 11:42:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:52784 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932186AbZD3PmA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Apr 2009 11:42:00 -0400
+Message-Id: <1e35fcf64449a0738344e4a80649c51d9d7add87.1241105648.git.arnd@arndb.de>
+In-Reply-To: <cover.1241105648.git.arnd@arndb.de>
+References: <cover.1241105648.git.arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 6 Nov 2008 13:24:29 +0100
+Subject: [PATCH 03/27] asm-generic: make pci.h usable directly
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org
+X-Provags-ID: V01U2FsdGVkX1+4BQitHrd72KmHeAF7E+ILDHNyniph2p789g3
+ EflO7+lacIjSr77L5YBzMmTGp2nBC9UVqsackhXkQTmaGkb+dl
+ 3vyEaXqZZmTOSX85Q5CpQ==
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+Some generic code is using the horribly misnamed PCI_DMA_BUS_IS_PHYS
+from asm/pci.h. This makes sure that an architecture without PCI
+support does not have to define this itself but can rely on the
+asm-generic version.
 
-sorry for the mistake in the preceding mail. That was an old,
-incomplete version of the patch which won't even apply to the
-current tree. Please disregard and use this one instead.
-
-Thanks,
-Tilman
-
-ISDN: update Documentation/isdn/00-INDEX
-
-After the merging of mISDN, state which files refer only to the
-old isdn4linux subsystem. Also add a few missing files and sort
-alphabetically.
-
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 ---
- Documentation/isdn/00-INDEX |   45 ++++++++++++++++++++++++------------------
- 1 files changed, 26 insertions(+), 19 deletions(-)
+ arch/frv/include/asm/pci.h  |   13 +++----------
+ arch/m32r/include/asm/pci.h |    2 --
+ include/asm-generic/pci.h   |    8 ++++++++
+ 3 files changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/isdn/00-INDEX b/Documentation/isdn/00-INDEX
-index 9fee5f2..33543ac 100644
---- a/Documentation/isdn/00-INDEX
-+++ b/Documentation/isdn/00-INDEX
-@@ -2,28 +2,20 @@
- 	- this file (info on ISDN implementation for Linux)
- CREDITS
- 	- list of the kind folks that brought you this stuff.
-+HiSax.cert
-+	- information about the ITU approval certification of the HiSax driver.
- INTERFACE
--	- description of Linklevel and Hardwarelevel ISDN interface.
-+	- description of isdn4linux Link Level and Hardware Level interfaces.
-+INTERFACE.fax
-+	- description of the fax subinterface of isdn4linux.
- README
- 	- general info on what you need and what to do for Linux ISDN.
- README.FAQ
- 	- general info for FAQ.
--README.audio
--	- info for running audio over ISDN.
--README.fax
--	- info for using Fax over ISDN.
--README.icn
--	- info on the ICN-ISDN-card and its driver.
- README.HiSax
- 	- info on the HiSax driver which replaces the old teles.
--README.hfc-pci
--	- info on hfc-pci based cards.
--README.pcbit
--	- info on the PCBIT-D ISDN adapter and driver.
--README.syncppp
--	- info on running Sync PPP over ISDN.
--syncPPP.FAQ
--	- frequently asked questions about running PPP over ISDN.
-+README.audio
-+	- info for running audio over ISDN.
- README.avmb1
- 	- info on driver for AVM-B1 ISDN card.
- README.act2000
-@@ -34,10 +26,25 @@ README.concap
- 	- info on "CONCAP" encapsulation protocol interface used for X.25.
- README.diversion
- 	- info on module for isdn diversion services.
-+README.fax
-+	- info for using Fax over ISDN.
-+README.gigaset
-+	- info on the drivers for Siemens Gigaset ISDN adapters
-+README.hfc-pci
-+	- info on hfc-pci based cards.
-+README.hysdn
-+        - info on driver for Hypercope active HYSDN cards
-+README.icn
-+	- info on the ICN-ISDN-card and its driver.
-+README.mISDN
-+	- info on the Modular ISDN subsystem (mISDN)
-+README.pcbit
-+	- info on the PCBIT-D ISDN adapter and driver.
- README.sc
- 	- info on driver for Spellcaster cards.
-+README.syncppp
-+	- info on running Sync PPP over ISDN.
- README.x25
--    _ info for running X.25 over ISDN.
--README.hysdn
--        - info on driver for Hypercope active HYSDN cards
-- 
-+	- info on running X.25 over ISDN.
-+syncPPP.FAQ
-+	- frequently asked questions about running PPP over ISDN.
+diff --git a/arch/frv/include/asm/pci.h b/arch/frv/include/asm/pci.h
+index 585d9b4..3ce227b 100644
+--- a/arch/frv/include/asm/pci.h
++++ b/arch/frv/include/asm/pci.h
+@@ -10,8 +10,8 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
+-#ifndef ASM_PCI_H
+-#define	ASM_PCI_H
++#ifndef _ASM_FRV_PCI_H
++#define _ASM_FRV_PCI_H
+ 
+ #include <linux/mm.h>
+ #include <asm/scatterlist.h>
+@@ -43,12 +43,6 @@ extern void pci_free_consistent(struct pci_dev *hwdev, size_t size,
+ /* Return the index of the PCI controller for device PDEV. */
+ #define pci_controller_num(PDEV)	(0)
+ 
+-/* The PCI address space does equal the physical memory
+- * address space.  The networking and block device layers use
+- * this boolean for bounce buffer decisions.
+- */
+-#define PCI_DMA_BUS_IS_PHYS	(1)
+-
+ /* pci_unmap_{page,single} is a nop so... */
+ #define DECLARE_PCI_UNMAP_ADDR(ADDR_NAME)
+ #define DECLARE_PCI_UNMAP_LEN(LEN_NAME)
+@@ -114,5 +108,4 @@ static inline void pci_dma_sync_sg(struct pci_dev *hwdev,
+ 				    sg_dma_address(&sg[i])+sg_dma_len(&sg[i]));
+ }
+ 
+-
+-#endif
++#endif /* _ASM_FRV_PCI_H */
+diff --git a/arch/m32r/include/asm/pci.h b/arch/m32r/include/asm/pci.h
+index fe785d1..07d3834 100644
+--- a/arch/m32r/include/asm/pci.h
++++ b/arch/m32r/include/asm/pci.h
+@@ -3,6 +3,4 @@
+ 
+ #include <asm-generic/pci.h>
+ 
+-#define PCI_DMA_BUS_IS_PHYS	(1)
+-
+ #endif /* _ASM_M32R_PCI_H */
+diff --git a/include/asm-generic/pci.h b/include/asm-generic/pci.h
+index c36a77d..515c6e2 100644
+--- a/include/asm-generic/pci.h
++++ b/include/asm-generic/pci.h
+@@ -52,4 +52,12 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
+ }
+ #endif /* HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ */
+ 
++/*
++ * By default, assume that no iommu is in use and that the PCI
++ * space is mapped to address physical 0.
++ */
++#ifndef PCI_DMA_BUS_IS_PHYS
++#define PCI_DMA_BUS_IS_PHYS	(1)
+ #endif
++
++#endif /* _ASM_GENERIC_PCI_H */
 -- 
-1.6.2.1.214.ge986c
+1.5.6.3
+
 
