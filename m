@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126AbYKFWYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbYKFW3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754126AbYKFWYk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 17:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYKFWYQ
+	id S1753370AbYKFW3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYKFW3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 17:24:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48796 "EHLO mx2.mail.elte.hu"
+	Thu, 6 Nov 2008 17:29:06 -0500
+Received: from gw.goop.org ([64.81.55.164]:60308 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYKFWYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 17:24:15 -0500
-Date: Thu, 6 Nov 2008 23:23:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ben Hutchings <bhutchings@solarflare.com>
-Subject: Re: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
-Message-ID: <20081106222347.GB7505@elte.hu>
-References: <4910C845.4060909@kernel.org> <20081106062608.GC6384@elte.hu> <86802c440811052242taefec24ndf661b1c65ca457e@mail.gmail.com> <4912943C.2090801@zytor.com> <1226008798.3023.23.camel@calx>
+	id S1751046AbYKFW3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 17:29:05 -0500
+Message-ID: <49136FAE.6070308@goop.org>
+Date: Thu, 06 Nov 2008 14:29:02 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226008798.3023.23.camel@calx>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ian Campbell <Ian.Campbell@citrix.com>,
+       "Christopher S. Aker" <caker@theshore.net>,
+       xen devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] 2.6.27 - SMP enabled, but only 1 CPU
+References: <48F3BC99.5040409@theshore.net> <490F5F50.7020704@theshore.net> <4910AD00.7040605@theshore.net> <4911BC52.7040905@theshore.net> <1225994697.12607.837.camel@zakaz.uk.xensource.com> <49134257.4000404@goop.org> <20081106211639.GA24579@elte.hu> <49136168.3040604@goop.org> <20081106213344.GF24579@elte.hu> <49136628.1020000@goop.org> <20081106222039.GA7505@elte.hu>
+In-Reply-To: <20081106222039.GA7505@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> ah! asm-generic was missed by my grep. (and i suspect Jan missed it 
+> too)
+>   
 
-* Matt Mackall <mpm@selenic.com> wrote:
+cscope is your friend.
 
-> On Wed, 2008-11-05 at 22:52 -0800, H. Peter Anvin wrote:
-> > Yinghai Lu wrote:
-> > >>
-> > >> Clean-up sidenote: i think we can now remove the VISWS #ifdef portion
-> > >> for good? Mind sending a patch for that too?
-> > > 
-> > > could remove CONFIG_PARAVIRT too.. Jeremy?
-> > > 
-> > 
-> > This seems like a bad idea, especially for the embedded guys.
-> 
-> I'd actually really like to see us move to dynamically-allocated irq 
-> tables as they're currently huge. But I haven't dug into it deeply 
-> enough to see what sort of gotchas are involved.
+>> Subject: xen: fix use of pgd_page now that it really does return a page
+>>     
+>
+> applied to tip/x86/urgent, thanks!
+>   
 
-sparseirq (== dynamic IRQ tables) is all implemented already, and most 
-of the details except the final feature-enabler are upstream already.
-
-	Ingo
+Thanks,
+    J
