@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYKFWdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbYKFWhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbYKFWdr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 17:33:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYKFWdi
+	id S1753392AbYKFWhn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYKFWhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 17:33:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45109 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750909AbYKFWdh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 17:33:37 -0500
+	Thu, 6 Nov 2008 17:37:33 -0500
+Received: from waste.org ([66.93.16.53]:52869 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750994AbYKFWhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 17:37:33 -0500
+Subject: Re: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
+From: Matt Mackall <mpm@selenic.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Ken Chen <kenchen@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [patch] sched: fix single-depth wchan output
-From: Andi Kleen <andi@firstfloor.org>
-References: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com>
-	<20081106061125.GA6384@elte.hu>
-	<b040c32a0811052216i4594a094gdcee3ae280cddec7@mail.gmail.com>
-	<20081106063012.GA15731@elte.hu>
-Date: Thu, 06 Nov 2008 23:33:42 +0100
-In-Reply-To: <20081106063012.GA15731@elte.hu> (Ingo Molnar's message of "Thu, 6 Nov 2008 07:30:12 +0100")
-Message-ID: <87mygco56h.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ben Hutchings <bhutchings@solarflare.com>
+In-Reply-To: <20081106222347.GB7505@elte.hu>
+References: <4910C845.4060909@kernel.org> <20081106062608.GC6384@elte.hu>
+	 <86802c440811052242taefec24ndf661b1c65ca457e@mail.gmail.com>
+	 <4912943C.2090801@zytor.com> <1226008798.3023.23.camel@calx>
+	 <20081106222347.GB7505@elte.hu>
+Content-Type: text/plain
+Date: Thu, 06 Nov 2008 16:36:09 -0600
+Message-Id: <1226010969.3023.29.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
->
-> are you interested in adding /proc/<PID>/stacktrace? If yes then we 
-> could remove fp generation for 64-bit right now and add your 
-> stacktrace patch when you are done with it.
+On Thu, 2008-11-06 at 23:23 +0100, Ingo Molnar wrote:
+> * Matt Mackall <mpm@selenic.com> wrote:
+> 
+> > On Wed, 2008-11-05 at 22:52 -0800, H. Peter Anvin wrote:
+> > > Yinghai Lu wrote:
+> > > >>
+> > > >> Clean-up sidenote: i think we can now remove the VISWS #ifdef portion
+> > > >> for good? Mind sending a patch for that too?
+> > > > 
+> > > > could remove CONFIG_PARAVIRT too.. Jeremy?
+> > > > 
+> > > 
+> > > This seems like a bad idea, especially for the embedded guys.
+> > 
+> > I'd actually really like to see us move to dynamically-allocated irq 
+> > tables as they're currently huge. But I haven't dug into it deeply 
+> > enough to see what sort of gotchas are involved.
+> 
+> sparseirq (== dynamic IRQ tables) is all implemented already, and most 
+> of the details except the final feature-enabler are upstream already.
 
-FWIW there used to be a patch floating around doing that a couple of
-years ago and even used in some distros. But the big problem was if
-someone read all of proc it took a lot of CPU time to do all the stack
-tracing. This also was triggerable from non root.
-
-So yes it's useful, but it can be costly.
-
--Andi
+Thanks for the pointer, I'd missed this going by.
 
 -- 
-ak@linux.intel.com
+Mathematics is the supreme nostalgia of our time.
+
