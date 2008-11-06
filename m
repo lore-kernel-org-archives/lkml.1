@@ -1,100 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYKFUfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbYKFUhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbYKFUfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 15:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYKFUfh
+	id S1753122AbYKFUhF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbYKFUgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 15:35:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50513 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751219AbYKFUfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 15:35:36 -0500
-Date: Thu, 6 Nov 2008 21:35:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
-Message-ID: <20081106203520.GD3578@elte.hu>
-References: <b040c32a0811061101j4a93a0f2pe30c0598726acd08@mail.gmail.com> <20081106195107.GA17545@x200.localdomain> <b040c32a0811061212x2630fda9xdd5adfdf3105044d@mail.gmail.com>
+	Thu, 6 Nov 2008 15:36:55 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:60546 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYKFUgx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:36:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=akz/lscRH8lq61c81Vv118tzOD4DwZKok8zumDQc/ibrv2CIsJpd/IcFqUp16eQey
+	joeWBdc9l0w/tJSaq208g==
+Date: Thu, 6 Nov 2008 12:35:03 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de,
+       Christoph Lameter <cl@linux-foundation.org>, dfults@sgi.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       Paul Menage <menage@google.com>, Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: [patch 0/7] cpuset writeback throttling
+In-Reply-To: <20081106103455.f3277a72.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0811061220370.7767@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0810292337170.23858@chino.kir.corp.google.com> <1225831988.7803.1939.camel@twins> <20081104131637.68fbe055.akpm@linux-foundation.org> <1225833710.7803.1993.camel@twins> <20081104135004.f1717fcf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811041601100.5077@quilx.com> <20081104143534.b5c16147.akpm@linux-foundation.org> <Pine.LNX.4.64.0811041648350.6254@quilx.com> <20081104153610.bbfd5ed8.akpm@linux-foundation.org> <Pine.LNX.4.64.0811042036000.31167@quilx.com>
+ <20081104190505.769b93ec.akpm@linux-foundation.org> <Pine.LNX.4.64.0811050747040.11867@quilx.com> <20081105104145.abd6fc91.akpm@linux-foundation.org> <Pine.LNX.4.64.0811051415360.31450@quilx.com> <20081105123150.d6628805.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811051434300.31450@quilx.com> <20081105125603.36d0c222.akpm@linux-foundation.org> <alpine.DEB.2.00.0811051347240.21365@chino.kir.corp.google.com> <20081106103455.f3277a72.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0811061212x2630fda9xdd5adfdf3105044d@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 6 Nov 2008, KAMEZAWA Hiroyuki wrote:
 
-* Ken Chen <kenchen@google.com> wrote:
-
-> On Thu, Nov 6, 2008 at 11:51 AM, Alexey Dobriyan wrote:
-> > Please, name handler proc_pid_stack following current convention.
-> > And drop space before casts.
+> > Agreed.  This patchset is admittedly from a different time when cpusets 
+> > was the only relevant extension that needed to be done.
+> > 
+> BTW, what is the problem this patch wants to fix ?
+>   1. avoid slow-down of memory allocation by triggering write-out earlier.
+>   2. avoid OOM by throttoling dirty pages.
 > 
-> OK.  handler name changed.  For the space between cast, it looks 
-> like there are different styles in the code base, either with or 
-> without. I dropped the space since I don't have strong opinion one 
-> way or the other.
+> About 1, memcg's diry_ratio can help if mounted as
+>    mount -t cgroup none /somewhere/  -o cpuset,memory
+> (If the user can accept overheads of memcg.)
+> If implemented.
+> 
 
-best way is to run scripts/checkpatch.pl on your patch, that will 
-remind you of any potential style issues.
+Yeah, it needs to be generalized to its own cgroup so that it doesn't 
+depend on both CONFIG_CPUSETS or CONFIG_CGROUP_MEM_RES_CTLR.  If we get 
+the dirty and writeback page statistics added to memcg, this becomes much 
+simpler.
 
-> Also wrap proc_pid_stack() inside CONFIG_STACKTRACE to fix compile 
-> time error when config option is not selected.
+> About 2, A Google guy posted OOM handler cgroup to linux-mm.
+> 
 
-> +#ifdef CONFIG_STACKTRACE
-> +#define MAX_STACK_TRACE_DEPTH	32
+Yeah, this could enable one of the workarounds that Christoph earlier 
+described: the oom handler has the ability to notify userspace and allows 
+it to defer invoking the oom killer if there's an alternative way to 
+remedy the situation.  So the oom handler posted to linux-mm could work by 
+doing a sync anytime it ran low on memory, but the objective of this 
+patchset is different.
 
-How about 64 instead? (it's such a nice round number)
+The idea here is to implement per-cpuset (and now per-memcg) dirty and 
+background dirty ratios to avoid using the global sysctls.  This is 
+currently problematic for users of cpusets who divide their machine for 
+batches of tasks, usually for NUMA optimizations: a cpuset, for example, 
+can represent 40% of the system's memory and if the global dirty ratio is 
+set to 50%, we still won't begin writeback even if all the memory in the 
+cpuset is dirty.
 
-> +static int proc_pid_stack(struct task_struct *task, char *buffer)
-> +{
-> +	int i, len = 0;
-> +	unsigned long *entries;
-> +	struct stack_trace trace;
-> +
-> +	entries = kmalloc(sizeof(*entries) * MAX_STACK_TRACE_DEPTH, GFP_KERNEL);
-> +	if (!entries)
-> +		goto out;
-> +
-> +	trace.nr_entries = 0;
-> +	trace.max_entries = MAX_STACK_TRACE_DEPTH;
-> +	trace.entries = entries;
-> +	trace.skip = 0;
-> +
-> +	read_lock(&tasklist_lock);
-> +	save_stack_trace_tsk(task, &trace);
-> +	read_unlock(&tasklist_lock);
-> +
-> +	for (i = 0; i < trace.nr_entries; i++) {
-> +		len += sprintf(buffer + len, "[<%p>] %pS\n",
-> +				(void *)entries[i], (void *)entries[i]);
+> > If we are to support memcg-specific dirty ratios, that requires the 
+> > aforementioned statistics to be collected so that the calculation is even 
+> > possible.  The series at 
+> > 
+> > 	http://marc.info/?l=linux-kernel&m=122123225006571
+> > 	http://marc.info/?l=linux-kernel&m=122123241106902
+> > 
+> yes. we(memcg) need this kind of.
+> 
 
-hm, this looks like a potential buffer overflow - isnt 'buffer' here 
-only valid up to the next PAGE_SIZE boundary?
+Andrea, what's the status of the patch to add dirty and writeback 
+statistics to memcg?  I don't see it in the October 30 mmotm or any 
+followup discussion on it.
 
-> +	}
+> > is a step in that direction, although I'd prefer to see NR_UNSTABLE_NFS to 
+> > be extracted separately from MEM_CGROUP_STAT_FILE_DIRTY so 
+> > throttle_vm_writeout() can also use the new statistics.
+> > 
 
-> +	kfree(entries);
-> +out:
-> +	return len;
-
-Not sure about the error path convention here: in the !entries kmalloc 
-failure path, shouldnt we return -ENOMEM? Otherwise userspace will get 
-zero length and would retry again and again?
-
-Also, please rename 'out:' to 'error:' - to make it clear that it's an 
-error path.
-
-	Ingo
+Is this possible in a second version?
