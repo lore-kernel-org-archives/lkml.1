@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYKFWVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753427AbYKFWXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753197AbYKFWVR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 17:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYKFWU7
+	id S1753427AbYKFWXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbYKFWXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 17:20:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46159 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750974AbYKFWU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 17:20:58 -0500
-Date: Thu, 6 Nov 2008 23:20:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ian Campbell <Ian.Campbell@citrix.com>,
-       "Christopher S. Aker" <caker@theshore.net>,
-       xen devel <xen-devel@lists.xensource.com>,
-       Jan Beulich <jbeulich@novell.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] 2.6.27 - SMP enabled, but only 1 CPU
-Message-ID: <20081106222039.GA7505@elte.hu>
-References: <48F3BC99.5040409@theshore.net> <490F5F50.7020704@theshore.net> <4910AD00.7040605@theshore.net> <4911BC52.7040905@theshore.net> <1225994697.12607.837.camel@zakaz.uk.xensource.com> <49134257.4000404@goop.org> <20081106211639.GA24579@elte.hu> <49136168.3040604@goop.org> <20081106213344.GF24579@elte.hu> <49136628.1020000@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49136628.1020000@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Thu, 6 Nov 2008 17:23:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54808 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750962AbYKFWXI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 17:23:08 -0500
+Date: Thu, 6 Nov 2008 14:22:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
+Cc: pavel@suse.cz, trenn@suse.de, burman.yan@gmail.com, rpurdie@rpsys.net,
+       linux-kernel@vger.kernel.org, len.brown@intel.com, kasievers@suse.de,
+       hmh@hmh.eng.br
+Subject: Re: leds-hp-disk vs lis3lv02d
+Message-Id: <20081106142240.763e1276.akpm@linux-foundation.org>
+In-Reply-To: <49136561.1050907@tremplin-utc.net>
+References: <200810162255.m9GMtKj4001733@imap1.linux-foundation.org>
+	<4902F817.4050108@tremplin-utc.net>
+	<20081026174023.GA1847@ucw.cz>
+	<200810271345.04961.trenn@suse.de>
+	<20081106121405.GA1601@ucw.cz>
+	<49136561.1050907@tremplin-utc.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 06 Nov 2008 22:45:05 +0100
+__ric Piel <Eric.Piel@tremplin-utc.net> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> Andrew, is there anything preventing the merge of the lis3lv02d driver 
+> from your tree to Linus' one?
 
-> Ingo Molnar wrote:
->> where exactly is that use? My grep didnt show any users of pud_page().  
->> pud_page() was changed in an incompatible way, all users of it must be  
->> updated.
->>   
->
-> pgd_page() uses it in pgtable-nopud.h, so any users of pgd_page() 
-> also need to be looked at.  It so happens the only user is 
-> arch/x86/xen/mmu.c, which expects it to return the vaddr.  Fixed 
-> below.
-
-ah! asm-generic was missed by my grep. (and i suspect Jan missed it 
-too)
-
-> Subject: xen: fix use of pgd_page now that it really does return a page
-
-applied to tip/x86/urgent, thanks!
-
-	Ingo
+Nope.  I have a number of shiny new drivers which I plan to send in for
+2.6.28 (I sent an fbdev one this morning).  I need to get down and do a
+sweep to round tham all up.
