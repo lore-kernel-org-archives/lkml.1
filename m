@@ -1,86 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKFKtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYKFKz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbYKFKtY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 05:49:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYKFKtE
+	id S1754602AbYKFKz1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 05:55:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYKFKzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 05:49:04 -0500
-Received: from ns1.suse.de ([195.135.220.2]:59500 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754501AbYKFKtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 05:49:03 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix msr check in compat_sys_swapcontext
-References: <jeprlabbi6.fsf@sykes.suse.de>
-	<18706.16317.759662.855430@cargo.ozlabs.ibm.com>
-	<jey6zx9piz.fsf@sykes.suse.de>
-	<18706.51381.987014.370948@cargo.ozlabs.ibm.com>
-X-Yow: This is my WILLIAM BENDIX memorial CORNER where I worship William
- Bendix like a GOD!!
-Date: Thu, 06 Nov 2008 11:49:00 +0100
-In-Reply-To: <18706.51381.987014.370948@cargo.ozlabs.ibm.com> (Paul
-	Mackerras's message of "Thu, 6 Nov 2008 21:36:37 +1100")
-Message-ID: <jek5bh9lk3.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	Thu, 6 Nov 2008 05:55:11 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:47887 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbYKFKzJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 05:55:09 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
+Date: Thu, 06 Nov 2008 02:48:35 -0800
+In-Reply-To: <m1ej1p2l6u.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
+	of "Thu, 06 Nov 2008 02:38:49 -0800")
+Message-ID: <m1abcd2kqk.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH 2/7] proc: Implement support for automounts in task directories
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras <paulus@samba.org> writes:
 
-> Andreas Schwab writes:
->
->> Paul Mackerras <paulus@samba.org> writes:
->> 
->> > we need to use get_user, not __get_user, since we haven't done an
->> > access_ok() check on the address.
->> 
->> The address is always ok since its a compat pointer, see do_setcontext.
->
-> OK, since it's inside a CONFIG_PPC64 block.  I'll add a paragraph to
-> the patch description pointing that out.
+This is a genearl mechanism that is capable of removing
+any unused mounts on /proc in any directory.  As we flush
+the mounts when a processes dies this mechanism is tailored
+for flushing mounts in the per task and per task group
+directories.
 
-How about this:
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/proc/Makefile        |    1 +
+ fs/proc/automount.c     |   29 +++++++++++++++++++++++++++++
+ fs/proc/internal.h      |    3 +++
+ include/linux/proc_fs.h |    1 +
+ kernel/exit.c           |    1 +
+ 5 files changed, 35 insertions(+), 0 deletions(-)
+ create mode 100644 fs/proc/automount.c
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index a6a4310..b13abf3 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -941,9 +941,21 @@ long sys_swapcontext(struct ucontext __user *old_ctx,
- #ifdef CONFIG_PPC64
- 	unsigned long new_msr = 0;
- 
--	if (new_ctx &&
--	    get_user(new_msr, &new_ctx->uc_mcontext.mc_gregs[PT_MSR]))
--		return -EFAULT;
-+	if (new_ctx) {
-+		struct mcontext __user *mcp;
-+		u32 cmcp;
+diff --git a/fs/proc/Makefile b/fs/proc/Makefile
+index 63d9651..862a8fe 100644
+--- a/fs/proc/Makefile
++++ b/fs/proc/Makefile
+@@ -18,6 +18,7 @@ proc-y	+= meminfo.o
+ proc-y	+= stat.o
+ proc-y	+= uptime.o
+ proc-y	+= version.o
++proc-y	+= automount.o
+ proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysctl.o
+ proc-$(CONFIG_NET)		+= proc_net.o
+ proc-$(CONFIG_PROC_KCORE)	+= kcore.o
+diff --git a/fs/proc/automount.c b/fs/proc/automount.c
+new file mode 100644
+index 0000000..a1fabf2
+--- /dev/null
++++ b/fs/proc/automount.c
+@@ -0,0 +1,29 @@
++#include <linux/workqueue.h>
++#include <linux/mount.h>
++#include <linux/vfs.h>
++#include "internal.h"
 +
-+		/*
-+		 * Get pointer to the real mcontext.  No need for
-+		 * access_ok since we are dealing with compat
-+		 * pointers.
-+		 */
-+		if (__get_user(cmcp, &new_ctx->uc_regs))
-+			return -EFAULT;
-+		mcp = (struct mcontext __user *)(u64)cmcp;
-+		if (__get_user(new_msr, &mcp->mc_gregs[PT_MSR]))
-+			return -EFAULT;
-+	}
- 	/*
- 	 * Check that the context is not smaller than the original
- 	 * size (with VMX but without VSX)
-
-Andreas.
-
++LIST_HEAD(proc_automounts);
++
++static void proc_expire_automounts(struct work_struct *work);
++
++static DECLARE_DELAYED_WORK(proc_automount_task, proc_expire_automounts);
++static int proc_automount_timeout = 500 * HZ;
++
++void proc_shrink_automounts(void)
++{
++	struct list_head *list = &proc_automounts;
++
++	mark_mounts_for_expiry(list);
++	mark_mounts_for_expiry(list);
++	if (list_empty(list))
++		return;
++
++	schedule_delayed_work(&proc_automount_task, proc_automount_timeout);
++}
++
++static void proc_expire_automounts(struct work_struct *work)
++{
++	proc_shrink_automounts();
++}
++
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 3e8aeb8..2a8eabb 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -93,3 +93,6 @@ struct pde_opener {
+ 	int (*release)(struct inode *, struct file *);
+ 	struct list_head lh;
+ };
++
++extern struct list_head proc_automounts;
++
+diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+index b8bdb96..3505a72 100644
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -101,6 +101,7 @@ extern spinlock_t proc_subdir_lock;
+ 
+ extern void proc_root_init(void);
+ 
++void proc_shrink_automounts(void);
+ void proc_flush_task(struct task_struct *task);
+ struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *);
+ int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
+diff --git a/kernel/exit.c b/kernel/exit.c
+index 80137a5..8a8badb 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -161,6 +161,7 @@ void release_task(struct task_struct * p)
+ repeat:
+ 	tracehook_prepare_release_task(p);
+ 	atomic_dec(&p->user->processes);
++	proc_shrink_automounts();
+ 	proc_flush_task(p);
+ 	write_lock_irq(&tasklist_lock);
+ 	tracehook_finish_release_task(p);
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.5.3.rc6.17.g1911
+
