@@ -1,196 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYKFR5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYKFR6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbYKFR5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 12:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYKFR5V
+	id S1752847AbYKFR6Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 12:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYKFR6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 12:57:21 -0500
-Received: from www.tglx.de ([62.245.132.106]:35755 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbYKFR5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 12:57:20 -0500
-Date: Thu, 6 Nov 2008 18:57:05 +0100
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH] USB/ISP1760: Add support for the generic platfrom device centralized driver model
-Message-ID: <20081106175705.GA4687@www.tglx.de>
-References: <1225963549-9892-1-git-send-email-cooloney@kernel.org>
+	Thu, 6 Nov 2008 12:58:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35786 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751171AbYKFR6M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 12:58:12 -0500
+Date: Thu, 6 Nov 2008 09:57:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Brian Kysela <bkysela@gmail.com>, <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, <linux-usb@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] usb-storage: Error in queuecommand: us->srb =
+ ffff88006a338480
+Message-Id: <20081106095757.2c2fcdc3.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0811061030370.2568-100000@iolanthe.rowland.org>
+References: <20081105174905.27194494.akpm@linux-foundation.org>
+	<Pine.LNX.4.44L0.0811061030370.2568-100000@iolanthe.rowland.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1225963549-9892-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.4.2.2i
-X-Key-Id: 97C4700B
-X-Key-Fingerprint: 09E2 D1F3 9A3A FF13 C3D3  961C 0688 1C1E 97C4 700B
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Bryan Wu | 2008-11-06 17:25:49 [+0800]:
+On Thu, 6 Nov 2008 10:36:50 -0500 (EST) Alan Stern <stern@rowland.harvard.edu> wrote:
 
->From: Michael Hennerich <michael.hennerich@analog.com>
->
->Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
->Signed-off-by: Bryan Wu <cooloney@kernel.org>
->---
-> drivers/usb/host/isp1760-if.c |   98 +++++++++++++++++++++++++++++++++++++++++
-> 1 files changed, 98 insertions(+), 0 deletions(-)
->
->diff --git a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
->index af849f5..dc16698 100644
->--- a/drivers/usb/host/isp1760-if.c
->+++ b/drivers/usb/host/isp1760-if.c
->@@ -3,6 +3,7 @@
->  * Currently there is support for
->  * - OpenFirmware
->  * - PCI
->+ * - PDEV (generic platform device centralized driver model)
->  *
->  * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
->  *
->@@ -23,6 +24,12 @@
-> #include <linux/pci.h>
-> #endif
+> On Wed, 5 Nov 2008, Andrew Morton wrote:
 > 
->+#if !defined(CONFIG_USB_ISP1760_OF) && !defined(CONFIG_USB_ISP1760_PCI)
->+#define USB_ISP1760_PDEV
-Usually I would prefer to make it conditional on
-CONFIGU_USB_ISP1760_PDEV. But since
-http://marc.info/?l=linux-usb&m=122563596420156&w=2 I would prefer to
-have unconditional.
-Any reason why you only enable it PDEV if you have neiher PCI nor OF?
-
->+#include <linux/platform_device.h>
->+#include <linux/usb/isp1760.h>
-You can't include files which are not mainline
-
->+#endif
->+
-> #ifdef CONFIG_USB_ISP1760_OF
-> static int of_isp1760_probe(struct of_device *dev,
-> 		const struct of_device_id *match)
->@@ -286,12 +293,100 @@ static struct pci_driver isp1761_pci_driver = {
-> };
-> #endif
+> > On Thu, 30 Oct 2008 17:35:57 -0400
+> > Brian Kysela <bkysela@gmail.com> wrote:
+> > 
+> > > On kernels ranging from 2.6.26 - 2.6.28-rc2
+> > 
+> > So 2.6.25 was OK?
+> > 
+> > > on an Intel P4 3.2GHz HT x86-64
+> > > cpu, I am seeing a bug that occurs about half the time when copying ~300MB
+> > > data from a usb flash drive (FAT) to hard drive (XFS). There are three
+> > > possible outcomes, so far, when I hit the bug:
+> > > 
+> > >     (1) The copy process hangs, cpu wait hits 100% and load avg climbs until
+> > >         reboot;
+> > >     (2) The copy process hangs and then recovers and then one of:
+> > >         (a) the cpu wait & load avg both decline to normal; or
+> > >         (b) cpu wait hovers at 100% and the load avg slowly climbs until reboot;
+> > >     (3) Kernel bug reported and machine locks up.
+> > > 
+> > > Result (1) is the most frequent. Result (3) happened only twice out of about 40
+> > > tests. I lose the full traces, but here are two relevant lines that I see on
+> > > screen before the machine locks up:
+> > > 
+> > > kernel BUG at /home/brian/linux-2.6/block/elevator.c:841!
+> > > invalid opcode: 0000 [#1] PREMPT SMP
+> > 
+> > It is unclear what kernel version produced that message, and that is
+> > important information.  In 2.6.28-rc2, block/elevator.c:841 is
+> > 
+> >     void elv_dequeue_request(struct request_queue *q, struct request *rq)
+> >     {
+> > -->>	BUG_ON(list_empty(&rq->queuelist));
+> > 	BUG_ON(ELV_ON_HASH(rq));
+> > 
+> > please confirm that I have the correct line there.
+> > 
+> > 
+> > I assume that you're hitting a bug in the USB storage code and this is
+> > triggering consistency-checking code in the block layer.
+> > 
+> > > When (1) or (2b) occurs I pull the usb drive to see what happens. In two cases
+> > > (3) occurred, but more often I get this in /var/log/syslog:
+> > 
+> > The other things you saw were most likely a consequence of the
+> > BUG_ON().
 > 
->+#ifdef USB_ISP1760_PDEV
->+static int __devinit
->+isp1760_pdev_probe(struct platform_device *pdev)
->+{
-Please make it 
-static int __devinit isp1760_pdev_probe(struct platform_device *pdev)
-
->+	struct usb_hcd *hcd;
->+	struct resource	*addr;
->+	int irq;
->+	unsigned int devflags = 0;
->+	struct isp1760_platform_data *priv = pdev->dev.platform_data;
->+
->+	/* basic sanity checks first.  board-specific init logic should
->+	 * have initialized these two resources and probably board
->+	 * specific platform_data.  we don't probe for IRQs, and do only
->+	 * minimal sanity checking.
->+	 */
->+
->+	if (usb_disabled())
->+		return -ENODEV;
->+
->+	if (pdev->num_resources < 2)
->+		return -ENODEV;
->+
->+	addr = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->+	irq = platform_get_irq(pdev, 0);
->+
->+	if (!addr || irq < 0)
->+		return -ENODEV;
->+
->+	if (priv) {
->+		if (priv->is_isp1761)
->+			devflags |= ISP1760_FLAG_ISP1761;
->+		if (priv->port1_disable)
->+			devflags |= ISP1760_FLAG_PORT1_DIS;
->+		if (priv->bus_width_16)
->+			devflags |= ISP1760_FLAG_BUS_WIDTH_16;
->+		if (priv->port1_otg)
->+			devflags |= ISP1760_FLAG_OTG_EN;
->+		if (priv->analog_oc)
->+			devflags |= ISP1760_FLAG_ANALOG_OC;
->+		if (priv->dack_polarity_high)
->+			devflags |= ISP1760_FLAG_DACK_POL_HIGH;
->+		if (priv->dreq_polarity_high)
->+			devflags |= ISP1760_FLAG_DREQ_POL_HIGH;
->+	}
->+
->+	hcd = isp1760_register(addr->start, resource_size(addr), irq,
->+		IRQF_DISABLED | IRQF_SHARED | IRQF_TRIGGER_FALLING,
-This won't work. The chip itself is configured as level, active low. You
-have to make sure the chip is configured as edge as well.
-
->+		&pdev->dev, dev_name(&pdev->dev),
->+		devflags);
->+
->+	if (IS_ERR(hcd))
->+		return PTR_ERR(hcd);
->+
->+	return 0;
->+}
->+
->+static int __devexit
->+isp1760_pdev_remove(struct platform_device *pdev)
->+{
->+	struct usb_hcd *hcd = platform_get_drvdata(pdev);
->+
->+	platform_set_drvdata(pdev, NULL);
->+
->+	usb_remove_hcd(hcd);
->+	iounmap(hcd->regs);
->+	usb_put_hcd(hcd);
->+	return 0;
->+}
->+
->+/* this driver is exported so sl811_cs can depend on it */
-What are you telling me here?
-
->+struct platform_driver isp1760_pdev_driver = {
->+	.probe =	isp1760_pdev_probe,
->+	.remove =	__devexit_p(isp1760_pdev_remove),
->+	.driver = {
->+		.name =	"isp1760-hcd",
->+		.owner = THIS_MODULE,
->+	},
->+};
->+#endif /* USB_ISP1760_PDEV */
->+
-> static int __init isp1760_init(void)
-> {
-> 	int ret = -ENODEV;
+> In theory, this sort of thing could have been caused by changes to the 
+> block-layer timeout handling in 2.6.28-rc.  But those changes are not 
+> present in 2.6.26 or 2.6.27.
 > 
-> 	init_kmem_once();
+> Note that the syslog shows a lockdep violation occurring _before_ the 
+> error message from usb-storage.  This suggests the problem originates 
+> somewhere else.
 > 
->+#ifdef USB_ISP1760_PDEV
->+	ret = platform_driver_register(&isp1760_pdev_driver);
->+	if (ret) {
->+		deinit_kmem_cache();
->+		return ret;
->+	}
->+#endif
->+
-> #ifdef CONFIG_USB_ISP1760_OF
-> 	ret = of_register_platform_driver(&isp1760_of_driver);
-> 	if (ret) {
->@@ -325,6 +420,9 @@ static void __exit isp1760_exit(void)
-> #ifdef CONFIG_USB_ISP1760_PCI
-> 	pci_unregister_driver(&isp1761_pci_driver);
-> #endif
->+#ifdef USB_ISP1760_PDEV
->+	platform_driver_unregister(&isp1760_pdev_driver);
->+#endif
-> 	deinit_kmem_cache();
-> }
-> module_exit(isp1760_exit);
->-- 
->1.5.6.3
+> The error message:
+> 
+> > [  152.701070] usb-storage: Error in queuecommand: us->srb = ffff88007dfd0680
+> 
+> means that the SCSI layer has told usb-storage to start a new command 
+> before the old one completed.  This could happen, for example, if the 
+> SCSI layer had gotten confused and tried to cancel a command that 
+> wasn't running -- then it would think usb-storage was idle when in fact 
+> it was still busy.  (This was the failure mechanism resulting from the 
+> timeout changes.)
+> 
 
-Sebastian
+OK, thanks.  I'll cc linux-scsi, but I have this-wont-be-getting-fixed
+feelings on this one :(
+
+I wonder what's special about Brian's setup.
