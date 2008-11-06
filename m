@@ -1,153 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYKFQQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYKFQQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbYKFQQP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKFQP7
+	id S1752743AbYKFQQe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYKFQQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:15:59 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56933 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbYKFQP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:15:58 -0500
-Date: Thu, 6 Nov 2008 11:15:36 -0500
-From: Neil Horman <nhorman@redhat.com>
-To: Ivan Vecera <ivecera@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, nhorman@redhat.com,
-       jmarchan@redhat.com
-Subject: Re: [PATCH] x86: call machine_shutdown and stop all CPUs in	native_machine_halt
-Message-ID: <20081106161536.GJ5228@hmsendeavour.rdu.redhat.com>
-References: <1224504787-11403-1-git-send-email-ivecera@redhat.com> <20081020160058.GB22779@elte.hu> <48FDCCCB.2080103@redhat.com> <491316D9.20206@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491316D9.20206@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Thu, 6 Nov 2008 11:16:20 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41368 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754049AbYKFQQU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:16:20 -0500
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+From: Peter Zijlstra <peterz@infradead.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>
+In-Reply-To: <20081106160154.GA7461@redhat.com>
+References: <20081106153022.215696930@redhat.com>
+	 <1225986593.7803.4688.camel@twins>  <20081106160154.GA7461@redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Nov 2008 17:16:13 +0100
+Message-Id: <1225988173.7803.4723.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 05:10:01PM +0100, Ivan Vecera wrote:
-> Any comments?
-> 
-> Ivan
-> 
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+On Thu, 2008-11-06 at 11:01 -0500, Vivek Goyal wrote:
 
-> ---
-> Ivan Vecera wrote:
-> > Ingo Molnar wrote:
-> >> the code in arch/x86/kernel/smp.c::stop_this_cpu() is very similar to 
-> >> this and could be shared. You could move the stop_this_cpu() function to 
-> >> arch/x86/kernel/process.c (out of smp.c), so that it can be used by 
-> >> reboot.c.
-> >>
-> > Yes, this make sense. Here is the patch.
-> > 
-> > Ivan
-> > 
-> > ---
-> >  arch/x86/kernel/process.c |   16 ++++++++++++++++
-> >  arch/x86/kernel/reboot.c  |    5 +++++
-> >  arch/x86/kernel/smp.c     |   13 -------------
-> >  include/asm-x86/system.h  |    2 ++
-> >  4 files changed, 23 insertions(+), 13 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-> > index c622772..af6904e 100644
-> > --- a/arch/x86/kernel/process.c
-> > +++ b/arch/x86/kernel/process.c
-> > @@ -8,6 +8,7 @@
-> >  #include <linux/pm.h>
-> >  #include <linux/clockchips.h>
-> >  #include <asm/system.h>
-> > +#include <asm/apic.h>
-> >  
-> >  unsigned long idle_halt;
-> >  EXPORT_SYMBOL(idle_halt);
-> > @@ -122,6 +123,21 @@ void default_idle(void)
-> >  EXPORT_SYMBOL(default_idle);
-> >  #endif
-> >  
-> > +void stop_this_cpu(void *dummy)
-> > +{
-> > +	local_irq_disable();
-> > +	/*
-> > +	 * Remove this CPU:
-> > +	 */
-> > +	cpu_clear(smp_processor_id(), cpu_online_map);
-> > +#ifdef CONFIG_X86_LOCAL_APIC
-> > +	disable_local_APIC();
-> > +#endif
-> > +	if (hlt_works(smp_processor_id()))
-> > +		for (;;) halt();
-> > +	for (;;);
-> > +}
-> > +
-> >  static void do_nothing(void *unused)
-> >  {
-> >  }
-> > diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-> > index f4c93f1..3113d9e 100644
-> > --- a/arch/x86/kernel/reboot.c
-> > +++ b/arch/x86/kernel/reboot.c
-> > @@ -465,6 +465,11 @@ static void native_machine_restart(char *__unused)
-> >  
-> >  static void native_machine_halt(void)
-> >  {
-> > +	/* stop other cpus and apics */
-> > +	machine_shutdown();
-> > +
-> > +	/* stop this cpu */
-> > +	stop_this_cpu(NULL);
-> >  }
-> >  
-> >  static void native_machine_power_off(void)
-> > diff --git a/arch/x86/kernel/smp.c b/arch/x86/kernel/smp.c
-> > index 18f9b19..3f92b13 100644
-> > --- a/arch/x86/kernel/smp.c
-> > +++ b/arch/x86/kernel/smp.c
-> > @@ -140,19 +140,6 @@ void native_send_call_func_ipi(cpumask_t mask)
-> >  		send_IPI_mask(mask, CALL_FUNCTION_VECTOR);
-> >  }
-> >  
-> > -static void stop_this_cpu(void *dummy)
-> > -{
-> > -	local_irq_disable();
-> > -	/*
-> > -	 * Remove this CPU:
-> > -	 */
-> > -	cpu_clear(smp_processor_id(), cpu_online_map);
-> > -	disable_local_APIC();
-> > -	if (hlt_works(smp_processor_id()))
-> > -		for (;;) halt();
-> > -	for (;;);
-> > -}
-> > -
-> >  /*
-> >   * this function calls the 'stop' function on all other CPUs in the system.
-> >   */
-> > diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
-> > index b20c894..17ac753 100644
-> > --- a/include/asm-x86/system.h
-> > +++ b/include/asm-x86/system.h
-> > @@ -314,6 +314,8 @@ extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
-> >  
-> >  void default_idle(void);
-> >  
-> > +void stop_this_cpu(void *dummy);
-> > +
-> >  /*
-> >   * Force strict CPU ordering.
-> >   * And yes, this is required on UP too when we're talking
+> > Does this still require I use dm, or does it also work on regular block
+> > devices? Patch 4/4 isn't quite clear on this.
 > 
+> No. You don't have to use dm. It will simply work on regular devices. We
+> shall have to put few lines of code for it to work on devices which don't
+> make use of standard __make_request() function and provide their own
+> make_request function. 
+> 
+> Hence for example, I have put that few lines of code so that it can work
+> with dm device. I shall have to do something similar for md too.
+> 
+> Though, I am not very sure why do I need to do IO control on higher level
+> devices. Will it be sufficient if we just control only bottom most
+> physical block devices?
+> 
+> Anyway, this approach should work at any level.
 
--- 
-/***************************************************
- *Neil Horman
- *Senior Software Engineer
- *Red Hat, Inc.
- *nhorman@redhat.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Nice, although I would think only doing the higher level devices makes
+more sense than only doing the leafs.
+
+Is there any reason we cannot merge this with the regular io-scheduler
+interface? afaik the only problem with doing group scheduling in the
+io-schedulers is the stacked devices issue.
+
+Could we make the io-schedulers aware of this hierarchy?
