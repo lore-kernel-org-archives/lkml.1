@@ -1,94 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYKFHoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754453AbYKFHpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbYKFHoq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 02:44:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYKFHoa
+	id S1754453AbYKFHpE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 02:45:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbYKFHoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 02:44:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45928 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754023AbYKFHo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 02:44:29 -0500
-Date: Thu, 6 Nov 2008 08:44:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [patch] sched: fix single-depth wchan output
-Message-ID: <20081106074417.GB8459@elte.hu>
-References: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com> <20081106061125.GA6384@elte.hu> <b040c32a0811052216i4594a094gdcee3ae280cddec7@mail.gmail.com> <20081106063012.GA15731@elte.hu> <b040c32a0811052242q767302cbx2667a68a8e058b6e@mail.gmail.com> <20081106065925.GE15731@elte.hu> <b040c32a0811052328k12c70644n15af3cedab32b6c3@mail.gmail.com>
+	Thu, 6 Nov 2008 02:44:38 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:46070 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754374AbYKFHoe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 02:44:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=TMuqUZhX8gSWl0ze4UI5UQnYXV76PyTU9hA5FRpI2YdoE4/nBQ29c7Qlqxe/bVAx0+
+         pKn24J/ogvfw6Lk6UqUI+Lt4emRO7XOkmIFTTnstf9p+UwBHFUbldY+jDFYD6YjAgmWp
+         NpQEgCVpk97vmTjEf/dZ4pmTrsr58YafbxdPU=
+Message-ID: <8d6898730811052344q218fc450i8c36fcd9e119d060@mail.gmail.com>
+Date: Thu, 6 Nov 2008 13:14:32 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: sharing interrupt between PCI device
+Cc: linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>,
+       "Jiri Slaby" <jirislaby@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <8d6898730811052211k695d208r53609701af633c2d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <b040c32a0811052328k12c70644n15af3cedab32b6c3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
+	 <4910E8AC.7050407@shaw.ca>
+	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
+	 <49115AFC.2030400@gmail.com>
+	 <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
+	 <8d6898730811052211k695d208r53609701af633c2d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Ken Chen <kenchen@google.com> wrote:
+can anybody point to some reference device drivers where PCI interrupt
+sharing is implemented properly.
 
-> On Wed, Nov 5, 2008 at 10:59 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > If it does stack walking manually then please update it to use
-> > save_stack_trace() instead - that is the standard API that will
-> > utilize the best possible stack walking machinery on the architecture
-> > level.
-> 
-> OK, I pulled the patch out of our code that export stack trace via 
-> /proc/pid/trace.  I didn't write this patch, but I think a better 
-> choice would be to override struct stacktrace_ops print_trace_ops 
-> with a memory buffer pointer to dump the stack into.  If you have 
-> any comments, please let me know.  I will polish this patch up and 
-> rebase to git-head.
+Thanks
+Nobin Mathew
 
-hm, instead of modifying the lowlevel arch dump code, why not just use 
-the existing save_stack_trace(), and render the output yourself via a 
-trivial sprintf, just like kernel/lockdep.c does?
-
-See kernel/stacktrace.c's print_stack_trace() - that could be extended 
-with a sprintf_stack_trace() method. Allocate a large enough buffer 
-dynamically, with a max of 128 stacktrace entries or so. (the output 
-buffer is limited to 4K-ish anyway, right?)
-
-As a bonus this will work on every architecture, not just x86.
-
-a few other details:
-
-> -	char namebuf[KSYM_NAME_LEN];
-> +	char namebuf[128];
-
-... time machine back to old crappy code ;-)
-
->  	symname = kallsyms_lookup(address, &symsize, &offset,
-> -					&modname, namebuf);
-> +				  &modname, namebuf);
-
-ditto. But none of this has to be modified so you can just drop these 
-bits.
-
-> +	read_lock(&tasklist_lock);
-> +	buf_show_task(posp, end, task);
-> +	read_unlock(&tasklist_lock);
-
-to get a stable trace we'll need more locking than that (tasklist_lock 
-does not exclude scheduling, etc.) - but it takes care of the most 
-important detail: tasks exiting from under us. So this should be OK.
-
->  #endif
-> +	INF("trace",  S_IFREG|S_IRUGO, pid_trace),
-
-that needs to be r-------- instead of r--r--r--, for security reasons.
-
-	Ingo
+On Thu, Nov 6, 2008 at 11:41 AM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
+> Hi
+>
+> Can somebody tell me what is going wrong in the driver. If you need
+> any further information please tell me
+>
+> Thanks
+> Nobin Mathew
+>
+> On Wed, Nov 5, 2008 at 2:50 PM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
+>> Hi
+>>
+>>
+>> Code is here
+>> first one USB Virual input devices
+>>
+>> http://lxr.linux.no/linux+v2.6.27.4/drivers/usb/core/hcd-pci.c
+>>
+>> Second one is hp-ilo driver
+>>
+>> http://lxr.linux.no/linux+v2.6.27.4/drivers/misc/hpilo.c
+>>
+>>
+>> Thanks
+>> Nobin Mathew.
+>>
+>>
+>> On Wed, Nov 5, 2008 at 2:06 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>>> On 11/05/2008 08:49 AM, Nobin Mathew wrote:
+>>>> Hi
+>>>>
+>>>> This is the system information X86_64 platform Xeon dual core processor.
+>>>>
+>>>> I saw the pci_disable_device () it is calling pcibios_disable_device
+>>>> () and this is is defined as
+>>>>
+>>>> void pcibios_disable_device (struct pci_dev *dev)
+>>>> {
+>>>>         pcibios_disable_resources(dev);
+>>>>         if (pcibios_disable_irq)
+>>>>                 pcibios_disable_irq(dev);
+>>>> }
+>>>>
+>>>> In i386 platform, I could not find a definition for these calls in
+>>>> x86_64 platform, i think it is using i386 platform code.
+>>>
+>>> Well, will you show us the code, so that we needn't to crystal gaze? It's pretty
+>>> hard to say what happens, if we don't see what you do in the driver...
+>>>
+>>
+>
