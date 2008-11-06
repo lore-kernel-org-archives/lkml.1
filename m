@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbYKFPAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbYKFPBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715AbYKFPAq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYKFPAg
+	id S1753900AbYKFPBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYKFPA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:00:36 -0500
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:58345 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYKFPAf (ORCPT
+	Thu, 6 Nov 2008 10:00:58 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:63457 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbYKFPA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:00:35 -0500
-Date: Thu, 6 Nov 2008 16:00:31 +0100
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Mattia Dongili <malattia@linux.it>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usb device not showing up
-Message-ID: <20081106150031.GI2395@gamma.logic.tuwien.ac.at>
-References: <20081104215829.GA2880@gamma.logic.tuwien.ac.at> <Pine.LNX.4.44L0.0811051102010.2573-100000@iolanthe.rowland.org>
+	Thu, 6 Nov 2008 10:00:56 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: linux-ext4@vger.kernel.org
+Subject: EXT4-fs: not enough memory for 522250 flex groups
+Date: Thu, 6 Nov 2008 16:00:54 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0811051102010.2573-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+Message-Id: <200811061600.54264.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+Hello,
 
-On Mi, 05 Nov 2008, Alan Stern wrote:
-> Well, this is a little odd.  The trace shows the modem was detected and
-> enumerated correctly.  But there's nothing corresponding to when you
-> loaded the hso driver.  In fact, there's nothing after uhci-hcd 
-> finished starting up and the unconnected root hubs were suspended.
+I tried to use ext4 on my s390 system. Converting the old ext3 file systems 
+(tune2fs -O extents) worked fine. When I tried to create a new ext4 file 
+system on a logical volume I got the "EXT4-fs: not enough memory for 522250 
+flex groups" error messageduring mount:
 
-Strange. I will redo the thing and see if something changes the second
-time. I am quite sure I loaded hsom but of course without udev running
-(init=/bin/bash) no devices were created.
 
-> Did you look in /proc/bus/usb/devices at this point?  And what about
-> the files in /sys/bus/usb/drivers/hso/?
+# mke2fs -t ext4 /dev/mapper/space-test
+mke2fs 1.41.3 (12-Oct-2008)
+Filesystem label=
+OS type: Linux
+Block size=4096 (log=2)
+Fragment size=4096 (log=2)
+262144 inodes, 1048576 blocks
+52428 blocks (5.00%) reserved for the super user
+First data block=0
+Maximum filesystem blocks=1073741824
+32 block groups
+32768 blocks per group, 32768 fragments per group
+8192 inodes per group
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736
+Writing inode tables: done
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done
+This filesystem will be automatically checked every 22 mounts or
+180 days, whichever comes first.  Use tune2fs -c or -i to override.
 
-I don't remember, will redo it.
 
-> This suggests the problem may lie in the hso driver itself, or in a
-> failure to bind the driver to the device.
+# mount -t ext4 /dev/mapper/space-test /mnt/
+mount: wrong fs type, bad option, bad superblock on /dev/mapper/space-test,
+       missing codepage or helper program, or other error
+       In some cases useful info is found in syslog - try
+       dmesg | tail  or so
 
-Well, the point is that under these circumstances, as I explained,
-*there*is*no*problem*, I can use the device without any problems.
 
-Only when I turn of the computer and turn it on again the device simply
-does not show up in the usb system.
 
-Best wishes
+# dmesg
+[...]
+[6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
+[6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
 
-Norbert
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-ADLESTROP (n.)
-That part of a suitcase which is designed to get snarled up on
-conveyor belts at airports. Some of the more modern adlestrop designs
-have a special 'quick release' feature which enables the case to flip
-open at this point and fling your underclothes into the conveyor
-belt's gearing mechanism.
-			--- Douglas Adams, The Meaning of Liff
+
+# lvdisplay
+  --- Logical volume ---
+  LV Name                /dev/space/test
+  VG Name                space
+  LV UUID                FPhFLU-1xTK-XtG4-STmI-u3D5-KhCR-FmlcCO
+  LV Write Access        read/write
+  LV Status              available
+  # open                 0
+  LV Size                4.00 GB
+  Current LE             1024
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:54
+
+
+
+# free
+             total       used       free     shared    buffers     cached
+Mem:       3081168     822972    2258196          0     154784     445420
+-/+ buffers/cache:     222768    2858400
+Swap:      9615904          0    9615904
+
+
+# uname -a
+Linux 2.6.28-rc2 #64 SMP Thu Nov 6 15:22:04 CET 2008 s390x s390x s390x 
+GNU/Linux
+
+
+
+# git describe
+kvm-78-2-g6e6c459
+
+
+Any ideas?
