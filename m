@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbYKFQ6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbYKFQ7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122AbYKFQ6Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbYKFQ57
+	id S1752998AbYKFQ7G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:59:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYKFQ6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:57:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35943 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbYKFQ57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:57:59 -0500
-Message-ID: <491321ED.5010103@redhat.com>
-Date: Thu, 06 Nov 2008 11:57:17 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Thu, 6 Nov 2008 11:58:53 -0500
+Received: from kroah.org ([198.145.64.141]:39191 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750920AbYKFQ6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:58:52 -0500
+Date: Thu, 6 Nov 2008 08:49:19 -0800
+From: Greg KH <greg@kroah.com>
+To: H L <swdevyid@yahoo.com>
+Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
+       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Message-ID: <20081106164919.GA4099@kroah.com>
+References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, ngupta@google.com, Jeff Moyer <jmoyer@redhat.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-References: <20081106153022.215696930@redhat.com>	 <1225986593.7803.4688.camel@twins> <20081106160154.GA7461@redhat.com>	 <1225988173.7803.4723.camel@twins>  <20081106163957.GB7461@redhat.com> <1225990327.7803.4776.camel@twins>
-In-Reply-To: <1225990327.7803.4776.camel@twins>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <894107.30288.qm@web45108.mail.sp1.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
 
-> The only real issue I can see is with linear volumes, but those are
-> stupid anyway - non of the gains but all the risks.
+A: No.
+Q: Should I include quotations after my reply?
 
-Linear volumes may well be the most common ones.
+On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
+> I have not modified any existing drivers, but instead I threw together
+> a bare-bones module enabling me to make a call to pci_iov_register()
+> and then poke at an SR-IOV adapter's /sys entries for which no driver
+> was loaded.
+> 
+> It appears from my perusal thus far that drivers using these new
+> SR-IOV patches will require modification; i.e. the driver associated
+> with the Physical Function (PF) will be required to make the
+> pci_iov_register() call along with the requisite notify() function.
+> Essentially this suggests to me a model for the PF driver to perform
+> any "global actions" or setup on behalf of VFs before enabling them
+> after which VF drivers could be associated.
 
-People start out with the filesystems at a certain size,
-increasing onto a second (new) disk later, when more space
-is required.
+Where would the VF drivers have to be associated?  On the "pci_dev"
+level or on a higher one?
 
--- 
-All rights reversed.
+Will all drivers that want to bind to a "VF" device need to be
+rewritten?
+
+> I have so far only seen Yu Zhao's "7-patch" set.  I've not yet looked
+> at his subsequently tendered "15-patch" set so I don't know what has
+> changed.    The hardware/firmware implementation for any given SR-IOV
+> compatible device, will determine the extent of differences required
+> between a PF driver and a VF driver.
+
+Yeah, that's what I'm worried/curious about.  Without seeing the code
+for such a driver, how can we properly evaluate if this infrastructure
+is the correct one and the proper way to do all of this?
+
+thanks,
+
+greg k-h
