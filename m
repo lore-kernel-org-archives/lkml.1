@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbYKFONi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYKFOQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133AbYKFONi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 09:13:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbYKFONa
+	id S1753966AbYKFOQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 09:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKFOQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 09:13:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55091 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbYKFON3 (ORCPT
+	Thu, 6 Nov 2008 09:16:10 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:16238 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbYKFOQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 09:13:29 -0500
-Date: Thu, 6 Nov 2008 06:14:08 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081106061408.03c10337@infradead.org>
-In-Reply-To: <1225976138.7803.4485.camel@twins>
-References: <20081105094902.27ec4b39@infradead.org>
-	<1225976138.7803.4485.camel@twins>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 6 Nov 2008 09:16:09 -0500
+X-BigFish: VPS-12(z21eWzzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0K9X0YI-04-PS8-01
+Date: Thu, 6 Nov 2008 15:15:55 +0100
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] AMD IOMMU fixes for 2.6.28
+Message-ID: <20081106141555.GD22503@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 06 Nov 2008 14:15:56.0296 (UTC) FILETIME=[2F422080:01C9401A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 13:55:38 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+Hi Ingo,
 
-> On Wed, 2008-11-05 at 09:49 -0800, Arjan van de Ven wrote:
-> > From 63c1b869d94eb31a98015af09fb24e22151f2f00 Mon Sep 17 00:00:00
-> > 2001 From: Arjan van de Ven <arjan@linux.intel.com>
-> > Date: Tue, 4 Nov 2008 21:08:11 -0800
-> > Subject: [PATCH] ftrace: add an fsync tracer
-> > 
-> > fsync() (and its cousin, fdatasync()) are important chokepoints in
-> > the kernel as they imply very expensive operations, both in terms
-> > of filesystem operations (ext3 writes back its entire journal) as
-> > well as the block layer (fsync() implies sending a cache flushing
-> > barrier to the SATA/SCSI disk).
-> > 
-> > This tracer makes a log of which application calls fsync() on which
-> > file, so that developers and others interested in finding these
-> > choke points can locate them and fix them in the apps that call
-> > this function.
-> 
-> Sorry, but I have to object to such single purpose tracers..
-> 
-> If we go this way we'll end up with a gazillion little tracers, non of
-> which are really useful.
-> 
-> Please work on getting something like a syscall tracer, or lttng like
-> event tracer.
-> 
+The following changes since commit 1e19b16a30c34c042f1eaa23db4c99bfad1dac0e:
+  Thomas Gleixner (1):
+        AMD IOMMU: use iommu_device_max_index, fix
 
-btw a syscall tracer is not long term right, just like system call
-level auditing was the wrong thing: you don't have the real information
-of what's being worked on. having the trace points on the do_FOO()
-level is the right thing, and that's exactly what my patch does.
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
+
+Joerg Roedel (2):
+      AMD IOMMU: fix detection of NP capable IOMMUs
+      AMD IOMMU: fix lazy IO/TLB flushing in unmap path
+
+ arch/x86/kernel/amd_iommu.c |    9 +++++++--
+ 1 files changed, 7 insertions(+), 2 deletions(-)
+
+This are 2 important bugfixes which fix lazy IO/TLB flushing with the
+driver. Please pull.
+
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
