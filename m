@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYKFKz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbYKFKzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbYKFKz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 05:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbYKFKzL
+	id S1755060AbYKFKzn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 05:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYKFKzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 05:55:11 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:47887 "EHLO
+	Thu, 6 Nov 2008 05:55:13 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:47892 "EHLO
 	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbYKFKzJ (ORCPT
+	with ESMTP id S1753389AbYKFKzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 05:55:09 -0500
+	Thu, 6 Nov 2008 05:55:11 -0500
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
        Al Viro <viro@ZenIV.linux.org.uk>,
        Linux Containers <containers@lists.osdl.org>
 References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
-Date: Thu, 06 Nov 2008 02:48:35 -0800
-In-Reply-To: <m1ej1p2l6u.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
-	of "Thu, 06 Nov 2008 02:38:49 -0800")
-Message-ID: <m1abcd2kqk.fsf@frodo.ebiederm.org>
+	<m1abcd2kqk.fsf@frodo.ebiederm.org>
+Date: Thu, 06 Nov 2008 02:49:58 -0800
+In-Reply-To: <m1abcd2kqk.fsf@frodo.ebiederm.org> (Eric W. Biederman's message
+	of "Thu, 06 Nov 2008 02:48:35 -0800")
+Message-ID: <m163n12ko9.fsf_-_@frodo.ebiederm.org>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,16 +28,16 @@ X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiede
 X-SA-Exim-Connect-IP: 24.130.11.59
 X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
 X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
 X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
 X-Spam-Relay-Country: 
 X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
 	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
+	*      [score: 0.0001]
 	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
 	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: [PATCH 2/7] proc: Implement support for automounts in task directories
+Subject: [PATCH 3/7] proc: Support multiple filesystems using the proc generic infrastructure
 X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
 X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,104 +45,121 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is a genearl mechanism that is capable of removing
-any unused mounts on /proc in any directory.  As we flush
-the mounts when a processes dies this mechanism is tailored
-for flushing mounts in the per task and per task group
-directories.
+- Implement proc_create_root to create a generic root directory.
+- Factor out release_proc_entry so that we can free a generic root directory.
+- Remove static from proc_sops so that we can access it in other files
+  implementing a proc generic filesystem.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/proc/Makefile        |    1 +
- fs/proc/automount.c     |   29 +++++++++++++++++++++++++++++
- fs/proc/internal.h      |    3 +++
- include/linux/proc_fs.h |    1 +
- kernel/exit.c           |    1 +
- 5 files changed, 35 insertions(+), 0 deletions(-)
- create mode 100644 fs/proc/automount.c
+ fs/proc/generic.c  |   30 +++++++++++++++++++++++++++---
+ fs/proc/inode.c    |    2 +-
+ fs/proc/internal.h |    3 +++
+ 3 files changed, 31 insertions(+), 4 deletions(-)
 
-diff --git a/fs/proc/Makefile b/fs/proc/Makefile
-index 63d9651..862a8fe 100644
---- a/fs/proc/Makefile
-+++ b/fs/proc/Makefile
-@@ -18,6 +18,7 @@ proc-y	+= meminfo.o
- proc-y	+= stat.o
- proc-y	+= uptime.o
- proc-y	+= version.o
-+proc-y	+= automount.o
- proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysctl.o
- proc-$(CONFIG_NET)		+= proc_net.o
- proc-$(CONFIG_PROC_KCORE)	+= kcore.o
-diff --git a/fs/proc/automount.c b/fs/proc/automount.c
-new file mode 100644
-index 0000000..a1fabf2
---- /dev/null
-+++ b/fs/proc/automount.c
-@@ -0,0 +1,29 @@
-+#include <linux/workqueue.h>
-+#include <linux/mount.h>
-+#include <linux/vfs.h>
-+#include "internal.h"
-+
-+LIST_HEAD(proc_automounts);
-+
-+static void proc_expire_automounts(struct work_struct *work);
-+
-+static DECLARE_DELAYED_WORK(proc_automount_task, proc_expire_automounts);
-+static int proc_automount_timeout = 500 * HZ;
-+
-+void proc_shrink_automounts(void)
+diff --git a/fs/proc/generic.c b/fs/proc/generic.c
+index 60a359b..8669cf6 100644
+--- a/fs/proc/generic.c
++++ b/fs/proc/generic.c
+@@ -532,7 +532,6 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
+ 			dp->proc_fops = &proc_dir_operations;
+ 			dp->proc_iops = &proc_dir_inode_operations;
+ 		}
+-		dir->nlink++;
+ 	} else if (S_ISLNK(dp->mode)) {
+ 		if (dp->proc_iops == NULL)
+ 			dp->proc_iops = &proc_link_inode_operations;
+@@ -555,6 +554,8 @@ static int proc_register(struct proc_dir_entry * dir, struct proc_dir_entry * dp
+ 	dp->next = dir->subdir;
+ 	dp->parent = dir;
+ 	dir->subdir = dp;
++	if (S_ISDIR(dp->mode))
++		dir->nlink++;
+ 	spin_unlock(&proc_subdir_lock);
+ 
+ 	return 0;
+@@ -599,6 +600,24 @@ static struct proc_dir_entry *__proc_create(struct proc_dir_entry **parent,
+ 	return ent;
+ }
+ 
++struct proc_dir_entry *proc_create_root(void)
 +{
-+	struct list_head *list = &proc_automounts;
++	struct proc_dir_entry *ent, *parent = NULL;
 +
-+	mark_mounts_for_expiry(list);
-+	mark_mounts_for_expiry(list);
-+	if (list_empty(list))
-+		return;
-+
-+	schedule_delayed_work(&proc_automount_task, proc_automount_timeout);
++	ent = __proc_create(&parent, "..", S_IFDIR | S_IRUGO | S_IXUGO, 2);
++	if (ent) {
++		ent->proc_fops = &proc_dir_operations;
++		ent->proc_iops = &proc_dir_inode_operations;
++		ent->low_ino = get_inode_number();
++		ent->parent = ent;
++		if (!ent->low_ino) {
++			kfree(ent);
++			ent = NULL;
++		}
++	}
++	return ent;
 +}
 +
-+static void proc_expire_automounts(struct work_struct *work)
-+{
-+	proc_shrink_automounts();
+ struct proc_dir_entry *proc_symlink(const char *name,
+ 		struct proc_dir_entry *parent, const char *dest)
+ {
+@@ -758,6 +777,8 @@ void remove_proc_entry(const char *name, struct proc_dir_entry *parent)
+ 			de = *p;
+ 			*p = de->next;
+ 			de->next = NULL;
++			if (S_ISDIR(de->mode))
++				parent->nlink--;
+ 			break;
+ 		}
+ 	}
+@@ -765,6 +786,11 @@ void remove_proc_entry(const char *name, struct proc_dir_entry *parent)
+ 	if (!de)
+ 		return;
+ 
++	release_proc_entry(de);
 +}
 +
++void release_proc_entry(struct proc_dir_entry *de)
++{
+ 	spin_lock(&de->pde_unload_lock);
+ 	/*
+ 	 * Stop accepting new callers into module. If you're
+@@ -800,8 +826,6 @@ continue_removing:
+ 	}
+ 	spin_unlock(&de->pde_unload_lock);
+ 
+-	if (S_ISDIR(de->mode))
+-		parent->nlink--;
+ 	de->nlink = 0;
+ 	WARN(de->subdir, KERN_WARNING "%s: removing non-empty directory "
+ 			"'%s/%s', leaking at least '%s'\n", __func__,
+diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+index 2543fd0..f3f81e2 100644
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -115,7 +115,7 @@ void __init proc_init_inodecache(void)
+ 					     init_once);
+ }
+ 
+-static const struct super_operations proc_sops = {
++const struct super_operations proc_sops = {
+ 	.alloc_inode	= proc_alloc_inode,
+ 	.destroy_inode	= proc_destroy_inode,
+ 	.drop_inode	= generic_delete_inode,
 diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 3e8aeb8..2a8eabb 100644
+index 2a8eabb..6fe00ff 100644
 --- a/fs/proc/internal.h
 +++ b/fs/proc/internal.h
-@@ -93,3 +93,6 @@ struct pde_opener {
- 	int (*release)(struct inode *, struct file *);
- 	struct list_head lh;
- };
-+
-+extern struct list_head proc_automounts;
-+
-diff --git a/include/linux/proc_fs.h b/include/linux/proc_fs.h
-index b8bdb96..3505a72 100644
---- a/include/linux/proc_fs.h
-+++ b/include/linux/proc_fs.h
-@@ -101,6 +101,7 @@ extern spinlock_t proc_subdir_lock;
+@@ -86,6 +86,9 @@ struct dentry *proc_lookup_de(struct proc_dir_entry *de, struct inode *ino,
+ 		struct dentry *dentry);
+ int proc_readdir_de(struct proc_dir_entry *de, struct file *filp, void *dirent,
+ 		filldir_t filldir);
++struct proc_dir_entry *proc_create_root(void);
++void release_proc_entry(struct proc_dir_entry *de);
++extern const struct super_operations proc_sops;
  
- extern void proc_root_init(void);
- 
-+void proc_shrink_automounts(void);
- void proc_flush_task(struct task_struct *task);
- struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *);
- int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 80137a5..8a8badb 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -161,6 +161,7 @@ void release_task(struct task_struct * p)
- repeat:
- 	tracehook_prepare_release_task(p);
- 	atomic_dec(&p->user->processes);
-+	proc_shrink_automounts();
- 	proc_flush_task(p);
- 	write_lock_irq(&tasklist_lock);
- 	tracehook_finish_release_task(p);
+ struct pde_opener {
+ 	struct inode *inode;
 -- 
 1.5.3.rc6.17.g1911
 
