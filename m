@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752423AbYKFT6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbYKFT7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752423AbYKFT6i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 14:58:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYKFT62
+	id S1752879AbYKFT7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 14:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYKFT7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 14:58:28 -0500
-Received: from n66.bullet.mail.sp1.yahoo.com ([98.136.44.50]:23651 "HELO
-	n66.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751007AbYKFT61 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 14:58:27 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 312672.54341.bm@omp403.mail.sp1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=FBnuS7DoIwzwn4chbm/laIZ/QKRgcV/ODsaOXJ/l5Ntpfr9L/cYxeVFz5i+HEtNi9VZIGFJYEusyGhqhpbK5xK9tF3ij7BB+LpNYZSAR4H45viXyzTeZdMTwtVRqP3ezZGDHTpcZ5gDfdMUjE/C10wPTOyguxmEzTRMJ/XM2o54=;
-X-YMail-OSG: nBqyL4wVM1lNoMMufSZnErXwyknbYnPENPeLNqsbTdvcQvRM8M0FaRUY69r30RIb_xKf1TZYfcm8dTTJuoEG8CL_N523Ma_qRiEb61n3u.mYMvZw.lc0FVj0rMA1_DF3ojt7CvvBC5WVVxU7wAzQZiupYkKB
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Thu, 6 Nov 2008 11:58:25 -0800 (PST)
-From: H L <swdevyid@yahoo.com>
-Reply-To: swdevyid@yahoo.com
-Subject: Re: git repository for SR-IOV development?
-To: Greg KH <greg@kroah.com>
-Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
-       linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
-In-Reply-To: <20081106165914.GA13476@kroah.com>
+	Thu, 6 Nov 2008 14:59:11 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:37381 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751120AbYKFT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 14:59:10 -0500
+Date: Thu, 6 Nov 2008 13:58:56 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
+       morgan@kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH -v2 3/4] AUDIT: collect info when execve results in
+	caps in pE
+Message-ID: <20081106195856.GA30017@us.ibm.com>
+References: <20081103201742.12059.36030.stgit@paris.rdu.redhat.com> <20081103201753.12059.67262.stgit@paris.rdu.redhat.com> <20081104163540.GA24318@us.ibm.com> <1225999615.3300.177.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <104014.9320.qm@web45110.mail.sp1.yahoo.com>
+Content-Disposition: inline
+In-Reply-To: <1225999615.3300.177.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
+Quoting Eric Paris (eparis@redhat.com):
+> So here's the problem....  I can't fail this syscall, it's too late.  I
 
-> On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
-> > 
-> > Has anyone initiated or given consideration to the
-> creation of a git
-> > repository (say, on kernel.org) for SR-IOV
-> development?
+Oh, right...
+
+> can do a couple of things.
 > 
-> Why?  It's only a few patches, right?  Why would it
-> need a whole new git
-> tree?
+> 1) waste lots of space in the execve record so we know memory has
+> already been allocated
+> 2) just ignore the memory failure and don't worry about it.  We are
+> still going to get the fcaps info from the patch record and should be
+> able to piece together the starting and finishing caps by looking at
+> past audit records if you really need it.
+> 3) I can call audit_log_lost().  I don't think we know are this time
+> that we really needed this record, but this is the 'safest' approach.
+> If people have their machines set to panic on lost records we would
+> panic.   Honestly though, if we don't have enough memory to satisfy this
+> request (we're talking about 72 bytes or something?) we are going to
+> fail the next audit message, so doing it now would be just fine.
+> 
+> I vote #2 since I don't think we are really going to have any lose of
+> info.  But if people want it I'll go #3 since I don't think it will hurt
+> anything.
 
+2 sounds reasonable to me.  Reckon sgrubb will speak up if it violates
+some audit requirement.
 
-So as to minimize the time and effort patching a kernel, especially if the tree (and/or hash level) against which the patches were created fails to be specified on a mailing-list.  Plus, there appears to be questions raised on how, precisely, the implementation should ultimately be modeled and especially given that, who knows at this point what number of patches will ultimately be submitted?  I know I've built the "7-patch" one (painfully, by the way), and I'm aware there's another 15-patch set out there which I've not yet examined.
-
-
-
-      
-
+thanks,
+-serge
