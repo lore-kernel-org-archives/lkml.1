@@ -1,167 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbYKFDOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYKFD2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbYKFDOT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 22:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbYKFDOF
+	id S1753720AbYKFD2n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 22:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYKFD2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 22:14:05 -0500
-Received: from tone.orchestra.cse.unsw.EDU.AU ([129.94.242.59]:59975 "EHLO
-	tone.orchestra.cse.unsw.EDU.AU" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752674AbYKFDOE (ORCPT
+	Wed, 5 Nov 2008 22:28:34 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48447 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbYKFD2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 22:14:04 -0500
-From: Shehjar Tikoo <shehjart@cse.unsw.edu.au>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 06 Nov 2008 14:06:09 +1100
-Message-ID: <49125F21.8010806@cse.unsw.edu.au>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 5 Nov 2008 22:28:33 -0500
+Date: Thu, 06 Nov 2008 12:28:30 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory hotplug
+Cc: Nigel Cunningham <ncunningham@crca.org.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20081106121212.e609476d.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081106110709.b168cc30.kamezawa.hiroyu@jp.fujitsu.com> <20081106121212.e609476d.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20081106121916.4474.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-CC: akpm@linux-foundation.org, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
-Subject: Re: Panic in multiple kernels: IA64 SBA IOMMU: Culprit commit on
- Mar 28, 2008
-References: <490F880E.4000801@cse.unsw.edu.au> <20081106032605J.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081106032605J.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> Sorry for the delay.
-> 
-> CC'ed linux-parisc since the same problem could happen to parisc.
-> 
-> On Tue, 04 Nov 2008 10:23:58 +1100
-> Shehjar Tikoo <shehjart@cse.unsw.edu.au> wrote:
-> 
->> I've been observing kernel panics for the past week on
->> kernel versions 2.6.26, 2.6.27 but not on 2.6.24 and 2.6.25.
->>
->> The panic message says:
->>
->> arch/ia64/hp/common/sba_iommu.c: I/O MMU is out of mapping resources
->>
->> Using git-bisect, I've zeroed in on the commit that introduced this.
->> Please see the attached file for the commit.
->>
->> The workload consists of 2 tests:
->> 1. Single fio process writing a 1 TB file.
->> 2. 15 fio processes writing 15GB files each.
->>
->> The panic happens on both workloads. There is no stack trace after
->> the above message.
->>
->> Other info:
->> System is HP RX6600(16Gb RAM, 16 processors w/ dual cores and HT)
->> 20 SATA disks under software RAID0 with 6 TB capacity.
->> Silicon Image 3124 controller.
->> File system is XFS.
->>
->> I'd much appreciate some help in fixing this because this panic has
->> basically stalled my own work. I'd be willing to run more tests on my
->> setup to test any patches that possibly fix this issue.
-> 
-> This patch modified the sba IOMMU driver to support LLDs' segment
-> boundary limits properly.
-> 
-> ATA hardware has poor segment boundary limit, 64KB. In addition, sba
-> IOMMU driver uses size-aligned allocation algorithm. It means that
-> it's difficult for the IOMMU driver to find an appropriate I/O address
-> space. I think that you hit the allocation failure due to this problem
-> (of course, it's possible that my change breaks the IOMMU driver but I
-> can't find a problem so far).
-> 
-> To make matters worse, sba IOMMU driver panic when the allocation
-> fails. IIRC, only IA64 and parisc IOMMU drivers panic by default in
-> the case of the allocation failure. I think that we need to change
-> them to handle the failure properly.
-> 
-> Can you try this? I've not fixed map_single failure yet but I think
-> that you hit the failure allocation in map_sg path.
-> 
 
-On 2.6.27, this patch seems to prevent the panic from happening for
-both the tests I had described earlier. Do you need more info to 
-validate this? I will be running more tests with this patch over
-the next few days, so we'll find out anyway.
+Hmm.
 
-Thanks
-Shehjar
+I think simple mutex is enough. read/write lock is not necessary.
+Memory hotplug event is very rare, and there is no requirement of
+parallel execution.
 
+
+> On Thu, 6 Nov 2008 11:07:09 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > Okay. then we can add "kernel thread for calling add/remove memory" and say
+> > "PLEASE WAIT UNTIL HIBERNATION IS READY".
+> > 
+> > I can try that by myself but doesn't have suitable machine....
+> > I think I can show you pseudo code in hours. please wait a bit.
+> > 
 > 
-> diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-> index d98f0f4..8f44dc8 100644
-> --- a/arch/ia64/hp/common/sba_iommu.c
-> +++ b/arch/ia64/hp/common/sba_iommu.c
-> @@ -676,12 +676,19 @@ sba_alloc_range(struct ioc *ioc, struct device *dev, size_t size)
->  			spin_unlock_irqrestore(&ioc->saved_lock, flags);
+> How about this one ? as a start step ?
+> I have no test environment. So please take this as a sample.
+> -Kame
+> =
+> 
+> Now, MEMORY_HOTPLUG and HIBERNATION is mutually exclusive in Kconfig.
+> That's because
+> 	- memory hotplug changes pgdat/zone/memmap range.
+> 	- hibernation countes # of memory based on pgdate/zone/memmap.
+> 
+> This patch adds rwsemaphore for making them not to run at the same time.
+> 
+> IIUC, add_memory() is called from following places.
+>     - probe interface
+>     - acpi handler
+> It seems both can sleep. (acpi handler uses sleepable memory allocator etc...)
+> 
+> online/offline handlers also sleeps.
+> 
+> Anyway, the most difficult thing is how to test this.
+> 
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+>  mm/Kconfig          |    2 -
+>  mm/memory_hotplug.c |   61 +++++++++++++++++++++++++++++++++++++++++++++-------
+>  2 files changed, 54 insertions(+), 9 deletions(-)
+> 
+> Index: linux-2.6.27.4/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-2.6.27.4.orig/mm/memory_hotplug.c
+> +++ linux-2.6.27.4/mm/memory_hotplug.c
+> @@ -31,6 +31,13 @@
 >  
->  			pide = sba_search_bitmap(ioc, dev, pages_needed, 0);
-> -			if (unlikely(pide >= (ioc->res_size << 3)))
-> -				panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
-> -				      ioc->ioc_hpa);
-> +			if (unlikely(pide >= (ioc->res_size << 3))) {
-> +				printk(KERN_WARNING "%s: I/O MMU @ %p is"
-> +				       "out of mapping resources, %u %u %lx\n",
-> +				       __func__, ioc->ioc_hpa, ioc->res_size,
-> +				       pages_needed, dma_get_seg_boundary(dev));
-> +				return -1;
-> +			}
->  #else
-> -			panic(__FILE__ ": I/O MMU @ %p is out of mapping resources\n",
-> -			      ioc->ioc_hpa);
-> +			printk(KERN_WARNING "%s: I/O MMU @ %p is"
-> +			       "out of mapping resources, %u %u %lx\n",
-> +			       __func__, ioc->ioc_hpa, ioc->res_size,
-> +			       pages_needed, dma_get_seg_boundary(dev));
-> +			return -1;
->  #endif
->  		}
+>  #include "internal.h"
+>  
+> +struct rw_semaphore memhp_mutex;
+> +
+> +static int init_memhp_mutex(void)
+> +{
+> +	init_rwsem(&memhp_mutex);
+> +}
+> +
+>  /* add this memory to iomem resource */
+>  static struct resource *register_memory_resource(u64 start, u64 size)
+>  {
+> @@ -381,6 +388,7 @@ int online_pages(unsigned long pfn, unsi
+>  	int ret;
+>  	struct memory_notify arg;
+>  
+> +	down_read(&memhp_mutex);
+>  	arg.start_pfn = pfn;
+>  	arg.nr_pages = nr_pages;
+>  	arg.status_change_nid = -1;
+> @@ -392,6 +400,7 @@ int online_pages(unsigned long pfn, unsi
+>  	ret = memory_notify(MEM_GOING_ONLINE, &arg);
+>  	ret = notifier_to_errno(ret);
+>  	if (ret) {
+> +		up_read(&memhp_mutex);
+>  		memory_notify(MEM_CANCEL_ONLINE, &arg);
+>  		return ret;
 >  	}
-> @@ -962,6 +969,7 @@ sba_map_single_attrs(struct device *dev, void *addr, size_t size, int dir,
->  #endif
->  
->  	pide = sba_alloc_range(ioc, dev, size);
-> +	BUG_ON(pide < 0);
->  
->  	iovp = (dma_addr_t) pide << iovp_shift;
->  
-> @@ -1304,6 +1312,7 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
->  	unsigned long dma_offset, dma_len; /* start/len of DMA stream */
->  	int n_mappings = 0;
->  	unsigned int max_seg_size = dma_get_max_seg_size(dev);
-> +	int idx;
->  
->  	while (nents > 0) {
->  		unsigned long vaddr = (unsigned long) sba_sg_address(startsg);
-> @@ -1402,9 +1411,13 @@ sba_coalesce_chunks(struct ioc *ioc, struct device *dev,
->  		vcontig_sg->dma_length = vcontig_len;
->  		dma_len = (dma_len + dma_offset + ~iovp_mask) & iovp_mask;
->  		ASSERT(dma_len <= DMA_CHUNK_SIZE);
-> -		dma_sg->dma_address = (dma_addr_t) (PIDE_FLAG
-> -			| (sba_alloc_range(ioc, dev, dma_len) << iovp_shift)
-> -			| dma_offset);
-> +		idx = sba_alloc_range(ioc, dev, dma_len);
-> +		if (idx < 0) {
-> +			dma_sg->dma_length = 0;
-> +			return -1;
-> +		}
-> +		dma_sg->dma_address = (dma_addr_t)(PIDE_FLAG | (idx << iovp_shift)
-> +						   | dma_offset);
->  		n_mappings++;
+> @@ -415,6 +424,7 @@ int online_pages(unsigned long pfn, unsi
+>  		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
+>  			nr_pages, pfn);
+>  		memory_notify(MEM_CANCEL_ONLINE, &arg);
+> +		up_read(&memhp_mutex);
+>  		return ret;
 >  	}
 >  
-> @@ -1476,6 +1489,10 @@ int sba_map_sg_attrs(struct device *dev, struct scatterlist *sglist, int nents,
->  	** Access to the virtual address is what forces a two pass algorithm.
->  	*/
->  	coalesced = sba_coalesce_chunks(ioc, dev, sglist, nents);
-> +	if (coalesced < 0) {
-> +		sba_unmap_sg_attrs(dev, sglist, nents, dir, attrs);
-> +		return 0;
+> @@ -436,7 +446,7 @@ int online_pages(unsigned long pfn, unsi
+>  
+>  	if (onlined_pages)
+>  		memory_notify(MEM_ONLINE, &arg);
+> -
+> +	up_read(&memhp_mutex);
+>  	return 0;
+>  }
+>  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+> @@ -477,14 +487,18 @@ int add_memory(int nid, u64 start, u64 s
+>  	struct resource *res;
+>  	int ret;
+>  
+> +	down_read(&memhp_mutex);
+>  	res = register_memory_resource(start, size);
+> -	if (!res)
+> +	if (!res) {
+> +		up_read(&memhp_mutex);
+>  		return -EEXIST;
+> -
 > +	}
+>  	if (!node_online(nid)) {
+>  		pgdat = hotadd_new_pgdat(nid, start);
+> -		if (!pgdat)
+> +		if (!pgdat) {
+> +			up_read(&memhp_mutex);
+>  			return -ENOMEM;
+> +		}
+>  		new_pgdat = 1;
+>  	}
 >  
->  	/*
->  	** Program the I/O Pdir
+> @@ -508,7 +522,7 @@ int add_memory(int nid, u64 start, u64 s
+>  		 */
+>  		BUG_ON(ret);
+>  	}
+> -
+> +	up_read(&memhp_mutex);
+>  	return ret;
+>  error:
+>  	/* rollback pgdat allocation and others */
+> @@ -517,10 +531,12 @@ error:
+>  	if (res)
+>  		release_memory_resource(res);
+>  
+> +	up_read(&memhp_mutex);
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(add_memory);
+>  
+> +
+>  #ifdef CONFIG_MEMORY_HOTREMOVE
+>  /*
+>   * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
+> @@ -750,20 +766,23 @@ int offline_pages(unsigned long start_pf
+>  		return -EINVAL;
+>  	if (!IS_ALIGNED(end_pfn, pageblock_nr_pages))
+>  		return -EINVAL;
+> +
+>  	/* This makes hotplug much easier...and readable.
+>  	   we assume this for now. .*/
+>  	if (!test_pages_in_a_zone(start_pfn, end_pfn))
+>  		return -EINVAL;
+>  
+> +	down_read(&memhp_mutex);
+>  	zone = page_zone(pfn_to_page(start_pfn));
+>  	node = zone_to_nid(zone);
+>  	nr_pages = end_pfn - start_pfn;
+>  
+>  	/* set above range as isolated */
+>  	ret = start_isolate_page_range(start_pfn, end_pfn);
+> -	if (ret)
+> +	if (ret) {
+> +		up_read(&memhp_mutex);
+>  		return ret;
+> -
+> +	}
+>  	arg.start_pfn = start_pfn;
+>  	arg.nr_pages = nr_pages;
+>  	arg.status_change_nid = -1;
+> @@ -838,6 +857,7 @@ repeat:
+>  	writeback_set_ratelimit();
+>  
+>  	memory_notify(MEM_OFFLINE, &arg);
+> +	up_read(&memhp_mutex);
+>  	return 0;
+>  
+>  failed_removal:
+> @@ -846,7 +866,7 @@ failed_removal:
+>  	memory_notify(MEM_CANCEL_OFFLINE, &arg);
+>  	/* pushback to free area */
+>  	undo_isolate_page_range(start_pfn, end_pfn);
+> -
+> +	up_read(&memhp_mutex);
+>  	return ret;
+>  }
+>  #else
+> @@ -856,3 +876,34 @@ int remove_memory(u64 start, u64 size)
+>  }
+>  EXPORT_SYMBOL_GPL(remove_memory);
+>  #endif /* CONFIG_MEMORY_HOTREMOVE */
+> +
+> +
+> +#ifdef CONFIG_HIBERNATION
+> +
+> +int memhp_hibenation_callback(struct notifier_block *self,
+> +			      unsigned long action,
+> +			      void *arg)
+> +{
+> +	int ret;
+> +
+> +	switch(action) {
+> +	case PM_HIBERNATION_PREPARE:
+> +		down_write(&memhp_mutex);
+> +		break;
+> +	case PM_POST_HIBERNATION:
+> +		up_write(&memhp_mutex);
+> +		break;
+> +	case PM_RESTORE_PREPARE:
+> +		down_write(&memhp_mutex);
+> +		break;
+> +	case PM_POST_RESTORE:
+> +		up_write(&memhp_mutex);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +	return NOTIFY_OK;
+> +}
+> +#endif
+> +
+> +
+> Index: linux-2.6.27.4/mm/Kconfig
+> ===================================================================
+> --- linux-2.6.27.4.orig/mm/Kconfig
+> +++ linux-2.6.27.4/mm/Kconfig
+> @@ -128,12 +128,9 @@ config SPARSEMEM_VMEMMAP
+>  config MEMORY_HOTPLUG
+>  	bool "Allow for memory hot-add"
+>  	depends on SPARSEMEM || X86_64_ACPI_NUMA
+> -	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
+> +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
+>  	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
+>  
+> -comment "Memory hotplug is currently incompatible with Software Suspend"
+> -	depends on SPARSEMEM && HOTPLUG && HIBERNATION
+> -
+>  config MEMORY_HOTPLUG_SPARSE
+>  	def_bool y
+>  	depends on SPARSEMEM && MEMORY_HOTPLUG
+> 
+
+-- 
+Yasunori Goto 
+
 
