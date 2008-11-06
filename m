@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYKFPeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYKFPez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbYKFPeE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYKFPdw
+	id S1753955AbYKFPez (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbYKFPeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:33:52 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:54430 "EHLO atmel-es2.atmel.fr"
+	Thu, 6 Nov 2008 10:34:44 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37306 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751976AbYKFPdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:33:50 -0500
-Message-ID: <49130E50.8090009@atmel.com>
-Date: Thu, 06 Nov 2008 16:33:36 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Julien Brunel <brunel@diku.dk>, adaplas@gmail.com,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] drivers/video: Bad error test before a dereference
-References: <200809261553.45301.brunel@diku.dk>
-In-Reply-To: <200809261553.45301.brunel@diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751689AbYKFPen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:34:43 -0500
+Message-Id: <20081106153022.215696930@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 06 Nov 2008 10:30:22 -0500
+From: vgoyal@redhat.com
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
+Cc: fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       ngupta@google.com, Rik van Riel <riel@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: [patch 0/4] [RFC] Another proportional weight IO controller 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julien Brunel :
-> The error test that follows the call to backlight_device_register
-> semms not to concern the right variable.
-> 
-> A simplified version of the semantic match that finds this problem is
-> as follows: 
-> (http://www.emn.fr/x-info/coccinelle/)
-> // <smpl>
-> @def0@
-> expression x;
-> position p0;
-> @@
-> x@p0 = backlight_device_register(...)
-> 
-> @protected@
-> expression def0.x,E;
-> position def0.p0;
-> position p;
-> statement S;
-> @@
-> x@p0
-> ... when != x = E
-> if (!IS_ERR(x) && ...) {<... x@p ...>} else S
-> 
-> @unprotected@
-> expression def0.x;
-> identifier fld;
-> position def0.p0;
-> position p != protected.p;
-> @@
-> x@p0
-> ... when != x = E
-> * x@p->fld
-> // </smpl>
-> 
-> Signed-off-by: Julien Brunel <brunel@diku.dk>
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Hi,
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+If you are not already tired of so many io controller implementations, here
+is another one.
 
-> 
-> ---
->  drivers/video/atmel_lcdfb.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
->  
->  	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
->  			sinfo, &atmel_lcdc_bl_ops);
-> -	if (IS_ERR(sinfo->backlight)) {
-> +	if (IS_ERR(bl)) {
->  		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
->  				PTR_ERR(bl));
->  		return;
-> 
+This is a very eary very crude implementation to get early feedback to see
+if this approach makes any sense or not.
 
-Thanks, regards,
+This controller is a proportional weight IO controller primarily
+based on/inspired by dm-ioband. One of the things I personally found little
+odd about dm-ioband was need of a dm-ioband device for every device we want
+to control.  I thought that probably we can make this control per request
+queue and get rid of device mapper driver. This should make configuration
+aspect easy.
+
+I have picked up quite some amount of code from dm-ioband especially for
+biocgroup implementation.
+
+I have done very basic testing and that is running 2-3 dd commands in different
+cgroups on x86_64. Wanted to throw out the code early to get some feedback.
+
+More details about the design and how to are in documentation patch.
+
+Your comments are welcome.
+
+Thanks
+Vivek
+
 -- 
-Nicolas Ferre
 
