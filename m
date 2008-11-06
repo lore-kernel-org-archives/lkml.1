@@ -1,97 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbYKFShA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751342AbYKFShh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752380AbYKFShA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 13:37:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYKFSgs
+	id S1751342AbYKFShh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 13:37:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbYKFShV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 13:36:48 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:49367 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbYKFSgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 13:36:47 -0500
-Date: Thu, 6 Nov 2008 11:36:30 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Fischer, Anna" <anna.fischer@hp.com>
-Cc: Greg KH <greg@kroah.com>, H L <swdevyid@yahoo.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
+	Thu, 6 Nov 2008 13:37:21 -0500
+Received: from kroah.org ([198.145.64.141]:43598 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751306AbYKFShS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 13:37:18 -0500
+Date: Thu, 6 Nov 2008 10:24:43 -0800
+From: Greg KH <greg@kroah.com>
+To: H L <swdevyid@yahoo.com>
+Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
+       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       mingo@elte.hu
 Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081106183630.GD11773@parisc-linux.org>
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net>
+Message-ID: <20081106182443.GB17782@kroah.com>
+References: <20081106164919.GA4099@kroah.com> <392264.50990.qm@web45103.mail.sp1.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <392264.50990.qm@web45103.mail.sp1.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-[Anna, can you fix your word-wrapping please?  Your lines appear to be
-infinitely long which is most unpleasant to reply to]
-
-On Thu, Nov 06, 2008 at 05:38:16PM +0000, Fischer, Anna wrote:
-> > Where would the VF drivers have to be associated?  On the "pci_dev"
+On Thu, Nov 06, 2008 at 10:05:39AM -0800, H L wrote:
+> 
+> --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
+>  
+> > On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
+> > > I have not modified any existing drivers, but instead
+> > I threw together
+> > > a bare-bones module enabling me to make a call to
+> > pci_iov_register()
+> > > and then poke at an SR-IOV adapter's /sys entries
+> > for which no driver
+> > > was loaded.
+> > > 
+> > > It appears from my perusal thus far that drivers using
+> > these new
+> > > SR-IOV patches will require modification; i.e. the
+> > driver associated
+> > > with the Physical Function (PF) will be required to
+> > make the
+> > > pci_iov_register() call along with the requisite
+> > notify() function.
+> > > Essentially this suggests to me a model for the PF
+> > driver to perform
+> > > any "global actions" or setup on behalf of
+> > VFs before enabling them
+> > > after which VF drivers could be associated.
+> > 
+> > Where would the VF drivers have to be associated?  On the
+> > "pci_dev"
 > > level or on a higher one?
 > 
-> A VF appears to the Linux OS as a standard (full, additional) PCI
-> device. The driver is associated in the same way as for a normal PCI
-> device. Ideally, you would use SR-IOV devices on a virtualized system,
-> for example, using Xen. A VF can then be assigned to a guest domain as
-> a full PCI device.
+> 
+> I have not yet fully grocked Yu Zhao's model to answer this.  That
+> said, I would *hope* to find it on the "pci_dev" level.
 
-It's not clear thats the right solution.  If the VF devices are _only_
-going to be used by the guest, then arguably, we don't want to create
-pci_devs for them in the host.  (I think it _is_ the right answer, but I
-want to make it clear there's multiple opinions on this).
+Me too.
 
-> > Will all drivers that want to bind to a "VF" device need to be
+> > Will all drivers that want to bind to a "VF"
+> > device need to be
 > > rewritten?
 > 
-> Currently, any vendor providing a SR-IOV device needs to provide a PF
-> driver and a VF driver that runs on their hardware. A VF driver does not
-> necessarily need to know much about SR-IOV but just run on the presented
-> PCI device. You might want to have a communication channel between PF
-> and VF driver though, for various reasons, if such a channel is not
-> provided in hardware.
+> Not necessarily, or perhaps minimally; depends on hardware/firmware
+> and actions the driver wants to take.  An example here might assist.
+> Let's just say someone has created, oh, I don't know, maybe an SR-IOV
+> NIC.  Now, for 'general' I/O operations to pass network traffic back
+> and forth there would ideally be no difference in the actions and
+> therefore behavior of a PF driver and a VF driver.  But, what do you
+> do in the instance a VF wants to change link-speed?  As that physical
+> characteristic affects all VFs, how do you handle that?  This is where
+> the hardware/firmware implementation part comes to play.  If a VF
+> driver performs some actions to initiate the change in link speed, the
+> logic in the adapter could be anything like:
 
-That is one model.  Another model is to provide one driver that can
-handle both PF and VF devices.  A third model is to provide, say, a
-Windows VF driver and a Xen PF driver and only support Windows-on-Xen.
-(This last would probably be an exercise in foot-shooting, but
-nevertheless, I've heard it mooted).
+<snip>
 
-> > Yeah, that's what I'm worried/curious about.  Without seeing the code
-> > for such a driver, how can we properly evaluate if this infrastructure
+Yes, I agree that all of this needs to be done, somehow.
+
+It's that "somehow" that I am interested in trying to see how it works
+out.
+
+> > 
+> > > I have so far only seen Yu Zhao's
+> > "7-patch" set.  I've not yet looked
+> > > at his subsequently tendered "15-patch" set
+> > so I don't know what has
+> > > changed.    The hardware/firmware implementation for
+> > any given SR-IOV
+> > > compatible device, will determine the extent of
+> > differences required
+> > > between a PF driver and a VF driver.
+> > 
+> > Yeah, that's what I'm worried/curious about. 
+> > Without seeing the code
+> > for such a driver, how can we properly evaluate if this
+> > infrastructure
 > > is the correct one and the proper way to do all of this?
 > 
-> Yu's API allows a PF driver to register with the Linux PCI code and use
-> it to activate VFs and allocate their resources. The PF driver needs to
-> be modified to work with that API. While you can argue about how that API
-> is supposed to look like, it is clear that such an API is required in some
-> form. The PF driver needs to know when VFs are active as it might want to
-> allocate further (device-specific) resources to VFs or initiate further
-> (device-specific) configurations. While probably a lot of SR-IOV specific
-> code has to be in the PF driver, there is also support required from
-> the Linux PCI subsystem, which is to some extend provided by Yu's patches.
+> 
+> As the example above demonstrates, that's a tough question to answer.
+> Ideally, in my view, there would only be one driver written per SR-IOV
+> device and it would contain the logic to "do the right things" based
+> on whether its running as a PF or VF with that determination easily
+> accomplished by testing the existence of the SR-IOV extended
+> capability.    Then, in an effort to minimize (if not eliminate) the
+> complexities of driver-to-driver actions for fielding "global events",
+> contain as much of the logic as is possible within the adapter.
+> Minimizing the efforts required for the device driver writers in my
+> opinion paves the way to greater adoption of this technology.
 
-Everyone agrees that some support is necessary.  The question is exactly
-what it looks like.  I must confess to not having reviewed this latest
-patch series yet -- I'm a little burned out on patch review.
+Yes, making things easier is the key here.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Perhaps some of this could be hidden with a new bus type for these kinds
+of devices?  Or a "virtual" bus of pci devices that the original SR-IOV
+device creates that corrispond to the individual virtual PCI devices?
+If that were the case, then it might be a lot easier in the end.
+
+thanks,
+
+greg k-h
