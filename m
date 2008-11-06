@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYKFVu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYKFVvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYKFVu5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbYKFVt7
+	id S1754837AbYKFVvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754490AbYKFVuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:49:59 -0500
-Received: from mail.queued.net ([207.210.101.209]:1272 "EHLO mail.queued.net"
+	Thu, 6 Nov 2008 16:50:14 -0500
+Received: from mail.queued.net ([207.210.101.209]:1278 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754174AbYKFVt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:49:58 -0500
-Date: Thu, 6 Nov 2008 16:49:55 -0500
+	id S1754411AbYKFVuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:50:12 -0500
+Date: Thu, 6 Nov 2008 16:50:09 -0500
 From: Andres Salomon <dilinger@queued.net>
 To: "Jaya Kumar" <jayakumar.lkml@gmail.com>
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [PATCH 8/14] ALSA: cs5535audio: check OLPC's Analog Input status
- vis GPIO
-Message-ID: <20081106164955.507e05a2@ephemeral>
+       Takashi Iwai <tiwai@suse.de>, Chris Ball <cjb@laptop.org>
+Subject: [PATCH 9/14] ALSA: cs5535audio: enable OLPC's V_REFOUT bias when
+ recording
+Message-ID: <20081106165009.25e722f2@ephemeral>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,32 +25,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Chris Ball <cjb@laptop.org>
 
-Checking the HPF register is irrelevant; HPF is secondary to the AI mode.
-Instead, check for Analog Input mode via GPIO.
+The OLPC has a privacy light hooked up in series with the microphone's
+V_Ref bias.  We want to activate the bias while we are capturing audio.
 
+Signed-off-by: Chris Ball <cjb@laptop.org>
 Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- sound/pci/cs5535audio/cs5535audio_olpc.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+ sound/pci/cs5535audio/cs5535audio_pcm.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
-index 2c148b9..f59af91 100644
---- a/sound/pci/cs5535audio/cs5535audio_olpc.c
-+++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
-@@ -43,13 +43,8 @@ static int olpc_dc_info(struct snd_kcontrol *kctl,
+diff --git a/sound/pci/cs5535audio/cs5535audio_pcm.c b/sound/pci/cs5535audio/cs5535audio_pcm.c
+index 6aa0c19..fa2a6b1 100644
+--- a/sound/pci/cs5535audio/cs5535audio_pcm.c
++++ b/sound/pci/cs5535audio/cs5535audio_pcm.c
+@@ -363,11 +363,27 @@ static int snd_cs5535audio_capture_open(struct snd_pcm_substream *substream)
+ 	if ((err = snd_pcm_hw_constraint_integer(runtime,
+ 					 SNDRV_PCM_HW_PARAM_PERIODS)) < 0)
+ 		return err;
++
++#ifdef CONFIG_OLPC
++	/* Enable the V_ref bias only while recording. */
++	err = snd_ac97_update_bits(cs5535au->ac97, AC97_AD_MISC,
++			1 << AC97_AD_VREFD_SHIFT, 0);
++	if (err < 0)
++		snd_printk(KERN_ERR "Error updating AD_MISC %d\n", err);
++#endif
+ 	return 0;
+ }
  
- static int olpc_dc_get(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *v)
+ static int snd_cs5535audio_capture_close(struct snd_pcm_substream *substream)
  {
--	struct cs5535audio *cs5535au = snd_kcontrol_chip(kctl);
--	u8 val;
--
--	val = snd_ac97_read(cs5535au->ac97, AC97_AD_TEST2);
--	val >>= AC97_AD_HPFD_SHIFT;
--	v->value.integer.value[0] = val & 0x1;
--
-+	v->value.integer.value[0] = geode_gpio_isset(OLPC_GPIO_MIC_AC,
-+			GPIO_OUTPUT_VAL);
++	int err;
++	struct cs5535audio *cs5535au = snd_pcm_substream_chip(substream);
++
++#ifdef CONFIG_OLPC
++	/* Disable V_ref bias. */
++	err = snd_ac97_update_bits(cs5535au->ac97, AC97_AD_MISC,
++			1 << AC97_AD_VREFD_SHIFT, 1 << AC97_AD_VREFD_SHIFT);
++#endif
  	return 0;
  }
  
