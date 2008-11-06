@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYKFHMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYKFHQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbYKFHMj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 02:12:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbYKFHMb
+	id S1753834AbYKFHQO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 02:16:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYKFHP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 02:12:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58790 "EHLO mx2.mail.elte.hu"
+	Thu, 6 Nov 2008 02:15:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45221 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752231AbYKFHMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 02:12:30 -0500
-Date: Thu, 6 Nov 2008 08:12:06 +0100
+	id S1751714AbYKFHP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 02:15:56 -0500
+Date: Thu, 6 Nov 2008 08:14:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: akpm@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, travis@sgi.com,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Subject: Re: [patch 5/7] x86_64: Support for cpu ops
-Message-ID: <20081106071206.GH15731@elte.hu>
-References: <20081105231634.133252042@quilx.com> <20081105231649.108433550@quilx.com>
+To: Eduardo Habkost <ehabkost@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
+Message-ID: <20081106071445.GI15731@elte.hu>
+References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com> <1225915018-6548-16-git-send-email-ehabkost@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081105231649.108433550@quilx.com>
+In-Reply-To: <1225915018-6548-16-git-send-email-ehabkost@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,22 +41,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
+* Eduardo Habkost <ehabkost@redhat.com> wrote:
 
-> +#
-> +# X86_64's spare segment register points to the PDA instead of the per
-> +# cpu area. Therefore x86_64 is not able to generate atomic vs. interrupt
-> +# per cpu instructions.
-> +#
-> +config HAVE_CPU_OPS
-> +	def_bool y
-> +	depends on X86_32
-> +
+> This reverts commit c7ffa6c26277b403920e2255d10df849bd613380.
+> 
+> Now that we have the hooks to disable virtualization on
+> emergency_restart(), we can get back to the BOOT_KBD reboot_type default.
+> 
+> Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 
-hm, what happened to the rebase-PDA-to-percpu-area optimization 
-patches you guys were working on? I remember there was some binutils 
-flakiness - weird crashes and things like that. Did you ever manage to 
-stabilize it? It would be sad if only 32-bit could take advantage of 
-the optimized ops.
+hm, why revert this? There's nothing wrong with the ACPI reboot 
+method, it's just that we surprise the BIOS by exiting with an unclean 
+VMX state in certain circumstances.
+
+if the ACPI reboot method does not work we do the KBD method as the 
+next thing in the reboot chain.
 
 	Ingo
