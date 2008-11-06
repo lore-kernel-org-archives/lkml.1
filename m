@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYKFPIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYKFPJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbYKFPIO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:08:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYKFPH7
+	id S1754121AbYKFPJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:09:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYKFPJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:07:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52528 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYKFPH6 (ORCPT
+	Thu, 6 Nov 2008 10:09:41 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:33484 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751708AbYKFPJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:07:58 -0500
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
-       mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
-       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0811060900450.3595@quilx.com>
-References: <1224694989.8431.23.camel@oberon>
-	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
-	 <1225219114.24204.37.camel@oberon>
-	 <1225936715.27507.44.camel@bobble.smo.corp.google.com>
-	 <1225969420.7803.4366.camel@twins>
-	 <Pine.LNX.4.64.0811060900450.3595@quilx.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Nov 2008 16:08:18 +0100
-Message-Id: <1225984098.7803.4642.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 6 Nov 2008 10:09:41 -0500
+Date: Thu, 6 Nov 2008 09:08:44 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: akpm@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, travis@sgi.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [patch 5/7] x86_64: Support for cpu ops
+In-Reply-To: <20081106071206.GH15731@elte.hu>
+Message-ID: <Pine.LNX.4.64.0811060907570.3595@quilx.com>
+References: <20081105231634.133252042@quilx.com> <20081105231649.108433550@quilx.com>
+ <20081106071206.GH15731@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 09:03 -0600, Christoph Lameter wrote:
-> On Thu, 6 Nov 2008, Peter Zijlstra wrote:
-> 
-> > Also, you just introduced per-cpu allocations for each thread-group,
-> > while Christoph is reworking the per-cpu allocator, with one unfortunate
-> > side-effect - its going to have a limited size pool. Therefore this will
-> > limit the number of thread-groups we can have.
-> 
-> Patches exist that implement a dynamically growable percpu pool (using
-> virtual mappings though). If the cost of the additional complexity /
-> overhead is justifiable then we can make the percpu pool dynamically
-> extendable.
+On Thu, 6 Nov 2008, Ingo Molnar wrote:
 
-Right, but I don't think the patch under consideration will fly anyway,
-doing a for_each_possible_cpu() loop on every tick on all cpus isn't
-really healthy, even for moderate sized machines.
+> hm, what happened to the rebase-PDA-to-percpu-area optimization
+> patches you guys were working on? I remember there was some binutils
+> flakiness - weird crashes and things like that. Did you ever manage to
+> stabilize it? It would be sad if only 32-bit could take advantage of
+> the optimized ops.
+
+I thought that was in your tree? I saw a conflict in -next with the zero
+based stuff a couple of weeks ago. Mike is working on that AFAICT.
+
