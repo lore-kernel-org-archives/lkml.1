@@ -1,63 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbYKFPf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbYKFPg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbYKFPf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbYKFPew
+	id S1754192AbYKFPg3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:36:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbYKFPfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:34:52 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35900 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbYKFPev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:34:51 -0500
-Date: Thu, 6 Nov 2008 10:34:50 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-In-Reply-To: <20081106070157.065b2dcc@infradead.org>
-Message-ID: <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com>
-References: <20081105094902.27ec4b39@infradead.org> <1225976138.7803.4485.camel@twins> <20081106060624.58a0f967@infradead.org> <1225981141.7803.4577.camel@twins> <20081106063108.02b4813d@infradead.org> <1225983052.7803.4623.camel@twins>
- <20081106070157.065b2dcc@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 6 Nov 2008 10:35:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37345 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752770AbYKFPfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:35:37 -0500
+Date: Thu, 6 Nov 2008 13:34:05 -0200
+From: Eduardo Habkost <ehabkost@redhat.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/15] x86: Emergency virtualization disable function
+Message-ID: <20081106153405.GS5247@blackpad>
+References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com> <1225915018-6548-10-git-send-email-ehabkost@redhat.com> <20081105222731.GA14202@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081105222731.GA14202@elf.ucw.cz>
+X-Fnord: you can see the fnord
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 6 Nov 2008, Arjan van de Ven wrote:
-
+On Wed, Nov 05, 2008 at 11:27:32PM +0100, Pavel Machek wrote:
+> On Wed 2008-11-05 17:56:52, Eduardo Habkost wrote:
+> > This patch adds an interface to set a function that can be used to
+> > disable virtualization extensions on the CPU on emergency cases, such
+> > as on kdump or emergency reboot.
 > > 
-> > The syscall tracer will also have told you about that open.
+> > The function will be set by code that enables virtualization extensions
+> > on the CPUs (i.e. KVM), and should do the very least to disable virt
+> > extensions on the CPU where it is being called.
+> > 
+> > The functions that set the function pointer uses RCU synchronization,
+> > just in case the crash NMI is triggered while KVM is unloading.
+> > 
+> > We can't just use the same notifiers used at reboot time (that are used
+> > by non-crash-dump kexec), because at crash time some CPUs may have IRQs
+> > disabled, so we can't use IPIs. The crash shutdown code use NMIs to tell
+> > the other CPUs to be halted, so the notifier call will be hooked into
+> > the CPU halting code that is on the crash shutdown NMI handler.
+> > 
+> > [v2: drop 'unsigned int cpu' arg from function]
+> > [v3: make emergency_virt_disable() non-static]
+> > [v4: add a config option for it: CPU_VIRT_EXTENSIONS]
+> > [v5: add has_virt_extensions() function]
+> > [v6: don't define the registering functions if CPU_VIRT_EXTENSIONS is
+> >  not enabled]
+> > [v7: use EXPORT_SYMBOL_GPL]
+> > 
 > 
-> ok so now you're turning a simple problem into "also track all open,
-> openat, dup, dup2, close, unix domain fs passing etc". That doesn't
-> sound like an improvement to me.
-> And even the "open/fd" family isn't enough, because the open will be
-> relative pathnames, so I now also need to second guess the PWD, and
-> then follow a chain of "chdir" calls as well and then resolve the
-> ".."'s in the path. And follow symlinks that may no longer be the same
-> symlink it used to be. Etc. Etc.
+> > --- /dev/null
+> > +++ b/arch/x86/kernel/virtext.c
+> > @@ -0,0 +1,89 @@
+> > +/* Core CPU virtualization extensions handling
+> > + *
+> > + * This should carry the code for handling CPU virtualization extensions
+> > + * that needs to live in the kernel core.
+> > + *
+> > + * Author: Eduardo Habkost <ehabkost@redhat.com>
+> > + *
+> > + * Copyright (C) 2008, Red Hat Inc.
+> > + */
 > 
-> No sorry, this really is not a viable approach.
-> 
-> And that goes beyond the fsync tracer. Anybody who thinks that syscall
-> tracing is the right approach needs to seriously think about it; it
-> really looks like the same problem as with audit... it started out with
-> a bad hack that did it at the syscall level but it was likewise shown
-> to just not be the right level. I am rather certain that the same will
-> be shown for tracing.
+> GPL?
 
-What I would like is a single "event tracer" that does all of this.
-But add the ability to start and stop different events. We could start
-with this tracer, and then add more events to this tracer. Have a
-separate file to show which events are available.
+Yes, of course.
 
-This will keep the 'available_tracers' file small, but it would be fine
-if the 'events' file grew large.
+As IANAL, I used a similar .c file as reference for the author/copyright
+info header, and used arch/x86/kernel/crash.c, that doesn't refer to
+the GPL also. I think I chose a bad example as reference.
 
--- Steve
+arch/x86/kernel/crash.c even has "All rights reserved". Ouch.
+
+-- 
+Eduardo
