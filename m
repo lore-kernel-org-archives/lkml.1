@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbYKFUxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbYKFU5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbYKFUxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 15:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbYKFUwu
+	id S1753397AbYKFU5e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:57:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbYKFU5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 15:52:50 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:36776 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbYKFUwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 15:52:47 -0500
-Subject: Re: [PATCH 0/5] eCryptfs: Filename Encryption
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: mhalcrow@linux.vnet.ibm.com
-Cc: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dustin Kirkland <dustin.kirkland@gmail.com>,
-       Eric Sandeen <sandeen@redhat.com>, Tyler C Hicks <tchicks@us.ibm.com>,
-       David Kleikamp <shaggy@us.ibm.com>
-In-Reply-To: <20081106202736.GC6688@halcrowt61p.austin.ibm.com>
-References: <20081104213754.GC6675@halcrowt61p.austin.ibm.com>
-	 <20081105155754.GA1759@ucw.cz>
-	 <20081106202736.GC6688@halcrowt61p.austin.ibm.com>
-Content-Type: text/plain
-Date: Thu, 06 Nov 2008 14:52:26 -0600
-Message-Id: <1226004746.8898.6.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 15:57:23 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:40111 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbYKFU5W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:57:22 -0500
+From: David Daney <ddaney@caviumnetworks.com>
+To: linux-mips@linux-mips.org
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       akpm@linux-foundation.org, David Daney <ddaney@caviumnetworks.com>
+Subject: [PATCH 26/29] 8250: Allow port type to specify bugs that are not probed for.
+Date: Thu,  6 Nov 2008 12:57:04 -0800
+Message-Id: <1226005025-27804-4-git-send-email-ddaney@caviumnetworks.com>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <491358F5.7040002@caviumnetworks.com>
+References: <491358F5.7040002@caviumnetworks.com>
+X-OriginalArrivalTime: 06 Nov 2008 20:57:12.0397 (UTC) FILETIME=[3DBB97D0:01C94052]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 14:27 -0600, mhalcrow@linux.vnet.ibm.com wrote:
-> On Wed, Nov 05, 2008 at 04:57:54PM +0100, Pavel Machek wrote:
-> > On Tue 2008-11-04 15:37:54, Michael Halcrow wrote:
-> > > This patchset implements filename encryption via a
-> > > passphrase-derived mount-wide Filename Encryption Key (FNEK)
-> > > specified as a mount parameter. Each encrypted filename has a
-> > > fixed prefix indicating that eCryptfs should try to decrypt the
-> > > filename. When eCryptfs encounters
-> > 
-> > That is 'interesting'. What happens if normal filename has that
-> > prefix?
-> 
-> If the lower filename has the prefix but does not have a valid tag 70
-> packet following the prefix, then eCryptfs will complain in the syslog
-> and then pass through the lower filename as-is.
+Add a bugs field to the serial8250_config and propagate it to the
+port's bugs field when the port is registered and configured.
 
-I'd recommend hiding this kind of syslog verbosity behind a debug config
-option.  I think it would be very easy to create a DOS attack against
-ecryptfs by putting all sorts of clever things in the lower file system.
+This is a follow on to the previous patch.  Now that we can specify
+the port type and don't have to probe for it, we can avoid probing for
+bugs if they are known with certainty to exist.
+
+The alternative is to load up 8250.c with a bunch of OCTEON specific
+special cases in the probing code.
+
+Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+---
+ drivers/serial/8250.c |    2 ++
+ drivers/serial/8250.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index 9d16abb..474ab89 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -1212,6 +1212,7 @@ static void autoconfig(struct uart_8250_port *up, unsigned int probeflags)
+ 	up->port.fifosize = uart_config[up->port.type].fifo_size;
+ 	up->capabilities = uart_config[up->port.type].flags;
+ 	up->tx_loadsz = uart_config[up->port.type].tx_loadsz;
++	up->bugs |= uart_config[up->port.type].bugs;
+ 
+ 	if (up->port.type == PORT_UNKNOWN)
+ 		goto out;
+@@ -3062,6 +3063,7 @@ int serial8250_register_port(struct uart_port *port)
+ 			uart->port.fifosize = uart_config[port->type].fifo_size;
+ 			uart->capabilities = uart_config[port->type].flags;
+ 			uart->tx_loadsz = uart_config[port->type].tx_loadsz;
++			uart->bugs = uart_config[port->type].bugs;
+ 		}
+ 
+ 		set_io_fns_from_upio(&uart->port);
+diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
+index 5202603..c9b3002 100644
+--- a/drivers/serial/8250.h
++++ b/drivers/serial/8250.h
+@@ -34,6 +34,7 @@ struct serial8250_config {
+ 	const char	*name;
+ 	unsigned short	fifo_size;
+ 	unsigned short	tx_loadsz;
++	unsigned short	bugs;
+ 	unsigned char	fcr;
+ 	unsigned int	flags;
+ };
 -- 
-David Kleikamp
-IBM Linux Technology Center
+1.5.6.5
 
