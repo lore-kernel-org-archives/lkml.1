@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbYKFQ5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbYKFQ6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752762AbYKFQ5c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYKFQ5V
+	id S1753122AbYKFQ6Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbYKFQ57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:57:21 -0500
-Received: from bu3sch.de ([62.75.166.246]:37149 "EHLO vs166246.vserver.de"
+	Thu, 6 Nov 2008 11:57:59 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35943 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751350AbYKFQ5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:57:20 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] SSB: make it depend on PCI
-Date: Thu, 6 Nov 2008 17:56:45 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Mike Frysinger" <vapier@gentoo.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1225965082-31462-1-git-send-email-vapier@gentoo.org> <1225969620.3619.204.camel@johannes.berg> <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com>
-In-Reply-To: <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com>
+	id S1750757AbYKFQ57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 11:57:59 -0500
+Message-ID: <491321ED.5010103@redhat.com>
+Date: Thu, 06 Nov 2008 11:57:17 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, ngupta@google.com, Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+References: <20081106153022.215696930@redhat.com>	 <1225986593.7803.4688.camel@twins> <20081106160154.GA7461@redhat.com>	 <1225988173.7803.4723.camel@twins>  <20081106163957.GB7461@redhat.com> <1225990327.7803.4776.camel@twins>
+In-Reply-To: <1225990327.7803.4776.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811061756.45493.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 November 2008 12:15:24 Mike Frysinger wrote:
-> linux/ssb/ssb.h always calls pci_dma_* functions
+Peter Zijlstra wrote:
 
-No it doesn't. Read the code.
-pci_dma_xxx functions should probably declared to no-op inlines in
-the pci.h header.
-However, we can also ifdef them in ssb.h.
+> The only real issue I can see is with linear volumes, but those are
+> stupid anyway - non of the gains but all the risks.
+
+Linear volumes may well be the most common ones.
+
+People start out with the filesystems at a certain size,
+increasing onto a second (new) disk later, when more space
+is required.
 
 -- 
-Greetings Michael.
+All rights reversed.
