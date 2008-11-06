@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYKFPmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754267AbYKFPn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYKFPmU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbYKFPmI
+	id S1754267AbYKFPn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbYKFPnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:42:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:1140 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYKFPmG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:42:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=bzCYdIAoBVdYuAu040ZnMqZ9/myCgIA/43GgTAQynyCQBYF+Gb5j/1evXYE6fO1lLF
-         t94W+AVDsdFddb2cUlAMzJGPX5ySHVbbqkj6/7QSeLZYOpYj9mFiJPRHxWIJonwU7EpD
-         CMpXm/myLH25dKsVFv7QJ5KJ5JaGDLWgoMk8E=
-Message-ID: <cfd18e0f0811060742v46dd3f9eod624954cd9dcda3d@mail.gmail.com>
-Date: Thu, 6 Nov 2008 10:42:03 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Marco Stornelli" <marco.stornelli@coritel.it>
-Subject: Re: [PATCH] [RESEND] documentation: xip documentation update
-Cc: rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <49130E3C.5040203@coritel.it>
+	Thu, 6 Nov 2008 10:43:20 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:38393 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752335AbYKFPnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:43:19 -0500
+Message-ID: <491310E1.1080002@sgi.com>
+Date: Thu, 06 Nov 2008 07:44:33 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [patch 5/7] x86_64: Support for cpu ops
+References: <20081105231634.133252042@quilx.com> <20081105231649.108433550@quilx.com> <20081106071206.GH15731@elte.hu> <Pine.LNX.4.64.0811060907570.3595@quilx.com> <20081106151558.GB1644@elte.hu>
+In-Reply-To: <20081106151558.GB1644@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <49130E3C.5040203@coritel.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marco,
+Ingo Molnar wrote:
+> * Christoph Lameter <cl@linux-foundation.org> wrote:
+> 
+>> On Thu, 6 Nov 2008, Ingo Molnar wrote:
+>>
+>>> hm, what happened to the rebase-PDA-to-percpu-area optimization 
+>>> patches you guys were working on? I remember there was some 
+>>> binutils flakiness - weird crashes and things like that. Did you 
+>>> ever manage to stabilize it? It would be sad if only 32-bit could 
+>>> take advantage of the optimized ops.
+>> I thought that was in your tree? I saw a conflict in -next with the 
+>> zero based stuff a couple of weeks ago. Mike is working on that 
+>> AFAICT.
+> 
+> No, what's in tip/core/percpu is not the PDA patches:
+> 
+>  f8d90d9: percpu: zero based percpu build error on s390
+>  cfcfdff: Merge branch 'linus' into core/percpu
+>  d379497: Zero based percpu: infrastructure to rebase the per cpu area to zero
+>  b3a0cb4: x86: extend percpu ops to 64 bit
+> 
+> But it's not actually utilized on x86. AFAICS you guys never came back 
+> with working patches for that (tip/x86/percpu is empty currently), and 
+> now i see something related on lkml on a separate track not Cc:-ed to 
+> the x86 folks so i thought i'd ask whether more coordination is 
+> desired here.
+> 
+> So ... what's the merge plan here? I like your fundamental idea, it's 
+> a nice improvement in a couple of areas and i'd like to help out make 
+> it happen. Also, the new per-cpu allocator would be nice for the 
+> sparseirq code.
+> 
+> 	Ingo
 
-A few comments below.
+Sorry, this was on my plate but the 4096 cpus if far more critical to get
+released and available.  As soon as that's finally done, I can get back to
+the pda/zero-based changes.
 
-On Thu, Nov 6, 2008 at 10:33 AM, Marco Stornelli
-<marco.stornelli@coritel.it> wrote:
-> From: Marco Stornelli <marco.stornelli@gmail.com>
->
-> xip documentation updated
-> Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
-> ---
->
-> --- a/Documentation/filesystems/xip.txt.orig    2008-08-20 20:11:37.000000000 +0200
-> +++ b/Documentation/filesystems/xip.txt 2008-11-06 12:47:48.000000000 +0200
-> @@ -39,10 +39,11 @@ The block device operation is optional,
->  today:
->  - dcssblk: s390 dcss block device driver
->
-> -An address space operation named get_xip_page is used to retrieve reference
-> -to a struct page. To address the target page, a reference to an address_space,
-> -and a sector number is provided. A 3rd argument indicates whether the
-
-> -function should allocate blocks if needed.
-> +An address space operation named get_xip_mem is used to retrieve reference
-
-s/reference/a reference/?
-
-> +to a page frame number and a kernel address. To obtain these values a reference
-> +to an address_space is provided. This function assigns values to the kmem and
-> +pfn parameters. The 3rd argument indicates whether the function should allocate
-
-It's a taste thing, but I would write "third" not "3rd".  (I
-appreciate that the existing text already used "3rd", but maybe that
-should be fixed.)
-
-> +blocks if needed.
->
->  This address space operation is mutually exclusive with readpage&writepage that
->  do page cache read/write operations.
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Thanks,
+Mike
