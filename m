@@ -1,96 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbYKFPhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbYKFPj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755195AbYKFPhv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbYKFPgy
+	id S1754260AbYKFPj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751387AbYKFPjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:36:54 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:47238 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754862AbYKFPgw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:36:52 -0500
-Date: Thu, 6 Nov 2008 10:36:50 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Brian Kysela <bkysela@gmail.com>, <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, <linux-usb@vger.kernel.org>
-Subject: Re: [BUG] usb-storage: Error in queuecommand: us->srb = ffff88006a338480
-In-Reply-To: <20081105174905.27194494.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0811061030370.2568-100000@iolanthe.rowland.org>
+	Thu, 6 Nov 2008 10:39:17 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41820 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751893AbYKFPjQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:39:16 -0500
+Message-ID: <49130F4C.6070603@redhat.com>
+Date: Thu, 06 Nov 2008 10:37:48 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com
+CC: David Miller <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       h-shimamoto@ct.jp.nec.com
+Subject: [PATCH] kprobes: disable preempt for module_text_address() and kernel_text_address()
+References: <490FE405.1000105@cn.fujitsu.com> <4910F697.2050203@redhat.com> <4910FB3D.4020805@cn.fujitsu.com> <491212C0.4030900@redhat.com> <49124307.60909@cn.fujitsu.com>
+In-Reply-To: <49124307.60909@cn.fujitsu.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Nov 2008, Andrew Morton wrote:
+__register_kprobe() can be preempted after checking probing address
+but before module_text_address() or try_module_get(), and in this
+interval the module can be unloaded. In that case,
+try_module_get(probed_mod) will access to invalid address,
+or kprobe will probe invalid address.
 
-> On Thu, 30 Oct 2008 17:35:57 -0400
-> Brian Kysela <bkysela@gmail.com> wrote:
-> 
-> > On kernels ranging from 2.6.26 - 2.6.28-rc2
-> 
-> So 2.6.25 was OK?
-> 
-> > on an Intel P4 3.2GHz HT x86-64
-> > cpu, I am seeing a bug that occurs about half the time when copying ~300MB
-> > data from a usb flash drive (FAT) to hard drive (XFS). There are three
-> > possible outcomes, so far, when I hit the bug:
-> > 
-> >     (1) The copy process hangs, cpu wait hits 100% and load avg climbs until
-> >         reboot;
-> >     (2) The copy process hangs and then recovers and then one of:
-> >         (a) the cpu wait & load avg both decline to normal; or
-> >         (b) cpu wait hovers at 100% and the load avg slowly climbs until reboot;
-> >     (3) Kernel bug reported and machine locks up.
-> > 
-> > Result (1) is the most frequent. Result (3) happened only twice out of about 40
-> > tests. I lose the full traces, but here are two relevant lines that I see on
-> > screen before the machine locks up:
-> > 
-> > kernel BUG at /home/brian/linux-2.6/block/elevator.c:841!
-> > invalid opcode: 0000 [#1] PREMPT SMP
-> 
-> It is unclear what kernel version produced that message, and that is
-> important information.  In 2.6.28-rc2, block/elevator.c:841 is
-> 
->     void elv_dequeue_request(struct request_queue *q, struct request *rq)
->     {
-> -->>	BUG_ON(list_empty(&rq->queuelist));
-> 	BUG_ON(ELV_ON_HASH(rq));
-> 
-> please confirm that I have the correct line there.
-> 
-> 
-> I assume that you're hitting a bug in the USB storage code and this is
-> triggering consistency-checking code in the block layer.
-> 
-> > When (1) or (2b) occurs I pull the usb drive to see what happens. In two cases
-> > (3) occurred, but more often I get this in /var/log/syslog:
-> 
-> The other things you saw were most likely a consequence of the
-> BUG_ON().
+this patch uses preempt_disable() to protect it and use
+__module_text_address() and __kernel_text_address().
 
-In theory, this sort of thing could have been caused by changes to the 
-block-layer timeout handling in 2.6.28-rc.  But those changes are not 
-present in 2.6.26 or 2.6.27.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
 
-Note that the syslog shows a lockdep violation occurring _before_ the 
-error message from usb-storage.  This suggests the problem originates 
-somewhere else.
+>> @@ -718,9 +725,11 @@ static void __kprobes __unregister_kprob
+>>  	struct kprobe *old_p;
+>>
+>>  	if (p->mod_refcounted) {
+>> -		mod = module_text_address((unsigned long)p->addr);
+>> +		preempt_disable();
+>> +		mod = __module_text_address((unsigned long)p->addr);
+>>  		if (mod)
+>>  			module_put(mod);
+>> +		preempt_enable();
+>
+> this is bad fix, we have had a reference to mod. we don't need
+> preempt_disable() before module_put(mod).
 
-The error message:
+Hmm, Indeed.
+So let's add a comment there.
 
-> [  152.701070] usb-storage: Error in queuecommand: us->srb = ffff88007dfd0680
+ kernel/kprobes.c |   21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
 
-means that the SCSI layer has told usb-storage to start a new command 
-before the old one completed.  This could happen, for example, if the 
-SCSI layer had gotten confused and tried to cancel a command that 
-wasn't running -- then it would think usb-storage was idle when in fact 
-it was still busy.  (This was the failure mechanism resulting from the 
-timeout changes.)
+Index: 2.6.28-rc3/kernel/kprobes.c
+===================================================================
+--- 2.6.28-rc3.orig/kernel/kprobes.c
++++ 2.6.28-rc3/kernel/kprobes.c
+@@ -613,30 +613,37 @@ static int __kprobes __register_kprobe(s
+ 		return -EINVAL;
+ 	p->addr = addr;
 
-Alan Stern
+-	if (!kernel_text_address((unsigned long) p->addr) ||
+-	    in_kprobes_functions((unsigned long) p->addr))
++	preempt_disable();
++	if (!__kernel_text_address((unsigned long) p->addr) ||
++	    in_kprobes_functions((unsigned long) p->addr)) {
++		preempt_enable();
+ 		return -EINVAL;
++	}
+
+ 	p->mod_refcounted = 0;
+
+ 	/*
+ 	 * Check if are we probing a module.
+ 	 */
+-	probed_mod = module_text_address((unsigned long) p->addr);
++	probed_mod = __module_text_address((unsigned long) p->addr);
+ 	if (probed_mod) {
+-		struct module *calling_mod = module_text_address(called_from);
++		struct module *calling_mod;
++		calling_mod = __module_text_address(called_from);
+ 		/*
+ 		 * We must allow modules to probe themself and in this case
+ 		 * avoid incrementing the module refcount, so as to allow
+ 		 * unloading of self probing modules.
+ 		 */
+ 		if (calling_mod && calling_mod != probed_mod) {
+-			if (unlikely(!try_module_get(probed_mod)))
++			if (unlikely(!try_module_get(probed_mod))) {
++				preempt_enable();
+ 				return -EINVAL;
++			}
+ 			p->mod_refcounted = 1;
+ 		} else
+ 			probed_mod = NULL;
+ 	}
++	preempt_enable();
+
+ 	p->nmissed = 0;
+ 	INIT_LIST_HEAD(&p->list);
+@@ -718,6 +725,10 @@ static void __kprobes __unregister_kprob
+ 	struct kprobe *old_p;
+
+ 	if (p->mod_refcounted) {
++		/*
++		 * Since we've already incremented refcount,
++		 * we don't need to disable preemption.
++		 */
+ 		mod = module_text_address((unsigned long)p->addr);
+ 		if (mod)
+ 			module_put(mod);
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
