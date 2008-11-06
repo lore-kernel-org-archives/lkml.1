@@ -1,111 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbYKFLDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYKFLFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbYKFLDT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 06:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbYKFLDK
+	id S1754632AbYKFLFZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 06:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbYKFLFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 06:03:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56723 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbYKFLDI (ORCPT
+	Thu, 6 Nov 2008 06:05:11 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:58761 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753287AbYKFLFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 06:03:08 -0500
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frank Mayhar <fmayhar@google.com>
-Cc: Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
-       adobriyan@gmail.com, akpm@linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <1225936715.27507.44.camel@bobble.smo.corp.google.com>
-References: <1224694989.8431.23.camel@oberon>
-	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
-	 <1225219114.24204.37.camel@oberon>
-	 <1225936715.27507.44.camel@bobble.smo.corp.google.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Nov 2008 12:03:40 +0100
-Message-Id: <1225969420.7803.4366.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Thu, 6 Nov 2008 06:05:09 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
+	<m1abcd2kqk.fsf@frodo.ebiederm.org>
+	<m163n12ko9.fsf_-_@frodo.ebiederm.org>
+	<m1y6zx15yj.fsf_-_@frodo.ebiederm.org>
+	<m1skq515ti.fsf_-_@frodo.ebiederm.org>
+	<m1od0t15rz.fsf_-_@frodo.ebiederm.org>
+Date: Thu, 06 Nov 2008 02:58:20 -0800
+In-Reply-To: <m1od0t15rz.fsf_-_@frodo.ebiederm.org> (Eric W. Biederman's
+	message of "Thu, 06 Nov 2008 02:57:04 -0800")
+Message-ID: <m1k5bh15pv.fsf_-_@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH 7/7] proc: Cleanup proc_flush_task.
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-05 at 17:58 -0800, Frank Mayhar wrote:
-> On Tue, 2008-10-28 at 14:38 -0400, Doug Chapman wrote:
-> > On Mon, 2008-10-27 at 11:39 -0700, Frank Mayhar wrote:
-> > > On Wed, 2008-10-22 at 13:03 -0400, Doug Chapman wrote:
-> > > > Unable to handle kernel paging request at virtual address
-> > > > 94949494949494a4
-> > > 
-> > > I take it this can be read as an uninitialized (or cleared) pointer?
-> > > 
-> > > It certainly looks like this is a race in thread (process?) teardown.  I
-> > > don't have hardware on which to reproduce this but _looks_ like another
-> > > thread has gotten in and torn down the process while we've been busy.
-> > 
-> > I finally managed to get kdump working and caught this in the act.  I
-> > still need to dig into this more but I think these 2 threads will show
-> > us the race condition.  Note that this is a slightly hacked kernel in
-> > that I removed "static" from a few functions to better see what was
-> > going on but no real functional changes when compared to a recent (day
-> > old or so) git pull from Linus's tree.
-> 
-> After digging through this a bit, I've concluded that it's probably a
-> race between process reap and the dequeue_entity() call to update_curr()
-> combined with a side effect of the slab debug stuff.  The
-> account_group_exec_runtime() routine (like the rest of these routines)
-> checks tsk->signal and tsk->signal->cputime.totals for NULL to make sure
-> they're still valid.  It looks like at this point tsk->signal is valid
-> (since the tsk->signal->cputime dereference succeeded) but
-> tsk->signal->cputime.totals is invalid.  That can't happen unless the
-> process is being reaped, and in fact can only happen in a narrow window
-> in __cleanup_signal() between the call to thread_group_cputime_free()
-> and the kmem_cache_free() of the signal struct itself.  Without the slab
-> debug stuff it would either skip the update (by noticing that pointers
-> were NULL) or blithely update freed structures.
-> 
-> I can't see anything that would prevent this from happening in the
-> general case.  I don't see what would stop the parent from coming in on
-> another CPU and reaping the process after schedule() has picked it off
-> the rq but before the deactivate_task->dequeue_task->dequeue_entity->
-> update_curr chain completes.  I see that schedule() disables preemption
-> on that CPU but will that really do the job?  I also suspect that with
-> hyperthreading both of these processes are on the same silicon, meaning
-> that one can be unexpectedly suspended while the other runs, thereby
-> making the window wider.
-> 
-> Unfortunately I don't know the code well enough to know what the right
-> fix is.  Maybe account_group_exec_runtime() should check for PF_EXITED?
 
-That is just plain ugly. The right fix to me seems to destroy the
-signal/thread group stuff _after_ the last task goes away.
+- shrink_dcache_parent is guarnateed to only flush dcache entries
+  from the specified superblock.  So the the insanely subtle
+  PF_EXITING check desgined to avoid flushing filesystems inodes
+  that are not safe to call during exit is unecessary.
 
-> Maybe update_curr() should do that?  I think that it makes more sense
-> for dequeue_entity() to do the check and then not call update_curr() if
-> the task is exiting but I defer to others with more knowledge of this
-> area.
+- The test to avoid excess flushing of dcache entries in proc
+  got inverted and generally broken for threads, and frankly
+  all it saved was a single d_hash_and_lookup so there was
+  very little point to it.  So remove the check and keep
+  the code stupid and correct.
 
-Hell no. Its a race in this signal/thread group stuff, fix it there.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/proc/base.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
-But now you made me look at this patch:
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 8b0d066..cb2222a 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -2560,15 +2560,11 @@ static void proc_flush_task_mnt(struct vfsmount *mnt, pid_t pid, pid_t tgid)
+ 	name.len = snprintf(buf, sizeof(buf), "%d", pid);
+ 	dentry = d_hash_and_lookup(mnt->mnt_root, &name);
+ 	if (dentry) {
+-		if (!(current->flags & PF_EXITING))
+-			shrink_dcache_parent(dentry);
++		shrink_dcache_parent(dentry);
+ 		d_drop(dentry);
+ 		dput(dentry);
+ 	}
+ 
+-	if (tgid == 0)
+-		goto out;
+-
+ 	name.name = buf;
+ 	name.len = snprintf(buf, sizeof(buf), "%d", tgid);
+ 	leader = d_hash_and_lookup(mnt->mnt_root, &name);
+@@ -2629,13 +2625,12 @@ void proc_flush_task(struct task_struct *task)
+ 	struct upid *upid;
+ 
+ 	pid = task_pid(task);
+-	if (thread_group_leader(task))
+-		tgid = task_tgid(task);
++	tgid = task_tgid(task);
+ 
+ 	for (i = 0; i <= pid->level; i++) {
+ 		upid = &pid->numbers[i];
+ 		proc_flush_task_mnt(upid->ns->proc_mnt, upid->nr,
+-			tgid ? tgid->numbers[i].nr : 0);
++				    tgid->numbers[i].nr);
+ 	}
+ 
+ 	upid = &pid->numbers[pid->level];
+-- 
+1.5.3.rc6.17.g1911
 
-commit f06febc96ba8e0af80bcc3eaec0a109e88275fac
-Author: Frank Mayhar <fmayhar@google.com>
-Date:   Fri Sep 12 09:54:39 2008 -0700
-
-    timers: fix itimer/many thread hang
-
-
-and I'm thinking you just rendered big iron unbootable.
-
-You replaced a loop-over-threads by a loop-over-cpus, on every tick. Did
-you stop to think what would happen on 4096 cpu machines?
-
-Also, you just introduced per-cpu allocations for each thread-group,
-while Christoph is reworking the per-cpu allocator, with one unfortunate
-side-effect - its going to have a limited size pool. Therefore this will
-limit the number of thread-groups we can have.
-
-Hohumm, not at all liking this..
