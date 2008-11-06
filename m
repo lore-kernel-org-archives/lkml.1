@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbYKFT7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbYKFUDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbYKFT7U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 14:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYKFT7L
+	id S1752466AbYKFUDo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:03:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYKFUDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 14:59:11 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:37381 "EHLO e8.ny.us.ibm.com"
+	Thu, 6 Nov 2008 15:03:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33345 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbYKFT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 14:59:10 -0500
-Date: Thu, 6 Nov 2008 13:58:56 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
-       morgan@kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH -v2 3/4] AUDIT: collect info when execve results in
-	caps in pE
-Message-ID: <20081106195856.GA30017@us.ibm.com>
-References: <20081103201742.12059.36030.stgit@paris.rdu.redhat.com> <20081103201753.12059.67262.stgit@paris.rdu.redhat.com> <20081104163540.GA24318@us.ibm.com> <1225999615.3300.177.camel@localhost.localdomain>
+	id S1751007AbYKFUDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:03:34 -0500
+Message-ID: <49134D8E.1070407@redhat.com>
+Date: Thu, 06 Nov 2008 15:03:26 -0500
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1225999615.3300.177.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: next-20081106: today's ftrace episode
+References: <20081106173645.e7e79071.sfr@canb.auug.org.au> <20081106194432.GA17188@x200.localdomain>
+In-Reply-To: <20081106194432.GA17188@x200.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> So here's the problem....  I can't fail this syscall, it's too late.  I
+Alexey Dobriyan wrote:
+> On m68k-amiga:
+>
+>   CC      arch/m68k/kernel/asm-offsets.s
+> In file included from include/linux/fs.h:287,
+>                  from include/linux/ftrace.h:5,		<===
+>                  from include/linux/hardirq.h:7,
+>                  from include2/asm/system.h:69,
+>                  from include/linux/list.h:7,		<===
+>                  from include/linux/preempt.h:11,
+>                  from include/linux/spinlock.h:50,
+>                  from include/linux/seqlock.h:29,
+>                  from include/linux/time.h:8,
+>                  from include/linux/timex.h:57,
+>                  from include/linux/sched.h:54,
+>                  from arch/m68k/kernel/asm-offsets.c:12:
+> include/linux/wait.h:37: error: field 'task_list' has incomplete type
+> 	...
+>
+> commit 7e5e26a3d8ac4bcadb380073dc9604c07a9a6198 aka "trace: fix hardirq header for non ftrace archs"
+>
+>
+>   
+We only need to include the ftrace.h to declare the ftrace_nmi_enter and 
+exit.
 
-Oh, right...
+I could separate that out into its own "ftrace_irq.h" file, that 
+hardirq.h can include. That should fix it.
 
-> can do a couple of things.
-> 
-> 1) waste lots of space in the execve record so we know memory has
-> already been allocated
-> 2) just ignore the memory failure and don't worry about it.  We are
-> still going to get the fcaps info from the patch record and should be
-> able to piece together the starting and finishing caps by looking at
-> past audit records if you really need it.
-> 3) I can call audit_log_lost().  I don't think we know are this time
-> that we really needed this record, but this is the 'safest' approach.
-> If people have their machines set to panic on lost records we would
-> panic.   Honestly though, if we don't have enough memory to satisfy this
-> request (we're talking about 72 bytes or something?) we are going to
-> fail the next audit message, so doing it now would be just fine.
-> 
-> I vote #2 since I don't think we are really going to have any lose of
-> info.  But if people want it I'll go #3 since I don't think it will hurt
-> anything.
+basically all that would be needed in that file is this:
 
-2 sounds reasonable to me.  Reckon sgrubb will speak up if it violates
-some audit requirement.
+#ifdef CONFIG_DYNAMIC_FTRACE
+    extern void ftrace_nmi_enter(void);
+    extern void ftrace_nmi_exit(void);
+#else
+    static inline void ftrace_nmi_enter(void) { }
+    static inline void ftrace_nmi_exit(void) { }
+#endif /* CONFIG_DYNAMIC_FTRACE */
 
-thanks,
--serge
+-- Steve
+
+
