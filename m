@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbYKFG6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbYKFG6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbYKFG6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbYKFG6J
+	id S1754599AbYKFG6c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYKFG6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:58:09 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:47734 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbYKFG6I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:58:08 -0500
-Message-ID: <49129493.9070103@linux.vnet.ibm.com>
-Date: Thu, 06 Nov 2008 12:24:11 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 6 Nov 2008 01:58:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49997 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753364AbYKFG6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:58:15 -0500
+Date: Thu, 6 Nov 2008 07:57:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
+	V2
+Message-ID: <20081106065751.GD15731@elte.hu>
+References: <49129310.5000903@cn.fujitsu.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 0/6] memcg updates (05/Nov)
-References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49129310.5000903@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Weekly (RFC) update for memcg.
-> 
-> This set includes
-> 
-> 1. change force_empty to do move account rather than forget all
 
-I would like this to be selectable, please. We don't want to break behaviour and
-not everyone would like to pay the cost of movement.
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 
-> 2. swap cache handling
-> 3. mem+swap controller kconfig
-> 4. swap_cgroup for rememver swap account information
-> 5. mem+swap controller core
-> 6. synchronize memcg's LRU and global LRU.
-> 
-> "1" is already sent, "6" is a newcomer.
-> I'd like to push out "2" or "2-5" in the next week (if no bugs.)
-> 
-> after 6, next candidates are
->   - dirty_ratio handler
->   - account move at task move.
-> 
-> Some more explanation about purpose of "6". (see details in patch itself)
-> Now, one of complicated logic in memcg is LRU handling. Because the place of
-> lru_head depends on page_cgroup->mem_cgroup pointer, we have to take
-> lock as following even under zone->lru_lock.
-> ==
->   pc = lookup_page_cgroup(page);
->   if (!trylock_page_cgroup(pc))
->   	return -EBUSY;
-> 
->    if (PageCgroupUsed(pc)) {
-> 	struct mem_cgroup_per_zone *mz = page_cgroup_zoneinfo(pc);
-> 	spin_lock_irqsave(&mz->lru_lock, flags);
-> 	....some operation on LRU.
-> 	spin_unlock_irqrestore(&mz->lru_lock, flags);
->    }
->    unlock_page_cgroup(pc);
-> ==
-> Sigh..
-> 
-> After "6", page_cgroup's LRU management can be done independently to some extent.
-> == as
->   (zone->lru_lock is held here)
->   pc = lookup_page_cgroup(page);
->   list operation on pc.
->   (unlock zone->lru_lock)
-> ==
-> Maybe good for maintainance and as a bonus, we can make use of isolate_lru_page() when
-> doing some racy operation.
-> 
-> 	isolate_lru_page(page);
-> 	pc = lookup_page_cgroup(page);
-> 	do some jobs.
-> 	putback_lru_page(page);
-> 
-> Maybe this will be a help to implement "account move at task move".
+> this fix remove ugly macro, and increase readability for rcupdate codes
 
-Sounds promising!
+looks good to me, if Paul acks the concept too.
 
--- 
-	Balbir
+Two small details:
+
+> +++ b/include/linux/rcuclassic.h
+> @@ -32,6 +32,7 @@
+>  
+>  #ifndef __LINUX_RCUCLASSIC_H
+>  #define __LINUX_RCUCLASSIC_H
+> +#define HAVE_SPECIAL_RCU_BH
+
+please use def_bool to define CONFIG_RCU_HAVE_SPECIAL_RCU_BH
+
+and:
+
+> +#else
+> +#define rcu_bh_qsctr_inc(cpu)
+> +#define rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
+> +#define rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
+> +#endif /* HAVE_SPECIAL_RCU_BH */
+
+use inline functions please. CPP defines should never be used in new 
+code. (use inlines instead of macros and enums/const instead of 
+constant #define's)
+
+	Ingo
