@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbYKFOVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYKFOZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbYKFOVW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 09:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYKFOVN
+	id S1754016AbYKFOZW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 09:25:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYKFOZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 09:21:13 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:51431 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750913AbYKFOVN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 09:21:13 -0500
-X-Sasl-enc: lWuxxyInemX9IzEut4M+EJxLEgt2S/tfgqSKikzErTo6 1225981271
-Date: Thu, 6 Nov 2008 12:21:07 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
-Message-ID: <20081106142107.GC23278@khazad-dum.debian.net>
-References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61> <20081105122632.GC14931@khazad-dum.debian.net> <20081105130852.GB30758@dose.home.local> <20081105162401.GF14931@khazad-dum.debian.net> <20081106003543.GA14766@x61> <20081106082314.GA18430@x61>
+	Thu, 6 Nov 2008 09:25:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36305 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751101AbYKFOZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 09:25:09 -0500
+Date: Thu, 6 Nov 2008 15:24:52 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD IOMMU fixes for 2.6.28
+Message-ID: <20081106142452.GA13023@elte.hu>
+References: <20081106141555.GD22503@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081106082314.GA18430@x61>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+In-Reply-To: <20081106141555.GD22503@amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008, Tino Keitel wrote:
-> The whole fan level stuff looks a bit complicated to me. Especially the
 
-It is.  The sysfs hwmon interface does not map 1:1 with the three possible
-thinkpad fan control interfaces.  fan_control_desired_level is used for that
-interface mainly, since I have to remember the last state used that was in
-the set of 0-7, ignoring AUTO (which is a separate pwm control mode for
-hwmon) and full-speed (which is a separate pwm control mode for hwmon).
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-It is hijacked by fan_suspend/fan_resume to store state between
-sleep/resume, because that was convenient.  Too bad I failed to notice it
-would not work properly for that.
+> Hi Ingo,
+> 
+> The following changes since commit 1e19b16a30c34c042f1eaa23db4c99bfad1dac0e:
+>   Thomas Gleixner (1):
+>         AMD IOMMU: use iommu_device_max_index, fix
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
+> 
+> Joerg Roedel (2):
+>       AMD IOMMU: fix detection of NP capable IOMMUs
+>       AMD IOMMU: fix lazy IO/TLB flushing in unmap path
+> 
+>  arch/x86/kernel/amd_iommu.c |    9 +++++++--
+>  1 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> This are 2 important bugfixes which fix lazy IO/TLB flushing with 
+> the driver. Please pull.
 
-> The attached patch tries to simplify this a bit. It sets
+pulled into tip/x86/urgent, thanks Joerg!
 
-NAK, it would break a lot of stuff.   See my previous reply on this thread
-for *some* of the stuff it would break.
-
-I will have a proper patch out probably within 24h but most certainly before
-next Monday.
-
-Meanwhile, I suggest you just remove the calls to fan_suspend and fan_resume
-as a workaround.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+	Ingo
