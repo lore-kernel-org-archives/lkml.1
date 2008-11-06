@@ -1,79 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbYKFA2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbYKFAf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755680AbYKFA2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 19:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYKFA2Z
+	id S1753919AbYKFAf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 19:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbYKFAfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 19:28:25 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56010 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754603AbYKFA2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 19:28:24 -0500
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
-	hotplug
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Nigel Cunningham <ncunningham@crca.org.au>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	 <1225817945.12673.602.camel@nimitz>
-	 <20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
-	 <200811051208.26628.rjw@sisk.pl>
-	 <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 05 Nov 2008 16:28:01 -0800
-Message-Id: <1225931281.11514.27.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Nov 2008 19:35:47 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:50815 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbYKFAfr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 19:35:47 -0500
+Date: Thu, 6 Nov 2008 01:35:44 +0100
+From: Tino Keitel <tino.keitel@tikei.de>
+To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
+Message-ID: <20081106003543.GA14766@x61>
+Mail-Followup-To: ibm-acpi-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61> <20081105122632.GC14931@khazad-dum.debian.net> <20081105130852.GB30758@dose.home.local> <20081105162401.GF14931@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="EeQfGwPcQSOJBaQU"
+Content-Disposition: inline
+In-Reply-To: <20081105162401.GF14931@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 09:14 +0900, KAMEZAWA Hiroyuki wrote:
-> Ok, please consider "when memory hotplug happens." 
+
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, Nov 05, 2008 at 14:24:01 -0200, Henrique de Moraes Holschuh wrote:
+
+[...]
+
+> It should not have set the fan to level 7, so it means we will need to add
+> debugging hints to the driver.  I don't have my T43 with me right now, or I
+> could try to reproduce the issue.
 > 
-> In general, it happens when
->   1. memory is inserted to slot.
->   2. the firmware notifes the system to enable already inserted memory.
-> 
-> To trigger "1", you have to open cover of server/pc. Do you open pc while the system
-> starts hibernation ? for usual people, no.
+> Are you confortable with adding some printk's to kernel source?  If so, try
+> to printk the interesting bits in fan_suspend and fan_resume on
+> drivers/misc/thinkpad_acpi.c.
 
-You're right, this won't happen very often.  We're trying to close a
-theoretical hole that hasn't ever been observed in practice.  But, we
-don't exactly leave races in code just because we haven't observed them.
-I think this is a classic race.
+In fan_init(), fan_control_desired_level is set to 7, and never changed
+to anything else. It is not set in fan_suspend() because
+tp_features.fan_ctrl_status_undef is 0 (also set in fan_init()).
 
-If we don't close it now, then someone doing some really weirdo hotplug
-is going to run into it at some point.  Who knows what tomorrow's
-hardware/firmware will do?
+In fan_resume(), saved_fan_level is taken from
+fan_control_desired_level. current_level is read and set to
+TP_EC_FAN_AUTO.
 
-> To trigger "2", the user have special console to tell firmware "enable this memory".
-> Such firmware console or users have to know "the system works well." And, more important,
-> when the system is suspended, the firmware can't do hotplug because the kernel is sleeping.
-> So, such firmware console or operator have to know the system status.
-> 
-> Am I missing some ? Current linux can know PCI/USB hotplug while the
-> system is suspended ?
+Now the following check is true:
 
-* echo 'disk' > /sys/power/state
-* count number of pages to write to disk
-* turn all interrupts off
-* copy pages to disk
-* power down
+saved_fan_level == 7 && !(current_level & TP_EC_FAN_FULLSPEED))
 
-I think the race we're trying to close is the one between when we count
-pages and when we turn interrupts off.  I assume that there is a reason
-that we don't do the *entire* hibernation process with interrupts off,
-probably because it would "lock" the system up for too long, and can
-even possibly fail.
+So do_set is set to true and the fan speed is set to 7 at resume.
 
--- Dave
+I tried to write a correct patch, but I got lost in all that
+fan_control_desired_level, fan_control_initial_status and
+tp_features.fan_ctrl_status_undef stuff.
 
+My brain says that one would just read the current fan settings from
+the EC at initialization. Then, after resume, this setting is restored
+unconditionally, or at least if it differs from current_level. The
+attached patch works for me. However, I don't have all the knowledge
+about older models and their specific behaviour.
+
+Correction: I just tested a bit further, and it doesn't work. If I set
+fan level to 3, suspend, resume, set fan level to auto, and
+resume/suspend again, fan level is restored to 3. This is because
+fan_control_desired_level isn't updated by fan_update_desired_level()
+if it is set back to auto, but kept at the old value. So, my impression
+is that all the values and states should be cleaned up a bit and
+simplified. In the current state, there are a lot of strage checks and
+quirks that have side effects when other parts are changed.
+
+Regards,
+Tino
+
+--EeQfGwPcQSOJBaQU
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="thinkpad-acpi_fan-level-restore-fix.diff"
+
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 4db1cf9..fa2b8df 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -5886,6 +5886,7 @@ static int __init fan_init(struct ibm_init_struct *iibm)
+ 		if (likely(acpi_ec_read(fan_status_offset,
+ 					&fan_control_initial_status))) {
+ 			fan_status_access_mode = TPACPI_FAN_RD_TPEC;
++			fan_control_desired_level = fan_control_initial_status;
+ 
+ 			/* In some ThinkPads, neither the EC nor the ACPI
+ 			 * DSDT initialize the fan status, and it ends up
+@@ -6025,9 +6026,7 @@ static void fan_resume(void)
+ 		break;
+ 	case TPACPI_FAN_WR_ACPI_FANS:
+ 	case TPACPI_FAN_WR_TPEC:
+-		do_set = ((saved_fan_level & TP_EC_FAN_FULLSPEED) ||
+-			  (saved_fan_level == 7 &&
+-			   !(current_level & TP_EC_FAN_FULLSPEED)));
++		do_set = 1;
+ 		break;
+ 	default:
+ 		return;
+
+--EeQfGwPcQSOJBaQU--
