@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753135AbYKFUrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYKFUrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753135AbYKFUrB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 15:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYKFUqx
+	id S1753342AbYKFUrZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYKFUrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 15:46:53 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:59323 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164AbYKFUqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 15:46:52 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
-	hotplug
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0811060947250.2456-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0811060947250.2456-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Fri, 07 Nov 2008 07:46:46 +1100
-Message-Id: <1226004406.6876.5.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 15:47:09 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:56357 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbYKFUrI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:47:08 -0500
+Date: Thu, 06 Nov 2008 13:56:16 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.28-rc2-mm1: multiple BUG: scheduling while atomic: swapper,
+ first in acpi_idle_enter_simple, then fbcon has problems
+In-reply-to: <20081106093324.57d88a43.akpm@linux-foundation.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-acpi@vger.kernel.org
+Message-id: <alpine.LFD.2.00.0811061354340.3106@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <20081106102309.GA334@atrey.karlin.mff.cuni.cz>
+ <20081106093324.57d88a43.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
 
-On Thu, 2008-11-06 at 09:48 -0500, Alan Stern wrote:
-> On Thu, 6 Nov 2008, Nigel Cunningham wrote:
+
+> > ...kernel contains experimental version of HP accelerometer driver and
+> > new HP acclerometer LED, but hopefully they are not causing this?
+> > 
 > 
-> > Remember that when we hibernate (assuming we don't then suspend to ram),
-> > the power is fully off. Resuming starts off like a fresh boot.
-> 
-> That simply is not true.  On ACPI systems, hibernation goes into the S4 
-> state.  Power fully off is S5.
+> The trace is a bit of a mess, but we first hit problems around
+> acpi_idle(), so I'd be suspecting acpi, x86 or sched-type changes.
 
-For the purposes of our discussion, it was a good enough description.
-Nevertheless, you're right - if we do everything in a fully ACPI spec
-compliant way, there will still be some power around. Of course we don't
-always do that (can use S4 or S5).
+try "idle=poll" to run none of the ACPI idle code.
+or "idle=halt" to just flirt with the idle code.
 
-Regards,
-
-Nigel
-
+-Len
