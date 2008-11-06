@@ -1,96 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYKFX5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYKFX5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbYKFX5A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 18:57:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbYKFX4u
+	id S1754664AbYKFX5b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 18:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbYKFX5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 18:56:50 -0500
-Received: from sous-sol.org ([216.99.217.87]:51085 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751844AbYKFX4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 18:56:49 -0500
-Date: Thu, 6 Nov 2008 15:54:06 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: Greg KH <greg@kroah.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, H L <swdevyid@yahoo.com>,
-       Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, linux-pci@vger.kernel.org,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, mingo@elte.hu, Chris Wright <chrisw@sous-sol.org>
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081106235406.GB30790@sequoia.sous-sol.org>
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <20081106174741.GC11773@parisc-linux.org> <20081106175308.GA17027@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106175308.GA17027@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 6 Nov 2008 18:57:21 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:45379 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752287AbYKFX5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 18:57:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:from:to:cc:in-reply-to:references:content-type:
+	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=uH/U9JFZxsmtVNWxKPsLOo41k2bDvm5e3O5z4UoD4Hwflh2OVK1FbdVHB124D1dgP
+	NxzjYy7QIS0TmH03T552A==
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+From: Frank Mayhar <fmayhar@google.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
+       adobriyan@gmail.com, akpm@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1225984098.7803.4642.camel@twins>
+References: <1224694989.8431.23.camel@oberon>
+	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
+	 <1225219114.24204.37.camel@oberon>
+	 <1225936715.27507.44.camel@bobble.smo.corp.google.com>
+	 <1225969420.7803.4366.camel@twins>
+	 <Pine.LNX.4.64.0811060900450.3595@quilx.com>
+	 <1225984098.7803.4642.camel@twins>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Thu, 06 Nov 2008 15:52:48 -0800
+Message-Id: <1226015568.2186.20.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (greg@kroah.com) wrote:
-> On Thu, Nov 06, 2008 at 10:47:41AM -0700, Matthew Wilcox wrote:
-> > On Thu, Nov 06, 2008 at 08:49:19AM -0800, Greg KH wrote:
-> > > On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
-> > > > I have not modified any existing drivers, but instead I threw together
-> > > > a bare-bones module enabling me to make a call to pci_iov_register()
-> > > > and then poke at an SR-IOV adapter's /sys entries for which no driver
-> > > > was loaded.
-> > > > 
-> > > > It appears from my perusal thus far that drivers using these new
-> > > > SR-IOV patches will require modification; i.e. the driver associated
-> > > > with the Physical Function (PF) will be required to make the
-> > > > pci_iov_register() call along with the requisite notify() function.
-> > > > Essentially this suggests to me a model for the PF driver to perform
-> > > > any "global actions" or setup on behalf of VFs before enabling them
-> > > > after which VF drivers could be associated.
-> > > 
-> > > Where would the VF drivers have to be associated?  On the "pci_dev"
-> > > level or on a higher one?
-> > > 
-> > > Will all drivers that want to bind to a "VF" device need to be
-> > > rewritten?
+On Thu, 2008-11-06 at 16:08 +0100, Peter Zijlstra wrote: 
+> On Thu, 2008-11-06 at 09:03 -0600, Christoph Lameter wrote:
+> > On Thu, 6 Nov 2008, Peter Zijlstra wrote:
 > > 
-> > The current model being implemented by my colleagues has separate
-> > drivers for the PF (aka native) and VF devices.  I don't personally
-> > believe this is the correct path, but I'm reserving judgement until I
-> > see some code.
+> > > Also, you just introduced per-cpu allocations for each thread-group,
+> > > while Christoph is reworking the per-cpu allocator, with one unfortunate
+> > > side-effect - its going to have a limited size pool. Therefore this will
+> > > limit the number of thread-groups we can have.
+> > 
+> > Patches exist that implement a dynamically growable percpu pool (using
+> > virtual mappings though). If the cost of the additional complexity /
+> > overhead is justifiable then we can make the percpu pool dynamically
+> > extendable.
 > 
-> Hm, I would like to see that code before we can properly evaluate this
-> interface.  Especially as they are all tightly tied together.
-> 
-> > I don't think we really know what the One True Usage model is for VF
-> > devices.  Chris Wright has some ideas, I have some ideas and Yu Zhao has
-> > some ideas.  I bet there's other people who have other ideas too.
-> 
-> I'd love to hear those ideas.
+> Right, but I don't think the patch under consideration will fly anyway,
+> doing a for_each_possible_cpu() loop on every tick on all cpus isn't
+> really healthy, even for moderate sized machines.
 
-First there's the question of how to represent the VF on the host.
-Ideally (IMO) this would show up as a normal interface so that normal tools
-can configure the interface.  This is not exactly how the first round of
-patches were designed.
+I personally think that you're overstating this.  First, the current
+implementation walks all threads for each tick, which is simply not
+scalable and results in soft lockups with large numbers of threads.
+This patch fixes a real bug.  Second, this only happens "on every tick"
+for processes that have more than one thread _and_ that use posix
+interval timers.  Roland and I went to some effort to keep loops like
+the on you're referring to out of the common paths.
 
-Second there's the question of reserving the BDF on the host such that
-we don't have two drivers (one in the host and one in a guest) trying to
-drive the same device (an issue that shows up for device assignment as
-well as VF assignment).
+In any event, while this particular implementation may not be optimal,
+at least it's _right_.  Whatever happened to "make it right, then make
+it fast?"
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
-Third there's the question of whether the VF can be used in the host at
-all.
-
-Fourth there's the question of whether the VF and PF drivers are the
-same or separate.
-
-The typical usecase is assigning the VF to the guest directly, so
-there's only enough functionality in the host side to allocate a VF,
-configure it, and assign it (and propagate AER).  This is with separate
-PF and VF driver.
-
-As Anthony mentioned, we are interested in allowing the host to use the
-VF.  This could be useful for containers as well as dedicating a VF (a
-set of device resources) to a guest w/out passing it through.
-
-thanks,
--chris
