@@ -1,187 +1,391 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYKFGuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbYKFGvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbYKFGuX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKFGuH
+	id S1754188AbYKFGvN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYKFGu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:50:07 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:50127 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbYKFGuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:50:05 -0500
-Date: Thu, 6 Nov 2008 01:50:03 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] net driver fixes for 2.6.28-rc
-Message-ID: <20081106065003.GA19105@havoc.gtf.org>
+	Thu, 6 Nov 2008 01:50:58 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64793 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751982AbYKFGu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:50:56 -0500
+Message-ID: <49129310.5000903@cn.fujitsu.com>
+Date: Thu, 06 Nov 2008 14:47:44 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c V2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Please pull from 'davem-fixes' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
+this fix remove ugly macro, and increase readability for rcupdate codes
 
-to receive the following updates:
+changed from v1:
+use HAVE_SPECIAL_RCU_BH/SCHED instead of define duplicate version of
+synchronize_sched().
 
- drivers/net/3c509.c          |    6 +++---
- drivers/net/mlx4/en_netdev.c |    2 +-
- drivers/net/sfc/ethtool.c    |    4 ++--
- drivers/net/tun.c            |    4 ++--
- drivers/net/usb/hso.c        |   12 +++++++-----
- drivers/net/virtio_net.c     |    2 +-
- 6 files changed, 16 insertions(+), 14 deletions(-)
-
-Al Viro (1):
-      el3_common_init() should be __devinit, not __init
-
-Ben Hutchings (1):
-      sfc: Correct address of gPXE boot configuration in EEPROM
-
-Jonathan McDowell (1):
-      [netdrvr] usb/hso: Cleanup rfkill error handling
-
-Mark McLoughlin (2):
-      virtio_net: don't set NETIF_F_FRAGLIST
-      tun: don't set NETIF_F_FRAGLIST
-
-Paulius Zaleckas (1):
-      hso: rfkill type should be WWAN
-
-Yevgeny Petrilin (1):
-      mlx4_en: Start port error flow bug fix
-
-diff --git a/drivers/net/3c509.c b/drivers/net/3c509.c
-index 3a7bc52..c7a4f3b 100644
---- a/drivers/net/3c509.c
-+++ b/drivers/net/3c509.c
-@@ -94,7 +94,7 @@
- #include <asm/io.h>
- #include <asm/irq.h>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+index 5f89b62..68e84ff 100644
+--- a/include/linux/rcuclassic.h
++++ b/include/linux/rcuclassic.h
+@@ -32,6 +32,7 @@
  
--static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
-+static char version[] __devinitdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
+ #ifndef __LINUX_RCUCLASSIC_H
+ #define __LINUX_RCUCLASSIC_H
++#define HAVE_SPECIAL_RCU_BH
  
- #ifdef EL3_DEBUG
- static int el3_debug = EL3_DEBUG;
-@@ -186,7 +186,7 @@ static int max_interrupt_work = 10;
- static int nopnp;
- #endif
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+@@ -166,12 +167,7 @@ extern struct lockdep_map rcu_lock_map;
+ 		local_bh_enable(); \
+ 	} while (0)
  
--static int __init el3_common_init(struct net_device *dev);
-+static int __devinit el3_common_init(struct net_device *dev);
- static void el3_common_remove(struct net_device *dev);
- static ushort id_read_eeprom(int index);
- static ushort read_eeprom(int ioaddr, int index);
-@@ -537,7 +537,7 @@ static struct mca_driver el3_mca_driver = {
- static int mca_registered;
- #endif /* CONFIG_MCA */
+-#define __synchronize_sched() synchronize_rcu()
+-
+-#define call_rcu_sched(head, func) call_rcu(head, func)
+-
+ extern void __rcu_init(void);
+-#define rcu_init_sched()	do { } while (0)
+ extern void rcu_check_callbacks(int cpu, int user);
+ extern void rcu_restart_cpu(int cpu);
  
--static int __init el3_common_init(struct net_device *dev)
-+static int __devinit el3_common_init(struct net_device *dev)
- {
- 	struct el3_private *lp = netdev_priv(dev);
- 	int err;
-diff --git a/drivers/net/mlx4/en_netdev.c b/drivers/net/mlx4/en_netdev.c
-index a339afb..a3f7324 100644
---- a/drivers/net/mlx4/en_netdev.c
-+++ b/drivers/net/mlx4/en_netdev.c
-@@ -706,7 +706,7 @@ tx_err:
- 	mlx4_en_release_rss_steer(priv);
- rx_err:
- 	for (i = 0; i < priv->rx_ring_num; i++)
--		mlx4_en_deactivate_rx_ring(priv, &priv->rx_ring[rx_index]);
-+		mlx4_en_deactivate_rx_ring(priv, &priv->rx_ring[i]);
- cq_err:
- 	while (rx_index--)
- 		mlx4_en_deactivate_cq(priv, &priv->rx_cq[rx_index]);
-diff --git a/drivers/net/sfc/ethtool.c b/drivers/net/sfc/ethtool.c
-index fa98af5..cd0d087 100644
---- a/drivers/net/sfc/ethtool.c
-+++ b/drivers/net/sfc/ethtool.c
-@@ -174,8 +174,8 @@ static struct efx_ethtool_stat efx_ethtool_stats[] = {
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 86f1f5e..7861bee 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -112,6 +112,7 @@ struct rcu_head {
+  */
+ #define rcu_read_unlock() __rcu_read_unlock()
  
- /* EEPROM range with gPXE configuration */
- #define EFX_ETHTOOL_EEPROM_MAGIC 0xEFAB
--#define EFX_ETHTOOL_EEPROM_MIN 0x100U
--#define EFX_ETHTOOL_EEPROM_MAX 0x400U
-+#define EFX_ETHTOOL_EEPROM_MIN 0x800U
-+#define EFX_ETHTOOL_EEPROM_MAX 0x1800U
- 
- /**************************************************************************
++#ifdef HAVE_SPECIAL_RCU_BH
+ /**
+  * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
   *
-diff --git a/drivers/net/tun.c b/drivers/net/tun.c
-index 6daea0c..86433ea 100644
---- a/drivers/net/tun.c
-+++ b/drivers/net/tun.c
-@@ -844,11 +844,11 @@ static int set_offload(struct net_device *dev, unsigned long arg)
+@@ -125,13 +126,19 @@ struct rcu_head {
+  */
+ #define rcu_read_lock_bh() __rcu_read_lock_bh()
  
- 	old_features = dev->features;
- 	/* Unset features, set them as we chew on the arg. */
--	features = (old_features & ~(NETIF_F_HW_CSUM|NETIF_F_SG|NETIF_F_FRAGLIST
-+	features = (old_features & ~(NETIF_F_HW_CSUM|NETIF_F_SG
- 				    |NETIF_F_TSO_ECN|NETIF_F_TSO|NETIF_F_TSO6));
+-/*
++/**
+  * rcu_read_unlock_bh - marks the end of a softirq-only RCU critical section
+  *
+  * See rcu_read_lock_bh() for more information.
+  */
+ #define rcu_read_unlock_bh() __rcu_read_unlock_bh()
  
- 	if (arg & TUN_F_CSUM) {
--		features |= NETIF_F_HW_CSUM|NETIF_F_SG|NETIF_F_FRAGLIST;
-+		features |= NETIF_F_HW_CSUM|NETIF_F_SG;
- 		arg &= ~TUN_F_CSUM;
++#else
++#define rcu_bh_qsctr_inc(cpu)
++#define rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
++#define rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
++#endif /* HAVE_SPECIAL_RCU_BH */
++
+ /**
+  * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
+  *
+@@ -189,45 +196,6 @@ struct rcu_head {
+ 		(p) = (v); \
+ 	})
  
- 		if (arg & (TUN_F_TSO4|TUN_F_TSO6)) {
-diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
-index 1164c52..8e90891 100644
---- a/drivers/net/usb/hso.c
-+++ b/drivers/net/usb/hso.c
-@@ -2184,19 +2184,20 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
- 			     struct usb_interface *interface)
- {
- 	struct hso_net *hso_net = dev2net(hso_dev);
--	struct device *dev = hso_dev->dev;
-+	struct device *dev = &hso_net->net->dev;
- 	char *rfkn;
+-/* Infrastructure to implement the synchronize_() primitives. */
+-
+-struct rcu_synchronize {
+-	struct rcu_head head;
+-	struct completion completion;
+-};
+-
+-extern void wakeme_after_rcu(struct rcu_head  *head);
+-
+-#define synchronize_rcu_xxx(name, func) \
+-void name(void) \
+-{ \
+-	struct rcu_synchronize rcu; \
+-	\
+-	init_completion(&rcu.completion); \
+-	/* Will wake me after RCU finished. */ \
+-	func(&rcu.head, wakeme_after_rcu); \
+-	/* Wait for it. */ \
+-	wait_for_completion(&rcu.completion); \
+-}
+-
+-/**
+- * synchronize_sched - block until all CPUs have exited any non-preemptive
+- * kernel code sequences.
+- *
+- * This means that all preempt_disable code sequences, including NMI and
+- * hardware-interrupt handlers, in progress on entry will have completed
+- * before this primitive returns.  However, this does not guarantee that
+- * softirq handlers will have completed, since in some kernels, these
+- * handlers can run in process context, and can block.
+- *
+- * This primitive provides the guarantees made by the (now removed)
+- * synchronize_kernel() API.  In contrast, synchronize_rcu() only
+- * guarantees that rcu_read_lock() sections will have completed.
+- * In "classic RCU", these two guarantees happen to be one and
+- * the same, but can differ in realtime RCU implementations.
+- */
+-#define synchronize_sched() __synchronize_sched()
+-
+ /**
+  * call_rcu - Queue an RCU callback for invocation after a grace period.
+  * @head: structure to be used for queueing the RCU updates.
+@@ -242,6 +210,11 @@ void name(void) \
+ extern void call_rcu(struct rcu_head *head,
+ 			      void (*func)(struct rcu_head *head));
  
- 	hso_net->rfkill = rfkill_allocate(&interface_to_usbdev(interface)->dev,
--				 RFKILL_TYPE_WLAN);
-+				 RFKILL_TYPE_WWAN);
- 	if (!hso_net->rfkill) {
--		dev_err(dev, "%s - Out of memory", __func__);
-+		dev_err(dev, "%s - Out of memory\n", __func__);
- 		return;
- 	}
- 	rfkn = kzalloc(20, GFP_KERNEL);
- 	if (!rfkn) {
- 		rfkill_free(hso_net->rfkill);
--		dev_err(dev, "%s - Out of memory", __func__);
-+		hso_net->rfkill = NULL;
-+		dev_err(dev, "%s - Out of memory\n", __func__);
- 		return;
- 	}
- 	snprintf(rfkn, 20, "hso-%d",
-@@ -2209,7 +2210,8 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
- 		kfree(rfkn);
- 		hso_net->rfkill->name = NULL;
- 		rfkill_free(hso_net->rfkill);
--		dev_err(dev, "%s - Failed to register rfkill", __func__);
-+		hso_net->rfkill = NULL;
-+		dev_err(dev, "%s - Failed to register rfkill\n", __func__);
- 		return;
- 	}
++
++extern void synchronize_rcu(void);
++extern void rcu_barrier(void);
++
++#ifdef HAVE_SPECIAL_RCU_BH
+ /**
+  * call_rcu_bh - Queue an RCU for invocation after a quicker grace period.
+  * @head: structure to be used for queueing the RCU updates.
+@@ -263,11 +236,46 @@ extern void call_rcu(struct rcu_head *head,
+ extern void call_rcu_bh(struct rcu_head *head,
+ 			void (*func)(struct rcu_head *head));
+ 
+-/* Exported common interfaces */
+-extern void synchronize_rcu(void);
+-extern void rcu_barrier(void);
+ extern void rcu_barrier_bh(void);
++#else
++
++#define call_rcu_bh call_rcu
++#define rcu_barrier_bh rcu_barrier
++
++/*
++ * Return the number of RCU batches processed thus far. Useful for debug
++ * and statistic. The _bh variant is identifcal to straight RCU
++ */
++static inline long rcu_batches_completed_bh(void)
++{
++	return rcu_batches_completed();
++}
++#endif /* HAVE_SPECIAL_RCU_BH */
++
++#ifdef HAVE_SPECIAL_RCU_SCHED
++/**
++ * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
++ * @head: structure to be used for queueing the RCU updates.
++ * @func: actual update function to be invoked after the grace period
++ *
++ * The update function will be invoked some time after a full
++ * synchronize_sched()-style grace period elapses, in other words after
++ * all currently executing preempt-disabled sections of code (including
++ * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
++ * completed.
++ */
++extern void call_rcu_sched(struct rcu_head *head,
++			   void (*func)(struct rcu_head *head));
++
++extern void synchronize_sched(void);
+ extern void rcu_barrier_sched(void);
++#else
++#define call_rcu_sched call_rcu
++#define synchronize_sched synchronize_rcu
++#define rcu_barrier_sched rcu_barrier
++
++#define rcu_init_sched()	do { } while (0)
++#endif /* HAVE_SPECIAL_RCU_SCHED */
+ 
+ /* Internal to kernel */
+ extern void rcu_init(void);
+diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+index 3e05c09..f30d1c8 100644
+--- a/include/linux/rcupreempt.h
++++ b/include/linux/rcupreempt.h
+@@ -32,6 +32,7 @@
+ 
+ #ifndef __LINUX_RCUPREEMPT_H
+ #define __LINUX_RCUPREEMPT_H
++#define HAVE_SPECIAL_RCU_SCHED
+ 
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+@@ -56,54 +57,18 @@ static inline void rcu_qsctr_inc(int cpu)
+ 
+ 	rdssp->sched_qs++;
  }
-diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
-index 0196a0d..9d4fdad 100644
---- a/drivers/net/virtio_net.c
-+++ b/drivers/net/virtio_net.c
-@@ -505,7 +505,7 @@ static int virtnet_probe(struct virtio_device *vdev)
- 	/* Do we support "hardware" checksums? */
- 	if (csum && virtio_has_feature(vdev, VIRTIO_NET_F_CSUM)) {
- 		/* This opens up the world of extra features. */
--		dev->features |= NETIF_F_HW_CSUM|NETIF_F_SG|NETIF_F_FRAGLIST;
-+		dev->features |= NETIF_F_HW_CSUM|NETIF_F_SG;
- 		if (gso && virtio_has_feature(vdev, VIRTIO_NET_F_GSO)) {
- 			dev->features |= NETIF_F_TSO | NETIF_F_UFO
- 				| NETIF_F_TSO_ECN | NETIF_F_TSO6;
+-#define rcu_bh_qsctr_inc(cpu)
+-
+-/*
+- * Someone might want to pass call_rcu_bh as a function pointer.
+- * So this needs to just be a rename and not a macro function.
+- *  (no parentheses)
+- */
+-#define call_rcu_bh	 	call_rcu
+-
+-/**
+- * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
+- * @head: structure to be used for queueing the RCU updates.
+- * @func: actual update function to be invoked after the grace period
+- *
+- * The update function will be invoked some time after a full
+- * synchronize_sched()-style grace period elapses, in other words after
+- * all currently executing preempt-disabled sections of code (including
+- * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
+- * completed.
+- */
+-extern void call_rcu_sched(struct rcu_head *head,
+-			   void (*func)(struct rcu_head *head));
+ 
+ extern void __rcu_read_lock(void)	__acquires(RCU);
+ extern void __rcu_read_unlock(void)	__releases(RCU);
+ extern int rcu_pending(int cpu);
+ extern int rcu_needs_cpu(int cpu);
+ 
+-#define __rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
+-#define __rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
+-
+-extern void __synchronize_sched(void);
+-
+ extern void __rcu_init(void);
+ extern void rcu_init_sched(void);
+ extern void rcu_check_callbacks(int cpu, int user);
+ extern void rcu_restart_cpu(int cpu);
+ extern long rcu_batches_completed(void);
+ 
+-/*
+- * Return the number of RCU batches processed thus far. Useful for debug
+- * and statistic. The _bh variant is identifcal to straight RCU
+- */
+-static inline long rcu_batches_completed_bh(void)
+-{
+-	return rcu_batches_completed();
+-}
+-
+ #ifdef CONFIG_RCU_TRACE
+ struct rcupreempt_trace;
+ extern long *rcupreempt_flipctr(int cpu);
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index ad63af8..70cff32 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -56,11 +56,16 @@ static atomic_t rcu_barrier_cpu_count;
+ static DEFINE_MUTEX(rcu_barrier_mutex);
+ static struct completion rcu_barrier_completion;
+ 
++struct rcu_synchronize {
++	struct rcu_head head;
++	struct completion completion;
++};
++
+ /*
+  * Awaken the corresponding synchronize_rcu() instance now that a
+  * grace period has elapsed.
+  */
+-void wakeme_after_rcu(struct rcu_head  *head)
++static void wakeme_after_rcu(struct rcu_head  *head)
+ {
+ 	struct rcu_synchronize *rcu;
+ 
+@@ -77,10 +82,48 @@ void wakeme_after_rcu(struct rcu_head  *head)
+  * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
+  * and may be nested.
+  */
+-void synchronize_rcu(void);	/* Makes kernel-doc tools happy */
+-synchronize_rcu_xxx(synchronize_rcu, call_rcu)
++void synchronize_rcu(void)
++{
++	struct rcu_synchronize rcu;
++
++	init_completion(&rcu.completion);
++	/* Will wake me after RCU finished. */
++	call_rcu(&rcu.head, wakeme_after_rcu);
++	/* Wait for it. */
++	wait_for_completion(&rcu.completion);
++}
+ EXPORT_SYMBOL_GPL(synchronize_rcu);
+ 
++#ifdef HAVE_SPECIAL_RCU_SCHED
++/**
++ * synchronize_sched - block until all CPUs have exited any non-preemptive
++ * kernel code sequences.
++ *
++ * This means that all preempt_disable code sequences, including NMI and
++ * hardware-interrupt handlers, in progress on entry will have completed
++ * before this primitive returns.  However, this does not guarantee that
++ * softirq handlers will have completed, since in some kernels, these
++ * handlers can run in process context, and can block.
++ *
++ * This primitive provides the guarantees made by the (now removed)
++ * synchronize_kernel() API.  In contrast, synchronize_rcu() only
++ * guarantees that rcu_read_lock() sections will have completed.
++ * In "classic RCU", these two guarantees happen to be one and
++ * the same, but can differ in realtime RCU implementations.
++ */
++void synchronize_sched(void)
++{
++	struct rcu_synchronize rcu;
++
++	init_completion(&rcu.completion);
++	/* Will wake me after RCU finished. */
++	call_rcu_sched(&rcu.head, wakeme_after_rcu);
++	/* Wait for it. */
++	wait_for_completion(&rcu.completion);
++}
++EXPORT_SYMBOL_GPL(synchronize_sched);
++#endif /* HAVE_SPECIAL_RCU_SCHED */
++
+ static void rcu_barrier_callback(struct rcu_head *notused)
+ {
+ 	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
+@@ -145,6 +188,7 @@ void rcu_barrier(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier);
+ 
++#ifdef HAVE_SPECIAL_RCU_BH
+ /**
+  * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
+  */
+@@ -153,7 +197,9 @@ void rcu_barrier_bh(void)
+ 	_rcu_barrier(RCU_BARRIER_BH);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_bh);
++#endif /* HAVE_SPECIAL_RCU_BH */
+ 
++#ifdef HAVE_SPECIAL_RCU_SCHED
+ /**
+  * rcu_barrier_sched - Wait for in-flight call_rcu_sched() callbacks.
+  */
+@@ -162,6 +208,7 @@ void rcu_barrier_sched(void)
+ 	_rcu_barrier(RCU_BARRIER_SCHED);
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_sched);
++#endif /* HAVE_SPECIAL_RCU_SCHED */
+ 
+ void __init rcu_init(void)
+ {
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index 59236e8..2068ad9 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -1161,15 +1161,6 @@ void call_rcu_sched(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
+ EXPORT_SYMBOL_GPL(call_rcu_sched);
+ 
+ /*
+- * Wait until all currently running preempt_disable() code segments
+- * (including hardware-irq-disable segments) complete.  Note that
+- * in -rt this does -not- necessarily result in all currently executing
+- * interrupt -handlers- having completed.
+- */
+-synchronize_rcu_xxx(__synchronize_sched, call_rcu_sched)
+-EXPORT_SYMBOL_GPL(__synchronize_sched);
+-
+-/*
+  * kthread function that manages call_rcu_sched grace periods.
+  */
+ static int rcu_sched_grace_period(void *arg)
+
+
