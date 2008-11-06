@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbYKFG7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYKFHAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbYKFG7q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbYKFG7i
+	id S1754645AbYKFHAU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 02:00:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbYKFHAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:59:38 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43640 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751491AbYKFG7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:59:37 -0500
-Date: Thu, 6 Nov 2008 07:59:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [patch] sched: fix single-depth wchan output
-Message-ID: <20081106065925.GE15731@elte.hu>
-References: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com> <20081106061125.GA6384@elte.hu> <b040c32a0811052216i4594a094gdcee3ae280cddec7@mail.gmail.com> <20081106063012.GA15731@elte.hu> <b040c32a0811052242q767302cbx2667a68a8e058b6e@mail.gmail.com>
+	Thu, 6 Nov 2008 02:00:05 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:17094 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbYKFHAC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 02:00:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=CdY98402/2P4OJrT11yvMAfQcd8T2wThGpd4oJhrvmNwvcvo9r3HOHqD7Fz8jebobF
+         2FCCUzbJCsjRxaDb0gq0RJCIT6XBChF+QQOdBR+QGrnCI7FxFbZ+myUQb+8joVBsZu9P
+         1BbLindUWbI98RoeNc16pa4UQ7WubETsCNr/Q=
+Message-ID: <86802c440811052300y279bd289t74b437a2053b97d1@mail.gmail.com>
+Date: Wed, 5 Nov 2008 23:00:01 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: make NR_IRQS on 32bit is same to 64bit
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Ben Hutchings" <bhutchings@solarflare.com>
+In-Reply-To: <4912943C.2090801@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <b040c32a0811052242q767302cbx2667a68a8e058b6e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <4910C845.4060909@kernel.org> <20081106062608.GC6384@elte.hu>
+	 <86802c440811052242taefec24ndf661b1c65ca457e@mail.gmail.com>
+	 <4912943C.2090801@zytor.com>
+X-Google-Sender-Auth: 4a5fcb2d6bfba4ea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Nov 5, 2008 at 10:52 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Yinghai Lu wrote:
+>>>
+>>> Clean-up sidenote: i think we can now remove the VISWS #ifdef portion
+>>> for good? Mind sending a patch for that too?
+>>
+>> could remove CONFIG_PARAVIRT too.. Jeremy?
+>>
+>
+> This seems like a bad idea, especially for the embedded guys.
 
-* Ken Chen <kenchen@google.com> wrote:
+make one CONFIG_NR_IRQS for them before working out one dyna_array is
+get merged?
 
-> On Wed, Nov 5, 2008 at 10:30 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> > are you interested in adding /proc/<PID>/stacktrace? If yes then we
-> > could remove fp generation for 64-bit right now and add your
-> > stacktrace patch when you are done with it.
-> 
-> Yes, we had a patch internally at google to dump task stack trace 
-> via procfs just like what you suggested.  I will get that patch out.
-
-very nice!
-
-If it does stack walking manually then please update it to use 
-save_stack_trace() instead - that is the standard API that will 
-utilize the best possible stack walking machinery on the architecture 
-level.
-
-For security reasons we want it to be admin-only readable, and we also 
-want a .config for it for the extra paranoid and for CONFIG_EMBEDDED.
-
-	Ingo
+YH
