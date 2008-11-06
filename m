@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYKFCAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbYKFCAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbYKFCAK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 21:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYKFB75
+	id S1755748AbYKFCAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 21:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYKFCA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 20:59:57 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44666 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752427AbYKFB74 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 20:59:56 -0500
-Date: Thu, 6 Nov 2008 10:59:18 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 5 Nov 2008 21:00:27 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:55387 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752672AbYKFCAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 21:00:25 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+	hotplug
+From: Nigel Cunningham <ncunningham@crca.org.au>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dave Hansen <dave@linux.vnet.ibm.com>,
        Yasunori Goto <y-goto@jp.fujitsu.com>,
        Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
        Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
        Andy Whitcroft <apw@shadowen.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
- hotplug
-Message-Id: <20081106105918.e64b7afb.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20081029105956.GA16347@atrey.karlin.mff.cuni.cz>
-	<1225817945.12673.602.camel@nimitz>
-	<20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
-	<200811051208.26628.rjw@sisk.pl>
-	<20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
-	<1225935787.6216.12.camel@nigel-laptop>
-	<20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	 <1225817945.12673.602.camel@nimitz>
+	 <20081105093837.e073c373.kamezawa.hiroyu@jp.fujitsu.com>
+	 <200811051208.26628.rjw@sisk.pl>
+	 <20081106091441.6517c072.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20081106101751.14113f24.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1225935787.6216.12.camel@nigel-laptop>
+	 <20081106105453.b2c1b0fc.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: Christian Reformed Churches of Australia
+Date: Thu, 06 Nov 2008 13:00:18 +1100
+Message-Id: <1225936818.6216.20.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 10:54:53 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi.
 
+On Thu, 2008-11-06 at 10:54 +0900, KAMEZAWA Hiroyuki wrote:
 > On Thu, 06 Nov 2008 12:43:07 +1100
 > Nigel Cunningham <ncunningham@crca.org.au> wrote:
 > 
@@ -90,17 +88,35 @@ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > > 
 > Hmm? this doesn't come from lost of hotplug interrupt ?
 > the memory plugged while the system is sleeping can be recognized when the system wakes up ?
-> 
+
+Remember that when we hibernate (assuming we don't then suspend to ram),
+the power is fully off. Resuming starts off like a fresh boot.
+
 > My point is the firmware/operator has to know "the system is sleeping or not" to do *any* hotplug.
 > (I'm not sure but removing a cpu while the system is under hibernation may cause panic, too.)
 > In my point of view, this is operator's problem, not hibernation's.
 
-IOW,  please just remove !HIBERNATION in Kconfig and add "WARNING" to Documentaion.
-for *now*.
+If a cpu is removed while we're hibernated, that's okay. We use
+hotplugging and can therefore cope quite happily with cpus going away
+while the system is powered down.
 
-I hope some notifier_call_chain from hibernation will be added.
+> If you want to fix the small race really, please add(or export) some mutex or notifier. like
+> 
+>   NOTIFY_HIBERNATION_START
+>   NOTIFY_HIBERNATION_END
+>   NOTIFY_HIBERNATION_RESUME
+> 
+> other pepole will make use of this.
+> I think __add_memory called by interrupt can be executed in some kernel thread.
+> 
+> Thanks,
+> -Kame
 
+There are notifier chains for hibernation already
+(PM_HIBERNATION_PREPARE, PM_RESTORE_PREPARE, PM_POST_RESTORE and
+PM_POST_HIBERNATION).
 
-Thanks,
--Kame
+Regards,
+
+Nigel
 
