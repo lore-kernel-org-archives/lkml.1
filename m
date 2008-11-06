@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbYKFQ2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862AbYKFQ22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752465AbYKFQ2A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:28:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYKFQ1v
+	id S1752862AbYKFQ22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKFQ2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:27:51 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:29551 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbYKFQ1u (ORCPT
+	Thu, 6 Nov 2008 11:28:17 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:47324 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbYKFQ2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:27:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ktaJbCXqEZ/n6y3NdavOKi3aWI4GbO7+h+IQQJPsYj34x39Qh8Y+qV70i23I8mzD+b
-         Idmn1PQpUFZcWRL9p8qN5j/Psclfvh4xeO7JX/tLulzB9sCA6kb+v2r8qfp2tiuJtrb2
-         9rFDU/nVA6ZUAQQ4v4MYMehs+GzaDe13DM0jU=
-Date: Thu, 6 Nov 2008 19:31:07 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: rusty@rustcorp.com.au, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Broken "cpualloc: the allocator" patch
-Message-ID: <20081106163107.GA3942@x200.localdomain>
-References: <20081104034237.GA15227@x200.localdomain> <Pine.LNX.4.64.0811040934180.12886@quilx.com> <20081105084254.GA3429@x200.localdomain> <Pine.LNX.4.64.0811050741450.11741@quilx.com>
+	Thu, 6 Nov 2008 11:28:17 -0500
+Date: Thu, 6 Nov 2008 10:27:16 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Mike Travis <travis@sgi.com>
+cc: Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [patch 5/7] x86_64: Support for cpu ops
+In-Reply-To: <491310E1.1080002@sgi.com>
+Message-ID: <Pine.LNX.4.64.0811061024070.6009@quilx.com>
+References: <20081105231634.133252042@quilx.com> <20081105231649.108433550@quilx.com>
+ <20081106071206.GH15731@elte.hu> <Pine.LNX.4.64.0811060907570.3595@quilx.com>
+ <20081106151558.GB1644@elte.hu> <491310E1.1080002@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811050741450.11741@quilx.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 07:45:35AM -0600, Christoph Lameter wrote:
-> --- linux-2.6.orig/include/linux/percpu.h
-> +++ linux-2.6/include/linux/percpu.h
-> @@ -44,11 +44,7 @@
->  extern unsigned int percpu_reserve;
->  /* Enough to cover all DEFINE_PER_CPUs in kernel, including modules. */
->  #ifndef PERCPU_AREA_SIZE
-> -#ifdef CONFIG_MODULES
->  #define PERCPU_RESERVE_SIZE	8192
-> -#else
-> -#define PERCPU_RESERVE_SIZE	0
-> -#endif
+On Thu, 6 Nov 2008, Mike Travis wrote:
 
-next-20081106 with this patch is fine, thank you.
+> Sorry, this was on my plate but the 4096 cpus if far more critical to get
+> released and available.  As soon as that's finally done, I can get back to
+> the pda/zero-based changes.
+
+You cannot solve your 4k issues without getting the zerobased stuff in
+becaus otherwise the large pointer arrays in the core (page allocator and
+slab allocator etc) are not removable. Without getting zerobased sorted
+out you will produce a lot of hacks around subsystems that create pointer
+arrays that would go away easily if you had the percpu aallocator.
+
+I'd say getting the zero based stuff issues fixed is a prerequisie for
+further work on 4k making sense.
