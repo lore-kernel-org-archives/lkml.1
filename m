@@ -1,173 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751844AbYKFWiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYKFWjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751844AbYKFWiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 17:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYKFWiH
+	id S1754501AbYKFWjA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:39:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYKFWis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 17:38:07 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:60951 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751413AbYKFWiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 17:38:05 -0500
-Message-ID: <491371A8.3090603@yahoo.it>
-Date: Thu, 06 Nov 2008 23:37:28 +0100
-From: Michael Trimarchi <trimarchimichael@yahoo.it>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Thu, 6 Nov 2008 17:38:48 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:12230 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbYKFWir (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 17:38:47 -0500
+Message-ID: <491371F0.7020805@codemonkey.ws>
+Date: Thu, 06 Nov 2008 16:38:40 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: joel.becker@oracle.com
-Subject: [RFC PATCH] Check if the Hangcheck-timer TSC source is stable
-Content-Type: multipart/mixed;
- boundary="------------010202040409050509010608"
+To: Matthew Wilcox <matthew@wil.cx>
+CC: "Fischer, Anna" <anna.fischer@hp.com>, Greg KH <greg@kroah.com>,
+       H L <swdevyid@yahoo.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "Chiang, Alexander" <achiang@hp.com>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net> <20081106183630.GD11773@parisc-linux.org>
+In-Reply-To: <20081106183630.GD11773@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010202040409050509010608
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Matthew Wilcox wrote:
+> [Anna, can you fix your word-wrapping please?  Your lines appear to be
+> infinitely long which is most unpleasant to reply to]
+>
+> On Thu, Nov 06, 2008 at 05:38:16PM +0000, Fischer, Anna wrote:
+>   
+>>> Where would the VF drivers have to be associated?  On the "pci_dev"
+>>> level or on a higher one?
+>>>       
+>> A VF appears to the Linux OS as a standard (full, additional) PCI
+>> device. The driver is associated in the same way as for a normal PCI
+>> device. Ideally, you would use SR-IOV devices on a virtualized system,
+>> for example, using Xen. A VF can then be assigned to a guest domain as
+>> a full PCI device.
+>>     
+>
+> It's not clear thats the right solution.  If the VF devices are _only_
+> going to be used by the guest, then arguably, we don't want to create
+> pci_devs for them in the host.  (I think it _is_ the right answer, but I
+> want to make it clear there's multiple opinions on this).
+>   
 
+The VFs shouldn't be limited to being used by the guest.
 
+SR-IOV is actually an incredibly painful thing.  You need to have a VF 
+driver in the guest, do hardware pass through, have a PV driver stub in 
+the guest that's hypervisor specific (a VF is not usable on it's own), 
+have a device specific backend in the VMM, and if you want to do live 
+migration, have another PV driver in the guest that you can do teaming 
+with.  Just a mess.
 
---------------010202040409050509010608
-Content-Type: text/plain;
- name="hangcheck-timer-tsc-unstable-v2.pach"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="hangcheck-timer-tsc-unstable-v2.pach"
+What we would rather do in KVM, is have the VFs appear in the host as 
+standard network devices.  We would then like to back our existing PV 
+driver to this VF directly bypassing the host networking stack.  A key 
+feature here is being able to fill the VF's receive queue with guest 
+memory instead of host kernel memory so that you can get zero-copy 
+receive traffic.  This will perform just as well as doing passthrough 
+(at least) and avoid all that ugliness of dealing with SR-IOV in the guest.
 
-Check if the TSC source is stable otherwise fail registration.
+This eliminates all of the mess of various drivers in the guest and all 
+the associated baggage of doing hardware passthrough.
 
-Signed-off-by: Michael Trimarchi <trimarchimichael@yahoo.it>
+So IMHO, having VFs be usable in the host is absolutely critical because 
+I think it's the only reasonable usage model.
 
----
-diff --git a/drivers/char/hangcheck-timer.c b/drivers/char/hangcheck-timer.c
-index 712d9f2..910a77a 100644
---- a/drivers/char/hangcheck-timer.c
-+++ b/drivers/char/hangcheck-timer.c
-@@ -10,12 +10,12 @@
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public
-  * License version 2 as published by the Free Software Foundation.
-- * 
-+ *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * General Public License for more details.
-- * 
-+ *
-  * You should have received a copy of the GNU General Public
-  * License along with this program; if not, write to the
-  * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-@@ -64,14 +64,18 @@ static int hangcheck_dump_tasks;  /* Defaults to not dumping SysRQ T */
- module_param(hangcheck_tick, int, 0);
- MODULE_PARM_DESC(hangcheck_tick, "Timer delay.");
- module_param(hangcheck_margin, int, 0);
--MODULE_PARM_DESC(hangcheck_margin, "If the hangcheck timer has been delayed more than hangcheck_margin seconds, the driver will fire.");
-+MODULE_PARM_DESC(hangcheck_margin, "If the hangcheck timer has been delayed"
-+		 " more than hangcheck_margin seconds, the driver will fire.");
- module_param(hangcheck_reboot, int, 0);
--MODULE_PARM_DESC(hangcheck_reboot, "If nonzero, the machine will reboot when the timer margin is exceeded.");
-+MODULE_PARM_DESC(hangcheck_reboot, "If nonzero, the machine will reboot"
-+		 " when the timer margin is exceeded.");
- module_param(hangcheck_dump_tasks, int, 0);
--MODULE_PARM_DESC(hangcheck_dump_tasks, "If nonzero, the machine will dump the system task state when the timer margin is exceeded.");
-+MODULE_PARM_DESC(hangcheck_dump_tasks, "If nonzero, the machine will dump"
-+		 " the system task state when the timer margin is exceeded.");
- 
- MODULE_AUTHOR("Oracle");
--MODULE_DESCRIPTION("Hangcheck-timer detects when the system has gone out to lunch past a certain margin.");
-+MODULE_DESCRIPTION("Hangcheck-timer detects when the system has gone"
-+		   " out to lunch past a certain margin.");
- MODULE_LICENSE("GPL");
- MODULE_VERSION(VERSION_STR);
- 
-@@ -81,7 +85,7 @@ MODULE_VERSION(VERSION_STR);
- static int __init hangcheck_parse_tick(char *str)
- {
- 	int par;
--	if (get_option(&str,&par))
-+	if (get_option(&str, &par))
- 		hangcheck_tick = par;
- 	return 1;
- }
-@@ -89,7 +93,7 @@ static int __init hangcheck_parse_tick(char *str)
- static int __init hangcheck_parse_margin(char *str)
- {
- 	int par;
--	if (get_option(&str,&par))
-+	if (get_option(&str, &par))
- 		hangcheck_margin = par;
- 	return 1;
- }
-@@ -97,7 +101,7 @@ static int __init hangcheck_parse_margin(char *str)
- static int __init hangcheck_parse_reboot(char *str)
- {
- 	int par;
--	if (get_option(&str,&par))
-+	if (get_option(&str, &par))
- 		hangcheck_reboot = par;
- 	return 1;
- }
-@@ -105,7 +109,7 @@ static int __init hangcheck_parse_reboot(char *str)
- static int __init hangcheck_parse_dump_tasks(char *str)
- {
- 	int par;
--	if (get_option(&str,&par))
-+	if (get_option(&str, &par))
- 		hangcheck_dump_tasks = par;
- 	return 1;
- }
-@@ -151,8 +155,10 @@ static void hangcheck_fire(unsigned long data)
- 
- 	if (cur_tsc > hangcheck_tsc)
- 		tsc_diff = cur_tsc - hangcheck_tsc;
--	else
--		tsc_diff = (cur_tsc + (~0ULL - hangcheck_tsc)); /* or something */
-+	else {
-+		/* or samenthing */
-+		tsc_diff = (cur_tsc + (~0ULL - hangcheck_tsc));
-+	}
- 
- 	if (tsc_diff > hangcheck_tsc_margin) {
- 		if (hangcheck_dump_tasks) {
-@@ -172,15 +178,21 @@ static void hangcheck_fire(unsigned long data)
- 	hangcheck_tsc = monotonic_clock();
- }
- 
--
- static int __init hangcheck_init(void)
- {
--	printk("Hangcheck: starting hangcheck timer %s (tick is %d seconds, margin is %d seconds).\n",
-+	printk(KERN_INFO "Hangcheck: starting hangcheck timer %s"
-+			 " (tick is %d seconds, margin is %d seconds).\n",
- 	       VERSION_STR, hangcheck_tick, hangcheck_margin);
--#if defined (HAVE_MONOTONIC)
--	printk("Hangcheck: Using monotonic_clock().\n");
-+#if defined(HAVE_MONOTONIC)
-+	printk(KERN_INFO "Hangcheck: Using monotonic_clock().\n");
- #else
--	printk("Hangcheck: Using get_cycles().\n");
-+	if (!check_tsc_unstable())
-+		printk(KERN_INFO "Hangcheck: Using get_cycles().\n");
-+	else {
-+		printk(KERN_ERR "Handcheck: Failed to register"
-+		       " (Unstable TSC).\n");
-+		return -ENODEV;
-+	}
- #endif  /* HAVE_MONOTONIC */
- 	hangcheck_tsc_margin =
- 		(unsigned long long)(hangcheck_margin + hangcheck_tick);
-@@ -196,7 +208,7 @@ static int __init hangcheck_init(void)
- static void __exit hangcheck_exit(void)
- {
- 	del_timer_sync(&hangcheck_ticktock);
--        printk("Hangcheck: Stopped hangcheck timer.\n");
-+	printk(KERN_INFO "Hangcheck: Stopped hangcheck timer.\n");
- }
- 
- module_init(hangcheck_init);
+Regards,
 
---------------010202040409050509010608--
+Anthony Liguori
