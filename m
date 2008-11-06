@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbYKFVPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbYKFVQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753784AbYKFVPd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYKFVPX
+	id S1753876AbYKFVQU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:16:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYKFVQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:15:23 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:60193 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751225AbYKFVPV (ORCPT
+	Thu, 6 Nov 2008 16:16:03 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:34832 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbYKFVQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:15:21 -0500
-X-Sasl-enc: lR0G8bsSTIVMsifCcc2WwKegYYoB5uhdkvTlInwi9ePn 1226006119
-Date: Thu, 6 Nov 2008 19:15:17 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
-Message-ID: <20081106211517.GA6477@khazad-dum.debian.net>
-References: <20081105073306.GA3132@x61> <20081105074712.GA2816@x61> <20081105122632.GC14931@khazad-dum.debian.net> <20081105130852.GB30758@dose.home.local> <20081105162401.GF14931@khazad-dum.debian.net> <20081106003543.GA14766@x61> <20081106141121.GB23278@khazad-dum.debian.net> <20081106153215.GA23739@x61>
+	Thu, 6 Nov 2008 16:16:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=lieM34aJ8ytaf7i/89mBhA40Vyd8DWLoCv0foRhy1y/qbcU5btwtYMDYaujJM079o8
+         3nCe3LN6/C9UTBXXdbuecLS7VMDSnAtiSaU7nEz7U0yU3B7Ei435q+LPF7jCkMG8iAV/
+         r6Ypl0alF24ZcO+JOeedtwwdawHUCgwUHqU9I=
+Message-ID: <8bd0f97a0811061316u6b9a330dy279cb7dca679ab73@mail.gmail.com>
+Date: Thu, 6 Nov 2008 16:16:00 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH] ssb: Fix DMA-API compilation for non-PCI systems
+Cc: "John Linville" <linville@tuxdriver.com>,
+       "Mike Frysinger" <vapier@gentoo.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200811062149.21841.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081106153215.GA23739@x61>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <200811062149.21841.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008, Tino Keitel wrote:
-> Maybe the level values should be changed to describe this order.
-> Currently, it's AUTO (0x80) > full-speed (0x40) > 7. There are already
-> 29(!) functions just for the fan handling, so there should be enough
-> room for a bit of abstraction. :-) I think it could have the benefit of code
-> which is easier to read and maintain. Correct me if I'm wrong.
+On Thu, Nov 6, 2008 at 15:49, Michael Buesch wrote:
+> --- wireless-testing.orig/include/linux/ssb/ssb.h       2008-08-01 17:26:05.000000000 +0200
+> +++ wireless-testing/include/linux/ssb/ssb.h    2008-11-06 21:45:37.000000000 +0100
+> @@ -427,12 +427,16 @@ static inline int ssb_dma_mapping_error(
+>  {
+>        switch (dev->bus->bustype) {
+>        case SSB_BUSTYPE_PCI:
+> +#ifdef CONFIG_SSB_PCIHOST
+>                return pci_dma_mapping_error(dev->bus->host_pci, addr);
+> +#endif
+> +               break;
+>        case SSB_BUSTYPE_SSB:
+>                return dma_mapping_error(dev->dev, addr);
+>        default:
+> -               __ssb_dma_not_implemented(dev);
+> +               break;
+>        }
 
-I will think about it.  It wouldn't hurt.
+all these functions now read:
+default: break;
+seems kind of pointless ... why not just drop that case completely
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+otherwise looks good, thanks
+-mike
