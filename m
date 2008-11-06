@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbYKFU3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYKFUaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbYKFU3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 15:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbYKFU3Z
+	id S1753353AbYKFUaB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:30:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYKFU3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 15:29:25 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38818 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbYKFU3Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 15:29:25 -0500
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <y0mej1ofvyz.fsf@ton.toronto.redhat.com>
-References: <20081105094902.27ec4b39@infradead.org>
-	 <1225976138.7803.4485.camel@twins> <20081106060624.58a0f967@infradead.org>
-	 <1225981141.7803.4577.camel@twins> <20081106063108.02b4813d@infradead.org>
-	 <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org>
-	 <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com>
-	 <20081106094558.50d94bcc@infradead.org>
-	 <y0mej1ofvyz.fsf@ton.toronto.redhat.com>
-Content-Type: text/plain
-Date: Thu, 06 Nov 2008 21:29:03 +0100
-Message-Id: <1226003343.31966.43.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 15:29:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48812 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751189AbYKFU3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:29:50 -0500
+Date: Thu, 6 Nov 2008 21:29:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, mingo@redhat.com, tglx@linutronix.de,
+       hpa@zytor.com, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] AMD IOMMU fixes for 2.6.28
+Message-ID: <20081106202907.GC3578@elte.hu>
+References: <20081106141555.GD22503@amd.com> <49133D15.4020607@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49133D15.4020607@garzik.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 15:19 -0500, Frank Ch. Eigler wrote:
-> Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> > [...]
-> > what is the real need is
-> > 1) Have a trace point in the source
-> > 2) Associate a "formatting function" with that point 
-> >    (which basically transforms the trace parameters to, say, a string)
-> > 3) A way to turn the trace point on/off.
-> 
-> For 1 and 2, it may be worth considering a plain trace_mark() in
-> do_sync().  The complication that makes this uglier than a one-liner
-> is d_path()'s buffer and error handling.
-> 
->     {
->     char *buffer = kzalloc (4096, GFP_KERNEL);
->     trace_mark(fsync, "Process %s is calling fsync on %s\n",
->                        current->comm,
->                        ({char *err = d_path (...);
->                          IS_ERR(err) ? "?" : err;}));
->     kfree (buffer);
->     }
-> 
-> With a bit of extension on the marker front, the allocation could be
-> made conditional on the marker being enabled.
-> 
-> 
-> For 3, the kernel could merge a backend that connects arbitrary
-> markers to an ftrace (or whatever) buffer.  Several compact prototypes
-> for the latter exist.
 
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-I prefer we keep using trace points but do what jason has been proposing
-for a while, which is add a format and arg list to the trace point
-definition.
+> Joerg Roedel wrote:
+>> Hi Ingo,
+>>
+>> The following changes since commit 1e19b16a30c34c042f1eaa23db4c99bfad1dac0e:
+>>   Thomas Gleixner (1):
+>>         AMD IOMMU: use iommu_device_max_index, fix
+>>
+>> are available in the git repository at:
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
+>>
+>> Joerg Roedel (2):
+>>       AMD IOMMU: fix detection of NP capable IOMMUs
+>>       AMD IOMMU: fix lazy IO/TLB flushing in unmap path
+>>
+>>  arch/x86/kernel/amd_iommu.c |    9 +++++++--
+>>  1 files changed, 7 insertions(+), 2 deletions(-)
+>>
+>> This are 2 important bugfixes which fix lazy IO/TLB flushing with the
+>> driver. Please pull.
+>
+> Even though the x86 maintainers probably don't require it, it would 
+> be nice if you could include the changes being pushed in the same 
+> email (provided the patch is under 400k).  Every little bit of 
+> additional review helps.
 
-Something like
+agreed, that would be nice to have for future pull requests.
 
-DEFINE_TRACE_FMT(sched_switch,
-	TPPROTO(struct rq *rq, struct task_struct *prev,
-		 struct task_struct *next),
-	TPARGS(rq, prev, next),
-	TPFMT("%d to %d\n", prev->pid, next->pid));
-
-Which would be similar to attaching a trace_mark() to the trace point
-and can in these cases save a lot of lines of code.
-
-Both lttng and the ftrace event tracer can use these default text
-strings.
-
-
+	Ingo
