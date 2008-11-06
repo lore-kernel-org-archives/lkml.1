@@ -1,302 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbYKFJtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYKFJtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbYKFJtA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 04:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYKFJsu
+	id S1754605AbYKFJtW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 04:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbYKFJsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 04:48:50 -0500
-Received: from mercuryimc.plus.com ([80.229.200.144]:37158 "EHLO
-	mimc.mimc.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752807AbYKFJst (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 04:48:49 -0500
-Message-ID: <4912B459.2020704@mimc.co.uk>
-Date: Thu, 06 Nov 2008 09:09:45 +0000
-From: Mark Jackson <mpfj@mimc.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 6 Nov 2008 04:48:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51300 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753325AbYKFJsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 04:48:51 -0500
+Message-ID: <4912BD67.8000704@redhat.com>
+Date: Thu, 06 Nov 2008 11:48:23 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: dbrownell@users.sourceforge.net
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, spi-devel-general@lists.sourceforge.net
-Subject: [PATCH v6] Add Dallas DS1390/93/94 RTC chips
+To: Eduardo Habkost <ehabkost@redhat.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
+       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
+       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/16] x86: Emergency virtualization disable function
+References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com> <1225810364-8990-9-git-send-email-ehabkost@redhat.com> <m1bpwu3wod.fsf@frodo.ebiederm.org> <20081105175235.GJ5247@blackpad>
+In-Reply-To: <20081105175235.GJ5247@blackpad>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-v6 (!!) of this patch with even more code tidying as per previous comments.
-Also only a single tx/rx buffer is used.
-Now uses spi_write_then_read()
-Comments changed to include extra chips in the family
+Eduardo Habkost wrote:
+> We could move the set_virt_disable_func() calls to vmx.c and svm.c (on
+> hardware_setup/hardware_unsetup). One could argue that it is sort of a
+> coincidence that we need the code for both vmx and svm.
+>   
 
-This patch adds support for the Dallas DS1390/93/94 SPI RTC chip.
+I don't share this fear of function calls, but perhaps that's due to 
+lack of experience with kdump.
 
-Signed-off-by: Mark Jackson <mpfj@mimc.co.uk>
----
- drivers/rtc/Kconfig      |   11 +++
- drivers/rtc/Makefile     |    1 +
- drivers/rtc/rtc-ds1390.c |  220 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 232 insertions(+), 0 deletions(-)
+If you want to be extra simple and safe, remove kvm from the equation.  
+Make the disabling code part of kdump/emergency_restart and only rely on 
+the convention that cr3.vmxe == vmxon.
 
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 814f49f..6e921e7 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -292,6 +292,17 @@ config RTC_DRV_DS1305
- 	  This driver can also be built as a module. If so, the module
- 	  will be called rtc-ds1305.
- 
-+config RTC_DRV_DS1390
-+	tristate "Dallas/Maxim DS1390/93/94"
-+	help
-+	  If you say yes here you get support for the DS1390/93/94 chips.
-+
-+	  This driver only supports the RTC feature, and not other chip
-+	  features such as alarms and trickle charging.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called rtc-ds1390.
-+
- config RTC_DRV_MAX6902
- 	tristate "Maxim MAX6902"
- 	help
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index d6a9ac7..316c3ce 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -28,6 +28,7 @@ obj-$(CONFIG_RTC_DRV_DS1302)	+= rtc-ds1302.o
- obj-$(CONFIG_RTC_DRV_DS1305)	+= rtc-ds1305.o
- obj-$(CONFIG_RTC_DRV_DS1307)	+= rtc-ds1307.o
- obj-$(CONFIG_RTC_DRV_DS1374)	+= rtc-ds1374.o
-+obj-$(CONFIG_RTC_DRV_DS1390)	+= rtc-ds1390.o
- obj-$(CONFIG_RTC_DRV_DS1511)	+= rtc-ds1511.o
- obj-$(CONFIG_RTC_DRV_DS1553)	+= rtc-ds1553.o
- obj-$(CONFIG_RTC_DRV_DS1672)	+= rtc-ds1672.o
-diff --git a/drivers/rtc/rtc-ds1390.c b/drivers/rtc/rtc-ds1390.c
-new file mode 100644
-index 0000000..16f70d4
---- /dev/null
-+++ b/drivers/rtc/rtc-ds1390.c
-@@ -0,0 +1,220 @@
-+/*
-+ * rtc-ds1390.c -- driver for DS1390/93/94
-+ *
-+ * Copyright (C) 2008 Mercury IMC Ltd
-+ * Written by Mark Jackson <mpfj@mimc.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * NOTE : Currently this driver only supports the bare minimum for read
-+ * and write the RTC.  The extra features provided by the chip family
-+ * (alarms, trickle charger, different control registers) are unavailable.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/rtc.h>
-+#include <linux/spi/spi.h>
-+#include <linux/bcd.h>
-+
-+#define DS1390_REG_100THS		0x00
-+#define DS1390_REG_SECONDS		0x01
-+#define DS1390_REG_MINUTES		0x02
-+#define DS1390_REG_HOURS		0x03
-+#define DS1390_REG_DAY			0x04
-+#define DS1390_REG_DATE			0x05
-+#define DS1390_REG_MONTH_CENT		0x06
-+#define DS1390_REG_YEAR			0x07
-+
-+#define DS1390_REG_ALARM_100THS		0x08
-+#define DS1390_REG_ALARM_SECONDS	0x09
-+#define DS1390_REG_ALARM_MINUTES	0x0A
-+#define DS1390_REG_ALARM_HOURS		0x0B
-+#define DS1390_REG_ALARM_DAY_DATE	0x0C
-+
-+#define DS1390_REG_CONTROL		0x0D
-+#define DS1390_REG_STATUS		0x0E
-+#define DS1390_REG_TRICKLE		0x0F
-+
-+struct ds1390 {
-+	struct rtc_device *rtc;
-+	u8 txrx_buf[9];	/* cmd + 8 registers */
-+};
-+
-+static void ds1390_set_reg(struct device *dev, unsigned char address,
-+				unsigned char data)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+
-+	/* Set MSB to indicate write */
-+	chip->txrx_buf[0] = address | 0x80;
-+	chip->txrx_buf[1] = data;
-+
-+	/* do the i/o */
-+	spi_write_then_read(spi, chip->txrx_buf, 2, NULL, 0);
-+}
-+
-+static int ds1390_get_reg(struct device *dev, unsigned char address,
-+				unsigned char *data)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+	int status;
-+
-+	/* Clear MSB to indicate read */
-+	chip->txrx_buf[0] = address & 0x7f;
-+	/* do the i/o */
-+	status = spi_write_then_read(spi, chip->txrx_buf, 1, chip->txrx_buf, 1);
-+	if (status != 0)
-+		return status;
-+
-+	*data = chip->txrx_buf[1];
-+
-+	return 0;
-+}
-+
-+static int ds1390_get_datetime(struct device *dev, struct rtc_time *dt)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+	int status;
-+
-+	/* build the message */
-+	chip->txrx_buf[0] = DS1390_REG_SECONDS;
-+
-+	/* do the i/o */
-+	status = spi_write_then_read(spi, chip->txrx_buf, 1, chip->txrx_buf, 8);
-+	if (status != 0)
-+		return status;
-+
-+	/* The chip sends data in this order:
-+	 * Seconds, Minutes, Hours, Day, Date, Month / Century, Year */
-+	dt->tm_sec	= bcd2bin(chip->txrx_buf[0]);
-+	dt->tm_min	= bcd2bin(chip->txrx_buf[1]);
-+	dt->tm_hour	= bcd2bin(chip->txrx_buf[2]);
-+	dt->tm_wday	= bcd2bin(chip->txrx_buf[3]);
-+	dt->tm_mday	= bcd2bin(chip->txrx_buf[4]);
-+	/* mask off century bit */
-+	dt->tm_mon	= bcd2bin(chip->txrx_buf[5] & 0x7f) - 1;
-+	/* adjust for century bit */
-+	dt->tm_year	= bcd2bin(chip->txrx_buf[6]) +
-+			  ((chip->txrx_buf[5] & 0x80) ? 100 : 0);
-+
-+	return rtc_valid_tm(dt);
-+}
-+
-+static int ds1390_set_datetime(struct device *dev, struct rtc_time *dt)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct ds1390 *chip = dev_get_drvdata(dev);
-+
-+	/* build the message */
-+	chip->txrx_buf[0] = DS1390_REG_SECONDS | 0x80;
-+	chip->txrx_buf[1] = bin2bcd(dt->tm_sec);
-+	chip->txrx_buf[2] = bin2bcd(dt->tm_min);
-+	chip->txrx_buf[3] = bin2bcd(dt->tm_hour);
-+	chip->txrx_buf[4] = bin2bcd(dt->tm_wday);
-+	chip->txrx_buf[5] = bin2bcd(dt->tm_mday);
-+	chip->txrx_buf[6] = bin2bcd(dt->tm_mon + 1) |
-+				((dt->tm_year > 99) ? 0x80 : 0x00);
-+	chip->txrx_buf[7] = bin2bcd(dt->tm_year % 100);
-+
-+	/* do the i/o */
-+	return spi_write_then_read(spi, chip->txrx_buf, 8, NULL, 0);
-+}
-+
-+static int ds1390_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return ds1390_get_datetime(dev, tm);
-+}
-+
-+static int ds1390_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	return ds1390_set_datetime(dev, tm);
-+}
-+
-+static const struct rtc_class_ops ds1390_rtc_ops = {
-+	.read_time	= ds1390_read_time,
-+	.set_time	= ds1390_set_time,
-+};
-+
-+static int __devinit ds1390_probe(struct spi_device *spi)
-+{
-+	struct rtc_device *rtc;
-+	unsigned char tmp;
-+	struct ds1390 *chip;
-+	int res;
-+
-+	printk(KERN_INFO "DS1390 SPI RTC driver\n");
-+
-+	chip = kzalloc(sizeof *chip, GFP_KERNEL);
-+	if (!chip) {
-+		printk(KERN_ALERT "DS1390: unable to allocate device memory\n");
-+		return -ENOMEM;
-+	}
-+
-+	spi->mode = SPI_MODE_3;
-+	spi->bits_per_word = 8;
-+	spi_setup(spi);
-+
-+	dev_set_drvdata(&spi->dev, chip);
-+
-+	res = ds1390_get_reg(&spi->dev, DS1390_REG_SECONDS, &tmp);
-+	if (res) {
-+		dev_err(&spi->dev, "DS1390: unable to read device\n");
-+		kfree(chip);
-+		return res;
-+	}
-+
-+	rtc = rtc_device_register("ds1390",
-+				&spi->dev, &ds1390_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(rtc)) {
-+		dev_err(&spi->dev, "DS1390: unable to register device\n");
-+		kfree(chip);
-+		return PTR_ERR(rtc);
-+	}
-+	chip->rtc = rtc;
-+
-+	return 0;
-+}
-+
-+static int __devexit ds1390_remove(struct spi_device *spi)
-+{
-+	struct ds1390 *chip = platform_get_drvdata(spi);
-+	struct rtc_device *rtc = chip->rtc;
-+
-+	rtc_device_unregister(rtc);
-+
-+	kfree(chip);
-+
-+	return 0;
-+}
-+
-+static struct spi_driver ds1390_driver = {
-+	.driver = {
-+		.name	= "rtc-ds1390",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe	= ds1390_probe,
-+	.remove = __devexit_p(ds1390_remove),
-+};
-+
-+static __init int ds1390_init(void)
-+{
-+	return spi_register_driver(&ds1390_driver);
-+}
-+module_init(ds1390_init);
-+
-+static __exit void ds1390_exit(void)
-+{
-+	spi_unregister_driver(&ds1390_driver);
-+}
-+module_exit(ds1390_exit);
-+
-+MODULE_DESCRIPTION("DS1390/93/94 SPI RTC driver");
-+MODULE_AUTHOR("Mark Jackson <mpfj@mimc.co.uk>");
-+MODULE_LICENSE("GPL");
+That has the advantage of working with other virtualization systems as well.
+
+-- 
+error compiling committee.c: too many arguments to function
+
