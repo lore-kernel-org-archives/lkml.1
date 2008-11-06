@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYKFAyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbYKFA5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYKFAyy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 19:54:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbYKFAyo
+	id S1754468AbYKFA5S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 19:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYKFA5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 19:54:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45381 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753055AbYKFAyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 19:54:43 -0500
-Date: Thu, 6 Nov 2008 11:54:28 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       travis@sgi.com
-Subject: Re: Git next: Second stage of cpu_alloc patches
-Message-Id: <20081106115428.f622e61f.sfr@canb.auug.org.au>
-In-Reply-To: <20081105235842.GB10909@cmpxchg.org>
-References: <Pine.LNX.4.64.0811042053510.31638@quilx.com>
-	<20081104195205.fe1bf62b.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0811050753120.11867@quilx.com>
-	<20081105235842.GB10909@cmpxchg.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__6_Nov_2008_11_54_28_+1100_VvM=bBQ4fT4Xq=Sy"
+	Wed, 5 Nov 2008 19:57:06 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:15084 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750784AbYKFA5F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 19:57:05 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=ZXvXCfbOwAOP1fQt2dvz43OxyhbirQUoNoubqwM1+dgads14Zg/lMzJQMiREmfqIx
+	xzMkbko0hSNcDCWL4TRrQ==
+MIME-Version: 1.0
+In-Reply-To: <20081101022128.3f8a535c.akpm@linux-foundation.org>
+References: <1786ab030810311354h1a7c8fb0q1267969d432f521c@mail.gmail.com>
+	 <20081101022128.3f8a535c.akpm@linux-foundation.org>
+Date: Wed, 5 Nov 2008 16:56:54 -0800
+Message-ID: <1786ab030811051656r7cc09fcakbf485c3b0663757@mail.gmail.com>
+Subject: Re: Metadata in sys_sync_file_range and fadvise(DONTNEED)
+From: Chad Talbott <ctalbott@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Michael Rubin <mrubin@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__6_Nov_2008_11_54_28_+1100_VvM=bBQ4fT4Xq=Sy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 6 Nov 2008 00:58:42 +0100 Johannes Weiner <hannes@cmpxchg.org> wrot=
-e:
+On Sat, Nov 1, 2008 at 1:21 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> And fadvise(FADV_DONTNEED) is just that: "I won't be using that data
+> again".  Implementing specific writeback behaviour underneath that hint
+> is unobvious and a bit weird.  It's a bit of a fluke that it does
+> writeout at all!
 >
-> On Wed, Nov 05, 2008 at 07:54:39AM -0600, Christoph Lameter wrote:
-> > Ok so post a patchset to lkml and at the same time offer a git tree?
->=20
-> Git is perhaps a more convenient way to pick up changesets compared to
-> extracting them from emails but review and discussion should still
-> happen by Email, no?
+> We have much more flexibility with sync_file_range(), and it is more
+> explicit.
 
-Correct.
+So in the new world, an application should call sync_file_range
+(solving my problem by including metadata) to initiate writeout, and
+then call posix_fadvise(DONTNEED) to drop the pages from page cache?
+I think this would work for me.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> That being said, I don't understand why the IO scheduling problems
+> which you're seeing are occurring.  There is code in fs/mpage.c
+> specifically to handle this case (search for "write_boundary_block").
+> It will spot that 4k indirect block in the middle of two 4MB data
+> blocks and will schedule it for writeout at the right time.
+>
+> So why isn't that working?
 
---Signature=_Thu__6_Nov_2008_11_54_28_+1100_VvM=bBQ4fT4Xq=Sy
-Content-Type: application/pgp-signature
+Very good question, I'll look into why it's not helping here.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEUEARECAAYFAkkSQEQACgkQjjKRsyhoI8wxvwCgg81Xk9NGVBcitQnmS9n9iRdw
-YPkAmIiq5lcQrF0WwQF71Y+/Sh7fClI=
-=5o6H
------END PGP SIGNATURE-----
-
---Signature=_Thu__6_Nov_2008_11_54_28_+1100_VvM=bBQ4fT4Xq=Sy--
+Chad
