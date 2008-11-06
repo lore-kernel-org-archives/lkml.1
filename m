@@ -1,261 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYKFQcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYKFQd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbYKFQcW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbYKFQcO
+	id S1752649AbYKFQd2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbYKFQdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:32:14 -0500
-Received: from cattelan-host202.dsl.visi.com ([208.42.117.202]:49364 "EHLO
-	slurp.thebarn.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750733AbYKFQcM (ORCPT
+	Thu, 6 Nov 2008 11:33:16 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:58272 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbYKFQdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:32:12 -0500
-X-Greylist: delayed 415 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Nov 2008 11:32:12 EST
-Message-ID: <49131A4A.4050208@xfs.org>
-Date: Thu, 06 Nov 2008 10:24:42 -0600
-From: Russell Cattelan <cattelan@thebarn.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
+	Thu, 6 Nov 2008 11:33:15 -0500
+Date: Thu, 6 Nov 2008 22:02:28 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Peter Staubach <staubach@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH]: ext4: fix big endian
+Message-ID: <20081106163228.GF25194@skywalker>
+References: <200811061600.54264.borntraeger@de.ibm.com> <200811061651.49602.borntraeger@de.ibm.com> <49131601.50407@redhat.com> <200811061715.53593.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-To: Lachlan McIlroy <lachlan@sgi.com>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: [xfs] [GIT PULL] XFS update for 2.6.28
-References: <20081031045737.ECE0E58AE1E9@chook.melbourne.sgi.com>
-In-Reply-To: <20081031045737.ECE0E58AE1E9@chook.melbourne.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811061715.53593.borntraeger@de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lachlan McIlroy wrote:
-> The following changes since commit 721d5dfe7e516954c501d5e9d0dfab379cf4241a:
->   Linus Torvalds (1):
->         Merge branch 'for-linus' of git://neil.brown.name/md
->
-> are available in the git repository at:
->
->   git://oss.sgi.com:8090/xfs/linux-2.6 master
->
->   
-Please don't publish the 8090 port for git at oss anymore.
-The firewall has been set up to allow for standard git traffic so no 
-port number is needed.
+On Thu, Nov 06, 2008 at 05:15:53PM +0100, Christian Borntraeger wrote:
+> Am Donnerstag, 6. November 2008 schrieb Peter Staubach:
+> > >  	/* We allocate both existing and potentially added groups */
+> > >  	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
+> > > -			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
+> > > +			    (le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks + 1) <<
+> > >   
+> > 
+> > I suspect that you want to do the le16_to_cpu() and _then_
+> > add the 1.  Otherwise, adding 1 to a different byte order
+> > value won't do quite what is expected or hoped for...
+> 
+> errm. Right.
+> Something like this maybe?
+> 
+> [PATCH]: ext4: fix big endian access for flex groups
+> 
+> On big endianess plattforms newly created ext4 file systems cannot be mounted
+> and show messages like:
+> [6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
+> [6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
+> 
+> We have to access s_reserved_gdb_blocks with le16_to_cpu.
+> 
+> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-The git daemon on port 8090 will probably cease once the oss upgrade is 
-complete.
+There is already a patch in the patchqueue that fix this
+http://repo.or.cz/w/ext4-patch-queue.git?a=blob;f=convert-to-host-order-in-ext4_fill_flex_info;h=ebe7efb3ee78b6cab4db49391f4a005d78a26f03;hb=HEAD
 
 
-> Barry Naujok (4):
->       [XFS] Remove final remnants of dirv1 macros and other stuff
->       [XFS] Sync up kernel and user-space headers
->       [XFS] Check agf_btreeblks is valid when reading in the AGF
->       [XFS] Show buffer address with debug hexdump on corruption
->
-> Christoph Hellwig (42):
->       [XFS] kill struct xfs_btree_hdr
->       [XFS] split up xfs_btree_init_cursor
->       [XFS] add generic btree types
->       [XFS] make btree root in inode support generic
->       [XFS] add a long pointers flag to xfs_btree_cur
->       [XFS] refactor xfs_btree_readahead
->       [XFS] refactor btree validation helpers
->       [XFS] make btree tracing generic
->       [XFS] add get_maxrecs btree operation
->       [XFS] add helpers for addressing entities inside a btree block
->       [XFS] implement generic xfs_btree_increment
->       [XFS] implement generic xfs_btree_decrement
->       [XFS] implement generic xfs_btree_lookup
->       [XFS] implement generic xfs_btree_updkey
->       [XFS] implement generic xfs_btree_update
->       [XFS] implement generic xfs_btree_rshift
->       [XFS] implement generic xfs_btree_lshift
->       [XFS] implement generic xfs_btree_split
->       [XFS] implement semi-generic xfs_btree_new_root
->       [XFS] move xfs_bmbt_newroot to common code
->       [XFS] implement generic xfs_btree_insert/insrec
->       [XFS] move xfs_bmbt_killroot to common code
->       [XFS] implement generic xfs_btree_delete/delrec
->       [XFS] implement generic xfs_btree_get_rec
->       [XFS] kill xfs_bmbt_log_block and xfs_bmbt_log_recs
->       [XFS] add keys_inorder and recs_inorder btree methods
->       [XFS] mark various functions in xfs_btree.c static
->       [XFS] make btree tracing generic
->       [XFS] Cleanup maxrecs calculation.
->       [XFS] cleanup btree record / key / ptr addressing macros.
->       [XFS] Always use struct xfs_btree_block instead of short / longform
->       [XFS] Move XFS_BMAP_SANITY_CHECK out of line.
->       [XFS] split out two helpers from xfs_syncsub
->       [XFS] fix instant oops with tracing enabled
->       [XFS] kill struct xfs_mount_args
->       [XFS] fix the noquota mount option
->       [XFS] fix biosize option
->       [XFS] Trivial xfs_remove comment fixup
->       [XFS] stop using xfs_itobp in xfs_bulkstat
->       Inode: export symbol destroy_inode
->       [XFS] free partially initialized inodes using destroy_inode
->       [XFS] kill sys_cred
->
-> David Chinner (44):
->       [XFS] Make use of the init-once slab optimisation.
->       [XFS] add new btree statistics
->       [XFS] move sync code to its own file
->       [XFS] move xfssyncd code to xfs_sync.c
->       [XFS] Remove xfs_iflush_all and clean up xfs_finish_reclaim_all()
->       [XFS] don't block in xfs_qm_dqflush() during async writeback.
->       [XFS] Use the inode tree for finding dirty inodes
->       [XFS] Traverse inode trees when releasing dquots
->       [XFS] remove the mount inode list
->       [XFS] Use struct inodes instead of vnodes to kill vn_grab
->       [XFS] use xfs_sync_inodes rather than xfs_syncsub
->       [XFS] kill xfs_syncsub
->       [XFS] xfssyncd: don't call xfs_sync
->       [XFS] make SYNC_ATTR no longer use xfs_sync
->       [XFS] make SYNC_DELWRI no longer use xfs_sync
->       [XFS] Kill SYNC_CLOSE
->       [XFS] Kill xfs_sync()
->       [XFS] Move remaining quiesce code.
->       [XFS] factor xfs_iget_core() into hit and miss cases
->       [XFS] Never call mark_inode_dirty_sync() directly
->       Inode: Allow external initialisers
->       Inode: Allow external list initialisation
->       [XFS] Combine the XFS and Linux inodes
->       [XFS] Prevent use-after-free caused by synchronous inode reclaim
->       [XFS] move inode reclaim functions to xfs_sync.c
->       [XFS] rename inode reclaim functions
->       [XFS] mark inodes for reclaim via a tag in the inode radix tree
->       [XFS] use the inode radix tree for reclaiming inodes
->       [XFS] kill deleted inodes list
->       [XFS] Prevent looping in xfs_sync_inodes_ag
->       [XFS] Account for allocated blocks when expanding directories
->       [XFS] Allocate the struct xfs_ail
->       [XFS] Use a cursor for AIL traversal.
->       [XFS] move the AIl traversal over to a consistent interface
->       [XFS] Allow 64 bit machines to avoid the AIL lock during flushes
->       [XFS] Move the AIL lock into the struct xfs_ail
->       [XFS] Given the log a pointer to the AIL
->       [XFS] Add ail pointer into log items
->       [XFS] Finish removing the mount pointer from the AIL API
->       [XFS] XFS: Check for valid transaction headers in recovery
->       [XFS] Can't lock inodes in radix tree preload region
->       [XFS] avoid all reclaimable inodes in xfs_sync_inodes_ag
->       [XFS] correctly select first log item to push
->       [XFS] Fix race when looking up reclaimable inodes
->
-> David Howells (1):
->       CRED: Wrap task credential accesses in the XFS filesystem
->
-> Lachlan McIlroy (7):
->       [XFS] Remove kmem_zone_t argument from xfs_inode_init_once()
->       [XFS] Use xfs_idestroy() to cleanup an inode.
->       [XFS] Fix use-after-free with log and quotas
->       [XFS] Unlock inode before calling xfs_idestroy()
->       [XFS] Wait for all I/O on truncate to zero file size
->       [XFS] Make xfs_btree_check_ptr() debug-only code.
->       [XFS] Fix build warning - xfs_fs_alloc_inode() needs a return statement
->
-> Peter Leckie (2):
->       [XFS] Clean up dquot pincount code.
->       [XFS] Fix build brakage from patch "Clean up dquot pincount code"
->
-> Tim Shimmin (2):
->       [XFS] remove restricted chown parameter from xfs linux
->       [XFS] remove restricted chown parameter from xfs linux
->
->  Documentation/filesystems/xfs.txt |    4 -
->  fs/inode.c                        |  208 ++-
->  fs/xfs/Makefile                   |    4 +-
->  fs/xfs/linux-2.6/xfs_aops.c       |    2 +-
->  fs/xfs/linux-2.6/xfs_cred.h       |   10 +-
->  fs/xfs/linux-2.6/xfs_globals.c    |    8 -
->  fs/xfs/linux-2.6/xfs_globals.h    |    1 -
->  fs/xfs/linux-2.6/xfs_ioctl.c      |    9 +-
->  fs/xfs/linux-2.6/xfs_iops.c       |   25 +-
->  fs/xfs/linux-2.6/xfs_linux.h      |    2 +-
->  fs/xfs/linux-2.6/xfs_stats.c      |    4 +
->  fs/xfs/linux-2.6/xfs_stats.h      |   65 +
->  fs/xfs/linux-2.6/xfs_super.c      |  840 +++------
->  fs/xfs/linux-2.6/xfs_super.h      |    3 -
->  fs/xfs/linux-2.6/xfs_sync.c       |  763 ++++++++
->  fs/xfs/linux-2.6/xfs_sync.h       |   55 +
->  fs/xfs/linux-2.6/xfs_sysctl.c     |   11 -
->  fs/xfs/linux-2.6/xfs_sysctl.h     |    3 +-
->  fs/xfs/linux-2.6/xfs_vfs.h        |   31 -
->  fs/xfs/linux-2.6/xfs_vnode.c      |   15 +-
->  fs/xfs/linux-2.6/xfs_vnode.h      |    5 -
->  fs/xfs/quota/xfs_dquot.c          |   39 +-
->  fs/xfs/quota/xfs_dquot.h          |    4 +-
->  fs/xfs/quota/xfs_dquot_item.c     |   45 +-
->  fs/xfs/quota/xfs_qm.c             |   13 +-
->  fs/xfs/quota/xfs_qm.h             |    1 -
->  fs/xfs/quota/xfs_qm_bhv.c         |    1 -
->  fs/xfs/quota/xfs_qm_syscalls.c    |  137 +-
->  fs/xfs/support/debug.c            |    2 +-
->  fs/xfs/xfs.h                      |    2 +-
->  fs/xfs/xfs_acl.c                  |    8 +-
->  fs/xfs/xfs_ag.h                   |   10 +-
->  fs/xfs/xfs_alloc.c                |  195 ++-
->  fs/xfs/xfs_alloc.h                |   27 +-
->  fs/xfs/xfs_alloc_btree.c          | 2387 ++++---------------------
->  fs/xfs/xfs_alloc_btree.h          |  107 +-
->  fs/xfs/xfs_arch.h                 |   39 +-
->  fs/xfs/xfs_bit.h                  |    3 +-
->  fs/xfs/xfs_bmap.c                 |  296 ++--
->  fs/xfs/xfs_bmap.h                 |   61 +-
->  fs/xfs/xfs_bmap_btree.c           | 2614 +++++----------------------
->  fs/xfs/xfs_bmap_btree.h           |  171 +--
->  fs/xfs/xfs_btree.c                | 3596 ++++++++++++++++++++++++++++++++-----
->  fs/xfs/xfs_btree.h                |  392 +++--
->  fs/xfs/xfs_btree_trace.c          |  249 +++
->  fs/xfs/xfs_btree_trace.h          |  116 ++
->  fs/xfs/xfs_buf_item.c             |   25 +-
->  fs/xfs/xfs_clnt.h                 |  105 --
->  fs/xfs/xfs_da_btree.c             |    5 +
->  fs/xfs/xfs_da_btree.h             |   24 +-
->  fs/xfs/xfs_dinode.h               |    5 +-
->  fs/xfs/xfs_dir2.c                 |    6 +
->  fs/xfs/xfs_dmops.c                |    5 +-
->  fs/xfs/xfs_extfree_item.c         |   45 +-
->  fs/xfs/xfs_fsops.c                |   24 +-
->  fs/xfs/xfs_ialloc.c               |  132 ++-
->  fs/xfs/xfs_ialloc.h               |   21 +-
->  fs/xfs/xfs_ialloc_btree.c         | 2193 +++--------------------
->  fs/xfs/xfs_ialloc_btree.h         |  111 +-
->  fs/xfs/xfs_iget.c                 |  501 ++----
->  fs/xfs/xfs_imap.h                 |    2 -
->  fs/xfs/xfs_inode.c                |  292 ++--
->  fs/xfs/xfs_inode.h                |  288 ++--
->  fs/xfs/xfs_inode_item.c           |   30 +-
->  fs/xfs/xfs_inode_item.h           |   41 +-
->  fs/xfs/xfs_itable.c               |   33 +-
->  fs/xfs/xfs_log.c                  |   10 +-
->  fs/xfs/xfs_log_priv.h             |    1 +
->  fs/xfs/xfs_log_recover.c          |  105 +-
->  fs/xfs/xfs_mount.c                |   47 +-
->  fs/xfs/xfs_mount.h                |   54 +-
->  fs/xfs/xfs_qmops.c                |    5 +-
->  fs/xfs/xfs_trans.c                |   13 +-
->  fs/xfs/xfs_trans.h                |  322 ++--
->  fs/xfs/xfs_trans_ail.c            |  362 +++--
->  fs/xfs/xfs_trans_buf.c            |    7 +-
->  fs/xfs/xfs_trans_item.c           |   10 +
->  fs/xfs/xfs_trans_priv.h           |   98 +-
->  fs/xfs/xfs_vfsops.c               |  617 +-------
->  fs/xfs/xfs_vfsops.h               |    2 -
->  fs/xfs/xfs_vnodeops.c             |  141 +--
->  fs/xfs/xfs_vnodeops.h             |    6 +-
->  include/linux/fs.h                |    2 +
->  kernel/sysctl_check.c             |    1 -
->  84 files changed, 8096 insertions(+), 10178 deletions(-)
->  create mode 100644 fs/xfs/linux-2.6/xfs_sync.c
->  create mode 100644 fs/xfs/linux-2.6/xfs_sync.h
->  create mode 100644 fs/xfs/xfs_btree_trace.c
->  create mode 100644 fs/xfs/xfs_btree_trace.h
->  delete mode 100644 fs/xfs/xfs_clnt.h
->
-> _______________________________________________
-> xfs mailing list
-> xfs@oss.sgi.com
-> http://oss.sgi.com/mailman/listinfo/xfs
->   
-
+-aneesh
