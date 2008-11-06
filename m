@@ -1,82 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbYKFS5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbYKFTBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbYKFS5m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 13:57:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbYKFS5Z
+	id S1752002AbYKFTBx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 14:01:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYKFTBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 13:57:25 -0500
-Received: from gw.goop.org ([64.81.55.164]:57205 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbYKFS5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 13:57:25 -0500
-Message-ID: <49133E11.8050607@goop.org>
-Date: Thu, 06 Nov 2008 10:57:21 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Thu, 6 Nov 2008 14:01:45 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:50967 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbYKFTBo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 14:01:44 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:date:message-id:subject:from:to:cc:
+	content-type:content-transfer-encoding;
+	b=cPRaRITTEpk8C26E3JeXZ4cHTAVKlSDCo/hd1lviX+0CFXqGP5oq8HMhQmtNxMvcT
+	HSA3yhbpKDdc3Nxp9S88A==
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Tony Luck <tony.luck@intel.com>, Isaku Yamahata <yamahata@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Fix section type conflict in arch/ia64/xen/xen_pv_ops.c
-References: <s5h1vxou7gf.wl%tiwai@suse.de>
-In-Reply-To: <s5h1vxou7gf.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Thu, 6 Nov 2008 11:01:39 -0800
+Message-ID: <b040c32a0811061101j4a93a0f2pe30c0598726acd08@mail.gmail.com>
+Subject: [patch] add /proc/pid/stack to dump task's stack trace
+From: Ken Chen <kenchen@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> __initdata and const cannot be always a happy pair, as gcc-4.3.3 gives
-> the compile errors like:
->
->   arch/ia64/xen/xen_pv_ops.c:156: error: xen_init_ops causes a section type conflict
->   arch/ia64/xen/xen_pv_ops.c:340: error: xen_iosapic_ops causes a section type conflict
->
-> This patch simply removes const from data with __initdata.
->   
+This patch adds the ability to query a task's stack trace via /proc/pid/stack.
+It is considered to be more useful than /proc/pid/wchan as it provides full
+stack trace instead of single depth.
 
-Yeah, I've seen these sort of messages before, but I don't see why 
-there's an inherent problem with having const __initdata.
+Signed-off-by: Ken Chen <kenchen@google.com>
 
-Sam?
+index bcceb99..3202d5c 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -139,6 +139,7 @@ Table 1-1: Process specific entries in /proc
+  statm		Process memory status information
+  status		Process status in human readable form
+  wchan		If CONFIG_KALLSYMS is set, a pre-decoded wchan
++ stack		If CONFIG_KALLSYMS is set, report full stack trace
+  smaps		Extension based on maps, the rss size for each mapped file
+ ..............................................................................
 
-    J
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 486cf3f..466e519 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -65,6 +65,7 @@
+ #include <linux/mm.h>
+ #include <linux/rcupdate.h>
+ #include <linux/kallsyms.h>
++#include <linux/stacktrace.h>
+ #include <linux/resource.h>
+ #include <linux/module.h>
+ #include <linux/mount.h>
+@@ -338,6 +339,35 @@ static int proc_pid_wchan
+ 	else
+ 		return sprintf(buffer, "%s", symname);
+ }
++
++#define MAX_STACK_TRACE_DEPTH	32
++static int proc_stack_trace(struct task_struct *task, char *buffer)
++{
++	int i, len = 0;
++	unsigned long *entries;
++	struct stack_trace trace;
++
++	entries = kmalloc(sizeof(*entries) * MAX_STACK_TRACE_DEPTH, GFP_KERNEL);
++	if (!entries)
++		goto out;
++
++	trace.nr_entries = 0;
++	trace.max_entries = MAX_STACK_TRACE_DEPTH;
++	trace.entries = entries;
++	trace.skip = 0;
++
++	read_lock(&tasklist_lock);
++	save_stack_trace_tsk(task, &trace);
++	read_unlock(&tasklist_lock);
++
++	for (i = 0; i < trace.nr_entries; i++) {
++		len += sprintf(buffer + len, "[<%p>] %pS\n",
++				(void *) entries[i], (void *) entries[i]);
++	}
++	kfree(entries);
++out:
++	return len;
++}
+ #endif /* CONFIG_KALLSYMS */
 
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
->
-> ---
-> diff --git a/arch/ia64/xen/xen_pv_ops.c b/arch/ia64/xen/xen_pv_ops.c
-> index 04cd123..5d491d9 100644
-> --- a/arch/ia64/xen/xen_pv_ops.c
-> +++ b/arch/ia64/xen/xen_pv_ops.c
-> @@ -153,7 +153,7 @@ xen_post_smp_prepare_boot_cpu(void)
->  	xen_setup_vcpu_info_placement();
->  }
->  
-> -static const struct pv_init_ops xen_init_ops __initdata = {
-> +static struct pv_init_ops xen_init_ops __initdata = {
->  	.banner = xen_banner,
->  
->  	.reserve_memory = xen_reserve_memory,
-> @@ -260,7 +260,7 @@ xen_intrin_local_irq_restore(unsigned long mask)
->  		xen_rsm_i();
->  }
->  
-> -static const struct pv_cpu_ops xen_cpu_ops __initdata = {
-> +static struct pv_cpu_ops xen_cpu_ops __initdata = {
->  	.fc		= xen_fc,
->  	.thash		= xen_thash,
->  	.get_cpuid	= xen_get_cpuid,
-> @@ -337,7 +337,7 @@ xen_iosapic_write(char __iomem *iosapic, unsigned int reg, u32 val)
->  	HYPERVISOR_physdev_op(PHYSDEVOP_apic_write, &apic_op);
->  }
->  
-> -static const struct pv_iosapic_ops xen_iosapic_ops __initdata = {
-> +static struct pv_iosapic_ops xen_iosapic_ops __initdata = {
->  	.pcat_compat_init = xen_pcat_compat_init,
->  	.__get_irq_chip = xen_iosapic_get_irq_chip,
->  
->   
-
+ #ifdef CONFIG_SCHEDSTATS
+@@ -2489,6 +2519,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	DIR("attr",       S_IRUGO|S_IXUGO, attr_dir),
+ #endif
+ #ifdef CONFIG_KALLSYMS
++	INF("stack",      S_IRUSR, stack_trace),
+ 	INF("wchan",      S_IRUGO, pid_wchan),
+ #endif
+ #ifdef CONFIG_SCHEDSTATS
