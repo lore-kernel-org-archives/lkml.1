@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbYKFQQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYKFQRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743AbYKFQQe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 11:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbYKFQQU
+	id S1754494AbYKFQRV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 11:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYKFQRE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 11:16:20 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41368 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754049AbYKFQQU (ORCPT
+	Thu, 6 Nov 2008 11:17:04 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:53443 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752603AbYKFQRD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 11:16:20 -0500
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Peter Zijlstra <peterz@infradead.org>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
-       Jeff Moyer <jmoyer@redhat.com>
-In-Reply-To: <20081106160154.GA7461@redhat.com>
-References: <20081106153022.215696930@redhat.com>
-	 <1225986593.7803.4688.camel@twins>  <20081106160154.GA7461@redhat.com>
-Content-Type: text/plain
+	Thu, 6 Nov 2008 11:17:03 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Peter Staubach <staubach@redhat.com>
+Subject: Re: [PATCH]: ext4: fix big endian
+Date: Thu, 6 Nov 2008 17:15:53 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <200811061600.54264.borntraeger@de.ibm.com> <200811061651.49602.borntraeger@de.ibm.com> <49131601.50407@redhat.com>
+In-Reply-To: <49131601.50407@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Thu, 06 Nov 2008 17:16:13 +0100
-Message-Id: <1225988173.7803.4723.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Disposition: inline
+Message-Id: <200811061715.53593.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 11:01 -0500, Vivek Goyal wrote:
-
-> > Does this still require I use dm, or does it also work on regular block
-> > devices? Patch 4/4 isn't quite clear on this.
+Am Donnerstag, 6. November 2008 schrieb Peter Staubach:
+> >  	/* We allocate both existing and potentially added groups */
+> >  	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
+> > -			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
+> > +			    (le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks + 1) <<
+> >   
 > 
-> No. You don't have to use dm. It will simply work on regular devices. We
-> shall have to put few lines of code for it to work on devices which don't
-> make use of standard __make_request() function and provide their own
-> make_request function. 
-> 
-> Hence for example, I have put that few lines of code so that it can work
-> with dm device. I shall have to do something similar for md too.
-> 
-> Though, I am not very sure why do I need to do IO control on higher level
-> devices. Will it be sufficient if we just control only bottom most
-> physical block devices?
-> 
-> Anyway, this approach should work at any level.
+> I suspect that you want to do the le16_to_cpu() and _then_
+> add the 1.  Otherwise, adding 1 to a different byte order
+> value won't do quite what is expected or hoped for...
 
-Nice, although I would think only doing the higher level devices makes
-more sense than only doing the leafs.
+errm. Right.
+Something like this maybe?
 
-Is there any reason we cannot merge this with the regular io-scheduler
-interface? afaik the only problem with doing group scheduling in the
-io-schedulers is the stacked devices issue.
+[PATCH]: ext4: fix big endian access for flex groups
 
-Could we make the io-schedulers aware of this hierarchy?
+On big endianess plattforms newly created ext4 file systems cannot be mounted
+and show messages like:
+[6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
+[6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
+
+We have to access s_reserved_gdb_blocks with le16_to_cpu.
+
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ fs/ext4/super.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: kvm/fs/ext4/super.c
+===================================================================
+--- kvm.orig/fs/ext4/super.c
++++ kvm/fs/ext4/super.c
+@@ -1455,8 +1455,8 @@ static int ext4_fill_flex_info(struct su
+ 
+ 	/* We allocate both existing and potentially added groups */
+ 	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
+-			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
+-			      EXT4_DESC_PER_BLOCK_BITS(sb))) /
++			    ((le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks) +
++			      1) << EXT4_DESC_PER_BLOCK_BITS(sb))) /
+ 			   groups_per_flex;
+ 	sbi->s_flex_groups = kzalloc(flex_group_count *
+ 				     sizeof(struct flex_groups), GFP_KERNEL);
