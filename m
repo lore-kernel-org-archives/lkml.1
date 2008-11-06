@@ -1,61 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbYKFOQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbYKFOS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753966AbYKFOQT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 09:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750823AbYKFOQK
+	id S1754094AbYKFOS0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 09:18:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbYKFOSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 09:16:10 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:16238 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750757AbYKFOQJ (ORCPT
+	Thu, 6 Nov 2008 09:18:18 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42673 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbYKFOSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 09:16:09 -0500
-X-BigFish: VPS-12(z21eWzzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0K9X0YI-04-PS8-01
-Date: Thu, 6 Nov 2008 15:15:55 +0100
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] AMD IOMMU fixes for 2.6.28
-Message-ID: <20081106141555.GD22503@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: mutt-ng/devel-r804 (Linux)
-X-OriginalArrivalTime: 06 Nov 2008 14:15:56.0296 (UTC) FILETIME=[2F422080:01C9401A]
+	Thu, 6 Nov 2008 09:18:17 -0500
+Subject: Re: [PATCH] ftrace: add an fsync tracer
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+In-Reply-To: <20081106060624.58a0f967@infradead.org>
+References: <20081105094902.27ec4b39@infradead.org>
+	 <1225976138.7803.4485.camel@twins>  <20081106060624.58a0f967@infradead.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Nov 2008 15:19:01 +0100
+Message-Id: <1225981141.7803.4577.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Thu, 2008-11-06 at 06:06 -0800, Arjan van de Ven wrote:
+> On Thu, 06 Nov 2008 13:55:38 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Wed, 2008-11-05 at 09:49 -0800, Arjan van de Ven wrote:
+> > > From 63c1b869d94eb31a98015af09fb24e22151f2f00 Mon Sep 17 00:00:00
+> > > 2001 From: Arjan van de Ven <arjan@linux.intel.com>
+> > > Date: Tue, 4 Nov 2008 21:08:11 -0800
+> > > Subject: [PATCH] ftrace: add an fsync tracer
+> > > 
+> > > fsync() (and its cousin, fdatasync()) are important chokepoints in
+> > > the kernel as they imply very expensive operations, both in terms
+> > > of filesystem operations (ext3 writes back its entire journal) as
+> > > well as the block layer (fsync() implies sending a cache flushing
+> > > barrier to the SATA/SCSI disk).
+> > > 
+> > > This tracer makes a log of which application calls fsync() on which
+> > > file, so that developers and others interested in finding these
+> > > choke points can locate them and fix them in the apps that call
+> > > this function.
+> > 
+> > Sorry, but I have to object to such single purpose tracers..
+> > 
+> > If we go this way we'll end up with a gazillion little tracers, non of
+> > which are really useful.
+> 
+> If we go this way we'll end up with a bunch of little tracers, all of
+> which will be useful in their area, and people can also make "super
+> tracers" out of the useful trace points.
 
-The following changes since commit 1e19b16a30c34c042f1eaa23db4c99bfad1dac0e:
-  Thomas Gleixner (1):
-        AMD IOMMU: use iommu_device_max_index, fix
+I don't think: 
 
-are available in the git repository at:
+# cat available_tracers | wc -l
+500
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git iommu-fixes-2.6.28
+will do much good for people.
 
-Joerg Roedel (2):
-      AMD IOMMU: fix detection of NP capable IOMMUs
-      AMD IOMMU: fix lazy IO/TLB flushing in unmap path
+Also, I don't think do_fsync() is the right place to catch what you're
+trying to catch.
 
- arch/x86/kernel/amd_iommu.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+> > 
+> > Please work on getting something like a syscall tracer,
+> 
+> a syscall tracer will exactly not tell you which file(name) was being
+> fsync()'d which was the whole point.
 
-This are 2 important bugfixes which fix lazy IO/TLB flushing with the
-driver. Please pull.
+It will tell you the process and the fd, and when you have those two its
+a simple step to find the actual file.
 
-Joerg
+> LatencyTOP already KNOWS that fsync is the problem. What it doesn't
+> know is which file is being fsync()d.
+> 
+> fsync is a problem when used incorrectly, not just for ext3 but also
+> due to barriers. That's why it's important to be able to find who calls
+> it when it impacts interactive performance.
 
--- 
-           |           AMD Saxony Limited Liability Company & Co. KG
- Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
- System    |                  Register Court Dresden: HRA 4896
- Research  |              General Partner authorized to represent:
- Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
-           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+Which suggests you want a tracer that gives more information about who
+generates barriers, not specifically fsync().
+
 
