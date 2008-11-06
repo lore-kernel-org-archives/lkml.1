@@ -1,92 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbYKFPc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbYKFPeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752570AbYKFPc5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:32:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYKFPcs
+	id S1753767AbYKFPeE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:34:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYKFPdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:32:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47443 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Nov 2008 10:33:52 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:54430 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbYKFPcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:32:47 -0500
-Date: Thu, 6 Nov 2008 16:32:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, T?r?k Edwin <edwintorok@gmail.com>,
-       srostedt@redhat.com, a.p.zijlstra@chello.nl, sandmann@daimi.au.dk,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Identify which executable object the userspace address
-	belongs to. Store thread group leader id, and use it to lookup the
-	address in the process's map. We could have looked up the address
-	on thread's map, but the thread might not exist by the time we are
-	called. The process might not exist either, but if you are reading
-	trace_pipe, that is unlikely.
-Message-ID: <20081106153238.GD1644@elte.hu>
-References: <1225660694-19765-1-git-send-email-edwintorok@gmail.com> <1225660694-19765-2-git-send-email-edwintorok@gmail.com> <1225660694-19765-3-git-send-email-edwintorok@gmail.com> <20081102212512.GF28946@ZenIV.linux.org.uk> <490E1B74.6010904@gmail.com> <20081102214042.GG28946@ZenIV.linux.org.uk> <20081103073257.GA13727@elte.hu> <20081104182628.GA6666@infradead.org> <20081106095547.GK4890@elte.hu> <20081106122650.GA23474@infradead.org>
+	id S1751976AbYKFPdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:33:50 -0500
+Message-ID: <49130E50.8090009@atmel.com>
+Date: Thu, 06 Nov 2008 16:33:36 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106122650.GA23474@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Julien Brunel <brunel@diku.dk>, adaplas@gmail.com,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] drivers/video: Bad error test before a dereference
+References: <200809261553.45301.brunel@diku.dk>
+In-Reply-To: <200809261553.45301.brunel@diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Christoph Hellwig <hch@infradead.org> wrote:
-
-> On Thu, Nov 06, 2008 at 10:55:47AM +0100, Ingo Molnar wrote:
-> > > On Mon, Nov 03, 2008 at 08:32:57AM +0100, Ingo Molnar wrote:
-> > > > could you please help out with such a helper? This is really about 
-> > > > visualization, not to rely on it.
-> > > 
-> > > Is this kindergarten? [...]
-> > 
-> > No, this is lkml where, if you decide to stand in the way of a patch, 
-> > you are supposed to back up your NAK's with a path out of that NAK. 
-> > Instead of forcing people into multiple email ping-pongs trying to 
-> > figure out what exactly the objections mean.
+Julien Brunel :
+> The error test that follows the call to backlight_device_register
+> semms not to concern the right variable.
 > 
-> Even if that was true, which would be avery sad world I should be 
-> easy enough for you or anyone to look at what seq_path does and how 
-> to have a version that doesn't use the seq_file insterface.  Takes 
-> about two minutes with most of the time spent on finding where 
-> seq_file is implemented.
+> A simplified version of the semantic match that finds this problem is
+> as follows: 
+> (http://www.emn.fr/x-info/coccinelle/)
+> // <smpl>
+> @def0@
+> expression x;
+> position p0;
+> @@
+> x@p0 = backlight_device_register(...)
+> 
+> @protected@
+> expression def0.x,E;
+> position def0.p0;
+> position p;
+> statement S;
+> @@
+> x@p0
+> ... when != x = E
+> if (!IS_ERR(x) && ...) {<... x@p ...>} else S
+> 
+> @unprotected@
+> expression def0.x;
+> identifier fld;
+> position def0.p0;
+> position p != protected.p;
+> @@
+> x@p0
+> ... when != x = E
+> * x@p->fld
+> // </smpl>
+> 
+> Signed-off-by: Julien Brunel <brunel@diku.dk>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-the timeline i quoted shows that it was a 2 days process, not 2 
-minutes.
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-It's the basic principle of communication: be forgiving in what you 
-receive and conservative in what you transmit. Plus if one extra 
-sentence of seemingly redundant information increases the chances to 
-save an email-roundtrip down the line then please do it to increase 
-communication efficiency and reduce latency.
+> 
+> ---
+>  drivers/video/atmel_lcdfb.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -u -p a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+> --- a/drivers/video/atmel_lcdfb.c
+> +++ b/drivers/video/atmel_lcdfb.c
+> @@ -132,7 +132,7 @@ static void init_backlight(struct atmel_
+>  
+>  	bl = backlight_device_register("backlight", &sinfo->pdev->dev,
+>  			sinfo, &atmel_lcdc_bl_ops);
+> -	if (IS_ERR(sinfo->backlight)) {
+> +	if (IS_ERR(bl)) {
+>  		dev_err(&sinfo->pdev->dev, "error %ld on backlight register\n",
+>  				PTR_ERR(bl));
+>  		return;
+> 
 
-Just to show you an example, let me give you an analogous situation in 
-scheduler talk, as a reply to someone from another field who tries to 
-use an existing scheduler API the wrong way:
+Thanks, regards,
+-- 
+Nicolas Ferre
 
- "
-   Hey, you loser, NAK. Sync wakeups are the wrong thing to do, why 
-   dont you just disable buddy wakeups for a minute in sched.c??
-
-   [ Only two minutes to write a patch. The solution is really
-     obvious to me, and we are not in the kindergarten to explain
-     everything to you. And besides, the longer i make it for you to
-     figure it all out, the cooler i can feel about being an
-     ueber-capable scheduler hacker ;-) ]
- "
-
-do you want such a world? i dont ;-)
-
-	Ingo
