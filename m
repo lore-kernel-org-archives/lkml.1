@@ -1,83 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbYKFVNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606AbYKFVOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbYKFVNg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbYKFVN1
+	id S1753606AbYKFVOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYKFVNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:13:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38377 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750932AbYKFVN0 (ORCPT
+	Thu, 6 Nov 2008 16:13:52 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:32768 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbYKFVNv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:13:26 -0500
-Date: Thu, 6 Nov 2008 13:13:48 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: fche@redhat.com (Frank Ch. Eigler)
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081106131348.68f8858e@infradead.org>
-In-Reply-To: <y0mej1ofvyz.fsf@ton.toronto.redhat.com>
-References: <20081105094902.27ec4b39@infradead.org>
-	<1225976138.7803.4485.camel@twins>
-	<20081106060624.58a0f967@infradead.org>
-	<1225981141.7803.4577.camel@twins>
-	<20081106063108.02b4813d@infradead.org>
-	<1225983052.7803.4623.camel@twins>
-	<20081106070157.065b2dcc@infradead.org>
-	<alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com>
-	<20081106094558.50d94bcc@infradead.org>
-	<y0mej1ofvyz.fsf@ton.toronto.redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+	Thu, 6 Nov 2008 16:13:51 -0500
+Date: Thu, 6 Nov 2008 21:50:48 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] kbuild: introduce KECHO convenience echo
+Message-ID: <20081106205048.GA2972@uranus.ravnborg.org>
+References: <1225960295-30366-1-git-send-email-vapier@gentoo.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1225960295-30366-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 15:19:48 -0500
-fche@redhat.com (Frank Ch. Eigler) wrote:
+On Thu, Nov 06, 2008 at 03:31:34AM -0500, Mike Frysinger wrote:
+> There is a bunch of places in the build system where we do 'echo' to show
+> some nice status lines.  This means we still get output when running in
+> silent mode.  So declare a new KECHO variable that only does 'echo' when we
+> are in a suitable verbose build mode.
 
-> Arjan van de Ven <arjan@infradead.org> writes:
-> 
-> > [...]
-> > what is the real need is
-> > 1) Have a trace point in the source
-> > 2) Associate a "formatting function" with that point 
-> >    (which basically transforms the trace parameters to, say, a
-> > string) 3) A way to turn the trace point on/off.
-> 
-> For 1 and 2, it may be worth considering a plain trace_mark() in
-> do_sync().  The complication that makes this uglier than a one-liner
+Nice idea.
+I will add it as soon as I start working on kbuild-next
+Same for your other two patches.
 
-no why is that?
+A lot of the kbuild stuff today is using lowercase to
+avoid all the typical SCREAMING in Makefiles so I
+may end up using $(kecho).
 
-what you really need is to be able to provide a callback function
-pointer that will do the formatting,
-or as Peter wants it, a format string.
-
-(and we can easily make a format string that knows how to print a
-struct file, no big deal, I suspect that is a common thing actually)
-
-Doing this like you propose is just too complex and too specialistic;
-the reality is that merely formatting the arguments of a trace point is
-the common case, and I suspect for 99.9% of the cases we can get away
-with a standard default formatting.
-
-We should make THAT easy. Not complex or ugly. But easy.
-
-And then if I or some tool wants to see a tracepoint, we have some
-standard way to enumerate them and turn individual ones on with their
-standard formatting ... and that's it.
-no iffs or buts
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Sam
