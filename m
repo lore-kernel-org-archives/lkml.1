@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYKFLe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYKFLfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYKFLe3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 06:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYKFLeU
+	id S1754919AbYKFLfa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 06:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYKFLfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 06:34:20 -0500
-Received: from vs02.svr02.mucip.net ([83.170.6.69]:46902 "EHLO
-	mailout.mucip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753752AbYKFLeU (ORCPT
+	Thu, 6 Nov 2008 06:35:17 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:41366 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753659AbYKFLfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 06:34:20 -0500
-Date: Thu, 6 Nov 2008 12:34:16 +0100
-From: Bernhard Schmidt <berni@birkenwald.de>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.28-rc3] regression when switching TTY->X, input related?
-Message-ID: <20081106113416.GA6449@schleppi.birkenwald.de>
-References: <20081105220419.GA15685@pest> <20081106041517.1C7FE143D4EA@smtp02.mtu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106041517.1C7FE143D4EA@smtp02.mtu.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 6 Nov 2008 06:35:15 -0500
+Subject: Re: [PATCH] SSB: make it depend on PCI
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, Michael Buesch <mb@bu3sch.de>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <8bd0f97a0811060332k281ae4d1m1fee62b27d811037@mail.gmail.com> (sfid-20081106_123252_847507_66B0AD6D)
+References: <1225965082-31462-1-git-send-email-vapier@gentoo.org>
+	 <1225969620.3619.204.camel@johannes.berg>
+	 <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com>
+	 <1225970573.3619.208.camel@johannes.berg>
+	 <8bd0f97a0811060326n5bcfc17fm5b5a65b12e71ea61@mail.gmail.com>
+	 <1225970982.3619.211.camel@johannes.berg>
+	 <8bd0f97a0811060332k281ae4d1m1fee62b27d811037@mail.gmail.com>
+	 (sfid-20081106_123252_847507_66B0AD6D)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Orh9Qws4NIkET78xKnt5"
+Date: Thu, 06 Nov 2008 12:35:11 +0100
+Message-Id: <1225971311.3619.214.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 07:15:11AM +0300, Andrey Borzenkov wrote:
 
-> > I have a pretty weird issue with 2.6.28-rc3 that I originally thought to
-> > be related with suspend2ram, then with intel's xorg driver and now it
-> > looks like something related to the input subsystem.
-> > 
-> > I have a Dell Latitude D630 (Intel GM965 graphics) running Ubuntu 8.10
-> > amd64. Since the included (heavily patched by Ubuntu) 2.6.27 is
-> > extremely unstable in iwlagn I've been trying my luck with 2.6.28-rc3.
-> > 
-> > One thing that did not work anymore was suspend2ram and resume. It would
-> > suspend just fine and resume as well, but then I would sit in front of a
-> > black screen with an unmovable mouse cursor and not be able to do
-> > anything, not even switch vtys or kill X with ctrl-alt-backspace. Magic
-> > Sysrq to reboot did usually work though.
-> > 
-> > I've been following a few threads about similar issues in here, among
-> > others this one: http://lkml.org/lkml/2008/11/5/217 . However, the
-> > workaround mentioned in there (switch to a textmode console prior to
-> > suspend) didn't work, in fact when switching back to X without
-> > suspending I had the same problem. After sitting there and scratching my
-> > head for a couple of minutes the screensaver unlock dialog suddenly
-> > appeared and I could enter my password and "work", but the touchpad
-> > didn't work. 
-> 
-> Cannot comment on input stuff, but I noticed that you are using driver
-> that requests firmware:
-> 
-> [   39.735183] iwlagn 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ
-> 17
-> [   39.735272] iwlagn 0000:0c:00.0: restoring config space at offset 0x1
-> (was 0x100102, writing 0x100106)
-> [   39.735379] iwlagn 0000:0c:00.0: irq 42 for MSI/MSI-X
-> [   39.735448] iwlagn 0000:0c:00.0: firmware: requesting
-> iwlwifi-4965-2.ucode
-> 
-> If it tries to do it during resume in ->resume method, this won't work and
-> will timeout; symptoms are exactly as you describe (sitting there for 180
-> seconds and suddenly start to work). Do you have WiFi connection on resume?
+--=-Orh9Qws4NIkET78xKnt5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes. In fact the WiFi connection is reestablished immediately after
-resume (with NetworkManager) and I can ping the box through WiFI, while
-X hangs and waits for something.
+On Thu, 2008-11-06 at 06:32 -0500, Mike Frysinger wrote:
 
-Bernhard
+> > I guess we
+> > need ifdefs or mandate that non-PCI architectures have dummy stubs (lik=
+e
+> > other architectures have in the !CONFIG_PCI case), but Michael's the SS=
+B
+> > expert.
+>=20
+> OK.  regarding the patch, if we drop the "&& PCI" part, i think the
+> rest should get merged ... having empty menus in kconfig is annoying.
+> agreed ?  i can send out another one ...
+
+Yeah that part looks fine to me.
+
+johannes
+
+--=-Orh9Qws4NIkET78xKnt5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJEtZqAAoJEKVg1VMiehFYN0gP/RQNaho+MDXPtCOP4uUdL3Kj
+pDc+p5IiteBZPqMzjewjz0CjSw2yi0hX0QNTv6PWNuR/BV5auOmLZGkrvKvPDpTB
+cQl929oYxsPKroYXOFYfgCYtWsb2+FsnGuVFZdtohUe0/qMwnkixj1HQUOm1EXgB
+kKaeORT8hdIR1ee1voN4NRI7UZ3ynkdjLZineCcNG0G9Q5OGbrOpt8LTWuJzcN9+
+JonpYernRTegdnJQnazh+5zKmvuvTtf3j1hlNR8RKHgACc8spQSoOw6QwjLmDpFn
+Ws0tYIj16yH59VxEtB+i098gCXCn5Qnc07+NDKbSMtpVRX7tB2UiED0Ht21ChBI0
++hvNwlxYtrVTAFDx5gOpwJkm/giUb63HBVvfIt2LUqJKzFsog9+IqKrdksm/Z2OG
+xGXi3n/IujTvA0CE2O6/Dwh4aqTmvZ187qNhL4EUGM89K397J/+SXugCq7BTmfRw
+X06yxRRoaBDvxJdq/PyIavikalWzwpuOgHpSus8LXKQc1286sB6lFNcfF793fVk5
+CVssmarQhoGNB8xOZ+r+FtixDw/HKVvqTlYw4QjEITeMjcbbcXiM4MXfduMPKQhd
+Y0FNQFzeReZyvrQMYuIocglwUohSiVXProVj9tWi/ZoR0ScIT1xJTlEWOryzLo0/
+LXr8dd8wR5TYZZtSQS8m
+=FMSc
+-----END PGP SIGNATURE-----
+
+--=-Orh9Qws4NIkET78xKnt5--
+
