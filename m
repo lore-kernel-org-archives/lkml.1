@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754924AbYKFKc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbYKFKkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754924AbYKFKc1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 05:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbYKFKcO
+	id S1754258AbYKFKkp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 05:40:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYKFKkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 05:32:14 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33016 "EHLO mx2.redhat.com"
+	Thu, 6 Nov 2008 05:40:36 -0500
+Received: from ozlabs.org ([203.10.76.45]:60809 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbYKFKcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 05:32:13 -0500
-Message-ID: <4912C75B.8050508@redhat.com>
-Date: Thu, 06 Nov 2008 12:30:51 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753385AbYKFKkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 05:40:35 -0500
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Eduardo Habkost <ehabkost@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/16] x86: Emergency virtualization disable function
-References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com>	<1225810364-8990-9-git-send-email-ehabkost@redhat.com>	<m1bpwu3wod.fsf@frodo.ebiederm.org> <20081105175235.GJ5247@blackpad>	<4912BD67.8000704@redhat.com> <m1mygd2lxs.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1mygd2lxs.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18706.51381.987014.370948@cargo.ozlabs.ibm.com>
+Date: Thu, 6 Nov 2008 21:36:37 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Andreas Schwab <schwab@suse.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix msr check in compat_sys_swapcontext
+In-Reply-To: <jey6zx9piz.fsf@sykes.suse.de>
+References: <jeprlabbi6.fsf@sykes.suse.de>
+	<18706.16317.759662.855430@cargo.ozlabs.ibm.com>
+	<jey6zx9piz.fsf@sykes.suse.de>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
->
->> If you want to be extra simple and safe, remove kvm from the equation.  Make the
->> disabling code part of kdump/emergency_restart and only rely on the convention
->> that cr3.vmxe == vmxon.
->>     
-> Convention?
->   
+Andreas Schwab writes:
 
-There is a de-facto convention supported by at least vmware and kvm.  If 
-cr4.vmxe is 1, then we are in vmx operation.  If cr4.vmxe is 0, then we 
-are not in vmx operation.  This allows us to determine whether we need 
-to execute vmxoff without any APIs.
+> Paul Mackerras <paulus@samba.org> writes:
+> 
+> > we need to use get_user, not __get_user, since we haven't done an
+> > access_ok() check on the address.
+> 
+> The address is always ok since its a compat pointer, see do_setcontext.
 
+OK, since it's inside a CONFIG_PPC64 block.  I'll add a paragraph to
+the patch description pointing that out.
 
--- 
-error compiling committee.c: too many arguments to function
-
+Paul.
