@@ -1,278 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbYKFD2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYKFDd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbYKFD2n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 22:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYKFD2e
+	id S1754023AbYKFDd2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 22:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbYKFDdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 22:28:34 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48447 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbYKFD2d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 22:28:33 -0500
-Date: Thu, 06 Nov 2008 12:28:30 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory hotplug
-Cc: Nigel Cunningham <ncunningham@crca.org.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Matt Tolentino <matthew.e.tolentino@intel.com>, linux-pm@lists.osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, pavel@suse.cz, Mel Gorman <mel@skynet.ie>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20081106121212.e609476d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081106110709.b168cc30.kamezawa.hiroyu@jp.fujitsu.com> <20081106121212.e609476d.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081106121916.4474.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 5 Nov 2008 22:33:20 -0500
+Received: from main.gmane.org ([80.91.229.2]:58396 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbYKFDdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 22:33:19 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Thomas Guyot-Sionnest <dermoth@aei.ca>
+Subject: AACRAID: Adaptec 2120S/2200S with +4GB RAM broken since 2.6.24, still
+ not fixed
+Date: Wed, 05 Nov 2008 22:33:01 -0500
+Message-ID: <getohg$j4u$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: dsl-61-62.aei.ca
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Hmm.
+This has been discussed before; servers with Adaptec 2120S and 2200S
+(and maybe others) are broken since 2.6.24 on systems with >4GB RAM. The
+following commit (meant to make some PowerEdge controllers work) broke it:
 
-I think simple mutex is enough. read/write lock is not necessary.
-Memory hotplug event is very rare, and there is no requirement of
-parallel execution.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+
+It is not clear in the related bugtracker on which basis all those
+controllers were given the AAC_QUIRK_SCSI_32 flag but it definitely
+break at least two of them, possibly others. There's multiple reports of
+it, threads in this and others mailing list, bug reports to various
+distributions, but still no fix!
+
+Tomas Henzl from Redhat posted a patch here nearly one moth ago (just
+before 2.6.27) which didn't get picked up for 2.6.28:
+
+http://lkml.org/lkml/2008/10/7/164
+
+Other references:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=9133
+https://bugzilla.redhat.com/show_bug.cgi?id=453472
+https://bugzilla.redhat.com/show_bug.cgi?id=457552
+
+Some more interesting links:
+http://marc.info/?l=linux-kernel&m=122166454808377&w=2
 
 
-> On Thu, 6 Nov 2008 11:07:09 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > Okay. then we can add "kernel thread for calling add/remove memory" and say
-> > "PLEASE WAIT UNTIL HIBERNATION IS READY".
-> > 
-> > I can try that by myself but doesn't have suitable machine....
-> > I think I can show you pseudo code in hours. please wait a bit.
-> > 
-> 
-> How about this one ? as a start step ?
-> I have no test environment. So please take this as a sample.
-> -Kame
-> =
-> 
-> Now, MEMORY_HOTPLUG and HIBERNATION is mutually exclusive in Kconfig.
-> That's because
-> 	- memory hotplug changes pgdat/zone/memmap range.
-> 	- hibernation countes # of memory based on pgdate/zone/memmap.
-> 
-> This patch adds rwsemaphore for making them not to run at the same time.
-> 
-> IIUC, add_memory() is called from following places.
->     - probe interface
->     - acpi handler
-> It seems both can sleep. (acpi handler uses sleepable memory allocator etc...)
-> 
-> online/offline handlers also sleeps.
-> 
-> Anyway, the most difficult thing is how to test this.
-> 
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
->  mm/Kconfig          |    2 -
->  mm/memory_hotplug.c |   61 +++++++++++++++++++++++++++++++++++++++++++++-------
->  2 files changed, 54 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6.27.4/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-2.6.27.4.orig/mm/memory_hotplug.c
-> +++ linux-2.6.27.4/mm/memory_hotplug.c
-> @@ -31,6 +31,13 @@
->  
->  #include "internal.h"
->  
-> +struct rw_semaphore memhp_mutex;
-> +
-> +static int init_memhp_mutex(void)
-> +{
-> +	init_rwsem(&memhp_mutex);
-> +}
-> +
->  /* add this memory to iomem resource */
->  static struct resource *register_memory_resource(u64 start, u64 size)
->  {
-> @@ -381,6 +388,7 @@ int online_pages(unsigned long pfn, unsi
->  	int ret;
->  	struct memory_notify arg;
->  
-> +	down_read(&memhp_mutex);
->  	arg.start_pfn = pfn;
->  	arg.nr_pages = nr_pages;
->  	arg.status_change_nid = -1;
-> @@ -392,6 +400,7 @@ int online_pages(unsigned long pfn, unsi
->  	ret = memory_notify(MEM_GOING_ONLINE, &arg);
->  	ret = notifier_to_errno(ret);
->  	if (ret) {
-> +		up_read(&memhp_mutex);
->  		memory_notify(MEM_CANCEL_ONLINE, &arg);
->  		return ret;
->  	}
-> @@ -415,6 +424,7 @@ int online_pages(unsigned long pfn, unsi
->  		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
->  			nr_pages, pfn);
->  		memory_notify(MEM_CANCEL_ONLINE, &arg);
-> +		up_read(&memhp_mutex);
->  		return ret;
->  	}
->  
-> @@ -436,7 +446,7 @@ int online_pages(unsigned long pfn, unsi
->  
->  	if (onlined_pages)
->  		memory_notify(MEM_ONLINE, &arg);
-> -
-> +	up_read(&memhp_mutex);
->  	return 0;
->  }
->  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-> @@ -477,14 +487,18 @@ int add_memory(int nid, u64 start, u64 s
->  	struct resource *res;
->  	int ret;
->  
-> +	down_read(&memhp_mutex);
->  	res = register_memory_resource(start, size);
-> -	if (!res)
-> +	if (!res) {
-> +		up_read(&memhp_mutex);
->  		return -EEXIST;
-> -
-> +	}
->  	if (!node_online(nid)) {
->  		pgdat = hotadd_new_pgdat(nid, start);
-> -		if (!pgdat)
-> +		if (!pgdat) {
-> +			up_read(&memhp_mutex);
->  			return -ENOMEM;
-> +		}
->  		new_pgdat = 1;
->  	}
->  
-> @@ -508,7 +522,7 @@ int add_memory(int nid, u64 start, u64 s
->  		 */
->  		BUG_ON(ret);
->  	}
-> -
-> +	up_read(&memhp_mutex);
->  	return ret;
->  error:
->  	/* rollback pgdat allocation and others */
-> @@ -517,10 +531,12 @@ error:
->  	if (res)
->  		release_memory_resource(res);
->  
-> +	up_read(&memhp_mutex);
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(add_memory);
->  
-> +
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  /*
->   * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
-> @@ -750,20 +766,23 @@ int offline_pages(unsigned long start_pf
->  		return -EINVAL;
->  	if (!IS_ALIGNED(end_pfn, pageblock_nr_pages))
->  		return -EINVAL;
-> +
->  	/* This makes hotplug much easier...and readable.
->  	   we assume this for now. .*/
->  	if (!test_pages_in_a_zone(start_pfn, end_pfn))
->  		return -EINVAL;
->  
-> +	down_read(&memhp_mutex);
->  	zone = page_zone(pfn_to_page(start_pfn));
->  	node = zone_to_nid(zone);
->  	nr_pages = end_pfn - start_pfn;
->  
->  	/* set above range as isolated */
->  	ret = start_isolate_page_range(start_pfn, end_pfn);
-> -	if (ret)
-> +	if (ret) {
-> +		up_read(&memhp_mutex);
->  		return ret;
-> -
-> +	}
->  	arg.start_pfn = start_pfn;
->  	arg.nr_pages = nr_pages;
->  	arg.status_change_nid = -1;
-> @@ -838,6 +857,7 @@ repeat:
->  	writeback_set_ratelimit();
->  
->  	memory_notify(MEM_OFFLINE, &arg);
-> +	up_read(&memhp_mutex);
->  	return 0;
->  
->  failed_removal:
-> @@ -846,7 +866,7 @@ failed_removal:
->  	memory_notify(MEM_CANCEL_OFFLINE, &arg);
->  	/* pushback to free area */
->  	undo_isolate_page_range(start_pfn, end_pfn);
-> -
-> +	up_read(&memhp_mutex);
->  	return ret;
->  }
->  #else
-> @@ -856,3 +876,34 @@ int remove_memory(u64 start, u64 size)
->  }
->  EXPORT_SYMBOL_GPL(remove_memory);
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
-> +
-> +
-> +#ifdef CONFIG_HIBERNATION
-> +
-> +int memhp_hibenation_callback(struct notifier_block *self,
-> +			      unsigned long action,
-> +			      void *arg)
-> +{
-> +	int ret;
-> +
-> +	switch(action) {
-> +	case PM_HIBERNATION_PREPARE:
-> +		down_write(&memhp_mutex);
-> +		break;
-> +	case PM_POST_HIBERNATION:
-> +		up_write(&memhp_mutex);
-> +		break;
-> +	case PM_RESTORE_PREPARE:
-> +		down_write(&memhp_mutex);
-> +		break;
-> +	case PM_POST_RESTORE:
-> +		up_write(&memhp_mutex);
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +	return NOTIFY_OK;
-> +}
-> +#endif
-> +
-> +
-> Index: linux-2.6.27.4/mm/Kconfig
-> ===================================================================
-> --- linux-2.6.27.4.orig/mm/Kconfig
-> +++ linux-2.6.27.4/mm/Kconfig
-> @@ -128,12 +128,9 @@ config SPARSEMEM_VMEMMAP
->  config MEMORY_HOTPLUG
->  	bool "Allow for memory hot-add"
->  	depends on SPARSEMEM || X86_64_ACPI_NUMA
-> -	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
-> +	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
->  	depends on (IA64 || X86 || PPC64 || SUPERH || S390)
->  
-> -comment "Memory hotplug is currently incompatible with Software Suspend"
-> -	depends on SPARSEMEM && HOTPLUG && HIBERNATION
-> -
->  config MEMORY_HOTPLUG_SPARSE
->  	def_bool y
->  	depends on SPARSEMEM && MEMORY_HOTPLUG
-> 
+You can also search this on Google for even more reports:
+AAC_QUIRK_SCSI_32
+"aac_fib_send failed with status 8195"
 
--- 
-Yasunori Goto 
+Thanks,
 
+Thomas
 
