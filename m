@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYKFUIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752691AbYKFUMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbYKFUIR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 15:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYKFUH7
+	id S1752691AbYKFUMZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYKFUMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 15:07:59 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41493 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Nov 2008 15:12:17 -0500
+Received: from mail.tpi.com ([198.107.51.143]:3551 "EHLO mail.tpi.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbYKFUH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 15:07:59 -0500
-Date: Thu, 6 Nov 2008 21:07:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [patch] restore sched_exec load balance heuristics
-Message-ID: <20081106200746.GA3578@elte.hu>
-References: <b040c32a0811061140u27093e4er70a43041564617f1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0811061140u27093e4er70a43041564617f1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1750900AbYKFUMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:12:17 -0500
+To: mike.miller@hp.com
+Subject: [PATCH] cciss: firmware version is invalid
+Cc: bryan.stillwell@hp.com, iss_storagedev@hp.com,
+       linux-kernel@vger.kernel.org
+Message-Id: <20081106201204.9C2AEF8A65@sepang.rtg.net>
+Date: Thu,  6 Nov 2008 13:12:04 -0700 (MST)
+From: timg@tpi.com (Tim Gardner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From b659b0b0e14f5e3c049bf5c8d2883587cdbfe344 Mon Sep 17 00:00:00 2001
+From: Tim Gardner <tim.gardner@canonical.com>
+Date: Thu, 6 Nov 2008 12:34:25 -0700
+Subject: [PATCH] cciss: Firmware Version is invalid
+ OriginalAuthor: bryan.stillwell@hp.com
+ OriginalLocation: http://launchpadlibrarian.net/18582511/cciss_firmware_version_fix.patch
+ Bug: https://bugs.launchpad.net/bugs/284031
 
-* Ken Chen <kenchen@google.com> wrote:
+Emit a CISS_INQUIRY command to read the firmware version.
 
-> We've seen long standing performance regression on sys_execve for several
-> upstream kernels, largely on workload that does heavy execve.  The main
-> reason for the regression was due to a change in sched_exec load balance
-> heuristics.  For example, on 2.6.11 kernel, the "exec" task will run on
-> the same cpu if that is the only task running.  However, 2.6.13 and onward
-> kernels will go around the sched-domain looking for most idle CPU (which
-> doesn't treat task exec'ing as an idle CPU).  Thus bouncing the exec'ing
-> task all over the place which leads to poor CPU cache and numa locality.
-> (The workload happens to share common data between subsequent exec program).
-> 
-> This execve heuristic was removed in upstream kernel by this git commit:
-> 
-> commit 68767a0ae428801649d510d9a65bb71feed44dd1
-> Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date:   Sat Jun 25 14:57:20 2005 -0700
-> 
-> [PATCH] sched: schedstats update for balance on fork
-> Add SCHEDSTAT statistics for sched-balance-fork.
-> 
-> >From the commit description, it appears that deleting the heuristics
-> was an accident, as the commit is supposedly just for schedstats.
-> 
-> So, restore the sched-exec load balancing if exec'ing task is the only
-> task running on that specific CPU.  The logic make sense: newly exec
-> program should continue to run on current CPU as it doesn't change any
-> load imbalance nor does it help anything by bouncing to another idle
-> CPU. By keeping on the same CPU, it preserves cache and numa locality.
-> 
-> Signed-off-by: Ken Chen <kenchen@google.com>
-> 
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index e8819bc..4ad1907 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -2873,7 +2873,12 @@ out:
->   */
->  void sched_exec(void)
->  {
-> -	int new_cpu, this_cpu = get_cpu();
-> +	int new_cpu, this_cpu;
-> +
-> +	if (this_rq()->nr_running <= 1)
-> +		return;
-> +
-> +	this_cpu = get_cpu();
->  	new_cpu = sched_balance_self(this_cpu, SD_BALANCE_EXEC);
->  	put_cpu();
->  	if (new_cpu != this_cpu)
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Cc: stable@kernel.org
+---
+ drivers/block/cciss.c |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
 
-ok, this should be solved - but rather at the level of 
-sched_balance_self(): it should never migrate this task over to 
-another cpu, it should take away this task's load from the current 
-CPU's load when considering migration.
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index b73116e..844b806 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -1631,6 +1631,7 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 	int ctlr = h->ctlr;
+ 	int num_luns;
+ 	ReportLunData_struct *ld_buff = NULL;
++	InquiryData_struct *inq_buff = NULL;
+ 	int return_code;
+ 	int listlength = 0;
+ 	int i;
+@@ -1651,6 +1652,26 @@ static int rebuild_lun_table(ctlr_info_t *h, int first_time)
+ 	h->busy_configuring = 1;
+ 	spin_unlock_irqrestore(CCISS_LOCK(h->ctlr), flags);
+ 
++	inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
++	if (inq_buff == NULL) {
++		printk(KERN_ERR "cciss: out of memory\n");
++		return ENOMEM;
++	}
++
++	/* Get the firmware version */
++	return_code = sendcmd_withirq(CISS_INQUIRY, ctlr, inq_buff,
++		sizeof(InquiryData_struct), 0, 0 ,0, TYPE_CMD);
++	if (return_code == IO_OK) {
++		h->firm_ver[0] = inq_buff->data_byte[32];
++		h->firm_ver[1] = inq_buff->data_byte[33];
++		h->firm_ver[2] = inq_buff->data_byte[34];
++		h->firm_ver[3] = inq_buff->data_byte[35];
++	} else {         /* send command failed */
++		printk(KERN_WARNING "cciss: unable to determine firmware"
++			" version of controller\n");
++	}
++
++	/* Get the number of logical volumes */
+ 	ld_buff = kzalloc(sizeof(ReportLunData_struct), GFP_KERNEL);
+ 	if (ld_buff == NULL)
+ 		goto mem_msg;
+-- 
+1.5.6.3
 
-	Ingo
