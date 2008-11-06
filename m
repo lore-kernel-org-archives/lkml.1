@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYKFGA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbYKFGDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbYKFGA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbYKFGAu
+	id S1754743AbYKFGDP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:03:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbYKFGDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:00:50 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:46324 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbYKFGAt (ORCPT
+	Thu, 6 Nov 2008 01:03:00 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:16366 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbYKFGC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:00:49 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: benh@kernel.crashing.org
-Cc: James Cloos <cloos@jhcloos.com>, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [Linux-fbdev-devel] radeonfb lockup in .28-rc (bisected)
-References: <m31vy1k3ea.fsf@lugabout.jhcloos.org>
-	<1225152347.8004.49.camel@pasglop>
-	<m3k5bt2hsc.fsf@lugabout.jhcloos.org>
-	<1225662539.8004.237.camel@pasglop>
-	<871vxtthr3.fsf@burly.wgtn.ondioline.org>
-	<1225697689.8004.245.camel@pasglop>
-	<87wsfkrnn1.fsf@burly.wgtn.ondioline.org>
-	<1225834394.8004.273.camel@pasglop>
-Date: Thu, 06 Nov 2008 19:00:48 +1300
-In-Reply-To: <1225834394.8004.273.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Wed, 05 Nov 2008 08:33:14 +1100")
-Message-ID: <87k5bhs8a7.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Thu, 6 Nov 2008 01:02:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=tI5v/pXYzEjkkmxxeoeo0uO8DB13S4G4cZWB5cgQwLnRnPtjR2HKp4+R6esNjyI6As
+         qF7RNS1tl0KXnItP02EyJ4TIio3CFYhg9AM90b+XUj70JX6U3B6bwhaCnzw6t2ZciAjO
+         D+aAgI5xzLcUdqyRvk53uCGeo3QDubNCDn6pU=
+Message-ID: <86802c440811052202of38d85l3801445d6db59ee5@mail.gmail.com>
+Date: Wed, 5 Nov 2008 22:02:58 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Theodore Tso" <tytso@mit.edu>, "Yinghai Lu" <yinghai@kernel.org>,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: 2.6.28-rc2: REGRESSION in early boot
+In-Reply-To: <20081106052340.GA12762@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081104224510.GA7672@mit.edu>
+	 <86802c440811041614i5ab5e7f5hf910211ef57423e7@mail.gmail.com>
+	 <20081105153508.GB22998@mit.edu>
+	 <86802c440811050922o53f494c6y7b007f094a6ece2e@mail.gmail.com>
+	 <20081106052340.GA12762@mit.edu>
+X-Google-Sender-Auth: f93a4a3c35dda181
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> Heh, it would have been easier to do
+On Wed, Nov 5, 2008 at 9:23 PM, Theodore Tso <tytso@mit.edu> wrote:
+> On Wed, Nov 05, 2008 at 09:22:38AM -0800, Yinghai Lu wrote:
+>> > What is your theory for why this was causing a failure in the timer
+>> > subsystem?  Were we overrunning the end of irq_desc array and stomping
+>> > on some other data structure?
+>>
+>> Yes. Please do apply that two patches at first.
+>>
 >
-> 	width = (image->width | 0x1f) + 1; 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> Oh and you also need to change the src_bytes calculation 
+> Success!  Applying these two patches, as found at:
+>
+>        http://lkml.org/lkml/2008/11/4/431
+>        http://lkml.org/lkml/2008/11/5/81
+>
+> ... and my 2.6.28-rc3-git2 based kernel successfully booted on my
+> system.
+>
+> I'll update:  http://bugzilla.kernel.org/show_bug.cgi?id=11951
+> accordingly.   Are these two patches scheduled to be pushed to
+> mainstream, hopefully ASAP since they are a regression fix?
 
-With the slightly less embarrassing patch below applied and using the
-default 8x16 font, the machine boots successfully with the expected
-gibberish console display.  I can then setfont one of the large fonts
-and it does not lock up.  The gibberish changes and if I do dmesg I even
-get a few chunks of legible output: http://ondioline.org/~paul/corruption.png
+thanks.
 
+Ingo, please check those two patches.
 
-diff --git a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
-index 8718f73..6dbd24a 100644
---- a/drivers/video/aty/radeon_accel.c
-+++ b/drivers/video/aty/radeon_accel.c
-@@ -176,6 +176,7 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
- {
- 	unsigned int src_bytes, dwords;
- 	u32 *bits;
-+	int width;
- 
- 	radeonfb_set_creg(rinfo, DP_GUI_MASTER_CNTL, &rinfo->dp_gui_mc_cache,
- 			  rinfo->dp_gui_mc_base |
-@@ -208,9 +209,11 @@ static void radeonfb_prim_imageblit(struct radeonfb_info *rinfo,
- 	 * work ok for me without that and the doco doesn't seem to imply
- 	 * there is such a restriction.
- 	 */
--	OUTREG(DST_WIDTH_HEIGHT, (image->width << 16) | image->height);
-+	/* Let us pad. */
-+	width = (image->width | 0x1f) + 1;
-+	OUTREG(DST_WIDTH_HEIGHT, (width << 16) | image->height);
- 
--	src_bytes = (((image->width * image->depth) + 7) / 8) * image->height;
-+	src_bytes = (((width * image->depth) + 7) / 8) * image->height;
- 	dwords = (src_bytes + 3) / 4;
- 	bits = (u32*)(image->data);
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+YH
