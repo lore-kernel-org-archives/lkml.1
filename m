@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYKFGLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYKFGLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753227AbYKFGLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYKFGLF
+	id S1753527AbYKFGLo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbYKFGLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:11:05 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:29118 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYKFGLC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:11:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=C2gIUqeR0e7+P8WEDGAAaLJFlrnP7+OxnypyMT0D9q3LKwoKwpj+ycM/QUFimaWkBN
-         zZ9hfLfpV3M3rAQYUVQbwWUoCyLePfhA5e9yecgVQxhKxFAK19fAHYgZi9BWtijUfjj8
-         cnHtdNowqHgmBekERntd0q58Q3uNqFSPI4QZM=
-Message-ID: <8d6898730811052211k695d208r53609701af633c2d@mail.gmail.com>
-Date: Thu, 6 Nov 2008 11:41:00 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: sharing interrupt between PCI device
-Cc: linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>,
-       "Jiri Slaby" <jirislaby@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
+	Thu, 6 Nov 2008 01:11:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42353 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbYKFGLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:11:33 -0500
+Date: Thu, 6 Nov 2008 07:11:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ken Chen <kenchen@google.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [patch] sched: fix single-depth wchan output
+Message-ID: <20081106061125.GA6384@elte.hu>
+References: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
-	 <4910E8AC.7050407@shaw.ca>
-	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
-	 <49115AFC.2030400@gmail.com>
-	 <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
+In-Reply-To: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
 
-Can somebody tell me what is going wrong in the driver. If you need
-any further information please tell me
+* Ken Chen <kenchen@google.com> wrote:
 
-Thanks
-Nobin Mathew
+> To get a meaningful /proc/<pid>/wchan, one is required to turn on 
+> full frame pointer when compile kernel/sched.c on x86 arch.  The 
+> enabling of frame pointer applies to entire kernel/sched.c and 
+> affects lots of other core scheduler functions that aren't related 
+> to wchan's call stack unwind.  This causes unnecessary expansion of 
+> stack pointer push and pop on the stack for scheduler functions.  To 
+> cut down the cost of frame pointer push/pop, one can use compile 
+> time config option 'single-depth wchan'.  However, the 
+> 'single-depth' option is broken on x86 due to lack of stack frame 
+> marker and simple stack unwind doesn't work, i.e., wchan always 
+> produces '0'.
+> 
+> This patch adds call site location explicitly in thread_struct for 
+> schedule() function so that get_wchan() can reliably get the data 
+> and at the same time not to overly burden the entire kernel/sched.c 
+> with frame pointer generation.  The remove of frame pointer 
+> dependency allows compiler to generate better and faster core 
+> scheduler code on x86_64.
 
-On Wed, Nov 5, 2008 at 2:50 PM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
-> Hi
->
->
-> Code is here
-> first one USB Virual input devices
->
-> http://lxr.linux.no/linux+v2.6.27.4/drivers/usb/core/hcd-pci.c
->
-> Second one is hp-ilo driver
->
-> http://lxr.linux.no/linux+v2.6.27.4/drivers/misc/hpilo.c
->
->
-> Thanks
-> Nobin Mathew.
->
->
-> On Wed, Nov 5, 2008 at 2:06 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
->> On 11/05/2008 08:49 AM, Nobin Mathew wrote:
->>> Hi
->>>
->>> This is the system information X86_64 platform Xeon dual core processor.
->>>
->>> I saw the pci_disable_device () it is calling pcibios_disable_device
->>> () and this is is defined as
->>>
->>> void pcibios_disable_device (struct pci_dev *dev)
->>> {
->>>         pcibios_disable_resources(dev);
->>>         if (pcibios_disable_irq)
->>>                 pcibios_disable_irq(dev);
->>> }
->>>
->>> In i386 platform, I could not find a definition for these calls in
->>> x86_64 platform, i think it is using i386 platform code.
->>
->> Well, will you show us the code, so that we needn't to crystal gaze? It's pretty
->> hard to say what happens, if we don't see what you do in the driver...
->>
->
+hm, this adds overhead - and the thing is that WCHAN is rather 
+uninformative to begin with (because it's a single dimension), so we 
+should phase it out, not expand it.
+
+How about adding a /proc/<PID>/stacktrace file that gives us the stack 
+trace of any task in the system? That would be useful for a number of 
+other purposes as well, and about 100 times more useful than wchan. 
+(often it would be more useful than sysrq-t dumps)
+
+Hm?
+
+	Ingo
