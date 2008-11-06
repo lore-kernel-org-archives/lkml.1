@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYKFLdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYKFLe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYKFLdH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 06:33:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbYKFLcw
+	id S1754794AbYKFLe3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 06:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbYKFLeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 06:32:52 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:41267 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753523AbYKFLcv (ORCPT
+	Thu, 6 Nov 2008 06:34:20 -0500
+Received: from vs02.svr02.mucip.net ([83.170.6.69]:46902 "EHLO
+	mailout.mucip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753752AbYKFLeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 06:32:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=pd3hv5MjVBydbi0Gu3jJIlrij49FHQ2xsa26JRqyEkWZ0xVbfNC9YxkKF6RRYnaBPG
-         z1qYyDo9CDJByRUCIo4ORDTRT3kI5ss1SwS1L2K9FsM9x2RJSDj67btuGQMsC8yglzPq
-         c6xy1gKhJ7PUdXIDxx8i7rFRMsd3FMbO9hu50=
-Message-ID: <8bd0f97a0811060332k281ae4d1m1fee62b27d811037@mail.gmail.com>
-Date: Thu, 6 Nov 2008 06:32:50 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Johannes Berg" <johannes@sipsolutions.net>
-Subject: Re: [PATCH] SSB: make it depend on PCI
-Cc: "Mike Frysinger" <vapier@gentoo.org>, "Michael Buesch" <mb@bu3sch.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1225970982.3619.211.camel@johannes.berg>
+	Thu, 6 Nov 2008 06:34:20 -0500
+Date: Thu, 6 Nov 2008 12:34:16 +0100
+From: Bernhard Schmidt <berni@birkenwald.de>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.28-rc3] regression when switching TTY->X, input related?
+Message-ID: <20081106113416.GA6449@schleppi.birkenwald.de>
+References: <20081105220419.GA15685@pest> <20081106041517.1C7FE143D4EA@smtp02.mtu.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1225965082-31462-1-git-send-email-vapier@gentoo.org>
-	 <1225969620.3619.204.camel@johannes.berg>
-	 <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com>
-	 <1225970573.3619.208.camel@johannes.berg>
-	 <8bd0f97a0811060326n5bcfc17fm5b5a65b12e71ea61@mail.gmail.com>
-	 <1225970982.3619.211.camel@johannes.berg>
+In-Reply-To: <20081106041517.1C7FE143D4EA@smtp02.mtu.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 6, 2008 at 06:29, Johannes Berg wrote:
-> On Thu, 2008-11-06 at 06:26 -0500, Mike Frysinger wrote:
->> On Thu, Nov 6, 2008 at 06:22, Johannes Berg wrote:
->> > On Thu, 2008-11-06 at 06:15 -0500, Mike Frysinger wrote:
->> >> while that may be the intent, it doesnt work today.
->> >>
->> >> drivers/ssb/main.c always includes linux/ssb/ssb.h
->> >>
->> >> linux/ssb/ssb.h always calls pci_dma_* functions
->> >>
->> >> arches that do not support PCI fail to build:
->> >>   CC      drivers/ssb/main.o
->> >> In file included from drivers/ssb/ssb_private.h:5,
->> >>                  from drivers/ssb/main.c:12:
->> >> include/linux/ssb/ssb.h: In function 'ssb_dma_mapping_error':
->> >> include/linux/ssb/ssb.h:430: error: implicit declaration of function 'pci_dma_mapping_error'
->> >> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_for_cpu':
->> >> include/linux/ssb/ssb.h:475: error: implicit declaration of function 'pci_dma_sync_single_for_cpu'
->> >> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_for_device':
->> >> include/linux/ssb/ssb.h:493: error: implicit declaration of function 'pci_dma_sync_single_for_device'
->> >> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_cpu':
->> >> include/linux/ssb/ssb.h:517: error: implicit declaration of function 'dma_sync_single_range_for_cpu'
->> >> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_device':
->> >> include/linux/ssb/ssb.h:538: error: implicit declaration of function 'dma_sync_single_range_for_device'
->> >> drivers/ssb/main.c: In function 'ssb_dma_set_mask':
->> >> drivers/ssb/main.c:1183: error: implicit declaration of function 'dma_set_mask'
->> >
->> >
->> > That seems odd, shouldn't at least the dma_sync_* functions and
->> > dma_set_mask be supported?
->>
->> i'm highlighting the pci-specific functions.  the common dma functions
->> missing are not a ssb problem, so ignore those ;).
->
-> Alright, but even then you'll fail build if you enable SSB ;)
+On Thu, Nov 06, 2008 at 07:15:11AM +0300, Andrey Borzenkov wrote:
 
-right ... but they're certainly nothing for you to worry about
+> > I have a pretty weird issue with 2.6.28-rc3 that I originally thought to
+> > be related with suspend2ram, then with intel's xorg driver and now it
+> > looks like something related to the input subsystem.
+> > 
+> > I have a Dell Latitude D630 (Intel GM965 graphics) running Ubuntu 8.10
+> > amd64. Since the included (heavily patched by Ubuntu) 2.6.27 is
+> > extremely unstable in iwlagn I've been trying my luck with 2.6.28-rc3.
+> > 
+> > One thing that did not work anymore was suspend2ram and resume. It would
+> > suspend just fine and resume as well, but then I would sit in front of a
+> > black screen with an unmovable mouse cursor and not be able to do
+> > anything, not even switch vtys or kill X with ctrl-alt-backspace. Magic
+> > Sysrq to reboot did usually work though.
+> > 
+> > I've been following a few threads about similar issues in here, among
+> > others this one: http://lkml.org/lkml/2008/11/5/217 . However, the
+> > workaround mentioned in there (switch to a textmode console prior to
+> > suspend) didn't work, in fact when switching back to X without
+> > suspending I had the same problem. After sitting there and scratching my
+> > head for a couple of minutes the screensaver unlock dialog suddenly
+> > appeared and I could enter my password and "work", but the touchpad
+> > didn't work. 
+> 
+> Cannot comment on input stuff, but I noticed that you are using driver
+> that requests firmware:
+> 
+> [   39.735183] iwlagn 0000:0c:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ
+> 17
+> [   39.735272] iwlagn 0000:0c:00.0: restoring config space at offset 0x1
+> (was 0x100102, writing 0x100106)
+> [   39.735379] iwlagn 0000:0c:00.0: irq 42 for MSI/MSI-X
+> [   39.735448] iwlagn 0000:0c:00.0: firmware: requesting
+> iwlwifi-4965-2.ucode
+> 
+> If it tries to do it during resume in ->resume method, this won't work and
+> will timeout; symptoms are exactly as you describe (sitting there for 180
+> seconds and suddenly start to work). Do you have WiFi connection on resume?
 
-> I guess we
-> need ifdefs or mandate that non-PCI architectures have dummy stubs (like
-> other architectures have in the !CONFIG_PCI case), but Michael's the SSB
-> expert.
+Yes. In fact the WiFi connection is reestablished immediately after
+resume (with NetworkManager) and I can ping the box through WiFI, while
+X hangs and waits for something.
 
-OK.  regarding the patch, if we drop the "&& PCI" part, i think the
-rest should get merged ... having empty menus in kconfig is annoying.
-agreed ?  i can send out another one ...
--mike
+Bernhard
