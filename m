@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbYKFH6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYKFIBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754266AbYKFH6Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 02:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYKFH6A
+	id S1753834AbYKFIBS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 03:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYKFIBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 02:58:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38321 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Nov 2008 03:01:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54313 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbYKFH6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 02:58:00 -0500
-Date: Thu, 6 Nov 2008 08:57:54 +0100
+	id S1751163AbYKFIBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 03:01:02 -0500
+Date: Thu, 6 Nov 2008 09:00:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: sys_sched_yield keeps locked irq before call of schedule()
-Message-ID: <20081106075754.GE8459@elte.hu>
-References: <c4e36d110811050457m36346fe1m63ffbb143f684637@mail.gmail.com> <20081105130113.GB29548@elte.hu> <c4e36d110811050509t51719671saa7eb337fca39656@mail.gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: rewrite SCHED_CPUMASK_ALLOC
+Message-ID: <20081106080057.GF8459@elte.hu>
+References: <4911341C.7020207@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c4e36d110811050509t51719671saa7eb337fca39656@mail.gmail.com>
+In-Reply-To: <4911341C.7020207@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,36 +37,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> > is this some special warning you added? The stock kernel certainly 
-> > does not emit this warning.
-> 
-> Yes - it's my personal debug checker that tries to watch wether irq 
-> & irqsafe are running in pair. So it shows a warning if there is a 
-> call of spin_lock_irq and irq is already dissabled.
+>  #if	NR_CPUS > 128
+> -#define	SCHED_CPUMASK_ALLOC		1
+> -#define	SCHED_CPUMASK_FREE(v)		kfree(v)
+> -#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
+> +#define SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
+> +#define SCHED_CPUMASK_ALLOC(v)		v = kmalloc(sizeof(*v), GFP_KERNEL)
+> +#define SCHED_CPUMASK_FREE(v)		kfree(v)
+>  #else
+> -#define	SCHED_CPUMASK_ALLOC		0
+> -#define	SCHED_CPUMASK_FREE(v)
+> -#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
+> +#define SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
+> +#define SCHED_CPUMASK_ALLOC(v)
+> +#define SCHED_CPUMASK_FREE(v)
+>  #endif
 
-btw., i have added lockdep instrumentation for this two years ago, 
-it's in the upstream kernel:
-
-/proc/lockdep_stats: redundant hardirq ons:                7744
-/proc/lockdep_stats: redundant hardirq offs:            1873736
-/proc/lockdep_stats: redundant softirq ons:                   0
-/proc/lockdep_stats: redundant softirq offs:                  0
-
-you could extend the code to trace it. See 
-kernel/lockdep.c:trace_hardirqs_on_caller(). This bit does it:
-
-        if (unlikely(curr->hardirqs_enabled)) {
-                debug_atomic_inc(&redundant_hardirqs_on);
-                return;
-        }
-
-you could add a ftrace_printk("redundant hardirq") call right there, 
-enable ftrace, and enable stack tracing of each trace entry:
-
- echo stacktrace > /debug/tracing/iter_ctrl
-
-then you should see all the call sites in /debug/tracing/trace.
+ok, the #ifdef removal is nice, but we can make it even cleaner: 
+please just change it to a sched_cpumask_alloc() inline. That way 
+SCHED_CPUMASK_DECLARE() can go away as well: just declare the 
+variable, it will be unused in the <128 CPUs case.
 
 	Ingo
