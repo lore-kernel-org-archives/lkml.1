@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbYKFPrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753482AbYKFPt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753695AbYKFPrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbYKFPra
+	id S1753482AbYKFPt5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbYKFPts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:47:30 -0500
-Received: from kroah.org ([198.145.64.141]:55574 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751392AbYKFPr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:47:28 -0500
-Date: Thu, 6 Nov 2008 07:43:51 -0800
-From: Greg KH <greg@kroah.com>
-To: H L <swdevyid@yahoo.com>
-Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
-       linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081106154351.GA30459@kroah.com>
-References: <20081106044828.GA30417@kroah.com> <909674.99469.qm@web45112.mail.sp1.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <909674.99469.qm@web45112.mail.sp1.yahoo.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 6 Nov 2008 10:49:48 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:59603 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbYKFPtr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:49:47 -0500
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+From: Peter Zijlstra <peterz@infradead.org>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>
+In-Reply-To: <20081106153022.215696930@redhat.com>
+References: <20081106153022.215696930@redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 06 Nov 2008 16:49:53 +0100
+Message-Id: <1225986593.7803.4688.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 07:40:12AM -0800, H L wrote:
+On Thu, 2008-11-06 at 10:30 -0500, vgoyal@redhat.com wrote:
+> Hi,
 > 
-> Greetings (from a new lurker to the list),
+> If you are not already tired of so many io controller implementations, here
+> is another one.
+> 
+> This is a very eary very crude implementation to get early feedback to see
+> if this approach makes any sense or not.
+> 
+> This controller is a proportional weight IO controller primarily
+> based on/inspired by dm-ioband. One of the things I personally found little
+> odd about dm-ioband was need of a dm-ioband device for every device we want
+> to control.  I thought that probably we can make this control per request
+> queue and get rid of device mapper driver. This should make configuration
+> aspect easy.
+> 
+> I have picked up quite some amount of code from dm-ioband especially for
+> biocgroup implementation.
+> 
+> I have done very basic testing and that is running 2-3 dd commands in different
+> cgroups on x86_64. Wanted to throw out the code early to get some feedback.
+> 
+> More details about the design and how to are in documentation patch.
+> 
+> Your comments are welcome.
 
-Welcome!
+please include
 
-> To your question Greg, "yes" and "sort of" ;-).  I have started taking
-> a look at these patches with a strong interest in understanding how
-> they work.  I've built a kernel with them and tried out a few things
-> with real SR-IOV hardware.
+QUILT_REFRESH_ARGS="--diffstat --strip-trailing-whitespace"
 
-Did you have to modify individual drivers to take advantage of this
-code?  It looks like the core code will run on this type of hardware,
-but there seems to be no real advantage until a driver is modified to
-use it, right?
+in your environment or .quiltrc
 
-Or am I missing some great advantage to having this code without
-modified drivers?
+I would expect all those bio* files to be placed in block/ not mm/
 
-thanks,
-
-greg k-h
+Does this still require I use dm, or does it also work on regular block
+devices? Patch 4/4 isn't quite clear on this.
