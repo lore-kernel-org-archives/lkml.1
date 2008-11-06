@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbYKFV0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbYKFV2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754877AbYKFV0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYKFVZv
+	id S1754213AbYKFV2V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYKFV2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:25:51 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50799 "EHLO mx3.mail.elte.hu"
+	Thu, 6 Nov 2008 16:28:13 -0500
+Received: from gw.goop.org ([64.81.55.164]:51050 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751300AbYKFVZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:25:50 -0500
-Date: Thu, 6 Nov 2008 22:25:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] enable wchan config menu item for x86-64
-Message-ID: <20081106212540.GE24579@elte.hu>
-References: <b040c32a0811061110g69b6cc6cta88774b72e5b9163@mail.gmail.com>
+	id S1751379AbYKFV2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 16:28:12 -0500
+Message-ID: <49136168.3040604@goop.org>
+Date: Thu, 06 Nov 2008 13:28:08 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b040c32a0811061110g69b6cc6cta88774b72e5b9163@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: Ian Campbell <Ian.Campbell@citrix.com>,
+       "Christopher S. Aker" <caker@theshore.net>,
+       xen devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] 2.6.27 - SMP enabled, but only 1 CPU
+References: <48F3BC99.5040409@theshore.net> <490F5F50.7020704@theshore.net> <4910AD00.7040605@theshore.net> <4911BC52.7040905@theshore.net> <1225994697.12607.837.camel@zakaz.uk.xensource.com> <49134257.4000404@goop.org> <20081106211639.GA24579@elte.hu>
+In-Reply-To: <20081106211639.GA24579@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> a "cleanup" impact line is only added if the change is not intended to 
+> have any side-effects whatsoever.
+>
+> We can drop it but it would be really nice to figure out what's going 
+> on. In a very quick late-night look i cannot see anything particularly 
+> weird about it, but based on the type of changes it does there are 
+> three leading candidates: lost high 32 bits, zero extend problem, or 
+> incorrect types.
+>   
 
-* Ken Chen <kenchen@google.com> wrote:
+Interestingly, the Xen code appears to be the *only* user of pud_page - 
+and only via pgd_page in PAE mode.
 
-> Ingo,
-> 
-> I don't know when will you phase out /proc/pid/wchan.  Can we enable the
-> wchan config menu item for now on x86-64 arch?  This will at least allow
-> people to enable/disable frame pointers on scheduler functions.
-> 
-> Signed-off-by: Ken Chen <kenchen@google.com>
-> 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index e60c59b..38f9fb9 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -367,7 +367,7 @@ config X86_RDC321X
->  config SCHED_NO_NO_OMIT_FRAME_POINTER
->  	def_bool y
->  	prompt "Single-depth WCHAN output"
-> -	depends on X86_32
-> +	depends on X86
-
-makes sense, i've added it to tip/sched/core, thanks Ken!
-
-This will need some testing as we never did this on 64-bit, so it's 
-definitely a v2.6.29 item.
-
-	Ingo
+    J
