@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYKFRAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751840AbYKFRHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbYKFRAi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 12:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYKFRA1
+	id S1751840AbYKFRHU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 12:07:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750812AbYKFRHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 12:00:27 -0500
-Received: from bu3sch.de ([62.75.166.246]:37728 "EHLO vs166246.vserver.de"
+	Thu, 6 Nov 2008 12:07:05 -0500
+Received: from mga01.intel.com ([192.55.52.88]:14929 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbYKFRA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 12:00:26 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH] SSB: make it depend on PCI
-Date: Thu, 6 Nov 2008 17:59:29 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       "Mike Frysinger" <vapier@gentoo.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1225965082-31462-1-git-send-email-vapier@gentoo.org> <1225970982.3619.211.camel@johannes.berg> <8bd0f97a0811060332k281ae4d1m1fee62b27d811037@mail.gmail.com>
-In-Reply-To: <8bd0f97a0811060332k281ae4d1m1fee62b27d811037@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1750772AbYKFRHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 12:07:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,558,1220252400"; 
+   d="scan'208";a="400768194"
+Subject: Re: iwlagn: wrong command queue 31, command id 0x0
+From: reinette chatre <reinette.chatre@intel.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: "Zhu, Yi" <yi.zhu@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <1225944979.3792.3.camel@calx>
+References: <1225944979.3792.3.camel@calx>
+Content-Type: text/plain
+Date: Thu, 06 Nov 2008 09:07:35 -0800
+Message-Id: <1225991255.1115.657.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811061759.29319.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 06 November 2008 12:32:50 Mike Frysinger wrote:
-> OK.  regarding the patch, if we drop the "&& PCI" part, i think the
-> rest should get merged ... having empty menus in kconfig is annoying.
-> agreed ?
+On Wed, 2008-11-05 at 20:16 -0800, Matt Mackall wrote:
+> As of 75fa67706cce5272bcfc51ed646f2da21f3bdb6e, I'm seeing this:
+> 
+> [ 5470.869820] WARNING: at drivers/net/wireless/iwlwifi/iwl-tx.c:1204
+> iwl_rx_handle+0x11a/0x21b [iwlagn]()
+> [ 5470.869824] wrong command queue 31, command id 0x0
 
-We have these all over the place.
-SSB_POSSIBLE is false for virtually nobody (only for some weird architectures).
-The the menu will be there in almost any case.
+This is a known issue that is being tracked at
+http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1703
 
--- 
-Greetings Michael.
+Reinette
+
