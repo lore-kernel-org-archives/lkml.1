@@ -1,86 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbYKFVgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbYKFVhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbYKFVgK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 16:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYKFVf5
+	id S1754062AbYKFVhb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 16:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYKFVhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 16:35:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49089 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750733AbYKFVf4 (ORCPT
+	Thu, 6 Nov 2008 16:37:19 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:25290 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbYKFVhR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 16:35:56 -0500
-Date: Thu, 6 Nov 2008 13:35:24 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/1] irq: Maintain user set affinity
-Message-Id: <20081106133524.75588d96.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 16:37:17 -0500
+From: "Fischer, Anna" <anna.fischer@hp.com>
+To: Greg KH <greg@kroah.com>, H L <swdevyid@yahoo.com>
+CC: "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "Chiang, Alexander" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Date: Thu, 6 Nov 2008 21:35:57 +0000
+Subject: RE: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Thread-Topic: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Thread-Index: AclAPvKtRKsTjjwkSHiVnONPsOZ8eQAEEXjg
+Message-ID: <0199E0D51A61344794750DC57738F58E5E26F99718@GVW1118EXC.americas.hpqcorp.net>
+References: <20081106164919.GA4099@kroah.com>
+	<392264.50990.qm@web45103.mail.sp1.yahoo.com>
+ <20081106182443.GB17782@kroah.com>
+In-Reply-To: <20081106182443.GB17782@kroah.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008 10:31:05 -0600 (CST)
-Kumar Gala <galak@kernel.crashing.org> wrote:
+> Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+>
+> On Thu, Nov 06, 2008 at 10:05:39AM -0800, H L wrote:
+> >
+> > --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
+> >
+> > > On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
+> > > > I have not modified any existing drivers, but instead
+> > > I threw together
+> > > > a bare-bones module enabling me to make a call to
+> > > pci_iov_register()
+> > > > and then poke at an SR-IOV adapter's /sys entries
+> > > for which no driver
+> > > > was loaded.
+> > > >
+> > > > It appears from my perusal thus far that drivers using
+> > > these new
+> > > > SR-IOV patches will require modification; i.e. the
+> > > driver associated
+> > > > with the Physical Function (PF) will be required to
+> > > make the
+> > > > pci_iov_register() call along with the requisite
+> > > notify() function.
+> > > > Essentially this suggests to me a model for the PF
+> > > driver to perform
+> > > > any "global actions" or setup on behalf of
+> > > VFs before enabling them
+> > > > after which VF drivers could be associated.
+> > >
+> > > Where would the VF drivers have to be associated?  On the
+> > > "pci_dev"
+> > > level or on a higher one?
+> >
+> >
+> > I have not yet fully grocked Yu Zhao's model to answer this.  That
+> > said, I would *hope* to find it on the "pci_dev" level.
+>
+> Me too.
+>
+> > > Will all drivers that want to bind to a "VF"
+> > > device need to be
+> > > rewritten?
+> >
+> > Not necessarily, or perhaps minimally; depends on hardware/firmware
+> > and actions the driver wants to take.  An example here might assist.
+> > Let's just say someone has created, oh, I don't know, maybe an SR-IOV
+> > NIC.  Now, for 'general' I/O operations to pass network traffic back
+> > and forth there would ideally be no difference in the actions and
+> > therefore behavior of a PF driver and a VF driver.  But, what do you
+> > do in the instance a VF wants to change link-speed?  As that physical
+> > characteristic affects all VFs, how do you handle that?  This is
+> where
+> > the hardware/firmware implementation part comes to play.  If a VF
+> > driver performs some actions to initiate the change in link speed,
+> the
+> > logic in the adapter could be anything like:
+>
+> <snip>
+>
+> Yes, I agree that all of this needs to be done, somehow.
+>
+> It's that "somehow" that I am interested in trying to see how it works
+> out.
+>
+> > >
+> > > > I have so far only seen Yu Zhao's
+> > > "7-patch" set.  I've not yet looked
+> > > > at his subsequently tendered "15-patch" set
+> > > so I don't know what has
+> > > > changed.    The hardware/firmware implementation for
+> > > any given SR-IOV
+> > > > compatible device, will determine the extent of
+> > > differences required
+> > > > between a PF driver and a VF driver.
+> > >
+> > > Yeah, that's what I'm worried/curious about.
+> > > Without seeing the code
+> > > for such a driver, how can we properly evaluate if this
+> > > infrastructure
+> > > is the correct one and the proper way to do all of this?
+> >
+> >
+> > As the example above demonstrates, that's a tough question to answer.
+> > Ideally, in my view, there would only be one driver written per SR-
+> IOV
+> > device and it would contain the logic to "do the right things" based
+> > on whether its running as a PF or VF with that determination easily
+> > accomplished by testing the existence of the SR-IOV extended
+> > capability.    Then, in an effort to minimize (if not eliminate) the
+> > complexities of driver-to-driver actions for fielding "global
+> events",
+> > contain as much of the logic as is possible within the adapter.
+> > Minimizing the efforts required for the device driver writers in my
+> > opinion paves the way to greater adoption of this technology.
+>
+> Yes, making things easier is the key here.
+>
+> Perhaps some of this could be hidden with a new bus type for these
+> kinds
+> of devices?  Or a "virtual" bus of pci devices that the original SR-IOV
+> device creates that corrispond to the individual virtual PCI devices?
+> If that were the case, then it might be a lot easier in the end.
 
-> >From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Tue, 4 Nov 2008 10:13:53 -0600
-> Subject: [PATCH 1/1] irq: Maintain user set affinity
-> 
-> This addresses a regression in that if a user specified an affinity
-> for an interrupt that affinity information would get reset between
-> a request_irq(), free_irq() and request_irq() for the same irq.
-> 
-> On example of this is bringing up an ethernet interface, taking
-> it down and bringing it back up again.
-> 
-> Instead of always using the irq_default_affinity we use the
-> previous setting of the IRQs affinity with the assumption that
-> at boot the IRQs affinity will be set to irq_default_affinity.
-> 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  kernel/irq/manage.c |    7 +++++--
->  1 files changed, 5 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index c498a1b..ea7d11b 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -115,9 +115,12 @@ int irq_select_affinity(unsigned int irq)
->  	if (!irq_can_set_affinity(irq))
->  		return 0;
-> 
-> -	cpus_and(mask, cpu_online_map, irq_default_affinity);
-> -
->  	desc = irq_to_desc(irq);
-> +
-> +	mask = desc->affinity;
-> +
-> +	cpus_and(mask, cpu_online_map, mask);
-> +
->  	desc->affinity = mask;
->  	desc->chip->set_affinity(irq, mask);
-> 
+I think a standard communication channel in Linux for SR-IOV devices
+would be a good start, and help to adopt the technology. Something
+like the virtual bus you are describing. It means that vendors do
+not need to write their own communication channel in the drivers.
+It would need to have well defined APIs though, as I guess that
+devices will have very different capabilities and hardware
+implementations for PFs and VFs, and so they might have very
+different events and information to propagate.
 
-Are you able to identify when this regression occurred?  It isn't
-immediately obvious to me.
-
-If the regression is present in 2.6.27 or earlier, do you think we
-should backport the fix?  If so, a different patch would be needed due
-to the presence of
-
-commit 08678b0841267c1d00d771fe01548d86043d065e
-Author: Yinghai Lu <yhlu.kernel@gmail.com>
-Date:   Tue Aug 19 20:50:05 2008 -0700
-
-    generic: sparse irqs: use irq_desc() together with dyn_array, instead of irq_desc[]
-
+Anna
