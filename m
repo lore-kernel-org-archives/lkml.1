@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbYKFPxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYKFPyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbYKFPxx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 10:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYKFPxl
+	id S1754806AbYKFPyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 10:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbYKFPyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 10:53:41 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44986 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753670AbYKFPxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 10:53:40 -0500
-Message-ID: <491312AA.6000006@redhat.com>
-Date: Thu, 06 Nov 2008 17:52:10 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Thu, 6 Nov 2008 10:54:02 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:38457 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753134AbYKFPyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 10:54:00 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: linux-ext4@vger.kernel.org
+Subject: [PATCH]: ext4: fix big endian  (was: not enough memory for 522250 flex groups)
+Date: Thu, 6 Nov 2008 16:51:49 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <200811061600.54264.borntraeger@de.ibm.com>
+In-Reply-To: <200811061600.54264.borntraeger@de.ibm.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Ingo Molnar <mingo@elte.hu>, Eduardo Habkost <ehabkost@redhat.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
-References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com>	<1225915018-6548-16-git-send-email-ehabkost@redhat.com>	<20081106071445.GI15731@elte.hu> <20081106124031.GO5247@blackpad>	<20081106143021.GD13023@elte.hu> <20081106150610.GA1644@elte.hu> <m1mygczwtu.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1mygczwtu.fsf@frodo.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811061651.49602.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> If there are a number of problems with reboot and reset
-> I'm wondering if we should investigate using an
-> outb to port 0x92.  With the right bit set you can trigger
-> a toggle of the reset line on many motherboards.
->   
+Ok, I think I found it:
 
-Most likely that's what the ACPI reset describes.
+On big endianess plattforms newly created ext4 file systems cannot be mounted
+and show messages like:
+[6923911.715968] EXT4-fs: not enough memory for 522250 flex groups
+[6923911.715973] EXT4-fs: unable to initialize flex_bg meta info!
 
--- 
-error compiling committee.c: too many arguments to function
+We have to access s_reserved_gdb_blocks with le16_to_cpu.
 
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+ fs/ext4/super.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: kvm/fs/ext4/super.c
+===================================================================
+--- kvm.orig/fs/ext4/super.c
++++ kvm/fs/ext4/super.c
+@@ -1455,7 +1455,7 @@ static int ext4_fill_flex_info(struct su
+ 
+ 	/* We allocate both existing and potentially added groups */
+ 	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
+-			    ((sbi->s_es->s_reserved_gdt_blocks +1 ) <<
++			    (le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks + 1) <<
+ 			      EXT4_DESC_PER_BLOCK_BITS(sb))) /
+ 			   groups_per_flex;
+ 	sbi->s_flex_groups = kzalloc(flex_group_count *
