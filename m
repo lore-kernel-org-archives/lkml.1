@@ -1,166 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbYKFW5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYKFW5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbYKFW5O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 17:57:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYKFW45
+	id S1754319AbYKFW5h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbYKFW5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 17:56:57 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:51118 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964AbYKFW44 (ORCPT
+	Thu, 6 Nov 2008 17:57:25 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:44621 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751381AbYKFW5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 17:56:56 -0500
-Date: Fri, 7 Nov 2008 09:56:54 +1100
-From: Simon Horman <horms@verge.net.au>
-To: H L <swdevyid@yahoo.com>
-Cc: Greg KH <greg@kroah.com>, Yu Zhao <yu.zhao@intel.com>,
-       randy.dunlap@oracle.com, grundler@parisc-linux.org, achiang@hp.com,
-       matthew@wil.cx, linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
-Subject: Re: git repository for SR-IOV development?
-Message-ID: <20081106225654.GA2012@verge.net.au>
-References: <20081106165914.GA13476@kroah.com> <104014.9320.qm@web45110.mail.sp1.yahoo.com>
+	Thu, 6 Nov 2008 17:57:24 -0500
+Date: Thu, 6 Nov 2008 23:57:13 +0100
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pete Zaitcev <zaitcev@redhat.com>, Mattia Dongili <malattia@linux.it>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: usb device not showing up
+Message-ID: <20081106225713.GD11406@gamma.logic.tuwien.ac.at>
+References: <20081106171958.GA17270@gamma.logic.tuwien.ac.at> <Pine.LNX.4.44L0.0811061423510.23473-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <104014.9320.qm@web45110.mail.sp1.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.44L0.0811061423510.23473-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 11:58:25AM -0800, H L wrote:
-> --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
+Hi Alan,
+
+On Do, 06 Nov 2008, Alan Stern wrote:
+> Okay.  In the earlier (working) test, the modem showed up on bus 4, not
+> bus 2.  Not that it matters much -- the modem didn't show up at all in
+
+Sorry, it is always bus 4, i meant interface (or how do you call it) 2,
+bus id 004:002
+
+> this test, on any bus.  Its USB interface seems to be electrically
+> disconnected or turned off.
+
+Right.
+
+> should start working, but I have no idea what that would be.  It's not 
+> a USB issue; as far as USB is concerned the device just isn't there at 
+
+Ok, if it is not an usb issue, I guess I have to hope for some fix in
+sony-laptop module. 
+
+> Interestingly, this trace appears to be missing some events.  There's a
+> gap between timestamps 4284549076 and 4284645743 (the timestamps are in
+> the second column) where we should see the initialization of bus 5 and
+> bus 6.  Instead there's a 100-ms delay in which nothing happens,
+> followed later on by the second initialization phase for those two
+> buses.
 > 
-> > On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
-> > > 
-> > > Has anyone initiated or given consideration to the
-> > creation of a git
-> > > repository (say, on kernel.org) for SR-IOV
-> > development?
-> > 
-> > Why?  It's only a few patches, right?  Why would it
-> > need a whole new git
-> > tree?
-> 
-> 
-> So as to minimize the time and effort patching a kernel, especially if
-> the tree (and/or hash level) against which the patches were created fails
-> to be specified on a mailing-list.  Plus, there appears to be questions
-> raised on how, precisely, the implementation should ultimately be modeled
-> and especially given that, who knows at this point what number of patches
-> will ultimately be submitted?  I know I've built the "7-patch" one
-> (painfully, by the way), and I'm aware there's another 15-patch set out
-> there which I've not yet examined.
+> I have to wonder...  Did you remove any part of the trace?  Did usbmon 
 
-FWIW, the v6 patch series (this thread) applied to both 2.6.28-rc3
-and the current Linus tree after a minor tweak to the first patch, as below.
+No. I sent you the output as it was saved on my hard disk. No editing
+involved.
 
--- 
-Simon Horman
-  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
-  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
+> malfunction?  Did parts of the initialization for those two buses 
+> really get skipped (I can't imagine how)?
 
-From: Yu Zhao <yu.zhao@intel.com>
+No idea. I can redo any tests you want, but I can guarantee that I
+didn't tinker with the usbmon-bad.txt file itself, it was created with
+	cat .../0u > usbmon-bad.txt
 
-[PATCH 1/16 v6] PCI: remove unnecessary arg of pci_update_resource()
+Best wishes
 
-This cleanup removes unnecessary argument 'struct resource *res' in
-pci_update_resource(), so it takes same arguments as other companion
-functions (pci_assign_resource(), etc.).
+Norbert
 
-Cc: Alex Chiang <achiang@hp.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Greg KH <greg@kroah.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Roland Dreier <rdreier@cisco.com>
-Signed-off-by: Yu Zhao <yu.zhao@intel.com>
-Upported-by: Simon Horman <horms@verge.net.au>
-
----
- drivers/pci/pci.c       |    4 ++--
- drivers/pci/setup-res.c |    7 ++++---
- include/linux/pci.h     |    2 +-
- 3 files changed, 7 insertions(+), 6 deletions(-)
-
-* Fri, 07 Nov 2008 09:05:18 +1100, Simon Horman
-  - Minor rediff of include/linux/pci.h section to apply to 2.6.28-rc3
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 4db261e..ae62f01 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -376,8 +376,8 @@ pci_restore_bars(struct pci_dev *dev)
- 		return;
- 	}
- 
--	for (i = 0; i < numres; i ++)
--		pci_update_resource(dev, &dev->resource[i], i);
-+	for (i = 0; i < numres; i++)
-+		pci_update_resource(dev, i);
- }
- 
- static struct pci_platform_pm_ops *pci_platform_pm;
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 2dbd96c..b7ca679 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -26,11 +26,12 @@
- #include "pci.h"
- 
- 
--void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno)
-+void pci_update_resource(struct pci_dev *dev, int resno)
- {
- 	struct pci_bus_region region;
- 	u32 new, check, mask;
- 	int reg;
-+	struct resource *res = dev->resource + resno;
- 
- 	/*
- 	 * Ignore resources for unimplemented BARs and unused resource slots
-@@ -162,7 +163,7 @@ int pci_assign_resource(struct pci_dev *dev, int resno)
- 	} else {
- 		res->flags &= ~IORESOURCE_STARTALIGN;
- 		if (resno < PCI_BRIDGE_RESOURCES)
--			pci_update_resource(dev, res, resno);
-+			pci_update_resource(dev, resno);
- 	}
- 
- 	return ret;
-@@ -197,7 +198,7 @@ int pci_assign_resource_fixed(struct pci_dev *dev, int resno)
- 		dev_err(&dev->dev, "BAR %d: can't allocate %s resource %pR\n",
- 			resno, res->flags & IORESOURCE_IO ? "I/O" : "mem", res);
- 	} else if (resno < PCI_BRIDGE_RESOURCES) {
--		pci_update_resource(dev, res, resno);
-+		pci_update_resource(dev, resno);
- 	}
- 
- 	return ret;
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 085187b..43e1fc1 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -626,7 +626,7 @@ int pcix_get_mmrbc(struct pci_dev *dev);
- int pcie_set_readrq(struct pci_dev *dev, int rq);
- int pci_reset_function(struct pci_dev *dev);
- int pci_execute_reset_function(struct pci_dev *dev);
--void pci_update_resource(struct pci_dev *dev, struct resource *res, int resno);
-+void pci_update_resource(struct pci_dev *dev, int resno);
- int __must_check pci_assign_resource(struct pci_dev *dev, int i);
- int pci_select_bars(struct pci_dev *dev, unsigned long flags);
- 
--- 
-1.5.6.4
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+Someone down there
+is trying to kill us!'
+`Terrific,' said Arthur.
+`But don't you see what this means?'
+`Yes. We are going to die.'
+`Yes, but apart from that.'
+`APART from that?'
+`It means we must be on to something!'
+`How soon can we get off it?'
+                 --- Zaphod and Arthur in a certain death situation over
+                 --- Magrathea.
+                 --- Douglas Adams, The Hitchhikers Guide to the Galaxy
