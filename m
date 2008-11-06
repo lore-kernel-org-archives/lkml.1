@@ -1,119 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYKFFna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbYKFFnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbYKFFna (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 00:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbYKFFnG
+	id S1751484AbYKFFnt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 00:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbYKFFnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 00:43:06 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:34697 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753213AbYKFFnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 00:43:02 -0500
-Message-ID: <491283E0.2010009@garzik.org>
-Date: Thu, 06 Nov 2008 00:42:56 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	Thu, 6 Nov 2008 00:43:11 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:41497 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755385AbYKFFnJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 00:43:09 -0500
+Message-ID: <4912836B.5040900@yandex.ru>
+Date: Thu, 06 Nov 2008 07:40:59 +0200
+From: Artem Bityutskiy <dedekind@yandex.ru>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Jonathan McDowell <noodles@earth.li>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes for 2.6.28-rc
-References: <20081104075138.GA2096@earth.li>
-In-Reply-To: <20081104075138.GA2096@earth.li>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Artem Bityutskiy <dedekind@infradead.org>
+Subject: Re: [PATCH] ubifs: fix printk format warnings
+References: <20081104204652.f8eb37a0.randy.dunlap@oracle.com>
+In-Reply-To: <20081104204652.f8eb37a0.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 06 Nov 2008 05:42:30.0371 (UTC) FILETIME=[757F0330:01C93FD2]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan McDowell wrote:
-> In article <490F824E.3070809@garzik.org> (earth.lists.linux-kernel) you wrote:
->> Marcel Holtmann wrote:
->>> are you also queuing patches for drivers/net/usb/hso.c, because the 
->>> current state of that driver is fully broken. It oopses and shows up 
->>> with a WLAN RFKILL switch instead of WWAN. Also it has some weird 
->>> disconnect race with the TTY layer. Some patches have been posted, but 
->>> seems that nobody has picked them up so far.
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
->> Last patch sent me was sent on 9/16 by Denis Joseph Barrow; I replied 
->> and never received a response after that.
+> Fix printk format warnings in ubifs.
+> Built cleanly on 7 arches.
 > 
->> Patches welcome...
+> fs/ubifs/journal.c:693: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/journal.c:1131: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/dir.c:163: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/tnc.c:2680: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/tnc.c:2700: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/replay.c:1066: warning: format '%lu' expects type 'long unsigned int', but argument 7 has type 'ino_t'
+> fs/ubifs/orphan.c:108: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:135: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:142: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:154: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:159: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:451: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:539: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:612: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:843: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/orphan.c:856: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/recovery.c:1438: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/recovery.c:1443: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/recovery.c:1475: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/recovery.c:1495: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:105: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:110: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:110: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:114: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:118: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'ino_t'
+> fs/ubifs/debug.c:1591: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1671: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1674: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/debug.c:1680: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1699: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/debug.c:1788: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/debug.c:1821: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/debug.c:1833: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/debug.c:1924: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1932: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1938: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1945: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1953: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1960: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1967: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1973: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1988: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'ino_t'
+> fs/ubifs/debug.c:1991: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'ino_t'
+> fs/ubifs/debug.c:2009: warning: format '%lu' expects type 'long unsigned int', but argument 2 has type 'ino_t'
 > 
->> I don't see any hso patches on
->> http://patchwork.ozlabs.org/project/netdev/list/ nor in my inbox, so I'm 
->> guessing that no one sent me or netdev any hso patches.
-> 
-> I sent the below to netdev@, Greg K-H and Andrew Bird (the people listed
-> in hso.c). I can't see it in the netdev archives but it did hit lkml ok
-> at:
-> 
-> http://lkml.org/lkml/2008/10/30/92
-> 
-> A subsequent fix for the rfkill layer has also been sent (and that did
-> hit netdev ok and got acked), but this hso cleanup is still appropriate.
-> 
-> The WLAN/WWAN change is obviously a one line fix but I didn't see any
-> point sending a patch for it until I knew I was going to get some sort
-> of response about it; I can knock one up if that's helpful.
-> 
-> Original message:
-> 
-> [PATCH] Cleanup hso rfkill error handling
-> 
-> Yup, this appears to be the problem, thanks. I think &hso_net->net->dev
-> is more intuitive for the error message, so I've used that. I've also
-> added missing line endings on the error messages and set our local
-> rfkill structure element to NULL on failure so we don't try to call
-> rfkill_unregister on driver removal if we failed to register at all.
-> 
-> The patch below Works For Me (TM); the device is detected fine, can be
-> removed without problems and connects ok. I'll have a prod at why the
-> rfkill stuff isn't working next, but I believe this cleanup of the error
-> handling is appropriate no matter what the issue with registration is.
-> 
-> Signed-Off-By: Jonathan McDowell <noodles@earth.li>
-> 
-> -----
-> diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
-> index 1164c52..9d9622b 100644
-> --- a/drivers/net/usb/hso.c
-> +++ b/drivers/net/usb/hso.c
-> @@ -2184,19 +2184,20 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
->  			     struct usb_interface *interface)
->  {
->  	struct hso_net *hso_net = dev2net(hso_dev);
-> -	struct device *dev = hso_dev->dev;
-> +	struct device *dev = &hso_net->net->dev;
->  	char *rfkn;
->  
->  	hso_net->rfkill = rfkill_allocate(&interface_to_usbdev(interface)->dev,
->  				 RFKILL_TYPE_WLAN);
->  	if (!hso_net->rfkill) {
-> -		dev_err(dev, "%s - Out of memory", __func__);
-> +		dev_err(dev, "%s - Out of memory\n", __func__);
->  		return;
->  	}
->  	rfkn = kzalloc(20, GFP_KERNEL);
->  	if (!rfkn) {
->  		rfkill_free(hso_net->rfkill);
-> -		dev_err(dev, "%s - Out of memory", __func__);
-> +		hso_net->rfkill = NULL;
-> +		dev_err(dev, "%s - Out of memory\n", __func__);
->  		return;
->  	}
->  	snprintf(rfkn, 20, "hso-%d",
-> @@ -2209,7 +2210,8 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
->  		kfree(rfkn);
->  		hso_net->rfkill->name = NULL;
->  		rfkill_free(hso_net->rfkill);
-> -		dev_err(dev, "%s - Failed to register rfkill", __func__);
-> +		hso_net->rfkill = NULL;
-> +		dev_err(dev, "%s - Failed to register rfkill\n", __func__);
->  		return;
 
-applied
+Thanks for the patch, but I've already done that after your original messages. I replied
+that I'll fix this, and so did I:
 
+http://git.infradead.org/users/dedekind/ubifs-2.6.git?a=commit;h=e359eb766b03ae6194d6a6721b5f88c16b074361
 
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
