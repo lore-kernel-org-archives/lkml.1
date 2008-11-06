@@ -1,160 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKFJQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKFJQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYKFJQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 04:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYKFJQN
+	id S1754201AbYKFJQv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 04:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYKFJQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 04:16:13 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:55365 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbYKFJQL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 04:16:11 -0500
-X-IronPort-AV: E=Sophos;i="4.33,556,1220241600"; 
-   d="scan'208";a="62142844"
-From: Bryan Wu <cooloney@kernel.org>
-To: laurent.pinchart@skynet.be, linux-uvc-devel@lists.berlios.de,
-       video4linux-list@redhat.com
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] Video/UVC: Fix unaligned exceptions in uvc video driver.
-Date: Thu,  6 Nov 2008 17:17:32 +0800
-Message-Id: <1225963052-6657-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Thu, 6 Nov 2008 04:16:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50806 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753471AbYKFJQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 04:16:20 -0500
+Date: Thu, 6 Nov 2008 10:15:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       lguest@ozlabs.org, jeremy@xensource.com,
+       Steven Rostedt <srostedt@redhat.com>, Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081106091548.GE4890@elte.hu>
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <20081104210643.GH29626@one.firstfloor.org> <4910EBF5.7070506@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4910EBF5.7070506@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
 
-buffer can be odd aligned on some NOMMU machine such as Blackfin
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/media/video/uvc/uvc_driver.c |   37 +++++++++++++++++----------------
- 1 files changed, 19 insertions(+), 18 deletions(-)
+> Why are the accesses locked?  Is it because it does an update of the 
+> accessed bit in the descriptor?  (We should be pre-setting them all 
+> anyway.)
 
-diff --git a/drivers/media/video/uvc/uvc_driver.c b/drivers/media/video/uvc/uvc_driver.c
-index d7ad060..9b4f469 100644
---- a/drivers/media/video/uvc/uvc_driver.c
-+++ b/drivers/media/video/uvc/uvc_driver.c
-@@ -31,6 +31,7 @@
- #include <linux/videodev2.h>
- #include <linux/vmalloc.h>
- #include <linux/wait.h>
-+#include <asm/unaligned.h>
- #include <asm/atomic.h>
- 
- #include <media/v4l2-common.h>
-@@ -432,20 +433,20 @@ static int uvc_parse_format(struct uvc_device *dev,
- 
- 		frame->bFrameIndex = buffer[3];
- 		frame->bmCapabilities = buffer[4];
--		frame->wWidth = le16_to_cpup((__le16 *)&buffer[5]);
--		frame->wHeight = le16_to_cpup((__le16 *)&buffer[7]);
--		frame->dwMinBitRate = le32_to_cpup((__le32 *)&buffer[9]);
--		frame->dwMaxBitRate = le32_to_cpup((__le32 *)&buffer[13]);
-+		frame->wWidth = le16_to_cpu(get_unaligned((__le16 *) &buffer[5]));
-+		frame->wHeight = le16_to_cpu(get_unaligned((__le16 *) &buffer[7]));
-+		frame->dwMinBitRate = le32_to_cpu(get_unaligned((__le32 *) &buffer[9]));
-+		frame->dwMaxBitRate = le32_to_cpu(get_unaligned((__le32 *) &buffer[13]));
- 		if (ftype != VS_FRAME_FRAME_BASED) {
- 			frame->dwMaxVideoFrameBufferSize =
--				le32_to_cpup((__le32 *)&buffer[17]);
-+				le32_to_cpu(get_unaligned((__le32 *) &buffer[17]));
- 			frame->dwDefaultFrameInterval =
--				le32_to_cpup((__le32 *)&buffer[21]);
-+				le32_to_cpu(get_unaligned((__le32 *) &buffer[21]));
- 			frame->bFrameIntervalType = buffer[25];
- 		} else {
- 			frame->dwMaxVideoFrameBufferSize = 0;
- 			frame->dwDefaultFrameInterval =
--				le32_to_cpup((__le32 *)&buffer[17]);
-+				le32_to_cpu(get_unaligned((__le32 *) &buffer[17]));
- 			frame->bFrameIntervalType = buffer[21];
- 		}
- 		frame->dwFrameInterval = *intervals;
-@@ -468,7 +469,7 @@ static int uvc_parse_format(struct uvc_device *dev,
- 		 * some other divisions by zero which could happen.
- 		 */
- 		for (i = 0; i < n; ++i) {
--			interval = le32_to_cpup((__le32 *)&buffer[26+4*i]);
-+			interval = le32_to_cpu(get_unaligned((__le32 *) &buffer[26+4*i]));
- 			*(*intervals)++ = interval ? interval : 1;
- 		}
- 
-@@ -814,7 +815,7 @@ static int uvc_parse_vendor_control(struct uvc_device *dev,
- 		memcpy(unit->extension.guidExtensionCode, &buffer[4], 16);
- 		unit->extension.bNumControls = buffer[20];
- 		unit->extension.bNrInPins =
--			le16_to_cpup((__le16 *)&buffer[21]);
-+			le16_to_cpu(get_unaligned((__le16 *) &buffer[21]));
- 		unit->extension.baSourceID = (__u8 *)unit + sizeof *unit;
- 		memcpy(unit->extension.baSourceID, &buffer[22], p);
- 		unit->extension.bControlSize = buffer[22+p];
-@@ -858,8 +859,8 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
- 			return -EINVAL;
- 		}
- 
--		dev->uvc_version = le16_to_cpup((__le16 *)&buffer[3]);
--		dev->clock_frequency = le32_to_cpup((__le32 *)&buffer[7]);
-+		dev->uvc_version = le16_to_cpu(get_unaligned((__le16 *) &buffer[3]));
-+		dev->clock_frequency = le32_to_cpu(get_unaligned((__le32 *) &buffer[7]));
- 
- 		/* Parse all USB Video Streaming interfaces. */
- 		for (i = 0; i < n; ++i) {
-@@ -886,7 +887,7 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
- 		/* Make sure the terminal type MSB is not null, otherwise it
- 		 * could be confused with a unit.
- 		 */
--		type = le16_to_cpup((__le16 *)&buffer[4]);
-+		type = le16_to_cpu(get_unaligned((__le16 *) &buffer[4]));
- 		if ((type & 0xff00) == 0) {
- 			uvc_trace(UVC_TRACE_DESCR, "device %d videocontrol "
- 				"interface %d INPUT_TERMINAL %d has invalid "
-@@ -928,11 +929,11 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
- 			term->camera.bControlSize = n;
- 			term->camera.bmControls = (__u8 *)term + sizeof *term;
- 			term->camera.wObjectiveFocalLengthMin =
--				le16_to_cpup((__le16 *)&buffer[8]);
-+				le16_to_cpu(get_unaligned((__le16 *) &buffer[8]));
- 			term->camera.wObjectiveFocalLengthMax =
--				le16_to_cpup((__le16 *)&buffer[10]);
-+				le16_to_cpu(get_unaligned((__le16 *) &buffer[10]));
- 			term->camera.wOcularFocalLength =
--				le16_to_cpup((__le16 *)&buffer[12]);
-+				le16_to_cpu(get_unaligned((__le16 *) &buffer[12]));
- 			memcpy(term->camera.bmControls, &buffer[15], n);
- 		} else if (UVC_ENTITY_TYPE(term) == ITT_MEDIA_TRANSPORT_INPUT) {
- 			term->media.bControlSize = n;
-@@ -968,7 +969,7 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
- 		/* Make sure the terminal type MSB is not null, otherwise it
- 		 * could be confused with a unit.
- 		 */
--		type = le16_to_cpup((__le16 *)&buffer[4]);
-+		type = le16_to_cpu(get_unaligned((__le16 *) &buffer[4]));
- 		if ((type & 0xff00) == 0) {
- 			uvc_trace(UVC_TRACE_DESCR, "device %d videocontrol "
- 				"interface %d OUTPUT_TERMINAL %d has invalid "
-@@ -1042,7 +1043,7 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
- 		unit->type = buffer[2];
- 		unit->processing.bSourceID = buffer[4];
- 		unit->processing.wMaxMultiplier =
--			le16_to_cpup((__le16 *)&buffer[5]);
-+			le16_to_cpu(get_unaligned((__le16 *) &buffer[5]));
- 		unit->processing.bControlSize = buffer[7];
- 		unit->processing.bmControls = (__u8 *)unit + sizeof *unit;
- 		memcpy(unit->processing.bmControls, &buffer[8], n);
-@@ -1078,7 +1079,7 @@ static int uvc_parse_standard_control(struct uvc_device *dev,
- 		memcpy(unit->extension.guidExtensionCode, &buffer[4], 16);
- 		unit->extension.bNumControls = buffer[20];
- 		unit->extension.bNrInPins =
--			le16_to_cpup((__le16 *)&buffer[21]);
-+			le16_to_cpu(get_unaligned((__le16 *) &buffer[21]));
- 		unit->extension.baSourceID = (__u8 *)unit + sizeof *unit;
- 		memcpy(unit->extension.baSourceID, &buffer[22], p);
- 		unit->extension.bControlSize = buffer[22+p];
--- 
-1.5.6.3
+yes, the accessed bit in the segment descriptor has to be updated in 
+an atomic transaction: the CPU has to do a MESI coherent 
+read+compare+write transaction, without damaging other updates to the 
+6 bytes segment descriptor.
+
+Old OSs implemented paging to disk by swapping out segments based on 
+the accessed bit, and clearing the present and accessed bit when the 
+segment is swapped out.
+
+But given that all our GDT entries have the accessed bit set on Linux, 
+there's no physical reason why the CPU should be using a locked cycle 
+here - only to stay compatible with ancient stuff.
+
+So ... that notion just survived in the backwards-compatibility stream 
+of CPU enhancements, over the past 10 years.
+
+On 64-bit Linux there's no reason to maintain that principle, so i'd 
+expect future CPUs to relax this even more, were it ever to show up on 
+the performance radar. Note that SYSCALL/SYSRET already optimize that 
+away.
+
+	Ingo
