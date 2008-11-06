@@ -1,117 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbYKFUV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbYKFU1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbYKFUV0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 15:21:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYKFUVS
+	id S1752177AbYKFU1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 15:27:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYKFU1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 15:21:18 -0500
-Received: from crmm.lgl.lu ([158.64.72.228]:51681 "EHLO lll.lu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbYKFUVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 15:21:17 -0500
-Date: Thu, 6 Nov 2008 21:21:12 +0100
-From: Alain Knaff <alain@knaff.lu>
-Message-Id: <200811062021.mA6KLCEp030336@hitchhiker.org.lu>
-Subject: [PATCH] VFS: lseek(fd, 0, SEEK_CUR) race condition
-To: <viro@zeniv.linux.org.uk>, <linux-fsdevel@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <alain@knaff.lu>
-X-Mailer: mail (GNU Mailutils 1.1)
+	Thu, 6 Nov 2008 15:27:40 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:50017 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbYKFU1j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 15:27:39 -0500
+Date: Thu, 6 Nov 2008 14:27:36 -0600
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dustin Kirkland <dustin.kirkland@gmail.com>,
+       Eric Sandeen <sandeen@redhat.com>, Tyler Hicks <tchicks@us.ibm.com>,
+       David Kleikamp <shaggy@us.ibm.com>
+Subject: Re: [PATCH 0/5] eCryptfs: Filename Encryption
+Message-ID: <20081106202736.GC6688@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <20081104213754.GC6675@halcrowt61p.austin.ibm.com> <20081105155754.GA1759@ucw.cz>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-ripemd160;
+	protocol="application/pgp-signature"; boundary="5G06lTa6Jq83wMTw"
+Content-Disposition: inline
+In-Reply-To: <20081105155754.GA1759@ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a race condition in lseek. While it is expected that
-unpredictable behaviour may result while repositioning the offset of a
-file descriptor concurrently with reading/writing to the same file
-descriptor, this should not happen when merely *reading* the file
-descriptor's offset.
 
-Unfortunately, the only portable way in Unix to read a file
-descriptor's offset is lseek(fd, 0, SEEK_CUR); however executing this
-concurrently with read/write may mess up the position, as shown by the
-testcase below:
+--5G06lTa6Jq83wMTw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-#include <sys/types.h>
-#include <stdio.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <pthread.h>
+On Wed, Nov 05, 2008 at 04:57:54PM +0100, Pavel Machek wrote:
+> On Tue 2008-11-04 15:37:54, Michael Halcrow wrote:
+> > This patchset implements filename encryption via a
+> > passphrase-derived mount-wide Filename Encryption Key (FNEK)
+> > specified as a mount parameter. Each encrypted filename has a
+> > fixed prefix indicating that eCryptfs should try to decrypt the
+> > filename. When eCryptfs encounters
+>=20
+> That is 'interesting'. What happens if normal filename has that
+> prefix?
 
+If the lower filename has the prefix but does not have a valid tag 70
+packet following the prefix, then eCryptfs will complain in the syslog
+and then pass through the lower filename as-is.
 
-void *loop(void *ptr)
-{
-  fprintf(stderr, "Starting seek thread\n");
-  while(1) {
-    if(lseek(0, 0LL, SEEK_CUR) < 0LL)
-      perror("seek");
-  }
-}
+--5G06lTa6Jq83wMTw
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-int main(int argc, char **argv) {
-  long long l=0;
-  int r;
-  char buf[4096];
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-  pthread_t thread;
-  pthread_create(&thread, 0, loop, 0);
+iQEcBAEBAwAGBQJJE1M4AAoJENtAhTFtyodplYUH/3o+htJSyFZqd4Mqen3vmLXs
++ESgoZ6/lEcj7QT7o/2PFjt15tWDOvDDW7Fv0pSuLKcEkwg0P/gt+vfqVsV5GCui
+sbVt4pb17ngM6IkJ+7hNBwtoxtx7nMMXBO2an2zuRpydA+GTRZ6YAXn+fU5S5URZ
+mRIUTircI/qGknM7zvwNFCQ0F7VqZl9qT//0MfnZ34XUzvdgHClJPXfIppVV7Ztc
+JHLGiQAZd56xu4J/wIPO8EoJfRf35GXXEvxW6scRVMsYO1DJdF40qXEC3BUHJd/A
+km1Dt+0J1j92Y6PsePi20rKc2f7TKULNhC3nY+TTWGqceSWpadtz3BHhU5jv2WU=
+=8fDo
+-----END PGP SIGNATURE-----
 
-  for(r=0; 1 ; r++) {
-    int n = read(0, buf, 4096);
-    if(n == 0)
-      break;
-    if(n < 4096) {
-      fprintf(stderr, "Short read %d %s\n", n, strerror(errno));
-    }
-    l+= n;
-  }
-  fprintf(stderr, "Read %lld bytes\n", l);
-  
-  return 0;
-}
-
-Compile this and run it on a multi-processor machine as
- ./a.out <bigFile
-
-where bigFile is a 1 Gigabyte file. It should print 1073741824.
-However, on a buggy kernel, it usually produces a bigger number. The
-problem only happens on a multiprocessor machine. This is because an
-lseek(fd, 0, SEEK_CUR) running concurrently with a read() or write()
-will reset the position back to what it used to be when the read()
-started.
-
-This behavior was observed "in the wild" when using udpcast which uses
-lseek to monitor progress of reading/writing the uncompressed data.
-
-The patch below fixes the issue by "special-casing" the lseek(fd, 0,
-SEEK_CUR) pattern.
-
-Apparently, an attempt was already made to fix the issue by the
-following code:
-
-		if (offset != file->f_pos) {
-			file->f_pos = offset;
-			file->f_version = 0;
-		}
-
-However, this doesn't work if file->f_pos was changed (by read() or
-write()) between the time offset was computed, and the time where it
-considers writing it back.
-
-Signed-off-by: Alain Knaff <alain@knaff.lu>
-
----
-
-diff -pur kernel.orig/fs/read_write.c kernel/fs/read_write.c
---- kernel.orig/fs/read_write.c	2008-10-11 14:12:07.000000000 +0200
-+++ kernel/fs/read_write.c	2008-11-06 19:55:59.000000000 +0100
-@@ -42,6 +42,8 @@ generic_file_llseek_unlocked(struct file
- 			offset += inode->i_size;
- 			break;
- 		case SEEK_CUR:
-+			if(offset == 0)
-+				return file->f_pos;
- 			offset += file->f_pos;
- 	}
- 	retval = -EINVAL;
+--5G06lTa6Jq83wMTw--
