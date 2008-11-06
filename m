@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbYKFG3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbYKFGae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbYKFG3P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:29:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbYKFG27
+	id S1753700AbYKFGae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:30:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYKFGaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:28:59 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:49233 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbYKFG27 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:28:59 -0500
-Message-ID: <ac3eb2510811052228o305b432cp2df9d311f103fc92@mail.gmail.com>
-Date: Thu, 6 Nov 2008 07:28:56 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Rusty Russell" <rusty@rustcorp.com.au>
-Subject: Re: virtio: struct device - replace bus_id with dev_name(), dev_set_name()
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "Greg KH" <greg@kroah.com>
-In-Reply-To: <200811061445.12050.rusty@rustcorp.com.au>
+	Thu, 6 Nov 2008 01:30:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59180 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbYKFGaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:30:25 -0500
+Date: Thu, 6 Nov 2008 07:30:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ken Chen <kenchen@google.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [patch] sched: fix single-depth wchan output
+Message-ID: <20081106063012.GA15731@elte.hu>
+References: <b040c32a0811052158r4f6662dega3503a0c7ec72620@mail.gmail.com> <20081106061125.GA6384@elte.hu> <b040c32a0811052216i4594a094gdcee3ae280cddec7@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1225393822.21973.39.camel@nga.site>
-	 <200811061445.12050.rusty@rustcorp.com.au>
+In-Reply-To: <b040c32a0811052216i4594a094gdcee3ae280cddec7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 6, 2008 at 04:45, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Friday 31 October 2008 06:10:22 Kay Sievers wrote:
->> This patch is part of a larger patch series which will remove
->> the "char bus_id[20]" name string from struct device. The device
->> name is managed in the kobject anyway, and without any size
->> limitation, and just needlessly copied into "struct device".
+
+* Ken Chen <kenchen@google.com> wrote:
+
+> On Wed, Nov 5, 2008 at 10:11 PM, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> OK, I've applied this patch.
+> > hm, this adds overhead - and the thing is that WCHAN is rather 
+> > uninformative to begin with (because it's a single dimension), so 
+> > we should phase it out, not expand it.
+> >
+> > How about adding a /proc/<PID>/stacktrace file that gives us the 
+> > stack trace of any task in the system? That would be useful for a 
+> > number of other purposes as well, and about 100 times more useful 
+> > than wchan. (often it would be more useful than sysrq-t dumps)
+> 
+> Sure, my main motivation is to remove frame pointer generation. 
+> x86_64 unconditionally adds fp for kernel/sched.c right now.  I'm 
+> all for phasing out wchan if people don't think there is value in 
+> it.
 
-Thanks!
+are you interested in adding /proc/<PID>/stacktrace? If yes then we 
+could remove fp generation for 64-bit right now and add your 
+stacktrace patch when you are done with it.
 
-> I'm curious how you're going to handle out-of-memory conditions?
+Generally we want frame pointers for high quality backtraces and 
+trouble-shooting. The small cost is almost always worth paying and 
+most distros enable framepointers for that reason. On 32-bit a 
+no-framepointers kernel image has less register pressure, but on 
+64-bit there's little reason to not enable them.
 
-If the name can't be set, the following call to device_register() will
-fail, and should be handled by the caller. Just like today when we
-allocate the kobject name in device_register(). After the core has
-switched over, the name allocation will only happen a few lines
-earlier, it should not behave different otherwise. Is that what you
-mean?
-
-Thanks,
-Kay
+	Ingo
