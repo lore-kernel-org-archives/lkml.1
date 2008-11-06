@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbYKFHpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbYKFHp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbYKFHpd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 02:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbYKFHpG
+	id S1755091AbYKFHp5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 02:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbYKFHpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 02:45:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46004 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754280AbYKFHpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 02:45:04 -0500
-Date: Thu, 6 Nov 2008 08:44:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andreas Huber <andreas.huber@keymile.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: Scheduler RR, first time slice wrong?
-Message-ID: <20081106074449.GC8459@elte.hu>
-References: <1225956167.4472.27.camel@chber1-10446x.ch.keymile.net>
-MIME-Version: 1.0
+	Thu, 6 Nov 2008 02:45:46 -0500
+Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:41710 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753153AbYKFHpp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 02:45:45 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AksFANMuEklMQWxa/2dsb2JhbACBdcg1g1U
+Date: Thu, 6 Nov 2008 02:45:43 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: ltt-dev@lists.casi.polymtl.ca
+Cc: linux-kernel@vger.kernel.org
+Subject: LTTng 0.51, improved timestamping
+Message-ID: <20081106074543.GA18558@Krystal>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1225956167.4472.27.camel@chber1-10446x.ch.keymile.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 02:40:36 up 154 days, 12:21,  4 users,  load average: 1.43, 1.01,
+	1.14
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-(added Cc:s)
+LTTng 0.51 for 2.6.27.4 does the following :
 
-* Andreas Huber <andreas.huber@keymile.com> wrote:
+It improves timestamping on architectures with non-synchronized TSCs in
+LTTng 0.51. I also now use per-cpu timers to do some time-related stuff
+I previously used IPIs for. It involves being more closely tied to the
+CPU hotplug callbacks.
 
-> Hi,
-> 
-> when starting a real-time process with the round-robin scheduler, the
-> first time slice is set to HZ (1 second).
-> When starting two such processes at the same time of the same static
-> priority, the second one started is first executed after 1 second.
-> (supposing the first process is heavy on cpu load).
-> After both have exhausted this first time slice, it is set to
-> DEF_TIMESLICE (which is 100ms).
-> 
-> Is this behavior as it is supposed to be?
-> 
-> Please add me in CC.
-> 
-> Regards,
-> Andreas
-> 
-> 
-> Relevant parts in the code:
-> include/linux/init_task.h
-> #define INIT_TASK(tsk) \
-> 	.rt	= { \
-> 		.time_slice = HZ,
-> 
-> kernel/sched.c
-> #define DEF_TIMESLICE   (100 * HZ / 1000)
-> 
-> kernel/sched_rt.c
-> static void task_tick_rt(struct rq *rq, struct task_struct *p, int
-> queued)
->   if (--p->rt.time_slice)
->     return;
-> 
->   p->rt.time_slice = DEF_TIMESLICE;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I also replaced x86 tsc_sync.c test by LTTng architecture independent
+test. (this will be posted separately on LKML for 2.6.28-rc3 tomorrow
+along with the "tracer clock" patchset).
+
+The event trap_entry, syscall_entry, irq_entry, softirq entry, exit and
+raise now use smaller fields (2 bytes), which should be enough to encode
+the IDs for all architectures. This will principally make a difference
+with non-aligned tracing for most of those events.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
