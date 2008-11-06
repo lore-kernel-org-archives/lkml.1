@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbYKFWPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYKFWVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbYKFWPL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 17:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbYKFWO6
+	id S1753197AbYKFWVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 17:21:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYKFWU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 17:14:58 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41974 "EHLO mx2.redhat.com"
+	Thu, 6 Nov 2008 17:20:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46159 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750909AbYKFWO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 17:14:57 -0500
-Date: Thu, 6 Nov 2008 17:14:27 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081106221426.GD20928@redhat.com>
-References: <20081106060624.58a0f967@infradead.org> <1225981141.7803.4577.camel@twins> <20081106063108.02b4813d@infradead.org> <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org> <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com> <20081106094558.50d94bcc@infradead.org> <y0mej1ofvyz.fsf@ton.toronto.redhat.com> <1226003343.31966.43.camel@lappy.programming.kicks-ass.net> <20081106215310.GA15163@Krystal>
-Mime-Version: 1.0
+	id S1750974AbYKFWU6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 17:20:58 -0500
+Date: Thu, 6 Nov 2008 23:20:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ian Campbell <Ian.Campbell@citrix.com>,
+       "Christopher S. Aker" <caker@theshore.net>,
+       xen devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] 2.6.27 - SMP enabled, but only 1 CPU
+Message-ID: <20081106222039.GA7505@elte.hu>
+References: <48F3BC99.5040409@theshore.net> <490F5F50.7020704@theshore.net> <4910AD00.7040605@theshore.net> <4911BC52.7040905@theshore.net> <1225994697.12607.837.camel@zakaz.uk.xensource.com> <49134257.4000404@goop.org> <20081106211639.GA24579@elte.hu> <49136168.3040604@goop.org> <20081106213344.GF24579@elte.hu> <49136628.1020000@goop.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081106215310.GA15163@Krystal>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <49136628.1020000@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
-On Thu, Nov 06, 2008 at 04:53:11PM -0500, Mathieu Desnoyers wrote:
-> [...]
-> > Something like
-> > 
-> > DEFINE_TRACE_FMT(sched_switch,
-> > 	TPPROTO(struct rq *rq, struct task_struct *prev,
-> > 		 struct task_struct *next),
-> > 	TPARGS(rq, prev, next),
-> > 	TPFMT("%d to %d\n", prev->pid, next->pid));
-> > 
-> > Which would be similar to attaching a trace_mark() to the trace point
-> > and can in these cases save a lot of lines of code.
-> > 
-> > Both lttng and the ftrace event tracer can use these default text
-> > strings.
-> 
-> Argh. No, please. Doing this would end up exposing the inner kernel API
-> (the tracepoints) directly to userspace. [...]
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
+> Ingo Molnar wrote:
+>> where exactly is that use? My grep didnt show any users of pud_page().  
+>> pud_page() was changed in an incompatible way, all users of it must be  
+>> updated.
+>>   
+>
+> pgd_page() uses it in pgtable-nopud.h, so any users of pgd_page() 
+> also need to be looked at.  It so happens the only user is 
+> arch/x86/xen/mmu.c, which expects it to return the vaddr.  Fixed 
+> below.
 
-Arjan asked for something to send formatted strings to tracing buffers
-that are consumed by user space.  Whether internally that is done by
-markers, or by tracepoints converted to markers, or by tracepoints
-with custom ftrace_printf-y code, is indistinguishable to the user.
+ah! asm-generic was missed by my grep. (and i suspect Jan missed it 
+too)
 
-Can you be specific in what way any of that is exposing an "API
-directly to userspace"?
+> Subject: xen: fix use of pgd_page now that it really does return a page
 
-- FChE
+applied to tip/x86/urgent, thanks!
+
+	Ingo
