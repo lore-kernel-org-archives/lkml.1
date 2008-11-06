@@ -1,89 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYKFBTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYKFBVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbYKFBTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Nov 2008 20:19:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753095AbYKFBTi
+	id S1755219AbYKFBVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Nov 2008 20:21:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753116AbYKFBVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Nov 2008 20:19:38 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:16371 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753080AbYKFBTh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Nov 2008 20:19:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	content-type:content-transfer-encoding;
-	b=mG/BZrxg4rMAVU1xC4LERBi/vIALqkCF0Z4IfWhU8Rv7aNM/YpAKcsHYAeAQfudJs
-	qQ/20pXsq2DRJlCoPBK1Q==
+	Wed, 5 Nov 2008 20:21:33 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53752 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753095AbYKFBVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Nov 2008 20:21:32 -0500
+Message-ID: <491245F1.5070707@cn.fujitsu.com>
+Date: Thu, 06 Nov 2008 09:18:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-In-Reply-To: <20081102224513.GH19509@disturbed>
-References: <1786ab030810311354h1a7c8fb0q1267969d432f521c@mail.gmail.com>
-	 <20081102224513.GH19509@disturbed>
-Date: Wed, 5 Nov 2008 17:19:20 -0800
-Message-ID: <1786ab030811051719w63ada9c8ldf75f15367adbb8b@mail.gmail.com>
-Subject: Re: Metadata in sys_sync_file_range and fadvise(DONTNEED)
-From: Chad Talbott <ctalbott@google.com>
-To: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@google.com>, Michael Rubin <mrubin@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Matt Helsley <matthltc@us.ibm.com>, Cedric Le Goater <clg@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: [PATCH -v2] freezer_cg: disable writing freezer.state of root cgroup
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 2, 2008 at 2:45 PM, Dave Chinner <david@fromorbit.com> wrote:
-> On Fri, Oct 31, 2008 at 01:54:14PM -0700, Chad Talbott wrote:
->> We are looking at adding calls to posix_fadvise(DONTNEED) to various
->> data logging routines.  This has two benefits:
->>
->>   - frequent write-out -> shorter queues give lower latency, also disk
->>     is more utilized as writeout begins immediately
->>
->>   - less useless stuff in page cache
->>
->> One problem with fadvise() (and ext2, at least) is that associated
->> metadata isn't scheduled with the data. So, for a large log file with
->> a high append rate, hundreds of indirect blocks are left to be written
->> out by periodic writeback.  This metadata consists of single blocks
->> spaced by 4MB, leading to spikes of very inefficient disk utilization,
->> deep queues and high latency.
->
-> Sounds like a filesystem bug to me, not a problem with
-> posix_fadvise(DONTNEED).
+With this change, control file 'freezer.state' doesn't exist in root
+cgroup, making root cgroup unfreezable.
 
-Agreed that the right fix is not to hack fadvise().  If the boundary
-page mechanism can't be made to work, It looks like right thing might
-be to modify ext2_writepages to opportunistically write dirty metadata
-in holes between dirty data.  For post-ext2 filesystems which attempt
-to provide transactional semantics, this is probably not acceptable.
+I think it's reasonable to disallow freeze tasks in the root cgroup.
+And then we can avoid fork overhead when freezer subsystem is
+compiled but not used.
 
->> Andrew suggests a new SYNC_FILE_RANGE_METADATA flag for
->> sys_sync_file_range(), and leaving posix_fadvise() alone.
->
-> What is the interface that a filesystem will see? No filesystem has
-> a "metadata sync" method - is this going to fall through to some new
-> convoluted combination of writeback flags to an inode/mapping
-> that more filesystems than not can get wrong?
+Also make writing invalid value to freezer.state returns EINVAL
+rather than EIO. This is more consistent with other cgroup subsystem.
 
-Good point, coupled with metadata/data ordering and your argument
-below, a decent argument against exposing this interface.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
-> FWIW, sys_sync_file_range() is fundamentally broken for data
-> integrity writeback - at no time does it call a filesystem method
-> that can result in a barrier I/O being issued to disk after
-> writeback is complete. So, unlike fsync() or fdatasync(), the data
-> can still be lost after completion due to power failure on drives
-> with volatile write caches....
+patch is based on freezer_cg-remove-task_lock-from-freezer_fork.patch
 
-Seems to be true.  I'm not currently concerned with sync_file_range
-for data integrity, so I'm going to punt on this issue.
+---
+ Documentation/cgroups/freezer-subsystem.txt |    3 +++
+ kernel/cgroup_freezer.c                     |   11 ++++++++++-
+ 2 files changed, 13 insertions(+), 1 deletions(-)
 
-If the consensus is against exposing a "sync metadata" interface, I'm
-fine with ext2 silently updating metadata alongside neighboring data
-in *either* posix_fadvise() or sync_file_range.   Either way, does it
-seem reasonable for posix_fadvise(DONTNEED) to call
-__filemap_fdatawrite_range to do its work?  This is the same path that
-sync_file_range uses.  I prefer this to the current behavior of
-ignoring the passed range and initiating writeback on the entire file.
+diff --git a/Documentation/cgroups/freezer-subsystem.txt b/Documentation/cgroups/freezer-subsystem.txt
+index c50ab58..91572b9 100644
+--- a/Documentation/cgroups/freezer-subsystem.txt
++++ b/Documentation/cgroups/freezer-subsystem.txt
+@@ -54,6 +54,9 @@ freezer.state. Writing "FROZEN" to the state file will freeze all tasks in the
+ cgroup. Subsequently writing "THAWED" will unfreeze the tasks in the cgroup.
+ Reading will return the current state.
+ 
++Note freezer.state doesn't exist in root cgroup, which means root cgroup
++is unfreezable.
++
+ * Examples of usage :
+ 
+    # mkdir /containers/freezer
+diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+index 6605907..cf3fce9 100644
+--- a/kernel/cgroup_freezer.c
++++ b/kernel/cgroup_freezer.c
+@@ -192,6 +192,13 @@ static void freezer_fork(struct cgroup_subsys *ss, struct task_struct *task)
+ 	 */
+ 	freezer = task_freezer(task);
+ 
++	/*
++	 * The root cgroup is unfreezable, so we can skip the
++	 * following check.
++	 */
++	if (!freezer->css.cgroup->parent)
++		return;
++
+ 	spin_lock_irq(&freezer->lock);
+ 	BUG_ON(freezer->state == CGROUP_FROZEN);
+ 
+@@ -335,7 +342,7 @@ static int freezer_write(struct cgroup *cgroup,
+ 	else if (strcmp(buffer, freezer_state_strs[CGROUP_FROZEN]) == 0)
+ 		goal_state = CGROUP_FROZEN;
+ 	else
+-		return -EIO;
++		return -EINVAL;
+ 
+ 	if (!cgroup_lock_live_group(cgroup))
+ 		return -ENODEV;
+@@ -354,6 +361,8 @@ static struct cftype files[] = {
+ 
+ static int freezer_populate(struct cgroup_subsys *ss, struct cgroup *cgroup)
+ {
++	if (!cgroup->parent)
++		return 0;
+ 	return cgroup_add_files(cgroup, ss, files, ARRAY_SIZE(files));
+ }
+ 
+-- 
+1.5.4.rc3
 
-Chad
