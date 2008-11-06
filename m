@@ -1,76 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbYKFGsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYKFGuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbYKFGsa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 01:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYKFGsP
+	id S1754015AbYKFGuX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 01:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKFGuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 01:48:15 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:42296 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbYKFGsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 01:48:13 -0500
-Message-ID: <491291F7.6030008@linux.vnet.ibm.com>
-Date: Thu, 06 Nov 2008 12:13:03 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 6 Nov 2008 01:50:07 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:50127 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751367AbYKFGuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 01:50:05 -0500
+Date: Thu, 6 Nov 2008 01:50:03 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches] net driver fixes for 2.6.28-rc
+Message-ID: <20081106065003.GA19105@havoc.gtf.org>
 MIME-Version: 1.0
-To: bharata@linux.vnet.ibm.com
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting controller
-References: <20081024050830.GA4387@in.ibm.com> <6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com> <20081025060157.GA4614@in.ibm.com> <6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com> <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com> <20081027044319.GA4386@in.ibm.com> <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com> <49057ADD.1050705@cn.fujitsu.com> <20081030171622.GA19872@linux.vnet.ibm.com> <20081031094041.194a32d9.kamezawa.hiroyu@jp.fujitsu.com> <20081104124937.GB4898@in.ibm.com>
-In-Reply-To: <20081104124937.GB4898@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bharata B Rao wrote:
-> On Fri, Oct 31, 2008 at 09:40:41AM +0900, KAMEZAWA Hiroyuki wrote:
->> On Thu, 30 Oct 2008 22:46:22 +0530
->> Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
->>> I disagree. The child is a part of the parent's hierarchy, and therefore
->>> its usage should reflect in the parent's usage.
->>>
->> In my point of view, there is no big difference. It's just whether we need a tool
->> in userland or not. If there is no performance impact, I have no objections.
->>
->> One request from me is add Documentation/controllers/cpuacct.txt or some to explain
->> "what we see".
-> 
-> I am not sure which version (mine or Li Zefan's) Paul prefers. I am
-> resending my patch anyway with documentation and performance numbers
-> included. I don't see any significant improvement or degradation in
-> hackbench, lmbench and volanomark numbers with this patch.
-> 
-> Regards,
-> Bharata.
-> 
-> Add hierarchical accounting to cpu accounting controller and cpuacct
-> documentation.
-> 
-> Currently, while charging the task's cputime to its accounting group,
-> the accounting group hierarchy isn't updated. This patch charges the cputime
-> of a task to its accounting group and all its parent accounting groups.
-> 
-> Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Reviewed-by: Paul Menage <menage@google.com>
 
-Looks good and straight forward.
+Please pull from 'davem-fixes' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+to receive the following updates:
 
--- 
-	Balbir
+ drivers/net/3c509.c          |    6 +++---
+ drivers/net/mlx4/en_netdev.c |    2 +-
+ drivers/net/sfc/ethtool.c    |    4 ++--
+ drivers/net/tun.c            |    4 ++--
+ drivers/net/usb/hso.c        |   12 +++++++-----
+ drivers/net/virtio_net.c     |    2 +-
+ 6 files changed, 16 insertions(+), 14 deletions(-)
+
+Al Viro (1):
+      el3_common_init() should be __devinit, not __init
+
+Ben Hutchings (1):
+      sfc: Correct address of gPXE boot configuration in EEPROM
+
+Jonathan McDowell (1):
+      [netdrvr] usb/hso: Cleanup rfkill error handling
+
+Mark McLoughlin (2):
+      virtio_net: don't set NETIF_F_FRAGLIST
+      tun: don't set NETIF_F_FRAGLIST
+
+Paulius Zaleckas (1):
+      hso: rfkill type should be WWAN
+
+Yevgeny Petrilin (1):
+      mlx4_en: Start port error flow bug fix
+
+diff --git a/drivers/net/3c509.c b/drivers/net/3c509.c
+index 3a7bc52..c7a4f3b 100644
+--- a/drivers/net/3c509.c
++++ b/drivers/net/3c509.c
+@@ -94,7 +94,7 @@
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ 
+-static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
++static char version[] __devinitdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
+ 
+ #ifdef EL3_DEBUG
+ static int el3_debug = EL3_DEBUG;
+@@ -186,7 +186,7 @@ static int max_interrupt_work = 10;
+ static int nopnp;
+ #endif
+ 
+-static int __init el3_common_init(struct net_device *dev);
++static int __devinit el3_common_init(struct net_device *dev);
+ static void el3_common_remove(struct net_device *dev);
+ static ushort id_read_eeprom(int index);
+ static ushort read_eeprom(int ioaddr, int index);
+@@ -537,7 +537,7 @@ static struct mca_driver el3_mca_driver = {
+ static int mca_registered;
+ #endif /* CONFIG_MCA */
+ 
+-static int __init el3_common_init(struct net_device *dev)
++static int __devinit el3_common_init(struct net_device *dev)
+ {
+ 	struct el3_private *lp = netdev_priv(dev);
+ 	int err;
+diff --git a/drivers/net/mlx4/en_netdev.c b/drivers/net/mlx4/en_netdev.c
+index a339afb..a3f7324 100644
+--- a/drivers/net/mlx4/en_netdev.c
++++ b/drivers/net/mlx4/en_netdev.c
+@@ -706,7 +706,7 @@ tx_err:
+ 	mlx4_en_release_rss_steer(priv);
+ rx_err:
+ 	for (i = 0; i < priv->rx_ring_num; i++)
+-		mlx4_en_deactivate_rx_ring(priv, &priv->rx_ring[rx_index]);
++		mlx4_en_deactivate_rx_ring(priv, &priv->rx_ring[i]);
+ cq_err:
+ 	while (rx_index--)
+ 		mlx4_en_deactivate_cq(priv, &priv->rx_cq[rx_index]);
+diff --git a/drivers/net/sfc/ethtool.c b/drivers/net/sfc/ethtool.c
+index fa98af5..cd0d087 100644
+--- a/drivers/net/sfc/ethtool.c
++++ b/drivers/net/sfc/ethtool.c
+@@ -174,8 +174,8 @@ static struct efx_ethtool_stat efx_ethtool_stats[] = {
+ 
+ /* EEPROM range with gPXE configuration */
+ #define EFX_ETHTOOL_EEPROM_MAGIC 0xEFAB
+-#define EFX_ETHTOOL_EEPROM_MIN 0x100U
+-#define EFX_ETHTOOL_EEPROM_MAX 0x400U
++#define EFX_ETHTOOL_EEPROM_MIN 0x800U
++#define EFX_ETHTOOL_EEPROM_MAX 0x1800U
+ 
+ /**************************************************************************
+  *
+diff --git a/drivers/net/tun.c b/drivers/net/tun.c
+index 6daea0c..86433ea 100644
+--- a/drivers/net/tun.c
++++ b/drivers/net/tun.c
+@@ -844,11 +844,11 @@ static int set_offload(struct net_device *dev, unsigned long arg)
+ 
+ 	old_features = dev->features;
+ 	/* Unset features, set them as we chew on the arg. */
+-	features = (old_features & ~(NETIF_F_HW_CSUM|NETIF_F_SG|NETIF_F_FRAGLIST
++	features = (old_features & ~(NETIF_F_HW_CSUM|NETIF_F_SG
+ 				    |NETIF_F_TSO_ECN|NETIF_F_TSO|NETIF_F_TSO6));
+ 
+ 	if (arg & TUN_F_CSUM) {
+-		features |= NETIF_F_HW_CSUM|NETIF_F_SG|NETIF_F_FRAGLIST;
++		features |= NETIF_F_HW_CSUM|NETIF_F_SG;
+ 		arg &= ~TUN_F_CSUM;
+ 
+ 		if (arg & (TUN_F_TSO4|TUN_F_TSO6)) {
+diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
+index 1164c52..8e90891 100644
+--- a/drivers/net/usb/hso.c
++++ b/drivers/net/usb/hso.c
+@@ -2184,19 +2184,20 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
+ 			     struct usb_interface *interface)
+ {
+ 	struct hso_net *hso_net = dev2net(hso_dev);
+-	struct device *dev = hso_dev->dev;
++	struct device *dev = &hso_net->net->dev;
+ 	char *rfkn;
+ 
+ 	hso_net->rfkill = rfkill_allocate(&interface_to_usbdev(interface)->dev,
+-				 RFKILL_TYPE_WLAN);
++				 RFKILL_TYPE_WWAN);
+ 	if (!hso_net->rfkill) {
+-		dev_err(dev, "%s - Out of memory", __func__);
++		dev_err(dev, "%s - Out of memory\n", __func__);
+ 		return;
+ 	}
+ 	rfkn = kzalloc(20, GFP_KERNEL);
+ 	if (!rfkn) {
+ 		rfkill_free(hso_net->rfkill);
+-		dev_err(dev, "%s - Out of memory", __func__);
++		hso_net->rfkill = NULL;
++		dev_err(dev, "%s - Out of memory\n", __func__);
+ 		return;
+ 	}
+ 	snprintf(rfkn, 20, "hso-%d",
+@@ -2209,7 +2210,8 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
+ 		kfree(rfkn);
+ 		hso_net->rfkill->name = NULL;
+ 		rfkill_free(hso_net->rfkill);
+-		dev_err(dev, "%s - Failed to register rfkill", __func__);
++		hso_net->rfkill = NULL;
++		dev_err(dev, "%s - Failed to register rfkill\n", __func__);
+ 		return;
+ 	}
+ }
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+index 0196a0d..9d4fdad 100644
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -505,7 +505,7 @@ static int virtnet_probe(struct virtio_device *vdev)
+ 	/* Do we support "hardware" checksums? */
+ 	if (csum && virtio_has_feature(vdev, VIRTIO_NET_F_CSUM)) {
+ 		/* This opens up the world of extra features. */
+-		dev->features |= NETIF_F_HW_CSUM|NETIF_F_SG|NETIF_F_FRAGLIST;
++		dev->features |= NETIF_F_HW_CSUM|NETIF_F_SG;
+ 		if (gso && virtio_has_feature(vdev, VIRTIO_NET_F_GSO)) {
+ 			dev->features |= NETIF_F_TSO | NETIF_F_UFO
+ 				| NETIF_F_TSO_ECN | NETIF_F_TSO6;
