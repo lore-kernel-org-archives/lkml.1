@@ -1,106 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYKFR6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbYKFR7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYKFR6Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 12:58:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYKFR6O
+	id S1753132AbYKFR7I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 12:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYKFR64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 12:58:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35786 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751171AbYKFR6M (ORCPT
+	Thu, 6 Nov 2008 12:58:56 -0500
+Received: from atlanta.zankel.net ([69.61.78.146]:1658 "EHLO
+	atlanta.zankel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751106AbYKFR6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 12:58:12 -0500
-Date: Thu, 6 Nov 2008 09:57:57 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Brian Kysela <bkysela@gmail.com>, <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, <linux-usb@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] usb-storage: Error in queuecommand: us->srb =
- ffff88006a338480
-Message-Id: <20081106095757.2c2fcdc3.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0811061030370.2568-100000@iolanthe.rowland.org>
-References: <20081105174905.27194494.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0811061030370.2568-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 6 Nov 2008 12:58:55 -0500
+Message-ID: <49133094.6070407@zankel.net>
+Date: Thu, 06 Nov 2008 09:59:48 -0800
+From: Chris Zankel <chris@zankel.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 10/10] xtensa: use the new byteorder headers
+References: <1225910131.5991.230.camel@brick>
+In-Reply-To: <1225910131.5991.230.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 10:36:50 -0500 (EST) Alan Stern <stern@rowland.harvard.edu> wrote:
+Hi Harvey,
 
-> On Wed, 5 Nov 2008, Andrew Morton wrote:
-> 
-> > On Thu, 30 Oct 2008 17:35:57 -0400
-> > Brian Kysela <bkysela@gmail.com> wrote:
-> > 
-> > > On kernels ranging from 2.6.26 - 2.6.28-rc2
-> > 
-> > So 2.6.25 was OK?
-> > 
-> > > on an Intel P4 3.2GHz HT x86-64
-> > > cpu, I am seeing a bug that occurs about half the time when copying ~300MB
-> > > data from a usb flash drive (FAT) to hard drive (XFS). There are three
-> > > possible outcomes, so far, when I hit the bug:
-> > > 
-> > >     (1) The copy process hangs, cpu wait hits 100% and load avg climbs until
-> > >         reboot;
-> > >     (2) The copy process hangs and then recovers and then one of:
-> > >         (a) the cpu wait & load avg both decline to normal; or
-> > >         (b) cpu wait hovers at 100% and the load avg slowly climbs until reboot;
-> > >     (3) Kernel bug reported and machine locks up.
-> > > 
-> > > Result (1) is the most frequent. Result (3) happened only twice out of about 40
-> > > tests. I lose the full traces, but here are two relevant lines that I see on
-> > > screen before the machine locks up:
-> > > 
-> > > kernel BUG at /home/brian/linux-2.6/block/elevator.c:841!
-> > > invalid opcode: 0000 [#1] PREMPT SMP
-> > 
-> > It is unclear what kernel version produced that message, and that is
-> > important information.  In 2.6.28-rc2, block/elevator.c:841 is
-> > 
-> >     void elv_dequeue_request(struct request_queue *q, struct request *rq)
-> >     {
-> > -->>	BUG_ON(list_empty(&rq->queuelist));
-> > 	BUG_ON(ELV_ON_HASH(rq));
-> > 
-> > please confirm that I have the correct line there.
-> > 
-> > 
-> > I assume that you're hitting a bug in the USB storage code and this is
-> > triggering consistency-checking code in the block layer.
-> > 
-> > > When (1) or (2b) occurs I pull the usb drive to see what happens. In two cases
-> > > (3) occurred, but more often I get this in /var/log/syslog:
-> > 
-> > The other things you saw were most likely a consequence of the
-> > BUG_ON().
-> 
-> In theory, this sort of thing could have been caused by changes to the 
-> block-layer timeout handling in 2.6.28-rc.  But those changes are not 
-> present in 2.6.26 or 2.6.27.
-> 
-> Note that the syslog shows a lockdep violation occurring _before_ the 
-> error message from usb-storage.  This suggests the problem originates 
-> somewhere else.
-> 
-> The error message:
-> 
-> > [  152.701070] usb-storage: Error in queuecommand: us->srb = ffff88007dfd0680
-> 
-> means that the SCSI layer has told usb-storage to start a new command 
-> before the old one completed.  This could happen, for example, if the 
-> SCSI layer had gotten confused and tried to cancel a command that 
-> wasn't running -- then it would think usb-storage was idle when in fact 
-> it was still busy.  (This was the failure mechanism resulting from the 
-> timeout changes.)
-> 
+I have added your patch to the xtensa-next tree on kernel.org and will 
+push to Linus soon.
 
-OK, thanks.  I'll cc linux-scsi, but I have this-wont-be-getting-fixed
-feelings on this one :(
+Thanks,
+-Chris
 
-I wonder what's special about Brian's setup.
+Harvey Harrison wrote:
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  include/asm-xtensa/byteorder.h |   32 +++++++++++++++-----------------
+>  1 files changed, 15 insertions(+), 17 deletions(-)
+> 
+> diff --git a/include/asm-xtensa/byteorder.h b/include/asm-xtensa/byteorder.h
+> index 765edf1..07d10ad 100644
+> --- a/include/asm-xtensa/byteorder.h
+> +++ b/include/asm-xtensa/byteorder.h
+> @@ -14,7 +14,17 @@
+>  #include <asm/types.h>
+>  #include <linux/compiler.h>
+>  
+> -static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+> +#ifdef __XTENSA_EL__
+> +# define __LITTLE_ENDIAN
+> +#elif defined(__XTENSA_EB__)
+> +# define __BIG_ENDIAN
+> +#else
+> +# error processor byte order undefined!
+> +#endif
+> +
+> +#define __SWAB_64_THRU_32__
+> +
+> +static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
+>  {
+>      __u32 res;
+>      /* instruction sequence from Xtensa ISA release 2/2000 */
+> @@ -28,8 +38,9 @@ static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
+>  	    );
+>      return res;
+>  }
+> +#define __arch_swab32 __arch_swab32
+>  
+> -static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
+> +static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
+>  {
+>      /* Given that 'short' values are signed (i.e., can be negative),
+>       * we cannot assume that the upper 16-bits of the register are
+> @@ -62,21 +73,8 @@ static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
+>  
+>      return res;
+>  }
+> +#define __arch_swab16 __arch_swab16
+>  
+> -#define __arch__swab32(x) ___arch__swab32(x)
+> -#define __arch__swab16(x) ___arch__swab16(x)
+> -
+> -#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+> -#  define __BYTEORDER_HAS_U64__
+> -#  define __SWAB_64_THRU_32__
+> -#endif
+> -
+> -#ifdef __XTENSA_EL__
+> -# include <linux/byteorder/little_endian.h>
+> -#elif defined(__XTENSA_EB__)
+> -# include <linux/byteorder/big_endian.h>
+> -#else
+> -# error processor byte order undefined!
+> -#endif
+> +#include <linux/byteorder.h>
+>  
+>  #endif /* _XTENSA_BYTEORDER_H */
+
