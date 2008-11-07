@@ -1,36 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYKGPgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753342AbYKGPie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbYKGPgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYKGPgN
+	id S1753342AbYKGPie (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYKGPi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:36:13 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34985 "EHLO mx2.redhat.com"
+	Fri, 7 Nov 2008 10:38:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37325 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbYKGPgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:36:12 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1225910127.5991.224.camel@brick>
-References: <1225910127.5991.224.camel@brick>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 04/10] frv: use the new byteorder headers
-Date: Fri, 07 Nov 2008 15:36:03 +0000
-Message-ID: <1815.1226072163@redhat.com>
+	id S1751142AbYKGPiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 10:38:25 -0500
+Date: Fri, 7 Nov 2008 13:38:14 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
+Message-ID: <20081107153814.GD9709@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	"Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+	Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk> <491450E4.2080802@hp.com> <20081107143215.GR21867@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081107143215.GR21867@kernel.dk>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison <harvey.harrison@gmail.com> wrote:
+Em Fri, Nov 07, 2008 at 03:32:16PM +0100, Jens Axboe escreveu:
+> On Fri, Nov 07 2008, Alan D. Brunelle wrote:
+> > 
+> > > 
+> > > I'll apply this for 2.6.29. I'm assuming you have tested this as well?
+> > > 
+> > 
+> > FYI: I tested this on a 16-way AMD x86_64 box (128GB RAM, a couple of
+> > Smart Array (CCISS) P800's). Running Jens' for-2.6.29 git tree versus a
+> > recent Linus 2.6.28-rc3 tree. I was doing kernel makes (10 passes for
+> > both kernels), and found that things worked just fine. All values below
+> > are in seconds:
+> > 
+> > 2.6.28-rc3:
+> > 
+> >     Part     Min     Avg     Max     Dev
+> > -------- ------- ------- ------- -------
+> >    untar  17.996  22.565  23.522   1.690
+> >   mk-cfg   3.279   3.454   3.529   0.070
+> >  mk-kern 140.837 141.557 142.549   0.626
+> > mk-clean  10.460  11.604  12.710   0.758
+> > -------- ------- ------- ------- -------
+> >    Combd 172.941 179.180 181.600   2.470
+> > ======== ======= ======= ======= =======
+> >    %sys   7.67%   7.78%   8.03%   0.114
+> > 
+> > 
+> > Jens' origin/for-2.6.29:
+> > 
+> >     Part     Min     Avg     Max     Dev
+> > -------- ------- ------- ------- -------
+> >    untar  18.138  22.576  24.279   1.693
+> >   mk-cfg   3.270   3.483   3.751   0.118
+> >  mk-kern 141.290 142.115 142.666   0.439
+> > mk-clean   8.263   9.609  10.211   0.624
+> > -------- ------- ------- ------- -------
+> >    Combd 173.736 177.783 179.654   1.786
+> > ======== ======= ======= ======= =======
+> >    %sys   7.77%   7.85%   8.01%   0.074
+> > 
+> > 
+> > Not sure why the 'make clean' portion of the runs went noticeably better
+> > with the newer code, but in any event, I don't see much difference
+> > elsewhere, and for sure the blktrace portion of things worked correctly.
+> > [blktrace + blkparse + blkrawverify + btt all worked just fine out of
+> > the box.]
+> 
+> Thanks a lot for running that test Alan, I think it looks fine!
 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  include/asm-frv/byteorder.h |   10 +++-------
->  1 files changed, 3 insertions(+), 7 deletions(-)
+Indeed, thanks a lot!
 
-Acked-by: David Howells <dhowells@redhat.com>
+- Arnaldo
