@@ -1,100 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbYKGXrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbYKGXwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbYKGXrP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:47:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbYKGXrA
+	id S1753649AbYKGXwA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:52:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbYKGXvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:47:00 -0500
-Received: from hq2.tensilica.com ([65.205.227.30]:25261 "EHLO
-	maia.hq.tensilica.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751065AbYKGXq7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:46:59 -0500
-X-Greylist: delayed 568 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Nov 2008 18:46:59 EST
-Message-ID: <4914D139.6060207@tensilica.com>
-Date: Fri, 07 Nov 2008 15:37:29 -0800
-From: Piet Delaney <piet.delaney@tensilica.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: kgdb-bugreport-request@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-CC: Piet Delaney <piet.delaney@tensilica.com>
-Subject: [XTENSA] [KGDB] kgdbts: ERROR PUT: end of test buffer on 'bad_read_test'
- line 0 expected S0* got $T05thread:0000000000000001;#a7
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 18:51:51 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54291 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752305AbYKGXvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:51:50 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com> <20081107053349.861709786@polymtl.ca> <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: dhowells@redhat.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Nicolas Pitre <nico@cam.org>, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+Date: Fri, 07 Nov 2008 23:50:38 +0000
+Message-ID: <9473.1226101838@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting a problem with the kgdb Test Suite on the third test:
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-    kgdbts:RUN plant and detach test
-    kgdbts:RUN sw breakpoint test
-    kgdbts:RUN bad memory access test
-    kgdbts: ERROR PUT: end of test buffer on 'bad_read_test' line 0 expected S0* got $T05thread:0000000000000001;#a7
-    ------------[ cut here ]------------
-    WARNING: at /export/src/xtensa-next/drivers/misc/kgdbts.c:723 run_simple_test+0x2a1/0x2cc()
+> > I use smp_rmb() to do this on SMP systems (hrm, actually, a rmb() could
+> > be required so it works also on UP systems safely wrt interrupts).
+> 
+> smp_rmb turns into a compiler barrier on UP and should prevent the below
+> description.
 
-I'm using an Illegal Instruction (ILL) instead of the normal BREAK instruction for now so I can use
-the std JTAG based gdb to debug the stub. The test appears to be just expecting the '#a7' but the stub has
-sent the Trap Information from gdb_serial_stub() up in frame #5:
+Note that that does not guarantee that the two reads will be done in the order
+you want.  The compiler barrier _only_ affects the compiler.  It does not stop
+the CPU from doing the reads in any order it wants.  You need something
+stronger than smp_rmb() if you need the reads to be so ordered.
 
-    1217 static int gdb_serial_stub(struct kgdb_state *ks)
-    1218 {
-    1219         int error = 0;
-    1220         int tmp;
-    1221
-    1222         /* Clear the out buffer. */
-    1223         memset(remcom_out_buffer, 0, sizeof(remcom_out_buffer));
-    1224
-    1225         if (kgdb_connected) {
-    1226                 unsigned char thref[8];
-    1227                 char *ptr;
-    1228
-    1229                 /* Reply to host that an exception has occurred */
-    1230                 ptr = remcom_out_buffer;
-    1231                 *ptr++ = 'T';
-    1232                 ptr = pack_hex_byte(ptr, ks->signo);
-    1233                 ptr += strlen(strcpy(ptr, "thread:"));
-    1234                 int_to_threadref(thref, shadow_pid(current->pid));
-    1235                 ptr = pack_threadid(ptr, thref);
-    1236                 *ptr++ = ';';
-
-(gdb) bt
-#0  dump_stack () at /export/src/xtensa-next/arch/xtensa/kernel/traps.c:507
-#1  0xd0016a3d in warn_on_slowpath (file=0xd01b90e4 "/export/src/xten"..., line=0x2d3) at /export/src/xtensa-next/kernel/panic.c:316
-#2  0xd012369d in run_simple_test (is_get_char=0x0, chr=0x37) at /export/src/xtensa-next/drivers/misc/kgdbts.c:721                                  [ERRORS on T05thread:0000000000000001']
-#3  0xd0123e8e in kgdbts_put_char (chr=0x37) at /export/src/xtensa-next/drivers/misc/kgdbts.c:1056
-#4  0xd0041a1c in put_packet (buffer=0xd0261100 "T05thread:000000"...) at /export/src/xtensa-next/kernel/kgdb.c:333
-#5  0xd0042e32 in gdb_serial_stub (ks=0xd381fa94) at /export/src/xtensa-next/kernel/kgdb.c:1237                                                     [WRITES 'T05thread:0000000000000001']
-#6  0xd0043392 in kgdb_handle_exception (evector=0x3f, signo=0x5, ecode=0x8, regs=0xd381fd40) at /export/src/xtensa-next/kernel/kgdb.c:1501
-#7  0xd000705e in __kgdb_xtensa_notify (args=0xd381fc60, cmd=0x3) at /export/src/xtensa-next/arch/xtensa/kernel/kgdb.c:818
-#8  0xd00070d8 in kgdb_xtensa_notify (self=0xd020e71c, cmd=0x3, args=0xd381fc60) at /export/src/xtensa-next/arch/xtensa/kernel/kgdb.c:837
-#9  0xd0034712 in notifier_call_chain (nl=0xd0209b84, val=0x3, v=0xd381fc60, nr_to_call=0xffffffff, nr_calls=0x0) at /export/src/xtensa-next/kernel/notifier.c:85
-#10 0xd00347e0 in __atomic_notifier_call_chain (nh=0xd0209b74, val=0x3, v=0xd381fc60, nr_to_call=0xffffffff, nr_calls=0x0) at /export/src/xtensa-next/kernel/notifier.c:174
-#11 0xd0034805 in atomic_notifier_call_chain (nh=0xd0209b74, val=0x3, v=0xd381fc60) at /export/src/xtensa-next/kernel/notifier.c:183
-#12 0xd0034bbc in notify_die (val=DIE_DEBUG, str=0xd01a5db4 "debug", regs=0xd381fd40, err=0x8, trap=0x3f, sig=0x5) at /export/src/xtensa-next/kernel/notifier.c:564
-#13 0xd0005995 in do_debug (regs=0xd381fd40) at /export/src/xtensa-next/arch/xtensa/kernel/traps.c:302
-#14 0xd0005898 in do_illegal_instruction (regs=0xd381fd40) at /export/src/xtensa-next/arch/xtensa/kernel/traps.c:234
-#15 0xd0002448 in _kernel_exception () at /export/src/xtensa-next/arch/xtensa/kernel/entry.S:602
-#16 0xd0007177 in arch_kgdb_breakpoint () at /export/src/xtensa-next/arch/xtensa/kernel/kgdb.c:919
-#17 0xd0043774 in kgdb_breakpoint () at /export/src/xtensa-next/kernel/kgdb.c:1717
-#18 0xd0123a00 in run_bad_read_test () at /export/src/xtensa-next/drivers/misc/kgdbts.c:849
-#19 0xd0123b74 in kgdbts_run_tests () at /export/src/xtensa-next/drivers/misc/kgdbts.c:909
-#20 0xd0123e12 in configure_kgdbts () at /export/src/xtensa-next/drivers/misc/kgdbts.c:1017
-#21 0xd022e2c2 in init_kgdbts () at /export/src/xtensa-next/drivers/misc/kgdbts.c:1034
-#22 0xd00013ee in do_one_initcall (fn=0xd022e2a8 <init_kgdbts>) at /export/src/xtensa-next/init/main.c:715
-#23 0xd0226848 in do_initcalls () at /export/src/xtensa-next/init/main.c:755
-#24 0xd022687e in do_basic_setup () at /export/src/xtensa-next/init/main.c:776
-#25 0xd0226903 in kernel_init (unused=0x0) at /export/src/xtensa-next/init/main.c:865
-#26 0xd0002bad in kernel_thread () at /export/src/xtensa-next/arch/xtensa/kernel/entry.S:1965
-Backtrace stopped: previous frame inner to this frame (corrupt stack?)
-(gdb)
-
-I've tried a few changes in the trap handler but so far the problem persist.
-The test suite suite seems like a nice idea.  Chapter 5 of the KGDB Internals
-doc just says to look at the code; which I've been doing.
-
--piet
-
+David
