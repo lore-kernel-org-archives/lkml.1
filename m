@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752370AbYKGI32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbYKGIaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752370AbYKGI32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbYKGI3S
+	id S1753267AbYKGIaQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:30:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYKGI37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:29:18 -0500
-Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:49272 "EHLO
-	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750929AbYKGI3R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:29:17 -0500
-From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-To: "Yang, Libin" <Libin.Yang@amd.com>
-Subject: Re: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
-Date: Fri, 7 Nov 2008 09:27:56 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.27.4r4; KDE/4.1.71; x86_64; ; )
-Cc: "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, "Huang, Shane" <Shane.Huang@amd.com>
-References: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de> <20081030055410.GB19035@kroah.com> <B90463BC30D2E446BA423D888DC85E50E8C0EB@sshaexmb1.amd.com>
-In-Reply-To: <B90463BC30D2E446BA423D888DC85E50E8C0EB@sshaexmb1.amd.com>
+	Fri, 7 Nov 2008 03:29:59 -0500
+Received: from kroah.org ([198.145.64.141]:53636 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751121AbYKGI36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:29:58 -0500
+Date: Fri, 7 Nov 2008 00:24:32 -0800
+From: Greg KH <greg@kroah.com>
+To: "Zhao, Yu" <yu.zhao@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+Message-ID: <20081107082432.GA6601@kroah.com>
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com> <20081106043235.GA30292@kroah.com> <4913AA03.5060807@intel.com> <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com> <20081107061603.GC3860@kroah.com> <4913F34A.8020805@intel.com> <20081107080222.GA6284@kroah.com> <4913F97E.7030408@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811070927.57506.volker.armin.hemmann@tu-clausthal.de>
+In-Reply-To: <4913F97E.7030408@intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-when I load ohci-hcd first and ehci-hcd second and make sure that the usb-port 
-for the mouse does not share its interrupt with the graphic card, everything 
-works (almost) fine. With big transfers from or to a harddisk in an enclosure 
-the mouse is sometimes a bit jerky.
+On Fri, Nov 07, 2008 at 04:17:02PM +0800, Zhao, Yu wrote:
+>> Well, to do it "correctly" you are going to have to tell the driver to
+>> shut itself down, and reinitialize itself.
+>> Turns out, that doesn't really work for disk and network devices without
+>> dropping the connection (well, network devices should be fine probably).
+>> So you just can't do this, sorry.  That's why the BIOS handles all of
+>> these issues in a PCI hotplug system.
+>> How does the hardware people think we are going to handle this in the
+>> OS?  It's not something that any operating system can do, is it part of
+>> the IOV PCI spec somewhere?
+>
+> No, it's not part of the PCI IOV spec.
+>
+> I just want the IOV (and whole PCI subsystem) have more flexibility on 
+> various BIOSes. So can we reconsider about resource rebalance as boot 
+> option, or should we forget about this idea?
 
-Bus 007 Device 001: ID 1d6b:0002
-Bus 006 Device 004: ID 05e3:0702 Genesys Logic, Inc. USB 2.0 IDE Adapter
-Bus 006 Device 002: ID 05e3:0608 Genesys Logic, Inc. USB-2.0 4-Port HUB
-Bus 006 Device 001: ID 1d6b:0002
-Bus 005 Device 001: ID 1d6b:0001
-Bus 004 Device 001: ID 1d6b:0001
-Bus 003 Device 001: ID 1d6b:0001
-Bus 002 Device 001: ID 1d6b:0001
-Bus 001 Device 005: ID 046d:c518 Logitech, Inc. MX610 Laser Cordless Mouse
-Bus 001 Device 001: ID 1d6b:0001
+As you have proposed it, the boot option will not work at all, so I
+think we need to forget about it.  Especially if it is not really
+needed.
 
-bus 1 is ohci.
-bus 6 is ehci.
+thanks,
 
-But if the mouse is connected to a ehci port or the ehci hub, as soon as data 
-transfers from or to an usb connected storage device starts, it will lock up.
+greg k-h
