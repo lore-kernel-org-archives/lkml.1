@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbYKGVFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbYKGVNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754441AbYKGVFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 16:05:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYKGVEx
+	id S1752536AbYKGVNn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 16:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYKGVNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 16:04:53 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47228 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753569AbYKGVEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 16:04:51 -0500
-Date: Fri, 7 Nov 2008 16:04:48 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Howells <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
-       paulus@samba.org, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-In-Reply-To: <20081107205411.GG6917@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811071602160.3711@gandalf.stny.rr.com>
-References: <20081107053349.861709786@polymtl.ca> <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal> <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com> <20081107191833.GA31809@Krystal>
- <1226086322.31966.67.camel@lappy.programming.kicks-ass.net> <20081107200243.GB32761@Krystal> <20081107204546.GA3324@Krystal> <20081107205411.GG6917@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 7 Nov 2008 16:13:34 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:57973 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbYKGVNd (ORCPT
+	<rfc822;Linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 16:13:33 -0500
+Subject: [PATCH][RT] Dereference pointer to cpu id, not to address of CPUID
+From: Sven-Thorsten Dietrich <sven@thebigcorporation.com>
+To: RT Users List <linux-rt-users@vger.kernel.org>
+Cc: LKML <Linux-kernel@vger.kernel.org>, Tony Jones <tonyj@suse.de>
+Content-Type: text/plain
+Organization: The Big Corporation
+Date: Fri, 07 Nov 2008 13:13:27 -0800
+Message-Id: <1226092407.5685.7.camel@dd>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch applies to 2.6.25-rt, 2.6.26-rt and 2.6.27-rt
 
-On Fri, 7 Nov 2008, Paul E. McKenney wrote:
-> > > Would that make more sense ?
-> > > 
-> > 
-> > Oh, actually, I got things reversed in this email : the readl(io_addr)
-> > must be done _after_ the __m_cnt_hi read.
-> > 
-> > Therefore, two consecutive executions would look like :
-> > 
-> > barrier();  /* Make sure the compiler does not reorder __m_cnt_hi and
-> >                previous mmio read. */
-> > read __m_cnt_hi
-> > smp_rmb();  /* Waits for every cached memory reads to complete */
-> 
-> If these are MMIO reads, then you need rmb() rather than smp_rmb(),
-> at least on architectures that can reorder writes (Power, Itanium,
-> and I believe also ARM, ...).
 
-The read is from a clock source. The only writes that are happening is 
-by the clock itself.
+From: Sven-Thorsten Dietrich <sdietrich@suse.de>
+Subject: Dereference pointer to cpu id, when evaluating condition.
 
-On a UP system, is a rmb still needed? That is, can you have two reads on 
-the same CPU from the clock source that will produce a backwards clock? 
-That to me sounds like the clock interface is broken.
+Without dereferencing, the condition always evaluates to true.
 
--- Steve
+Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+---
+ mm/slab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2033,7 +2033,7 @@ slab_destroy(struct kmem_cache *cachep,
+ 	} else {
+ 		kmem_freepages(cachep, addr);
+ 		if (OFF_SLAB(cachep)) {
+-			if (this_cpu)
++			if (*this_cpu)
+ 				__cache_free(cachep->slabp_cache, slabp, this_cpu);
+ 			else
+ 				kmem_cache_free(cachep->slabp_cache, slabp);
+
+
