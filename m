@@ -1,122 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751200AbYKGEhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYKGEhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751200AbYKGEhc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYKGEhU
+	id S1755453AbYKGEhr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKGEhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:37:20 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36186 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYKGEhT (ORCPT
+	Thu, 6 Nov 2008 23:37:23 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:35225 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbYKGEhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:37:19 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20081106164644.GA14012@csn.ul.ie>
-References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081106164644.GA14012@csn.ul.ie>
-Message-Id: <20081107093127.F84A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 6 Nov 2008 23:37:20 -0500
+Cc: Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Message-Id: <2AADE700-38A1-48BC-B586-9962AAC38147@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Zhu Yi <yi.zhu@intel.com>
+In-Reply-To: <1226020422.2604.148.camel@debian.sh.intel.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri,  7 Nov 2008 13:37:14 +0900 (JST)
+Mime-Version: 1.0 (Apple Message framework v929.2)
+Subject: Re: iwlagn: wrong command queue 31, command id 0x0
+Date: Fri, 7 Nov 2008 05:37:18 +0100
+References: <1225944979.3792.3.camel@calx> <1226020422.2604.148.camel@debian.sh.intel.com>
+X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel, Cristoph,
+Hi Yi,
 
-Thank you for interesting comment!
+>> As of 75fa67706cce5272bcfc51ed646f2da21f3bdb6e, I'm seeing this:
+>
+> On which git repo? I couldn't find the commit on either linux-2.6 or
+> wireless-testing/-2.6.
 
+don't bother trying to track down the exact commit. This bug has been  
+introduced sometime between 2.6.26 and 2.6.27 and was originally a BUG  
+that crashed your machine. My last working kernel without this problem  
+was the Ubuntu 8.04 kernel.
 
-> > MIGRATE_RESERVE mean that the page is for emergency.
-> > So it shouldn't be cached in pcp.
-> 
-> It doesn't necessarily mean it's for emergencys. MIGRATE_RESERVE is one
-> or more pageblocks at the beginning of the zone. While it's possible
-> that the minimum page reserve for GFP_ATOMIC is located here, it's not
-> mandatory.
-> 
-> What MIGRATE_RESERVE can help is high-order atomic allocations used by
-> some network drivers (a wireless one is what led to MIGRATE_RESERVE). As
-> they are high-order allocations, they would be returned to the buddy
-> allocator anyway.
+So starting with 2.6.28-rc1, Johannes turned the BUG into a WARN_ON  
+and now we do actually see the issue and the code in question. Check  
+kerneloops.org for reference since I did post all of my warnings there.
 
-yup.
-my patch is meaningless for high order allocation because high order allocation
-don't use pcp.
+Regards
 
-
-> What your patch may help is the situation where the system is under intense
-> memory pressure, is dipping routinely into the lowmem reserves and mixing
-> with high-order atomic allocations. This seems a bit extreme.
-
-not so extreame.
-
-The linux page reclaim can't process in interrupt context.
-Sl network subsystem and driver often use MIGRATE_RESERVE memory although
-system have many reclaimable memory.
-
-At that time, any task in process context can use high order allocation.
-
-
-> > otherwise, the system have unnecessary memory starvation risk
-> > because other cpu can't use this emergency pages.
-> > 
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > CC: Mel Gorman <mel@csn.ul.ie>
-> > CC: Christoph Lameter <cl@linux-foundation.org>
-> > 
-> 
-> This patch seems functionally sound but as Christoph points out, this
-> adds another branch to the fast path. Now, I ran some tests and those that
-> completed didn't show any problems but adding branches in the fast path can
-> eventually lead to hard-to-detect performance problems.
-> 
-> Do you have a situation in mind that this patch fixes up?
-
-Ah, sorry for my description is too poor.
-This isn't real workload issue, it is jsut 
-
-Actually, I plan to rework to pcp because following pcp list searching 
-in fast path is NOT fast.
-
-In general, list searching often cause L1 cache miss, therefore it shouldn't be
-used in fast path.
-
-
-static struct page *buffered_rmqueue(struct zone *preferred_zone,
-                        struct zone *zone, int order, gfp_t gfp_flags)
-{
-(snip)
-                /* Find a page of the appropriate migrate type */
-                if (cold) {
-                        list_for_each_entry_reverse(page, &pcp->list, lru)
-                                if (page_private(page) == migratetype)
-                                        break;
-                } else {
-                        list_for_each_entry(page, &pcp->list, lru)
-                                if (page_private(page) == migratetype)
-                                        break;
-                }
-
-
-Therefore, I'd like to make per migratetype pcp list.
-However, MIGRATETYPE_RESEVE list isn't useful because caller never need reserve type.
-it is only internal attribute.
-
-So I thought "dropping reserve type page in pcp" patch is useful although it is sololy used.
-Then, I posted it sololy for hear other developer opinion.
-
-Actually, current pcp is NOT fast, therefore the discussion of the 
-number of branches isn't meaningful.
-the discussion of the number of branches is only meaningful when the fast path can
-process at N*branches level time, but current pcp is more slow.
-
-
-
+Marcel
 
