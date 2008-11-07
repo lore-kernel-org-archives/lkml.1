@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbYKGU0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbYKGUfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbYKGU0m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 15:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751353AbYKGU0e
+	id S1752707AbYKGUfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 15:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYKGUf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 15:26:34 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39978 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbYKGU0e (ORCPT
+	Fri, 7 Nov 2008 15:35:26 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:19436 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbYKGUfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 15:26:34 -0500
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frank Mayhar <fmayhar@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, roland@redhat.com,
-       adobriyan@gmail.com, akpm@linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1226081448.28191.64.camel@bobble.smo.corp.google.com>
-References: <1224694989.8431.23.camel@oberon>
-	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
-	 <1225219114.24204.37.camel@oberon>
-	 <1225936715.27507.44.camel@bobble.smo.corp.google.com>
-	 <1225969420.7803.4366.camel@twins>
-	 <Pine.LNX.4.64.0811060900450.3595@quilx.com>
-	 <1225984098.7803.4642.camel@twins>
-	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
-	 <1226053744.7803.5851.camel@twins>
-	 <1226081448.28191.64.camel@bobble.smo.corp.google.com>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 21:26:14 +0100
-Message-Id: <1226089574.31966.85.camel@lappy.programming.kicks-ass.net>
+	Fri, 7 Nov 2008 15:35:25 -0500
+Date: Fri, 7 Nov 2008 21:35:13 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Darrick J. Wong" <djwong@us.ibm.com>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH 4/5] adt7473: Check inputs from sysfs writes
+Message-ID: <20081107213513.2f347fca@hyperion.delvare>
+In-Reply-To: <20081107112040.0154e093.akpm@linux-foundation.org>
+References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com>
+	<20081107185641.13022.70557.stgit@elm3a70.beaverton.ibm.com>
+	<20081107112040.0154e093.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Nov 2008 11:20:40 -0800, Andrew Morton wrote:
+> On Fri, 07 Nov 2008 10:56:41 -0800
+> "Darrick J. Wong" <djwong@us.ibm.com> wrote:
+> 
+> > +#define ROUND_DIV(x, divisor)	(((x) + ((divisor) / 2)) / (divisor))
+> 
+> It might make sense to rename this to ROUND_CLOSEST, fix the
+> double-evaluation and whap it into kernel.h?
 
-OK, so how about going about this differently.
+To be consistent with DIV_ROUND_UP, I'd rather name the new function
+DIV_ROUND_CLOSEST. But other than that, yes I agree that making this an
+inline function and moving it to kernel.h would be a good idea. Many
+many hwmon drivers use this and people keep asking about this construct.
 
-How about we group the threads per cpu, and appoint one the cpu-leader
-and collect the per cpu sum in there.
-
-Then, on tick time we sum the cpu-leaders to obtain the total.
-
-This would require finding the cpu-leader for any particular cpu, which
-for example, we could do by maintaining a rb-tree ordered on cpu. If you
-find an entry, its the leader and you store a pointer to it, if its
-empty, insert yourself.
-
-We'd have to update this whenever a task migrates.
-
-When the cpu-leader migrates it can hand off its sum to the cpu-leader
-of the target cpu (assuming there is one, otherwise it will again be
-cpu-leader).
-
-The advantage is that the memory foot-print scales with nr_tasks and the
-runtime cost is min(nr_tasks, nr_cpus) where nr_cpus is limited to the
-cpus the process actually runs on, so this takes full advantage of
-things like cpusets.
-
-
-
+-- 
+Jean Delvare
