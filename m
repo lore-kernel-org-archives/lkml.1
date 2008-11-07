@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbYKGO5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYKGO6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbYKGO5r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:57:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbYKGO5i
+	id S1752641AbYKGO6R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYKGO56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:57:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:37306 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbYKGO5g (ORCPT
+	Fri, 7 Nov 2008 09:57:58 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:5528 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751449AbYKGO55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:57:36 -0500
+	Fri, 7 Nov 2008 09:57:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=k98v2fAi+PgVBDw1jQJ6YgxayEcR0G4787XCiiX11WzecWn9Y3xVKuMSw65oYQngCi
-         6U9ZmTeIv2kr5yhjOGajDCg9q+pu5+Rfwf0yoGlqKmy5UqP/NoLXzADkoXHbGCp/GuLI
-         ylDVQSNBkmol/gbK1jGu7H7vLx6NhNXMHU2T4=
-Message-ID: <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com>
-Date: Fri, 7 Nov 2008 17:57:33 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
-Cc: "Eric Miao" <eric.y.miao@gmail.com>, "Cyril Hrubis" <metan@ucw.cz>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Russell King" <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
-In-Reply-To: <20081107142923.GA1616@ucw.cz>
+        b=p3xzHLrPz9/24dJGX8TlGe8lr1jK99C9nvbLP92J//kEoIUYL01IuHordojY9OWqn0
+         yFkBd8TTz9dpjS7aezXcZeCiM6x4/QVV96wYPHYU24BUmsu1bXMFeuIaXsXp/zVk4olq
+         0HBjEUsMrDMUrOCuiblO0sb1uB576a0+EvMyo=
+Message-ID: <3aaafc130811070657o63894848l3c11989c9b0f2911@mail.gmail.com>
+Date: Fri, 7 Nov 2008 09:57:55 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Henrik Rydberg" <rydberg@euromail.se>
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report protocol
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <49145628.7030804@euromail.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz>
-	 <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com>
-	 <20081105173303.GC2038@elf.ucw.cz>
-	 <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com>
-	 <20081106080416.GA1531@ucw.cz>
-	 <20081106191424.GA2273@atrey.karlin.mff.cuni.cz>
-	 <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
-	 <20081107142923.GA1616@ucw.cz>
+References: <49142351.9080805@euromail.se>
+	 <3aaafc130811070534p54eebeb6q9b57d3e847ed859a@mail.gmail.com>
+	 <49145016.7090206@euromail.se>
+	 <3aaafc130811070636g681accf5qae252679c2edcdb9@mail.gmail.com>
+	 <49145628.7030804@euromail.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/7 Pavel Machek <pavel@suse.cz>:
-> On Fri 2008-11-07 21:23:41, Eric Miao wrote:
->> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
->> Did you guys ever try that?
+On Fri, Nov 7, 2008 at 9:52 AM, Henrik Rydberg <rydberg@euromail.se> wrote:
+>> Have you worked with MPX? Or was a vanilla-X11 driver simple enough?
+>> How does this all get presented to userspace applications? Multiple
+>> mouse inputs or special stuff that applications would need a rewrite
+>> to leverage?
 >
-> I never heard about that patch, do you have it handy?
-
-http://rpsys.net/openzaurus/patches/archive/pxa-linking-bug.patch
-
-I plan to submit a bit modified version of this patch later.
-
+> MPX is about making use of multiple pointers. The MT protocol is about
+> making use of multiple fingers. It can in principle be used as input
+> to MPX applications; I will bring it up with Peter Hutterer. However,
+> the main aim is to bring advanced gestures to the linux desktop.
 >
->                                                                Pavel
->
->> On Fri, Nov 7, 2008 at 3:14 AM, Cyril Hrubis <metan@ucw.cz> wrote:
->> > Hi,
->> >> I do not have serial cable :-(,
->> >
->> > Okay I have one that works for sl5500, it needs external power on
->> > sl-cxxx but it should be easy to fix.
->> >
->> > --
->> > metan
->> >
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+> Henrik
 
-
-
--- 
-With best wishes
-Dmitry
+I think this approach is cleaner than "fooling" userspace into seeing
+a bunch of mice.
