@@ -1,105 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbYKGCMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbYKGCP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbYKGCMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYKGCMl
+	id S1752813AbYKGCP2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:15:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYKGCPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:12:41 -0500
-Received: from main.gmane.org ([80.91.229.2]:38114 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbYKGCMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:12:41 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: kenneth johansson <ken@kenjo.org>
-Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
-	120 seconds"
-Date: Fri, 7 Nov 2008 02:12:23 +0000 (UTC)
-Message-ID: <gf0867$a4d$1@ger.gmane.org>
-References: <20081017123207.GA14979@rabbit.intern.cm-ag>
-	<1224484046.23068.14.camel@localhost.localdomain>
-	<1225539927.2221.3.camel@localhost.localdomain>
-	<1225546878.4390.3.camel@heimdal.trondhjem.org>
-	<1225636847.2221.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 1-1-4-20a.ras.sth.bostream.se
-User-Agent: Pan/0.132 (Waxed in Black)
+	Thu, 6 Nov 2008 21:15:18 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:39120 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbYKGCPQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:15:16 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
+       containers@lists.osdl.org
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
+	<20081106172221.dbeb5b12.akpm@linux-foundation.org>
+Date: Thu, 06 Nov 2008 18:06:46 -0800
+In-Reply-To: <20081106172221.dbeb5b12.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 6 Nov 2008 17:22:21 -0800")
+Message-ID: <m14p2kxpah.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0001]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 1/7] vfs: Fix shrink_submounts
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Nov 2008 14:40:47 +0000, Ian Campbell wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Sat, 2008-11-01 at 09:41 -0400, Trond Myklebust wrote:
->> 
->> 
->> Have you tested with the TCP RST fix yet? It has been merged into
->> mainline, so it should be in the latest 2.6.28-git, but I've attached
->> it so you can apply it to your test kernel...
-> 
-> I wasn't aware of it. I'll give it a go.
-> 
-> Thanks,
-> Ian.
->>
+> OK, so that's a for-2.6.28 bugfix, yes?
+>
+> The other six patches will fall under Alexey's procfs tree.
 
-I think I having the same problem as you. At least I have a gut feeling it's nfs related. 
+Fundamentally they are all bug fixes, but whatever works.
 
-What good and bad versions do you have so far in your bisecting. ??
-
-I see the problem several times a day so it should be possible
-to at least try one or two versions per day.
-
-this is on a 2.6.27.2 client to a 2.6.26.3 server.
---------
-
- sudo grep blocked /var/log/syslog.0 
-Nov  5 02:06:27 duo kernel: [ 5080.947067] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 02:08:40 duo kernel: [ 5214.091071] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 02:10:49 duo kernel: [ 5342.940064] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 02:33:15 duo kernel: [ 6688.338072] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 02:35:44 duo kernel: [ 6837.588072] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 02:38:12 duo kernel: [ 6985.765070] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 02:40:37 duo kernel: [ 7130.720067] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 06:56:00 duo kernel: [22454.090070] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 07:51:38 duo kernel: [25791.279105] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 09:39:33 duo kernel: [32267.016068] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 09:41:55 duo kernel: [32408.750061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 09:44:17 duo kernel: [32550.484061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 09:46:37 duo kernel: [32691.144064] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 16:26:25 duo kernel: [56678.536068] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 16:28:50 duo kernel: [56823.492067] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 16:31:17 duo kernel: [56970.594061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 16:33:44 duo kernel: [57117.697062] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 16:51:04 duo kernel: [58158.153065] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 18:00:39 duo kernel: [62256.625050] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
-Nov  5 18:15:16 duo kernel: [63210.108080] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 18:24:08 duo kernel: [63741.610074] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 19:47:09 duo kernel: [68722.698056] INFO: task hald-addon-stor:7102 blocked for more than 120 seconds.
-Nov  5 19:47:53 duo kernel: [68722.698307] INFO: task hald-addon-stor:7105 blocked for more than 120 seconds.
-Nov  5 19:47:53 duo kernel: [68722.698513] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
-Nov  5 19:47:53 duo kernel: [68755.984030] INFO: task scsi_eh_12:2687 blocked for more than 120 seconds.
-Nov  5 22:20:11 duo kernel: [77904.265068] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 22:23:10 duo kernel: [78083.580065] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 22:46:09 duo kernel: [79462.264081] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  5 23:22:05 duo kernel: [81599.010033] INFO: task scsi_eh_10:2675 blocked for more than 120 seconds.
-Nov  5 23:22:05 duo kernel: [81599.010253] INFO: task hald-addon-stor:7097 blocked for more than 120 seconds.
-Nov  5 23:22:05 duo kernel: [81599.010468] INFO: task hald-addon-stor:7102 blocked for more than 120 seconds.
-Nov  5 23:22:05 duo kernel: [81599.010674] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
-Nov  6 01:46:31 duo kernel: [90209.346061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  6 01:46:31 duo kernel: [90242.632048] INFO: task hald-addon-stor:7102 blocked for more than 120 seconds.
-Nov  6 01:46:31 duo kernel: [90242.632230] INFO: task hald-addon-stor:7105 blocked for more than 120 seconds.
-Nov  6 01:46:31 duo kernel: [90242.632368] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
-Nov  6 01:46:31 duo kernel: [90275.918024] INFO: task scsi_eh_12:2687 blocked for more than 120 seconds.
-Nov  6 02:11:59 duo kernel: [91812.443070] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  6 02:14:12 duo kernel: [91945.587069] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  6 02:16:50 duo kernel: [92103.427069] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
-Nov  6 02:28:26 duo kernel: [92759.483053] INFO: task hald-addon-usb-:7009 blocked for more than 120 seconds.
-Nov  6 02:28:26 duo kernel: [92759.483233] INFO: task hald-addon-stor:7105 blocked for more than 120 seconds.
-Nov  6 02:28:26 duo kernel: [92759.483447] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
-Nov  6 02:28:26 duo kernel: [92792.769034] INFO: task scsi_eh_12:2687 blocked for more than 120 seconds.
-Nov  6 02:58:49 duo kernel: [94622.425059] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Eric
 
