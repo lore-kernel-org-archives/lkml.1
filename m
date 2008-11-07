@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYKGNfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbYKGNkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbYKGNfk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 08:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYKGNfZ
+	id S1753049AbYKGNkX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 08:40:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbYKGNkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 08:35:25 -0500
-Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:4181 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752185AbYKGNfX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 08:35:23 -0500
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pcmcia: minor logging improvement on card detection
-Date: Fri, 7 Nov 2008 14:35:15 +0100
-User-Agent: KMail/1.9.9
-Cc: linux@dominikbrodowski.net, linux-pcmcia@lists.infradead.org
-References: <200811031942.20360.elendil@planet.nl> <200811071419.11050.elendil@planet.nl>
-In-Reply-To: <200811071419.11050.elendil@planet.nl>
+	Fri, 7 Nov 2008 08:40:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55054 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286AbYKGNkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 08:40:08 -0500
+Date: Fri, 7 Nov 2008 08:38:56 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081107133856.GA21884@redhat.com>
+References: <20081106153022.215696930@redhat.com> <4913A9C2.8060904@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811071435.15934.elendil@planet.nl>
-X-OriginalArrivalTime: 07 Nov 2008 13:35:18.0522 (UTC) FILETIME=[ACA515A0:01C940DD]
+In-Reply-To: <4913A9C2.8060904@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frans Pop <elendil@planet.nl>
+On Fri, Nov 07, 2008 at 10:36:50AM +0800, Gui Jianfeng wrote:
+> vgoyal@redhat.com wrote:
+> > Hi,
+> > 
+> > If you are not already tired of so many io controller implementations, here
+> > is another one.
+> > 
+> > This is a very eary very crude implementation to get early feedback to see
+> > if this approach makes any sense or not.
+> > 
+> > This controller is a proportional weight IO controller primarily
+> > based on/inspired by dm-ioband. One of the things I personally found little
+> > odd about dm-ioband was need of a dm-ioband device for every device we want
+> > to control.  I thought that probably we can make this control per request
+> > queue and get rid of device mapper driver. This should make configuration
+> > aspect easy.
+> > 
+> > I have picked up quite some amount of code from dm-ioband especially for
+> > biocgroup implementation.
+> > 
+> > I have done very basic testing and that is running 2-3 dd commands in different
+> > cgroups on x86_64. Wanted to throw out the code early to get some feedback.
+> > 
+> > More details about the design and how to are in documentation patch.
+> > 
+> > Your comments are welcome.
+> 
+>   Which kernel version is this patch set based on?
+> 
 
-pcmcia: minor logging improvement on card detection
-    
-Show for which device a card has been inserted, so instead of:
-   pcmcia_socket pcmcia_socket0: pccard: CardBus card inserted into slot 0
-print:
-   yenta_cardbus 0000:01:0b.0: pccard: CardBus card inserted into slot 0
-    
-This provides a more logical link between previous and following messages.
-    
-Signed-off-by: Frans Pop <elendil@planet.nl>
-CC: Dominik Brodowski <linux@dominikbrodowski.net>
+2.6.27
 
-diff --git a/drivers/pcmcia/cs.c b/drivers/pcmcia/cs.c
-index c68c5d3..c249776 100644
---- a/drivers/pcmcia/cs.c
-+++ b/drivers/pcmcia/cs.c
-@@ -510,7 +510,7 @@ static int socket_insert(struct pcmcia_socket *skt)
- 	if (ret == 0) {
- 		skt->state |= SOCKET_PRESENT;
- 
--		dev_printk(KERN_NOTICE, &skt->dev,
-+		dev_printk(KERN_NOTICE, &skt->cb_dev->dev,
- 			   "pccard: %s card inserted into slot %d\n",
- 			   (skt->state & SOCKET_CARDBUS) ? "CardBus" : "PCMCIA",
- 			   skt->sock);
+Thanks
+Vivek
