@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752244AbYKGCWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbYKGCaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752244AbYKGCWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:22:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbYKGCWZ
+	id S1752770AbYKGCaL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYKGC35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:22:25 -0500
-Received: from shards.monkeyblade.net ([198.137.202.13]:60583 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbYKGCWY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:22:24 -0500
-X-Greylist: delayed 2320 seconds by postgrey-1.27 at vger.kernel.org; Thu, 06 Nov 2008 21:22:24 EST
-Message-ID: <49139D4C.2010004@kernel.org>
-Date: Thu, 06 Nov 2008 17:43:40 -0800
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Thu, 6 Nov 2008 21:29:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37024 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbYKGC35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:29:57 -0500
+Message-ID: <4913A7B2.9000609@redhat.com>
+Date: Fri, 07 Nov 2008 11:28:02 +0900
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: users@linux.kernel.org, git@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
-Subject: [KORG] Master backend downtime - hardware swap
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: h-shimamoto@ct.jp.nec.com, ananth@in.ibm.com, laijs@cn.fujitsu.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kprobes: bugfix: try_module_get even if calling_mod is
+ NULL
+References: <490FE405.1000105@cn.fujitsu.com>	<4910F697.2050203@redhat.com>	<4910FB3D.4020805@cn.fujitsu.com>	<491212C0.4030900@redhat.com>	<4912222F.9040605@ct.jp.nec.com>	<49122745.4090004@redhat.com>	<49123521.6020608@redhat.com> <20081106170023.d5349c42.akpm@linux-foundation.org>
+In-Reply-To: <20081106170023.d5349c42.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Thu, 06 Nov 2008 17:43:39 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Andrew Morton wrote:
+> I do not understand this description "Get probed module even if the
+> caller is in the kernel core code".
+> 
+> What bug is being fixed here?  What is the kernel behaviour before and
+> after the patch?
 
-Hey everyone,
+When someone called register_*probe() from kernel-core code(not from
+module) and that probes a kernel module, users can remove the probed
+module because kprobe doesn't increment reference counter of the module.
+(on the other hand, if the kernel-module calls register_*probe,
+kprobe increments refcount of the probed module.)
 
-Just a heads up to everyone, I'm going to be taking the master (hera)
-backend server offline for a couple of hours tomorrow (Friday, CST)
-afternoon.  Downtime is going to get used for finishing flipping over
-the master to new hardware, which was very generously donated by
-Hewlett-Packard.  We are moving up to a new DL380 G5.  That said I will
-need time to shut everything down, get a current rsync from the old
-hardware to the new hardware and confirm that serves are restored on the
-new machine.
+Currently, we have no register_*probe() calling from kernel-core(except
+smoke-test, but the smoke-test doesn't probe module), so there is no
+real bugs. But the logic is wrong(or not fair) and it can causes a
+problem when someone might want to probe module from kernel.
 
-I'm expecting the entire downtime to only take a couple of hours, but
-since we all know things will take longer I'm going to declare the
-window from 1200 CST (1800 UTC Friday Nov 7th).  Expect the window to
-run through 2000 UTC, and if things are up and running before that I'll
-let people know.  Otherwise if there are problems you'll see another
-e-mail from me.
+After this patch is applied, even if someone put register_*probe() call
+in the kernel-core code, it increments the reference counter of the
+probed module, and it prevents user to remove the module until stopping
+probing it.
 
-If you have questions, comments, concerns, etc - please send them to me
-CC ftpadmin@kernel.org
+> Was the bug present in 2.6.27, 2.6.26 etc?  Or was it a post-2.6.28
+> regression?
 
-- - John 'Warthog9' Hawley
-Chief Kernel.org Administrator
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
+Hmm, it might be an enhancement, because currently the kernel doesn't
+have real bugs.
 
-iD8DBQFJE51L/E3kyWU9dicRAs8/AJ9DVJjQxcOt9CUVsQYVM6elJkTr2gCePLJ8
-+UuEcZdwUpAICFijAXp9ae4=
-=c6vs
------END PGP SIGNATURE-----
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
