@@ -1,83 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYKGUEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752580AbYKGUH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752608AbYKGUEO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 15:04:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYKGUD5
+	id S1752580AbYKGUH5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 15:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYKGUHs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 15:03:57 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:54701 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751324AbYKGUD4 (ORCPT
+	Fri, 7 Nov 2008 15:07:48 -0500
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:58765 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750976AbYKGUHr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 15:03:56 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Fri, 07 Nov 2008 15:03:49 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Fri, 7 Nov 2008 15:07:47 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtcEALIuFElMQWxa/2dsb2JhbACBdshOg1Y
+Date: Fri, 7 Nov 2008 15:02:43 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Steven Rostedt <rostedt@goodmis.org>, David Howells <dhowells@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
+       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
+       paulus@samba.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-arch@vger.kernel.org
 Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-In-reply-to: <20081107092115.7c3c4a49.akpm@linux-foundation.org>
-Message-id: <alpine.LFD.2.00.0811071458560.13034@xanadu.home>
-References: <20081107003816.9b0f947a.akpm@linux-foundation.org>
- <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca>
- <20081106220530.5b0e3a96.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
- <25363.1226056819@redhat.com>
- <alpine.LFD.2.00.0811070952150.13034@xanadu.home>
- <20081107075003.fa93ccf4.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0811071129440.13034@xanadu.home>
- <20081107092115.7c3c4a49.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Message-ID: <20081107200243.GB32761@Krystal>
+References: <20081107053349.861709786@polymtl.ca> <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal> <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com> <20081107191833.GA31809@Krystal> <1226086322.31966.67.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1226086322.31966.67.camel@lappy.programming.kicks-ass.net>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:39:11 up 156 days, 19 min,  6 users,  load average: 0.53,
+	1.10, 1.24
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008, Andrew Morton wrote:
-
-> On Fri, 07 Nov 2008 11:47:47 -0500 (EST) Nicolas Pitre <nico@cam.org> wrote:
-> 
-> > > btw, do you know how damned irritating and frustrating it is for a code
-> > > reviewer to have his comments deliberately ignored and deleted in
-> > > replies?
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Fri, 2008-11-07 at 14:18 -0500, Mathieu Desnoyers wrote:
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > 
+> > > On Fri, 7 Nov 2008, Mathieu Desnoyers wrote:
+> > > > 
+> > > >   __m_cnt_hi
+> > > >  is read before
+> > > >   mmio cnt_lo read
+> > > > 
+> > > > for the detailed reasons explained in my previous discussion with
+> > > > Nicolas here :
+> > > > http://lkml.org/lkml/2008/10/21/1
+> > > > 
+> > > > I use smp_rmb() to do this on SMP systems (hrm, actually, a rmb() could
+> > > > be required so it works also on UP systems safely wrt interrupts).
+> > > 
+> > > smp_rmb turns into a compiler barrier on UP and should prevent the below
+> > > description.
+> > > 
 > > 
-> > Do you know how irritating and frustrating it is when reviewers don't 
-> > care reading the damn comments along with the code?
+> > Ah, right, preserving program order on UP should be enough. smp_rmb()
+> > then.
 > 
-> As you still seek to ignore it, I shall repeat my earlier question. 
-> Please do not delete it again.
 > 
->    It apparently tries to avoid races via ordering tricks, as long
->    as it is called with sufficient frequency.  But nothing guarantees
->    that it _is_ called sufficiently frequently?
+> I'm not quite sure I'm following here. Is this a global hardware clock
+> you're reading from multiple cpus, if so, are you sure smp_rmb() will
+> indeed be enough to sync the read?
 > 
-> Things like tickless kernels and SCHED_RR can surely cause
-> sched_clock() to not be called for arbitrary periods.
+> (In which case the smp_wmb() is provided by the hardware increasing the
+> clock?)
+> 
+> If these are per-cpu clocks then even in the smp case we'd be good with
+> a plain barrier() because you'd only ever want to read your own cpu's
+> clock (and have a separate __m_cnt_hi per cpu).
+> 
+> Or am I totally missing out on something?
+> 
 
-On the machines this was initially written for, the critical period is 
-in the order of minutes.  And if you're afraid you might lack enough 
-scheduling activities for that long, you simply have to keep the 
-algorithm "warm" with a simple kernel timer which only purpose is to 
-ensure it is called often enough.
+This is the global hardware clock scenario.
 
-> Userspace cli() will definitely do this, but it is expected to break
-> stuff and is not as legitiate a thing to do.
+We have to order an uncached mmio read wrt a cached variable read/write.
+The uncached mmio read vs smp_rmb() barrier (e.g. lfence instruction)
+should be insured by program order because the read will skip the cache
+and go directly to the bus. Luckily we only do a mmio read and no mmio
+write, so mmiowb() is not required.
 
-Why do you bring it on then?
+You might be right in that it could require more barriers.
 
-> I'm just giving up on the tastefulness issue.
+Given adequate program order, we can assume the the mmio read will
+happen "on the spot", but that the cached read may be delayed.
 
-Taste is a pretty subjective matter.
+What we want is :
 
+readl(io_addr)
+read __m_cnt_hi
+write __m_cnt_hi
 
-Nicolas
+With the two reads in the correct order. If we consider two consecutive
+executions on the same CPU :
+
+readl(io_addr)
+read __m_cnt_hi
+write __m_cnt_hi
+
+readl(io_addr)
+read __m_cnt_hi
+write __m_cnt_hi
+
+We might have to order the read/write pair wrt the following readl, such
+as :
+
+smp_rmb();  /* Waits for every cached memory reads to complete */
+readl(io_addr);
+barrier();  /* Make sure the compiler leaves mmio read before cached read */
+read __m_cnt_hi
+write __m_cnt_hi
+
+smp_rmb();  /* Waits for every cached memory reads to complete */
+readl(io_addr)
+barrier();  /* Make sure the compiler leaves mmio read before cached read */
+read __m_cnt_hi
+write __m_cnt_hi
+
+Would that make more sense ?
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
