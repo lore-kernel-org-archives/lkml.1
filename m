@@ -1,50 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYKGEhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYKGEiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbYKGEhr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:37:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKGEhX
+	id S1755391AbYKGEiX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbYKGEiB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:37:23 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:35225 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083AbYKGEhU (ORCPT
+	Thu, 6 Nov 2008 23:38:01 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:46503 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbYKGEiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:37:20 -0500
-Cc: Matt Mackall <mpm@selenic.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Message-Id: <2AADE700-38A1-48BC-B586-9962AAC38147@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Zhu Yi <yi.zhu@intel.com>
-In-Reply-To: <1226020422.2604.148.camel@debian.sh.intel.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: iwlagn: wrong command queue 31, command id 0x0
-Date: Fri, 7 Nov 2008 05:37:18 +0100
-References: <1225944979.3792.3.camel@calx> <1226020422.2604.148.camel@debian.sh.intel.com>
-X-Mailer: Apple Mail (2.929.2)
+	Thu, 6 Nov 2008 23:38:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wwEGrrgur95zn8iLYcQym4VSanWe/B9Z1c5POA2n3seZCShrDE8Ti2ppbht//85vWp
+         SmqCcCsd87jFiWJ66BA5L8w4Q/yYCEH0KdN4uo+0cntJJ5cvU378+gxgQ8Mf0fytdPGa
+         XSfx2H2ewblRjjBA6v19+RCCRsYtURykW0+LY=
+Date: Fri, 7 Nov 2008 07:41:18 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task
+	directories
+Message-ID: <20081107044118.GA21330@x200.localdomain>
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org> <m1abcd2kqk.fsf@frodo.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1abcd2kqk.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Yi,
+On Thu, Nov 06, 2008 at 02:48:35AM -0800, Eric W. Biederman wrote:
+> --- a/fs/proc/Makefile
+> +++ b/fs/proc/Makefile
+> @@ -18,6 +18,7 @@ proc-y	+= meminfo.o
+>  proc-y	+= stat.o
+>  proc-y	+= uptime.o
+>  proc-y	+= version.o
+> +proc-y	+= automount.o
+>  proc-$(CONFIG_PROC_SYSCTL)	+= proc_sysctl.o
+>  proc-$(CONFIG_NET)		+= proc_net.o
+>  proc-$(CONFIG_PROC_KCORE)	+= kcore.o
 
->> As of 75fa67706cce5272bcfc51ed646f2da21f3bdb6e, I'm seeing this:
->
-> On which git repo? I couldn't find the commit on either linux-2.6 or
-> wireless-testing/-2.6.
+> --- a/include/linux/proc_fs.h
+> +++ b/include/linux/proc_fs.h
+> @@ -101,6 +101,7 @@ extern spinlock_t proc_subdir_lock;
+>  
+>  extern void proc_root_init(void);
+>  
+> +void proc_shrink_automounts(void);
+>  void proc_flush_task(struct task_struct *task);
+>  struct dentry *proc_pid_lookup(struct inode *dir, struct dentry * dentry, struct nameidata *);
+>  int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir);
+> diff --git a/kernel/exit.c b/kernel/exit.c
+> index 80137a5..8a8badb 100644
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -161,6 +161,7 @@ void release_task(struct task_struct * p)
+>  repeat:
+>  	tracehook_prepare_release_task(p);
+>  	atomic_dec(&p->user->processes);
+> +	proc_shrink_automounts();
 
-don't bother trying to track down the exact commit. This bug has been  
-introduced sometime between 2.6.26 and 2.6.27 and was originally a BUG  
-that crashed your machine. My last working kernel without this problem  
-was the Ubuntu 8.04 kernel.
-
-So starting with 2.6.28-rc1, Johannes turned the BUG into a WARN_ON  
-and now we do actually see the issue and the code in question. Check  
-kerneloops.org for reference since I did post all of my warnings there.
-
-Regards
-
-Marcel
-
+This, of course, won't compile when PROC_FS=n.
