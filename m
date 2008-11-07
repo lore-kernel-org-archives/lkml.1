@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYKGCAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYKGCF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbYKGCAw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:00:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYKGCAm
+	id S1753310AbYKGCF1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbYKGCFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:00:42 -0500
-Received: from kroah.org ([198.145.64.141]:51920 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750894AbYKGCAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:00:41 -0500
-Date: Thu, 6 Nov 2008 17:58:44 -0800
-From: Greg KH <greg@kroah.com>
-To: H L <swdevyid@yahoo.com>
-Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
-       linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
-Subject: Re: git repository for SR-IOV development?
-Message-ID: <20081107015844.GA11884@kroah.com>
-References: <20081106165914.GA13476@kroah.com> <104014.9320.qm@web45110.mail.sp1.yahoo.com>
+	Thu, 6 Nov 2008 21:05:16 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:34365 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbYKGCFO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:05:14 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
+       containers@lists.osdl.org
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
+	<m1abcd2kqk.fsf@frodo.ebiederm.org>
+	<20081106172521.91061dcf.akpm@linux-foundation.org>
+Date: Thu, 06 Nov 2008 18:02:24 -0800
+In-Reply-To: <20081106172521.91061dcf.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Thu, 6 Nov 2008 17:25:21 -0800")
+Message-ID: <m1fxm4xphr.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <104014.9320.qm@web45110.mail.sp1.yahoo.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task directories
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 11:58:25AM -0800, H L wrote:
-> --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
-> 
-> > On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
-> > > 
-> > > Has anyone initiated or given consideration to the
-> > creation of a git
-> > > repository (say, on kernel.org) for SR-IOV
-> > development?
-> > 
-> > Why?  It's only a few patches, right?  Why would it
-> > need a whole new git
-> > tree?
-> 
-> 
-> So as to minimize the time and effort patching a kernel, especially if
-> the tree (and/or hash level) against which the patches were created
-> fails to be specified on a mailing-list.  Plus, there appears to be
-> questions raised on how, precisely, the implementation should
-> ultimately be modeled and especially given that, who knows at this
-> point what number of patches will ultimately be submitted?  I know
-> I've built the "7-patch" one (painfully, by the way), and I'm aware
-> there's another 15-patch set out there which I've not yet examined.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-It's a mere 7 or 15 patches, you don't need a whole git tree for
-something small like that.
+> On Thu, 06 Nov 2008 02:48:35 -0800
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> This is a genearl mechanism that is capable of removing
+>> any unused mounts on /proc in any directory.  As we flush
+>> the mounts when a processes dies this mechanism is tailored
+>> for flushing mounts in the per task and per task group
+>> directories.
+>
+> What I'm missing here is any sense of what these patches are for,
+> where they're headed, what the big picture is, etc?
 
-Especially as there only seems to be one developer doing real work...
+Sorry.
 
-thanks,
+> My vague guess is that perhaps it has something to do with mounting
+> procfs multiple times in separate containers.  How did I do?
 
-greg k-h
+The big picture is that right now /proc/<pid>/net/stat
+is a directory that is hard linked in different locations.
+
+Which means you can deadlock rename at the vfs level
+(despite the fact that proc doesn't support rename).
+
+So this patchset splits /proc/net out into it's own filesystem
+so we don't have multiple hard links.
+
+It uses the vfs level automounts  to preserve backwards compatibility
+so user space does not need to explicitly mount /proc/<pid>/net.
+
+When Al noticed the problem there was some security drama, and
+people were privately cc'd etc.  And however it works I am incompetent
+at getting patches merged in that kind of environment.  So these
+patches have languished since the middle of September.
+
+On one level these patches constitute a bug fix for the bug
+of having multiple hard links in /proc/net.  At another level
+these patches are a clean up and a nice to have feature.  Allowing
+a network namespace to be monitored in the weird interval between when
+the last processes goes away and when the network namespace is destroyed.
+Because you can mount /proc/net independently.
+
+Eric
+
