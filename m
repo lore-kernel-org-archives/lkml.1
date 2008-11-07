@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbYKGFQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYKGFTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbYKGFQI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 00:16:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYKGFPz
+	id S1752420AbYKGFTP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 00:19:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYKGFS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 00:15:55 -0500
-Received: from mail172.messagelabs.com ([216.82.254.3]:38350 "EHLO
-	mail172.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbYKGFPy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 00:15:54 -0500
-X-VirusChecked: Checked
-X-Env-Sender: buddhike.desilva@readify.net
-X-Msg-Ref: server-11.tower-172.messagelabs.com!1226034949!211803!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [203.89.209.186]
-From: Buddhike De Silva <buddhike.desilva@readify.net>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 7 Nov 2008 16:15:36 +1100
-Subject: Compiling a small kernel on Ubuntu
-Thread-Topic: Compiling a small kernel on Ubuntu
-Thread-Index: AclAl94HHS51mShqRAqDMYWet85hFw==
-Message-ID: <B635664A870E3E409144F6DDD84ABA3C3842945EE2@rpmail01.solar.system>
-Accept-Language: en-US, en-AU
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US, en-AU
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 7 Nov 2008 00:18:58 -0500
+Received: from mga09.intel.com ([134.134.136.24]:6417 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750724AbYKGFS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 00:18:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,562,1220252400"; 
+   d="scan'208";a="460308923"
+Message-ID: <4913CFBC.4040203@intel.com>
+Date: Fri, 07 Nov 2008 13:18:52 +0800
+From: "Zhao, Yu" <yu.zhao@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081106044828.GA30417@kroah.com>
+In-Reply-To: <20081106044828.GA30417@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Everyone,
+Greg KH wrote:
+> On Wed, Oct 22, 2008 at 04:38:09PM +0800, Yu Zhao wrote:
+>> Greetings,
+>>
+>> Following patches are intended to support SR-IOV capability in the
+>> Linux kernel. With these patches, people can turn a PCI device with
+>> the capability into multiple ones from software perspective, which
+>> will benefit KVM and achieve other purposes such as QoS, security,
+>> and etc.
+> 
+> Is there any actual users of this API around yet?  How was it tested as
+> there is no hardware to test on?  Which drivers are going to have to be
+> rewritten to take advantage of this new interface?
 
-I'm trying to learn how linux scheduler is implemented. As a result, I wanted to compile and run linux kernel from its source code. That way I can assure that I have a working base to play around. I started by following this article:
-http://www.digitalhermit.com/linux/Kernel-Build-HOWTO.html
+Yes, the API is used by Intel, HP, NextIO and some other anonymous 
+companies as they rise questions and send me feedback. I haven't seen 
+their works but I guess some of drivers using SR-IOV API are going to be 
+released soon.
 
-I managed to complete the given instructions and change Grub to display a new entry to select the newly compiled kernel. However, it falls over while trying to load (unable to handle kernel paging request). My gut feeling says I've missed something in the kernel configuration step. Can someone please tell me the basic set of options required for a kernel to get the following system up and running?
+My test was done with Intel 82576 Gigabit Ethernet Controller. The 
+product brief is at 
+http://download.intel.com/design/network/ProdBrf/320025.pdf and the spec 
+is available at 
+http://download.intel.com/design/network/datashts/82576_Datasheet_v2p1.pdf
 
-Machine: IBM thinkpad t42
-CPU:  Intel Centrino Mobile 32bit
-RAM: 1 GB
-Hard Disk: 40GB IDE
-
-Also is there a guide for kernel debugging? Thanks a lot in advance.
-
-Cheers,
-Buddhike
+Regards,
+Yu
