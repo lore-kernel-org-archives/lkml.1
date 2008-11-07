@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbYKGQWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbYKGQ1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754019AbYKGQWk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 11:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbYKGQWa
+	id S1753832AbYKGQ1m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 11:27:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYKGQ1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 11:22:30 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60382 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbYKGQW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 11:22:29 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081107075003.fa93ccf4.akpm@linux-foundation.org>
-References: <20081107075003.fa93ccf4.akpm@linux-foundation.org> <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <25363.1226056819@redhat.com> <alpine.LFD.2.00.0811070952150.13034@xanadu.home> 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Nicolas Pitre <nico@cam.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Date: Fri, 07 Nov 2008 16:21:55 +0000
-Message-ID: <8189.1226074915@redhat.com>
+	Fri, 7 Nov 2008 11:27:33 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:24561 "EHLO
+	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbYKGQ1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 11:27:32 -0500
+X-BigFish: VPS-55(z21eWz1432R62a3L98dR936eQ4015M1805Mzzzzz32i6bh43j66h)
+X-Spam-TCS-SCL: 5:0
+X-WSS-ID: 0K9Z1PF-01-18P-01
+Date: Fri, 7 Nov 2008 17:26:53 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
+Message-ID: <20081107162651.GP9785@erda.amd.com>
+References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com> <49130694.7000007@cosmosbay.com> <20081107130249.GN29626@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20081107130249.GN29626@one.firstfloor.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 07 Nov 2008 16:27:18.0249 (UTC) FILETIME=[B3AE7590:01C940F5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On 07.11.08 14:02:49, Andi Kleen wrote:
+> 
+> Can you please test this patch and see if it solves the problem?
+> 
+> Thanks,
+> -Andi
+> 
+> ---
+> 
+> oprofile: Fix p6 counter overflow check
+> 
+> Fix the counter overflow check for CPUs with counter width > 32
+> 
+> I had a similar change in a different patch that I didn't submit
+> and I didn't notice the problem earlier because it was always
+> tested together.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-> If gcc did that then it would need to generate static instances of
-> inlined functions within individual compilation units.  It would be a
-> disaster for the kernel.  For a start, functions which are "inlined" in kernel
-> modules wouldn't be able to access their static storage and modprobing
-> them would fail.
+Andi,
 
-Do you expect a static inline function that lives in a header file and that
-has a static variable in it to share that static variable over all instances
-of that function in a program?  Or do you expect the static variable to be
-limited at the file level?  Or just at the invocation level?
+your patch fixes the initial bug that stops sampling immediately after
+starting. The issue Eric mentions seems to be a different problem. I
+am also not able to reproduce this. Your patch on top of rc3 continues
+sampling at least for several minutes.
 
-> Does mn10300's get_cycles() really count backwards?
+I will apply your fix.
 
-Yes, because the value is generated by a pair of cascaded 16-bit hardware
-down-counters.
+Thanks Andi,
 
-> The first two callsites I looked at (crypto/tcrypt.c and fs/ext4/mballoc.c)
-> assume that it is an upcounter.
+-Robert
 
-Hmmm...  I didn't occur to me that get_cycles() was available for use outside
-of arch code.  Possibly it wasn't so used when I first came up with the code.
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-I should probably make it count the other way.
-
-David
