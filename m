@@ -1,110 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbYKGLc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYKGLd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbYKGLc2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYKGLcU
+	id S1754855AbYKGLd3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:33:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYKGLdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:32:20 -0500
-Received: from ozlabs.org ([203.10.76.45]:40261 "EHLO ozlabs.org"
+	Fri, 7 Nov 2008 06:33:20 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:37953 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750793AbYKGLcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:32:19 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
-Date: Fri, 7 Nov 2008 22:32:02 +1100
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Mike Travis <travis@sgi.com>, linux-kernel@vger.kernel.org
-References: <20081029152849.3883d072.sfr@canb.auug.org.au> <20081107084016.GF4435@elte.hu> <20081107005229.53d6f2e3.akpm@linux-foundation.org>
-In-Reply-To: <20081107005229.53d6f2e3.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751374AbYKGLdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:33:19 -0500
+Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: "Phillip O'Donnell" <phillip.odonnell@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Oskar Liljeblad <oskar@osk.mine.nu>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4908E5B6.1080703@redhat.com>
+References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
+	 <49079E09.20703@shaw.ca> <20081029185856.GA8152@osk.mine.nu>
+	 <20081029201724.0a7d736e@lxorguk.ukuu.org.uk> <4908C62E.5070307@redhat.com>
+	 <7a9b5c320810291352k5db86a4eg4e03fb09317de459@mail.gmail.com>
+	 <4908E5B6.1080703@redhat.com>
+Content-Type: text/plain
+Date: Fri, 07 Nov 2008 12:33:17 +0100
+Message-Id: <1226057597.17253.98.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811072232.03323.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 07 November 2008 19:52:29 Andrew Morton wrote:
-> So I can happily compile and run
->
-> 	cpumask_first("hello, world");
->
-> with CONFIG_SMP=n?
+On Wed, 2008-10-29 at 18:37 -0400, Ric Wheeler wrote:
+> Phillip O'Donnell wrote:
+<snip>
+> I am just going based on what I read at the Seagate customer site - it 
+> looks like the hang was during the processing of the ATA_CACHE_FLUSH_EXT 
+> command.
+> 
+> New drives are routinely buggy to some degree, especially ones that jump 
+> up in capacity :-)  Seagate has a well earned reputation for quality and 
+> I will be surprised if they don't fix this issue soon,
 
-Good point.  It was based on the existing "first_cpu", but it's not a practice
-we should encourage.
+Is there any new information on this? so far the only thing i can find
+seems to be people reporting the issue, but no word from seagate..
 
-Hmm, the implementation of these UP versions is wrong in corner cases, too. 
-Obviously it doesn't currently matter the way they are used, but a nasty trap
-for the future.
-
-Here's the addition, I've queued it for linux-next (which will next come out
-after the weekend).
-
-diff -u b/include/linux/cpumask.h b/include/linux/cpumask.h
---- b/include/linux/cpumask.h	Fri Nov 07 00:15:12 2008 +1100
-+++ b/include/linux/cpumask.h	Fri Nov 07 22:28:33 2008 +1100
-@@ -564,12 +564,36 @@
- }
- 
- #if NR_CPUS == 1
--/* Uniprocesor. */
--#define cpumask_first(src)		({ (void)(src); 0; })
--#define cpumask_next(n, src)		({ (void)(src); 1; })
--#define cpumask_next_zero(n, src)	({ (void)(src); 1; })
--#define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
--#define cpumask_any_but(mask, cpu)	({ (void)(mask); (void)(cpu); 0; })
-+/* Uniprocessor.  Assume all masks are "1". */
-+static inline unsigned int cpumask_first(const struct cpumask *srcp)
-+{
-+	return 0;
-+}
-+
-+/* Valid inputs for n are -1 and 0. */
-+static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
-+{
-+	return n+1;
-+}
-+
-+static inline unsigned int cpumask_next_zero(int n, const struct cpumask *srcp)
-+{
-+	return n+1;
-+}
-+
-+static inline unsigned int cpumask_next_and(int n,
-+					    const struct cpumask *srcp,
-+					    const struct cpumask *andp)
-+{
-+	return n+1;
-+}
-+
-+/* cpu must be a valid cpu, ie 0, so there's no other choice. */
-+static inline unsigned int cpumask_any_but(const struct cpumask *mask,
-+					   unsigned int cpu)
-+{
-+	return 1;
-+}
- 
- #define for_each_cpu(cpu, mask)			\
- 	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-diff -u b/lib/cpumask.c b/lib/cpumask.c
---- b/lib/cpumask.c	Fri Nov 07 00:15:12 2008 +1100
-+++ b/lib/cpumask.c	Fri Nov 07 22:28:33 2008 +1100
-@@ -67,6 +67,7 @@
- {
- 	unsigned int i;
- 
-+	cpumask_check(cpu);
- 	for_each_cpu(i, mask)
- 		if (i != cpu)
- 			break;
-
-
+> 
+> Ric
+> 
+> >   
+> >> I suspect that the drive is simply choking on the barrier related cache
+> >> flushing that we do - that seemed to be the MacOS error as well. The windows
+> >> comment suggested that windows had an hba/driver bug (most likely unrelated
+> >> to this).
+> >>
+> >> If you want to avoid the issue until they fix the drive, you could run fast
+> >> and dangerous (mount without barriers on) or slow and safe (disable the
+> >> write cache).
+> >>     
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
