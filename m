@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYKGWJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbYKGWMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbYKGWJL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 17:09:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbYKGWI6
+	id S1752809AbYKGWMk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 17:12:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbYKGWM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 17:08:58 -0500
-Received: from xenotime.net ([72.52.64.118]:37165 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751959AbYKGWI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 17:08:57 -0500
-Date: Fri, 7 Nov 2008 14:08:23 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>,
-       Marco Stornelli <marco.stornelli@gmail.com>,
-       Carsten Otte <cotte@de.ibm.com>
-Subject: [PATCH] DOC: update xip method info
-Message-Id: <20081107140823.6361f21e.rdunlap@xenotime.net>
-Organization: YPO4
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 17:12:28 -0500
+Received: from kroah.org ([198.145.64.141]:46577 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752072AbYKGWM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 17:12:28 -0500
+Subject: patch acpi-dock-avoid-check-_sta-method.patch added to 2.6.26-stable tree
+To: shaohua.li@intel.com, gregkh@suse.de, len.brown@intel.com,
+       linux-kernel@vger.kernel.org
+Cc: <stable@kernel.org>, <stable-commits@vger.kernel.org>
+From: <gregkh@suse.de>
+Date: Fri, 07 Nov 2008 14:11:22 -0800
+In-Reply-To: <alpine.LFD.2.00.0811061417380.3106@localhost.localdomain>
+Message-Id: <20081107221227.6E9C84903A@coco.kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marco Stornelli <marco.stornelli@gmail.com>
 
-xip documentation updated:
-- change "get_xip_page" to "get_xip_mem";
-- explain changed function parameters
+This is a note to let you know that we have just queued up the patch titled
 
-Signed-off-by: Marco Stornelli <marco.stornelli@gmail.com>
-cc: Carsten Otte <cotte@de.ibm.com>
+    Subject: ACPI: dock: avoid check _STA method
+
+to the 2.6.26-stable tree.  Its filename is
+
+    acpi-dock-avoid-check-_sta-method.patch
+
+A git repo of this tree can be found at 
+    http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+
+
+>From lenb@kernel.org  Fri Nov  7 14:08:55 2008
+From: Shaohua Li <shaohua.li@intel.com>
+Date: Thu, 06 Nov 2008 14:18:55 -0500 (EST)
+Subject: ACPI: dock: avoid check _STA method
+To: stable@kernel.org
+Cc: linux-acpi@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shaohua Li <shaohua.li@intel.com>
+Message-ID: <alpine.LFD.2.00.0811061417380.3106@localhost.localdomain>
+
+From: Shaohua Li <shaohua.li@intel.com>
+
+commit 8b59560a3baf2e7c24e0fb92ea5d09eca92805db upstream.
+
+ACPI: dock: avoid check _STA method
+
+In some BIOSes, every _STA method call will send a notification again,
+this cause freeze. And in some BIOSes, it appears _STA should be called
+after _DCK. This tries to avoid calls _STA, and still keep the device
+present check.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10431
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- Documentation/filesystems/xip.txt |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/acpi/dock.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- linux-next-20081107.orig/Documentation/filesystems/xip.txt
-+++ linux-next-20081107/Documentation/filesystems/xip.txt
-@@ -39,10 +39,11 @@ The block device operation is optional, 
- today:
- - dcssblk: s390 dcss block device driver
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -599,14 +599,17 @@ static int handle_eject_request(struct d
+ static void dock_notify(acpi_handle handle, u32 event, void *data)
+ {
+ 	struct dock_station *ds = data;
++	struct acpi_device *tmp;
  
--An address space operation named get_xip_page is used to retrieve reference
--to a struct page. To address the target page, a reference to an address_space,
--and a sector number is provided. A 3rd argument indicates whether the
--function should allocate blocks if needed.
-+An address space operation named get_xip_mem is used to retrieve references
-+to a page frame number and a kernel address. To obtain these values a reference
-+to an address_space is provided. This function assigns values to the kmem and
-+pfn parameters. The third argument indicates whether the function should allocate
-+blocks if needed.
- 
- This address space operation is mutually exclusive with readpage&writepage that
- do page cache read/write operations.
+ 	switch (event) {
+ 	case ACPI_NOTIFY_BUS_CHECK:
+-		if (!dock_in_progress(ds) && dock_present(ds)) {
++		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
++		   &tmp)) {
+ 			begin_dock(ds);
+ 			dock(ds);
+ 			if (!dock_present(ds)) {
+ 				printk(KERN_ERR PREFIX "Unable to dock!\n");
++				complete_dock(ds);
+ 				break;
+ 			}
+ 			atomic_notifier_call_chain(&dock_notifier_list,
+
+
+Patches currently in stable-queue which might be from shaohua.li@intel.com are
+
+queue-2.6.26/acpi-dock-avoid-check-_sta-method.patch
