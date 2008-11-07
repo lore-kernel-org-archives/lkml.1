@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYKGIAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYKGIC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640AbYKGIAb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYKGIAW
+	id S1753214AbYKGIC7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:02:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbYKGICu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:00:22 -0500
-Received: from hope.ime.usp.br ([143.107.45.8]:56746 "HELO hope.ime.usp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750929AbYKGIAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:00:20 -0500
-Message-ID: <1226044855.4913f5b7f2f45@webmail.ime.usp.br>
-Date: Fri, 07 Nov 2008 06:00:55 -0200
-From: Rogerio Theodoro de Brito <rbrito@ime.usp.br>
-To: =?iso-8859-1?b?Um9n6XJpbw==?= Brito <rbrito@ime.usp.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
-       rbrito@ime.usp.br
-Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
-References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br>
-In-Reply-To: <20081107014535.GA19201@ime.usp.br>
+	Fri, 7 Nov 2008 03:02:50 -0500
+Received: from lazybastard.de ([212.112.238.170]:56636 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbYKGICu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:02:50 -0500
+Date: Fri, 7 Nov 2008 09:02:37 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Patch] Always include <linux/types.h>
+Message-ID: <20081107080237.GB28847@logfs.org>
+References: <491073BB.4000900@panasas.com> <1225817069-5969-1-git-send-email-bharrosh@panasas.com> <20081104180347.GA9818@uranus.ravnborg.org> <20081105163941.GB6561@logfs.org> <20081105172312.GA10585@x200.localdomain> <20081105191628.GC6561@logfs.org> <20081105200216.GD6561@logfs.org> <20081105203212.GA11910@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-User-Agent: Internet Messaging Program (IMP) 3.2.1
-X-Originating-IP: 189.39.150.164
+In-Reply-To: <20081105203212.GA11910@x200.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, 5 November 2008 23:32:12 +0300, Alexey Dobriyan wrote:
+> 
+> If you are working on improving compile times, it's better concentrate
+> on removing unneeded includes. If just removing "extern"s from prototypes
+> can reliably save several seconds, reducing headers can do wonders.
 
-Some more information that may prove to be useful.
+My goal was more to assume we want all headers to compile standalone and
+see where that would lead.  Result for include/linux/ was some 500 added
+lines, 170 of which were to add types.h or compiler.h.  Another 50-100
+further includes were fairly well-spread across the spectrum.  The
+remainder was declarations like
+struct super_block;
 
-Quoting Rogério Brito <rbrito@ime.usp.br>:
-> If any further information is needed, please let me know.
+Overall we have three evils to choose from.  Headers with unresolved
+dependencies lead to random compile breakage after removing a header
+from some .c file.  Even if the change was tested, it can still break
+for some config/architecture combination month down the line.
 
-I just discovered that the "suspend button" is overloaded: it is actually 
-a poweroff button, which would explain the behaviour when the kernel is in 
-suspend to RAM.
+Sprinkling more includes throughout the headers increase compile time.
+And the common practice of declaring a structure instead of including
+the header is a pita when working with ctags.  The last problem is
+particularly annoying since I have no idea what problem this warning is
+supposed to solve:
+In file included from include/linux/coda_cache.c:1:
+include/linux/coda_cache.h:18: warning: â€˜struct super_blockâ€™ declared inside parameter list
+include/linux/coda_cache.h:18: warning: its scope is only this definition or declaration, which is probably not what you want
 
-(This notebook doesn't have a suspend hehaviour when closing the lid, as 
-far as I could observe right now).
+Should we just teach gcc to shut up about that one?
 
-I just reinstalled Windows Vista (from the rescue DVD) and it suspends and 
-resumes fine. I don't know where Windows stores its logs (sorry, I've been 
-using Unix systems for more than a decade).
-
-So, summarizing, it seems that the "suspend to RAM" button is actually a 
-poweroff button, but this behaviour of powering off the machine manifests 
-only when the kernel is already in a suspend to ram state. I can provide 
-more information under guidance. Please, just let me know what is needed 
-and I will test anything, as this notebook has not yet been used for 
-production.
-
-
-Thanks in advance for any help, Rogério Brito.
+JÃ¶rn
 
 -- 
-Rogério Brito : rbrito@ime.usp.br : http://www.ime.usp.br/~rbrito
-Homepage of the algorithms package : http://algorithms.berlios.de
-Homepage on freshmeat:  http://freshmeat.net/projects/algorithms/
+Anything that can go wrong, will.
+-- Finagle's Law
