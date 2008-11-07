@@ -1,75 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbYKGJ0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbYKGJ31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751708AbYKGJ0N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:26:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754342AbYKGJZx
+	id S1753890AbYKGJ31 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYKGJ3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:25:53 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:57029 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754217AbYKGJZt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:25:49 -0500
-X-Greylist: delayed 789 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Nov 2008 04:25:48 EST
-X-Sasl-enc: xpXVPLW6oZ4cJR7gDmAyPtNq6+9zYCP4U/yKfErgjZT7 1226049157
-Message-ID: <49140683.9040008@ladisch.de>
-Date: Fri, 07 Nov 2008 10:12:35 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 7 Nov 2008 04:29:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54830 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751344AbYKGJ3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 04:29:12 -0500
+Date: Fri, 7 Nov 2008 10:29:02 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Ken Chen <kenchen@google.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
+Message-ID: <20081107092902.GB7787@elte.hu>
+References: <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain> <20081107083249.GD4435@elte.hu> <20081107084943.GA16147@x200.localdomain> <20081107085352.GA27245@elte.hu> <20081107090304.GA30540@elte.hu> <20081107011659.98d3788a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-CC: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang
-References: <1226019485.3135.31.camel@localhost.localdomain>
-In-Reply-To: <1226019485.3135.31.camel@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081107011659.98d3788a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fernando Lopez-Lezcano wrote:
-> I'm seeing a realtime patch related hard hang in the kernel alsa
-> subsystem (MIDI input/output). In a nutshell:
->
-> - alsa rawmidi works (ie: "rawmidi -v -i hw:0" outputs a stream of
-> messages when pointed to a midi capable card that has an external
-> keyboard connected).
->
-> - the alsa sequencer interface works (ie: aplaymidi connected to
-> aseqdump transfers data just fine).
->
-> - BOTH combined do NOT work (ie: use aconnect to connect the port that
-> corresponds to the external midi interface to aseqdump: aseqdump hangs
-> forever after transferring the first message and the only way out is a
-> reboot).
 
-Please try the snd-virmidi driver, then we'd have a test case that does
-not require MIDI hardware.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> ... including the output of a "echo t >/proc/sysrq-trigger" that
-> should show where aseqdump currently hangs (or so I think).
+> On Fri, 7 Nov 2008 10:03:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > task running on this CPU:
+> > 
+> >  # cat /proc/self/stack
+> >  [<ffffffff80216f79>] save_stack_trace_tsk+0x26/0x44
+> >  [<ffffffff802f59a5>] proc_pid_stack+0x6e/0xd3
+> >  [<ffffffff802f6da3>] proc_info_read+0x68/0xba
+> >  [<ffffffff802b2f17>] vfs_read+0xa9/0xe3
+> >  [<ffffffff802b301f>] sys_read+0x4c/0x73
+> >  [<ffffffff8020c23b>] system_call_fastpath+0x16/0x1b
+> >  [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> So we provide a means by which process A can sample process B's 
+> instruction pointer?  Even if it's in random.c or crypto code?  
+> There's a little project for someone.
 
-It hangs in tasklet_kill(), which gets called while it tries to close
-the rawmidi port.
+yes - like "echo p > /proc/sysrq-trigger" and sysrq-t. Although unlike 
+sysrq-p, the IP itself isnt printed, just the stack trace - but 
+there's indeed a correlation.
 
-The rawmidi framework uses this tasklet to notify the sequencer that new
-MIDI data is available.  The handler function is
-snd_rawmidi_input_event_tasklet() in sound/core/rawmidi.c; the sequencer
-callback that gets called from there is snd_midi_input_event() in
-core/seq/seq_midi.c.
+> I guess the 0400 mode on that file will suffice...
 
-You say that the first event gets delivered, so it might be possible
-that the tasklet never finishes executing.  Please check whether the
-call to snd_seq_kernel_client_dispatch() in snd_midi_input_event()
-ever returns.
+correct, 0400 is used already in the present patch:
 
+ phoenix:~> cat /proc/1/stack
+ cat: /proc/1/stack: Permission denied
 
-I vaguely remember that we had exactly the same problem (hangs when
-using sequencer on RT kernel) some time ago, and that it was somehow
-related to tasklets.
+but that is _not_ enough, it should be narrowed even more, to the 
+boundaries that i pointed out in my first review feedback mail, and 
+which is not implemented yet:
 
+ 1) only root should be allowed to do this - i.e. file needs to be 
+    root-owned.
 
-Regards,
-Clemens
+ 2) there also needs to be a .config entry for folks to be able to
+    turn it off altogether - just like folks can turn off sysrq-t 
+    dumping via the .config.
+
+	Ingo
