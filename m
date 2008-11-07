@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbYKGXbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbYKGXcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753007AbYKGXbu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKGX0n
+	id S1755929AbYKGXcL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbYKGX0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:26:43 -0500
-Received: from kroah.org ([198.145.64.141]:47471 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:26:45 -0500
+Received: from kroah.org ([198.145.64.141]:47487 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753876AbYKGX0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:26:41 -0500
-Date: Fri, 7 Nov 2008 15:25:59 -0800
+	id S1754430AbYKGX0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:26:43 -0500
+Date: Fri, 7 Nov 2008 15:26:01 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 01/16] gpiolib: fix oops in gpio_get_value_cansleep()
-Message-ID: <20081107232559.GB4282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, ext4 development <linux-ext4@vger.kernel.org>,
+       Eric Sandeen <sandeen@redhat.com>, Eugene Teo <eugeneteo@kernel.sg>
+Subject: [patch 02/16] ext: Avoid printk floods in the face of directory
+	corruption (CVE-2008-3528)
+Message-ID: <20081107232601.GC4282@kroah.com>
 References: <20081107231848.995297975@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="gpiolib-fix-oops-in-gpio_get_value_cansleep.patch"
+Content-Disposition: inline; filename="ext-avoid-printk-floods-in-the-face-of-directory-corruption.patch"
 In-Reply-To: <20081107232544.GA4282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,56 +41,244 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: Eric Sandeen <sandeen@redhat.com>
 
-commit 978ccaa8ea5d8c7bf6b676209f2fc126eae6355b upstream
+This is a trivial backport of the following upstream commits:
 
-We can get the following oops from gpio_get_value_cansleep() when a GPIO
-controller doesn't provide a get() callback:
+- bd39597cbd42a784105a04010100e27267481c67 (ext2)
+- cdbf6dba28e8e6268c8420857696309470009fd9 (ext3)
+- 9d9f177572d9e4eba0f2e18523b44f90dd51fe74 (ext4)
 
- Unable to handle kernel paging request for instruction fetch
- Faulting instruction address: 0x00000000
- Oops: Kernel access of bad area, sig: 11 [#1]
- [...]
- NIP [00000000] 0x0
- LR [c0182fb0] gpio_get_value_cansleep+0x40/0x50
- Call Trace:
- [c7b79e80] [c0183f28] gpio_value_show+0x5c/0x94
- [c7b79ea0] [c01a584c] dev_attr_show+0x30/0x7c
- [c7b79eb0] [c00d6b48] fill_read_buffer+0x68/0xe0
- [c7b79ed0] [c00d6c54] sysfs_read_file+0x94/0xbc
- [c7b79ef0] [c008f24c] vfs_read+0xb4/0x16c
- [c7b79f10] [c008f580] sys_read+0x4c/0x90
- [c7b79f40] [c0013a14] ret_from_syscall+0x0/0x38
+This addresses CVE-2008-3528
 
-It's OK to request the value of *any* GPIO; most GPIOs are bidirectional,
-so configuring them as outputs just enables an output driver and doesn't
-disable the input logic.
+ext[234]: Avoid printk floods in the face of directory corruption
 
-So the problem is that gpio_get_value_cansleep() isn't making the same
-sanity check that gpio_get_value() does: making sure this GPIO isn't one
-of the atypical "no input logic" cases.
+Note: some people thinks this represents a security bug, since it
+might make the system go away while it is printing a large number of
+console messages, especially if a serial console is involved.  Hence,
+it has been assigned CVE-2008-3528, but it requires that the attacker
+either has physical access to your machine to insert a USB disk with a
+corrupted filesystem image (at which point why not just hit the power
+button), or is otherwise able to convince the system administrator to
+mount an arbitrary filesystem image (at which point why not just
+include a setuid shell or world-writable hard disk device file or some
+such).  Me, I think they're just being silly. --tytso
 
-Reported-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org
+Cc: Eugene Teo <eugeneteo@kernel.sg>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpio/gpiolib.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext2/dir.c |   60 +++++++++++++++++++++++++++++++++-------------------------
+ fs/ext3/dir.c |   10 ++++++---
+ fs/ext4/dir.c |   11 +++++++---
+ 3 files changed, 50 insertions(+), 31 deletions(-)
 
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -426,7 +426,7 @@ int gpio_get_value_cansleep(unsigned gpi
- 
- 	might_sleep_if(extra_checks);
- 	chip = gpio_to_chip(gpio);
--	return chip->get(chip, gpio - chip->base);
-+	return chip->get ? chip->get(chip, gpio - chip->base) : 0;
+--- a/fs/ext2/dir.c
++++ b/fs/ext2/dir.c
+@@ -103,7 +103,7 @@ static int ext2_commit_chunk(struct page
+ 	return err;
  }
- EXPORT_SYMBOL_GPL(gpio_get_value_cansleep);
  
+-static void ext2_check_page(struct page *page)
++static void ext2_check_page(struct page *page, int quiet)
+ {
+ 	struct inode *dir = page->mapping->host;
+ 	struct super_block *sb = dir->i_sb;
+@@ -146,10 +146,10 @@ out:
+ 	/* Too bad, we had an error */
+ 
+ Ebadsize:
+-	ext2_error(sb, "ext2_check_page",
+-		"size of directory #%lu is not a multiple of chunk size",
+-		dir->i_ino
+-	);
++	if (!quiet)
++		ext2_error(sb, __func__,
++			"size of directory #%lu is not a multiple "
++			"of chunk size", dir->i_ino);
+ 	goto fail;
+ Eshort:
+ 	error = "rec_len is smaller than minimal";
+@@ -166,32 +166,36 @@ Espan:
+ Einumber:
+ 	error = "inode out of bounds";
+ bad_entry:
+-	ext2_error (sb, "ext2_check_page", "bad entry in directory #%lu: %s - "
+-		"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
+-		dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
+-		(unsigned long) le32_to_cpu(p->inode),
+-		rec_len, p->name_len);
++	if (!quiet)
++		ext2_error(sb, __func__, "bad entry in directory #%lu: : %s - "
++			"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
++			dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
++			(unsigned long) le32_to_cpu(p->inode),
++			rec_len, p->name_len);
+ 	goto fail;
+ Eend:
+-	p = (ext2_dirent *)(kaddr + offs);
+-	ext2_error (sb, "ext2_check_page",
+-		"entry in directory #%lu spans the page boundary"
+-		"offset=%lu, inode=%lu",
+-		dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
+-		(unsigned long) le32_to_cpu(p->inode));
++	if (!quiet) {
++		p = (ext2_dirent *)(kaddr + offs);
++		ext2_error(sb, "ext2_check_page",
++			"entry in directory #%lu spans the page boundary"
++			"offset=%lu, inode=%lu",
++			dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
++			(unsigned long) le32_to_cpu(p->inode));
++	}
+ fail:
+ 	SetPageChecked(page);
+ 	SetPageError(page);
+ }
+ 
+-static struct page * ext2_get_page(struct inode *dir, unsigned long n)
++static struct page * ext2_get_page(struct inode *dir, unsigned long n,
++				   int quiet)
+ {
+ 	struct address_space *mapping = dir->i_mapping;
+ 	struct page *page = read_mapping_page(mapping, n, NULL);
+ 	if (!IS_ERR(page)) {
+ 		kmap(page);
+ 		if (!PageChecked(page))
+-			ext2_check_page(page);
++			ext2_check_page(page, quiet);
+ 		if (PageError(page))
+ 			goto fail;
+ 	}
+@@ -292,7 +296,7 @@ ext2_readdir (struct file * filp, void *
+ 	for ( ; n < npages; n++, offset = 0) {
+ 		char *kaddr, *limit;
+ 		ext2_dirent *de;
+-		struct page *page = ext2_get_page(inode, n);
++		struct page *page = ext2_get_page(inode, n, 0);
+ 
+ 		if (IS_ERR(page)) {
+ 			ext2_error(sb, __FUNCTION__,
+@@ -361,6 +365,7 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 	struct page *page = NULL;
+ 	struct ext2_inode_info *ei = EXT2_I(dir);
+ 	ext2_dirent * de;
++	int dir_has_error = 0;
+ 
+ 	if (npages == 0)
+ 		goto out;
+@@ -374,7 +379,7 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 	n = start;
+ 	do {
+ 		char *kaddr;
+-		page = ext2_get_page(dir, n);
++		page = ext2_get_page(dir, n, dir_has_error);
+ 		if (!IS_ERR(page)) {
+ 			kaddr = page_address(page);
+ 			de = (ext2_dirent *) kaddr;
+@@ -391,7 +396,9 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 				de = ext2_next_entry(de);
+ 			}
+ 			ext2_put_page(page);
+-		}
++		} else
++			dir_has_error = 1;
++
+ 		if (++n >= npages)
+ 			n = 0;
+ 		/* next page is past the blocks we've got */
+@@ -414,7 +421,7 @@ found:
+ 
+ struct ext2_dir_entry_2 * ext2_dotdot (struct inode *dir, struct page **p)
+ {
+-	struct page *page = ext2_get_page(dir, 0);
++	struct page *page = ext2_get_page(dir, 0, 0);
+ 	ext2_dirent *de = NULL;
+ 
+ 	if (!IS_ERR(page)) {
+@@ -487,7 +494,7 @@ int ext2_add_link (struct dentry *dentry
+ 	for (n = 0; n <= npages; n++) {
+ 		char *dir_end;
+ 
+-		page = ext2_get_page(dir, n);
++		page = ext2_get_page(dir, n, 0);
+ 		err = PTR_ERR(page);
+ 		if (IS_ERR(page))
+ 			goto out;
+@@ -655,14 +662,17 @@ int ext2_empty_dir (struct inode * inode
+ {
+ 	struct page *page = NULL;
+ 	unsigned long i, npages = dir_pages(inode);
++	int dir_has_error = 0;
+ 
+ 	for (i = 0; i < npages; i++) {
+ 		char *kaddr;
+ 		ext2_dirent * de;
+-		page = ext2_get_page(inode, i);
++		page = ext2_get_page(inode, i, dir_has_error);
+ 
+-		if (IS_ERR(page))
++		if (IS_ERR(page)) {
++			dir_has_error = 1;
+ 			continue;
++		}
+ 
+ 		kaddr = page_address(page);
+ 		de = (ext2_dirent *)kaddr;
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -102,6 +102,7 @@ static int ext3_readdir(struct file * fi
+ 	int err;
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	int ret = 0;
++	int dir_has_error = 0;
+ 
+ 	sb = inode->i_sb;
+ 
+@@ -148,9 +149,12 @@ static int ext3_readdir(struct file * fi
+ 		 * of recovering data when there's a bad sector
+ 		 */
+ 		if (!bh) {
+-			ext3_error (sb, "ext3_readdir",
+-				"directory #%lu contains a hole at offset %lu",
+-				inode->i_ino, (unsigned long)filp->f_pos);
++			if (!dir_has_error) {
++				ext3_error(sb, __func__, "directory #%lu "
++					"contains a hole at offset %lld",
++					inode->i_ino, filp->f_pos);
++				dir_has_error = 1;
++			}
+ 			/* corrupt size?  Maybe no more blocks to read */
+ 			if (filp->f_pos > inode->i_blocks << 9)
+ 				break;
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -102,6 +102,7 @@ static int ext4_readdir(struct file * fi
+ 	int err;
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	int ret = 0;
++	int dir_has_error = 0;
+ 
+ 	sb = inode->i_sb;
+ 
+@@ -147,9 +148,13 @@ static int ext4_readdir(struct file * fi
+ 		 * of recovering data when there's a bad sector
+ 		 */
+ 		if (!bh) {
+-			ext4_error (sb, "ext4_readdir",
+-				"directory #%lu contains a hole at offset %lu",
+-				inode->i_ino, (unsigned long)filp->f_pos);
++			if (!dir_has_error) {
++				ext4_error(sb, __func__, "directory #%lu "
++					   "contains a hole at offset %Lu",
++					   inode->i_ino,
++					   (unsigned long long) filp->f_pos);
++				dir_has_error = 1;
++			}
+ 			/* corrupt size?  Maybe no more blocks to read */
+ 			if (filp->f_pos > inode->i_blocks << 9)
+ 				break;
 
 -- 
