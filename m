@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYKGXZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbYKGXZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183AbYKGXZd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYKGXW6
+	id S1754643AbYKGXZx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYKGXXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:22:58 -0500
-Received: from kroah.org ([198.145.64.141]:59217 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:23:00 -0500
+Received: from kroah.org ([198.145.64.141]:59235 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753572AbYKGXW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:22:58 -0500
-Date: Fri, 7 Nov 2008 15:15:27 -0800
+	id S1753641AbYKGXW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:22:59 -0500
+Date: Fri, 7 Nov 2008 15:15:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Serge Hallyn <serue@us.ibm.com>,
-       David Howells <dhowells@redhat.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>
-Subject: [patch 07/23] file caps: always start with clear bprm->caps_*
-Message-ID: <20081107231527.GH1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>, Chris Wedgwood <cw@f00f.org>
+Subject: [patch 08/23] ALSA: use correct lock in snd_ctl_dev_disconnect()
+Message-ID: <20081107231539.GI1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="file-caps-always-start-with-clear-bprm-caps_.patch"
+Content-Disposition: inline; filename="alsa-use-correct-lock-in-snd_ctl_dev_disconnect.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,44 +40,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Serge Hallyn <serue@us.ibm.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 3318a386e4ca68c76e0294363d29bdc46fcad670 upstream
+commit d8009882e9f5e1a76986c741f071edd2ad760c97 upstream
 
-While Linux doesn't honor setuid on scripts.  However, it mistakenly
-behaves differently for file capabilities.
+The lock used in snd_ctl_dev_disconnect() should be card->ctl_files_rwlock
+for protection of card->ctl_files entries, instead of card->controls_rwsem.
 
-This patch fixes that behavior by making sure that get_file_caps()
-begins with empty bprm->caps_*.  That way when a script is loaded,
-its bprm->caps_* may be filled when binfmt_misc calls prepare_binprm(),
-but they will be cleared again when binfmt_elf calls prepare_binprm()
-next to read the interpreter's file capabilities.
-
-Signed-off-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: David Howells <dhowells@redhat.com>
-Acked-by: Andrew G. Morgan <morgan@kernel.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@perex.cz>
+Cc: Chris Wedgwood <cw@f00f.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- security/commoncap.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ sound/core/control.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -247,10 +247,10 @@ static int get_file_caps(struct linux_bi
- 	struct vfs_cap_data vcaps;
- 	struct inode *inode;
+--- a/sound/core/control.c
++++ b/sound/core/control.c
+@@ -1426,12 +1426,12 @@ static int snd_ctl_dev_disconnect(struct
+ 	cardnum = card->number;
+ 	snd_assert(cardnum >= 0 && cardnum < SNDRV_CARDS, return -ENXIO);
  
--	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
--		bprm_clear_caps(bprm);
-+	bprm_clear_caps(bprm);
-+
-+	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
- 		return 0;
--	}
+-	down_read(&card->controls_rwsem);
++	read_lock(&card->ctl_files_rwlock);
+ 	list_for_each_entry(ctl, &card->ctl_files, list) {
+ 		wake_up(&ctl->change_sleep);
+ 		kill_fasync(&ctl->fasync, SIGIO, POLL_ERR);
+ 	}
+-	up_read(&card->controls_rwsem);
++	read_unlock(&card->ctl_files_rwlock);
  
- 	dentry = dget(bprm->file->f_dentry);
- 	inode = dentry->d_inode;
+ 	if ((err = snd_unregister_device(SNDRV_DEVICE_TYPE_CONTROL,
+ 					 card, -1)) < 0)
 
 -- 
