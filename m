@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbYKGXXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYKGXYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbYKGXXe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYKGXWu
+	id S1754418AbYKGXYp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:24:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYKGXW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:22:50 -0500
-Received: from kroah.org ([198.145.64.141]:59134 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:22:56 -0500
+Received: from kroah.org ([198.145.64.141]:59193 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752561AbYKGXWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:22:49 -0500
-Date: Fri, 7 Nov 2008 15:15:14 -0800
+	id S1753540AbYKGXWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:22:55 -0500
+Date: Fri, 7 Nov 2008 15:15:23 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,75 +22,124 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 01/23] gpiolib: fix oops in gpio_get_value_cansleep()
-Message-ID: <20081107231514.GB1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 05/23] net: Fix recursive descent in __scm_destroy().
+Message-ID: <20081107231523.GF1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="gpiolib-fix-oops-in-gpio_get_value_cansleep.patch"
+Content-Disposition: inline; filename="net-fix-recursive-descent-in-__scm_destroy.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+From: David Miller <davem@davemloft.net>
 
-commit 978ccaa8ea5d8c7bf6b676209f2fc126eae6355b upstream
+commit f8d570a4745835f2238a33b537218a1bb03fc671 and
+3b53fbf4314594fa04544b02b2fc6e607912da18 upstream (because once wasn't
+good enough...)
 
-We can get the following oops from gpio_get_value_cansleep() when a GPIO
-controller doesn't provide a get() callback:
+__scm_destroy() walks the list of file descriptors in the scm_fp_list
+pointed to by the scm_cookie argument.
 
- Unable to handle kernel paging request for instruction fetch
- Faulting instruction address: 0x00000000
- Oops: Kernel access of bad area, sig: 11 [#1]
- [...]
- NIP [00000000] 0x0
- LR [c0182fb0] gpio_get_value_cansleep+0x40/0x50
- Call Trace:
- [c7b79e80] [c0183f28] gpio_value_show+0x5c/0x94
- [c7b79ea0] [c01a584c] dev_attr_show+0x30/0x7c
- [c7b79eb0] [c00d6b48] fill_read_buffer+0x68/0xe0
- [c7b79ed0] [c00d6c54] sysfs_read_file+0x94/0xbc
- [c7b79ef0] [c008f24c] vfs_read+0xb4/0x16c
- [c7b79f10] [c008f580] sys_read+0x4c/0x90
- [c7b79f40] [c0013a14] ret_from_syscall+0x0/0x38
+Those, in turn, can close sockets and invoke __scm_destroy() again.
 
-It's OK to request the value of *any* GPIO; most GPIOs are bidirectional,
-so configuring them as outputs just enables an output driver and doesn't
-disable the input logic.
+There is nothing which limits how deeply this can occur.
 
-So the problem is that gpio_get_value_cansleep() isn't making the same
-sanity check that gpio_get_value() does: making sure this GPIO isn't one
-of the atypical "no input logic" cases.
+The idea for how to fix this is from Linus.  Basically, we do all of
+the fput()s at the top level by collecting all of the scm_fp_list
+objects hit by an fput().  Inside of the initial __scm_destroy() we
+keep running the list until it is empty.
 
-Reported-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/gpio/gpiolib.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/sched.h |    4 +++-
+ include/net/scm.h     |    5 +++--
+ net/core/scm.c        |   24 +++++++++++++++++++++---
+ 3 files changed, 27 insertions(+), 6 deletions(-)
 
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -517,7 +517,7 @@ int gpio_get_value_cansleep(unsigned gpi
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1288,7 +1288,9 @@ struct task_struct {
+ 	atomic_t fs_excl;	/* holding fs exclusive resources */
+ 	struct rcu_head rcu;
  
- 	might_sleep_if(extra_checks);
- 	chip = gpio_to_chip(gpio);
--	return chip->get(chip, gpio - chip->base);
-+	return chip->get ? chip->get(chip, gpio - chip->base) : 0;
+-	/*
++	struct list_head	*scm_work_list;
++
++/*
+ 	 * cache last used pipe for splice
+ 	 */
+ 	struct pipe_inode_info *splice_pipe;
+--- a/include/net/scm.h
++++ b/include/net/scm.h
+@@ -14,8 +14,9 @@
+ 
+ struct scm_fp_list
+ {
+-	int		count;
+-	struct file	*fp[SCM_MAX_FD];
++	struct list_head	list;
++	int			count;
++	struct file		*fp[SCM_MAX_FD];
+ };
+ 
+ struct scm_cookie
+--- a/net/core/scm.c
++++ b/net/core/scm.c
+@@ -75,6 +75,7 @@ static int scm_fp_copy(struct cmsghdr *c
+ 		if (!fpl)
+ 			return -ENOMEM;
+ 		*fplp = fpl;
++		INIT_LIST_HEAD(&fpl->list);
+ 		fpl->count = 0;
+ 	}
+ 	fpp = &fpl->fp[fpl->count];
+@@ -106,9 +107,25 @@ void __scm_destroy(struct scm_cookie *sc
+ 
+ 	if (fpl) {
+ 		scm->fp = NULL;
+-		for (i=fpl->count-1; i>=0; i--)
+-			fput(fpl->fp[i]);
+-		kfree(fpl);
++		if (current->scm_work_list) {
++			list_add_tail(&fpl->list, current->scm_work_list);
++		} else {
++			LIST_HEAD(work_list);
++
++			current->scm_work_list = &work_list;
++
++			list_add(&fpl->list, &work_list);
++			while (!list_empty(&work_list)) {
++				fpl = list_first_entry(&work_list, struct scm_fp_list, list);
++
++				list_del(&fpl->list);
++				for (i=fpl->count-1; i>=0; i--)
++					fput(fpl->fp[i]);
++				kfree(fpl);
++			}
++
++			current->scm_work_list = NULL;
++		}
+ 	}
  }
- EXPORT_SYMBOL_GPL(gpio_get_value_cansleep);
  
+@@ -284,6 +301,7 @@ struct scm_fp_list *scm_fp_dup(struct sc
+ 
+ 	new_fpl = kmalloc(sizeof(*fpl), GFP_KERNEL);
+ 	if (new_fpl) {
++		INIT_LIST_HEAD(&new_fpl->list);
+ 		for (i=fpl->count-1; i>=0; i--)
+ 			get_file(fpl->fp[i]);
+ 		memcpy(new_fpl, fpl, sizeof(*fpl));
 
 -- 
