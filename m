@@ -1,130 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYKGGix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYKGGlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYKGGix (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 01:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYKGGio
+	id S1755347AbYKGGlR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 01:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYKGGlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 01:38:44 -0500
-Received: from i220-221-252-159.s30.a048.ap.plala.or.jp ([220.221.252.159]:50250
-	"EHLO mail.m.clustcom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750929AbYKGGin (ORCPT
+	Fri, 7 Nov 2008 01:41:01 -0500
+Received: from mga09.intel.com ([134.134.136.24]:25143 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992AbYKGGlA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 01:38:43 -0500
-Date: Fri, 7 Nov 2008 15:38:24 +0000
-From: Hitoshi Mitake <mitake@clustcom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
-       linux-kernel@vger.kernel.org, ktaka@clustcom.com
-Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-Id: <20081107153824.0ec934e6.mitake@clustcom.com>
-In-Reply-To: <20081106223122.8a255211.akpm@linux-foundation.org>
-References: <20081105222911.d76e7e1c.mitake@clustcom.com>
-	<413709.12821.qm@web50106.mail.re2.yahoo.com>
-	<20081106164641.ed369060.akpm@linux-foundation.org>
-	<20081107152830.a42766f3.mitake@clustcom.com>
-	<20081106223122.8a255211.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 01:41:00 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,562,1220252400"; 
+   d="scan'208";a="357258590"
+From: "Perez-Gonzalez, Inaky" <inaky.perez-gonzalez@intel.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Vrabel <david.vrabel@csr.com>
+Date: Thu, 6 Nov 2008 22:41:15 -0800
+Subject: RE: [PATCH] wusb: annotate association types withe proper endianness
+Thread-Topic: [PATCH] wusb: annotate association types withe proper
+ endianness
+Thread-Index: AclAoppkBdIZFIFyRZ+WVqYA3hGYKQAAQ4og
+Message-ID: <8F0C2E89B9AA20448D482EB589641EB30EF72904@orsmsx507.amr.corp.intel.com>
+References: <1226039536.11596.5.camel@brick>
+In-Reply-To: <1226039536.11596.5.camel@brick>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 22:31:22 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+>From: Harvey Harrison [mailto:harvey.harrison@gmail.com]
+>
+>Also a trivial annotation in rh.c for:
 
-> On Fri, 7 Nov 2008 15:28:30 +0000 Hitoshi Mitake <mitake@clustcom.com> wrote:
-> 
-> > On Thu, 6 Nov 2008 16:46:41 -0800
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Wed, 5 Nov 2008 08:26:12 -0800 (PST)
-> > > Doug Thompson <norsk5@yahoo.com> wrote:
-> > > 
-> > > > > I wrote new version of this driver and tested. It works well.
-> > > > > This is replacement for old version.
-> > > > > Or should I send diff of two versions?
-> > > > 
-> > > > 
-> > > > I would suggest sending a diff of what is now in the -mm tree to what it should be.
-> > > 
-> > > This driver is now in the mainline kernel so yes, a patch against that
-> > > kernel is the only appropriate way of updating the driver.
-> > > 
-> > 
-> > Sorry, and thanks for notification, Doug and Andrew.
-> > This is patch against mainline kernel.
-> > 
-> > Signed-off-by: Hitoshi Mitake <mitake@clustcom.com>
-> > Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-> 
-> We will need a description of this patch for the changelog, please.  We
-> always do.
-> 
+Copying David Vrabel, the WUSB maintainer.
 
-Sorry, I missed...
-
-This patch makes x38_edac.c to use kernel's
-readq() function when it is compiled for x86_64.
-
-Signed-off-by: Hitoshi Mitake <mitake@clustcom.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
----
-
-Index: linux-2.6.28-rc3-git2/drivers/edac/Kconfig
-===================================================================
---- linux-2.6.28-rc3-git2.orig/drivers/edac/Kconfig	2008-11-07 11:27:05.000000000 +0000
-+++ linux-2.6.28-rc3-git2/drivers/edac/Kconfig	2008-11-07 11:27:14.000000000 +0000
-@@ -104,7 +104,7 @@
- 
- config EDAC_X38
- 	tristate "Intel X38"
--	depends on EDAC_MM_EDAC && PCI && X86
-+	depends on EDAC_MM_EDAC && PCI && (X86 || X86_64)
- 	help
- 	  Support for error detection and correction on the Intel
- 	  X38 server chipsets.
-Index: linux-2.6.28-rc3-git2/drivers/edac/x38_edac.c
-===================================================================
---- linux-2.6.28-rc3-git2.orig/drivers/edac/x38_edac.c	2008-11-07 11:27:06.000000000 +0000
-+++ linux-2.6.28-rc3-git2/drivers/edac/x38_edac.c	2008-11-07 11:27:29.000000000 +0000
-@@ -162,10 +162,12 @@
- 			 X38_ERRSTS_BITS);
- }
- 
--static u64 x38_readq(const void __iomem *addr)
-+#ifndef CONFIG_X86_64
-+static u64 readq(const void __iomem *addr)
- {
- 	return readl(addr) | (((u64)readl(addr + 4)) << 32);
- }
-+#endif	/* CONFIG_X86_64 */
- 
- static void x38_get_and_clear_error_info(struct mem_ctl_info *mci,
- 				 struct x38_error_info *info)
-@@ -184,9 +186,9 @@
- 	if (!(info->errsts & X38_ERRSTS_BITS))
- 		return;
- 
--	info->eccerrlog[0] = x38_readq(window + X38_C0ECCERRLOG);
-+	info->eccerrlog[0] = readq(window + X38_C0ECCERRLOG);
- 	if (x38_channel_num == 2)
--		info->eccerrlog[1] = x38_readq(window + X38_C1ECCERRLOG);
-+		info->eccerrlog[1] = readq(window + X38_C1ECCERRLOG);
- 
- 	pci_read_config_word(pdev, X38_ERRSTS, &info->errsts2);
- 
-@@ -197,10 +199,10 @@
- 	 * should be UE info.
- 	 */
- 	if ((info->errsts ^ info->errsts2) & X38_ERRSTS_BITS) {
--		info->eccerrlog[0] = x38_readq(window + X38_C0ECCERRLOG);
-+		info->eccerrlog[0] = readq(window + X38_C0ECCERRLOG);
- 		if (x38_channel_num == 2)
- 			info->eccerrlog[1] =
--				x38_readq(window + X38_C1ECCERRLOG);
-+				readq(window + X38_C1ECCERRLOG);
- 	}
- 
- 	x38_clear_error_info(mci);
+Thanks Harvey
