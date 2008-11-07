@@ -1,113 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751928AbYKGFM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbYKGFOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751928AbYKGFM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 00:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbYKGFMT
+	id S1752670AbYKGFOP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 00:14:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750828AbYKGFN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 00:12:19 -0500
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:38446 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750771AbYKGFMS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 00:12:18 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAJxbE0lMQWxa/2dsb2JhbACBdsoUg1Y
-Date: Fri, 7 Nov 2008 00:12:14 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081107051214.GA30350@Krystal>
-References: <1225983052.7803.4623.camel@twins> <20081106070157.065b2dcc@infradead.org> <alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com> <20081106094558.50d94bcc@infradead.org> <y0mej1ofvyz.fsf@ton.toronto.redhat.com> <1226003343.31966.43.camel@lappy.programming.kicks-ass.net> <20081106215310.GA15163@Krystal> <20081106221426.GD20928@redhat.com> <20081106222529.GA17528@Krystal> <20081106232506.GF20928@redhat.com>
+	Fri, 7 Nov 2008 00:13:57 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36454 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750771AbYKGFN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 00:13:56 -0500
+Date: Fri, 7 Nov 2008 16:13:40 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: lachlan@sgi.com
+Cc: David Chinner <david@fromorbit.com>, linux-next@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: linux-next: unable to fetch the xfs tree
+Message-Id: <20081107161340.268ee812.sfr@canb.auug.org.au>
+In-Reply-To: <4913C967.30309@sgi.com>
+References: <20081107111125.ef33b1dc.sfr@canb.auug.org.au>
+	<20081107145332.52d49390.sfr@canb.auug.org.au>
+	<4913BEC6.6080901@sgi.com>
+	<20081107154602.8621ea3d.sfr@canb.auug.org.au>
+	<4913C967.30309@sgi.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20081106232506.GF20928@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 00:00:57 up 155 days,  9:41,  7 users,  load average: 0.21, 0.78,
-	0.82
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__7_Nov_2008_16_13_40_+1100_//=X1SKeU.yVpAZe"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frank,
+--Signature=_Fri__7_Nov_2008_16_13_40_+1100_//=X1SKeU.yVpAZe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Hi -
-> 
-> On Thu, Nov 06, 2008 at 05:25:29PM -0500, Mathieu Desnoyers wrote:
-> > [...]
-> > > Arjan asked for something to send formatted strings to tracing buffers
-> > > that are consumed by user space.  Whether internally that is done by
-> > > markers, or by tracepoints converted to markers, or by tracepoints
-> > > with custom ftrace_printf-y code, is indistinguishable to the user.
-> > > 
-> > > Can you be specific in what way any of that is exposing an "API
-> > > directly to userspace"?
-> > 
-> > The tracepoint declaration is linked to the kernel code that is meant to
-> > be traced. Given this code will change over time, it will be more
-> > difficult to perform those changes if it is in any way coupled with
-> > format strings exported to userspace via traced.  [...]
-> 
-> The userspace interface to all the various tracing widgets consists of
-> the textual formatted trace data stream.
+Hi Lachlan,
 
-Oh ? Really ? I thought a binary data stream wasn't out of the question ?
-Actually, having both ascii and binary output seems like a good way to
-do it.
+On Fri, 07 Nov 2008 15:51:51 +1100 Lachlan McIlroy <lachlan@sgi.com> wrote:
+>
+> Stephen Rothwell wrote:
+> >=20
+> > On Fri, 07 Nov 2008 15:06:30 +1100 Lachlan McIlroy <lachlan@sgi.com> wr=
+ote:
+> >> Stephen Rothwell wrote:
+> >>>
+> >>> On Fri, 7 Nov 2008 11:11:25 +1100 Stephen Rothwell <sfr@canb.auug.org=
+.au> wrote:
+> >>>> I am getting:
+> >>>>
+> >>>> oss.sgi.com[0: 192.48.170.157]: errno=3DConnection refused
+> >>>>
+> >>>> so I will use what I fetched yesterday.
+> >>> And now I have received:
+> >>>
+> >>> <xfs-masters@oss.sgi.com>: host cuda-allmx.sgi.com[192.48.176.16] sai=
+d: 550
+> >>>     cuda_nsu 5.1.1 <xfs-masters@oss.sgi.com>... User unknown (in repl=
+y to RCPT
+> >>>     TO command)
+> >>>
+> >>> So, is this a permanent state of affairs, or just a temporary glitch?
+> >> Should be temporary.  We have known DNS and email issues that we are w=
+orking
+> >> on.  We're also moving oss.sgi.com but I have no idea what the schedul=
+e is.
+> >=20
+> > Thanks.
+>=20
+> I actually got a bounce message when I sent that reply.  Gotta love the i=
+rony.
 
-> ** IF ** these streams are
-> to represent a long-term interface, can you elaborate why you believe
-> it would be harder to generate identical text in the future with
-> markers rather than another technique with more internal layers?  Can
-> you work out an example?  
-> 
+That is probably because I spelt linux-fsdevel wrong twice :-(
 
-Hum.. I never said it would be harder to generate the trace data. I said
-it would be harder for kernel developers to change kernel code because
-they would have to change (and understand the usefulness down to the
-analysis tools) all the subtile tracepoint fields exported to userspace
-tools. I am not willing to push tracepoints in the kernel as a
-supplementary maintainance burden for kernel developers. With the format
-string identifying subfield, this burden will fall on the kernel
-developers. If we put the field selection in a callback sitting in a
-different module, well, it won't compile for as long as nobody think
-it's important enough to be fixed according to new in-kernel APIs, but
-it won't break the standard kernel build, and this is a _must_.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> (BTW, is "traced" a typo?)
-> 
+--Signature=_Fri__7_Nov_2008_16_13_40_+1100_//=X1SKeU.yVpAZe
+Content-Type: application/pgp-signature
 
-Yep, I should have written "via a tracer".
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> And as to that ** IF **: is there actually consensus that the format
-> of tracing data generated by e.g.  ftrace engines are supposed to be
-> preserved into the future versions, just as if they were a user-space
-> interface like /proc files?  (That's certainly not my impression.)
-> 
+iEYEARECAAYFAkkTzoQACgkQjjKRsyhoI8xDAQCcDXfsShHmuder29mSHvBm9nzW
+PAQAn0xJtKrEQUHGoiNab/IBRPGWFwF7
+=F7QU
+-----END PGP SIGNATURE-----
 
-We aim at having a standardized buffer format at some point, and expect
-the consumer tools to be shipped with the kernel tree for most part.
-We also plan to put a version number on the trace buffer. I am merely
-relating the discussions that led to Steven Rostedt unified trace buffer
-mechanism. (I do not say it actually does everything that was agreed on,
-but we have to start somewhere)
-
-If I can get my head out of the sand and start posting the
-implementations I have, we'll have more concrete stuff to discuss about
-:) Only two things left on my 30-ish things long todo list.. almost
-there ;)
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--Signature=_Fri__7_Nov_2008_16_13_40_+1100_//=X1SKeU.yVpAZe--
