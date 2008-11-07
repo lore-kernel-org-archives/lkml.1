@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYKGEto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbYKGExW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbYKGEto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:49:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKGEtb
+	id S1755353AbYKGExW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYKGExN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:49:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47572
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751353AbYKGEta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:49:30 -0500
-Date: Thu, 06 Nov 2008 20:49:29 -0800 (PST)
-Message-Id: <20081106.204929.161401868.davem@davemloft.net>
-To: swmike@swm.pp.se
-Cc: daniel.blueman@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-net@vger.kernel.org
-Subject: Re: time for TCP ECN defaulting to on?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
-References: <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
-	<20081105.151015.206163697.davem@davemloft.net>
-	<alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 6 Nov 2008 23:53:13 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:40874 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751157AbYKGExM (ORCPT
+	<rfc822;@relay.corp.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 23:53:12 -0500
+Message-ID: <4913C967.30309@sgi.com>
+Date: Fri, 07 Nov 2008 15:51:51 +1100
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: David Chinner <david@fromorbit.com>, linux-next@vger.kernel.org,
+       linuxf-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: linux-next: unable to fetch the xfs tree
+References: <20081107111125.ef33b1dc.sfr@canb.auug.org.au>	<20081107145332.52d49390.sfr@canb.auug.org.au>	<4913BEC6.6080901@sgi.com> <20081107154602.8621ea3d.sfr@canb.auug.org.au>
+In-Reply-To: <20081107154602.8621ea3d.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-Date: Fri, 7 Nov 2008 05:46:28 +0100 (CET)
+Stephen Rothwell wrote:
+> Hi Lachlan,
+> 
+> On Fri, 07 Nov 2008 15:06:30 +1100 Lachlan McIlroy <lachlan@sgi.com> wrote:
+>> Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>>> On Fri, 7 Nov 2008 11:11:25 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>>>> I am getting:
+>>>>
+>>>> oss.sgi.com[0: 192.48.170.157]: errno=Connection refused
+>>>>
+>>>> so I will use what I fetched yesterday.
+>>> And now I have received:
+>>>
+>>> <xfs-masters@oss.sgi.com>: host cuda-allmx.sgi.com[192.48.176.16] said: 550
+>>>     cuda_nsu 5.1.1 <xfs-masters@oss.sgi.com>... User unknown (in reply to RCPT
+>>>     TO command)
+>>>
+>>> So, is this a permanent state of affairs, or just a temporary glitch?
+>> Should be temporary.  We have known DNS and email issues that we are working
+>> on.  We're also moving oss.sgi.com but I have no idea what the schedule is.
+> 
+> Thanks.
+> 
 
-> I see that in
-> <http://www.icir.org/floyd/papers/draft-ietf-tsvwg-tcp-ecn-00.txt>
-> there is a recommendation to not use ECN on retransmits, is there
-> code right now (or planned) to do some kind of "ECN blackhole
-> detection", ie if no response is received to SYN with ECN set,
-> continue by sending the second SYN without ECN and keep this
-> information for the duration of the TCP session?
-
-No, we are firmly against any form of ECN blackhole detection.  Alexey Kuznetsov and
-Sally Floyd argued this out exhaustively several years ago.
+I actually got a bounce message when I sent that reply.  Gotta love the irony.
