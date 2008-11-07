@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbYKGRRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbYKGRWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbYKGRRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 12:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYKGRRH
+	id S1753260AbYKGRWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 12:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYKGRW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 12:17:07 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:39123 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750929AbYKGRRG (ORCPT
+	Fri, 7 Nov 2008 12:22:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52463 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750879AbYKGRW2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 12:17:06 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAMoEFElMQWxa/2dsb2JhbACBdrxuCIsJglMIew
-Date: Fri, 7 Nov 2008 12:17:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@cam.org>,
+	Fri, 7 Nov 2008 12:22:28 -0500
+Date: Fri, 7 Nov 2008 09:21:15 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Pitre <nico@cam.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
@@ -24,75 +23,46 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@cam.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
 Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Message-ID: <20081107171703.GE22134@Krystal>
-References: <20081107164758.GB22134@Krystal> <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <25363.1226056819@redhat.com> <8481.1226077497@redhat.com>
+Message-Id: <20081107092115.7c3c4a49.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811071129440.13034@xanadu.home>
+References: <20081107003816.9b0f947a.akpm@linux-foundation.org>
+	<20081107052336.652868737@polymtl.ca>
+	<20081107053349.861709786@polymtl.ca>
+	<20081106220530.5b0e3a96.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811070256450.13034@xanadu.home>
+	<25363.1226056819@redhat.com>
+	<alpine.LFD.2.00.0811070952150.13034@xanadu.home>
+	<20081107075003.fa93ccf4.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811071129440.13034@xanadu.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <8481.1226077497@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:11:58 up 155 days, 21:52,  7 users,  load average: 0.13, 0.58,
-	0.67
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Howells (dhowells@redhat.com) wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+On Fri, 07 Nov 2008 11:47:47 -0500 (EST) Nicolas Pitre <nico@cam.org> wrote:
+
+> > btw, do you know how damned irritating and frustrating it is for a code
+> > reviewer to have his comments deliberately ignored and deleted in
+> > replies?
 > 
-> > First off, using this macro with get_cycles() is simply buggy, because the
-> > macro expects _perfect_ order of timestamps, no skew whatsoever, or
-> > otherwise time could jump.
-> 
-> Erm...  Why can't I pass it get_cycles()?  Are you saying that sched_clock()
-> in MN10300 is wrong for it's use of get_cycles() with cnt32_to_63()?
-> 
+> Do you know how irritating and frustrating it is when reviewers don't 
+> care reading the damn comments along with the code?
 
-Yes. Do you think the synchronization of the cycles counters is
-_perfect_ across CPUs so that there is no possible way whatsoever that
-two cycle counter values appear to go backward between CPUs ? (also
-taking in account delays in __m_cnt_hi write-back...)
+As you still seek to ignore it, I shall repeat my earlier question. 
+Please do not delete it again.
 
-As I showed in my previous example, if you are unlucky enough to hit the
-spot where the cycle counters go backward at the time warp edge, time
-will jump of 2^32, so about 4.29s at 1GHz.
+   It apparently tries to avoid races via ordering tricks, as long
+   as it is called with sufficient frequency.  But nothing guarantees
+   that it _is_ called sufficiently frequently?
 
-> > 	__x.lo = readl(cnt_lo); /* mmio read */
-> 
-> readl() might insert an extra barrier instruction.  Not only that, io_addr
-> must be unsigned long.
+Things like tickless kernels and SCHED_RR can surely cause
+sched_clock() to not be called for arbitrary periods.
 
-If we expect the only correct use-case to be with readl(), I don't see
-the problem with added synchronization.
+Userspace cli() will definitely do this, but it is expected to break
+stuff and is not as legitiate a thing to do.
 
-> 
 
-Ah, right, then the parameters should be updated accordingly.
-
-static inline u64 cnt32_to_63(unsigned long io_addr, u32 *__m_cnt_hi)
-{
-        union cnt32_to_63 __x;
-        __x.hi = *__m_cnt_hi;   /* memory read for high bits internal state */
-        rmb();                  /*
-                                 * read high bits before low bits insures time
-                                 * does not go backward. Sync across
-                                 * CPUs and for interrupts.
-                                 */
-        __x.lo = readl(io_addr); /* mmio read */
-        if (unlikely((s32)(__x.hi ^ __x.lo) < 0))
-                *__m_cnt_hi =
-                        __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31);
-        return __x.val;
-}
-
-Mathieu
-
-> David
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+I'm just giving up on the tastefulness issue.
