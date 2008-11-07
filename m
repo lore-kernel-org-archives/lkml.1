@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbYKGX20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbYKGX13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbYKGX20 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYKGXXM
+	id S1754666AbYKGX13 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYKGXXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:23:12 -0500
-Received: from kroah.org ([198.145.64.141]:59324 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:23:07 -0500
+Received: from kroah.org ([198.145.64.141]:59287 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752999AbYKGXXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:23:08 -0500
-Date: Fri, 7 Nov 2008 15:15:53 -0800
+	id S1753703AbYKGXXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:23:04 -0500
+Date: Fri, 7 Nov 2008 15:15:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,132 +22,70 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 15/23] net: Fix netdev_run_todo dead-lock
-Message-ID: <20081107231553.GP1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Steven Toth <stoth@linuxtv.org>,
+       Devin Heitmueller <devin.heitmueller@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 12/23] DVB: s5h1411: Perform s5h1411 soft reset after tuning
+Message-ID: <20081107231547.GM1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0001-net-Fix-netdev_run_todo-dead-lock.patch"
+Content-Disposition: inline; filename="dvb-s5h1411-perform-s5h1411-soft-reset-after-tuning.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Devin Heitmueller <devin.heitmueller@gmail.com>
 
-[ Upstream commit 58ec3b4db9eb5a28e3aec5f407a54e28f7039c19 ]
+commit f0d041e50bc6c8a677922d72b010f80af9b23b18 upstream.
 
-Benjamin Thery tracked down a bug that explains many instances
-of the error
+DVB: s5h1411: Perform s5h1411 soft reset after tuning
 
-unregister_netdevice: waiting for %s to become free. Usage count = %d
+If you instruct the tuner to change frequencies, it can take up to 2500ms to
+get a demod lock.  By performing a soft reset after the tuning call (which
+is consistent with how the Pinnacle 801e Windows driver behaves), you get
+a demod lock inside of 300ms
 
-It turns out that netdev_run_todo can dead-lock with itself if
-a second instance of it is run in a thread that will then free
-a reference to the device waited on by the first instance.
-
-The problem is really quite silly.  We were trying to create
-parallelism where none was required.  As netdev_run_todo always
-follows a RTNL section, and that todo tasks can only be added
-with the RTNL held, by definition you should only need to wait
-for the very ones that you've added and be done with it.
-
-There is no need for a second mutex or spinlock.
-
-This is exactly what the following patch does.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Devin Heitmueller <devin.heitmueller@gmail.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
+Acked-by: Steven Toth <stoth@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/dev.c       |   27 ++++++---------------------
- net/core/rtnetlink.c |    2 +-
- 2 files changed, 7 insertions(+), 22 deletions(-)
+ drivers/media/dvb/frontends/s5h1411.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3624,14 +3624,11 @@ static int dev_new_index(struct net *net
- }
+--- a/drivers/media/dvb/frontends/s5h1411.c
++++ b/drivers/media/dvb/frontends/s5h1411.c
+@@ -588,9 +588,6 @@ static int s5h1411_set_frontend(struct d
  
- /* Delayed registration/unregisteration */
--static DEFINE_SPINLOCK(net_todo_list_lock);
- static LIST_HEAD(net_todo_list);
+ 	s5h1411_enable_modulation(fe, p->u.vsb.modulation);
  
- static void net_set_todo(struct net_device *dev)
- {
--	spin_lock(&net_todo_list_lock);
- 	list_add_tail(&dev->todo_list, &net_todo_list);
--	spin_unlock(&net_todo_list_lock);
- }
- 
- static void rollback_registered(struct net_device *dev)
-@@ -3941,33 +3938,24 @@ static void netdev_wait_allrefs(struct n
-  *	free_netdev(y1);
-  *	free_netdev(y2);
-  *
-- * We are invoked by rtnl_unlock() after it drops the semaphore.
-+ * We are invoked by rtnl_unlock().
-  * This allows us to deal with problems:
-  * 1) We can delete sysfs objects which invoke hotplug
-  *    without deadlocking with linkwatch via keventd.
-  * 2) Since we run with the RTNL semaphore not held, we can sleep
-  *    safely in order to wait for the netdev refcnt to drop to zero.
-+ *
-+ * We must not return until all unregister events added during
-+ * the interval the lock was held have been completed.
-  */
--static DEFINE_MUTEX(net_todo_run_mutex);
- void netdev_run_todo(void)
- {
- 	struct list_head list;
- 
--	/* Need to guard against multiple cpu's getting out of order. */
--	mutex_lock(&net_todo_run_mutex);
+-	/* Allow the demod to settle */
+-	msleep(100);
 -
--	/* Not safe to do outside the semaphore.  We must not return
--	 * until all unregister events invoked by the local processor
--	 * have been completed (either by this todo run, or one on
--	 * another cpu).
--	 */
--	if (list_empty(&net_todo_list))
--		goto out;
--
- 	/* Snapshot list, allow later requests */
--	spin_lock(&net_todo_list_lock);
- 	list_replace_init(&net_todo_list, &list);
--	spin_unlock(&net_todo_list_lock);
-+
-+	__rtnl_unlock();
- 
- 	while (!list_empty(&list)) {
- 		struct net_device *dev
-@@ -3997,9 +3985,6 @@ void netdev_run_todo(void)
- 		/* Free network device */
- 		kobject_put(&dev->dev.kobj);
+ 	if (fe->ops.tuner_ops.set_params) {
+ 		if (fe->ops.i2c_gate_ctrl)
+ 			fe->ops.i2c_gate_ctrl(fe, 1);
+@@ -601,6 +598,10 @@ static int s5h1411_set_frontend(struct d
+ 			fe->ops.i2c_gate_ctrl(fe, 0);
  	}
--
--out:
--	mutex_unlock(&net_todo_run_mutex);
- }
  
- static struct net_device_stats *internal_stats(struct net_device *dev)
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -73,7 +73,7 @@ void __rtnl_unlock(void)
- 
- void rtnl_unlock(void)
- {
--	mutex_unlock(&rtnl_mutex);
-+	/* This fellow will unlock it for us. */
- 	netdev_run_todo();
++	/* Issue a reset to the demod so it knows to resync against the
++	   newly tuned frequency */
++	s5h1411_softreset(fe);
++
+ 	return 0;
  }
  
 
