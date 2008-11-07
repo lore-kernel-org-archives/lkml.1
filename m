@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753051AbYKGXYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbYKGXXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753051AbYKGXYa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYKGXW4
+	id S1754048AbYKGXXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYKGXWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:22:56 -0500
-Received: from kroah.org ([198.145.64.141]:59184 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:22:53 -0500
+Received: from kroah.org ([198.145.64.141]:59150 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753153AbYKGXWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:22:54 -0500
-Date: Fri, 7 Nov 2008 15:15:21 -0800
+	id S1752665AbYKGXWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:22:51 -0500
+Date: Fri, 7 Nov 2008 15:15:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,57 +22,263 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Ferenc Wagner <wferi@niif.hu>
-Subject: [patch 04/23] SCSI: qla2xxx: Skip FDMI registration on
-	ISP21xx/22xx parts.
-Message-ID: <20081107231521.GE1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk, ext4 development <linux-ext4@vger.kernel.org>,
+       Eric Sandeen <sandeen@redhat.com>, Eugene Teo <eugeneteo@kernel.sg>
+Subject: [patch 02/23] ext: Avoid printk floods in the face of directory
+	corruption (CVE-2008-3528)
+Message-ID: <20081107231516.GC1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-qla2xxx-skip-fdmi-registration-on-isp21xx-22xx-parts.patch"
+Content-Disposition: inline; filename="ext-avoid-printk-floods-in-the-face-of-directory-corruption.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+From: Eric Sandeen <sandeen@redhat.com>
 
-commit 031e134e5f95233d80fb1b62fdaf5e1be587597c upstream
+This is a trivial backport of the following upstream commits:
 
-Firmware does not have the facilities to issue management server
-IOCBs.
+- bd39597cbd42a784105a04010100e27267481c67 (ext2)
+- cdbf6dba28e8e6268c8420857696309470009fd9 (ext3)
+- 9d9f177572d9e4eba0f2e18523b44f90dd51fe74 (ext4)
 
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Ferenc Wagner <wferi@niif.hu>
+This addresses CVE-2008-3528
+
+ext[234]: Avoid printk floods in the face of directory corruption
+
+Note: some people thinks this represents a security bug, since it
+might make the system go away while it is printing a large number of
+console messages, especially if a serial console is involved.  Hence,
+it has been assigned CVE-2008-3528, but it requires that the attacker
+either has physical access to your machine to insert a USB disk with a
+corrupted filesystem image (at which point why not just hit the power
+button), or is otherwise able to convince the system administrator to
+mount an arbitrary filesystem image (at which point why not just
+include a setuid shell or world-writable hard disk device file or some
+such).  Me, I think they're just being silly. --tytso
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: linux-ext4@vger.kernel.org
+Cc: Eugene Teo <eugeneteo@kernel.sg>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/qla2xxx/qla_gs.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ fs/ext2/dir.c |   60 +++++++++++++++++++++++++++++++++-------------------------
+ fs/ext3/dir.c |   10 ++++++---
+ fs/ext4/dir.c |   11 +++++++---
+ 3 files changed, 50 insertions(+), 31 deletions(-)
 
---- a/drivers/scsi/qla2xxx/qla_gs.c
-+++ b/drivers/scsi/qla2xxx/qla_gs.c
-@@ -1661,6 +1661,12 @@ qla2x00_fdmi_register(scsi_qla_host_t *h
- {
- 	int rval;
+--- a/fs/ext2/dir.c
++++ b/fs/ext2/dir.c
+@@ -103,7 +103,7 @@ static int ext2_commit_chunk(struct page
+ 	return err;
+ }
  
-+	if (IS_QLA2100(ha) || IS_QLA2200(ha)) {
-+		DEBUG2(printk("scsi(%ld): FDMI unsupported on "
-+		    "ISP2100/ISP2200.\n", ha->host_no));
-+		return QLA_SUCCESS;
+-static void ext2_check_page(struct page *page)
++static void ext2_check_page(struct page *page, int quiet)
+ {
+ 	struct inode *dir = page->mapping->host;
+ 	struct super_block *sb = dir->i_sb;
+@@ -146,10 +146,10 @@ out:
+ 	/* Too bad, we had an error */
+ 
+ Ebadsize:
+-	ext2_error(sb, "ext2_check_page",
+-		"size of directory #%lu is not a multiple of chunk size",
+-		dir->i_ino
+-	);
++	if (!quiet)
++		ext2_error(sb, __func__,
++			"size of directory #%lu is not a multiple "
++			"of chunk size", dir->i_ino);
+ 	goto fail;
+ Eshort:
+ 	error = "rec_len is smaller than minimal";
+@@ -166,32 +166,36 @@ Espan:
+ Einumber:
+ 	error = "inode out of bounds";
+ bad_entry:
+-	ext2_error (sb, "ext2_check_page", "bad entry in directory #%lu: %s - "
+-		"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
+-		dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
+-		(unsigned long) le32_to_cpu(p->inode),
+-		rec_len, p->name_len);
++	if (!quiet)
++		ext2_error(sb, __func__, "bad entry in directory #%lu: : %s - "
++			"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
++			dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
++			(unsigned long) le32_to_cpu(p->inode),
++			rec_len, p->name_len);
+ 	goto fail;
+ Eend:
+-	p = (ext2_dirent *)(kaddr + offs);
+-	ext2_error (sb, "ext2_check_page",
+-		"entry in directory #%lu spans the page boundary"
+-		"offset=%lu, inode=%lu",
+-		dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
+-		(unsigned long) le32_to_cpu(p->inode));
++	if (!quiet) {
++		p = (ext2_dirent *)(kaddr + offs);
++		ext2_error(sb, "ext2_check_page",
++			"entry in directory #%lu spans the page boundary"
++			"offset=%lu, inode=%lu",
++			dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
++			(unsigned long) le32_to_cpu(p->inode));
 +	}
+ fail:
+ 	SetPageChecked(page);
+ 	SetPageError(page);
+ }
+ 
+-static struct page * ext2_get_page(struct inode *dir, unsigned long n)
++static struct page * ext2_get_page(struct inode *dir, unsigned long n,
++				   int quiet)
+ {
+ 	struct address_space *mapping = dir->i_mapping;
+ 	struct page *page = read_mapping_page(mapping, n, NULL);
+ 	if (!IS_ERR(page)) {
+ 		kmap(page);
+ 		if (!PageChecked(page))
+-			ext2_check_page(page);
++			ext2_check_page(page, quiet);
+ 		if (PageError(page))
+ 			goto fail;
+ 	}
+@@ -292,7 +296,7 @@ ext2_readdir (struct file * filp, void *
+ 	for ( ; n < npages; n++, offset = 0) {
+ 		char *kaddr, *limit;
+ 		ext2_dirent *de;
+-		struct page *page = ext2_get_page(inode, n);
++		struct page *page = ext2_get_page(inode, n, 0);
+ 
+ 		if (IS_ERR(page)) {
+ 			ext2_error(sb, __func__,
+@@ -361,6 +365,7 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 	struct page *page = NULL;
+ 	struct ext2_inode_info *ei = EXT2_I(dir);
+ 	ext2_dirent * de;
++	int dir_has_error = 0;
+ 
+ 	if (npages == 0)
+ 		goto out;
+@@ -374,7 +379,7 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 	n = start;
+ 	do {
+ 		char *kaddr;
+-		page = ext2_get_page(dir, n);
++		page = ext2_get_page(dir, n, dir_has_error);
+ 		if (!IS_ERR(page)) {
+ 			kaddr = page_address(page);
+ 			de = (ext2_dirent *) kaddr;
+@@ -391,7 +396,9 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 				de = ext2_next_entry(de);
+ 			}
+ 			ext2_put_page(page);
+-		}
++		} else
++			dir_has_error = 1;
 +
- 	rval = qla2x00_mgmt_svr_login(ha);
- 	if (rval)
- 		return rval;
+ 		if (++n >= npages)
+ 			n = 0;
+ 		/* next page is past the blocks we've got */
+@@ -414,7 +421,7 @@ found:
+ 
+ struct ext2_dir_entry_2 * ext2_dotdot (struct inode *dir, struct page **p)
+ {
+-	struct page *page = ext2_get_page(dir, 0);
++	struct page *page = ext2_get_page(dir, 0, 0);
+ 	ext2_dirent *de = NULL;
+ 
+ 	if (!IS_ERR(page)) {
+@@ -487,7 +494,7 @@ int ext2_add_link (struct dentry *dentry
+ 	for (n = 0; n <= npages; n++) {
+ 		char *dir_end;
+ 
+-		page = ext2_get_page(dir, n);
++		page = ext2_get_page(dir, n, 0);
+ 		err = PTR_ERR(page);
+ 		if (IS_ERR(page))
+ 			goto out;
+@@ -655,14 +662,17 @@ int ext2_empty_dir (struct inode * inode
+ {
+ 	struct page *page = NULL;
+ 	unsigned long i, npages = dir_pages(inode);
++	int dir_has_error = 0;
+ 
+ 	for (i = 0; i < npages; i++) {
+ 		char *kaddr;
+ 		ext2_dirent * de;
+-		page = ext2_get_page(inode, i);
++		page = ext2_get_page(inode, i, dir_has_error);
+ 
+-		if (IS_ERR(page))
++		if (IS_ERR(page)) {
++			dir_has_error = 1;
+ 			continue;
++		}
+ 
+ 		kaddr = page_address(page);
+ 		de = (ext2_dirent *)kaddr;
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -102,6 +102,7 @@ static int ext3_readdir(struct file * fi
+ 	int err;
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	int ret = 0;
++	int dir_has_error = 0;
+ 
+ 	sb = inode->i_sb;
+ 
+@@ -148,9 +149,12 @@ static int ext3_readdir(struct file * fi
+ 		 * of recovering data when there's a bad sector
+ 		 */
+ 		if (!bh) {
+-			ext3_error (sb, "ext3_readdir",
+-				"directory #%lu contains a hole at offset %lu",
+-				inode->i_ino, (unsigned long)filp->f_pos);
++			if (!dir_has_error) {
++				ext3_error(sb, __func__, "directory #%lu "
++					"contains a hole at offset %lld",
++					inode->i_ino, filp->f_pos);
++				dir_has_error = 1;
++			}
+ 			/* corrupt size?  Maybe no more blocks to read */
+ 			if (filp->f_pos > inode->i_blocks << 9)
+ 				break;
+--- a/fs/ext4/dir.c
++++ b/fs/ext4/dir.c
+@@ -102,6 +102,7 @@ static int ext4_readdir(struct file * fi
+ 	int err;
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	int ret = 0;
++	int dir_has_error = 0;
+ 
+ 	sb = inode->i_sb;
+ 
+@@ -147,9 +148,13 @@ static int ext4_readdir(struct file * fi
+ 		 * of recovering data when there's a bad sector
+ 		 */
+ 		if (!bh) {
+-			ext4_error (sb, "ext4_readdir",
+-				"directory #%lu contains a hole at offset %lu",
+-				inode->i_ino, (unsigned long)filp->f_pos);
++			if (!dir_has_error) {
++				ext4_error(sb, __func__, "directory #%lu "
++					   "contains a hole at offset %Lu",
++					   inode->i_ino,
++					   (unsigned long long) filp->f_pos);
++				dir_has_error = 1;
++			}
+ 			/* corrupt size?  Maybe no more blocks to read */
+ 			if (filp->f_pos > inode->i_blocks << 9)
+ 				break;
 
 -- 
