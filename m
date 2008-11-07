@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYKGNRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbYKGNRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbYKGNRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 08:17:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKGNRJ
+	id S1752928AbYKGNRv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 08:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751287AbYKGNRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 08:17:09 -0500
-Received: from outbound-mail-37.bluehost.com ([69.89.20.191]:60300 "HELO
-	outbound-mail-37.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751287AbYKGNRH (ORCPT
+	Fri, 7 Nov 2008 08:17:42 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50057 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbYKGNRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 08:17:07 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=uniscape.net;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=fdOjasiNtWp00vMRGvfvyDSmgXaCey9d4Zc2r786eQHi/+u/wlX1A2xqqe/hd8WONEsrJXrkGSz/yQIbzTAhouApytrbz7PBVwtcGRq0zhTsZ3NxiJBVIt+NG+f2e6TR;
-Message-ID: <49143E00.30003@uniscape.net>
-Date: Fri, 07 Nov 2008 21:09:20 +0800
-From: Yu Zhao <yu.zhao@uniscape.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
-MIME-Version: 1.0
-To: H L <swdevyid@yahoo.com>
-CC: Greg KH <greg@kroah.com>, Yu Zhao <yu.zhao@intel.com>,
-       randy.dunlap@oracle.com, grundler@parisc-linux.org, achiang@hp.com,
-       matthew@wil.cx, linux-pci@vger.kernel.org, rdreier@cisco.com,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
-Subject: Re: git repository for SR-IOV development?
-References: <20081106165914.GA13476@kroah.com> <104014.9320.qm@web45110.mail.sp1.yahoo.com> <20081107015844.GA11884@kroah.com>
-In-Reply-To: <20081107015844.GA11884@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 7 Nov 2008 08:17:41 -0500
+Subject: Re: [PATCH] ftrace: Allow section alignment
+From: Peter Zijlstra <peterz@infradead.org>
+To: Matt Fleming <mjf@gentoo.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, rostedt@goodmis.org
+In-Reply-To: <5ff4a1e50811070512v410e623ax60e8a65b169f800@mail.gmail.com>
+References: <5ff4a1e50811070512v410e623ax60e8a65b169f800@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {2990:host272.hostmonster.com:uniscape:uniscape.net} {sentby:smtp auth 124.76.3.39 authed with yu.zhao@uniscape.net}
+Date: Fri, 07 Nov 2008 14:18:16 +0100
+Message-Id: <1226063896.2697.28.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Lance,
+On Fri, 2008-11-07 at 13:12 +0000, Matt Fleming wrote:
+> Provide a means of aligning the __mcount_loc section.
 
-Thanks for your interest in SR-IOV. As Greg said we can't have a git 
-tree for the change, but you are welcome to ask any question here and I 
-also will keep you informed if there is any update on the SR-IOV patches.
+Not that I object to the patch, but this changelog needs work.
 
-Thanks,
-Yu
+Its wrong, it doesn't provide means, it plain does.
+It doesn't tell us why.
 
-Greg KH wrote:
-> On Thu, Nov 06, 2008 at 11:58:25AM -0800, H L wrote:
->> --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
->>
->>> On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
->>>> Has anyone initiated or given consideration to the
->>> creation of a git
->>>> repository (say, on kernel.org) for SR-IOV
->>> development?
->>>
->>> Why?  It's only a few patches, right?  Why would it
->>> need a whole new git
->>> tree?
->>
->> So as to minimize the time and effort patching a kernel, especially if
->> the tree (and/or hash level) against which the patches were created
->> fails to be specified on a mailing-list.  Plus, there appears to be
->> questions raised on how, precisely, the implementation should
->> ultimately be modeled and especially given that, who knows at this
->> point what number of patches will ultimately be submitted?  I know
->> I've built the "7-patch" one (painfully, by the way), and I'm aware
->> there's another 15-patch set out there which I've not yet examined.
+> Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
+> ---
+>  scripts/recordmcount.pl |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> It's a mere 7 or 15 patches, you don't need a whole git tree for
-> something small like that.
+> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+> index 6b9fe3e..2d0bfa1 100755
+> --- a/scripts/recordmcount.pl
+> +++ b/scripts/recordmcount.pl
+> @@ -134,6 +134,7 @@ my $section_regex;  # Find the start of a section
+>  my $function_regex;    # Find the name of a function
+>                         #    (return offset and func name)
+>  my $mcount_regex;      # Find the call site to mcount (return offset)
+> +my $alignment;         # The .align value to use for $mcount_section
 > 
-> Especially as there only seems to be one developer doing real work...
+>  if ($arch eq "x86") {
+>      if ($bits == 64) {
+> @@ -148,6 +149,7 @@ if ($arch eq "x86_64") {
+>      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+>      $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
+>      $type = ".quad";
+> +    $alignment = 8;
 > 
-> thanks,
+>      # force flags for this arch
+>      $ld .= " -m elf_x86_64";
+> @@ -160,6 +162,7 @@ if ($arch eq "x86_64") {
+>      $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
+>      $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
+>      $type = ".long";
+> +    $alignment = 4;
 > 
-> greg k-h
+>      # force flags for this arch
+>      $ld .= " -m elf_i386";
+> @@ -288,6 +291,7 @@ sub update_funcs
+>             open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
+>             $opened = 1;
+>             print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
+> +           print FILE "\t.align $alignment\n";
+>         }
+>         printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
+>      }
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+> 1.5.6.4
