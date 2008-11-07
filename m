@@ -1,95 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbYKGRdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYKGRlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbYKGRdm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 12:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYKGRdc
+	id S1753483AbYKGRlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 12:41:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYKGRli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 12:33:32 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:64291 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbYKGRdb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 12:33:31 -0500
-Date: Fri, 7 Nov 2008 12:33:26 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: David Howells <dhowells@redhat.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Nicolas Pitre <nico@cam.org>, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-In-Reply-To: <20081107170902.GD22134@Krystal>
-Message-ID: <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com>
-References: <20081107053349.861709786@polymtl.ca> <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 7 Nov 2008 12:41:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55003 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbYKGRlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 12:41:37 -0500
+Date: Fri, 7 Nov 2008 19:42:05 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Doug Chapman <doug.chapman@hp.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       adobriyan@gmail.com, Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] account_group_exec_runtime: fix the racy usage of
+	->signal
+Message-ID: <20081107184205.GA30523@redhat.com>
+References: <20081107165238.GA23055@redhat.com> <20081107162101.GA2178@elte.hu> <1226077087.6451.18.camel@oberon>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1226077087.6451.18.camel@oberon>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 11/07, Doug Chapman wrote:
+> 
+> On Fri, 2008-11-07 at 17:21 +0100, Ingo Molnar wrote:
+> > * Oleg Nesterov <oleg@redhat.com> wrote:
+> >
+> > > @@ -351,10 +351,12 @@ static inline void account_group_exec_ru
+> > >  					      unsigned long long ns)
+> > >  {
+> > >  	struct signal_struct *sig;
+> > > +	unsigned long flags;
+> > >
+> > > -	sig = tsk->signal;
+> > > -	if (unlikely(!sig))
+> > > +	if (unlikely(!lock_task_sighand(tsk, &flags)))
+> > >  		return;
+> >
+> > i think this will lock up: the signal lock must not nest inside the rq 
+> > lock, and these accounting functions are called from within the 
+> > scheduler.
+>
+> I can confirm that this does hang on bootup.
 
-On Fri, 7 Nov 2008, Mathieu Desnoyers wrote:
-> 
->   __m_cnt_hi
->  is read before
->   mmio cnt_lo read
-> 
-> for the detailed reasons explained in my previous discussion with
-> Nicolas here :
-> http://lkml.org/lkml/2008/10/21/1
-> 
-> I use smp_rmb() to do this on SMP systems (hrm, actually, a rmb() could
-> be required so it works also on UP systems safely wrt interrupts).
+Thanks a lot Doug.
 
-smp_rmb turns into a compiler barrier on UP and should prevent the below
-description.
+If only I could understand what happens. I am running the 2.6.27 kernel
+with the patch below just fine.
 
--- Steve
+Ingo, could you please explain?
 
-> 
-> The write side is between the hardware counter, which is assumed to
-> increment monotonically between each read, and the value __m_cnt_hi
-> updated by the CPU. I don't see where we could put a wmb() there.
-> 
-> Without barrier, the smp race looks as follow :
-> 
-> 
-> CPU    A                                    B
->                                             read hw cnt low (0xFFFFFFFA)
->        read __m_cnt_hi (0x80000000)
->        read hw cnt low (0x00000001)
->        (wrap detected :
->         (s32)(0x80000000 ^ 0x1) < 0)
->        write __m_cnt_hi = 0x00000001
->                                             read __m_cnt_hi (0x00000001)
->        return 0x0000000100000001
->                                             (wrap detected :
->                                              (s32)(0x00000001 ^ 0xFFFFFFFA) < 0)
->                                             write __m_cnt_hi = 0x80000001
->                                             return 0x80000001FFFFFFFA
->                                                                   (time jumps)
-> 
-> And UP interrupt race :
-> 
->        Thread context                       Interrupts
->        read hw cnt low (0xFFFFFFFA)
->                                             read __m_cnt_hi (0x80000000)
->                                             read hw cnt low (0x00000001)
->                                             (wrap detected :
->                                              (s32)(0x80000000 ^ 0x1) < 0)
->                                             write __m_cnt_hi = 0x00000001
->        read __m_cnt_hi (0x00000001)
->                                             return 0x0000000100000001
->        (wrap detected :
->         (s32)(0x00000001 ^ 0xFFFFFFFA) < 0)
->        write __m_cnt_hi = 0x80000001
->        return 0x80000001FFFFFFFA
->                 (time jumps)
-> 
+OK, perhaps we can check ->exit_state... I'll return on Monday.
+
+
+--- linux-2.6.27/kernel/sched_fair.c~DBG	2008-10-10 00:13:53.000000000 +0200
++++ linux-2.6.27/kernel/sched_fair.c	2008-11-07 19:15:28.000000000 +0100
+@@ -484,6 +484,16 @@ __update_curr(struct cfs_rq *cfs_rq, str
+ 	curr->vruntime += delta_exec_weighted;
+ }
+ 
++static void ttt(struct task_struct *tsk)
++{
++	unsigned long flags;
++
++	if (unlikely(!lock_task_sighand(tsk, &flags)))
++		return;
++
++	unlock_task_sighand(tsk, &flags);
++}
++
+ static void update_curr(struct cfs_rq *cfs_rq)
+ {
+ 	struct sched_entity *curr = cfs_rq->curr;
+@@ -507,6 +517,7 @@ static void update_curr(struct cfs_rq *c
+ 		struct task_struct *curtask = task_of(curr);
+ 
+ 		cpuacct_charge(curtask, delta_exec);
++		ttt(curtask);
+ 	}
+ }
+ 
+
