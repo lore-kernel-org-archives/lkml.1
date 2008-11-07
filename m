@@ -1,202 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbYKGH7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYKGIAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753233AbYKGH7q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 02:59:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYKGH7h
+	id S1753640AbYKGIAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbYKGIAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 02:59:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34819 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbYKGH7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 02:59:36 -0500
-Date: Fri, 7 Nov 2008 08:59:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
-Message-ID: <20081107075925.GA1825@elte.hu>
-References: <20081106203520.GD3578@elte.hu> <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu>
+	Fri, 7 Nov 2008 03:00:22 -0500
+Received: from hope.ime.usp.br ([143.107.45.8]:56746 "HELO hope.ime.usp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750929AbYKGIAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:00:20 -0500
+Message-ID: <1226044855.4913f5b7f2f45@webmail.ime.usp.br>
+Date: Fri, 07 Nov 2008 06:00:55 -0200
+From: Rogerio Theodoro de Brito <rbrito@ime.usp.br>
+To: =?iso-8859-1?b?Um9n6XJpbw==?= Brito <rbrito@ime.usp.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
+       rbrito@ime.usp.br
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
+References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br>
+In-Reply-To: <20081107014535.GA19201@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081107074147.GA26607@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+User-Agent: Internet Messaging Program (IMP) 3.2.1
+X-Originating-IP: 189.39.150.164
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Some more information that may prove to be useful.
 
-> > > + * buffer size used for proc read.  See proc_info_read().
-> > > + * 4K page size but our output routines use some slack for overruns
-> > > + */
-> > > +#define PROC_BLOCK_SIZE	(3*1024)
-> 
-> That sounds like a proper limit - the hard limit for this particular 
-> printout function is 4096-170, so we are well within the 
-> PROC_BLOCK_SIZE range.
+Quoting Rogério Brito <rbrito@ime.usp.br>:
+> If any further information is needed, please let me know.
 
-ok, i've added Ken's patch to tip/core/stacktrace and started testing 
-it.
+I just discovered that the "suspend button" is overloaded: it is actually 
+a poweroff button, which would explain the behaviour when the kernel is in 
+suspend to RAM.
 
-Alexey, i've added your Acked-by because you appeared to like the 
-patch - let me know if i should remove it.
+(This notebook doesn't have a suspend hehaviour when closing the lid, as 
+far as I could observe right now).
 
-i've done a few finishing touches to the patch as well - see the end 
-result below.
+I just reinstalled Windows Vista (from the rescue DVD) and it suspends and 
+resumes fine. I don't know where Windows stores its logs (sorry, I've been 
+using Unix systems for more than a decade).
 
-Andrew, i remember that you found some sort of problem (crashes?) with 
-stack-dumping tasks that are running on another CPU (or something like 
-that) - do you remember the specifics? Could we run into any of those 
-problems with the patch below, on some rare architecture?
+So, summarizing, it seems that the "suspend to RAM" button is actually a 
+poweroff button, but this behaviour of powering off the machine manifests 
+only when the kernel is already in a suspend to ram state. I can provide 
+more information under guidance. Please, just let me know what is needed 
+and I will test anything, as this notebook has not yet been used for 
+production.
 
-	Ingo
 
-------------------->
->From d3d23f82adeb5ec8a9546747d1df058dcaad0589 Mon Sep 17 00:00:00 2001
-From: Ken Chen <kenchen@google.com>
-Date: Thu, 6 Nov 2008 16:30:23 -0800
-Subject: [PATCH] stacktrace: add /proc/<pid>/stack to dump task's stack trace
+Thanks in advance for any help, Rogério Brito.
 
-Impact: add the new (root-only) /proc/<pid>/stack debug facility
-
-This patch adds the ability to query a task's current stack trace via
-/proc/<pid>/stack.
-
-It is considered to be more useful than /proc/pid/wchan as it provides
-full stack trace instead of single depth.
-
-It is also more useful than sysrq-t because it does not overflow the
-dmesg like sysrq-t often does, can be read in a finegrained per-task
-way and can be read programmatically as well.
-
-It works on sleeping and running tasks as well.
-
-Also, move up PROC_BLOCK_SIZE a bit so that proc_pid_stack() can use it.
-
-[ mingo@elte.hu: small cleanups, comments ]
-
-Signed-off-by: Ken Chen <kenchen@google.com>
-Acked-by: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- Documentation/filesystems/proc.txt |    1 +
- fs/proc/base.c                     |   52 ++++++++++++++++++++++++++++++++++-
- 2 files changed, 51 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index bcceb99..11f5b75 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -139,6 +139,7 @@ Table 1-1: Process specific entries in /proc
-  statm		Process memory status information
-  status		Process status in human readable form
-  wchan		If CONFIG_KALLSYMS is set, a pre-decoded wchan
-+ stack		Report full stack trace, enable via CONFIG_STACKTRACE
-  smaps		Extension based on maps, the rss size for each mapped file
- ..............................................................................
- 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 486cf3f..805e514 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -65,6 +65,7 @@
- #include <linux/mm.h>
- #include <linux/rcupdate.h>
- #include <linux/kallsyms.h>
-+#include <linux/stacktrace.h>
- #include <linux/resource.h>
- #include <linux/module.h>
- #include <linux/mount.h>
-@@ -130,6 +131,12 @@ struct pid_entry {
- 		{ .proc_show = &proc_##OTYPE } )
- 
- /*
-+ * buffer size used for proc read.  See proc_info_read().
-+ * 4K page size but our output routines use some slack for overruns
-+ */
-+#define PROC_BLOCK_SIZE	(3*1024)
-+
-+/*
-  * Count the number of hardlinks for the pid_entry table, excluding the .
-  * and .. links.
-  */
-@@ -340,6 +347,46 @@ static int proc_pid_wchan(struct task_struct *task, char *buffer)
- }
- #endif /* CONFIG_KALLSYMS */
- 
-+#ifdef CONFIG_STACKTRACE
-+
-+#define MAX_STACK_TRACE_DEPTH	64
-+
-+static int proc_pid_stack(struct task_struct *task, char *buffer)
-+{
-+	struct stack_trace trace;
-+	unsigned long *entries;
-+	int i, len = 0;
-+
-+	entries = kmalloc(sizeof(*entries)*MAX_STACK_TRACE_DEPTH, GFP_KERNEL);
-+	if (!entries)
-+		return -ENOMEM;
-+
-+	trace.nr_entries	= 0;
-+	trace.max_entries	= MAX_STACK_TRACE_DEPTH;
-+	trace.entries		= entries;
-+	trace.skip		= 0;
-+
-+	/*
-+	 * Protect against the task exiting (and deallocating its
-+	 * stack, etc.) while we save its backtrace:
-+	 */
-+	read_lock(&tasklist_lock);
-+	save_stack_trace_tsk(task, &trace);
-+	read_unlock(&tasklist_lock);
-+
-+	for (i = 0; i < trace.nr_entries; i++) {
-+		len += snprintf(buffer + len, PROC_BLOCK_SIZE - len,
-+				"[<%p>] %pS\n",
-+				(void *)entries[i], (void *)entries[i]);
-+		if (!len)
-+			break;
-+	}
-+	kfree(entries);
-+
-+	return len;
-+}
-+#endif
-+
- #ifdef CONFIG_SCHEDSTATS
- /*
-  * Provides /proc/PID/schedstat
-@@ -688,8 +735,6 @@ static const struct file_operations proc_mountstats_operations = {
- 	.release	= mounts_release,
- };
- 
--#define PROC_BLOCK_SIZE	(3*1024)		/* 4K page size but our output routines use some slack for overruns */
--
- static ssize_t proc_info_read(struct file * file, char __user * buf,
- 			  size_t count, loff_t *ppos)
- {
-@@ -2491,6 +2536,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_KALLSYMS
- 	INF("wchan",      S_IRUGO, pid_wchan),
- #endif
-+#ifdef CONFIG_STACKTRACE
-+	INF("stack",      S_IRUSR, pid_stack),
-+#endif
- #ifdef CONFIG_SCHEDSTATS
- 	INF("schedstat",  S_IRUGO, pid_schedstat),
- #endif
+-- 
+Rogério Brito : rbrito@ime.usp.br : http://www.ime.usp.br/~rbrito
+Homepage of the algorithms package : http://algorithms.berlios.de
+Homepage on freshmeat:  http://freshmeat.net/projects/algorithms/
