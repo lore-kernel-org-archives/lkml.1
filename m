@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYKGXce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbYKGXcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbYKGXce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYKGX0r
+	id S1753526AbYKGXcu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbYKGX0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:26:47 -0500
-Received: from kroah.org ([198.145.64.141]:47504 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:26:48 -0500
+Received: from kroah.org ([198.145.64.141]:47520 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754804AbYKGX0p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:26:45 -0500
-Date: Fri, 7 Nov 2008 15:26:03 -0800
+	id S1754097AbYKGX0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:26:46 -0500
+Date: Fri, 7 Nov 2008 15:26:05 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: [patch 03/16] edac cell: fix incorrect edac_mode
-Message-ID: <20081107232603.GD4282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 04/16] net: Fix recursive descent in __scm_destroy().
+Message-ID: <20081107232605.GE4282@kroah.com>
 References: <20081107231848.995297975@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="edac-cell-fix-incorrect-edac_mode.patch"
+Content-Disposition: inline; filename="net-fix-recursive-descent-in-__scm_destroy.patch"
 In-Reply-To: <20081107232544.GA4282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,34 +39,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: David Miller <davem@davemloft.net>
 
-commit 3b274f44d2ca05f719fe39947b6a5293a2dbd8fd upstream
+commit f8d570a4745835f2238a33b537218a1bb03fc671 and
+3b53fbf4314594fa04544b02b2fc6e607912da18 upstream (because once wasn't
+good enough...)
 
-The cell_edac driver is setting the edac_mode field of the csrow's to an
-incorrect value, causing the sysfs show routine for that field to go out
-of an array bound and Oopsing the kernel when used.
+__scm_destroy() walks the list of file descriptors in the scm_fp_list
+pointed to by the scm_cookie argument.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Those, in turn, can close sockets and invoke __scm_destroy() again.
+
+There is nothing which limits how deeply this can occur.
+
+The idea for how to fix this is from Linus.  Basically, we do all of
+the fput()s at the top level by collecting all of the scm_fp_list
+objects hit by an fput().  Inside of the initial __scm_destroy() we
+keep running the list until it is empty.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/edac/cell_edac.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/sched.h |    4 +++-
+ include/net/scm.h     |    5 +++--
+ net/core/scm.c        |   24 +++++++++++++++++++++---
+ 3 files changed, 27 insertions(+), 6 deletions(-)
 
---- a/drivers/edac/cell_edac.c
-+++ b/drivers/edac/cell_edac.c
-@@ -141,7 +141,7 @@ static void __devinit cell_edac_init_csr
- 		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
- 		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
- 		csrow->mtype = MEM_XDR;
--		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+		csrow->edac_mode = EDAC_SECDED;
- 		dev_dbg(mci->dev,
- 			"Initialized on node %d, chanmask=0x%x,"
- 			" first_page=0x%lx, nr_pages=0x%x\n",
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1256,7 +1256,9 @@ struct task_struct {
+ 	atomic_t fs_excl;	/* holding fs exclusive resources */
+ 	struct rcu_head rcu;
+ 
+-	/*
++	struct list_head	*scm_work_list;
++
++/*
+ 	 * cache last used pipe for splice
+ 	 */
+ 	struct pipe_inode_info *splice_pipe;
+--- a/include/net/scm.h
++++ b/include/net/scm.h
+@@ -14,8 +14,9 @@
+ 
+ struct scm_fp_list
+ {
+-	int		count;
+-	struct file	*fp[SCM_MAX_FD];
++	struct list_head	list;
++	int			count;
++	struct file		*fp[SCM_MAX_FD];
+ };
+ 
+ struct scm_cookie
+--- a/net/core/scm.c
++++ b/net/core/scm.c
+@@ -75,6 +75,7 @@ static int scm_fp_copy(struct cmsghdr *c
+ 		if (!fpl)
+ 			return -ENOMEM;
+ 		*fplp = fpl;
++		INIT_LIST_HEAD(&fpl->list);
+ 		fpl->count = 0;
+ 	}
+ 	fpp = &fpl->fp[fpl->count];
+@@ -106,9 +107,25 @@ void __scm_destroy(struct scm_cookie *sc
+ 
+ 	if (fpl) {
+ 		scm->fp = NULL;
+-		for (i=fpl->count-1; i>=0; i--)
+-			fput(fpl->fp[i]);
+-		kfree(fpl);
++		if (current->scm_work_list) {
++			list_add_tail(&fpl->list, current->scm_work_list);
++		} else {
++			LIST_HEAD(work_list);
++
++			current->scm_work_list = &work_list;
++
++			list_add(&fpl->list, &work_list);
++			while (!list_empty(&work_list)) {
++				fpl = list_first_entry(&work_list, struct scm_fp_list, list);
++
++				list_del(&fpl->list);
++				for (i=fpl->count-1; i>=0; i--)
++					fput(fpl->fp[i]);
++				kfree(fpl);
++			}
++
++			current->scm_work_list = NULL;
++		}
+ 	}
+ }
+ 
+@@ -284,6 +301,7 @@ struct scm_fp_list *scm_fp_dup(struct sc
+ 
+ 	new_fpl = kmalloc(sizeof(*fpl), GFP_KERNEL);
+ 	if (new_fpl) {
++		INIT_LIST_HEAD(&new_fpl->list);
+ 		for (i=fpl->count-1; i>=0; i--)
+ 			get_file(fpl->fp[i]);
+ 		memcpy(new_fpl, fpl, sizeof(*fpl));
 
 -- 
