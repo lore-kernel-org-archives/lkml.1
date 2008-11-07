@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbYKGLwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbYKGL47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144AbYKGLwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:52:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYKGLwp
+	id S1753286AbYKGL47 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYKGL4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:52:45 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:15109 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256AbYKGLwo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:52:44 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [RFC patch 17/18] MIPS : Trace clock
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <20081107053351.329744816@polymtl.ca>
-References: <20081107052336.652868737@polymtl.ca>
-	 <20081107053351.329744816@polymtl.ca>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 12:53:17 +0100
-Message-Id: <1226058797.2697.19.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 7 Nov 2008 06:56:48 -0500
+Received: from mga09.intel.com ([134.134.136.24]:65449 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750978AbYKGL4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:56:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,564,1220252400"; 
+   d="scan'208";a="357311568"
+From: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Subject: [PATCH 0/4] I/OAT fixes
+To: dan.j.williams@intel.com
+Cc: tom.s.picard@intel.com, mark_rustad@Xiotech.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
+Date: Fri, 07 Nov 2008 12:45:16 +0100
+Message-ID: <20081107114325.25190.5419.stgit@linux.site>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 00:23 -0500, Mathieu Desnoyers wrote:
-> Note for Peter Zijlstra :
-> You should probably have a look at lockdep.c raw_spinlock_t lockdep_lock usage.
-> I suspect it may be used with preemption enabled in graph_lock(). (not sure
-> though, but it's worth double-checking.
+This patch series contains couple of fixes for I/OAT DMA and DCA.
 
-Are you worried about the graph_lock() instance in
-lookup_chain_cache() ?
+Maciej Sosnowski (3):
+    I/OAT: fix channel resources free for not allocated channels
+    I/OAT: fix dma_pin_iovec_pages() error handling
+    I/OAT: fix async_tx.callback checking
 
-That is the locking for validate_chain,
+Dan Williams (1):
+    dca: fixup initialization dependency
 
-__lock_acquire()
- validate_chain()
-   look_up_chain_cache()
-     graph_lock()
-   check_prevs_add()
-     check_prev_add()
-       graph_unlock()
-       graph_lock()
-   graph_unlock()
+ drivers/dca/dca-core.c |    2 +-
+ drivers/dma/ioat_dma.c |   11 +++++++++--
+ drivers/dma/iovlock.c  |   17 ++++++-----------
+ 3 files changed, 16 insertions(+), 14 deletions(-)
 
-which is all done without modifying IRQ state.
-
-However, __lock_acquire() is only called with IRQs disabled:
-
-lock_acquire()
-  raw_local_irq_save()
-  __lock_acquire()
-
-lock_release()
-  raw_local_irq_save()
-  __lock_release()
-    lock_release_nested()
-      __lock_acquire()
-    lock_release_non_nested()
-      __lock_acquire()
-
-lock_set_subclass()
-  raw_local_irq_save()
-  __lock_set_subclass()
-    __lock_acquire()
-
-So I think we're good.
-
+--
+Maciej
