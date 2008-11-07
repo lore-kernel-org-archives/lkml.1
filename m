@@ -1,86 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbYKGPYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbYKGPgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbYKGPYo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:24:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYKGPXv
+	id S1753201AbYKGPgW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751007AbYKGPgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:23:51 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54860 "EHLO mx2.redhat.com"
+	Fri, 7 Nov 2008 10:36:13 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34985 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753917AbYKGPXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:23:50 -0500
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH -v3 4/4] SELinux: use new cap_noaudit interface
-To: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Cc: sds@tycho.nsa.gov, jmorris@nameil.org, serue@us.ibm.com, morgan@kernel.org,
-       casey@schaufler-ca.com, esandeen@redhat.com
-Date: Fri, 07 Nov 2008 10:23:43 -0500
-Message-ID: <20081107152343.10328.60753.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20081107152326.10328.44330.stgit@paris.rdu.redhat.com>
-References: <20081107152326.10328.44330.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1751073AbYKGPgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 10:36:12 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1225910127.5991.224.camel@brick>
+References: <1225910127.5991.224.camel@brick>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 04/10] frv: use the new byteorder headers
+Date: Fri, 07 Nov 2008 15:36:03 +0000
+Message-ID: <1815.1226072163@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently SELinux jumps through some ugly hoops to not audit a capbility
-check when determining if a process has additional powers to override
-memory limits or when trying to read/write illegal file labels.  Use
-the new noaudit call instead.
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  include/asm-frv/byteorder.h |   10 +++-------
+>  1 files changed, 3 insertions(+), 7 deletions(-)
 
- security/selinux/hooks.c |   19 ++-----------------
- 1 files changed, 2 insertions(+), 17 deletions(-)
-
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 0d4ee8c..d3fd051 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -1978,16 +1978,8 @@ static int selinux_syslog(int type)
- static int selinux_vm_enough_memory(struct mm_struct *mm, long pages)
- {
- 	int rc, cap_sys_admin = 0;
--	struct task_security_struct *tsec = current->security;
--
--	rc = secondary_ops->capable(current, CAP_SYS_ADMIN, SECURITY_CAP_NOAUDIT);
--	if (rc == 0)
--		rc = avc_has_perm_noaudit(tsec->sid, tsec->sid,
--					  SECCLASS_CAPABILITY,
--					  CAP_TO_MASK(CAP_SYS_ADMIN),
--					  0,
--					  NULL);
- 
-+	rc = selinux_capable(current, CAP_SYS_ADMIN, SECURITY_CAP_NOAUDIT);
- 	if (rc == 0)
- 		cap_sys_admin = 1;
- 
-@@ -2812,7 +2804,6 @@ static int selinux_inode_getsecurity(const struct inode *inode, const char *name
- 	u32 size;
- 	int error;
- 	char *context = NULL;
--	struct task_security_struct *tsec = current->security;
- 	struct inode_security_struct *isec = inode->i_security;
- 
- 	if (strcmp(name, XATTR_SELINUX_SUFFIX))
-@@ -2827,13 +2818,7 @@ static int selinux_inode_getsecurity(const struct inode *inode, const char *name
- 	 * and lack of permission just means that we fall back to the
- 	 * in-core context value, not a denial.
- 	 */
--	error = secondary_ops->capable(current, CAP_MAC_ADMIN, SECURITY_CAP_NOAUDIT);
--	if (!error)
--		error = avc_has_perm_noaudit(tsec->sid, tsec->sid,
--					     SECCLASS_CAPABILITY2,
--					     CAPABILITY2__MAC_ADMIN,
--					     0,
--					     NULL);
-+	error = selinux_capable(current, CAP_MAC_ADMIN, SECURITY_CAP_NOAUDIT);
- 	if (!error)
- 		error = security_sid_to_context_force(isec->sid, &context,
- 						      &size);
-
+Acked-by: David Howells <dhowells@redhat.com>
