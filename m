@@ -1,115 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYKGCIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbYKGCMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755227AbYKGCIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYKGCIj
+	id S1753864AbYKGCMu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYKGCMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:08:39 -0500
-Received: from mga09.intel.com ([134.134.136.24]:42584 "EHLO mga09.intel.com"
+	Thu, 6 Nov 2008 21:12:41 -0500
+Received: from main.gmane.org ([80.91.229.2]:38114 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbYKGCIi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:08:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,560,1220252400"; 
-   d="scan'208";a="460256936"
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: Anthony Liguori <anthony@codemonkey.ws>, Matthew Wilcox <matthew@wil.cx>
-CC: "Fischer, Anna" <anna.fischer@hp.com>, Greg KH <greg@kroah.com>,
-       H L <swdevyid@yahoo.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Date: Thu, 6 Nov 2008 18:08:31 -0800
-Subject: RE: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Thread-Topic: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Thread-Index: AclAYHg8a9aqa1drRG2g5MMX8EwwRgAEon0A
-Message-ID: <0B53E02A2965CE4F9ADB38B34501A3A1678F60DA@orsmsx505.amr.corp.intel.com>
-References: <20081106154351.GA30459@kroah.com>
- <894107.30288.qm@web45108.mail.sp1.yahoo.com>
- <20081106164919.GA4099@kroah.com>
- <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net>
- <20081106183630.GD11773@parisc-linux.org> <491371F0.7020805@codemonkey.ws>
-In-Reply-To: <491371F0.7020805@codemonkey.ws>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1750920AbYKGCMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:12:41 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: kenneth johansson <ken@kenjo.org>
+Subject: Re: [PATCH] NFS regression in 2.6.26?, "task blocked for more than
+	120 seconds"
+Date: Fri, 7 Nov 2008 02:12:23 +0000 (UTC)
+Message-ID: <gf0867$a4d$1@ger.gmane.org>
+References: <20081017123207.GA14979@rabbit.intern.cm-ag>
+	<1224484046.23068.14.camel@localhost.localdomain>
+	<1225539927.2221.3.camel@localhost.localdomain>
+	<1225546878.4390.3.camel@heimdal.trondhjem.org>
+	<1225636847.2221.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 1-1-4-20a.ras.sth.bostream.se
+User-Agent: Pan/0.132 (Waxed in Black)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/6/2008 2:38:40 PM, Anthony Liguori wrote:
-> Matthew Wilcox wrote:
-> > [Anna, can you fix your word-wrapping please?  Your lines appear to
-> > be infinitely long which is most unpleasant to reply to]
-> >
-> > On Thu, Nov 06, 2008 at 05:38:16PM +0000, Fischer, Anna wrote:
-> >
-> > > > Where would the VF drivers have to be associated?  On the "pci_dev"
-> > > > level or on a higher one?
-> > > >
-> > > A VF appears to the Linux OS as a standard (full, additional) PCI
-> > > device. The driver is associated in the same way as for a normal
-> > > PCI device. Ideally, you would use SR-IOV devices on a virtualized
-> > > system, for example, using Xen. A VF can then be assigned to a
-> > > guest domain as a full PCI device.
-> > >
-> >
-> > It's not clear thats the right solution.  If the VF devices are
-> > _only_ going to be used by the guest, then arguably, we don't want
-> > to create pci_devs for them in the host.  (I think it _is_ the right
-> > answer, but I want to make it clear there's multiple opinions on this).
-> >
->
-> The VFs shouldn't be limited to being used by the guest.
->
-> SR-IOV is actually an incredibly painful thing.  You need to have a VF
-> driver in the guest, do hardware pass through, have a PV driver stub
-> in the guest that's hypervisor specific (a VF is not usable on it's
-> own), have a device specific backend in the VMM, and if you want to do
-> live migration, have another PV driver in the guest that you can do
-> teaming with.  Just a mess.
+On Sun, 02 Nov 2008 14:40:47 +0000, Ian Campbell wrote:
 
-Actually "a PV driver stub in the guest" _was_ correct; I admit that I stated so at a virt mini summit more than a half year ago ;-). But the things have changed, and such a stub is no longer required (at least in our implementation). The major benefit of VF drivers now is that they are VMM-agnostic.
+> On Sat, 2008-11-01 at 09:41 -0400, Trond Myklebust wrote:
+>> 
+>> 
+>> Have you tested with the TCP RST fix yet? It has been merged into
+>> mainline, so it should be in the latest 2.6.28-git, but I've attached
+>> it so you can apply it to your test kernel...
+> 
+> I wasn't aware of it. I'll give it a go.
+> 
+> Thanks,
+> Ian.
+>>
 
->
-> What we would rather do in KVM, is have the VFs appear in the host as
-> standard network devices.  We would then like to back our existing PV
-> driver to this VF directly bypassing the host networking stack.  A key
-> feature here is being able to fill the VF's receive queue with guest
-> memory instead of host kernel memory so that you can get zero-copy
-> receive traffic.  This will perform just as well as doing passthrough
-> (at
-> least) and avoid all that ugliness of dealing with SR-IOV in the guest.
->
-> This eliminates all of the mess of various drivers in the guest and
-> all the associated baggage of doing hardware passthrough.
->
-> So IMHO, having VFs be usable in the host is absolutely critical
-> because I think it's the only reasonable usage model.
+I think I having the same problem as you. At least I have a gut feeling it's nfs related. 
 
-As Eddie said, VMDq is better for this model, and the feature is already available today. It is much simpler because it was designed for such purposes. It does not require hardware pass-through (e.g. VT-d) or VFs as a PCI device, either.
+What good and bad versions do you have so far in your bisecting. ??
 
->
-> Regards,
->
-> Anthony Liguori
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in the
-> body of a message to majordomo@vger.kernel.org More majordomo info at
-> http://vger.kernel.org/majordomo-info.html
-             .
-Jun Nakajima | Intel Open Source Technology Center
+I see the problem several times a day so it should be possible
+to at least try one or two versions per day.
+
+this is on a 2.6.27.2 client to a 2.6.26.3 server.
+--------
+
+ sudo grep blocked /var/log/syslog.0 
+Nov  5 02:06:27 duo kernel: [ 5080.947067] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 02:08:40 duo kernel: [ 5214.091071] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 02:10:49 duo kernel: [ 5342.940064] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 02:33:15 duo kernel: [ 6688.338072] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 02:35:44 duo kernel: [ 6837.588072] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 02:38:12 duo kernel: [ 6985.765070] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 02:40:37 duo kernel: [ 7130.720067] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 06:56:00 duo kernel: [22454.090070] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 07:51:38 duo kernel: [25791.279105] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 09:39:33 duo kernel: [32267.016068] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 09:41:55 duo kernel: [32408.750061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 09:44:17 duo kernel: [32550.484061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 09:46:37 duo kernel: [32691.144064] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 16:26:25 duo kernel: [56678.536068] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 16:28:50 duo kernel: [56823.492067] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 16:31:17 duo kernel: [56970.594061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 16:33:44 duo kernel: [57117.697062] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 16:51:04 duo kernel: [58158.153065] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 18:00:39 duo kernel: [62256.625050] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
+Nov  5 18:15:16 duo kernel: [63210.108080] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 18:24:08 duo kernel: [63741.610074] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 19:47:09 duo kernel: [68722.698056] INFO: task hald-addon-stor:7102 blocked for more than 120 seconds.
+Nov  5 19:47:53 duo kernel: [68722.698307] INFO: task hald-addon-stor:7105 blocked for more than 120 seconds.
+Nov  5 19:47:53 duo kernel: [68722.698513] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
+Nov  5 19:47:53 duo kernel: [68755.984030] INFO: task scsi_eh_12:2687 blocked for more than 120 seconds.
+Nov  5 22:20:11 duo kernel: [77904.265068] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 22:23:10 duo kernel: [78083.580065] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 22:46:09 duo kernel: [79462.264081] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  5 23:22:05 duo kernel: [81599.010033] INFO: task scsi_eh_10:2675 blocked for more than 120 seconds.
+Nov  5 23:22:05 duo kernel: [81599.010253] INFO: task hald-addon-stor:7097 blocked for more than 120 seconds.
+Nov  5 23:22:05 duo kernel: [81599.010468] INFO: task hald-addon-stor:7102 blocked for more than 120 seconds.
+Nov  5 23:22:05 duo kernel: [81599.010674] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
+Nov  6 01:46:31 duo kernel: [90209.346061] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  6 01:46:31 duo kernel: [90242.632048] INFO: task hald-addon-stor:7102 blocked for more than 120 seconds.
+Nov  6 01:46:31 duo kernel: [90242.632230] INFO: task hald-addon-stor:7105 blocked for more than 120 seconds.
+Nov  6 01:46:31 duo kernel: [90242.632368] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
+Nov  6 01:46:31 duo kernel: [90275.918024] INFO: task scsi_eh_12:2687 blocked for more than 120 seconds.
+Nov  6 02:11:59 duo kernel: [91812.443070] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  6 02:14:12 duo kernel: [91945.587069] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  6 02:16:50 duo kernel: [92103.427069] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+Nov  6 02:28:26 duo kernel: [92759.483053] INFO: task hald-addon-usb-:7009 blocked for more than 120 seconds.
+Nov  6 02:28:26 duo kernel: [92759.483233] INFO: task hald-addon-stor:7105 blocked for more than 120 seconds.
+Nov  6 02:28:26 duo kernel: [92759.483447] INFO: task hald-addon-stor:7110 blocked for more than 120 seconds.
+Nov  6 02:28:26 duo kernel: [92792.769034] INFO: task scsi_eh_12:2687 blocked for more than 120 seconds.
+Nov  6 02:58:49 duo kernel: [94622.425059] INFO: task cpufreq-applet:11956 blocked for more than 120 seconds.
+
