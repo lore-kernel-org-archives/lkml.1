@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYKGXzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYKGX4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbYKGXzq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbYKGXzi
+	id S1753982AbYKGX4x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYKGX4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:55:38 -0500
-Received: from mx2.suse.de ([195.135.220.15]:54837 "EHLO mx2.suse.de"
+	Fri, 7 Nov 2008 18:56:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39938 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbYKGXzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:55:38 -0500
-Date: Fri, 7 Nov 2008 15:55:20 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       stable@kernel.org
-Subject: Re: Linux 2.6.27.5
-Message-ID: <20081107235520.GA6155@suse.de>
-References: <20081107233437.GA5036@kroah.com> <20081107233456.GB5036@kroah.com> <alpine.LFD.2.00.0811071543370.3468@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811071543370.3468@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1751449AbYKGX4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:56:44 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <alpine.LFD.2.00.0811071513180.13034@xanadu.home>
+References: <alpine.LFD.2.00.0811071513180.13034@xanadu.home> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <25298.1226055815@redhat.com> <20081107165112.GC22134@Krystal>
+To: Nicolas Pitre <nico@cam.org>
+Cc: dhowells@redhat.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+Date: Fri, 07 Nov 2008 23:55:05 +0000
+Message-ID: <9500.1226102105@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 03:44:49PM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 7 Nov 2008, Greg KH wrote:
-> >
-> > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > index 3d9120c..6bfb849 100644
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -1286,7 +1286,9 @@ struct task_struct {
-> >  	atomic_t fs_excl;	/* holding fs exclusive resources */
-> >  	struct rcu_head rcu;
-> >  
-> > -	/*
-> > +	struct list_head	*scm_work_list;
-> > +
-> > +/*
-> >  	 * cache last used pipe for splice
-> >  	 */
-> >  	struct pipe_inode_info *splice_pipe;
-> 
-> You did somethign wrong here when merging that scm_destroy() fix. See the 
-> badly indented comment start.
+Nicolas Pitre <nico@cam.org> wrote:
 
-Ugh, you are right, it should be indented.  Cut and paste caused that :(
+> I explained several times already why I disagree.  Preemption is not a 
+> problem unless you're preempted away for long enough, or IOW if your 
+> counter is too fast.
 
-I'll fix it up in the next version, there shouldn't be any problem as
-it's just a formatting issue.  I had to do it by hand compared to the
-upstream version as the field structures were different between the
-kernel versions.  I moved it higher up in the structure so there
-wouldn't be merge issues on .25 and .26 as well.
+That's my point.  Say a nice -19 process gets preempted... what guarantees
+that it will resume within, the time it takes the counter to wrap?  Even if
+the preempting process goes back to sleep, in that time a bunch of other
+processes could have woken up and could starve it for a long period of time.
 
-I'll go fix up the patch in those 2 review series too, as it's also
-formatted wrong there.
-
-thanks,
-
-greg k-h
+David
