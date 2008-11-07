@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbYKGLVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbYKGLXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754182AbYKGLVS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYKGLVE
+	id S1754136AbYKGLXJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:23:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYKGLW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:21:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48523 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751887AbYKGLVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:21:02 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081107003816.9b0f947a.akpm@linux-foundation.org>
-References: <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Nicolas Pitre <nico@cam.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Date: Fri, 07 Nov 2008 11:20:19 +0000
-Message-ID: <25363.1226056819@redhat.com>
+	Fri, 7 Nov 2008 06:22:56 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:21415 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbYKGLWz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:22:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=hclLE5AApjG4DlSi7tItKRy56feRIHgVL2tFslW+BnF8nOd61HbjExKbZINQJSi2TQ
+         rKW7lMclIVWl/93bPMS+C/mcrBdW59S/q5Md/ac3ylH6ygo17avoVdv1GBgJj0CdyO77
+         zbeeasN/xSDFq+AE7BcwMvQZibz0yv/NrpVrE=
+Date: Fri, 7 Nov 2008 12:22:50 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Buddhike De Silva <buddhike.desilva@readify.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Compiling a small kernel on Ubuntu
+Message-ID: <20081107122250.31884d61@varda>
+In-Reply-To: <B635664A870E3E409144F6DDD84ABA3C3842945EE2@rpmail01.solar.system>
+References: <B635664A870E3E409144F6DDD84ABA3C3842945EE2@rpmail01.solar.system>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+El Fri, 7 Nov 2008 16:15:36 +1100
+Buddhike De Silva <buddhike.desilva@readify.net> escribió:
 
-> We have a macro which must only have a single usage in any particular
-> kernel build (and nothing to detect a violation of that).
+> Hi Everyone,
+> 
+> I'm trying to learn how linux scheduler is implemented. As a result, I wanted to compile and run linux kernel from its source code. That way I can assure that I have a working base to play around. I started by following this article:
+> http://www.digitalhermit.com/linux/Kernel-Build-HOWTO.html
+> 
+> I managed to complete the given instructions and change Grub to display a new entry to select the newly compiled kernel. However, it falls over while trying to load (unable to handle kernel paging request). My gut feeling says I've missed something in the kernel configuration step. Can someone please tell me the basic set of options required for a kernel to get the following system up and running?
 
-That's not true.  It's a macro containing a _static_ local variable, therefore
-the macro may be used multiple times, and each time it's used the compiler
-will allocate a new piece of storage.
+ Why not base your config in the ubuntu config? 
+ cp /boot/config-$(uname -r) path/to/kernelsource
+ make oldconfig
+ (answer some questions)
 
-> It apparently tries to avoid races via ordering tricks, as long
-> as it is called with sufficient frequency.  But nothing guarantees
-> that it _is_ called sufficiently frequently?
-
-The comment attached to it clearly states this restriction.  Therefore the
-caller must guarantee it.  That is something Mathieu's code and my code must
-deal with, not Nicolas's.
-
-> There is absolutely no reason why the first two of these quite bad things
-> needed to be done.  In fact there is no reason why it needed to be
-> implemented as a macro at all.
-
-There's a very good reason to implement it as either a macro or an inline
-function: it's faster.  Moving the whole thing out of line would impose an
-additional function call overhead - with a 64-bit return value on 32-bit
-platforms.  For my case - sched_clock() - I'm willing to burn a bit of extra
-space to get the extra speed.
-
-> As I said in the text which you deleted and ignored, this would be
-> better if it was implemented as a C function which requires that the
-> caller explicitly pass in a reference to the state storage.
-
-I'd be quite happy if it was:
-
-	static inline u64 cnt32_to_63(u32 cnt_lo, u32 *__m_cnt_hi)
-	{
-		union cnt32_to_63 __x;
-		__x.hi = *__m_cnt_hi;
-		__x.lo = cnt_lo;
-		if (unlikely((s32)(__x.hi ^ __x.lo) < 0))
-			*__m_cnt_hi =
-				__x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31);
-		return __x.val;
-	}
-
-I imagine this would compile pretty much the same as the macro.  I think it
-would make it more obvious about the independence of the storage.
-
-Alternatively, perhaps Nicolas just needs to mention this in the comment more
-clearly.
-
-David
+> 
+> Machine: IBM thinkpad t42
+> CPU:  Intel Centrino Mobile 32bit
+> RAM: 1 GB
+> Hard Disk: 40GB IDE
+> 
+> Also is there a guide for kernel debugging? Thanks a lot in advance.
+> 
+> Cheers,
+> Buddhike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
