@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751790AbYKGUNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbYKGUSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751790AbYKGUNv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 15:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbYKGUNA
+	id S1752920AbYKGUSi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 15:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbYKGUS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 15:13:00 -0500
-Received: from kroah.org ([198.145.64.141]:57317 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752815AbYKGUMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 15:12:55 -0500
-Date: Fri, 7 Nov 2008 10:53:25 -0800
-From: Greg KH <greg@kroah.com>
-To: "Zhao, Yu" <yu.zhao@intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
-Message-ID: <20081107185325.GE2320@kroah.com>
-References: <20081106043235.GA30292@kroah.com> <4913AA03.5060807@intel.com> <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com> <20081107061603.GC3860@kroah.com> <4913F34A.8020805@intel.com> <20081107080222.GA6284@kroah.com> <4913F97E.7030408@intel.com> <20081107082432.GA6601@kroah.com> <4913FDE3.8050804@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4913FDE3.8050804@intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 7 Nov 2008 15:18:29 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:16981 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbYKGUS2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 15:18:28 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 07 Nov 2008 15:18:22 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+In-reply-to: <20081107165112.GC22134@Krystal>
+Message-id: <alpine.LFD.2.00.0811071513180.13034@xanadu.home>
+References: <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
+ <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca>
+ <20081106220530.5b0e3a96.akpm@linux-foundation.org>
+ <25298.1226055815@redhat.com> <20081107165112.GC22134@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 04:35:47PM +0800, Zhao, Yu wrote:
-> Greg KH wrote:
->> On Fri, Nov 07, 2008 at 04:17:02PM +0800, Zhao, Yu wrote:
->>>> Well, to do it "correctly" you are going to have to tell the driver to
->>>> shut itself down, and reinitialize itself.
->>>> Turns out, that doesn't really work for disk and network devices without
->>>> dropping the connection (well, network devices should be fine probably).
->>>> So you just can't do this, sorry.  That's why the BIOS handles all of
->>>> these issues in a PCI hotplug system.
->>>> How does the hardware people think we are going to handle this in the
->>>> OS?  It's not something that any operating system can do, is it part of
->>>> the IOV PCI spec somewhere?
->>> No, it's not part of the PCI IOV spec.
->>>
->>> I just want the IOV (and whole PCI subsystem) have more flexibility on 
->>> various BIOSes. So can we reconsider about resource rebalance as boot 
->>> option, or should we forget about this idea?
->> As you have proposed it, the boot option will not work at all, so I
->> think we need to forget about it.  Especially if it is not really
->> needed.
->
-> I guess at least one thing would work if people don't want to boot twice: 
-> give the bus number 0 as rebalance starting point, then all system 
-> resources would be reshuffled :-)
+On Fri, 7 Nov 2008, Mathieu Desnoyers wrote:
 
-Hm, but don't we do that today with our basic resource reservation logic
-at boot time?  What would be different about this kind of proposal?
+> * David Howells (dhowells@redhat.com) wrote:
+> > Nicolas Pitre <nico@cam.org> wrote:
+> > 
+> > > > I mean, the darned thing is called from sched_clock(), which can be
+> > > > concurrently called on separate CPUs and which can be called from
+> > > > interrupt context (with an arbitrary nesting level!) while it was running
+> > > > in process context.
+> > > 
+> > > Yes!  And this is so on *purpose*.  Please take some time to read the 
+> > > comment that goes along with it, and if you're still not convinced then 
+> > > look for those explanation emails I've already posted.
+> > 
+> > I agree with Nicolas on this.  It's abominably clever, but I think he's right.
+> > 
+> > The one place I remain unconvinced is over the issue of preemption of a process
+> > that is in the middle of cnt32_to_63(), where if the preempted process is
+> > asleep for long enough, I think it can wind time backwards when it resumes, but
+> > that's not a problem for the one place I want to use it (sched_clock()) because
+> > that is (almost) always called with preemption disabled in one way or another.
+> > 
+> > The one place it isn't is a debugging case that I'm not too worried about.
+> > 
+> 
+> I am also concerned about the non-preemption off case.
+> 
+> Then I think the function should document that it must be called with
+> preempt disabled.
 
-thanks,
+I explained several times already why I disagree.  Preemption is not a 
+problem unless you're preempted away for long enough, or IOW if your 
+counter is too fast.
 
-greg k-h
+And no, ^Z on a process doesn't create preemption. This is a signal that 
+gets acted upon far away from the middle of cnt32_to_63().
+
+
+Nicolas
