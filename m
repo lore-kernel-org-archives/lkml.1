@@ -1,99 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbYKGIdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYKGIdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbYKGIdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYKGIdI
+	id S1754224AbYKGIdf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:33:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYKGIdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:33:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56383 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbYKGIdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:33:05 -0500
-Date: Fri, 7 Nov 2008 09:32:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ken Chen <kenchen@google.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
-Message-ID: <20081107083249.GD4435@elte.hu>
-References: <20081106203520.GD3578@elte.hu> <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain>
+	Fri, 7 Nov 2008 03:33:19 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:49780 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752757AbYKGIdS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:33:18 -0500
+Message-ID: <ac3eb2510811070033m108d8ed5t499c20ee02b2618f@mail.gmail.com>
+Date: Fri, 7 Nov 2008 09:33:16 +0100
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: sparc: struct device - replace bus_id with dev_name(), dev_set_name()
+Cc: wli@holomorphy.com, greg@kroah.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20081106.233557.193705310.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081107082003.GA15800@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <1226018639.3189.15.camel@nga>
+	 <20081106.233557.193705310.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
-
-> On Fri, Nov 07, 2008 at 08:59:25AM +0100, Ingo Molnar wrote:
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > > > + * buffer size used for proc read.  See proc_info_read().
-> > > > > + * 4K page size but our output routines use some slack for overruns
-> > > > > + */
-> > > > > +#define PROC_BLOCK_SIZE	(3*1024)
-> > > 
-> > > That sounds like a proper limit - the hard limit for this particular 
-> > > printout function is 4096-170, so we are well within the 
-> > > PROC_BLOCK_SIZE range.
-> > 
-> > ok, i've added Ken's patch to tip/core/stacktrace and started testing 
-> > it.
-> > 
-> > Alexey, i've added your Acked-by because you appeared to like the 
-> > patch - let me know if i should remove it.
-> 
-> Of course, I don't like it!
-> 
-> Switch to seqfiles, add entry in TID table as well.
+On Fri, Nov 7, 2008 at 08:35, David Miller <davem@davemloft.net> wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Date: Fri, 07 Nov 2008 01:43:59 +0100
 >
-> The idea is good, though.
+>> --- a/arch/sparc/kernel/of_device.c
+>> +++ b/arch/sparc/kernel/of_device.c
+>> @@ -563,9 +563,9 @@ build_resources:
+>>       op->dev.parent = parent;
+>>       op->dev.bus = &of_platform_bus_type;
+>>       if (!parent)
+>> -             strcpy(op->dev.bus_id, "root");
+>> +             dev_set_name(&op->dev, "root");
+>>       else
+>> -             sprintf(op->dev.bus_id, "%08x", dp->node);
+>> +             dev_set_name(&op->dev, "%08x", dp->node);
+>>
+>>       if (of_device_register(op)) {
+>>               printk("%s: Could not register of device.\n",
+>
+> This part is OK.
+>
+>> --- a/arch/sparc64/kernel/vio.c
+>> +++ b/arch/sparc64/kernel/vio.c
+>> @@ -224,7 +224,7 @@ static struct vio_dev *vio_create_one(st
+>>       if (!strcmp(type, "domain-services-port"))
+>>               bus_id_name = "ds";
+>>
+>> -     if (strlen(bus_id_name) >= BUS_ID_SIZE - 4) {
+>> +     if (strlen(bus_id_name) >= 20 - 4) {
+>>               printk(KERN_ERR "VIO: bus_id_name [%s] is too long.\n",
+>>                      bus_id_name);
+>>               return NULL;
+>>
+>>
+>
+> But I don't like this.
+>
+> Could you please keep the macro around until everything is converted?
+> Then you can remove the test entirely.
+>
+> Leaving it with just constants there is inviting confusion, no matter
+> how short amount of time it will be there.
 
-oh well - Ken, could you please switch it to seqfiles?
+I can add a SPARC_BUS_ID_SIZE, to that file, or in a sparc header, but
+the core will not provide any such value, and have to, go to catch all
+remaining occurrences across the tree. Where should I add it?
 
-It should be something like this to convert the currently sweet and 
-trivial function into a much more complex seqfile iterator splitup:
-
-- the ::start method does the kmalloc of a loop state structure like 
-  this:
-
-  {
-	struct stack_trace backtrace;
-	unsigned long entries[MAX_STACK_TRACE_DEPTH];
-
-	int iterator;
-  }
-
-  and saves the trace. (struct stack_trace trace can be on-stack, it's 
-  only needed for the save_stack_trace() - and we keep the entries 
-  after that.)
-
-- the ::stop method does the kfree of the loop state.
-
-- the ::show method prints a single line, based on ->entries[->iterator]
-
-- the ::next method does ->iterator++, and returns NULL if iterator 
-  reaches ->backtrace.nr_entries.
-
-it will be more source code, larger kernel image, it will be more 
-fragile and will be harder to review, and it wont actually matter in 
-practice because 99.9999% of the backtraces we care about have a size 
-smaller than 3K. (and where they get larger clipping them to the first 
-3K is perfectly fine)
-
-	Ingo
+Thanks,
+Kay
