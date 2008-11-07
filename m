@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbYKGHgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbYKGHiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbYKGHgb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 02:36:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYKGHgT
+	id S1752418AbYKGHiy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 02:38:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYKGHiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 02:36:19 -0500
-Received: from mail.suse.de ([195.135.220.2]:33484 "EHLO mx1.suse.de"
+	Fri, 7 Nov 2008 02:38:46 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50221 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbYKGHgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 02:36:17 -0500
-Date: Fri, 07 Nov 2008 08:36:15 +0100
-Message-ID: <s5hd4h8q974.wl%tiwai@suse.de>
+	id S1750981AbYKGHiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 02:38:46 -0500
+Date: Fri, 07 Nov 2008 08:38:44 +0100
+Message-ID: <s5hbpwsq92z.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: alsa-devel@alsa-project.org, "Mike Frysinger" <vapier@gentoo.org>,
+Cc: alsa-devel@alsa-project.org, Mike Frysinger <vapier@gentoo.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] [PATCH] ALSA: have snd_BUG_ON() always refer to arguments
+Subject: Re: [alsa-devel] [PATCH] ALSA: have snd_BUG_ON() always refer to	arguments
 In-Reply-To: <8bd0f97a0811062329l26f8338ahbb62bab9e8284c36@mail.gmail.com>
 References: <1226023521-10037-1-git-send-email-vapier@gentoo.org>
 	<s5hod0sqcmt.wl%tiwai@suse.de>
@@ -34,50 +34,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 At Fri, 7 Nov 2008 02:29:25 -0500,
 Mike Frysinger wrote:
 > 
-> On Fri, Nov 7, 2008 at 02:15, Takashi Iwai wrote:
-> > At Fri, 7 Nov 2008 02:09:04 -0500,
-> > Mike Frysinger wrote:
-> >> On Fri, Nov 7, 2008 at 01:22, Takashi Iwai wrote:
-> >> > At Thu,  6 Nov 2008 21:05:21 -0500,
-> >> > Mike Frysinger wrote:
-> >> >> The snd_BUG_ON() macro should always expand its argument even if we're
-> >> >> forcing it to false.  This kills off unused warnings that did not exist
-> >> >> before the snd_assert() -> snd_BUG_ON() conversion.
-> >> >
-> >> > Andrew already change this differently.  Check with the latest version.
-> >>
-> >> what are you defining as "latest version" ?  i'm looking in torvalds
-> >> linux-2.6.git.
-> >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
-> >
-> >> > And which warning did you get actually?
-> >>
-> >> a few codecs define local vars which only get used in snd_BUG_ON() ...
-> >> so if snd_BUG_ON() doesnt utilize cond, gcc whines that the var is
-> >> unused.
-> >
-> > I know it.  But I thought all these were removed in the actual codes.
-> > I'd like to see the real warning messages.
-> 
-> seems the warnings where in codec drivers we havent pushed into
-> mainline yet.  regardless, i dont think auditing code and changing it
-> just to avoid (cond) references is the way to go.  it also breaks
+> it also breaks
 > valid C code if there were side effects in the (cond) as any other
 > macro which does not properly utilize every argument exactly once.
 
-IIRC, just giving 0 in a macro like your patch resulted in another
-warning messages in case it's used plainly like:
+BTW, what do you mean this exactly?
 
-	snd_BUG_ON(foo);
 
-That's the reason why { 0; } was used in the first place.  But, this
-caused yet another warning messages depending on gcc versions, thus
-Andrew fixed it previously.
-
-I think the best way is to change the latest code like:
-
-#define snd_BUG_ON(cond)	__snd_bug_on(0 && (cond))
-
+thanks,
 
 Takashi
