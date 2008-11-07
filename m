@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYKGHxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbYKGH4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbYKGHxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 02:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYKGHxV
+	id S1752545AbYKGH4f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 02:56:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYKGH40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 02:53:21 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:44058 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbYKGHxU (ORCPT
+	Fri, 7 Nov 2008 02:56:26 -0500
+Received: from rn-out-0910.google.com ([64.233.170.186]:62037 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbYKGH40 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 02:53:20 -0500
-Date: Fri, 7 Nov 2008 09:53:18 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Mikael Abrahamsson <swmike@swm.pp.se>
-cc: David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Re: time for TCP ECN defaulting to on?
-In-Reply-To: <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
-Message-ID: <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi>
-References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
- <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
- <20081105.151015.206163697.davem@davemloft.net>
- <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Nov 2008 02:56:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=OeBIIYbbOtIl7HtdNn6W/xj06IwVZ/YXRkoDOu2A4X/BcLN5+43lW3LFMhAoBawR6u
+         SANs4uo9vxpqSp5S4m63fzk0xyxapJlalVjOtapcVGvZCfXMnkx1V7OwaBv6S/XNI9uL
+         RLrUwTYeFDBqT9kWumVFa5g9a5WScMGQFSRfo=
+Message-ID: <8bd0f97a0811062356k6c9c7e3dle53500c092565a32@mail.gmail.com>
+Date: Fri, 7 Nov 2008 02:56:24 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Takashi Iwai" <tiwai@suse.de>
+Subject: Re: [alsa-devel] [PATCH] ALSA: have snd_BUG_ON() always refer to arguments
+Cc: alsa-devel@alsa-project.org, "Mike Frysinger" <vapier@gentoo.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <s5hd4h8q974.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1226023521-10037-1-git-send-email-vapier@gentoo.org>
+	 <s5hod0sqcmt.wl%tiwai@suse.de>
+	 <8bd0f97a0811062309m4029f612k4d3fe380e6d124df@mail.gmail.com>
+	 <s5hk5bgqa61.wl%tiwai@suse.de>
+	 <8bd0f97a0811062329l26f8338ahbb62bab9e8284c36@mail.gmail.com>
+	 <s5hd4h8q974.wl%tiwai@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008, Mikael Abrahamsson wrote:
+On Fri, Nov 7, 2008 at 02:36, Takashi Iwai wrote:
+> At Fri, 7 Nov 2008 02:29:25 -0500,
+> Mike Frysinger wrote:
+>> On Fri, Nov 7, 2008 at 02:15, Takashi Iwai wrote:
+>> > At Fri, 7 Nov 2008 02:09:04 -0500,
+>> > Mike Frysinger wrote:
+>> >> On Fri, Nov 7, 2008 at 01:22, Takashi Iwai wrote:
+>> >> > At Thu,  6 Nov 2008 21:05:21 -0500,
+>> >> > Mike Frysinger wrote:
+>> >> >> The snd_BUG_ON() macro should always expand its argument even if we're
+>> >> >> forcing it to false.  This kills off unused warnings that did not exist
+>> >> >> before the snd_assert() -> snd_BUG_ON() conversion.
+>> >> >
+>> >> > Andrew already change this differently.  Check with the latest version.
+>> >>
+>> >> what are you defining as "latest version" ?  i'm looking in torvalds
+>> >> linux-2.6.git.
+>> >
+>> > git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
+>> >
+>> >> > And which warning did you get actually?
+>> >>
+>> >> a few codecs define local vars which only get used in snd_BUG_ON() ...
+>> >> so if snd_BUG_ON() doesnt utilize cond, gcc whines that the var is
+>> >> unused.
+>> >
+>> > I know it.  But I thought all these were removed in the actual codes.
+>> > I'd like to see the real warning messages.
+>>
+>> seems the warnings where in codec drivers we havent pushed into
+>> mainline yet.  regardless, i dont think auditing code and changing it
+>> just to avoid (cond) references is the way to go.  it also breaks
+>> valid C code if there were side effects in the (cond) as any other
+>> macro which does not properly utilize every argument exactly once.
+>
+> IIRC, just giving 0 in a macro like your patch resulted in another
+> warning messages in case it's used plainly like:
+>
+>        snd_BUG_ON(foo);
+>
+> That's the reason why { 0; } was used in the first place.  But, this
+> caused yet another warning messages depending on gcc versions, thus
+> Andrew fixed it previously.
+>
+> I think the best way is to change the latest code like:
+>
+> #define snd_BUG_ON(cond)        __snd_bug_on(0 && (cond))
 
-> On Wed, 5 Nov 2008, David Miller wrote:
-> 
-> > This kind of thinking just perpetuates the problem forever.
-> 
-> It's like the TCP option order "bug", where some devices would drop the
-> packets because of buggy implementations, that was changed in Linux to work
-> around others buggy code, and I see "ECN blackhole detection" as a similar
-> measure.
-
-That is entirely bogus claim! The different ordering of options cost us 
-nothing, while disabling ECN certainly has an innumerable cost both in 
-performance and in nobody taking the initiative which makes the situation 
-worse for everybody.
-
-And about somebody earlier claiming that they'll get an impressions that 
-Linux stack is broken (if such people even know that there's some network 
-stack in Linux :-))... I'm rather sure those isp supports etc. put a blaim 
-on us anyway even when loads of counterproof would exists because it's 
-just cheaper to do nothing and blaim linux instead. Also some claims 
-asserted by incompetent people easily start to live among random forums; 
-an example from the previous incident: "since disabling timestamps helps, 
-it must be that timestamps are broken" (and somebody even "more clueful" 
-added that they got enabled for 2.6.27?!?), needless to say, neither 
-holds.
-
-
--- 
- i.
+that should work i think ...
+-mike
