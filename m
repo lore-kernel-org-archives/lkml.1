@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751709AbYKGB5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYKGCAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751709AbYKGB5W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 20:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbYKGB4s
+	id S1754205AbYKGCAw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYKGCAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 20:56:48 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:52163 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbYKGB4o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 20:56:44 -0500
-Date: Thu, 06 Nov 2008 20:53:29 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
-In-reply-to: <20081107014342.GA9841@srcf.ucam.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Zhao Yakui <yakui.zhao@intel.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, Ingo Molnar <mingo@elte.hu>,
-       Eduardo Habkost <ehabkost@redhat.com>, Avi Kivity <avi@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Message-id: <alpine.LFD.2.00.0811062049020.3106@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <fa.UVpnVba3yRAWG3rGZ0sk20JE9hs@ifi.uio.no>
- <fa.FPBNKx3BSvZHPZ+eXD4Tb+fuRYk@ifi.uio.no>
- <fa.PvVEuEo+f/t4sLmcGyN2Tsl8zYg@ifi.uio.no>
- <fa.zzFdOXisTZzBaE1+ueGIYmt+Z5c@ifi.uio.no>
- <fa.vQ6HVRcPFFr1zpcXFFOjEPtDdNk@ifi.uio.no>
- <fa.ckUqcrtVKbxAkjNggIdajBTHr9Q@ifi.uio.no> <49139A43.4000203@shaw.ca>
- <20081107014342.GA9841@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 6 Nov 2008 21:00:42 -0500
+Received: from kroah.org ([198.145.64.141]:51920 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750894AbYKGCAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:00:41 -0500
+Date: Thu, 6 Nov 2008 17:58:44 -0800
+From: Greg KH <greg@kroah.com>
+To: H L <swdevyid@yahoo.com>
+Cc: Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
+       grundler@parisc-linux.org, achiang@hp.com, matthew@wil.cx,
+       linux-pci@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
+Subject: Re: git repository for SR-IOV development?
+Message-ID: <20081107015844.GA11884@kroah.com>
+References: <20081106165914.GA13476@kroah.com> <104014.9320.qm@web45110.mail.sp1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <104014.9320.qm@web45110.mail.sp1.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 7 Nov 2008, Matthew Garrett wrote:
-
-> On Thu, Nov 06, 2008 at 07:30:43PM -0600, Robert Hancock wrote:
+On Thu, Nov 06, 2008 at 11:58:25AM -0800, H L wrote:
+> --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
 > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8fd145917fb62368a9b80db59562c20576238f5a
+> > On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
+> > > 
+> > > Has anyone initiated or given consideration to the
+> > creation of a git
+> > > repository (say, on kernel.org) for SR-IOV
+> > development?
 > > 
-> > This patch ignores the RESET_REG_SUP flag and just tries using the reset 
-> > register anyway if it thinks it's valid. So we may attempt ACPI reset on 
-> > machines which don't indicate it's supported.
+> > Why?  It's only a few patches, right?  Why would it
+> > need a whole new git
+> > tree?
 > 
-> Yeah, that sounds very wrong.
-
-As it turns out, it was an incorrect guess on our part on how to be "bug 
-compatible" and I'm reverting it per the regression report here:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11942
-
--Len
-
-> > The patch description mentioned that some machines didn't reboot after 
-> > S3 suspend without this patch. However, we recently had this patch merged:
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a68823ee5285e65b51ceb96f8b13a5b4f99a6888
-> > 
-> > Is it possible that the problem fixed there is the true cause of this 
-> > reboot after S3 problem?
 > 
-> Oh, yeah, could be. Given the From:, I should really have thought of 
-> that :)
-> 
-> -- 
-> Matthew Garrett | mjg59@srcf.ucam.org
-> 
+> So as to minimize the time and effort patching a kernel, especially if
+> the tree (and/or hash level) against which the patches were created
+> fails to be specified on a mailing-list.  Plus, there appears to be
+> questions raised on how, precisely, the implementation should
+> ultimately be modeled and especially given that, who knows at this
+> point what number of patches will ultimately be submitted?  I know
+> I've built the "7-patch" one (painfully, by the way), and I'm aware
+> there's another 15-patch set out there which I've not yet examined.
+
+It's a mere 7 or 15 patches, you don't need a whole git tree for
+something small like that.
+
+Especially as there only seems to be one developer doing real work...
+
+thanks,
+
+greg k-h
