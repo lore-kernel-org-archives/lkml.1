@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYKGFTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbYKGFVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbYKGFTP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 00:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbYKGFS6
+	id S1752340AbYKGFVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 00:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbYKGFV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 00:18:58 -0500
-Received: from mga09.intel.com ([134.134.136.24]:6417 "EHLO mga09.intel.com"
+	Fri, 7 Nov 2008 00:21:28 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60142 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750724AbYKGFS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 00:18:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,562,1220252400"; 
-   d="scan'208";a="460308923"
-Message-ID: <4913CFBC.4040203@intel.com>
-Date: Fri, 07 Nov 2008 13:18:52 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081106044828.GA30417@kroah.com>
-In-Reply-To: <20081106044828.GA30417@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1750769AbYKGFV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 00:21:28 -0500
+Date: Fri, 7 Nov 2008 16:21:14 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: next-20081106: undefined reference to `__per_cpu_start'
+Message-Id: <20081107162114.2a41c623.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0811061310350.6009@quilx.com>
+References: <20081106173645.e7e79071.sfr@canb.auug.org.au>
+	<20081106183939.GA26925@x200.localdomain>
+	<Pine.LNX.4.64.0811061310350.6009@quilx.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__7_Nov_2008_16_21_14_+1100_uSi1=TsWGmz_/.gl"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Oct 22, 2008 at 04:38:09PM +0800, Yu Zhao wrote:
->> Greetings,
->>
->> Following patches are intended to support SR-IOV capability in the
->> Linux kernel. With these patches, people can turn a PCI device with
->> the capability into multiple ones from software perspective, which
->> will benefit KVM and achieve other purposes such as QoS, security,
->> and etc.
-> 
-> Is there any actual users of this API around yet?  How was it tested as
-> there is no hardware to test on?  Which drivers are going to have to be
-> rewritten to take advantage of this new interface?
+--Signature=_Fri__7_Nov_2008_16_21_14_+1100_uSi1=TsWGmz_/.gl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, the API is used by Intel, HP, NextIO and some other anonymous 
-companies as they rise questions and send me feedback. I haven't seen 
-their works but I guess some of drivers using SR-IOV API are going to be 
-released soon.
+Hi Christoph,
 
-My test was done with Intel 82576 Gigabit Ethernet Controller. The 
-product brief is at 
-http://download.intel.com/design/network/ProdBrf/320025.pdf and the spec 
-is available at 
-http://download.intel.com/design/network/datashts/82576_Datasheet_v2p1.pdf
+On Thu, 6 Nov 2008 13:15:07 -0600 (CST) Christoph Lameter <cl@linux-foundat=
+ion.org> wrote:
+>
+> On Thu, 6 Nov 2008, Alexey Dobriyan wrote:
+>=20
+> > On blackfin-BF526-EZBRD and other blackfins:
+> >
+> >   LD      .tmp_vmlinux1
+> > mm/built-in.o: In function `cpu_alloc_init':
+> > (.init.text+0x1486): undefined reference to `__per_cpu_start'
+> > mm/built-in.o: In function `cpu_alloc_init':
+> > (.init.text+0x148c): undefined reference to `__per_cpu_start'
+> > mm/built-in.o: In function `cpu_alloc_init':
+> > (.init.text+0x1492): undefined reference to `__per_cpu_end'
+> > mm/built-in.o: In function `cpu_alloc_init':
+> > (.init.text+0x1496): undefined reference to `__per_cpu_end'
+>=20
+> Any contigencies for __per_cpu_start/end in your blackfin vmlinux.lds.h?
+> That is where these symbols are defined
+>=20
+> Or did you use generic percpu support and set
+> CONFIG_HAVE_ZERO_BASED_PER_CPU?
 
-Regards,
-Yu
+Also a avr32 allnoconfig
+(http://kisskb.ellerman.id.au/kisskb/buildresult/53233/) gets:
+
+backing-dev.c:(.init.text+0xc4c): undefined reference to `__per_cpu_start'
+backing-dev.c:(.init.text+0xc50): undefined reference to `__per_cpu_end'
+
+and avr32 defconfig
+(http://kisskb.ellerman.id.au/kisskb/buildresult/53225/) gets:
+
+vmstat.c:(.init.text+0xff0): undefined reference to `__per_cpu_start'
+vmstat.c:(.init.text+0xff4): undefined reference to `__per_cpu_end'
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__7_Nov_2008_16_21_14_+1100_uSi1=TsWGmz_/.gl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkT0EoACgkQjjKRsyhoI8wnOwCgoiZhSfkJdYCSs+N6eMNkd0cX
+rDAAoKHnOI6QDCd3rQ5PzLA58exJgCpa
+=SGH9
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__7_Nov_2008_16_21_14_+1100_uSi1=TsWGmz_/.gl--
