@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbYKGXeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYKGXeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbYKGXeK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:34:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYKGX0w
+	id S1756395AbYKGXeb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbYKGX0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:26:52 -0500
-Received: from kroah.org ([198.145.64.141]:47571 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:26:54 -0500
+Received: from kroah.org ([198.145.64.141]:47587 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754825AbYKGX0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:26:51 -0500
-Date: Fri, 7 Nov 2008 15:26:14 -0800
+	id S1754836AbYKGX0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:26:52 -0500
+Date: Fri, 7 Nov 2008 15:26:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
-       Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 08/16] ACPI: dock: avoid check _STA method
-Message-ID: <20081107232614.GI4282@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Ilpo =?utf-8?B?SsOD4oKscnZpbmVu?= <ilpo.jarvinen@helsinki.fi>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 09/16] tcpv6: fix option space offsets with md5
+Message-ID: <20081107232616.GJ4282@kroah.com>
 References: <20081107231848.995297975@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-dock-avoid-check-_sta-method.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="0001-tcpv6-fix-option-space-offsets-with-md5.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20081107232544.GA4282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,47 +42,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-commit 8b59560a3baf2e7c24e0fb92ea5d09eca92805db upstream.
+[ Upstream commit 53b125779fb0b29e5b316bf3dc7d199e6dcea567 ]
 
-ACPI: dock: avoid check _STA method
+More breakage :-), part of timestamps just were previously
+overwritten.
 
-In some BIOSes, every _STA method call will send a notification again,
-this cause freeze. And in some BIOSes, it appears _STA should be called
-after _DCK. This tries to avoid calls _STA, and still keep the device
-present check.
-
-http://bugzilla.kernel.org/show_bug.cgi?id=10431
-
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/dock.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ net/ipv6/tcp_ipv6.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -599,14 +599,17 @@ static int handle_eject_request(struct d
- static void dock_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct dock_station *ds = data;
-+	struct acpi_device *tmp;
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -1130,7 +1130,7 @@ static void tcp_v6_send_ack(struct tcp_t
+ 		*topt++ = htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16) |
+ 				(TCPOPT_TIMESTAMP << 8) | TCPOLEN_TIMESTAMP);
+ 		*topt++ = htonl(tcp_time_stamp);
+-		*topt = htonl(ts);
++		*topt++ = htonl(ts);
+ 	}
  
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
--		if (!dock_in_progress(ds) && dock_present(ds)) {
-+		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
-+		   &tmp)) {
- 			begin_dock(ds);
- 			dock(ds);
- 			if (!dock_present(ds)) {
- 				printk(KERN_ERR PREFIX "Unable to dock!\n");
-+				complete_dock(ds);
- 				break;
- 			}
- 			atomic_notifier_call_chain(&dock_notifier_list,
+ #ifdef CONFIG_TCP_MD5SIG
 
 -- 
