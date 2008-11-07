@@ -1,86 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985AbYKGBfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbYKGBnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985AbYKGBfy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 20:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbYKGBfo
+	id S1752732AbYKGBnc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 20:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750704AbYKGBnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 20:35:44 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:55479 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbYKGBfn (ORCPT
+	Thu, 6 Nov 2008 20:43:22 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52107 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbYKGBnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 20:35:43 -0500
-Date: Thu, 06 Nov 2008 20:35:41 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH]1/3 intel_menlow:Adding comment for GTHS legal values
-In-reply-to: <7D0189F5BE1DF549A570B212D1D5612182AF02@bgsmsx412.gar.corp.intel.com>
-X-X-Sender: lenb@localhost.localdomain
-To: "Thomas, Sujith" <sujith.thomas@intel.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Message-id: <alpine.LFD.2.00.0811062030280.3106@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <7D0189F5BE1DF549A570B212D1D5612182AF02@bgsmsx412.gar.corp.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 6 Nov 2008 20:43:21 -0500
+Date: Fri, 7 Nov 2008 10:42:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into
+ pcp
+Message-Id: <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081106164644.GA14012@csn.ul.ie>
+References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081106164644.GA14012@csn.ul.ie>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sujith,
-
-I applied 1/3 and 2/3.
-I had to hand-edit them because they were line wrapped
-by your mailer.
-
-This is only a minor waste of my time for a trivial patch,
-but for a longer patch, I'm not going to do that for you.
-
-Please read Documentation/SubmittingPatches
-
-note that it is [PATCH 1/3], not [PATCH] 1/3 -- as future
-generations don't need the '1/3' in the commit message...
-
-thanks,
--Len
-
-ps. also, don't bother sending a copy of patches to my intel.com
-address, that goes to exchange, which destroys patches.
-I apply all patches from my kernel.org account, which is
-subscribed to the lists.
-
-On Wed, 5 Nov 2008, Thomas, Sujith wrote:
-
-> Documentation of legal values for GTHS
-> To be patched over Rui's 09/11 bug fix patch
+On Thu, 6 Nov 2008 16:46:45 +0000
+Mel Gorman <mel@csn.ul.ie> wrote:
+> > otherwise, the system have unnecessary memory starvation risk
+> > because other cpu can't use this emergency pages.
+> > 
+> > 
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > CC: Mel Gorman <mel@csn.ul.ie>
+> > CC: Christoph Lameter <cl@linux-foundation.org>
+> > 
 > 
-> Signed-off-by: Sujith Thomas <sujith.thomas@intel.com>
-> ---
->  drivers/misc/intel_menlow.c |    5 +++++
->  1 file changed, 5 insertions(+)
+> This patch seems functionally sound but as Christoph points out, this
+> adds another branch to the fast path. Now, I ran some tests and those that
+> completed didn't show any problems but adding branches in the fast path can
+> eventually lead to hard-to-detect performance problems.
 > 
-> Index: linux-2.6.27/drivers/misc/intel_menlow.c
-> ===================================================================
-> --- linux-2.6.27.orig/drivers/misc/intel_menlow.c
-> +++ linux-2.6.27/drivers/misc/intel_menlow.c
-> @@ -52,6 +52,11 @@ MODULE_LICENSE("GPL");
->  #define MEMORY_ARG_CUR_BANDWIDTH 1
->  #define MEMORY_ARG_MAX_BANDWIDTH 0
->  
-> +/*
-> + * GTHS returning 'n' would mean that [0,n-1] states are supported
-> + * In that case max_cstate would be n-1
-> + * GTHS returning '0' would mean that no bandwidth control states are
-> supported
-> + */
->  static int memory_get_int_max_bandwidth(struct thermal_cooling_device
-> *cdev,
->  					unsigned long *max_state)
->  {
+dividing pcp-list into MIGRATE_TYPES is bad ?
+If divided, we can get rid of scan. 
+
+Thanks,
+-Kame
+
+
+
+> Do you have a situation in mind that this patch fixes up?
+> 
+> Thanks
+> 
+> > ---
+> >  mm/page_alloc.c |   12 +++++++++++-
+> >  1 file changed, 11 insertions(+), 1 deletion(-)
+> > 
+> > Index: b/mm/page_alloc.c
+> > ===================================================================
+> > --- a/mm/page_alloc.c	2008-11-06 06:01:15.000000000 +0900
+> > +++ b/mm/page_alloc.c	2008-11-06 06:27:41.000000000 +0900
+> > @@ -1002,6 +1002,7 @@ static void free_hot_cold_page(struct pa
+> >  	struct zone *zone = page_zone(page);
+> >  	struct per_cpu_pages *pcp;
+> >  	unsigned long flags;
+> > +	int migratetype = get_pageblock_migratetype(page);
+> >  
+> >  	if (PageAnon(page))
+> >  		page->mapping = NULL;
+> > @@ -1018,16 +1019,25 @@ static void free_hot_cold_page(struct pa
+> >  	pcp = &zone_pcp(zone, get_cpu())->pcp;
+> >  	local_irq_save(flags);
+> >  	__count_vm_event(PGFREE);
+> > +
+> > +	set_page_private(page, migratetype);
+> > +
+> > +	/* the page for emergency shouldn't be cached */
+> > +	if (migratetype == MIGRATE_RESERVE) {
+> > +		free_one_page(zone, page, 0);
+> > +		goto out;
+> > +	}
+> >  	if (cold)
+> >  		list_add_tail(&page->lru, &pcp->list);
+> >  	else
+> >  		list_add(&page->lru, &pcp->list);
+> > -	set_page_private(page, get_pageblock_migratetype(page));
+> >  	pcp->count++;
+> >  	if (pcp->count >= pcp->high) {
+> >  		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
+> >  		pcp->count -= pcp->batch;
+> >  	}
+> > +
+> > +out:
+> >  	local_irq_restore(flags);
+> >  	put_cpu();
+> >  }
+> > 
+> > 
+> 
+> -- 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
+> 
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 > 
+
