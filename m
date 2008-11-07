@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755207AbYKGJis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYKGJje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755207AbYKGJis (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432AbYKGJif
+	id S1754907AbYKGJje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:39:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYKGJjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:38:35 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42997
+	Fri, 7 Nov 2008 04:39:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43004
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754770AbYKGJie (ORCPT
+	by vger.kernel.org with ESMTP id S1751485AbYKGJjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:38:34 -0500
-Date: Fri, 07 Nov 2008 01:38:33 -0800 (PST)
-Message-Id: <20081107.013833.147302570.davem@davemloft.net>
-To: kay.sievers@vrfy.org
-Cc: wli@holomorphy.com, greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: sparc: struct device - replace bus_id with dev_name(),
- dev_set_name()
+	Fri, 7 Nov 2008 04:39:22 -0500
+Date: Fri, 07 Nov 2008 01:39:20 -0800 (PST)
+Message-Id: <20081107.013920.77605257.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches v2] net driver fixes for 2.6.28-rc
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <ac3eb2510811070033m108d8ed5t499c20ee02b2618f@mail.gmail.com>
-References: <1226018639.3189.15.camel@nga>
-	<20081106.233557.193705310.davem@davemloft.net>
-	<ac3eb2510811070033m108d8ed5t499c20ee02b2618f@mail.gmail.com>
+In-Reply-To: <20081107083546.GA25245@havoc.gtf.org>
+References: <20081107083546.GA25245@havoc.gtf.org>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,45 +26,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-Date: Fri, 7 Nov 2008 09:33:16 +0100
+From: Jeff Garzik <jeff@garzik.org>
+Date: Fri, 7 Nov 2008 03:35:46 -0500
 
-> On Fri, Nov 7, 2008 at 08:35, David Miller <davem@davemloft.net> wrote:
-> > From: Kay Sievers <kay.sievers@vrfy.org>
-> > Date: Fri, 07 Nov 2008 01:43:59 +0100
-> >
-> >> --- a/arch/sparc64/kernel/vio.c
-> >> +++ b/arch/sparc64/kernel/vio.c
-> >> @@ -224,7 +224,7 @@ static struct vio_dev *vio_create_one(st
-> >>       if (!strcmp(type, "domain-services-port"))
-> >>               bus_id_name = "ds";
-> >>
-> >> -     if (strlen(bus_id_name) >= BUS_ID_SIZE - 4) {
-> >> +     if (strlen(bus_id_name) >= 20 - 4) {
-> >>               printk(KERN_ERR "VIO: bus_id_name [%s] is too long.\n",
-> >>                      bus_id_name);
-> >>               return NULL;
-> >>
-> >>
-> >
-> > But I don't like this.
-> >
-> > Could you please keep the macro around until everything is converted?
-> > Then you can remove the test entirely.
-> >
-> > Leaving it with just constants there is inviting confusion, no matter
-> > how short amount of time it will be there.
 > 
-> I can add a SPARC_BUS_ID_SIZE, to that file, or in a sparc header, but
-> the core will not provide any such value, and have to, go to catch all
-> remaining occurrences across the tree. Where should I add it?
+> Removed the bogus fraglist changes for tun and virtio_net.
+> 
+> Please pull from 'davem-fixes' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
 
-You should keep BUS_ID_SIZE in the device.h header or wherever it is
-now.
-
-Then it's a simply grep to kill that off and all the references (and
-you have to systematically eliminate these no-longer-needed tests
-anyways) in one fell swoop.
-
-Otherwise someone will have to grep for "20" (!!) in order to do that
-cleanup.
+Pulled, thanks a lot Jeff.
