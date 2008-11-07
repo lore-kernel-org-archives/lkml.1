@@ -1,83 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbYKGLEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYKGLPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbYKGLEk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbYKGLE0
+	id S1753211AbYKGLPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:15:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYKGLPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:04:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60472 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754771AbYKGLEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:04:24 -0500
-Date: Fri, 7 Nov 2008 09:06:13 -0200
-From: Glauber Costa <glommer@redhat.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH] restart search at beggining of vmalloc address
-Message-ID: <20081107110613.GA15827@poweredge.glommer>
-References: <1226005106-4974-1-git-send-email-glommer@redhat.com> <20081107002742.GA12135@wotan.suse.de>
+	Fri, 7 Nov 2008 06:15:43 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:34338 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751809AbYKGLPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:15:41 -0500
+Message-ID: <49142351.9080805@euromail.se>
+Date: Fri, 07 Nov 2008 12:15:29 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081107002742.GA12135@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] input: Add a detailed multi-touch finger data report protocol
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1KyPJT-0003qx-5I.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KyPJT-0003qx-5I 18ba6e6edb1d1edf389d8351fc802d16
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 01:27:42AM +0100, Nick Piggin wrote:
-> Excellent, thank you! Good catch
-> 
-> If you agree my previous patch was also good in combination with this one,
-> then I'll send them all to be merged.
-I'll test it with conjunction with my patch to be sure it does not retrigger
-the bug I had. But I'm sure it won't (famous last words)
+In order to utilize the full power of the new multi-touch devices, a
+way to report detailed finger data to user space is needed. This patch
+adds a multi-touch (MT) protocol which allows drivers to report details
+for an arbitrary number of fingers.
 
-I also had two more patches that I wrote that aided me in debugging this, that
-I'd like to see included:
- * the first shows the size of the failing allocation: We can see current allocations
-   with /proc/vmallocinfo, but it's hard to get a grasp at what's the size of the allocation
-   that just failed, because it is not registered.
- * the second, shows the real name of the callers in vmallocinfo, instead of things like
-   "vmalloc_32", which is just an intermediate.
+BTN_MT_REPORT_PACKET
 
-My plan was to send them today, after getting comments from you on this one.
-If you think they are all reasonable, maybe we can send them all as a series.
+The driver presses this button to indicate the start of a packet of
+finger data. The button is released after the whole packet has been
+reported.
 
-> 
-> Thanks,
-> Nick
-> 
-> On Thu, Nov 06, 2008 at 06:58:26PM -0200, Glauber Costa wrote:
-> > Current vmalloc restart search for a free area in case we
-> > can't find one. The reason is there are areas which are lazily
-> > freed, and could be possibly freed now. However, current implementation
-> > start searching the tree from the last failing address, which is
-> > pretty much by definition at the end of address space. So, we fail.
-> > 
-> > The proposal of this patch is to restart the search from the beginning
-> > of the requested vstart address. This fixes the regression in running
-> > KVM virtual machines for me, described in
-> > http://lkml.org/lkml/2008/10/28/349, caused by commit
-> > db64fe02258f1507e13fe5212a989922323685ce.
-> > 
-> > Signed-off-by: Glauber Costa <glommer@redhat.com>
-> > CC: Nick Piggin <npiggin@suse.de>
-> > ---
-> >  mm/vmalloc.c |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-> > index 7db493d..6fe2003 100644
-> > --- a/mm/vmalloc.c
-> > +++ b/mm/vmalloc.c
-> > @@ -378,6 +378,7 @@ found:
-> >  		if (!purged) {
-> >  			purge_vmap_area_lazy();
-> >  			purged = 1;
-> > +			addr = ALIGN(vstart, align);
-> >  			goto retry;
-> >  		}
-> >  		if (printk_ratelimit())
-> > -- 
-> > 1.5.6.5
+BTN_MT_REPORT_FINGER
+
+The driver presses this button to indicate the start of a new
+finger. The button is released when the finger has been reported.
+
+In order to stay compatible with existing applications, the data
+reported in a finger packet must not be recognized as single-touch
+events. Therefore, a specific set of ABS_MT events is used instead.
+
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ include/linux/input.h |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/input.h b/include/linux/input.h
+index b86fb55..c82dd42 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -590,6 +590,9 @@ struct input_absinfo {
+ #define KEY_NUMERIC_STAR	0x20a
+ #define KEY_NUMERIC_POUND	0x20b
+
++#define BTN_MT_REPORT_PACKET	0x210	/* report multitouch packet data */
++#define BTN_MT_REPORT_FINGER	0x211	/* report multitouch finger data */
++
+ /* We avoid low common keys in module aliases so they don't get huge. */
+ #define KEY_MIN_INTERESTING	KEY_MUTE
+ #define KEY_MAX			0x2ff
+@@ -642,6 +645,15 @@ struct input_absinfo {
+ #define ABS_TOOL_WIDTH		0x1c
+ #define ABS_VOLUME		0x20
+ #define ABS_MISC		0x28
++#define ABS_MT_TOUCH		0x30	/* Diameter of touching circle */
++#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
++#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis of touching ellipse */
++#define ABS_MT_WIDTH		0x32	/* Diameter of approaching circle */
++#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
++#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis of approaching ellipse */
++#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
++#define ABS_MT_POSITION_X	0x35	/* Center X ellipse position */
++#define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
+ #define ABS_MAX			0x3f
+ #define ABS_CNT			(ABS_MAX+1)
+
+-- 
+1.5.6.3
+
