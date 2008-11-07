@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYKGXIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbYKGXI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbYKGXIj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYKGXIc
+	id S1753676AbYKGXI6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYKGXIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:08:32 -0500
-Received: from bc.sympatico.ca ([209.226.175.184]:53324 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752294AbYKGXIb (ORCPT
+	Fri, 7 Nov 2008 18:08:47 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:5289 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752376AbYKGXIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:08:31 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAAdTFElMQWxa/2dsb2JhbACBdr1OCIsWglMIew
-Date: Fri, 7 Nov 2008 18:08:29 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH-ugly] kmemtrace: casting a gfp_t requires __force
-Message-ID: <20081107230829.GA10636@Krystal>
-References: <1226084321.11596.37.camel@brick> <20081107192029.GA4001@x200.localdomain> <20081107225015.GA5210@localhost>
-Mime-Version: 1.0
+	Fri, 7 Nov 2008 18:08:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SMRgXvfc39N556wt7ZwIYhwETTljGgODg8LGPuPzI66tXvnokFp4u+nB4btxw8kOGG
+         AkrqtlKFCkg1THISDILEDov6Bv+VlVOs/2LqkgY8/KDVvpd0lD8+ydTZH18D780iImKU
+         /IRKTtcfHv9IUVacSA1zIOjIvOU2I8LDbZlRA=
+Date: Sat, 8 Nov 2008 02:12:05 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Koyama, Yoshiya" <Yoshiya.Koyama@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data
+	to userspace
+Message-ID: <20081107231205.GA2528@x200.localdomain>
+References: <19f34abd0810251014s7968557br38e43aa0b9cdcf09@mail.gmail.com> <200810252241.53601.rjw@sisk.pl> <m163nggvhq.fsf@frodo.ebiederm.org> <19f34abd0810261408w61b1e2dbvb9a0e16ce5a10022@mail.gmail.com> <19f34abd0811040139t8334502i7a5d8501c5fe95ac@mail.gmail.com> <20081104151234.GH28946@ZenIV.linux.org.uk> <20081106100410.GN4890@elte.hu> <20081107190544.GA1551@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081107225015.GA5210@localhost>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:05:02 up 156 days,  3:45,  7 users,  load average: 1.59, 0.81,
-	0.76
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20081107190544.GA1551@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
-> On Fri, Nov 07, 2008 at 10:20:29PM +0300, Alexey Dobriyan wrote:
-> > On Fri, Nov 07, 2008 at 10:58:41AM -0800, Harvey Harrison wrote:
-> > > --- a/include/linux/kmemtrace.h
-> > > +++ b/include/linux/kmemtrace.h
-> > > @@ -34,7 +34,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
-> > >  		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
-> > >  		   type_id, call_site, (unsigned long) ptr,
-> > >  		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
-> > > -		   (unsigned long) gfp_flags, node);
-> > > +		   (__force unsigned long)gfp_flags, node);
+On Fri, Nov 07, 2008 at 11:05:44AM -0800, Greg KH wrote:
+> On Thu, Nov 06, 2008 at 11:04:10AM +0100, Ingo Molnar wrote:
 > > 
-> > gfp_t is "unsigned int" actually. These casts are bogus.
+> > * Al Viro <viro@ZenIV.linux.org.uk> wrote:
 > > 
-> > Subject: How do I printk <type> correctly?
+> > > On Tue, Nov 04, 2008 at 10:39:19AM +0100, Vegard Nossum wrote:
+> > > > On Sun, Oct 26, 2008 at 10:08 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > > > # uname -a
+> > > > Linux localhost.localdomain 2.6.25.11-97.fc9.i686 #1 SMP Mon Jul 21
+> > > > 01:31:09 EDT 2008 i686 i686 i386 GNU/Linux
+> > > > # prelink -mRf /sbin/udevd
+> > > > # ./a.out /proc/564/exe
+> > > > warning: /proc/564/exe: got return value 38, expected 11
+> > > > 2f7362696e2f7564657664005f47387942426e5952446e566f306868202864656c6574656429
+> > > > /sbin/udevd _G8yBBnYRDnVo0hh (deleted)
+> > > > 
+> > > > Yoshiya Koyama reports that the problem exists on RHEL 2.6.9-42.ELsmp too.
+> > > > 
+> > > > I don't think it's exactly the same problem as originally reported,
+> > > > because I definitely wasn't using prelinking (the prelink binary
+> > > > wasn't even installed on the machine until today). But finding the
+> > > > root cause of this may solve both problems.
+> > > 
+> > > switch_names() buggered in case of short names on both sides.  That should
+> > > help:
+> > > 
+> > > >From 2acda856910b774717e0290bbf948c7dee0f2e1a Mon Sep 17 00:00:00 2001
+> > > From: Al Viro <viro@zeniv.linux.org.uk>
+> > > Date: Mon, 3 Nov 2008 15:03:50 -0500
+> > > Subject: [PATCH] fix switch_names() breakage in short-to-short case
+> > > 
+> > > We want ->name.len to match the resulting name on *both*
+> > > source and target
+> > > 
+> > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 > > 
-> > If variable is of Type	use	printk format specifier.
-> > ---------------------------------------------------------
-> > 		int			%d or %x
-> > 		unsigned int		%u or %x
-> > 		long			%ld ot %lx
-> > 		unsigned long		%lu or %lx
-> > 		long long		%lld or %llx
-> > 		unsigned long long	%llu or %llx
-> > 		size_t			%zu or %zx
-> > 		ssize_t			%zd or %zx
-> > 
-> > Raw pointer value SHOULD be printed with %p.
-> > 
-> > u64 SHOULD be printed with %llu/%llx, (unsigned long long):
-> > 
-> > 	printk("%llu", (unsigned long long)u64_var);
-> > 
-> > s64 SHOULD be printed with %lld/%llx, (long long):
-> > 
-> > 	printk("%lld", (long long)s64_var);
-> > 
-> > If type is dependent on config option (sector_t), use format specifier
-> > of biggest type and explicitly cast to it.
-> > 
-> > Reminder: sizeof() result is of type size_t.
-> > 
-> > Thank you for your cooperation.
+> > please credit kmemcheck in the commit message and use an appropriate 
+> > Reported-by line as well. Thanks,
 > 
-> Hi,
-> 
-> Actually, "%zu" was the first thing that crossed my mind too. But we
-> don't want to carry such types into the probe callbacks.
+> Did this fix ever get merged into Linus's tree?
 
-quote :
-> It's a lot
-> easier to see which u* an unsigned long fits into than it is for
-> size_t.
-
-why would you need to limit yourself to u8, u16, u32, u64 ?
-
-sizeof(size_t) tells you for sure what the size of size_t is. You can
-even export it to a trace header so that size is know when the trace is
-analyzed, neat eh ? :)
-
-Why would you ever want to create a macro to make typing more obscure
-and to take considerably more space on architectures where a u64 is not
-required ?
-
-Mathieu
-
-
-> So we take care of this inside a wrapper; the sooner, the better.
-> 
-> Also take into account that debugging code usually casts pointers to
-> unsigned long. This can easily be seen by looking at _RET_IP_ definition
-> or SLAB code. I think there's a very good reason to do so, since it adds
-> opacity to something that's not supposed to be used as a pointer.
-> 
-> 
-> 	Cheers,
-> 	Eduard
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+So far no.
