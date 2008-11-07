@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753479AbYKGXau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYKGXbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753479AbYKGXau (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbYKGXXX
+	id S1755294AbYKGXbQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:31:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbYKGXXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:23:23 -0500
-Received: from kroah.org ([198.145.64.141]:59438 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:23:24 -0500
+Received: from kroah.org ([198.145.64.141]:59451 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753875AbYKGXXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:23:18 -0500
-Date: Fri, 7 Nov 2008 15:16:11 -0800
+	id S1753854AbYKGXXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:23:19 -0500
+Date: Fri, 7 Nov 2008 15:16:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,15 +23,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
-       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
-Subject: [patch 22/23] netfilter: snmp nat leaks memory in case of failure
-Message-ID: <20081107231611.GW1108@kroah.com>
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
+Subject: [patch 23/23] netfilter: restore lost ifdef guarding defrag
+	exception
+Message-ID: <20081107231613.GX1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline; filename="netfilter-snmp-nat-leaks-memory-in-case-of-failure.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="netfilter-restore-lost-ifdef-guarding-defrag-exception.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,28 +41,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+From: Patrick McHardy <kaber@trash.net>
 
-netfilter: snmp nat leaks memory in case of failure
+netfilter: restore lost #ifdef guarding defrag exception
 
-Upstream commit 311670f3e:
+Upstream commit 38f7ac3eb:
 
-Signed-off-by: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+Nir Tzachar <nir.tzachar@gmail.com> reported a warning when sending
+fragments over loopback with NAT:
+
+[ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+
+The reason is that defragmentation is skipped for already tracked connections.
+This is wrong in combination with NAT and ip_conntrack actually had some ifdefs
+to avoid this behaviour when NAT is compiled in.
+
+The entire "optimization" may seem a bit silly, for now simply restoring the
+lost #ifdef is the easiest solution until we can come up with something better.
+
 Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/netfilter/nf_nat_snmp_basic.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/net/ipv4/netfilter/nf_nat_snmp_basic.c
-+++ b/net/ipv4/netfilter/nf_nat_snmp_basic.c
-@@ -742,6 +742,7 @@ static unsigned char snmp_object_decode(
- 			*obj = kmalloc(sizeof(struct snmp_object) + len,
- 				       GFP_ATOMIC);
- 			if (*obj == NULL) {
-+				kfree(p);
- 				kfree(id);
- 				if (net_ratelimit())
- 					printk("OOM in bsalg (%d)\n", __LINE__);
+--- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
++++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
+@@ -150,10 +150,12 @@ static unsigned int ipv4_conntrack_defra
+ 					  const struct net_device *out,
+ 					  int (*okfn)(struct sk_buff *))
+ {
++#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
+ 	/* Previously seen (loopback)?  Ignore.  Do this before
+ 	   fragment check. */
+ 	if (skb->nfct)
+ 		return NF_ACCEPT;
++#endif
+ 
+ 	/* Gather fragments. */
+ 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
 
 -- 
