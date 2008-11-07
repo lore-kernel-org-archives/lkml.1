@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYKGRlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595AbYKGRo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbYKGRlq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 12:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYKGRli
+	id S1753595AbYKGRo5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 12:44:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYKGRot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 12:41:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55003 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750814AbYKGRlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 12:41:37 -0500
-Date: Fri, 7 Nov 2008 19:42:05 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Doug Chapman <doug.chapman@hp.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       adobriyan@gmail.com, Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] account_group_exec_runtime: fix the racy usage of
-	->signal
-Message-ID: <20081107184205.GA30523@redhat.com>
-References: <20081107165238.GA23055@redhat.com> <20081107162101.GA2178@elte.hu> <1226077087.6451.18.camel@oberon>
-MIME-Version: 1.0
+	Fri, 7 Nov 2008 12:44:49 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:60934 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750879AbYKGRos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 12:44:48 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtcEAMcLFElMQWxa/2dsb2JhbACBdsddg1Y
+Date: Fri, 7 Nov 2008 12:44:46 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [RFC patch 17/18] MIPS : Trace clock
+Message-ID: <20081107174446.GF22134@Krystal>
+References: <20081107052336.652868737@polymtl.ca> <20081107053351.329744816@polymtl.ca> <1226058797.2697.19.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1226077087.6451.18.camel@oberon>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1226058797.2697.19.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:20:08 up 155 days, 22:00,  7 users,  load average: 0.70, 0.77,
+	0.69
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/07, Doug Chapman wrote:
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Fri, 2008-11-07 at 00:23 -0500, Mathieu Desnoyers wrote:
+> > Note for Peter Zijlstra :
+> > You should probably have a look at lockdep.c raw_spinlock_t lockdep_lock usage.
+> > I suspect it may be used with preemption enabled in graph_lock(). (not sure
+> > though, but it's worth double-checking.
 > 
-> On Fri, 2008-11-07 at 17:21 +0100, Ingo Molnar wrote:
-> > * Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > @@ -351,10 +351,12 @@ static inline void account_group_exec_ru
-> > >  					      unsigned long long ns)
-> > >  {
-> > >  	struct signal_struct *sig;
-> > > +	unsigned long flags;
-> > >
-> > > -	sig = tsk->signal;
-> > > -	if (unlikely(!sig))
-> > > +	if (unlikely(!lock_task_sighand(tsk, &flags)))
-> > >  		return;
-> >
-> > i think this will lock up: the signal lock must not nest inside the rq 
-> > lock, and these accounting functions are called from within the 
-> > scheduler.
->
-> I can confirm that this does hang on bootup.
+> Are you worried about the graph_lock() instance in
+> lookup_chain_cache() ?
+> 
+> That is the locking for validate_chain,
+> 
+> __lock_acquire()
+>  validate_chain()
+>    look_up_chain_cache()
+>      graph_lock()
+>    check_prevs_add()
+>      check_prev_add()
+>        graph_unlock()
+>        graph_lock()
+>    graph_unlock()
+> 
+> which is all done without modifying IRQ state.
+> 
+> However, __lock_acquire() is only called with IRQs disabled:
+> 
+> lock_acquire()
+>   raw_local_irq_save()
+>   __lock_acquire()
+> 
+> lock_release()
+>   raw_local_irq_save()
+>   __lock_release()
+>     lock_release_nested()
+>       __lock_acquire()
+>     lock_release_non_nested()
+>       __lock_acquire()
+> 
+> lock_set_subclass()
+>   raw_local_irq_save()
+>   __lock_set_subclass()
+>     __lock_acquire()
+> 
+> So I think we're good.
+> 
 
-Thanks a lot Doug.
+Yep, looks good.
 
-If only I could understand what happens. I am running the 2.6.27 kernel
-with the patch below just fine.
-
-Ingo, could you please explain?
-
-OK, perhaps we can check ->exit_state... I'll return on Monday.
+Mathieu
 
 
---- linux-2.6.27/kernel/sched_fair.c~DBG	2008-10-10 00:13:53.000000000 +0200
-+++ linux-2.6.27/kernel/sched_fair.c	2008-11-07 19:15:28.000000000 +0100
-@@ -484,6 +484,16 @@ __update_curr(struct cfs_rq *cfs_rq, str
- 	curr->vruntime += delta_exec_weighted;
- }
- 
-+static void ttt(struct task_struct *tsk)
-+{
-+	unsigned long flags;
-+
-+	if (unlikely(!lock_task_sighand(tsk, &flags)))
-+		return;
-+
-+	unlock_task_sighand(tsk, &flags);
-+}
-+
- static void update_curr(struct cfs_rq *cfs_rq)
- {
- 	struct sched_entity *curr = cfs_rq->curr;
-@@ -507,6 +517,7 @@ static void update_curr(struct cfs_rq *c
- 		struct task_struct *curtask = task_of(curr);
- 
- 		cpuacct_charge(curtask, delta_exec);
-+		ttt(curtask);
- 	}
- }
- 
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
