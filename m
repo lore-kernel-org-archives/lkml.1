@@ -1,111 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYKGFy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYKGF7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbYKGFy2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 00:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYKGFyR
+	id S1754763AbYKGF7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 00:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbYKGF6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 00:54:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38896 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750920AbYKGFyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 00:54:15 -0500
-Date: Thu, 6 Nov 2008 21:52:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
-       paulus@samba.org, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 07/18] Trace clock core
-Message-Id: <20081106215256.a9f01ec4.akpm@linux-foundation.org>
-In-Reply-To: <20081107053349.699011457@polymtl.ca>
-References: <20081107052336.652868737@polymtl.ca>
-	<20081107053349.699011457@polymtl.ca>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 7 Nov 2008 00:58:50 -0500
+Received: from waste.org ([66.93.16.53]:36253 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbYKGF6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 00:58:50 -0500
+Subject: Re: iwlagn: wrong command queue 31, command id 0x0
+From: Matt Mackall <mpm@selenic.com>
+To: Marcel Holtmann <holtmann@linux.intel.com>
+Cc: Zhu Yi <yi.zhu@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+In-Reply-To: <5109BB99-53F1-499A-9D0B-FAB77591FBD5@linux.intel.com>
+References: <1225944979.3792.3.camel@calx>
+	 <5109BB99-53F1-499A-9D0B-FAB77591FBD5@linux.intel.com>
+Content-Type: text/plain
+Date: Thu, 06 Nov 2008 23:58:38 -0600
+Message-Id: <1226037518.3023.60.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Nov 2008 00:23:43 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> 32 to 64 bits clock extension. Extracts 64 bits tsc from a [1..32]
-> bits counter, kept up to date by periodical timer interrupt. Lockless.
+On Fri, 2008-11-07 at 05:40 +0100, Marcel Holtmann wrote:
+> Hi Matt,
 > 
-> ...
->
-> +#include <linux/sched.h> /* FIX for m68k local_irq_enable in on_each_cpu */
+> > [ 5470.869820] WARNING: at drivers/net/wireless/iwlwifi/iwl-tx.c:1204
+> > iwl_rx_handle+0x11a/0x21b [iwlagn]()
+> > [ 5470.869824] wrong command queue 31, command id 0x0
+> 
+> I am seeing this a lot with my X61 running a 64-bit kernel/OS and my D- 
+> Link DIR-615 access point. With some other access points I am seeing  
+> it never or a lot less.
 
-What's going on here?
+> What kind of laptop and access point are you using? Is you access  
+> point 802.11n capable? Do you run the i386 or x86_64 version of your  
+> distro?
 
-> +struct synthetic_tsc_struct {
-> +	union {
-> +		u64 val;
-> +		struct {
-> +#ifdef __BIG_ENDIAN
-> +			u32 msb;
-> +			u32 lsb;
-> +#else
-> +			u32 lsb;
-> +			u32 msb;
-> +#endif
+Laptop is a Fujitsu 8010p. I've tried this with kernel only once with a
+G-capable Airport (with various other unknown access points in range),
+but it failed to find any networks. 64-bit kernel and Debian unstable.
 
-One would expect an identifier called "msb" to mean "most significant
-bit" or possible "most significant byte".
+2.6.27 mostly works fine here, though occasionally I need to load/unload
+iwlagn after s2ram.
 
-Maybe ms32 and ls32?
-
-> +		} sel;
-> +	} tsc[2];
-> +	unsigned int index;	/* Index of the current synth. tsc. */
-> +};
-> +
-> +static DEFINE_PER_CPU(struct synthetic_tsc_struct, synthetic_tsc);
-> +
-> +/* Called from IPI : either in interrupt or process context */
-
-IPI handlers should always be called with local interrupts disabled.
-
-> +static void update_synthetic_tsc(void)
-> +{
-> +	struct synthetic_tsc_struct *cpu_synth;
-> +	u32 tsc;
-> +
-> +	preempt_disable();
-
-which would make this unnecessary.
-
-> +	cpu_synth = &per_cpu(synthetic_tsc, smp_processor_id());
-> +	tsc = trace_clock_read32();		/* Hardware clocksource read */
-> +
-> +	if (tsc < HW_LSB(cpu_synth->tsc[cpu_synth->index].sel.lsb)) {
-> +		unsigned int new_index = 1 - cpu_synth->index; /* 0 <-> 1 */
-> +		/*
-> +		 * Overflow
-> +		 * Non atomic update of the non current synthetic TSC, followed
-> +		 * by an atomic index change. There is no write concurrency,
-> +		 * so the index read/write does not need to be atomic.
-> +		 */
-> +		cpu_synth->tsc[new_index].val =
-> +			(SW_MSB(cpu_synth->tsc[cpu_synth->index].val)
-> +				| (u64)tsc) + (1ULL << HW_BITS);
-> +		cpu_synth->index = new_index;	/* atomic change of index */
-> +	} else {
-> +		/*
-> +		 * No overflow : We know that the only bits changed are
-> +		 * contained in the 32 LSBs, which can be written to atomically.
-> +		 */
-> +		cpu_synth->tsc[cpu_synth->index].sel.lsb =
-> +			SW_MSB(cpu_synth->tsc[cpu_synth->index].sel.lsb) | tsc;
-> +	}
-> +	preempt_enable();
-> +}
-
-Is there something we should be fixing in m68k?
+-- 
+Mathematics is the supreme nostalgia of our time.
 
