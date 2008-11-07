@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYKGJIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYKGJLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYKGJIz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:08:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbYKGJIi
+	id S1753423AbYKGJLu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYKGJLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:08:38 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:33505 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYKGJIg (ORCPT
+	Fri, 7 Nov 2008 04:11:34 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:37099 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbYKGJLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:08:36 -0500
-Date: Fri, 7 Nov 2008 18:02:48 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>, nishimura@mxp.nes.nec.co.jp
-Subject: Re: [RFC][PATCH 5/6] memcg: mem+swap controller
-Message-Id: <20081107180248.39251a80.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20081105172316.354c00fb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081105172316.354c00fb.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 7 Nov 2008 04:11:32 -0500
+Date: Fri, 7 Nov 2008 10:11:18 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: David Miller <davem@davemloft.net>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
+       linux-i2c@vger.kernel.org
+Subject: Re: I2C from interrupt context?
+Message-ID: <20081107101118.286f3713@hyperion.delvare>
+In-Reply-To: <20081106.154754.02648408.davem@davemloft.net>
+References: <m3bpws8ln3.fsf@maximus.localdomain>
+	<20081106.154754.02648408.davem@davemloft.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,201 +28,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Nov 2008 17:23:16 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Mem+Swap controller core.
+On Thu, 06 Nov 2008 15:47:54 -0800 (PST), David Miller wrote:
+> From: Krzysztof Halasa <khc@pm.waw.pl>
+> Date: Fri, 07 Nov 2008 00:44:48 +0100
 > 
-> This patch implements per cgroup limit for usage of memory+swap.
-> However there are SwapCache, double counting of swap-cache and
-> swap-entry is avoided.
+> [ Fixed i2c list address, it's now hosted at vger ]
 > 
-> Mem+Swap controller works as following.
->   - memory usage is limited by memory.limit_in_bytes.
->   - memory + swap usage is limited by memory.memsw_limit_in_bytes.
+> > I'm updating my EEPROM console logger and have encountered a problem
+> > - the logger (as any console) can be called with hardware interrupts
+> > disabled and/or from interrupt context. It needs to write to I^2C
+> > (using ARM (Xscale) GPIO) and possibly SMBUS-only EEPROM chip. Is it
+> > at all supposed to be possible?
 > 
-> 
-> This has following benefits.
->   - A user can limit total resource usage of mem+swap.
-> 
->     Without this, because memory resource controller doesn't take care of
->     usage of swap, a process can exhaust all the swap (by memory leak.)
->     We can avoid this case.
-> 
->     And Swap is shared resource but it cannot be reclaimed (goes back to memory)
->     until it's used. This characteristic can be trouble when the memory
->     is divided into some parts by cpuset or memcg.
->     Assume group A and group B.
->     After some application executes, the system can be..
->     
->     Group A -- very large free memory space but occupy 99% of swap.
->     Group B -- under memory shortage but cannot use swap...it's nearly full.
-> 
->     Ability to set appropriate swap limit for each group is required.
->       
-> Maybe someone wonder "why not swap but mem+swap ?"
-> 
->   - The global LRU(kswapd) can swap out arbitrary pages. Swap-out means
->     to move account from memory to swap...there is no change in usage of
->     mem+swap.
-> 
->     In other words, when we want to limit the usage of swap without affecting
->     global LRU, mem+swap limit is better than just limiting swap.
-> 
-> 
-> Accounting target information is stored in swap_cgroup which is
-> per swap entry record.
-> 
-> Charge is done as following.
->   map
->     - charge  page and memsw.
-> 
->   unmap
->     - uncharge page/memsw if not SwapCache.
-> 
->   swap-out (__delete_from_swap_cache)
->     - uncharge page
->     - record mem_cgroup information to swap_cgroup.
-> 
->   swap-in (do_swap_page)
->     - charged as page and memsw.
->       record in swap_cgroup is cleared.
->       memsw accounting is decremented.
-> 
->   swap-free (swap_free())
->     - if swap entry is freed, memsw is uncharged by PAGE_SIZE.
-> 
-> 
-> After this, usual memory resource controller handles SwapCache.
-> (It was lacked(ignored) feature in current memcg but must be handled.)
-> 
-SwapCache has been handled in [2/6] already :)
+> Not really.  The I2C operations need to be able to sleep and that's
+> not allowed in interrupt context.
 
-(snip)
-> @@ -514,12 +534,25 @@ static int __mem_cgroup_try_charge(struc
->  		css_get(&mem->css);
->  	}
->  
-> +	while (1) {
-> +		int ret;
-> +		bool noswap = false;
->  
-> -	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
-> +		ret = res_counter_charge(&mem->res, PAGE_SIZE);
-> +		if (likely(!ret)) {
-> +			if (!do_swap_account)
-> +				break;
-> +			ret = res_counter_charge(&mem->memsw, PAGE_SIZE);
-> +			if (likely(!ret))
-> +				break;
-> +			/* mem+swap counter fails */
-> +			res_counter_uncharge(&mem->res, PAGE_SIZE);
-> +			noswap = true;
-> +		}
->  		if (!(gfp_mask & __GFP_WAIT))
->  			goto nomem;
->  
-> -		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
-> +		if (try_to_free_mem_cgroup_pages(mem, gfp_mask, noswap))
->  			continue;
->  
->  		/*
-I have two comment about try_charge.
+That's not totally correct. Since kernel 2.6.25, i2c_transfer()
+supports being called in contexts where it cannot sleep. Of course, for
+it to work, the underlying i2c adapter driver must also not sleep. As I
+recall, only the i2c-pxa driver was explicitly modified to support this
+at the moment (see member use_pio of struct pxa_i2c) but other drivers
+could be modified in a similar way (and some i2c adapter drivers may be
+naturally non-sleeping - everything based on i2c-algo-bit is likely to
+fall into this category.)
 
-1. It would be better if possible to avoid charging memsw at swapin (and uncharging
-   it again at mem_cgroup_cache_charge_swapin/mem_cgroup_commit_charge_swapin).
-   How about adding a new argument "charge_memsw" ? (it has many args already now...)
-2. Should we use swap when exceeding mem.limit but mem.limit == memsw.limit ?
+The situation is far from perfect though. For one thing, I seem to
+recall that Andrew Morton didn't like the approach taken in
+i2c_transfer(). For another, i2c_smbus_xfer() was not yet modified so
+at this point only I2C-level transactions can be non-sleeping,
+SMBus-level transactions can't. But all this could be fixed by anyone
+who cares about these specific issues.
 
-(snip)
->  void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *mem)
-> @@ -838,6 +947,7 @@ void mem_cgroup_cancel_charge_swapin(str
->  	if (!mem)
->  		return;
->  	res_counter_uncharge(&mem->res, PAGE_SIZE);
-> +	res_counter_uncharge(&mem->memsw, PAGE_SIZE);
->  	css_put(&mem->css);
->  }
->  
-"if (do_swap_account)" is needed before uncharging memsw.
-
-(snip)
->  static struct cftype mem_cgroup_files[] = {
->  	{
->  		.name = "usage_in_bytes",
-> -		.private = RES_USAGE,
-> +		.private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
->  		.read_u64 = mem_cgroup_read,
->  	},
->  	{
->  		.name = "max_usage_in_bytes",
-> -		.private = RES_MAX_USAGE,
-> +		.private = MEMFILE_PRIVATE(_MEM, RES_MAX_USAGE),
->  		.trigger = mem_cgroup_reset,
->  		.read_u64 = mem_cgroup_read,
->  	},
->  	{
->  		.name = "limit_in_bytes",
-> -		.private = RES_LIMIT,
-> +		.private = MEMFILE_PRIVATE(_MEM, RES_LIMIT),
->  		.write_string = mem_cgroup_write,
->  		.read_u64 = mem_cgroup_read,
->  	},
->  	{
->  		.name = "failcnt",
-> -		.private = RES_FAILCNT,
-> +		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
->  		.trigger = mem_cgroup_reset,
->  		.read_u64 = mem_cgroup_read,
->  	},
-> @@ -1317,6 +1541,31 @@ static struct cftype mem_cgroup_files[] 
->  		.name = "stat",
->  		.read_map = mem_control_stat_show,
->  	},
-> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> +	{
-> +		.name = "memsw.usage_in_bytes",
-> +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_USAGE),
-> +		.read_u64 = mem_cgroup_read,
-> +	},
-> +	{
-> +		.name = "memsw.max_usage_in_bytes",
-> +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_MAX_USAGE),
-> +		.trigger = mem_cgroup_reset,
-> +		.read_u64 = mem_cgroup_read,
-> +	},
-> +	{
-> +		.name = "memsw.limit_in_bytes",
-> +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_LIMIT),
-> +		.write_string = mem_cgroup_write,
-> +		.read_u64 = mem_cgroup_read,
-> +	},
-> +	{
-> +		.name = "memsw.failcnt",
-> +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_FAILCNT),
-> +		.trigger = mem_cgroup_reset,
-> +		.read_u64 = mem_cgroup_read,
-> +	},
-> +#endif
->  };
->  
-IMHO, it would be better to define those "memsw.*" files as memsw_cgroup_files[],
-and change mem_cgroup_populate() like:
-
-static int mem_cgroup_populate(struct cgroup_subsys *ss,
-				struct cgroup *cont)
-{
-	int ret;
-
-	ret = cgroup_add_files(cont, ss, mem_cgroup_files,
-					ARRAY_SIZE(mem_cgroup_files));
-	if (!ret && do_swap_account)
-		ret = cgroup_add_files(cont, ss, memsw_cgroup_files,
-					ARRAY_SIZE(memsw_cgroup_files));
-
-	return ret;
-}
-
-so that those files appear only when swap accounting is enabled.
-
-
-Thanks,
-Daisuke Nishimura.
+-- 
+Jean Delvare
