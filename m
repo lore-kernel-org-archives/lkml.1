@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYKGXbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbYKGXbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbYKGXbQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbYKGXXY
+	id S1755335AbYKGXbd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:31:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbYKGX0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:23:24 -0500
-Received: from kroah.org ([198.145.64.141]:59451 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:26:42 -0500
+Received: from kroah.org ([198.145.64.141]:47452 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753854AbYKGXXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:23:19 -0500
-Date: Fri, 7 Nov 2008 15:16:13 -0800
+	id S1754786AbYKGX0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:26:40 -0500
+Date: Fri, 7 Nov 2008 15:25:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,64 +22,62 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>, davem@davemloft.net
-Subject: [patch 23/23] netfilter: restore lost ifdef guarding defrag
-	exception
-Message-ID: <20081107231613.GX1108@kroah.com>
-References: <20081107224818.593212310@mini.kroah.org>
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/16] 2.6.25.20-stable review
+Message-ID: <20081107232544.GA4282@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-restore-lost-ifdef-guarding-defrag-exception.patch"
-In-Reply-To: <20081107231457.GA1108@kroah.com>
+Content-Disposition: inline
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.26-stable review patch.  If anyone has any objections, please let us know.
+This is the start of the stable review cycle for the 2.6.25.20 release.
+There are 16 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-------------------
+These patches are sent out with a number of different people on the
+Cc: line.  If you wish to be a reviewer, please email stable@kernel.org
+to add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-From: Patrick McHardy <kaber@trash.net>
+Responses should be made by Monday, November 10, 20:00:00 UTC.  Anything
+received after that time might be too late.
 
-netfilter: restore lost #ifdef guarding defrag exception
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.20-rc1.gz
+and the diffstat can be found below.
 
-Upstream commit 38f7ac3eb:
 
-Nir Tzachar <nir.tzachar@gmail.com> reported a warning when sending
-fragments over loopback with NAT:
+thanks,
 
-[ 6658.338121] WARNING: at net/ipv4/netfilter/nf_nat_standalone.c:89 nf_nat_fn+0x33/0x155()
+greg k-h
 
-The reason is that defragmentation is skipped for already tracked connections.
-This is wrong in combination with NAT and ip_conntrack actually had some ifdefs
-to avoid this behaviour when NAT is compiled in.
+-----------------
 
-The entire "optimization" may seem a bit silly, for now simply restoring the
-lost #ifdef is the easiest solution until we can come up with something better.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-@@ -150,10 +150,12 @@ static unsigned int ipv4_conntrack_defra
- 					  const struct net_device *out,
- 					  int (*okfn)(struct sk_buff *))
- {
-+#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
- 	/* Previously seen (loopback)?  Ignore.  Do this before
- 	   fragment check. */
- 	if (skb->nfct)
- 		return NF_ACCEPT;
-+#endif
- 
- 	/* Gather fragments. */
- 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
-
--- 
+ Makefile                                       |    2 
+ arch/sparc64/kernel/trampoline.S               |   18 ++-
+ drivers/acpi/dock.c                            |    5 -
+ drivers/acpi/video.c                           |  123 ++++++++++++++-----------
+ drivers/edac/cell_edac.c                       |    2 
+ drivers/gpio/gpiolib.c                         |    2 
+ drivers/net/wireless/libertas/scan.c           |    4 
+ fs/ext2/dir.c                                  |   60 +++++++-----
+ fs/ext3/dir.c                                  |   10 +-
+ fs/ext4/dir.c                                  |   11 +-
+ include/linux/sched.h                          |    4 
+ include/math-emu/op-common.h                   |   17 ++-
+ include/net/scm.h                              |    5 -
+ net/core/dev.c                                 |   27 +----
+ net/core/rtnetlink.c                           |    2 
+ net/core/scm.c                                 |   24 ++++
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 
+ net/ipv4/netfilter/nf_nat_snmp_basic.c         |    1 
+ net/ipv6/tcp_ipv6.c                            |    2 
+ net/netfilter/xt_iprange.c                     |    8 -
+ security/commoncap.c                           |    6 -
+ sound/core/control.c                           |    4 
+ 22 files changed, 206 insertions(+), 133 deletions(-)
