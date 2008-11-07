@@ -1,233 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbYKGCh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbYKGCiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbYKGCh5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:37:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbYKGChs
+	id S1754424AbYKGCiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbYKGCiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:37:48 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:45171 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYKGChq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:37:46 -0500
-Date: Thu, 06 Nov 2008 21:37:44 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: ACPI: struct device - replace bus_id with dev_name(),
- dev_set_name()
-In-reply-to: <1225325939.5970.15.camel@nga.site>
-X-X-Sender: lenb@localhost.localdomain
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.2.00.0811062137300.3106@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <1225325939.5970.15.camel@nga.site>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 6 Nov 2008 21:38:02 -0500
+Received: from mga03.intel.com ([143.182.124.21]:24277 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753531AbYKGCh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:37:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,560,1220252400"; 
+   d="scan'208";a="72563358"
+Message-ID: <4913AA03.5060807@intel.com>
+Date: Fri, 07 Nov 2008 10:37:55 +0800
+From: "Zhao, Yu" <yu.zhao@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com> <20081106043235.GA30292@kroah.com>
+In-Reply-To: <20081106043235.GA30292@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied.
+Greg KH wrote:
+> On Wed, Oct 22, 2008 at 04:45:31PM +0800, Yu Zhao wrote:
+>>  Documentation/kernel-parameters.txt |   10 ++++++++++
+>>  1 files changed, 10 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index 53ba7c7..5482ae0 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is defined in the file
+>>  		cbmemsize=nn[KMG]	The fixed amount of bus space which is
+>>  				reserved for the CardBus bridge's memory
+>>  				window. The default value is 64 megabytes.
+>> +		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
+>> +				devices under bus [dddd:]bb (dddd is the domain
+>> +				number and bb is the bus number).
+>> +		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
+>> +				devices under bus [dddd:]bb (dddd is the domain
+>> +				number and bb is the bus number).
+>> +		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
+>> +				device to minimum PAGE_SIZE alignment (dddd is
+>> +				the domain number and bb, dd and f is the bus,
+>> +				device and function number).
+> 
+> This seems like a big problem.  How are we going to know to add these
+> command line options for devices we haven't even seen/known about yet?
+> 
+> How do we know the bus ids aren't going to change between boots (hint,
+> they are, pci bus ids change all the time...)
+> 
+> We need to be able to do this kind of thing dynamically, not fixed at
+> boot time, which seems way to early to even know about this, right?
+> 
+> thanks,
+> 
+> greg k-h
 
-thanks,
--len
+Yes, I totally agree. Doing things dynamically is better.
 
+The purpose of these parameters is to rebalance and align resources for 
+device that has BARs encapsulated in various new capabilities (SR-IOV, 
+etc.), because most of existing BIOSes don't take care of those BARs.
 
-On Thu, 30 Oct 2008, Kay Sievers wrote:
+If we do resource rebalance after system is up, do you think there is 
+any side effect or impact to other subsystem other than PCI (e.g. MTRR)?
 
-> This patch is part of a larger patch series which will remove
-> the "char bus_id[20]" name string from struct device. The device
-> name is managed in the kobject anyway, and without any size
-> limitation, and just needlessly copied into "struct device".
-> 
-> To set and read the device name dev_name(dev) and dev_set_name(dev)
-> must be used. If your code uses static kobjects, which it shouldn't
-> do, "const char *init_name" can be used to statically provide the
-> name the registered device should have. At registration time, the
-> init_name field is cleared, to enforce the use of dev_name(dev) to
-> access the device name at a later time.
-> 
-> We need to get rid of all occurrences of bus_id in the entire tree
-> to be able to enable the new interface. Please apply this patch,
-> and possibly convert any remaining remaining occurrences of bus_id.
-> 
-> We want to submit a patch to -next, which will remove bus_id from
-> "struct device", to find the remaining pieces to convert, and finally
-> switch over to the new api, which will remove the 20 bytes array
-> and does no longer have a size limitation.
-> 
-> Thanks,
-> Kay
-> 
-> 
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Subject: ACPI: struct device - replace bus_id with dev_name(), dev_set_name()
-> 
-> CC: Len Brown <len.brown@intel.com>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
-> ---
-> 
-> 
-> diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
-> index d72a1b6..2d46732 100644
-> --- a/drivers/acpi/ac.c
-> +++ b/drivers/acpi/ac.c
-> @@ -242,7 +242,7 @@ static void acpi_ac_notify(acpi_handle handle, u32 event, void *data)
->  		acpi_ac_get_state(ac);
->  		acpi_bus_generate_proc_event(device, event, (u32) ac->state);
->  		acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -						  device->dev.bus_id, event,
-> +						  dev_name(&device->dev), event,
->  						  (u32) ac->state);
->  #ifdef CONFIG_ACPI_SYSFS_POWER
->  		kobject_uevent(&ac->charger.dev->kobj, KOBJ_CHANGE);
-> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-> index b2133e8..e68f218 100644
-> --- a/drivers/acpi/battery.c
-> +++ b/drivers/acpi/battery.c
-> @@ -782,7 +782,7 @@ static void acpi_battery_notify(acpi_handle handle, u32 event, void *data)
->  	acpi_bus_generate_proc_event(device, event,
->  				     acpi_battery_present(battery));
->  	acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -					device->dev.bus_id, event,
-> +					dev_name(&device->dev), event,
->  					acpi_battery_present(battery));
->  #ifdef CONFIG_ACPI_SYSFS_POWER
->  	/* acpi_batter_update could remove power_supply object */
-> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-> index 24a362f..cf7e885 100644
-> --- a/drivers/acpi/processor_core.c
-> +++ b/drivers/acpi/processor_core.c
-> @@ -761,20 +761,20 @@ static void acpi_processor_notify(acpi_handle handle, u32 event, void *data)
->  		acpi_bus_generate_proc_event(device, event,
->  					pr->performance_platform_limit);
->  		acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -						  device->dev.bus_id, event,
-> +						  dev_name(&device->dev), event,
->  						  pr->performance_platform_limit);
->  		break;
->  	case ACPI_PROCESSOR_NOTIFY_POWER:
->  		acpi_processor_cst_has_changed(pr);
->  		acpi_bus_generate_proc_event(device, event, 0);
->  		acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -						  device->dev.bus_id, event, 0);
-> +						  dev_name(&device->dev), event, 0);
->  		break;
->  	case ACPI_PROCESSOR_NOTIFY_THROTTLING:
->  		acpi_processor_tstate_has_changed(pr);
->  		acpi_bus_generate_proc_event(device, event, 0);
->  		acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -						  device->dev.bus_id, event, 0);
-> +						  dev_name(&device->dev), event, 0);
->  	default:
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
->  				  "Unsupported event [0x%x]\n", event));
-> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-> index a9dda8e..4dd1f31 100644
-> --- a/drivers/acpi/scan.c
-> +++ b/drivers/acpi/scan.c
-> @@ -109,8 +109,7 @@ static int acpi_bus_hot_remove_device(void *context)
->  		return 0;
->  
->  	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> -		"Hot-removing device %s...\n", device->dev.bus_id));
-> -
-> +		"Hot-removing device %s...\n", dev_name(&device->dev)));
->  
->  	if (acpi_bus_trim(device, 1)) {
->  		printk(KERN_ERR PREFIX
-> @@ -460,7 +459,7 @@ static int acpi_device_register(struct acpi_device *device,
->  		acpi_device_bus_id->instance_no = 0;
->  		list_add_tail(&acpi_device_bus_id->node, &acpi_bus_id_list);
->  	}
-> -	sprintf(device->dev.bus_id, "%s:%02x", acpi_device_bus_id->bus_id, acpi_device_bus_id->instance_no);
-> +	dev_set_name(&device->dev, "%s:%02x", acpi_device_bus_id->bus_id, acpi_device_bus_id->instance_no);
->  
->  	if (device->parent) {
->  		list_add_tail(&device->node, &device->parent->children);
-> @@ -484,7 +483,8 @@ static int acpi_device_register(struct acpi_device *device,
->  
->  	result = acpi_device_setup_files(device);
->  	if(result)
-> -		printk(KERN_ERR PREFIX "Error creating sysfs interface for device %s\n", device->dev.bus_id);
-> +		printk(KERN_ERR PREFIX "Error creating sysfs interface for device %s\n",
-> +		       dev_name(&device->dev));
->  
->  	device->removal_type = ACPI_BUS_REMOVAL_NORMAL;
->  	return 0;
-> diff --git a/drivers/acpi/sleep/proc.c b/drivers/acpi/sleep/proc.c
-> index 631ee2e..64e591b 100644
-> --- a/drivers/acpi/sleep/proc.c
-> +++ b/drivers/acpi/sleep/proc.c
-> @@ -366,8 +366,8 @@ acpi_system_wakeup_device_seq_show(struct seq_file *seq, void *offset)
->  			   dev->wakeup.state.enabled ? "enabled" : "disabled");
->  		if (ldev)
->  			seq_printf(seq, "%s:%s",
-> -				   ldev->bus ? ldev->bus->name : "no-bus",
-> -				   ldev->bus_id);
-> +				   dev_name(ldev) ? ldev->bus->name : "no-bus",
-> +				   dev_name(ldev));
->  		seq_printf(seq, "\n");
->  		put_device(ldev);
->  
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index ad6cae9..462b168 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -576,7 +576,7 @@ static int acpi_thermal_critical(struct acpi_thermal *tz)
->  	acpi_bus_generate_proc_event(tz->device, ACPI_THERMAL_NOTIFY_CRITICAL,
->  				tz->trips.critical.flags.enabled);
->  	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
-> -					  tz->device->dev.bus_id,
-> +					  dev_name(&tz->device->dev),
->  					  ACPI_THERMAL_NOTIFY_CRITICAL,
->  					  tz->trips.critical.flags.enabled);
->  
-> @@ -605,7 +605,7 @@ static int acpi_thermal_hot(struct acpi_thermal *tz)
->  	acpi_bus_generate_proc_event(tz->device, ACPI_THERMAL_NOTIFY_HOT,
->  				tz->trips.hot.flags.enabled);
->  	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
-> -					  tz->device->dev.bus_id,
-> +					  dev_name(&tz->device->dev),
->  					  ACPI_THERMAL_NOTIFY_HOT,
->  					  tz->trips.hot.flags.enabled);
->  
-> @@ -1592,14 +1592,14 @@ static void acpi_thermal_notify(acpi_handle handle, u32 event, void *data)
->  		acpi_thermal_check(tz);
->  		acpi_bus_generate_proc_event(device, event, 0);
->  		acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -						  device->dev.bus_id, event, 0);
-> +						  dev_name(&device->dev), event, 0);
->  		break;
->  	case ACPI_THERMAL_NOTIFY_DEVICES:
->  		acpi_thermal_trips_update(tz, ACPI_TRIPS_REFRESH_DEVICES);
->  		acpi_thermal_check(tz);
->  		acpi_bus_generate_proc_event(device, event, 0);
->  		acpi_bus_generate_netlink_event(device->pnp.device_class,
-> -						  device->dev.bus_id, event, 0);
-> +						  dev_name(&device->dev), event, 0);
->  		break;
->  	default:
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
-> index 47cd7ba..8a8b377 100644
-> --- a/drivers/acpi/wmi.c
-> +++ b/drivers/acpi/wmi.c
-> @@ -660,7 +660,7 @@ static void acpi_wmi_notify(acpi_handle handle, u32 event, void *data)
->  				wblock->handler(event, wblock->handler_data);
->  
->  			acpi_bus_generate_netlink_event(
-> -				device->pnp.device_class, device->dev.bus_id,
-> +				device->pnp.device_class, dev_name(&device->dev),
->  				event, 0);
->  			break;
->  		}
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+I haven't had much thinking on the dynamical resource rebalance. If you 
+have any idea about this, can you please suggest?
+
+Regards,
+Yu
