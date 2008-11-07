@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbYKGOrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYKGOru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102AbYKGOrB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbYKGOqw
+	id S1754002AbYKGOru (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYKGOrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:46:52 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:29258 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbYKGOqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:46:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ELba1/gN1bAK+D0mB+fnUXHFL8jNkdAoxbQN/ejA8/T7zPdFXa4NAXdlDxvakyXC6E
-         lDl9ek98lnldwZo7QyFMPXepKHcRIJPG3ZTl947xl1rDIEcdetXJ++6+p+y+kFtf2hcW
-         DLlyRVCLEprVQfZ0RAEOyCkJfu0OtPFsUuetw=
-Message-ID: <2c918050811070646y1bb5771bo70aff584252d7d1@mail.gmail.com>
-Date: Fri, 7 Nov 2008 14:46:51 +0000
-From: andy <rootstrap@googlemail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: accessing file operations directly in the kernel
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <491397F2.6050106@shaw.ca>
+	Fri, 7 Nov 2008 09:47:41 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33421 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751676AbYKGOrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 09:47:41 -0500
+Date: Fri, 7 Nov 2008 09:44:17 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, Rik van Riel <riel@redhat.com>,
+       fernando@oss.ntt.co.jp, Jeff Moyer <jmoyer@redhat.com>,
+       menage@google.com, ngupta@google.com,
+       Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com
+Subject: Re: [patch 2/4] io controller: biocgroup implementation
+Message-ID: <20081107144417.GE21884@redhat.com>
+References: <20081106153022.215696930@redhat.com> <20081106153135.790621895@redhat.com> <20081107115030.7ccf3f07.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <fa.8yqIDPH3sfvHfyr9YeQyeb9HG/Q@ifi.uio.no>
-	 <491397F2.6050106@shaw.ca>
+In-Reply-To: <20081107115030.7ccf3f07.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree with you! But there are cases where standards
-are followed from certain developers. I have to deal with a
-very "peculiar" arrangement of a set of requirements to access
-a serial device driver. The type of code below gives me what I need, I think.
+On Fri, Nov 07, 2008 at 11:50:30AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 06 Nov 2008 10:30:24 -0500
+> vgoyal@redhat.com wrote:
+> 
+> > 
+> > o biocgroup functionality.
+> > o Implemented new controller "bio"
+> > o Most of it picked from dm-ioband biocgroup implementation patches.
+> > 
+> page_cgroup implementation is changed and most of this patch needs rework.
+> please see the latest one. (I think most of new characteristics are useful
+> for you.)
+> 
 
-filp = filp_open("/dev/device1", O_WRONLY, 0);
+Sure I will have a look.
 
-if (filp->f_op->ioctl(filp->f_dentry->d_inode, filp,
-							CMD,
-							(unsigned long) &args) != 0) {
-        		goto failed;
-}
+> One comment from me is
+> ==
+> > +struct page_cgroup {
+> > +	struct list_head lru;		/* per cgroup LRU list */
+> > +	struct page *page;
+> > +	struct mem_cgroup *mem_cgroup;
+> > +	int flags;
+> > +#ifdef CONFIG_CGROUP_BIO
+> > +	struct list_head blist;		/* for bio_cgroup page list */
+> > +	struct bio_cgroup *bio_cgroup;
+> > +#endif
+> > +};
+> ==
+> 
+> this blist is too bad. please keep this object small...
+> 
 
-Regards
-Andy
+This is just another connecting element so that page_cgroup can be on another
+list also. It is useful in making sure that IO on all the pages of a bio
+group has completed beofer that bio cgroup is deleted.
 
-On 11/7/08, Robert Hancock <hancockr@shaw.ca> wrote:
-> andy wrote:
->
-> > Hi,
-> >
-> > I am dealing with an interesting situation, which I have to access a
-> > serial device driver
-> > from the kernel space. I tried to use sys_open, sys_ioctl ... but
-> > there is a problem
-> > with the file descriptors.  Now, I started using direct calls to the
-> > drivers functions
-> > driver_open, driver_ioctl... passing the *inode from user_path_walk(),
-> > but it doesn't
-> > seem that works right. This serial device is going to be used only
-> > from the other
-> > module that runs in the kernel.
-> >
->
->  For some reason this kind of question (using file operations inside the
-> kernel) gets asked a lot. The short answer is that if you're asking it, you
-> likely have a wrong design. It's just not the right thing to do. For one
-> thing, file descriptors belong to a process, so just stealing the FD space
-> from some random process is unlikely to do the right thing.
->
->  If you really need to do this, adding hooks to the serial device driver
-> would seem a more logical thing to do.. but even that seems a suspicious
-> design. It would be best if you explained what it is you're actually trying
-> to accomplish.
->
+> Maybe dm-ioband people will post his own new one. just making use of it is an idea.
+
+Sure, I will have a look when dm-ioband people post new version of patch
+and how they have optimized it further.
+
+Thanks
+Vivek
