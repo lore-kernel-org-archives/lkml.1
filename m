@@ -1,80 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYKGCc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbYKGCh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbYKGCc5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:32:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbYKGCcs
+	id S1752908AbYKGCh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbYKGChs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:32:48 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58745 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbYKGCcr (ORCPT
+	Thu, 6 Nov 2008 21:37:48 -0500
+Received: from vms173001pub.verizon.net ([206.46.173.1]:45171 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYKGChq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:32:47 -0500
-Date: Fri, 7 Nov 2008 11:32:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, Rik van Riel <riel@redhat.com>,
-       fernando@oss.ntt.co.jp, Jeff Moyer <jmoyer@redhat.com>,
-       menage@google.com, ngupta@google.com,
-       Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com
-Subject: Re: [patch 1/4] io controller: documentation
-Message-Id: <20081107113209.a6011c67.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081106153135.743458085@redhat.com>
-References: <20081106153022.215696930@redhat.com>
-	<20081106153135.743458085@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 21:37:46 -0500
+Date: Thu, 06 Nov 2008 21:37:44 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: ACPI: struct device - replace bus_id with dev_name(),
+ dev_set_name()
+In-reply-to: <1225325939.5970.15.camel@nga.site>
+X-X-Sender: lenb@localhost.localdomain
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0811062137300.3106@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <1225325939.5970.15.camel@nga.site>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 10:30:23 -0500
-vgoyal@redhat.com wrote:
-> +ISSUES
-> +======
-> +- IO controller can buffer the bios if suffcient tokens were not available
-> +  at the time of bio submission. Once the tokens are available, these bios
-> +  are dispatched to elevator/lower layers in first come first serve manner.
-> +  And this has potential to break CFQ where a RT tasks should be able to
-> +  dispatch the bio first or a high priority task should be able to release
-> +  more bio as compared to low priority task in same cgroup.
-> +
-> +  Not sure how to fix it. May be we need to maintain another rb-tree and
-> +  keep track of RT tasks and tasks priorities and dispatch accordingly. This
-> +  is equivalent of duplicating lots of CFQ logic and not sure how would it
-> +  impact AS behaviour.
+applied.
+
+thanks,
+-len
+
+
+On Thu, 30 Oct 2008, Kay Sievers wrote:
+
+> This patch is part of a larger patch series which will remove
+> the "char bus_id[20]" name string from struct device. The device
+> name is managed in the kobject anyway, and without any size
+> limitation, and just needlessly copied into "struct device".
 > 
-Why you don't isolate RT tasks into other cgroup ?
-   /cgroup/bio-cgroup/group_for_usual/...usual tasks.
-                     /group_for_RT/ ...RT tasks. you can use high-speed path.
-
-How about adding RT flag to bio-cgroup and skip buffering at bio-cgroup if RT
-flag is set ? I think handling an usual process and RT process in "a" cgroup
-just makes the code complex.
-
-Looking into a cpu-scheduler, which is the first module handling RT, it has
-some tweaks to handle RT in the system.
- - special RT scheduler.
- - isolated RT domain
- - maximum execution time allowed to RT
- ....
-
-Maybe handling RT in following way is usual way...(if we do something in this layer)
-
-  - Allow RT-bio-cgroup to skip limit check.
-  - But RT-bio-cgroup calculates io-throuput, execution time, statistics...
-  - When RT tasks in RT-bio-cgroup does excessive I/O which starves the whole system
-    too long, raise safeguard-limitter. and tell users Warning or kill it.
-
-Hmm ?
-
-Thanks,
--Kame
-
+> To set and read the device name dev_name(dev) and dev_set_name(dev)
+> must be used. If your code uses static kobjects, which it shouldn't
+> do, "const char *init_name" can be used to statically provide the
+> name the registered device should have. At registration time, the
+> init_name field is cleared, to enforce the use of dev_name(dev) to
+> access the device name at a later time.
+> 
+> We need to get rid of all occurrences of bus_id in the entire tree
+> to be able to enable the new interface. Please apply this patch,
+> and possibly convert any remaining remaining occurrences of bus_id.
+> 
+> We want to submit a patch to -next, which will remove bus_id from
+> "struct device", to find the remaining pieces to convert, and finally
+> switch over to the new api, which will remove the 20 bytes array
+> and does no longer have a size limitation.
+> 
+> Thanks,
+> Kay
+> 
+> 
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: ACPI: struct device - replace bus_id with dev_name(), dev_set_name()
+> 
+> CC: Len Brown <len.brown@intel.com>
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-Off-By: Kay Sievers <kay.sievers@vrfy.org>
+> ---
+> 
+> 
+> diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+> index d72a1b6..2d46732 100644
+> --- a/drivers/acpi/ac.c
+> +++ b/drivers/acpi/ac.c
+> @@ -242,7 +242,7 @@ static void acpi_ac_notify(acpi_handle handle, u32 event, void *data)
+>  		acpi_ac_get_state(ac);
+>  		acpi_bus_generate_proc_event(device, event, (u32) ac->state);
+>  		acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -						  device->dev.bus_id, event,
+> +						  dev_name(&device->dev), event,
+>  						  (u32) ac->state);
+>  #ifdef CONFIG_ACPI_SYSFS_POWER
+>  		kobject_uevent(&ac->charger.dev->kobj, KOBJ_CHANGE);
+> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+> index b2133e8..e68f218 100644
+> --- a/drivers/acpi/battery.c
+> +++ b/drivers/acpi/battery.c
+> @@ -782,7 +782,7 @@ static void acpi_battery_notify(acpi_handle handle, u32 event, void *data)
+>  	acpi_bus_generate_proc_event(device, event,
+>  				     acpi_battery_present(battery));
+>  	acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -					device->dev.bus_id, event,
+> +					dev_name(&device->dev), event,
+>  					acpi_battery_present(battery));
+>  #ifdef CONFIG_ACPI_SYSFS_POWER
+>  	/* acpi_batter_update could remove power_supply object */
+> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+> index 24a362f..cf7e885 100644
+> --- a/drivers/acpi/processor_core.c
+> +++ b/drivers/acpi/processor_core.c
+> @@ -761,20 +761,20 @@ static void acpi_processor_notify(acpi_handle handle, u32 event, void *data)
+>  		acpi_bus_generate_proc_event(device, event,
+>  					pr->performance_platform_limit);
+>  		acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -						  device->dev.bus_id, event,
+> +						  dev_name(&device->dev), event,
+>  						  pr->performance_platform_limit);
+>  		break;
+>  	case ACPI_PROCESSOR_NOTIFY_POWER:
+>  		acpi_processor_cst_has_changed(pr);
+>  		acpi_bus_generate_proc_event(device, event, 0);
+>  		acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -						  device->dev.bus_id, event, 0);
+> +						  dev_name(&device->dev), event, 0);
+>  		break;
+>  	case ACPI_PROCESSOR_NOTIFY_THROTTLING:
+>  		acpi_processor_tstate_has_changed(pr);
+>  		acpi_bus_generate_proc_event(device, event, 0);
+>  		acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -						  device->dev.bus_id, event, 0);
+> +						  dev_name(&device->dev), event, 0);
+>  	default:
+>  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+>  				  "Unsupported event [0x%x]\n", event));
+> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> index a9dda8e..4dd1f31 100644
+> --- a/drivers/acpi/scan.c
+> +++ b/drivers/acpi/scan.c
+> @@ -109,8 +109,7 @@ static int acpi_bus_hot_remove_device(void *context)
+>  		return 0;
+>  
+>  	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> -		"Hot-removing device %s...\n", device->dev.bus_id));
+> -
+> +		"Hot-removing device %s...\n", dev_name(&device->dev)));
+>  
+>  	if (acpi_bus_trim(device, 1)) {
+>  		printk(KERN_ERR PREFIX
+> @@ -460,7 +459,7 @@ static int acpi_device_register(struct acpi_device *device,
+>  		acpi_device_bus_id->instance_no = 0;
+>  		list_add_tail(&acpi_device_bus_id->node, &acpi_bus_id_list);
+>  	}
+> -	sprintf(device->dev.bus_id, "%s:%02x", acpi_device_bus_id->bus_id, acpi_device_bus_id->instance_no);
+> +	dev_set_name(&device->dev, "%s:%02x", acpi_device_bus_id->bus_id, acpi_device_bus_id->instance_no);
+>  
+>  	if (device->parent) {
+>  		list_add_tail(&device->node, &device->parent->children);
+> @@ -484,7 +483,8 @@ static int acpi_device_register(struct acpi_device *device,
+>  
+>  	result = acpi_device_setup_files(device);
+>  	if(result)
+> -		printk(KERN_ERR PREFIX "Error creating sysfs interface for device %s\n", device->dev.bus_id);
+> +		printk(KERN_ERR PREFIX "Error creating sysfs interface for device %s\n",
+> +		       dev_name(&device->dev));
+>  
+>  	device->removal_type = ACPI_BUS_REMOVAL_NORMAL;
+>  	return 0;
+> diff --git a/drivers/acpi/sleep/proc.c b/drivers/acpi/sleep/proc.c
+> index 631ee2e..64e591b 100644
+> --- a/drivers/acpi/sleep/proc.c
+> +++ b/drivers/acpi/sleep/proc.c
+> @@ -366,8 +366,8 @@ acpi_system_wakeup_device_seq_show(struct seq_file *seq, void *offset)
+>  			   dev->wakeup.state.enabled ? "enabled" : "disabled");
+>  		if (ldev)
+>  			seq_printf(seq, "%s:%s",
+> -				   ldev->bus ? ldev->bus->name : "no-bus",
+> -				   ldev->bus_id);
+> +				   dev_name(ldev) ? ldev->bus->name : "no-bus",
+> +				   dev_name(ldev));
+>  		seq_printf(seq, "\n");
+>  		put_device(ldev);
+>  
+> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+> index ad6cae9..462b168 100644
+> --- a/drivers/acpi/thermal.c
+> +++ b/drivers/acpi/thermal.c
+> @@ -576,7 +576,7 @@ static int acpi_thermal_critical(struct acpi_thermal *tz)
+>  	acpi_bus_generate_proc_event(tz->device, ACPI_THERMAL_NOTIFY_CRITICAL,
+>  				tz->trips.critical.flags.enabled);
+>  	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
+> -					  tz->device->dev.bus_id,
+> +					  dev_name(&tz->device->dev),
+>  					  ACPI_THERMAL_NOTIFY_CRITICAL,
+>  					  tz->trips.critical.flags.enabled);
+>  
+> @@ -605,7 +605,7 @@ static int acpi_thermal_hot(struct acpi_thermal *tz)
+>  	acpi_bus_generate_proc_event(tz->device, ACPI_THERMAL_NOTIFY_HOT,
+>  				tz->trips.hot.flags.enabled);
+>  	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
+> -					  tz->device->dev.bus_id,
+> +					  dev_name(&tz->device->dev),
+>  					  ACPI_THERMAL_NOTIFY_HOT,
+>  					  tz->trips.hot.flags.enabled);
+>  
+> @@ -1592,14 +1592,14 @@ static void acpi_thermal_notify(acpi_handle handle, u32 event, void *data)
+>  		acpi_thermal_check(tz);
+>  		acpi_bus_generate_proc_event(device, event, 0);
+>  		acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -						  device->dev.bus_id, event, 0);
+> +						  dev_name(&device->dev), event, 0);
+>  		break;
+>  	case ACPI_THERMAL_NOTIFY_DEVICES:
+>  		acpi_thermal_trips_update(tz, ACPI_TRIPS_REFRESH_DEVICES);
+>  		acpi_thermal_check(tz);
+>  		acpi_bus_generate_proc_event(device, event, 0);
+>  		acpi_bus_generate_netlink_event(device->pnp.device_class,
+> -						  device->dev.bus_id, event, 0);
+> +						  dev_name(&device->dev), event, 0);
+>  		break;
+>  	default:
+>  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+> diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
+> index 47cd7ba..8a8b377 100644
+> --- a/drivers/acpi/wmi.c
+> +++ b/drivers/acpi/wmi.c
+> @@ -660,7 +660,7 @@ static void acpi_wmi_notify(acpi_handle handle, u32 event, void *data)
+>  				wblock->handler(event, wblock->handler_data);
+>  
+>  			acpi_bus_generate_netlink_event(
+> -				device->pnp.device_class, device->dev.bus_id,
+> +				device->pnp.device_class, dev_name(&device->dev),
+>  				event, 0);
+>  			break;
+>  		}
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
