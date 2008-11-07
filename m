@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbYKGXds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbYKGXeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbYKGXds (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:33:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbYKGX0v
+	id S1755686AbYKGXeK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbYKGX0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:26:51 -0500
-Received: from kroah.org ([198.145.64.141]:47559 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:26:52 -0500
+Received: from kroah.org ([198.145.64.141]:47571 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754097AbYKGX0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:26:50 -0500
-Date: Fri, 7 Nov 2008 15:26:12 -0800
+	id S1754825AbYKGX0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:26:51 -0500
+Date: Fri, 7 Nov 2008 15:26:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@perex.cz>, Chris Wedgwood <cw@f00f.org>
-Subject: [patch 07/16] ALSA: use correct lock in snd_ctl_dev_disconnect()
-Message-ID: <20081107232612.GH4282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
+       Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Subject: [patch 08/16] ACPI: dock: avoid check _STA method
+Message-ID: <20081107232614.GI4282@kroah.com>
 References: <20081107231848.995297975@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-use-correct-lock-in-snd_ctl_dev_disconnect.patch"
+Content-Disposition: inline; filename="acpi-dock-avoid-check-_sta-method.patch"
 In-Reply-To: <20081107232544.GA4282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,39 +40,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Shaohua Li <shaohua.li@intel.com>
 
-commit d8009882e9f5e1a76986c741f071edd2ad760c97 upstream
+commit 8b59560a3baf2e7c24e0fb92ea5d09eca92805db upstream.
 
-The lock used in snd_ctl_dev_disconnect() should be card->ctl_files_rwlock
-for protection of card->ctl_files entries, instead of card->controls_rwsem.
+ACPI: dock: avoid check _STA method
 
-Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Jaroslav Kysela <perex@perex.cz>
-Cc: Chris Wedgwood <cw@f00f.org>
+In some BIOSes, every _STA method call will send a notification again,
+this cause freeze. And in some BIOSes, it appears _STA should be called
+after _DCK. This tries to avoid calls _STA, and still keep the device
+present check.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10431
+
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/control.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/dock.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/sound/core/control.c
-+++ b/sound/core/control.c
-@@ -1426,12 +1426,12 @@ static int snd_ctl_dev_disconnect(struct
- 	cardnum = card->number;
- 	snd_assert(cardnum >= 0 && cardnum < SNDRV_CARDS, return -ENXIO);
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -599,14 +599,17 @@ static int handle_eject_request(struct d
+ static void dock_notify(acpi_handle handle, u32 event, void *data)
+ {
+ 	struct dock_station *ds = data;
++	struct acpi_device *tmp;
  
--	down_read(&card->controls_rwsem);
-+	read_lock(&card->ctl_files_rwlock);
- 	list_for_each_entry(ctl, &card->ctl_files, list) {
- 		wake_up(&ctl->change_sleep);
- 		kill_fasync(&ctl->fasync, SIGIO, POLL_ERR);
- 	}
--	up_read(&card->controls_rwsem);
-+	read_unlock(&card->ctl_files_rwlock);
- 
- 	if ((err = snd_unregister_device(SNDRV_DEVICE_TYPE_CONTROL,
- 					 card, -1)) < 0)
+ 	switch (event) {
+ 	case ACPI_NOTIFY_BUS_CHECK:
+-		if (!dock_in_progress(ds) && dock_present(ds)) {
++		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
++		   &tmp)) {
+ 			begin_dock(ds);
+ 			dock(ds);
+ 			if (!dock_present(ds)) {
+ 				printk(KERN_ERR PREFIX "Unable to dock!\n");
++				complete_dock(ds);
+ 				break;
+ 			}
+ 			atomic_notifier_call_chain(&dock_notifier_list,
 
 -- 
