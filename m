@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbYKGX2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYKGX1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbYKGX2F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYKGXXL
+	id S1755044AbYKGX1p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYKGXXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:23:11 -0500
-Received: from kroah.org ([198.145.64.141]:59309 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:23:09 -0500
+Received: from kroah.org ([198.145.64.141]:59299 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752865AbYKGXXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:23:07 -0500
-Date: Fri, 7 Nov 2008 15:15:51 -0800
+	id S1753288AbYKGXXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:23:05 -0500
+Date: Fri, 7 Nov 2008 15:15:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,14 +23,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 14/23] scx200_i2c: Add missing class parameter
-Message-ID: <20081107231551.GO1108@kroah.com>
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Steven Toth <stoth@linuxtv.org>,
+       Devin Heitmueller <devin.heitmueller@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [patch 13/23] DVB: s5h1411: Power down s5h1411 when not in use
+Message-ID: <20081107231549.GN1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scx200_i2c-add-missing-class-parameter.patch"
+Content-Disposition: inline; filename="dvb-s5h1411-power-down-s5h1411-when-not-in-use.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,31 +44,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+From: Devin Heitmueller <devin.heitmueller@gmail.com>
 
-commit 4a029abee0f1d69cb0445657d6fa5a38597bd17d upstream
+commit 11fc9a4a440112b5afc1a99d86ba92d70205a688 upstream.
 
-The scx200_i2c driver is missing the .class parameter, which means no
-i2c drivers are willing to probe for devices on the bus and attach to
-them.
+DVB: s5h1411: Power down s5h1411 when not in use
 
-Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Power down the s5h1411 demodulator when not in use
+(on the Pinnacle 801e, this brings idle power from
+123ma down to 84ma).
+
+Signed-off-by: Devin Heitmueller <devin.heitmueller@gmail.com>
+Acked-by: Steven Toth <stoth@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/busses/scx200_i2c.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/media/dvb/frontends/s5h1411.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/drivers/i2c/busses/scx200_i2c.c
-+++ b/drivers/i2c/busses/scx200_i2c.c
-@@ -81,6 +81,7 @@ static struct i2c_algo_bit_data scx200_i
+--- a/drivers/media/dvb/frontends/s5h1411.c
++++ b/drivers/media/dvb/frontends/s5h1411.c
+@@ -549,7 +549,7 @@ static int s5h1411_set_gpio(struct dvb_f
+ 		return s5h1411_writereg(state, S5H1411_I2C_TOP_ADDR, 0xe0, val);
+ }
  
- static struct i2c_adapter scx200_i2c_ops = {
- 	.owner		   = THIS_MODULE,
-+	.class             = I2C_CLASS_HWMON,
- 	.id		   = I2C_HW_B_SCX200,
- 	.algo_data	   = &scx200_i2c_data,
- 	.name	= "NatSemi SCx200 I2C",
+-static int s5h1411_sleep(struct dvb_frontend *fe, int enable)
++static int s5h1411_set_powerstate(struct dvb_frontend *fe, int enable)
+ {
+ 	struct s5h1411_state *state = fe->demodulator_priv;
+ 
+@@ -565,6 +565,11 @@ static int s5h1411_sleep(struct dvb_fron
+ 	return 0;
+ }
+ 
++static int s5h1411_sleep(struct dvb_frontend *fe)
++{
++	return s5h1411_set_powerstate(fe, 1);
++}
++
+ static int s5h1411_register_reset(struct dvb_frontend *fe)
+ {
+ 	struct s5h1411_state *state = fe->demodulator_priv;
+@@ -614,7 +619,7 @@ static int s5h1411_init(struct dvb_front
+ 
+ 	dprintk("%s()\n", __func__);
+ 
+-	s5h1411_sleep(fe, 0);
++	s5h1411_set_powerstate(fe, 0);
+ 	s5h1411_register_reset(fe);
+ 
+ 	for (i = 0; i < ARRAY_SIZE(init_tab); i++)
+@@ -878,6 +883,7 @@ static struct dvb_frontend_ops s5h1411_o
+ 	},
+ 
+ 	.init                 = s5h1411_init,
++	.sleep                = s5h1411_sleep,
+ 	.i2c_gate_ctrl        = s5h1411_i2c_gate_ctrl,
+ 	.set_frontend         = s5h1411_set_frontend,
+ 	.get_frontend         = s5h1411_get_frontend,
 
 -- 
