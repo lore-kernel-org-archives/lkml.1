@@ -1,116 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYKGSOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbYKGSPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754168AbYKGSOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 13:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYKGSOR
+	id S1754373AbYKGSPz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 13:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbYKGSPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 13:14:17 -0500
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:37657 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753144AbYKGSOP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 13:14:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAP0TFElMQWxa/2dsb2JhbACBdsd8g1Y
-Date: Fri, 7 Nov 2008 13:14:12 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
-       paulus@samba.org, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 04/18] get_cycles() : powerpc64 HAVE_GET_CYCLES
-Message-ID: <20081107181412.GH22134@Krystal>
-References: <20081107052336.652868737@polymtl.ca> <20081107053349.215096700@polymtl.ca> <20081107145636.GA5021@yoda.jdub.homelinux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Nov 2008 13:15:47 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:51431 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751119AbYKGSPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 13:15:46 -0500
+Message-ID: <4914861F.7080006@sgi.com>
+Date: Fri, 07 Nov 2008 10:17:03 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
+References: <20081029152849.3883d072.sfr@canb.auug.org.au> <200811021229.16061.rusty@rustcorp.com.au> <alpine.LFD.2.00.0811011834360.3483@nehalem.linux-foundation.org> <200811070949.02914.rusty@rustcorp.com.au> <20081107084016.GF4435@elte.hu> <20081107201139.196fa52b.sfr@canb.auug.org.au> <20081107093911.GD7787@elte.hu> <20081107122400.GA20777@elte.hu>
+In-Reply-To: <20081107122400.GA20777@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20081107145636.GA5021@yoda.jdub.homelinux.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:03:15 up 155 days, 22:43,  6 users,  load average: 0.81, 0.76,
-	0.64
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
-> On Fri, Nov 07, 2008 at 12:23:40AM -0500, Mathieu Desnoyers wrote:
-> >This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
-> >get_cycles_rate() are implemented.
-> >
-> >Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >CC: benh@kernel.crashing.org
-> >CC: paulus@samba.org
-> >CC: David Miller <davem@davemloft.net>
-> >CC: Linus Torvalds <torvalds@linux-foundation.org>
-> >CC: Andrew Morton <akpm@linux-foundation.org>
-> >CC: Ingo Molnar <mingo@redhat.com>
-> >CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> >CC: Thomas Gleixner <tglx@linutronix.de>
-> >CC: Steven Rostedt <rostedt@goodmis.org>
-> >CC: linux-arch@vger.kernel.org
-> >---
-> > arch/powerpc/Kconfig             |    1 +
-> > arch/powerpc/include/asm/timex.h |   11 +++++++++++
-> > 2 files changed, 12 insertions(+)
-> >
-> >Index: linux.trees.git/arch/powerpc/Kconfig
-> >===================================================================
-> >--- linux.trees.git.orig/arch/powerpc/Kconfig	2008-11-07 00:09:44.000000000 -0500
-> >+++ linux.trees.git/arch/powerpc/Kconfig	2008-11-07 00:09:46.000000000 -0500
-> >@@ -121,6 +121,7 @@ config PPC
-> > 	select HAVE_DMA_ATTRS if PPC64
-> > 	select USE_GENERIC_SMP_HELPERS if SMP
-> > 	select HAVE_OPROFILE
-> >+	select HAVE_GET_CYCLES if PPC64
+Ingo Molnar wrote:
+...
+> Find below the delta patch between the two versions, and an 
+> analysis/review of the changes. I've started testing it as well, and 
+> it's looking good so far.
 > 
-> So maybe it's just me because it's Friday and I'm on vacation, but I don't
-> see anything overly specific to ppc64 here.  In fact, you use get_cycles_rate
-> for all of powerpc in a later patch in the series.
+...
+> "0c82f41: cpumask:new-API-only" thus has only a couple of hours of 
+> lifetime and the "this has been in linux-next" is only true for that 
+> short time period.
 > 
-> Is there something special about HAVE_GET_CYCLES that I'm missing that would
-> make it only apply to ppc64 and not ppc32?
+> So ... i've reconstructed what's new in 0c82f41, and i came up with 
+> the delta patch below.
+...
+>>From cd83e42c6b0413dcbb548c2ead799111ff7e6a13 Mon Sep 17 00:00:00 2001
+> From: Rusty Russell <rusty@rustcorp.com.au>
+> Date: Fri, 7 Nov 2008 11:12:29 +1100
+> Subject: [PATCH] cpumask: new API, v2
 > 
-> josh
+> - add cpumask_of()
+> - add free_bootmem_cpumask_var()
+...
 
-Hi Josh,
+I'd like to begin resubmitting the patches that were in the cpus4096-v2
+branch but I'm not quite sure how to set up the git tree.  I have:
 
-powerpc32 only uses the 32 LSBs for the TSC in the current get_cycles()
-implementation. We could either define HAVE_GET_CYCLES_32 like I did on
-mips32, or change get_cycles so it also reads the 32 MSBs in a loop like
-this (it does not take care of the CPU_FTR_CELL_TB_BUG though) :
+git-remote add linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+git-remote add tip git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+git-remote update
+git-checkout -b cpus4096 tip/cpus4096
 
-typedef unsigned long long cycles_t;
+But I don't see the linux-next changes (like cpumask_first for uniprocessor), so I'm
+guessing I need to either merge in linux-next, or insert it into the above setup
+commands?
 
-cycles_t get_cycles_ppc32(void)
-{
-  union {
-    cycles_t v;
-    struct {
-      u32 ms32, ls32; /* powerpc is big endian */
-    } s;
-  } cycles;
+Fyi, hopefully this patch submission conduit will work:
 
-  do {
-    cycles.ls32 = mftbu();
-    cycles.ms32 = mftbl();
-  } while (cycles.ls32 != mftbu());
-  return cycles.v;
-}
+	generic only: via linux-next
+	arch-specific (x86 + others): Rusty via arch-maintainers (linux-next?)
+	(x86 only): Mike via tip/cpus4096
 
-I'd prefer this second solution. If one needs a specific get_cycles() to
-be only 32-bits (but really really fast) for the scheduler, then this
-could be a get_cycles_sched() or something like this which does not
-guarantee that it returns full 64-bits...
+Does this work for you?
 
-Mathieu
+Thanks,
+Mike
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
