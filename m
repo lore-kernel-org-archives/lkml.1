@@ -1,56 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYKGBAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbYKGBBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbYKGBAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 20:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYKGBAP
+	id S1755330AbYKGBBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 20:01:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbYKGBBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 20:00:15 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:34279 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754041AbYKGBAN (ORCPT
+	Thu, 6 Nov 2008 20:01:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52023 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753453AbYKGBBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 20:00:13 -0500
-Date: Fri, 7 Nov 2008 00:59:46 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Zhao Yakui <yakui.zhao@intel.com>
-Cc: Len Brown <lenb@kernel.org>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Ingo Molnar <mingo@elte.hu>, Eduardo Habkost <ehabkost@redhat.com>,
-       Avi Kivity <avi@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
-Message-ID: <20081107005946.GA9254@srcf.ucam.org>
-References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com> <20081106143021.GD13023@elte.hu> <20081106150610.GA1644@elte.hu> <200811061853.08003.arvidjaar@mail.ru> <alpine.LFD.2.00.0811061442590.3106@localhost.localdomain> <20081106215011.GA6391@srcf.ucam.org> <alpine.LFD.2.00.0811061716420.3106@localhost.localdomain> <1226019679.3989.107.camel@yakui_zhao.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226019679.3989.107.camel@yakui_zhao.sh.intel.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Thu, 6 Nov 2008 20:01:17 -0500
+Date: Thu, 6 Nov 2008 17:00:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: h-shimamoto@ct.jp.nec.com, ananth@in.ibm.com, laijs@cn.fujitsu.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kprobes: bugfix: try_module_get even if calling_mod is
+ NULL
+Message-Id: <20081106170023.d5349c42.akpm@linux-foundation.org>
+In-Reply-To: <49123521.6020608@redhat.com>
+References: <490FE405.1000105@cn.fujitsu.com>
+	<4910F697.2050203@redhat.com>
+	<4910FB3D.4020805@cn.fujitsu.com>
+	<491212C0.4030900@redhat.com>
+	<4912222F.9040605@ct.jp.nec.com>
+	<49122745.4090004@redhat.com>
+	<49123521.6020608@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 09:01:19AM +0800, Zhao Yakui wrote:
+On Wed, 05 Nov 2008 19:06:57 -0500
+Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-> With the help of KVM I find that the windows will be rebooted by writing
-> RESET_VALUE to RESET_REG I/O port if the RESET_REG_SUP bit is not
-> zero(It indicates whether ACPI reboot is supported).
-> IMO maybe the ACPI reboot is the first choice. If it can't, then it will
-> fall back to other mode.
+> Get probed module even if the caller is in the kernel core code.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> ---
+> 
+> >> One question, off topic.
+> >> If calling_mod is NULL, no try_module_get(), is that OK?
+> >
+> > Good question. Currently, kprobes is called only from kernel modules,
+> > so calling_mod should be always !NULL.
+> > However, it should be fixed, because the logic is not correct.
+> 
+> Thank you so much. So here is the additional bugfix patch.
+> 
+>  kernel/kprobes.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: 2.6.28-rc3/kernel/kprobes.c
+> ===================================================================
+> --- 2.6.28-rc3.orig/kernel/kprobes.c
+> +++ 2.6.28-rc3/kernel/kprobes.c
+> @@ -634,7 +634,7 @@ static int __kprobes __register_kprobe(s
+>  		 * avoid incrementing the module refcount, so as to allow
+>  		 * unloading of self probing modules.
+>  		 */
+> -		if (calling_mod && calling_mod != probed_mod) {
+> +		if (calling_mod != probed_mod) {
+>  			if (unlikely(!try_module_get(probed_mod))) {
+>  				preempt_enable();
+>  				return -EINVAL;
+> 
 
-Hmm. But we're seeing some machines that end up very confused if 
-rebooted via ACPI. I guess we need to run Vista on them to find out how 
-they behave. What OSI strings did your KVM setup expose? We know that 
-Windows changes behaviour under various circumstances depending on which 
-OS the firmware requests, so it's almost possible that this is another 
-of those cases.
+I do not understand this description "Get probed module even if the
+caller is in the kernel core code".
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+What bug is being fixed here?  What is the kernel behaviour before and
+after the patch?
+
+Was the bug present in 2.6.27, 2.6.26 etc?  Or was it a post-2.6.28
+regression?
+
