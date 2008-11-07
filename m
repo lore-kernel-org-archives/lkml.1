@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbYKGX30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYKGX3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbYKGX30 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbYKGXXQ
+	id S1755471AbYKGX3n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYKGXXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:23:16 -0500
-Received: from kroah.org ([198.145.64.141]:59377 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:23:18 -0500
+Received: from kroah.org ([198.145.64.141]:59389 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753847AbYKGXXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:23:12 -0500
-Date: Fri, 7 Nov 2008 15:16:00 -0800
+	id S1753854AbYKGXXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:23:14 -0500
+Date: Fri, 7 Nov 2008 15:16:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,91 +22,201 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrea Shepard <andrea@persephoneslair.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 18/23] sparc64: Fix race in arch/sparc64/kernel/trampoline.S
-Message-ID: <20081107231600.GS1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>,
+       Julia Jomantaite <julia.jomantaite@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 19/23] ACPI: video: fix brightness allocation
+Message-ID: <20081107231602.GT1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0002-sparc64-Fix-race-in-arch-sparc64-kernel-trampoline.patch"
+Content-Disposition: inline; filename="acpi-video-fix-brightness-allocation.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Andrea Shepard <andrea@persephoneslair.org>
+From: Julia Jomantaite <julia.jomantaite@gmail.com>
 
-[ Upstream commit e0037df3852b4b60edbe01f70f4968e4a9fdb272 ]
+upstream commit 469778c1740fcf3113498b6fdf4559bdec25c58f
 
-Make arch/sparc64/kernel/trampoline.S in 2.6.27.1 lock prom_entry_lock
-when calling the PROM.  This prevents a race condition that I observed
-causing a hang on startup on a 12-CPU E4500.
+Thanks to Arjan for spotting this
+http://www.kerneloops.org/search.php?search=acpi_video_switch_brightness
+and suggesting it for .stable
 
-I am not subscribed to this list, so please CC me on replies.
 
-Signed-off-by: Andrea Shepard <andrea@persephoneslair.org>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Fix use of uninitialized device->brightness.
+
+Signed-off-by: Julia Jomantaite <julia.jomantaite@gmail.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc64/kernel/trampoline.S |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ drivers/acpi/video.c |  123 ++++++++++++++++++++++++++++++---------------------
+ 1 file changed, 73 insertions(+), 50 deletions(-)
 
---- a/arch/sparc64/kernel/trampoline.S
-+++ b/arch/sparc64/kernel/trampoline.S
-@@ -328,6 +328,12 @@ after_lock_tlb:
- 
- 	wrpr		%g0, 0, %wstate
- 
-+	sethi		%hi(prom_entry_lock), %g2
-+1:	ldstub		[%g2 + %lo(prom_entry_lock)], %g1
-+	membar		#StoreLoad | #StoreStore
-+	brnz,pn		%g1, 1b
-+	 nop
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -631,6 +631,76 @@ acpi_video_bus_DOS(struct acpi_video_bus
+  *  	device	: video output device (LCD, CRT, ..)
+  *
+  *  Return Value:
++ *	Maximum brightness level
++ *
++ *  Allocate and initialize device->brightness.
++ */
 +
- 	/* As a hack, put &init_thread_union into %g6.
- 	 * prom_world() loads from here to restore the %asi
- 	 * register.
-@@ -337,7 +343,7 @@ after_lock_tlb:
- 
- 	sethi		%hi(is_sun4v), %o0
- 	lduw		[%o0 + %lo(is_sun4v)], %o0
--	brz,pt		%o0, 1f
-+	brz,pt		%o0, 2f
- 	 nop
- 
- 	TRAP_LOAD_TRAP_BLOCK(%g2, %g3)
-@@ -369,10 +375,10 @@ after_lock_tlb:
- 	call		%o1
- 	 add		%sp, (2047 + 128), %o0
- 
--	ba,pt		%xcc, 2f
-+	ba,pt		%xcc, 3f
- 	 nop
- 
--1:	sethi		%hi(sparc64_ttable_tl0), %o0
-+2:	sethi		%hi(sparc64_ttable_tl0), %o0
- 	set		prom_set_trap_table_name, %g2
- 	stx		%g2, [%sp + 2047 + 128 + 0x00]
- 	mov		1, %g2
-@@ -386,7 +392,11 @@ after_lock_tlb:
- 	call		%o1
- 	 add		%sp, (2047 + 128), %o0
- 
--2:	ldx		[%l0], %g6
-+3:	sethi		%hi(prom_entry_lock), %g2
-+	stb		%g0, [%g2 + %lo(prom_entry_lock)]
-+	membar		#StoreStore | #StoreLoad
++static int
++acpi_video_init_brightness(struct acpi_video_device *device)
++{
++	union acpi_object *obj = NULL;
++	int i, max_level = 0, count = 0;
++	union acpi_object *o;
++	struct acpi_video_device_brightness *br = NULL;
 +
-+	ldx		[%l0], %g6
- 	ldx		[%g6 + TI_TASK], %g4
++	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
++						"LCD brightness level\n"));
++		goto out;
++	}
++
++	if (obj->package.count < 2)
++		goto out;
++
++	br = kzalloc(sizeof(*br), GFP_KERNEL);
++	if (!br) {
++		printk(KERN_ERR "can't allocate memory\n");
++		goto out;
++	}
++
++	br->levels = kmalloc(obj->package.count * sizeof *(br->levels),
++				GFP_KERNEL);
++	if (!br->levels)
++		goto out_free;
++
++	for (i = 0; i < obj->package.count; i++) {
++		o = (union acpi_object *)&obj->package.elements[i];
++		if (o->type != ACPI_TYPE_INTEGER) {
++			printk(KERN_ERR PREFIX "Invalid data\n");
++			continue;
++		}
++		br->levels[count] = (u32) o->integer.value;
++
++		if (br->levels[count] > max_level)
++			max_level = br->levels[count];
++		count++;
++	}
++
++	if (count < 2)
++		goto out_free_levels;
++
++	br->count = count;
++	device->brightness = br;
++	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "found %d brightness levels\n", count));
++	kfree(obj);
++	return max_level;
++
++out_free_levels:
++	kfree(br->levels);
++out_free:
++	kfree(br);
++out:
++	device->brightness = NULL;
++	kfree(obj);
++	return 0;
++}
++
++/*
++ *  Arg:
++ *	device	: video output device (LCD, CRT, ..)
++ *
++ *  Return Value:
+  *  	None
+  *
+  *  Find out all required AML methods defined under the output
+@@ -640,10 +710,7 @@ acpi_video_bus_DOS(struct acpi_video_bus
+ static void acpi_video_device_find_cap(struct acpi_video_device *device)
+ {
+ 	acpi_handle h_dummy1;
+-	int i;
+ 	u32 max_level = 0;
+-	union acpi_object *obj = NULL;
+-	struct acpi_video_device_brightness *br = NULL;
  
- 	mov		1, %g5
+ 
+ 	memset(&device->cap, 0, sizeof(device->cap));
+@@ -672,53 +739,7 @@ static void acpi_video_device_find_cap(s
+ 		device->cap._DSS = 1;
+ 	}
+ 
+-	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
+-
+-		if (obj->package.count >= 2) {
+-			int count = 0;
+-			union acpi_object *o;
+-
+-			br = kzalloc(sizeof(*br), GFP_KERNEL);
+-			if (!br) {
+-				printk(KERN_ERR "can't allocate memory\n");
+-			} else {
+-				br->levels = kmalloc(obj->package.count *
+-						     sizeof *(br->levels), GFP_KERNEL);
+-				if (!br->levels)
+-					goto out;
+-
+-				for (i = 0; i < obj->package.count; i++) {
+-					o = (union acpi_object *)&obj->package.
+-					    elements[i];
+-					if (o->type != ACPI_TYPE_INTEGER) {
+-						printk(KERN_ERR PREFIX "Invalid data\n");
+-						continue;
+-					}
+-					br->levels[count] = (u32) o->integer.value;
+-
+-					if (br->levels[count] > max_level)
+-						max_level = br->levels[count];
+-					count++;
+-				}
+-			      out:
+-				if (count < 2) {
+-					kfree(br->levels);
+-					kfree(br);
+-				} else {
+-					br->count = count;
+-					device->brightness = br;
+-					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-							  "found %d brightness levels\n",
+-							  count));
+-				}
+-			}
+-		}
+-
+-	} else {
+-		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
+-	}
+-
+-	kfree(obj);
++	max_level = acpi_video_init_brightness(device);
+ 
+ 	if (device->cap._BCL && device->cap._BCM && max_level > 0) {
+ 		int result;
+@@ -1705,6 +1726,8 @@ static void
+ acpi_video_switch_brightness(struct acpi_video_device *device, int event)
+ {
+ 	unsigned long level_current, level_next;
++	if (!device->brightness)
++		return;
+ 	acpi_video_device_lcd_get_level_current(device, &level_current);
+ 	level_next = acpi_video_get_next_level(device, level_current, event);
+ 	acpi_video_device_lcd_set_level(device, level_next);
 
 -- 
