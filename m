@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbYKGJMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYKGJN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbYKGJMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:12:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYKGJLz
+	id S1754033AbYKGJN7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYKGJNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:11:55 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34499 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753823AbYKGJLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:11:54 -0500
-Date: Fri, 7 Nov 2008 20:11:39 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
-Message-Id: <20081107201139.196fa52b.sfr@canb.auug.org.au>
-In-Reply-To: <20081107084016.GF4435@elte.hu>
-References: <20081029152849.3883d072.sfr@canb.auug.org.au>
-	<200811021229.16061.rusty@rustcorp.com.au>
-	<alpine.LFD.2.00.0811011834360.3483@nehalem.linux-foundation.org>
-	<200811070949.02914.rusty@rustcorp.com.au>
-	<20081107084016.GF4435@elte.hu>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Fri, 7 Nov 2008 04:13:43 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49156 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbYKGJNm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 04:13:42 -0500
+Date: Fri, 7 Nov 2008 18:13:03 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC][PATCH 2/6] memcg: handle swap cache
+Message-Id: <20081107181303.7dd232fd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081107175303.1d5c8a29.nishimura@mxp.nes.nec.co.jp>
+References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081105172009.d9541e27.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081107175303.1d5c8a29.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 7 Nov 2008 17:53:03 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Hi Ingo,
+> On Wed, 5 Nov 2008 17:20:09 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > SwapCache support for memory resource controller (memcg)
+> > 
+> > Before mem+swap controller, memcg itself should handle SwapCache in proper way.
+> > 
+> > In current memcg, SwapCache is just leaked and the user can create tons of
+> > SwapCache. This is a leak of account and should be handled.
+> > 
+> > SwapCache accounting is done as following.
+> > 
+> >   charge (anon)
+> > 	- charged when it's mapped.
+> > 	  (because of readahead, charge at add_to_swap_cache() is not sane)
+> >   uncharge (anon)
+> > 	- uncharged when it's dropped from swapcache and fully unmapped.
+> > 	  means it's not uncharged at unmap.
+> > 	  Note: delete from swap cache at swap-in is done after rmap information
+> > 	        is established.
+> >   charge (shmem)
+> > 	- charged at swap-in. this prevents charge at add_to_page_cache().
+> > 
+> >   uncharge (shmem)
+> > 	- uncharged when it's dropped from swapcache and not on shmem's
+> > 	  radix-tree.
+> > 
+> >   at migration, check against 'old page' is modified to handle shmem.
+> > 
+> > Comparing to the old version discussed (and caused troubles), we have
+> > advantages of
+> >   - PCG_USED bit.
+> >   - simple migrating handling.
+> > 
+> > So, situation is much easier than several months ago, maybe.
+> > 
+> > Changelog (v1) -> (v2)
+> >   - use lock_page() when we handle unlocked SwapCache.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> I tested this version under swap in/out activity with page migration/rmdir,
+> and it worked w/o errors for more than 24 hours.
+> 
+> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+Thank you!
 
-On Fri, 7 Nov 2008 09:40:16 +0100 Ingo Molnar <mingo@elte.hu> wrote:
->
-> if this is equal to the patch that you sent me (see the git=20
-> coordinates below), it was also stess-tested and build-coverage tested=20
-> by me on a healthy range of x86 systems, in a range of build=20
-> environments.
+-Kame
 
-It isn't identical.  See my message about a small merge conflict between
-the cpus4096 tree and the rr tree in linux-next today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkUBksACgkQjjKRsyhoI8zV+gCcCA/i5dKxihbIM6qBQoah1scG
-LqwAn0drbMwbriLTMW7CQmGqWMSndUiq
-=iG5a
------END PGP SIGNATURE-----
-
---Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L--
