@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYKGSX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYKGS2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbYKGSX6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 13:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbYKGSXr
+	id S1753517AbYKGS2n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 13:28:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYKGS2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 13:23:47 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54732 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbYKGSXq (ORCPT
+	Fri, 7 Nov 2008 13:28:35 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:46872 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbYKGS2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 13:23:46 -0500
-Date: Fri, 7 Nov 2008 18:23:11 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, Eric Miao <eric.y.miao@gmail.com>,
-       Cyril Hrubis <metan@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
-Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
-Message-ID: <20081107182311.GA28600@flint.arm.linux.org.uk>
-References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz> <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com> <20081105173303.GC2038@elf.ucw.cz> <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com> <20081106080416.GA1531@ucw.cz> <20081106191424.GA2273@atrey.karlin.mff.cuni.cz> <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com> <20081107142923.GA1616@ucw.cz> <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 7 Nov 2008 13:28:34 -0500
+Date: Fri, 7 Nov 2008 12:28:04 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: next-20081106: undefined reference to `__per_cpu_start'
+In-Reply-To: <20081107054437.GA21421@x200.localdomain>
+Message-ID: <Pine.LNX.4.64.0811071227330.5387@quilx.com>
+References: <20081106173645.e7e79071.sfr@canb.auug.org.au>
+ <20081106183939.GA26925@x200.localdomain> <Pine.LNX.4.64.0811061310350.6009@quilx.com>
+ <20081107162114.2a41c623.sfr@canb.auug.org.au> <20081107054437.GA21421@x200.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 05:57:33PM +0300, Dmitry wrote:
-> 2008/11/7 Pavel Machek <pavel@suse.cz>:
-> > On Fri 2008-11-07 21:23:41, Eric Miao wrote:
-> >> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
-> >> Did you guys ever try that?
-> >
-> > I never heard about that patch, do you have it handy?
-> 
-> http://rpsys.net/openzaurus/patches/archive/pxa-linking-bug.patch
-> 
-> I plan to submit a bit modified version of this patch later.
+On Fri, 7 Nov 2008, Alexey Dobriyan wrote:
 
-That doesn't look like something that should be accepted.  Take a moment
-to put some thought into the question.  Why should we _allocate_ and
-contain the stack in the resulting image?  Does the stack contain any
-data that must be pre-initialized?
+> BTW, on alpha I get
+>
+> mm/cpu_alloc.c:146:1: error: pasting "per_cpu__" and "(" does not give a valid preprocessing token
 
-Obviously not.
+That is discussed elsewhere. SHIFT_PERCPU_PTR macro is messed up on alpha.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
