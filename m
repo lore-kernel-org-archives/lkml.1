@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbYKGJVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbYKGJZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752078AbYKGJVX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:21:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbYKGJU0
+	id S1754119AbYKGJZq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYKGJZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:20:26 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:59054 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbYKGJUX (ORCPT
+	Fri, 7 Nov 2008 04:25:25 -0500
+Received: from canardo.mork.no ([148.122.252.1]:49057 "EHLO canardo.mork.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751374AbYKGJZX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:20:23 -0500
-Subject: Re: [patch 15/21] ptrace changes
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: David Smith <dsmith@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-In-Reply-To: <49133665.8090701@redhat.com>
-References: <20081001083317.782967473@de.ibm.com>
-	 <20081001084129.042880937@de.ibm.com>  <490F317C.9040603@redhat.com>
-	 <1225885284.17430.7.camel@localhost>  <49133665.8090701@redhat.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 07 Nov 2008 10:14:31 +0100
-Message-Id: <1226049271.5830.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 04:25:23 -0500
+X-Greylist: delayed 765 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Nov 2008 04:25:22 EST
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+Cc: Ilpo =?utf-8?Q?J=C3=A4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+Organization: m
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
+	<alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
+	<20081105.151015.206163697.davem@davemloft.net>
+	<alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+	<Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi>
+	<alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se>
+X-Hashcash: 1:26:081107:netdev@vger.kernel.org::ZNTdiFVtKxS2+f08:000000000000000000000000000000000000000O4ik
+X-Hashcash: 1:26:081107:ilpo.jarvinen@helsinki.fi::MEJrJUIt2/3xMYtM:000000000000000000000000000000000000fsor
+X-Hashcash: 1:26:081107:linux-net@vger.kernel.org::9pEr1rLny1bp0rLl:0000000000000000000000000000000000019bCK
+X-Hashcash: 1:26:081107:swmike@swm.pp.se::lHtKhc/tfU79ayip:1mVyJ
+X-Hashcash: 1:26:081107:daniel.blueman@gmail.com::jVFTWq4Ipbwp2Xcg:0000000000000000000000000000000000003+qzA
+X-Hashcash: 1:26:081107:davem@davemloft.net::/ZOKq3vxDDxcx50k:000000000000000000000000000000000000000004ztKq
+X-Hashcash: 1:26:081107:linux-kernel@vger.kernel.org::Vf0PzyO9kwKTsVqa:00000000000000000000000000000000BQREf
+Date: Fri, 07 Nov 2008 10:12:20 +0100
+In-Reply-To: <alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se> (Mikael
+	Abrahamsson's message of "Fri, 7 Nov 2008 09:11:48 +0100 (CET)")
+Message-ID: <8763mzx5l7.fsf@obelix.mork.no>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 12:24 -0600, David Smith wrote:
-> Martin Schwidefsky wrote:
-> > On Mon, 2008-11-03 at 11:14 -0600, David Smith wrote: 
-> > 
-> >> Is this correct, or should the 1st syscall argument be found in
-> >> regs->orig_gpr2 by syscall_get_arguments()/syscall_set_arguments()?
-> > 
-> > The question is when do syscall_get_arguments and syscall_set_arguments
-> > functions get called? If they are called on a call chain that started
-> > from do_syscall_trace_enter then we'd have to use orig_gpr2 instead of
-> > gprs[2] but if the functions are not called via do_syscall_trace_enter
-> > the first argument is located in grprs[2]. As far as I can see the sole
-> > user of syscall_get_arguments is collect_syscall which is used to get
-> > the registers of a blocked process. In this case the kernel call chain
-> > does not include do_syscall_trace_enter, therefore the first argument is
-> > in gprs[2], no?
-> 
-> But, collect_syscall() also calls syscall_get_nr():
-> 
-> 	*callno = syscall_get_nr(target, regs);
-> 	if (*callno != -1L && maxargs > 0)
-> 		syscall_get_arguments(target, regs, 0, maxargs, args);
-> 
-> Both syscall_get_nr() *and* syscall_get_arguments() returning gprs[2]
-> can't be right, can it?
+Mikael Abrahamsson <swmike@swm.pp.se> writes:
 
-Indeed, this cannot work. syscall_get_nr() requires that it is called on
-a call chain that includes do_syscall_trace_enter(). And the fix for it
-is not trivial. Probably the best would be to add another field to
-pt_regs which contains the system call number. syscall_get_arguments()
-could be improved to always use orig_gpr2 instead of grps[2] then it
-doesn't matter when it is called. The problematic one is
-syscall_set_arguments(), there it depends if grps[2] needs to be stored
-of not. Hmm, this needs some thinking ..
-Good spotting by the way :-)
+> I have sent an email (which will hopefully initiate a discussion) to a
+> mailinglist populated by a lot of the operational ISP community and
+> asked around about ECN and views on that. I also checked around on
+> core router platforms (Cisco 12000 and Cisco CRS-1, which definitely
+> is two of the top three core router platforms deployed in the world)
+> and it seems they do not support ECN as far as I can discern.
 
--- 
-blue skies,
-  Martin.
+I believe you can forget about ECN in core networks as long as these
+searches fail:
 
-"Reality continues to ruin my life." - Calvin.
+ http://www.google.com/search?q=%22rfc+5129%22+site%3Acisco.com
+ http://www.google.com/search?q=%22rfc+5129%22+site%3Ajuniper.net
 
 
+
+Bjørn
