@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYKGOez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYKGOhO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbYKGOez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYKGOeo
+	id S1753434AbYKGOhO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:37:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYKGOg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:34:44 -0500
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:36283 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751760AbYKGOen (ORCPT
+	Fri, 7 Nov 2008 09:36:59 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:27715 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbYKGOg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:34:43 -0500
-Date: Fri, 7 Nov 2008 09:34:40 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 fixes
-Message-ID: <20081107143440.GC9543@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <E1KyDvc-0007hT-I6@closure.thunk.org> <alpine.LFD.2.00.0811061647130.3451@nehalem.linux-foundation.org> <20081107033315.GB29038@mit.edu>
+	Fri, 7 Nov 2008 09:36:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bx9IluAQjSLAys3pYUP3jWvDCl+fAJzqfC85nBpoKwmiIGRKFq1bhxNFpE5sUg3HpA
+         ZVyCGbnUI5yR3uIAXQDu5qTOONZRQmTbBvXQpbc4lWaWmNAmr3GcMzc004Qq0JJF7/7H
+         GiH9rKdFxs7C0CQaZeD+v9R1W7yoYvfgVHEcI=
+Message-ID: <3aaafc130811070636g681accf5qae252679c2edcdb9@mail.gmail.com>
+Date: Fri, 7 Nov 2008 09:36:57 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Henrik Rydberg" <rydberg@euromail.se>
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report protocol
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <49145016.7090206@euromail.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081107033315.GB29038@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <49142351.9080805@euromail.se>
+	 <3aaafc130811070534p54eebeb6q9b57d3e847ed859a@mail.gmail.com>
+	 <49145016.7090206@euromail.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 10:33:15PM -0500, Theodore Tso wrote:
-> > 
-> > Nothing there. Forgot to push out?
-> 
-> Whoops, sorry.  Just pushed to master.
-> 
+On Fri, Nov 7, 2008 at 9:26 AM, Henrik Rydberg <rydberg@euromail.se> wrote:
+> J.R. Mauro wrote:
+>> On Fri, Nov 7, 2008 at 6:15 AM, Henrik Rydberg <rydberg@euromail.se> wrote:
+>>> In order to utilize the full power of the new multi-touch devices, a
+>>> way to report detailed finger data to user space is needed. This patch
+>>> adds a multi-touch (MT) protocol which allows drivers to report details
+>>> for an arbitrary number of fingers.
+>>
+>> This is a great idea, Henrik. How will things like X11 go about
+>> leveraging this functionality?
+>
+> What I have in mind is this:
+>
+> 1. Add support for the MT interface in the trackpad drivers, to the extent
+> they support the information. First out is bcm5974, for which the interface
+> is designed. A patch is prepared, but I will keep it on hold for a little
+> while longer.
+>
+> 2. Add support for the MT protocol in Xorg synaptics and/or a new Xorg
+> multitouch driver. As you might have guessed, I have an experimental
+> driver, utilizing the MT protocol. It uses proper matching techniques
+> to obtain smooth multi-finger actions. My plan is to launch this in user
+> space as soon as there is kernel support.
+>
+> Henrik
+>
 
-I see you haven't pulled from it the ext4 tree yet.  In the meantime,
-two more bug fixes, one which fixes a rather nasty mmap corruption bug
-in low memory situations have come in, so I've updated the repository
-to include two more patches.  So for_linus has two more patches than
-it does previously.
-
-If you've already pulled from the for_linus branch, by the time read
-this, please pull again to get the two commits marked with an '*':
-
-	git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
-
-						- Ted
-
-Aneesh Kumar K.V (3):
-      ext4: fix missing ext4_unlock_group in error path
-      ext4: Convert to host order before using the values.
-    * ext4: Mark the buffer_heads as dirty and uptodate after prepare_write
-
-Frederic Bohe (1):
-    * ext4: add checksum calculation when clearing UNINIT flag in ext4_new_inode
-
-Sami Liedes (1):
-      jbd2: deregister proc on failure in jbd2_journal_init_inode
-
-Theodore Ts'o (4):
-      jbd: don't give up looking for space so easily in __log_wait_for_space
-      jbd2: don't give up looking for space so easily in __jbd2_log_wait_for_space
-      ext4: wait on all pending commits in ext4_sync_fs()
-      ext4: calculate journal credits correctly
-
- fs/ext4/ialloc.c     |    2 ++
- fs/ext4/inode.c      |    7 +++++--
- fs/ext4/mballoc.c    |    1 +
- fs/ext4/super.c      |   24 ++++++++++--------------
- fs/jbd/checkpoint.c  |   31 ++++++++++++++++++++++++-------
- fs/jbd2/checkpoint.c |   32 +++++++++++++++++++++++++-------
- fs/jbd2/journal.c    |    2 ++
- 7 files changed, 69 insertions(+), 30 deletions(-)
+Have you worked with MPX? Or was a vanilla-X11 driver simple enough?
+How does this all get presented to userspace applications? Multiple
+mouse inputs or special stuff that applications would need a rewrite
+to leverage?
