@@ -1,58 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbYKGFv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYKGFy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbYKGFv0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 00:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbYKGFqV
+	id S1755501AbYKGFy2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 00:54:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750958AbYKGFyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 00:46:21 -0500
-Received: from rn-out-0910.google.com ([64.233.170.186]:49547 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755765AbYKGFqT (ORCPT
+	Fri, 7 Nov 2008 00:54:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38896 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750920AbYKGFyP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 00:46:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=hS6/nQK5Wvh+y17e7nFNqTVq5U2cSIyyGApm4AwIdDJrW1zmQEik/ztm950/x4DMIi
-         d4pCgPj55G4ZZOpGqWuhSnroFqV+aWh4TTVSlt0E1HUv53S3OjoCB7JELp7YpzfNRQNK
-         msAk7EaeBUhYnvlW4w1Dx75Mx8CWvo5F1qNyQ=
-Message-ID: <8d6898730811062146w45418fcbta659254642906f11@mail.gmail.com>
-Date: Fri, 7 Nov 2008 11:16:17 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: sharing interrupt between PCI device
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       "Robert Hancock" <hancockr@shaw.ca>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <4913609F.7050607@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 7 Nov 2008 00:54:15 -0500
+Date: Thu, 6 Nov 2008 21:52:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
+       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
+       paulus@samba.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 07/18] Trace clock core
+Message-Id: <20081106215256.a9f01ec4.akpm@linux-foundation.org>
+In-Reply-To: <20081107053349.699011457@polymtl.ca>
+References: <20081107052336.652868737@polymtl.ca>
+	<20081107053349.699011457@polymtl.ca>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
-	 <4910E8AC.7050407@shaw.ca>
-	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
-	 <49115AFC.2030400@gmail.com>
-	 <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
-	 <8d6898730811052211k695d208r53609701af633c2d@mail.gmail.com>
-	 <8d6898730811052344q218fc450i8c36fcd9e119d060@mail.gmail.com>
-	 <4913609F.7050607@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Exactly
+On Fri, 07 Nov 2008 00:23:43 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-On Fri, Nov 7, 2008 at 2:54 AM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 11/06/2008 08:44 AM, Nobin Mathew wrote:
->> Hi
->>
->> can anybody point to some reference device drivers where PCI interrupt
->> sharing is implemented properly.
+> 32 to 64 bits clock extension. Extracts 64 bits tsc from a [1..32]
+> bits counter, kept up to date by periodical timer interrupt. Lockless.
+> 
+> ...
 >
-> Sorry, I still don't understand the setup. You have two separate pci devices,
-> both with the same irq number and pci_disable_device on one of them stops irqs
-> on the second?
->
+> +#include <linux/sched.h> /* FIX for m68k local_irq_enable in on_each_cpu */
+
+What's going on here?
+
+> +struct synthetic_tsc_struct {
+> +	union {
+> +		u64 val;
+> +		struct {
+> +#ifdef __BIG_ENDIAN
+> +			u32 msb;
+> +			u32 lsb;
+> +#else
+> +			u32 lsb;
+> +			u32 msb;
+> +#endif
+
+One would expect an identifier called "msb" to mean "most significant
+bit" or possible "most significant byte".
+
+Maybe ms32 and ls32?
+
+> +		} sel;
+> +	} tsc[2];
+> +	unsigned int index;	/* Index of the current synth. tsc. */
+> +};
+> +
+> +static DEFINE_PER_CPU(struct synthetic_tsc_struct, synthetic_tsc);
+> +
+> +/* Called from IPI : either in interrupt or process context */
+
+IPI handlers should always be called with local interrupts disabled.
+
+> +static void update_synthetic_tsc(void)
+> +{
+> +	struct synthetic_tsc_struct *cpu_synth;
+> +	u32 tsc;
+> +
+> +	preempt_disable();
+
+which would make this unnecessary.
+
+> +	cpu_synth = &per_cpu(synthetic_tsc, smp_processor_id());
+> +	tsc = trace_clock_read32();		/* Hardware clocksource read */
+> +
+> +	if (tsc < HW_LSB(cpu_synth->tsc[cpu_synth->index].sel.lsb)) {
+> +		unsigned int new_index = 1 - cpu_synth->index; /* 0 <-> 1 */
+> +		/*
+> +		 * Overflow
+> +		 * Non atomic update of the non current synthetic TSC, followed
+> +		 * by an atomic index change. There is no write concurrency,
+> +		 * so the index read/write does not need to be atomic.
+> +		 */
+> +		cpu_synth->tsc[new_index].val =
+> +			(SW_MSB(cpu_synth->tsc[cpu_synth->index].val)
+> +				| (u64)tsc) + (1ULL << HW_BITS);
+> +		cpu_synth->index = new_index;	/* atomic change of index */
+> +	} else {
+> +		/*
+> +		 * No overflow : We know that the only bits changed are
+> +		 * contained in the 32 LSBs, which can be written to atomically.
+> +		 */
+> +		cpu_synth->tsc[cpu_synth->index].sel.lsb =
+> +			SW_MSB(cpu_synth->tsc[cpu_synth->index].sel.lsb) | tsc;
+> +	}
+> +	preempt_enable();
+> +}
+
+Is there something we should be fixing in m68k?
+
