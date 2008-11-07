@@ -1,92 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbYKGPVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbYKGPXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbYKGPVH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYKGPUz
+	id S1753854AbYKGPXu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYKGPXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:20:55 -0500
-Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:59264 "HELO
-	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752352AbYKGPUy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:20:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=uniscape.net;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=CWvRwS277fzZHGuAGjgTPa+/X9DnskcdsHYNN9uC9bW/0jtlCIAxcsN25mnoK2SspxD/UvtNrDaky/mW017cCuxBXiTJyGMvewfGD/4Wf5qhFmTR+gd5jrX38dYe9Ha1;
-Message-ID: <49145C14.1050409@uniscape.net>
-Date: Fri, 07 Nov 2008 23:17:40 +0800
-From: Yu Zhao <yu.zhao@uniscape.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Fri, 7 Nov 2008 10:23:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54839 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752344AbYKGPXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 10:23:37 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH -v3 1/4] SECURITY: new capable_noaudit interface
+To: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Cc: sds@tycho.nsa.gov, jmorris@nameil.org, serue@us.ibm.com, morgan@kernel.org,
+       casey@schaufler-ca.com, esandeen@redhat.com
+Date: Fri, 07 Nov 2008 10:23:26 -0500
+Message-ID: <20081107152326.10328.44330.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, Matthew Wilcox <matthew@wil.cx>
-CC: Anthony Liguori <anthony@codemonkey.ws>,
-       "Fischer, Anna" <anna.fischer@hp.com>, H L <swdevyid@yahoo.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, keir.fraser@eu.citrix.com,
-       Leonid.Grossman@neterion.com, eddie.dong@intel.com,
-       jun.nakajima@intel.com, avi@redhat.com
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net> <20081106183630.GD11773@parisc-linux.org> <491371F0.7020805@codemonkey.ws> <20081106225854.GA15439@parisc-linux.org> <20081107061952.GF3860@kroah.com>
-In-Reply-To: <20081107061952.GF3860@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {2990:host272.hostmonster.com:uniscape:uniscape.net} {sentby:smtp auth 124.76.3.39 authed with yu.zhao@uniscape.net}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While we are arguing what the software model the SR-IOV should be, let 
-me ask two simple questions first:
+Add a new capable interface that will be used by systems that use audit to
+make an A or B type decision instead of a security decision.  Currently
+this is the case at least for filesystems when deciding if a process can use
+the reserved 'root' blocks and for the case of things like the oom
+algorithm determining if processes are root processes and should be less
+likely to be killed.  These types of security system requests should not be
+audited or logged since they are not really security decisions.  It would be
+possible to solve this problem like the vm_enough_memory security check did
+by creating a new LSM interface and moving all of the policy into that
+interface but proves the needlessly bloat the LSM and provide complex
+indirection.
 
-1, What does the SR-IOV looks like?
-2, Why do we need to support it?
+This merely allows those decisions to be made where they belong and to not
+flood logs or printk with denials for thing that are not security decisions.
 
-I'm sure people have different understandings from their own view 
-points. No one is wrong, but, please don't make thing complicated and 
-don't ignore user requirements.
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by:  Stephen Smalley <sds@tycho.nsa.gov>
+---
 
-PCI SIG and hardware vendors create such thing intending to make 
-hardware resource in one PCI device be shared from different software 
-instances -- I guess all of us agree with this. No doubt PF is real 
-function in the PCI device, but VF is different? No, it also has its own 
-Bus, Device and Function numbers, and PCI configuration space and Memory 
-Space (MMIO). To be more detailed, it can response to and initiate PCI 
-Transaction Layer Protocol packets, which means it can do everything a 
-PF can in PCI level. From these obvious behaviors, we can conclude PCI 
-SIG model VF as a normal PCI device function, even it's not standalone.
+ include/linux/capability.h |    3 +++
+ include/linux/security.h   |   16 +++++++++++++---
+ security/commoncap.c       |    8 ++++----
+ security/security.c        |    7 ++++++-
+ security/selinux/hooks.c   |   20 +++++++++++++-------
+ 5 files changed, 39 insertions(+), 15 deletions(-)
 
-As you know the Linux kernel is the base of various virtual machine 
-monitors such as KVM, Xen, OpenVZ and VServer. We need SR-IOV support in 
-the kernel because mostly it helps high-end users (IT departments, HPC, 
-etc.) to share limited hardware resources among hundreds or even 
-thousands virtual machines and hence reduce the cost. How can we make 
-these virtual machine monitors utilize the advantage of SR-IOV without 
-spending too much effort meanwhile remaining architectural correctness? 
-I believe making VF represent as much closer as a normal PCI device 
-(struct pci_dev) is the best way in current situation, because this is 
-not only what the hardware designers expect us to do but also the usage 
-model that KVM, Xen and other VMMs have already supported.
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 9d1fe30..0a0379b 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -503,6 +503,8 @@ extern const kernel_cap_t __cap_init_eff_set;
+ 
+ kernel_cap_t cap_set_effective(const kernel_cap_t pE_new);
+ 
++extern int security_capable(struct task_struct *t, int cap);
++extern int security_capable_noaudit(struct task_struct *t, int cap);
+ /**
+  * has_capability - Determine if a task has a superior capability available
+  * @t: The task in question
+@@ -514,6 +516,7 @@ kernel_cap_t cap_set_effective(const kernel_cap_t pE_new);
+  * Note that this does not set PF_SUPERPRIV on the task.
+  */
+ #define has_capability(t, cap) (security_capable((t), (cap)) == 0)
++#define has_capability_noaudit(t, cap) (security_capable_noaudit((t), (cap)) == 0)
+ 
+ extern int capable(int cap);
+ 
+diff --git a/include/linux/security.h b/include/linux/security.h
+index c13f1ce..5fe28a6 100644
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -37,6 +37,10 @@
+ /* Maximum number of letters for an LSM name string */
+ #define SECURITY_NAME_MAX	10
+ 
++/* If capable should audit the security request */
++#define SECURITY_CAP_NOAUDIT 0
++#define SECURITY_CAP_AUDIT 1
++
+ struct ctl_table;
+ struct audit_krule;
+ 
+@@ -44,7 +48,7 @@ struct audit_krule;
+  * These functions are in security/capability.c and are used
+  * as the default capabilities functions
+  */
+-extern int cap_capable(struct task_struct *tsk, int cap);
++extern int cap_capable(struct task_struct *tsk, int cap, int audit);
+ extern int cap_settime(struct timespec *ts, struct timezone *tz);
+ extern int cap_ptrace_may_access(struct task_struct *child, unsigned int mode);
+ extern int cap_ptrace_traceme(struct task_struct *parent);
+@@ -1307,7 +1311,7 @@ struct security_operations {
+ 			    kernel_cap_t *effective,
+ 			    kernel_cap_t *inheritable,
+ 			    kernel_cap_t *permitted);
+-	int (*capable) (struct task_struct *tsk, int cap);
++	int (*capable) (struct task_struct *tsk, int cap, int audit);
+ 	int (*acct) (struct file *file);
+ 	int (*sysctl) (struct ctl_table *table, int op);
+ 	int (*quotactl) (int cmds, int type, int id, struct super_block *sb);
+@@ -1577,6 +1581,7 @@ void security_capset_set(struct task_struct *target,
+ 			 kernel_cap_t *inheritable,
+ 			 kernel_cap_t *permitted);
+ int security_capable(struct task_struct *tsk, int cap);
++int security_capable_noaudit(struct task_struct *tsk, int cap);
+ int security_acct(struct file *file);
+ int security_sysctl(struct ctl_table *table, int op);
+ int security_quotactl(int cmds, int type, int id, struct super_block *sb);
+@@ -1782,7 +1787,12 @@ static inline void security_capset_set(struct task_struct *target,
+ 
+ static inline int security_capable(struct task_struct *tsk, int cap)
+ {
+-	return cap_capable(tsk, cap);
++	return cap_capable(tsk, cap, SECURITY_CAP_AUDIT);
++}
++
++static inline int security_capable_noaudit(struct task_struct *tsk, int cap)
++{
++	return cap_capable(tsk, cap, SECURITY_CAP_NOAUDIT);
+ }
+ 
+ static inline int security_acct(struct file *file)
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 3976613..73999f6 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -48,7 +48,7 @@ EXPORT_SYMBOL(cap_netlink_recv);
+  * returns 0 when a task has a capability, but the kernel's capable()
+  * returns 1 for this case.
+  */
+-int cap_capable (struct task_struct *tsk, int cap)
++int cap_capable(struct task_struct *tsk, int cap, int audit)
+ {
+ 	/* Derived from include/linux/sched.h:capable. */
+ 	if (cap_raised(tsk->cap_effective, cap))
+@@ -111,7 +111,7 @@ static inline int cap_inh_is_capped(void)
+ 	 * to the old permitted set. That is, if the current task
+ 	 * does *not* possess the CAP_SETPCAP capability.
+ 	 */
+-	return (cap_capable(current, CAP_SETPCAP) != 0);
++	return (cap_capable(current, CAP_SETPCAP, SECURITY_CAP_AUDIT) != 0);
+ }
+ 
+ static inline int cap_limit_ptraced_target(void) { return 1; }
+@@ -640,7 +640,7 @@ int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
+ 		    || ((current->securebits & SECURE_ALL_LOCKS
+ 			 & ~arg2))                                    /*[2]*/
+ 		    || (arg2 & ~(SECURE_ALL_LOCKS | SECURE_ALL_BITS)) /*[3]*/
+-		    || (cap_capable(current, CAP_SETPCAP) != 0)) {    /*[4]*/
++		    || (cap_capable(current, CAP_SETPCAP, SECURITY_CAP_AUDIT) != 0)) { /*[4]*/
+ 			/*
+ 			 * [1] no changing of bits that are locked
+ 			 * [2] no unlocking of locks
+@@ -705,7 +705,7 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
+ {
+ 	int cap_sys_admin = 0;
+ 
+-	if (cap_capable(current, CAP_SYS_ADMIN) == 0)
++	if (cap_capable(current, CAP_SYS_ADMIN, SECURITY_CAP_NOAUDIT) == 0)
+ 		cap_sys_admin = 1;
+ 	return __vm_enough_memory(mm, pages, cap_sys_admin);
+ }
+diff --git a/security/security.c b/security/security.c
+index c0acfa7..346f21e 100644
+--- a/security/security.c
++++ b/security/security.c
+@@ -163,7 +163,12 @@ void security_capset_set(struct task_struct *target,
+ 
+ int security_capable(struct task_struct *tsk, int cap)
+ {
+-	return security_ops->capable(tsk, cap);
++	return security_ops->capable(tsk, cap, SECURITY_CAP_AUDIT);
++}
++
++int security_capable_noaudit(struct task_struct *tsk, int cap)
++{
++	return security_ops->capable(tsk, cap, SECURITY_CAP_NOAUDIT);
+ }
+ 
+ int security_acct(struct file *file)
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index f85597a..0d4ee8c 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -1365,12 +1365,14 @@ static int task_has_perm(struct task_struct *tsk1,
+ 
+ /* Check whether a task is allowed to use a capability. */
+ static int task_has_capability(struct task_struct *tsk,
+-			       int cap)
++			       int cap, int audit)
+ {
+ 	struct task_security_struct *tsec;
+ 	struct avc_audit_data ad;
++	struct av_decision avd;
+ 	u16 sclass;
+ 	u32 av = CAP_TO_MASK(cap);
++	int rc;
+ 
+ 	tsec = tsk->security;
+ 
+@@ -1390,7 +1392,11 @@ static int task_has_capability(struct task_struct *tsk,
+ 		       "SELinux:  out of range capability %d\n", cap);
+ 		BUG();
+ 	}
+-	return avc_has_perm(tsec->sid, tsec->sid, sclass, av, &ad);
++
++	rc = avc_has_perm_noaudit(tsec->sid, tsec->sid, sclass, av, 0, &avd);
++	if (audit == SECURITY_CAP_AUDIT)
++		avc_audit(tsec->sid, tsec->sid, sclass, av, &avd, rc, &ad);
++	return rc;
+ }
+ 
+ /* Check whether a task is allowed to use a system operation. */
+@@ -1801,15 +1807,15 @@ static void selinux_capset_set(struct task_struct *target, kernel_cap_t *effecti
+ 	secondary_ops->capset_set(target, effective, inheritable, permitted);
+ }
+ 
+-static int selinux_capable(struct task_struct *tsk, int cap)
++static int selinux_capable(struct task_struct *tsk, int cap, int audit)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->capable(tsk, cap);
++	rc = secondary_ops->capable(tsk, cap, audit);
+ 	if (rc)
+ 		return rc;
+ 
+-	return task_has_capability(tsk, cap);
++	return task_has_capability(tsk, cap, audit);
+ }
+ 
+ static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
+@@ -1974,7 +1980,7 @@ static int selinux_vm_enough_memory(struct mm_struct *mm, long pages)
+ 	int rc, cap_sys_admin = 0;
+ 	struct task_security_struct *tsec = current->security;
+ 
+-	rc = secondary_ops->capable(current, CAP_SYS_ADMIN);
++	rc = secondary_ops->capable(current, CAP_SYS_ADMIN, SECURITY_CAP_NOAUDIT);
+ 	if (rc == 0)
+ 		rc = avc_has_perm_noaudit(tsec->sid, tsec->sid,
+ 					  SECCLASS_CAPABILITY,
+@@ -2821,7 +2827,7 @@ static int selinux_inode_getsecurity(const struct inode *inode, const char *name
+ 	 * and lack of permission just means that we fall back to the
+ 	 * in-core context value, not a denial.
+ 	 */
+-	error = secondary_ops->capable(current, CAP_MAC_ADMIN);
++	error = secondary_ops->capable(current, CAP_MAC_ADMIN, SECURITY_CAP_NOAUDIT);
+ 	if (!error)
+ 		error = avc_has_perm_noaudit(tsec->sid, tsec->sid,
+ 					     SECCLASS_CAPABILITY2,
 
-I agree that API in the SR-IOV pacth is arguable and the concerns such 
-as lack of PF driver, etc. are also valid. But I personally think these 
-stuff are not essential problems to me and other SR-IOV driver 
-developers. People can refine things but don't want to recreate things 
-in another totally different way especially that way doesn't bring them 
-obvious benefits.
-
-As I can see that we are now reaching a point that a decision must be 
-made, I know this is such difficult thing in an open and free community 
-but fortunately we have a lot of talented and experienced people here. 
-So let's make it happen, and keep our loyal users happy!
-
-Thanks,
-Yu
