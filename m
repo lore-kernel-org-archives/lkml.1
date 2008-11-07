@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbYKGOdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYKGOez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbYKGOdw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:33:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYKGOdn
+	id S1753221AbYKGOez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbYKGOeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:33:43 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46237 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbYKGOdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:33:43 -0500
-Date: Fri, 7 Nov 2008 15:32:16 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
-Message-ID: <20081107143215.GR21867@kernel.dk>
-References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk> <491450E4.2080802@hp.com>
+	Fri, 7 Nov 2008 09:34:44 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:36283 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751760AbYKGOen (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 09:34:43 -0500
+Date: Fri, 7 Nov 2008 09:34:40 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 fixes
+Message-ID: <20081107143440.GC9543@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1KyDvc-0007hT-I6@closure.thunk.org> <alpine.LFD.2.00.0811061647130.3451@nehalem.linux-foundation.org> <20081107033315.GB29038@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <491450E4.2080802@hp.com>
+In-Reply-To: <20081107033315.GB29038@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07 2008, Alan D. Brunelle wrote:
-> 
+On Thu, Nov 06, 2008 at 10:33:15PM -0500, Theodore Tso wrote:
 > > 
-> > I'll apply this for 2.6.29. I'm assuming you have tested this as well?
-> > 
+> > Nothing there. Forgot to push out?
 > 
-> FYI: I tested this on a 16-way AMD x86_64 box (128GB RAM, a couple of
-> Smart Array (CCISS) P800's). Running Jens' for-2.6.29 git tree versus a
-> recent Linus 2.6.28-rc3 tree. I was doing kernel makes (10 passes for
-> both kernels), and found that things worked just fine. All values below
-> are in seconds:
+> Whoops, sorry.  Just pushed to master.
 > 
-> 2.6.28-rc3:
-> 
->     Part     Min     Avg     Max     Dev
-> -------- ------- ------- ------- -------
->    untar  17.996  22.565  23.522   1.690
->   mk-cfg   3.279   3.454   3.529   0.070
->  mk-kern 140.837 141.557 142.549   0.626
-> mk-clean  10.460  11.604  12.710   0.758
-> -------- ------- ------- ------- -------
->    Combd 172.941 179.180 181.600   2.470
-> ======== ======= ======= ======= =======
->    %sys   7.67%   7.78%   8.03%   0.114
-> 
-> 
-> Jens' origin/for-2.6.29:
-> 
->     Part     Min     Avg     Max     Dev
-> -------- ------- ------- ------- -------
->    untar  18.138  22.576  24.279   1.693
->   mk-cfg   3.270   3.483   3.751   0.118
->  mk-kern 141.290 142.115 142.666   0.439
-> mk-clean   8.263   9.609  10.211   0.624
-> -------- ------- ------- ------- -------
->    Combd 173.736 177.783 179.654   1.786
-> ======== ======= ======= ======= =======
->    %sys   7.77%   7.85%   8.01%   0.074
-> 
-> 
-> Not sure why the 'make clean' portion of the runs went noticeably better
-> with the newer code, but in any event, I don't see much difference
-> elsewhere, and for sure the blktrace portion of things worked correctly.
-> [blktrace + blkparse + blkrawverify + btt all worked just fine out of
-> the box.]
 
-Thanks a lot for running that test Alan, I think it looks fine!
+I see you haven't pulled from it the ext4 tree yet.  In the meantime,
+two more bug fixes, one which fixes a rather nasty mmap corruption bug
+in low memory situations have come in, so I've updated the repository
+to include two more patches.  So for_linus has two more patches than
+it does previously.
 
--- 
-Jens Axboe
+If you've already pulled from the for_linus branch, by the time read
+this, please pull again to get the two commits marked with an '*':
 
+	git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+
+						- Ted
+
+Aneesh Kumar K.V (3):
+      ext4: fix missing ext4_unlock_group in error path
+      ext4: Convert to host order before using the values.
+    * ext4: Mark the buffer_heads as dirty and uptodate after prepare_write
+
+Frederic Bohe (1):
+    * ext4: add checksum calculation when clearing UNINIT flag in ext4_new_inode
+
+Sami Liedes (1):
+      jbd2: deregister proc on failure in jbd2_journal_init_inode
+
+Theodore Ts'o (4):
+      jbd: don't give up looking for space so easily in __log_wait_for_space
+      jbd2: don't give up looking for space so easily in __jbd2_log_wait_for_space
+      ext4: wait on all pending commits in ext4_sync_fs()
+      ext4: calculate journal credits correctly
+
+ fs/ext4/ialloc.c     |    2 ++
+ fs/ext4/inode.c      |    7 +++++--
+ fs/ext4/mballoc.c    |    1 +
+ fs/ext4/super.c      |   24 ++++++++++--------------
+ fs/jbd/checkpoint.c  |   31 ++++++++++++++++++++++++-------
+ fs/jbd2/checkpoint.c |   32 +++++++++++++++++++++++++-------
+ fs/jbd2/journal.c    |    2 ++
+ 7 files changed, 69 insertions(+), 30 deletions(-)
