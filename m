@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbYKGG3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbYKGGaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbYKGG3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 01:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbYKGG2l
+	id S1756187AbYKGGaQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 01:30:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbYKGG2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 01:28:41 -0500
-Received: from kroah.org ([198.145.64.141]:48957 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 01:28:47 -0500
+Received: from kroah.org ([198.145.64.141]:48961 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755596AbYKGG2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 01:28:39 -0500
-Date: Thu, 6 Nov 2008 22:17:00 -0800
+	id S1755641AbYKGG2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 01:28:40 -0500
+Date: Thu, 6 Nov 2008 22:18:35 -0800
 From: Greg KH <greg@kroah.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Matthew Wilcox <matthew@wil.cx>, H L <swdevyid@yahoo.com>,
-       Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, linux-pci@vger.kernel.org,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, mingo@elte.hu, Chris Wright <chrisw@sous-sol.org>
+To: "Fischer, Anna" <anna.fischer@hp.com>
+Cc: H L <swdevyid@yahoo.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "Chiang, Alexander" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
 Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081107061700.GD3860@kroah.com>
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <20081106174741.GC11773@parisc-linux.org> <20081106175308.GA17027@kroah.com> <49137255.9010104@codemonkey.ws>
+Message-ID: <20081107061835.GE3860@kroah.com>
+References: <20081106164919.GA4099@kroah.com> <392264.50990.qm@web45103.mail.sp1.yahoo.com> <20081106182443.GB17782@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F99718@GVW1118EXC.americas.hpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49137255.9010104@codemonkey.ws>
+In-Reply-To: <0199E0D51A61344794750DC57738F58E5E26F99718@GVW1118EXC.americas.hpqcorp.net>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 04:40:21PM -0600, Anthony Liguori wrote:
-> Greg KH wrote:
->> On Thu, Nov 06, 2008 at 10:47:41AM -0700, Matthew Wilcox wrote:
->>   
->>> I don't think we really know what the One True Usage model is for VF
->>> devices.  Chris Wright has some ideas, I have some ideas and Yu Zhao has
->>> some ideas.  I bet there's other people who have other ideas too.
->>>     
->>
->> I'd love to hear those ideas.
->>   
->
-> We've been talking about avoiding hardware passthrough entirely and
-> just backing a virtio-net backend driver by a dedicated VF in the
-> host.  That avoids a huge amount of guest-facing complexity, let's
-> migration Just Work, and should give the same level of performance.
+On Thu, Nov 06, 2008 at 09:35:57PM +0000, Fischer, Anna wrote:
+> > Perhaps some of this could be hidden with a new bus type for these
+> > kinds
+> > of devices?  Or a "virtual" bus of pci devices that the original SR-IOV
+> > device creates that corrispond to the individual virtual PCI devices?
+> > If that were the case, then it might be a lot easier in the end.
+> 
+> I think a standard communication channel in Linux for SR-IOV devices
+> would be a good start, and help to adopt the technology. Something
+> like the virtual bus you are describing. It means that vendors do
+> not need to write their own communication channel in the drivers.
+> It would need to have well defined APIs though, as I guess that
+> devices will have very different capabilities and hardware
+> implementations for PFs and VFs, and so they might have very
+> different events and information to propagate.
 
-Does that involve this patch set?  Or a different type of interface.
+That would be good to standardize on.  Have patches?
 
 thanks,
 
