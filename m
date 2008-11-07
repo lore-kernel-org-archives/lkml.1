@@ -1,72 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbYKGQ1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYKGQ3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbYKGQ1m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 11:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYKGQ1d
+	id S1754135AbYKGQ3O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 11:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYKGQ26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 11:27:33 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:24561 "EHLO
-	WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbYKGQ1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 11:27:32 -0500
-X-BigFish: VPS-55(z21eWz1432R62a3L98dR936eQ4015M1805Mzzzzz32i6bh43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0K9Z1PF-01-18P-01
-Date: Fri, 7 Nov 2008 17:26:53 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-Message-ID: <20081107162651.GP9785@erda.amd.com>
-References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com> <49130694.7000007@cosmosbay.com> <20081107130249.GN29626@one.firstfloor.org>
+	Fri, 7 Nov 2008 11:28:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53723 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752677AbYKGQ25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 11:28:57 -0500
+Date: Fri, 7 Nov 2008 17:28:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] core kernel fixes
+Message-ID: <20081107162843.GA3510@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081107130249.GN29626@one.firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 07 Nov 2008 16:27:18.0249 (UTC) FILETIME=[B3AE7590:01C940F5]
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07.11.08 14:02:49, Andi Kleen wrote:
-> 
-> Can you please test this patch and see if it solves the problem?
-> 
-> Thanks,
-> -Andi
-> 
-> ---
-> 
-> oprofile: Fix p6 counter overflow check
-> 
-> Fix the counter overflow check for CPUs with counter width > 32
-> 
-> I had a similar change in a different patch that I didn't submit
-> and I didn't notice the problem earlier because it was always
-> tested together.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Linus,
 
-Andi,
+Please pull the latest core-fixes-for-linus git tree from:
 
-your patch fixes the initial bug that stops sampling immediately after
-starting. The issue Eric mentions seems to be a different problem. I
-am also not able to reproduce this. Your patch on top of rc3 continues
-sampling at least for several minutes.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-I will apply your fix.
+Xen fixes filed under tip/core/urgent becase they have MM impact.
 
-Thanks Andi,
+ Thanks,
 
--Robert
+	Ingo
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+------------------>
+Jeremy Fitzhardinge (2):
+      vmap: cope with vm_unmap_aliases before vmalloc_init()
+      xen: make sure stray alias mappings are gone before pinning
 
+
+ arch/x86/xen/enlighten.c |    5 +++--
+ arch/x86/xen/mmu.c       |    9 ++++++---
+ mm/vmalloc.c             |    7 +++++++
+ 3 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index b61534c..5e4686d 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -863,15 +863,16 @@ static void xen_alloc_ptpage(struct mm_struct *mm, unsigned long pfn, unsigned l
+ 	if (PagePinned(virt_to_page(mm->pgd))) {
+ 		SetPagePinned(page);
+ 
++		vm_unmap_aliases();
+ 		if (!PageHighMem(page)) {
+ 			make_lowmem_page_readonly(__va(PFN_PHYS((unsigned long)pfn)));
+ 			if (level == PT_PTE && USE_SPLIT_PTLOCKS)
+ 				pin_pagetable_pfn(MMUEXT_PIN_L1_TABLE, pfn);
+-		} else
++		} else {
+ 			/* make sure there are no stray mappings of
+ 			   this page */
+ 			kmap_flush_unused();
+-			vm_unmap_aliases();
++		}
+ 	}
+ }
+ 
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index aba77b2..89f3b6e 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -850,13 +850,16 @@ static int xen_pin_page(struct mm_struct *mm, struct page *page,
+    read-only, and can be pinned. */
+ static void __xen_pgd_pin(struct mm_struct *mm, pgd_t *pgd)
+ {
++	vm_unmap_aliases();
++
+ 	xen_mc_batch();
+ 
+-	if (xen_pgd_walk(mm, xen_pin_page, USER_LIMIT)) {
+-		/* re-enable interrupts for kmap_flush_unused */
++	 if (xen_pgd_walk(mm, xen_pin_page, USER_LIMIT)) {
++		/* re-enable interrupts for flushing */
+ 		xen_mc_issue(0);
++
+ 		kmap_flush_unused();
+-		vm_unmap_aliases();
++
+ 		xen_mc_batch();
+ 	}
+ 
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index 66fad3f..ba6b0f5 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -592,6 +592,8 @@ static void free_unmap_vmap_area_addr(unsigned long addr)
+ 
+ #define VMAP_BLOCK_SIZE		(VMAP_BBMAP_BITS * PAGE_SIZE)
+ 
++static bool vmap_initialized __read_mostly = false;
++
+ struct vmap_block_queue {
+ 	spinlock_t lock;
+ 	struct list_head free;
+@@ -828,6 +830,9 @@ void vm_unmap_aliases(void)
+ 	int cpu;
+ 	int flush = 0;
+ 
++	if (unlikely(!vmap_initialized))
++		return;
++
+ 	for_each_possible_cpu(cpu) {
+ 		struct vmap_block_queue *vbq = &per_cpu(vmap_block_queue, cpu);
+ 		struct vmap_block *vb;
+@@ -942,6 +947,8 @@ void __init vmalloc_init(void)
+ 		INIT_LIST_HEAD(&vbq->dirty);
+ 		vbq->nr_dirty = 0;
+ 	}
++
++	vmap_initialized = true;
+ }
+ 
+ void unmap_kernel_range(unsigned long addr, unsigned long size)
