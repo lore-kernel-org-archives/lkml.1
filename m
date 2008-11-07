@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbYKGERv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYKGEUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754840AbYKGERv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbYKGERk
+	id S1755095AbYKGEUE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:20:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbYKGETx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:17:40 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:43080 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbYKGERj (ORCPT
+	Thu, 6 Nov 2008 23:19:53 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:58705 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750806AbYKGETw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:17:39 -0500
-Date: Thu, 6 Nov 2008 21:17:22 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: "Zhao, Yu" <yu.zhao@intel.com>
-Cc: Greg KH <greg@kroah.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
-Message-ID: <20081107041721.GB15439@parisc-linux.org>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com> <20081106043235.GA30292@kroah.com> <4913AA03.5060807@intel.com> <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4913B8A5.5010806@intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 6 Nov 2008 23:19:52 -0500
+Date: Fri, 07 Nov 2008 13:19:49 +0900 (JST)
+Message-Id: <20081107.131949.106618398.taka@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: vgoyal@redhat.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       riel@redhat.com, fernando@oss.ntt.co.jp, jmoyer@redhat.com,
+       menage@google.com, ngupta@google.com, akpm@linux-foundation.org,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [patch 2/4] io controller: biocgroup implementation
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <20081107115030.7ccf3f07.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081106153022.215696930@redhat.com>
+	<20081106153135.790621895@redhat.com>
+	<20081107115030.7ccf3f07.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 11:40:21AM +0800, Zhao, Yu wrote:
-> Greg KH wrote:
-> >We've thought about this in the past, and even Microsoft said it was
-> >going to happen for Vista, but they realized in the end, like we did a
-> >few years previously, that it would require full support of all PCI
-> >drivers as well (if you rebalance stuff that is already bound to a
-> >driver.)  So they dropped it.
-> >
-> >When would you want to do this kind of rebalancing?  Before any PCI
-> >driver is bound to any devices?  Or afterwards?
-> 
-> I guess if we want the rebalance dynamic, then we should have it full -- 
-> the rebalance would be functional even after the driver is loaded.
-> 
-> But in most cases, there will be problem when we unload driver from a 
-> hard disk controller, etc. We can mount root on a ramdisk and do the 
-> rebalance there, but it's complicated for a real user.
-> 
-> So looks like doing rebalancing before any driver is bound to any device 
-> is also a nice idea, if user can get a shell to do rebalance before 
-> built-in PCI driver grabs device.
+Hi,
 
-Can we use the suspend/resume code to do this?  Some drivers (sym2 for
-one) would definitely need to rerun some of their init code to cope with
-a BAR address changing.
+I'm going to release a new version of bio_cgroup soon, which doesn't
+have "struct list_head blist" anymore and whose overhead is minimized.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+> > o biocgroup functionality.
+> > o Implemented new controller "bio"
+> > o Most of it picked from dm-ioband biocgroup implementation patches.
+> > 
+> page_cgroup implementation is changed and most of this patch needs rework.
+> please see the latest one. (I think most of new characteristics are useful
+> for you.)
+> 
+> One comment from me is
+> ==
+> > +struct page_cgroup {
+> > +	struct list_head lru;		/* per cgroup LRU list */
+> > +	struct page *page;
+> > +	struct mem_cgroup *mem_cgroup;
+> > +	int flags;
+> > +#ifdef CONFIG_CGROUP_BIO
+> > +	struct list_head blist;		/* for bio_cgroup page list */
+> > +	struct bio_cgroup *bio_cgroup;
+> > +#endif
+> > +};
+> ==
+> 
+> this blist is too bad. please keep this object small...
+> 
+> Maybe dm-ioband people will post his own new one. just making use of it is an idea.
+> 
+> Thanks,
+> -Kame
+> 
+> 
