@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYKGD1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbYKGDd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbYKGD1P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 22:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYKGD07
+	id S1753640AbYKGDd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 22:33:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbYKGDdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 22:26:59 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:3577 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751119AbYKGD07 (ORCPT
+	Thu, 6 Nov 2008 22:33:19 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:36269 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750806AbYKGDdS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 22:26:59 -0500
-Date: Thu, 6 Nov 2008 22:26:55 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Norbert Preining <preining@logic.at>
-cc: Pete Zaitcev <zaitcev@redhat.com>, Mattia Dongili <malattia@linux.it>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usb device not showing up
-In-Reply-To: <20081106225713.GD11406@gamma.logic.tuwien.ac.at>
-Message-ID: <Pine.LNX.4.44L0.0811062223100.26081-100000@netrider.rowland.org>
+	Thu, 6 Nov 2008 22:33:18 -0500
+Date: Thu, 6 Nov 2008 22:33:15 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 fixes
+Message-ID: <20081107033315.GB29038@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1KyDvc-0007hT-I6@closure.thunk.org> <alpine.LFD.2.00.0811061647130.3451@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0811061647130.3451@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008, Norbert Preining wrote:
-
-> Hi Alan,
+On Thu, Nov 06, 2008 at 04:47:47PM -0800, Linus Torvalds wrote:
 > 
-> On Do, 06 Nov 2008, Alan Stern wrote:
-> > Okay.  In the earlier (working) test, the modem showed up on bus 4, not
-> > bus 2.  Not that it matters much -- the modem didn't show up at all in
 > 
-> Sorry, it is always bus 4, i meant interface (or how do you call it) 2,
-> bus id 004:002
-
-Yes, okay.  That's bus 4, address 2.
-
-> > should start working, but I have no idea what that would be.  It's not 
-> > a USB issue; as far as USB is concerned the device just isn't there at 
-> 
-> Ok, if it is not an usb issue, I guess I have to hope for some fix in
-> sony-laptop module. 
-
-I hope it works out.
-
-> > Interestingly, this trace appears to be missing some events.  There's a
-> > gap between timestamps 4284549076 and 4284645743 (the timestamps are in
-> > the second column) where we should see the initialization of bus 5 and
-> > bus 6.  Instead there's a 100-ms delay in which nothing happens,
-> > followed later on by the second initialization phase for those two
-> > buses.
+> On Thu, 6 Nov 2008, Theodore Ts'o wrote:
 > > 
-> > I have to wonder...  Did you remove any part of the trace?  Did usbmon 
+> > Please pull from:
+> > 
+> >         git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+> > 
+> > to grab some bug fixes and regressions for ext4.  Thanks!!
 > 
-> No. I sent you the output as it was saved on my hard disk. No editing
-> involved.
+> Nothing there. Forgot to push out?
 
-It must be like Pete said: Some events just got lost because not enough
-memory was allocated to usbmon.  Fortunately those missing events had
-nothing to do with the hso problem.
+Whoops, sorry.  Just pushed to master.
 
-Alan Stern
+						- Ted
 
