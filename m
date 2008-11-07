@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYKGXGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbYKGXIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbYKGXGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYKGXGQ
+	id S1753326AbYKGXIj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYKGXIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:06:16 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:64208 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751860AbYKGXGP (ORCPT
+	Fri, 7 Nov 2008 18:08:32 -0500
+Received: from bc.sympatico.ca ([209.226.175.184]:53324 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752294AbYKGXIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:06:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=bDrXi7KZmUvBQ+rdr73ac8+AtrQG5lVkGVMmRJt8n476/CiR2OEpqSqDQn5yXKkKV8
-         BczU0aAORJr60AE7CVw7sUaszcYV5hTXequB8MfylY+FBk6bqDtOz37Zb4nghlZBUquW
-         X82eHhrY1mGb+d+T/bR4WwYfJtme078yb5vQg=
-Date: Sat, 8 Nov 2008 01:06:29 +0200
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
+	Fri, 7 Nov 2008 18:08:31 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtcEAAdTFElMQWxa/2dsb2JhbACBdr1OCIsWglMIew
+Date: Fri, 7 Nov 2008 18:08:29 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH-ugly] kmemtrace: casting a gfp_t requires __force
-Message-ID: <20081107230629.GC5210@localhost>
-References: <1226084321.11596.37.camel@brick>
-MIME-Version: 1.0
+Message-ID: <20081107230829.GA10636@Krystal>
+References: <1226084321.11596.37.camel@brick> <20081107192029.GA4001@x200.localdomain> <20081107225015.GA5210@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1226084321.11596.37.camel@brick>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20081107225015.GA5210@localhost>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:05:02 up 156 days,  3:45,  7 users,  load average: 1.59, 0.81,
+	0.76
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 10:58:41AM -0800, Harvey Harrison wrote:
-> gfp_t is a bitwise type, casting to unsigned long produces a
-> warning.  Suppress it with __force.
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> On Fri, Nov 07, 2008 at 10:20:29PM +0300, Alexey Dobriyan wrote:
+> > On Fri, Nov 07, 2008 at 10:58:41AM -0800, Harvey Harrison wrote:
+> > > --- a/include/linux/kmemtrace.h
+> > > +++ b/include/linux/kmemtrace.h
+> > > @@ -34,7 +34,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
+> > >  		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
+> > >  		   type_id, call_site, (unsigned long) ptr,
+> > >  		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
+> > > -		   (unsigned long) gfp_flags, node);
+> > > +		   (__force unsigned long)gfp_flags, node);
+> > 
+> > gfp_t is "unsigned int" actually. These casts are bogus.
+> > 
+> > Subject: How do I printk <type> correctly?
+> > 
+> > If variable is of Type	use	printk format specifier.
+> > ---------------------------------------------------------
+> > 		int			%d or %x
+> > 		unsigned int		%u or %x
+> > 		long			%ld ot %lx
+> > 		unsigned long		%lu or %lx
+> > 		long long		%lld or %llx
+> > 		unsigned long long	%llu or %llx
+> > 		size_t			%zu or %zx
+> > 		ssize_t			%zd or %zx
+> > 
+> > Raw pointer value SHOULD be printed with %p.
+> > 
+> > u64 SHOULD be printed with %llu/%llx, (unsigned long long):
+> > 
+> > 	printk("%llu", (unsigned long long)u64_var);
+> > 
+> > s64 SHOULD be printed with %lld/%llx, (long long):
+> > 
+> > 	printk("%lld", (long long)s64_var);
+> > 
+> > If type is dependent on config option (sector_t), use format specifier
+> > of biggest type and explicitly cast to it.
+> > 
+> > Reminder: sizeof() result is of type size_t.
+> > 
+> > Thank you for your cooperation.
 > 
-> Otherwise sparse complains thusly:
-> include/linux/kmemtrace.h:33:2: warning: cast from restricted gfp_t
+> Hi,
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Eduard, this is a local patch I've had sitting around in my sparse testing
-> tree.  I'm really not sure what the appropriate format specifier is for a
-> gfp_t, but I don't think the trace infrastructure has support for it
-> anyway...so if you are going to keep casting to unsigned long you'll need
-> this...perhaps with a comment why added.
-> 
->  include/linux/kmemtrace.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/kmemtrace.h b/include/linux/kmemtrace.h
-> index 5bea8ea..9d82085 100644
-> --- a/include/linux/kmemtrace.h
-> +++ b/include/linux/kmemtrace.h
-> @@ -34,7 +34,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
->  		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
->  		   type_id, call_site, (unsigned long) ptr,
->  		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
-> -		   (unsigned long) gfp_flags, node);
-> +		   (__force unsigned long)gfp_flags, node);
->  }
->  
->  static inline void kmemtrace_mark_free(enum kmemtrace_type_id type_id,
-> -- 
-> 1.6.0.3.756.gb776d
-> 
->
+> Actually, "%zu" was the first thing that crossed my mind too. But we
+> don't want to carry such types into the probe callbacks.
 
-Sorry, the commit name is okay, my mistake.
+quote :
+> It's a lot
+> easier to see which u* an unsigned long fits into than it is for
+> size_t.
 
+why would you need to limit yourself to u8, u16, u32, u64 ?
+
+sizeof(size_t) tells you for sure what the size of size_t is. You can
+even export it to a trace header so that size is know when the trace is
+analyzed, neat eh ? :)
+
+Why would you ever want to create a macro to make typing more obscure
+and to take considerably more space on architectures where a u64 is not
+required ?
+
+Mathieu
+
+
+> So we take care of this inside a wrapper; the sooner, the better.
+> 
+> Also take into account that debugging code usually casts pointers to
+> unsigned long. This can easily be seen by looking at _RET_IP_ definition
+> or SLAB code. I think there's a very good reason to do so, since it adds
+> opacity to something that's not supposed to be used as a pointer.
+> 
+> 
+> 	Cheers,
+> 	Eduard
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
