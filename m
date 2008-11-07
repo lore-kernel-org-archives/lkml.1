@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYKGOar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYKGObI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbYKGOar (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYKGOaI
+	id S1754217AbYKGObI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:31:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbYKGOaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:30:08 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49352 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbYKGOaE (ORCPT
+	Fri, 7 Nov 2008 09:30:09 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:43239 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753733AbYKGOaB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:30:04 -0500
-Date: Fri, 7 Nov 2008 16:30:01 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-cc: Mikael Abrahamsson <swmike@swm.pp.se>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Re: time for TCP ECN defaulting to on?
-In-Reply-To: <6278d2220811070543p51ca2139t13aba28e6dba5ff4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811071548060.23792@wrl-59.cs.helsinki.fi>
-References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> 
- <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se> 
- <20081105.151015.206163697.davem@davemloft.net> 
- <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se> 
- <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi> 
- <alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se> 
- <Pine.LNX.4.64.0811071039480.23629@wrl-59.cs.helsinki.fi> 
- <alpine.DEB.1.10.0811071230310.10993@uplift.swm.pp.se> 
- <Pine.LNX.4.64.0811071341430.23792@wrl-59.cs.helsinki.fi>
- <6278d2220811070543p51ca2139t13aba28e6dba5ff4@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Nov 2008 09:30:01 -0500
+Message-ID: <491450E4.2080802@hp.com>
+Date: Fri, 07 Nov 2008 09:29:56 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][v3] blktrace: conversion to tracepoints
+References: <20081029120556.GD28123@ghostprotocols.net> <20081029131855.GC31673@kernel.dk> <20081029194323.GA25056@ghostprotocols.net> <20081030073134.GM31673@kernel.dk>
+In-Reply-To: <20081030073134.GM31673@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008, Daniel J Blueman wrote:
 
-> then we
-> avoid hurting these users by enabling ECN per default when eg
-> CONFIG_IP_ADVANCED_ROUTER is set (to little direct benefit of course).
+> 
+> I'll apply this for 2.6.29. I'm assuming you have tested this as well?
+> 
 
-I suppose all distros enable that anyway in generic kernels so it's not 
-going to be any different from just enabling it.
+FYI: I tested this on a 16-way AMD x86_64 box (128GB RAM, a couple of
+Smart Array (CCISS) P800's). Running Jens' for-2.6.29 git tree versus a
+recent Linus 2.6.28-rc3 tree. I was doing kernel makes (10 passes for
+both kernels), and found that things worked just fine. All values below
+are in seconds:
 
-> It's a start and a constructive idea; by doing this and documenting
-> it, we provide a wake-up call for vendors, laying the path for
-> enabling it for all types of host in a few years. Even enabling ECN
-> for -rc kernels will raise awareness.
->
-> Alternatively, an ECN-day could be publicised targeting the linux tech
-> community, where we can report failing networks/sites to a central
-> website to quantify actual potential negative impact.
+2.6.28-rc3:
 
-This will still miss much. Eg., the ordering problems were not discovered 
-afaik until 2.6.27 release, that's quite long time of testing without 
-anybody noticing that hey it's broken (it might be that some distro 
-circles saw this with some -rcx if they were using them but that didn't 
-gain much attention until 2.6.27 was already out). And at that time 
-the imminent release of Ubuntu's made the amount of testers much more 
-abundant resource than with some other kernel version.
-
-Agreed that we definately should do more than just turn it on and wait for 
-troubles but educating users might turn out to be quite hard problem. 
-And certainly there will be troubles as even with the most comprehensive 
-attempts within linux' dev+tester community are going to leave major holes 
-like was proven with the tcp option ordering saga.
+    Part     Min     Avg     Max     Dev
+-------- ------- ------- ------- -------
+   untar  17.996  22.565  23.522   1.690
+  mk-cfg   3.279   3.454   3.529   0.070
+ mk-kern 140.837 141.557 142.549   0.626
+mk-clean  10.460  11.604  12.710   0.758
+-------- ------- ------- ------- -------
+   Combd 172.941 179.180 181.600   2.470
+======== ======= ======= ======= =======
+   %sys   7.67%   7.78%   8.03%   0.114
 
 
--- 
- i.
+Jens' origin/for-2.6.29:
+
+    Part     Min     Avg     Max     Dev
+-------- ------- ------- ------- -------
+   untar  18.138  22.576  24.279   1.693
+  mk-cfg   3.270   3.483   3.751   0.118
+ mk-kern 141.290 142.115 142.666   0.439
+mk-clean   8.263   9.609  10.211   0.624
+-------- ------- ------- ------- -------
+   Combd 173.736 177.783 179.654   1.786
+======== ======= ======= ======= =======
+   %sys   7.77%   7.85%   8.01%   0.074
+
+
+Not sure why the 'make clean' portion of the runs went noticeably better
+with the newer code, but in any event, I don't see much difference
+elsewhere, and for sure the blktrace portion of things worked correctly.
+[blktrace + blkparse + blkrawverify + btt all worked just fine out of
+the box.]
+
+Regards,
+Alan
+
+
