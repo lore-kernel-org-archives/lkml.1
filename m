@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYKGSRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbYKGSXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537AbYKGSRJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 13:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYKGSQz
+	id S1753468AbYKGSXH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 13:23:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYKGSWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 13:16:55 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:49109 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751080AbYKGSQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 13:16:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAL8TFElMQWxa/2dsb2JhbACBdsgCg1Y
-Date: Fri, 7 Nov 2008 13:16:50 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
-       paulus@samba.org, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 07/18] Trace clock core
-Message-ID: <20081107181650.GI22134@Krystal>
-References: <20081107052336.652868737@polymtl.ca> <20081107053349.699011457@polymtl.ca> <20081106215256.a9f01ec4.akpm@linux-foundation.org> <20081107061643.GA798@Krystal> <20081106222656.8e35d9d5.akpm@linux-foundation.org> <20081107161237.GA22134@Krystal> <20081107081939.4bcdf25b.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 7 Nov 2008 13:22:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43279 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750953AbYKGSWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 13:22:55 -0500
+Date: Fri, 7 Nov 2008 19:22:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] OProfile fixes for v2.6.28
+Message-ID: <20081107182242.GE5878@elte.hu>
+References: <20081107171339.GQ9785@erda.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081107081939.4bcdf25b.akpm@linux-foundation.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:15:59 up 155 days, 22:56,  6 users,  load average: 0.40, 0.60,
-	0.61
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <20081107171339.GQ9785@erda.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -0.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
+	[score: 0.0761]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton (akpm@linux-foundation.org) wrote:
-> On Fri, 7 Nov 2008 11:12:38 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > * Andrew Morton (akpm@linux-foundation.org) wrote:
-> > > On Fri, 7 Nov 2008 01:16:43 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > > 
-> > > > > Is there something we should be fixing in m68k?
-> > > > > 
-> > > > 
-> > > > Yes, but I fear it's going to go deep into include hell :-(
-> > > 
-> > > Oh, OK.  I thought that the comment meant that m68k's on_each_cpu()
-> > > behaves differently at runtime from other architectures (and wrongly).
-> > > 
-> > > If it's just some compile-time #include snafu then that's far less
-> > > of a concern.
-> > > 
-> > 
-> > Should I simply remove this comment then ?
-> > 
-> 
-> umm, it could perhaps be clarified - mention that it's needed for an
-> include order problem.
-> 
-> It's a bit odd.  Surely by the time we've included these:
-> 
-> +#include <linux/module.h>
-> +#include <linux/init.h>
-> +#include <linux/delay.h>
-> +#include <linux/timer.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/cpu.h>
-> +#include <linux/timex.h>
-> +#include <linux/bitops.h>
-> +#include <linux/trace-clock.h>
-> +#include <linux/smp.h>
-> 
-> someone has already included sched.h, and the definition of
-> _LINUX_SCHED_H will cause the later inclusion to not change anything?
-> 
 
-Maybe now it's ok, but in the past, sched.h was not included..
-surprisingly.
+* Robert Richter <robert.richter@amd.com> wrote:
 
-I'll just write a clearer comment.
+> Hi Ingo,
+> 
+> please pull oprofile fixes for 2.6.28 for tip regression:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git oprofile-for-tip
+> 
+> Thanks,
 
-Thanks,
+pulled, thanks Robert!
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Ingo
