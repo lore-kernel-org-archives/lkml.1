@@ -1,71 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbYKGEGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYKGEHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbYKGEGW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbYKGEGK
+	id S1754848AbYKGEHu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:07:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751001AbYKGEHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:06:10 -0500
-Received: from sh.osrg.net ([192.16.179.4]:42522 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750806AbYKGEGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:06:09 -0500
-Date: Fri, 7 Nov 2008 13:05:55 +0900
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, stern@rowland.harvard.edu,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problems with the block-layer timeouts
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081106072352.GR21867@kernel.dk>
-References: <20081103085247.GO31673@kernel.dk>
-	<20081106090117U.fujita.tomonori@lab.ntt.co.jp>
-	<20081106072352.GR21867@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 6 Nov 2008 23:07:40 -0500
+Received: from yw-out-2324.google.com ([74.125.46.28]:49392 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbYKGEHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 23:07:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=FXWlJ6zlgQe60je2lquHmd9xYbVSk9cywXJXxytgaEo2Phc1YssLDz5vo3FAw6trx/
+         wo5u0pVyghRBjh1nxESzq7pO/rSftPho5sllJDNeMXaYzS6oZbhZQeLNIVp1DNx5eQbp
+         IjEPw8QHzDpy4tirZlhi0oEPIc7czNWJ9QAms=
+Message-ID: <386072610811062000i37a34e71yf96d1325fdd8c012@mail.gmail.com>
+Date: Fri, 7 Nov 2008 12:00:08 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Subject: Re: [PATCH] USB/ISP1760: Add support for the generic platfrom device centralized driver model
+Cc: "Sebastian Andrzej Siewior" <bigeasy@linutronix.de>,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D0649D8D0@limkexm3.ad.analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081107130552K.fujita.tomonori@lab.ntt.co.jp>
+Content-Disposition: inline
+References: <1225963549-9892-1-git-send-email-cooloney@kernel.org>
+	 <20081106175705.GA4687@www.tglx.de>
+	 <8A42379416420646B9BFAC9682273B6D0649D8D0@limkexm3.ad.analog.com>
+X-Google-Sender-Auth: a9a6aee77a7bfa14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 08:23:54 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Fri, Nov 7, 2008 at 3:29 AM, Hennerich, Michael
+<Michael.Hennerich@analog.com> wrote:
+> Sebastian,
+>
+> Thanks for your feedback, see my comments below.
+> We will resubmit a patch soon.
+>
+> Thanks and best regards,
+> Michael
+>
+>
+>>-----Original Message-----
+>>From: Sebastian Andrzej Siewior [mailto:bigeasy@linutronix.de]
+>>Sent: Thursday, November 06, 2008 6:57 PM
+>>To: Bryan Wu
+>>Cc: linux-usb@vger.kernel.org; linux-kernel@vger.kernel.org; Michael
+>>Hennerich
+>>Subject: Re: [PATCH] USB/ISP1760: Add support for the generic platfrom
+>>device centralized driver model
+>>
+>>* Bryan Wu | 2008-11-06 17:25:49 [+0800]:
+>>
+>>>From: Michael Hennerich <michael.hennerich@analog.com>
+>>>
+>>>Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+>>>Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>>>---
+>>> drivers/usb/host/isp1760-if.c |   98
+>>+++++++++++++++++++++++++++++++++++++++++
+>>> 1 files changed, 98 insertions(+), 0 deletions(-)
+>>>
+>>>diff --git a/drivers/usb/host/isp1760-if.c
+> b/drivers/usb/host/isp1760-if.c
+>>>index af849f5..dc16698 100644
+>>>--- a/drivers/usb/host/isp1760-if.c
+>>>+++ b/drivers/usb/host/isp1760-if.c
+>>>@@ -3,6 +3,7 @@
+>>>  * Currently there is support for
+>>>  * - OpenFirmware
+>>>  * - PCI
+>>>+ * - PDEV (generic platform device centralized driver model)
+>>>  *
+>>>  * (c) 2007 Sebastian Siewior <bigeasy@linutronix.de>
+>>>  *
+>>>@@ -23,6 +24,12 @@
+>>> #include <linux/pci.h>
+>>> #endif
+>>>
+>>>+#if !defined(CONFIG_USB_ISP1760_OF) &&
+> !defined(CONFIG_USB_ISP1760_PCI)
+>>>+#define USB_ISP1760_PDEV
+>>Usually I would prefer to make it conditional on
+>>CONFIGU_USB_ISP1760_PDEV. But since
+>>http://marc.info/?l=linux-usb&m=122563596420156&w=2 I would prefer to
+>>have unconditional.
+>>Any reason why you only enable it PDEV if you have neiher PCI nor OF?
+>
+>
+> Originally I had this kconfig option, but later decided to toss it.
+> Why would you use pdev if you have PCI or OF, was my argument... :-)
+> I'll add it back.
+>
+>>
+>>>+#include <linux/platform_device.h>
+>>>+#include <linux/usb/isp1760.h>
+>>You can't include files which are not mainline
+>
+> My tree features this file.
+> It simply misses in this patch.
+>
 
-> On Thu, Nov 06 2008, FUJITA Tomonori wrote:
-> > On Mon, 3 Nov 2008 09:52:48 +0100
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > > In blk_del_timer(), there's no reason to test q->rq_timed_out_fn.  If 
-> > > > the method pointer is NULL then req->deadline would be 0 anyway.  In 
-> > > > addition, req->deadline should be set to 0 and the end of the routine, 
-> > > > just in case req gets requeued.
-> > > > 
-> > > > In blk_add_timer(), the line
-> > > > 
-> > > > 	expiry = round_jiffies(req->deadline);
-> > > > 
-> > > > is not optimal.  round_jiffies() will sometimes round a value _down_ to
-> > > > the nearest second.  But blk_rq_timed_out_timer() tests whether
-> > > > req->deadline is in the past -- and if the deadline was rounded down
-> > > > then this won't be true the first time through.  You wind up getting an
-> > > > unnecessary timer interrupt.  Instead there should be a
-> > > > round_jiffies_up() utility routine, and it should be used in both
-> > > > blk_add_timer() and blk_rq_timed_out_timer().
-> > > 
-> > > Very good point, we do indeed want a round_jiffies_up() for this!
-> > 
-> > Just out of curiosity, why do we need to use round_jiffies here? We
-> > didn't do that for SCSI, right?
-> 
-> We don't have to, but given that we don't care about exact timeouts, we
-> may as well. It's not a new thing, we've done that since pretty much the
-> beginning of the generic timeout development.
+My fault, I forgot to git-add this new isp1760.h before sending out this patch.
 
-I'm not sure that the users of the timeout feature can control exact
-timeouts because the block layer doesn't let the users directly play
-with the timer. elv_dequeue_request() is not the exact time that the
-users want to start the timer. Instead, the block layer hides the
-details behind the elevator (note that as I said before, I think that
-it's the right thing). So the round_jiffies in the block layer doesn't
-make sense to me. I prefer remove them instead of adding a bunch of
-round_jiffies_up_* (I bet that some of them will never be used).
+Michael, after you fix up this patch according to Sebastian, I will
+send out the update version.
+
+-Bryan
