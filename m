@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbYKGHwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYKGHxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbYKGHwi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 02:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKGHw3
+	id S1753381AbYKGHxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 02:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYKGHxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 02:52:29 -0500
-Received: from lazybastard.de ([212.112.238.170]:54001 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751039AbYKGHw3 (ORCPT
+	Fri, 7 Nov 2008 02:53:21 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44058 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbYKGHxU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 02:52:29 -0500
-Date: Fri, 7 Nov 2008 08:52:20 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] B+Tree library V2
-Message-ID: <20081107075220.GA28847@logfs.org>
-References: <1225449314.3535.23.camel@johannes.berg> <20081031112651.GD18182@logfs.org> <1225452761.3535.28.camel@johannes.berg> <20081031125453.GE18182@logfs.org> <20081101155958.GA28776@logfs.org> <1225915040.3619.155.camel@johannes.berg> <20081105200635.GE6561@logfs.org> <1225915954.3619.166.camel@johannes.berg> <20081105202158.GF6561@logfs.org> <1225916724.3619.175.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1225916724.3619.175.camel@johannes.berg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 7 Nov 2008 02:53:20 -0500
+Date: Fri, 7 Nov 2008 09:53:18 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+cc: David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+In-Reply-To: <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+Message-ID: <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi>
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
+ <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
+ <20081105.151015.206163697.davem@davemloft.net>
+ <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 November 2008 21:25:24 +0100, Johannes Berg wrote:
-> On Wed, 2008-11-05 at 21:21 +0100, Jörn Engel wrote:
-> > 
-> > I could create a git tree and ask for inclusion in -next.  Or you could
-> > combine it with your code.  I slightly favor the latter, as a library
-> > without any users is somewhat... useless.
+On Fri, 7 Nov 2008, Mikael Abrahamsson wrote:
+
+> On Wed, 5 Nov 2008, David Miller wrote:
 > 
-> I can do that, though I can't promise right now when I'll actually be
-> able to solve the remaining problems with that code. And I also thought
-> you already had another user in mind :)
+> > This kind of thinking just perpetuates the problem forever.
+> 
+> It's like the TCP option order "bug", where some devices would drop the
+> packets because of buggy implementations, that was changed in Linux to work
+> around others buggy code, and I see "ECN blackhole detection" as a similar
+> measure.
 
-Of course I do.  And if my code gets merged first I'll take the btree
-along, promised.
+That is entirely bogus claim! The different ordering of options cost us 
+nothing, while disabling ECN certainly has an innumerable cost both in 
+performance and in nobody taking the initiative which makes the situation 
+worse for everybody.
 
-Jörn
+And about somebody earlier claiming that they'll get an impressions that 
+Linux stack is broken (if such people even know that there's some network 
+stack in Linux :-))... I'm rather sure those isp supports etc. put a blaim 
+on us anyway even when loads of counterproof would exists because it's 
+just cheaper to do nothing and blaim linux instead. Also some claims 
+asserted by incompetent people easily start to live among random forums; 
+an example from the previous incident: "since disabling timestamps helps, 
+it must be that timestamps are broken" (and somebody even "more clueful" 
+added that they got enabled for 2.6.27?!?), needless to say, neither 
+holds.
+
 
 -- 
-He who knows others is wise.
-He who knows himself is enlightened.
--- Lao Tsu
+ i.
