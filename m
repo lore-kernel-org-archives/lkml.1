@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYKGEqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYKGEqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYKGEqX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYKGEqO
+	id S1755504AbYKGEqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYKGEqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:46:14 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:45431 "EHLO smtps.tip.net.au"
+	Thu, 6 Nov 2008 23:46:31 -0500
+Received: from swm.pp.se ([212.247.200.143]:37134 "EHLO uplift.swm.pp.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbYKGEqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:46:13 -0500
-Date: Fri, 7 Nov 2008 15:46:02 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: lachlan@sgi.com
-Cc: David Chinner <david@fromorbit.com>, linux-next@vger.kernel.org,
-       linuxf-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: linux-next: unable to fetch the xfs tree
-Message-Id: <20081107154602.8621ea3d.sfr@canb.auug.org.au>
-In-Reply-To: <4913BEC6.6080901@sgi.com>
-References: <20081107111125.ef33b1dc.sfr@canb.auug.org.au>
-	<20081107145332.52d49390.sfr@canb.auug.org.au>
-	<4913BEC6.6080901@sgi.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__7_Nov_2008_15_46_02_+1100_k6+7yxsx/SEkz9MF"
+	id S1751447AbYKGEqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 23:46:30 -0500
+Date: Fri, 7 Nov 2008 05:46:28 +0100 (CET)
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+To: David Miller <davem@davemloft.net>
+cc: daniel.blueman@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+In-Reply-To: <20081105.151015.206163697.davem@davemloft.net>
+Message-ID: <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se> <20081105.151015.206163697.davem@davemloft.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Organization: People's Front Against WWW
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__7_Nov_2008_15_46_02_+1100_k6+7yxsx/SEkz9MF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 5 Nov 2008, David Miller wrote:
 
-Hi Lachlan,
+> This kind of thinking just perpetuates the problem forever.
 
-On Fri, 07 Nov 2008 15:06:30 +1100 Lachlan McIlroy <lachlan@sgi.com> wrote:
->
-> Stephen Rothwell wrote:
-> > Hi all,
-> >=20
-> > On Fri, 7 Nov 2008 11:11:25 +1100 Stephen Rothwell <sfr@canb.auug.org.a=
-u> wrote:
-> >> I am getting:
-> >>
-> >> oss.sgi.com[0: 192.48.170.157]: errno=3DConnection refused
-> >>
-> >> so I will use what I fetched yesterday.
-> >=20
-> > And now I have received:
-> >=20
-> > <xfs-masters@oss.sgi.com>: host cuda-allmx.sgi.com[192.48.176.16] said:=
- 550
-> >     cuda_nsu 5.1.1 <xfs-masters@oss.sgi.com>... User unknown (in reply =
-to RCPT
-> >     TO command)
-> >=20
-> > So, is this a permanent state of affairs, or just a temporary glitch?
->=20
-> Should be temporary.  We have known DNS and email issues that we are work=
-ing
-> on.  We're also moving oss.sgi.com but I have no idea what the schedule i=
-s.
+Well, I also think IPv6 breaks things for some people (mostly buggt DNS 
+resolvers) but I wholly support this being default on. The ISP business is 
+going in the direction of faster links and smaller interface buffers, 
+meaning WRED is used less and less, thus lessening the benefit of ECN.
 
-Thanks.
+I see that in 
+<http://www.icir.org/floyd/papers/draft-ietf-tsvwg-tcp-ecn-00.txt> there 
+is a recommendation to not use ECN on retransmits, is there code right now 
+(or planned) to do some kind of "ECN blackhole detection", ie if no 
+response is received to SYN with ECN set, continue by sending the second 
+SYN without ECN and keep this information for the duration of the TCP 
+session?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+If there is, I do agree with you that enabling ECN by default is a good 
+idea. Without such code, I still believe there are enough broken devices 
+out there that will create problems for people.
 
---Signature=_Fri__7_Nov_2008_15_46_02_+1100_k6+7yxsx/SEkz9MF
-Content-Type: application/pgp-signature
+It's like the TCP option order "bug", where some devices would drop the 
+packets because of buggy implementations, that was changed in Linux to 
+work around others buggy code, and I see "ECN blackhole detection" as a 
+similar measure.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkTyAoACgkQjjKRsyhoI8zIbwCfcig917DLvcVm1rIGnco5/Wzx
-QmgAoL2fwdEutzseIPCE57Ylg3q3oo63
-=N1lx
------END PGP SIGNATURE-----
-
---Signature=_Fri__7_Nov_2008_15_46_02_+1100_k6+7yxsx/SEkz9MF--
+-- 
+Mikael Abrahamsson    email: swmike@swm.pp.se
