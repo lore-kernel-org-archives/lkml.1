@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753366AbYKGMyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbYKGNES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753366AbYKGMyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 07:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKGMyG
+	id S1752472AbYKGNES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 08:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYKGNEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 07:54:06 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:39235 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751047AbYKGMyF (ORCPT
+	Fri, 7 Nov 2008 08:04:04 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:15760 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750807AbYKGNEC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 07:54:05 -0500
-Date: Fri, 7 Nov 2008 14:02:49 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Robert Richter <robert.richter@amd.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-Message-ID: <20081107130249.GN29626@one.firstfloor.org>
-References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com> <49130694.7000007@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 7 Nov 2008 08:04:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=eNSM9OjdFp5t6TUCOuax4TjoLPJNxBcWMwC3SAOVva1zInjnN5Q0u8sT94HvKIGpc7
+         kZec/FBjbGd3ptnnxLG3U/CAP0GYe/RR2bhLjnasnoMSPKsNwuYCEmtWLwtMS5xFyZzh
+         I3+/bp7yNJXpe8ewWUkcXdkm6bFWhezfwX4HE=
+Message-ID: <f17812d70811070458y445b795ap58047a7413d79180@mail.gmail.com>
+Date: Fri, 7 Nov 2008 20:58:51 +0800
+From: "Eric Miao" <eric.y.miao@gmail.com>
+To: "Mike Rapoport" <mike@compulab.co.il>
+Subject: Re: [PATCH] mfd: da903x: fix event masking for da9030
+Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org
+In-Reply-To: <1225970631-15451-1-git-send-email-mike@compulab.co.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49130694.7000007@cosmosbay.com>
-User-Agent: Mutt/1.4.2.1i
+References: <1225970631-15451-1-git-send-email-mike@compulab.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Nov 6, 2008 at 7:23 PM, Mike Rapoport <mike@compulab.co.il> wrote:
+>
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
-Can you please test this patch and see if it solves the problem?
+Acked-by: Eric Miao <eric.miao@marvell.com>
 
-Thanks,
--Andi
+> ---
+>  drivers/mfd/da903x.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/mfd/da903x.c b/drivers/mfd/da903x.c
+> index b57326a..0b5bd85 100644
+> --- a/drivers/mfd/da903x.c
+> +++ b/drivers/mfd/da903x.c
+> @@ -267,7 +267,7 @@ static int da9030_mask_events(struct da903x_chip *chip, unsigned int events)
+>  {
+>        uint8_t v[3];
+>
+> -       chip->events_mask &= ~events;
+> +       chip->events_mask |= events;
+>
+>        v[0] = (chip->events_mask & 0xff);
+>        v[1] = (chip->events_mask >> 8) & 0xff;
+> --
+> 1.5.6.4
+>
+>
 
----
-
-oprofile: Fix p6 counter overflow check
-
-Fix the counter overflow check for CPUs with counter width > 32
-
-I had a similar change in a different patch that I didn't submit
-and I didn't notice the problem earlier because it was always
-tested together.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/oprofile/op_model_ppro.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.28-rc3-test/arch/x86/oprofile/op_model_ppro.c
-===================================================================
---- linux-2.6.28-rc3-test.orig/arch/x86/oprofile/op_model_ppro.c	2008-11-07 13:46:23.000000000 +0100
-+++ linux-2.6.28-rc3-test/arch/x86/oprofile/op_model_ppro.c	2008-11-07 13:50:57.000000000 +0100
-@@ -27,8 +27,7 @@
- static int counter_width = 32;
- 
- #define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
--#define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
--#define CTR_OVERFLOWED(n) (!((n) & (1U<<(counter_width-1))))
-+#define CTR_OVERFLOWED(n) (!((n) & (1ULL<<(counter_width-1))))
- 
- #define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
- #define CTRL_READ(l, h, msrs, c) do {rdmsr((msrs->controls[(c)].addr), (l), (h)); } while (0)
-@@ -124,14 +123,14 @@
- static int ppro_check_ctrs(struct pt_regs * const regs,
- 			   struct op_msrs const * const msrs)
- {
--	unsigned int low, high;
-+	u64 val;
- 	int i;
- 
- 	for (i = 0 ; i < num_counters; ++i) {
- 		if (!reset_value[i])
- 			continue;
--		CTR_READ(low, high, msrs, i);
--		if (CTR_OVERFLOWED(low)) {
-+		rdmsrl(msrs->counters[i].addr, val);
-+		if (CTR_OVERFLOWED(val)) {
- 			oprofile_add_sample(regs, i);
- 			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
- 		}
 
 
 -- 
-ak@linux.intel.com
+Cheers
+- eric
