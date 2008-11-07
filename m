@@ -1,101 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893AbYKGG3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbYKGG3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893AbYKGG3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 01:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbYKGG2j
+	id S1756100AbYKGG3v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 01:29:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755672AbYKGG2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 01:28:39 -0500
-Received: from kroah.org ([198.145.64.141]:48935 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 01:28:44 -0500
+Received: from kroah.org ([198.145.64.141]:48945 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755566AbYKGG2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 01:28:36 -0500
-Date: Thu, 6 Nov 2008 22:10:07 -0800
+	id S1755571AbYKGG2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 01:28:37 -0500
+Date: Thu, 6 Nov 2008 22:16:03 -0800
 From: Greg KH <greg@kroah.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, H L <swdevyid@yahoo.com>,
-       Yu Zhao <yu.zhao@intel.com>, randy.dunlap@oracle.com,
-       grundler@parisc-linux.org, achiang@hp.com, linux-pci@vger.kernel.org,
-       rdreier@cisco.com, linux-kernel@vger.kernel.org,
-       jbarnes@virtuousgeek.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081107061007.GB3860@kroah.com>
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <20081106174741.GC11773@parisc-linux.org> <20081106175308.GA17027@kroah.com> <20081106235406.GB30790@sequoia.sous-sol.org>
+To: "Zhao, Yu" <yu.zhao@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "achiang@hp.com" <achiang@hp.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "matthew@wil.cx" <matthew@wil.cx>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
+Message-ID: <20081107061603.GC3860@kroah.com>
+References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com> <20081106043235.GA30292@kroah.com> <4913AA03.5060807@intel.com> <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081106235406.GB30790@sequoia.sous-sol.org>
+In-Reply-To: <4913B8A5.5010806@intel.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 03:54:06PM -0800, Chris Wright wrote:
-> * Greg KH (greg@kroah.com) wrote:
-> > On Thu, Nov 06, 2008 at 10:47:41AM -0700, Matthew Wilcox wrote:
-> > > On Thu, Nov 06, 2008 at 08:49:19AM -0800, Greg KH wrote:
-> > > > On Thu, Nov 06, 2008 at 08:41:53AM -0800, H L wrote:
-> > > > > I have not modified any existing drivers, but instead I threw together
-> > > > > a bare-bones module enabling me to make a call to pci_iov_register()
-> > > > > and then poke at an SR-IOV adapter's /sys entries for which no driver
-> > > > > was loaded.
-> > > > > 
-> > > > > It appears from my perusal thus far that drivers using these new
-> > > > > SR-IOV patches will require modification; i.e. the driver associated
-> > > > > with the Physical Function (PF) will be required to make the
-> > > > > pci_iov_register() call along with the requisite notify() function.
-> > > > > Essentially this suggests to me a model for the PF driver to perform
-> > > > > any "global actions" or setup on behalf of VFs before enabling them
-> > > > > after which VF drivers could be associated.
-> > > > 
-> > > > Where would the VF drivers have to be associated?  On the "pci_dev"
-> > > > level or on a higher one?
-> > > > 
-> > > > Will all drivers that want to bind to a "VF" device need to be
-> > > > rewritten?
-> > > 
-> > > The current model being implemented by my colleagues has separate
-> > > drivers for the PF (aka native) and VF devices.  I don't personally
-> > > believe this is the correct path, but I'm reserving judgement until I
-> > > see some code.
-> > 
-> > Hm, I would like to see that code before we can properly evaluate this
-> > interface.  Especially as they are all tightly tied together.
-> > 
-> > > I don't think we really know what the One True Usage model is for VF
-> > > devices.  Chris Wright has some ideas, I have some ideas and Yu Zhao has
-> > > some ideas.  I bet there's other people who have other ideas too.
-> > 
-> > I'd love to hear those ideas.
-> 
-> First there's the question of how to represent the VF on the host.
-> Ideally (IMO) this would show up as a normal interface so that normal tools
-> can configure the interface.  This is not exactly how the first round of
-> patches were designed.
-> 
-> Second there's the question of reserving the BDF on the host such that
-> we don't have two drivers (one in the host and one in a guest) trying to
-> drive the same device (an issue that shows up for device assignment as
-> well as VF assignment).
-> 
-> Third there's the question of whether the VF can be used in the host at
-> all.
-> 
-> Fourth there's the question of whether the VF and PF drivers are the
-> same or separate.
-> 
-> The typical usecase is assigning the VF to the guest directly, so
-> there's only enough functionality in the host side to allocate a VF,
-> configure it, and assign it (and propagate AER).  This is with separate
-> PF and VF driver.
-> 
-> As Anthony mentioned, we are interested in allowing the host to use the
-> VF.  This could be useful for containers as well as dedicating a VF (a
-> set of device resources) to a guest w/out passing it through.
+On Fri, Nov 07, 2008 at 11:40:21AM +0800, Zhao, Yu wrote:
+> Greg KH wrote:
+>> On Fri, Nov 07, 2008 at 10:37:55AM +0800, Zhao, Yu wrote:
+>>> Greg KH wrote:
+>>>> On Wed, Oct 22, 2008 at 04:45:31PM +0800, Yu Zhao wrote:
+>>>>>  Documentation/kernel-parameters.txt |   10 ++++++++++
+>>>>>  1 files changed, 10 insertions(+), 0 deletions(-)
+>>>>>
+>>>>> diff --git a/Documentation/kernel-parameters.txt 
+>>>>> b/Documentation/kernel-parameters.txt
+>>>>> index 53ba7c7..5482ae0 100644
+>>>>> --- a/Documentation/kernel-parameters.txt
+>>>>> +++ b/Documentation/kernel-parameters.txt
+>>>>> @@ -1677,6 +1677,16 @@ and is between 256 and 4096 characters. It is 
+>>>>> defined in the file
+>>>>>  		cbmemsize=nn[KMG]	The fixed amount of bus space which is
+>>>>>  				reserved for the CardBus bridge's memory
+>>>>>  				window. The default value is 64 megabytes.
+>>>>> +		assign-mmio=[dddd:]bb	[X86] reassign memory resources of all
+>>>>> +				devices under bus [dddd:]bb (dddd is the domain
+>>>>> +				number and bb is the bus number).
+>>>>> +		assign-pio=[dddd:]bb	[X86] reassign io port resources of all
+>>>>> +				devices under bus [dddd:]bb (dddd is the domain
+>>>>> +				number and bb is the bus number).
+>>>>> +		align-mmio=[dddd:]bb:dd.f  [X86] relocate memory resources of a
+>>>>> +				device to minimum PAGE_SIZE alignment (dddd is
+>>>>> +				the domain number and bb, dd and f is the bus,
+>>>>> +				device and function number).
+>>>> This seems like a big problem.  How are we going to know to add these
+>>>> command line options for devices we haven't even seen/known about yet?
+>>>> How do we know the bus ids aren't going to change between boots (hint,
+>>>> they are, pci bus ids change all the time...)
+>>>> We need to be able to do this kind of thing dynamically, not fixed at
+>>>> boot time, which seems way to early to even know about this, right?
+>>>> thanks,
+>>>> greg k-h
+>>> Yes, I totally agree. Doing things dynamically is better.
+>>>
+>>> The purpose of these parameters is to rebalance and align resources for 
+>>> device that has BARs encapsulated in various new capabilities (SR-IOV, 
+>>> etc.), because most of existing BIOSes don't take care of those BARs.
+>> But how are you going to know what the proper device ids are going to
+>> be before the machine boots?  I don't see how these options are ever
+>> going to work properly for a "real" user.
+>>> If we do resource rebalance after system is up, do you think there is any 
+>>> side effect or impact to other subsystem other than PCI (e.g. MTRR)?
+>> I don't think so.
+>>> I haven't had much thinking on the dynamical resource rebalance. If you 
+>>> have any idea about this, can you please suggest?
+>> Yeah, it's going to be hard :)
+>> We've thought about this in the past, and even Microsoft said it was
+>> going to happen for Vista, but they realized in the end, like we did a
+>> few years previously, that it would require full support of all PCI
+>> drivers as well (if you rebalance stuff that is already bound to a
+>> driver.)  So they dropped it.
+>> When would you want to do this kind of rebalancing?  Before any PCI
+>> driver is bound to any devices?  Or afterwards?
+>
+> I guess if we want the rebalance dynamic, then we should have it full -- 
+> the rebalance would be functional even after the driver is loaded.
+>
+> But in most cases, there will be problem when we unload driver from a hard 
+> disk controller, etc. We can mount root on a ramdisk and do the rebalance 
+> there, but it's complicated for a real user.
+>
+> So looks like doing rebalancing before any driver is bound to any device is 
+> also a nice idea, if user can get a shell to do rebalance before built-in 
+> PCI driver grabs device.
 
-All of this looks great.  So, with all of these questions, how does the
-current code pertain to these issues?  It seems like we have a long way
-to go...
+That's not going to work, it needs to happen before any PCI device is
+bound, which is before init runs.
 
 thanks,
 
