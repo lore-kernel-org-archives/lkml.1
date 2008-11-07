@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbYKGQNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYKGQVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbYKGQNW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 11:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYKGQNL
+	id S1753563AbYKGQVY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 11:21:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbYKGQVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 11:13:11 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:34020 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbYKGQNK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 11:13:10 -0500
-Message-ID: <491468F1.8070304@cosmosbay.com>
-Date: Fri, 07 Nov 2008 17:12:33 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 7 Nov 2008 11:21:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56416 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750962AbYKGQVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 11:21:15 -0500
+Date: Fri, 7 Nov 2008 17:21:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, adobriyan@gmail.com,
+       Doug Chapman <doug.chapman@hp.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] account_group_exec_runtime: fix the racy usage of
+	->signal
+Message-ID: <20081107162101.GA2178@elte.hu>
+References: <20081107165238.GA23055@redhat.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Robert Richter <robert.richter@amd.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com> <49130694.7000007@cosmosbay.com> <20081107130249.GN29626@one.firstfloor.org> <49145B26.4040701@cosmosbay.com> <20081107160553.GR29626@one.firstfloor.org>
-In-Reply-To: <20081107160553.GR29626@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 07 Nov 2008 17:12:47 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081107165238.GA23055@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> On Fri, Nov 07, 2008 at 04:13:42PM +0100, Eric Dumazet wrote:
->> Andi Kleen a écrit :
->>> Can you please test this patch and see if it solves the problem?
->>>
->>> Thanks,
->>> -Andi
->>>
->>> ---
->>>
->>> oprofile: Fix p6 counter overflow check
->>>
->>> Fix the counter overflow check for CPUs with counter width > 32
->>>
->>> I had a similar change in a different patch that I didn't submit
->>> and I didn't notice the problem earlier because it was always
->>> tested together.
->>>
->>> Signed-off-by: Andi Kleen <ak@linux.intel.com>
->>>
->> Thanks Andi
->>
->> Unfortunatly, there is still a freeze of NMIS after a while.
+
+* Oleg Nesterov <oleg@redhat.com> wrote:
+
+> Compile tested.
 > 
-> How long is the while?
+> Unlike other similar routines, account_group_exec_runtime() could be
+> called "implicitly" after exit_notify(). This means we can race with
+> the parent doing release_task(), we can't just check ->signal != NULL.
 > 
-
-Less than 20 seconds if fully loaded with "tbench 8" on my 8 cpus machine.
-
-With your patch, many events are handled by oprofile (about 10.000.000
-last time I tried) before freeze.
-
-Without your patch, freeze was very very fast, no more than 10.000 NMI...
-
-
-
-> I don't see this here on a Merom when I let it run for
-> 10 minutes or so.
+> Take ->siglock to make sure ->signal can't go away.
 > 
-> You might need to bisect it.
+> This is the minimal fix, with this patch we don't need need get/put cpu,
+> and I think we should uninline this function.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-Too many bugs during bisection unfortunatly, machine doesnt boot :(
+> 
+> --- K-28/kernel/sched_stats.h~A_G_E_R_FIX	2008-11-07 17:32:02.000000000 +0100
+> +++ K-28/kernel/sched_stats.h	2008-11-07 17:44:39.000000000 +0100
+> @@ -351,10 +351,12 @@ static inline void account_group_exec_ru
+>  					      unsigned long long ns)
+>  {
+>  	struct signal_struct *sig;
+> +	unsigned long flags;
+>  
+> -	sig = tsk->signal;
+> -	if (unlikely(!sig))
+> +	if (unlikely(!lock_task_sighand(tsk, &flags)))
+>  		return;
 
+i think this will lock up: the signal lock must not nest inside the rq 
+lock, and these accounting functions are called from within the 
+scheduler.
 
+	Ingo
