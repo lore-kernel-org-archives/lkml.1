@@ -1,104 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYKGTTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYKGTVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbYKGTTZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 14:19:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbYKGTTQ
+	id S1754601AbYKGTVQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 14:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYKGTVA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 14:19:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49890 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751474AbYKGTTP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 14:19:15 -0500
-Date: Fri, 7 Nov 2008 11:18:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: djwong@us.ibm.com, khali@linux-fr.org, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH 1/5] adt7462: New hwmon driver
-Message-Id: <20081107111808.851dad3b.akpm@linux-foundation.org>
-In-Reply-To: <20081107185626.13022.59407.stgit@elm3a70.beaverton.ibm.com>
-References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com>
-	<20081107185626.13022.59407.stgit@elm3a70.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 7 Nov 2008 14:21:00 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:57346 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751213AbYKGTU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 14:20:59 -0500
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] igb: Reinitialize tx/rx ring count on resume
+To: "Darrick J. Wong" <djwong@us.ibm.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Bruce Allan <bruce.w.allan@intel.com>,
+       PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>,
+       John Ronciak <john.ronciak@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       e1000-devel@lists.sourceforge.net
+Date: Fri, 07 Nov 2008 11:20:56 -0800
+Message-ID: <20081107192056.13464.7315.stgit@elm3a70.beaverton.ibm.com>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Nov 2008 10:56:26 -0800
-"Darrick J. Wong" <djwong@us.ibm.com> wrote:
 
-> 
-> New driver to play with.  As Jean mentioned a couple of years ago, this
-> chip is a beast with odd combinations of 8 fans, 4 temperatures, and 
-> 13 voltage sensors.  This driver has been tested on an IntelliStation
-> Z30.
-> 
-> ...
->
-> + * 9. Vbatt/FSB_Vtt (pin 26)
-> + * A. +3.3V/+1.2V1 (pin 25)
-> + * B. Vccp2/+2.5V/+1.8V/+1.5V (pin 24)
-> + * C. +1.5V ICH (only if BOTH pin 28/29 are set to +1.5V)
-> + * D. +1.5V 3GPIO (only if BOTH pin 28/29 are set to +1.5V)
-> + *
-> + * Each of these 13 has a factor to convert raw to voltage.  Even better,
-> + * the pins can be connected to other sensors (tach/gpio/hot/etc), which
-> + * makes the bookkeeping tricky.
-> + *
-> + * Some, but not all, of these voltages have low/high limits.
-> + */
-> +#define ADT7462_VOLT_COUNT	12
-> +
-> +#define ADT7462_VENDOR		0x41
-> +#define ADT7462_DEVICE		0x62
-> +/* datasheet only mentions a revision 4 */
-> +#define ADT7462_REVISION	0x04
-> +
-> +/* How often do we reread sensors values? (In jiffies) */
-> +#define SENSOR_REFRESH_INTERVAL	(2 * HZ)
-> +
-> +/* How often do we reread sensor limit values? (In jiffies) */
-> +#define LIMIT_REFRESH_INTERVAL	(60 * HZ)
-> +
-> +/* datasheet says to divide this number by the fan reading to get fan rpm */
-> +#define FAN_PERIOD_TO_RPM(x)	((90000 * 60) / (x))
-> +#define FAN_RPM_TO_PERIOD	FAN_PERIOD_TO_RPM
-> +#define FAN_PERIOD_INVALID	65535
-> +#define FAN_DATA_VALID(x)	((x) && (x) != FAN_PERIOD_INVALID)
+When suspending the device, adapter->[tr]x_ring structures are freed.  Upon
+resume, these two pointers are reallocated but adapter->[tr]x_ring->count is
+not set to any value.  This causes igb_setup_tx_resources to fail on zero-sized
+buffers and thus the NIC doesn't come back up.
 
-A macro which evaluates its args more than once is a bit naughty.
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-> +#define MASK_AND_SHIFT(value, prefix)	\
-> +	(((value) & prefix##_MASK) >> prefix##_SHIFT)
-> +
-> +#define ROUND_DIV(x, divisor)  (((x) + ((divisor) / 2)) / (divisor))
+ drivers/net/igb/igb_main.c |   28 +++++++++++++++++++++-------
+ 1 files changed, 21 insertions(+), 7 deletions(-)
 
-hm, ok.
-
-That evaluates `divisor' twice, too.
-
-argh.  ALIGN() has the same problem.  Something like this...
-
---- a/include/linux/kernel.h~a
-+++ a/include/linux/kernel.h
-@@ -39,7 +39,12 @@ extern const char linux_proc_banner[];
- #define STACK_MAGIC	0xdeadbeef
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index 1f397cd..6df8d1d 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -951,6 +951,21 @@ static int igb_is_need_ioport(struct pci_dev *pdev)
+ }
  
- #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
--#define __ALIGN_MASK(x,mask)	(((x)+(mask))&~(mask))
+ /**
++ * igb_set_num_queues - Initialize default queue counts for RX/TX rings
++ * @adapter: Adapter to set queue counts
++ **/
++static void igb_set_num_queues(struct igb_adapter *adapter)
++{
++	int i;
++	adapter->tx_ring->count = 256;
++	for (i = 0; i < adapter->num_tx_queues; i++)
++		adapter->tx_ring[i].count = adapter->tx_ring->count;
++	adapter->rx_ring->count = 256;
++	for (i = 0; i < adapter->num_rx_queues; i++)
++		adapter->rx_ring[i].count = adapter->rx_ring->count;
++}
 +
-+#define __ALIGN_MASK(x,mask)	({		\
-+	typeof(mask) __mask = mask;		\
-+	(((x) + __mask) & ~__mask);		\
-+})
-+
- #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
- #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) == 0)
++/**
+  * igb_probe - Device Initialization Routine
+  * @pdev: PCI device information struct
+  * @ent: entry in igb_pci_tbl
+@@ -970,7 +985,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
+ 	struct pci_dev *us_dev;
+ 	const struct e1000_info *ei = igb_info_tbl[ent->driver_data];
+ 	unsigned long mmio_start, mmio_len;
+-	int i, err, pci_using_dac, pos;
++	int err, pci_using_dac, pos;
+ 	u16 eeprom_data = 0, state = 0;
+ 	u16 eeprom_apme_mask = IGB_EEPROM_APME;
+ 	u32 part_num;
+@@ -1192,12 +1207,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
+ 	INIT_WORK(&adapter->watchdog_task, igb_watchdog_task);
  
-_
+ 	/* Initialize link & ring properties that are user-changeable */
+-	adapter->tx_ring->count = 256;
+-	for (i = 0; i < adapter->num_tx_queues; i++)
+-		adapter->tx_ring[i].count = adapter->tx_ring->count;
+-	adapter->rx_ring->count = 256;
+-	for (i = 0; i < adapter->num_rx_queues; i++)
+-		adapter->rx_ring[i].count = adapter->rx_ring->count;
++	igb_set_num_queues(adapter);
+ 
+ 	adapter->fc_autoneg = true;
+ 	hw->mac.autoneg = true;
+@@ -1552,9 +1562,11 @@ int igb_setup_tx_resources(struct igb_adapter *adapter,
+ 	int size;
+ 
+ 	size = sizeof(struct igb_buffer) * tx_ring->count;
++	WARN_ON(!size);
+ 	tx_ring->buffer_info = vmalloc(size);
+ 	if (!tx_ring->buffer_info)
+ 		goto err;
++
+ 	memset(tx_ring->buffer_info, 0, size);
+ 
+ 	/* round up to nearest 4K */
+@@ -4388,6 +4400,8 @@ static int igb_resume(struct pci_dev *pdev)
+ 		return -ENOMEM;
+ 	}
+ 
++	igb_set_num_queues(adapter);
++
+ 	/* e1000_power_up_phy(adapter); */
+ 
+ 	igb_reset(adapter);
 
-Looks good to my untrained eye.  Quite a large driver.
