@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752424AbYKGVsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbYKGVwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752424AbYKGVsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 16:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKGVsN
+	id S1752570AbYKGVwx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 16:52:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYKGVwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 16:48:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:56150 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751171AbYKGVsN (ORCPT
+	Fri, 7 Nov 2008 16:52:46 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:21971 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbYKGVwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 16:48:13 -0500
-Subject: Re: 2.6.26.6-rt11: BUGs (sleeping function called from invalid
-	context)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1226093710.20569.23.camel@localhost.localdomain>
-References: <1226083858.20569.14.camel@localhost.localdomain>
-	 <alpine.DEB.1.10.0811071400570.3711@gandalf.stny.rr.com>
-	 <1226085407.31966.58.camel@lappy.programming.kicks-ass.net>
-	 <1226093710.20569.23.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 22:47:51 +0100
-Message-Id: <1226094472.31966.93.camel@lappy.programming.kicks-ass.net>
+	Fri, 7 Nov 2008 16:52:45 -0500
+Date: Fri, 7 Nov 2008 13:51:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [PATCH] DOC: add printk-formats.txt
+Message-Id: <20081107135132.a6fe9bba.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A0B0202.4914B884.0102:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 13:35 -0800, Fernando Lopez-Lezcano wrote:
-> On Fri, 2008-11-07 at 20:16 +0100, Peter Zijlstra wrote:
-> > On Fri, 2008-11-07 at 14:01 -0500, Steven Rostedt wrote:
-> > > Peter, I think we've seen this before. It is the highmem code sleeping.
-> > 
-> > I've been working on an alternative kmap_atomic implementation for -rt,
-> > the below has been build and booted but not stressed, anybody care to
-> > give it a spin ?
-> 
-> I'll give it a try. Anything in particular I should try to do? Or not
-> do? Or watch for?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Lots of I/O should stress the i386 highmem stuff. If all is well it
-works, if not, crashes and splats.
+Add printk-formats.txt so that we don't have to keep fixing the
+same things over and over again.  <wishful thinking>
 
-> -- Fernando
-> 
-> 
-> > ---
-> >  arch/x86/mm/highmem_32.c  |  130 ++++++++++++++++++++++++++++++++++++++++++---
-> >  include/asm-x86/highmem.h |   11 ----
-> >  include/linux/sched.h     |    5 ++
-> >  kernel/sched.c            |   10 ++++
-> >  4 files changed, 137 insertions(+), 19 deletions(-)
-> >  [MUNCH]
-> 
-> 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ Documentation/00-INDEX           |    2 ++
+ Documentation/printk-formats.txt |   36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 38 insertions(+)
 
+--- linux-next-20081107.orig/Documentation/00-INDEX
++++ linux-next-20081107/Documentation/00-INDEX
+@@ -290,6 +290,8 @@ powerpc/
+ 	- directory with info on using Linux with the PowerPC.
+ preempt-locking.txt
+ 	- info on locking under a preemptive kernel.
++printk-formats.txt
++	- how to get printk format specifiers right
+ prio_tree.txt
+ 	- info on radix-priority-search-tree use for indexing vmas.
+ ramdisk.txt
+--- /dev/null
++++ linux-next-20081107/Documentation/printk-formats.txt
+@@ -0,0 +1,36 @@
++If variable is of Type,		use printk format specifier:
++---------------------------------------------------------
++		int			%d or %x
++		unsigned int		%u or %x
++		long			%ld or %lx
++		unsigned long		%lu or %lx
++		long long		%lld or %llx
++		unsigned long long	%llu or %llx
++		size_t			%zu or %zx
++		ssize_t			%zd or %zx
++
++Raw pointer value SHOULD be printed with %p.
++
++u64 SHOULD be printed with %llu/%llx, (unsigned long long):
++
++	printk("%llu", (unsigned long long)u64_var);
++
++s64 SHOULD be printed with %lld/%llx, (long long):
++
++	printk("%lld", (long long)s64_var);
++
++If <type> is dependent on a config option for its size (e.g., sector_t,
++blkcnt_t, phys_addr_t, resource_size_t) or is architecture-dependent
++for its size (e.g., tcflag_t), use a format specifier of its largest
++possible type and explicitly cast to it.  Example:
++
++	printk("test: sector number/total blocks: %llu/%llu\n",
++		(unsigned long long)sector, (unsigned long long)blockcount);
++
++Reminder: sizeof() result is of type size_t.
++
++Thank you for your cooperation and attention.
++
++
++Written by Alexey Dobriyan <adobriyan@gmail.com>
++Updated by Randy Dunlap <rdunlap@xenotime.net>
