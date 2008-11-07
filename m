@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYKGLd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYKGLjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbYKGLd3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:33:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750793AbYKGLdU
+	id S1753305AbYKGLjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYKGLjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:33:20 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37953 "EHLO pasmtpB.tele.dk"
+	Fri, 7 Nov 2008 06:39:03 -0500
+Received: from swm.pp.se ([212.247.200.143]:56573 "EHLO uplift.swm.pp.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751374AbYKGLdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:33:19 -0500
-Subject: Re: sata errors with Seagate 1.5TB on AMD 780G/SB700 motherboard
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: "Phillip O'Donnell" <phillip.odonnell@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Oskar Liljeblad <oskar@osk.mine.nu>, Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4908E5B6.1080703@redhat.com>
-References: <fa.01zEaARwrup2dCOTuHTYxzuS9BI@ifi.uio.no>
-	 <49079E09.20703@shaw.ca> <20081029185856.GA8152@osk.mine.nu>
-	 <20081029201724.0a7d736e@lxorguk.ukuu.org.uk> <4908C62E.5070307@redhat.com>
-	 <7a9b5c320810291352k5db86a4eg4e03fb09317de459@mail.gmail.com>
-	 <4908E5B6.1080703@redhat.com>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 12:33:17 +0100
-Message-Id: <1226057597.17253.98.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	id S1750978AbYKGLjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:39:01 -0500
+Date: Fri, 7 Nov 2008 12:38:59 +0100 (CET)
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+To: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+cc: David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+In-Reply-To: <Pine.LNX.4.64.0811071039480.23629@wrl-59.cs.helsinki.fi>
+Message-ID: <alpine.DEB.1.10.0811071230310.10993@uplift.swm.pp.se>
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se> <20081105.151015.206163697.davem@davemloft.net> <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+ <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi> <alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se> <Pine.LNX.4.64.0811071039480.23629@wrl-59.cs.helsinki.fi>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Organization: People's Front Against WWW
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-137064504-1445617518-1226057771=:10993"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-10-29 at 18:37 -0400, Ric Wheeler wrote:
-> Phillip O'Donnell wrote:
-<snip>
-> I am just going based on what I read at the Seagate customer site - it 
-> looks like the hang was during the processing of the ATA_CACHE_FLUSH_EXT 
-> command.
-> 
-> New drives are routinely buggy to some degree, especially ones that jump 
-> up in capacity :-)  Seagate has a well earned reputation for quality and 
-> I will be surprised if they don't fix this issue soon,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Is there any new information on this? so far the only thing i can find
-seems to be people reporting the issue, but no word from seagate..
+---137064504-1445617518-1226057771=:10993
+Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15; FORMAT=flowed
+Content-Transfer-Encoding: 8BIT
 
-> 
-> Ric
-> 
-> >   
-> >> I suspect that the drive is simply choking on the barrier related cache
-> >> flushing that we do - that seemed to be the MacOS error as well. The windows
-> >> comment suggested that windows had an hba/driver bug (most likely unrelated
-> >> to this).
-> >>
-> >> If you want to avoid the issue until they fix the drive, you could run fast
-> >> and dangerous (mount without barriers on) or slow and safe (disable the
-> >> write cache).
-> >>     
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Fri, 7 Nov 2008, Ilpo Järvinen wrote:
 
+> I think you partially miss the point here. In many cases not every 
+> single router has to _support_ ECN to get its benefits, not-supporting 
+> is not the problem in itself (though it would be nice to get that 
+> "fixed" as well) but breaking ecn-enabled connections. I suppose you 
+> didn't check that aspect? I'd guess those mentioned devices will 
+> interoperate just fine since one can mostly connect ok with ecn too 
+> besides rare exceptions rather than things being vice-versa.
+
+I don't understand. My point is that most of the ISP core equipment out 
+there doesn't act on ECN rendering it mostly useless. The N in ECN renders 
+useless because there is no device doing the *notification*. They'll just 
+pass the traffic without acting on it differently regardless if ECN is on 
+or off.
+
+> The most crucial components are anyway the points of congestion, I don't know 
+> enough isp topologies but I suppose those core routers are not the ones where 
+> towards subscribers device traffic congests?
+
+There can be congestion anywhere in the network, best would be if all 
+routers supported it. My problem with ECN is that the most advanced 
+routers do not support it, it's useless with L2/L3 switches (as they have 
+very small buffers, there is "nothing" to do WRED on), so that leaves 
+potential implementation by either DSLAM/BRAS vendors (where Cisco BRAS 
+does support it but it needs to be enabled by the ISP) or the SOHO devices 
+which run Linux and might implement it, but I'd rather see them do active 
+queue management at all (fair-queue for instance) before asking them to do 
+ECN. Of course, if users start to ask for ECN and we get fair-queue at the 
+same time, all the better. One very common congestion point is definitely 
+the upstream connection of someones cable or DSL modem.
+
+> I doubt it any worse than with eg. timestamps.
+
+According to <http://www.imperialviolet.org/binary/ecntest.pdf> it's 0.5% 
+of hosts that drop packets when ECN is enabled. It's a substantial part of 
+the Internet. Yes, not doing blackhole detection might get these hosts 
+fixed faster, but at the expense of more end user hurt.
+
+-- 
+Mikael Abrahamsson    email: swmike@swm.pp.se
+---137064504-1445617518-1226057771=:10993--
