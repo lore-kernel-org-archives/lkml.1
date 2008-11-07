@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYKGEZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYKGE3B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbYKGEZI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYKGEY4
+	id S1755187AbYKGE3B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:29:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYKGE2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:24:56 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59055 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112AbYKGEYz (ORCPT
+	Thu, 6 Nov 2008 23:28:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42155 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751052AbYKGE2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:24:55 -0500
-Date: Thu, 6 Nov 2008 20:25:22 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, alan@redhat.com, jbaron@redhat.com
-Subject: Re: [PATCH] ftrace: add an fsync tracer
-Message-ID: <20081106202522.4be6bf75@infradead.org>
-In-Reply-To: <20081106232506.GF20928@redhat.com>
-References: <20081106063108.02b4813d@infradead.org>
-	<1225983052.7803.4623.camel@twins>
-	<20081106070157.065b2dcc@infradead.org>
-	<alpine.DEB.1.10.0811061020311.31011@gandalf.stny.rr.com>
-	<20081106094558.50d94bcc@infradead.org>
-	<y0mej1ofvyz.fsf@ton.toronto.redhat.com>
-	<1226003343.31966.43.camel@lappy.programming.kicks-ass.net>
-	<20081106215310.GA15163@Krystal>
-	<20081106221426.GD20928@redhat.com>
-	<20081106222529.GA17528@Krystal>
-	<20081106232506.GF20928@redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+	Thu, 6 Nov 2008 23:28:52 -0500
+Date: Thu, 6 Nov 2008 20:28:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task
+ directories
+Message-Id: <20081106202822.a1af8a6e.akpm@linux-foundation.org>
+In-Reply-To: <m1iqr0urb8.fsf@frodo.ebiederm.org>
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
+	<m1abcd2kqk.fsf@frodo.ebiederm.org>
+	<20081106172617.dd51d0af.akpm@linux-foundation.org>
+	<m1abccxpc5.fsf@frodo.ebiederm.org>
+	<20081106184945.179c248a.akpm@linux-foundation.org>
+	<m1iqr0urb8.fsf@frodo.ebiederm.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 18:25:06 -0500
-"Frank Ch. Eigler" <fche@redhat.com> wrote:
+On Thu, 06 Nov 2008 19:51:23 -0800 ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> Hi -
+> If we could do all of this with reference counting so that the
+> mount would persist exactly until the last user of it has gone
+> away without a periodic poll I would love it.  But the infrastructure
+> doesn't support that today,
+
+Well that sucks.  The free-on-last-put idiom occurs in so many places
+and serves us so well.  I wonder what went wrong here?
+
+I guess it has interactions with dentry and inode cache aging which
+could get tricky.
+
+> and where this is at least partially
+> a bug fix I would rather not have the change depend on enhancing
+> the VFS.
 > 
-> On Thu, Nov 06, 2008 at 05:25:29PM -0500, Mathieu Desnoyers wrote:
-> > [...]
-> > > Arjan asked for something to send formatted strings to tracing
-> > > buffers that are consumed by user space.  Whether internally that
-> > > is done by markers, or by tracepoints converted to markers, or by
-> > > tracepoints with custom ftrace_printf-y code, is
-> > > indistinguishable to the user.
-> > > 
-> > > Can you be specific in what way any of that is exposing an "API
-> > > directly to userspace"?
-> > 
-> > The tracepoint declaration is linked to the kernel code that is
-> > meant to be traced. Given this code will change over time, it will
-> > be more difficult to perform those changes if it is in any way
-> > coupled with format strings exported to userspace via traced.  [...]
+> The algorithm is actually very aggressive and in practice you don't
+> see any /proc/<pid>/net showing up as a mount point.
+
+Do you think it has failure modes?  Most particularly: obscure usage
+patterns which can cause memory exhaustion?
+
+> > Obviously, that becomes clearer as one spends more time with the code,
+> > but I wonder whether this has all been made as maintainble as it
+> > possibly could be.
 > 
-> The userspace interface to all the various tracing widgets consists of
-> the textual formatted trace data stream.  ** IF ** these streams are
-> to represent a long-term interface, can you elaborate why you believe
+> Good question.
+> 
+> In the sense of will we have to go through and futz with the code all
+> of the time.  The abstraction seems good.   You put a mount on
+> the proc_automounts list with do_add_mounts and it goes away eventually
+> with all of the vfs rules maintained.
+> 
+> In the sense of can the code be read?    Perhaps it could be better.
+> I expect it helps to have run the code and see /proc/net as a filesystem.
+> that is magically mounted.
 
-tracepoints are not and cannot be a stable interface, and users of
-these points, preferably scripts that are part of the kernel source,
-need to learn to adapt to a changing environment.
-At least if we make the formatting function a *function*, we can even do
-very minor things to deal with some changes, but even then.
+'twould be a useful contribution if you were to enshrine your
+discoveries in /*these things*/.  You knew I was working up to that :)
 
-And this is ok. You're talking about deep internals, and for
-tracepoints to be useful they HAVE to be about these internals.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
