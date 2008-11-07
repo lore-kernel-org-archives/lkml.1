@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbYKGTWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbYKGTXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbYKGTWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 14:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYKGTWo
+	id S1754882AbYKGTXs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 14:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYKGTXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 14:22:44 -0500
-Received: from el-out-1112.google.com ([209.85.162.182]:26761 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYKGTWn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 14:22:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=LkOdyAavZ0JJVcxNKu8XaqKdhgU9vgeDe8LGEJ7oWDvMLpjvXfc9ttD+dTY9BWB2mD
-         HThY/3lKCrJi6v8OrFeJG7QCuj8CiyfdUbgaTPd7yLRjWtYXXIwj+L0Ake67XwREVlIK
-         r80lALzt7yiCNUnCfQLerQ6ZEjbujE/oXHJTk=
-Subject: Re: [PATCH-ugly] kmemtrace: casting a gfp_t requires __force
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Eduard Munteanu <eduard.munteanu@linux360.ro>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081107192029.GA4001@x200.localdomain>
-References: <1226084321.11596.37.camel@brick>
-	 <20081107192029.GA4001@x200.localdomain>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 11:22:39 -0800
-Message-Id: <1226085759.11596.43.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 7 Nov 2008 14:23:40 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:44103 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751080AbYKGTXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 14:23:39 -0500
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] i5000-edac: Hold reference to mci kobject
+To: "Darrick J. Wong" <djwong@us.ibm.com>,
+       Douglas Thompson <norsk5@xmission.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 07 Nov 2008 11:23:37 -0800
+Message-ID: <20081107192337.13505.76764.stgit@elm3a70.beaverton.ibm.com>
+User-Agent: StGIT/0.13
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 22:20 +0300, Alexey Dobriyan wrote:
-> On Fri, Nov 07, 2008 at 10:58:41AM -0800, Harvey Harrison wrote:
-> > --- a/include/linux/kmemtrace.h
-> > +++ b/include/linux/kmemtrace.h
-> > @@ -34,7 +34,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
-> >  		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
-> >  		   type_id, call_site, (unsigned long) ptr,
-> >  		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
-> > -		   (unsigned long) gfp_flags, node);
-> > +		   (__force unsigned long)gfp_flags, node);
-> 
-> gfp_t is "unsigned int" actually. These casts are bogus.
-> 
-> Subject: How do I printk <type> correctly?
-> 
-> If variable is of Type	use	printk format specifier.
-> ---------------------------------------------------------
-> 		int			%d or %x
-> 		unsigned int		%u or %x
-> 		long			%ld ot %lx
-> 		unsigned long		%lu or %lx
-> 		long long		%lld or %llx
-> 		unsigned long long	%llu or %llx
-> 		size_t			%zu or %zx
-> 		ssize_t			%zd or %zx
-> 
 
-Perhaps add gfp_t to the list ;-)
+It turns out that edac_mc_del_mc will kobject_put the last kref on the mci
+object.  If the timing is just right, that means that the mci object is freed
+before before i5000_remove_one has a chance to free the resources associated
+with it, causing a null pointer exceptions when unloading the driver.  Insert
+a kobject_{get,put} pair so that this doesn't happen.
 
-Thanks.
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-Harvey
+ drivers/edac/i5000_edac.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/edac/i5000_edac.c b/drivers/edac/i5000_edac.c
+index f0d9b41..d335086 100644
+--- a/drivers/edac/i5000_edac.c
++++ b/drivers/edac/i5000_edac.c
+@@ -1381,6 +1381,7 @@ static int i5000_probe1(struct pci_dev *pdev, int dev_idx)
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+ 
++	kobject_get(&mci->edac_mci_kobj);
+ 	debugf0("MC: " __FILE__ ": %s(): mci = %p\n", __func__, mci);
+ 
+ 	mci->dev = &pdev->dev;	/* record ptr  to the generic device */
+@@ -1453,6 +1454,7 @@ fail1:
+ 	i5000_put_devices(mci);
+ 
+ fail0:
++	kobject_put(&mci->edac_mci_kobj);
+ 	edac_mc_free(mci);
+ 	return -ENODEV;
+ }
+@@ -1498,7 +1500,7 @@ static void __devexit i5000_remove_one(struct pci_dev *pdev)
+ 
+ 	/* retrieve references to resources, and free those resources */
+ 	i5000_put_devices(mci);
+-
++	kobject_put(&mci->edac_mci_kobj);
+ 	edac_mc_free(mci);
+ }
+ 
 
