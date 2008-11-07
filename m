@@ -1,109 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbYKGIlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbYKGIqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433AbYKGIlY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYKGIk7
+	id S1752687AbYKGIqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKGIql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:40:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46689 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752693AbYKGIk6 (ORCPT
+	Fri, 7 Nov 2008 03:46:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:15998 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbYKGIqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:40:58 -0500
-Date: Fri, 7 Nov 2008 00:38:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Message-Id: <20081107003816.9b0f947a.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
-References: <20081107052336.652868737@polymtl.ca>
-	<20081107053349.861709786@polymtl.ca>
-	<20081106220530.5b0e3a96.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0811070256450.13034@xanadu.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 03:46:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dl/N4bze4DHXnGlzXVNsgus9JEkw15XuBdvPN0uEFtDD/oDpk0ECOK51v4N3QT+Zxi
+         zWz8JzG3OZ3LB4b05vRIElcBy5poUdsSgvtM+nIr6u7aw/g2Y687wUTa7BEpspWIvRbM
+         MBc/zSa/AIC0CsY81pnuu2z35M7JWUaB8NIWU=
+Date: Fri, 7 Nov 2008 11:49:43 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ken Chen <kenchen@google.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
+Message-ID: <20081107084943.GA16147@x200.localdomain>
+References: <20081106203520.GD3578@elte.hu> <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain> <20081107083249.GD4435@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081107083249.GD4435@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Nov 2008 03:12:18 -0500 (EST) Nicolas Pitre <nico@cam.org> wrote:
-
-> On Thu, 6 Nov 2008, Andrew Morton wrote:
+On Fri, Nov 07, 2008 at 09:32:49AM +0100, Ingo Molnar wrote:
 > 
-> > On Fri, 07 Nov 2008 00:23:44 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> 
+> > On Fri, Nov 07, 2008 at 08:59:25AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > > > + * buffer size used for proc read.  See proc_info_read().
+> > > > > > + * 4K page size but our output routines use some slack for overruns
+> > > > > > + */
+> > > > > > +#define PROC_BLOCK_SIZE	(3*1024)
+> > > > 
+> > > > That sounds like a proper limit - the hard limit for this particular 
+> > > > printout function is 4096-170, so we are well within the 
+> > > > PROC_BLOCK_SIZE range.
+> > > 
+> > > ok, i've added Ken's patch to tip/core/stacktrace and started testing 
+> > > it.
+> > > 
+> > > Alexey, i've added your Acked-by because you appeared to like the 
+> > > patch - let me know if i should remove it.
 > > 
-> > >  #define cnt32_to_63(cnt_lo) \
-> > >  ({ \
-> > > -	static volatile u32 __m_cnt_hi; \
-> > > +	static u32 __m_cnt_hi; \
-> > >  	union cnt32_to_63 __x; \
-> > >  	__x.hi = __m_cnt_hi; \
-> > > +	smp_rmb(); 	/* read __m_cnt_hi before mmio cnt_lo */ \
-> > >  	__x.lo = (cnt_lo); \
-> > >  	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
-> > >  		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
+> > Of course, I don't like it!
 > > 
-> > Oh dear.  We have a macro which secretly maintains
-> > per-instantiation-site global state?  And doesn't even implement locking
-> > to protect that state?
+> > Switch to seqfiles, add entry in TID table as well.
+> >
+> > The idea is good, though.
 > 
-> Please do me a favor and look for those very unfrequent posts I've sent 
-> to lkml lately.
-
-No.  Reading the kernel code (and, at a pinch, the changelogs) should
-suffice.  If it does not suffice, the kernel code is in error.
-
->  I've explained it all at least 3 times so far, to Peter 
-> Zijlstra, to David Howells, to Mathieu Desnoyers, and now to you.
-
-If four heads have exploded (thus far) over one piece of code, perhaps
-the blame doesn't lie with those heads.
-
-> > I mean, the darned thing is called from sched_clock(), which can be
-> > concurrently called on separate CPUs and which can be called from
-> > interrupt context (with an arbitrary nesting level!) while it was running
-> > in process context.
+> oh well - Ken, could you please switch it to seqfiles?
 > 
-> Yes!  And this is so on *purpose*.  Please take some time to read the 
-> comment that goes along with it,
-
-OK.
-
-> and if you're still not convinced then 
-> look for those explanation emails I've already posted.
-
-No.
-
-> > /*
-> >  * Caller must provide locking to protect *caller_state
-> >  */
+> It should be something like this to convert the currently sweet and 
+> trivial function into a much more complex seqfile iterator splitup:
 > 
-> NO!  This is meant to be LOCK FREE!
+> - the ::start method does the kmalloc of a loop state structure like 
+>   this:
+> 
+>   {
+> 	struct stack_trace backtrace;
+> 	unsigned long entries[MAX_STACK_TRACE_DEPTH];
+> 
+> 	int iterator;
+>   }
+> 
+>   and saves the trace. (struct stack_trace trace can be on-stack, it's 
+>   only needed for the save_stack_trace() - and we keep the entries 
+>   after that.)
+> 
+> - the ::stop method does the kfree of the loop state.
+> 
+> - the ::show method prints a single line, based on ->entries[->iterator]
+> 
+> - the ::next method does ->iterator++, and returns NULL if iterator 
+>   reaches ->backtrace.nr_entries.
+> 
+> it will be more source code, larger kernel image, it will be more 
+> fragile and will be harder to review, and it wont actually matter in 
+> practice because 99.9999% of the backtraces we care about have a size 
+> smaller than 3K. (and where they get larger clipping them to the first 
+> 3K is perfectly fine)
 
-We have a macro which must only have a single usage in any particular
-kernel build (and nothing to detect a violation of that).
+Or you can do all of this in ->show(), without start/next/stop:
 
-We have a macro which secretly hides internal state, on a per-expansion-site
-basis, no less.
-
-It apparently tries to avoid races via ordering tricks, as long
-as it is called with sufficient frequency.  But nothing guarantees
-that it _is_ called sufficiently frequently?
-
-There is absolutely no reason why the first two of these quite bad things
-needed to be done.  In fact there is no reason why it needed to be
-implemented as a macro at all.
-
-As I said in the text which you deleted and ignored, this would be
-better if it was implemented as a C function which requires that the
-caller explicitly pass in a reference to the state storage.
+	for (i = 0; i < N; i++)
+		seq_printf(m, "[<%p>] %pS\n", x, x);
