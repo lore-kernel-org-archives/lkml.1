@@ -1,344 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbYKGPlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYKGPnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbYKGPlP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbYKGPkv
+	id S1753917AbYKGPnA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYKGPmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:40:51 -0500
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:55906 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753333AbYKGPkt (ORCPT
+	Fri, 7 Nov 2008 10:42:52 -0500
+Received: from arroyo.ext.ti.com ([192.94.94.40]:60807 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751282AbYKGPmv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:40:49 -0500
-Subject: Re: [patch 15/21] ptrace changes
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: David Smith <dsmith@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-In-Reply-To: <49133665.8090701@redhat.com>
-References: <20081001083317.782967473@de.ibm.com>
-	 <20081001084129.042880937@de.ibm.com>  <490F317C.9040603@redhat.com>
-	 <1225885284.17430.7.camel@localhost>  <49133665.8090701@redhat.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 07 Nov 2008 16:32:33 +0100
-Message-Id: <1226071953.5830.33.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 10:42:51 -0500
+From: "Dasgupta, Romit" <romit@ti.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 7 Nov 2008 21:12:43 +0530
+Subject: FW: [SMC911x ]fix for driver resume
+Thread-Topic: [SMC911x ]fix for driver resume
+Thread-Index: Ack/+LVEFFKMv5dXQFqoW9Xv9fxw+AA9pHFw
+Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301B34DC4E3@dbde02.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-06 at 12:24 -0600, David Smith wrote:
-> But, collect_syscall() also calls syscall_get_nr():
-> 
->         *callno = syscall_get_nr(target, regs);
->         if (*callno != -1L && maxargs > 0)
->                 syscall_get_arguments(target, regs, 0, maxargs, args);
-> 
-> Both syscall_get_nr() *and* syscall_get_arguments() returning gprs[2]
-> can't be right, can it?
+Hi,
+     I did not get any reply from anyone yet. Is there any MAINTAINER who can verify the patch below?
 
-Ok, I managed to get syscall_get_nr() independent from
-do_syscall_trace_enter. With the patch below syscall_get_nr() can now be
-called anytime for a speeling process.
+Regards,
+-Romit
 
--- 
-blue skies,
-  Martin.
 
-"Reality continues to ruin my life." - Calvin.
+-----Original Message-----
+From: Dasgupta, Romit 
+Sent: Thursday, November 06, 2008 3:46 PM
+To: 'dustin@sensoria.com'; 'jgarzik@pobox.com'; 'nico@cam.org'
+Cc: 'netdev@vger.kernel.org'; linux-omap@vger.kernel.org
+Subject: [SMC911x ]fix for driver resume and compilation warning 
 
----
-Subject: [PATCH] fix syscall_get_nr.
+Hi,
+     I am trying out suspend, resume on an OMAP3 based board. What I see during resume is that the SMC911x driver resume routing gets stuck after trying to transmit the packet out of the controller. Some debug messages below:
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+--> smc911x_drv_resume
+eth0: --> smc911x_reset
+eth0: smc911x_reset timeout waiting for PM restore
+eth0: --> smc911x_enable
+eth0: --> smc911x_phy_configure()
+eth0: --> smc911x_phy_reset()
+eth0: phy caps=0x782d
+eth0: phy advertised caps=0x0de1
+eth0: --> smc911x_phy_check_media
+smc911x_phy_read: phyaddr=0x1, phyreg=0x01, phydata=0x7809
+smc911x_phy_read: phyaddr=0x1, phyreg=0x01, phydata=0x7809
+eth0: link down
+Restarting tasks ... eth0: --> smc911x_hard_start_xmit
+eth0: --> smc911x_hardware_send_pkt
+eth0: --> smc911x_hard_start_xmit
+eth0: --> smc911x_hardware_send_pkt
+eth0: --> smc911x_hard_start_xmit
+eth0: --> smc911x_hardware_send_pkt
+nfs: server 172.24.190.217 not responding, still trying
+nfs: server 172.24.190.217 not responding, still trying
 
-syscall_get_nr() currently returns a valid result only if the call
-chain of the traced process includes do_syscall_trace_enter(). But
-collect_syscall() can be called for any sleeping task, the result of
-syscall_get_nr() in general is completely bogus.
 
-To make syscall_get_nr() work for any sleeping task the traps field
-in pt_regs is replace with svcnr - the system call number the process
-is executing. If svcnr == 0 the process is not on a system call path.
+The following change makes it work fine: (The change within smc911x_drv_probe function was to get rid of a compilation warning).
+Additionally, the SMC9211 data sheet says that when we enter D2 sleep state, we need to set the EDPWRDOWN bit in the PHY Mode control/status register and clear it when we are back to D0. This is not done in the code as far as I can see. So does it mean that the PHY is not powered down but the controller is? I have another patch that fixes it. I will send that as well unless I am missing something.
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Thanks,
+-Romit
 
- arch/s390/include/asm/ptrace.h   |    2 +-
- arch/s390/include/asm/syscall.h  |    4 +---
- arch/s390/kernel/asm-offsets.c   |    2 +-
- arch/s390/kernel/compat_signal.c |    2 +-
- arch/s390/kernel/entry.S         |   21 +++++++++++----------
- arch/s390/kernel/entry64.S       |   23 ++++++++++-------------
- arch/s390/kernel/ptrace.c        |    2 +-
- arch/s390/kernel/signal.c        |    6 +++---
- 8 files changed, 29 insertions(+), 33 deletions(-)
 
-diff -urpN linux-2.6/arch/s390/include/asm/ptrace.h linux-2.6-patched/arch/s390/include/asm/ptrace.h
---- linux-2.6/arch/s390/include/asm/ptrace.h	2008-11-07 16:35:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/include/asm/ptrace.h	2008-11-07 16:36:20.000000000 +0100
-@@ -321,8 +321,8 @@ struct pt_regs 
- 	psw_t psw;
- 	unsigned long gprs[NUM_GPRS];
- 	unsigned long orig_gpr2;
-+	unsigned short svcnr;
- 	unsigned short ilc;
--	unsigned short trap;
- };
- #endif
- 
-diff -urpN linux-2.6/arch/s390/include/asm/syscall.h linux-2.6-patched/arch/s390/include/asm/syscall.h
---- linux-2.6/arch/s390/include/asm/syscall.h	2008-11-07 16:35:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/include/asm/syscall.h	2008-11-07 16:36:20.000000000 +0100
-@@ -17,9 +17,7 @@
- static inline long syscall_get_nr(struct task_struct *task,
- 				  struct pt_regs *regs)
+Signed-off-by: Romit Dasgupta <romit@ti.com>
+
+diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
+index 5051554..1f26ab0 100644
+--- a/drivers/net/smc911x.c
++++ b/drivers/net/smc911x.c
+@@ -2050,7 +2050,9 @@ err_out:
+  */
+ static int smc911x_drv_probe(struct platform_device *pdev)
  {
--	if (regs->trap != __LC_SVC_OLD_PSW)
--		return -1;
--	return regs->gprs[2];
-+	return regs->svcnr ? regs->svcnr : -1;
- }
++#ifdef SMC_DYNAMIC_BUS_CONFIG
+ 	struct smc911x_platdata *pd = pdev->dev.platform_data;
++#endif
+ 	struct net_device *ndev;
+ 	struct resource *res;
+ 	struct smc911x_local *lp;
+@@ -2182,9 +2184,9 @@ static int smc911x_drv_resume(struct platform_device *dev)
  
- static inline void syscall_rollback(struct task_struct *task,
-diff -urpN linux-2.6/arch/s390/kernel/asm-offsets.c linux-2.6-patched/arch/s390/kernel/asm-offsets.c
---- linux-2.6/arch/s390/kernel/asm-offsets.c	2008-11-07 16:36:07.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/asm-offsets.c	2008-11-07 16:36:20.000000000 +0100
-@@ -33,7 +33,7 @@ int main(void)
- 	DEFINE(__PT_GPRS, offsetof(struct pt_regs, gprs));
- 	DEFINE(__PT_ORIG_GPR2, offsetof(struct pt_regs, orig_gpr2));
- 	DEFINE(__PT_ILC, offsetof(struct pt_regs, ilc));
--	DEFINE(__PT_TRAP, offsetof(struct pt_regs, trap));
-+	DEFINE(__PT_SVCNR, offsetof(struct pt_regs, svcnr));
- 	DEFINE(__PT_SIZE, sizeof(struct pt_regs));
- 	BLANK();
- 	DEFINE(__SF_BACKCHAIN, offsetof(struct stack_frame, back_chain));
-diff -urpN linux-2.6/arch/s390/kernel/compat_signal.c linux-2.6-patched/arch/s390/kernel/compat_signal.c
---- linux-2.6/arch/s390/kernel/compat_signal.c	2008-10-10 00:13:53.000000000 +0200
-+++ linux-2.6-patched/arch/s390/kernel/compat_signal.c	2008-11-07 16:36:20.000000000 +0100
-@@ -340,7 +340,7 @@ static int restore_sigregs32(struct pt_r
- 		return err;
- 
- 	restore_fp_regs(&current->thread.fp_regs);
--	regs->trap = -1;	/* disable syscall checks */
-+	regs->svcnr = 0;	/* disable syscall checks */
- 	return 0;
- }
- 
-diff -urpN linux-2.6/arch/s390/kernel/entry64.S linux-2.6-patched/arch/s390/kernel/entry64.S
---- linux-2.6/arch/s390/kernel/entry64.S	2008-11-07 16:36:04.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry64.S	2008-11-07 16:36:20.000000000 +0100
-@@ -46,7 +46,7 @@ SP_R14	     =	STACK_FRAME_OVERHEAD + __P
- SP_R15	     =	STACK_FRAME_OVERHEAD + __PT_GPRS + 120
- SP_ORIG_R2   =	STACK_FRAME_OVERHEAD + __PT_ORIG_GPR2
- SP_ILC	     =	STACK_FRAME_OVERHEAD + __PT_ILC
--SP_TRAP      =	STACK_FRAME_OVERHEAD + __PT_TRAP
-+SP_SVCNR      =	STACK_FRAME_OVERHEAD + __PT_SVCNR
- SP_SIZE      =	STACK_FRAME_OVERHEAD + __PT_SIZE
- 
- STACK_SHIFT = PAGE_SHIFT + THREAD_ORDER
-@@ -171,11 +171,10 @@ _TIF_WORK_INT = (_TIF_SIGPENDING | _TIF_
- 	.macro	CREATE_STACK_FRAME psworg,savearea
- 	aghi	%r15,-SP_SIZE		# make room for registers & psw
- 	mvc	SP_PSW(16,%r15),0(%r12)	# move user PSW to stack
--	la	%r12,\psworg
- 	stg	%r2,SP_ORIG_R2(%r15)	# store original content of gpr 2
--	icm	%r12,12,__LC_SVC_ILC
-+	icm	%r12,3,__LC_SVC_ILC
- 	stmg	%r0,%r11,SP_R0(%r15)	# store gprs %r0-%r11 to kernel stack
--	st	%r12,SP_ILC(%r15)
-+	st	%r12,SP_SVCNR(%r15)
- 	mvc	SP_R12(32,%r15),\savearea # move %r12-%r15 to stack
- 	la	%r12,0
- 	stg	%r12,__SF_BACKCHAIN(%r15)
-@@ -250,16 +249,17 @@ sysc_update:
- #endif
- sysc_do_svc:
- 	lg	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
--	slag	%r7,%r7,2	# *4 and test for svc 0
-+	ltgr	%r7,%r7		# test for svc 0
- 	jnz	sysc_nr_ok
- 	# svc 0: system call number in %r1
- 	cl	%r1,BASED(.Lnr_syscalls)
- 	jnl	sysc_nr_ok
- 	lgfr	%r7,%r1 	# clear high word in r1
--	slag	%r7,%r7,2	# svc 0: system call number in %r1
- sysc_nr_ok:
- 	mvc	SP_ARGS(8,%r15),SP_R7(%r15)
- sysc_do_restart:
-+	sth	%r7,SP_SVCNR(%r15)
-+	sllg	%r7,%r7,2	# svc number * 4
- 	larl	%r10,sys_call_table
- #ifdef CONFIG_COMPAT
- 	tm	__TI_flags+5(%r9),(_TIF_31BIT>>16)  # running in 31 bit mode ?
-@@ -363,7 +363,6 @@ sysc_notify_resume:
- sysc_restart:
- 	ni	__TI_flags+7(%r9),255-_TIF_RESTART_SVC # clear TIF_RESTART_SVC
- 	lg	%r7,SP_R2(%r15)		# load new svc number
--	slag	%r7,%r7,2		# *4
- 	mvc	SP_R2(8,%r15),SP_ORIG_R2(%r15) # restore first argument
- 	lmg	%r2,%r6,SP_R2(%r15)	# load svc arguments
- 	j	sysc_do_restart 	# restart svc
-@@ -372,9 +371,8 @@ sysc_restart:
- # _TIF_SINGLE_STEP is set, call do_single_step
- #
- sysc_singlestep:
--	ni	__TI_flags+7(%r9),255-_TIF_SINGLE_STEP # clear TIF_SINGLE_STEP
--	lhi	%r0,__LC_PGM_OLD_PSW
--	sth	%r0,SP_TRAP(%r15)	# set trap indication to pgm check
-+	ni	__TI_flags+7(%r9),255-_TIF_SINGLE_STEP	# clear TIF_SINGLE_STEP
-+	xc	SP_SVCNR(2,%r15),SP_SVCNR(%r15)		# clear svc number
- 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
- 	larl	%r14,sysc_return	# load adr. of system return
- 	jg	do_single_step		# branch to do_sigtrap
-@@ -392,7 +390,7 @@ sysc_tracesys:
- 	lghi	%r0,NR_syscalls
- 	clgr	%r0,%r2
- 	jnh	sysc_tracenogo
--	slag	%r7,%r2,2		# *4
-+	sllg	%r7,%r2,2		# svc number *4
- 	lgf	%r8,0(%r7,%r10)
- sysc_tracego:
- 	lmg	%r3,%r6,SP_R3(%r15)
-@@ -567,8 +565,7 @@ pgm_svcper:
- # per was called from kernel, must be kprobes
- #
- kernel_per:
--	lhi	%r0,__LC_PGM_OLD_PSW
--	sth	%r0,SP_TRAP(%r15)	# set trap indication to pgm check
-+	xc	SP_SVCNR(2,%r15),SP_SVCNR(%r15)	# clear svc number
- 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
- 	larl	%r14,sysc_restore	# load adr. of system ret, no work
- 	jg	do_single_step		# branch to do_single_step
-diff -urpN linux-2.6/arch/s390/kernel/entry.S linux-2.6-patched/arch/s390/kernel/entry.S
---- linux-2.6/arch/s390/kernel/entry.S	2008-11-07 16:36:04.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/entry.S	2008-11-07 16:36:20.000000000 +0100
-@@ -46,7 +46,7 @@ SP_R14	     =	STACK_FRAME_OVERHEAD + __P
- SP_R15	     =	STACK_FRAME_OVERHEAD + __PT_GPRS + 60
- SP_ORIG_R2   =	STACK_FRAME_OVERHEAD + __PT_ORIG_GPR2
- SP_ILC	     =	STACK_FRAME_OVERHEAD + __PT_ILC
--SP_TRAP      =	STACK_FRAME_OVERHEAD + __PT_TRAP
-+SP_SVCNR     =	STACK_FRAME_OVERHEAD + __PT_SVCNR
- SP_SIZE      =	STACK_FRAME_OVERHEAD + __PT_SIZE
- 
- _TIF_WORK_SVC = (_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_NEED_RESCHED | \
-@@ -183,11 +183,10 @@ STACK_SIZE  = 1 << STACK_SHIFT
- 	.macro	CREATE_STACK_FRAME psworg,savearea
- 	s	%r15,BASED(.Lc_spsize)	# make room for registers & psw
- 	mvc	SP_PSW(8,%r15),0(%r12)	# move user PSW to stack
--	la	%r12,\psworg
- 	st	%r2,SP_ORIG_R2(%r15)	# store original content of gpr 2
--	icm	%r12,12,__LC_SVC_ILC
-+	icm	%r12,3,__LC_SVC_ILC
- 	stm	%r0,%r11,SP_R0(%r15)	# store gprs %r0-%r11 to kernel stack
--	st	%r12,SP_ILC(%r15)
-+	st	%r12,SP_SVCNR(%r15)
- 	mvc	SP_R12(16,%r15),\savearea # move %r12-%r15 to stack
- 	la	%r12,0
- 	st	%r12,__SF_BACKCHAIN(%r15)	# clear back chain
-@@ -264,16 +263,17 @@ sysc_update:
- #endif
- sysc_do_svc:
- 	l	%r9,__LC_THREAD_INFO	# load pointer to thread_info struct
--	sla	%r7,2			# *4 and test for svc 0
-+	ltr	%r7,%r7			# test for svc 0
- 	bnz	BASED(sysc_nr_ok)	# svc number > 0
- 	# svc 0: system call number in %r1
- 	cl	%r1,BASED(.Lnr_syscalls)
- 	bnl	BASED(sysc_nr_ok)
- 	lr	%r7,%r1 	  # copy svc number to %r7
--	sla	%r7,2		  # *4
- sysc_nr_ok:
- 	mvc	SP_ARGS(4,%r15),SP_R7(%r15)
- sysc_do_restart:
-+	sth	%r7,SP_SVCNR(%r15)
-+	sll	%r7,2		  # svc number *4
- 	l	%r8,BASED(.Lsysc_table)
- 	tm	__TI_flags+3(%r9),(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
- 	l	%r8,0(%r7,%r8)	  # get system call addr.
-@@ -376,7 +376,6 @@ sysc_notify_resume:
- sysc_restart:
- 	ni	__TI_flags+3(%r9),255-_TIF_RESTART_SVC # clear TIF_RESTART_SVC
- 	l	%r7,SP_R2(%r15) 	# load new svc number
--	sla	%r7,2
- 	mvc	SP_R2(4,%r15),SP_ORIG_R2(%r15) # restore first argument
- 	lm	%r2,%r6,SP_R2(%r15)	# load svc arguments
- 	b	BASED(sysc_do_restart)	# restart svc
-@@ -386,7 +385,8 @@ sysc_restart:
- #
- sysc_singlestep:
- 	ni	__TI_flags+3(%r9),255-_TIF_SINGLE_STEP # clear TIF_SINGLE_STEP
--	mvi	SP_TRAP+1(%r15),0x28	# set trap indication to pgm check
-+	mvi	SP_SVCNR(%r15),0xff	# set trap indication to pgm check
-+	mvi	SP_SVCNR+1(%r15),0xff
- 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
- 	l	%r1,BASED(.Lhandle_per)	# load adr. of per handler
- 	la	%r14,BASED(sysc_return)	# load adr. of system return
-@@ -407,7 +407,7 @@ sysc_tracesys:
- 	bnl	BASED(sysc_tracenogo)
- 	l	%r8,BASED(.Lsysc_table)
- 	lr	%r7,%r2
--	sll	%r7,2			# *4
-+	sll	%r7,2			# svc number *4
- 	l	%r8,0(%r7,%r8)
- sysc_tracego:
- 	lm	%r3,%r6,SP_R3(%r15)
-@@ -586,7 +586,8 @@ pgm_svcper:
- # per was called from kernel, must be kprobes
- #
- kernel_per:
--	mvi	SP_TRAP+1(%r15),0x28	# set trap indication to pgm check
-+	mvi	SP_SVCNR(%r15),0xff	# set trap indication to pgm check
-+	mvi	SP_SVCNR+1(%r15),0xff
- 	la	%r2,SP_PTREGS(%r15)	# address of register-save area
- 	l	%r1,BASED(.Lhandle_per)	# load adr. of per handler
- 	la	%r14,BASED(sysc_restore)# load adr. of system return
-diff -urpN linux-2.6/arch/s390/kernel/ptrace.c linux-2.6-patched/arch/s390/kernel/ptrace.c
---- linux-2.6/arch/s390/kernel/ptrace.c	2008-11-07 16:36:18.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/ptrace.c	2008-11-07 16:36:20.000000000 +0100
-@@ -655,7 +655,7 @@ asmlinkage long do_syscall_trace_enter(s
- 		 * debugger stored an invalid system call number. Skip
- 		 * the system call and the system call restart handling.
- 		 */
--		regs->trap = -1;
-+		regs->svcnr = 0;
- 		ret = -1;
- 	}
- 
-diff -urpN linux-2.6/arch/s390/kernel/signal.c linux-2.6-patched/arch/s390/kernel/signal.c
---- linux-2.6/arch/s390/kernel/signal.c	2008-11-07 16:35:54.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/signal.c	2008-11-07 16:36:20.000000000 +0100
-@@ -160,7 +160,7 @@ static int restore_sigregs(struct pt_reg
- 	current->thread.fp_regs.fpc &= FPC_VALID_MASK;
- 
- 	restore_fp_regs(&current->thread.fp_regs);
--	regs->trap = -1;	/* disable syscall checks */
-+	regs->svcnr = 0;	/* disable syscall checks */
- 	return 0;
- }
- 
-@@ -445,7 +445,7 @@ void do_signal(struct pt_regs *regs)
- 		oldset = &current->blocked;
- 
- 	/* Are we from a system call? */
--	if (regs->trap == __LC_SVC_OLD_PSW) {
-+	if (regs->svcnr) {
- 		continue_addr = regs->psw.addr;
- 		restart_addr = continue_addr - regs->ilc;
- 		retval = regs->gprs[2];
-@@ -462,7 +462,7 @@ void do_signal(struct pt_regs *regs)
- 		case -ERESTART_RESTARTBLOCK:
- 			regs->gprs[2] = -EINTR;
+ 		if (netif_running(ndev)) {
+ 			smc911x_reset(ndev);
+-			smc911x_enable(ndev);
+ 			if (lp->phy_type != 0)
+ 				smc911x_phy_configure(&lp->phy_configure);
++			smc911x_enable(ndev);
+ 			netif_device_attach(ndev);
  		}
--		regs->trap = -1;	/* Don't deal with this again. */
-+		regs->svcnr = 0;	/* Don't deal with this again. */
  	}
- 
- 	/* Get signal to deliver.  When running under ptrace, at this point
-
-
