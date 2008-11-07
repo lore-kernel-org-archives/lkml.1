@@ -1,104 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbYKGPnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbYKGPvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbYKGPnA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbYKGPmw
+	id S1753301AbYKGPvx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbYKGPvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:42:52 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:60807 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751282AbYKGPmv convert rfc822-to-8bit (ORCPT
+	Fri, 7 Nov 2008 10:51:41 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59592 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752099AbYKGPvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:42:51 -0500
-From: "Dasgupta, Romit" <romit@ti.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Fri, 7 Nov 2008 21:12:43 +0530
-Subject: FW: [SMC911x ]fix for driver resume
-Thread-Topic: [SMC911x ]fix for driver resume
-Thread-Index: Ack/+LVEFFKMv5dXQFqoW9Xv9fxw+AA9pHFw
-Message-ID: <B85A65D85D7EB246BE421B3FB0FBB59301B34DC4E3@dbde02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Fri, 7 Nov 2008 10:51:40 -0500
+Date: Fri, 7 Nov 2008 07:50:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nicolas Pitre <nico@cam.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+Message-Id: <20081107075003.fa93ccf4.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811070952150.13034@xanadu.home>
+References: <20081107003816.9b0f947a.akpm@linux-foundation.org>
+	<20081107052336.652868737@polymtl.ca>
+	<20081107053349.861709786@polymtl.ca>
+	<20081106220530.5b0e3a96.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811070256450.13034@xanadu.home>
+	<25363.1226056819@redhat.com>
+	<alpine.LFD.2.00.0811070952150.13034@xanadu.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-     I did not get any reply from anyone yet. Is there any MAINTAINER who can verify the patch below?
+On Fri, 07 Nov 2008 10:01:01 -0500 (EST) Nicolas Pitre <nico@cam.org> wrote:
 
-Regards,
--Romit
+> On Fri, 7 Nov 2008, David Howells wrote:
+> 
+> > Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > As I said in the text which you deleted and ignored, this would be
+> > > better if it was implemented as a C function which requires that the
+> > > caller explicitly pass in a reference to the state storage.
+> 
+> The whole purpose of that thing is to be utterly fast and lightweight.  
 
+Well I'm glad it wasn't designed to demonstrate tastefulness.
 
------Original Message-----
-From: Dasgupta, Romit 
-Sent: Thursday, November 06, 2008 3:46 PM
-To: 'dustin@sensoria.com'; 'jgarzik@pobox.com'; 'nico@cam.org'
-Cc: 'netdev@vger.kernel.org'; linux-omap@vger.kernel.org
-Subject: [SMC911x ]fix for driver resume and compilation warning 
+btw, do you know how damned irritating and frustrating it is for a code
+reviewer to have his comments deliberately ignored and deleted in
+replies?
 
-Hi,
-     I am trying out suspend, resume on an OMAP3 based board. What I see during resume is that the SMC911x driver resume routing gets stuck after trying to transmit the packet out of the controller. Some debug messages below:
+> Having an out of line C call would trash the major advantage of this 
+> code.
 
---> smc911x_drv_resume
-eth0: --> smc911x_reset
-eth0: smc911x_reset timeout waiting for PM restore
-eth0: --> smc911x_enable
-eth0: --> smc911x_phy_configure()
-eth0: --> smc911x_phy_reset()
-eth0: phy caps=0x782d
-eth0: phy advertised caps=0x0de1
-eth0: --> smc911x_phy_check_media
-smc911x_phy_read: phyaddr=0x1, phyreg=0x01, phydata=0x7809
-smc911x_phy_read: phyaddr=0x1, phyreg=0x01, phydata=0x7809
-eth0: link down
-Restarting tasks ... eth0: --> smc911x_hard_start_xmit
-eth0: --> smc911x_hardware_send_pkt
-eth0: --> smc911x_hard_start_xmit
-eth0: --> smc911x_hardware_send_pkt
-eth0: --> smc911x_hard_start_xmit
-eth0: --> smc911x_hardware_send_pkt
-nfs: server 172.24.190.217 not responding, still trying
-nfs: server 172.24.190.217 not responding, still trying
+Not really.
 
+> > I'd be quite happy if it was:
+> > 
+> > 	static inline u64 cnt32_to_63(u32 cnt_lo, u32 *__m_cnt_hi)
+> > 	{
+> > 		union cnt32_to_63 __x;
+> > 		__x.hi = *__m_cnt_hi;
+> > 		__x.lo = cnt_lo;
+> > 		if (unlikely((s32)(__x.hi ^ __x.lo) < 0))
+> > 			*__m_cnt_hi =
+> > 				__x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31);
+> > 		return __x.val;
+> > 	}
+> > 
+> > I imagine this would compile pretty much the same as the macro.
+> 
+> Depends.  As everybody has noticed now, the read ordering is important, 
+> and if gcc decides to not inline this 
 
-The following change makes it work fine: (The change within smc911x_drv_probe function was to get rid of a compilation warning).
-Additionally, the SMC9211 data sheet says that when we enter D2 sleep state, we need to set the EDPWRDOWN bit in the PHY Mode control/status register and clear it when we are back to D0. This is not done in the code as far as I can see. So does it mean that the PHY is not powered down but the controller is? I have another patch that fixes it. I will send that as well unless I am missing something.
+If gcc did that then it would need to generate static instances of
+inlined functions within individual compilation units.  It would be a
+disaster for the kernel.  For a start, functions which are "inlined" in kernel
+modules wouldn't be able to access their static storage and modprobing
+them would fail.
 
-Thanks,
--Romit
+> for whatever reason then the 
+> ordering is lost.
 
+Uninlining won't affect any ordering I can see.
 
-Signed-off-by: Romit Dasgupta <romit@ti.com>
+>  This is why this was a macro to start with.
+> 
+> > I think it
+> > would make it more obvious about the independence of the storage.
+> 
+> I don't think having the associated storage be outside the macro make 
+> any sense either.  There is simply no valid reason for having it shared 
+> between multiple invokations of the macro, as well as making its 
+> interface more complex for no gain.
 
-diff --git a/drivers/net/smc911x.c b/drivers/net/smc911x.c
-index 5051554..1f26ab0 100644
---- a/drivers/net/smc911x.c
-+++ b/drivers/net/smc911x.c
-@@ -2050,7 +2050,9 @@ err_out:
-  */
- static int smc911x_drv_probe(struct platform_device *pdev)
- {
-+#ifdef SMC_DYNAMIC_BUS_CONFIG
- 	struct smc911x_platdata *pd = pdev->dev.platform_data;
-+#endif
- 	struct net_device *ndev;
- 	struct resource *res;
- 	struct smc911x_local *lp;
-@@ -2182,9 +2184,9 @@ static int smc911x_drv_resume(struct platform_device *dev)
- 
- 		if (netif_running(ndev)) {
- 			smc911x_reset(ndev);
--			smc911x_enable(ndev);
- 			if (lp->phy_type != 0)
- 				smc911x_phy_configure(&lp->phy_configure);
-+			smc911x_enable(ndev);
- 			netif_device_attach(ndev);
- 		}
- 	}
+oh god.
+
+> > Alternatively, perhaps Nicolas just needs to mention this in the comment more
+> > clearly.
+> 
+> I wrote that code so to me it is cristal clear already.  Any suggestions 
+> as to how this could be improved?
+> 
+
+Does mn10300's get_cycles() really count backwards?  The first two
+callsites I looked at (crypto/tcrypt.c and fs/ext4/mballoc.c) assume
+that it is an upcounter.
+
