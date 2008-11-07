@@ -1,233 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYKGTQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYKGTRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbYKGTQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 14:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYKGTQk
+	id S1754859AbYKGTRW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 14:17:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYKGTRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 14:16:40 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:46521 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbYKGTQj (ORCPT
+	Fri, 7 Nov 2008 14:17:13 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:59050 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbYKGTRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 14:16:39 -0500
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: [PATCH] Fix platform drivers that crash on suspend/resume
-To: "Darrick J. Wong" <djwong@us.ibm.com>, Corey Minyard <minyard@acm.org>,
-       Jean Delvare <khali@linux-fr.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       openipmi-developer@lists.sourceforge.net,
-       lm-sensors <lm-sensors@lm-sensors.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Date: Fri, 07 Nov 2008 11:16:36 -0800
-Message-ID: <20081107191636.13288.17003.stgit@elm3a70.beaverton.ibm.com>
-User-Agent: StGIT/0.13
+	Fri, 7 Nov 2008 14:17:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hAjOED2RH8+QfNVQkHOsT5tM3yCQnU/UTiL4Rki2maCq4AnVsQjy2D3F12v3uE5e6Q
+         06zGdhIWnLRP7NEvv/DsKNO3RpwiS9AiUFNFzZdmDXBUsnt46nJ4vFVDVOpHZttpfPSl
+         CSoZN1m8xBANsAzhbHDITD+VUM3P/r4Smb9Z4=
+Date: Fri, 7 Nov 2008 22:20:29 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Eduard Munteanu <eduard.munteanu@linux360.ro>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH-ugly] kmemtrace: casting a gfp_t requires __force
+Message-ID: <20081107192029.GA4001@x200.localdomain>
+References: <1226084321.11596.37.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1226084321.11596.37.camel@brick>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Nov 07, 2008 at 10:58:41AM -0800, Harvey Harrison wrote:
+> --- a/include/linux/kmemtrace.h
+> +++ b/include/linux/kmemtrace.h
+> @@ -34,7 +34,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
+>  		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
+>  		   type_id, call_site, (unsigned long) ptr,
+>  		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
+> -		   (unsigned long) gfp_flags, node);
+> +		   (__force unsigned long)gfp_flags, node);
 
-It turns out that if one registers a struct platform_device, the platform
-device code expects that platform_device.device->driver points to a struct
-driver inside a struct platform_driver.  This is not the case with the ipmi-si,
-ipmi-msghandler and ibmaem drivers, which causes the suspend/resume hook
-functions to jump off into nowhere, causing a crash.  Make this assumption hold
-true for these three drivers.
+gfp_t is "unsigned int" actually. These casts are bogus.
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+Subject: How do I printk <type> correctly?
 
- drivers/char/ipmi/ipmi_msghandler.c |   20 +++++++++++---------
- drivers/char/ipmi/ipmi_si_intf.c    |   16 +++++++++-------
- drivers/hwmon/ibmaem.c              |   18 ++++++++++--------
- 3 files changed, 30 insertions(+), 24 deletions(-)
+If variable is of Type	use	printk format specifier.
+---------------------------------------------------------
+		int			%d or %x
+		unsigned int		%u or %x
+		long			%ld ot %lx
+		unsigned long		%lu or %lx
+		long long		%lld or %llx
+		unsigned long long	%llu or %llx
+		size_t			%zu or %zx
+		ssize_t			%zd or %zx
 
-diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-index 8a59aaa..7a88dfd 100644
---- a/drivers/char/ipmi/ipmi_msghandler.c
-+++ b/drivers/char/ipmi/ipmi_msghandler.c
-@@ -422,9 +422,11 @@ struct ipmi_smi {
- /**
-  * The driver model view of the IPMI messaging driver.
-  */
--static struct device_driver ipmidriver = {
--	.name = "ipmi",
--	.bus = &platform_bus_type
-+static struct platform_driver ipmidriver = {
-+	.driver = {
-+		.name = "ipmi",
-+		.bus = &platform_bus_type
-+	}
- };
- static DEFINE_MUTEX(ipmidriver_mutex);
- 
-@@ -2384,9 +2386,9 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
- 	 * representing the interfaced BMC already
- 	 */
- 	if (bmc->guid_set)
--		old_bmc = ipmi_find_bmc_guid(&ipmidriver, bmc->guid);
-+		old_bmc = ipmi_find_bmc_guid(&ipmidriver.driver, bmc->guid);
- 	else
--		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver,
-+		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
- 						    bmc->id.product_id,
- 						    bmc->id.device_id);
- 
-@@ -2416,7 +2418,7 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
- 		snprintf(name, sizeof(name),
- 			 "ipmi_bmc.%4.4x", bmc->id.product_id);
- 
--		while (ipmi_find_bmc_prod_dev_id(&ipmidriver,
-+		while (ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
- 						 bmc->id.product_id,
- 						 bmc->id.device_id)) {
- 			if (!warn_printed) {
-@@ -2446,7 +2448,7 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
- 			       " Unable to allocate platform device\n");
- 			return -ENOMEM;
- 		}
--		bmc->dev->dev.driver = &ipmidriver;
-+		bmc->dev->dev.driver = &ipmidriver.driver;
- 		dev_set_drvdata(&bmc->dev->dev, bmc);
- 		kref_init(&bmc->refcount);
- 
-@@ -4247,7 +4249,7 @@ static int ipmi_init_msghandler(void)
- 	if (initialized)
- 		return 0;
- 
--	rv = driver_register(&ipmidriver);
-+	rv = driver_register(&ipmidriver.driver);
- 	if (rv) {
- 		printk(KERN_ERR PFX "Could not register IPMI driver\n");
- 		return rv;
-@@ -4308,7 +4310,7 @@ static __exit void cleanup_ipmi(void)
- 	remove_proc_entry(proc_ipmi_root->name, NULL);
- #endif /* CONFIG_PROC_FS */
- 
--	driver_unregister(&ipmidriver);
-+	driver_unregister(&ipmidriver.driver);
- 
- 	initialized = 0;
- 
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-index 3123bf5..3000135 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -114,9 +114,11 @@ static char *si_to_str[] = { "kcs", "smic", "bt" };
- 
- #define DEVICE_NAME "ipmi_si"
- 
--static struct device_driver ipmi_driver = {
--	.name = DEVICE_NAME,
--	.bus = &platform_bus_type
-+static struct platform_driver ipmi_driver = {
-+	.driver = {
-+		.name = DEVICE_NAME,
-+		.bus = &platform_bus_type
-+	}
- };
- 
- 
-@@ -2868,7 +2870,7 @@ static int try_smi_init(struct smi_info *new_smi)
- 			goto out_err;
- 		}
- 		new_smi->dev = &new_smi->pdev->dev;
--		new_smi->dev->driver = &ipmi_driver;
-+		new_smi->dev->driver = &ipmi_driver.driver;
- 
- 		rv = platform_device_add(new_smi->pdev);
- 		if (rv) {
-@@ -2983,7 +2985,7 @@ static __devinit int init_ipmi_si(void)
- 	initialized = 1;
- 
- 	/* Register the device drivers. */
--	rv = driver_register(&ipmi_driver);
-+	rv = driver_register(&ipmi_driver.driver);
- 	if (rv) {
- 		printk(KERN_ERR
- 		       "init_ipmi_si: Unable to register driver: %d\n",
-@@ -3052,7 +3054,7 @@ static __devinit int init_ipmi_si(void)
- #ifdef CONFIG_PPC_OF
- 		of_unregister_platform_driver(&ipmi_of_platform_driver);
- #endif
--		driver_unregister(&ipmi_driver);
-+		driver_unregister(&ipmi_driver.driver);
- 		printk(KERN_WARNING
- 		       "ipmi_si: Unable to find any System Interface(s)\n");
- 		return -ENODEV;
-@@ -3151,7 +3153,7 @@ static __exit void cleanup_ipmi_si(void)
- 		cleanup_one_si(e);
- 	mutex_unlock(&smi_infos_lock);
- 
--	driver_unregister(&ipmi_driver);
-+	driver_unregister(&ipmi_driver.driver);
- }
- module_exit(cleanup_ipmi_si);
- 
-diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
-index 7b0ed5d..fe74609 100644
---- a/drivers/hwmon/ibmaem.c
-+++ b/drivers/hwmon/ibmaem.c
-@@ -88,9 +88,11 @@
- static DEFINE_IDR(aem_idr);
- static DEFINE_SPINLOCK(aem_idr_lock);
- 
--static struct device_driver aem_driver = {
--	.name = DRVNAME,
--	.bus = &platform_bus_type,
-+static struct platform_driver aem_driver = {
-+	.driver = {
-+		.name = DRVNAME,
-+		.bus = &platform_bus_type,
-+	}
- };
- 
- struct aem_ipmi_data {
-@@ -583,7 +585,7 @@ static int aem_init_aem1_inst(struct aem_ipmi_data *probe, u8 module_handle)
- 	data->pdev = platform_device_alloc(DRVNAME, data->id);
- 	if (!data->pdev)
- 		goto dev_err;
--	data->pdev->dev.driver = &aem_driver;
-+	data->pdev->dev.driver = &aem_driver.driver;
- 
- 	res = platform_device_add(data->pdev);
- 	if (res)
-@@ -716,7 +718,7 @@ static int aem_init_aem2_inst(struct aem_ipmi_data *probe,
- 	data->pdev = platform_device_alloc(DRVNAME, data->id);
- 	if (!data->pdev)
- 		goto dev_err;
--	data->pdev->dev.driver = &aem_driver;
-+	data->pdev->dev.driver = &aem_driver.driver;
- 
- 	res = platform_device_add(data->pdev);
- 	if (res)
-@@ -1085,7 +1087,7 @@ static int __init aem_init(void)
- {
- 	int res;
- 
--	res = driver_register(&aem_driver);
-+	res = driver_register(&aem_driver.driver);
- 	if (res) {
- 		printk(KERN_ERR "Can't register aem driver\n");
- 		return res;
-@@ -1097,7 +1099,7 @@ static int __init aem_init(void)
- 	return 0;
- 
- ipmi_reg_err:
--	driver_unregister(&aem_driver);
-+	driver_unregister(&aem_driver.driver);
- 	return res;
- 
- }
-@@ -1107,7 +1109,7 @@ static void __exit aem_exit(void)
- 	struct aem_data *p1, *next1;
- 
- 	ipmi_smi_watcher_unregister(&driver_data.bmc_events);
--	driver_unregister(&aem_driver);
-+	driver_unregister(&aem_driver.driver);
- 	list_for_each_entry_safe(p1, next1, &driver_data.aem_devices, list)
- 		aem_delete(p1);
- }
+Raw pointer value SHOULD be printed with %p.
+
+u64 SHOULD be printed with %llu/%llx, (unsigned long long):
+
+	printk("%llu", (unsigned long long)u64_var);
+
+s64 SHOULD be printed with %lld/%llx, (long long):
+
+	printk("%lld", (long long)s64_var);
+
+If type is dependent on config option (sector_t), use format specifier
+of biggest type and explicitly cast to it.
+
+Reminder: sizeof() result is of type size_t.
+
+Thank you for your cooperation.
 
