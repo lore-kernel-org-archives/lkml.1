@@ -1,123 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbYKGNNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYKGNRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752567AbYKGNNA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 08:13:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbYKGNMt
+	id S1752641AbYKGNRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 08:17:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKGNRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 08:12:49 -0500
-Received: from rv-out-0506.google.com ([209.85.198.230]:18947 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYKGNMs (ORCPT
+	Fri, 7 Nov 2008 08:17:09 -0500
+Received: from outbound-mail-37.bluehost.com ([69.89.20.191]:60300 "HELO
+	outbound-mail-37.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751287AbYKGNRH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 08:12:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type
-         :x-google-sender-auth;
-        b=V6aBP5H+0y4JkRwXQcYFb71OHUfAVK5VGYiuCEi8u6aYZBeerrWxZ28oZg4F3eTTaI
-         YAeWag79IruFglchwTTassFc2nYGSCeHdWdXY+9GqLCtwkKRfvJ7m1FYFw1JOLQYCoQB
-         HpQP6SMWPPEwW9/8zOqWXenZPJNJu5qNda5mA=
-Message-ID: <5ff4a1e50811070512v410e623ax60e8a65b169f800@mail.gmail.com>
-Date: Fri, 7 Nov 2008 13:12:47 +0000
-From: "Matt Fleming" <mjf@gentoo.org>
-To: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, rostedt@goodmis.org
-Subject: [PATCH] ftrace: Allow section alignment
+	Fri, 7 Nov 2008 08:17:07 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=uniscape.net;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=fdOjasiNtWp00vMRGvfvyDSmgXaCey9d4Zc2r786eQHi/+u/wlX1A2xqqe/hd8WONEsrJXrkGSz/yQIbzTAhouApytrbz7PBVwtcGRq0zhTsZ3NxiJBVIt+NG+f2e6TR;
+Message-ID: <49143E00.30003@uniscape.net>
+Date: Fri, 07 Nov 2008 21:09:20 +0800
+From: Yu Zhao <yu.zhao@uniscape.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_27883_16227586.1226063567808"
-X-Google-Sender-Auth: 6a520e886942ab10
+To: H L <swdevyid@yahoo.com>
+CC: Greg KH <greg@kroah.com>, Yu Zhao <yu.zhao@intel.com>,
+       randy.dunlap@oracle.com, grundler@parisc-linux.org, achiang@hp.com,
+       matthew@wil.cx, linux-pci@vger.kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       mingo@elte.hu, Xen-devel List <xen-devel@lists.xensource.com>
+Subject: Re: git repository for SR-IOV development?
+References: <20081106165914.GA13476@kroah.com> <104014.9320.qm@web45110.mail.sp1.yahoo.com> <20081107015844.GA11884@kroah.com>
+In-Reply-To: <20081107015844.GA11884@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {2990:host272.hostmonster.com:uniscape:uniscape.net} {sentby:smtp auth 124.76.3.39 authed with yu.zhao@uniscape.net}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_27883_16227586.1226063567808
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello Lance,
 
-Provide a means of aligning the __mcount_loc section.
+Thanks for your interest in SR-IOV. As Greg said we can't have a git 
+tree for the change, but you are welcome to ask any question here and I 
+also will keep you informed if there is any update on the SR-IOV patches.
 
-Signed-off-by: Matt Fleming <matthew.fleming@imgtec.com>
----
- scripts/recordmcount.pl |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Thanks,
+Yu
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 6b9fe3e..2d0bfa1 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -134,6 +134,7 @@ my $section_regex;  # Find the start of a section
- my $function_regex;    # Find the name of a function
-                        #    (return offset and func name)
- my $mcount_regex;      # Find the call site to mcount (return offset)
-+my $alignment;         # The .align value to use for $mcount_section
+Greg KH wrote:
+> On Thu, Nov 06, 2008 at 11:58:25AM -0800, H L wrote:
+>> --- On Thu, 11/6/08, Greg KH <greg@kroah.com> wrote:
+>>
+>>> On Thu, Nov 06, 2008 at 08:51:09AM -0800, H L wrote:
+>>>> Has anyone initiated or given consideration to the
+>>> creation of a git
+>>>> repository (say, on kernel.org) for SR-IOV
+>>> development?
+>>>
+>>> Why?  It's only a few patches, right?  Why would it
+>>> need a whole new git
+>>> tree?
+>>
+>> So as to minimize the time and effort patching a kernel, especially if
+>> the tree (and/or hash level) against which the patches were created
+>> fails to be specified on a mailing-list.  Plus, there appears to be
+>> questions raised on how, precisely, the implementation should
+>> ultimately be modeled and especially given that, who knows at this
+>> point what number of patches will ultimately be submitted?  I know
+>> I've built the "7-patch" one (painfully, by the way), and I'm aware
+>> there's another 15-patch set out there which I've not yet examined.
+> 
+> It's a mere 7 or 15 patches, you don't need a whole git tree for
+> something small like that.
+> 
+> Especially as there only seems to be one developer doing real work...
+> 
+> thanks,
+> 
+> greg k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
- if ($arch eq "x86") {
-     if ($bits == 64) {
-@@ -148,6 +149,7 @@ if ($arch eq "x86_64") {
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount([+-]0x[0-9a-zA-Z]+)?\$";
-     $type = ".quad";
-+    $alignment = 8;
-
-     # force flags for this arch
-     $ld .= " -m elf_x86_64";
-@@ -160,6 +162,7 @@ if ($arch eq "x86_64") {
-     $function_regex = "^([0-9a-fA-F]+)\\s+<(.*?)>:";
-     $mcount_regex = "^\\s*([0-9a-fA-F]+):.*\\smcount\$";
-     $type = ".long";
-+    $alignment = 4;
-
-     # force flags for this arch
-     $ld .= " -m elf_i386";
-@@ -288,6 +291,7 @@ sub update_funcs
-            open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
-            $opened = 1;
-            print FILE "\t.section $mcount_section,\"a\",\@progbits\n";
-+           print FILE "\t.align $alignment\n";
-        }
-        printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
-     }
---
-1.5.6.4
-
-------=_Part_27883_16227586.1226063567808
-Content-Type: text/x-diff; name=0001-ftrace-Allow-section-alignment.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fn8ujm5v0
-Content-Disposition: attachment;
- filename=0001-ftrace-Allow-section-alignment.patch
-
-RnJvbSAyYTQwNWU3NTQ0NTdhNjc2MTU1ZmI4NmU2MmRhYzQzYzYwZWU0YmUwIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBNYXR0IEZsZW1pbmcgPG1hdHRoZXcuZmxlbWluZ0BpbWd0ZWMu
-Y29tPgpEYXRlOiBGcmksIDcgTm92IDIwMDggMTI6NTU6MjIgKzAwMDAKU3ViamVjdDogW1BBVENI
-XSBmdHJhY2U6IEFsbG93IHNlY3Rpb24gYWxpZ25tZW50CgpQcm92aWRlIGEgbWVhbnMgb2YgYWxp
-Z25pbmcgdGhlIF9fbWNvdW50X2xvYyBzZWN0aW9uLgoKU2lnbmVkLW9mZi1ieTogTWF0dCBGbGVt
-aW5nIDxtYXR0aGV3LmZsZW1pbmdAaW1ndGVjLmNvbT4KLS0tCiBzY3JpcHRzL3JlY29yZG1jb3Vu
-dC5wbCB8ICAgIDQgKysrKwogMSBmaWxlcyBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDAgZGVs
-ZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvc2NyaXB0cy9yZWNvcmRtY291bnQucGwgYi9zY3JpcHRz
-L3JlY29yZG1jb3VudC5wbAppbmRleCA2YjlmZTNlLi4yZDBiZmExIDEwMDc1NQotLS0gYS9zY3Jp
-cHRzL3JlY29yZG1jb3VudC5wbAorKysgYi9zY3JpcHRzL3JlY29yZG1jb3VudC5wbApAQCAtMTM0
-LDYgKzEzNCw3IEBAIG15ICRzZWN0aW9uX3JlZ2V4OwkjIEZpbmQgdGhlIHN0YXJ0IG9mIGEgc2Vj
-dGlvbgogbXkgJGZ1bmN0aW9uX3JlZ2V4OwkjIEZpbmQgdGhlIG5hbWUgb2YgYSBmdW5jdGlvbgog
-CQkJIyAgICAocmV0dXJuIG9mZnNldCBhbmQgZnVuYyBuYW1lKQogbXkgJG1jb3VudF9yZWdleDsJ
-IyBGaW5kIHRoZSBjYWxsIHNpdGUgdG8gbWNvdW50IChyZXR1cm4gb2Zmc2V0KQorbXkgJGFsaWdu
-bWVudDsJCSMgVGhlIC5hbGlnbiB2YWx1ZSB0byB1c2UgZm9yICRtY291bnRfc2VjdGlvbgogCiBp
-ZiAoJGFyY2ggZXEgIng4NiIpIHsKICAgICBpZiAoJGJpdHMgPT0gNjQpIHsKQEAgLTE0OCw2ICsx
-NDksNyBAQCBpZiAoJGFyY2ggZXEgIng4Nl82NCIpIHsKICAgICAkZnVuY3Rpb25fcmVnZXggPSAi
-XihbMC05YS1mQS1GXSspXFxzKzwoLio/KT46IjsKICAgICAkbWNvdW50X3JlZ2V4ID0gIl5cXHMq
-KFswLTlhLWZBLUZdKyk6LipcXHNtY291bnQoWystXTB4WzAtOWEtekEtWl0rKT9cJCI7CiAgICAg
-JHR5cGUgPSAiLnF1YWQiOworICAgICRhbGlnbm1lbnQgPSA4OwogCiAgICAgIyBmb3JjZSBmbGFn
-cyBmb3IgdGhpcyBhcmNoCiAgICAgJGxkIC49ICIgLW0gZWxmX3g4Nl82NCI7CkBAIC0xNjAsNiAr
-MTYyLDcgQEAgaWYgKCRhcmNoIGVxICJ4ODZfNjQiKSB7CiAgICAgJGZ1bmN0aW9uX3JlZ2V4ID0g
-Il4oWzAtOWEtZkEtRl0rKVxccys8KC4qPyk+OiI7CiAgICAgJG1jb3VudF9yZWdleCA9ICJeXFxz
-KihbMC05YS1mQS1GXSspOi4qXFxzbWNvdW50XCQiOwogICAgICR0eXBlID0gIi5sb25nIjsKKyAg
-ICAkYWxpZ25tZW50ID0gNDsKIAogICAgICMgZm9yY2UgZmxhZ3MgZm9yIHRoaXMgYXJjaAogICAg
-ICRsZCAuPSAiIC1tIGVsZl9pMzg2IjsKQEAgLTI4OCw2ICsyOTEsNyBAQCBzdWIgdXBkYXRlX2Z1
-bmNzCiAJICAgIG9wZW4oRklMRSwgIj4kbWNvdW50X3MiKSB8fCBkaWUgImNhbid0IGNyZWF0ZSAk
-bWNvdW50X3NcbiI7CiAJICAgICRvcGVuZWQgPSAxOwogCSAgICBwcmludCBGSUxFICJcdC5zZWN0
-aW9uICRtY291bnRfc2VjdGlvbixcImFcIixcQHByb2diaXRzXG4iOworCSAgICBwcmludCBGSUxF
-ICJcdC5hbGlnbiAkYWxpZ25tZW50XG4iOwogCX0KIAlwcmludGYgRklMRSAiXHQlcyAlcyArICVk
-XG4iLCAkdHlwZSwgJHJlZl9mdW5jLCAkb2Zmc2V0c1skaV0gLSAkb2Zmc2V0OwogICAgIH0KLS0g
-CjEuNS42LjQKCg==
-------=_Part_27883_16227586.1226063567808--
