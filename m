@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYKGOa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYKGOar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532AbYKGOa1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYKGOaA
+	id S1753333AbYKGOar (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbYKGOaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:30:00 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57667 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751543AbYKGO36 (ORCPT
+	Fri, 7 Nov 2008 09:30:08 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49352 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbYKGOaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:29:58 -0500
-Date: Fri, 7 Nov 2008 14:29:50 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Hudson <linux-kernel@blueteddy.net>
-Cc: Ilpo =?ISO-8859-14?B?SuRydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
-       Mikael Abrahamsson <swmike@swm.pp.se>,
-       David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
+	Fri, 7 Nov 2008 09:30:04 -0500
+Date: Fri, 7 Nov 2008 16:30:01 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+cc: Mikael Abrahamsson <swmike@swm.pp.se>, David Miller <davem@davemloft.net>,
        LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
        linux-net@vger.kernel.org
 Subject: Re: time for TCP ECN defaulting to on?
-Message-ID: <20081107142950.13906925@lxorguk.ukuu.org.uk>
-In-Reply-To: <4914240F.7050701@blueteddy.net>
-References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
-	<alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
-	<20081105.151015.206163697.davem@davemloft.net>
-	<alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
-	<Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi>
-	<4914240F.7050701@blueteddy.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+In-Reply-To: <6278d2220811070543p51ca2139t13aba28e6dba5ff4@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811071548060.23792@wrl-59.cs.helsinki.fi>
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> 
+ <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se> 
+ <20081105.151015.206163697.davem@davemloft.net> 
+ <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se> 
+ <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi> 
+ <alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se> 
+ <Pine.LNX.4.64.0811071039480.23629@wrl-59.cs.helsinki.fi> 
+ <alpine.DEB.1.10.0811071230310.10993@uplift.swm.pp.se> 
+ <Pine.LNX.4.64.0811071341430.23792@wrl-59.cs.helsinki.fi>
+ <6278d2220811070543p51ca2139t13aba28e6dba5ff4@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Not all of the routers in question (the ones that crash, block packets 
-> or otherwise misbehave) are provided by ISPs
+On Fri, 7 Nov 2008, Daniel J Blueman wrote:
 
-The ones that block and misbehave are the bigger problem. The ones that
-crash are less of a problem and I think they are less common. Certainly
-if they were common then people would be abusing the flaw routinely.
-Similar end users tend to grasp "if it keeps crashing blame the supplier".
+> then we
+> avoid hurting these users by enabling ECN per default when eg
+> CONFIG_IP_ADVANCED_ROUTER is set (to little direct benefit of course).
 
-When stuff just mysteriously doesn't work it is a whole lot more
-problematic. I think however Sally Floyd had it right and Alexey has it
-wrong (as does Davem).
+I suppose all distros enable that anyway in generic kernels so it's not 
+going to be any different from just enabling it.
 
-If you turn it off on a retransmit then you provide an immediate
-incentive for everyone on the web server end of the business to fix their
-network. Especially if you turn it off for second retransmit. That will
-cause faulty ECN handling sites to feel "a bit slow" and we know from
-marketing data that web site performance is crucial to customer base. A
-three or four second delay getting a page up translates into dramatically
-reduced hit counts.
+> It's a start and a constructive idea; by doing this and documenting
+> it, we provide a wake-up call for vendors, laying the path for
+> enabling it for all types of host in a few years. Even enabling ECN
+> for -rc kernels will raise awareness.
+>
+> Alternatively, an ECN-day could be publicised targeting the linux tech
+> community, where we can report failing networks/sites to a central
+> website to quantify actual potential negative impact.
 
-Alan
+This will still miss much. Eg., the ordering problems were not discovered 
+afaik until 2.6.27 release, that's quite long time of testing without 
+anybody noticing that hey it's broken (it might be that some distro 
+circles saw this with some -rcx if they were using them but that didn't 
+gain much attention until 2.6.27 was already out). And at that time 
+the imminent release of Ubuntu's made the amount of testers much more 
+abundant resource than with some other kernel version.
+
+Agreed that we definately should do more than just turn it on and wait for 
+troubles but educating users might turn out to be quite hard problem. 
+And certainly there will be troubles as even with the most comprehensive 
+attempts within linux' dev+tester community are going to leave major holes 
+like was proven with the tcp option ordering saga.
+
+
+-- 
+ i.
