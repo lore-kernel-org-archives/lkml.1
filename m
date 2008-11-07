@@ -1,56 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbYKGJGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYKGJIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbYKGJGv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYKGJG1
+	id S1754059AbYKGJIP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:08:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYKGJIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:06:27 -0500
-Received: from gw2.scei.a-star.edu.sg ([192.122.140.11]:48275 "EHLO
-	gw2.scei.a-star.edu.sg" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbYKGJGZ convert rfc822-to-8bit (ORCPT
+	Fri, 7 Nov 2008 04:08:00 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:44544 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbYKGJH5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:06:25 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Fri, 7 Nov 2008 04:07:57 -0500
+Date: Fri, 7 Nov 2008 17:53:03 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>, nishimura@mxp.nes.nec.co.jp
+Subject: Re: [RFC][PATCH 2/6] memcg: handle swap cache
+Message-Id: <20081107175303.1d5c8a29.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20081105172009.d9541e27.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081105172009.d9541e27.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: UWB, WUSB, and WLP subsystems for 2.6.28
-Date: Fri, 7 Nov 2008 17:02:06 +0800
-Message-ID: <162B8AFBFBBB2148A9A1B8F9C5753428057B9D69@mailbe01.teak.local.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: UWB, WUSB, and WLP subsystems for 2.6.28
-Thread-Index: Ack07e3s/h2fDgRBSNS5fq0hME3uUALyZSID
-References: <fa.s78bJIT7sRB89tYmSVZWUEBUq5k@ifi.uio.no> <6f3df9eb-5c1a-4ee1-a78f-7c0ff55a42fc@t18g2000prt.googlegroups.com> <49003D45.4080708@csr.com>
-From: "Law Sie Yong" <sylaw@i2r.a-star.edu.sg>
-To: "David Vrabel" <david.vrabel@csr.com>
-Cc: "Kernel development list" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 07 Nov 2008 09:06:02.0664 (UTC) FILETIME=[0F00CA80:01C940B8]
-X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.7400:2.4.4,1.2.40,4.0.166 definitions=2008-11-07_02:2008-11-06,2008-11-07,2008-11-06 signatures=0
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=0 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=5.0.0-0810130000 definitions=main-0811070001
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Wed, 5 Nov 2008 17:20:09 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> SwapCache support for memory resource controller (memcg)
+> 
+> Before mem+swap controller, memcg itself should handle SwapCache in proper way.
+> 
+> In current memcg, SwapCache is just leaked and the user can create tons of
+> SwapCache. This is a leak of account and should be handled.
+> 
+> SwapCache accounting is done as following.
+> 
+>   charge (anon)
+> 	- charged when it's mapped.
+> 	  (because of readahead, charge at add_to_swap_cache() is not sane)
+>   uncharge (anon)
+> 	- uncharged when it's dropped from swapcache and fully unmapped.
+> 	  means it's not uncharged at unmap.
+> 	  Note: delete from swap cache at swap-in is done after rmap information
+> 	        is established.
+>   charge (shmem)
+> 	- charged at swap-in. this prevents charge at add_to_page_cache().
+> 
+>   uncharge (shmem)
+> 	- uncharged when it's dropped from swapcache and not on shmem's
+> 	  radix-tree.
+> 
+>   at migration, check against 'old page' is modified to handle shmem.
+> 
+> Comparing to the old version discussed (and caused troubles), we have
+> advantages of
+>   - PCG_USED bit.
+>   - simple migrating handling.
+> 
+> So, situation is much easier than several months ago, maybe.
+> 
+> Changelog (v1) -> (v2)
+>   - use lock_page() when we handle unlocked SwapCache.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+I tested this version under swap in/out activity with page migration/rmdir,
+and it worked w/o errors for more than 24 hours.
 
-  Just wondering if you know the email address of Ed Stock from Intel, as he seems to have the firmware that work with WLP according to the link below
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-http://www.spinics.net/lists/linux-usb/msg11640.html. Or anyone in the mailing list that can let me know. Thx in advance !
 
+Thanks,
+Daisuke Nishimura.
 
-Law Sie Yong
-Senior Research Officer
-Communication Systems Department
-
-**********************  ANNOUNCEMENT ********************************
- We have moved to Fusionopolis!
- Our official address is:
- Institute for Infocomm Research,  1 Fusionopolis Way,  #21-01 Connexis, South Tower,
- Singapore 138632.   Main line: +65 64082000. Main fax: +65 67761378
- Please visit http://www.fusionopolis.a-star.edu.sg/ for more information
- on Fusionopolis.
-******************************************************************
-
-Institute For Infocomm Research - Disclaimer This email is confidential and may be privileged.  If you are not the intended recipient, please delete it and notify us immediately. Please do not copy or use it for any purpose, or disclose its contents to any other person. Thank you."
+> ---
+>  Documentation/controllers/memory.txt |    5 ++
+>  include/linux/swap.h                 |   16 ++++++++
+>  mm/memcontrol.c                      |   67 +++++++++++++++++++++++++++++++----
+>  mm/shmem.c                           |   18 ++++++++-
+>  mm/swap_state.c                      |    1 
+>  5 files changed, 99 insertions(+), 8 deletions(-)
+> 
+> Index: mmotm-2.6.28-rc2+/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/mm/memcontrol.c
+> +++ mmotm-2.6.28-rc2+/mm/memcontrol.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/memcontrol.h>
+>  #include <linux/cgroup.h>
+>  #include <linux/mm.h>
+> +#include <linux/pagemap.h>
+>  #include <linux/smp.h>
+>  #include <linux/page-flags.h>
+>  #include <linux/backing-dev.h>
+> @@ -140,6 +141,7 @@ enum charge_type {
+>  	MEM_CGROUP_CHARGE_TYPE_MAPPED,
+>  	MEM_CGROUP_CHARGE_TYPE_SHMEM,	/* used by page migration of shmem */
+>  	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
+> +	MEM_CGROUP_CHARGE_TYPE_SWAPOUT,	/* for accounting swapcache */
+>  	NR_CHARGE_TYPE,
+>  };
+>  
+> @@ -781,6 +783,33 @@ int mem_cgroup_cache_charge(struct page 
+>  				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
+>  }
+>  
+> +#ifdef CONFIG_SWAP
+> +int mem_cgroup_cache_charge_swapin(struct page *page,
+> +			struct mm_struct *mm, gfp_t mask, bool locked)
+> +{
+> +	int ret = 0;
+> +
+> +	if (mem_cgroup_subsys.disabled)
+> +		return 0;
+> +	if (unlikely(!mm))
+> +		mm = &init_mm;
+> +	if (!locked)
+> +		lock_page(page);
+> +	/*
+> +	 * If not locked, the page can be dropped from SwapCache until
+> +	 * we reach here.
+> +	 */
+> +	if (PageSwapCache(page)) {
+> +		ret = mem_cgroup_charge_common(page, mm, mask,
+> +				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
+> +	}
+> +	if (!locked)
+> +		unlock_page(page);
+> +
+> +	return ret;
+> +}
+> +#endif
+> +
+>  void mem_cgroup_commit_charge_swapin(struct page *page, struct mem_cgroup *ptr)
+>  {
+>  	struct page_cgroup *pc;
+> @@ -818,6 +847,9 @@ __mem_cgroup_uncharge_common(struct page
+>  	if (mem_cgroup_subsys.disabled)
+>  		return;
+>  
+> +	if (PageSwapCache(page))
+> +		return;
+> +
+>  	/*
+>  	 * Check if our page_cgroup is valid
+>  	 */
+> @@ -826,12 +858,26 @@ __mem_cgroup_uncharge_common(struct page
+>  		return;
+>  
+>  	lock_page_cgroup(pc);
+> -	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED && page_mapped(page))
+> -	     || !PageCgroupUsed(pc)) {
+> -		/* This happens at race in zap_pte_range() and do_swap_page()*/
+> -		unlock_page_cgroup(pc);
+> -		return;
+> +
+> +	if (!PageCgroupUsed(pc))
+> +		goto unlock_out;
+> +
+> +	switch(ctype) {
+> +	case MEM_CGROUP_CHARGE_TYPE_MAPPED:
+> +		if (page_mapped(page))
+> +			goto unlock_out;
+> +		break;
+> +	case MEM_CGROUP_CHARGE_TYPE_SWAPOUT:
+> +		if (!PageAnon(page)) {	/* Shared memory */
+> +			if (page->mapping && !page_is_file_cache(page))
+> +				goto unlock_out;
+> +		} else if (page_mapped(page)) /* Anon */
+> +				goto unlock_out;
+> +		break;
+> +	default:
+> +		break;
+>  	}
+> +
+>  	ClearPageCgroupUsed(pc);
+>  	mem = pc->mem_cgroup;
+>  
+> @@ -845,6 +891,10 @@ __mem_cgroup_uncharge_common(struct page
+>  	css_put(&mem->css);
+>  
+>  	return;
+> +
+> +unlock_out:
+> +	unlock_page_cgroup(pc);
+> +	return;
+>  }
+>  
+>  void mem_cgroup_uncharge_page(struct page *page)
+> @@ -864,6 +914,11 @@ void mem_cgroup_uncharge_cache_page(stru
+>  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+>  }
+>  
+> +void mem_cgroup_uncharge_swapcache(struct page *page)
+> +{
+> +	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
+> +}
+> +
+>  /*
+>   * Before starting migration, account PAGE_SIZE to mem_cgroup that the old
+>   * page belongs to.
+> @@ -921,7 +976,7 @@ void mem_cgroup_end_migration(struct mem
+>  		ctype = MEM_CGROUP_CHARGE_TYPE_SHMEM;
+>  
+>  	/* unused page is not on radix-tree now. */
+> -	if (unused && ctype != MEM_CGROUP_CHARGE_TYPE_MAPPED)
+> +	if (unused)
+>  		__mem_cgroup_uncharge_common(unused, ctype);
+>  
+>  	pc = lookup_page_cgroup(target);
+> Index: mmotm-2.6.28-rc2+/mm/swap_state.c
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/mm/swap_state.c
+> +++ mmotm-2.6.28-rc2+/mm/swap_state.c
+> @@ -119,6 +119,7 @@ void __delete_from_swap_cache(struct pag
+>  	total_swapcache_pages--;
+>  	__dec_zone_page_state(page, NR_FILE_PAGES);
+>  	INC_CACHE_INFO(del_total);
+> +	mem_cgroup_uncharge_swapcache(page);
+>  }
+>  
+>  /**
+> Index: mmotm-2.6.28-rc2+/include/linux/swap.h
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/include/linux/swap.h
+> +++ mmotm-2.6.28-rc2+/include/linux/swap.h
+> @@ -332,6 +332,22 @@ static inline void disable_swap_token(vo
+>  	put_swap_token(swap_token_mm);
+>  }
+>  
+> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> +extern int mem_cgroup_cache_charge_swapin(struct page *page,
+> +				struct mm_struct *mm, gfp_t mask, bool locked);
+> +extern void mem_cgroup_uncharge_swapcache(struct page *page);
+> +#else
+> +static inline
+> +int mem_cgroup_cache_charge_swapin(struct page *page,
+> +				struct mm_struct *mm, gfp_t mask, bool locked)
+> +{
+> +	return 0;
+> +}
+> +static inline void mem_cgroup_uncharge_swapcache(struct page *page)
+> +{
+> +}
+> +#endif
+> +
+>  #else /* CONFIG_SWAP */
+>  
+>  #define total_swap_pages			0
+> Index: mmotm-2.6.28-rc2+/mm/shmem.c
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/mm/shmem.c
+> +++ mmotm-2.6.28-rc2+/mm/shmem.c
+> @@ -920,8 +920,12 @@ found:
+>  	error = 1;
+>  	if (!inode)
+>  		goto out;
+> -	/* Charge page using GFP_HIGHUSER_MOVABLE while we can wait */
+> -	error = mem_cgroup_cache_charge(page, current->mm, GFP_HIGHUSER_MOVABLE);
+> +	/*
+> +         * Charge page using GFP_HIGHUSER_MOVABLE while we can wait.
+> +         * charged back to the user(not to caller) when swap account is used.
+> +         */
+> +	error = mem_cgroup_cache_charge_swapin(page,
+> +			current->mm, GFP_HIGHUSER_MOVABLE, true);
+>  	if (error)
+>  		goto out;
+>  	error = radix_tree_preload(GFP_KERNEL);
+> @@ -1258,6 +1262,16 @@ repeat:
+>  				goto repeat;
+>  			}
+>  			wait_on_page_locked(swappage);
+> +			/*
+> +			 * We want to avoid charge at add_to_page_cache().
+> +			 * charge against this swap cache here.
+> +			 */
+> +			if (mem_cgroup_cache_charge_swapin(swappage,
+> +						current->mm, gfp, false)) {
+> +				page_cache_release(swappage);
+> +				error = -ENOMEM;
+> +				goto failed;
+> +			}
+>  			page_cache_release(swappage);
+>  			goto repeat;
+>  		}
+> Index: mmotm-2.6.28-rc2+/Documentation/controllers/memory.txt
+> ===================================================================
+> --- mmotm-2.6.28-rc2+.orig/Documentation/controllers/memory.txt
+> +++ mmotm-2.6.28-rc2+/Documentation/controllers/memory.txt
+> @@ -137,6 +137,11 @@ behind this approach is that a cgroup th
+>  page will eventually get charged for it (once it is uncharged from
+>  the cgroup that brought it in -- this will happen on memory pressure).
+>  
+> +Exception: When you do swapoff and make swapped-out pages of shmem(tmpfs) to
+> +be backed into memory in force, charges for pages are accounted against the
+> +caller of swapoff rather than the users of shmem.
+> +
+> +
+>  2.4 Reclaim
+>  
+>  Each cgroup maintains a per cgroup LRU that consists of an active
+> 
