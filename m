@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYKGX3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbYKGXaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbYKGX3n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:29:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbYKGXXS
+	id S1755177AbYKGXaa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbYKGXXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:23:18 -0500
-Received: from kroah.org ([198.145.64.141]:59389 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:23:21 -0500
+Received: from kroah.org ([198.145.64.141]:59421 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753854AbYKGXXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:23:14 -0500
-Date: Fri, 7 Nov 2008 15:16:02 -0800
+	id S1753847AbYKGXXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:23:17 -0500
+Date: Fri, 7 Nov 2008 15:16:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@infradead.org>,
-       Julia Jomantaite <julia.jomantaite@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 19/23] ACPI: video: fix brightness allocation
-Message-ID: <20081107231602.GT1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: [patch 21/23] netfilter: xt_iprange: fix range inversion match
+Message-ID: <20081107231609.GV1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-video-fix-brightness-allocation.patch"
+Content-Disposition: inline; filename="netfilter-xt_iprange-fix-range-inversion-match.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,180 +43,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Julia Jomantaite <julia.jomantaite@gmail.com>
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-upstream commit 469778c1740fcf3113498b6fdf4559bdec25c58f
+netfilter: xt_iprange: fix range inversion match
 
-Thanks to Arjan for spotting this
-http://www.kerneloops.org/search.php?search=acpi_video_switch_brightness
-and suggesting it for .stable
+Upstream commit 6def1eb48:
 
+Inverted IPv4 v1 and IPv6 v0 matches don't match anything since 2.6.25-rc1!
 
-Fix use of uninitialized device->brightness.
-
-Signed-off-by: Julia Jomantaite <julia.jomantaite@gmail.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Jan Engelhardt <jengelh@medozas.de>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/video.c |  123 ++++++++++++++++++++++++++++++---------------------
- 1 file changed, 73 insertions(+), 50 deletions(-)
+ net/netfilter/xt_iprange.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -631,6 +631,76 @@ acpi_video_bus_DOS(struct acpi_video_bus
-  *  	device	: video output device (LCD, CRT, ..)
-  *
-  *  Return Value:
-+ *	Maximum brightness level
-+ *
-+ *  Allocate and initialize device->brightness.
-+ */
-+
-+static int
-+acpi_video_init_brightness(struct acpi_video_device *device)
-+{
-+	union acpi_object *obj = NULL;
-+	int i, max_level = 0, count = 0;
-+	union acpi_object *o;
-+	struct acpi_video_device_brightness *br = NULL;
-+
-+	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
-+						"LCD brightness level\n"));
-+		goto out;
-+	}
-+
-+	if (obj->package.count < 2)
-+		goto out;
-+
-+	br = kzalloc(sizeof(*br), GFP_KERNEL);
-+	if (!br) {
-+		printk(KERN_ERR "can't allocate memory\n");
-+		goto out;
-+	}
-+
-+	br->levels = kmalloc(obj->package.count * sizeof *(br->levels),
-+				GFP_KERNEL);
-+	if (!br->levels)
-+		goto out_free;
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		o = (union acpi_object *)&obj->package.elements[i];
-+		if (o->type != ACPI_TYPE_INTEGER) {
-+			printk(KERN_ERR PREFIX "Invalid data\n");
-+			continue;
-+		}
-+		br->levels[count] = (u32) o->integer.value;
-+
-+		if (br->levels[count] > max_level)
-+			max_level = br->levels[count];
-+		count++;
-+	}
-+
-+	if (count < 2)
-+		goto out_free_levels;
-+
-+	br->count = count;
-+	device->brightness = br;
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "found %d brightness levels\n", count));
-+	kfree(obj);
-+	return max_level;
-+
-+out_free_levels:
-+	kfree(br->levels);
-+out_free:
-+	kfree(br);
-+out:
-+	device->brightness = NULL;
-+	kfree(obj);
-+	return 0;
-+}
-+
-+/*
-+ *  Arg:
-+ *	device	: video output device (LCD, CRT, ..)
-+ *
-+ *  Return Value:
-  *  	None
-  *
-  *  Find out all required AML methods defined under the output
-@@ -640,10 +710,7 @@ acpi_video_bus_DOS(struct acpi_video_bus
- static void acpi_video_device_find_cap(struct acpi_video_device *device)
- {
- 	acpi_handle h_dummy1;
--	int i;
- 	u32 max_level = 0;
--	union acpi_object *obj = NULL;
--	struct acpi_video_device_brightness *br = NULL;
- 
- 
- 	memset(&device->cap, 0, sizeof(device->cap));
-@@ -672,53 +739,7 @@ static void acpi_video_device_find_cap(s
- 		device->cap._DSS = 1;
+--- a/net/netfilter/xt_iprange.c
++++ b/net/netfilter/xt_iprange.c
+@@ -67,7 +67,7 @@ iprange_mt4(const struct sk_buff *skb, c
+ 	if (info->flags & IPRANGE_SRC) {
+ 		m  = ntohl(iph->saddr) < ntohl(info->src_min.ip);
+ 		m |= ntohl(iph->saddr) > ntohl(info->src_max.ip);
+-		m ^= info->flags & IPRANGE_SRC_INV;
++		m ^= !!(info->flags & IPRANGE_SRC_INV);
+ 		if (m) {
+ 			pr_debug("src IP " NIPQUAD_FMT " NOT in range %s"
+ 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
+@@ -81,7 +81,7 @@ iprange_mt4(const struct sk_buff *skb, c
+ 	if (info->flags & IPRANGE_DST) {
+ 		m  = ntohl(iph->daddr) < ntohl(info->dst_min.ip);
+ 		m |= ntohl(iph->daddr) > ntohl(info->dst_max.ip);
+-		m ^= info->flags & IPRANGE_DST_INV;
++		m ^= !!(info->flags & IPRANGE_DST_INV);
+ 		if (m) {
+ 			pr_debug("dst IP " NIPQUAD_FMT " NOT in range %s"
+ 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
+@@ -123,14 +123,14 @@ iprange_mt6(const struct sk_buff *skb, c
+ 	if (info->flags & IPRANGE_SRC) {
+ 		m  = iprange_ipv6_sub(&iph->saddr, &info->src_min.in6) < 0;
+ 		m |= iprange_ipv6_sub(&iph->saddr, &info->src_max.in6) > 0;
+-		m ^= info->flags & IPRANGE_SRC_INV;
++		m ^= !!(info->flags & IPRANGE_SRC_INV);
+ 		if (m)
+ 			return false;
  	}
- 
--	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
--
--		if (obj->package.count >= 2) {
--			int count = 0;
--			union acpi_object *o;
--
--			br = kzalloc(sizeof(*br), GFP_KERNEL);
--			if (!br) {
--				printk(KERN_ERR "can't allocate memory\n");
--			} else {
--				br->levels = kmalloc(obj->package.count *
--						     sizeof *(br->levels), GFP_KERNEL);
--				if (!br->levels)
--					goto out;
--
--				for (i = 0; i < obj->package.count; i++) {
--					o = (union acpi_object *)&obj->package.
--					    elements[i];
--					if (o->type != ACPI_TYPE_INTEGER) {
--						printk(KERN_ERR PREFIX "Invalid data\n");
--						continue;
--					}
--					br->levels[count] = (u32) o->integer.value;
--
--					if (br->levels[count] > max_level)
--						max_level = br->levels[count];
--					count++;
--				}
--			      out:
--				if (count < 2) {
--					kfree(br->levels);
--					kfree(br);
--				} else {
--					br->count = count;
--					device->brightness = br;
--					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--							  "found %d brightness levels\n",
--							  count));
--				}
--			}
--		}
--
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
--	}
--
--	kfree(obj);
-+	max_level = acpi_video_init_brightness(device);
- 
- 	if (device->cap._BCL && device->cap._BCM && max_level > 0) {
- 		int result;
-@@ -1705,6 +1726,8 @@ static void
- acpi_video_switch_brightness(struct acpi_video_device *device, int event)
- {
- 	unsigned long level_current, level_next;
-+	if (!device->brightness)
-+		return;
- 	acpi_video_device_lcd_get_level_current(device, &level_current);
- 	level_next = acpi_video_get_next_level(device, level_current, event);
- 	acpi_video_device_lcd_set_level(device, level_next);
+ 	if (info->flags & IPRANGE_DST) {
+ 		m  = iprange_ipv6_sub(&iph->daddr, &info->dst_min.in6) < 0;
+ 		m |= iprange_ipv6_sub(&iph->daddr, &info->dst_max.in6) > 0;
+-		m ^= info->flags & IPRANGE_DST_INV;
++		m ^= !!(info->flags & IPRANGE_DST_INV);
+ 		if (m)
+ 			return false;
+ 	}
 
 -- 
