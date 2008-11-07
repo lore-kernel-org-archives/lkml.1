@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbYKGXYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbYKGXZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbYKGXYI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:24:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbYKGXWy
+	id S1754183AbYKGXZd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYKGXW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:22:54 -0500
-Received: from kroah.org ([198.145.64.141]:59166 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:22:58 -0500
+Received: from kroah.org ([198.145.64.141]:59217 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752758AbYKGXWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:22:53 -0500
-Date: Fri, 7 Nov 2008 15:15:18 -0800
+	id S1753572AbYKGXW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:22:58 -0500
+Date: Fri, 7 Nov 2008 15:15:27 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: [patch 03/23] edac cell: fix incorrect edac_mode
-Message-ID: <20081107231518.GD1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Serge Hallyn <serue@us.ibm.com>,
+       David Howells <dhowells@redhat.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>
+Subject: [patch 07/23] file caps: always start with clear bprm->caps_*
+Message-ID: <20081107231527.GH1108@kroah.com>
 References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="edac-cell-fix-incorrect-edac_mode.patch"
+Content-Disposition: inline; filename="file-caps-always-start-with-clear-bprm-caps_.patch"
 In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,34 +41,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Serge Hallyn <serue@us.ibm.com>
 
-commit 3b274f44d2ca05f719fe39947b6a5293a2dbd8fd upstream
+commit 3318a386e4ca68c76e0294363d29bdc46fcad670 upstream
 
-The cell_edac driver is setting the edac_mode field of the csrow's to an
-incorrect value, causing the sysfs show routine for that field to go out
-of an array bound and Oopsing the kernel when used.
+While Linux doesn't honor setuid on scripts.  However, it mistakenly
+behaves differently for file capabilities.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+This patch fixes that behavior by making sure that get_file_caps()
+begins with empty bprm->caps_*.  That way when a script is loaded,
+its bprm->caps_* may be filled when binfmt_misc calls prepare_binprm(),
+but they will be cleared again when binfmt_elf calls prepare_binprm()
+next to read the interpreter's file capabilities.
+
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: David Howells <dhowells@redhat.com>
+Acked-by: Andrew G. Morgan <morgan@kernel.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/edac/cell_edac.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ security/commoncap.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/edac/cell_edac.c
-+++ b/drivers/edac/cell_edac.c
-@@ -141,7 +141,7 @@ static void __devinit cell_edac_init_csr
- 		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
- 		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
- 		csrow->mtype = MEM_XDR;
--		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+		csrow->edac_mode = EDAC_SECDED;
- 		dev_dbg(mci->dev,
- 			"Initialized on node %d, chanmask=0x%x,"
- 			" first_page=0x%lx, nr_pages=0x%x\n",
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -247,10 +247,10 @@ static int get_file_caps(struct linux_bi
+ 	struct vfs_cap_data vcaps;
+ 	struct inode *inode;
+ 
+-	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
+-		bprm_clear_caps(bprm);
++	bprm_clear_caps(bprm);
++
++	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
+ 		return 0;
+-	}
+ 
+ 	dentry = dget(bprm->file->f_dentry);
+ 	inode = dentry->d_inode;
 
 -- 
