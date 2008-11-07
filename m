@@ -1,105 +1,631 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753213AbYKGTJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYKGTLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753213AbYKGTJz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 14:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbYKGTJr
+	id S1754223AbYKGTLa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 14:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYKGTLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 14:09:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38731 "EHLO mx2.redhat.com"
+	Fri, 7 Nov 2008 14:11:21 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:58509 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751082AbYKGTJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 14:09:46 -0500
-Date: Fri, 7 Nov 2008 14:09:44 -0500
-From: Dave Jones <davej@redhat.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: allocation failure in b43/ssb
-Message-ID: <20081107190944.GA18949@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
+	id S1751082AbYKGTLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 14:11:20 -0500
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] ics932s401: New driver
+To: "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 07 Nov 2008 11:11:10 -0800
+Message-ID: <20081107191110.13201.20476.stgit@elm3a70.beaverton.ibm.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We just had a report from a user who spotted a bunch of messages
-of the form below in his logs..
 
-swapper: page allocation failure. order:1, mode:0x4020
-Pid: 0, comm: swapper Not tainted 2.6.26.6-79.fc9.i686.debug #1
-[<c064a320>] ? printk+0xf/0x17
-[<c0472da5>] __alloc_pages_internal+0x3c0/0x3db
-[<c0472dd7>] __alloc_pages+0xa/0xc
-[<c048bbab>] __slab_alloc+0x1aa/0x4ea
-[<c048c74d>] __kmalloc_track_caller+0x98/0xf9
-[<eec655c2>] ? setup_rx_descbuffer+0x3d/0x1cf [b43]
-[<eec655c2>] ? setup_rx_descbuffer+0x3d/0x1cf [b43]
-[<c05d5280>] __alloc_skb+0x49/0xf8
-[<eec655c2>] setup_rx_descbuffer+0x3d/0x1cf [b43]
-[<eeb9d783>] ? ssb_pci_read32+0x29/0x31 [ssb]
-[<eec65a2e>] b43_dma_rx+0x28b/0x3f1 [b43]
-[<eec59a83>] b43_interrupt_tasklet+0x58f/0x6e4 [b43]
-[<c042eb92>] ? tasklet_action+0x40/0xec
-[<c042ebd1>] tasklet_action+0x7f/0xec
-[<c042f502>] __do_softirq+0x84/0x10a
-[<c0406f6e>] do_softirq+0x79/0xda
-[<c04685ed>] ? handle_fasteoi_irq+0x0/0xb6
-[<c042f068>] irq_exit+0x44/0x77
-[<c04070b3>] do_IRQ+0xe4/0xfd
-[<c040567a>] common_interrupt+0x2e/0x34
-[<c04400d8>] ? pm_qos_add_requirement+0x39/0x93
-[<c05524e9>] ? acpi_idle_enter_simple+0x19e/0x20e
-[<c05520c2>] acpi_idle_enter_bm+0xbc/0x345
-[<c043fe82>] ? pm_qos_requirement+0x26/0x2b
-[<c05beb2a>] ? menu_select+0x38/0x86
-[<c05bdea1>] cpuidle_idle_call+0x67/0x97
-[<c05bde3a>] ? cpuidle_idle_call+0x0/0x97
-[<c0403bfc>] cpu_idle+0xb8/0xd8
-[<c063ce6e>] rest_init+0x4e/0x50
-=======================
-Mem-info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-Normal per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 125
-Active:127308 inactive:26735 dirty:8411 writeback:340 unstable:0
-free:1213 slab:15322 mapped:13069 pagetables:1563 bounce:0
-DMA free:2864kB min:72kB low:88kB high:108kB active:2784kB inactive:1552kB present:16160kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 709 709 709
-Normal free:1988kB min:3368kB low:4208kB high:5052kB active:506448kB inactive:105388kB present:726060kB pages_scanned:1460 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 34*4kB 1*8kB 8*16kB 11*32kB 9*64kB 3*128kB 1*256kB 2*512kB 0*1024kB 0*2048kB 0*4096kB = 2864kB
-Normal: 341*4kB 2*8kB 20*16kB 1*32kB 0*64kB 0*128kB 1*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 1988kB
-78549 total pagecache pages
-Swap cache: add 352198, delete 308691, find 91428/128877
-Free swap  = 1065960kB
-Total swap = 1502068kB
-188128 pages of RAM
-0 pages of HIGHMEM
-4850 reserved pages
-100808 pages shared
-43507 pages swap cached
-8411 pages dirty
-340 pages writeback
-13069 pages mapped
-15322 pages slab
-1563 pages pagetables
+The ics932s401 is a clock generator chip.  This driver allows users to read
+the current clock outputs.
 
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-The kernel is a little old (2.6.26).
+ Documentation/ics932s401  |   31 +++
+ drivers/misc/Kconfig      |   10 +
+ drivers/misc/Makefile     |    1 
+ drivers/misc/ics932s401.c |  515 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 557 insertions(+), 0 deletions(-)
 
-Looking at it though, I'm puzzled..
+diff --git a/Documentation/ics932s401 b/Documentation/ics932s401
+new file mode 100644
+index 0000000..07a739f
+--- /dev/null
++++ b/Documentation/ics932s401
+@@ -0,0 +1,31 @@
++Kernel driver ics932s401
++======================
++
++Supported chips:
++  * IDT ICS932S401
++    Prefix: 'ics932s401'
++    Addresses scanned: I2C 0x69
++    Datasheet: Publically available at the IDT website
++
++Author: Darrick J. Wong
++
++Description
++-----------
++
++This driver implements support for the IDT ICS932S401 chip family.
++
++This chip has 4 clock outputs--a base clock for the CPU (which is likely
++multiplied to get the real CPU clock), a system clock, a PCI clock, a USB
++clock, and a reference clock.  The driver reports selected and actual
++frequency.  If spread spectrum mode is enabled, the driver also reports by what
++percent the clock signal is being spread, which should be between 0 and -0.5%.
++All frequencies are reported in KHz.
++
++The ICS932S401 monitors all inputs continuously. The driver will not read
++the registers more often than once every other second.
++
++Special Features
++----------------
++
++The clocks could be reprogrammed to increase system speed.  I will not help you
++do this, as you risk damaging your system!
+diff --git a/drivers/misc/Kconfig b/drivers/misc/Kconfig
+index 9494400..6917d61 100644
+--- a/drivers/misc/Kconfig
++++ b/drivers/misc/Kconfig
+@@ -227,6 +227,16 @@ config HP_WMI
+          To compile this driver as a module, choose M here: the module will
+          be called hp-wmi.
+ 
++config ICS932S401
++	tristate "Integrated Circuits ICS932S401"
++	depends on I2C && EXPERIMENTAL
++	help
++	  If you say yes here you get support for the Integrated Circuits
++	  ICS932S401 clock control chips.
++
++	  This driver can also be built as a module. If so, the module
++	  will be called ics932s401.
++
+ config MSI_LAPTOP
+         tristate "MSI Laptop Extras"
+         depends on X86
+diff --git a/drivers/misc/Makefile b/drivers/misc/Makefile
+index 909e246..bb14633 100644
+--- a/drivers/misc/Makefile
++++ b/drivers/misc/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
+ obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
+ obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
+ obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
++obj-$(CONFIG_ICS932S401)	+= ics932s401.o
+ obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
+ obj-$(CONFIG_LKDTM)		+= lkdtm.o
+ obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
+diff --git a/drivers/misc/ics932s401.c b/drivers/misc/ics932s401.c
+new file mode 100644
+index 0000000..6e43ab4
+--- /dev/null
++++ b/drivers/misc/ics932s401.c
+@@ -0,0 +1,515 @@
++/*
++ * A driver for the Integrated Circuits ICS932S401
++ * Copyright (C) 2008 IBM
++ *
++ * Author: Darrick J. Wong <djwong@us.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/module.h>
++#include <linux/jiffies.h>
++#include <linux/i2c.h>
++#include <linux/err.h>
++#include <linux/mutex.h>
++#include <linux/delay.h>
++#include <linux/log2.h>
++
++/* Addresses to scan */
++static const unsigned short normal_i2c[] = { 0x69, I2C_CLIENT_END };
++
++/* Insmod parameters */
++I2C_CLIENT_INSMOD_1(ics932s401);
++
++/* ICS932S401 registers */
++#define ICS932S401_REG_CFG2			0x01
++#define 	ICS932S401_CFG1_SPREAD		0x01
++#define ICS932S401_REG_CFG7			0x06
++#define		ICS932S401_FS_MASK		0x07
++#define	ICS932S401_REG_VENDOR_REV		0x07
++#define		ICS932S401_VENDOR		1
++#define		ICS932S401_VENDOR_MASK		0x0F
++#define		ICS932S401_REV			4
++#define		ICS932S401_REV_SHIFT		4
++#define ICS932S401_REG_DEVICE			0x09
++#define		ICS932S401_DEVICE		11
++#define	ICS932S401_REG_CTRL			0x0A
++#define		ICS932S401_MN_ENABLED		0x80
++#define		ICS932S401_CPU_ALT		0x04
++#define		ICS932S401_SRC_ALT		0x08
++#define ICS932S401_REG_CPU_M_CTRL		0x0B
++#define		ICS932S401_M_MASK		0x3F
++#define	ICS932S401_REG_CPU_N_CTRL		0x0C
++#define	ICS932S401_REG_CPU_SPREAD1		0x0D
++#define ICS932S401_REG_CPU_SPREAD2		0x0E
++#define		ICS932S401_SPREAD_MASK		0x7FFF
++#define ICS932S401_REG_SRC_M_CTRL		0x0F
++#define ICS932S401_REG_SRC_N_CTRL		0x10
++#define	ICS932S401_REG_SRC_SPREAD1		0x11
++#define ICS932S401_REG_SRC_SPREAD2		0x12
++#define ICS932S401_REG_CPU_DIVISOR		0x13
++#define 	ICS932S401_CPU_DIVISOR_SHIFT	4
++#define ICS932S401_REG_PCISRC_DIVISOR		0x14
++#define		ICS932S401_SRC_DIVISOR_MASK	0x0F
++#define		ICS932S401_PCI_DIVISOR_SHIFT	4
++
++/* Base clock is 14.318MHz */
++#define BASE_CLOCK				14318
++
++#define NUM_REGS				21
++#define NUM_MIRRORED_REGS			15
++
++static int regs_to_copy[NUM_MIRRORED_REGS] = {
++	ICS932S401_REG_CFG2,
++	ICS932S401_REG_CFG7,
++	ICS932S401_REG_VENDOR_REV,
++	ICS932S401_REG_DEVICE,
++	ICS932S401_REG_CTRL,
++	ICS932S401_REG_CPU_M_CTRL,
++	ICS932S401_REG_CPU_N_CTRL,
++	ICS932S401_REG_CPU_SPREAD1,
++	ICS932S401_REG_CPU_SPREAD2,
++	ICS932S401_REG_SRC_M_CTRL,
++	ICS932S401_REG_SRC_N_CTRL,
++	ICS932S401_REG_SRC_SPREAD1,
++	ICS932S401_REG_SRC_SPREAD2,
++	ICS932S401_REG_CPU_DIVISOR,
++	ICS932S401_REG_PCISRC_DIVISOR,
++};
++
++/* How often do we reread sensors values? (In jiffies) */
++#define SENSOR_REFRESH_INTERVAL	(2 * HZ)
++
++/* How often do we reread sensor limit values? (In jiffies) */
++#define LIMIT_REFRESH_INTERVAL	(60 * HZ)
++
++struct ics932s401_data {
++	struct attribute_group	attrs;
++	struct mutex		lock;
++	char			sensors_valid;
++	unsigned long		sensors_last_updated;	/* In jiffies */
++
++	u8			regs[NUM_REGS];
++};
++
++static int ics932s401_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id);
++static int ics932s401_detect(struct i2c_client *client, int kind,
++			  struct i2c_board_info *info);
++static int ics932s401_remove(struct i2c_client *client);
++
++static const struct i2c_device_id ics932s401_id[] = {
++	{ "ics932s401", ics932s401 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, ics932s401_id);
++
++static struct i2c_driver ics932s401_driver = {
++	.class		= I2C_CLASS_HWMON,
++	.driver = {
++		.name	= "ics932s401",
++	},
++	.probe		= ics932s401_probe,
++	.remove		= ics932s401_remove,
++	.id_table	= ics932s401_id,
++	.detect		= ics932s401_detect,
++	.address_data	= &addr_data,
++};
++
++static struct ics932s401_data *ics932s401_update_device(struct device *dev)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct ics932s401_data *data = i2c_get_clientdata(client);
++	unsigned long local_jiffies = jiffies;
++	int i, temp;
++
++	mutex_lock(&data->lock);
++	if (time_before(local_jiffies, data->sensors_last_updated +
++		SENSOR_REFRESH_INTERVAL)
++		&& data->sensors_valid)
++		goto out;
++
++	/*
++	 * Each register must be read as a word and then right shifted 8 bits.
++	 * Not really sure why this is; setting the "byte count programming"
++	 * register to 1 does not fix this problem.
++	 */
++	for (i = 0; i < NUM_MIRRORED_REGS; i++) {
++		temp = i2c_smbus_read_word_data(client, regs_to_copy[i]);
++		data->regs[regs_to_copy[i]] = temp >> 8;
++	}
++
++	data->sensors_last_updated = local_jiffies;
++	data->sensors_valid = 1;
++
++out:
++	mutex_unlock(&data->lock);
++	return data;
++}
++
++static ssize_t show_spread_enabled(struct device *dev,
++				   struct device_attribute *devattr,
++				   char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++
++	if (data->regs[ICS932S401_REG_CFG2] & ICS932S401_CFG1_SPREAD)
++		return sprintf(buf, "1\n");
++
++	return sprintf(buf, "0\n");
++}
++
++/* bit to cpu khz map */
++static const int fs_speeds[] = {
++	266666,
++	133333,
++	200000,
++	166666,
++	333333,
++	100000,
++	400000,
++	0,
++};
++
++/* clock divisor map */
++static const int divisors[] = {2, 3, 5, 15, 4, 6, 10, 30, 8, 12, 20, 60, 16,
++			       24, 40, 120};
++
++/* Calculate CPU frequency from the M/N registers. */
++static int calculate_cpu_freq(struct ics932s401_data *data)
++{
++	int m, n, freq;
++
++	m = data->regs[ICS932S401_REG_CPU_M_CTRL] & ICS932S401_M_MASK;
++	n = data->regs[ICS932S401_REG_CPU_N_CTRL];
++
++	/* Pull in bits 8 & 9 from the M register */
++	n |= ((int)data->regs[ICS932S401_REG_CPU_M_CTRL] & 0x80) << 1;
++	n |= ((int)data->regs[ICS932S401_REG_CPU_M_CTRL] & 0x40) << 3;
++
++	freq = BASE_CLOCK * (n + 8) / (m + 2);
++	freq /= divisors[data->regs[ICS932S401_REG_CPU_DIVISOR] >>
++			 ICS932S401_CPU_DIVISOR_SHIFT];
++
++	return freq;
++}
++
++static ssize_t show_cpu_clock(struct device *dev,
++			      struct device_attribute *devattr,
++			      char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++
++	return sprintf(buf, "%d\n", calculate_cpu_freq(data));
++}
++
++static ssize_t show_cpu_clock_sel(struct device *dev,
++				  struct device_attribute *devattr,
++				  char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++	int freq;
++
++	if (data->regs[ICS932S401_REG_CTRL] & ICS932S401_MN_ENABLED)
++		freq = calculate_cpu_freq(data);
++	else {
++		/* Freq is neatly wrapped up for us */
++		int fid = data->regs[ICS932S401_REG_CFG7] & ICS932S401_FS_MASK;
++		freq = fs_speeds[fid];
++		if (data->regs[ICS932S401_REG_CTRL] & ICS932S401_CPU_ALT) {
++			switch (freq) {
++			case 166666:
++				freq = 160000;
++				break;
++			case 333333:
++				freq = 320000;
++				break;
++			}
++		}
++	}
++
++	return sprintf(buf, "%d\n", freq);
++}
++
++/* Calculate SRC frequency from the M/N registers. */
++static int calculate_src_freq(struct ics932s401_data *data)
++{
++	int m, n, freq;
++
++	m = data->regs[ICS932S401_REG_SRC_M_CTRL] & ICS932S401_M_MASK;
++	n = data->regs[ICS932S401_REG_SRC_N_CTRL];
++
++	/* Pull in bits 8 & 9 from the M register */
++	n |= ((int)data->regs[ICS932S401_REG_SRC_M_CTRL] & 0x80) << 1;
++	n |= ((int)data->regs[ICS932S401_REG_SRC_M_CTRL] & 0x40) << 3;
++
++	freq = BASE_CLOCK * (n + 8) / (m + 2);
++	freq /= divisors[data->regs[ICS932S401_REG_PCISRC_DIVISOR] &
++			 ICS932S401_SRC_DIVISOR_MASK];
++
++	return freq;
++}
++
++static ssize_t show_src_clock(struct device *dev,
++			      struct device_attribute *devattr,
++			      char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++
++	return sprintf(buf, "%d\n", calculate_src_freq(data));
++}
++
++static ssize_t show_src_clock_sel(struct device *dev,
++				  struct device_attribute *devattr,
++				  char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++	int freq;
++
++	if (data->regs[ICS932S401_REG_CTRL] & ICS932S401_MN_ENABLED)
++		freq = calculate_src_freq(data);
++	else
++		/* Freq is neatly wrapped up for us */
++		if (data->regs[ICS932S401_REG_CTRL] & ICS932S401_CPU_ALT &&
++		    data->regs[ICS932S401_REG_CTRL] & ICS932S401_SRC_ALT)
++			freq = 96000;
++		else
++			freq = 100000;
++
++	return sprintf(buf, "%d\n", freq);
++}
++
++/* Calculate PCI frequency from the SRC M/N registers. */
++static int calculate_pci_freq(struct ics932s401_data *data)
++{
++	int m, n, freq;
++
++	m = data->regs[ICS932S401_REG_SRC_M_CTRL] & ICS932S401_M_MASK;
++	n = data->regs[ICS932S401_REG_SRC_N_CTRL];
++
++	/* Pull in bits 8 & 9 from the M register */
++	n |= ((int)data->regs[ICS932S401_REG_SRC_M_CTRL] & 0x80) << 1;
++	n |= ((int)data->regs[ICS932S401_REG_SRC_M_CTRL] & 0x40) << 3;
++
++	freq = BASE_CLOCK * (n + 8) / (m + 2);
++	freq /= divisors[data->regs[ICS932S401_REG_PCISRC_DIVISOR] >>
++			 ICS932S401_PCI_DIVISOR_SHIFT];
++
++	return freq;
++}
++
++static ssize_t show_pci_clock(struct device *dev,
++			      struct device_attribute *devattr,
++			      char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++
++	return sprintf(buf, "%d\n", calculate_pci_freq(data));
++}
++
++static ssize_t show_pci_clock_sel(struct device *dev,
++				  struct device_attribute *devattr,
++				  char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++	int freq;
++
++	if (data->regs[ICS932S401_REG_CTRL] & ICS932S401_MN_ENABLED)
++		freq = calculate_pci_freq(data);
++	else
++		freq = 33333;
++
++	return sprintf(buf, "%d\n", freq);
++}
++
++static ssize_t show_value(struct device *dev,
++			  struct device_attribute *devattr,
++			  char *buf);
++
++static ssize_t show_spread(struct device *dev,
++			   struct device_attribute *devattr,
++			   char *buf);
++
++static DEVICE_ATTR(spread_enabled, S_IRUGO, show_spread_enabled, NULL);
++static DEVICE_ATTR(cpu_clock_selection, S_IRUGO, show_cpu_clock_sel, NULL);
++static DEVICE_ATTR(cpu_clock, S_IRUGO, show_cpu_clock, NULL);
++static DEVICE_ATTR(src_clock_selection, S_IRUGO, show_src_clock_sel, NULL);
++static DEVICE_ATTR(src_clock, S_IRUGO, show_src_clock, NULL);
++static DEVICE_ATTR(pci_clock_selection, S_IRUGO, show_pci_clock_sel, NULL);
++static DEVICE_ATTR(pci_clock, S_IRUGO, show_pci_clock, NULL);
++static DEVICE_ATTR(usb_clock, S_IRUGO, show_value, NULL);
++static DEVICE_ATTR(ref_clock, S_IRUGO, show_value, NULL);
++static DEVICE_ATTR(cpu_spread, S_IRUGO, show_spread, NULL);
++static DEVICE_ATTR(src_spread, S_IRUGO, show_spread, NULL);
++
++static struct attribute *ics932s401_attr[] =
++{
++	&dev_attr_spread_enabled.attr,
++	&dev_attr_cpu_clock_selection.attr,
++	&dev_attr_cpu_clock.attr,
++	&dev_attr_src_clock_selection.attr,
++	&dev_attr_src_clock.attr,
++	&dev_attr_pci_clock_selection.attr,
++	&dev_attr_pci_clock.attr,
++	&dev_attr_usb_clock.attr,
++	&dev_attr_ref_clock.attr,
++	&dev_attr_cpu_spread.attr,
++	&dev_attr_src_spread.attr,
++	NULL
++};
++
++static ssize_t show_value(struct device *dev,
++			  struct device_attribute *devattr,
++			  char *buf)
++{
++	int x;
++
++	if (devattr == &dev_attr_usb_clock)
++		x = 48000;
++	else if (devattr == &dev_attr_ref_clock)
++		x = BASE_CLOCK;
++	else
++		BUG();
++
++	return sprintf(buf, "%d\n", x);
++}
++
++static ssize_t show_spread(struct device *dev,
++			   struct device_attribute *devattr,
++			   char *buf)
++{
++	struct ics932s401_data *data = ics932s401_update_device(dev);
++	int reg;
++	unsigned long val;
++
++	if (!(data->regs[ICS932S401_REG_CFG2] & ICS932S401_CFG1_SPREAD))
++		return sprintf(buf, "0%%\n");
++
++	if (devattr == &dev_attr_src_spread)
++		reg = ICS932S401_REG_SRC_SPREAD1;
++	else if (devattr == &dev_attr_cpu_spread)
++		reg = ICS932S401_REG_CPU_SPREAD1;
++	else
++		BUG();
++
++	val = data->regs[reg] | (data->regs[reg + 1] << 8);
++	val &= ICS932S401_SPREAD_MASK;
++
++	/* Scale 0..2^14 to -0.5. */
++	val = 500000 * val / 16384;
++	return sprintf(buf, "-0.%lu%%\n", val);
++}
++
++/* Return 0 if detection is successful, -ENODEV otherwise */
++static int ics932s401_detect(struct i2c_client *client, int kind,
++			  struct i2c_board_info *info)
++{
++	struct i2c_adapter *adapter = client->adapter;
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA))
++		return -ENODEV;
++
++	if (kind <= 0) {
++		int vendor, device, revision;
++
++		vendor = i2c_smbus_read_word_data(client,
++						  ICS932S401_REG_VENDOR_REV);
++		vendor >>= 8;
++		revision = vendor >> ICS932S401_REV_SHIFT;
++		vendor &= ICS932S401_VENDOR_MASK;
++		if (vendor != ICS932S401_VENDOR)
++			return -ENODEV;
++
++		device = i2c_smbus_read_word_data(client,
++						  ICS932S401_REG_DEVICE);
++		device >>= 8;
++		if (device != ICS932S401_DEVICE)
++			return -ENODEV;
++
++		if (revision != ICS932S401_REV)
++			dev_info(&adapter->dev, "Unknown revision %d\n",
++				 revision);
++	} else
++		dev_dbg(&adapter->dev, "detection forced\n");
++
++	strlcpy(info->type, "ics932s401", I2C_NAME_SIZE);
++
++	return 0;
++}
++
++static int ics932s401_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
++{
++	struct ics932s401_data *data;
++	int err;
++
++	data = kzalloc(sizeof(struct ics932s401_data), GFP_KERNEL);
++	if (!data) {
++		err = -ENOMEM;
++		goto exit;
++	}
++
++	i2c_set_clientdata(client, data);
++	mutex_init(&data->lock);
++
++	dev_info(&client->dev, "%s chip found\n", client->name);
++
++	/* Register sysfs hooks */
++	data->attrs.attrs = ics932s401_attr;
++	err = sysfs_create_group(&client->dev.kobj, &data->attrs);
++	if (err)
++		goto exit_free;
++
++	return 0;
++
++exit_free:
++	kfree(data);
++exit:
++	return err;
++}
++
++static int ics932s401_remove(struct i2c_client *client)
++{
++	struct ics932s401_data *data = i2c_get_clientdata(client);
++
++	sysfs_remove_group(&client->dev.kobj, &data->attrs);
++	kfree(data);
++	return 0;
++}
++
++static int __init ics932s401_init(void)
++{
++	return i2c_add_driver(&ics932s401_driver);
++}
++
++static void __exit ics932s401_exit(void)
++{
++	i2c_del_driver(&ics932s401_driver);
++}
++
++MODULE_AUTHOR("Darrick J. Wong <djwong@us.ibm.com>");
++MODULE_DESCRIPTION("ICS932S401 driver");
++MODULE_LICENSE("GPL");
++
++module_init(ics932s401_init);
++module_exit(ics932s401_exit);
++
++/* IBM IntelliStation Z30 */
++MODULE_ALIAS("dmi:bvnIBM:*:rn9228:*");
++MODULE_ALIAS("dmi:bvnIBM:*:rn9232:*");
++
++/* IBM x3650/x3550 */
++MODULE_ALIAS("dmi:bvnIBM:*:pnIBMSystemx3650*");
++MODULE_ALIAS("dmi:bvnIBM:*:pnIBMSystemx3550*");
 
-It seems we failed to allocate an order-1 allocation, even though
-we had memory available in the DMA and normal zones.
-
-What am I missing?
-
-Full logs at https://bugzilla.redhat.com/attachment.cgi?id=322882
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
