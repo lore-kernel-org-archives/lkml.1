@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbYKGCaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbYKGCc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbYKGCaL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 21:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbYKGC35
+	id S1753389AbYKGCc5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 21:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbYKGCcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 21:29:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37024 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbYKGC35 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 21:29:57 -0500
-Message-ID: <4913A7B2.9000609@redhat.com>
-Date: Fri, 07 Nov 2008 11:28:02 +0900
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: h-shimamoto@ct.jp.nec.com, ananth@in.ibm.com, laijs@cn.fujitsu.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kprobes: bugfix: try_module_get even if calling_mod is
- NULL
-References: <490FE405.1000105@cn.fujitsu.com>	<4910F697.2050203@redhat.com>	<4910FB3D.4020805@cn.fujitsu.com>	<491212C0.4030900@redhat.com>	<4912222F.9040605@ct.jp.nec.com>	<49122745.4090004@redhat.com>	<49123521.6020608@redhat.com> <20081106170023.d5349c42.akpm@linux-foundation.org>
-In-Reply-To: <20081106170023.d5349c42.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 6 Nov 2008 21:32:48 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58745 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbYKGCcr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 21:32:47 -0500
+Date: Fri, 7 Nov 2008 11:32:09 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: vgoyal@redhat.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, Rik van Riel <riel@redhat.com>,
+       fernando@oss.ntt.co.jp, Jeff Moyer <jmoyer@redhat.com>,
+       menage@google.com, ngupta@google.com,
+       Andrew Morton <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com
+Subject: Re: [patch 1/4] io controller: documentation
+Message-Id: <20081107113209.a6011c67.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081106153135.743458085@redhat.com>
+References: <20081106153022.215696930@redhat.com>
+	<20081106153135.743458085@redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I do not understand this description "Get probed module even if the
-> caller is in the kernel core code".
+On Thu, 06 Nov 2008 10:30:23 -0500
+vgoyal@redhat.com wrote:
+> +ISSUES
+> +======
+> +- IO controller can buffer the bios if suffcient tokens were not available
+> +  at the time of bio submission. Once the tokens are available, these bios
+> +  are dispatched to elevator/lower layers in first come first serve manner.
+> +  And this has potential to break CFQ where a RT tasks should be able to
+> +  dispatch the bio first or a high priority task should be able to release
+> +  more bio as compared to low priority task in same cgroup.
+> +
+> +  Not sure how to fix it. May be we need to maintain another rb-tree and
+> +  keep track of RT tasks and tasks priorities and dispatch accordingly. This
+> +  is equivalent of duplicating lots of CFQ logic and not sure how would it
+> +  impact AS behaviour.
 > 
-> What bug is being fixed here?  What is the kernel behaviour before and
-> after the patch?
+Why you don't isolate RT tasks into other cgroup ?
+   /cgroup/bio-cgroup/group_for_usual/...usual tasks.
+                     /group_for_RT/ ...RT tasks. you can use high-speed path.
 
-When someone called register_*probe() from kernel-core code(not from
-module) and that probes a kernel module, users can remove the probed
-module because kprobe doesn't increment reference counter of the module.
-(on the other hand, if the kernel-module calls register_*probe,
-kprobe increments refcount of the probed module.)
+How about adding RT flag to bio-cgroup and skip buffering at bio-cgroup if RT
+flag is set ? I think handling an usual process and RT process in "a" cgroup
+just makes the code complex.
 
-Currently, we have no register_*probe() calling from kernel-core(except
-smoke-test, but the smoke-test doesn't probe module), so there is no
-real bugs. But the logic is wrong(or not fair) and it can causes a
-problem when someone might want to probe module from kernel.
+Looking into a cpu-scheduler, which is the first module handling RT, it has
+some tweaks to handle RT in the system.
+ - special RT scheduler.
+ - isolated RT domain
+ - maximum execution time allowed to RT
+ ....
 
-After this patch is applied, even if someone put register_*probe() call
-in the kernel-core code, it increments the reference counter of the
-probed module, and it prevents user to remove the module until stopping
-probing it.
+Maybe handling RT in following way is usual way...(if we do something in this layer)
 
-> Was the bug present in 2.6.27, 2.6.26 etc?  Or was it a post-2.6.28
-> regression?
+  - Allow RT-bio-cgroup to skip limit check.
+  - But RT-bio-cgroup calculates io-throuput, execution time, statistics...
+  - When RT tasks in RT-bio-cgroup does excessive I/O which starves the whole system
+    too long, raise safeguard-limitter. and tell users Warning or kill it.
 
-Hmm, it might be an enhancement, because currently the kernel doesn't
-have real bugs.
+Hmm ?
 
-Thank you,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Thanks,
+-Kame
 
