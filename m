@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589AbYKGSpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYKGSqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752589AbYKGSpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 13:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYKGSpg
+	id S1754623AbYKGSqc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 13:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYKGSqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 13:45:36 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:47953 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751665AbYKGSpg (ORCPT
+	Fri, 7 Nov 2008 13:46:25 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:51139 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbYKGSqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 13:45:36 -0500
-Date: Fri, 7 Nov 2008 12:45:20 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into
- pcp
-In-Reply-To: <20081107112722.GE13786@csn.ul.ie>
-Message-ID: <Pine.LNX.4.64.0811071244330.5387@quilx.com>
-References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
- <20081106164644.GA14012@csn.ul.ie> <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
- <20081107104242.GC13786@csn.ul.ie> <20081107200251.15e9851a.kamezawa.hiroyu@jp.fujitsu.com>
- <20081107112722.GE13786@csn.ul.ie>
+	Fri, 7 Nov 2008 13:46:24 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding;
+	b=nxM86TBYZSM9CTF39NUz4q6AFKTgLUDn98FB66A6sgxiJ8jKyNTpfbSg1QbDzSMEP
+	9cm309tHTN/00EtOdtyhA==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+In-Reply-To: <b040c32a0811071038g5e6faba6n55b22e52e1d2ea98@mail.gmail.com>
+References: <20081106203520.GD3578@elte.hu> <20081107003021.GA18666@google.com>
+	 <20081107004824.GA28780@x200.localdomain>
+	 <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu>
+	 <20081107082003.GA15800@x200.localdomain>
+	 <20081107083249.GD4435@elte.hu>
+	 <b040c32a0811071038g5e6faba6n55b22e52e1d2ea98@mail.gmail.com>
+Date: Fri, 7 Nov 2008 10:46:11 -0800
+Message-ID: <6599ad830811071046w30111c42refcc2287a154a1e@mail.gmail.com>
+Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
+From: Paul Menage <menage@google.com>
+To: Ken Chen <kenchen@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008, Mel Gorman wrote:
+On Fri, Nov 7, 2008 at 10:38 AM, Ken Chen <kenchen@google.com> wrote:
+>
+> Here is a patch convert to seq_file using proc_single_show() helper.
+> I don't see it to be any superior than what was before using
+> snprintf().  seq_read also allocate one page for printf buffer, so
+> functionally it is the same (perhaps a little bit better because it
+> can use the whole page, compare to PROC_BLOCK_SIZE currently).
 
-> Oh, do you mean splitting the list instead of searching? This is how it was
-> originally implement and shot down on the grounds it increased the size of
-> a per-cpu structure.
+No - if you exceed the original buffer size, the seq_file system will
+double up the memory buffer and try again if necessary.
 
-The situation may be better with the cpu_alloc stuff. The big pcp array in
-struct zone for all possible processors will be gone and thus the memory
-requirements will be less.
+Paul
