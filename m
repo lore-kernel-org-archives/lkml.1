@@ -1,70 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbYKGS7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYKGTBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbYKGS7L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 13:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYKGS6p
+	id S1754794AbYKGTBm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 14:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbYKGTBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 13:58:45 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:56407 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755461AbYKGS6o (ORCPT
+	Fri, 7 Nov 2008 14:01:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60239 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbYKGTBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 13:58:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Yc77AJS4bPZ5mwvUqRg/6FilHs2awlRTt8cOxMwp72izS7yn0gHzOGbe9takJrdLIy
-         hwGCsSrMLvyhW909sTSVU21L1uYqYRZw0C02Lo29KwiMgWxkIl06h3kLkhB88DFcnSlX
-         9jZxK1KkTyxpGaFDaYwi9VNDejdOASlklvd5Q=
-Subject: [PATCH-ugly] kmemtrace: casting a gfp_t requires __force
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Eduard Munteanu <eduard.munteanu@linux360.ro>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 10:58:41 -0800
-Message-Id: <1226084321.11596.37.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 14:01:33 -0500
+Date: Fri, 7 Nov 2008 14:01:32 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: 2.6.26.6-rt11: BUGs (sleeping function called from invalid
+ context)
+In-Reply-To: <1226083858.20569.14.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0811071400570.3711@gandalf.stny.rr.com>
+References: <1226083858.20569.14.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-gfp_t is a bitwise type, casting to unsigned long produces a
-warning.  Suppress it with __force.
 
-Otherwise sparse complains thusly:
-include/linux/kmemtrace.h:33:2: warning: cast from restricted gfp_t
+Peter, I think we've seen this before. It is the highmem code sleeping.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Eduard, this is a local patch I've had sitting around in my sparse testing
-tree.  I'm really not sure what the appropriate format specifier is for a
-gfp_t, but I don't think the trace infrastructure has support for it
-anyway...so if you are going to keep casting to unsigned long you'll need
-this...perhaps with a comment why added.
+On Fri, 7 Nov 2008, Fernando Lopez-Lezcano wrote:
 
- include/linux/kmemtrace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> Three BUGs while booting 2.6.26.7 + rt11 (same hardware: no problems
+> with 2.6.24.7-rt21):
+> 
+> Nov  7 10:31:19 host kernel: BUG: sleeping function called from invalid
+> context IRQ-22(540) at arch/x86/mm/highmem_32.c:8
+> Nov  7 10:31:19 host kernel: in_atomic():0 [00000000], irqs_disabled():1
+> Nov  7 10:31:19 host kernel: Pid: 540, comm: IRQ-22 Not tainted
+> 2.6.26.7-1.rt11.1fc9.ccrma.i686.rt #1
+> Nov  7 10:31:19 host kernel: [<c041ff88>] __might_sleep+0xe8/0xed
+> Nov  7 10:31:19 host kernel: [<c041cd55>] kmap+0x42/0x55
 
-diff --git a/include/linux/kmemtrace.h b/include/linux/kmemtrace.h
-index 5bea8ea..9d82085 100644
---- a/include/linux/kmemtrace.h
-+++ b/include/linux/kmemtrace.h
-@@ -34,7 +34,7 @@ static inline void kmemtrace_mark_alloc_node(enum kmemtrace_type_id type_id,
- 		   "bytes_req %lu bytes_alloc %lu gfp_flags %lu node %d",
- 		   type_id, call_site, (unsigned long) ptr,
- 		   (unsigned long) bytes_req, (unsigned long) bytes_alloc,
--		   (unsigned long) gfp_flags, node);
-+		   (__force unsigned long)gfp_flags, node);
- }
- 
- static inline void kmemtrace_mark_free(enum kmemtrace_type_id type_id,
--- 
-1.6.0.3.756.gb776d
+As here.
 
+-- Steve
 
-
+> Nov  7 10:31:19 host kernel: [<f88e9e1d>] ata_sff_hsm_move+0x3d3/0x66b
+> [libata]
+> Nov  7 10:31:19 host kernel: [<f88ea314>] ata_sff_interrupt+0x153/0x1eb
+> [libata]
+> Nov  7 10:31:19 host kernel: [<c0461730>] handle_IRQ_event+0x49/0xcd
+> Nov  7 10:31:19 host kernel: [<c0461a15>] thread_simple_irq+0x45/0x7c
+> Nov  7 10:31:19 host kernel: [<c0461a4c>] ? do_irqd+0x0/0x229
+> Nov  7 10:31:19 host kernel: [<c0461afb>] do_irqd+0xaf/0x229
+> Nov  7 10:31:19 host kernel: [<c0461a4c>] ? do_irqd+0x0/0x229
+> Nov  7 10:31:19 host kernel: [<c043b15f>] kthread+0x3b/0x61
+> Nov  7 10:31:19 host kernel: [<c043b124>] ? kthread+0x0/0x61
+> Nov  7 10:31:19 host kernel: [<c040581f>] kernel_thread_helper+0x7/0x10
+> Nov  7 10:31:19 host kernel: =======================
+> 
+> 
+> Nov  7 10:31:01 host kernel: BUG: sleeping function called from invalid
+> context IRQ-22(540) at arch/x86/mm/highmem_32.c:8
+> Nov  7 10:31:01 host kernel: in_atomic():0 [00000000], irqs_disabled():1
+> Nov  7 10:31:01 host kernel: Pid: 540, comm: IRQ-22 Not tainted
+> 2.6.26.7-1.rt11.1fc9.ccrma.i686.rt #1
+> Nov  7 10:31:01 host kernel: [<c041ff88>] __might_sleep+0xe8/0xed
+> Nov  7 10:31:01 host kernel: [<c041cd55>] kmap+0x42/0x55
+> Nov  7 10:31:01 host kernel: [<f88e9e1d>] ata_sff_hsm_move+0x3d3/0x66b
+> [libata]
+> Nov  7 10:31:01 host kernel: [<f88ea314>] ata_sff_interrupt+0x153/0x1eb
+> [libata]
+> Nov  7 10:31:01 host kernel: [<c0461730>] handle_IRQ_event+0x49/0xcd
+> Nov  7 10:31:01 host kernel: [<c0461a15>] thread_simple_irq+0x45/0x7c
+> Nov  7 10:31:01 host kernel: [<c0461a4c>] ? do_irqd+0x0/0x229
+> Nov  7 10:31:01 host kernel: [<c0461afb>] do_irqd+0xaf/0x229
+> Nov  7 10:31:01 host kernel: [<c0461a4c>] ? do_irqd+0x0/0x229
+> Nov  7 10:31:01 host kernel: [<c043b15f>] kthread+0x3b/0x61
+> Nov  7 10:31:01 host kernel: [<c043b124>] ? kthread+0x0/0x61
+> Nov  7 10:31:01 host kernel: [<c040581f>] kernel_thread_helper+0x7/0x10
+> Nov  7 10:31:01 host kernel: =======================
+> 
+> 
+> Nov  7 10:30:58 host kernel: BUG: sleeping function called from invalid
+> context IRQ-22(540) at arch/x86/mm/highmem_32.c:8
+> Nov  7 10:30:58 host kernel: in_atomic():0 [00000000], irqs_disabled():1
+> Nov  7 10:30:58 host kernel: Pid: 540, comm: IRQ-22 Not tainted
+> 2.6.26.7-1.rt11.1fc9.ccrma.i686.rt #1
+> Nov  7 10:30:58 host kernel: [<c041ff88>] __might_sleep+0xe8/0xed
+> Nov  7 10:30:58 host kernel: [<c041cd55>] kmap+0x42/0x55
+> Nov  7 10:30:58 host kernel: [<f88e9e1d>] ata_sff_hsm_move+0x3d3/0x66b
+> [libata]
+> Nov  7 10:30:58 host kernel: [<f88ea314>] ata_sff_interrupt+0x153/0x1eb
+> [libata]
+> Nov  7 10:30:58 host kernel: [<c0461730>] handle_IRQ_event+0x49/0xcd
+> Nov  7 10:30:58 host kernel: [<c0461a15>] thread_simple_irq+0x45/0x7c
+> Nov  7 10:30:58 host kernel: [<c0461a4c>] ? do_irqd+0x0/0x229
+> Nov  7 10:30:58 host kernel: [<c0461afb>] do_irqd+0xaf/0x229
+> Nov  7 10:30:58 host kernel: [<c0461a4c>] ? do_irqd+0x0/0x229
+> Nov  7 10:30:58 host kernel: [<c043b15f>] kthread+0x3b/0x61
+> Nov  7 10:30:58 host kernel: [<c043b124>] ? kthread+0x0/0x61
+> Nov  7 10:30:58 host kernel: [<c040581f>] kernel_thread_helper+0x7/0x10
+> Nov  7 10:30:58 host kernel: =======================
+> 
+> -- Fernando
+> 
+> 
+> 
+> 
