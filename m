@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbYKGUBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYKGUEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbYKGUBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 15:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYKGUBJ
+	id S1752608AbYKGUEO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 15:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbYKGUD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 15:01:09 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39229 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750976AbYKGUBI (ORCPT
+	Fri, 7 Nov 2008 15:03:57 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:54701 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbYKGUD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 15:01:08 -0500
-Date: Fri, 7 Nov 2008 14:54:03 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: allocation failure in b43/ssb
-Message-ID: <20081107195403.GD3546@tuxdriver.com>
-References: <20081107190944.GA18949@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081107190944.GA18949@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 7 Nov 2008 15:03:56 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Fri, 07 Nov 2008 15:03:49 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+In-reply-to: <20081107092115.7c3c4a49.akpm@linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0811071458560.13034@xanadu.home>
+References: <20081107003816.9b0f947a.akpm@linux-foundation.org>
+ <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca>
+ <20081106220530.5b0e3a96.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
+ <25363.1226056819@redhat.com>
+ <alpine.LFD.2.00.0811070952150.13034@xanadu.home>
+ <20081107075003.fa93ccf4.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0811071129440.13034@xanadu.home>
+ <20081107092115.7c3c4a49.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 02:09:44PM -0500, Dave Jones wrote:
-> We just had a report from a user who spotted a bunch of messages
-> of the form below in his logs..
+On Fri, 7 Nov 2008, Andrew Morton wrote:
 
-<snip>
+> On Fri, 07 Nov 2008 11:47:47 -0500 (EST) Nicolas Pitre <nico@cam.org> wrote:
+> 
+> > > btw, do you know how damned irritating and frustrating it is for a code
+> > > reviewer to have his comments deliberately ignored and deleted in
+> > > replies?
+> > 
+> > Do you know how irritating and frustrating it is when reviewers don't 
+> > care reading the damn comments along with the code?
+> 
+> As you still seek to ignore it, I shall repeat my earlier question. 
+> Please do not delete it again.
+> 
+>    It apparently tries to avoid races via ordering tricks, as long
+>    as it is called with sufficient frequency.  But nothing guarantees
+>    that it _is_ called sufficiently frequently?
+> 
+> Things like tickless kernels and SCHED_RR can surely cause
+> sched_clock() to not be called for arbitrary periods.
 
-> The kernel is a little old (2.6.26).
-> 
-> Looking at it though, I'm puzzled..
-> 
-> It seems we failed to allocate an order-1 allocation, even though
-> we had memory available in the DMA and normal zones.
-> 
-> What am I missing?
-> 
-> Full logs at https://bugzilla.redhat.com/attachment.cgi?id=322882
+On the machines this was initially written for, the critical period is 
+in the order of minutes.  And if you're afraid you might lack enough 
+scheduling activities for that long, you simply have to keep the 
+algorithm "warm" with a simple kernel timer which only purpose is to 
+ensure it is called often enough.
 
-Most of those traces look a little scrambled, but as best as I can
-tell that call to setup_rx_descbuffer comes from dma_rx.  That means
-that the call to __dev_alloc_skb is done with GFP_ATOMIC.  I don't
-know if that factors into the answer to what is happening or not.
+> Userspace cli() will definitely do this, but it is expected to break
+> stuff and is not as legitiate a thing to do.
 
-John
--- 
-John W. Linville		Linux should be at the core
-linville@tuxdriver.com			of your literate lifestyle.
+Why do you bring it on then?
+
+> I'm just giving up on the tastefulness issue.
+
+Taste is a pretty subjective matter.
+
+
+Nicolas
