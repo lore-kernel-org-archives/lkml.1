@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbYKGO6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbYKGO6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbYKGO6R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:58:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbYKGO56
+	id S1754359AbYKGO6u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbYKGO6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:57:58 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:5528 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751449AbYKGO55 (ORCPT
+	Fri, 7 Nov 2008 09:58:40 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:23309 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbYKGO6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:57:57 -0500
+	Fri, 7 Nov 2008 09:58:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=p3xzHLrPz9/24dJGX8TlGe8lr1jK99C9nvbLP92J//kEoIUYL01IuHordojY9OWqn0
-         yFkBd8TTz9dpjS7aezXcZeCiM6x4/QVV96wYPHYU24BUmsu1bXMFeuIaXsXp/zVk4olq
-         0HBjEUsMrDMUrOCuiblO0sb1uB576a0+EvMyo=
-Message-ID: <3aaafc130811070657o63894848l3c11989c9b0f2911@mail.gmail.com>
-Date: Fri, 7 Nov 2008 09:57:55 -0500
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: "Henrik Rydberg" <rydberg@euromail.se>
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report protocol
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <49145628.7030804@euromail.se>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=GYyy7LVXoVhr6oY7wTUjRi5E08uJBb8wkpDDNQf1AXQlBXlIG5MhEkjC7EyMwA8/sn
+         zk3r7CCqSSABL536BGGwURgdh8zKNkyXQeM3PCy6b8NgV4qLeBEy32OYpuQKY438fU4q
+         RjKeI7oNyN7t482t2u6Oj6Mwq/+YKCZq2+ivo=
+Date: Fri, 7 Nov 2008 09:56:36 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       paulus@samba.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 04/18] get_cycles() : powerpc64 HAVE_GET_CYCLES
+Message-ID: <20081107145636.GA5021@yoda.jdub.homelinux.org>
+References: <20081107052336.652868737@polymtl.ca> <20081107053349.215096700@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <49142351.9080805@euromail.se>
-	 <3aaafc130811070534p54eebeb6q9b57d3e847ed859a@mail.gmail.com>
-	 <49145016.7090206@euromail.se>
-	 <3aaafc130811070636g681accf5qae252679c2edcdb9@mail.gmail.com>
-	 <49145628.7030804@euromail.se>
+In-Reply-To: <20081107053349.215096700@polymtl.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 7, 2008 at 9:52 AM, Henrik Rydberg <rydberg@euromail.se> wrote:
->> Have you worked with MPX? Or was a vanilla-X11 driver simple enough?
->> How does this all get presented to userspace applications? Multiple
->> mouse inputs or special stuff that applications would need a rewrite
->> to leverage?
+On Fri, Nov 07, 2008 at 12:23:40AM -0500, Mathieu Desnoyers wrote:
+>This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
+>get_cycles_rate() are implemented.
 >
-> MPX is about making use of multiple pointers. The MT protocol is about
-> making use of multiple fingers. It can in principle be used as input
-> to MPX applications; I will bring it up with Peter Hutterer. However,
-> the main aim is to bring advanced gestures to the linux desktop.
+>Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>CC: benh@kernel.crashing.org
+>CC: paulus@samba.org
+>CC: David Miller <davem@davemloft.net>
+>CC: Linus Torvalds <torvalds@linux-foundation.org>
+>CC: Andrew Morton <akpm@linux-foundation.org>
+>CC: Ingo Molnar <mingo@redhat.com>
+>CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>CC: Thomas Gleixner <tglx@linutronix.de>
+>CC: Steven Rostedt <rostedt@goodmis.org>
+>CC: linux-arch@vger.kernel.org
+>---
+> arch/powerpc/Kconfig             |    1 +
+> arch/powerpc/include/asm/timex.h |   11 +++++++++++
+> 2 files changed, 12 insertions(+)
 >
-> Henrik
+>Index: linux.trees.git/arch/powerpc/Kconfig
+>===================================================================
+>--- linux.trees.git.orig/arch/powerpc/Kconfig	2008-11-07 00:09:44.000000000 -0500
+>+++ linux.trees.git/arch/powerpc/Kconfig	2008-11-07 00:09:46.000000000 -0500
+>@@ -121,6 +121,7 @@ config PPC
+> 	select HAVE_DMA_ATTRS if PPC64
+> 	select USE_GENERIC_SMP_HELPERS if SMP
+> 	select HAVE_OPROFILE
+>+	select HAVE_GET_CYCLES if PPC64
 
-I think this approach is cleaner than "fooling" userspace into seeing
-a bunch of mice.
+So maybe it's just me because it's Friday and I'm on vacation, but I don't
+see anything overly specific to ppc64 here.  In fact, you use get_cycles_rate
+for all of powerpc in a later patch in the series.
+
+Is there something special about HAVE_GET_CYCLES that I'm missing that would
+make it only apply to ppc64 and not ppc32?
+
+josh
