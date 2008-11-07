@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbYKGAis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbYKGAj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbYKGAis (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 19:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbYKGAik
+	id S1755113AbYKGAj7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 19:39:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753357AbYKGAju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 19:38:40 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:35584 "EHLO
+	Thu, 6 Nov 2008 19:39:50 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:25932 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbYKGAij (ORCPT
+	with ESMTP id S1753260AbYKGAju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 19:38:39 -0500
-Subject: chris: struct device - replace bus_id with dev_name(),
+	Thu, 6 Nov 2008 19:39:50 -0500
+Subject: IA64: struct device - replace bus_id with dev_name(),
  dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Tony Luck <tony.luck@intel.com>
 Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 07 Nov 2008 01:38:40 +0100
-Message-Id: <1226018320.3189.9.camel@nga>
+Date: Fri, 07 Nov 2008 01:39:51 +0100
+Message-Id: <1226018391.3189.10.camel@nga>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
@@ -54,32 +54,37 @@ Kay
 
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: chris: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: IA64: struct device - replace bus_id with dev_name(), dev_set_name()
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+Cc: Tony Luck <tony.luck@intel.com>
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 ---
- arch/cris/arch-v32/drivers/iop_fw_load.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/ia64/kernel/pci-dma.c  |    2 +-
+ arch/ia64/sn/kernel/tiocx.c |    3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
---- a/arch/cris/arch-v32/drivers/iop_fw_load.c
-+++ b/arch/cris/arch-v32/drivers/iop_fw_load.c
-@@ -24,12 +24,12 @@
- #error "Please contact <greg@kroah.com> for details on how to fix it properly."
- 
- static struct device iop_spu_device[2] = {
--	{ .bus_id =     "iop-spu0", },
--	{ .bus_id =     "iop-spu1", },
-+	{ .init_name =     "iop-spu0", },
-+	{ .init_name =     "iop-spu1", },
+--- a/arch/ia64/kernel/pci-dma.c
++++ b/arch/ia64/kernel/pci-dma.c
+@@ -40,7 +40,7 @@ int iommu_detected __read_mostly;
+    be probably a smaller DMA mask, but this is bug-to-bug compatible
+    to i386. */
+ struct device fallback_dev = {
+-	.bus_id = "fallback device",
++	.init_name = "fallback device",
+ 	.coherent_dma_mask = DMA_32BIT_MASK,
+ 	.dma_mask = &fallback_dev.coherent_dma_mask,
  };
+--- a/arch/ia64/sn/kernel/tiocx.c
++++ b/arch/ia64/sn/kernel/tiocx.c
+@@ -206,8 +206,7 @@ cx_device_register(nasid_t nasid, int pa
+ 	cx_dev->dev.parent = NULL;
+ 	cx_dev->dev.bus = &tiocx_bus_type;
+ 	cx_dev->dev.release = tiocx_bus_release;
+-	snprintf(cx_dev->dev.bus_id, BUS_ID_SIZE, "%d",
+-		 cx_dev->cx_id.nasid);
++	dev_set_name(&cx_dev->dev, "%d", cx_dev->cx_id.nasid);
+ 	device_register(&cx_dev->dev);
+ 	get_device(&cx_dev->dev);
  
- static struct device iop_mpu_device = {
--	.bus_id =       "iop-mpu",
-+	.init_name =       "iop-mpu",
- };
- 
- static int wait_mpu_idle(void)
-
 
