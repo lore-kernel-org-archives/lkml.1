@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbYKGPH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbYKGPHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753348AbYKGPH1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbYKGPHO
+	id S1754144AbYKGPHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYKGPHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:07:14 -0500
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:36929 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752000AbYKGPHN (ORCPT
+	Fri, 7 Nov 2008 10:07:38 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:38290 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbYKGPHg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:07:13 -0500
-Message-ID: <4914599D.9060403@euromail.se>
-Date: Fri, 07 Nov 2008 16:07:09 +0100
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 7 Nov 2008 10:07:36 -0500
+From: "=?iso-8859-1?q?R=E9mi?= Denis-Courmont" 
+	<remi.denis-courmont@nokia.com>
+Organization: Maemo Software - Nokia Devices R&D
+To: "ext David Newall" <davidn@davidnewall.com>
+Subject: Re: time for TCP ECN defaulting to on?
+Date: Fri, 7 Nov 2008 17:07:01 +0200
+User-Agent: KMail/1.9.10
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dave Hudson <linux-kernel@blueteddy.net>,
+       Ilpo =?iso-8859-1?q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Mikael Abrahamsson <swmike@swm.pp.se>,
+       David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-net@vger.kernel.org
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> <20081107142950.13906925@lxorguk.ukuu.org.uk> <491454A3.1040802@davidnewall.com>
+In-Reply-To: <491454A3.1040802@davidnewall.com>
 MIME-Version: 1.0
-To: "J.R. Mauro" <jrm8005@gmail.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
- protocol
-References: <49142351.9080805@euromail.se>	 <3aaafc130811070534p54eebeb6q9b57d3e847ed859a@mail.gmail.com>	 <49145016.7090206@euromail.se>	 <3aaafc130811070636g681accf5qae252679c2edcdb9@mail.gmail.com>	 <49145628.7030804@euromail.se> <3aaafc130811070657o63894848l3c11989c9b0f2911@mail.gmail.com>
-In-Reply-To: <3aaafc130811070657o63894848l3c11989c9b0f2911@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.192.132
-X-Scan-Result: No virus found in message 1KySvW-0002jt-7b.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1KySvW-0002jt-7b 2b7fab43b9c2d86a2ad76ab04a3bf1e9
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200811071707.02030.remi.denis-courmont@nokia.com>
+X-OriginalArrivalTime: 07 Nov 2008 15:07:02.0361 (UTC) FILETIME=[7D304490:01C940EA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 07 November 2008 16:45:55 ext David Newall, you wrote:
+> Isn't this a question for the IETF to answer?  Are they saying turn on
+> ECN now?
 
-> I think this approach is cleaner than "fooling" userspace into seeing
-> a bunch of mice.
+For what it's worth, the IESG says RFC3168 is a PROPOSED STANDARD.
+This is the "entry-level maturity for the standards track":
+(ftp://ftp.rfc-editor.org/in-notes/bcp/bcp9.txt)
 
-The many-input-device approach has problems with synchronicity. In
-particular when envisioning the appearance of more advanced chips,
-with finger matching in hardware. Currently, no chip with open or
-sufficient documentation has these features, but it is probably
-only a matter of time.
+   A Proposed Standard specification is generally stable, has resolved
+   known design choices, is believed to be well-understood, has received
+   significant community review, and appears to enjoy enough community
+   interest to be considered valuable.  However, further experience
+   might result in a change or even retraction of the specification
+   before it advances.
+   (...)
+   Implementors should treat Proposed Standards as immature
+   specifications.  It is desirable to implement them in order to gain
+   experience and to validate, test, and clarify the specification.
+   However, since the content of Proposed Standards may be changed if
+   problems are found or better solutions are identified, deploying
+   implementations of such standards into a disruption-sensitive
+   environment is not recommended.
+
+-- 
+Rémi Denis-Courmont
+Maemo Software, Nokia Devices R&D
