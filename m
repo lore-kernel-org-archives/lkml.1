@@ -1,438 +1,807 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbYKGIjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYKGIlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbYKGIjk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKGIjc
+	id S1753476AbYKGIlA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKGIkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:39:32 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:52916 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751397AbYKGIja (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:39:30 -0500
-Date: Fri, 7 Nov 2008 16:39:27 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: linux-crypto@gondor.apana.org.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: libcrc32c: Move implementation to crypto crc32c
-Message-ID: <20081107083926.GA10721@gondor.apana.org.au>
+	Fri, 7 Nov 2008 03:40:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54666 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbYKGIku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:40:50 -0500
+Date: Fri, 7 Nov 2008 09:40:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
+Message-ID: <20081107084016.GF4435@elte.hu>
+References: <20081029152849.3883d072.sfr@canb.auug.org.au> <200811021229.16061.rusty@rustcorp.com.au> <alpine.LFD.2.00.0811011834360.3483@nehalem.linux-foundation.org> <200811070949.02914.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200811070949.02914.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi:
 
-libcrc32c: Move implementation to crypto crc32c
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-This patch swaps the role of libcrc32c and crc32c.  Previously
-the implementation was in libcrc32c and crc32c was a wrapper.
-Now the code is in crc32c and libcrc32c just calls the crypto
-layer.
+> (Tested in linux-next as well as locally.  Linus, please apply).
 
-The reason for the change is to tap into the algorithm selection
-capability of the crypto API so that optimised implementations
-such as the one utilising Intel's CRC32C instruction can be
-used where available.
+if this is equal to the patch that you sent me (see the git 
+coordinates below), it was also stess-tested and build-coverage tested 
+by me on a healthy range of x86 systems, in a range of build 
+environments.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Acked-by: Mike Travis <travis@sgi.com>
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 39dbd8e..eb0b3db 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -228,12 +228,10 @@ comment "Digest"
- config CRYPTO_CRC32C
- 	tristate "CRC32c CRC algorithm"
- 	select CRYPTO_HASH
--	select LIBCRC32C
- 	help
- 	  Castagnoli, et al Cyclic Redundancy-Check Algorithm.  Used
- 	  by iSCSI for header and data digests and by others.
--	  See Castagnoli93.  This implementation uses lib/libcrc32c.
--	  Module will be crc32c.
-+	  See Castagnoli93.  Module will be crc32c.
- 
- config CRYPTO_CRC32C_INTEL
- 	tristate "CRC32c INTEL hardware acceleration"
-diff --git a/crypto/crc32c.c b/crypto/crc32c.c
-index b21b93f..973bc2c 100644
---- a/crypto/crc32c.c
-+++ b/crypto/crc32c.c
-@@ -3,8 +3,29 @@
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
+
+-------------->
+
+The cpus4096 git tree can be pulled from:
+
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git cpus4096
+
+ Thanks,
+
+	Ingo
+
+------------------>
+Rusty Russell (1):
+      cpumask: introduce new API, without changing anything
+
+
+ include/linux/cpumask.h   |  502 ++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/smp.h       |    9 +
+ include/linux/workqueue.h |    8 +
+ kernel/cpu.c              |    3 +
+ kernel/workqueue.c        |   45 ++++
+ lib/cpumask.c             |   73 +++++++
+ 6 files changed, 638 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index d3219d7..c8e6661 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -5,6 +5,9 @@
+  * Cpumasks provide a bitmap suitable for representing the
+  * set of CPU's in a system, one bit position per CPU number.
   *
-  * CRC32C chksum
-  *
-- * This module file is a wrapper to invoke the lib/crc32c routines.
-+ *@Article{castagnoli-crc,
-+ * author =       { Guy Castagnoli and Stefan Braeuer and Martin Herrman},
-+ * title =        {{Optimization of Cyclic Redundancy-Check Codes with 24
-+ *                 and 32 Parity Bits}},
-+ * journal =      IEEE Transactions on Communication,
-+ * year =         {1993},
-+ * volume =       {41},
-+ * number =       {6},
-+ * pages =        {},
-+ * month =        {June},
-+ *}
-+ * Used by the iSCSI driver, possibly others, and derived from the
-+ * the iscsi-crc.c module of the linux-iscsi driver at
-+ * http://linux-iscsi.sourceforge.net.
-  *
-+ * Following the example of lib/crc32, this function is intended to be
-+ * flexible and useful for all users.  Modules that currently have their
-+ * own crc32c, but hopefully may be able to use this one are:
-+ *  net/sctp (please add all your doco to here if you change to
-+ *            use this one!)
-+ *  <endoflist>
++ * The new cpumask_ ops take a "struct cpumask *"; the old ones
++ * use cpumask_t.
 + *
-+ * Copyright (c) 2004 Cisco Systems, Inc.
-  * Copyright (c) 2008 Herbert Xu <herbert@gondor.apana.org.au>
+  * See detailed comments in the file linux/bitmap.h describing the
+  * data type on which these cpumasks are based.
   *
-  * This program is free software; you can redistribute it and/or modify it
-@@ -18,7 +39,6 @@
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/string.h>
--#include <linux/crc32c.h>
- #include <linux/kernel.h>
+@@ -31,7 +34,7 @@
+  *       will span the entire range of NR_CPUS.
+  * . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  *
+- * The available cpumask operations are:
++ * The obsolescent cpumask operations are:
+  *
+  * void cpu_set(cpu, mask)		turn on bit 'cpu' in mask
+  * void cpu_clear(cpu, mask)		turn off bit 'cpu' in mask
+@@ -138,7 +141,7 @@
+ #include <linux/threads.h>
+ #include <linux/bitmap.h>
  
- #define CHKSUM_BLOCK_SIZE	1
-@@ -33,6 +53,95 @@ struct chksum_desc_ctx {
- };
+-typedef struct { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
++typedef struct cpumask { DECLARE_BITMAP(bits, NR_CPUS); } cpumask_t;
+ extern cpumask_t _unused_cpumask_arg_;
  
- /*
-+ * This is the CRC-32C table
-+ * Generated with:
-+ * width = 32 bits
-+ * poly = 0x1EDC6F41
-+ * reflect input bytes = true
-+ * reflect output bytes = true
-+ */
+ #define cpu_set(cpu, dst) __cpu_set((cpu), &(dst))
+@@ -527,4 +530,499 @@ extern cpumask_t cpu_active_map;
+ #define for_each_online_cpu(cpu)   for_each_cpu_mask_nr((cpu), cpu_online_map)
+ #define for_each_present_cpu(cpu)  for_each_cpu_mask_nr((cpu), cpu_present_map)
+ 
++/* These are the new versions of the cpumask operators: passed by pointer.
++ * The older versions will be implemented in terms of these, then deleted. */
++#define cpumask_bits(maskp) ((maskp)->bits)
 +
-+static const u32 crc32c_table[256] = {
-+	0x00000000L, 0xF26B8303L, 0xE13B70F7L, 0x1350F3F4L,
-+	0xC79A971FL, 0x35F1141CL, 0x26A1E7E8L, 0xD4CA64EBL,
-+	0x8AD958CFL, 0x78B2DBCCL, 0x6BE22838L, 0x9989AB3BL,
-+	0x4D43CFD0L, 0xBF284CD3L, 0xAC78BF27L, 0x5E133C24L,
-+	0x105EC76FL, 0xE235446CL, 0xF165B798L, 0x030E349BL,
-+	0xD7C45070L, 0x25AFD373L, 0x36FF2087L, 0xC494A384L,
-+	0x9A879FA0L, 0x68EC1CA3L, 0x7BBCEF57L, 0x89D76C54L,
-+	0x5D1D08BFL, 0xAF768BBCL, 0xBC267848L, 0x4E4DFB4BL,
-+	0x20BD8EDEL, 0xD2D60DDDL, 0xC186FE29L, 0x33ED7D2AL,
-+	0xE72719C1L, 0x154C9AC2L, 0x061C6936L, 0xF477EA35L,
-+	0xAA64D611L, 0x580F5512L, 0x4B5FA6E6L, 0xB93425E5L,
-+	0x6DFE410EL, 0x9F95C20DL, 0x8CC531F9L, 0x7EAEB2FAL,
-+	0x30E349B1L, 0xC288CAB2L, 0xD1D83946L, 0x23B3BA45L,
-+	0xF779DEAEL, 0x05125DADL, 0x1642AE59L, 0xE4292D5AL,
-+	0xBA3A117EL, 0x4851927DL, 0x5B016189L, 0xA96AE28AL,
-+	0x7DA08661L, 0x8FCB0562L, 0x9C9BF696L, 0x6EF07595L,
-+	0x417B1DBCL, 0xB3109EBFL, 0xA0406D4BL, 0x522BEE48L,
-+	0x86E18AA3L, 0x748A09A0L, 0x67DAFA54L, 0x95B17957L,
-+	0xCBA24573L, 0x39C9C670L, 0x2A993584L, 0xD8F2B687L,
-+	0x0C38D26CL, 0xFE53516FL, 0xED03A29BL, 0x1F682198L,
-+	0x5125DAD3L, 0xA34E59D0L, 0xB01EAA24L, 0x42752927L,
-+	0x96BF4DCCL, 0x64D4CECFL, 0x77843D3BL, 0x85EFBE38L,
-+	0xDBFC821CL, 0x2997011FL, 0x3AC7F2EBL, 0xC8AC71E8L,
-+	0x1C661503L, 0xEE0D9600L, 0xFD5D65F4L, 0x0F36E6F7L,
-+	0x61C69362L, 0x93AD1061L, 0x80FDE395L, 0x72966096L,
-+	0xA65C047DL, 0x5437877EL, 0x4767748AL, 0xB50CF789L,
-+	0xEB1FCBADL, 0x197448AEL, 0x0A24BB5AL, 0xF84F3859L,
-+	0x2C855CB2L, 0xDEEEDFB1L, 0xCDBE2C45L, 0x3FD5AF46L,
-+	0x7198540DL, 0x83F3D70EL, 0x90A324FAL, 0x62C8A7F9L,
-+	0xB602C312L, 0x44694011L, 0x5739B3E5L, 0xA55230E6L,
-+	0xFB410CC2L, 0x092A8FC1L, 0x1A7A7C35L, 0xE811FF36L,
-+	0x3CDB9BDDL, 0xCEB018DEL, 0xDDE0EB2AL, 0x2F8B6829L,
-+	0x82F63B78L, 0x709DB87BL, 0x63CD4B8FL, 0x91A6C88CL,
-+	0x456CAC67L, 0xB7072F64L, 0xA457DC90L, 0x563C5F93L,
-+	0x082F63B7L, 0xFA44E0B4L, 0xE9141340L, 0x1B7F9043L,
-+	0xCFB5F4A8L, 0x3DDE77ABL, 0x2E8E845FL, 0xDCE5075CL,
-+	0x92A8FC17L, 0x60C37F14L, 0x73938CE0L, 0x81F80FE3L,
-+	0x55326B08L, 0xA759E80BL, 0xB4091BFFL, 0x466298FCL,
-+	0x1871A4D8L, 0xEA1A27DBL, 0xF94AD42FL, 0x0B21572CL,
-+	0xDFEB33C7L, 0x2D80B0C4L, 0x3ED04330L, 0xCCBBC033L,
-+	0xA24BB5A6L, 0x502036A5L, 0x4370C551L, 0xB11B4652L,
-+	0x65D122B9L, 0x97BAA1BAL, 0x84EA524EL, 0x7681D14DL,
-+	0x2892ED69L, 0xDAF96E6AL, 0xC9A99D9EL, 0x3BC21E9DL,
-+	0xEF087A76L, 0x1D63F975L, 0x0E330A81L, 0xFC588982L,
-+	0xB21572C9L, 0x407EF1CAL, 0x532E023EL, 0xA145813DL,
-+	0x758FE5D6L, 0x87E466D5L, 0x94B49521L, 0x66DF1622L,
-+	0x38CC2A06L, 0xCAA7A905L, 0xD9F75AF1L, 0x2B9CD9F2L,
-+	0xFF56BD19L, 0x0D3D3E1AL, 0x1E6DCDEEL, 0xEC064EEDL,
-+	0xC38D26C4L, 0x31E6A5C7L, 0x22B65633L, 0xD0DDD530L,
-+	0x0417B1DBL, 0xF67C32D8L, 0xE52CC12CL, 0x1747422FL,
-+	0x49547E0BL, 0xBB3FFD08L, 0xA86F0EFCL, 0x5A048DFFL,
-+	0x8ECEE914L, 0x7CA56A17L, 0x6FF599E3L, 0x9D9E1AE0L,
-+	0xD3D3E1ABL, 0x21B862A8L, 0x32E8915CL, 0xC083125FL,
-+	0x144976B4L, 0xE622F5B7L, 0xF5720643L, 0x07198540L,
-+	0x590AB964L, 0xAB613A67L, 0xB831C993L, 0x4A5A4A90L,
-+	0x9E902E7BL, 0x6CFBAD78L, 0x7FAB5E8CL, 0x8DC0DD8FL,
-+	0xE330A81AL, 0x115B2B19L, 0x020BD8EDL, 0xF0605BEEL,
-+	0x24AA3F05L, 0xD6C1BC06L, 0xC5914FF2L, 0x37FACCF1L,
-+	0x69E9F0D5L, 0x9B8273D6L, 0x88D28022L, 0x7AB90321L,
-+	0xAE7367CAL, 0x5C18E4C9L, 0x4F48173DL, 0xBD23943EL,
-+	0xF36E6F75L, 0x0105EC76L, 0x12551F82L, 0xE03E9C81L,
-+	0x34F4F86AL, 0xC69F7B69L, 0xD5CF889DL, 0x27A40B9EL,
-+	0x79B737BAL, 0x8BDCB4B9L, 0x988C474DL, 0x6AE7C44EL,
-+	0xBE2DA0A5L, 0x4C4623A6L, 0x5F16D052L, 0xAD7D5351L
++#if NR_CPUS <= BITS_PER_LONG
++#define CPU_BITS_ALL						\
++{								\
++	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD	\
++}
++
++/* This produces more efficient code. */
++#define nr_cpumask_bits	NR_CPUS
++
++#else /* NR_CPUS > BITS_PER_LONG */
++
++#define CPU_BITS_ALL						\
++{								\
++	[0 ... BITS_TO_LONGS(NR_CPUS)-2] = ~0UL,		\
++	[BITS_TO_LONGS(NR_CPUS)-1] = CPU_MASK_LAST_WORD		\
++}
++
++#define nr_cpumask_bits	nr_cpu_ids
++#endif /* NR_CPUS > BITS_PER_LONG */
++
++/* verify cpu argument to cpumask_* operators */
++static inline unsigned int cpumask_check(unsigned int cpu)
++{
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++	WARN_ON_ONCE(cpu >= nr_cpumask_bits);
++#endif /* CONFIG_DEBUG_PER_CPU_MAPS */
++	return cpu;
++}
++
++#if NR_CPUS == 1
++/* Uniprocesor. */
++#define cpumask_first(src)		({ (void)(src); 0; })
++#define cpumask_next(n, src)		({ (void)(src); 1; })
++#define cpumask_next_zero(n, src)	({ (void)(src); 1; })
++#define cpumask_next_and(n, srcp, andp)	({ (void)(srcp), (void)(andp); 1; })
++#define cpumask_any_but(mask, cpu)	({ (void)(mask); (void)(cpu); 0; })
++
++#define for_each_cpu(cpu, mask)			\
++	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
++#define for_each_cpu_and(cpu, mask, and)	\
++	for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask, (void)and)
++#else
++/**
++ * cpumask_first - get the first cpu in a cpumask
++ * @srcp: the cpumask pointer
++ *
++ * Returns >= nr_cpu_ids if no cpus set.
++ */
++static inline unsigned int cpumask_first(const struct cpumask *srcp)
++{
++	return find_first_bit(cpumask_bits(srcp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_next - get the next cpu in a cpumask
++ * @n: the cpu prior to the place to search (ie. return will be > @n)
++ * @srcp: the cpumask pointer
++ *
++ * Returns >= nr_cpu_ids if no further cpus set.
++ */
++static inline unsigned int cpumask_next(int n, const struct cpumask *srcp)
++{
++	/* -1 is a legal arg here. */
++	if (n != -1)
++		cpumask_check(n);
++	return find_next_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
++}
++
++/**
++ * cpumask_next_zero - get the next unset cpu in a cpumask
++ * @n: the cpu prior to the place to search (ie. return will be > @n)
++ * @srcp: the cpumask pointer
++ *
++ * Returns >= nr_cpu_ids if no further cpus unset.
++ */
++static inline unsigned int cpumask_next_zero(int n, const struct cpumask *srcp)
++{
++	/* -1 is a legal arg here. */
++	if (n != -1)
++		cpumask_check(n);
++	return find_next_zero_bit(cpumask_bits(srcp), nr_cpumask_bits, n+1);
++}
++
++int cpumask_next_and(int n, const struct cpumask *, const struct cpumask *);
++int cpumask_any_but(const struct cpumask *mask, unsigned int cpu);
++
++#define for_each_cpu(cpu, mask)				\
++	for ((cpu) = -1;				\
++		(cpu) = cpumask_next((cpu), (mask)),	\
++		(cpu) < nr_cpu_ids;)
++#define for_each_cpu_and(cpu, mask, and)				\
++	for ((cpu) = -1;						\
++		(cpu) = cpumask_next_and((cpu), (mask), (and)),		\
++		(cpu) < nr_cpu_ids;)
++#endif /* SMP */
++
++#define CPU_BITS_NONE						\
++{								\
++	[0 ... BITS_TO_LONGS(NR_CPUS)-1] = 0UL			\
++}
++
++#define CPU_BITS_CPU0						\
++{								\
++	[0] =  1UL						\
++}
++
++/**
++ * cpumask_set_cpu - set a cpu in a cpumask
++ * @cpu: cpu number (< nr_cpu_ids)
++ * @dstp: the cpumask pointer
++ */
++static inline void cpumask_set_cpu(unsigned int cpu, struct cpumask *dstp)
++{
++	set_bit(cpumask_check(cpu), cpumask_bits(dstp));
++}
++
++/**
++ * cpumask_clear_cpu - clear a cpu in a cpumask
++ * @cpu: cpu number (< nr_cpu_ids)
++ * @dstp: the cpumask pointer
++ */
++static inline void cpumask_clear_cpu(int cpu, struct cpumask *dstp)
++{
++	clear_bit(cpumask_check(cpu), cpumask_bits(dstp));
++}
++
++/**
++ * cpumask_test_cpu - test for a cpu in a cpumask
++ * @cpu: cpu number (< nr_cpu_ids)
++ * @cpumask: the cpumask pointer
++ *
++ * No static inline type checking - see Subtlety (1) above.
++ */
++#define cpumask_test_cpu(cpu, cpumask) \
++	test_bit(cpumask_check(cpu), (cpumask)->bits)
++
++/**
++ * cpumask_test_and_set_cpu - atomically test and set a cpu in a cpumask
++ * @cpu: cpu number (< nr_cpu_ids)
++ * @cpumask: the cpumask pointer
++ *
++ * test_and_set_bit wrapper for cpumasks.
++ */
++static inline int cpumask_test_and_set_cpu(int cpu, struct cpumask *cpumask)
++{
++	return test_and_set_bit(cpumask_check(cpu), cpumask_bits(cpumask));
++}
++
++/**
++ * cpumask_setall - set all cpus (< nr_cpu_ids) in a cpumask
++ * @dstp: the cpumask pointer
++ */
++static inline void cpumask_setall(struct cpumask *dstp)
++{
++	bitmap_fill(cpumask_bits(dstp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_clear - clear all cpus (< nr_cpu_ids) in a cpumask
++ * @dstp: the cpumask pointer
++ */
++static inline void cpumask_clear(struct cpumask *dstp)
++{
++	bitmap_zero(cpumask_bits(dstp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_and - *dstp = *src1p & *src2p
++ * @dstp: the cpumask result
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline void cpumask_and(struct cpumask *dstp,
++			       const struct cpumask *src1p,
++			       const struct cpumask *src2p)
++{
++	bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
++				       cpumask_bits(src2p), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_or - *dstp = *src1p | *src2p
++ * @dstp: the cpumask result
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline void cpumask_or(struct cpumask *dstp, const struct cpumask *src1p,
++			      const struct cpumask *src2p)
++{
++	bitmap_or(cpumask_bits(dstp), cpumask_bits(src1p),
++				      cpumask_bits(src2p), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_xor - *dstp = *src1p ^ *src2p
++ * @dstp: the cpumask result
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline void cpumask_xor(struct cpumask *dstp,
++			       const struct cpumask *src1p,
++			       const struct cpumask *src2p)
++{
++	bitmap_xor(cpumask_bits(dstp), cpumask_bits(src1p),
++				       cpumask_bits(src2p), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_andnot - *dstp = *src1p & ~*src2p
++ * @dstp: the cpumask result
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline void cpumask_andnot(struct cpumask *dstp,
++				  const struct cpumask *src1p,
++				  const struct cpumask *src2p)
++{
++	bitmap_andnot(cpumask_bits(dstp), cpumask_bits(src1p),
++					  cpumask_bits(src2p), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_complement - *dstp = ~*srcp
++ * @dstp: the cpumask result
++ * @srcp: the input to invert
++ */
++static inline void cpumask_complement(struct cpumask *dstp,
++				      const struct cpumask *srcp)
++{
++	bitmap_complement(cpumask_bits(dstp), cpumask_bits(srcp),
++					      nr_cpumask_bits);
++}
++
++/**
++ * cpumask_equal - *src1p == *src2p
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline bool cpumask_equal(const struct cpumask *src1p,
++				const struct cpumask *src2p)
++{
++	return bitmap_equal(cpumask_bits(src1p), cpumask_bits(src2p),
++						 nr_cpumask_bits);
++}
++
++/**
++ * cpumask_intersects - (*src1p & *src2p) != 0
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline bool cpumask_intersects(const struct cpumask *src1p,
++				     const struct cpumask *src2p)
++{
++	return bitmap_intersects(cpumask_bits(src1p), cpumask_bits(src2p),
++						      nr_cpumask_bits);
++}
++
++/**
++ * cpumask_subset - (*src1p & ~*src2p) == 0
++ * @src1p: the first input
++ * @src2p: the second input
++ */
++static inline int cpumask_subset(const struct cpumask *src1p,
++				 const struct cpumask *src2p)
++{
++	return bitmap_subset(cpumask_bits(src1p), cpumask_bits(src2p),
++						  nr_cpumask_bits);
++}
++
++/**
++ * cpumask_empty - *srcp == 0
++ * @srcp: the cpumask to that all cpus < nr_cpu_ids are clear.
++ */
++static inline bool cpumask_empty(const struct cpumask *srcp)
++{
++	return bitmap_empty(cpumask_bits(srcp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_full - *srcp == 0xFFFFFFFF...
++ * @srcp: the cpumask to that all cpus < nr_cpu_ids are set.
++ */
++static inline bool cpumask_full(const struct cpumask *srcp)
++{
++	return bitmap_full(cpumask_bits(srcp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_weight - Count of bits in *srcp
++ * @srcp: the cpumask to count bits (< nr_cpu_ids) in.
++ */
++static inline unsigned int cpumask_weight(const struct cpumask *srcp)
++{
++	return bitmap_weight(cpumask_bits(srcp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_shift_right - *dstp = *srcp >> n
++ * @dstp: the cpumask result
++ * @srcp: the input to shift
++ * @n: the number of bits to shift by
++ */
++static inline void cpumask_shift_right(struct cpumask *dstp,
++				       const struct cpumask *srcp, int n)
++{
++	bitmap_shift_right(cpumask_bits(dstp), cpumask_bits(srcp), n,
++					       nr_cpumask_bits);
++}
++
++/**
++ * cpumask_shift_left - *dstp = *srcp << n
++ * @dstp: the cpumask result
++ * @srcp: the input to shift
++ * @n: the number of bits to shift by
++ */
++static inline void cpumask_shift_left(struct cpumask *dstp,
++				      const struct cpumask *srcp, int n)
++{
++	bitmap_shift_left(cpumask_bits(dstp), cpumask_bits(srcp), n,
++					      nr_cpumask_bits);
++}
++
++/**
++ * cpumask_copy - *dstp = *srcp
++ * @dstp: the result
++ * @srcp: the input cpumask
++ */
++static inline void cpumask_copy(struct cpumask *dstp,
++				const struct cpumask *srcp)
++{
++	bitmap_copy(cpumask_bits(dstp), cpumask_bits(srcp), nr_cpumask_bits);
++}
++
++/**
++ * cpumask_any - pick a "random" cpu from *srcp
++ * @srcp: the input cpumask
++ *
++ * Returns >= nr_cpu_ids if no cpus set.
++ */
++#define cpumask_any(srcp) cpumask_first(srcp)
++
++/**
++ * cpumask_first_and - return the first cpu from *srcp1 & *srcp2
++ * @src1p: the first input
++ * @src2p: the second input
++ *
++ * Returns >= nr_cpu_ids if no cpus set in both.  See also cpumask_next_and().
++ */
++#define cpumask_first_and(src1p, src2p) cpumask_next_and(-1, (src1p), (src2p))
++
++/**
++ * cpumask_any_and - pick a "random" cpu from *mask1 & *mask2
++ * @mask1: the first input cpumask
++ * @mask2: the second input cpumask
++ *
++ * Returns >= nr_cpu_ids if no cpus set.
++ */
++#define cpumask_any_and(mask1, mask2) cpumask_first_and((mask1), (mask2))
++
++/**
++ * to_cpumask - convert an NR_CPUS bitmap to a struct cpumask *
++ * @bitmap: the bitmap
++ *
++ * There are a few places where cpumask_var_t isn't appropriate and
++ * static cpumasks must be used (eg. very early boot), yet we don't
++ * expose the definition of 'struct cpumask'.
++ *
++ * This does the conversion, and can be used as a constant initializer.
++ */
++#define to_cpumask(bitmap)						\
++	((struct cpumask *)(1 ? (bitmap)				\
++			    : (void *)sizeof(__check_is_bitmap(bitmap))))
++
++static inline int __check_is_bitmap(const unsigned long *bitmap)
++{
++	return 1;
++}
++
++/**
++ * cpumask_size - size to allocate for a 'struct cpumask' in bytes
++ *
++ * This will eventually be a runtime variable, depending on nr_cpu_ids.
++ */
++static inline size_t cpumask_size(void)
++{
++	/* FIXME: Once all cpumask assignments are eliminated, this
++	 * can be nr_cpumask_bits */
++	return BITS_TO_LONGS(NR_CPUS) * sizeof(long);
++}
++
++/*
++ * cpumask_var_t: struct cpumask for stack usage.
++ *
++ * Oh, the wicked games we play!  In order to make kernel coding a
++ * little more difficult, we typedef cpumask_var_t to an array or a
++ * pointer: doing &mask on an array is a noop, so it still works.
++ *
++ * ie.
++ *	cpumask_var_t tmpmask;
++ *	if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL))
++ *		return -ENOMEM;
++ *
++ *	  ... use 'tmpmask' like a normal struct cpumask * ...
++ *
++ *	free_cpumask_var(tmpmask);
++ */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++typedef struct cpumask *cpumask_var_t;
++
++bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags);
++void alloc_bootmem_cpumask_var(cpumask_var_t *mask);
++void free_cpumask_var(cpumask_var_t mask);
++
++#else
++typedef struct cpumask cpumask_var_t[1];
++
++static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
++{
++	return true;
++}
++
++static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
++{
++}
++
++static inline void free_cpumask_var(cpumask_var_t mask)
++{
++}
++#endif /* CONFIG_CPUMASK_OFFSTACK */
++
++/* The pointer versions of the maps, these will become the primary versions. */
++#define cpu_possible_mask ((const struct cpumask *)&cpu_possible_map)
++#define cpu_online_mask ((const struct cpumask *)&cpu_online_map)
++#define cpu_present_mask ((const struct cpumask *)&cpu_present_map)
++#define cpu_active_mask ((const struct cpumask *)&cpu_active_map)
++
++/* It's common to want to use cpu_all_mask in struct member initializers,
++ * so it has to refer to an address rather than a pointer. */
++extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
++#define cpu_all_mask to_cpumask(cpu_all_bits)
++
++/* First bits of cpu_bit_bitmap are in fact unset. */
++#define cpu_none_mask to_cpumask(cpu_bit_bitmap[0])
++
++/* Wrappers for arch boot code to manipulate normally-constant masks */
++static inline void set_cpu_possible(unsigned int cpu, bool possible)
++{
++	if (possible)
++		cpumask_set_cpu(cpu, &cpu_possible_map);
++	else
++		cpumask_clear_cpu(cpu, &cpu_possible_map);
++}
++
++static inline void set_cpu_present(unsigned int cpu, bool present)
++{
++	if (present)
++		cpumask_set_cpu(cpu, &cpu_present_map);
++	else
++		cpumask_clear_cpu(cpu, &cpu_present_map);
++}
++
++static inline void set_cpu_online(unsigned int cpu, bool online)
++{
++	if (online)
++		cpumask_set_cpu(cpu, &cpu_online_map);
++	else
++		cpumask_clear_cpu(cpu, &cpu_online_map);
++}
++
++static inline void set_cpu_active(unsigned int cpu, bool active)
++{
++	if (active)
++		cpumask_set_cpu(cpu, &cpu_active_map);
++	else
++		cpumask_clear_cpu(cpu, &cpu_active_map);
++}
++
++static inline void init_cpu_present(const struct cpumask *src)
++{
++	cpumask_copy(&cpu_present_map, src);
++}
++
++static inline void init_cpu_possible(const struct cpumask *src)
++{
++	cpumask_copy(&cpu_possible_map, src);
++}
++
++static inline void init_cpu_online(const struct cpumask *src)
++{
++	cpumask_copy(&cpu_online_map, src);
++}
+ #endif /* __LINUX_CPUMASK_H */
+diff --git a/include/linux/smp.h b/include/linux/smp.h
+index 2e4d58b..3f9a600 100644
+--- a/include/linux/smp.h
++++ b/include/linux/smp.h
+@@ -64,8 +64,17 @@ extern void smp_cpus_done(unsigned int max_cpus);
+  * Call a function on all other processors
+  */
+ int smp_call_function(void(*func)(void *info), void *info, int wait);
++/* Deprecated: use smp_call_function_many() which uses a cpumask ptr. */
+ int smp_call_function_mask(cpumask_t mask, void(*func)(void *info), void *info,
+ 				int wait);
++
++static inline void smp_call_function_many(const struct cpumask *mask,
++					  void (*func)(void *info), void *info,
++					  int wait)
++{
++	smp_call_function_mask(*mask, func, info, wait);
++}
++
+ int smp_call_function_single(int cpuid, void (*func) (void *info), void *info,
+ 				int wait);
+ void __smp_call_function_single(int cpuid, struct call_single_data *data);
+diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
+index 89a5a12..b362911 100644
+--- a/include/linux/workqueue.h
++++ b/include/linux/workqueue.h
+@@ -240,4 +240,12 @@ void cancel_rearming_delayed_work(struct delayed_work *work)
+ 	cancel_delayed_work_sync(work);
+ }
+ 
++#ifndef CONFIG_SMP
++static inline long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
++{
++	return fn(arg);
++}
++#else
++long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg);
++#endif /* CONFIG_SMP */
+ #endif
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 86d4904..5a732c5 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -499,3 +499,6 @@ const unsigned long cpu_bit_bitmap[BITS_PER_LONG+1][BITS_TO_LONGS(NR_CPUS)] = {
+ #endif
+ };
+ EXPORT_SYMBOL_GPL(cpu_bit_bitmap);
++
++const DECLARE_BITMAP(cpu_all_bits, NR_CPUS) = CPU_BITS_ALL;
++EXPORT_SYMBOL(cpu_all_bits);
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index f928f2a..d4dc69d 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -970,6 +970,51 @@ undo:
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_SMP
++struct work_for_cpu {
++	struct work_struct work;
++	long (*fn)(void *);
++	void *arg;
++	long ret;
 +};
 +
-+/*
-+ * Steps through buffer one byte at at time, calculates reflected
-+ * crc using table.
-+ */
-+
-+static u32 crc32c(u32 crc, const u8 *data, unsigned int length)
++static void do_work_for_cpu(struct work_struct *w)
 +{
-+	while (length--)
-+		crc = crc32c_table[(crc ^ *data++) & 0xFFL] ^ (crc >> 8);
++	struct work_for_cpu *wfc = container_of(w, struct work_for_cpu, work);
 +
-+	return crc;
++	wfc->ret = wfc->fn(wfc->arg);
 +}
 +
-+/*
-  * Steps through buffer one byte at at time, calculates reflected 
-  * crc using table.
-  */
-diff --git a/include/linux/crc32c.h b/include/linux/crc32c.h
-index 508f512..66fa8ff 100644
---- a/include/linux/crc32c.h
-+++ b/include/linux/crc32c.h
-@@ -3,9 +3,6 @@
- 
- #include <linux/types.h>
- 
--extern u32 crc32c_le(u32 crc, unsigned char const *address, size_t length);
--extern u32 crc32c_be(u32 crc, unsigned char const *address, size_t length);
--
--#define crc32c(seed, data, length)  crc32c_le(seed, (unsigned char const *)data, length)
-+extern u32 crc32c(u32 crc, const void *address, unsigned int length);
- 
- #endif	/* _LINUX_CRC32C_H */
-diff --git a/lib/Kconfig b/lib/Kconfig
-index c7ad7a5..d09edb7 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -64,6 +64,7 @@ config CRC7
- 
- config LIBCRC32C
- 	tristate "CRC32c (Castagnoli, et al) Cyclic Redundancy-Check"
-+	select CRYPTO_CRC32C
- 	help
- 	  This option is provided for the case where no in-kernel-tree
- 	  modules require CRC32c functions, but a module built outside the
-diff --git a/lib/libcrc32c.c b/lib/libcrc32c.c
-index b5c3287..38b17ab 100644
---- a/lib/libcrc32c.c
-+++ b/lib/libcrc32c.c
-@@ -30,168 +30,50 @@
-  * any later version.
-  *
-  */
--#include <linux/crc32c.h>
--#include <linux/compiler.h>
--#include <linux/module.h>
--
--MODULE_AUTHOR("Clay Haapala <chaapala@cisco.com>");
--MODULE_DESCRIPTION("CRC32c (Castagnoli) calculations");
--MODULE_LICENSE("GPL");
--
--#define CRC32C_POLY_BE 0x1EDC6F41
--#define CRC32C_POLY_LE 0x82F63B78
- 
--#ifndef CRC_LE_BITS 
--# define CRC_LE_BITS 8
--#endif
--
--
--/*
-- * Haven't generated a big-endian table yet, but the bit-wise version
-- * should at least work.
-- */
--#if defined CRC_BE_BITS && CRC_BE_BITS != 1
--#undef CRC_BE_BITS
--#endif
--#ifndef CRC_BE_BITS
--# define CRC_BE_BITS 1
--#endif
-+#include <crypto/hash.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
- 
--EXPORT_SYMBOL(crc32c_le);
-+static struct crypto_shash *tfm;
- 
--#if CRC_LE_BITS == 1
--/*
-- * Compute things bit-wise, as done in crc32.c.  We could share the tight 
-- * loop below with crc32 and vary the POLY if we don't find value in terms
-- * of space and maintainability in keeping the two modules separate.
-- */
--u32 __pure
--crc32c_le(u32 crc, unsigned char const *p, size_t len)
-+u32 crc32c(u32 crc, const void *address, unsigned int length)
- {
--	int i;
--	while (len--) {
--		crc ^= *p++;
--		for (i = 0; i < 8; i++)
--			crc = (crc >> 1) ^ ((crc & 1) ? CRC32C_POLY_LE : 0);
--	}
--	return crc;
--}
--#else
-+	struct {
-+		struct shash_desc shash;
-+		char ctx[crypto_shash_descsize(tfm)];
-+	} desc;
-+	int err;
- 
--/*
-- * This is the CRC-32C table
-- * Generated with:
-- * width = 32 bits
-- * poly = 0x1EDC6F41
-- * reflect input bytes = true
-- * reflect output bytes = true
-- */
-+	desc.shash.tfm = tfm;
-+	desc.shash.flags = 0;
-+	*(u32 *)desc.ctx = crc;
- 
--static const u32 crc32c_table[256] = {
--	0x00000000L, 0xF26B8303L, 0xE13B70F7L, 0x1350F3F4L,
--	0xC79A971FL, 0x35F1141CL, 0x26A1E7E8L, 0xD4CA64EBL,
--	0x8AD958CFL, 0x78B2DBCCL, 0x6BE22838L, 0x9989AB3BL,
--	0x4D43CFD0L, 0xBF284CD3L, 0xAC78BF27L, 0x5E133C24L,
--	0x105EC76FL, 0xE235446CL, 0xF165B798L, 0x030E349BL,
--	0xD7C45070L, 0x25AFD373L, 0x36FF2087L, 0xC494A384L,
--	0x9A879FA0L, 0x68EC1CA3L, 0x7BBCEF57L, 0x89D76C54L,
--	0x5D1D08BFL, 0xAF768BBCL, 0xBC267848L, 0x4E4DFB4BL,
--	0x20BD8EDEL, 0xD2D60DDDL, 0xC186FE29L, 0x33ED7D2AL,
--	0xE72719C1L, 0x154C9AC2L, 0x061C6936L, 0xF477EA35L,
--	0xAA64D611L, 0x580F5512L, 0x4B5FA6E6L, 0xB93425E5L,
--	0x6DFE410EL, 0x9F95C20DL, 0x8CC531F9L, 0x7EAEB2FAL,
--	0x30E349B1L, 0xC288CAB2L, 0xD1D83946L, 0x23B3BA45L,
--	0xF779DEAEL, 0x05125DADL, 0x1642AE59L, 0xE4292D5AL,
--	0xBA3A117EL, 0x4851927DL, 0x5B016189L, 0xA96AE28AL,
--	0x7DA08661L, 0x8FCB0562L, 0x9C9BF696L, 0x6EF07595L,
--	0x417B1DBCL, 0xB3109EBFL, 0xA0406D4BL, 0x522BEE48L,
--	0x86E18AA3L, 0x748A09A0L, 0x67DAFA54L, 0x95B17957L,
--	0xCBA24573L, 0x39C9C670L, 0x2A993584L, 0xD8F2B687L,
--	0x0C38D26CL, 0xFE53516FL, 0xED03A29BL, 0x1F682198L,
--	0x5125DAD3L, 0xA34E59D0L, 0xB01EAA24L, 0x42752927L,
--	0x96BF4DCCL, 0x64D4CECFL, 0x77843D3BL, 0x85EFBE38L,
--	0xDBFC821CL, 0x2997011FL, 0x3AC7F2EBL, 0xC8AC71E8L,
--	0x1C661503L, 0xEE0D9600L, 0xFD5D65F4L, 0x0F36E6F7L,
--	0x61C69362L, 0x93AD1061L, 0x80FDE395L, 0x72966096L,
--	0xA65C047DL, 0x5437877EL, 0x4767748AL, 0xB50CF789L,
--	0xEB1FCBADL, 0x197448AEL, 0x0A24BB5AL, 0xF84F3859L,
--	0x2C855CB2L, 0xDEEEDFB1L, 0xCDBE2C45L, 0x3FD5AF46L,
--	0x7198540DL, 0x83F3D70EL, 0x90A324FAL, 0x62C8A7F9L,
--	0xB602C312L, 0x44694011L, 0x5739B3E5L, 0xA55230E6L,
--	0xFB410CC2L, 0x092A8FC1L, 0x1A7A7C35L, 0xE811FF36L,
--	0x3CDB9BDDL, 0xCEB018DEL, 0xDDE0EB2AL, 0x2F8B6829L,
--	0x82F63B78L, 0x709DB87BL, 0x63CD4B8FL, 0x91A6C88CL,
--	0x456CAC67L, 0xB7072F64L, 0xA457DC90L, 0x563C5F93L,
--	0x082F63B7L, 0xFA44E0B4L, 0xE9141340L, 0x1B7F9043L,
--	0xCFB5F4A8L, 0x3DDE77ABL, 0x2E8E845FL, 0xDCE5075CL,
--	0x92A8FC17L, 0x60C37F14L, 0x73938CE0L, 0x81F80FE3L,
--	0x55326B08L, 0xA759E80BL, 0xB4091BFFL, 0x466298FCL,
--	0x1871A4D8L, 0xEA1A27DBL, 0xF94AD42FL, 0x0B21572CL,
--	0xDFEB33C7L, 0x2D80B0C4L, 0x3ED04330L, 0xCCBBC033L,
--	0xA24BB5A6L, 0x502036A5L, 0x4370C551L, 0xB11B4652L,
--	0x65D122B9L, 0x97BAA1BAL, 0x84EA524EL, 0x7681D14DL,
--	0x2892ED69L, 0xDAF96E6AL, 0xC9A99D9EL, 0x3BC21E9DL,
--	0xEF087A76L, 0x1D63F975L, 0x0E330A81L, 0xFC588982L,
--	0xB21572C9L, 0x407EF1CAL, 0x532E023EL, 0xA145813DL,
--	0x758FE5D6L, 0x87E466D5L, 0x94B49521L, 0x66DF1622L,
--	0x38CC2A06L, 0xCAA7A905L, 0xD9F75AF1L, 0x2B9CD9F2L,
--	0xFF56BD19L, 0x0D3D3E1AL, 0x1E6DCDEEL, 0xEC064EEDL,
--	0xC38D26C4L, 0x31E6A5C7L, 0x22B65633L, 0xD0DDD530L,
--	0x0417B1DBL, 0xF67C32D8L, 0xE52CC12CL, 0x1747422FL,
--	0x49547E0BL, 0xBB3FFD08L, 0xA86F0EFCL, 0x5A048DFFL,
--	0x8ECEE914L, 0x7CA56A17L, 0x6FF599E3L, 0x9D9E1AE0L,
--	0xD3D3E1ABL, 0x21B862A8L, 0x32E8915CL, 0xC083125FL,
--	0x144976B4L, 0xE622F5B7L, 0xF5720643L, 0x07198540L,
--	0x590AB964L, 0xAB613A67L, 0xB831C993L, 0x4A5A4A90L,
--	0x9E902E7BL, 0x6CFBAD78L, 0x7FAB5E8CL, 0x8DC0DD8FL,
--	0xE330A81AL, 0x115B2B19L, 0x020BD8EDL, 0xF0605BEEL,
--	0x24AA3F05L, 0xD6C1BC06L, 0xC5914FF2L, 0x37FACCF1L,
--	0x69E9F0D5L, 0x9B8273D6L, 0x88D28022L, 0x7AB90321L,
--	0xAE7367CAL, 0x5C18E4C9L, 0x4F48173DL, 0xBD23943EL,
--	0xF36E6F75L, 0x0105EC76L, 0x12551F82L, 0xE03E9C81L,
--	0x34F4F86AL, 0xC69F7B69L, 0xD5CF889DL, 0x27A40B9EL,
--	0x79B737BAL, 0x8BDCB4B9L, 0x988C474DL, 0x6AE7C44EL,
--	0xBE2DA0A5L, 0x4C4623A6L, 0x5F16D052L, 0xAD7D5351L
--};
-+	err = crypto_shash_update(&desc.shash, address, length);
-+	BUG_ON(err);
- 
--/*
-- * Steps through buffer one byte at at time, calculates reflected 
-- * crc using table.
-- */
-+	return *(u32 *)desc.ctx;
-+}
- 
--u32 __pure
--crc32c_le(u32 crc, unsigned char const *data, size_t length)
-+static int __init libcrc32c_mod_init(void)
- {
--	while (length--)
--		crc =
--		    crc32c_table[(crc ^ *data++) & 0xFFL] ^ (crc >> 8);
-+	tfm = crypto_alloc_shash("crc32c", 0, 0);
-+	if (IS_ERR(tfm))
-+		return PTR_ERR(tfm);
- 
--	return crc;
-+	return 0;
- }
- 
--#endif	/* CRC_LE_BITS == 8 */
--
--EXPORT_SYMBOL(crc32c_be);
--
--#if CRC_BE_BITS == 1
--u32 __pure
--crc32c_be(u32 crc, unsigned char const *p, size_t len)
-+static void __exit libcrc32c_mod_fini(void)
- {
--	int i;
--	while (len--) {
--		crc ^= *p++ << 24;
--		for (i = 0; i < 8; i++)
--			crc =
--			    (crc << 1) ^ ((crc & 0x80000000) ? CRC32C_POLY_BE :
--					  0);
--	}
--	return crc;
-+	crypto_free_shash(tfm);
- }
--#endif
- 
--/*
-- * Unit test
-- *
-- * A small unit test suite is implemented as part of the crypto suite.
-- * Select CRYPTO_CRC32C and use the tcrypt module to run the tests.
-- */
-+module_init(libcrc32c_mod_init);
-+module_exit(libcrc32c_mod_fini);
++/**
++ * work_on_cpu - run a function in user context on a particular cpu
++ * @cpu: the cpu to run on
++ * @fn: the function to run
++ * @arg: the function arg
++ *
++ * This will return -EINVAL in the cpu is not online, or the return value
++ * of @fn otherwise.
++ */
++long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
++{
++	struct work_for_cpu wfc;
 +
-+MODULE_AUTHOR("Clay Haapala <chaapala@cisco.com>");
-+MODULE_DESCRIPTION("CRC32c (Castagnoli) calculations");
-+MODULE_LICENSE("GPL");
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
++	INIT_WORK(&wfc.work, do_work_for_cpu);
++	wfc.fn = fn;
++	wfc.arg = arg;
++	get_online_cpus();
++	if (unlikely(!cpu_online(cpu)))
++		wfc.ret = -EINVAL;
++	else {
++		schedule_work_on(cpu, &wfc.work);
++		flush_work(&wfc.work);
++	}
++	put_online_cpus();
++
++	return wfc.ret;
++}
++EXPORT_SYMBOL_GPL(work_on_cpu);
++#endif /* CONFIG_SMP */
++
+ void __init init_workqueues(void)
+ {
+ 	cpu_populated_map = cpu_online_map;
+diff --git a/lib/cpumask.c b/lib/cpumask.c
+index 5f97dc2..5ceb421 100644
+--- a/lib/cpumask.c
++++ b/lib/cpumask.c
+@@ -2,6 +2,7 @@
+ #include <linux/bitops.h>
+ #include <linux/cpumask.h>
+ #include <linux/module.h>
++#include <linux/bootmem.h>
+ 
+ int __first_cpu(const cpumask_t *srcp)
+ {
+@@ -35,3 +36,75 @@ int __any_online_cpu(const cpumask_t *mask)
+ 	return cpu;
+ }
+ EXPORT_SYMBOL(__any_online_cpu);
++
++/**
++ * cpumask_next_and - get the next cpu in *src1p & *src2p
++ * @n: the cpu prior to the place to search (ie. return will be > @n)
++ * @src1p: the first cpumask pointer
++ * @src2p: the second cpumask pointer
++ *
++ * Returns >= nr_cpu_ids if no further cpus set in both.
++ */
++int cpumask_next_and(int n, const struct cpumask *src1p,
++		     const struct cpumask *src2p)
++{
++	while ((n = cpumask_next(n, src1p)) < nr_cpu_ids)
++		if (cpumask_test_cpu(n, src2p))
++			break;
++	return n;
++}
++EXPORT_SYMBOL(cpumask_next_and);
++
++/**
++ * cpumask_any_but - return a "random" in a cpumask, but not this one.
++ * @mask: the cpumask to search
++ * @cpu: the cpu to ignore.
++ *
++ * Often used to find any cpu but smp_processor_id() in a mask.
++ * Returns >= nr_cpu_ids if no cpus set.
++ */
++int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
++{
++	unsigned int i;
++
++	for_each_cpu(i, mask)
++		if (i != cpu)
++			break;
++	return i;
++}
++
++/* These are not inline because of header tangles. */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
++{
++	if (likely(slab_is_available()))
++		*mask = kmalloc(cpumask_size(), flags);
++	else {
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++		printk(KERN_ERR
++			"=> alloc_cpumask_var: kmalloc not available!\n");
++		dump_stack();
++#endif
++		*mask = NULL;
++	}
++#ifdef CONFIG_DEBUG_PER_CPU_MAPS
++	if (!*mask) {
++		printk(KERN_ERR "=> alloc_cpumask_var: failed!\n");
++		dump_stack();
++	}
++#endif
++	return *mask != NULL;
++}
++EXPORT_SYMBOL(alloc_cpumask_var);
++
++void __init alloc_bootmem_cpumask_var(cpumask_var_t *mask)
++{
++	*mask = alloc_bootmem(cpumask_size());
++}
++
++void free_cpumask_var(cpumask_var_t mask)
++{
++	kfree(mask);
++}
++EXPORT_SYMBOL(free_cpumask_var);
++#endif
