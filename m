@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbYKGJcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbYKGJfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbYKGJcv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbYKGJcn
+	id S1753892AbYKGJfb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:35:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYKGJfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:32:43 -0500
-Received: from acsinet14.oracle.com ([141.146.126.236]:57853 "EHLO
-	acsinet14.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199AbYKGJcm (ORCPT
+	Fri, 7 Nov 2008 04:35:17 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43431
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750998AbYKGJfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:32:42 -0500
-X-Greylist: delayed 475 seconds by postgrey-1.27 at vger.kernel.org; Fri, 07 Nov 2008 04:32:42 EST
-Date: Fri, 7 Nov 2008 01:23:14 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Michael Trimarchi <trimarchimichael@yahoo.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] Check if the Hangcheck-timer TSC source is stable
-Message-ID: <20081107092314.GI15220@mail.oracle.com>
-Mail-Followup-To: Michael Trimarchi <trimarchimichael@yahoo.it>,
-	linux-kernel@vger.kernel.org
-References: <491371A8.3090603@yahoo.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491371A8.3090603@yahoo.it>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: acsinet12.oracle.com [141.146.126.234]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4914099F.009C:SCFMA922111,ss=1,fgs=0
+	Fri, 7 Nov 2008 04:35:16 -0500
+Date: Fri, 07 Nov 2008 01:35:14 -0800 (PST)
+Message-Id: <20081107.013514.105616478.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver updates for 2.6.29
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4913F778.7000206@garzik.org>
+References: <20081106065059.GA19202@havoc.gtf.org>
+	<20081106.221330.181959128.davem@davemloft.net>
+	<4913F778.7000206@garzik.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 11:37:28PM +0100, Michael Trimarchi wrote:
-> Check if the TSC source is stable otherwise fail registration.
+From: Jeff Garzik <jeff@garzik.org>
+Date: Fri, 07 Nov 2008 03:08:24 -0500
 
-	Good idea.
+> David Miller wrote:
+> > From: Jeff Garzik <jeff@garzik.org>
+> > Date: Thu, 6 Nov 2008 01:50:59 -0500
+> > 
+> >> Please pull from 'davem-next' branch of
+> >> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-next
+> >>
+> >> to receive the following updates:
+> > drivers/net/usb/usbnet.c: In function 'usbnet_suspend':
+> > drivers/net/usb/usbnet.c:1357: error: 'struct usb_device' has no member named 'auto_pm'
+> > Please fix this up and send me another pull request.
+> 
+> hmmm, builds for me on x86 and x86-64.
+> 
+> <looks>  are you building with CONFIG_PM disabled, perhaps?  I'll try that build next...
 
-> @@ -151,8 +155,10 @@ static void hangcheck_fire(unsigned long data)
->  
->  	if (cur_tsc > hangcheck_tsc)
->  		tsc_diff = cur_tsc - hangcheck_tsc;
-> -	else
-> -		tsc_diff = (cur_tsc + (~0ULL - hangcheck_tsc)); /* or something */
-> +	else {
-> +		/* or samenthing */
-> +		tsc_diff = (cur_tsc + (~0ULL - hangcheck_tsc));
-> +	}
-
-	This hunk isn't any good.  The comment spelling is messed up,
-and really you can just remove the "or something".
-
-Joel
-
--- 
-
-"There is no sincerer love than the love of food."  
-         - George Bernard Shaw 
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Yes, in fact CONFIG_PM is always disabled on sparc64.
