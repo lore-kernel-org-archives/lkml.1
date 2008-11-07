@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbYKGO3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532AbYKGOa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753805AbYKGO3q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:29:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYKGO3f
+	id S1752532AbYKGOa1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYKGOaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:29:35 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43198 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751437AbYKGO3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:29:34 -0500
-Date: Fri, 7 Nov 2008 15:29:23 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Cyril Hrubis <metan@ucw.cz>, Dmitry <dbaryshkov@gmail.com>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
-Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
-Message-ID: <20081107142923.GA1616@ucw.cz>
-References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz> <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com> <20081105173303.GC2038@elf.ucw.cz> <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com> <20081106080416.GA1531@ucw.cz> <20081106191424.GA2273@atrey.karlin.mff.cuni.cz> <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 7 Nov 2008 09:30:00 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57667 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751543AbYKGO36 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 09:29:58 -0500
+Date: Fri, 7 Nov 2008 14:29:50 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Hudson <linux-kernel@blueteddy.net>
+Cc: Ilpo =?ISO-8859-14?B?SuRydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
+       Mikael Abrahamsson <swmike@swm.pp.se>,
+       David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
+       linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+Message-ID: <20081107142950.13906925@lxorguk.ukuu.org.uk>
+In-Reply-To: <4914240F.7050701@blueteddy.net>
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
+	<alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
+	<20081105.151015.206163697.davem@davemloft.net>
+	<alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+	<Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi>
+	<4914240F.7050701@blueteddy.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-11-07 21:23:41, Eric Miao wrote:
-> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
-> Did you guys ever try that?
+> Not all of the routers in question (the ones that crash, block packets 
+> or otherwise misbehave) are provided by ISPs
 
-I never heard about that patch, do you have it handy?
+The ones that block and misbehave are the bigger problem. The ones that
+crash are less of a problem and I think they are less common. Certainly
+if they were common then people would be abusing the flaw routinely.
+Similar end users tend to grasp "if it keeps crashing blame the supplier".
 
-								Pavel
+When stuff just mysteriously doesn't work it is a whole lot more
+problematic. I think however Sally Floyd had it right and Alexey has it
+wrong (as does Davem).
 
-> On Fri, Nov 7, 2008 at 3:14 AM, Cyril Hrubis <metan@ucw.cz> wrote:
-> > Hi,
-> >> I do not have serial cable :-(,
-> >
-> > Okay I have one that works for sl5500, it needs external power on
-> > sl-cxxx but it should be easy to fix.
-> >
-> > --
-> > metan
-> >
+If you turn it off on a retransmit then you provide an immediate
+incentive for everyone on the web server end of the business to fix their
+network. Especially if you turn it off for second retransmit. That will
+cause faulty ECN handling sites to feel "a bit slow" and we know from
+marketing data that web site performance is crucial to customer base. A
+three or four second delay getting a page up translates into dramatically
+reduced hit counts.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Alan
