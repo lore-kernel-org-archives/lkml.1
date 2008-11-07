@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYKGKnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065AbYKGKrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbYKGKnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 05:43:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYKGKms
+	id S1754065AbYKGKrU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 05:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYKGKrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 05:42:48 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:42662 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbYKGKmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 05:42:45 -0500
-Date: Fri, 7 Nov 2008 10:42:42 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
-Message-ID: <20081107104242.GC13786@csn.ul.ie>
-References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081106164644.GA14012@csn.ul.ie> <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 7 Nov 2008 05:47:12 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:17060 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYKGKrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 05:47:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=XatuXSKAlfYLM1l0hegm3GOOYVvf/r2vH1ZslpXPwGpzIt0dKavuqfnY+ysLQyyBZO
+         +HUJD1cjVZmEplF13LRk168rJUJP+49GjgqeaT3jpmW/5Q8al/CsohF9FUt+diMSNTOj
+         OWDr2hfWygYOKrL0Yb1c7z7+Lnx4Drul8jNdA=
+Message-ID: <e2e108260811070247h11992d74p3ad0786cd4523dc0@mail.gmail.com>
+Date: Fri, 7 Nov 2008 11:47:09 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Michael Dressel" <Michael.Dressel@bruker-biospin.de>
+Subject: Re: pthread_mutex_lock hangs on unlocked mutex
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LSU.2.00.0811070856260.5231@eleven.esr.bruker.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <alpine.LSU.2.00.0811070856260.5231@eleven.esr.bruker.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 10:42:24AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Thu, 6 Nov 2008 16:46:45 +0000
-> Mel Gorman <mel@csn.ul.ie> wrote:
-> > > otherwise, the system have unnecessary memory starvation risk
-> > > because other cpu can't use this emergency pages.
-> > > 
-> > > 
-> > > 
-> > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > CC: Mel Gorman <mel@csn.ul.ie>
-> > > CC: Christoph Lameter <cl@linux-foundation.org>
-> > > 
-> > 
-> > This patch seems functionally sound but as Christoph points out, this
-> > adds another branch to the fast path. Now, I ran some tests and those that
-> > completed didn't show any problems but adding branches in the fast path can
-> > eventually lead to hard-to-detect performance problems.
-> > 
-> dividing pcp-list into MIGRATE_TYPES is bad ?
+On Fri, Nov 7, 2008 at 9:43 AM, Michael Dressel
+<Michael.Dressel@bruker-biospin.de> wrote:
+> in our software three processes are using several pthread mutexes.
 
-I do not understand what your question is.
+LKML is a mailing list to discuss kernel issues. What you report is
+most likely a userspace issue. Please check your application with the
+Valgrind tools memcheck, helgrind and/or drd first.
 
-> If divided, we can get rid of scan. 
-> 
-
-I don't know what you are saying here either. I think you are saying
-that we should avoid scanning the PCP lists for migrate types at all.
-That hurts anti-fragmentation as pages can be badly placed if any pcp
-page is used.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Bart.
