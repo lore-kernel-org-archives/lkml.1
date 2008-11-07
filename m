@@ -1,142 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbYKGPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYKGPOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754382AbYKGPOd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 10:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbYKGPOJ
+	id S1754596AbYKGPOt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 10:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYKGPON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 10:14:09 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:53295 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbYKGPOH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 10:14:07 -0500
-Message-ID: <49145B26.4040701@cosmosbay.com>
-Date: Fri, 07 Nov 2008 16:13:42 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 7 Nov 2008 10:14:13 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:51044 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752758AbYKGPOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 10:14:11 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH -v3 2/5] CAPABILITIES: add cpu endian vfs caps structure
+To: linux-kernel@vger.kernel.org, linux-audit@redhat.com
+Cc: sgrubb@redhat.com, morgan@kernel.org, serue@us.ibm.com,
+       viro@ZenIV.linux.org.uk
+Date: Fri, 07 Nov 2008 10:14:01 -0500
+Message-ID: <20081107151401.9977.15523.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20081107151355.9977.47852.stgit@paris.rdu.redhat.com>
+References: <20081107151355.9977.47852.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>, Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Robert Richter <robert.richter@amd.com>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@linux.intel.com>
-Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
-References: <4909F690.9090208@cosmosbay.com> <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com> <49130694.7000007@cosmosbay.com> <20081107130249.GN29626@one.firstfloor.org>
-In-Reply-To: <20081107130249.GN29626@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 07 Nov 2008 16:13:56 +0100 (CET)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> Can you please test this patch and see if it solves the problem?
-> 
-> Thanks,
-> -Andi
-> 
-> ---
-> 
-> oprofile: Fix p6 counter overflow check
-> 
-> Fix the counter overflow check for CPUs with counter width > 32
-> 
-> I had a similar change in a different patch that I didn't submit
-> and I didn't notice the problem earlier because it was always
-> tested together.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
+This patch add a generic cpu endian caps structure and externally available
+functions which retrieve fcaps information from disk.  This information is
+necessary so fcaps information can be collected and recorded by the audit
+system.
 
-Thanks Andi
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+---
 
-Unfortunatly, there is still a freeze of NMIS after a while.
+ include/linux/capability.h |    7 ++
+ security/commoncap.c       |  129 ++++++++++++++++++++++++--------------------
+ 2 files changed, 78 insertions(+), 58 deletions(-)
 
-# grep NMI /proc/interrupts
-NMI:     127869     439091     905577       6158     809531      54720    4402881    2411582   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:     294473     765839    1174243     282249    1190866     382543    4747495    2463270   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:     294473     899262    1174243     282249    1282407     515973    5139226    2463270   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:     294473     899262    1174243     282249    1282407     515973    5187081    2463270   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:     294473     899262    1174243     282249    1282407     515973    5187081    2463270   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:     294473     899262    1174243     282249    1282407     515973    5187081    2463270   Non-maskable interrupts
-# grep NMI /proc/interrupts
-NMI:     294473     899262    1174243     282249    1282407     515973    5187081    2463270   Non-maskable interrupts
-#
-
-# grep . /dev/oprofile/*/*
-/dev/oprofile/0/count:10000
-/dev/oprofile/0/enabled:1
-/dev/oprofile/0/event:60
-/dev/oprofile/0/kernel:1
-/dev/oprofile/0/unit_mask:0
-/dev/oprofile/0/user:1
-/dev/oprofile/1/count:0
-/dev/oprofile/1/enabled:0
-/dev/oprofile/1/event:0
-/dev/oprofile/1/kernel:0
-/dev/oprofile/1/unit_mask:0
-/dev/oprofile/1/user:0
-/dev/oprofile/stats/bt_lost_no_mapping:0
-/dev/oprofile/stats/event_lost_overflow:376941
-/dev/oprofile/stats/sample_lost_no_mapping:43358
-/dev/oprofile/stats/sample_lost_no_mm:26
-
-# grep . /dev/oprofile/*
-/dev/oprofile/backtrace_depth:0
-grep: /dev/oprofile/buffer: Device or resource busy
-/dev/oprofile/buffer_size:1048576
-/dev/oprofile/buffer_watershed:32768
-/dev/oprofile/cpu_buffer_size:65536
-/dev/oprofile/cpu_type:i386/core_2
-grep: /dev/oprofile/dump: Invalid argument
-/dev/oprofile/enable:1
-/dev/oprofile/pointer_size:4
-
-
-
-> ---
->  arch/x86/oprofile/op_model_ppro.c |    9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.28-rc3-test/arch/x86/oprofile/op_model_ppro.c
-> ===================================================================
-> --- linux-2.6.28-rc3-test.orig/arch/x86/oprofile/op_model_ppro.c	2008-11-07 13:46:23.000000000 +0100
-> +++ linux-2.6.28-rc3-test/arch/x86/oprofile/op_model_ppro.c	2008-11-07 13:50:57.000000000 +0100
-> @@ -27,8 +27,7 @@
->  static int counter_width = 32;
->  
->  #define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
-> -#define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
-> -#define CTR_OVERFLOWED(n) (!((n) & (1U<<(counter_width-1))))
-> +#define CTR_OVERFLOWED(n) (!((n) & (1ULL<<(counter_width-1))))
->  
->  #define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
->  #define CTRL_READ(l, h, msrs, c) do {rdmsr((msrs->controls[(c)].addr), (l), (h)); } while (0)
-> @@ -124,14 +123,14 @@
->  static int ppro_check_ctrs(struct pt_regs * const regs,
->  			   struct op_msrs const * const msrs)
->  {
-> -	unsigned int low, high;
-> +	u64 val;
->  	int i;
->  
->  	for (i = 0 ; i < num_counters; ++i) {
->  		if (!reset_value[i])
->  			continue;
-> -		CTR_READ(low, high, msrs, i);
-> -		if (CTR_OVERFLOWED(low)) {
-> +		rdmsrl(msrs->counters[i].addr, val);
-> +		if (CTR_OVERFLOWED(val)) {
->  			oprofile_add_sample(regs, i);
->  			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
->  		}
-> 
-> 
-
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 9f44150..83e4f33 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -96,6 +96,13 @@ typedef struct kernel_cap_struct {
+ 	__u32 cap[_KERNEL_CAPABILITY_U32S];
+ } kernel_cap_t;
+ 
++/* exact same as vfs_cap_data but in cpu endian and always filled completely */
++struct cpu_vfs_cap_data {
++	__u32 magic_etc;
++	kernel_cap_t permitted;
++	kernel_cap_t inheritable;
++};
++
+ #define _USER_CAP_HEADER_SIZE  (sizeof(struct __user_cap_header_struct))
+ #define _KERNEL_CAP_T_SIZE     (sizeof(kernel_cap_t))
+ 
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 3976613..8bb95ed 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -202,17 +202,70 @@ int cap_inode_killpriv(struct dentry *dentry)
+ 	return inode->i_op->removexattr(dentry, XATTR_NAME_CAPS);
+ }
+ 
+-static inline int cap_from_disk(struct vfs_cap_data *caps,
+-				struct linux_binprm *bprm, unsigned size)
++static inline int bprm_caps_from_vfs_caps(struct cpu_vfs_cap_data *caps,
++					  struct linux_binprm *bprm)
+ {
++	unsigned i;
++	int ret = 0;
++
++	if (caps->magic_etc & VFS_CAP_FLAGS_EFFECTIVE)
++		bprm->cap_effective = true;
++	else
++		bprm->cap_effective = false;
++
++	CAP_FOR_EACH_U32(i) {
++		__u32 permitted = caps->permitted.cap[i];
++		__u32 inheritable = caps->inheritable.cap[i];
++
++		/*
++		 * pP' = (X & fP) | (pI & fI)
++		 */
++		bprm->cap_post_exec_permitted.cap[i] =
++			(current->cap_bset.cap[i] & permitted) |
++			(current->cap_inheritable.cap[i] & inheritable);
++
++		if (permitted & ~bprm->cap_post_exec_permitted.cap[i]) {
++			/*
++			 * insufficient to execute correctly
++			 */
++			ret = -EPERM;
++		}
++	}
++
++	/*
++	 * For legacy apps, with no internal support for recognizing they
++	 * do not have enough capabilities, we return an error if they are
++	 * missing some "forced" (aka file-permitted) capabilities.
++	 */
++	return bprm->cap_effective ? ret : 0;
++}
++
++int get_vfs_caps_from_disk(const struct dentry *dentry, struct cpu_vfs_cap_data *cpu_caps)
++{
++	struct inode *inode = dentry->d_inode;
+ 	__u32 magic_etc;
+ 	unsigned tocopy, i;
+-	int ret;
++	int size;
++	struct vfs_cap_data caps;
++
++	memset(cpu_caps, 0, sizeof(struct cpu_vfs_cap_data));
++
++	if (!inode || !inode->i_op || !inode->i_op->getxattr)
++		return -ENODATA;
++
++	size = inode->i_op->getxattr((struct dentry *)dentry, XATTR_NAME_CAPS, &caps,
++				   XATTR_CAPS_SZ);
++	if (size == -ENODATA || size == -EOPNOTSUPP) {
++		/* no data, that's ok */
++		return -ENODATA;
++	}
++	if (size < 0)
++		return size;
+ 
+ 	if (size < sizeof(magic_etc))
+ 		return -EINVAL;
+ 
+-	magic_etc = le32_to_cpu(caps->magic_etc);
++	cpu_caps->magic_etc = magic_etc = le32_to_cpu(caps.magic_etc);
+ 
+ 	switch ((magic_etc & VFS_CAP_REVISION_MASK)) {
+ 	case VFS_CAP_REVISION_1:
+@@ -229,46 +282,13 @@ static inline int cap_from_disk(struct vfs_cap_data *caps,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (magic_etc & VFS_CAP_FLAGS_EFFECTIVE) {
+-		bprm->cap_effective = true;
+-	} else {
+-		bprm->cap_effective = false;
+-	}
+-
+-	ret = 0;
+-
+ 	CAP_FOR_EACH_U32(i) {
+-		__u32 value_cpu;
+-
+-		if (i >= tocopy) {
+-			/*
+-			 * Legacy capability sets have no upper bits
+-			 */
+-			bprm->cap_post_exec_permitted.cap[i] = 0;
+-			continue;
+-		}
+-		/*
+-		 * pP' = (X & fP) | (pI & fI)
+-		 */
+-		value_cpu = le32_to_cpu(caps->data[i].permitted);
+-		bprm->cap_post_exec_permitted.cap[i] =
+-			(current->cap_bset.cap[i] & value_cpu) |
+-			(current->cap_inheritable.cap[i] &
+-				le32_to_cpu(caps->data[i].inheritable));
+-		if (value_cpu & ~bprm->cap_post_exec_permitted.cap[i]) {
+-			/*
+-			 * insufficient to execute correctly
+-			 */
+-			ret = -EPERM;
+-		}
++		if (i >= tocopy)
++			break;
++		cpu_caps->permitted.cap[i] = le32_to_cpu(caps.data[i].permitted);
++		cpu_caps->inheritable.cap[i] = le32_to_cpu(caps.data[i].inheritable);
+ 	}
+-
+-	/*
+-	 * For legacy apps, with no internal support for recognizing they
+-	 * do not have enough capabilities, we return an error if they are
+-	 * missing some "forced" (aka file-permitted) capabilities.
+-	 */
+-	return bprm->cap_effective ? ret : 0;
++	return 0;
+ }
+ 
+ /* Locate any VFS capabilities: */
+@@ -276,8 +296,7 @@ static int get_file_caps(struct linux_binprm *bprm)
+ {
+ 	struct dentry *dentry;
+ 	int rc = 0;
+-	struct vfs_cap_data vcaps;
+-	struct inode *inode;
++	struct cpu_vfs_cap_data vcaps;
+ 
+ 	bprm_clear_caps(bprm);
+ 
+@@ -285,24 +304,18 @@ static int get_file_caps(struct linux_binprm *bprm)
+ 		return 0;
+ 
+ 	dentry = dget(bprm->file->f_dentry);
+-	inode = dentry->d_inode;
+-	if (!inode->i_op || !inode->i_op->getxattr)
+-		goto out;
+ 
+-	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, &vcaps,
+-				   XATTR_CAPS_SZ);
+-	if (rc == -ENODATA || rc == -EOPNOTSUPP) {
+-		/* no data, that's ok */
+-		rc = 0;
++	rc = get_vfs_caps_from_disk(dentry, &vcaps);
++	if (rc < 0) {
++		if (rc == -EINVAL)
++			printk(KERN_NOTICE "%s: get_vfs_caps_from_disk returned %d for %s\n",
++				__func__, rc, bprm->filename);
++		else if (rc == -ENODATA)
++			rc = 0;
+ 		goto out;
+ 	}
+-	if (rc < 0)
+-		goto out;
+ 
+-	rc = cap_from_disk(&vcaps, bprm, rc);
+-	if (rc == -EINVAL)
+-		printk(KERN_NOTICE "%s: cap_from_disk returned %d for %s\n",
+-		       __func__, rc, bprm->filename);
++	rc = bprm_caps_from_vfs_caps(&vcaps, bprm);
+ 
+ out:
+ 	dput(dentry);
 
