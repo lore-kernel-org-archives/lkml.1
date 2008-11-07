@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbYKGIMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbYKGIQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103AbYKGIMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKGIM0
+	id S1753260AbYKGIQm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:16:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbYKGIQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:12:26 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:37083 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbYKGIMY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:12:24 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Fri, 07 Nov 2008 03:12:18 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-In-reply-to: <20081106220530.5b0e3a96.akpm@linux-foundation.org>
-Message-id: <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
-References: <20081107052336.652868737@polymtl.ca>
- <20081107053349.861709786@polymtl.ca>
- <20081106220530.5b0e3a96.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 7 Nov 2008 03:16:33 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36941 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751082AbYKGIQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:16:33 -0500
+Date: Fri, 7 Nov 2008 09:16:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sched: rewrite SCHED_CPUMASK_ALLOC
+Message-ID: <20081107081627.GC4435@elte.hu>
+References: <4911341C.7020207@cn.fujitsu.com> <20081106080057.GF8459@elte.hu> <4913EB8C.8010003@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4913EB8C.8010003@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008, Andrew Morton wrote:
 
-> On Fri, 07 Nov 2008 00:23:44 -0500 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> >>  #if	NR_CPUS > 128
+> >> -#define	SCHED_CPUMASK_ALLOC		1
+> >> -#define	SCHED_CPUMASK_FREE(v)		kfree(v)
+> >> -#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
+> >> +#define SCHED_CPUMASK_DECLARE(v)	struct allmasks *v
+> >> +#define SCHED_CPUMASK_ALLOC(v)		v = kmalloc(sizeof(*v), GFP_KERNEL)
+> >> +#define SCHED_CPUMASK_FREE(v)		kfree(v)
+> >>  #else
+> >> -#define	SCHED_CPUMASK_ALLOC		0
+> >> -#define	SCHED_CPUMASK_FREE(v)
+> >> -#define	SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
+> >> +#define SCHED_CPUMASK_DECLARE(v)	struct allmasks _v, *v = &_v
+> >> +#define SCHED_CPUMASK_ALLOC(v)
+> >> +#define SCHED_CPUMASK_FREE(v)
+> >>  #endif
+> > 
+> > ok, the #ifdef removal is nice, but we can make it even cleaner: 
+> > please just change it to a sched_cpumask_alloc() inline. That way 
+> > SCHED_CPUMASK_DECLARE() can go away as well: just declare the 
+> > variable, it will be unused in the <128 CPUs case.
+> > 
 > 
-> >  #define cnt32_to_63(cnt_lo) \
-> >  ({ \
-> > -	static volatile u32 __m_cnt_hi; \
-> > +	static u32 __m_cnt_hi; \
-> >  	union cnt32_to_63 __x; \
-> >  	__x.hi = __m_cnt_hi; \
-> > +	smp_rmb(); 	/* read __m_cnt_hi before mmio cnt_lo */ \
-> >  	__x.lo = (cnt_lo); \
-> >  	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
-> >  		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
+> I don't catch you. :(
 > 
-> Oh dear.  We have a macro which secretly maintains
-> per-instantiation-site global state?  And doesn't even implement locking
-> to protect that state?
+> In the <128 CPUs case, SCHED_CPUMASK_DECLARE is needed to declare a 
+> local variable(struct allmasks) and a pointer pointing to it. So I 
+> don't know what you mean by 'unused' and how to remove the DECLARE 
+> macro..
 
-Please do me a favor and look for those very unfrequent posts I've sent 
-to lkml lately.  I've explained it all at least 3 times so far, to Peter 
-Zijlstra, to David Howells, to Mathieu Desnoyers, and now to you.
+Sorry, you are right - keep the SCHED_CPUMASK_DECLARE() macro please. 
 
-> I mean, the darned thing is called from sched_clock(), which can be
-> concurrently called on separate CPUs and which can be called from
-> interrupt context (with an arbitrary nesting level!) while it was running
-> in process context.
+But the other macros can become an inline function just fine, correct?
 
-Yes!  And this is so on *purpose*.  Please take some time to read the 
-comment that goes along with it, and if you're still not convinced then 
-look for those explanation emails I've already posted.
-
-> /*
->  * Caller must provide locking to protect *caller_state
->  */
-
-NO!  This is meant to be LOCK FREE!
-
-
-Nicolas
+	Ingo
