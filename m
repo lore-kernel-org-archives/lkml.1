@@ -1,255 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYKGVxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339AbYKGV4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbYKGVxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 16:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbYKGVxA
+	id S1752339AbYKGV4g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 16:56:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751168AbYKGV43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 16:53:00 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:39797 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbYKGVw7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 16:52:59 -0500
-Date: Fri, 07 Nov 2008 15:52:44 -0600
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [Openipmi-developer] [PATCH] Fix platform drivers that crash on
-	suspend/resume
-In-reply-to: <20081107191636.13288.17003.stgit@elm3a70.beaverton.ibm.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       openipmi-developer@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Message-id: <4914B8AC.7070202@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20081107191636.13288.17003.stgit@elm3a70.beaverton.ibm.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.17 (X11/20081018)
+	Fri, 7 Nov 2008 16:56:29 -0500
+Received: from main.gmane.org ([80.91.229.2]:42037 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751163AbYKGV42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 16:56:28 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: walt <w41ter@gmail.com>
+Subject: Re: [PATCH 0/4] Fix vmalloc regression
+Date: Fri, 07 Nov 2008 13:56:10 -0800
+Message-ID: <gf2dhq$l1d$1@ger.gmane.org>
+References: <1226097354-7523-1-git-send-email-glommer@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-69-234-183-20.dsl.irvnca.pacbell.net
+User-Agent: Thunderbird/3.0a2pre (X11; 2008110705)
+In-Reply-To: <1226097354-7523-1-git-send-email-glommer@redhat.com>
+Cc: kvm@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, thanks for this.
+Glauber Costa wrote:
+> Nick,
+>
+> This is the whole set of patches I was talking about.
+> Patch 3 is the one that in fact fixes the problem...
 
-Might this be a candidate for the stable-kernel?
+Yep, patch 3 works for me, thanks.  Only the 32-bit kernel
+seems to need the patch, FWIW.
 
-Acked-by: Corey Minyard <cminyard@mvista.com>
-
-Darrick J. Wong wrote:
-> It turns out that if one registers a struct platform_device, the platform
-> device code expects that platform_device.device->driver points to a struct
-> driver inside a struct platform_driver.  This is not the case with the ipmi-si,
-> ipmi-msghandler and ibmaem drivers, which causes the suspend/resume hook
-> functions to jump off into nowhere, causing a crash.  Make this assumption hold
-> true for these three drivers.
->
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> ---
->
->  drivers/char/ipmi/ipmi_msghandler.c |   20 +++++++++++---------
->  drivers/char/ipmi/ipmi_si_intf.c    |   16 +++++++++-------
->  drivers/hwmon/ibmaem.c              |   18 ++++++++++--------
->  3 files changed, 30 insertions(+), 24 deletions(-)
->
-> diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
-> index 8a59aaa..7a88dfd 100644
-> --- a/drivers/char/ipmi/ipmi_msghandler.c
-> +++ b/drivers/char/ipmi/ipmi_msghandler.c
-> @@ -422,9 +422,11 @@ struct ipmi_smi {
->  /**
->   * The driver model view of the IPMI messaging driver.
->   */
-> -static struct device_driver ipmidriver = {
-> -	.name = "ipmi",
-> -	.bus = &platform_bus_type
-> +static struct platform_driver ipmidriver = {
-> +	.driver = {
-> +		.name = "ipmi",
-> +		.bus = &platform_bus_type
-> +	}
->  };
->  static DEFINE_MUTEX(ipmidriver_mutex);
->  
-> @@ -2384,9 +2386,9 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
->  	 * representing the interfaced BMC already
->  	 */
->  	if (bmc->guid_set)
-> -		old_bmc = ipmi_find_bmc_guid(&ipmidriver, bmc->guid);
-> +		old_bmc = ipmi_find_bmc_guid(&ipmidriver.driver, bmc->guid);
->  	else
-> -		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver,
-> +		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
->  						    bmc->id.product_id,
->  						    bmc->id.device_id);
->  
-> @@ -2416,7 +2418,7 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
->  		snprintf(name, sizeof(name),
->  			 "ipmi_bmc.%4.4x", bmc->id.product_id);
->  
-> -		while (ipmi_find_bmc_prod_dev_id(&ipmidriver,
-> +		while (ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
->  						 bmc->id.product_id,
->  						 bmc->id.device_id)) {
->  			if (!warn_printed) {
-> @@ -2446,7 +2448,7 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
->  			       " Unable to allocate platform device\n");
->  			return -ENOMEM;
->  		}
-> -		bmc->dev->dev.driver = &ipmidriver;
-> +		bmc->dev->dev.driver = &ipmidriver.driver;
->  		dev_set_drvdata(&bmc->dev->dev, bmc);
->  		kref_init(&bmc->refcount);
->  
-> @@ -4247,7 +4249,7 @@ static int ipmi_init_msghandler(void)
->  	if (initialized)
->  		return 0;
->  
-> -	rv = driver_register(&ipmidriver);
-> +	rv = driver_register(&ipmidriver.driver);
->  	if (rv) {
->  		printk(KERN_ERR PFX "Could not register IPMI driver\n");
->  		return rv;
-> @@ -4308,7 +4310,7 @@ static __exit void cleanup_ipmi(void)
->  	remove_proc_entry(proc_ipmi_root->name, NULL);
->  #endif /* CONFIG_PROC_FS */
->  
-> -	driver_unregister(&ipmidriver);
-> +	driver_unregister(&ipmidriver.driver);
->  
->  	initialized = 0;
->  
-> diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-> index 3123bf5..3000135 100644
-> --- a/drivers/char/ipmi/ipmi_si_intf.c
-> +++ b/drivers/char/ipmi/ipmi_si_intf.c
-> @@ -114,9 +114,11 @@ static char *si_to_str[] = { "kcs", "smic", "bt" };
->  
->  #define DEVICE_NAME "ipmi_si"
->  
-> -static struct device_driver ipmi_driver = {
-> -	.name = DEVICE_NAME,
-> -	.bus = &platform_bus_type
-> +static struct platform_driver ipmi_driver = {
-> +	.driver = {
-> +		.name = DEVICE_NAME,
-> +		.bus = &platform_bus_type
-> +	}
->  };
->  
->  
-> @@ -2868,7 +2870,7 @@ static int try_smi_init(struct smi_info *new_smi)
->  			goto out_err;
->  		}
->  		new_smi->dev = &new_smi->pdev->dev;
-> -		new_smi->dev->driver = &ipmi_driver;
-> +		new_smi->dev->driver = &ipmi_driver.driver;
->  
->  		rv = platform_device_add(new_smi->pdev);
->  		if (rv) {
-> @@ -2983,7 +2985,7 @@ static __devinit int init_ipmi_si(void)
->  	initialized = 1;
->  
->  	/* Register the device drivers. */
-> -	rv = driver_register(&ipmi_driver);
-> +	rv = driver_register(&ipmi_driver.driver);
->  	if (rv) {
->  		printk(KERN_ERR
->  		       "init_ipmi_si: Unable to register driver: %d\n",
-> @@ -3052,7 +3054,7 @@ static __devinit int init_ipmi_si(void)
->  #ifdef CONFIG_PPC_OF
->  		of_unregister_platform_driver(&ipmi_of_platform_driver);
->  #endif
-> -		driver_unregister(&ipmi_driver);
-> +		driver_unregister(&ipmi_driver.driver);
->  		printk(KERN_WARNING
->  		       "ipmi_si: Unable to find any System Interface(s)\n");
->  		return -ENODEV;
-> @@ -3151,7 +3153,7 @@ static __exit void cleanup_ipmi_si(void)
->  		cleanup_one_si(e);
->  	mutex_unlock(&smi_infos_lock);
->  
-> -	driver_unregister(&ipmi_driver);
-> +	driver_unregister(&ipmi_driver.driver);
->  }
->  module_exit(cleanup_ipmi_si);
->  
-> diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
-> index 7b0ed5d..fe74609 100644
-> --- a/drivers/hwmon/ibmaem.c
-> +++ b/drivers/hwmon/ibmaem.c
-> @@ -88,9 +88,11 @@
->  static DEFINE_IDR(aem_idr);
->  static DEFINE_SPINLOCK(aem_idr_lock);
->  
-> -static struct device_driver aem_driver = {
-> -	.name = DRVNAME,
-> -	.bus = &platform_bus_type,
-> +static struct platform_driver aem_driver = {
-> +	.driver = {
-> +		.name = DRVNAME,
-> +		.bus = &platform_bus_type,
-> +	}
->  };
->  
->  struct aem_ipmi_data {
-> @@ -583,7 +585,7 @@ static int aem_init_aem1_inst(struct aem_ipmi_data *probe, u8 module_handle)
->  	data->pdev = platform_device_alloc(DRVNAME, data->id);
->  	if (!data->pdev)
->  		goto dev_err;
-> -	data->pdev->dev.driver = &aem_driver;
-> +	data->pdev->dev.driver = &aem_driver.driver;
->  
->  	res = platform_device_add(data->pdev);
->  	if (res)
-> @@ -716,7 +718,7 @@ static int aem_init_aem2_inst(struct aem_ipmi_data *probe,
->  	data->pdev = platform_device_alloc(DRVNAME, data->id);
->  	if (!data->pdev)
->  		goto dev_err;
-> -	data->pdev->dev.driver = &aem_driver;
-> +	data->pdev->dev.driver = &aem_driver.driver;
->  
->  	res = platform_device_add(data->pdev);
->  	if (res)
-> @@ -1085,7 +1087,7 @@ static int __init aem_init(void)
->  {
->  	int res;
->  
-> -	res = driver_register(&aem_driver);
-> +	res = driver_register(&aem_driver.driver);
->  	if (res) {
->  		printk(KERN_ERR "Can't register aem driver\n");
->  		return res;
-> @@ -1097,7 +1099,7 @@ static int __init aem_init(void)
->  	return 0;
->  
->  ipmi_reg_err:
-> -	driver_unregister(&aem_driver);
-> +	driver_unregister(&aem_driver.driver);
->  	return res;
->  
->  }
-> @@ -1107,7 +1109,7 @@ static void __exit aem_exit(void)
->  	struct aem_data *p1, *next1;
->  
->  	ipmi_smi_watcher_unregister(&driver_data.bmc_events);
-> -	driver_unregister(&aem_driver);
-> +	driver_unregister(&aem_driver.driver);
->  	list_for_each_entry_safe(p1, next1, &driver_data.aem_devices, list)
->  		aem_delete(p1);
->  }
->
->
-> -------------------------------------------------------------------------
-> This SF.Net email is sponsored by the Moblin Your Move Developer's challenge
-> Build the coolest Linux based applications with Moblin SDK & win great prizes
-> Grand prize is a trip for two to an Open Source event anywhere in the world
-> http://moblin-contest.org/redirect.php?banner_id=100&url=/
-> _______________________________________________
-> Openipmi-developer mailing list
-> Openipmi-developer@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/openipmi-developer
->
->   
 
