@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYKGLjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbYKGLwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbYKGLjW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYKGLjD
+	id S1753144AbYKGLwz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:52:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYKGLwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:39:03 -0500
-Received: from swm.pp.se ([212.247.200.143]:56573 "EHLO uplift.swm.pp.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbYKGLjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:39:01 -0500
-Date: Fri, 7 Nov 2008 12:38:59 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-cc: David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Re: time for TCP ECN defaulting to on?
-In-Reply-To: <Pine.LNX.4.64.0811071039480.23629@wrl-59.cs.helsinki.fi>
-Message-ID: <alpine.DEB.1.10.0811071230310.10993@uplift.swm.pp.se>
-References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se> <20081105.151015.206163697.davem@davemloft.net> <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
- <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi> <alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se> <Pine.LNX.4.64.0811071039480.23629@wrl-59.cs.helsinki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-137064504-1445617518-1226057771=:10993"
+	Fri, 7 Nov 2008 06:52:45 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:15109 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752256AbYKGLwo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:52:44 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [RFC patch 17/18] MIPS : Trace clock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Ralf Baechle <ralf@linux-mips.org>
+In-Reply-To: <20081107053351.329744816@polymtl.ca>
+References: <20081107052336.652868737@polymtl.ca>
+	 <20081107053351.329744816@polymtl.ca>
+Content-Type: text/plain
+Date: Fri, 07 Nov 2008 12:53:17 +0100
+Message-Id: <1226058797.2697.19.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 2008-11-07 at 00:23 -0500, Mathieu Desnoyers wrote:
+> Note for Peter Zijlstra :
+> You should probably have a look at lockdep.c raw_spinlock_t lockdep_lock usage.
+> I suspect it may be used with preemption enabled in graph_lock(). (not sure
+> though, but it's worth double-checking.
 
----137064504-1445617518-1226057771=:10993
-Content-Type: TEXT/PLAIN; CHARSET=ISO-8859-15; FORMAT=flowed
-Content-Transfer-Encoding: 8BIT
+Are you worried about the graph_lock() instance in
+lookup_chain_cache() ?
 
-On Fri, 7 Nov 2008, Ilpo Järvinen wrote:
+That is the locking for validate_chain,
 
-> I think you partially miss the point here. In many cases not every 
-> single router has to _support_ ECN to get its benefits, not-supporting 
-> is not the problem in itself (though it would be nice to get that 
-> "fixed" as well) but breaking ecn-enabled connections. I suppose you 
-> didn't check that aspect? I'd guess those mentioned devices will 
-> interoperate just fine since one can mostly connect ok with ecn too 
-> besides rare exceptions rather than things being vice-versa.
+__lock_acquire()
+ validate_chain()
+   look_up_chain_cache()
+     graph_lock()
+   check_prevs_add()
+     check_prev_add()
+       graph_unlock()
+       graph_lock()
+   graph_unlock()
 
-I don't understand. My point is that most of the ISP core equipment out 
-there doesn't act on ECN rendering it mostly useless. The N in ECN renders 
-useless because there is no device doing the *notification*. They'll just 
-pass the traffic without acting on it differently regardless if ECN is on 
-or off.
+which is all done without modifying IRQ state.
 
-> The most crucial components are anyway the points of congestion, I don't know 
-> enough isp topologies but I suppose those core routers are not the ones where 
-> towards subscribers device traffic congests?
+However, __lock_acquire() is only called with IRQs disabled:
 
-There can be congestion anywhere in the network, best would be if all 
-routers supported it. My problem with ECN is that the most advanced 
-routers do not support it, it's useless with L2/L3 switches (as they have 
-very small buffers, there is "nothing" to do WRED on), so that leaves 
-potential implementation by either DSLAM/BRAS vendors (where Cisco BRAS 
-does support it but it needs to be enabled by the ISP) or the SOHO devices 
-which run Linux and might implement it, but I'd rather see them do active 
-queue management at all (fair-queue for instance) before asking them to do 
-ECN. Of course, if users start to ask for ECN and we get fair-queue at the 
-same time, all the better. One very common congestion point is definitely 
-the upstream connection of someones cable or DSL modem.
+lock_acquire()
+  raw_local_irq_save()
+  __lock_acquire()
 
-> I doubt it any worse than with eg. timestamps.
+lock_release()
+  raw_local_irq_save()
+  __lock_release()
+    lock_release_nested()
+      __lock_acquire()
+    lock_release_non_nested()
+      __lock_acquire()
 
-According to <http://www.imperialviolet.org/binary/ecntest.pdf> it's 0.5% 
-of hosts that drop packets when ECN is enabled. It's a substantial part of 
-the Internet. Yes, not doing blackhole detection might get these hosts 
-fixed faster, but at the expense of more end user hurt.
+lock_set_subclass()
+  raw_local_irq_save()
+  __lock_set_subclass()
+    __lock_acquire()
 
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
----137064504-1445617518-1226057771=:10993--
+So I think we're good.
+
