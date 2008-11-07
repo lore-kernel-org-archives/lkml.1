@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbYKGXf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbYKGXgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbYKGXf4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYKGX1B
+	id S1754876AbYKGXgl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYKGX1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:27:01 -0500
-Received: from kroah.org ([198.145.64.141]:47634 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:27:06 -0500
+Received: from kroah.org ([198.145.64.141]:47661 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753526AbYKGX07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:26:59 -0500
-Date: Fri, 7 Nov 2008 15:26:24 -0800
+	id S1753870AbYKGX1C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:27:02 -0500
+Date: Fri, 7 Nov 2008 15:26:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,201 +22,48 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Julia Jomantaite <julia.jomantaite@gmail.com>,
-       linux-acpi@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Andi Kleen <ak@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 13/16] ACPI: video: fix brightness allocation
-Message-ID: <20081107232624.GN4282@kroah.com>
+       alan@lxorguk.ukuu.org.uk, netfilter-devel@vger.kernel.org,
+       Patrick McHardy <kaber@trash.net>, davem@davemloft.net,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+Subject: [patch 15/16] netfilter: snmp nat leaks memory in case of failure
+Message-ID: <20081107232629.GP4282@kroah.com>
 References: <20081107231848.995297975@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-video-fix-brightness-allocation.patch"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline; filename="netfilter-snmp-nat-leaks-memory-in-case-of-failure.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20081107232544.GA4282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Julia Jomantaite <julia.jomantaite@gmail.com>
+From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-Thanks to Arjan for spotting this for .stable:
-http://www.kerneloops.org/search.php?search=acpi_video_switch_brightness
+netfilter: snmp nat leaks memory in case of failure
 
-upstream commit 469778c1740fcf3113498b6fdf4559bdec25c58f
+Upstream commit 311670f3e:
 
-ACPI: video: fix brightness allocation
-
-Fix use of uninitialized device->brightness.
-
-Signed-off-by: Julia Jomantaite <julia.jomantaite@gmail.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 
 ---
- drivers/acpi/video.c |  123 ++++++++++++++++++++++++++++++---------------------
- 1 file changed, 73 insertions(+), 50 deletions(-)
+ net/ipv4/netfilter/nf_nat_snmp_basic.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -624,6 +624,76 @@ acpi_video_bus_DOS(struct acpi_video_bus
-  *  	device	: video output device (LCD, CRT, ..)
-  *
-  *  Return Value:
-+ *	Maximum brightness level
-+ *
-+ *  Allocate and initialize device->brightness.
-+ */
-+
-+static int
-+acpi_video_init_brightness(struct acpi_video_device *device)
-+{
-+	union acpi_object *obj = NULL;
-+	int i, max_level = 0, count = 0;
-+	union acpi_object *o;
-+	struct acpi_video_device_brightness *br = NULL;
-+
-+	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
-+						"LCD brightness level\n"));
-+		goto out;
-+	}
-+
-+	if (obj->package.count < 2)
-+		goto out;
-+
-+	br = kzalloc(sizeof(*br), GFP_KERNEL);
-+	if (!br) {
-+		printk(KERN_ERR "can't allocate memory\n");
-+		goto out;
-+	}
-+
-+	br->levels = kmalloc(obj->package.count * sizeof *(br->levels),
-+				GFP_KERNEL);
-+	if (!br->levels)
-+		goto out_free;
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		o = (union acpi_object *)&obj->package.elements[i];
-+		if (o->type != ACPI_TYPE_INTEGER) {
-+			printk(KERN_ERR PREFIX "Invalid data\n");
-+			continue;
-+		}
-+		br->levels[count] = (u32) o->integer.value;
-+
-+		if (br->levels[count] > max_level)
-+			max_level = br->levels[count];
-+		count++;
-+	}
-+
-+	if (count < 2)
-+		goto out_free_levels;
-+
-+	br->count = count;
-+	device->brightness = br;
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "found %d brightness levels\n", count));
-+	kfree(obj);
-+	return max_level;
-+
-+out_free_levels:
-+	kfree(br->levels);
-+out_free:
-+	kfree(br);
-+out:
-+	device->brightness = NULL;
-+	kfree(obj);
-+	return 0;
-+}
-+
-+/*
-+ *  Arg:
-+ *	device	: video output device (LCD, CRT, ..)
-+ *
-+ *  Return Value:
-  *  	None
-  *
-  *  Find out all required AML methods defined under the output
-@@ -633,10 +703,7 @@ acpi_video_bus_DOS(struct acpi_video_bus
- static void acpi_video_device_find_cap(struct acpi_video_device *device)
- {
- 	acpi_handle h_dummy1;
--	int i;
- 	u32 max_level = 0;
--	union acpi_object *obj = NULL;
--	struct acpi_video_device_brightness *br = NULL;
- 
- 
- 	memset(&device->cap, 0, sizeof(device->cap));
-@@ -665,53 +732,7 @@ static void acpi_video_device_find_cap(s
- 		device->cap._DSS = 1;
- 	}
- 
--	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
--
--		if (obj->package.count >= 2) {
--			int count = 0;
--			union acpi_object *o;
--
--			br = kzalloc(sizeof(*br), GFP_KERNEL);
--			if (!br) {
--				printk(KERN_ERR "can't allocate memory\n");
--			} else {
--				br->levels = kmalloc(obj->package.count *
--						     sizeof *(br->levels), GFP_KERNEL);
--				if (!br->levels)
--					goto out;
--
--				for (i = 0; i < obj->package.count; i++) {
--					o = (union acpi_object *)&obj->package.
--					    elements[i];
--					if (o->type != ACPI_TYPE_INTEGER) {
--						printk(KERN_ERR PREFIX "Invalid data\n");
--						continue;
--					}
--					br->levels[count] = (u32) o->integer.value;
--
--					if (br->levels[count] > max_level)
--						max_level = br->levels[count];
--					count++;
--				}
--			      out:
--				if (count < 2) {
--					kfree(br->levels);
--					kfree(br);
--				} else {
--					br->count = count;
--					device->brightness = br;
--					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--							  "found %d brightness levels\n",
--							  count));
--				}
--			}
--		}
--
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
--	}
--
--	kfree(obj);
-+	max_level = acpi_video_init_brightness(device);
- 
- 	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
- 		int result;
-@@ -1710,6 +1731,8 @@ static void
- acpi_video_switch_brightness(struct acpi_video_device *device, int event)
- {
- 	unsigned long level_current, level_next;
-+	if (!device->brightness)
-+		return;
- 	acpi_video_device_lcd_get_level_current(device, &level_current);
- 	level_next = acpi_video_get_next_level(device, level_current, event);
- 	acpi_video_device_lcd_set_level(device, level_next);
+--- a/net/ipv4/netfilter/nf_nat_snmp_basic.c
++++ b/net/ipv4/netfilter/nf_nat_snmp_basic.c
+@@ -742,6 +742,7 @@ static unsigned char snmp_object_decode(
+ 			*obj = kmalloc(sizeof(struct snmp_object) + len,
+ 				       GFP_ATOMIC);
+ 			if (*obj == NULL) {
++				kfree(p);
+ 				kfree(id);
+ 				if (net_ratelimit())
+ 					printk("OOM in bsalg (%d)\n", __LINE__);
 
 -- 
