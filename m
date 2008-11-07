@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbYKGBIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbYKGBKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbYKGBIg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 20:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYKGBI1
+	id S1755046AbYKGBKF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 20:10:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYKGBJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 20:08:27 -0500
-Received: from bc.sympatico.ca ([209.226.175.184]:41369 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751680AbYKGBI0 (ORCPT
+	Thu, 6 Nov 2008 20:09:54 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54792 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752020AbYKGBJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 20:08:26 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcEAKcdE0lMQWxa/2dsb2JhbACBdso6g1Y
-Date: Thu, 6 Nov 2008 20:08:22 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: LTTng 0.52, scheduler instrumentation
-Message-ID: <20081107010821.GA23269@Krystal>
+	Thu, 6 Nov 2008 20:09:54 -0500
+Date: Fri, 7 Nov 2008 10:09:15 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nigel Cunningham <ncunningham@crca.org.au>,
+       Tolentino <matthew.e.tolentino@intel.com>, Hansen <haveblue@us.ibm.com>,
+       <linux-pm@lists.osdl.org>, <Matt@smtp1.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>,
+       <Dave@smtp1.linux-foundation.org>, Mel Gorman <mel@skynet.ie>,
+       <Andy@smtp1.linux-foundation.org>, Whitcroft <apw@shadowen.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, <pavel@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [linux-pm] [PATCH] hibernation should work ok with memory
+ hotplug
+Message-Id: <20081107100915.6c525512.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.44L0.0811060943480.2456-100000@iolanthe.rowland.org>
+References: <20081106095314.8e65f443.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.44L0.0811060943480.2456-100000@iolanthe.rowland.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:53:27 up 155 days,  5:33, 10 users,  load average: 1.33, 0.69,
-	0.60
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 6 Nov 2008 09:47:12 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-I just released LTTng 0.52 for 2.6.27.4. It fixes the stuff I dreamt
-about this morning. ;-)
+> On Thu, 6 Nov 2008, KAMEZAWA Hiroyuki wrote:
+> 
+> > Hmm, people tend to make crazy hardware, oh yes. the pc may fly in
+> > the sky with rocket engine.
+> 
+> This isn't crazy at all.  I am currently working on an experiment 
+> called RAISE (Rapid Acquisition Imaging Spectrograph Experiment) that 
+> involves flying a rocket above the Earth's atmosphere to make 
+> measurements of the Sun.  The experiments in this rocket will be 
+> controlled by a computer running Linux.  See
+> 
+> 	http://www.swri.org/3pubs/ttoday/Spring06/Solar.htm
+> 
+> for a slightly out-of-date description.
+> 
 
-Ingo what do you think about this first point ?
+interesitng :)
 
-- I now only use 2 bytes to encode the task->state field in the trace.
-  However it seems that 1 byte would be enough (bitmask of values 0 to
-  127), except that -1 is used for "unrunnable". But when it's
-  unrunnable, it should "never" be reach scheduler events, right ?
+-Kame
 
-Changelog :
-- Add kernel command line : force_tsc_sync=1 to force tsc
-  synchronization at boot.
-- Supports AMD64 X2 box with unsynchronized TSCs very well. Includes
-  a warning that tells users to try
-  force_tsc_sync=1 idle=poll and to disable PowerNow or Speedstep to get
-  synchronized timestamp counters on x86. This workaround works very
-  well.
-- Default to no LTT alignment for traces if
-  HAVE_EFFICIENT_UNALIGNED_ACCESS is selected.
-- Fixed mixed up irq entry field names in (appeared in 0.51).
+> Alan Stern
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Some testing would be required with virtualization to see how it
-behaves.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
