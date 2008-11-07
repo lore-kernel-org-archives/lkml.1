@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbYKGErv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbYKGEto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbYKGErv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYKGErn
+	id S1755485AbYKGEto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:49:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKGEtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:47:43 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:39431 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751414AbYKGErl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:47:41 -0500
-Date: Fri, 7 Nov 2008 10:16:55 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, h-shimamoto@ct.jp.nec.com,
-       laijs@cn.fujitsu.com, davem@davemloft.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kprobes: bugfix: try_module_get even if calling_mod is
-	NULL
-Message-ID: <20081107044655.GA17228@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <490FE405.1000105@cn.fujitsu.com> <4910F697.2050203@redhat.com> <4910FB3D.4020805@cn.fujitsu.com> <491212C0.4030900@redhat.com> <4912222F.9040605@ct.jp.nec.com> <49122745.4090004@redhat.com> <49123521.6020608@redhat.com> <20081106170023.d5349c42.akpm@linux-foundation.org> <4913A7B2.9000609@redhat.com> <20081106185456.0b1d00eb.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106185456.0b1d00eb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 6 Nov 2008 23:49:31 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47572
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751353AbYKGEta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 23:49:30 -0500
+Date: Thu, 06 Nov 2008 20:49:29 -0800 (PST)
+Message-Id: <20081106.204929.161401868.davem@davemloft.net>
+To: swmike@swm.pp.se
+Cc: daniel.blueman@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+References: <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
+	<20081105.151015.206163697.davem@davemloft.net>
+	<alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 06:54:56PM -0800, Andrew Morton wrote:
-> On Fri, 07 Nov 2008 11:28:02 +0900 Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
-> > Andrew Morton wrote:
-> > > I do not understand this description "Get probed module even if the
-> > > caller is in the kernel core code".
-> > > 
-> > > What bug is being fixed here?  What is the kernel behaviour before and
-> > > after the patch?
-> > 
-> > When someone called register_*probe() from kernel-core code(not from
-> > module) and that probes a kernel module, users can remove the probed
-> > module because kprobe doesn't increment reference counter of the module.
-> > (on the other hand, if the kernel-module calls register_*probe,
-> > kprobe increments refcount of the probed module.)
-> > 
-> > Currently, we have no register_*probe() calling from kernel-core(except
-> > smoke-test, but the smoke-test doesn't probe module), so there is no
-> > real bugs. But the logic is wrong(or not fair) and it can causes a
-> > problem when someone might want to probe module from kernel.
-> > 
-> > After this patch is applied, even if someone put register_*probe() call
-> > in the kernel-core code, it increments the reference counter of the
-> > probed module, and it prevents user to remove the module until stopping
-> > probing it.
-> > 
-> > > Was the bug present in 2.6.27, 2.6.26 etc?  Or was it a post-2.6.28
-> > > regression?
-> > 
-> > Hmm, it might be an enhancement, because currently the kernel doesn't
-> > have real bugs.
-> > 
-> 
-> OK, thanks, so I scheduled this for 2.6.29.
-> 
-> Also, I decided that
-> kprobes-disable-preempt-for-module_text_address-and-kernel_text_address.patch
-> is needed in 2.6.28.  Please let me know if that was incorrect.  Please
-> also let me know if you think that patch is needed in 2.6.27.x or
-> earlier.
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+Date: Fri, 7 Nov 2008 05:46:28 +0100 (CET)
 
-That is correct and this doesn't warrant inclusion in 2.6.27.x.
+> I see that in
+> <http://www.icir.org/floyd/papers/draft-ietf-tsvwg-tcp-ecn-00.txt>
+> there is a recommendation to not use ECN on retransmits, is there
+> code right now (or planned) to do some kind of "ECN blackhole
+> detection", ie if no response is received to SYN with ECN set,
+> continue by sending the second SYN without ECN and keep this
+> information for the duration of the TCP session?
 
-Ananth
+No, we are firmly against any form of ECN blackhole detection.  Alexey Kuznetsov and
+Sally Floyd argued this out exhaustively several years ago.
