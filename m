@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYKGXeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbYKGXfG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbYKGXeq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbYKGX04
+	id S1756581AbYKGXfG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:35:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbYKGX05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:26:56 -0500
-Received: from kroah.org ([198.145.64.141]:47602 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:26:57 -0500
+Received: from kroah.org ([198.145.64.141]:47610 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753885AbYKGX0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:26:54 -0500
-Date: Fri, 7 Nov 2008 15:26:18 -0800
+	id S1754510AbYKGX0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:26:55 -0500
+Date: Fri, 7 Nov 2008 15:26:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
+       alan@lxorguk.ukuu.org.uk, Andrea Shepard <andrea@persephoneslair.org>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 10/16] net: Fix netdev_run_todo dead-lock
-Message-ID: <20081107232618.GK4282@kroah.com>
+Subject: [patch 11/16] sparc64: Fix race in arch/sparc64/kernel/trampoline.S
+Message-ID: <20081107232620.GL4282@kroah.com>
 References: <20081107231848.995297975@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="0002-net-Fix-netdev_run_todo-dead-lock.patch"
+Content-Disposition: inline; filename="0001-sparc64-Fix-race-in-arch-sparc64-kernel-trampoline.patch"
 In-Reply-To: <20081107232544.GA4282@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,115 +40,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Andrea Shepard <andrea@persephoneslair.org>
 
-[ Upstream commit 58ec3b4db9eb5a28e3aec5f407a54e28f7039c19 ]
+[ Upstream commit e0037df3852b4b60edbe01f70f4968e4a9fdb272 ]
 
-Benjamin Thery tracked down a bug that explains many instances
-of the error
+Make arch/sparc64/kernel/trampoline.S in 2.6.27.1 lock prom_entry_lock
+when calling the PROM.  This prevents a race condition that I observed
+causing a hang on startup on a 12-CPU E4500.
 
-unregister_netdevice: waiting for %s to become free. Usage count = %d
+I am not subscribed to this list, so please CC me on replies.
 
-It turns out that netdev_run_todo can dead-lock with itself if
-a second instance of it is run in a thread that will then free
-a reference to the device waited on by the first instance.
-
-The problem is really quite silly.  We were trying to create
-parallelism where none was required.  As netdev_run_todo always
-follows a RTNL section, and that todo tasks can only be added
-with the RTNL held, by definition you should only need to wait
-for the very ones that you've added and be done with it.
-
-There is no need for a second mutex or spinlock.
-
-This is exactly what the following patch does.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Andrea Shepard <andrea@persephoneslair.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/dev.c       |   27 ++++++---------------------
- net/core/rtnetlink.c |    2 +-
- 2 files changed, 7 insertions(+), 22 deletions(-)
+ arch/sparc64/kernel/trampoline.S |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3593,14 +3593,11 @@ static int dev_new_index(struct net *net
- }
+--- a/arch/sparc64/kernel/trampoline.S
++++ b/arch/sparc64/kernel/trampoline.S
+@@ -328,6 +328,12 @@ after_lock_tlb:
  
- /* Delayed registration/unregisteration */
--static DEFINE_SPINLOCK(net_todo_list_lock);
- static LIST_HEAD(net_todo_list);
+ 	wrpr		%g0, 0, %wstate
  
- static void net_set_todo(struct net_device *dev)
- {
--	spin_lock(&net_todo_list_lock);
- 	list_add_tail(&dev->todo_list, &net_todo_list);
--	spin_unlock(&net_todo_list_lock);
- }
- 
- static void rollback_registered(struct net_device *dev)
-@@ -3909,33 +3906,24 @@ static void netdev_wait_allrefs(struct n
-  *	free_netdev(y1);
-  *	free_netdev(y2);
-  *
-- * We are invoked by rtnl_unlock() after it drops the semaphore.
-+ * We are invoked by rtnl_unlock().
-  * This allows us to deal with problems:
-  * 1) We can delete sysfs objects which invoke hotplug
-  *    without deadlocking with linkwatch via keventd.
-  * 2) Since we run with the RTNL semaphore not held, we can sleep
-  *    safely in order to wait for the netdev refcnt to drop to zero.
-+ *
-+ * We must not return until all unregister events added during
-+ * the interval the lock was held have been completed.
-  */
--static DEFINE_MUTEX(net_todo_run_mutex);
- void netdev_run_todo(void)
- {
- 	struct list_head list;
- 
--	/* Need to guard against multiple cpu's getting out of order. */
--	mutex_lock(&net_todo_run_mutex);
--
--	/* Not safe to do outside the semaphore.  We must not return
--	 * until all unregister events invoked by the local processor
--	 * have been completed (either by this todo run, or one on
--	 * another cpu).
--	 */
--	if (list_empty(&net_todo_list))
--		goto out;
--
- 	/* Snapshot list, allow later requests */
--	spin_lock(&net_todo_list_lock);
- 	list_replace_init(&net_todo_list, &list);
--	spin_unlock(&net_todo_list_lock);
++	sethi		%hi(prom_entry_lock), %g2
++1:	ldstub		[%g2 + %lo(prom_entry_lock)], %g1
++	membar		#StoreLoad | #StoreStore
++	brnz,pn		%g1, 1b
++	 nop
 +
-+	__rtnl_unlock();
+ 	/* As a hack, put &init_thread_union into %g6.
+ 	 * prom_world() loads from here to restore the %asi
+ 	 * register.
+@@ -337,7 +343,7 @@ after_lock_tlb:
  
- 	while (!list_empty(&list)) {
- 		struct net_device *dev
-@@ -3965,9 +3953,6 @@ void netdev_run_todo(void)
- 		/* Free network device */
- 		kobject_put(&dev->dev.kobj);
- 	}
--
--out:
--	mutex_unlock(&net_todo_run_mutex);
- }
+ 	sethi		%hi(is_sun4v), %o0
+ 	lduw		[%o0 + %lo(is_sun4v)], %o0
+-	brz,pt		%o0, 1f
++	brz,pt		%o0, 2f
+ 	 nop
  
- static struct net_device_stats *internal_stats(struct net_device *dev)
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -73,7 +73,7 @@ void __rtnl_unlock(void)
+ 	TRAP_LOAD_TRAP_BLOCK(%g2, %g3)
+@@ -369,10 +375,10 @@ after_lock_tlb:
+ 	call		%o1
+ 	 add		%sp, (2047 + 128), %o0
  
- void rtnl_unlock(void)
- {
--	mutex_unlock(&rtnl_mutex);
-+	/* This fellow will unlock it for us. */
- 	netdev_run_todo();
- }
+-	ba,pt		%xcc, 2f
++	ba,pt		%xcc, 3f
+ 	 nop
  
+-1:	sethi		%hi(sparc64_ttable_tl0), %o0
++2:	sethi		%hi(sparc64_ttable_tl0), %o0
+ 	set		prom_set_trap_table_name, %g2
+ 	stx		%g2, [%sp + 2047 + 128 + 0x00]
+ 	mov		1, %g2
+@@ -386,7 +392,11 @@ after_lock_tlb:
+ 	call		%o1
+ 	 add		%sp, (2047 + 128), %o0
+ 
+-2:	ldx		[%l0], %g6
++3:	sethi		%hi(prom_entry_lock), %g2
++	stb		%g0, [%g2 + %lo(prom_entry_lock)]
++	membar		#StoreStore | #StoreLoad
++
++	ldx		[%l0], %g6
+ 	ldx		[%g6 + TI_TASK], %g4
+ 
+ 	mov		1, %g5
 
 -- 
