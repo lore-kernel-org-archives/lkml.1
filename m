@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbYKGXXC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbYKGXXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753AbYKGXXC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:23:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYKGXWt
+	id S1752997AbYKGXXe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:23:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbYKGXWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:22:49 -0500
-Received: from kroah.org ([198.145.64.141]:59108 "EHLO coco.kroah.org"
+	Fri, 7 Nov 2008 18:22:50 -0500
+Received: from kroah.org ([198.145.64.141]:59134 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752305AbYKGXWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:22:48 -0500
-Date: Fri, 7 Nov 2008 15:14:57 -0800
+	id S1752561AbYKGXWt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 18:22:49 -0500
+Date: Fri, 7 Nov 2008 15:15:14 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,67 +22,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/23] 2.6.26.8-stable review
-Message-ID: <20081107231457.GA1108@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 01/23] gpiolib: fix oops in gpio_get_value_cansleep()
+Message-ID: <20081107231514.GB1108@kroah.com>
+References: <20081107224818.593212310@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="gpiolib-fix-oops-in-gpio_get_value_cansleep.patch"
+In-Reply-To: <20081107231457.GA1108@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.26.8 release.
-There are 23 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+2.6.26-stable review patch.  If anyone has any objections, please let us know.
 
-Responses should be made by Monday, November 10, 20:00:00 UTC.  Anything
-received after that time might be too late.
+------------------
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.26.8-rc1.gz
-and the diffstat can be found below.
+From: David Brownell <dbrownell@users.sourceforge.net>
 
+commit 978ccaa8ea5d8c7bf6b676209f2fc126eae6355b upstream
 
-thanks,
+We can get the following oops from gpio_get_value_cansleep() when a GPIO
+controller doesn't provide a get() callback:
 
-greg k-h
+ Unable to handle kernel paging request for instruction fetch
+ Faulting instruction address: 0x00000000
+ Oops: Kernel access of bad area, sig: 11 [#1]
+ [...]
+ NIP [00000000] 0x0
+ LR [c0182fb0] gpio_get_value_cansleep+0x40/0x50
+ Call Trace:
+ [c7b79e80] [c0183f28] gpio_value_show+0x5c/0x94
+ [c7b79ea0] [c01a584c] dev_attr_show+0x30/0x7c
+ [c7b79eb0] [c00d6b48] fill_read_buffer+0x68/0xe0
+ [c7b79ed0] [c00d6c54] sysfs_read_file+0x94/0xbc
+ [c7b79ef0] [c008f24c] vfs_read+0xb4/0x16c
+ [c7b79f10] [c008f580] sys_read+0x4c/0x90
+ [c7b79f40] [c0013a14] ret_from_syscall+0x0/0x38
 
-----------------
+It's OK to request the value of *any* GPIO; most GPIOs are bidirectional,
+so configuring them as outputs just enables an output driver and doesn't
+disable the input logic.
 
- Makefile                                       |    2 
- arch/sparc64/kernel/trampoline.S               |   18 ++-
- drivers/acpi/button.c                          |    3 
- drivers/acpi/dock.c                            |    5 -
- drivers/acpi/video.c                           |  123 ++++++++++++++-----------
- drivers/edac/cell_edac.c                       |    2 
- drivers/gpio/gpiolib.c                         |    2 
- drivers/i2c/busses/scx200_i2c.c                |    1 
- drivers/media/dvb/frontends/s5h1411.c          |   35 +++++--
- drivers/media/video/pvrusb2/pvrusb2-encoder.c  |    4 
- drivers/net/wireless/libertas/scan.c           |    4 
- drivers/scsi/qla2xxx/qla_gs.c                  |    6 +
- fs/ext2/dir.c                                  |   60 +++++++-----
- fs/ext3/dir.c                                  |   10 +-
- fs/ext4/dir.c                                  |   11 +-
- include/linux/sched.h                          |    4 
- include/math-emu/op-common.h                   |   17 ++-
- include/net/scm.h                              |    5 -
- net/core/dev.c                                 |   27 +----
- net/core/rtnetlink.c                           |    2 
- net/core/scm.c                                 |   24 ++++
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 
- net/ipv4/netfilter/nf_nat_snmp_basic.c         |    1 
- net/ipv6/tcp_ipv6.c                            |    2 
- net/netfilter/xt_iprange.c                     |    8 -
- security/commoncap.c                           |    6 -
- sound/core/control.c                           |    4 
- 27 files changed, 247 insertions(+), 141 deletions(-)
+So the problem is that gpio_get_value_cansleep() isn't making the same
+sanity check that gpio_get_value() does: making sure this GPIO isn't one
+of the atypical "no input logic" cases.
+
+Reported-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/gpio/gpiolib.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -517,7 +517,7 @@ int gpio_get_value_cansleep(unsigned gpi
+ 
+ 	might_sleep_if(extra_checks);
+ 	chip = gpio_to_chip(gpio);
+-	return chip->get(chip, gpio - chip->base);
++	return chip->get ? chip->get(chip, gpio - chip->base) : 0;
+ }
+ EXPORT_SYMBOL_GPL(gpio_get_value_cansleep);
+ 
+
+-- 
