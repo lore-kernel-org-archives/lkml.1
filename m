@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbYKGQai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYKGQbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbYKGQai (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 11:30:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbYKGQa3
+	id S1753922AbYKGQbE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 11:31:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYKGQav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 11:30:29 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54334 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752474AbYKGQa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 11:30:28 -0500
-Date: Fri, 7 Nov 2008 17:30:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [git pull] x86 fix
-Message-ID: <20081107163011.GA3781@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Fri, 7 Nov 2008 11:30:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49529 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776AbYKGQau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 11:30:50 -0500
+Date: Fri, 7 Nov 2008 08:29:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Nicolas Pitre <nico@cam.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+Message-Id: <20081107082926.ee3e1efe.akpm@linux-foundation.org>
+In-Reply-To: <8189.1226074915@redhat.com>
+References: <20081107075003.fa93ccf4.akpm@linux-foundation.org>
+	<20081107003816.9b0f947a.akpm@linux-foundation.org>
+	<20081107052336.652868737@polymtl.ca>
+	<20081107053349.861709786@polymtl.ca>
+	<20081106220530.5b0e3a96.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811070256450.13034@xanadu.home>
+	<25363.1226056819@redhat.com>
+	<alpine.LFD.2.00.0811070952150.13034@xanadu.home>
+	<8189.1226074915@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Fri, 07 Nov 2008 16:21:55 +0000 David Howells <dhowells@redhat.com> wrote:
 
-Please pull the latest x86-fixes-for-linus git tree from:
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > If gcc did that then it would need to generate static instances of
+> > inlined functions within individual compilation units.  It would be a
+> > disaster for the kernel.  For a start, functions which are "inlined" in kernel
+> > modules wouldn't be able to access their static storage and modprobing
+> > them would fail.
+> 
+> Do you expect a static inline function that lives in a header file and that
+> has a static variable in it to share that static variable over all instances
+> of that function in a program?  Or do you expect the static variable to be
+> limited at the file level?  Or just at the invocation level?
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+I'd expect it to behave in the same way as it would if the function was
+implemented out-of-line.
 
- Thanks,
+But it occurs to me that the modrobe-doesnt-work thing would happen if
+the function _is_ inlined anyway, so we won't be doing that.
 
-	Ingo
+Whatever.  Killing this many puppies because gcc may do something so
+bizarrely wrong isn't justifiable.
 
------------------->
-Jeremy Fitzhardinge (1):
-      x86, xen: fix use of pgd_page now that it really does return a page
-
-
- arch/x86/xen/mmu.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index aba77b2..49697d8 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -874,7 +874,7 @@ static void __xen_pgd_pin(struct mm_struct *mm, pgd_t *pgd)
- #else /* CONFIG_X86_32 */
- #ifdef CONFIG_X86_PAE
- 	/* Need to make sure unshared kernel PMD is pinnable */
--	xen_pin_page(mm, virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])),
-+	xen_pin_page(mm, pgd_page(pgd[pgd_index(TASK_SIZE)]),
- 		     PT_PMD);
- #endif
- 	xen_do_pin(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(pgd)));
-@@ -991,7 +991,7 @@ static void __xen_pgd_unpin(struct mm_struct *mm, pgd_t *pgd)
- 
- #ifdef CONFIG_X86_PAE
- 	/* Need to make sure unshared kernel PMD is unpinned */
--	xen_unpin_page(mm, virt_to_page(pgd_page(pgd[pgd_index(TASK_SIZE)])),
-+	xen_unpin_page(mm, pgd_page(pgd[pgd_index(TASK_SIZE)]),
- 		       PT_PMD);
- #endif
- 
