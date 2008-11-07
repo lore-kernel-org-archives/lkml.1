@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYKGLPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754095AbYKGLRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYKGLPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:15:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYKGLPn
+	id S1754095AbYKGLRV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbYKGLRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:15:43 -0500
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:34338 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751809AbYKGLPl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:15:41 -0500
-Message-ID: <49142351.9080805@euromail.se>
-Date: Fri, 07 Nov 2008 12:15:29 +0100
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Fri, 7 Nov 2008 06:17:03 -0500
+Received: from swm.pp.se ([212.247.200.143]:47208 "EHLO uplift.swm.pp.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751902AbYKGLRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:17:01 -0500
+Date: Fri, 7 Nov 2008 12:16:59 +0100 (CET)
+From: Mikael Abrahamsson <swmike@swm.pp.se>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Netdev <netdev@vger.kernel.org>, linux-net@vger.kernel.org
+Subject: Re: time for TCP ECN defaulting to on?
+In-Reply-To: <8763mzx5l7.fsf@obelix.mork.no>
+Message-ID: <alpine.DEB.1.10.0811071214320.10993@uplift.swm.pp.se>
+References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com> <alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se> <20081105.151015.206163697.davem@davemloft.net> <alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
+ <Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi> <alpine.DEB.1.10.0811070854361.10993@uplift.swm.pp.se> <8763mzx5l7.fsf@obelix.mork.no>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Organization: People's Front Against WWW
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] input: Add a detailed multi-touch finger data report protocol
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.192.132
-X-Scan-Result: No virus found in message 1KyPJT-0003qx-5I.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1KyPJT-0003qx-5I 18ba6e6edb1d1edf389d8351fc802d16
+Content-Type: MULTIPART/MIXED; BOUNDARY="-137064504-1750580102-1226056619=:10993"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to utilize the full power of the new multi-touch devices, a
-way to report detailed finger data to user space is needed. This patch
-adds a multi-touch (MT) protocol which allows drivers to report details
-for an arbitrary number of fingers.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-BTN_MT_REPORT_PACKET
+---137064504-1750580102-1226056619=:10993
+Content-Type: TEXT/PLAIN; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-The driver presses this button to indicate the start of a packet of
-finger data. The button is released after the whole packet has been
-reported.
+On Fri, 7 Nov 2008, Bjørn Mork wrote:
 
-BTN_MT_REPORT_FINGER
+> I believe you can forget about ECN in core networks as long as these 
+> searches fail:
 
-The driver presses this button to indicate the start of a new
-finger. The button is released when the finger has been reported.
-
-In order to stay compatible with existing applications, the data
-reported in a finger packet must not be recognized as single-touch
-events. Therefore, a specific set of ABS_MT events is used instead.
-
-Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
----
- include/linux/input.h |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/input.h b/include/linux/input.h
-index b86fb55..c82dd42 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -590,6 +590,9 @@ struct input_absinfo {
- #define KEY_NUMERIC_STAR	0x20a
- #define KEY_NUMERIC_POUND	0x20b
-
-+#define BTN_MT_REPORT_PACKET	0x210	/* report multitouch packet data */
-+#define BTN_MT_REPORT_FINGER	0x211	/* report multitouch finger data */
-+
- /* We avoid low common keys in module aliases so they don't get huge. */
- #define KEY_MIN_INTERESTING	KEY_MUTE
- #define KEY_MAX			0x2ff
-@@ -642,6 +645,15 @@ struct input_absinfo {
- #define ABS_TOOL_WIDTH		0x1c
- #define ABS_VOLUME		0x20
- #define ABS_MISC		0x28
-+#define ABS_MT_TOUCH		0x30	/* Diameter of touching circle */
-+#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
-+#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis of touching ellipse */
-+#define ABS_MT_WIDTH		0x32	/* Diameter of approaching circle */
-+#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
-+#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis of approaching ellipse */
-+#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
-+#define ABS_MT_POSITION_X	0x35	/* Center X ellipse position */
-+#define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
- #define ABS_MAX			0x3f
- #define ABS_CNT			(ABS_MAX+1)
+A lot of ISPs use MPLS yes, but it would be a simplification to say that 
+it's useless without MPLS support, because it's quite common that 
+congestion happens at the interconnections/borders between ISPs and they 
+are very rarely MPLS-labeled.
 
 -- 
-1.5.6.3
-
+Mikael Abrahamsson    email: swmike@swm.pp.se
+---137064504-1750580102-1226056619=:10993--
