@@ -1,69 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbYKGAyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbYKGAy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754930AbYKGAyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 19:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbYKGAyK
+	id S1755241AbYKGAy5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 19:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYKGAyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 19:54:10 -0500
-Received: from mga01.intel.com ([192.55.52.88]:46360 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752933AbYKGAyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 19:54:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,560,1220252400"; 
-   d="scan'208";a="636501285"
-Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
-From: Zhao Yakui <yakui.zhao@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Matthew Garrett <mjg@redhat.com>, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Ingo Molnar <mingo@elte.hu>, Eduardo Habkost <ehabkost@redhat.com>,
-       Avi Kivity <avi@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0811061716420.3106@localhost.localdomain>
-References: <1225915018-6548-1-git-send-email-ehabkost@redhat.com>
-	 <20081106143021.GD13023@elte.hu> <20081106150610.GA1644@elte.hu>
-	 <200811061853.08003.arvidjaar@mail.ru>
-	 <alpine.LFD.2.00.0811061442590.3106@localhost.localdomain>
-	 <20081106215011.GA6391@srcf.ucam.org>
-	 <alpine.LFD.2.00.0811061716420.3106@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 09:01:19 +0800
-Message-Id: <1226019679.3989.107.camel@yakui_zhao.sh.intel.com>
+	Thu, 6 Nov 2008 19:54:46 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:34261 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbYKGAyo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 19:54:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:from;
+        b=uq8e11W8k+o5pvKTrFTdluwtfgVA35oi3vgB8NBR+FC+qrmBlQFccZHsiDOxHBI/YR
+         cWbgs7s6cLk7bkTy8wht9OtvcwO76TbF3zTEYRaE3Tj1LGh5khx8q70TDSkSgVztmXnA
+         YscX80ks9L83Dq6TOalnHHbGkm8wV7SiGOaPs=
+Date: Thu, 6 Nov 2008 19:54:38 -0500
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, linux-usb@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] usb-storage: Error in queuecommand: us->srb = ffff88006a338480
+Message-ID: <20081107005438.GA26198@ezra.hsd1.tn.comcast.net>
+References: <20081106095757.2c2fcdc3.akpm@linux-foundation.org> <Pine.LNX.4.44L0.0811061435070.23473-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0811061435070.23473-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.4.2.3i
+From: Brian Kysela <brian.kysela@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 06:17 +0800, Len Brown wrote:
+On 2008-11-06 at 14:36 -0500, Alan Stern wrote: 
+> On Thu, 6 Nov 2008, Andrew Morton wrote:
 > 
-> > > My expectation is that with the ACPI default, our problem
-> > > is working around a finite list of old machines that don't work;
-> > > while with the default KBD, our problem is working around
-> > > a potentially unbounded list of yet to be shipped machines
-> > > who may only be tested and work using the ACPI method.
+> > > The error message:
+> > > 
+> > > > [  152.701070] usb-storage: Error in queuecommand: us->srb = ffff88007dfd0680
+> > > 
+> > > means that the SCSI layer has told usb-storage to start a new command 
+> > > before the old one completed.  This could happen, for example, if the 
+> > > SCSI layer had gotten confused and tried to cancel a command that 
+> > > wasn't running -- then it would think usb-storage was idle when in fact 
+> > > it was still busy.  (This was the failure mechanism resulting from the 
+> > > timeout changes.)
+> > > 
 > > 
-> > Does Windows default to using the ACPI method now?
+> > OK, thanks.  I'll cc linux-scsi, but I have this-wont-be-getting-fixed
+> > feelings on this one :(
+> > 
+> > I wonder what's special about Brian's setup.
 > 
-> That is my guess, based on the fact that we've seen
-> newer machines that don't reboot w/o using the ACPI reset reg.
-With the help of KVM I find that the windows will be rebooted by writing
-RESET_VALUE to RESET_REG I/O port if the RESET_REG_SUP bit is not
-zero(It indicates whether ACPI reboot is supported).
-IMO maybe the ACPI reboot is the first choice. If it can't, then it will
-fall back to other mode.
+> Brian, if you can use usbmon to monitor what happens during the file 
+> copy and subsequent error, it might provide a clue.  Instructions are 
+> in the kernel source file Documentation/usb/usbmon.txt.
 
-Thanks.
-> 
-> -Len
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Since it's a large file, I have posted the content of usbmon here:
 
+http://www.kysela.org/pub/1.mon.out
+
+I also got another kernel bug and system freeze on that copy, after the
+copy process hung, when I pulled the drive out:
+
+[ Linux version 2.6.28-rc2-00385-g721d5df ]
+
+[  698.265008] Code: a8 00 00 00 00 00 00 00 48 c7 86 b0 00 00 00 00 00 00 00 4c 89 c6 48 89 38 e8 a7 0c 01 00 31 c0 41 5b c3 48 8b 16 48 39 f2 75 04 <0f> 0b eb fe 48 83 be 98 00 00 00 00 74 04 0f 0b eb fe 48 8b 46 
+[  698.264858] ------------[ cut here ]------------
+[  698.264865] kernel BUG at /home/brian/projects/linux-2.6/block/elevator.c:841!
+[  698.264870] invalid opcode: 0000 [#1] PREEMPT SMP 
+[  698.264879] last sysfs file: /sys/devices/pci0000:00/0000:00:1d.7/usb1/1-7/1-7:1.0/host2/target2:0:0/2:0:0:0/block/sdb/size
+[  698.264885] CPU 0 
+[  698.264965] Process scsi_eh_2 (pid: 1537, threadinfo ffff880066830000, task ffff880069b26580)
+[  698.264969] Stack:
+[  698.264972]  ffffffff80441fb5 ffff880069afe368 ffff880069afe178 ffff88007e3623b0
+[  698.264981]  ffff88007e362040 ffff88007e362040 0000000000000286 ffff880069a33148
+[  698.264992]  ffff880066831ed0 ffff880066831ee0 ffffffff80373aa9 ffff88007e362040
+[  698.265004] Call Trace:
+[  698.265007]  [<ffffffff80441fb5>] ? scsi_request_fn+0x141/0x3ec
+[  698.265008]  [<ffffffff80373aa9>] ? blk_invoke_request_fn+0x33/0x60
+[  698.265008]  [<ffffffff80373f6b>] ? blk_run_queue+0x21/0x34
+[  698.265008]  [<ffffffff80440e73>] ? scsi_queue_insert+0x97/0x9e
+[  698.265008]  [<ffffffff8043ec8d>] ? scsi_eh_flush_done_q+0x5d/0x93
+[  698.265008]  [<ffffffff8043f9df>] ? scsi_error_handler+0x18c/0x2e7
+[  698.265008]  [<ffffffff8043f853>] ? scsi_error_handler+0x0/0x2e7
+[  698.265008]  [<ffffffff8024a6b6>] ? kthread+0x47/0x75
+[  698.265008]  [<ffffffff805835df>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+[  698.265008]  [<ffffffff8020c5c9>] ? child_rip+0xa/0x11
+[  698.265008]  [<ffffffff8020bab8>] ? restore_args+0x0/0x30
+[  698.265008]  [<ffffffff8024a64a>] ? kthreadd+0x16e/0x193
+[  698.265008]  [<ffffffff8024a66f>] ? kthread+0x0/0x75
+[  698.265008]  [<ffffffff8020c5bf>] ? child_rip+0x0/0x11
+[  698.265008] Code: a8 00 00 00 00 00 00 00 48 c7 86 b0 00 00 00 00 00 00 00 4c 89 c6 48 89 38 e8 a7 0c 01 00 31 c0 41 5b c3 48 8b 16 48 39 f2 75 04 <0f> 0b eb fe 48 83 be 98 00 00 00 00 74 04 0f 0b eb fe 48 8b 46 
+[  698.265008] RIP  [<ffffffff8037236c>] elv_dequeue_request+0x8/0x45
+[  698.265008]  RSP <ffff880066831dc8>
+[  698.265008] ---[ end trace 60e1b9808d5b9649 ]---
+
+
+Brian
