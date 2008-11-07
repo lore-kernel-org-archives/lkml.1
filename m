@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYKGUMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbYKGUNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbYKGUMx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 15:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbYKGUMn
+	id S1753726AbYKGUNf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 15:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYKGUNC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 15:12:43 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45761 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbYKGUMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 15:12:43 -0500
-Date: Fri, 7 Nov 2008 20:11:18 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@cam.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Message-ID: <20081107201118.GB28600@flint.arm.linux.org.uk>
-Mail-Followup-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	David Howells <dhowells@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Nicolas Pitre <nico@cam.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-	benh@kernel.crashing.org, paulus@samba.org,
-	David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-References: <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <25363.1226056819@redhat.com> <20081107164758.GB22134@Krystal>
-Mime-Version: 1.0
+	Fri, 7 Nov 2008 15:13:02 -0500
+Received: from kroah.org ([198.145.64.141]:57331 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752957AbYKGUNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 15:13:00 -0500
+Date: Fri, 7 Nov 2008 11:05:44 -0800
+From: Greg KH <greg@kroah.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, Vegard Nossum <vegard.nossum@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Koyama, Yoshiya" <Yoshiya.Koyama@hp.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: v2.6.28-rc1: readlink /proc/*/exe returns uninitialized data
+	to userspace
+Message-ID: <20081107190544.GA1551@kroah.com>
+References: <19f34abd0810251014s7968557br38e43aa0b9cdcf09@mail.gmail.com> <200810252241.53601.rjw@sisk.pl> <m163nggvhq.fsf@frodo.ebiederm.org> <19f34abd0810261408w61b1e2dbvb9a0e16ce5a10022@mail.gmail.com> <19f34abd0811040139t8334502i7a5d8501c5fe95ac@mail.gmail.com> <20081104151234.GH28946@ZenIV.linux.org.uk> <20081106100410.GN4890@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081107164758.GB22134@Krystal>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081106100410.GN4890@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 11:47:58AM -0500, Mathieu Desnoyers wrote:
-> But any get_cycles() user of cnt32_to_63() should be shot down. The
-> bright side is  : there is no way get_cycles() can be used with this
-> new code. :)
+On Thu, Nov 06, 2008 at 11:04:10AM +0100, Ingo Molnar wrote:
 > 
-> e.g. of incorrect users for arm (unless they are UP only, but that seems
-> like a weird design argument) :
+> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
 > 
-> mach-sa1100/include/mach/SA-1100.h:#define OSCR     __REG(0x90000010)
-> /* OS timer Counter Reg. */
-> mach-sa1100/generic.c:  unsigned long long v = cnt32_to_63(OSCR);
-> mach-pxa/include/mach/pxa-regs.h:#define OSCR   __REG(0x40A00010)  /* OS
-> Timer Counter Register */
-> mach-pxa/time.c:  unsigned long long v = cnt32_to_63(OSCR);
+> > On Tue, Nov 04, 2008 at 10:39:19AM +0100, Vegard Nossum wrote:
+> > > On Sun, Oct 26, 2008 at 10:08 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > > # uname -a
+> > > Linux localhost.localdomain 2.6.25.11-97.fc9.i686 #1 SMP Mon Jul 21
+> > > 01:31:09 EDT 2008 i686 i686 i386 GNU/Linux
+> > > # prelink -mRf /sbin/udevd
+> > > # ./a.out /proc/564/exe
+> > > warning: /proc/564/exe: got return value 38, expected 11
+> > > 2f7362696e2f7564657664005f47387942426e5952446e566f306868202864656c6574656429
+> > > /sbin/udevd _G8yBBnYRDnVo0hh (deleted)
+> > > 
+> > > Yoshiya Koyama reports that the problem exists on RHEL 2.6.9-42.ELsmp too.
+> > > 
+> > > I don't think it's exactly the same problem as originally reported,
+> > > because I definitely wasn't using prelinking (the prelink binary
+> > > wasn't even installed on the machine until today). But finding the
+> > > root cause of this may solve both problems.
+> > 
+> > switch_names() buggered in case of short names on both sides.  That should
+> > help:
+> > 
+> > >From 2acda856910b774717e0290bbf948c7dee0f2e1a Mon Sep 17 00:00:00 2001
+> > From: Al Viro <viro@zeniv.linux.org.uk>
+> > Date: Mon, 3 Nov 2008 15:03:50 -0500
+> > Subject: [PATCH] fix switch_names() breakage in short-to-short case
+> > 
+> > We want ->name.len to match the resulting name on *both*
+> > source and target
+> > 
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> 
+> please credit kmemcheck in the commit message and use an appropriate 
+> Reported-by line as well. Thanks,
 
-It's strange for you to make that assertion when PXA was the exact
-platform that Nicolas created this code for - and that's a platform
-where preempt has been widely used.
+Did this fix ever get merged into Linus's tree?
 
-The two you mention are both ARMv5 or older architectures, and the
-first real SMP ARM architecture is ARMv6.  So architecturally they
-are UP only.
+thanks,
 
-So, tell me why you say "unless they are UP only, but that seems like
-a weird design argument"?  If the platforms can only ever be UP only,
-what's wrong with UP only code being used with them?  (Not that I'm
-saying anything there about cnt32_to_63.)
-
-I'd like to see you modify the silicon of a PXA or SA11x0 SoC to add
-more than one processor to the chip - maybe you could use evostick to
-glue two dies together and a microscope to aid bonding wires between
-the two?  (Of course, you'd need to design something to ensure cache
-coherence as well, and arbitrate the internal bus between the two
-dies.) ;)
-
-Personally, I think that's highly unlikely.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+greg k-h
