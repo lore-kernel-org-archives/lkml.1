@@ -1,30 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbYKGJN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbYKGJSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbYKGJN7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYKGJNn
+	id S1753590AbYKGJSB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:18:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYKGJRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:13:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49156 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYKGJNm (ORCPT
+	Fri, 7 Nov 2008 04:17:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52522 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751225AbYKGJRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:13:42 -0500
-Date: Fri, 7 Nov 2008 18:13:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>
-Subject: Re: [RFC][PATCH 2/6] memcg: handle swap cache
-Message-Id: <20081107181303.7dd232fd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081107175303.1d5c8a29.nishimura@mxp.nes.nec.co.jp>
-References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081105172009.d9541e27.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081107175303.1d5c8a29.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 7 Nov 2008 04:17:45 -0500
+Date: Fri, 7 Nov 2008 01:16:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Ken Chen <kenchen@google.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
+Message-Id: <20081107011659.98d3788a.akpm@linux-foundation.org>
+In-Reply-To: <20081107090304.GA30540@elte.hu>
+References: <20081106203520.GD3578@elte.hu>
+	<20081107003021.GA18666@google.com>
+	<20081107004824.GA28780@x200.localdomain>
+	<20081107074147.GA26607@elte.hu>
+	<20081107075925.GA1825@elte.hu>
+	<20081107082003.GA15800@x200.localdomain>
+	<20081107083249.GD4435@elte.hu>
+	<20081107084943.GA16147@x200.localdomain>
+	<20081107085352.GA27245@elte.hu>
+	<20081107090304.GA30540@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,55 +36,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008 17:53:03 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Fri, 7 Nov 2008 10:03:04 +0100 Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Wed, 5 Nov 2008 17:20:09 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > SwapCache support for memory resource controller (memcg)
-> > 
-> > Before mem+swap controller, memcg itself should handle SwapCache in proper way.
-> > 
-> > In current memcg, SwapCache is just leaked and the user can create tons of
-> > SwapCache. This is a leak of account and should be handled.
-> > 
-> > SwapCache accounting is done as following.
-> > 
-> >   charge (anon)
-> > 	- charged when it's mapped.
-> > 	  (because of readahead, charge at add_to_swap_cache() is not sane)
-> >   uncharge (anon)
-> > 	- uncharged when it's dropped from swapcache and fully unmapped.
-> > 	  means it's not uncharged at unmap.
-> > 	  Note: delete from swap cache at swap-in is done after rmap information
-> > 	        is established.
-> >   charge (shmem)
-> > 	- charged at swap-in. this prevents charge at add_to_page_cache().
-> > 
-> >   uncharge (shmem)
-> > 	- uncharged when it's dropped from swapcache and not on shmem's
-> > 	  radix-tree.
-> > 
-> >   at migration, check against 'old page' is modified to handle shmem.
-> > 
-> > Comparing to the old version discussed (and caused troubles), we have
-> > advantages of
-> >   - PCG_USED bit.
-> >   - simple migrating handling.
-> > 
-> > So, situation is much easier than several months ago, maybe.
-> > 
-> > Changelog (v1) -> (v2)
-> >   - use lock_page() when we handle unlocked SwapCache.
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> I tested this version under swap in/out activity with page migration/rmdir,
-> and it worked w/o errors for more than 24 hours.
+> task running on this CPU:
 > 
-> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 	Tested-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-Thank you!
+>  # cat /proc/self/stack
+>  [<ffffffff80216f79>] save_stack_trace_tsk+0x26/0x44
+>  [<ffffffff802f59a5>] proc_pid_stack+0x6e/0xd3
+>  [<ffffffff802f6da3>] proc_info_read+0x68/0xba
+>  [<ffffffff802b2f17>] vfs_read+0xa9/0xe3
+>  [<ffffffff802b301f>] sys_read+0x4c/0x73
+>  [<ffffffff8020c23b>] system_call_fastpath+0x16/0x1b
+>  [<ffffffffffffffff>] 0xffffffffffffffff
 
--Kame
+So we provide a means by which process A can sample process B's
+instruction pointer?  Even if it's in random.c or crypto code?  There's
+a little project for someone.
+
+I guess the 0400 mode on that file will suffice...
 
