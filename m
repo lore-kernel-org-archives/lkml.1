@@ -1,53 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKGJUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbYKGJU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYKGJUe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYKGJUO
+	id S1754602AbYKGJU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYKGJUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:20:14 -0500
-Received: from smtprelay10.ispgateway.de ([80.67.29.24]:38762 "EHLO
-	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbYKGJUN (ORCPT
+	Fri, 7 Nov 2008 04:20:17 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44038 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbYKGJUN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 7 Nov 2008 04:20:13 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Scheduler RR, first time slice wrong?
-Date: Fri, 7 Nov 2008 10:19:57 +0100
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, Andreas Huber <andreas.huber@keymile.com>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>
-References: <1225956167.4472.27.camel@chber1-10446x.ch.keymile.net> <20081106074449.GC8459@elte.hu> <1225961212.7803.4190.camel@twins>
-In-Reply-To: <1225961212.7803.4190.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Date: Fri, 7 Nov 2008 18:19:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC][PATCH 5/6] memcg: mem+swap controller
+Message-Id: <20081107181932.94e6f307.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081107180248.39251a80.nishimura@mxp.nes.nec.co.jp>
+References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081105172316.354c00fb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081107180248.39251a80.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811071020.06422.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+On Fri, 7 Nov 2008 18:02:48 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-On Thursday 06 November 2008, Peter Zijlstra wrote:
-> Currently we inherit the RR time-slice from our parent. In case that is
-> init we inherit the 1s value set by default, in case its an already
-> running RR task, we inherit whatever is left.
+> On Wed, 5 Nov 2008 17:23:16 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > Mem+Swap controller core.
+> > 
+> > This patch implements per cgroup limit for usage of memory+swap.
+> > However there are SwapCache, double counting of swap-cache and
+> > swap-entry is avoided.
+> > 
+> > Mem+Swap controller works as following.
+> >   - memory usage is limited by memory.limit_in_bytes.
+> >   - memory + swap usage is limited by memory.memsw_limit_in_bytes.
+> > 
+> > 
+> > This has following benefits.
+> >   - A user can limit total resource usage of mem+swap.
+> > 
+> >     Without this, because memory resource controller doesn't take care of
+> >     usage of swap, a process can exhaust all the swap (by memory leak.)
+> >     We can avoid this case.
+> > 
+> >     And Swap is shared resource but it cannot be reclaimed (goes back to memory)
+> >     until it's used. This characteristic can be trouble when the memory
+> >     is divided into some parts by cpuset or memcg.
+> >     Assume group A and group B.
+> >     After some application executes, the system can be..
+> >     
+> >     Group A -- very large free memory space but occupy 99% of swap.
+> >     Group B -- under memory shortage but cannot use swap...it's nearly full.
+> > 
+> >     Ability to set appropriate swap limit for each group is required.
+> >       
+> > Maybe someone wonder "why not swap but mem+swap ?"
+> > 
+> >   - The global LRU(kswapd) can swap out arbitrary pages. Swap-out means
+> >     to move account from memory to swap...there is no change in usage of
+> >     mem+swap.
+> > 
+> >     In other words, when we want to limit the usage of swap without affecting
+> >     global LRU, mem+swap limit is better than just limiting swap.
+> > 
+> > 
+> > Accounting target information is stored in swap_cgroup which is
+> > per swap entry record.
+> > 
+> > Charge is done as following.
+> >   map
+> >     - charge  page and memsw.
+> > 
+> >   unmap
+> >     - uncharge page/memsw if not SwapCache.
+> > 
+> >   swap-out (__delete_from_swap_cache)
+> >     - uncharge page
+> >     - record mem_cgroup information to swap_cgroup.
+> > 
+> >   swap-in (do_swap_page)
+> >     - charged as page and memsw.
+> >       record in swap_cgroup is cleared.
+> >       memsw accounting is decremented.
+> > 
+> >   swap-free (swap_free())
+> >     - if swap entry is freed, memsw is uncharged by PAGE_SIZE.
+> > 
+> > 
+> > After this, usual memory resource controller handles SwapCache.
+> > (It was lacked(ignored) feature in current memcg but must be handled.)
+> > 
+> SwapCache has been handled in [2/6] already :)
 > 
-> Fix both these by resetting the time-slice on fork.
-
-I remember that this MIGHT be on purpose to mitigate fork bombs.
-
-Behaviour was, that you could starve others, if you fork, 
-do little or no work and fork again before your timeslice is over.
-
-But I'm not sure this applies here...
+yes. I'll rewrite this.
 
 
-Best Regards
+> (snip)
+> > @@ -514,12 +534,25 @@ static int __mem_cgroup_try_charge(struc
+> >  		css_get(&mem->css);
+> >  	}
+> >  
+> > +	while (1) {
+> > +		int ret;
+> > +		bool noswap = false;
+> >  
+> > -	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
+> > +		ret = res_counter_charge(&mem->res, PAGE_SIZE);
+> > +		if (likely(!ret)) {
+> > +			if (!do_swap_account)
+> > +				break;
+> > +			ret = res_counter_charge(&mem->memsw, PAGE_SIZE);
+> > +			if (likely(!ret))
+> > +				break;
+> > +			/* mem+swap counter fails */
+> > +			res_counter_uncharge(&mem->res, PAGE_SIZE);
+> > +			noswap = true;
+> > +		}
+> >  		if (!(gfp_mask & __GFP_WAIT))
+> >  			goto nomem;
+> >  
+> > -		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
+> > +		if (try_to_free_mem_cgroup_pages(mem, gfp_mask, noswap))
+> >  			continue;
+> >  
+> >  		/*
+> I have two comment about try_charge.
+> 
+> 1. It would be better if possible to avoid charging memsw at swapin (and uncharging
+>    it again at mem_cgroup_cache_charge_swapin/mem_cgroup_commit_charge_swapin).
+>    How about adding a new argument "charge_memsw" ? (it has many args already now...)
 
-Ingo Oeser
+Hmm, maybe possible and good. I'll cosider this again.
+
+> 2. Should we use swap when exceeding mem.limit but mem.limit == memsw.limit ?
+> 
+I'd like to put that special case into "TODO" list. Hmm...
+maybe set noswap=true in that case is enough. but we have to be careful.
+
+
+> (snip)
+> >  void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *mem)
+> > @@ -838,6 +947,7 @@ void mem_cgroup_cancel_charge_swapin(str
+> >  	if (!mem)
+> >  		return;
+> >  	res_counter_uncharge(&mem->res, PAGE_SIZE);
+> > +	res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+> >  	css_put(&mem->css);
+> >  }
+> >  
+> "if (do_swap_account)" is needed before uncharging memsw.
+> 
+good catch !
+
+> (snip)
+> >  static struct cftype mem_cgroup_files[] = {
+> >  	{
+> >  		.name = "usage_in_bytes",
+> > -		.private = RES_USAGE,
+> > +		.private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
+> >  		.read_u64 = mem_cgroup_read,
+> >  	},
+> >  	{
+> >  		.name = "max_usage_in_bytes",
+> > -		.private = RES_MAX_USAGE,
+> > +		.private = MEMFILE_PRIVATE(_MEM, RES_MAX_USAGE),
+> >  		.trigger = mem_cgroup_reset,
+> >  		.read_u64 = mem_cgroup_read,
+> >  	},
+> >  	{
+> >  		.name = "limit_in_bytes",
+> > -		.private = RES_LIMIT,
+> > +		.private = MEMFILE_PRIVATE(_MEM, RES_LIMIT),
+> >  		.write_string = mem_cgroup_write,
+> >  		.read_u64 = mem_cgroup_read,
+> >  	},
+> >  	{
+> >  		.name = "failcnt",
+> > -		.private = RES_FAILCNT,
+> > +		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
+> >  		.trigger = mem_cgroup_reset,
+> >  		.read_u64 = mem_cgroup_read,
+> >  	},
+> > @@ -1317,6 +1541,31 @@ static struct cftype mem_cgroup_files[] 
+> >  		.name = "stat",
+> >  		.read_map = mem_control_stat_show,
+> >  	},
+> > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> > +	{
+> > +		.name = "memsw.usage_in_bytes",
+> > +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_USAGE),
+> > +		.read_u64 = mem_cgroup_read,
+> > +	},
+> > +	{
+> > +		.name = "memsw.max_usage_in_bytes",
+> > +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_MAX_USAGE),
+> > +		.trigger = mem_cgroup_reset,
+> > +		.read_u64 = mem_cgroup_read,
+> > +	},
+> > +	{
+> > +		.name = "memsw.limit_in_bytes",
+> > +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_LIMIT),
+> > +		.write_string = mem_cgroup_write,
+> > +		.read_u64 = mem_cgroup_read,
+> > +	},
+> > +	{
+> > +		.name = "memsw.failcnt",
+> > +		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_FAILCNT),
+> > +		.trigger = mem_cgroup_reset,
+> > +		.read_u64 = mem_cgroup_read,
+> > +	},
+> > +#endif
+> >  };
+> >  
+> IMHO, it would be better to define those "memsw.*" files as memsw_cgroup_files[],
+> and change mem_cgroup_populate() like:
+> 
+> static int mem_cgroup_populate(struct cgroup_subsys *ss,
+> 				struct cgroup *cont)
+> {
+> 	int ret;
+> 
+> 	ret = cgroup_add_files(cont, ss, mem_cgroup_files,
+> 					ARRAY_SIZE(mem_cgroup_files));
+> 	if (!ret && do_swap_account)
+> 		ret = cgroup_add_files(cont, ss, memsw_cgroup_files,
+> 					ARRAY_SIZE(memsw_cgroup_files));
+> 
+> 	return ret;
+> }
+> 
+> so that those files appear only when swap accounting is enabled.
+> 
+
+Nice idea. I'll try that. 
+
+Thanks,
+-Kame
+
