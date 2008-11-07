@@ -1,121 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752732AbYKGBnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbYKGBoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752732AbYKGBnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 20:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750704AbYKGBnW
+	id S1753578AbYKGBoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 20:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbYKGBoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 20:43:22 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52107 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbYKGBnV (ORCPT
+	Thu, 6 Nov 2008 20:44:06 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:33181 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750704AbYKGBoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 20:43:21 -0500
-Date: Fri, 7 Nov 2008 10:42:24 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into
- pcp
-Message-Id: <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081106164644.GA14012@csn.ul.ie>
-References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20081106164644.GA14012@csn.ul.ie>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 6 Nov 2008 20:44:02 -0500
+Date: Fri, 7 Nov 2008 01:43:42 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Zhao Yakui <yakui.zhao@intel.com>, Len Brown <lenb@kernel.org>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, Ingo Molnar <mingo@elte.hu>,
+       Eduardo Habkost <ehabkost@redhat.com>, Avi Kivity <avi@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH 15/15] Revert "x86: default to reboot via ACPI"
+Message-ID: <20081107014342.GA9841@srcf.ucam.org>
+References: <fa.UVpnVba3yRAWG3rGZ0sk20JE9hs@ifi.uio.no> <fa.FPBNKx3BSvZHPZ+eXD4Tb+fuRYk@ifi.uio.no> <fa.PvVEuEo+f/t4sLmcGyN2Tsl8zYg@ifi.uio.no> <fa.zzFdOXisTZzBaE1+ueGIYmt+Z5c@ifi.uio.no> <fa.vQ6HVRcPFFr1zpcXFFOjEPtDdNk@ifi.uio.no> <fa.ckUqcrtVKbxAkjNggIdajBTHr9Q@ifi.uio.no> <49139A43.4000203@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49139A43.4000203@shaw.ca>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008 16:46:45 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
-> > otherwise, the system have unnecessary memory starvation risk
-> > because other cpu can't use this emergency pages.
-> > 
-> > 
-> > 
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > CC: Mel Gorman <mel@csn.ul.ie>
-> > CC: Christoph Lameter <cl@linux-foundation.org>
-> > 
-> 
-> This patch seems functionally sound but as Christoph points out, this
-> adds another branch to the fast path. Now, I ran some tests and those that
-> completed didn't show any problems but adding branches in the fast path can
-> eventually lead to hard-to-detect performance problems.
-> 
-dividing pcp-list into MIGRATE_TYPES is bad ?
-If divided, we can get rid of scan. 
+On Thu, Nov 06, 2008 at 07:30:43PM -0600, Robert Hancock wrote:
 
-Thanks,
--Kame
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8fd145917fb62368a9b80db59562c20576238f5a
+> 
+> This patch ignores the RESET_REG_SUP flag and just tries using the reset 
+> register anyway if it thinks it's valid. So we may attempt ACPI reset on 
+> machines which don't indicate it's supported.
 
+Yeah, that sounds very wrong.
 
+> The patch description mentioned that some machines didn't reboot after 
+> S3 suspend without this patch. However, we recently had this patch merged:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a68823ee5285e65b51ceb96f8b13a5b4f99a6888
+> 
+> Is it possible that the problem fixed there is the true cause of this 
+> reboot after S3 problem?
 
-> Do you have a situation in mind that this patch fixes up?
-> 
-> Thanks
-> 
-> > ---
-> >  mm/page_alloc.c |   12 +++++++++++-
-> >  1 file changed, 11 insertions(+), 1 deletion(-)
-> > 
-> > Index: b/mm/page_alloc.c
-> > ===================================================================
-> > --- a/mm/page_alloc.c	2008-11-06 06:01:15.000000000 +0900
-> > +++ b/mm/page_alloc.c	2008-11-06 06:27:41.000000000 +0900
-> > @@ -1002,6 +1002,7 @@ static void free_hot_cold_page(struct pa
-> >  	struct zone *zone = page_zone(page);
-> >  	struct per_cpu_pages *pcp;
-> >  	unsigned long flags;
-> > +	int migratetype = get_pageblock_migratetype(page);
-> >  
-> >  	if (PageAnon(page))
-> >  		page->mapping = NULL;
-> > @@ -1018,16 +1019,25 @@ static void free_hot_cold_page(struct pa
-> >  	pcp = &zone_pcp(zone, get_cpu())->pcp;
-> >  	local_irq_save(flags);
-> >  	__count_vm_event(PGFREE);
-> > +
-> > +	set_page_private(page, migratetype);
-> > +
-> > +	/* the page for emergency shouldn't be cached */
-> > +	if (migratetype == MIGRATE_RESERVE) {
-> > +		free_one_page(zone, page, 0);
-> > +		goto out;
-> > +	}
-> >  	if (cold)
-> >  		list_add_tail(&page->lru, &pcp->list);
-> >  	else
-> >  		list_add(&page->lru, &pcp->list);
-> > -	set_page_private(page, get_pageblock_migratetype(page));
-> >  	pcp->count++;
-> >  	if (pcp->count >= pcp->high) {
-> >  		free_pages_bulk(zone, pcp->batch, &pcp->list, 0);
-> >  		pcp->count -= pcp->batch;
-> >  	}
-> > +
-> > +out:
-> >  	local_irq_restore(flags);
-> >  	put_cpu();
-> >  }
-> > 
-> > 
-> 
-> -- 
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+Oh, yeah, could be. Given the From:, I should really have thought of 
+that :)
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
