@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbYKGKmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbYKGKnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753540AbYKGKmz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 05:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYKGKmo
+	id S1753834AbYKGKnT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 05:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYKGKms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 05:42:44 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60034 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYKGKmn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 05:42:43 -0500
-Date: Fri, 7 Nov 2008 11:44:20 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-acpi@vger.kernel.org
-Subject: Re: 2.6.28-rc2-mm1: multiple BUG: scheduling while atomic:
-	swapper, first in acpi_idle_enter_simple, then fbcon has problems
-Message-ID: <20081107104420.GB2146@elf.ucw.cz>
-References: <20081106102309.GA334@atrey.karlin.mff.cuni.cz> <20081106093324.57d88a43.akpm@linux-foundation.org> <alpine.LFD.2.00.0811061354340.3106@localhost.localdomain>
+	Fri, 7 Nov 2008 05:42:48 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:42662 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751827AbYKGKmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 05:42:45 -0500
+Date: Fri, 7 Nov 2008 10:42:42 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
+Message-ID: <20081107104242.GC13786@csn.ul.ie>
+References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081106164644.GA14012@csn.ul.ie> <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811061354340.3106@localhost.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081107104224.1631057e.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-11-06 13:56:16, Len Brown wrote:
-> 
-> 
-> > > ...kernel contains experimental version of HP accelerometer driver and
-> > > new HP acclerometer LED, but hopefully they are not causing this?
+On Fri, Nov 07, 2008 at 10:42:24AM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 6 Nov 2008 16:46:45 +0000
+> Mel Gorman <mel@csn.ul.ie> wrote:
+> > > otherwise, the system have unnecessary memory starvation risk
+> > > because other cpu can't use this emergency pages.
+> > > 
+> > > 
+> > > 
+> > > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > CC: Mel Gorman <mel@csn.ul.ie>
+> > > CC: Christoph Lameter <cl@linux-foundation.org>
 > > > 
 > > 
-> > The trace is a bit of a mess, but we first hit problems around
-> > acpi_idle(), so I'd be suspecting acpi, x86 or sched-type changes.
-> 
-> try "idle=poll" to run none of the ACPI idle code.
-> or "idle=halt" to just flirt with the idle code.
+> > This patch seems functionally sound but as Christoph points out, this
+> > adds another branch to the fast path. Now, I ran some tests and those that
+> > completed didn't show any problems but adding branches in the fast path can
+> > eventually lead to hard-to-detect performance problems.
+> > 
+> dividing pcp-list into MIGRATE_TYPES is bad ?
 
-I'll try that if the problem happens. I had problems twice on two
-boots, but then it started to behave, so...
-									Pavel
+I do not understand what your question is.
+
+> If divided, we can get rid of scan. 
+> 
+
+I don't know what you are saying here either. I think you are saying
+that we should avoid scanning the PCP lists for migrate types at all.
+That hurts anti-fragmentation as pages can be badly placed if any pcp
+page is used.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
