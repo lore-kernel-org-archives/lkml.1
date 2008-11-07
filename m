@@ -1,57 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756264AbYKGGak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbYKGGa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756264AbYKGGak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 01:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755693AbYKGG2s
+	id S1756423AbYKGGa5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 01:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbYKGG3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 01:28:48 -0500
-Received: from kroah.org ([198.145.64.141]:48974 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755654AbYKGG2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 01:28:41 -0500
-Date: Thu, 6 Nov 2008 22:19:52 -0800
-From: Greg KH <greg@kroah.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Anthony Liguori <anthony@codemonkey.ws>,
-       "Fischer, Anna" <anna.fischer@hp.com>, H L <swdevyid@yahoo.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-Message-ID: <20081107061952.GF3860@kroah.com>
-References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net> <20081106183630.GD11773@parisc-linux.org> <491371F0.7020805@codemonkey.ws> <20081106225854.GA15439@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106225854.GA15439@parisc-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 7 Nov 2008 01:29:32 -0500
+Received: from i220-221-252-159.s30.a048.ap.plala.or.jp ([220.221.252.159]:40374
+	"EHLO mail.m.clustcom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755958AbYKGG3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 01:29:30 -0500
+Date: Fri, 7 Nov 2008 15:28:30 +0000
+From: Hitoshi Mitake <mitake@clustcom.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
+       linux-kernel@vger.kernel.org, ktaka@clustcom.com
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-Id: <20081107152830.a42766f3.mitake@clustcom.com>
+In-Reply-To: <20081106164641.ed369060.akpm@linux-foundation.org>
+References: <20081105222911.d76e7e1c.mitake@clustcom.com>
+	<413709.12821.qm@web50106.mail.re2.yahoo.com>
+	<20081106164641.ed369060.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 03:58:54PM -0700, Matthew Wilcox wrote:
-> > What we would rather do in KVM, is have the VFs appear in the host as 
-> > standard network devices.  We would then like to back our existing PV 
-> > driver to this VF directly bypassing the host networking stack.  A key 
-> > feature here is being able to fill the VF's receive queue with guest 
-> > memory instead of host kernel memory so that you can get zero-copy 
-> > receive traffic.  This will perform just as well as doing passthrough 
-> > (at least) and avoid all that ugliness of dealing with SR-IOV in the guest.
+On Thu, 6 Nov 2008 16:46:41 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 5 Nov 2008 08:26:12 -0800 (PST)
+> Doug Thompson <norsk5@yahoo.com> wrote:
 > 
-> This argues for ignoring the SR-IOV mess completely.  Just have the
-> host driver expose multiple 'ethN' devices.
+> > > I wrote new version of this driver and tested. It works well.
+> > > This is replacement for old version.
+> > > Or should I send diff of two versions?
+> > 
+> > 
+> > I would suggest sending a diff of what is now in the -mm tree to what it should be.
+> 
+> This driver is now in the mainline kernel so yes, a patch against that
+> kernel is the only appropriate way of updating the driver.
+> 
 
-That would work, but do we want to do that for every different type of
-driver?
+Sorry, and thanks for notification, Doug and Andrew.
+This is patch against mainline kernel.
 
-thanks,
+Signed-off-by: Hitoshi Mitake <mitake@clustcom.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+---
 
-greg k-h
+Index: linux-2.6.28-rc3-git2/drivers/edac/Kconfig
+===================================================================
+--- linux-2.6.28-rc3-git2.orig/drivers/edac/Kconfig	2008-11-07 11:27:05.000000000 +0000
++++ linux-2.6.28-rc3-git2/drivers/edac/Kconfig	2008-11-07 11:27:14.000000000 +0000
+@@ -104,7 +104,7 @@
+ 
+ config EDAC_X38
+ 	tristate "Intel X38"
+-	depends on EDAC_MM_EDAC && PCI && X86
++	depends on EDAC_MM_EDAC && PCI && (X86 || X86_64)
+ 	help
+ 	  Support for error detection and correction on the Intel
+ 	  X38 server chipsets.
+Index: linux-2.6.28-rc3-git2/drivers/edac/x38_edac.c
+===================================================================
+--- linux-2.6.28-rc3-git2.orig/drivers/edac/x38_edac.c	2008-11-07 11:27:06.000000000 +0000
++++ linux-2.6.28-rc3-git2/drivers/edac/x38_edac.c	2008-11-07 11:27:29.000000000 +0000
+@@ -162,10 +162,12 @@
+ 			 X38_ERRSTS_BITS);
+ }
+ 
+-static u64 x38_readq(const void __iomem *addr)
++#ifndef CONFIG_X86_64
++static u64 readq(const void __iomem *addr)
+ {
+ 	return readl(addr) | (((u64)readl(addr + 4)) << 32);
+ }
++#endif	/* CONFIG_X86_64 */
+ 
+ static void x38_get_and_clear_error_info(struct mem_ctl_info *mci,
+ 				 struct x38_error_info *info)
+@@ -184,9 +186,9 @@
+ 	if (!(info->errsts & X38_ERRSTS_BITS))
+ 		return;
+ 
+-	info->eccerrlog[0] = x38_readq(window + X38_C0ECCERRLOG);
++	info->eccerrlog[0] = readq(window + X38_C0ECCERRLOG);
+ 	if (x38_channel_num == 2)
+-		info->eccerrlog[1] = x38_readq(window + X38_C1ECCERRLOG);
++		info->eccerrlog[1] = readq(window + X38_C1ECCERRLOG);
+ 
+ 	pci_read_config_word(pdev, X38_ERRSTS, &info->errsts2);
+ 
+@@ -197,10 +199,10 @@
+ 	 * should be UE info.
+ 	 */
+ 	if ((info->errsts ^ info->errsts2) & X38_ERRSTS_BITS) {
+-		info->eccerrlog[0] = x38_readq(window + X38_C0ECCERRLOG);
++		info->eccerrlog[0] = readq(window + X38_C0ECCERRLOG);
+ 		if (x38_channel_num == 2)
+ 			info->eccerrlog[1] =
+-				x38_readq(window + X38_C1ECCERRLOG);
++				readq(window + X38_C1ECCERRLOG);
+ 	}
+ 
+ 	x38_clear_error_info(mci);
