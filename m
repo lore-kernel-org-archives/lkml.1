@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbYKGO3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbYKGO3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144AbYKGO3W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 09:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYKGO3E
+	id S1753805AbYKGO3q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 09:29:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYKGO3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 09:29:04 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:60858 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbYKGO3C (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 09:29:02 -0500
-To: Dave Hudson <linux-kernel@blueteddy.net>
-Cc: Ilpo =?utf-8?Q?J=C3=A4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Mikael Abrahamsson <swmike@swm.pp.se>,
-       David Miller <davem@davemloft.net>, daniel.blueman@gmail.com,
-       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>,
-       linux-net@vger.kernel.org
-Subject: Re: time for TCP ECN defaulting to on?
-From: Andi Kleen <andi@firstfloor.org>
-References: <6278d2220811040632u7a36d68ekad5de517fd0671bb@mail.gmail.com>
-	<alpine.DEB.1.10.0811052316210.10993@uplift.swm.pp.se>
-	<20081105.151015.206163697.davem@davemloft.net>
-	<alpine.DEB.1.10.0811070529550.10993@uplift.swm.pp.se>
-	<Pine.LNX.4.64.0811070931190.23284@wrl-59.cs.helsinki.fi>
-	<4914240F.7050701@blueteddy.net>
-Date: Fri, 07 Nov 2008 15:33:53 +0100
-In-Reply-To: <4914240F.7050701@blueteddy.net> (Dave Hudson's message of "Fri, 07 Nov 2008 11:18:39 +0000")
-Message-ID: <87k5bfppv2.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Fri, 7 Nov 2008 09:29:35 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43198 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751437AbYKGO3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 09:29:34 -0500
+Date: Fri, 7 Nov 2008 15:29:23 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Cyril Hrubis <metan@ucw.cz>, Dmitry <dbaryshkov@gmail.com>,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
+       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
+Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
+Message-ID: <20081107142923.GA1616@ucw.cz>
+References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz> <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com> <20081105173303.GC2038@elf.ucw.cz> <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com> <20081106080416.GA1531@ucw.cz> <20081106191424.GA2273@atrey.karlin.mff.cuni.cz> <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Hudson <linux-kernel@blueteddy.net> writes:
->
-> Not all of the routers in question (the ones that crash, block packets
-> or otherwise misbehave) are provided by ISPs - in fact a huge number
-> of them are and have been sold retail.  Over time most of those boxes
-> will get replaced with ones that don't have the problem because most
-> (probably all major) SOHO router suppliers now test that they don't
-> break with ECN so eventually there will be a point where enabling ECN
-> by default will make a lot of sense (there will be too few broken
-> routers to care about).
+On Fri 2008-11-07 21:23:41, Eric Miao wrote:
+> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
+> Did you guys ever try that?
 
-One option would be also to enable it by default for IPv6 only.
+I never heard about that patch, do you have it handy?
 
--Andi
+								Pavel
+
+> On Fri, Nov 7, 2008 at 3:14 AM, Cyril Hrubis <metan@ucw.cz> wrote:
+> > Hi,
+> >> I do not have serial cable :-(,
+> >
+> > Okay I have one that works for sl5500, it needs external power on
+> > sl-cxxx but it should be easy to fix.
+> >
+> > --
+> > metan
+> >
 
 -- 
-ak@linux.intel.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
