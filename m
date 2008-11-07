@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbYKGQ5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYKGQ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbYKGQ5A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 11:57:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYKGQ4u
+	id S1754187AbYKGQ6W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 11:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYKGQ6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 11:56:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57363 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbYKGQ4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 11:56:49 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0811071129440.13034@xanadu.home>
-References: <alpine.LFD.2.00.0811071129440.13034@xanadu.home> <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <25363.1226056819@redhat.com> <alpine.LFD.2.00.0811070952150.13034@xanadu.home> <20081107075003.fa93ccf4.akpm@linux-foundation.org> 
-To: Nicolas Pitre <nico@cam.org>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Date: Fri, 07 Nov 2008 16:55:59 +0000
-Message-ID: <8445.1226076959@redhat.com>
+	Fri, 7 Nov 2008 11:58:12 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:36233 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbYKGQ6L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 11:58:11 -0500
+Subject: Re: [PATCH] account_group_exec_runtime: fix the racy usage of
+	->signal
+From: Doug Chapman <doug.chapman@hp.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       adobriyan@gmail.com, Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081107162101.GA2178@elte.hu>
+References: <20081107165238.GA23055@redhat.com>
+	 <20081107162101.GA2178@elte.hu>
+Content-Type: text/plain
+Date: Fri, 07 Nov 2008 11:58:07 -0500
+Message-Id: <1226077087.6451.18.camel@oberon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Pitre <nico@cam.org> wrote:
 
-> > Well I'm glad it wasn't designed to demonstrate tastefulness.
+On Fri, 2008-11-07 at 17:21 +0100, Ingo Molnar wrote:
+> * Oleg Nesterov <oleg@redhat.com> wrote:
 > 
-> Fast tricks aren't always meant to be beautiful.  That,s why we have 
-> abstraction layers.
+> > Compile tested.
+> > 
+> > Unlike other similar routines, account_group_exec_runtime() could be
+> > called "implicitly" after exit_notify(). This means we can race with
+> > the parent doing release_task(), we can't just check ->signal != NULL.
+> > 
+> > Take ->siglock to make sure ->signal can't go away.
+> > 
+> > This is the minimal fix, with this patch we don't need need get/put cpu,
+> > and I think we should uninline this function.
+> > 
+> > Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+> 
+> > 
+> > --- K-28/kernel/sched_stats.h~A_G_E_R_FIX	2008-11-07 17:32:02.000000000 +0100
+> > +++ K-28/kernel/sched_stats.h	2008-11-07 17:44:39.000000000 +0100
+> > @@ -351,10 +351,12 @@ static inline void account_group_exec_ru
+> >  					      unsigned long long ns)
+> >  {
+> >  	struct signal_struct *sig;
+> > +	unsigned long flags;
+> >  
+> > -	sig = tsk->signal;
+> > -	if (unlikely(!sig))
+> > +	if (unlikely(!lock_task_sighand(tsk, &flags)))
+> >  		return;
+> 
+> i think this will lock up: the signal lock must not nest inside the rq 
+> lock, and these accounting functions are called from within the 
+> scheduler.
+> 
+> 	Ingo
 
-And comments.  The comment attached to cnt32_to_63() is well written and
-informative.
+I can confirm that this does hang on bootup.
 
-> I know nothing about mn10300.
+- Doug
 
-That's aimed my way.
 
-David
