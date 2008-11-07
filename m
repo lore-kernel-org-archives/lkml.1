@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYKGLEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbYKGLEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYKGLEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 06:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbYKGLEI
+	id S1752622AbYKGLEk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 06:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbYKGLE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 06:04:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60470 "EHLO mx2.redhat.com"
+	Fri, 7 Nov 2008 06:04:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:60472 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754303AbYKGLEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 06:04:06 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
-References: <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org>
-To: Nicolas Pitre <nico@cam.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Date: Fri, 07 Nov 2008 11:03:35 +0000
-Message-ID: <25298.1226055815@redhat.com>
+	id S1754771AbYKGLEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 06:04:24 -0500
+Date: Fri, 7 Nov 2008 09:06:13 -0200
+From: Glauber Costa <glommer@redhat.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH] restart search at beggining of vmalloc address
+Message-ID: <20081107110613.GA15827@poweredge.glommer>
+References: <1226005106-4974-1-git-send-email-glommer@redhat.com> <20081107002742.GA12135@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081107002742.GA12135@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Pitre <nico@cam.org> wrote:
-
-> > I mean, the darned thing is called from sched_clock(), which can be
-> > concurrently called on separate CPUs and which can be called from
-> > interrupt context (with an arbitrary nesting level!) while it was running
-> > in process context.
+On Fri, Nov 07, 2008 at 01:27:42AM +0100, Nick Piggin wrote:
+> Excellent, thank you! Good catch
 > 
-> Yes!  And this is so on *purpose*.  Please take some time to read the 
-> comment that goes along with it, and if you're still not convinced then 
-> look for those explanation emails I've already posted.
+> If you agree my previous patch was also good in combination with this one,
+> then I'll send them all to be merged.
+I'll test it with conjunction with my patch to be sure it does not retrigger
+the bug I had. But I'm sure it won't (famous last words)
 
-I agree with Nicolas on this.  It's abominably clever, but I think he's right.
+I also had two more patches that I wrote that aided me in debugging this, that
+I'd like to see included:
+ * the first shows the size of the failing allocation: We can see current allocations
+   with /proc/vmallocinfo, but it's hard to get a grasp at what's the size of the allocation
+   that just failed, because it is not registered.
+ * the second, shows the real name of the callers in vmallocinfo, instead of things like
+   "vmalloc_32", which is just an intermediate.
 
-The one place I remain unconvinced is over the issue of preemption of a process
-that is in the middle of cnt32_to_63(), where if the preempted process is
-asleep for long enough, I think it can wind time backwards when it resumes, but
-that's not a problem for the one place I want to use it (sched_clock()) because
-that is (almost) always called with preemption disabled in one way or another.
+My plan was to send them today, after getting comments from you on this one.
+If you think they are all reasonable, maybe we can send them all as a series.
 
-The one place it isn't is a debugging case that I'm not too worried about.
-
-> > /*
-> >  * Caller must provide locking to protect *caller_state
-> >  */
 > 
-> NO!  This is meant to be LOCK FREE!
-
-Absolutely.
-
-David
+> Thanks,
+> Nick
+> 
+> On Thu, Nov 06, 2008 at 06:58:26PM -0200, Glauber Costa wrote:
+> > Current vmalloc restart search for a free area in case we
+> > can't find one. The reason is there are areas which are lazily
+> > freed, and could be possibly freed now. However, current implementation
+> > start searching the tree from the last failing address, which is
+> > pretty much by definition at the end of address space. So, we fail.
+> > 
+> > The proposal of this patch is to restart the search from the beginning
+> > of the requested vstart address. This fixes the regression in running
+> > KVM virtual machines for me, described in
+> > http://lkml.org/lkml/2008/10/28/349, caused by commit
+> > db64fe02258f1507e13fe5212a989922323685ce.
+> > 
+> > Signed-off-by: Glauber Costa <glommer@redhat.com>
+> > CC: Nick Piggin <npiggin@suse.de>
+> > ---
+> >  mm/vmalloc.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> > index 7db493d..6fe2003 100644
+> > --- a/mm/vmalloc.c
+> > +++ b/mm/vmalloc.c
+> > @@ -378,6 +378,7 @@ found:
+> >  		if (!purged) {
+> >  			purge_vmap_area_lazy();
+> >  			purged = 1;
+> > +			addr = ALIGN(vstart, align);
+> >  			goto retry;
+> >  		}
+> >  		if (printk_ratelimit())
+> > -- 
+> > 1.5.6.5
