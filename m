@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYKGVFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbYKGVFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYKGVFL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 16:05:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYKGVEs
+	id S1754441AbYKGVFn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 16:05:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbYKGVEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 16:04:48 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:38523 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752673AbYKGVEr (ORCPT
+	Fri, 7 Nov 2008 16:04:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47228 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753569AbYKGVEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 16:04:47 -0500
-Message-ID: <4914ACED.8070207@oracle.com>
-Date: Fri, 07 Nov 2008 13:02:37 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 7 Nov 2008 16:04:51 -0500
+Date: Fri, 7 Nov 2008 16:04:48 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Howells <dhowells@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
+       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
+       paulus@samba.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+In-Reply-To: <20081107205411.GG6917@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.1.10.0811071602160.3711@gandalf.stny.rr.com>
+References: <20081107053349.861709786@polymtl.ca> <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal> <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com> <20081107191833.GA31809@Krystal>
+ <1226086322.31966.67.camel@lappy.programming.kicks-ass.net> <20081107200243.GB32761@Krystal> <20081107204546.GA3324@Krystal> <20081107205411.GG6917@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "Darrick J. Wong" <djwong@us.ibm.com>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH 4/5] adt7473: Check inputs from sysfs writes
-References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com>	<20081107185641.13022.70557.stgit@elm3a70.beaverton.ibm.com>	<20081107112040.0154e093.akpm@linux-foundation.org>	<1226090974.10478.15.camel@localhost> <20081107220019.74c60aa4@hyperion.delvare>
-In-Reply-To: <20081107220019.74c60aa4@hyperion.delvare>
-Content-Type: text/plain; charset=windows-1251
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4914AD15.00D7:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean Delvare wrote:
-> On Fri, 07 Nov 2008 12:49:34 -0800, Joe Perches wrote:
->> On Fri, 2008-11-07 at 11:20 -0800, Andrew Morton wrote:
->>>> +#define ROUND_DIV(x, divisor)	(((x) + ((divisor) / 2)) / (divisor))
->>> It might make sense to rename this to ROUND_CLOSEST, fix the
->>> double-evaluation and whap it into kernel.h?
->> ROUND_HALF_UP?
+
+On Fri, 7 Nov 2008, Paul E. McKenney wrote:
+> > > Would that make more sense ?
+> > > 
+> > 
+> > Oh, actually, I got things reversed in this email : the readl(io_addr)
+> > must be done _after_ the __m_cnt_hi read.
+> > 
+> > Therefore, two consecutive executions would look like :
+> > 
+> > barrier();  /* Make sure the compiler does not reorder __m_cnt_hi and
+> >                previous mmio read. */
+> > read __m_cnt_hi
+> > smp_rmb();  /* Waits for every cached memory reads to complete */
 > 
-> What would that supposedly mean?
+> If these are MMIO reads, then you need rmb() rather than smp_rmb(),
+> at least on architectures that can reorder writes (Power, Itanium,
+> and I believe also ARM, ...).
 
-Just go with DIV_ROUND_CLOSEST() or DIV_ROUND().
-The _CLOSEST() is redundant to ROUND .. IMO.
+The read is from a clock source. The only writes that are happening is 
+by the clock itself.
 
--- 
-~Randy
+On a UP system, is a rmb still needed? That is, can you have two reads on 
+the same CPU from the clock source that will produce a backwards clock? 
+That to me sounds like the clock interface is broken.
+
+-- Steve
