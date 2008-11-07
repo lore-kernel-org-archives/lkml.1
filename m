@@ -1,60 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbYKGTPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbYKGTQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbYKGTPa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 14:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYKGTPW
+	id S1753481AbYKGTQs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 14:16:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYKGTQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 14:15:22 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:51581
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbYKGTPV (ORCPT
+	Fri, 7 Nov 2008 14:16:40 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:46521 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbYKGTQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 14:15:21 -0500
-From: Rob Landley <rob@landley.net>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [RFC] Documentation tree sub-directories reorg.
-Date: Fri, 7 Nov 2008 13:17:17 -0600
-User-Agent: KMail/1.9.9
-Cc: Randy Dunlap <rdunlap@xenotime.net>, lkml <linux-kernel@vger.kernel.org>,
-       linux-doc@vger.kernel.org, mtk.manpages@gmail.com,
-       alan@lxorguk.ukuu.org.uk
-References: <4910D1BC.9060100@xenotime.net> <20081104162345.38729b20@bike.lwn.net>
-In-Reply-To: <20081104162345.38729b20@bike.lwn.net>
+	Fri, 7 Nov 2008 14:16:39 -0500
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH] Fix platform drivers that crash on suspend/resume
+To: "Darrick J. Wong" <djwong@us.ibm.com>, Corey Minyard <minyard@acm.org>,
+       Jean Delvare <khali@linux-fr.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       openipmi-developer@lists.sourceforge.net,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 07 Nov 2008 11:16:36 -0800
+Message-ID: <20081107191636.13288.17003.stgit@elm3a70.beaverton.ibm.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811071317.19159.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 November 2008 17:23:45 Jonathan Corbet wrote:
-> On Tue, 04 Nov 2008 14:50:36 -0800
->
-> Randy Dunlap <rdunlap@xenotime.net> wrote:
-> > I would like to use a few more sub-directories in the Documentation/
-> > tree to try to help clean it up some.  E.g., move some drivers/block/
-> > doc files to Documentation/blockdev/ and move some serial/tty/chardev
-> > doc files to Documentation/serial/
->
-> This all makes fine sense to me, but I do wonder if we shouldn't also
-> create an "obsolete" subdirectory and put some of those files there?
-> For example, paride.txt starts off this way:
->
-> 	Owing to the simplicity and near universality of the parallel port
-> 	interface to personal computers, many external devices such as
-> 	portable hard-disk, CD-ROM, LS-120 and tape drives use the parallel
-> 	port to connect to their host computer.
->
-> Said ports are not quite as universal as they once were.
 
-Yeah, but the robotics guys guys love 'em as a really easy way to get 
-controllable pinouts from PC hardware. :)
+It turns out that if one registers a struct platform_device, the platform
+device code expects that platform_device.device->driver points to a struct
+driver inside a struct platform_driver.  This is not the case with the ipmi-si,
+ipmi-msghandler and ibmaem drivers, which causes the suspend/resume hook
+functions to jump off into nowhere, causing a crash.  Make this assumption hold
+true for these three drivers.
 
-No objection to the idea of a place to put obsolete docs, 
-although "deprecated" might be a better name and it seems like it relates to 
-feature-removal-schedule.txt somehow...
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-Rob
+ drivers/char/ipmi/ipmi_msghandler.c |   20 +++++++++++---------
+ drivers/char/ipmi/ipmi_si_intf.c    |   16 +++++++++-------
+ drivers/hwmon/ibmaem.c              |   18 ++++++++++--------
+ 3 files changed, 30 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/char/ipmi/ipmi_msghandler.c b/drivers/char/ipmi/ipmi_msghandler.c
+index 8a59aaa..7a88dfd 100644
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -422,9 +422,11 @@ struct ipmi_smi {
+ /**
+  * The driver model view of the IPMI messaging driver.
+  */
+-static struct device_driver ipmidriver = {
+-	.name = "ipmi",
+-	.bus = &platform_bus_type
++static struct platform_driver ipmidriver = {
++	.driver = {
++		.name = "ipmi",
++		.bus = &platform_bus_type
++	}
+ };
+ static DEFINE_MUTEX(ipmidriver_mutex);
+ 
+@@ -2384,9 +2386,9 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
+ 	 * representing the interfaced BMC already
+ 	 */
+ 	if (bmc->guid_set)
+-		old_bmc = ipmi_find_bmc_guid(&ipmidriver, bmc->guid);
++		old_bmc = ipmi_find_bmc_guid(&ipmidriver.driver, bmc->guid);
+ 	else
+-		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver,
++		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
+ 						    bmc->id.product_id,
+ 						    bmc->id.device_id);
+ 
+@@ -2416,7 +2418,7 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
+ 		snprintf(name, sizeof(name),
+ 			 "ipmi_bmc.%4.4x", bmc->id.product_id);
+ 
+-		while (ipmi_find_bmc_prod_dev_id(&ipmidriver,
++		while (ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
+ 						 bmc->id.product_id,
+ 						 bmc->id.device_id)) {
+ 			if (!warn_printed) {
+@@ -2446,7 +2448,7 @@ static int ipmi_bmc_register(ipmi_smi_t intf, int ifnum,
+ 			       " Unable to allocate platform device\n");
+ 			return -ENOMEM;
+ 		}
+-		bmc->dev->dev.driver = &ipmidriver;
++		bmc->dev->dev.driver = &ipmidriver.driver;
+ 		dev_set_drvdata(&bmc->dev->dev, bmc);
+ 		kref_init(&bmc->refcount);
+ 
+@@ -4247,7 +4249,7 @@ static int ipmi_init_msghandler(void)
+ 	if (initialized)
+ 		return 0;
+ 
+-	rv = driver_register(&ipmidriver);
++	rv = driver_register(&ipmidriver.driver);
+ 	if (rv) {
+ 		printk(KERN_ERR PFX "Could not register IPMI driver\n");
+ 		return rv;
+@@ -4308,7 +4310,7 @@ static __exit void cleanup_ipmi(void)
+ 	remove_proc_entry(proc_ipmi_root->name, NULL);
+ #endif /* CONFIG_PROC_FS */
+ 
+-	driver_unregister(&ipmidriver);
++	driver_unregister(&ipmidriver.driver);
+ 
+ 	initialized = 0;
+ 
+diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+index 3123bf5..3000135 100644
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -114,9 +114,11 @@ static char *si_to_str[] = { "kcs", "smic", "bt" };
+ 
+ #define DEVICE_NAME "ipmi_si"
+ 
+-static struct device_driver ipmi_driver = {
+-	.name = DEVICE_NAME,
+-	.bus = &platform_bus_type
++static struct platform_driver ipmi_driver = {
++	.driver = {
++		.name = DEVICE_NAME,
++		.bus = &platform_bus_type
++	}
+ };
+ 
+ 
+@@ -2868,7 +2870,7 @@ static int try_smi_init(struct smi_info *new_smi)
+ 			goto out_err;
+ 		}
+ 		new_smi->dev = &new_smi->pdev->dev;
+-		new_smi->dev->driver = &ipmi_driver;
++		new_smi->dev->driver = &ipmi_driver.driver;
+ 
+ 		rv = platform_device_add(new_smi->pdev);
+ 		if (rv) {
+@@ -2983,7 +2985,7 @@ static __devinit int init_ipmi_si(void)
+ 	initialized = 1;
+ 
+ 	/* Register the device drivers. */
+-	rv = driver_register(&ipmi_driver);
++	rv = driver_register(&ipmi_driver.driver);
+ 	if (rv) {
+ 		printk(KERN_ERR
+ 		       "init_ipmi_si: Unable to register driver: %d\n",
+@@ -3052,7 +3054,7 @@ static __devinit int init_ipmi_si(void)
+ #ifdef CONFIG_PPC_OF
+ 		of_unregister_platform_driver(&ipmi_of_platform_driver);
+ #endif
+-		driver_unregister(&ipmi_driver);
++		driver_unregister(&ipmi_driver.driver);
+ 		printk(KERN_WARNING
+ 		       "ipmi_si: Unable to find any System Interface(s)\n");
+ 		return -ENODEV;
+@@ -3151,7 +3153,7 @@ static __exit void cleanup_ipmi_si(void)
+ 		cleanup_one_si(e);
+ 	mutex_unlock(&smi_infos_lock);
+ 
+-	driver_unregister(&ipmi_driver);
++	driver_unregister(&ipmi_driver.driver);
+ }
+ module_exit(cleanup_ipmi_si);
+ 
+diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
+index 7b0ed5d..fe74609 100644
+--- a/drivers/hwmon/ibmaem.c
++++ b/drivers/hwmon/ibmaem.c
+@@ -88,9 +88,11 @@
+ static DEFINE_IDR(aem_idr);
+ static DEFINE_SPINLOCK(aem_idr_lock);
+ 
+-static struct device_driver aem_driver = {
+-	.name = DRVNAME,
+-	.bus = &platform_bus_type,
++static struct platform_driver aem_driver = {
++	.driver = {
++		.name = DRVNAME,
++		.bus = &platform_bus_type,
++	}
+ };
+ 
+ struct aem_ipmi_data {
+@@ -583,7 +585,7 @@ static int aem_init_aem1_inst(struct aem_ipmi_data *probe, u8 module_handle)
+ 	data->pdev = platform_device_alloc(DRVNAME, data->id);
+ 	if (!data->pdev)
+ 		goto dev_err;
+-	data->pdev->dev.driver = &aem_driver;
++	data->pdev->dev.driver = &aem_driver.driver;
+ 
+ 	res = platform_device_add(data->pdev);
+ 	if (res)
+@@ -716,7 +718,7 @@ static int aem_init_aem2_inst(struct aem_ipmi_data *probe,
+ 	data->pdev = platform_device_alloc(DRVNAME, data->id);
+ 	if (!data->pdev)
+ 		goto dev_err;
+-	data->pdev->dev.driver = &aem_driver;
++	data->pdev->dev.driver = &aem_driver.driver;
+ 
+ 	res = platform_device_add(data->pdev);
+ 	if (res)
+@@ -1085,7 +1087,7 @@ static int __init aem_init(void)
+ {
+ 	int res;
+ 
+-	res = driver_register(&aem_driver);
++	res = driver_register(&aem_driver.driver);
+ 	if (res) {
+ 		printk(KERN_ERR "Can't register aem driver\n");
+ 		return res;
+@@ -1097,7 +1099,7 @@ static int __init aem_init(void)
+ 	return 0;
+ 
+ ipmi_reg_err:
+-	driver_unregister(&aem_driver);
++	driver_unregister(&aem_driver.driver);
+ 	return res;
+ 
+ }
+@@ -1107,7 +1109,7 @@ static void __exit aem_exit(void)
+ 	struct aem_data *p1, *next1;
+ 
+ 	ipmi_smi_watcher_unregister(&driver_data.bmc_events);
+-	driver_unregister(&aem_driver);
++	driver_unregister(&aem_driver.driver);
+ 	list_for_each_entry_safe(p1, next1, &driver_data.aem_devices, list)
+ 		aem_delete(p1);
+ }
+
