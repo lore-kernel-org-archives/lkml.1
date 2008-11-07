@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYKGQbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbYKGQjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922AbYKGQbE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 11:31:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbYKGQav
+	id S1753563AbYKGQjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 11:39:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbYKGQjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 11:30:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49529 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750776AbYKGQau (ORCPT
+	Fri, 7 Nov 2008 11:39:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:57790 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbYKGQjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 11:30:50 -0500
-Date: Fri, 7 Nov 2008 08:29:26 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Nicolas Pitre <nico@cam.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Message-Id: <20081107082926.ee3e1efe.akpm@linux-foundation.org>
-In-Reply-To: <8189.1226074915@redhat.com>
-References: <20081107075003.fa93ccf4.akpm@linux-foundation.org>
-	<20081107003816.9b0f947a.akpm@linux-foundation.org>
-	<20081107052336.652868737@polymtl.ca>
-	<20081107053349.861709786@polymtl.ca>
-	<20081106220530.5b0e3a96.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0811070256450.13034@xanadu.home>
-	<25363.1226056819@redhat.com>
-	<alpine.LFD.2.00.0811070952150.13034@xanadu.home>
-	<8189.1226074915@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 7 Nov 2008 11:39:09 -0500
+Date: Fri, 7 Nov 2008 17:47:57 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       Robert Richter <robert.richter@amd.com>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@linux.intel.com>
+Subject: Re: linux-2.6.28-rc2 regression : oprofile doesnt work anymore ?
+Message-ID: <20081107164757.GS29626@one.firstfloor.org>
+References: <84144f020810310721x1d1eccbeica5d10608d7b2e57@mail.gmail.com> <20081104181855.GK9785@erda.amd.com> <Pine.LNX.4.64.0811042118460.1597@melkki.cs.Helsinki.FI> <4910CD65.1010301@cosmosbay.com> <49113894.5040806@cosmosbay.com> <49130694.7000007@cosmosbay.com> <20081107130249.GN29626@one.firstfloor.org> <49145B26.4040701@cosmosbay.com> <20081107160553.GR29626@one.firstfloor.org> <491468F1.8070304@cosmosbay.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <491468F1.8070304@cosmosbay.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Nov 2008 16:21:55 +0000 David Howells <dhowells@redhat.com> wrote:
-
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, Nov 07, 2008 at 05:12:33PM +0100, Eric Dumazet wrote:
+> Andi Kleen a écrit :
+> >On Fri, Nov 07, 2008 at 04:13:42PM +0100, Eric Dumazet wrote:
+> >>Andi Kleen a écrit :
+> >>>Can you please test this patch and see if it solves the problem?
+> >>>
+> >>>Thanks,
+> >>>-Andi
+> >>>
+> >>>---
+> >>>
+> >>>oprofile: Fix p6 counter overflow check
+> >>>
+> >>>Fix the counter overflow check for CPUs with counter width > 32
+> >>>
+> >>>I had a similar change in a different patch that I didn't submit
+> >>>and I didn't notice the problem earlier because it was always
+> >>>tested together.
+> >>>
+> >>>Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> >>>
+> >>Thanks Andi
+> >>
+> >>Unfortunatly, there is still a freeze of NMIS after a while.
+> >
+> >How long is the while?
+> >
 > 
-> > If gcc did that then it would need to generate static instances of
-> > inlined functions within individual compilation units.  It would be a
-> > disaster for the kernel.  For a start, functions which are "inlined" in kernel
-> > modules wouldn't be able to access their static storage and modprobing
-> > them would fail.
-> 
-> Do you expect a static inline function that lives in a header file and that
-> has a static variable in it to share that static variable over all instances
-> of that function in a program?  Or do you expect the static variable to be
-> limited at the file level?  Or just at the invocation level?
+> Less than 20 seconds if fully loaded with "tbench 8" on my 8 cpus machine.
 
-I'd expect it to behave in the same way as it would if the function was
-implemented out-of-line.
+I don't have tbench on the test box, but when I load it with a couple
+of while true ; do true ; done loops it also continues sampling.
 
-But it occurs to me that the modrobe-doesnt-work thing would happen if
-the function _is_ inlined anyway, so we won't be doing that.
+Are you sure it worked in 2.6.27?
 
-Whatever.  Killing this many puppies because gcc may do something so
-bizarrely wrong isn't justifiable.
-
+-Andi
