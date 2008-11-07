@@ -1,185 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbYKGSOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbYKGSOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbYKGSOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 13:14:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYKGSOD
+	id S1754168AbYKGSOd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 13:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbYKGSOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 13:14:03 -0500
-Received: from smtp5.Stanford.EDU ([171.67.219.85]:40826 "EHLO
-	smtp5.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbYKGSOA (ORCPT
+	Fri, 7 Nov 2008 13:14:17 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:37657 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753144AbYKGSOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 13:14:00 -0500
-Subject: Re: [alsa-devel] 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-In-Reply-To: <49140683.9040008@ladisch.de>
-References: <1226019485.3135.31.camel@localhost.localdomain>
-	 <49140683.9040008@ladisch.de>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 10:12:37 -0800
-Message-Id: <1226081557.20569.5.camel@localhost.localdomain>
+	Fri, 7 Nov 2008 13:14:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtcEAP0TFElMQWxa/2dsb2JhbACBdsd8g1Y
+Date: Fri, 7 Nov 2008 13:14:12 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org,
+       paulus@samba.org, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 04/18] get_cycles() : powerpc64 HAVE_GET_CYCLES
+Message-ID: <20081107181412.GH22134@Krystal>
+References: <20081107052336.652868737@polymtl.ca> <20081107053349.215096700@polymtl.ca> <20081107145636.GA5021@yoda.jdub.homelinux.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081107145636.GA5021@yoda.jdub.homelinux.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 13:03:15 up 155 days, 22:43,  6 users,  load average: 0.81, 0.76,
+	0.64
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 10:12 +0100, Clemens Ladisch wrote:
-> Fernando Lopez-Lezcano wrote:
-> > I'm seeing a realtime patch related hard hang in the kernel alsa
-> > subsystem (MIDI input/output). In a nutshell:
+* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
+> On Fri, Nov 07, 2008 at 12:23:40AM -0500, Mathieu Desnoyers wrote:
+> >This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
+> >get_cycles_rate() are implemented.
 > >
-> > - alsa rawmidi works (ie: "rawmidi -v -i hw:0" outputs a stream of
-> > messages when pointed to a midi capable card that has an external
-> > keyboard connected).
+> >Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> >CC: benh@kernel.crashing.org
+> >CC: paulus@samba.org
+> >CC: David Miller <davem@davemloft.net>
+> >CC: Linus Torvalds <torvalds@linux-foundation.org>
+> >CC: Andrew Morton <akpm@linux-foundation.org>
+> >CC: Ingo Molnar <mingo@redhat.com>
+> >CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> >CC: Thomas Gleixner <tglx@linutronix.de>
+> >CC: Steven Rostedt <rostedt@goodmis.org>
+> >CC: linux-arch@vger.kernel.org
+> >---
+> > arch/powerpc/Kconfig             |    1 +
+> > arch/powerpc/include/asm/timex.h |   11 +++++++++++
+> > 2 files changed, 12 insertions(+)
 > >
-> > - the alsa sequencer interface works (ie: aplaymidi connected to
-> > aseqdump transfers data just fine).
-> >
-> > - BOTH combined do NOT work (ie: use aconnect to connect the port that
-> > corresponds to the external midi interface to aseqdump: aseqdump hangs
-> > forever after transferring the first message and the only way out is a
-> > reboot).
+> >Index: linux.trees.git/arch/powerpc/Kconfig
+> >===================================================================
+> >--- linux.trees.git.orig/arch/powerpc/Kconfig	2008-11-07 00:09:44.000000000 -0500
+> >+++ linux.trees.git/arch/powerpc/Kconfig	2008-11-07 00:09:46.000000000 -0500
+> >@@ -121,6 +121,7 @@ config PPC
+> > 	select HAVE_DMA_ATTRS if PPC64
+> > 	select USE_GENERIC_SMP_HELPERS if SMP
+> > 	select HAVE_OPROFILE
+> >+	select HAVE_GET_CYCLES if PPC64
 > 
-> Please try the snd-virmidi driver, then we'd have a test case that does
-> not require MIDI hardware.
+> So maybe it's just me because it's Friday and I'm on vacation, but I don't
+> see anything overly specific to ppc64 here.  In fact, you use get_cycles_rate
+> for all of powerpc in a later patch in the series.
 > 
-> > ... including the output of a "echo t >/proc/sysrq-trigger" that
-> > should show where aseqdump currently hangs (or so I think).
+> Is there something special about HAVE_GET_CYCLES that I'm missing that would
+> make it only apply to ppc64 and not ppc32?
 > 
-> It hangs in tasklet_kill(), which gets called while it tries to close
-> the rawmidi port.
-> 
-> The rawmidi framework uses this tasklet to notify the sequencer that new
-> MIDI data is available.  The handler function is
-> snd_rawmidi_input_event_tasklet() in sound/core/rawmidi.c; the sequencer
-> callback that gets called from there is snd_midi_input_event() in
-> core/seq/seq_midi.c.
-> 
-> You say that the first event gets delivered, so it might be possible
-> that the tasklet never finishes executing.  Please check whether the
-> call to snd_seq_kernel_client_dispatch() in snd_midi_input_event()
-> ever returns.
+> josh
 
-I added a printk before and after the call, it looks like it gets called
-and it returns (but only _once_... aseqdump hangs in an unkillable state
-as before).
+Hi Josh,
 
-But the hang is different, I'll reboot and retry to see if it is
-repeatable:
+powerpc32 only uses the 32 LSBs for the TSC in the current get_cycles()
+implementation. We could either define HAVE_GET_CYCLES_32 like I did on
+mips32, or change get_cycles so it also reads the 32 MSBs in a loop like
+this (it does not take care of the CPU_FTR_CELL_TB_BUG though) :
 
---------
-Nov  7 10:05:36 host kernel: =======================
-Nov  7 10:05:36 host kernel: aseqdump      S [f2e5c330] f78df0f0     0
-5256   5185
-Nov  7 10:05:36 host kernel:       f2cffbd4 00000086 f2cffb88 f78df0f0
-00000003 f2e5c330 f2e5c5c4 c4847700 
-Nov  7 10:05:36 host kernel:       00000001 c4847700 ef1ba352 0000002c
-c4844054 00000000 fffe5e91 00000246 
-Nov  7 10:05:36 host kernel:       f57fc274 00000000 00000000 00000000
-ffffffff 00000000 7fffffff f2cffe98 
-Nov  7 10:05:36 host kernel: Call Trace:
-Nov  7 10:05:36 host kernel: [<c0643ba5>] schedule+0xbf/0xd8
-Nov  7 10:05:36 host kernel: [<c0643c72>] schedule_timeout+0x17/0xbc
-Nov  7 10:05:36 host kernel: [<c0496c8f>] ? __pollwait+0xad/0xb6
-Nov  7 10:05:36 host kernel: [<f8971b34>] ? snd_seq_fifo_poll_wait
-+0x18/0x25 [snd_seq]
-Nov  7 10:05:36 host kernel: [<f896efad>] ? snd_seq_poll+0x4d/0x9f
-[snd_seq]
-Nov  7 10:05:36 host kernel: [<c0495d92>] do_sys_poll+0x292/0x348
-Nov  7 10:05:36 host kernel: [<c0496be2>] ? __pollwait+0x0/0xb6
-Nov  7 10:05:36 host kernel: [<c0425c81>] ? default_wake_function
-+0x0/0x12
-Nov  7 10:05:36 host kernel: [<c0645736>] ? rt_spin_lock+0x38/0x3b
-Nov  7 10:05:36 host kernel: [<c04752f7>] ? page_address+0x88/0xaa
-Nov  7 10:05:36 host kernel: [<c047596d>] ? kmap_high+0x421/0x42a
-Nov  7 10:05:36 host kernel: [<c04ff574>] ? radix_valid_always+0x0/0xa
-Nov  7 10:05:36 host kernel: [<c046430b>] ? __rcu_read_unlock+0x6d/0x72
-Nov  7 10:05:36 host kernel: [<c04699ec>] ? find_get_page+0xfa/0x120
-Nov  7 10:05:36 host kernel: [<c06456c1>] ? __rt_spin_lock+0x24/0x61
-Nov  7 10:05:36 host kernel: [<c0645736>] ? rt_spin_lock+0x38/0x3b
-Nov  7 10:05:36 host kernel: [<c0420afc>] ? __enqueue_entity+0xe3/0xeb
-Nov  7 10:05:36 host kernel: [<c041f87b>] ? task_rq_lock+0x44/0x6e
-Nov  7 10:05:36 host kernel: [<c0425c76>] ? try_to_wake_up+0x212/0x21d
-Nov  7 10:05:36 host kernel: [<c0425c91>] ? default_wake_function
-+0x10/0x12
-Nov  7 10:05:36 host kernel: [<c041ddd8>] ? __wake_up_common+0x35/0x5b
-Nov  7 10:05:36 host kernel: [<c0423172>] ? __wake_up+0x28/0x32
-Nov  7 10:05:36 host kernel: [<c0554f2e>] ? n_tty_receive_buf
-+0xfa9/0xff7
-Nov  7 10:05:36 host kernel: [<c0554f2e>] ? n_tty_receive_buf
-+0xfa9/0xff7
-Nov  7 10:05:36 host kernel: [<c0447cef>] ? rt_mutex_up_read+0x1b7/0x25d
-Nov  7 10:05:36 host kernel: [<c0448f40>] ? rt_up_read+0x8/0xa
-Nov  7 10:05:36 host kernel: [<c0647c26>] ? do_page_fault+0x45f/0x7d8
-Nov  7 10:05:36 host kernel: [<c0502f6c>] ? copy_to_user+0x36/0x106
-Nov  7 10:05:36 host kernel: [<c0644770>] ? rt_spin_lock_slowlock
-+0x1bd/0x1d8
-Nov  7 10:05:36 host kernel: [<c06456c1>] ? __rt_spin_lock+0x24/0x61
-Nov  7 10:05:36 host kernel: [<c0645736>] ? rt_spin_lock+0x38/0x3b
-Nov  7 10:05:36 host kernel: [<f8971c46>] ? snd_seq_fifo_cell_out
-+0x47/0xee [snd_seq]
-Nov  7 10:05:36 host kernel: [<c0425c81>] ? default_wake_function
-+0x0/0x12
-Nov  7 10:05:36 host kernel: [<f896f041>] ? snd_seq_read+0x0/0x1d8
-[snd_seq]
-Nov  7 10:05:36 host kernel: [<f896f11e>] ? snd_seq_read+0xdd/0x1d8
-[snd_seq]
-Nov  7 10:05:36 host kernel: [<c04d73d3>] ? security_file_permission
-+0xf/0x11
-Nov  7 10:05:36 host kernel: [<c045e231>] ? audit_syscall_entry
-+0xf9/0x123
-Nov  7 10:05:36 host kernel: [<c049606a>] sys_poll+0x3a/0x6a
-Nov  7 10:05:36 host kernel: [<c0404be6>] syscall_call+0x7/0xb
-Nov  7 10:05:36 host kernel: =======================
---------
+typedef unsigned long long cycles_t;
 
-# cat /proc/5256/status
-Name:	aseqdump
-State:	D (disk sleep)
-Tgid:	5256
-Pid:	5256
-PPid:	5185
-TracerPid:	0
-Uid:	743	743	743	743
-Gid:	10	10	10	10
-FDSize:	32
-Groups:	10 11 30 31 400 
-VmPeak:	    3104 kB
-VmSize:	    3048 kB
-VmLck:	       0 kB
-VmHWM:	     884 kB
-VmRSS:	     884 kB
-VmData:	     172 kB
-VmStk:	      84 kB
-VmExe:	      12 kB
-VmLib:	    2700 kB
-VmPTE:	      20 kB
-Threads:	1
-SigQ:	1/32768
-SigPnd:	0000000000000000
-ShdPnd:	0000000000004000
-SigBlk:	0000000000000000
-SigIgn:	0000000000000000
-SigCgt:	0000000180004002
-CapInh:	0000000000000000
-CapPrm:	0000000000000000
-CapEff:	0000000000000000
-CapBnd:	ffffffffffffffff
-Cpus_allowed:	0000000f
-Cpus_allowed_list:	0-3
-Mems_allowed:	1
-Mems_allowed_list:	0
-voluntary_ctxt_switches:	66283
-nonvoluntary_ctxt_switches:	4
+cycles_t get_cycles_ppc32(void)
+{
+  union {
+    cycles_t v;
+    struct {
+      u32 ms32, ls32; /* powerpc is big endian */
+    } s;
+  } cycles;
 
-# cat /proc/5256/wchan 
-msleep
+  do {
+    cycles.ls32 = mftbu();
+    cycles.ms32 = mftbl();
+  } while (cycles.ls32 != mftbu());
+  return cycles.v;
+}
 
--- Fernando
+I'd prefer this second solution. If one needs a specific get_cycles() to
+be only 32-bits (but really really fast) for the scheduler, then this
+could be a get_cycles_sched() or something like this which does not
+guarantee that it returns full 64-bits...
 
+Mathieu
 
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
