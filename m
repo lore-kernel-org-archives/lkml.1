@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbYKGUka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbYKGUkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbYKGUka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 15:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbYKGUjf
+	id S1754305AbYKGUkv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 15:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbYKGUji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 15:39:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52184 "EHLO mx2.redhat.com"
+	Fri, 7 Nov 2008 15:39:38 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52189 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752256AbYKGUje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 15:39:34 -0500
+	id S1752417AbYKGUjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 15:39:36 -0500
 From: Glauber Costa <glommer@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org, avi@redhat.com, npiggin@suse.de
-Subject: [PATCH 2/4] show size of failing allocation
-Date: Fri,  7 Nov 2008 20:35:52 -0200
-Message-Id: <1226097354-7523-3-git-send-email-glommer@redhat.com>
-In-Reply-To: <1226097354-7523-2-git-send-email-glommer@redhat.com>
+Subject: [PATCH 3/4] restart search at beggining of vmalloc address
+Date: Fri,  7 Nov 2008 20:35:53 -0200
+Message-Id: <1226097354-7523-4-git-send-email-glommer@redhat.com>
+In-Reply-To: <1226097354-7523-3-git-send-email-glommer@redhat.com>
 References: <1226097354-7523-1-git-send-email-glommer@redhat.com>
  <1226097354-7523-2-git-send-email-glommer@redhat.com>
+ <1226097354-7523-3-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-if we can't service a vmalloc allocation, show size of
-the allocation that actually failed. Useful for
-debugging.
+Current vmalloc restart search for a free area in case we
+can't find one. The reason is there are areas which are lazily
+freed, and could be possibly freed now. However, current implementation
+start searching the tree from the last failing address, which is
+pretty much by definition at the end of address space. So, we fail.
+
+The proposal of this patch is to restart the search from the beginning
+of the requested vstart address. This fixes the regression in running
+KVM virtual machines for me, described in
+http://lkml.org/lkml/2008/10/28/349, caused by commit
+db64fe02258f1507e13fe5212a989922323685ce.
 
 Signed-off-by: Glauber Costa <glommer@redhat.com>
+CC: Nick Piggin <npiggin@suse.de>
 ---
- mm/vmalloc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ mm/vmalloc.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 95856d1..7db493d 100644
+index 7db493d..6fe2003 100644
 --- a/mm/vmalloc.c
 +++ b/mm/vmalloc.c
-@@ -381,8 +381,8 @@ found:
+@@ -378,6 +378,7 @@ found:
+ 		if (!purged) {
+ 			purge_vmap_area_lazy();
+ 			purged = 1;
++			addr = ALIGN(vstart, align);
  			goto retry;
  		}
  		if (printk_ratelimit())
--			printk(KERN_WARNING "vmap allocation failed: "
--				 "use vmalloc=<size> to increase size.\n");
-+			printk(KERN_WARNING "vmap allocation for size %d failed: "
-+				 "use vmalloc=<size> to increase size.\n", size);
- 		return ERR_PTR(-EBUSY);
- 	}
- 
 -- 
 1.5.6.5
 
