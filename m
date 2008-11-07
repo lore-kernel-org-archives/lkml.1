@@ -1,76 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYKGE3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751200AbYKGEhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbYKGE3B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 23:29:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751200AbYKGE2w
+	id S1751200AbYKGEhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 23:37:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYKGEhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 23:28:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42155 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751052AbYKGE2w (ORCPT
+	Thu, 6 Nov 2008 23:37:20 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36186 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083AbYKGEhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 23:28:52 -0500
-Date: Thu, 6 Nov 2008 20:28:22 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
-       containers@lists.osdl.org
-Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task
- directories
-Message-Id: <20081106202822.a1af8a6e.akpm@linux-foundation.org>
-In-Reply-To: <m1iqr0urb8.fsf@frodo.ebiederm.org>
-References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
-	<m1abcd2kqk.fsf@frodo.ebiederm.org>
-	<20081106172617.dd51d0af.akpm@linux-foundation.org>
-	<m1abccxpc5.fsf@frodo.ebiederm.org>
-	<20081106184945.179c248a.akpm@linux-foundation.org>
-	<m1iqr0urb8.fsf@frodo.ebiederm.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 6 Nov 2008 23:37:19 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20081106164644.GA14012@csn.ul.ie>
+References: <20081106091431.0D2A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081106164644.GA14012@csn.ul.ie>
+Message-Id: <20081107093127.F84A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Fri,  7 Nov 2008 13:37:14 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 19:51:23 -0800 ebiederm@xmission.com (Eric W. Biederman) wrote:
+Hi Mel, Cristoph,
 
-> If we could do all of this with reference counting so that the
-> mount would persist exactly until the last user of it has gone
-> away without a periodic poll I would love it.  But the infrastructure
-> doesn't support that today,
+Thank you for interesting comment!
 
-Well that sucks.  The free-on-last-put idiom occurs in so many places
-and serves us so well.  I wonder what went wrong here?
 
-I guess it has interactions with dentry and inode cache aging which
-could get tricky.
-
-> and where this is at least partially
-> a bug fix I would rather not have the change depend on enhancing
-> the VFS.
+> > MIGRATE_RESERVE mean that the page is for emergency.
+> > So it shouldn't be cached in pcp.
 > 
-> The algorithm is actually very aggressive and in practice you don't
-> see any /proc/<pid>/net showing up as a mount point.
-
-Do you think it has failure modes?  Most particularly: obscure usage
-patterns which can cause memory exhaustion?
-
-> > Obviously, that becomes clearer as one spends more time with the code,
-> > but I wonder whether this has all been made as maintainble as it
-> > possibly could be.
+> It doesn't necessarily mean it's for emergencys. MIGRATE_RESERVE is one
+> or more pageblocks at the beginning of the zone. While it's possible
+> that the minimum page reserve for GFP_ATOMIC is located here, it's not
+> mandatory.
 > 
-> Good question.
-> 
-> In the sense of will we have to go through and futz with the code all
-> of the time.  The abstraction seems good.   You put a mount on
-> the proc_automounts list with do_add_mounts and it goes away eventually
-> with all of the vfs rules maintained.
-> 
-> In the sense of can the code be read?    Perhaps it could be better.
-> I expect it helps to have run the code and see /proc/net as a filesystem.
-> that is magically mounted.
+> What MIGRATE_RESERVE can help is high-order atomic allocations used by
+> some network drivers (a wireless one is what led to MIGRATE_RESERVE). As
+> they are high-order allocations, they would be returned to the buddy
+> allocator anyway.
 
-'twould be a useful contribution if you were to enshrine your
-discoveries in /*these things*/.  You knew I was working up to that :)
+yup.
+my patch is meaningless for high order allocation because high order allocation
+don't use pcp.
+
+
+> What your patch may help is the situation where the system is under intense
+> memory pressure, is dipping routinely into the lowmem reserves and mixing
+> with high-order atomic allocations. This seems a bit extreme.
+
+not so extreame.
+
+The linux page reclaim can't process in interrupt context.
+Sl network subsystem and driver often use MIGRATE_RESERVE memory although
+system have many reclaimable memory.
+
+At that time, any task in process context can use high order allocation.
+
+
+> > otherwise, the system have unnecessary memory starvation risk
+> > because other cpu can't use this emergency pages.
+> > 
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > CC: Mel Gorman <mel@csn.ul.ie>
+> > CC: Christoph Lameter <cl@linux-foundation.org>
+> > 
+> 
+> This patch seems functionally sound but as Christoph points out, this
+> adds another branch to the fast path. Now, I ran some tests and those that
+> completed didn't show any problems but adding branches in the fast path can
+> eventually lead to hard-to-detect performance problems.
+> 
+> Do you have a situation in mind that this patch fixes up?
+
+Ah, sorry for my description is too poor.
+This isn't real workload issue, it is jsut 
+
+Actually, I plan to rework to pcp because following pcp list searching 
+in fast path is NOT fast.
+
+In general, list searching often cause L1 cache miss, therefore it shouldn't be
+used in fast path.
+
+
+static struct page *buffered_rmqueue(struct zone *preferred_zone,
+                        struct zone *zone, int order, gfp_t gfp_flags)
+{
+(snip)
+                /* Find a page of the appropriate migrate type */
+                if (cold) {
+                        list_for_each_entry_reverse(page, &pcp->list, lru)
+                                if (page_private(page) == migratetype)
+                                        break;
+                } else {
+                        list_for_each_entry(page, &pcp->list, lru)
+                                if (page_private(page) == migratetype)
+                                        break;
+                }
+
+
+Therefore, I'd like to make per migratetype pcp list.
+However, MIGRATETYPE_RESEVE list isn't useful because caller never need reserve type.
+it is only internal attribute.
+
+So I thought "dropping reserve type page in pcp" patch is useful although it is sololy used.
+Then, I posted it sololy for hear other developer opinion.
+
+Actually, current pcp is NOT fast, therefore the discussion of the 
+number of branches isn't meaningful.
+the discussion of the number of branches is only meaningful when the fast path can
+process at N*branches level time, but current pcp is more slow.
+
+
+
 
