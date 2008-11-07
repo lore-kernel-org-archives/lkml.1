@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbYKGJLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbYKGJMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbYKGJLu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 04:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYKGJLe
+	id S1754439AbYKGJMO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 04:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYKGJLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 04:11:34 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:37099 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbYKGJLc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 04:11:32 -0500
-Date: Fri, 7 Nov 2008 10:11:18 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: David Miller <davem@davemloft.net>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, linux-kernel@vger.kernel.org,
-       linux-i2c@vger.kernel.org
-Subject: Re: I2C from interrupt context?
-Message-ID: <20081107101118.286f3713@hyperion.delvare>
-In-Reply-To: <20081106.154754.02648408.davem@davemloft.net>
-References: <m3bpws8ln3.fsf@maximus.localdomain>
-	<20081106.154754.02648408.davem@davemloft.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+	Fri, 7 Nov 2008 04:11:55 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34499 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbYKGJLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 04:11:54 -0500
+Date: Fri, 7 Nov 2008 20:11:39 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
+Message-Id: <20081107201139.196fa52b.sfr@canb.auug.org.au>
+In-Reply-To: <20081107084016.GF4435@elte.hu>
+References: <20081029152849.3883d072.sfr@canb.auug.org.au>
+	<200811021229.16061.rusty@rustcorp.com.au>
+	<alpine.LFD.2.00.0811011834360.3483@nehalem.linux-foundation.org>
+	<200811070949.02914.rusty@rustcorp.com.au>
+	<20081107084016.GF4435@elte.hu>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 06 Nov 2008 15:47:54 -0800 (PST), David Miller wrote:
-> From: Krzysztof Halasa <khc@pm.waw.pl>
-> Date: Fri, 07 Nov 2008 00:44:48 +0100
-> 
-> [ Fixed i2c list address, it's now hosted at vger ]
-> 
-> > I'm updating my EEPROM console logger and have encountered a problem
-> > - the logger (as any console) can be called with hardware interrupts
-> > disabled and/or from interrupt context. It needs to write to I^2C
-> > (using ARM (Xscale) GPIO) and possibly SMBUS-only EEPROM chip. Is it
-> > at all supposed to be possible?
-> 
-> Not really.  The I2C operations need to be able to sleep and that's
-> not allowed in interrupt context.
+--Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's not totally correct. Since kernel 2.6.25, i2c_transfer()
-supports being called in contexts where it cannot sleep. Of course, for
-it to work, the underlying i2c adapter driver must also not sleep. As I
-recall, only the i2c-pxa driver was explicitly modified to support this
-at the moment (see member use_pio of struct pxa_i2c) but other drivers
-could be modified in a similar way (and some i2c adapter drivers may be
-naturally non-sleeping - everything based on i2c-algo-bit is likely to
-fall into this category.)
+Hi Ingo,
 
-The situation is far from perfect though. For one thing, I seem to
-recall that Andrew Morton didn't like the approach taken in
-i2c_transfer(). For another, i2c_smbus_xfer() was not yet modified so
-at this point only I2C-level transactions can be non-sleeping,
-SMBus-level transactions can't. But all this could be fixed by anyone
-who cares about these specific issues.
+On Fri, 7 Nov 2008 09:40:16 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>
+> if this is equal to the patch that you sent me (see the git=20
+> coordinates below), it was also stess-tested and build-coverage tested=20
+> by me on a healthy range of x86 systems, in a range of build=20
+> environments.
 
--- 
-Jean Delvare
+It isn't identical.  See my message about a small merge conflict between
+the cpus4096 tree and the rr tree in linux-next today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkUBksACgkQjjKRsyhoI8zV+gCcCA/i5dKxihbIM6qBQoah1scG
+LqwAn0drbMwbriLTMW7CQmGqWMSndUiq
+=iG5a
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__7_Nov_2008_20_11_39_+1100_A7_iuZrQk8fio2_L--
