@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753123AbYKGXFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbYKGXGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753123AbYKGXFq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 18:05:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYKGXFi
+	id S1753390AbYKGXGY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYKGXGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 18:05:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:15474 "EHLO
+	Fri, 7 Nov 2008 18:06:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:64208 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYKGXFi (ORCPT
+	with ESMTP id S1751860AbYKGXGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 18:05:38 -0500
+	Fri, 7 Nov 2008 18:06:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=pXdW8vZ7SZ1OrBrTdxWJFWJg3VMMVhcTCQ+vVxKX5VzsKBYyHfxsPWErc7a564YYWN
-         5KJmzp260eU56kF9W/XG1z1jfUbog9s0C6ctk2VttKrl5qPWdw8nJ0kqWs9bClqyO714
-         0/vidkucaZRh7ddacBGOuXvTFXfSqj+F+ib90=
-Date: Sat, 8 Nov 2008 01:05:51 +0200
+        b=bDrXi7KZmUvBQ+rdr73ac8+AtrQG5lVkGVMmRJt8n476/CiR2OEpqSqDQn5yXKkKV8
+         BczU0aAORJr60AE7CVw7sUaszcYV5hTXequB8MfylY+FBk6bqDtOz37Zb4nghlZBUquW
+         X82eHhrY1mGb+d+T/bR4WwYfJtme078yb5vQg=
+Date: Sat, 8 Nov 2008 01:06:29 +0200
 From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 To: Harvey Harrison <harvey.harrison@gmail.com>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        LKML <linux-kernel@vger.kernel.org>,
        Alexey Dobriyan <adobriyan@gmail.com>
 Subject: Re: [PATCH-ugly] kmemtrace: casting a gfp_t requires __force
-Message-ID: <20081107230551.GB5210@localhost>
+Message-ID: <20081107230629.GC5210@localhost>
 References: <1226084321.11596.37.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -68,15 +68,8 @@ On Fri, Nov 07, 2008 at 10:58:41AM -0800, Harvey Harrison wrote:
 >  static inline void kmemtrace_mark_free(enum kmemtrace_type_id type_id,
 > -- 
 > 1.6.0.3.756.gb776d
- 
-Thanks. It looks like the right thing to do, especially that linux/gfp.h does
-it, IIRC. Although there's a missing whitespace and the commit name is a
-bit longish. I would recommend "kmemtrace: Suppress gfp_t casting
-warning with __force.", and telling that __bitwise & sparse story within
-the commit description. Could you fix it so Pekka can cleanly send it
-to Linus?
+> 
+>
 
-
-	Thanks,
-	Eduard
+Sorry, the commit name is okay, my mistake.
 
