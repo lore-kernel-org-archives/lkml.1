@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753259AbYKGW5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbYKGXBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753259AbYKGW5S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 17:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYKGW5C
+	id S1753040AbYKGXBc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 18:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYKGXBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 17:57:02 -0500
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:20520 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750904AbYKGW5B (ORCPT
+	Fri, 7 Nov 2008 18:01:18 -0500
+Received: from shards.monkeyblade.net ([198.137.202.13]:34721 "EHLO
+	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbYKGXBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 17:57:01 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Vx6fcJuASXzs+pWXKVWZmUjkuTlwh2IZ5z9LpB87snyUaj0D21ZbbTj1nlSOFQNCLdGynfJUXCe71DaoL4mlockAIBrMV6kRJs3CDfDlkNq4HHPjRbfg0E9KOGlQ8vWwGGLEkTeHkxClvWnKrkEIPA02NUHygB5k7saNvveWjX0=  ;
-X-YMail-OSG: rTR7gyEVM1mD2V0JN3VOJA_YQL3Y36CTKaLfYfS8uXk9Pr5N9zZUArjgzkyJ2uxxTq.wT5mMyX9jqahXciDQWhwulNnZ8sxFw.ZOIPryGxK3WDB2psJEoj9dyPwL286ZIgU-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH/RFC] hardware irq debouncing support
-Date: Fri, 7 Nov 2008 14:56:58 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Victor <linux@maxim.org.za>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Tony Lindgren <tony@atomide.com>
-References: <200809241251.32606.david-b@pacbell.net> <200810111101.20885.david-b@pacbell.net> <20081012144638.4dfdbff8@hskinnemo-gx745.norway.atmel.com>
-In-Reply-To: <20081012144638.4dfdbff8@hskinnemo-gx745.norway.atmel.com>
+	Fri, 7 Nov 2008 18:01:17 -0500
+Message-ID: <4914C8AA.1080204@kernel.org>
+Date: Fri, 07 Nov 2008 15:00:58 -0800
+From: "J.H." <warthog9@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: users@linux.kernel.org, git@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, ftpadmin@kernel.org
+Subject: Re: [KORG] Master backend downtime - hardware swap
+References: <49139D4C.2010004@kernel.org>
+In-Reply-To: <49139D4C.2010004@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811071456.58921.david-b@pacbell.net>
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.1.12 (shards.monkeyblade.net [198.137.202.13]); Fri, 07 Nov 2008 15:00:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 12 October 2008, Haavard Skinnemoen wrote:
-> I just want a mechanism where you'll end up with the same behaviour
-> regardless of what the hardware supports, at the cost of a timer if the
-> hardware doesn't support the requested debounce delay. As an added
-> benefit, this would eliminate the need for drivers to set up their own
-> debounce timers. It would also make such "more powerful" hardware
-> features easier to utilize from generic drivers, wouldn't it?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Just a heads up to everyone, ran slightly over (rsync took longer to
+verify the move than I expected).  But we are moved over to the much
+bigger and faster new master.kernel.org server.
+
+For those curious it's a:
+HP DL380 G5
+	2 x Intel Quad Core Xeon's
+	16G ram
+	Pile more disk (including an external MSA chassis)
+
+Thanks go out to HP for the new hardware, and their continued support of
+Kernel.org!!!
+
+If there are problems, issues or concerns please report them to
+ftpadmin@kernel.org, a quick look around seems to indicate everything
+looks good however.
+
+- - John 'Warthog9' Hawley
+Chief Kernel.org Administrator
+
+J.H. wrote:
+> Hey everyone,
 > 
-> But you've convinced me that your IRQF_DEBOUNCE hint might be useful
-> too.
+> Just a heads up to everyone, I'm going to be taking the master (hera)
+> backend server offline for a couple of hours tomorrow (Friday, CST)
+> afternoon.  Downtime is going to get used for finishing flipping over
+> the master to new hardware, which was very generously donated by
+> Hewlett-Packard.  We are moving up to a new DL380 G5.  That said I will
+> need time to shut everything down, get a current rsync from the old
+> hardware to the new hardware and confirm that serves are restored on the
+> new machine.
+> 
+> I'm expecting the entire downtime to only take a couple of hours, but
+> since we all know things will take longer I'm going to declare the
+> window from 1200 CST (1800 UTC Friday Nov 7th).  Expect the window to
+> run through 2000 UTC, and if things are up and running before that I'll
+> let people know.  Otherwise if there are problems you'll see another
+> e-mail from me.
+> 
+> If you have questions, comments, concerns, etc - please send them to me
+> CC ftpadmin@kernel.org
+> 
+> - John 'Warthog9' Hawley
+> Chief Kernel.org Administrator
+- --
+To unsubscribe from this list: send the line "unsubscribe git" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Remi - http://enigmail.mozdev.org
 
-Just for the record ... I'm withdrawing this proposal, in the sense
-that I won't be pursuing it any further.  A lighter weight solution
-is enough for now.
-
-I think the framework we discussed -- lowlevel irq_chip mechanism
-that can kick in hardware debouncing and report the duration of its
-debounce delay, paired with upper level code that can kick in longer
-software timers as needed -- is probably the right direction to go,
-if anyone really needs this.
-
-
-> > If the platform setup code knows the hardware debounce will
-> > be requested, it can adjust its platform_data debounce parameter
-> > accordingly.
->
-> I guess it could, but why would it do that? The debounce delay
-> shouldn't depend on the mechanism used to implement it, should it?
-
-The overall delay shouldn't matter, no.  But if an 10 msec hardware
-debounce kicks in and you wanted 20 msec total, you'd want something
-to conclude that a 10 msec software timer is more appropriate than
-a 20 msec one.  I was pointing out that in one construction, that
-"something" would be platform setup code which knows more about how
-the system is set up than a "dumb" software timer in that driver.
-
-- Dave
-
+iD8DBQFJFMip/E3kyWU9dicRAv4aAJ4l6dSodeAT6eGx9sb0wpsv44KY0gCePJsD
+gNdijp6x/oEHXwkxkbqxWB8=
+=CWoY
+-----END PGP SIGNATURE-----
