@@ -1,78 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbYKGIdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYKGIgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754224AbYKGIdf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 03:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbYKGIdT
+	id S1753530AbYKGIgA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 03:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYKGIfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 03:33:19 -0500
-Received: from nf-out-0910.google.com ([64.233.182.189]:49780 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757AbYKGIdS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 03:33:18 -0500
-Message-ID: <ac3eb2510811070033m108d8ed5t499c20ee02b2618f@mail.gmail.com>
-Date: Fri, 7 Nov 2008 09:33:16 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: sparc: struct device - replace bus_id with dev_name(), dev_set_name()
-Cc: wli@holomorphy.com, greg@kroah.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20081106.233557.193705310.davem@davemloft.net>
+	Fri, 7 Nov 2008 03:35:48 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:35434 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751225AbYKGIfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 03:35:47 -0500
+Date: Fri, 7 Nov 2008 03:35:46 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [git patches v2] net driver fixes for 2.6.28-rc
+Message-ID: <20081107083546.GA25245@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1226018639.3189.15.camel@nga>
-	 <20081106.233557.193705310.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 7, 2008 at 08:35, David Miller <davem@davemloft.net> wrote:
-> From: Kay Sievers <kay.sievers@vrfy.org>
-> Date: Fri, 07 Nov 2008 01:43:59 +0100
->
->> --- a/arch/sparc/kernel/of_device.c
->> +++ b/arch/sparc/kernel/of_device.c
->> @@ -563,9 +563,9 @@ build_resources:
->>       op->dev.parent = parent;
->>       op->dev.bus = &of_platform_bus_type;
->>       if (!parent)
->> -             strcpy(op->dev.bus_id, "root");
->> +             dev_set_name(&op->dev, "root");
->>       else
->> -             sprintf(op->dev.bus_id, "%08x", dp->node);
->> +             dev_set_name(&op->dev, "%08x", dp->node);
->>
->>       if (of_device_register(op)) {
->>               printk("%s: Could not register of device.\n",
->
-> This part is OK.
->
->> --- a/arch/sparc64/kernel/vio.c
->> +++ b/arch/sparc64/kernel/vio.c
->> @@ -224,7 +224,7 @@ static struct vio_dev *vio_create_one(st
->>       if (!strcmp(type, "domain-services-port"))
->>               bus_id_name = "ds";
->>
->> -     if (strlen(bus_id_name) >= BUS_ID_SIZE - 4) {
->> +     if (strlen(bus_id_name) >= 20 - 4) {
->>               printk(KERN_ERR "VIO: bus_id_name [%s] is too long.\n",
->>                      bus_id_name);
->>               return NULL;
->>
->>
->
-> But I don't like this.
->
-> Could you please keep the macro around until everything is converted?
-> Then you can remove the test entirely.
->
-> Leaving it with just constants there is inviting confusion, no matter
-> how short amount of time it will be there.
 
-I can add a SPARC_BUS_ID_SIZE, to that file, or in a sparc header, but
-the core will not provide any such value, and have to, go to catch all
-remaining occurrences across the tree. Where should I add it?
+Removed the bogus fraglist changes for tun and virtio_net.
 
-Thanks,
-Kay
+Please pull from 'davem-fixes' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git davem-fixes
+
+to receive the following updates:
+
+ drivers/net/3c509.c          |    6 +++---
+ drivers/net/mlx4/en_netdev.c |    2 +-
+ drivers/net/sfc/ethtool.c    |    4 ++--
+ drivers/net/usb/hso.c        |   12 +++++++-----
+ 4 files changed, 13 insertions(+), 11 deletions(-)
+
+Al Viro (1):
+      el3_common_init() should be __devinit, not __init
+
+Ben Hutchings (1):
+      sfc: Correct address of gPXE boot configuration in EEPROM
+
+Jonathan McDowell (1):
+      [netdrvr] usb/hso: Cleanup rfkill error handling
+
+Paulius Zaleckas (1):
+      hso: rfkill type should be WWAN
+
+Yevgeny Petrilin (1):
+      mlx4_en: Start port error flow bug fix
+
+diff --git a/drivers/net/3c509.c b/drivers/net/3c509.c
+index 3a7bc52..c7a4f3b 100644
+--- a/drivers/net/3c509.c
++++ b/drivers/net/3c509.c
+@@ -94,7 +94,7 @@
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ 
+-static char version[] __initdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
++static char version[] __devinitdata = DRV_NAME ".c:" DRV_VERSION " " DRV_RELDATE " becker@scyld.com\n";
+ 
+ #ifdef EL3_DEBUG
+ static int el3_debug = EL3_DEBUG;
+@@ -186,7 +186,7 @@ static int max_interrupt_work = 10;
+ static int nopnp;
+ #endif
+ 
+-static int __init el3_common_init(struct net_device *dev);
++static int __devinit el3_common_init(struct net_device *dev);
+ static void el3_common_remove(struct net_device *dev);
+ static ushort id_read_eeprom(int index);
+ static ushort read_eeprom(int ioaddr, int index);
+@@ -537,7 +537,7 @@ static struct mca_driver el3_mca_driver = {
+ static int mca_registered;
+ #endif /* CONFIG_MCA */
+ 
+-static int __init el3_common_init(struct net_device *dev)
++static int __devinit el3_common_init(struct net_device *dev)
+ {
+ 	struct el3_private *lp = netdev_priv(dev);
+ 	int err;
+diff --git a/drivers/net/mlx4/en_netdev.c b/drivers/net/mlx4/en_netdev.c
+index a339afb..a3f7324 100644
+--- a/drivers/net/mlx4/en_netdev.c
++++ b/drivers/net/mlx4/en_netdev.c
+@@ -706,7 +706,7 @@ tx_err:
+ 	mlx4_en_release_rss_steer(priv);
+ rx_err:
+ 	for (i = 0; i < priv->rx_ring_num; i++)
+-		mlx4_en_deactivate_rx_ring(priv, &priv->rx_ring[rx_index]);
++		mlx4_en_deactivate_rx_ring(priv, &priv->rx_ring[i]);
+ cq_err:
+ 	while (rx_index--)
+ 		mlx4_en_deactivate_cq(priv, &priv->rx_cq[rx_index]);
+diff --git a/drivers/net/sfc/ethtool.c b/drivers/net/sfc/ethtool.c
+index fa98af5..cd0d087 100644
+--- a/drivers/net/sfc/ethtool.c
++++ b/drivers/net/sfc/ethtool.c
+@@ -174,8 +174,8 @@ static struct efx_ethtool_stat efx_ethtool_stats[] = {
+ 
+ /* EEPROM range with gPXE configuration */
+ #define EFX_ETHTOOL_EEPROM_MAGIC 0xEFAB
+-#define EFX_ETHTOOL_EEPROM_MIN 0x100U
+-#define EFX_ETHTOOL_EEPROM_MAX 0x400U
++#define EFX_ETHTOOL_EEPROM_MIN 0x800U
++#define EFX_ETHTOOL_EEPROM_MAX 0x1800U
+ 
+ /**************************************************************************
+  *
+diff --git a/drivers/net/usb/hso.c b/drivers/net/usb/hso.c
+index 1164c52..8e90891 100644
+--- a/drivers/net/usb/hso.c
++++ b/drivers/net/usb/hso.c
+@@ -2184,19 +2184,20 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
+ 			     struct usb_interface *interface)
+ {
+ 	struct hso_net *hso_net = dev2net(hso_dev);
+-	struct device *dev = hso_dev->dev;
++	struct device *dev = &hso_net->net->dev;
+ 	char *rfkn;
+ 
+ 	hso_net->rfkill = rfkill_allocate(&interface_to_usbdev(interface)->dev,
+-				 RFKILL_TYPE_WLAN);
++				 RFKILL_TYPE_WWAN);
+ 	if (!hso_net->rfkill) {
+-		dev_err(dev, "%s - Out of memory", __func__);
++		dev_err(dev, "%s - Out of memory\n", __func__);
+ 		return;
+ 	}
+ 	rfkn = kzalloc(20, GFP_KERNEL);
+ 	if (!rfkn) {
+ 		rfkill_free(hso_net->rfkill);
+-		dev_err(dev, "%s - Out of memory", __func__);
++		hso_net->rfkill = NULL;
++		dev_err(dev, "%s - Out of memory\n", __func__);
+ 		return;
+ 	}
+ 	snprintf(rfkn, 20, "hso-%d",
+@@ -2209,7 +2210,8 @@ static void hso_create_rfkill(struct hso_device *hso_dev,
+ 		kfree(rfkn);
+ 		hso_net->rfkill->name = NULL;
+ 		rfkill_free(hso_net->rfkill);
+-		dev_err(dev, "%s - Failed to register rfkill", __func__);
++		hso_net->rfkill = NULL;
++		dev_err(dev, "%s - Failed to register rfkill\n", __func__);
+ 		return;
+ 	}
+ }
