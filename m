@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbYKGNXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbYKGNZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbYKGNXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 08:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbYKGNXn
+	id S1752928AbYKGNZu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 08:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbYKGNZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 08:23:43 -0500
-Received: from el-out-1112.google.com ([209.85.162.179]:58213 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYKGNXm (ORCPT
+	Fri, 7 Nov 2008 08:25:42 -0500
+Received: from rv-out-0506.google.com ([209.85.198.238]:26015 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbYKGNZl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 08:23:42 -0500
+	Fri, 7 Nov 2008 08:25:41 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=uaDNp6QJPOaVVc4RwVd1gJ13BCMbZ5R5J4SyQtcjTXYbBe02bGPJu+r+TVefi8ROqm
-         Rr4ZBerryul1woO6uDypGQsi0WQze2RRIsIiLbZ8pmXncZjEqQZnDWkbejgzG9S/OqC9
-         0Fiw4X0THl0ciSLOlhralsGBHH7VWPLZdaEFs=
-Message-ID: <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
-Date: Fri, 7 Nov 2008 21:23:41 +0800
-From: "Eric Miao" <eric.y.miao@gmail.com>
-To: "Cyril Hrubis" <metan@ucw.cz>
-Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
-Cc: "Pavel Machek" <pavel@suse.cz>, Dmitry <dbaryshkov@gmail.com>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Russell King" <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
-In-Reply-To: <20081106191424.GA2273@atrey.karlin.mff.cuni.cz>
+         :references:x-google-sender-auth;
+        b=sgkLa2FjYcolCXF4QyeI/fzk35Y152W+tC37W43Fui92r72DHXxkIgmFSqqenbUsK2
+         LyWlxgSxzneKlBXgHfQvA0OO+oX61GgMXEWi9Zy+G+y9eTTZhjil+4VKnTqX24AZ3wO4
+         Bk0uhV+HbakDZ1P3gXEP2sfyOBGY8KTsUtCQQ=
+Message-ID: <5ff4a1e50811070525t56834306va8a975617de589b6@mail.gmail.com>
+Date: Fri, 7 Nov 2008 13:25:41 +0000
+From: "Matt Fleming" <mjf@gentoo.org>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] ftrace: Allow section alignment
+Cc: LKML <linux-kernel@vger.kernel.org>, mingo@elte.hu, rostedt@goodmis.org
+In-Reply-To: <1226063896.2697.28.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz>
-	 <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com>
-	 <20081105173303.GC2038@elf.ucw.cz>
-	 <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com>
-	 <20081106080416.GA1531@ucw.cz>
-	 <20081106191424.GA2273@atrey.karlin.mff.cuni.cz>
+References: <5ff4a1e50811070512v410e623ax60e8a65b169f800@mail.gmail.com>
+	 <1226063896.2697.28.camel@twins>
+X-Google-Sender-Auth: 3d1f3f85c4d2f200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
-Did you guys ever try that?
+2008/11/7 Peter Zijlstra <peterz@infradead.org>:
+> On Fri, 2008-11-07 at 13:12 +0000, Matt Fleming wrote:
+>> Provide a means of aligning the __mcount_loc section.
+>
+> Not that I object to the patch, but this changelog needs work.
+>
+> Its wrong, it doesn't provide means, it plain does.
+> It doesn't tell us why.
+>
 
-On Fri, Nov 7, 2008 at 3:14 AM, Cyril Hrubis <metan@ucw.cz> wrote:
-> Hi,
->> I do not have serial cable :-(,
->
-> Okay I have one that works for sl5500, it needs external power on
-> sl-cxxx but it should be easy to fix.
->
-> --
-> metan
->
+Would you like me to resubmit the patch with a better changelog?
