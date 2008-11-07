@@ -1,89 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYKGDXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbYKGD1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbYKGDXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 6 Nov 2008 22:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbYKGDXA
+	id S1754195AbYKGD1P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 6 Nov 2008 22:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYKGD07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 6 Nov 2008 22:23:00 -0500
-Received: from kroah.org ([198.145.64.141]:33190 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750904AbYKGDW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 6 Nov 2008 22:22:59 -0500
-Date: Thu, 6 Nov 2008 19:18:37 -0800
-From: Greg KH <greg@kroah.com>
-To: "Zhao, Yu" <yu.zhao@intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-Message-ID: <20081107031837.GB30003@kroah.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084515.GO3773@yzhao12-linux.sh.intel.com> <20081106043318.GB30292@kroah.com> <20081106044613.GA30397@kroah.com> <4913AF89.2050504@intel.com>
+	Thu, 6 Nov 2008 22:26:59 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3577 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751119AbYKGD07 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 6 Nov 2008 22:26:59 -0500
+Date: Thu, 6 Nov 2008 22:26:55 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Norbert Preining <preining@logic.at>
+cc: Pete Zaitcev <zaitcev@redhat.com>, Mattia Dongili <malattia@linux.it>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: usb device not showing up
+In-Reply-To: <20081106225713.GD11406@gamma.logic.tuwien.ac.at>
+Message-ID: <Pine.LNX.4.44L0.0811062223100.26081-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4913AF89.2050504@intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 11:01:29AM +0800, Zhao, Yu wrote:
-> Greg KH wrote:
->> On Wed, Nov 05, 2008 at 08:33:18PM -0800, Greg KH wrote:
->>> On Wed, Oct 22, 2008 at 04:45:15PM +0800, Yu Zhao wrote:
->>>>  Documentation/ABI/testing/sysfs-bus-pci |   33 
->>>> +++++++++++++++++++++++++++++++
->>>>  1 files changed, 33 insertions(+), 0 deletions(-)
->>>>
->>>> diff --git a/Documentation/ABI/testing/sysfs-bus-pci 
->>>> b/Documentation/ABI/testing/sysfs-bus-pci
->>>> index ceddcff..41cce8f 100644
->>>> --- a/Documentation/ABI/testing/sysfs-bus-pci
->>>> +++ b/Documentation/ABI/testing/sysfs-bus-pci
->>>> @@ -9,3 +9,36 @@ Description:
->>>>  		that some devices may have malformatted data.  If the
->>>>  		underlying VPD has a writable section then the
->>>>  		corresponding section of this file will be writable.
->>>> +
->>>> +What:		/sys/bus/pci/devices/.../iov/enable
->>> Are you sure this is still the correct location with your change to
->>> struct device?
->> Nevermind, this is correct.
->> But the bigger problem is that userspace doesn't know when these
->> attributes show up.  So tools like udev and HAL and others can't look
->> for them as they never get notified, and they don't even know if they
->> should be looking for them or not.
->> Is there any way to tie these attributes to the "main" pci device so
->> that they get created before the device is announced to the world?
->> Doing that would solve this issue.
->> thanks,
->> greg k-h
->
-> Currently PCI subsystem has /sys/.../{vendor,device,...} bundled to the 
-> main PCI device (I suppose this means the entries are created by 
-> 'device_add')
->
-> And after the PCI device is announced, 
-> /sys/.../{config,resourceX,rom,vpd,iov,...} get created depending on if 
-> these features are supported.
+On Thu, 6 Nov 2008, Norbert Preining wrote:
 
-And that's a bug.  Let's not continue to make the same bug here as well.
+> Hi Alan,
+> 
+> On Do, 06 Nov 2008, Alan Stern wrote:
+> > Okay.  In the earlier (working) test, the modem showed up on bus 4, not
+> > bus 2.  Not that it matters much -- the modem didn't show up at all in
+> 
+> Sorry, it is always bus 4, i meant interface (or how do you call it) 2,
+> bus id 004:002
 
-> Making dynamic entries tie to the main PCI device would require PCI 
-> subsystem to allocate different 'bus_type' for the devices, right?
+Yes, okay.  That's bus 4, address 2.
 
-No, it would just mean they need to be all added before the device is
-fully registered with the driver core.
+> > should start working, but I have no idea what that would be.  It's not 
+> > a USB issue; as far as USB is concerned the device just isn't there at 
+> 
+> Ok, if it is not an usb issue, I guess I have to hope for some fix in
+> sony-laptop module. 
 
-thanks,
+I hope it works out.
 
-greg k-h
+> > Interestingly, this trace appears to be missing some events.  There's a
+> > gap between timestamps 4284549076 and 4284645743 (the timestamps are in
+> > the second column) where we should see the initialization of bus 5 and
+> > bus 6.  Instead there's a 100-ms delay in which nothing happens,
+> > followed later on by the second initialization phase for those two
+> > buses.
+> > 
+> > I have to wonder...  Did you remove any part of the trace?  Did usbmon 
+> 
+> No. I sent you the output as it was saved on my hard disk. No editing
+> involved.
+
+It must be like Pete said: Some events just got lost because not enough
+memory was allocated to usbmon.  Fortunately those missing events had
+nothing to do with the hso problem.
+
+Alan Stern
+
