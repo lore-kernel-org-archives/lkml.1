@@ -1,47 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbYKHPgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbYKHPiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618AbYKHPgW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 10:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYKHPgP
+	id S1754685AbYKHPiU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 10:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753518AbYKHPiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 10:36:15 -0500
-Received: from genesysrack.ru ([195.178.208.66]:43728 "EHLO tservice.net.ru"
+	Sat, 8 Nov 2008 10:38:05 -0500
+Received: from mx.neterion.com ([72.1.205.142]:37275 "EHLO owa.neterion.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752984AbYKHPgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 10:36:14 -0500
-Date: Sat, 8 Nov 2008 18:35:45 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: mtk.manpages@gmail.com
-Cc: linux-kernel@vger.kernel.org, Robert Love <rlove@rlove.org>,
-       linux-api@vger.kernel.org
-Subject: Re: [1/1] Use pid in inotify events.
-Message-ID: <20081108153545.GA3859@ioremap.net>
-References: <20081108114225.GA22674@ioremap.net> <cfd18e0f0811080625w5b285cc0p2410e8d187b025c7@mail.gmail.com>
+	id S1753358AbYKHPiD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 10:38:03 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0811080625w5b285cc0p2410e8d187b025c7@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Date: Sat, 8 Nov 2008 10:37:54 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77048C24C0@nekter>
+In-Reply-To: <0199E0D51A61344794750DC57738F58E5E26FF3237@GVW1118EXC.americas.hpqcorp.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Thread-Index: AclBFTb7qUtEL2p/QLi7p8D7C8ssfAAei3ywAAk7nSA=
+References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net> <20081106183630.GD11773@parisc-linux.org> <491371F0.7020805@codemonkey.ws> <20081106225854.GA15439@parisc-linux.org> <20081107061952.GF3860@kroah.com> <49145C14.1050409@uniscape.net> <20081107184825.GB2320@kroah.com> <0199E0D51A61344794750DC57738F58E5E26FF3237@GVW1118EXC.americas.hpqcorp.net>
+From: "Leonid Grossman" <Leonid.Grossman@neterion.com>
+To: "Fischer, Anna" <anna.fischer@hp.com>, "Greg KH" <greg@kroah.com>,
+       "Yu Zhao" <yu.zhao@uniscape.net>
+Cc: "Matthew Wilcox" <matthew@wil.cx>,
+       "Anthony Liguori" <anthony@codemonkey.ws>, "H L" <swdevyid@yahoo.com>,
+       <randy.dunlap@oracle.com>, <grundler@parisc-linux.org>,
+       "Chiang, Alexander" <achiang@hp.com>, <linux-pci@vger.kernel.org>,
+       <rdreier@cisco.com>, <linux-kernel@vger.kernel.org>,
+       <jbarnes@virtuousgeek.org>, <virtualization@lists.linux-foundation.org>,
+       <kvm@vger.kernel.org>, <mingo@elte.hu>, <keir.fraser@eu.citrix.com>,
+       <eddie.dong@intel.com>, <jun.nakajima@intel.com>, <avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael.
 
-On Sat, Nov 08, 2008 at 09:25:16AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
-> I've not looked closely at the patch, but a quick question.  The
-> ookied field is unused for _most_ events, but is used for rename
-> events.  Are you saying that with this patch, that the cookie will be
-> used as before for rename events, but for other events it will be the
-> PID of the triggering process?  If so, that seems a bit ugly -- why
-> wouldn't we also be intersted in the PID for rename events?
 
-Yes, rename events actually consist of at least two: move from and move
-to, and they carry the same cookie, so that userspace could combine them
-into single transaction. All others use zero, so I decided to put PID of
-the caller there. This does not look perfect of course, but we can not
-change the structure layout, so rename events can not be changed to
-carry additional PID field.
+> -----Original Message-----
+> From: Fischer, Anna [mailto:anna.fischer@hp.com]
+> Sent: Saturday, November 08, 2008 3:10 AM
+> To: Greg KH; Yu Zhao
+> Cc: Matthew Wilcox; Anthony Liguori; H L; randy.dunlap@oracle.com;
+> grundler@parisc-linux.org; Chiang, Alexander;
+linux-pci@vger.kernel.org;
+> rdreier@cisco.com; linux-kernel@vger.kernel.org;
+jbarnes@virtuousgeek.org;
+> virtualization@lists.linux-foundation.org; kvm@vger.kernel.org;
+> mingo@elte.hu; keir.fraser@eu.citrix.com; Leonid Grossman;
+> eddie.dong@intel.com; jun.nakajima@intel.com; avi@redhat.com
+> Subject: RE: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+> 
 
--- 
-	Evgeniy Polyakov
+
+> > But would such an api really take advantage of the new IOV
+interfaces
+> > that are exposed by the new device type?
+> 
+> I agree with what Yu says. The idea is to have hardware capabilities
+to
+> virtualize a PCI device in a way that those virtual devices can
+represent
+> full PCI devices. The advantage of that is that those virtual device
+can
+> then be used like any other standard PCI device, meaning we can use
+> existing
+> OS tools, configuration mechanism etc. to start working with them.
+Also,
+> when
+> using a virtualization-based system, e.g. Xen or KVM, we do not need
+> to introduce new mechanisms to make use of SR-IOV, because we can
+handle
+> VFs as full PCI devices.
+> 
+> A virtual PCI device in hardware (a VF) can be as powerful or complex
+as
+> you like, or it can be very simple. But the big advantage of SR-IOV is
+> that hardware presents a complete PCI device to the OS - as opposed to
+> some resources, or queues, that need specific new configuration and
+> assignment mechanisms in order to use them with a guest OS (like, for
+> example, VMDq or similar technologies).
+> 
+> Anna
+
+
+Ditto. 
+Taking netdev interface as an example - a queue pair is a great way to
+scale across cpu cores in a single OS image, but it is just not a good
+way to share device across multiple OS images. 
+The best unit of virtualization is a VF that is implemented as a
+complete netdev pci device (not a subset of a pci device).
+ This way, native netdev device drivers can work for direct hw access to
+a VF "as is", and most/all Linux networking features (including VMQ)
+will work in a guest.
+Also, guest migration for netdev interfaces (both direct and virtual)
+can be supported via native Linux mechanism (bonding driver), while Dom0
+can retain "veto power" over any guest direct interface operation it
+deems privileged (vlan, mac address, promisc mode, bandwidth allocation
+between VFs, etc.).
+ 
+Leonid
