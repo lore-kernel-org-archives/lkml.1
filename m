@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbYKHO1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYKHOgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbYKHO1L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 09:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYKHO06
+	id S1754506AbYKHOgz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 09:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYKHOgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 09:26:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34998 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752984AbYKHO05 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 09:26:57 -0500
-Date: Sat, 8 Nov 2008 14:27:05 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: mathias.schnarrenberger@gmx.de
+	Sat, 8 Nov 2008 09:36:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49477 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753447AbYKHOgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 09:36:45 -0500
+X-Authenticated: #36613700
+X-Provags-ID: V01U2FsdGVkX19M3fRUVmxMyR0kwGQoytAKNhVl3e2weANJtBOA5/
+	Yg229seMrRKfKi
+From: Mathias Schnarrenberger <mathias.schnarrenberger@gmx.de>
+Reply-To: mathias.schnarrenberger@gmx.de
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: security: delete BIOS password in keyboard buffer during kernel bootup
+Date: Sat, 8 Nov 2008 15:36:39 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27-7-generic; KDE/4.1.3; i686; ; )
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: security: delete BIOS password in keyboard buffer during kernel
- bootup
-Message-ID: <20081108142705.59c1ced7@lxorguk.ukuu.org.uk>
-In-Reply-To: <200811081100.03966.mathias.schnarrenberger@gmx.de>
-References: <200811081100.03966.mathias.schnarrenberger@gmx.de>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <200811081100.03966.mathias.schnarrenberger@gmx.de> <20081108142705.59c1ced7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081108142705.59c1ced7@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811081536.40422.mathias.schnarrenberger@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.8100000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So, I think it would be good if the kernel clears the keyboard buffer during boot up (at least in x86-based systems) to protect the users password. I don't know anything about EFI-based systems and other architectures.
-> Because I'm not sure where to implement the code to delete the keyboard buffer in the kernel, I can't make a proper patch. Possibly one of you can do this ;)
-
-Clear it with a program if it bothers you. You've written 90% of the
-needed code with the program below.
+>Clear it with a program if it bothers you. You've written 90% of the
+>needed code with the program below.
 
 
-Alan
+>Alan
+
+Yes, I already wrote the program for my personal usage. But I wanted to share 
+this information with the open source community. And I think it would be more 
+secure to implement this into kernel.
+
+Mathias
