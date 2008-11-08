@@ -1,101 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753888AbYKHAE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbYKHARz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753888AbYKHAE5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 19:04:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbYKHAEt
+	id S1753305AbYKHARz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 19:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbYKHARq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 19:04:49 -0500
-Received: from hq2.tensilica.com ([65.205.227.30]:27769 "EHLO
-	maia.hq.tensilica.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751311AbYKHAEt (ORCPT
+	Fri, 7 Nov 2008 19:17:46 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41938 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYKHARp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 19:04:49 -0500
-Message-ID: <4914D7A0.3070703@tensilica.com>
-Date: Fri, 07 Nov 2008 16:04:48 -0800
-From: Piet Delaney <piet.delaney@tensilica.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Piet Delaney <piet.delaney@tensilica.com>
-Subject: [XTENSA] [KGDB] kgdbts: ERROR PUT: end of test buffer on 'bad_read_test'
- line 0 expected S0* got $T05thread:0000000000000001;#a7
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 19:17:45 -0500
+Date: Sat, 8 Nov 2008 00:15:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@cam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+Message-ID: <20081108001555.GE18378@flint.arm.linux.org.uk>
+Mail-Followup-To: David Howells <dhowells@redhat.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Nicolas Pitre <nico@cam.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+	benh@kernel.crashing.org, paulus@samba.org,
+	David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+References: <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <25363.1226056819@redhat.com> <20081107164758.GB22134@Krystal> <20081107201118.GB28600@flint.arm.linux.org.uk> <20081107213610.GC2654@Krystal> <9405.1226101315@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9405.1226101315@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting a problem with the kgdb Test Suite on the third test:
+On Fri, Nov 07, 2008 at 11:41:55PM +0000, David Howells wrote:
+> Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> 
+> > Well, that's where it was - private to ARM.  Then David Howells came
+> > along and unilaterally - and without reference to anyone as far as I
+> > can see - moved it to include/linux.
+> > 
+> > Neither Nicolas, nor me had any idea that it was going to move into
+> > include/linux - the first we knew of it was when pulling the change
+> > from Linus' tree.
+> > 
+> > Look, if people in the kernel community can't or won't communicate
+> > with others (either through malice, purpose or accident), you can
+> > expect this kind of crap to happen.
+> 
+> Excuse me, Russell, but I sent Nicolas an email prior to doing so asking him
+> if he had any objections:
+> 
+> 	To: Nicolas Pitre <nico@cam.org>
+> 	cc: dhowells@redhat.com
+> 	Subject: Moving asm-arm/cnt32_to_63.h to include/linux/
+> 	Date: Thu, 31 Jul 2008 16:04:04 +0100
+> 
+> 	Hi Nicolas,
+> 
+> 	Mind if I move include/asm-arm/cnt32_to_63.h to include/linux/?
+> 
+> 	I need to use it for MN10300.
+> 
+> 	David
+> 
+> He didn't respond.  Not only that, but I copied Nicolas on the patch to make
+> the move and the patch to make MN10300 use it when I submitted it to Linus on
+> the 24th September, so it's not like he didn't have plenty of time.  He
+> certainly saw that because he joined in the discussion of the second patch.
+> Furthermore, he could've asked Linus to refuse the patch, or to revert it if
+> it had already gone in.
+> 
+> I suppose I should've cc'd the ARM list too... but why should it adversely
+> affect ARM?
 
-    kgdbts:RUN plant and detach test
-    kgdbts:RUN sw breakpoint test
-    kgdbts:RUN bad memory access test
-    kgdbts: ERROR PUT: end of test buffer on 'bad_read_test' line 0 expected S0* got $T05thread:0000000000000001;#a7
-    ------------[ cut here ]------------
-    WARNING: at /export/src/xtensa-next/drivers/misc/kgdbts.c:723 run_simple_test+0x2a1/0x2cc()
+I take back the "Neither Nicolas" bit but the rest of my comment stands
+and remains valid.
 
-I'm using an Illegal Instruction (ILL) instead of the normal BREAK instruction for now so I can use
-the std JTAG based gdb to debug the stub. The test appears to be just expecting the '#a7' but the stub has
-sent the Trap Information from gdb_serial_stub() up in frame #5:
+In light of akpm's demands to know how this got into the kernel, I decided
+I'd put the story forward, especially as people in this thread are confused
+about what it was designed for, and making random unfounded claiming that
+its existing ARM uses are buggy when they aren't.
 
-    1217 static int gdb_serial_stub(struct kgdb_state *ks)
-    1218 {
-    1219         int error = 0;
-    1220         int tmp;
-    1221
-    1222         /* Clear the out buffer. */
-    1223         memset(remcom_out_buffer, 0, sizeof(remcom_out_buffer));
-    1224
-    1225         if (kgdb_connected) {
-    1226                 unsigned char thref[8];
-    1227                 char *ptr;
-    1228
-    1229                 /* Reply to host that an exception has occurred */
-    1230                 ptr = remcom_out_buffer;
-    1231                 *ptr++ = 'T';
-    1232                 ptr = pack_hex_byte(ptr, ks->signo);
-    1233                 ptr += strlen(strcpy(ptr, "thread:"));
-    1234                 int_to_threadref(thref, shadow_pid(current->pid));
-    1235                 ptr = pack_threadid(ptr, thref);
-    1236                 *ptr++ = ';';
+It sounds to me as if the right answer is for it to move back to being an
+ARM private thing with a MN10300 private copy, rather than it pretending
+to be something everyone can use.
 
-(gdb) bt
-#0  dump_stack () at /export/src/xtensa-next/arch/xtensa/kernel/traps.c:507
-#1  0xd0016a3d in warn_on_slowpath (file=0xd01b90e4 "/export/src/xten"..., line=0x2d3) at /export/src/xtensa-next/kernel/panic.c:316
-#2  0xd012369d in run_simple_test (is_get_char=0x0, chr=0x37) at /export/src/xtensa-next/drivers/misc/kgdbts.c:721                                  [ERRORS on T05thread:0000000000000001']
-#3  0xd0123e8e in kgdbts_put_char (chr=0x37) at /export/src/xtensa-next/drivers/misc/kgdbts.c:1056
-#4  0xd0041a1c in put_packet (buffer=0xd0261100 "T05thread:000000"...) at /export/src/xtensa-next/kernel/kgdb.c:333
-#5  0xd0042e32 in gdb_serial_stub (ks=0xd381fa94) at /export/src/xtensa-next/kernel/kgdb.c:1237                                                     [WRITES 'T05thread:0000000000000001']
-#6  0xd0043392 in kgdb_handle_exception (evector=0x3f, signo=0x5, ecode=0x8, regs=0xd381fd40) at /export/src/xtensa-next/kernel/kgdb.c:1501
-#7  0xd000705e in __kgdb_xtensa_notify (args=0xd381fc60, cmd=0x3) at /export/src/xtensa-next/arch/xtensa/kernel/kgdb.c:818
-#8  0xd00070d8 in kgdb_xtensa_notify (self=0xd020e71c, cmd=0x3, args=0xd381fc60) at /export/src/xtensa-next/arch/xtensa/kernel/kgdb.c:837
-#9  0xd0034712 in notifier_call_chain (nl=0xd0209b84, val=0x3, v=0xd381fc60, nr_to_call=0xffffffff, nr_calls=0x0) at /export/src/xtensa-next/kernel/notifier.c:85
-#10 0xd00347e0 in __atomic_notifier_call_chain (nh=0xd0209b74, val=0x3, v=0xd381fc60, nr_to_call=0xffffffff, nr_calls=0x0) at /export/src/xtensa-next/kernel/notifier.c:174
-#11 0xd0034805 in atomic_notifier_call_chain (nh=0xd0209b74, val=0x3, v=0xd381fc60) at /export/src/xtensa-next/kernel/notifier.c:183
-#12 0xd0034bbc in notify_die (val=DIE_DEBUG, str=0xd01a5db4 "debug", regs=0xd381fd40, err=0x8, trap=0x3f, sig=0x5) at /export/src/xtensa-next/kernel/notifier.c:564
-#13 0xd0005995 in do_debug (regs=0xd381fd40) at /export/src/xtensa-next/arch/xtensa/kernel/traps.c:302
-#14 0xd0005898 in do_illegal_instruction (regs=0xd381fd40) at /export/src/xtensa-next/arch/xtensa/kernel/traps.c:234
-#15 0xd0002448 in _kernel_exception () at /export/src/xtensa-next/arch/xtensa/kernel/entry.S:602
-#16 0xd0007177 in arch_kgdb_breakpoint () at /export/src/xtensa-next/arch/xtensa/kernel/kgdb.c:919
-#17 0xd0043774 in kgdb_breakpoint () at /export/src/xtensa-next/kernel/kgdb.c:1717
-#18 0xd0123a00 in run_bad_read_test () at /export/src/xtensa-next/drivers/misc/kgdbts.c:849
-#19 0xd0123b74 in kgdbts_run_tests () at /export/src/xtensa-next/drivers/misc/kgdbts.c:909
-#20 0xd0123e12 in configure_kgdbts () at /export/src/xtensa-next/drivers/misc/kgdbts.c:1017
-#21 0xd022e2c2 in init_kgdbts () at /export/src/xtensa-next/drivers/misc/kgdbts.c:1034
-#22 0xd00013ee in do_one_initcall (fn=0xd022e2a8 <init_kgdbts>) at /export/src/xtensa-next/init/main.c:715
-#23 0xd0226848 in do_initcalls () at /export/src/xtensa-next/init/main.c:755
-#24 0xd022687e in do_basic_setup () at /export/src/xtensa-next/init/main.c:776
-#25 0xd0226903 in kernel_init (unused=0x0) at /export/src/xtensa-next/init/main.c:865
-#26 0xd0002bad in kernel_thread () at /export/src/xtensa-next/arch/xtensa/kernel/entry.S:1965
-Backtrace stopped: previous frame inner to this frame (corrupt stack?)
-(gdb)
-
-I've tried a few changes in the trap handler but so far the problem persist.
-The test suite suite seems like a nice idea. Did I miss an explanation somewhere
-that goes into the details of the code that implements this? Chapter 5 of the Internals
-doc just says to look at the code; which I've been doing.
-
-I thought it might be worthwhile to get your thoughts now that I've been messing with it a while.
-
--piet
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
