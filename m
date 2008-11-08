@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483AbYKHAtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbYKHAvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483AbYKHAtk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 19:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbYKHAtc
+	id S1753793AbYKHAvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 19:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbYKHAvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 19:49:32 -0500
-Received: from smtp5.Stanford.EDU ([171.67.219.85]:49165 "EHLO
-	smtp5.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752561AbYKHAtc (ORCPT
+	Fri, 7 Nov 2008 19:51:41 -0500
+Received: from smtp-out1.tiscali.nl ([195.241.79.176]:44839 "EHLO
+	smtp-out1.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYKHAvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 19:49:32 -0500
-Subject: Re: [alsa-devel] 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>, alsa-devel@alsa-project.org,
+	Fri, 7 Nov 2008 19:51:38 -0500
+Date: Sat, 8 Nov 2008 01:51:25 +0100
+From: Arjan Opmeer <arjan@opmeer.net>
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1226099549.7647.3.camel@localhost.localdomain>
-References: <1226019485.3135.31.camel@localhost.localdomain>
-	 <49140683.9040008@ladisch.de>
-	 <1226081557.20569.5.camel@localhost.localdomain>
-	 <1226099549.7647.3.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 16:48:06 -0800
-Message-Id: <1226105286.7647.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Message-ID: <20081108005125.GA24783@adopmeer.homeip.net>
+References: <49142351.9080805@euromail.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49142351.9080805@euromail.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
+	protocol
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 15:12 -0800, Fernando Lopez-Lezcano wrote:
-> On Fri, 2008-11-07 at 10:12 -0800, Fernando Lopez-Lezcano wrote:
-> > On Fri, 2008-11-07 at 10:12 +0100, Clemens Ladisch wrote:
-> > > Fernando Lopez-Lezcano wrote:
-> > > > I'm seeing a realtime patch related hard hang in the kernel alsa
-> > > > subsystem (MIDI input/output). In a nutshell:
-> > > >
-> > > > - alsa rawmidi works (ie: "rawmidi -v -i hw:0" outputs a stream of
-> > > > messages when pointed to a midi capable card that has an external
-> > > > keyboard connected).
-> > > >
-> > > > - the alsa sequencer interface works (ie: aplaymidi connected to
-> > > > aseqdump transfers data just fine).
-> > > >
-> > > > - BOTH combined do NOT work (ie: use aconnect to connect the port that
-> > > > corresponds to the external midi interface to aseqdump: aseqdump hangs
-> > > > forever after transferring the first message and the only way out is a
-> > > > reboot).
-> > > 
-> > > Please try the snd-virmidi driver, then we'd have a test case that does
-> > > not require MIDI hardware.
-> > > 
-> > > > ... including the output of a "echo t >/proc/sysrq-trigger" that
-> > > > should show where aseqdump currently hangs (or so I think).
-> > > 
-> > > It hangs in tasklet_kill(), which gets called while it tries to close
-> > > the rawmidi port.
-> > > 
-> > > The rawmidi framework uses this tasklet to notify the sequencer that new
-> > > MIDI data is available.  The handler function is
-> > > snd_rawmidi_input_event_tasklet() in sound/core/rawmidi.c; the sequencer
-> > > callback that gets called from there is snd_midi_input_event() in
-> > > core/seq/seq_midi.c.
-> > > 
-> > > You say that the first event gets delivered, so it might be possible
-> > > that the tasklet never finishes executing.  Please check whether the
-> > > call to snd_seq_kernel_client_dispatch() in snd_midi_input_event()
-> > > ever returns.
-> > 
-> > I added a printk before and after the call, it looks like it gets called
-> > and it returns (but only _once_... aseqdump hangs in an unkillable state
-> > as before).
+
+Hi Henrik,
+
+On Fri, Nov 07, 2008 at 12:15:29PM +0100, Henrik Rydberg wrote:
+> In order to utilize the full power of the new multi-touch devices, a way
+> to report detailed finger data to user space is needed. This patch adds a
+> multi-touch (MT) protocol which allows drivers to report details for an
+> arbitrary number of fingers.
+
+Good. Something like this is also needed for the Elantech touchpad which can
+report the coordinates of two fingers on the pad simultaneously. This allows
+for the well known two finger zoom and rotate gestures.
+
+> BTN_MT_REPORT_PACKET
 > 
-> Just in case, the tasklet keeps getting called as long as midi bytes are
-> received. So the tasklet runs once, snd_midi_input_event gets called
-> once and the tasklet keeps running again and again, but nobody runs
-> snd_midi_input_event. Who should?
+> The driver presses this button to indicate the start of a packet of finger
+> data. The button is released after the whole packet has been reported.
+> 
+> BTN_MT_REPORT_FINGER
+> 
+> The driver presses this button to indicate the start of a new finger. The
+> button is released when the finger has been reported.
 
-I normally use rtirq to tune realtime priorities for realtime kernel
-processes, as I looked around and noticed tasklets seem to be related to
-(or are) software interrupts and those have priorities, so I disabled
-rtirq and rebooted (which leaves the default priority of 50 for all
-realtime kernel processes). 
+Hmm, why not use a new event type to report multi-touch data? I find the use
+of fake buttons here kind of ugly.
 
-Now I get __two__ midi bytes instead of one (active sensing messages
-from the keyboard) and the whole thing stalls as before. 
-??
-So is this a priority inversion problem?
--- Fernando
+> +#define ABS_MT_TOUCH		0x30	/* Diameter of touching circle */
+> +#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
+> +#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis of touching ellipse */
+> +#define ABS_MT_WIDTH		0x32	/* Diameter of approaching circle */
+> +#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
+> +#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis of approaching ellipse */
+> +#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
+> +#define ABS_MT_POSITION_X	0x35	/* Center X ellipse position */
+> +#define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
 
+Does your hardware provide all this data, or do you want to do the
+calculations for these numbers in a kernel driver? Isn't it much easier to
+do these kind of calculations in user space where you can make liberal use
+of floating point numbers?
+
+In other words, are you not overdesigning this interface or targetting it
+too much to some specific hardware you have in mind? It doesn't seem to fit
+the Elantech touchpad too well, for example.
+
+
+Arjan
 
