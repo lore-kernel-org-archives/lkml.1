@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbYKHCqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbYKHCr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbYKHCqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 21:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYKHCqU
+	id S1753664AbYKHCr1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 21:47:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYKHCrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 21:46:20 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34049 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbYKHCqT (ORCPT
+	Fri, 7 Nov 2008 21:47:19 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47680 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751311AbYKHCrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 21:46:19 -0500
-Message-ID: <38971.10.75.179.62.1226112376.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <31630.10.75.179.62.1226111079.squirrel@webmail-b.css.fujitsu.com>
-References: <1226096940.8805.4.camel@badari-desktop>
-    <31630.10.75.179.62.1226111079.squirrel@webmail-b.css.fujitsu.com>
-Date: Sat, 8 Nov 2008 11:46:16 +0900 (JST)
-Subject: Re: 2.6.28-rc3 mem_cgroup panic
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Badari Pulavarty" <pbadari@us.ibm.com>,
-       "Balbir Singh" <balbir@in.ibm.com>, "linux-mm" <linux-mm@kvack.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
-MIME-Version: 1.0
-Content-Type: text/plain;charset=us-ascii
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 7 Nov 2008 21:47:18 -0500
+Date: Fri, 7 Nov 2008 18:46:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, maneesh@in.ibm.com,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Srinivasa Ds <srinivasa@in.ibm.com>
+Subject: Re: [PATCH] kprobe: increase kprobe_hash_table size
+Message-Id: <20081107184629.97eb5ec3.akpm@linux-foundation.org>
+In-Reply-To: <4914FA8D.4000607@redhat.com>
+References: <4914D2DE.9030603@redhat.com>
+	<20081107155646.b375413e.akpm@linux-foundation.org>
+	<4914DAEE.2050301@redhat.com>
+	<20081107170307.1a4f815e.akpm@linux-foundation.org>
+	<4914FA8D.4000607@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki said:
-> Badari Pulavarty said:
->> Hi Balbir,
->>
->> I was running memory remove/add tests in a continuous loop.
->> I get following panic in mem_cgroup migration code.
->>
->> Is this a known issue ?
->>
-> No, this is new one. We don't see panic in cpuset based migration..so..
-> Maybe related to page_cgroup allocation/free code in memory hotplug
-> notifier.
->
-> Thank you for report. I'll try this.
->
-Hmm...at quick look...
+On Fri, 07 Nov 2008 21:33:49 -0500 Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-online/offline page_cgroup's calculation for "start" is buggy..
+> Not really. Hmm, I have to investigate more on this problem.
 
--start = start_pfn & (PAGES_PER_SECTION - 1);
-+start = start_pfn & ~(PAGES_PER_SECTION - 1);
+OK ;)
 
-I'm sorry I can't write patch today.
+Meanwhile, how does this look?
 
-Regards,
--Kame
+
+
+From: Andrew Morton <akpm@linux-foundation.org>
+
+We only need the cacheline padding on SMP kernels.  Saves 6k:
+
+   text    data     bss     dec     hex filename
+   5713     388    2632    8733    221d kernel/kprobes.o
+   5713     388    8840   14941    3a5d kernel/kprobes.o
+
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ kernel/kprobes.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN kernel/kprobes.c~a kernel/kprobes.c
+--- a/kernel/kprobes.c~a
++++ a/kernel/kprobes.c
+@@ -72,7 +72,7 @@ static bool kprobe_enabled;
+ DEFINE_MUTEX(kprobe_mutex);		/* Protects kprobe_table */
+ static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
+ static struct {
+-	spinlock_t lock ____cacheline_aligned;
++	spinlock_t lock ____cacheline_aligned_in_smp;
+ } kretprobe_table_locks[KPROBE_TABLE_SIZE];
+ 
+ static spinlock_t *kretprobe_table_lock_ptr(unsigned long hash)
+_
 
