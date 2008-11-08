@@ -1,146 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbYKHH5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbYKHH55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbYKHH5d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 02:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbYKHH5N
+	id S1754393AbYKHH55 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 02:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbYKHH5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 02:57:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46695 "EHLO mx2.mail.elte.hu"
+	Sat, 8 Nov 2008 02:57:46 -0500
+Received: from colo.lackof.org ([198.49.126.79]:39561 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753018AbYKHH5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 02:57:11 -0500
-Date: Sat, 8 Nov 2008 08:57:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [git pull] OProfile fixes
-Message-ID: <20081108075700.GA2417@elte.hu>
+	id S1752567AbYKHH5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 02:57:45 -0500
+Date: Sat, 8 Nov 2008 00:57:30 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Nobin Mathew <nobin.mathew@gmail.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sharing interrupt between PCI device
+Message-ID: <20081108075729.GA15107@colo.lackof.org>
+References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no> <4910E8AC.7050407@shaw.ca> <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com> <49115AFC.2030400@gmail.com> <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wed, Nov 05, 2008 at 02:50:01PM +0530, Nobin Mathew wrote:
+> Hi
+> 
+> 
+> Code is here
+> first one USB Virual input devices
+> 
+> http://lxr.linux.no/linux+v2.6.27.4/drivers/usb/core/hcd-pci.c
+> 
+> Second one is hp-ilo driver
+> 
+> http://lxr.linux.no/linux+v2.6.27.4/drivers/misc/hpilo.c
 
-Please pull the latest oprofile-fixes-for-linus git tree from:
+I looked for usage of request_irq() and didn't see it in either driver.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git oprofile-fixes-for-linus
-
- Thanks,
-
-	Ingo
-
------------------->
-Andi Kleen (1):
-      oprofile: Fix p6 counter overflow check
-
-Carl Love (2):
-      Cell OProfile: Incorrect local array size in activate spu profiling function
-      Cell OProfile: Incorrect local array size in activate spu profiling function
-
-Jesper Dangaard Brouer (1):
-      Change UTF8 chars in Kconfig help text about Oprofile AMD barcelona
-
-Nick Piggin (1):
-      oprofile: fix memory ordering
-
-Robert Richter (1):
-      Revert "Cell OProfile: Incorrect local array size in activate spu profiling function"
+I was looking for the parameters passed to the request_irq() call.
+If the IRQ and the "dev_id" parameter are the same for both drivers,
+I'm not sure how the generic IRQ management code could tell them apart
+and then might disable the wrong instance when free_irq() is called.
+Perhaps you already know where the respective request_irq() calls are
+and can easily determine that both are passing in a NULL for
+the "dev_id" parameter?
 
 
- arch/Kconfig                      |    2 +-
- arch/x86/oprofile/op_model_ppro.c |    9 ++++-----
- drivers/oprofile/event_buffer.c   |    6 +++---
- 3 files changed, 8 insertions(+), 9 deletions(-)
+If that's not the case, I would be looking for bugs in the generic
+shared IRQ code.  But given shared IRQ experience with older kernels,
+I'm not inclined to believe there is a problem in the generic IRQ code
+on newer kernels unless presented with contrary evidence.
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index e6ab550..8977d99 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -21,7 +21,7 @@ config OPROFILE_IBS
-           Instruction-Based Sampling (IBS) is a new profiling
-           technique that provides rich, precise program performance
-           information. IBS is introduced by AMD Family10h processors
--          (AMD Opteron Quad-Core processor “Barcelona”) to overcome
-+          (AMD Opteron Quad-Core processor "Barcelona") to overcome
-           the limitations of conventional performance counter
-           sampling.
- 
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index 0620d6d..3f1b81a 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -27,8 +27,7 @@ static int num_counters = 2;
- static int counter_width = 32;
- 
- #define CTR_IS_RESERVED(msrs, c) (msrs->counters[(c)].addr ? 1 : 0)
--#define CTR_READ(l, h, msrs, c) do {rdmsr(msrs->counters[(c)].addr, (l), (h)); } while (0)
--#define CTR_OVERFLOWED(n) (!((n) & (1U<<(counter_width-1))))
-+#define CTR_OVERFLOWED(n) (!((n) & (1ULL<<(counter_width-1))))
- 
- #define CTRL_IS_RESERVED(msrs, c) (msrs->controls[(c)].addr ? 1 : 0)
- #define CTRL_READ(l, h, msrs, c) do {rdmsr((msrs->controls[(c)].addr), (l), (h)); } while (0)
-@@ -124,14 +123,14 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
- static int ppro_check_ctrs(struct pt_regs * const regs,
- 			   struct op_msrs const * const msrs)
- {
--	unsigned int low, high;
-+	u64 val;
- 	int i;
- 
- 	for (i = 0 ; i < num_counters; ++i) {
- 		if (!reset_value[i])
- 			continue;
--		CTR_READ(low, high, msrs, i);
--		if (CTR_OVERFLOWED(low)) {
-+		rdmsrl(msrs->counters[i].addr, val);
-+		if (CTR_OVERFLOWED(val)) {
- 			oprofile_add_sample(regs, i);
- 			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
- 		}
-diff --git a/drivers/oprofile/event_buffer.c b/drivers/oprofile/event_buffer.c
-index d962ba0..191a320 100644
---- a/drivers/oprofile/event_buffer.c
-+++ b/drivers/oprofile/event_buffer.c
-@@ -105,7 +105,7 @@ static int event_buffer_open(struct inode *inode, struct file *file)
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
--	if (test_and_set_bit(0, &buffer_opened))
-+	if (test_and_set_bit_lock(0, &buffer_opened))
- 		return -EBUSY;
- 
- 	/* Register as a user of dcookies
-@@ -129,7 +129,7 @@ static int event_buffer_open(struct inode *inode, struct file *file)
- fail:
- 	dcookie_unregister(file->private_data);
- out:
--	clear_bit(0, &buffer_opened);
-+	__clear_bit_unlock(0, &buffer_opened);
- 	return err;
- }
- 
-@@ -141,7 +141,7 @@ static int event_buffer_release(struct inode *inode, struct file *file)
- 	dcookie_unregister(file->private_data);
- 	buffer_pos = 0;
- 	atomic_set(&buffer_ready, 0);
--	clear_bit(0, &buffer_opened);
-+	__clear_bit_unlock(0, &buffer_opened);
- 	return 0;
- }
- 
+hth,
+grant
+
+
+
+> 
+> Thanks
+> Nobin Mathew.
+> 
+> 
+> On Wed, Nov 5, 2008 at 2:06 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> > On 11/05/2008 08:49 AM, Nobin Mathew wrote:
+> >> Hi
+> >>
+> >> This is the system information X86_64 platform Xeon dual core processor.
+> >>
+> >> I saw the pci_disable_device () it is calling pcibios_disable_device
+> >> () and this is is defined as
+> >>
+> >> void pcibios_disable_device (struct pci_dev *dev)
+> >> {
+> >>         pcibios_disable_resources(dev);
+> >>         if (pcibios_disable_irq)
+> >>                 pcibios_disable_irq(dev);
+> >> }
+> >>
+> >> In i386 platform, I could not find a definition for these calls in
+> >> x86_64 platform, i think it is using i386 platform code.
+> >
+> > Well, will you show us the code, so that we needn't to crystal gaze? It's pretty
+> > hard to say what happens, if we don't see what you do in the driver...
+> >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
