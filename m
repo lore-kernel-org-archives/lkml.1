@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753098AbYKHSct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbYKHSjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753098AbYKHSct (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 13:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750860AbYKHSck
+	id S1753110AbYKHSjQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 13:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYKHSi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 13:32:40 -0500
-Received: from acsinet14.oracle.com ([141.146.126.236]:29202 "EHLO
-	acsinet14.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbYKHSck (ORCPT
+	Sat, 8 Nov 2008 13:38:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51363 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750981AbYKHSi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 13:32:40 -0500
-X-Greylist: delayed 565 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Nov 2008 13:32:39 EST
-Date: Sat, 8 Nov 2008 10:22:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>,
-       Christian Pellegrin <chripell@evolware.org>
-Subject: [PATCH -mmotm] max3100: select SERIAL_CORE
-Message-Id: <20081108102227.6ffaf2fb.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsinet11.oracle.com [141.146.126.233]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4915D958.029D:SCFMA922111,ss=1,fgs=0
+	Sat, 8 Nov 2008 13:38:59 -0500
+Date: Sat, 8 Nov 2008 10:38:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [git pull] scheduler updates
+In-Reply-To: <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0811081035370.3468@nehalem.linux-foundation.org>
+References: <20081108170224.GA553@elte.hu> <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-max3100 driver need to select SERIAL_CORE like most other serial drivers do.
 
-max3100.c:(.text+0x524c5): undefined reference to `uart_write_wakeup'
-max3100.c:(.text+0x526eb): undefined reference to `uart_write_wakeup'
-max3100.c:(.text+0x529f7): undefined reference to `uart_update_timeout'
-max3100.c:(.text+0x52cfa): undefined reference to `uart_resume_port'
-max3100.c:(.text+0x52d6a): undefined reference to `uart_suspend_port'
-max3100.c:(.devinit.text+0x23e3): undefined reference to `uart_register_driver'
-max3100.c:(.devinit.text+0x265a): undefined reference to `uart_add_one_port'
-max3100.c:(.devexit.text+0x1aa): undefined reference to `uart_remove_one_port'
-max3100.c:(.devexit.text+0x1e5): undefined reference to `uart_unregister_driver'
+On Sat, 8 Nov 2008, Linus Torvalds wrote:
+> 
+> Can we please just remove that idiocy? Or can somebody give a _sane_ 
+> argument for it?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Christian Pellegrin <chripell@evolware.org>
----
- drivers/serial/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+Btw, the only _possible_ sane argument I see is 
 
---- mmotm-2008-1106-1344.orig/drivers/serial/Kconfig
-+++ mmotm-2008-1106-1344/drivers/serial/Kconfig
-@@ -511,6 +511,7 @@ config SERIAL_S3C2440
- config SERIAL_MAX3100
-         tristate "MAX3100 support"
-         depends on SPI
-+	select SERIAL_CORE
-         help
-           MAX3100 chip support
- 
+ - two consecutive rdtsc calls
+ - timing the code in between
+ - the code in between is not self-serializing
+
+and quite frankly, if that's the case, then it's _that_ code that should 
+have the barriers, not some generic "[v]get_cycles()". 
+
+IOW, the rdtsc_barrier may make sense when you're synchronizing the TSC to 
+some other hardware event (eg the "tie the TSC to the HPET" kind of 
+code), but then the barriers are about the code, not about the TSC access 
+itself.
+
+			Linus
