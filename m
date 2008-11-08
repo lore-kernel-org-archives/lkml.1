@@ -1,103 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbYKHF2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbYKHFp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184AbYKHF2n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 00:28:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbYKHF2c
+	id S1753217AbYKHFp5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 00:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYKHFps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 00:28:32 -0500
-Received: from kroah.org ([198.145.64.141]:42677 "EHLO coco.kroah.org"
+	Sat, 8 Nov 2008 00:45:48 -0500
+Received: from kroah.org ([198.145.64.141]:37127 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750971AbYKHF2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 00:28:31 -0500
-Date: Fri, 7 Nov 2008 21:25:19 -0800
+	id S1750971AbYKHFpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 00:45:47 -0500
 From: Greg KH <greg@kroah.com>
-To: Yu Zhao <yu.zhao@uniscape.net>
-Cc: "Zhao, Yu" <yu.zhao@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
-Message-ID: <20081108052519.GA11067@kroah.com>
-References: <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com> <20081107061603.GC3860@kroah.com> <4913F34A.8020805@intel.com> <20081107080222.GA6284@kroah.com> <4913F97E.7030408@intel.com> <20081107082432.GA6601@kroah.com> <4913FDE3.8050804@intel.com> <20081107185325.GE2320@kroah.com> <49151CED.8060507@uniscape.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49151CED.8060507@uniscape.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/2] Staging: only build the tree if we really want to
+Date: Fri,  7 Nov 2008 21:45:42 -0800
+Message-Id: <1226123143-28859-1-git-send-email-greg@kroah.com>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <20081108054511.GA28846@kroah.com>
+References: <20081108054511.GA28846@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 08, 2008 at 01:00:29PM +0800, Yu Zhao wrote:
-> Greg KH wrote:
->> On Fri, Nov 07, 2008 at 04:35:47PM +0800, Zhao, Yu wrote:
->>> Greg KH wrote:
->>>> On Fri, Nov 07, 2008 at 04:17:02PM +0800, Zhao, Yu wrote:
->>>>>> Well, to do it "correctly" you are going to have to tell the driver to
->>>>>> shut itself down, and reinitialize itself.
->>>>>> Turns out, that doesn't really work for disk and network devices 
->>>>>> without
->>>>>> dropping the connection (well, network devices should be fine 
->>>>>> probably).
->>>>>> So you just can't do this, sorry.  That's why the BIOS handles all of
->>>>>> these issues in a PCI hotplug system.
->>>>>> How does the hardware people think we are going to handle this in the
->>>>>> OS?  It's not something that any operating system can do, is it part 
->>>>>> of
->>>>>> the IOV PCI spec somewhere?
->>>>> No, it's not part of the PCI IOV spec.
->>>>>
->>>>> I just want the IOV (and whole PCI subsystem) have more flexibility on 
->>>>> various BIOSes. So can we reconsider about resource rebalance as boot 
->>>>> option, or should we forget about this idea?
->>>> As you have proposed it, the boot option will not work at all, so I
->>>> think we need to forget about it.  Especially if it is not really
->>>> needed.
->>> I guess at least one thing would work if people don't want to boot twice: 
->>> give the bus number 0 as rebalance starting point, then all system 
->>> resources would be reshuffled :-)
->> Hm, but don't we do that today with our basic resource reservation logic
->> at boot time?  What would be different about this kind of proposal?
->
-> The generic PCI core can do this but this feature is kind of disabled by 
-> low level PCI code in x86. The low level code tries to reserve resource 
-> according to configuration from BIOS. If the BIOS is wrong, the allocation 
-> would fail and the generic PCI core couldn't repair it because the bridge 
-> resources may have been allocated by the PCI low level and the PCI core 
-> can't expand them to find enough resource for the subordinates.
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-Yes, we do this on purpose.
+This Kconfig change allows the common 'make allmodconfig' and
+'make allyesconfig' build options to skip the staging tree, which is
+probably what you want to have happen anyway.
 
-> The proposal is to disable x86 PCI low level to allocation resources 
-> according to BIOS so PCI core can fully control the resource allocation. 
-> The PCI core takes all resources from BARs it knows into account and 
-> configure the resource windows on the bridges according to its own 
-> calculation.
+This makes the linux-next developer's life a lot easier so he doesn't
+have to worry about changes that break the staging tree, that's for me
+to worry about...
 
-Ah, so you mean we should revert back to the way we use to do x86 PCI
-resource allocation from about a year and a half ago to about 8 years
-ago?
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/Kconfig |   20 ++++++++++++++++++--
+ 1 files changed, 18 insertions(+), 2 deletions(-)
 
-Hint, there was a reason why we switched over to using the BIOS instead
-of doing it ourselves.  Turns out we have to trust the BIOS here, as
-that is exactly what other operating systems do.  Trying to do it on our
-own was too fragile and resulted in too many problems over time.
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index e1654f5..0a49cd7 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -21,7 +21,23 @@ menuconfig STAGING
+ 
+ 	  If in doubt, say N here.
+ 
+-if STAGING
++
++config STAGING_EXCLUDE_BUILD
++	bool "Exclude Staging drivers from being built"
++	default y
++	---help---
++	  Are you sure you really want to build the staging drivers?
++	  They taint your kernel, don't live up to the normal Linux
++	  kernel quality standards, are a bit crufty around the edges,
++	  and might go off and kick your dog when you aren't paying
++	  attention.
++
++	  Say N here to be able to select and build the Staging drivers.
++	  This option is primarily here to prevent them from being built
++	  when selecting 'make allyesconfg' and 'make allmodconfig' so
++	  don't be all that put off, your dog will be just fine.
++
++if !STAGING_EXCLUDE_BUILD
+ 
+ source "drivers/staging/et131x/Kconfig"
+ 
+@@ -45,4 +61,4 @@ source "drivers/staging/at76_usb/Kconfig"
+ 
+ source "drivers/staging/poch/Kconfig"
+ 
+-endif # STAGING
++endif # !STAGING_EXCLUDE_BUILD
+-- 
+1.5.6
 
-Go look at the archives for when this all was switched, you'll see the
-reasons why.
-
-So no, we will not be going back to the way we used to do things, we
-changed for a reason :)
-
-thanks,
-
-greg k-h
