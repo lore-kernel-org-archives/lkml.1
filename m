@@ -1,81 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbYKHCe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYKHCgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbYKHCe4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 21:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYKHCeq
+	id S1753487AbYKHCgG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 21:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYKHCfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 21:34:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38317 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751065AbYKHCeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 21:34:46 -0500
-Message-ID: <4914FA8D.4000607@redhat.com>
-Date: Fri, 07 Nov 2008 21:33:49 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Fri, 7 Nov 2008 21:35:52 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40017 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065AbYKHCfv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 21:35:51 -0500
+Message-ID: <36332.10.75.179.62.1226111748.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20081107145036.GF21884@redhat.com>
+References: <20081106153022.215696930@redhat.com>
+    <20081106153135.869625751@redhat.com>
+    <20081107122145.69500cd3.kamezawa.hiroyu@jp.fujitsu.com>
+    <20081107145036.GF21884@redhat.com>
+Date: Sat, 8 Nov 2008 11:35:48 +0900 (JST)
+Subject: Re: [patch 3/4] io controller: Core IO controller 
+     implementationlogic
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Vivek Goyal" <vgoyal@redhat.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       "Hirokazu Takahashi" <taka@valinux.co.jp>,
+       "Ryo Tsuruta" <ryov@valinux.co.jp>,
+       "Andrea Righi" <righi.andrea@gmail.com>,
+       "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>,
+       "Rik van Riel" <riel@redhat.com>, fernando@oss.ntt.co.jp,
+       "Jeff Moyer" <jmoyer@redhat.com>, menage@google.com, ngupta@google.com,
+       "Andrew Morton" <akpm@linux-foundation.org>, balbir@linux.vnet.ibm.com
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, maneesh@in.ibm.com,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Srinivasa Ds <srinivasa@in.ibm.com>
-Subject: Re: [PATCH] kprobe: increase kprobe_hash_table size
-References: <4914D2DE.9030603@redhat.com>	<20081107155646.b375413e.akpm@linux-foundation.org>	<4914DAEE.2050301@redhat.com> <20081107170307.1a4f815e.akpm@linux-foundation.org>
-In-Reply-To: <20081107170307.1a4f815e.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> I agree that there may be many opinions about what is the best suited size.
->> Why I chose 512 was that I thought the table (byte) size was less than or
->> equal 4096 even on 64-bit arch.
-> 
-> Well...
-> 
->    text    data     bss     dec     hex filename
->    7036     744    9380   17160    4308 kernel/kprobes.o
->    7048     744   73892   81684   13f14 kernel/kprobes.o
-> 
-> That's 64 kbytes more memory.  It will be kretprobe_table_locks[] which
-> is hurting here, due to the ____cacheline_aligned.
+Vivek Goyal said:
+> On Fri, Nov 07, 2008 at 12:21:45PM +0900, KAMEZAWA Hiroyuki wrote:
+>> On Thu, 06 Nov 2008 10:30:25 -0500
+>> vgoyal@redhat.com wrote:
+>>
+>> >
+>> > o Core IO controller implementation
+>> >
+>> > Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+>> >
+>>
+>> 2 comments after a quick look.
+>>
+>>  - I don't recommend generic work queue. More stacked dependency between
+>> "work"
+>>    is not good. (I think disk-driver uses "work" for their jobs.)
+>
+> Sorry, I did not get this. Are you recommending that don't create a new
+> work queue, instead use existing work queue (say kblockd) to submit the
+> bios
+> here?
+>
+Ah, no, recomending new-original its own workqueue. I'm sorry that it seems
+I missed something at reading your patch.
+(other person may have other opinion, here;)
 
-Oops! It's really bad.
+> I will look into it. I was little worried about a kblockd being overworked
+> in case of too many logical devices enabling IO controller.
+>
 
-
-> I expected CONFIG_X86_VSMP=y to make this far worse, but fortunately
-> that only affects ____cacheline_internodealigned_in_smp.
-> 
-> btw, that array wastes a ton of memory on uniprocessor builds.  Using
-> ____cacheline_aligned_in_smp should fix that.
-> 
-> Please always check these thigns with /usr/bin/size.
-
-I see. I'll check that and try to find the best way...
-
-> btw2, could/should kprobe_table[] and kretprobe_inst_table[] be
-> aggregated into kretprobe_table_locks[]?  That would save some memory
-> and might save some cache misses as well?
-
-Indeed, thank you for good idea.
-
-> Anyway, enough pos-facto code review.  Is this change which you're
-> proposing worth increasing kernel memory usage by 64k?
-
-Not really. Hmm, I have to investigate more on this problem.
-
-Thanks a lot.
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Thanks,
+-Kame
 
