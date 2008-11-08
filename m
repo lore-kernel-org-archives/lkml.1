@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYKHDaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYKHDiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbYKHDaO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 22:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYKHD37
+	id S1753398AbYKHDiT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 22:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYKHDiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 22:29:59 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:46726 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbYKHD36 (ORCPT
+	Fri, 7 Nov 2008 22:38:08 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:33471 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbYKHDiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 22:29:58 -0500
-Date: Fri, 07 Nov 2008 22:29:53 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
-In-reply-to: <200810281922.20490.arvidjaar@mail.ru>
-X-X-Sender: lenb@localhost.localdomain
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>,
-       toshiba_acpi@memebeam.org, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.2.00.0811072224200.9051@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <200809061108.34877.arvidjaar@mail.ru>
- <200810281426.53499.trenn@suse.de> <200810281615.19894.rjw@sisk.pl>
- <200810281922.20490.arvidjaar@mail.ru>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 7 Nov 2008 22:38:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=PXjSRm0u1f9GKmCnKhKRC4dE0ZIdiI1tNcpsUViY8QdiSBVSsLUKiuBBpvZ2f+sFc2
+         acPWG8mK5wI4WZDDN++fU9U7XQhaQV3u4OfNeqIvhEkS243HYvRmzZHXQ9Cj0Ms0HIJZ
+         ncwPqfE+4kBzROw0hn4n8uCVQgvfZ6xmVbAys=
+Subject: Re: [PATCH 10/10] xtensa: use the new byteorder headers - Merged
+ with your previous xtensa-next and will remerge shortly.
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Piet Delaney <piet.delaney@tensilica.com>
+Cc: Chris Zankel <chris@zankel.net>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Marc Gauthier <marc@tensilica.com>,
+       Joe Taylor <joetayloremail@gmail.com>, linux-xtensa@linux-xtensa.org,
+       Chuck Lever <chuck.lever@oracle.com>
+In-Reply-To: <491500C0.90407@tensilica.com>
+References: <1225910131.5991.230.camel@brick> <49133094.6070407@zankel.net>
+	 <491500C0.90407@tensilica.com>
+Content-Type: text/plain
+Date: Fri, 07 Nov 2008 19:38:01 -0800
+Message-Id: <1226115481.11596.63.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-11-07 at 19:00 -0800, Piet Delaney wrote:
+> Hi Chris:
+> 
+>    I've merged your recent xtensa-next with our 2.6.24-smp repo.
+> It seems to work fine and I'm in the process of cleaning it
+> up a bit and adding preliminary XTENSA kgdb support.
 
+2.6.24?  In that case you probably don't have include/linux/byteorder.h,
+or include/linux/swab.h which would explain your byteorder problems.
 
-> > Do you have a pointer to those patches?
-> > 
-> 
-> So far I am running with these commits from git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6:
-> 
-> commit f43d728731c691772ddc29e50d25c68a859935b5
-> Author: Thomas Renninger <trenn@suse.de>
-> Date:   Fri Aug 1 17:37:55 2008 +0200
-> 
->     Check for ACPI backlight support otherwise use vendor ACPI drivers
-> 
-> 
-> commit ad9ed8385ed6ec5be8da7094db911c824258ceec
-> Author: Thomas Renninger <trenn@suse.de>
-> Date:   Fri Aug 1 17:37:54 2008 +0200
-> 
->     ACPI: video: Ignore devices that aren't present in hardware
-> 
-> I have been waiting for in-tree inclusion to submit patches for
-> toshiba_acpi against stable base.
+Or is that a typo in the version numbers?
 
-Ah, the commit id's above solved the mystery.
-It looks like andi checked these patches directly into his
-"test" branch rather than a topic branch.  eg. they were
-sitting on top of the old pcc_acpi driver etc.
+You should be able to just pull those two headers from Linus' tree
+and drop them in, there is no dependencies other than those two
+headers.
 
-So I lost them when I deleted the old test branch
-in order to merge the updated topic branches
-into a new test branch.
+If it is some other problem, let me know and I'll look into it.
 
--Len
+Harvey
 
