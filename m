@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYKHCg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbYKHCqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYKHCg0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 21:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbYKHCfy
+	id S1753286AbYKHCqb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 21:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbYKHCqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 21:35:54 -0500
-Received: from smtp.zeuux.org ([210.51.160.52]:60823 "EHLO z.billxu.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751780AbYKHCfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 21:35:52 -0500
-Date: Sat, 8 Nov 2008 10:35:58 +0800
-From: Jianjun Kong <jianjun@zeuux.org>
-To: linville@tuxdriver.com
-Cc: Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: [PATCH] nets: fix a buffer overrun
-Message-ID: <20081108023558.GB6384@ubuntu>
+	Fri, 7 Nov 2008 21:46:20 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34049 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751311AbYKHCqT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 21:46:19 -0500
+Message-ID: <38971.10.75.179.62.1226112376.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <31630.10.75.179.62.1226111079.squirrel@webmail-b.css.fujitsu.com>
+References: <1226096940.8805.4.camel@badari-desktop>
+    <31630.10.75.179.62.1226111079.squirrel@webmail-b.css.fujitsu.com>
+Date: Sat, 8 Nov 2008 11:46:16 +0900 (JST)
+Subject: Re: 2.6.28-rc3 mem_cgroup panic
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Badari Pulavarty" <pbadari@us.ibm.com>,
+       "Balbir Singh" <balbir@in.ibm.com>, "linux-mm" <linux-mm@kvack.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki said:
+> Badari Pulavarty said:
+>> Hi Balbir,
+>>
+>> I was running memory remove/add tests in a continuous loop.
+>> I get following panic in mem_cgroup migration code.
+>>
+>> Is this a known issue ?
+>>
+> No, this is new one. We don't see panic in cpuset based migration..so..
+> Maybe related to page_cgroup allocation/free code in memory hotplug
+> notifier.
+>
+> Thank you for report. I'll try this.
+>
+Hmm...at quick look...
 
-net/mac80211/debugfs_sta.c
-The trailing zero was written to state[4], it's out of bounds.
+online/offline page_cgroup's calculation for "start" is buggy..
 
-Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
----
- net/mac80211/debugfs_sta.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+-start = start_pfn & (PAGES_PER_SECTION - 1);
++start = start_pfn & ~(PAGES_PER_SECTION - 1);
 
-diff --git a/net/mac80211/debugfs_sta.c b/net/mac80211/debugfs_sta.c
-index 189d0ba..b85c4f2 100644
---- a/net/mac80211/debugfs_sta.c
-+++ b/net/mac80211/debugfs_sta.c
-@@ -199,7 +199,7 @@ static ssize_t sta_agg_status_write(struct file *file,
- 		/* toggle Rx aggregation command */
- 		tid_num = tid_num - 100;
- 		if (tid_static_rx[tid_num] == 1) {
--			strcpy(state, "off ");
-+			strcpy(state, "off");
- 			ieee80211_sta_stop_rx_ba_session(sta->sdata, da, tid_num, 0,
- 					WLAN_REASON_QSTA_REQUIRE_SETUP);
- 			sta->ampdu_mlme.tid_state_rx[tid_num] |=
--- 
-1.5.6.3
+I'm sorry I can't write patch today.
+
+Regards,
+-Kame
+
