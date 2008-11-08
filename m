@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbYKHTn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990AbYKHTqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753982AbYKHTn2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 14:43:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbYKHTnU
+	id S1753990AbYKHTqd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 14:46:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYKHTqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 14:43:20 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:62232 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbYKHTnU (ORCPT
+	Sat, 8 Nov 2008 14:46:25 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43186 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbYKHTqZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 14:43:20 -0500
-Date: Sat, 8 Nov 2008 11:42:34 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, ericvh@gmail.com
-Subject: [PATCH mmotm] net/9p: fix build error
-Message-Id: <20081108114234.32e3fb17.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 8 Nov 2008 14:46:25 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4915EC7B.9080607@s5r6.in-berlin.de>
+Date: Sat, 08 Nov 2008 20:46:03 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.17) Gecko/20081027 SeaMonkey/1.1.12
+MIME-Version: 1.0
+To: linux1394-devel@lists.sourceforge.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firewire: detect and log TSB81BA3 erratum
+References: <tkrat.f09c80ed76dd6c79@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.f09c80ed76dd6c79@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4915EBCA.0331:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(I did this patch for linux-next & posted it, but it's not merged anywhere,
-so mmotm also needs it.)
+I wrote:
+[...]
+> TI's "TSB81BA3 Errata (Rev. C)" SLLZ015C.  These resets cause massive
+> I/O failures.
+> 
+> Self-ID complete events after such resets consistently show more than
+> one self-ID zero packet with i bit set ( = initiated reset).  If this
+> happens, emit a warning in dmesg and suggest hardware workarounds to the
+> user.
 
-
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-linux-next:
-
-Make 9p's RDMA option depend on INET since it uses Infiniband rdma_*
-functions and that code depends on INET.  Otherwise 9p can try to
-use symbols which don't exist.
-
-ERROR: "rdma_destroy_id" [net/9p/9pnet_rdma.ko] undefined!
-ERROR: "rdma_connect" [net/9p/9pnet_rdma.ko] undefined!
-ERROR: "rdma_create_id" [net/9p/9pnet_rdma.ko] undefined!
-ERROR: "rdma_create_qp" [net/9p/9pnet_rdma.ko] undefined!
-ERROR: "rdma_resolve_route" [net/9p/9pnet_rdma.ko] undefined!
-ERROR: "rdma_disconnect" [net/9p/9pnet_rdma.ko] undefined!
-ERROR: "rdma_resolve_addr" [net/9p/9pnet_rdma.ko] undefined!
-
-I used an if/endif block so that the menu items would remain
-presented together.
-
-Also correct an article adjective.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- net/9p/Kconfig |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
-
---- linux-next-20081103.orig/net/9p/Kconfig
-+++ linux-next-20081103/net/9p/Kconfig
-@@ -13,22 +13,24 @@ menuconfig NET_9P
- 
- 	  If unsure, say N.
- 
-+if NET_9P
-+
- config NET_9P_VIRTIO
--	depends on NET_9P && EXPERIMENTAL && VIRTIO
-+	depends on EXPERIMENTAL && VIRTIO
- 	tristate "9P Virtio Transport (Experimental)"
- 	help
- 	  This builds support for a transports between
- 	  guest partitions and a host partition.
- 
- config NET_9P_RDMA
--	depends on NET_9P && INFINIBAND && EXPERIMENTAL
-+	depends on INET && INFINIBAND && EXPERIMENTAL
- 	tristate "9P RDMA Transport (Experimental)"
- 	help
--	  This builds support for a RDMA transport.
-+	  This builds support for an RDMA transport.
- 
- config NET_9P_DEBUG
- 	bool "Debug information"
--	depends on NET_9P
- 	help
- 	  Say Y if you want the 9P subsystem to log debug information.
- 
-+endif
+Apparently two initiators are OK when a node joins a bus.  My alarm goes
+off too quickly.
+-- 
+Stefan Richter
+-=====-==--- =-== -=---
+http://arcgraph.de/sr/
