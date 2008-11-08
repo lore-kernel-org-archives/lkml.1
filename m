@@ -1,409 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbYKHPJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbYKHPWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754397AbYKHPJd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 10:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYKHPJY
+	id S1754476AbYKHPWT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 10:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYKHPWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 10:09:24 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:12180 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbYKHPJX (ORCPT
+	Sat, 8 Nov 2008 10:22:07 -0500
+Received: from www17.your-server.de ([213.133.104.17]:57118 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbYKHPWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 10:09:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=LQZEPkWntknZuAo7vcQQHiMC7ecIT5RV74yhYwUxQ3bM4q76hgdEUMHqE1ZgM0mZ+p
-         ZUgYcKrh+5OnH7pv5CBZJrp7S5GhYXb3vLeEzFi0DlpeDqrWJCJlNbIAcc+FiGB9ZpNI
-         9ypv1Th2wmlzlenvFvXk9Xt0K6FWRuy3NodoE=
-Message-ID: <c62985530811080709k7b26aa85l2b19bdc78fcb90a0@mail.gmail.com>
-Date: Sat, 8 Nov 2008 16:09:21 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [RFC v2][PATCH 2/2] Add a tracer to catch execution time of kernel functions
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0811071348310.3711@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 8 Nov 2008 10:22:06 -0500
+Subject: 2.6.28-rc3 (x86_64) on current Fedora 9 (i386)
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 08 Nov 2008 16:22:08 +0100
+Message-Id: <1226157728.6060.7.camel@dhcppc0>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <49148214.4030607@gmail.com>
-	 <alpine.DEB.1.10.0811071348310.3711@gandalf.stny.rr.com>
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/7 Steven Rostedt <rostedt@goodmis.org>:
->
-> On Fri, 7 Nov 2008, Frederic Weisbecker wrote:
->
->> This tracer uses the low level function return ftrace plugin to measure
->> the execution time of the kernel functions.
->>
->> The first field is the caller of the function, the second is the measured function, and the last
->> one is the execution time in nanoseconds.
->>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> ---
->> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
->> index fc4febc..f27b46b 100644
->> --- a/kernel/trace/Kconfig
->> +++ b/kernel/trace/Kconfig
->> @@ -54,6 +54,19 @@ config FUNCTION_TRACER
->>         (the bootup default), then the overhead of the instructions is very
->>         small and not measurable even in micro-benchmarks.
->>
->> +config FTRACE_RETURN
->> +     bool "Kernel Function return Tracer"
->> +     depends on !DYNAMIC_FTRACE
->
-> Why not the DYNAMIC_FTRACE?
+Hi,
+
+Cross compiled with gcc-4.2.4.
+
+nm-applet seems to constantly fail to connect my wlan:
+
+[  415.702723] rndis_wlan 1-6.3:1.0: rndis media connect
+[  415.731909] ADDRCONF(NETDEV_CHANGE): wlan0: link becomes ready
+[  415.732700] wpa_supplicant[3416]: segfault at fff40000 ip 000000004f612fd6 sp 00000000fff3c108 error 4 in libc-2.8.so[4f59c000+163000]
+[  415.749491] rndis_wlan 1-6.3:1.0: rndis media disconnect
+[  426.664267] wlan0: no IPv6 routers present
+[  431.701722] rndis_wlan 1-6.3:1.0: rndis media connect
+[  431.726008] wpa_supplicant[4055]: segfault at ffcc9000 ip 000000004f612fd6 sp 00000000ffcc6698 error 4 in libc-2.8.so[4f59c000+163000]
+[  431.740094] rndis_wlan 1-6.3:1.0: rndis media disconnect
+[  437.705723] rndis_wlan 1-6.3:1.0: rndis media connect
+[  437.735135] wpa_supplicant[4160]: segfault at ffd88000 ip 000000004f612fd6 sp 00000000ffd83b98 error 4 in libc-2.8.so[4f59c000+163000]
+[  437.754987] rndis_wlan 1-6.3:1.0: rndis media disconnect
+[  443.705723] rndis_wlan 1-6.3:1.0: rndis media connect
+[  443.735113] wpa_supplicant[4167]: segfault at fffa7000 ip 000000004f612fd6 sp 00000000fffa4978 error 4 in libc-2.8.so[4f59c000+163000]
+[  443.751981] rndis_wlan 1-6.3:1.0: rndis media disconnect
+[  459.705722] rndis_wlan 1-6.3:1.0: rndis media connect
+[  459.736240] wpa_supplicant[4173]: segfault at ffe7d000 ip 000000004f612fd6 sp 00000000ffe7a048 error 4 in libc-2.8.so[4f59c000+163000]
+[  459.750979] rndis_wlan 1-6.3:1.0: rndis media disconnect
+
+The same kernel not cross compiled (with the supplied Fedora gcc) works correctly with the nm-applet...
+
+Kernel or user land bug?
+
+Also I get this strange error messages:
+[   23.767645] ioctl32(rhgb:2177): Unknown cmd fd(13) cmd(0000530b){t:'S';sz:0} arg(4eed91aa) on /dev/pts/0
+[   23.767652] ioctl32(rhgb:2177): Unknown cmd fd(13) cmd(0000530b){t:'S';sz:0} arg(4eed91af) on /dev/pts/0
+[   23.767657] ioctl32(rhgb:2177): Unknown cmd fd(13) cmd(0000530b){t:'S';sz:0} arg(4eed91b6) on /dev/pts/0
+
+[   46.273767] ioctl32(hald-probe-stor:2750): Unknown cmd fd(4) cmd(00005320){t:'S';sz:0} arg(00000004) on /dev/sr0
+
+[  525.336420] ioctl32(gnome-terminal:4419): Unknown cmd fd(20) cmd(0000530b){t:'S';sz:0} arg(4eed91aa) on /dev/pts/1
+[  525.336427] ioctl32(gnome-terminal:4419): Unknown cmd fd(20) cmd(0000530b){t:'S';sz:0} arg(4eed91af) on /dev/pts/1
+[  525.336432] ioctl32(gnome-terminal:4419): Unknown cmd fd(20) cmd(0000530b){t:'S';sz:0} arg(4eed91b6) on /dev/pts/1
+
+Should I care about these messages?
+
+greets
+thomas
 
 
-Hm.  Perhaps I misunderstand DYNAMIC_TRACE but AFAIK, it modifies the
-code to add a direct call to the function tracer.
-I should adapt it to add a call to prepare_ftrace_return. I just did
-not work on it yet but on the current state I can't use it with return
-tracing.
-
-
-> You might want to add a HAVE_FTRACE_RETURN and just depend on that as well
-> as DEBUG_KERNEL.
-
-
-Right.
-
-
->> +     depends on X86
->> +     depends on DEBUG_KERNEL
->> +     select FRAME_POINTER
->> +     select TRACING
->> +     help
->> +       Enable the kernel to trace a function at its return.
->> +       It's first purpose is to trace the duration of functions.
->> +       It is totally unstable and ugly at this time and only supports
->> +       one function call at a time.
->> +
->>  config IRQSOFF_TRACER
->>       bool "Interrupts-off Latency Tracer"
->>       default n
->> diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
->> index c8228b1..5cfacd5 100644
->> --- a/kernel/trace/Makefile
->> +++ b/kernel/trace/Makefile
->> @@ -24,5 +24,6 @@ obj-$(CONFIG_NOP_TRACER) += trace_nop.o
->>  obj-$(CONFIG_STACK_TRACER) += trace_stack.o
->>  obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
->>  obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
->> +obj-$(CONFIG_FTRACE_RETURN) += trace_functions_return.o
->>
->>  libftrace-y := ftrace.o
->> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> index 896c71f..d11e4a2 100644
->> --- a/kernel/trace/ftrace.c
->> +++ b/kernel/trace/ftrace.c
->> @@ -1481,3 +1481,18 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
->>       return ret;
->>  }
->>
->> +#ifdef CONFIG_FTRACE_RETURN
->> +void (*ftrace_function_return)(struct ftrace_retfunc *) = ftrace_return_stub;
->> +void register_ftrace_return(void (*func)(struct ftrace_retfunc *))
->> +{
->> +     ftrace_function_return = func;
->
-> Might be cool to allow multiple functions like ftrace does. But we can do
-> that after we get the kinks out of the code you already have ;-)
-
-
-I thought about it too. And as you said, I reserve it when the current
-things will be proper :-)
-
-
->> +}
->> +
->> +void unregister_ftrace_return(void)
->> +{
->> +     ftrace_function_return = ftrace_return_stub;
->
-> Again, I think just using ftrace_stub should be fine.
->
->
->> +}
->> +#endif
->> +
->> +
->> +
->> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
->> index d55ccfc..6e7f2bb 100644
->> --- a/kernel/trace/trace.c
->> +++ b/kernel/trace/trace.c
->> @@ -244,13 +244,6 @@ unsigned long nsecs_to_usecs(unsigned long nsecs)
->>       return nsecs / 1000;
->>  }
->>
->> -/*
->> - * TRACE_ITER_SYM_MASK masks the options in trace_flags that
->> - * control the output of kernel symbols.
->> - */
->> -#define TRACE_ITER_SYM_MASK \
->> -     (TRACE_ITER_PRINT_PARENT|TRACE_ITER_SYM_OFFSET|TRACE_ITER_SYM_ADDR)
->
-> Not sure why you moved TRACE_ITER_SYM_MASK. I like it here because it is
-> right next to the trace_options flags.
-
-
-Because I use it with seq_ip_print_sym on the return tracer.
-
-
->> -
->>  /* These must match the bit postions in trace_iterator_flags */
->>  static const char *trace_options[] = {
->>       "print-parent",
->> @@ -813,6 +806,33 @@ trace_function(struct trace_array *tr, struct trace_array_cpu *data,
->>       ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
->>  }
->>
->> +static void __trace_function_return(struct trace_array *tr,
->> +                                                      struct trace_array_cpu *data,
->> +                                                      struct ftrace_retfunc *trace,
->> +                                                      unsigned long flags,
->> +                                                      int pc)
->> +{
->> +     struct ring_buffer_event *event;
->> +     struct ftrace_ret_entry *entry;
->> +     unsigned long irq_flags;
->> +
->> +     if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
->> +             return;
->> +
->> +     event = ring_buffer_lock_reserve(global_trace.buffer, sizeof(*entry),
->> +                                      &irq_flags);
->> +     if (!event)
->> +             return;
->> +     entry   = ring_buffer_event_data(event);
->> +     tracing_generic_entry_update(&entry->ent, flags, pc);
->> +     entry->ent.type                 = TRACE_FN_RET;
->> +     entry->ip                       = trace->func;
->> +     entry->parent_ip        = trace->ret;
->> +     entry->rettime          = trace->rettime;
->> +     entry->calltime         = trace->calltime;
->> +     ring_buffer_unlock_commit(global_trace.buffer, event, irq_flags);
->> +}
->> +
->>  void
->>  ftrace(struct trace_array *tr, struct trace_array_cpu *data,
->>         unsigned long ip, unsigned long parent_ip, unsigned long flags,
->> @@ -1039,6 +1059,27 @@ function_trace_call(unsigned long ip, unsigned long parent_ip)
->>       raw_local_irq_restore(flags);
->>  }
->>
->> +void trace_function_return(struct ftrace_retfunc *trace)
->> +{
->> +     struct trace_array *tr = &global_trace;
->> +     struct trace_array_cpu *data;
->> +     unsigned long flags;
->> +     long disabled;
->> +     int cpu;
->> +     int pc;
->> +
->> +     raw_local_irq_save(flags);
->> +     cpu = raw_smp_processor_id();
->> +     data = tr->data[cpu];
->> +     disabled = atomic_inc_return(&data->disabled);
->> +     if (likely(disabled)) {
->
-> You need a test of disabled == 1, otherwise it is always true ;-)
-
-
-Oops.
-
-
->> +             pc = preempt_count();
->> +             __trace_function_return(tr, data, trace, flags, pc);
->> +     }
->> +     atomic_dec(&data->disabled);
->> +     raw_local_irq_restore(flags);
->> +}
->> +
->>  static struct ftrace_ops trace_ops __read_mostly =
->>  {
->>       .func = function_trace_call,
->> @@ -1286,7 +1327,7 @@ seq_print_sym_offset(struct trace_seq *s, const char *fmt,
->>  # define IP_FMT "%016lx"
->>  #endif
->>
->> -static int
->> +int
->>  seq_print_ip_sym(struct trace_seq *s, unsigned long ip, unsigned long sym_flags)
->>  {
->>       int ret;
->> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
->> index 3422489..ebf1722 100644
->> --- a/kernel/trace/trace.h
->> +++ b/kernel/trace/trace.h
->> @@ -22,6 +22,7 @@ enum trace_type {
->>       TRACE_MMIO_RW,
->>       TRACE_MMIO_MAP,
->>       TRACE_BOOT,
->> +     TRACE_FN_RET,
->>
->>       __TRACE_LAST_TYPE
->>  };
->> @@ -48,6 +49,15 @@ struct ftrace_entry {
->>       unsigned long           ip;
->>       unsigned long           parent_ip;
->>  };
->> +
->> +/* Function return entry */
->> +struct ftrace_ret_entry {
->> +     struct trace_entry      ent;
->> +     unsigned long           ip;
->> +     unsigned long           parent_ip;
->> +     unsigned long long      calltime;
->> +     unsigned long long      rettime;
->> +};
->>  extern struct tracer boot_tracer;
->>  extern struct tracer sched_switch_trace; /* Used by the boot tracer */
->>
->> @@ -220,6 +230,7 @@ extern void __ftrace_bad_type(void);
->>               IF_ASSIGN(var, ent, struct trace_mmiotrace_map,         \
->>                         TRACE_MMIO_MAP);                              \
->>               IF_ASSIGN(var, ent, struct trace_boot, TRACE_BOOT);     \
->> +             IF_ASSIGN(var, ent, struct ftrace_ret_entry, TRACE_FN_RET); \
->>               __ftrace_bad_type();                                    \
->>       } while (0)
->>
->> @@ -322,6 +333,8 @@ void trace_function(struct trace_array *tr,
->>                   unsigned long ip,
->>                   unsigned long parent_ip,
->>                   unsigned long flags, int pc);
->> +void
->> +trace_function_return(struct ftrace_retfunc *trace);
->>
->>  void tracing_start_cmdline_record(void);
->>  void tracing_stop_cmdline_record(void);
->> @@ -391,6 +404,15 @@ extern void *head_page(struct trace_array_cpu *data);
->>  extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...);
->>  extern void trace_seq_print_cont(struct trace_seq *s,
->>                                struct trace_iterator *iter);
->> +
->> +/*
->> + * TRACE_ITER_SYM_MASK masks the options in trace_flags that
->> + * control the output of kernel symbols.
->> + */
->> +#define TRACE_ITER_SYM_MASK \
->> +     (TRACE_ITER_PRINT_PARENT|TRACE_ITER_SYM_OFFSET|TRACE_ITER_SYM_ADDR)
->> +extern int
->> +seq_print_ip_sym(struct trace_seq *s, unsigned long ip, unsigned long sym_flags);
->>  extern ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
->>                                size_t cnt);
->>  extern long ns2usecs(cycle_t nsec);
->> diff --git a/kernel/trace/trace_functions_return.c b/kernel/trace/trace_functions_return.c
->> new file mode 100644
->> index 0000000..b62491d
->> --- /dev/null
->> +++ b/kernel/trace/trace_functions_return.c
->> @@ -0,0 +1,98 @@
->> +/*
->> + *
->> + * Function return tracer.
->> + * Copyright (c) 2008 Frederic Weisbecker <fweisbec@gmail.com>
->> + * Mostly borrowed from function tracer which
->> + * is Copyright (c) Steven Rostedt <srostedt@redhat.com>
->> + *
->> + */
->> +#include <linux/debugfs.h>
->> +#include <linux/uaccess.h>
->> +#include <linux/ftrace.h>
->> +#include <linux/fs.h>
->> +
->> +#include "trace.h"
->> +
->> +struct trace_array *ret_trace;
->> +
->> +
->> +
->> +static void start_return_trace(struct trace_array *tr)
->> +{
->> +     register_ftrace_return(&trace_function_return);
->> +}
->> +
->> +static void stop_return_trace(struct trace_array *tr)
->> +{
->> +     unregister_ftrace_return();
->> +}
->> +
->> +static void return_trace_init(struct trace_array *tr)
->> +{
->> +     int cpu;
->> +     for_each_online_cpu(cpu)
->> +             tracing_reset(tr, cpu);
->> +     ret_trace = tr;
->> +
->> +     if (tr->ctrl)
->> +             start_return_trace(tr);
->> +}
->> +
->> +static void return_trace_reset(struct trace_array *tr)
->> +{
->> +     if (tr->ctrl)
->> +             stop_return_trace(tr);
->> +}
->> +
->> +static void return_trace_ctrl_update(struct trace_array *tr)
->> +{
->> +     if (tr->ctrl)
->> +             start_return_trace(tr);
->> +     else
->> +             stop_return_trace(tr);
->> +}
->> +
->> +typedef void (*func_t)(void);
->> +
->> +static enum print_line_t
->> +print_return(struct trace_iterator *iter)
->> +{
->> +     struct trace_seq *s = &iter->seq;
->> +     struct trace_entry *entry = iter->ent;
->> +     struct ftrace_ret_entry *field;
->> +     int ret;
->> +
->> +     if (entry->type == TRACE_FN_RET) {
->> +             trace_assign_type(field, entry);
->> +             ret = trace_seq_printf(s, "%pF -> ", (func_t)field->parent_ip);
->> +             if (!ret)
->> +                     return TRACE_TYPE_PARTIAL_LINE;
->> +             ret = seq_print_ip_sym(s, field->ip,
->> +                                     trace_flags & TRACE_ITER_SYM_MASK);
->> +             if (!ret)
->> +                     return TRACE_TYPE_PARTIAL_LINE;
->> +             ret = trace_seq_printf(s, " (%llu ns)\n",
->> +                                     field->rettime - field->calltime);
->> +             if (!ret)
->> +                     return TRACE_TYPE_PARTIAL_LINE;
->> +             else
->> +                     return TRACE_TYPE_HANDLED;
->> +     }
->> +     return TRACE_TYPE_UNHANDLED;
->> +}
->> +
->> +static struct tracer return_trace __read_mostly =
->> +{
->> +     .name        = "return",
->> +     .init        = return_trace_init,
->> +     .reset       = return_trace_reset,
->> +     .ctrl_update = return_trace_ctrl_update,
->> +     .print_line = print_return
->
-> Can you just add the case statement in the trace.c code to call your print
-> function. Otherwise, all we get is your output. It would be nice to let
-> all tracers use this.
-
-
-Ok.
-Thanks. I will apply these things for V3.
