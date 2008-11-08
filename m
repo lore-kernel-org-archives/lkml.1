@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbYKHLmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbYKHLxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbYKHLmv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 06:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbYKHLmk
+	id S1753932AbYKHLxi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 06:53:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbYKHLx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 06:42:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36535 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754184AbYKHLmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 06:42:39 -0500
-Date: Sat, 8 Nov 2008 12:42:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt LaPlante <kernel1@cyberdogtech.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] Change default for STRICT_DEVMEM
-Message-ID: <20081108114226.GB8354@elte.hu>
-References: <1226089116-7700-1-git-send-email-kernel1@cyberdogtech.com>
+	Sat, 8 Nov 2008 06:53:29 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:45178 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbYKHLx2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 06:53:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=W9W76wm7tCluunWnCvoZvV9BHwwZhRmT0BjZk8QUGKbiP8AguJO9HdNDXM3D8YZySE
+         kPZRShDFubawT2xb6xkAkUrdz5T9Oyv9NbfPbIdkBSjvEn8nE8j/yE6R8VnCwO0MGj+E
+         gj5r/8md67853cYa8EaRQZkS0cm6yoeW3JR9Q=
+Message-ID: <8d6898730811080353q6cae6620qbf203735d592a40e@mail.gmail.com>
+Date: Sat, 8 Nov 2008 17:23:25 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: sharing interrupt between PCI device
+Cc: "Grant Grundler" <grundler@parisc-linux.org>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>
+In-Reply-To: <491560C7.7050607@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1226089116-7700-1-git-send-email-kernel1@cyberdogtech.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
+	 <4910E8AC.7050407@shaw.ca>
+	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
+	 <49115AFC.2030400@gmail.com>
+	 <8d6898730811050120k10a20e4em744be45e04cfba94@mail.gmail.com>
+	 <20081108075729.GA15107@colo.lackof.org> <491560C7.7050607@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is what happens when we insert and remove the hp-ilo driver (dmesg logs).
 
-* Matt LaPlante <kernel1@cyberdogtech.com> wrote:
+for remove
+ACPI: PCI interrupt for device 0000:01:04.2 disabled
 
-> The recommendation for STRICT_DEVMEM is to select Y,
-> however the option currently defaults to N.  Have the option
-> default to Y since it is recommended.
-> 
-> ---
->  arch/x86/Kconfig.debug |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
 
-no. This is a special case: due to compatibility we default to N, but 
-still we recommend people/distros to enable it. Eventually we can 
-switch around the default in the future, but not yet.
+when inserted
+PCI: Enabling device 0000:01:04.2 (0114 -> 0117)
+ACPI: PCI Interrupt 0000:01:04.2[B] -> GSI 23 (level, low) -> IRQ 225
 
-	Ingo
+Thanks
+
+On Sat, Nov 8, 2008 at 3:19 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 11/08/2008 08:57 AM, Grant Grundler wrote:
+>> On Wed, Nov 05, 2008 at 02:50:01PM +0530, Nobin Mathew wrote:
+>>> Hi
+>>>
+>>>
+>>> Code is here
+>>> first one USB Virual input devices
+>>>
+>>> http://lxr.linux.no/linux+v2.6.27.4/drivers/usb/core/hcd-pci.c
+>>>
+>>> Second one is hp-ilo driver
+>>>
+>>> http://lxr.linux.no/linux+v2.6.27.4/drivers/misc/hpilo.c
+>>
+>> I looked for usage of request_irq() and didn't see it in either driver.
+>
+> The second one doesn't use interrupts at all. How can this be listed in
+> /proc/interrupts on any line?
+>
+> The first one obviously uses irq by registering it in common *hci layer.
+>
