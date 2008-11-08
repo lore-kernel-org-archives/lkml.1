@@ -1,171 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYKHDZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYKHD0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753203AbYKHDZt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 22:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYKHDZk
+	id S1753852AbYKHD0h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 22:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYKHD03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 22:25:40 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:51621 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121AbYKHDZj (ORCPT
+	Fri, 7 Nov 2008 22:26:29 -0500
+Received: from mu-out-0910.google.com ([209.85.134.186]:38836 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYKHD02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 22:25:39 -0500
-Message-ID: <491506B0.5030503@ct.jp.nec.com>
-Date: Fri, 07 Nov 2008 19:25:36 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 7 Nov 2008 22:26:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=XTMXrmzvbbWTcvj5wVYYldmzNvdN65gKWgmemVgOdCnCt7fOcFEnEkE50s11OC8RUU
+         A/KMzD8/J5bH0JG29IF5rGdY9jO0QR4KEQZhDKDBHwwcWO/lPqd8GRN0pPBdX/1UM/lG
+         PmWss0ZJ07ShFy+o8D13vKwOe1oJIslyKz7/o=
+Message-ID: <491506DB.1070000@gmail.com>
+Date: Sat, 08 Nov 2008 05:26:19 +0200
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: signal: cosmetic unification of setup_sigcontext()
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       ath5k-devel@venema.h4ckr.net
+CC: alsa-devel@alsa-project.org
+Subject: Bugs on aspire one A150
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+I have just bought an Aspire one A150, XP version,
+as it was the only available here, and installed ubuntu on it.
 
-Impact: cleanup
+Bugs I discovered so far:
 
-Make setup_sigcontext() same.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/signal_32.c |   32 ++++++++++++++++++++++++++++----
- arch/x86/kernel/signal_64.c |   33 ++++++++++++++++++++++++++++-----
- 2 files changed, 56 insertions(+), 9 deletions(-)
+** 1 - embedded controler works in polling mode, due to this:
 
-diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
-index 6a05c74..27a5c81 100644
---- a/arch/x86/kernel/signal_32.c
-+++ b/arch/x86/kernel/signal_32.c
-@@ -279,14 +279,20 @@ static int
- setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
- 		 struct pt_regs *regs, unsigned long mask)
- {
--	int tmp, err = 0;
-+	int err = 0;
- 
--	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
--	savesegment(gs, tmp);
--	err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
-+#ifdef CONFIG_X86_32
-+	{
-+		unsigned int tmp;
- 
-+		savesegment(gs, tmp);
-+		err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
-+	}
-+	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
- 	err |= __put_user(regs->es, (unsigned int __user *)&sc->es);
- 	err |= __put_user(regs->ds, (unsigned int __user *)&sc->ds);
-+#endif /* CONFIG_X86_32 */
-+
- 	err |= __put_user(regs->di, &sc->di);
- 	err |= __put_user(regs->si, &sc->si);
- 	err |= __put_user(regs->bp, &sc->bp);
-@@ -295,13 +301,31 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
- 	err |= __put_user(regs->dx, &sc->dx);
- 	err |= __put_user(regs->cx, &sc->cx);
- 	err |= __put_user(regs->ax, &sc->ax);
-+#ifdef CONFIG_X86_64
-+	err |= __put_user(regs->r8, &sc->r8);
-+	err |= __put_user(regs->r9, &sc->r9);
-+	err |= __put_user(regs->r10, &sc->r10);
-+	err |= __put_user(regs->r11, &sc->r11);
-+	err |= __put_user(regs->r12, &sc->r12);
-+	err |= __put_user(regs->r13, &sc->r13);
-+	err |= __put_user(regs->r14, &sc->r14);
-+	err |= __put_user(regs->r15, &sc->r15);
-+#endif /* CONFIG_X86_64 */
-+
- 	err |= __put_user(current->thread.trap_no, &sc->trapno);
- 	err |= __put_user(current->thread.error_code, &sc->err);
- 	err |= __put_user(regs->ip, &sc->ip);
-+#ifdef CONFIG_X86_32
- 	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
- 	err |= __put_user(regs->flags, &sc->flags);
- 	err |= __put_user(regs->sp, &sc->sp_at_signal);
- 	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
-+#else /* !CONFIG_X86_32 */
-+	err |= __put_user(regs->flags, &sc->flags);
-+	err |= __put_user(regs->cs, &sc->cs);
-+	err |= __put_user(0, &sc->gs);
-+	err |= __put_user(0, &sc->fs);
-+#endif /* CONFIG_X86_32 */
- 
- 	err |= __put_user(fpstate, &sc->fpstate);
- 
-diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
-index 3868c2a..d2307e4 100644
---- a/arch/x86/kernel/signal_64.c
-+++ b/arch/x86/kernel/signal_64.c
-@@ -157,16 +157,23 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
- /*
-  * Set up a signal frame.
-  */
--
--static inline int
-+static int
- setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
- 		 struct pt_regs *regs, unsigned long mask)
- {
- 	int err = 0;
- 
--	err |= __put_user(regs->cs, &sc->cs);
--	err |= __put_user(0, &sc->gs);
--	err |= __put_user(0, &sc->fs);
-+#ifdef CONFIG_X86_32
-+	{
-+		unsigned int tmp;
-+
-+		savesegment(gs, tmp);
-+		err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
-+	}
-+	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
-+	err |= __put_user(regs->es, (unsigned int __user *)&sc->es);
-+	err |= __put_user(regs->ds, (unsigned int __user *)&sc->ds);
-+#endif /* CONFIG_X86_32 */
- 
- 	err |= __put_user(regs->di, &sc->di);
- 	err |= __put_user(regs->si, &sc->si);
-@@ -176,6 +183,7 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
- 	err |= __put_user(regs->dx, &sc->dx);
- 	err |= __put_user(regs->cx, &sc->cx);
- 	err |= __put_user(regs->ax, &sc->ax);
-+#ifdef CONFIG_X86_64
- 	err |= __put_user(regs->r8, &sc->r8);
- 	err |= __put_user(regs->r9, &sc->r9);
- 	err |= __put_user(regs->r10, &sc->r10);
-@@ -184,11 +192,26 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
- 	err |= __put_user(regs->r13, &sc->r13);
- 	err |= __put_user(regs->r14, &sc->r14);
- 	err |= __put_user(regs->r15, &sc->r15);
-+#endif /* CONFIG_X86_64 */
-+
- 	err |= __put_user(current->thread.trap_no, &sc->trapno);
- 	err |= __put_user(current->thread.error_code, &sc->err);
- 	err |= __put_user(regs->ip, &sc->ip);
-+#ifdef CONFIG_X86_32
-+	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
- 	err |= __put_user(regs->flags, &sc->flags);
-+	err |= __put_user(regs->sp, &sc->sp_at_signal);
-+	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
-+#else /* !CONFIG_X86_32 */
-+	err |= __put_user(regs->flags, &sc->flags);
-+	err |= __put_user(regs->cs, &sc->cs);
-+	err |= __put_user(0, &sc->gs);
-+	err |= __put_user(0, &sc->fs);
-+#endif /* CONFIG_X86_32 */
-+
- 	err |= __put_user(fpstate, &sc->fpstate);
-+
-+	/* non-iBCS2 extensions.. */
- 	err |= __put_user(mask, &sc->oldmask);
- 	err |= __put_user(current->thread.cr2, &sc->cr2);
- 
--- 
-1.5.6
+[    0.708571] ACPI: EC: non-query interrupt received, switching to interrupt mode
+[    1.224043] ACPI: EC: missing confirmations, switch off interrupt mode.
 
+
+Maybe this is the reason for the fact that gnome power manager freezes when I unplug
+the AC, and freezes often when I try to see battery status.
+
+
+(Note: same is seen on my acer aspire 5720)
+
+
+** 2 - wireless: not to mention the fact that ath5k wasn't installed by default in ubuntu...
+wireless more or less works, but kernel log is full of backtraces.
+Was able to connect to my WPA2 access point.
+Sometimes wireless fails completely, especially after suspend to ram.
+Advanced features like monitor/injection work, but when I changed the card's
+mac address it stopped working.
+I also noticed that if I then start airodump, then wireless works with new mac.
+
+
+
+** 3 - internal mic doesn't work.
+tried model=acer, model=auto.
+Overall it seems that alsa misprograms O/B realteck
+codec.
+I talk about this later.
+Have same issue on my acer 5720
+
+
+
+** 4 - wireless led doesn't work.
+ath5k devs, can you fix this?
+
+
+** 5 - coretemp doesn't show cpu temperature,
+I have seen somewhere that atom support same thermal diode as core2
+and only patch to detect it is needed.
+Please include such path in 2.6.28 if exists.
+
+
+** 6 - both card readers are missing from lspci, is this normal?
+
+** 7 - opengl is broken, I tried running neverball in fullscreen, but it shows wrong/corrupted
+textures (compiz is running, and working well thought)
+ 
+Now I installed 2.6.28-rc3 (actually latest -git)
+
+
+Sadly nothing improved.
+I only found few regressions:
+
+
+
+* Wireless now drops connection from my WPA2 access point after few minutes.
+I changed temporarily its wireless protection to WEP and open mode, and both work
+fine, maybe this is related to periodic key exchange WPA does?
+
+* System doesn't reboot/shutdown, just hangs.
+
+
+
+
+
+Best regards,
+	Maxim Levitsky.
