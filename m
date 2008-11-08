@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbYKHWCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754246AbYKHWD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbYKHWCt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 17:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYKHWCk
+	id S1754246AbYKHWD1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 17:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYKHWDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 17:02:40 -0500
-Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:4755 "EHLO
-	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752557AbYKHWCk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 17:02:40 -0500
-Message-ID: <49160C7D.7020507@shikadi.net>
-Date: Sun, 09 Nov 2008 08:02:37 +1000
-From: Adam Nielsen <a.nielsen@shikadi.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.16) Gecko/20080727 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
+	Sat, 8 Nov 2008 17:03:19 -0500
+Received: from genesysrack.ru ([195.178.208.66]:33196 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752557AbYKHWDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 17:03:18 -0500
+Date: Sun, 9 Nov 2008 01:03:02 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Robert Love <rlove@rlove.org>
+Cc: John McCutchan <ttb@tentacle.dhs.org>, linux-api@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtk.manpages@gmail.com
+Subject: Re: [1/1] Use pid in inotify events.
+Message-ID: <20081108220302.GA25271@ioremap.net>
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081108184013.GA11888@ioremap.net>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: LKML Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: hid class and sysfs/hwmon
-References: <490FFF1B.6050300@shikadi.net> <4910C32F.9060204@gmail.com> <49152F4E.5040003@shikadi.net> <49159F54.8090500@gmail.com> <4916087F.30100@shikadi.net> <491609CA.30303@gmail.com>
-In-Reply-To: <491609CA.30303@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081108184013.GA11888@ioremap.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't know much about hwmon, but I would guess you should use hwmon_dev
-> for registering the attributes if you want it under /sys/class/hwmon/...
-> 
-> Such as:
-> sysfs_create_group(&odin_psu->hwmon_dev->kobj, &odin_attr_group);
-> 
-> No?
+On Sat, Nov 08, 2008 at 09:40:13PM +0300, Evgeniy Polyakov (zbr@ioremap.net) wrote:
+> But I really do not want to start to discuss this, since I already see
+> that result will be effectively zero, so returning to the original
+> problem with putting pid into events: if inotify_init() caller has 0
+> (e)uid or if IO origin has the same (e)uid, are you ok to put pid into
+> the event?
 
-Oh, that worked!  All the other hwmon drivers seem to have it the other 
-way around, i.e. you attach sysfs to your original bus/class device kobj 
-instead of the hwmon kobj.
+Something like this (not tested yet, no normal network access).
 
-Hopefully doing it this way won't have any side effects...
+Signed-off.
 
-Thanks for your help Jiri!
+diff --git a/fs/inotify.c b/fs/inotify.c
+index 690e725..121f025 100644
+--- a/fs/inotify.c
++++ b/fs/inotify.c
+@@ -80,6 +80,7 @@ struct inotify_handle {
+ 	struct list_head	watches;	/* list of watches */
+ 	atomic_t		count;		/* reference count */
+ 	u32			last_wd;	/* the last wd allocated */
++	uid_t			uid;		/* watcher's uid */
+ 	const struct inotify_operations *in_ops; /* inotify caller operations */
+ };
+ 
+@@ -292,6 +293,10 @@ void inotify_inode_queue_event(struct inode *inode, u32 mask, u32 cookie,
+ 			mutex_lock(&ih->mutex);
+ 			if (watch_mask & IN_ONESHOT)
+ 				remove_watch_no_event(watch, ih);
++
++			if (!cookie && (ih->uid == 0 ||
++					ih->uid == current->user->uid))
++				cookie = task_tgid_vnr(current);
+ 			ih->in_ops->handle_event(watch, watch->wd, mask, cookie,
+ 						 name, n_inode);
+ 			mutex_unlock(&ih->mutex);
+diff --git a/fs/inotify_user.c b/fs/inotify_user.c
+index 6024942..e426f7c 100644
+--- a/fs/inotify_user.c
++++ b/fs/inotify_user.c
+@@ -612,6 +612,8 @@ asmlinkage long sys_inotify_init1(int flags)
+ 	dev->ih = ih;
+ 	dev->fa = NULL;
+ 
++	ih->uid = user->uid;
++
+ 	filp->f_op = &inotify_fops;
+ 	filp->f_path.mnt = mntget(inotify_mnt);
+ 	filp->f_path.dentry = dget(inotify_mnt->mnt_root);
 
-Cheers,
-Adam.
+
+-- 
+	Evgeniy Polyakov
