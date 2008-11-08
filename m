@@ -1,98 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbYKHREu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbYKHRLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbYKHREu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 12:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbYKHREm
+	id S1754693AbYKHRLl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 12:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYKHRLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 12:04:42 -0500
-Received: from rv-out-0506.google.com ([209.85.198.226]:17479 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753591AbYKHREl (ORCPT
+	Sat, 8 Nov 2008 12:11:33 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:59768 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753626AbYKHRLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 12:04:41 -0500
-Message-ID: <acdcfe7e0811080904y7eb461d3n70b0765d8b1e9011@mail.gmail.com>
-Date: Sat, 8 Nov 2008 12:04:40 -0500
-From: "Robert Love" <rlove@rlove.org>
-To: mtk.manpages@gmail.com
-Subject: Re: [1/1] Use pid in inotify events.
-Cc: "Evgeniy Polyakov" <zbr@ioremap.net>, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, "John McCutchan" <ttb@tentacle.dhs.org>
-In-Reply-To: <cfd18e0f0811080858k7f6cddadg962771ed0cb3bdb8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081108114225.GA22674@ioremap.net>
-	 <cfd18e0f0811080625w5b285cc0p2410e8d187b025c7@mail.gmail.com>
-	 <20081108153545.GA3859@ioremap.net>
-	 <cfd18e0f0811080858k7f6cddadg962771ed0cb3bdb8@mail.gmail.com>
+	Sat, 8 Nov 2008 12:11:32 -0500
+Date: Sat, 08 Nov 2008 12:11:23 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: swappiness in 2.6.28-rc3?
+To: linux-kernel@vger.kernel.org
+Message-id: <200811081211.24000.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The reason John & I did not add a pid field -- and we discussed it and
-really wanted it -- is security. It is an information leak to know
-what an unrelated process is doing.
+Greetings;
 
-Trust me that the rest of the kernel developers are even harder on
-this subject than I.
+I have 2.6.28-rc3 with a 5 day uptime, and I have had to do a "swapoff -a; 
+swapon -a" almost daily to clear the swap.
 
-I suppose you could fill out the pid field only if the uid's match,
-but that is extra work for less utility.
+This is about 18 hours since I last did that:
+Mem:   4151132k total,  2891180k used,  1259952k free,   281224k buffers
+Swap:  2048276k total,    85864k used,  1962412k free,  2078404k cached
 
-     Robert
+I don't recall having to do this with 2.6.27 or any of its -rc's.
 
+Comments anyone?
 
-On Sat, Nov 8, 2008 at 11:58 AM, Michael Kerrisk
-<mtk.manpages@googlemail.com> wrote:
-> [CC += "John McCutchan" <ttb@tentacle.dhs.org>, who was one of the
-> inotify developers, as I recall]
->
-> Hi Evgeniy,
->
-> On Sat, Nov 8, 2008 at 10:35 AM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
->> Hi Michael.
->>
->> On Sat, Nov 08, 2008 at 09:25:16AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
->>> I've not looked closely at the patch, but a quick question.  The
->>> ookied field is unused for _most_ events, but is used for rename
->>> events.  Are you saying that with this patch, that the cookie will be
->>> used as before for rename events, but for other events it will be the
->>> PID of the triggering process?  If so, that seems a bit ugly -- why
->>> wouldn't we also be intersted in the PID for rename events?
->>
->> Yes, rename events actually consist of at least two: move from and move
->> to, and they carry the same cookie, so that userspace could combine them
->> into single transaction. All others use zero, so I decided to put PID of
->> the caller there. This does not look perfect of course, but we can not
->> change the structure layout, so rename events can not be changed to
->> carry additional PID field.
->
-> It's perhaps unfortunate that the structure wasn't padded out with a
-> few additional fields "for future use".  But -- maybe it is not really
-> true that we can't change things.  Two things to consider:
->
-> a) We now (since 2.6.27) have an inotify_init1() which has a flags argument.
-> b) There are spare bits in the mask argument of inotify_add_watch()
->
-> We could use a flag in either of these to say that we want a different
-> structure returned on read() from the inotify descriptor.  In the
-> first case, this would be a global setting for all inotify events on
-> that descriptor.  In the second, we could do it on a per-watch basis
-> (I'm not so sure that that is a nice idea).  Since we are in any case
-> extending the ABI, and new applications would need to be taught about
-> the extension, it seems we could consider either of the alternative
-> extensions I mentioned, which woul also allow the PID to be obtained
-> for rename() events.  What do you think?
->
-> Cheers,
->
-> Michael
->
-> --
-> Michael Kerrisk
-> Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-> git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-> man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-> Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
->
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+SCCS, the source motel!  Programs check in and never check out!
+		-- Ken Thompson
