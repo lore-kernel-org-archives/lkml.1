@@ -1,91 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYKHTK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbYKHTLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbYKHTK1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 14:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYKHTKS
+	id S1752965AbYKHTLL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 14:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYKHTK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 14:10:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37089 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbYKHTKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 14:10:17 -0500
-Date: Sat, 8 Nov 2008 20:10:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [git pull] scheduler updates
-Message-ID: <20081108191010.GA12852@elte.hu>
-References: <20081108170224.GA553@elte.hu> <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org> <20081108104116.48bd26e6@infradead.org> <alpine.LFD.2.00.0811081051190.3468@nehalem.linux-foundation.org>
+	Sat, 8 Nov 2008 14:10:57 -0500
+Received: from ik-out-1112.google.com ([66.249.90.177]:12864 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbYKHTKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 14:10:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=DcjK7aJdFtDSPqzXEE1/GikcPNny/It7CiqYkRL5+JYZmq2/0UhvSsEY/qMZrdqO3t
+         N5JmzZ10mm+wdFUjxdcmaQfEpzUyN6+iAjTQVL6mK7YozDWQcm9cOLcLKkxmpGY15V5u
+         wxap4NuryaNeCFzhljDY2G3lSzbcK1d65SURs=
+Message-ID: <4915E43E.4010206@gmail.com>
+Date: Sat, 08 Nov 2008 20:10:54 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811081051190.3468@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Nobin Mathew <nobin.mathew@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
+Subject: Re: sharing interrupt between PCI device
+References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no> <4910E8AC.7050407@shaw.ca> <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com> <20081108172716.GA28039@colo.lackof.org>
+In-Reply-To: <20081108172716.GA28039@colo.lackof.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Grant Grundler napsal(a):
+> So I see how the IRQ is enabled and disabled. I still don't see where
+> an interrupt handler is bound to IRQ 225 (output you posted today in
+> another email).
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+This irq setup is done during pci_enable_device.
 
-> On Sat, 8 Nov 2008, Arjan van de Ven wrote:
-> > 
-> > historically it was for early AMD cpus (K7, not sure if early K8 did
-> > this) where 2 consecutive rdtsc's in the same codestream would get
-> > reordered compared to eachother, so you could observe the tsc go
-> > backwards...
-> 
-> .. but this only happens with two _consecutive_ ones.
-> 
-> The thing is, nobody sane does that in generic code. The scheduler wants 
-> to have cycles, yes, but two consecutive scheduler invocations will have 
-> spinlocks etc in between. That's true of _all_ sane uses of a TSC.
-> 
-> I don't see that there is ever any reason to do the barriers for any 
-> normal case. And the cases where it does matter would actually be worth 
-> pointing out (ie making the barriers explicit in those cases, and those 
-> cases only).
-> 
-> Doing it in get_cycles() and "forgetting about it" may sound like a simple 
-> solution, but it's likely wrong. For example, one of the few cases where 
-> we realy care about time going backwards is gettimeofday() - which uses 
-> tsc, but which also has tons of serializing instructions on its own. 
-> EXCEPT WHEN IT IS a vsyscall!
-> 
-> But in that case, we don't even have the barrier, because we put it in the 
-> wrong function and 'forgot about it'. Of course, we may not need it 
-> (rdtscp maybe always serializes, I didn't check), but the point is, an 
-> explicit barrier is actually better than one that is hidden.
-> 
-> So who _really_ needs it? And why not just do it there?
+> Nobin, can you dump /proc/interrupts when both drivers
+> are loaded and also send the dmesg output after both are loaded?
 
-i think, the tree as offered to you, intends to do just that, unless i 
-made some grave (and unintended) mistake somewhere.
-
-The barrier is only present in the vread function: which is the 
-vsyscall-read function, to be used from user-space.
-
-Even in the past, no was actually forgotten or put in the wrong 
-function as far as i can see because previously _everything_ 
-(including the vread method) had the barrier.
-
-The change from me simply removes the barrier from the places that 
-dont need it - exactly for the reason you outlined: the scheduler is 
-both imprecise and has a ton of natural serialization anyway, so it's 
-a non-issue there.
-
-Hm?
-
-	Ingo
+This won't show the hp driver as it doesn't request_irq.
