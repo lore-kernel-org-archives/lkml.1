@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYKHItc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYKHJKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYKHItc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 03:49:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbYKHItW
+	id S1753647AbYKHJKU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 04:10:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYKHJKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 03:49:22 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:55149 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752089AbYKHItV (ORCPT
+	Sat, 8 Nov 2008 04:10:00 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:58225 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbYKHJJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 03:49:21 -0500
+	Sat, 8 Nov 2008 04:09:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=ElfZljc7zZ/ZZifpF4HO5ZwWCBkuKpsSEakFuYc7U0YL/6taNnTUi1oaAhQ3+Xgj3K
-         71kcJj415b2kBl1Vj86nK5FPYchShFQERJyk1e9LqCcxBnLF/VgMcHImTFKZnflM79ei
-         FljBeRJBfP0K/L47wRZpa8Fwn6zfTc29Bmf+Q=
-Date: Sat, 8 Nov 2008 16:48:33 +0800
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: rdunlap@xenotime.net
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6] /fs/ecryptfs/inode.c: cleanup kerneldoc
-Message-ID: <20081108164833.71ab8742@ubuntu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=message-id:date:from:user-agent:mime-version:cc:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=M5Ea5l1cARxjYM9e8DPN2yLu97l/hPLyxzbk21FaurncdWgHsvlcCaZVNMxAvfk9XJ
+         UXYGbXuk48d1hrJ8KC+yu8R1uvgJsSZpS4N3gTCYn6+UnG1++dJwdl09vGKfWaEi69Gp
+         p5o01UnEn5/gLhXJu8smJXfQvFY2HwBrO7uEQ=
+Message-ID: <4915575F.1040103@gmail.com>
+Date: Sat, 08 Nov 2008 10:09:51 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+CC: Gareth Hughes <gareth@valinux.com>, Dave Airlie <airlied@linux.ie>,
+       dri-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@tungstengraphics.com>
+Subject: Re: oops in radeon_suspend (mmotm 2008-10-22-17-18)
+References: <49048B88.1060807@gmail.com>
+In-Reply-To: <49048B88.1060807@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arguments lower_dentry and ecryptfs_dentry in ecryptfs_create_underlying_file()
-have been merged into dentry, now fix it.
+Ping
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 89209f0..b17146f 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -52,8 +52,7 @@ static void unlock_dir(struct dentry *dir)
- /**
-  * ecryptfs_create_underlying_file
-  * @lower_dir_inode: inode of the parent in the lower fs of the new file
-- * @lower_dentry: New file's dentry in the lower fs
-- * @ecryptfs_dentry: New file's dentry in ecryptfs
-+ * @dentry: New file's dentry
-  * @mode: The mode of the new file
-  * @nd: nameidata of ecryptfs' parent's dentry & vfsmount
-  *
+On 10/26/2008 04:23 PM, Jiri Slaby wrote:
+> Hi,
+> 
+> this oops occured on suspend of mmotm:
+> http://decibel.fi.muni.cz/~xslaby/radeon_oops1.png
+> http://decibel.fi.muni.cz/~xslaby/radeon_oops2.png
+> 
+> radeon_suspend:
+> movq    288(%rcx), %rax # <variable>.mmio, <variable>.mmio
+> xorl    %edx, %edx      # tmp68
+> movq    24(%rax), %rax  # <variable>.handle, <variable>.handle
+> 
+> rax (dev_priv->mmio) is null.
