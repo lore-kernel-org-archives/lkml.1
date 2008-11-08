@@ -1,90 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbYKHQ6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbYKHRCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754583AbYKHQ6n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 11:58:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbYKHQ6e
+	id S1754668AbYKHRCr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 12:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604AbYKHRCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 11:58:34 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:35162 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753562AbYKHQ6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 11:58:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=uN/zsUfGydZQ/W9ng8ftUvNT1TwGSwbJNj5+skexV3m6vpe4AYqsihx5Nu/2/czxmQ
-         NAhGdkG2sbl8wXn9YMUmRmML5g58wV2oVxBk6ijIWLsURrRfFEvuuVxWzI2buzmq1yY3
-         iqw1pYGh08tlCoKdsRcMLCv7TztIBvIlmtDR4=
-Message-ID: <cfd18e0f0811080858k7f6cddadg962771ed0cb3bdb8@mail.gmail.com>
-Date: Sat, 8 Nov 2008 11:58:30 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Evgeniy Polyakov" <zbr@ioremap.net>
-Subject: Re: [1/1] Use pid in inotify events.
-Cc: linux-kernel@vger.kernel.org, "Robert Love" <rlove@rlove.org>,
-       linux-api@vger.kernel.org, "John McCutchan" <ttb@tentacle.dhs.org>
-In-Reply-To: <20081108153545.GA3859@ioremap.net>
+	Sat, 8 Nov 2008 12:02:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40743 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753591AbYKHRCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 12:02:38 -0500
+Date: Sat, 8 Nov 2008 18:02:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: [git pull] scheduler updates
+Message-ID: <20081108170224.GA553@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20081108114225.GA22674@ioremap.net>
-	 <cfd18e0f0811080625w5b285cc0p2410e8d187b025c7@mail.gmail.com>
-	 <20081108153545.GA3859@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC += "John McCutchan" <ttb@tentacle.dhs.org>, who was one of the
-inotify developers, as I recall]
+Linus,
 
-Hi Evgeniy,
+Please pull the latest scheduler updates git tree from:
 
-On Sat, Nov 8, 2008 at 10:35 AM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
-> Hi Michael.
->
-> On Sat, Nov 08, 2008 at 09:25:16AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
->> I've not looked closely at the patch, but a quick question.  The
->> ookied field is unused for _most_ events, but is used for rename
->> events.  Are you saying that with this patch, that the cookie will be
->> used as before for rename events, but for other events it will be the
->> PID of the triggering process?  If so, that seems a bit ugly -- why
->> wouldn't we also be intersted in the PID for rename events?
->
-> Yes, rename events actually consist of at least two: move from and move
-> to, and they carry the same cookie, so that userspace could combine them
-> into single transaction. All others use zero, so I decided to put PID of
-> the caller there. This does not look perfect of course, but we can not
-> change the structure layout, so rename events can not be changed to
-> carry additional PID field.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
-It's perhaps unfortunate that the structure wasn't padded out with a
-few additional fields "for future use".  But -- maybe it is not really
-true that we can't change things.  Two things to consider:
+ Thanks,
 
-a) We now (since 2.6.27) have an inotify_init1() which has a flags argument.
-b) There are spare bits in the mask argument of inotify_add_watch()
+	Ingo
 
-We could use a flag in either of these to say that we want a different
-structure returned on read() from the inotify descriptor.  In the
-first case, this would be a global setting for all inotify events on
-that descriptor.  In the second, we could do it on a per-watch basis
-(I'm not so sure that that is a nice idea).  Since we are in any case
-extending the ABI, and new applications would need to be taught about
-the extension, it seems we could consider either of the alternative
-extensions I mentioned, which woul also allow the PID to be obtained
-for rename() events.  What do you think?
+------------------>
+Ingo Molnar (2):
+      sched: improve sched_clock() performance
+      sched: optimize sched_clock() a bit
 
-Cheers,
 
-Michael
+ arch/x86/include/asm/msr.h |    2 --
+ arch/x86/include/asm/tsc.h |    8 +++++++-
+ arch/x86/kernel/tsc.c      |    2 +-
+ 3 files changed, 8 insertions(+), 4 deletions(-)
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 46be2fa..c2a812e 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -108,9 +108,7 @@ static __always_inline unsigned long long __native_read_tsc(void)
+ {
+ 	DECLARE_ARGS(val, low, high);
+ 
+-	rdtsc_barrier();
+ 	asm volatile("rdtsc" : EAX_EDX_RET(val, low, high));
+-	rdtsc_barrier();
+ 
+ 	return EAX_EDX_VAL(val, low, high);
+ }
+diff --git a/arch/x86/include/asm/tsc.h b/arch/x86/include/asm/tsc.h
+index 38ae163..9cd83a8 100644
+--- a/arch/x86/include/asm/tsc.h
++++ b/arch/x86/include/asm/tsc.h
+@@ -34,6 +34,8 @@ static inline cycles_t get_cycles(void)
+ 
+ static __always_inline cycles_t vget_cycles(void)
+ {
++	cycles_t cycles;
++
+ 	/*
+ 	 * We only do VDSOs on TSC capable CPUs, so this shouldnt
+ 	 * access boot_cpu_data (which is not VDSO-safe):
+@@ -42,7 +44,11 @@ static __always_inline cycles_t vget_cycles(void)
+ 	if (!cpu_has_tsc)
+ 		return 0;
+ #endif
+-	return (cycles_t)__native_read_tsc();
++	rdtsc_barrier();
++	cycles = (cycles_t)__native_read_tsc();
++	rdtsc_barrier();
++
++	return cycles;
+ }
+ 
+ extern void tsc_init(void);
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 2ef80e3..424093b 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -55,7 +55,7 @@ u64 native_sched_clock(void)
+ 	rdtscll(this_offset);
+ 
+ 	/* return the value in ns */
+-	return cycles_2_ns(this_offset);
++	return __cycles_2_ns(this_offset);
+ }
+ 
+ /* We need to define a real function for sched_clock, to override the
