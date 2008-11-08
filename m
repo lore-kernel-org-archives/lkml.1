@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754563AbYKHRqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbYKHSKM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754563AbYKHRqa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 12:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYKHRqV
+	id S1753741AbYKHSKM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 13:10:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbYKHSJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 12:46:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:52036 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbYKHRqU convert rfc822-to-8bit (ORCPT
+	Sat, 8 Nov 2008 13:09:57 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:41107 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbYKHSJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 12:46:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=rUlDjvW/3pbAMzuD92zvExGPoMrzN/Hgf++vt+R1r9UHycQlk5Z0H9tmet//iWDRdZ
-         Crwi2+9RxHAmqTtwB9xm3k+YfX77a9id38b9SsbM9J6pCtF14BwP+/rNpWw2JgPZr0S5
-         dSRTEZ7ODUTfZ3nqe2vwwIs1QmRAZEC1bPnoc=
-Date: Sat, 8 Nov 2008 18:46:25 +0100
-From: dcg <diegocalleja@gmail.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: swappiness in 2.6.28-rc3?
-Message-ID: <20081108184625.6a64a518@diego-desktop>
-In-Reply-To: <200811081211.24000.gene.heskett@gmail.com>
-References: <200811081211.24000.gene.heskett@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+	Sat, 8 Nov 2008 13:09:57 -0500
+Date: Sat, 8 Nov 2008 10:09:11 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, netdev <netdev@vger.kernel.org>,
+       p_gortmaker@yahoo.com
+Subject: Re: mmotm 2008-11-06-13-44 uploaded (smc-ultra)
+Message-Id: <20081108100911.e475ff0f.randy.dunlap@oracle.com>
+In-Reply-To: <200811062144.mA6LiWj8004200@imap1.linux-foundation.org>
+References: <200811062144.mA6LiWj8004200@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A0B0207.4915D5E8.028D:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Sat, 08 Nov 2008 12:11:23 -0500, Gene Heskett <gene.heskett@gmail.com> escribió:
+On Thu, 06 Nov 2008 13:44:32 -0800 akpm@linux-foundation.org wrote:
 
-> Greetings;
+> The mm-of-the-moment snapshot 2008-11-06-13-44 has been uploaded to
 > 
-> I have 2.6.28-rc3 with a 5 day uptime, and I have had to do a "swapoff -a; 
-> swapon -a" almost daily to clear the swap.
+>    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> This is about 18 hours since I last did that:
-> Mem:   4151132k total,  2891180k used,  1259952k free,   281224k buffers
-> Swap:  2048276k total,    85864k used,  1962412k free,  2078404k cached
-> 
-> I don't recall having to do this with 2.6.27 or any of its -rc's.
+> It contains the following patches against 2.6.28-rc3:
 
-I've also noticed more swappiness (very probably due to the vm scanning
-rework), but I can't say for sure if it's a bad thing...
+
+mmotm-2008-1106-1344/drivers/net/smc-ultra.c: In function 'ultra_probe1':
+mmotm-2008-1106-1344/drivers/net/smc-ultra.c:254: error: 'mac' undeclared (first use in this function)
+
+---
+~Randy
