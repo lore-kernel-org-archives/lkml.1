@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbYKHSjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbYKHSkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbYKHSjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 13:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbYKHSi7
+	id S1753292AbYKHSkG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 13:40:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYKHSjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 13:38:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51363 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750981AbYKHSi7 (ORCPT
+	Sat, 8 Nov 2008 13:39:55 -0500
+Received: from nf-out-0910.google.com ([64.233.182.191]:51244 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbYKHSjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 13:38:59 -0500
-Date: Sat, 8 Nov 2008 10:38:43 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [git pull] scheduler updates
-In-Reply-To: <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0811081035370.3468@nehalem.linux-foundation.org>
-References: <20081108170224.GA553@elte.hu> <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 8 Nov 2008 13:39:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=CcMUJO7w2vH1VZN88yiZfBXH8o4eoDggOBFSWxg1H9pUkwLPO3/WI1KVdZ2OYlRHmE
+         D2tpPTO6lklhp9qBeXZCQxuH3YYXiPmi+Cnp4PyZGRrKYmVp6vWKwrHowxvsHSlxyzWz
+         RIy1UfzMWdH9cSUywvZm+vADQuHntWnpklUWo=
+Date: Sat, 8 Nov 2008 21:43:15 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: linux-next: Tree for November 7
+Message-ID: <20081108184315.GA9382@x200.localdomain>
+References: <20081107205457.f64dea59.sfr@canb.auug.org.au> <200811081257.45184.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811081257.45184.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 8 Nov 2008, Linus Torvalds wrote:
+On Sat, Nov 08, 2008 at 12:57:44PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> On Friday 07 November 2008, Stephen Rothwell wrote:
+> > Changes since 20081106:
 > 
-> Can we please just remove that idiocy? Or can somebody give a _sane_ 
-> argument for it?
+> The following patch fixes the panic on loopback device registration
+> (patch is an interdiff between old and new version of "net: Guaranetee
+> the proper ordering of the loopback device." fix from Eric).
+> 
+> [ I'm sure this will get fixed in -net tree (if not fixed already)
+>   but at the moment it is needed for linux-next. ]
 
-Btw, the only _possible_ sane argument I see is 
-
- - two consecutive rdtsc calls
- - timing the code in between
- - the code in between is not self-serializing
-
-and quite frankly, if that's the case, then it's _that_ code that should 
-have the barriers, not some generic "[v]get_cycles()". 
-
-IOW, the rdtsc_barrier may make sense when you're synchronizing the TSC to 
-some other hardware event (eg the "tie the TSC to the HPET" kind of 
-code), but then the barriers are about the code, not about the TSC access 
-itself.
-
-			Linus
+This patch alone is a) not enough, and b) davem already pushed out correct
+version.
