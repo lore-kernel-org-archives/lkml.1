@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbYKHTP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753659AbYKHTTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753907AbYKHTP4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 14:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYKHTPs
+	id S1753659AbYKHTTO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 14:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbYKHTS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 14:15:48 -0500
-Received: from colo.lackof.org ([198.49.126.79]:42686 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbYKHTPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 14:15:47 -0500
-Date: Sat, 8 Nov 2008 12:15:36 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Nobin Mathew <nobin.mathew@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>
-Subject: Re: sharing interrupt between PCI device
-Message-ID: <20081108191536.GC28039@colo.lackof.org>
-References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no> <4910E8AC.7050407@shaw.ca> <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com> <20081108172716.GA28039@colo.lackof.org> <4915E43E.4010206@gmail.com>
+	Sat, 8 Nov 2008 14:18:58 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:53679 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbYKHTS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 14:18:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=LqJBHlu46sbzyUq9SyEfneBKa5F+Z2hD4YKjkX66b3GSt+h+VvgSPvSAyCk5Ojkibt
+         R4nEDnNymElVWZHuX3ahWOewsP+5718nIJB6qmgvjdg++y9Vo58isHIukYkAwOcY8MHU
+         CHqIRaRWKAvLCiQyuEWd/CdhCqcd3ssXXXNI4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: linux-next: Tree for November 7
+Date: Sat, 8 Nov 2008 20:13:03 +0100
+User-Agent: KMail/1.9.10
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "David S. Miller" <davem@davemloft.net>
+References: <20081107205457.f64dea59.sfr@canb.auug.org.au> <200811081257.45184.bzolnier@gmail.com> <20081108184315.GA9382@x200.localdomain>
+In-Reply-To: <20081108184315.GA9382@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4915E43E.4010206@gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200811082013.04066.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 08, 2008 at 08:10:54PM +0100, Jiri Slaby wrote:
-> Grant Grundler napsal(a):
-> > So I see how the IRQ is enabled and disabled. I still don't see where
-> > an interrupt handler is bound to IRQ 225 (output you posted today in
-> > another email).
+On Saturday 08 November 2008, Alexey Dobriyan wrote:
+> On Sat, Nov 08, 2008 at 12:57:44PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > On Friday 07 November 2008, Stephen Rothwell wrote:
+> > > Changes since 20081106:
+> > 
+> > The following patch fixes the panic on loopback device registration
+> > (patch is an interdiff between old and new version of "net: Guaranetee
+> > the proper ordering of the loopback device." fix from Eric).
+> > 
+> > [ I'm sure this will get fixed in -net tree (if not fixed already)
+> >   but at the moment it is needed for linux-next. ]
 > 
-> This irq setup is done during pci_enable_device.
+> This patch alone is a) not enough, and b) davem already pushed out correct
+> version.
 
-Sorry, I wasn't quite correct: pci_enable_device() should only assign IRQs,
-not enable them. request_irq() would enable them.
+Well, it was enough to make next-20081107 bootable for me. :-)
 
-> > Nobin, can you dump /proc/interrupts when both drivers
-> > are loaded and also send the dmesg output after both are loaded?
-> 
-> This won't show the hp driver as it doesn't request_irq.
+However, it seems like the following patch is also neeed by linux-next users:
+ http://git.kernel.org/?p=linux/kernel/git/davem/net-next-2.6.git;a=commitdiff;h=5d6d480908300a0c0b3be8b58567dfcef62c83a5
 
-Yup - that's what I expect too. But I was afraid something else might
-be calling request_irq() and I'm just not seeing it. :)
+[ I also see that it is fixed now but it was actually an overdue mail from
+  yesterday and like I said earlier, the sole its purpose was to help people
+  trying linux-next kernels (linux-next is not released on weekends so from
+  their POV it doesn't really matter if it already got fixed in net-next). ]
 
-grant
+Thanks,
+Bart
