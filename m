@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYKHDvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbYKHDvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYKHDvc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 22:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbYKHDsA
+	id S1755168AbYKHDvt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 22:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYKHDuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 22:48:00 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48370 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752666AbYKHDrw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 22:47:52 -0500
-Message-Id: <20081108034750.383808318@goodmis.org>
-References: <20081108034605.289816911@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 07 Nov 2008 22:46:14 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
+	Fri, 7 Nov 2008 22:50:44 -0500
+Received: from xenotime.net ([72.52.64.118]:47980 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754781AbYKHDul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 22:50:41 -0500
+Date: Fri, 7 Nov 2008 19:50:38 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 09/10] ftrace: force pass of preemptoff selftest
-Content-Disposition: inline; filename=0009-ftrace-force-pass-of-preemptoff-selftest.patch
+Cc: akpm@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH] MTD: remove excess kernel-doc notation
+Message-Id: <20081107195038.ee059fa1.rdunlap@xenotime.net>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: preemptoff not tested in selftest
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Due to the BKL not being preemptable anymore, the selftest of the
-preemptoff code can not be tested. It requires that it is called
-with preemption enabled, but since the BKL is held, that is no
-longer the case.
+Delete extra kernel-doc notation for struct fields and function
+parameters that don't exist:
 
-This patch simply skips those tests if it detects that the context
-is not preemptable. The following will now show up in the tests:
+Warning(include/linux/mtd/nand.h:428): Excess struct/union/enum/typedef member 'wq' description in 'nand_chip'
+Warning(include/linux/mtd/nand.h:428): Excess struct/union/enum/typedef member 'datbuf' description in 'nand_chip'
+Warning(include/linux/mtd/nand.h:428): Excess struct/union/enum/typedef member 'oobbuf' description in 'nand_chip'
+Warning(include/linux/mtd/nand.h:428): Excess struct/union/enum/typedef member 'oobdirty' description in 'nand_chip'
+Warning(include/linux/mtd/nand.h:428): Excess struct/union/enum/typedef member 'data_poi' description in 'nand_chip'
+Warning(drivers/mtd/nand/nand_base.c:2527): Excess function parameter 'maxchips' description in 'nand_scan_tail'
 
-Testing tracer preemptoff: can not test ... force PASSED
-Testing tracer preemptirqsoff: can not test ... force PASSED
-
-When the BKL is removed, or it becomes preemptable once again, then
-the tests will be performed.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: David Woodhouse <dwmw2@infradead.org>
 ---
- kernel/trace/trace_selftest.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+ drivers/mtd/nand/nand_base.c |    1 -
+ include/linux/mtd/nand.h     |    5 -----
+ 2 files changed, 6 deletions(-)
 
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index ea4e5d3..0728a10 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -257,6 +257,19 @@ trace_selftest_startup_preemptoff(struct tracer *trace, struct trace_array *tr)
- 	unsigned long count;
- 	int ret;
- 
-+	/*
-+	 * Now that the big kernel lock is no longer preemptable,
-+	 * and this is called with the BKL held, it will always
-+	 * fail. If preemption is already disabled, simply
-+	 * pass the test. When the BKL is removed, or becomes
-+	 * preemptible again, we will once again test this,
-+	 * so keep it in.
-+	 */
-+	if (preempt_count()) {
-+		printk(KERN_CONT "can not test ... force ");
-+		return 0;
-+	}
-+
- 	/* start the tracing */
- 	trace->init(tr);
- 	/* reset the max latency */
-@@ -293,6 +306,19 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
- 	unsigned long count;
- 	int ret;
- 
-+	/*
-+	 * Now that the big kernel lock is no longer preemptable,
-+	 * and this is called with the BKL held, it will always
-+	 * fail. If preemption is already disabled, simply
-+	 * pass the test. When the BKL is removed, or becomes
-+	 * preemptible again, we will once again test this,
-+	 * so keep it in.
-+	 */
-+	if (preempt_count()) {
-+		printk(KERN_CONT "can not test ... force ");
-+		return 0;
-+	}
-+
- 	/* start the tracing */
- 	trace->init(tr);
- 
--- 
-1.5.6.5
-
--- 
+--- linux-2.6.28-rc3-git4.orig/drivers/mtd/nand/nand_base.c
++++ linux-2.6.28-rc3-git4/drivers/mtd/nand/nand_base.c
+@@ -2517,7 +2517,6 @@ int nand_scan_ident(struct mtd_info *mtd
+ /**
+  * nand_scan_tail - [NAND Interface] Scan for the NAND device
+  * @mtd:	    MTD device structure
+- * @maxchips:	    Number of chips to scan for
+  *
+  * This is the second phase of the normal nand_scan() function. It
+  * fills out all the uninitialized function pointers with the defaults
+--- linux-2.6.28-rc3-git4.orig/include/linux/mtd/nand.h
++++ linux-2.6.28-rc3-git4/include/linux/mtd/nand.h
+@@ -335,17 +335,12 @@ struct nand_buffers {
+  * @erase_cmd:		[INTERN] erase command write function, selectable due to AND support
+  * @scan_bbt:		[REPLACEABLE] function to scan bad block table
+  * @chip_delay:		[BOARDSPECIFIC] chip dependent delay for transfering data from array to read regs (tR)
+- * @wq:			[INTERN] wait queue to sleep on if a NAND operation is in progress
+  * @state:		[INTERN] the current state of the NAND device
+  * @oob_poi:		poison value buffer
+  * @page_shift:		[INTERN] number of address bits in a page (column address bits)
+  * @phys_erase_shift:	[INTERN] number of address bits in a physical eraseblock
+  * @bbt_erase_shift:	[INTERN] number of address bits in a bbt entry
+  * @chip_shift:		[INTERN] number of address bits in one chip
+- * @datbuf:		[INTERN] internal buffer for one page + oob
+- * @oobbuf:		[INTERN] oob buffer for one eraseblock
+- * @oobdirty:		[INTERN] indicates that oob_buf must be reinitialized
+- * @data_poi:		[INTERN] pointer to a data buffer
+  * @options:		[BOARDSPECIFIC] various chip options. They can partly be set to inform nand_scan about
+  *			special functionality. See the defines for further explanation
+  * @badblockpos:	[INTERN] position of the bad block marker in the oob area
