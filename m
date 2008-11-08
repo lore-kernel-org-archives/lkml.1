@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYKHOgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbYKHOqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbYKHOgz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 09:36:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYKHOgq
+	id S1754406AbYKHOqh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 09:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbYKHOq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 09:36:46 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49477 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753447AbYKHOgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 09:36:45 -0500
-X-Authenticated: #36613700
-X-Provags-ID: V01U2FsdGVkX19M3fRUVmxMyR0kwGQoytAKNhVl3e2weANJtBOA5/
-	Yg229seMrRKfKi
-From: Mathias Schnarrenberger <mathias.schnarrenberger@gmx.de>
-Reply-To: mathias.schnarrenberger@gmx.de
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: security: delete BIOS password in keyboard buffer during kernel bootup
-Date: Sat, 8 Nov 2008 15:36:39 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27-7-generic; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200811081100.03966.mathias.schnarrenberger@gmx.de> <20081108142705.59c1ced7@lxorguk.ukuu.org.uk>
-In-Reply-To: <20081108142705.59c1ced7@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 8 Nov 2008 09:46:28 -0500
+Received: from tim.rpsys.net ([194.106.48.114]:45096 "EHLO tim.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753060AbYKHOq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 09:46:27 -0500
+Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Dmitry <dbaryshkov@gmail.com>, Pavel Machek <pavel@suse.cz>,
+       Eric Miao <eric.y.miao@gmail.com>, Cyril Hrubis <metan@ucw.cz>,
+       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Dirk@opfer-online.de, arminlitzel@web.de, pavel.urban@ct.cz,
+       thommycheck@gmail.com
+In-Reply-To: <20081107182311.GA28600@flint.arm.linux.org.uk>
+References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz>
+	 <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com>
+	 <20081105173303.GC2038@elf.ucw.cz>
+	 <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com>
+	 <20081106080416.GA1531@ucw.cz>
+	 <20081106191424.GA2273@atrey.karlin.mff.cuni.cz>
+	 <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com>
+	 <20081107142923.GA1616@ucw.cz>
+	 <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com>
+	 <20081107182311.GA28600@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Sat, 08 Nov 2008 14:45:40 +0000
+Message-Id: <1226155540.5379.5.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811081536.40422.mathias.schnarrenberger@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.8100000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Clear it with a program if it bothers you. You've written 90% of the
->needed code with the program below.
+
+On Fri, 2008-11-07 at 18:23 +0000, Russell King wrote:
+> On Fri, Nov 07, 2008 at 05:57:33PM +0300, Dmitry wrote:
+> > 2008/11/7 Pavel Machek <pavel@suse.cz>:
+> > > On Fri 2008-11-07 21:23:41, Eric Miao wrote:
+> > >> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
+> > >> Did you guys ever try that?
+> > >
+> > > I never heard about that patch, do you have it handy?
+> > 
+> > http://rpsys.net/openzaurus/patches/archive/pxa-linking-bug.patch
+> > 
+> > I plan to submit a bit modified version of this patch later.
+> 
+> That doesn't look like something that should be accepted.  Take a moment
+> to put some thought into the question.  Why should we _allocate_ and
+> contain the stack in the resulting image?  Does the stack contain any
+> data that must be pre-initialized?
+> 
+> Obviously not.
+
+Firstly, I don't think that patch should ever make it into a mainline
+kernel. I can perhaps give some clues why its required though. I think
+the bootloader on the zaurus truncates the image when writing the kernel
+into flash using the standard flashing process. By having that much
+extra padding on the end of the kernel, nothing important is lost.
+
+How did the original 2.4 kernels ever work? Binutils used to be buggy
+and left this padding in. Nobody therefore ever noticed the bug in the
+bootloader.
+
+The above theory is guesswork based on the kernels I've seen work and
+not work and I wrote the patch mentioned above as a workaround a long
+time ago and more pressing issues meant I never got back to it. I'd love
+to see someone work out the problem for sure!
+
+Cheers,
+
+Richard
 
 
->Alan
 
-Yes, I already wrote the program for my personal usage. But I wanted to share 
-this information with the open source community. And I think it would be more 
-secure to implement this into kernel.
 
-Mathias
