@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbYKHDiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYKHDsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbYKHDiT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 22:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYKHDiI
+	id S1753584AbYKHDsG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 22:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYKHDrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 22:38:08 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:33471 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbYKHDiF (ORCPT
+	Fri, 7 Nov 2008 22:47:51 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48846 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbYKHDru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 22:38:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=PXjSRm0u1f9GKmCnKhKRC4dE0ZIdiI1tNcpsUViY8QdiSBVSsLUKiuBBpvZ2f+sFc2
-         acPWG8mK5wI4WZDDN++fU9U7XQhaQV3u4OfNeqIvhEkS243HYvRmzZHXQ9Cj0Ms0HIJZ
-         ncwPqfE+4kBzROw0hn4n8uCVQgvfZ6xmVbAys=
-Subject: Re: [PATCH 10/10] xtensa: use the new byteorder headers - Merged
- with your previous xtensa-next and will remerge shortly.
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Piet Delaney <piet.delaney@tensilica.com>
-Cc: Chris Zankel <chris@zankel.net>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Marc Gauthier <marc@tensilica.com>,
-       Joe Taylor <joetayloremail@gmail.com>, linux-xtensa@linux-xtensa.org,
-       Chuck Lever <chuck.lever@oracle.com>
-In-Reply-To: <491500C0.90407@tensilica.com>
-References: <1225910131.5991.230.camel@brick> <49133094.6070407@zankel.net>
-	 <491500C0.90407@tensilica.com>
-Content-Type: text/plain
-Date: Fri, 07 Nov 2008 19:38:01 -0800
-Message-Id: <1226115481.11596.63.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 22:47:50 -0500
+Message-Id: <20081108034605.289816911@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 07 Nov 2008 22:46:05 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 00/10] ftrace: various updates
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-07 at 19:00 -0800, Piet Delaney wrote:
-> Hi Chris:
-> 
->    I've merged your recent xtensa-next with our 2.6.24-smp repo.
-> It seems to work fine and I'm in the process of cleaning it
-> up a bit and adding preliminary XTENSA kgdb support.
+Ingo,
 
-2.6.24?  In that case you probably don't have include/linux/byteorder.h,
-or include/linux/swab.h which would explain your byteorder problems.
+The following patches are in:
 
-Or is that a typo in the version numbers?
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 
-You should be able to just pull those two headers from Linus' tree
-and drop them in, there is no dependencies other than those two
-headers.
+    branch: tip/devel
 
-If it is some other problem, let me know and I'll look into it.
 
-Harvey
+Matt Fleming (1):
+      ftrace: Align __mcount_loc sections
 
+Steven Rostedt (9):
+      ftrace: fix set_ftrace_filter
+      ftrace: fix boot trace sched startup
+      ftrace: fix sched_switch API
+      ftrace: irqsoff tracer incorrect reset
+      ftrace: enable trace_printk by default
+      ftrace: remove ctrl_update method
+      ftrace: remove trace array ctrl
+      ftrace: force pass of preemptoff selftest
+      ftrace: display start of CPU buffer in trace output
+
+----
+ kernel/trace/ftrace.c             |    3 +
+ kernel/trace/trace.c              |   43 +++++++++++--------
+ kernel/trace/trace.h              |    8 ++-
+ kernel/trace/trace_boot.c         |   22 ++++------
+ kernel/trace/trace_functions.c    |   15 +------
+ kernel/trace/trace_irqsoff.c      |   19 +--------
+ kernel/trace/trace_mmiotrace.c    |   22 ++++------
+ kernel/trace/trace_nop.c          |   16 +------
+ kernel/trace/trace_sched_switch.c |   77 ++++++++++++++++++++++++----------
+ kernel/trace/trace_sched_wakeup.c |   21 ++--------
+ kernel/trace/trace_selftest.c     |   82 +++++++++++++++++++++++-------------
+ kernel/trace/trace_sysprof.c      |   16 +------
+ scripts/recordmcount.pl           |    4 ++
+ 13 files changed, 172 insertions(+), 176 deletions(-)
