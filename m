@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753828AbYKHAes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbYKHAqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753828AbYKHAes (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 19:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYKHAei
+	id S1753270AbYKHAqq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 19:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbYKHAqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 19:34:38 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:49285 "EHLO e8.ny.us.ibm.com"
+	Fri, 7 Nov 2008 19:46:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47043 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751607AbYKHAeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 19:34:37 -0500
-Date: Fri, 7 Nov 2008 16:34:36 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Howells <dhowells@redhat.com>,
+	id S1751390AbYKHAqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 7 Nov 2008 19:46:35 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20081108001555.GE18378@flint.arm.linux.org.uk>
+References: <20081108001555.GE18378@flint.arm.linux.org.uk> <20081107003816.9b0f947a.akpm@linux-foundation.org> <20081107052336.652868737@polymtl.ca> <20081107053349.861709786@polymtl.ca> <20081106220530.5b0e3a96.akpm@linux-foundation.org> <alpine.LFD.2.00.0811070256450.13034@xanadu.home> <25363.1226056819@redhat.com> <20081107164758.GB22134@Krystal> <20081107201118.GB28600@flint.arm.linux.org.uk> <20081107213610.GC2654@Krystal> <9405.1226101315@redhat.com> 
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: dhowells@redhat.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, Nicolas Pitre <nico@cam.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
-       paulus@samba.org, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
 Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
-Message-ID: <20081108003436.GI6917@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal> <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com> <20081107191833.GA31809@Krystal> <1226086322.31966.67.camel@lappy.programming.kicks-ass.net> <20081107200243.GB32761@Krystal> <20081107204546.GA3324@Krystal> <20081107205411.GG6917@linux.vnet.ibm.com> <alpine.DEB.1.10.0811071602160.3711@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811071602160.3711@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Date: Sat, 08 Nov 2008 00:45:45 +0000
+Message-ID: <9933.1226105145@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 04:04:48PM -0500, Steven Rostedt wrote:
-> 
-> On Fri, 7 Nov 2008, Paul E. McKenney wrote:
-> > > > Would that make more sense ?
-> > > > 
-> > > 
-> > > Oh, actually, I got things reversed in this email : the readl(io_addr)
-> > > must be done _after_ the __m_cnt_hi read.
-> > > 
-> > > Therefore, two consecutive executions would look like :
-> > > 
-> > > barrier();  /* Make sure the compiler does not reorder __m_cnt_hi and
-> > >                previous mmio read. */
-> > > read __m_cnt_hi
-> > > smp_rmb();  /* Waits for every cached memory reads to complete */
-> > 
-> > If these are MMIO reads, then you need rmb() rather than smp_rmb(),
-> > at least on architectures that can reorder writes (Power, Itanium,
-> > and I believe also ARM, ...).
-> 
-> The read is from a clock source. The only writes that are happening is 
-> by the clock itself.
-> 
-> On a UP system, is a rmb still needed? That is, can you have two reads on 
-> the same CPU from the clock source that will produce a backwards clock? 
-> That to me sounds like the clock interface is broken.
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-I do not believe that all CPUs are guaranteed to execute a sequence
-of MMIO reads in order.
+> It sounds to me as if the right answer is for it to move back to being an
+> ARM private thing with a MN10300 private copy, rather than it pretending
+> to be something everyone can use.
 
-							Thanx, Paul
+The only problem I have with that is that there are then two independent
+copies of it:-(
+
+David
