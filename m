@@ -1,238 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYKHJMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYKHJRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbYKHJMr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 04:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYKHJM3
+	id S1753748AbYKHJRy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 04:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbYKHJRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 04:12:29 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:35875 "EHLO e2.ny.us.ibm.com"
+	Sat, 8 Nov 2008 04:17:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59833 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265AbYKHJM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 04:12:27 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Sat, 08 Nov 2008 14:41:00 +0530
-Message-Id: <20081108091100.32236.89666.sendpatchset@localhost.localdomain>
-In-Reply-To: <20081108091009.32236.26177.sendpatchset@localhost.localdomain>
-References: <20081108091009.32236.26177.sendpatchset@localhost.localdomain>
-Subject: [RFC][mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v2)
+	id S1751749AbYKHJRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 04:17:38 -0500
+Date: Sat, 8 Nov 2008 10:17:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: signal: cosmetic unification of setup_sigcontext()
+Message-ID: <20081108091725.GD18215@elte.hu>
+References: <491506B0.5030503@ct.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <491506B0.5030503@ct.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch introduces hierarchical reclaim. When an ancestor goes over its
-limit, the charging routine points to the parent that is above its limit.
-The reclaim process then starts from the last scanned child of the ancestor
-and reclaims until the ancestor goes below its limit.
+* Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> 
+> Impact: cleanup
+> 
+> Make setup_sigcontext() same.
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  arch/x86/kernel/signal_32.c |   32 ++++++++++++++++++++++++++++----
+>  arch/x86/kernel/signal_64.c |   33 ++++++++++++++++++++++++++++-----
+>  2 files changed, 56 insertions(+), 9 deletions(-)
 
- mm/memcontrol.c |  152 +++++++++++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 128 insertions(+), 24 deletions(-)
+applied to tip/x86/signal, thanks!
 
-diff -puN mm/memcontrol.c~memcg-hierarchical-reclaim mm/memcontrol.c
---- linux-2.6.28-rc2/mm/memcontrol.c~memcg-hierarchical-reclaim	2008-11-08 14:09:32.000000000 +0530
-+++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-08 14:09:32.000000000 +0530
-@@ -132,6 +132,11 @@ struct mem_cgroup {
- 	 * statistics.
- 	 */
- 	struct mem_cgroup_stat stat;
-+	/*
-+	 * While reclaiming in a hiearchy, we cache the last child we
-+	 * reclaimed from.
-+	 */
-+	struct mem_cgroup *last_scanned_child;
- };
- static struct mem_cgroup init_mem_cgroup;
- 
-@@ -467,6 +472,124 @@ unsigned long mem_cgroup_isolate_pages(u
- 	return nr_taken;
- }
- 
-+static struct mem_cgroup *
-+mem_cgroup_from_res_counter(struct res_counter *counter)
-+{
-+	return container_of(counter, struct mem_cgroup, res);
-+}
-+
-+/*
-+ * Dance down the hierarchy if needed to reclaim memory. We remember the
-+ * last child we reclaimed from, so that we don't end up penalizing
-+ * one child extensively based on its position in the children list.
-+ *
-+ * root_mem is the original ancestor that we've been reclaim from.
-+ */
-+static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *mem,
-+						struct mem_cgroup *root_mem,
-+						gfp_t gfp_mask)
-+{
-+	struct cgroup *cg_current, *cgroup;
-+	struct mem_cgroup *mem_child;
-+	int ret = 0;
-+
-+	/*
-+	 * Reclaim unconditionally and don't check for return value.
-+	 * We need to reclaim in the current group and down the tree.
-+	 * One might think about checking for children before reclaiming,
-+	 * but there might be left over accounting, even after children
-+	 * have left.
-+	 */
-+	try_to_free_mem_cgroup_pages(mem, gfp_mask);
-+
-+	if (res_counter_check_under_limit(&root_mem->res))
-+		return 0;
-+
-+	if (list_empty(&mem->css.cgroup->children))
-+		return 0;
-+
-+	/*
-+	 * Scan all children under the mem_cgroup mem
-+	 */
-+	if (!mem->last_scanned_child)
-+		cgroup = list_first_entry(&mem->css.cgroup->children,
-+				struct cgroup, sibling);
-+	else
-+		cgroup = mem->last_scanned_child->css.cgroup;
-+
-+	cg_current = cgroup;
-+	cgroup_lock();
-+
-+	do {
-+		struct list_head *next;
-+
-+		mem_child = mem_cgroup_from_cont(cgroup);
-+		cgroup_unlock();
-+
-+		ret = mem_cgroup_hierarchical_reclaim(mem_child, root_mem,
-+							gfp_mask);
-+		mem->last_scanned_child = mem_child;
-+
-+		cgroup_lock();
-+		if (res_counter_check_under_limit(&root_mem->res)) {
-+			ret = 0;
-+			goto done;
-+		}
-+
-+		/*
-+		 * Since we gave up the lock, it is time to
-+		 * start from last cgroup
-+		 */
-+		cgroup = mem->last_scanned_child->css.cgroup;
-+		next = cgroup->sibling.next;
-+
-+		if (next == &cg_current->parent->children)
-+			cgroup = list_first_entry(&mem->css.cgroup->children,
-+							struct cgroup, sibling);
-+		else
-+			cgroup = container_of(next, struct cgroup, sibling);
-+	} while (cgroup != cg_current);
-+
-+done:
-+	cgroup_unlock();
-+	return ret;
-+}
-+
-+/*
-+ * Charge memory cgroup mem and check if it is over its limit. If so, reclaim
-+ * from mem.
-+ */
-+static int mem_cgroup_charge_and_reclaim(struct mem_cgroup *mem, gfp_t gfp_mask)
-+{
-+	int ret = 0;
-+	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-+	struct res_counter *fail_res;
-+	struct mem_cgroup *mem_over_limit;
-+
-+	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE, &fail_res))) {
-+		if (!(gfp_mask & __GFP_WAIT))
-+			goto out;
-+
-+		/*
-+		 * Is one of our ancestors over their limit?
-+		 */
-+		if (fail_res)
-+			mem_over_limit = mem_cgroup_from_res_counter(fail_res);
-+		else
-+			mem_over_limit = mem;
-+
-+		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit,
-+							mem_over_limit,
-+							gfp_mask);
-+
-+		if (!nr_retries--) {
-+			mem_cgroup_out_of_memory(mem, gfp_mask);
-+			goto out;
-+		}
-+	}
-+out:
-+	return ret;
-+}
- 
- /**
-  * mem_cgroup_try_charge - get charge of PAGE_SIZE.
-@@ -484,8 +607,7 @@ int mem_cgroup_try_charge(struct mm_stru
- 			gfp_t gfp_mask, struct mem_cgroup **memcg)
- {
- 	struct mem_cgroup *mem;
--	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
--	struct res_counter *fail_res;
-+
- 	/*
- 	 * We always charge the cgroup the mm_struct belongs to.
- 	 * The mm_struct's mem_cgroup changes on task migration if the
-@@ -510,29 +632,9 @@ int mem_cgroup_try_charge(struct mm_stru
- 		css_get(&mem->css);
- 	}
- 
-+	if (mem_cgroup_charge_and_reclaim(mem, gfp_mask))
-+		goto nomem;
- 
--	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE, &fail_res))) {
--		if (!(gfp_mask & __GFP_WAIT))
--			goto nomem;
--
--		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
--			continue;
--
--		/*
--		 * try_to_free_mem_cgroup_pages() might not give us a full
--		 * picture of reclaim. Some pages are reclaimed and might be
--		 * moved to swap cache or just unmapped from the cgroup.
--		 * Check the limit again to see if the reclaim reduced the
--		 * current usage of the cgroup before giving up
--		 */
--		if (res_counter_check_under_limit(&mem->res))
--			continue;
--
--		if (!nr_retries--) {
--			mem_cgroup_out_of_memory(mem, gfp_mask);
--			goto nomem;
--		}
--	}
- 	return 0;
- nomem:
- 	css_put(&mem->css);
-@@ -1195,6 +1297,8 @@ mem_cgroup_create(struct cgroup_subsys *
- 		if (alloc_mem_cgroup_per_zone_info(mem, node))
- 			goto free_out;
- 
-+	mem->last_scanned_child = NULL;
-+
- 	return &mem->css;
- free_out:
- 	for_each_node_state(node, N_POSSIBLE)
-_
+(the 10 patches of yours that are already in tip/x86/signal are 
+working perfectly)
 
--- 
-	Balbir
+	Ingo
