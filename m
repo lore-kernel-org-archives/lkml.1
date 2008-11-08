@@ -1,80 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbYKHBEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYKHBQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753889AbYKHBEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 20:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbYKHBEN
+	id S1753521AbYKHBQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 20:16:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYKHBQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 20:04:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53808 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752848AbYKHBEM (ORCPT
+	Fri, 7 Nov 2008 20:16:08 -0500
+Received: from smtp5.Stanford.EDU ([171.67.219.85]:38934 "EHLO
+	smtp5.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752844AbYKHBQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 20:04:12 -0500
-Date: Fri, 7 Nov 2008 17:03:07 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, maneesh@in.ibm.com,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] kprobe: increase kprobe_hash_table size
-Message-Id: <20081107170307.1a4f815e.akpm@linux-foundation.org>
-In-Reply-To: <4914DAEE.2050301@redhat.com>
-References: <4914D2DE.9030603@redhat.com>
-	<20081107155646.b375413e.akpm@linux-foundation.org>
-	<4914DAEE.2050301@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 7 Nov 2008 20:16:07 -0500
+Subject: Re: [alsa-devel] 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       alsa-devel@alsa-project.org, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1226105286.7647.21.camel@localhost.localdomain>
+References: <1226019485.3135.31.camel@localhost.localdomain>
+	 <49140683.9040008@ladisch.de>
+	 <1226081557.20569.5.camel@localhost.localdomain>
+	 <1226099549.7647.3.camel@localhost.localdomain>
+	 <1226105286.7647.21.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 07 Nov 2008 17:14:44 -0800
+Message-Id: <1226106884.7647.25.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Nov 2008 19:18:54 -0500 Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> Hi Andrew,
-> 
-> Andrew Morton wrote:
-> > On Fri, 07 Nov 2008 18:44:30 -0500 Masami Hiramatsu <mhiramat@redhat.com> wrote:
+On Fri, 2008-11-07 at 16:48 -0800, Fernando Lopez-Lezcano wrote:
+> On Fri, 2008-11-07 at 15:12 -0800, Fernando Lopez-Lezcano wrote:
+> > On Fri, 2008-11-07 at 10:12 -0800, Fernando Lopez-Lezcano wrote:
+> > > On Fri, 2008-11-07 at 10:12 +0100, Clemens Ladisch wrote:
+> > > > Fernando Lopez-Lezcano wrote:
+> > > > > I'm seeing a realtime patch related hard hang in the kernel alsa
+> > > > > subsystem (MIDI input/output). In a nutshell:
+> > > > >
+> > > > > - alsa rawmidi works (ie: "rawmidi -v -i hw:0" outputs a stream of
+> > > > > messages when pointed to a midi capable card that has an external
+> > > > > keyboard connected).
+> > > > >
+> > > > > - the alsa sequencer interface works (ie: aplaymidi connected to
+> > > > > aseqdump transfers data just fine).
+> > > > >
+> > > > > - BOTH combined do NOT work (ie: use aconnect to connect the port that
+> > > > > corresponds to the external midi interface to aseqdump: aseqdump hangs
+> > > > > forever after transferring the first message and the only way out is a
+> > > > > reboot).
+> > > > 
+> > > > Please try the snd-virmidi driver, then we'd have a test case that does
+> > > > not require MIDI hardware.
+> > > > 
+> > > > > ... including the output of a "echo t >/proc/sysrq-trigger" that
+> > > > > should show where aseqdump currently hangs (or so I think).
+> > > > 
+> > > > It hangs in tasklet_kill(), which gets called while it tries to close
+> > > > the rawmidi port.
+> > > > 
+> > > > The rawmidi framework uses this tasklet to notify the sequencer that new
+> > > > MIDI data is available.  The handler function is
+> > > > snd_rawmidi_input_event_tasklet() in sound/core/rawmidi.c; the sequencer
+> > > > callback that gets called from there is snd_midi_input_event() in
+> > > > core/seq/seq_midi.c.
+> > > > 
+> > > > You say that the first event gets delivered, so it might be possible
+> > > > that the tasklet never finishes executing.  Please check whether the
+> > > > call to snd_seq_kernel_client_dispatch() in snd_midi_input_event()
+> > > > ever returns.
+> > > 
+> > > I added a printk before and after the call, it looks like it gets called
+> > > and it returns (but only _once_... aseqdump hangs in an unkillable state
+> > > as before).
 > > 
-> >> Increase the size of kprobe hash table to 512. It's useful when hundreds
-> >> of kprobes were used in the kernel because current size is just 64.
-> >>
-> > 
-> > "useful" is a bit vague.  How big is the problem which this solves, and
-> > how well did it solve it?
+> > Just in case, the tasklet keeps getting called as long as midi bytes are
+> > received. So the tasklet runs once, snd_midi_input_event gets called
+> > once and the tasklet keeps running again and again, but nobody runs
+> > snd_midi_input_event. Who should?
 > 
-> For example, when probing enters and exits of syscall-related functions,
-> we need more than 500 probes. In that case, each hlist would have 8
-> elements in average. With this patch, the hlist would have 1 element in
-> average.
+> I normally use rtirq to tune realtime priorities for realtime kernel
+> processes, as I looked around and noticed tasklets seem to be related to
+> (or are) software interrupts and those have priorities, so I disabled
+> rtirq and rebooted (which leaves the default priority of 50 for all
+> realtime kernel processes). 
 > 
-> I agree that there may be many opinions about what is the best suited size.
-> Why I chose 512 was that I thought the table (byte) size was less than or
-> equal 4096 even on 64-bit arch.
+> Now I get __two__ midi bytes instead of one (active sensing messages
+> from the keyboard) and the whole thing stalls as before. 
 
-Well...
+This is repeatable. 
 
-   text    data     bss     dec     hex filename
-   7036     744    9380   17160    4308 kernel/kprobes.o
-   7048     744   73892   81684   13f14 kernel/kprobes.o
+> ??
+> So is this a priority inversion problem?
 
-That's 64 kbytes more memory.  It will be kretprobe_table_locks[] which
-is hurting here, due to the ____cacheline_aligned.
+And for that matter, what _should_ be the priority order of all the
+realtime little tasks of rt kernels?? Names have changed and there's a
+lot more of those...
 
-I expected CONFIG_X86_VSMP=y to make this far worse, but fortunately
-that only affects ____cacheline_internodealigned_in_smp.
+(I can readily hang the whole machine if I change the wrong one to a
+higher priority!)
 
-btw, that array wastes a ton of memory on uniprocessor builds.  Using
-____cacheline_aligned_in_smp should fix that.
-
-Please always check these thigns with /usr/bin/size.
-
-btw2, could/should kprobe_table[] and kretprobe_inst_table[] be
-aggregated into kretprobe_table_locks[]?  That would save some memory
-and might save some cache misses as well?
+Any help appreciated...
+-- Fernando
 
 
-Anyway, enough pos-facto code review.  Is this change which you're
-proposing worth increasing kernel memory usage by 64k?
