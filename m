@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbYKHX3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbYKHXbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbYKHX3d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 18:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbYKHX3Z
+	id S1754002AbYKHXbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 18:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbYKHXbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 18:29:25 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:51043 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344AbYKHX3Y (ORCPT
+	Sat, 8 Nov 2008 18:31:06 -0500
+Received: from vitalin.sorra.shikadi.net ([64.71.152.201]:4184 "EHLO
+	vitalin.sorra.shikadi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbYKHXbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 18:29:24 -0500
-Date: Sat, 8 Nov 2008 23:28:57 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>, Pavel Machek <pavel@suse.cz>,
-       Eric Miao <eric.y.miao@gmail.com>, Cyril Hrubis <metan@ucw.cz>,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, thommycheck@gmail.com
-Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
-Message-ID: <20081108232857.GE14351@flint.arm.linux.org.uk>
-References: <20081106080416.GA1531@ucw.cz> <20081106191424.GA2273@atrey.karlin.mff.cuni.cz> <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com> <20081107142923.GA1616@ucw.cz> <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com> <20081107182311.GA28600@flint.arm.linux.org.uk> <1226155540.5379.5.camel@dax.rpnet.com> <bc64b4640811081512ta8bfd90m921760839bdf8ffa@mail.gmail.com> <20081108232111.GD14351@flint.arm.linux.org.uk> <bc64b4640811081525o66e51fffy4729008f8e6a0017@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc64b4640811081525o66e51fffy4729008f8e6a0017@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 8 Nov 2008 18:31:05 -0500
+Message-ID: <49162135.50502@shikadi.net>
+Date: Sun, 09 Nov 2008 09:31:01 +1000
+From: Adam Nielsen <a.nielsen@shikadi.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.16) Gecko/20080727 Thunderbird/2.0.0.16 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: LKML Mailinglist <linux-kernel@vger.kernel.org>
+CC: Jiri Slaby <jirislaby@gmail.com>
+Subject: hid class and USB access
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 09, 2008 at 02:25:35AM +0300, Dmitry wrote:
-> 2008/11/9 Russell King <rmk+lkml@arm.linux.org.uk>:
-> > On Sun, Nov 09, 2008 at 02:12:47AM +0300, Dmitry wrote:
-> >> 2008/11/8 Richard Purdie <rpurdie@rpsys.net>:
-> >> > Firstly, I don't think that patch should ever make it into a mainline
-> >> > kernel. I can perhaps give some clues why its required though. I think
-> >> > the bootloader on the zaurus truncates the image when writing the kernel
-> >> > into flash using the standard flashing process. By having that much
-> >> > extra padding on the end of the kernel, nothing important is lost.
-> > ...
-> >>
-> >> I did rewrote your patch in a bit cleaner way (to apply the hack to
-> >> vmlinux.lds.in
-> >> in a cleaner way and only on PXA_SHARPSL), however I'm not submitting it
-> >> till I find what's the real reason for this problem.
-> >
-> > Even if the reason is found, I don't think it's something that should
-> > concern the kernel, especially as there is a script which writes the
-> > kernel image into the flash.  If it's a case that the boot loader needs
-> > an extra 4K tacked on the end of the kernel image, that should be easy
-> > enough for this 'updater.sh' shell script to do.
-> 
-> Actually on my tosa builds it's like 40k of zeroes (.bss is before .stack
-> and so is also present in the zImage). It seems that just 4k of padding
-> isn't enough (I tried that).
+Hi again,
 
-That doesn't change my view - it's something that the kernel shouldn't be
-caring about.  And as I point out, this script can add the padding itself
-which seems to be the right place to resolve the problem.
+Okay, hopefully one last question.  When writing a hid driver, what's 
+the best way of accessing the USB device?  Are there custom hid 
+functions you should use instead of the standard USB functions?  I don't 
+want to tread on the toes of the hid class driver.
 
-(and I've finally dropped that bad email address from the CC line.)
+There is a usbhid_submit_report() which seems to send a control message 
+to the device which works well, but my device sends interrupt messages 
+in response to control messages, and I'm not sure of the best way of 
+receiving these.  For example, from usbmon:
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+3059935847 S Co:8:002:0 s 21 09 0200 0000 0005 5 = 02010101 01
+3059939037 C Co:8:002:0 0 5 >
+3059943035 C Ii:8:002:1 0:8 8 = 2b181515 140f000b
+3059945841 S Ii:8:002:1 -115:8 8 <
+3059956862 S Co:8:002:0 s 21 09 0200 0000 0005 5 = 03010101 01
+3060121048 C Co:8:002:0 0 5 >
+3060127044 C Ii:8:002:1 0:8 8 = 050407dc 00000000
+3060131063 S Ii:8:002:1 -115:8 8 <
+
+I can send these control messages like this:
+
+odin_psu->report->field[0]->value[0] = 0x02;
+odin_psu->report->field[0]->value[1] = 0x01;
+odin_psu->report->field[0]->value[2] = 0x01;
+odin_psu->report->field[0]->value[3] = 0x01;
+odin_psu->report->field[0]->value[4] = 0x01;
+usbhid_submit_report(odin_psu->hdev, odin_psu->report, USB_DIR_OUT);
+
+Resulting in usbmon output like this:
+
+3710917380 S Co:8:002:0 s 21 09 0200 0000 0005 5 = 02010101 01
+3710920638 C Co:8:002:0 -71 0
+
+3714917416 S Co:8:002:0 s 21 09 0200 0000 0005 5 = 02010101 01
+3714920639 C Co:8:002:0 -71 0
+
+Which seems to send the correct messages (I think - I'm not sure what 
+the second Co line is for), but I'm not quite sure how to receive the 
+Interrupt responses from within the hid framework.  Can I use 
+usbhid_submit_report(), or do I need to create an URB etc.
+
+Many thanks,
+Adam.
