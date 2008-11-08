@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbYKHFqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbYKHFqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbYKHFqW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 00:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYKHFpw
+	id S1754363AbYKHFqf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 00:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbYKHFpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 00:45:52 -0500
-Received: from kroah.org ([198.145.64.141]:37129 "EHLO coco.kroah.org"
+	Sat, 8 Nov 2008 00:45:54 -0500
+Received: from kroah.org ([198.145.64.141]:37130 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751113AbYKHFps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 00:45:48 -0500
+	id S1752294AbYKHFpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 00:45:53 -0500
+Date: Fri, 7 Nov 2008 21:45:11 -0800
 From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/2] Staging: make usbip depend on CONFIG_NET
-Date: Fri,  7 Nov 2008 21:45:43 -0800
-Message-Id: <1226123143-28859-2-git-send-email-greg@kroah.com>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <20081108054511.GA28846@kroah.com>
-References: <20081108054511.GA28846@kroah.com>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] STAGING fixes for 2.6.28
+Message-ID: <20081108054511.GA28846@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+Here are two small Kconfig staging patches against your 2.6 git tree.
 
-Thanks to Randy Dunlap for finding this problem.
+They fix a Kconfig dependancy on the USB/IP drivers that Randy Dunlap
+found, and they add a second Kconfig option, which enables the staging
+drivers to be automatically excluded from a 'make allmodconfig' or 'make
+allyesconfig' build.  This last patch will help out the -next tree a lot
+in its automatic build tests.
 
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
+
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
+
+thanks,
+
+greg k-h
+
+
+ drivers/staging/Kconfig       |   20 ++++++++++++++++++--
  drivers/staging/usbip/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ 2 files changed, 19 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/usbip/Kconfig b/drivers/staging/usbip/Kconfig
-index 7426235..217fb7e 100644
---- a/drivers/staging/usbip/Kconfig
-+++ b/drivers/staging/usbip/Kconfig
-@@ -1,6 +1,6 @@
- config USB_IP_COMMON
- 	tristate "USB IP support (EXPERIMENTAL)"
--	depends on USB && EXPERIMENTAL
-+	depends on USB && NET && EXPERIMENTAL
- 	default N
- 	---help---
- 	  This enables pushing USB packets over IP to allow remote
--- 
-1.5.6
+---------------
+
+Greg Kroah-Hartman (2):
+      Staging: only build the tree if we really want to
+      Staging: make usbip depend on CONFIG_NET
 
