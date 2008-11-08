@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbYKHLDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYKHLKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbYKHLDz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 06:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYKHLDr
+	id S1753951AbYKHLKb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 06:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYKHLKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 06:03:47 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38715 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752758AbYKHLDq (ORCPT
+	Sat, 8 Nov 2008 06:10:23 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:27672 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752904AbYKHLKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 06:03:46 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 8 Nov 2008 12:03:28 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: detect and log TSB81BA3 erratum
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.f09c80ed76dd6c79@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Sat, 8 Nov 2008 06:10:22 -0500
+Date: Sat, 8 Nov 2008 12:09:50 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>, Greg KH <greg@kroah.com>,
+       Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: [PATCH 2/5] i5k_amb: Load automatically on all 5000/5400
+ chipsets
+Message-ID: <20081108120950.397a3165@hyperion.delvare>
+In-Reply-To: <20081107185631.13022.59600.stgit@elm3a70.beaverton.ibm.com>
+References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com>
+	<20081107185631.13022.59600.stgit@elm3a70.beaverton.ibm.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While testing a larger 1394b bus, I saw the following Texas Instruments
-TSB81BA3 hardware bug at work:  On a 1394b-only bus with three or more
-PHYs and differing cable lengths or differing hop speeds, the PHYs
-repeatedly cause bus resets during traffic on the bus, as documented in
-TI's "TSB81BA3 Errata (Rev. C)" SLLZ015C.  These resets cause massive
-I/O failures.
+Hi Darrick,
 
-Self-ID complete events after such resets consistently show more than
-one self-ID zero packet with i bit set ( = initiated reset).  If this
-happens, emit a warning in dmesg and suggest hardware workarounds to the
-user.  (There is no software workaround.)
+On Fri, 07 Nov 2008 10:56:31 -0800, Darrick J. Wong wrote:
+> It turns out that we cannot create a pci_driver in this driver because PCI will
+> not call this module's probe function if the i5000-edac driver is already
+> loaded.
 
-The hardware bug is fixed in TSB81BA3 revision D but there are probably
-many FireWire 800 products out there which have a buggy version of this
-chip.
+I seem to recall work in progress to let multiple drivers bind to the
+same PCI device. Greg, Kay, what's the status?
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-topology.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+> That said, we only want one value (AMBASE) from the PCI config space.
+> Neither driver alters this value, so it's safe to read it.  However, we still
+> want the module aliases, so provide that.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/hwmon/i5k_amb.c |    8 ++++++++
+>  1 files changed, 8 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/hwmon/i5k_amb.c b/drivers/hwmon/i5k_amb.c
+> index 2ede938..a3fa639 100644
+> --- a/drivers/hwmon/i5k_amb.c
+> +++ b/drivers/hwmon/i5k_amb.c
+> @@ -490,6 +490,14 @@ static unsigned long chipset_ids[] = {
+>  	0
+>  };
+>  
+> +static struct pci_device_id i5k_amb_ids[] __devinitdata = {
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5400_ERR) },
+> +	{ 0, },
+> +};
+> +
+> +MODULE_DEVICE_TABLE(pci, i5k_amb_ids);
+> +
+>  static int __devinit i5k_amb_probe(struct platform_device *pdev)
+>  {
+>  	struct i5k_amb_data *data;
+> 
 
-Index: linux/drivers/firewire/fw-topology.c
-===================================================================
---- linux.orig/drivers/firewire/fw-topology.c
-+++ linux/drivers/firewire/fw-topology.c
-@@ -179,7 +179,7 @@ static struct fw_node *build_tree(struct
- 	struct list_head stack, *h;
- 	u32 *next_sid, *end, q;
- 	int i, port_count, child_port_count, phy_id, parent_count, stack_depth;
--	int gap_count;
-+	int gap_count, reset_initiators;
- 	bool beta_repeaters_present;
- 
- 	local_node = NULL;
-@@ -190,6 +190,7 @@ static struct fw_node *build_tree(struct
- 	phy_id = 0;
- 	irm_node = NULL;
- 	gap_count = SELF_ID_GAP_COUNT(*sid);
-+	reset_initiators = 0;
- 	beta_repeaters_present = false;
- 
- 	while (sid < end) {
-@@ -285,6 +286,8 @@ static struct fw_node *build_tree(struct
- 		list_add_tail(&node->link, &stack);
- 		stack_depth += 1 - child_port_count;
- 
-+		reset_initiators += SELF_ID_PHY_INITIATOR(q);
-+
- 		if (node->phy_speed == SCODE_BETA &&
- 		    parent_count + child_port_count > 1)
- 			beta_repeaters_present = true;
-@@ -307,6 +310,14 @@ static struct fw_node *build_tree(struct
- 	card->gap_count = gap_count;
- 	card->beta_repeaters_present = beta_repeaters_present;
- 
-+	if (reset_initiators != 1) {
-+		fw_error("%d bus reset initiators, hardware bug?\n",
-+			 reset_initiators);
-+		if (beta_repeaters_present)
-+			fw_error("try cables with matched length "
-+				 "or add a 1394a node\n");
-+	}
-+
- 	return local_node;
- }
- 
+Looks good to me, we can apply this for now.
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
 
 -- 
-Stefan Richter
--=====-==--- =-== -=---
-http://arcgraph.de/sr/
-
+Jean Delvare
