@@ -1,107 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYKHD0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbYKHDaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYKHD0h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 22:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYKHD03
+	id S1753494AbYKHDaO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 22:30:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYKHD37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 22:26:29 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:38836 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752121AbYKHD02 (ORCPT
+	Fri, 7 Nov 2008 22:29:59 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:46726 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbYKHD36 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 22:26:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=XTMXrmzvbbWTcvj5wVYYldmzNvdN65gKWgmemVgOdCnCt7fOcFEnEkE50s11OC8RUU
-         A/KMzD8/J5bH0JG29IF5rGdY9jO0QR4KEQZhDKDBHwwcWO/lPqd8GRN0pPBdX/1UM/lG
-         PmWss0ZJ07ShFy+o8D13vKwOe1oJIslyKz7/o=
-Message-ID: <491506DB.1070000@gmail.com>
-Date: Sat, 08 Nov 2008 05:26:19 +0200
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       ath5k-devel@venema.h4ckr.net
-CC: alsa-devel@alsa-project.org
-Subject: Bugs on aspire one A150
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 7 Nov 2008 22:29:58 -0500
+Date: Fri, 07 Nov 2008 22:29:53 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: ACPI video.c brightness handler conflicts with toshiba_acpi
+In-reply-to: <200810281922.20490.arvidjaar@mail.ru>
+X-X-Sender: lenb@localhost.localdomain
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Renninger <trenn@suse.de>,
+       toshiba_acpi@memebeam.org, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0811072224200.9051@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200809061108.34877.arvidjaar@mail.ru>
+ <200810281426.53499.trenn@suse.de> <200810281615.19894.rjw@sisk.pl>
+ <200810281922.20490.arvidjaar@mail.ru>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have just bought an Aspire one A150, XP version,
-as it was the only available here, and installed ubuntu on it.
-
-Bugs I discovered so far:
 
 
-** 1 - embedded controler works in polling mode, due to this:
+> > Do you have a pointer to those patches?
+> > 
+> 
+> So far I am running with these commits from git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-acpi-2.6:
+> 
+> commit f43d728731c691772ddc29e50d25c68a859935b5
+> Author: Thomas Renninger <trenn@suse.de>
+> Date:   Fri Aug 1 17:37:55 2008 +0200
+> 
+>     Check for ACPI backlight support otherwise use vendor ACPI drivers
+> 
+> 
+> commit ad9ed8385ed6ec5be8da7094db911c824258ceec
+> Author: Thomas Renninger <trenn@suse.de>
+> Date:   Fri Aug 1 17:37:54 2008 +0200
+> 
+>     ACPI: video: Ignore devices that aren't present in hardware
+> 
+> I have been waiting for in-tree inclusion to submit patches for
+> toshiba_acpi against stable base.
 
-[    0.708571] ACPI: EC: non-query interrupt received, switching to interrupt mode
-[    1.224043] ACPI: EC: missing confirmations, switch off interrupt mode.
+Ah, the commit id's above solved the mystery.
+It looks like andi checked these patches directly into his
+"test" branch rather than a topic branch.  eg. they were
+sitting on top of the old pcc_acpi driver etc.
 
+So I lost them when I deleted the old test branch
+in order to merge the updated topic branches
+into a new test branch.
 
-Maybe this is the reason for the fact that gnome power manager freezes when I unplug
-the AC, and freezes often when I try to see battery status.
+-Len
 
-
-(Note: same is seen on my acer aspire 5720)
-
-
-** 2 - wireless: not to mention the fact that ath5k wasn't installed by default in ubuntu...
-wireless more or less works, but kernel log is full of backtraces.
-Was able to connect to my WPA2 access point.
-Sometimes wireless fails completely, especially after suspend to ram.
-Advanced features like monitor/injection work, but when I changed the card's
-mac address it stopped working.
-I also noticed that if I then start airodump, then wireless works with new mac.
-
-
-
-** 3 - internal mic doesn't work.
-tried model=acer, model=auto.
-Overall it seems that alsa misprograms O/B realteck
-codec.
-I talk about this later.
-Have same issue on my acer 5720
-
-
-
-** 4 - wireless led doesn't work.
-ath5k devs, can you fix this?
-
-
-** 5 - coretemp doesn't show cpu temperature,
-I have seen somewhere that atom support same thermal diode as core2
-and only patch to detect it is needed.
-Please include such path in 2.6.28 if exists.
-
-
-** 6 - both card readers are missing from lspci, is this normal?
-
-** 7 - opengl is broken, I tried running neverball in fullscreen, but it shows wrong/corrupted
-textures (compiz is running, and working well thought)
- 
-Now I installed 2.6.28-rc3 (actually latest -git)
-
-
-Sadly nothing improved.
-I only found few regressions:
-
-
-
-* Wireless now drops connection from my WPA2 access point after few minutes.
-I changed temporarily its wireless protection to WEP and open mode, and both work
-fine, maybe this is related to periodic key exchange WPA does?
-
-* System doesn't reboot/shutdown, just hangs.
-
-
-
-
-
-Best regards,
-	Maxim Levitsky.
