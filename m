@@ -1,151 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYKHDAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203AbYKHDZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbYKHDAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 7 Nov 2008 22:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYKHDAf
+	id S1753203AbYKHDZt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 7 Nov 2008 22:25:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYKHDZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 7 Nov 2008 22:00:35 -0500
-Received: from hq2.tensilica.com ([65.205.227.30]:50206 "EHLO
-	maia.hq.tensilica.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751790AbYKHDAe (ORCPT
+	Fri, 7 Nov 2008 22:25:40 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:51621 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbYKHDZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 7 Nov 2008 22:00:34 -0500
-Message-ID: <491500C0.90407@tensilica.com>
-Date: Fri, 07 Nov 2008 19:00:16 -0800
-From: Piet Delaney <piet.delaney@tensilica.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 7 Nov 2008 22:25:39 -0500
+Message-ID: <491506B0.5030503@ct.jp.nec.com>
+Date: Fri, 07 Nov 2008 19:25:36 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Chris Zankel <chris@zankel.net>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Marc Gauthier <marc@tensilica.com>,
-       Joe Taylor <joetayloremail@gmail.com>, linux-xtensa@linux-xtensa.org,
-       Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: [PATCH 10/10] xtensa: use the new byteorder headers - Merged
- with your previous xtensa-next and will remerge shortly.
-References: <1225910131.5991.230.camel@brick> <49133094.6070407@zankel.net>
-In-Reply-To: <49133094.6070407@zankel.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: signal: cosmetic unification of setup_sigcontext()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chris:
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-   I've merged your recent xtensa-next with our 2.6.24-smp repo.
-It seems to work fine and I'm in the process of cleaning it
-up a bit and adding preliminary XTENSA kgdb support.
+Impact: cleanup
 
-   Looks like you have moved xtensa include files to arch/xtensa.
-I'm pulling your repo and re-merge with your latest bits. I'm
-limiting the changes outside of arch/xtensa to just the few
-required (like the open core Ethernet driver) and a very small
-change I made to mm/slab.c to allow the kernel to be compiled -O0.
+Make setup_sigcontext() same.
 
-   One regression that came up after the merge with your previous
-bits (2.6.27-rc3 last changed 2008-07-30) was that the NFS RPC
-code wouldn't compile -O0 due to a problem with byte order macros
-to convert IP addresses from local to net form. In this case it
-appears to be the RPC code with it's initialization of a structure
-with a htonl(INADDR_LOOPBACK) which isn't being optimized away.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/signal_32.c |   32 ++++++++++++++++++++++++++++----
+ arch/x86/kernel/signal_64.c |   33 ++++++++++++++++++++++++++++-----
+ 2 files changed, 56 insertions(+), 9 deletions(-)
 
-		"net/sunrpc/rpcb_clnt.c
-		-----------------------
-static const struct sockaddr_in rpcb_inaddr_loopback = {
-         .sin_family             = AF_INET,
-         .sin_addr.s_addr        = htonl(INADDR_LOOPBACK),
-         .sin_port               = htons(RPCBIND_PORT),
-};
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index 6a05c74..27a5c81 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -279,14 +279,20 @@ static int
+ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+ 		 struct pt_regs *regs, unsigned long mask)
+ {
+-	int tmp, err = 0;
++	int err = 0;
+ 
+-	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
+-	savesegment(gs, tmp);
+-	err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
++#ifdef CONFIG_X86_32
++	{
++		unsigned int tmp;
+ 
++		savesegment(gs, tmp);
++		err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
++	}
++	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
+ 	err |= __put_user(regs->es, (unsigned int __user *)&sc->es);
+ 	err |= __put_user(regs->ds, (unsigned int __user *)&sc->ds);
++#endif /* CONFIG_X86_32 */
++
+ 	err |= __put_user(regs->di, &sc->di);
+ 	err |= __put_user(regs->si, &sc->si);
+ 	err |= __put_user(regs->bp, &sc->bp);
+@@ -295,13 +301,31 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+ 	err |= __put_user(regs->dx, &sc->dx);
+ 	err |= __put_user(regs->cx, &sc->cx);
+ 	err |= __put_user(regs->ax, &sc->ax);
++#ifdef CONFIG_X86_64
++	err |= __put_user(regs->r8, &sc->r8);
++	err |= __put_user(regs->r9, &sc->r9);
++	err |= __put_user(regs->r10, &sc->r10);
++	err |= __put_user(regs->r11, &sc->r11);
++	err |= __put_user(regs->r12, &sc->r12);
++	err |= __put_user(regs->r13, &sc->r13);
++	err |= __put_user(regs->r14, &sc->r14);
++	err |= __put_user(regs->r15, &sc->r15);
++#endif /* CONFIG_X86_64 */
++
+ 	err |= __put_user(current->thread.trap_no, &sc->trapno);
+ 	err |= __put_user(current->thread.error_code, &sc->err);
+ 	err |= __put_user(regs->ip, &sc->ip);
++#ifdef CONFIG_X86_32
+ 	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
+ 	err |= __put_user(regs->flags, &sc->flags);
+ 	err |= __put_user(regs->sp, &sc->sp_at_signal);
+ 	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
++#else /* !CONFIG_X86_32 */
++	err |= __put_user(regs->flags, &sc->flags);
++	err |= __put_user(regs->cs, &sc->cs);
++	err |= __put_user(0, &sc->gs);
++	err |= __put_user(0, &sc->fs);
++#endif /* CONFIG_X86_32 */
+ 
+ 	err |= __put_user(fpstate, &sc->fpstate);
+ 
+diff --git a/arch/x86/kernel/signal_64.c b/arch/x86/kernel/signal_64.c
+index 3868c2a..d2307e4 100644
+--- a/arch/x86/kernel/signal_64.c
++++ b/arch/x86/kernel/signal_64.c
+@@ -157,16 +157,23 @@ asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+ /*
+  * Set up a signal frame.
+  */
+-
+-static inline int
++static int
+ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+ 		 struct pt_regs *regs, unsigned long mask)
+ {
+ 	int err = 0;
+ 
+-	err |= __put_user(regs->cs, &sc->cs);
+-	err |= __put_user(0, &sc->gs);
+-	err |= __put_user(0, &sc->fs);
++#ifdef CONFIG_X86_32
++	{
++		unsigned int tmp;
++
++		savesegment(gs, tmp);
++		err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
++	}
++	err |= __put_user(regs->fs, (unsigned int __user *)&sc->fs);
++	err |= __put_user(regs->es, (unsigned int __user *)&sc->es);
++	err |= __put_user(regs->ds, (unsigned int __user *)&sc->ds);
++#endif /* CONFIG_X86_32 */
+ 
+ 	err |= __put_user(regs->di, &sc->di);
+ 	err |= __put_user(regs->si, &sc->si);
+@@ -176,6 +183,7 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+ 	err |= __put_user(regs->dx, &sc->dx);
+ 	err |= __put_user(regs->cx, &sc->cx);
+ 	err |= __put_user(regs->ax, &sc->ax);
++#ifdef CONFIG_X86_64
+ 	err |= __put_user(regs->r8, &sc->r8);
+ 	err |= __put_user(regs->r9, &sc->r9);
+ 	err |= __put_user(regs->r10, &sc->r10);
+@@ -184,11 +192,26 @@ setup_sigcontext(struct sigcontext __user *sc, void __user *fpstate,
+ 	err |= __put_user(regs->r13, &sc->r13);
+ 	err |= __put_user(regs->r14, &sc->r14);
+ 	err |= __put_user(regs->r15, &sc->r15);
++#endif /* CONFIG_X86_64 */
++
+ 	err |= __put_user(current->thread.trap_no, &sc->trapno);
+ 	err |= __put_user(current->thread.error_code, &sc->err);
+ 	err |= __put_user(regs->ip, &sc->ip);
++#ifdef CONFIG_X86_32
++	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
+ 	err |= __put_user(regs->flags, &sc->flags);
++	err |= __put_user(regs->sp, &sc->sp_at_signal);
++	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
++#else /* !CONFIG_X86_32 */
++	err |= __put_user(regs->flags, &sc->flags);
++	err |= __put_user(regs->cs, &sc->cs);
++	err |= __put_user(0, &sc->gs);
++	err |= __put_user(0, &sc->fs);
++#endif /* CONFIG_X86_32 */
++
+ 	err |= __put_user(fpstate, &sc->fpstate);
++
++	/* non-iBCS2 extensions.. */
+ 	err |= __put_user(mask, &sc->oldmask);
+ 	err |= __put_user(current->thread.cr2, &sc->cr2);
+ 
+-- 
+1.5.6
 
-Looks like this convention was started by Chuck Lever on 7/14/2008 (Id:44).
-
-
-   Still tweaking and testing a major change to entry.S that Marc wrote
-to allow gdb to backtrace across an exception. It's been extremely
-valuable while working on problems like bringing up the kgdb stub.
-
--piet
-
-> Hi Harvey,
-> 
-> I have added your patch to the xtensa-next tree on kernel.org and will 
-> push to Linus soon.
-> 
-> Thanks,
-> -Chris
-> 
-> Harvey Harrison wrote:
->> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
->> ---
->>  include/asm-xtensa/byteorder.h |   32 +++++++++++++++-----------------
->>  1 files changed, 15 insertions(+), 17 deletions(-)
->>
->> diff --git a/include/asm-xtensa/byteorder.h 
->> b/include/asm-xtensa/byteorder.h
->> index 765edf1..07d10ad 100644
->> --- a/include/asm-xtensa/byteorder.h
->> +++ b/include/asm-xtensa/byteorder.h
->> @@ -14,7 +14,17 @@
->>  #include <asm/types.h>
->>  #include <linux/compiler.h>
->>  
->> -static __inline__ __attribute_const__ __u32 ___arch__swab32(__u32 x)
->> +#ifdef __XTENSA_EL__
->> +# define __LITTLE_ENDIAN
->> +#elif defined(__XTENSA_EB__)
->> +# define __BIG_ENDIAN
->> +#else
->> +# error processor byte order undefined!
->> +#endif
->> +
->> +#define __SWAB_64_THRU_32__
->> +
->> +static inline __attribute_const__ __u32 __arch_swab32(__u32 x)
->>  {
->>      __u32 res;
->>      /* instruction sequence from Xtensa ISA release 2/2000 */
->> @@ -28,8 +38,9 @@ static __inline__ __attribute_const__ __u32 
->> ___arch__swab32(__u32 x)
->>          );
->>      return res;
->>  }
->> +#define __arch_swab32 __arch_swab32
->>  
->> -static __inline__ __attribute_const__ __u16 ___arch__swab16(__u16 x)
->> +static inline __attribute_const__ __u16 __arch_swab16(__u16 x)
->>  {
->>      /* Given that 'short' values are signed (i.e., can be negative),
->>       * we cannot assume that the upper 16-bits of the register are
->> @@ -62,21 +73,8 @@ static __inline__ __attribute_const__ __u16 
->> ___arch__swab16(__u16 x)
->>  
->>      return res;
->>  }
->> +#define __arch_swab16 __arch_swab16
->>  
->> -#define __arch__swab32(x) ___arch__swab32(x)
->> -#define __arch__swab16(x) ___arch__swab16(x)
->> -
->> -#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
->> -#  define __BYTEORDER_HAS_U64__
->> -#  define __SWAB_64_THRU_32__
->> -#endif
->> -
->> -#ifdef __XTENSA_EL__
->> -# include <linux/byteorder/little_endian.h>
->> -#elif defined(__XTENSA_EB__)
->> -# include <linux/byteorder/big_endian.h>
->> -#else
->> -# error processor byte order undefined!
->> -#endif
->> +#include <linux/byteorder.h>
->>  
->>  #endif /* _XTENSA_BYTEORDER_H */
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
