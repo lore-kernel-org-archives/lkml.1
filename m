@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbYKIMxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbYKIMyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbYKIMxu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 07:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbYKIMxk
+	id S1755348AbYKIMyW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 07:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYKIMyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 07:53:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56099 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbYKIMxj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 07:53:39 -0500
-Message-ID: <4916DD31.4000503@redhat.com>
-Date: Sun, 09 Nov 2008 14:53:05 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Anthony Liguori <anthony@codemonkey.ws>, Matthew Wilcox <matthew@wil.cx>,
-       "Fischer, Anna" <anna.fischer@hp.com>, Greg KH <greg@kroah.com>,
-       H L <swdevyid@yahoo.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-References: <20081106154351.GA30459@kroah.com>	<894107.30288.qm@web45108.mail.sp1.yahoo.com>	<20081106164919.GA4099@kroah.com>	<0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net>	<20081106183630.GD11773@parisc-linux.org>	<491371F0.7020805@codemonkey.ws> <87d4h7pnnm.fsf@basil.nowhere.org>
-In-Reply-To: <87d4h7pnnm.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Nov 2008 07:54:08 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:34209 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753852AbYKIMyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 07:54:07 -0500
+X-Sasl-enc: FmEGBF26Tcl4hmtAZuAjrKJB+Gqx9roE0W7Qmt5JG/sD 1226235245
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] thinkpad-acpi regression fix for 2.6.28-rc
+Date: Sun,  9 Nov 2008 10:54:01 -0200
+Message-Id: <1226235242-11130-1-git-send-email-hmh@hmh.eng.br>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20081109113011.GB8329@khazad-dum.debian.net>
+References: <20081109113011.GB8329@khazad-dum.debian.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Anthony Liguori <anthony@codemonkey.ws> writes:
->   
->> What we would rather do in KVM, is have the VFs appear in the host as
->> standard network devices.  We would then like to back our existing PV
->> driver to this VF directly bypassing the host networking stack.  A key
->> feature here is being able to fill the VF's receive queue with guest
->> memory instead of host kernel memory so that you can get zero-copy
->> receive traffic.  This will perform just as well as doing passthrough
->> (at least) and avoid all that ugliness of dealing with SR-IOV in the
->> guest.
->>     
->
-> But you shift a lot of ugliness into the host network stack again.
-> Not sure that is a good trade off.
->   
 
-The net effect will be positive.  We will finally have aio networking 
-from userspace (can send process memory without resorting to 
-sendfile()), and we'll be able to assign a queue to a process (which 
-will enable all sorts of interesting high performance things; basically 
-VJ channels without kernel involvement).
+This patch should fix a reported regression on fan_resume (not
+on bugzilla, report on the LKML and ibm-acpi-devel).
 
-> Also it would always require context switches and I believe one
-> of the reasons for the PV/VF model is very low latency IO and having
-> heavyweight switches to the host and back would be against that.
->   
+Tino, Rafael, please test and reply with a tested-by line.  I have
+tested it here, but my T43 has a fan quirk that might get in the
+way...
 
-It's true that latency would suffer (or alternatively cpu consumption 
-would increase).
+Len, if we get reports that this fixes the regression, it would be
+really nice if you could send it to Linus for 2.6.28-rc.  It is a
+rather annoying regression.  Otherwise, a revert of the commit who
+broke things (listed in the patch commit log) is also acceptable.
+
+Thank you.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
