@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYKIXZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYKIX0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbYKIXZY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 18:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbYKIXZJ
+	id S1757253AbYKIX0g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 18:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYKIX00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 18:25:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45498 "EHLO ogre.sisk.pl"
+	Sun, 9 Nov 2008 18:26:26 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48351 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756512AbYKIXZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 18:25:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: [Bug #11925] cdrom: missing compat ioctls
-Date: Mon, 10 Nov 2008 00:29:10 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.3XG.z4zFJB@chimera> <jeiqqwjyis.fsf@sykes.suse.de>
-In-Reply-To: <jeiqqwjyis.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811100029.11044.rjw@sisk.pl>
+	id S1756413AbYKIX0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 18:26:25 -0500
+Date: Mon, 10 Nov 2008 10:26:07 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, linux-next@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, michaelc@cs.wisc.edu,
+       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
+       linux-scsi@vger.kernel.org, Sami.Iren@seagate.com,
+       Pete Wyckoff <pw@padd.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
+Message-Id: <20081110102607.378c3279.sfr@canb.auug.org.au>
+In-Reply-To: <4916FAB3.4010409@panasas.com>
+References: <48876009.8010701@panasas.com>
+	<491073BB.4000900@panasas.com>
+	<20081104111923.bb19c238.akpm@linux-foundation.org>
+	<4916FAB3.4010409@panasas.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 10 of November 2008, Andreas Schwab wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11925
-> > Subject		: cdrom: missing compat ioctls
-> > Submitter	: Andreas Schwab <schwab@suse.de>
-> > Date		: 2008-10-31 14:02 (10 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=33c2dca4957bd0da3e1af7b96d0758d97e708ef6
-> > Handled-By	: Andreas Schwab <schwab@suse.de>
-> > Patch		: http://marc.info/?l=linux-kernel&m=122548923531545&w=2
-> 
-> The patch has been picked up by akpm.
+--Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK, but has it been merged into mainline already?
+Hi Boaz,
 
-Rafael
+On Sun, 09 Nov 2008 16:58:59 +0200 Boaz Harrosh <bharrosh@panasas.com> wrot=
+e:
+>
+> I have prepared a branch for linux-next based on today's Linus tree
+> It is here:
+>     git://git.open-osd.org/linux-open-osd.git linux-next
+> This is if it's OK with James, as these bits are his responsibility.
+> They need only sit in linux-next for a couple of weeks to get some wider
+> compilation exposure. Other then that they are totally new code and
+> are safe. Eventually they should be included into Linux-next through
+> scsi-misc-2.6.
+
+I have added that tree to linux-next for today.
+
+What I say to everyone:  commits in that branch must have been posted
+somewhere appropriate, reviewed, unit tested and destined for the next
+merge window.  Also, note that my (new) practise is to temporarily drop a
+tree if it causes non-trivial conflicts (especially with Linus' tree), so
+don't be too upset if you get a message from me to that effect.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkXcY8ACgkQjjKRsyhoI8zqiwCgpQfbG13he3AXK2WXi24Atyg5
+QkQAoLvKrU/ArrvIslvdS3J75rfQm2nX
+=iwiW
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg--
