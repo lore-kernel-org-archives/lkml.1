@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbYKIU2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYKIU32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbYKIU2z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 15:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYKIU2g
+	id S1756946AbYKIU32 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 15:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYKIU3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 15:28:36 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:33077 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756031AbYKIU2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 15:28:35 -0500
-Date: Sun, 9 Nov 2008 21:28:30 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Suspend regression in stable kernel 2.6.27.4 on Mac mini Core Duo
-Message-ID: <20081109202830.GA7206@x61>
-Mail-Followup-To: linux-kernel@vger.kernel.org, stable@kernel.org
+	Sun, 9 Nov 2008 15:29:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49222 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756031AbYKIU3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 15:29:05 -0500
+Date: Sun, 9 Nov 2008 21:28:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, hpa@zytor.com
+Subject: Re: Move iomap.h to arch/x86/include/asm
+Message-ID: <20081109202855.GA26895@elte.hu>
+References: <20081109101405.6981b835@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081109101405.6981b835@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-my Mac mini Core Duo doesn't wake up from suspend to RAM anymore with
-2.6.27.4. It works with 2.6.27.3. I enabled pm_trace, but dmesg | grep
-"hash matches" didn't show anything after resume. I tried 2.6.27.5,
-which also failed to resume.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-The system is i386, the hardware is basically Intel based: Core Duo
-T2300 CPU, Intel graphics i945, ICH7, Marvell GbE (sky2), a SATA hard
-disk, PATA DVD drive, a Firewire hard disk, and a lot of USB devices.
+> 
+> 
+> The following changes since commit
+> a622cf69b806bbb1887913c04e01d0c25b892876: Linus Torvalds (1):
+>         Merge branch 'sched-fixes-for-linus' of
+> git://git.kernel.org/.../tip/linux-2.6-tip
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-kerneloops.git
+>   for-mingo
+> 
+> Arjan van de Ven (1):
+>       x86: move iomap.h to the new include location
+> 
+>  {include/asm-x86 => arch/x86/include/asm}/iomap.h |    0
+>  1 files changed, 0 insertions(+), 0 deletions(-)
+>  rename {include/asm-x86 => arch/x86/include/asm}/iomap.h (100%)
 
-Does that ring any bells? Any hints what commit I should try to revert?
+pulled into tip/x86/urgent, thanks Arjan!
 
-Regards,
-Tino
+	Ingo
