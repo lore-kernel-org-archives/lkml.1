@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYKIVtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYKIVtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756956AbYKIVtA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 16:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbYKIVoP
+	id S1757547AbYKIVtX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 16:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbYKIVqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 16:44:15 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:46862 "EHLO minas.ics.muni.cz"
+	Sun, 9 Nov 2008 16:46:40 -0500
+Received: from ozlabs.org ([203.10.76.45]:37041 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758133AbYKIVoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 16:44:13 -0500
-Date: Sun, 9 Nov 2008 22:43:38 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org,
-       corsac@debian.org, elendil@planet.nl
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Message-ID: <20081109214338.GB4385@ics.muni.cz>
-References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz> <200811091424.10943.rjw@sisk.pl> <20081109200918.GA4361@ics.muni.cz> <20081109122835.10f410fa@infradead.org> <20081109203432.GB4361@ics.muni.cz> <20081109132438.5d81cd74@infradead.org>
+	id S1758584AbYKIVqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 16:46:39 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
+Date: Mon, 10 Nov 2008 08:46:34 +1100
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20081029152849.3883d072.sfr@canb.auug.org.au> <200811082024.20157.rusty@rustcorp.com.au> <alpine.LFD.2.00.0811091200090.3468@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811091200090.3468@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081109132438.5d81cd74@infradead.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 09 Nov 2008 22:43:32 +0100 (CET)
+Message-Id: <200811100846.35404.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 09, 2008 at 01:24:38PM -0800, Arjan van de Ven wrote:
-> it would be greatly appreciated if those that see this issue can test the
-> patch below (which is a combo patch of thomas' fixes, to make testing
-> easier) and confirm if this fixes the hangs.  If they do fix the issue we
-> don't need to disable anything and get better power savings as bonus as
-> well.
+On Monday 10 November 2008 07:01:50 Linus Torvalds wrote:
+> On Sat, 8 Nov 2008, Rusty Russell wrote:
+> > Ok, I sent through the latest delta on top of this before, but see below.
+>
+> Can somebody send a final patch-set to me? Right now I have multiple
+> versions of patches, apparently on top of each other, and sometimes
+> multiple patches per email. Very confusing, and I do _not_ want to apply
+> the wrong thing by mistake.
 
-hmm, on the other hand, powertop application shows that C4 state is 51.5%
-residency and C0 is 47.3% residency. I have about 5% C0 residency and 95-98%
-C3 residency. Is this expected?
+Sure, am waiting for a final run through linux-next.  There's no huge hurry 
+and it helps find obscure arch compile/include issues.
 
--- 
-Luká¹ Hejtmánek
+Cheers,
+Rusty.
