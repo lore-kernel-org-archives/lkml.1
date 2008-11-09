@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbYKIKvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbYKIKxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbYKIKvv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 05:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYKIKvl
+	id S1755059AbYKIKxn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 05:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbYKIKxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 05:51:41 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:42965 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752182AbYKIKvl (ORCPT
+	Sun, 9 Nov 2008 05:53:35 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:43158 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753498AbYKIKxe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 05:51:41 -0500
-Date: Sun, 9 Nov 2008 11:51:37 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-cc: Johannes Berg <johannes@sipsolutions.net>,
-       Mike Frysinger <vapier@gentoo.org>, Michael Buesch <mb@bu3sch.de>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] SSB: make it depend on PCI
-In-Reply-To: <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811091149280.19341@anakin>
-References: <1225965082-31462-1-git-send-email-vapier@gentoo.org>
- <1225969620.3619.204.camel@johannes.berg> <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com>
+	Sun, 9 Nov 2008 05:53:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ZjuAnjNAKfZIURT4BX2OXpuIu/ZqMUE1BbNCmNt+vwy6ZvI7VhX7YXD6ZB8odPZuQg
+         vyJbEtMq1yy34PsEwI3oNIEpd8AiexPOtIKC6ZHutuXirosVPuhDlcVayDudZyCLTqaZ
+         0h4g5cmTdav1EFPOqyGhHpxchMZ6egTpBC6iE=
+Date: Sun, 9 Nov 2008 11:52:02 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
+Message-ID: <20081109105159.GA5867@joi>
+References: <20081104173300.GF6134@ics.muni.cz> <200811090106.04579.rjw@sisk.pl> <20081108205532.7952fec6@infradead.org> <20081109085649.GD4353@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081109085649.GD4353@ics.muni.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 6 Nov 2008, Mike Frysinger wrote:
-> On Thu, Nov 6, 2008 at 06:07, Johannes Berg wrote:
-> > On Thu, 2008-11-06 at 04:51 -0500, Mike Frysinger wrote:
-> >> Since the SSB code requires PCI, set the Kconfig dependencies accordingly.
-> >> Also tweak the menu display so that the menu does not show up at all if
-> >> SSB is not possible.
-> >>
-> >> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> >> ---
-> >>  drivers/ssb/Kconfig |    7 ++++---
-> >>  1 files changed, 4 insertions(+), 3 deletions(-)
-> >>
-> >> diff --git a/drivers/ssb/Kconfig b/drivers/ssb/Kconfig
-> >> index 307b1f6..f0a176a 100644
-> >> --- a/drivers/ssb/Kconfig
-> >> +++ b/drivers/ssb/Kconfig
-> >> @@ -1,10 +1,11 @@
-> >> -menu "Sonics Silicon Backplane"
-> >> -
-> >>  config SSB_POSSIBLE
-> >>       bool
-> >> -     depends on HAS_IOMEM && HAS_DMA
-> >> +     depends on HAS_IOMEM && HAS_DMA && PCI
-> >
-> > This is incorrect. SSB is also used on embedded systems that do not use
-> > PCI at all.
+On Sun, Nov 09, 2008 at 09:56:49AM +0100, Lukas Hejtmanek wrote:
+> On Sat, Nov 08, 2008 at 08:55:32PM -0800, Arjan van de Ven wrote:
+> > do you have RAID autoprobing enabled ?
+> > raid autoprobing requires that all devices have been discovered,
+> > to avoid getting partial RAID arrays and other nasty things...
+> > 
+> > it's CONFIG_MD_AUTODETECT
 > 
-> while that may be the intent, it doesnt work today.
+> # CONFIG_MD is not set
 > 
-> drivers/ssb/main.c always includes linux/ssb/ssb.h
+> I do not have MD at all.
 > 
-> linux/ssb/ssb.h always calls pci_dma_* functions
+> Moreover, I discovered that I have to hit a keyboard several times during the
+> boot to boot up.
 > 
-> arches that do not support PCI fail to build:
->   CC      drivers/ssb/main.o
-> In file included from drivers/ssb/ssb_private.h:5,
->                  from drivers/ssb/main.c:12:
-> include/linux/ssb/ssb.h: In function 'ssb_dma_mapping_error':
-> include/linux/ssb/ssb.h:430: error: implicit declaration of function
-> 'pci_dma_mapping_error'
-> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_for_cpu':
-> include/linux/ssb/ssb.h:475: error: implicit declaration of function
-> 'pci_dma_sync_single_for_cpu'
-> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_for_device':
-> include/linux/ssb/ssb.h:493: error: implicit declaration of function
-> 'pci_dma_sync_single_for_device'
-> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_cpu':
-> include/linux/ssb/ssb.h:517: error: implicit declaration of function
-> 'dma_sync_single_range_for_cpu'
-> include/linux/ssb/ssb.h: In function 'ssb_dma_sync_single_range_for_device':
-> include/linux/ssb/ssb.h:538: error: implicit declaration of function
-> 'dma_sync_single_range_for_device'
-> drivers/ssb/main.c: In function 'ssb_dma_set_mask':
-> drivers/ssb/main.c:1183: error: implicit declaration of function 'dma_set_mask'
-> make[1]: *** [drivers/ssb/main.o] Error 1
-> make: *** [drivers/ssb/main.o] Error 2
+> The delay depends on keyboard hit. If I do not touch the keyboard, it waits
+> forever.. Looks like something needs an interrupt..
 
-I had the same issue on m68k, not only with SSB but also with other legacy
-drivers (hp100 Ethernet, AIC7xxx SCSI). It was fixed in commit
-998aaf01c6f6f3dffc1ea9e7b20b131e38fdbc78 ("m68k: <asm/pci.h> needs
-<asm-generic/pci-dma-compat.h>").
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Do you have NO_HZ enabled?
+(Cc'ing Thomas)
