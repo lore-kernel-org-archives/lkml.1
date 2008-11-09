@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbYKILmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbYKILoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058AbYKILmb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 06:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbYKILmW
+	id S1755209AbYKILoW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 06:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbYKILoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 06:42:22 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54141 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbYKILmV (ORCPT
+	Sun, 9 Nov 2008 06:44:13 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42685 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753098AbYKILoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 06:42:21 -0500
-Date: Sun, 9 Nov 2008 20:41:12 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Chris Snook <csnook@redhat.com>
-Subject: Re: [PATCH] change CONFIG_NUMA description
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-In-Reply-To: <4914BD77.2080005@redhat.com>
-References: <20081106085301.GB4890@elte.hu> <4914BD77.2080005@redhat.com>
-Message-Id: <20081109204031.F4FF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sun, 9 Nov 2008 06:44:12 -0500
+Date: Sun, 9 Nov 2008 12:45:45 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Dmitry <dbaryshkov@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Cyril Hrubis <metan@ucw.cz>,
+       rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
+       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
+Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
+Message-ID: <20081109114545.GG6094@elf.ucw.cz>
+References: <20081031150601.GA1457@ucw.cz> <20081105142329.GA1724@ucw.cz> <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com> <20081105173303.GC2038@elf.ucw.cz> <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com> <20081106080416.GA1531@ucw.cz> <20081106191424.GA2273@atrey.karlin.mff.cuni.cz> <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com> <20081107142923.GA1616@ucw.cz> <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +	  For 64-bit this is recommended if the system is Intel Core 7i
-> > +	  (or later), AMD Opteron, or EM64T NUMA.
-> > +
-> > +	  For 32-bit this is only needed on (rare) 32-bit-only platforms
-> > +	  that support NUMA topologies, such as NUMAQ / Summit, or if you
-> > +	  boot a 32-bit kernel on a 64-bit NUMA platform.
-> > +
-> > +	  Otherwise, you should say N.
-> >  
-> >  comment "NUMA (Summit) requires SMP, 64GB highmem support, ACPI"
-> >  	depends on X86_32 && X86_SUMMIT && (!HIGHMEM64G || !ACPI)
+On Fri 2008-11-07 17:57:33, Dmitry wrote:
+> 2008/11/7 Pavel Machek <pavel@suse.cz>:
+> > On Fri 2008-11-07 21:23:41, Eric Miao wrote:
+> >> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
+> >> Did you guys ever try that?
+> >
+> > I never heard about that patch, do you have it handy?
 > 
-> Core i7, not Core 7i.
+> http://rpsys.net/openzaurus/patches/archive/pxa-linking-bug.patch
+> 
+> I plan to submit a bit modified version of this patch later.
 
-Good catch.
-Tanks.
+Could you send me full .config that is known to work?
 
-
-
+Do I need pxa-linking-bug.patch to get it to boot?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
