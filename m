@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756203AbYKITem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbYKITgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756203AbYKITem (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 14:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbYKITec
+	id S1756139AbYKITgY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 14:36:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbYKITgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 14:34:32 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:53165 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755699AbYKITeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 14:34:31 -0500
-Date: Sun, 9 Nov 2008 20:34:01 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Peter Alfredsen <loki_val@gentoo.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lee Howard <lee.howard@mainpine.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is the PCI serial driver code GPL v2 or v3
-Message-ID: <20081109193357.GA1549@ucw.cz>
-References: <20081106174341.GA8155@xolotl.n0ano.com> <200811061952.37490.loki_val@gentoo.org> <20081106191250.GA28514@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081106191250.GA28514@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 9 Nov 2008 14:36:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38127 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755645AbYKITgP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 14:36:15 -0500
+Date: Sun, 9 Nov 2008 11:36:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: JosephChan@via.com.tw, <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
+Message-Id: <20081109113603.d45361ad.akpm@linux-foundation.org>
+In-Reply-To: <20081109202537.33ead0a2@neptune.home>
+References: <20081109202537.33ead0a2@neptune.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-11-06 19:12:50, Russell King wrote:
-> On Thu, Nov 06, 2008 at 08:52:31PM +0200, Peter Alfredsen wrote:
-> > It seems like a typo to me to.. That wording has been constant since the 
-> > file drivers/serial/serial_8250_pci.c was created based on work in 
-> > drivers/char/serial.c:
-> > http://git.kernel.org/?p=linux/kernel/git/tglx/history.git;a=commitdiff;h=33c0d1b0c3ebb61243d9b19ce70d9063acff2aac
-> > serial_8250.c has the "or later" clause there.
-> > 
-> > But I suppose the best way is to ask the originator of that file. 
-> > Russell, what say you?
-> > Did you mean to license that file under GPL-2 or GPL-2+?
-> 
-> It was based upon the original serial.c by Ted T'so, but with some
-> reworking to add a separate quirks table, and quite a number of cleanups.
-> 
-> My personal position is that code I author is GPLv2, and not GPLv2 or
-> later.  So it's a question whether you consider that I'm the author
-> of the code in that file, or whether you think it's Ted's with my
-> contributions were under Ted's original terms.
+On Sun, 9 Nov 2008 20:25:37 +0100 Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
 
-Original poster wants GPLv3 version for use in grub-2. Would you be
-willing to relicense your changes in serial_8250.c, so that he can do
-that? Would Ted be willing to do that?
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> The function viafb_cursor() uses 2 stack-variables of CURSOR_SIZE bits;
+> CURSOR_SIZE is defined as (8 * 1024). Using up twice 1k on stack is too much
+> for 4k-stack (though it works with 8k-stacks).
+
+yup, we should fix that.
+
+> Make those two variables kzalloc'ed to preserve stack space.
+> 
+> Signed-off-by: Bruno Pr__mont <bonbons@linux-vserver.org>
+> 
+> ---
+> --- linux-2.6.28-rc3.orig/drviers/video/via/viafbdev.c	2008-11-09 19:22:15.000000000 +0100
+
+                              ^^  typo in pathname?
+
+> +++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-09 19:36:15.000000000 +0100
+> @@ -1052,10 +1052,8 @@ static void viafb_imageblit(struct fb_in
+>  
+>  static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+>  {
+> -	u8 data[CURSOR_SIZE / 8];
+> -	u32 data_bak[CURSOR_SIZE / 32];
+>  	u32 temp, xx, yy, bg_col = 0, fg_col = 0;
+> -	int size, i, j = 0;
+> +	int i, j = 0;
+>  	static int hw_cursor;
+>  	struct viafb_par *p_viafb_par;
+>  
+> @@ -1178,10 +1176,15 @@ static int viafb_cursor(struct fb_info *
+>  	}
+>  
+>  	if (cursor->set & FB_CUR_SETSHAPE) {
+> -		size =
+> +		u8 *data = kzalloc(CURSOR_SIZE / 8, GFP_KERNEL);
+> +		u32 *data_bak = kzalloc(CURSOR_SIZE / 32, GFP_KERNEL);
+> +		int size =
+>  		    ((viacursor.image.width + 7) >> 3) *
+>  		    viacursor.image.height;
+>  
+> +		if (data == NULL || data_bak == NULL)
+> +			goto out;
+> +
+>  		if (MAX_CURS == 32) {
+>  			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
+>  				data_bak[i] = 0x0;
+> @@ -1231,6 +1234,9 @@ static int viafb_cursor(struct fb_info *
+>  		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
+>  		       ((struct viafb_par *)(info->par))->cursor_start,
+>  		       data_bak, CURSOR_SIZE);
+> +out:
+> +		kfree(data);
+> +		kfree(data_bak);
+>  	}
+>  
+>  	if (viacursor.enable)
+
+Is the ->fb_cursor handler allowed to perform GFP_KERNEL memory
+allocations?  It's never called from atomic contexts?
+
