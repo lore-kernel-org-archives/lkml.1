@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbYKIUvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbYKIUzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbYKIUvj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 15:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYKIUvc
+	id S1756580AbYKIUzz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 15:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYKIUzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 15:51:32 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:35426 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755675AbYKIUvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 15:51:31 -0500
-Date: Sun, 9 Nov 2008 21:43:41 +0100
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: Re: [PATCH] pcmcia: minor logging improvement on card detection
-Message-ID: <20081109204341.GA16869@comet.dominikbrodowski.net>
-Mail-Followup-To: Frans Pop <elendil@planet.nl>,
-	linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-References: <200811031942.20360.elendil@planet.nl> <200811071419.11050.elendil@planet.nl> <200811071435.15934.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811071435.15934.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 9 Nov 2008 15:55:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36043 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754243AbYKIUzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 15:55:46 -0500
+Date: Sun, 9 Nov 2008 12:55:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, JosephChan@via.com.tw,
+       <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
+Message-Id: <20081109125522.b5266352.akpm@linux-foundation.org>
+In-Reply-To: <20081109213811.4b85adc6@neptune.home>
+References: <20081109202537.33ead0a2@neptune.home>
+	<20081109113603.d45361ad.akpm@linux-foundation.org>
+	<20081109122515.1deb9ec2@infradead.org>
+	<20081109213811.4b85adc6@neptune.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 9 Nov 2008 21:38:11 +0100 Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
 
-On Fri, Nov 07, 2008 at 02:35:15PM +0100, Frans Pop wrote:
-> From: Frans Pop <elendil@planet.nl>
+> On Sun, 09 November 2008 Arjan van de Ven wrote:
+> > On Sun, 9 Nov 2008 Andrew Morton wrote:
+> > > On Sun, 9 Nov 2008 Bruno Pr__mont wrote:
+> > > 
+> > > > The function viafb_cursor() uses 2 stack-variables of CURSOR_SIZE
+> > > > bits; CURSOR_SIZE is defined as (8 * 1024). Using up twice 1k on
+> > > > stack is too much for 4k-stack (though it works with 8k-stacks).
+> > > 
+> > > >  
+> > > >  	if (viacursor.enable)
+> > > 
+> > > Is the ->fb_cursor handler allowed to perform GFP_KERNEL memory
+> > > allocations?  It's never called from atomic contexts?
+> > 
+> > if it's allowed to do GFP_KERNEL memory allocations the statement that
+> > it works with 8k stacks is a bit overstated... since irq's can come in
+> > and take several KB of stack as well ;)
+> I don't know if it can be called from atomic contexts or not :(
 > 
-> pcmcia: minor logging improvement on card detection
->     
-> Show for which device a card has been inserted, so instead of:
->    pcmcia_socket pcmcia_socket0: pccard: CardBus card inserted into slot 0
-> print:
->    yenta_cardbus 0000:01:0b.0: pccard: CardBus card inserted into slot 0
->     
-> This provides a more logical link between previous and following messages.
+> 
+> In addition I get panics some time after start-up which I'm not sure
+> what to associate them with (apparently unrelated)
+> It could be some stack overflow by calling fbset (I will to more testing
+> in order to find out)
+> 
+> First attempt: calling fbset via ssh:
+> 
+> [ 1806.952151] BUG: unable to handle kernel NULL pointer dereference at 00000123
+> [ 1806.952601] IP: [<c03d2737>] icmpv6_send+0x387/0x580
+> 
+> ...
+>
+> Second attempt, delayed after calling fbset from console:
+> 
+> [  217.260426] BUG: unable to handle kernel NULL pointer dereference at 000000c7
+> [  217.260915] IP: [<c0380b46>] rt_worker_func+0xb6/0x160
 
-unfortunately, this won't work -- &skt->cb_dev is only available and set if
-the parent device is a PCI device; therefore, &skt->dev is the only thing we
-can use.
+gack.  Your kernel was destroyed.
 
-Best,
-	Dominik
+Stack overflow might well explain this.  Does it work OK with 8k stacks?
+
+scripts/checkstack.pl should help find the problems.
