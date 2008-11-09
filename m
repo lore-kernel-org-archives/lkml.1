@@ -1,80 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYKIX0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYKIXb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbYKIX0g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 18:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYKIX00
+	id S1757237AbYKIXb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 18:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYKIXbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 18:26:26 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48351 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756413AbYKIX0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 18:26:25 -0500
-Date: Mon, 10 Nov 2008 10:26:07 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, linux-next@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, michaelc@cs.wisc.edu,
-       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
-       linux-scsi@vger.kernel.org, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
-Message-Id: <20081110102607.378c3279.sfr@canb.auug.org.au>
-In-Reply-To: <4916FAB3.4010409@panasas.com>
-References: <48876009.8010701@panasas.com>
-	<491073BB.4000900@panasas.com>
-	<20081104111923.bb19c238.akpm@linux-foundation.org>
-	<4916FAB3.4010409@panasas.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg"
+	Sun, 9 Nov 2008 18:31:49 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:47758 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756442AbYKIXbs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 18:31:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ri0Ps20jtM5VXpWQHS4W6Xmnjo6iiR2eg5SMelLGmM4/9ghqyAqckXwsDSdOToSLklnheOABd87hl0JVMNEg28XGLUSgv4IsEQoH1TCznVA29wHa/pviOQkBnCUJuKXw+07aWxDE0dI0jIjq8ypT5dIfo9K5Fi7dQdM6gOcGs4k=  ;
+X-YMail-OSG: SCSFzpoVM1kobM6u3AqyXigTlfO0k9m5jyPzOMykwbFQd3fGw6RKwVd2jkznXnxcYYEHvnJfpfHf2_wj19AzIjjper1RkgZtWvGEx5JiZi1ESg1_3t82zPn3Zj0n_XZ9obFvVZlvAuKWyu83s04NDoa0IyvXNuUa_twShDfFKvhBCVAQ9II5QIT06ZCh
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: broonie@opensource.wolfsonmicro.com, lrg@slimlogic.co.uk
+Subject: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
+Date: Sun, 9 Nov 2008 15:31:45 -0800
+User-Agent: KMail/1.9.10
+Cc: lkml <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811091531.46003.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-Hi Boaz,
+The regulator framework needs to expose an OFF mode for regulators
+with a single state machine.  Example:  TWL4030 regulators each
+have a status register exposing the current mode, which will be
+either ACTIVE, STANDBY, or OFF.  But regulator_ops.get_mode()
+currently has no way to report that third (OFF) mode.
 
-On Sun, 09 Nov 2008 16:58:59 +0200 Boaz Harrosh <bharrosh@panasas.com> wrot=
-e:
->
-> I have prepared a branch for linux-next based on today's Linus tree
-> It is here:
->     git://git.open-osd.org/linux-open-osd.git linux-next
-> This is if it's OK with James, as these bits are his responsibility.
-> They need only sit in linux-next for a couple of weeks to get some wider
-> compilation exposure. Other then that they are totally new code and
-> are safe. Eventually they should be included into Linux-next through
-> scsi-misc-2.6.
+Add such an OFF mode, reporting it in the standard ways.
 
-I have added that tree to linux-next for today.
+In the spirit of the existing interface, disable() operations are
+still used to enter this mode:
 
-What I say to everyone:  commits in that branch must have been posted
-somewhere appropriate, reviewed, unit tested and destined for the next
-merge window.  Also, note that my (new) practise is to temporarily drop a
-tree if it causes non-trivial conflicts (especially with Linus' tree), so
-don't be too upset if you get a message from me to that effect.
+ - regulator_set_mode() rejects it; drivers doing runtime power
+   management must use regulator_disable().
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ - the PM_SUSPEND_* notifier goes down the set_suspend_disable()
+   path, not requiring set_suspend_mode() to handle OFF mode.
 
---Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg
-Content-Type: application/pgp-signature
+This doesn't address any other enable/disable issues... like the
+way regulator_disable() clobbers state even on failure paths, or
+refcounting isssues (e.g. two clients enable, one disables, then
+the regulator should stay active.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/regulator/core.c           |   16 +++++++++++++---
+ include/linux/regulator/consumer.h |    4 ++++
+ 2 files changed, 17 insertions(+), 3 deletions(-)
 
-iEYEARECAAYFAkkXcY8ACgkQjjKRsyhoI8zqiwCgpQfbG13he3AXK2WXi24Atyg5
-QkQAoLvKrU/ArrvIslvdS3J75rfQm2nX
-=iwiW
------END PGP SIGNATURE-----
-
---Signature=_Mon__10_Nov_2008_10_26_07_+1100_a2Z._j7.QHhcvrSg--
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -272,6 +272,8 @@ static ssize_t regulator_opmode_show(str
+ 		return sprintf(buf, "idle\n");
+ 	case REGULATOR_MODE_STANDBY:
+ 		return sprintf(buf, "standby\n");
++	case REGULATOR_MODE_OFF:
++		return sprintf(buf, "off\n");
+ 	}
+ 	return sprintf(buf, "unknown\n");
+ }
+@@ -411,6 +413,8 @@ static ssize_t suspend_opmode_show(struc
+ 		return sprintf(buf, "idle\n");
+ 	case REGULATOR_MODE_STANDBY:
+ 		return sprintf(buf, "standby\n");
++	case REGULATOR_MODE_OFF:
++		return sprintf(buf, "off\n");
+ 	}
+ 	return sprintf(buf, "unknown\n");
+ }
+@@ -589,7 +593,7 @@ static int suspend_set_state(struct regu
+ 		return -EINVAL;
+ 	}
+ 
+-	if (rstate->enabled)
++	if (rstate->enabled && rstate->mode != REGULATOR_MODE_OFF)
+ 		ret = rdev->desc->ops->set_suspend_enable(rdev);
+ 	else
+ 		ret = rdev->desc->ops->set_suspend_disable(rdev);
+@@ -668,7 +672,9 @@ static void print_constraints(struct reg
+ 	if (constraints->valid_modes_mask & REGULATOR_MODE_IDLE)
+ 		count += sprintf(buf + count, "idle ");
+ 	if (constraints->valid_modes_mask & REGULATOR_MODE_STANDBY)
+-		count += sprintf(buf + count, "standby");
++		count += sprintf(buf + count, "standby ");
++	if (constraints->valid_modes_mask & REGULATOR_MODE_OFF)
++		count += sprintf(buf + count, "off ");
+ 
+ 	printk(KERN_INFO "regulator: %s: %s\n", rdev->desc->name, buf);
+ }
+@@ -1362,7 +1368,8 @@ EXPORT_SYMBOL_GPL(regulator_get_current_
+  * @mode: operating mode - one of the REGULATOR_MODE constants
+  *
+  * Set regulator operating mode to increase regulator efficiency or improve
+- * regulation performance.
++ * regulation performance.  You may not pass REGULATOR_MODE_OFF; to achieve
++ * that effect, call regulator_disable().
+  *
+  * NOTE: Regulator system constraints must be set for this regulator before
+  * calling this function otherwise this call will fail.
+@@ -1372,6 +1379,9 @@ int regulator_set_mode(struct regulator 
+ 	struct regulator_dev *rdev = regulator->rdev;
+ 	int ret;
+ 
++	if (mode == REGULATOR_MODE_OFF)
++		return -EINVAL;
++
+ 	mutex_lock(&rdev->mutex);
+ 
+ 	/* sanity check */
+--- a/include/linux/regulator/consumer.h
++++ b/include/linux/regulator/consumer.h
+@@ -68,6 +68,9 @@
+  *             the most noisy and may not be able to handle fast load
+  *             switching.
+  *
++ *  OFF        Regulator is disabled.  This mode may be observed from
++ *             some hardware after invoking disable() primitives.
++ *
+  * NOTE: Most regulators will only support a subset of these modes. Some
+  * will only just support NORMAL.
+  *
+@@ -78,6 +81,7 @@
+ #define REGULATOR_MODE_NORMAL			0x2
+ #define REGULATOR_MODE_IDLE			0x4
+ #define REGULATOR_MODE_STANDBY			0x8
++#define REGULATOR_MODE_OFF			0x10
+ 
+ /*
+  * Regulator notifier events.
