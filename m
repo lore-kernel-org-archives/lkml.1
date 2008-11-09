@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYKIQ4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbYKIQ4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYKIQ4L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:56:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbYKIQzx
+	id S1755881AbYKIQ4w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:56:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbYKIQ4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:55:53 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:43590 "EHLO mgw1.diku.dk"
+	Sun, 9 Nov 2008 11:56:38 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:37665 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755819AbYKIQzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:55:52 -0500
-Date: Sun, 9 Nov 2008 17:55:49 +0100 (CET)
+	id S1755467AbYKIQ4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 11:56:37 -0500
+Date: Sun, 9 Nov 2008 17:56:34 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/8] drivers/mtd/maps/nettel.c: use ARRAY_SIZE
-Message-ID: <Pine.LNX.4.64.0811091755280.32509@ask.diku.dk>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 7/8] drivers/staging/wlan-ng/p80211wext.c: use ARRAY_SIZE
+Message-ID: <Pine.LNX.4.64.0811091756140.32509@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,25 +42,41 @@ T[] E;
 
 - (sizeof(E)/sizeof(E[...]))
 + ARRAY_SIZE(E)
+
+@depends on i using "paren.iso"@
+type T;
+T[] E;
+@@
+
+- (sizeof(E)/sizeof(T))
++ ARRAY_SIZE(E)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/mtd/maps/nettel.c     |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/staging/wlan-ng/p80211wext.c           |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mtd/maps/nettel.c b/drivers/mtd/maps/nettel.c
-index 965e6c6..f38e92c 100644
---- a/drivers/mtd/maps/nettel.c
-+++ b/drivers/mtd/maps/nettel.c
-@@ -362,8 +362,7 @@ static int __init nettel_init(void)
+diff --git a/drivers/staging/wlan-ng/p80211wext.c b/drivers/staging/wlan-ng/p80211wext.c
+index 906ba43..b8f83eb 100644
+--- a/drivers/staging/wlan-ng/p80211wext.c
++++ b/drivers/staging/wlan-ng/p80211wext.c
+@@ -128,7 +128,7 @@ static const long p80211wext_channel_freq[] = {
+ 	2412, 2417, 2422, 2427, 2432, 2437, 2442,
+ 	2447, 2452, 2457, 2462, 2467, 2472, 2484
+ };
+-#define NUM_CHANNELS (sizeof(p80211wext_channel_freq) / sizeof(p80211wext_channel_freq[0]))
++#define NUM_CHANNELS ARRAY_SIZE(p80211wext_channel_freq)
  
- 	intel_mtd->owner = THIS_MODULE;
+ /* steal a spare bit to store the shared/opensystems state. should default to open if not set */
+ #define HOSTWEP_SHAREDKEY BIT3
+@@ -1852,7 +1852,7 @@ static iw_handler p80211wext_handlers[] =  {
+ };
  
--	num_intel_partitions = sizeof(nettel_intel_partitions) /
--		sizeof(nettel_intel_partitions[0]);
-+	num_intel_partitions = ARRAY_SIZE(nettel_intel_partitions);
- 
- 	if (intelboot) {
- 		/*
+ struct iw_handler_def p80211wext_handler_def = {
+-	.num_standard = sizeof(p80211wext_handlers) / sizeof(iw_handler),
++	.num_standard = ARRAY_SIZE(p80211wext_handlers),
+ 	.num_private = 0,
+ 	.num_private_args = 0,
+         .standard = p80211wext_handlers,
