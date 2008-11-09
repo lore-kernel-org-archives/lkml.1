@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbYKIQy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYKIQyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbYKIQy1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYKIQyV
+	id S1755548AbYKIQyy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbYKIQyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:54:21 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:37594 "EHLO mgw2.diku.dk"
+	Sun, 9 Nov 2008 11:54:43 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:37604 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755260AbYKIQyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:54:20 -0500
-Date: Sun, 9 Nov 2008 17:54:15 +0100 (CET)
+	id S1755208AbYKIQym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 11:54:42 -0500
+Date: Sun, 9 Nov 2008 17:54:40 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: herbert@gondor.apana.org.au, davem@davemloft.net,
-       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/8] crypto/md4.c: use ARRAY_SIZE
-Message-ID: <Pine.LNX.4.64.0811091753500.32509@ask.diku.dk>
+To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/8] drivers/isdn/mISDN: use ARRAY_SIZE
+Message-ID: <Pine.LNX.4.64.0811091754170.32509@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -48,28 +47,34 @@ T[] E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- crypto/md4.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/isdn/mISDN/dsp_hwec.c     |    2 +-
+ drivers/isdn/mISDN/dsp_pipeline.c |    3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/crypto/md4.c b/crypto/md4.c
-index 3c19aa0..a143c4a 100644
---- a/crypto/md4.c
-+++ b/crypto/md4.c
-@@ -148,7 +148,7 @@ static void md4_transform(u32 *hash, u32 const *in)
+diff --git a/drivers/isdn/mISDN/dsp_hwec.c b/drivers/isdn/mISDN/dsp_hwec.c
+index eb892d9..806a997 100644
+--- a/drivers/isdn/mISDN/dsp_hwec.c
++++ b/drivers/isdn/mISDN/dsp_hwec.c
+@@ -43,7 +43,7 @@ static struct mISDN_dsp_element dsp_hwec_p = {
+ 	.free = NULL,
+ 	.process_tx = NULL,
+ 	.process_rx = NULL,
+-	.num_args = sizeof(args) / sizeof(struct mISDN_dsp_element_arg),
++	.num_args = ARRAY_SIZE(args),
+ 	.args = args,
+ };
+ struct mISDN_dsp_element *dsp_hwec = &dsp_hwec_p;
+diff --git a/drivers/isdn/mISDN/dsp_pipeline.c b/drivers/isdn/mISDN/dsp_pipeline.c
+index 850260a..45bff0a 100644
+--- a/drivers/isdn/mISDN/dsp_pipeline.c
++++ b/drivers/isdn/mISDN/dsp_pipeline.c
+@@ -99,8 +99,7 @@ int mISDN_dsp_element_register(struct mISDN_dsp_element *elem)
+ 		goto err1;
+ 	}
  
- static inline void md4_transform_helper(struct md4_ctx *ctx)
- {
--	le32_to_cpu_array(ctx->block, sizeof(ctx->block) / sizeof(u32));
-+	le32_to_cpu_array(ctx->block, ARRAY_SIZE(ctx->block));
- 	md4_transform(ctx->hash, ctx->block);
- }
- 
-@@ -214,7 +214,7 @@ static void md4_final(struct crypto_tfm *tfm, u8 *out)
- 	le32_to_cpu_array(mctx->block, (sizeof(mctx->block) -
- 	                  sizeof(u64)) / sizeof(u32));
- 	md4_transform(mctx->hash, mctx->block);
--	cpu_to_le32_array(mctx->hash, sizeof(mctx->hash) / sizeof(u32));
-+	cpu_to_le32_array(mctx->hash, ARRAY_SIZE(mctx->hash));
- 	memcpy(out, mctx->hash, sizeof(mctx->hash));
- 	memset(mctx, 0, sizeof(*mctx));
- }
+-	for (i = 0; i < (sizeof(element_attributes)
+-		/ sizeof(struct device_attribute)); ++i)
++	for (i = 0; i < ARRAY_SIZE(element_attributes); ++i)
+ 		ret = device_create_file(&entry->dev,
+ 				&element_attributes[i]);
+ 		if (ret) {
