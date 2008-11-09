@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbYKII5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbYKIJE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbYKII5a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 03:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYKII5W
+	id S1754795AbYKIJE4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 04:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYKIJEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 03:57:22 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:57435 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925AbYKII5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 03:57:22 -0500
-Date: Sun, 9 Nov 2008 09:56:49 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Message-ID: <20081109085649.GD4353@ics.muni.cz>
-References: <20081104173300.GF6134@ics.muni.cz> <200811090106.04579.rjw@sisk.pl> <20081108205532.7952fec6@infradead.org>
+	Sun, 9 Nov 2008 04:04:36 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:4367 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbYKIJEf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 04:04:35 -0500
+Message-ID: <4916A751.4000104@chelsio.com>
+Date: Sun, 09 Nov 2008 01:03:13 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
+To: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steve Wise <swise@opengridcomputing.com>
+Subject: [PATCH 0/2 2.6.28] cxgb3 - driver fixes
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081108205532.7952fec6@infradead.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 85.132.163.129
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 09 Nov 2008 09:56:43 +0100 (CET)
+X-OriginalArrivalTime: 09 Nov 2008 09:04:35.0640 (UTC) FILETIME=[2FF57B80:01C9424A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 08, 2008 at 08:55:32PM -0800, Arjan van de Ven wrote:
-> do you have RAID autoprobing enabled ?
-> raid autoprobing requires that all devices have been discovered,
-> to avoid getting partial RAID arrays and other nasty things...
-> 
-> it's CONFIG_MD_AUTODETECT
+Hi Jeff,
 
-# CONFIG_MD is not set
+I’m submitting 2 patches for inclusion in 2.6.28.
+Here is a brief description of the patch series:
+- fix eeprom content access
+- restrict multiqueue setting to MSI-X mode
 
-I do not have MD at all.
+Cheers,
+Divy
 
-Moreover, I discovered that I have to hit a keyboard several times during the
-boot to boot up.
 
-The delay depends on keyboard hit. If I do not touch the keyboard, it waits
-forever.. Looks like something needs an interrupt..
-
--- 
-Luká¹ Hejtmánek
