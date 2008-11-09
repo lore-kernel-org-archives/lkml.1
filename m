@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbYKIQ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbYKIQy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbYKIQ2a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbYKIQZ0
+	id S1755667AbYKIQy1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbYKIQyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:25:26 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:60863 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756148AbYKIQZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:25:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=spml9wM62wtWMpKxpOxmKc/JYMaoBxdvV54iKwe3aNyJTqP3tejaBwdqVaHsX0dfhd
-         F3ozxXNDSgXNy3Y3f4qd8L+v9eBOohF1CRqo5IKOP8339DZcZqzlGOtlxW21eq7IimkD
-         QpdN3vs9J41cKUKLuI15TG9tC44SDLwHXTUW0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Sun, 09 Nov 2008 17:23:24 +0100
-Message-Id: <20081109162324.18999.29895.sendpatchset@localhost.localdomain>
-In-Reply-To: <20081109162219.18999.74912.sendpatchset@localhost.localdomain>
-References: <20081109162219.18999.74912.sendpatchset@localhost.localdomain>
-Subject: [PATCH 10/11] ide: remove superfluous local_irq_{save,restore}() from ide_dump_status()
+	Sun, 9 Nov 2008 11:54:21 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:37594 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755260AbYKIQyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 11:54:20 -0500
+Date: Sun, 9 Nov 2008 17:54:15 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: herbert@gondor.apana.org.au, davem@davemloft.net,
+       linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/8] crypto/md4.c: use ARRAY_SIZE
+Message-ID: <Pine.LNX.4.64.0811091753500.32509@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: remove superfluous local_irq_{save,restore}() from ide_dump_status()
+From: Julia Lawall <julia@diku.dk>
 
-No reason to run this function with local IRQs off.
+ARRAY_SIZE is more concise to use when the size of an array is divided by
+the size of its type or the size of its first element.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@i@
+@@
+
+#include <linux/kernel.h>
+
+@depends on i using "paren.iso"@
+type T;
+T[] E;
+@@
+
+- (sizeof(E)/sizeof(T))
++ ARRAY_SIZE(E)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
 ---
- drivers/ide/ide-lib.c |    3 ---
- 1 file changed, 3 deletions(-)
+ crypto/md4.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: b/drivers/ide/ide-lib.c
-===================================================================
---- a/drivers/ide/ide-lib.c
-+++ b/drivers/ide/ide-lib.c
-@@ -384,10 +384,8 @@ static void ide_dump_atapi_error(ide_dri
+diff --git a/crypto/md4.c b/crypto/md4.c
+index 3c19aa0..a143c4a 100644
+--- a/crypto/md4.c
++++ b/crypto/md4.c
+@@ -148,7 +148,7 @@ static void md4_transform(u32 *hash, u32 const *in)
  
- u8 ide_dump_status(ide_drive_t *drive, const char *msg, u8 stat)
+ static inline void md4_transform_helper(struct md4_ctx *ctx)
  {
--	unsigned long flags;
- 	u8 err = 0;
- 
--	local_irq_save(flags);
- 	printk(KERN_ERR "%s: %s: status=0x%02x { ", drive->name, msg, stat);
- 	if (stat & ATA_BUSY)
- 		printk(KERN_CONT "Busy ");
-@@ -417,7 +415,6 @@ u8 ide_dump_status(ide_drive_t *drive, c
- 			ide_dump_atapi_error(drive, err);
- 	}
- 	ide_dump_opcode(drive);
--	local_irq_restore(flags);
- 	return err;
+-	le32_to_cpu_array(ctx->block, sizeof(ctx->block) / sizeof(u32));
++	le32_to_cpu_array(ctx->block, ARRAY_SIZE(ctx->block));
+ 	md4_transform(ctx->hash, ctx->block);
  }
- EXPORT_SYMBOL(ide_dump_status);
+ 
+@@ -214,7 +214,7 @@ static void md4_final(struct crypto_tfm *tfm, u8 *out)
+ 	le32_to_cpu_array(mctx->block, (sizeof(mctx->block) -
+ 	                  sizeof(u64)) / sizeof(u32));
+ 	md4_transform(mctx->hash, mctx->block);
+-	cpu_to_le32_array(mctx->hash, sizeof(mctx->hash) / sizeof(u32));
++	cpu_to_le32_array(mctx->hash, ARRAY_SIZE(mctx->hash));
+ 	memcpy(out, mctx->hash, sizeof(mctx->hash));
+ 	memset(mctx, 0, sizeof(*mctx));
+ }
