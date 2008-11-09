@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbYKID4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbYKIEZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754362AbYKID4W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 22:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbYKID4M
+	id S1754468AbYKIEZh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 23:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbYKIEZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 22:56:12 -0500
-Received: from hq2.tensilica.com ([65.205.227.30]:29414 "EHLO
-	maia.hq.tensilica.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753825AbYKID4M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 22:56:12 -0500
-Message-ID: <49165F4A.4070905@tensilica.com>
-Date: Sat, 08 Nov 2008 19:55:54 -0800
-From: Piet Delaney <piet.delaney@tensilica.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Chris Zankel <chris@zankel.net>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Marc Gauthier <marc@tensilica.com>,
-       Joe Taylor <joetayloremail@gmail.com>, linux-xtensa@linux-xtensa.org,
-       Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: [PATCH 10/10] xtensa: use the new byteorder headers - Merged
- with your previous xtensa-next and will remerge shortly.
-References: <1225910131.5991.230.camel@brick> <49133094.6070407@zankel.net>	 <491500C0.90407@tensilica.com> <1226115481.11596.63.camel@brick>
-In-Reply-To: <1226115481.11596.63.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 8 Nov 2008 23:25:26 -0500
+Received: from mx2.adfa.edu.au ([131.236.200.17]:6538 "EHLO mx2.adfa.edu.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753838AbYKIEZZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 23:25:25 -0500
+X-Greylist: delayed 687 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Nov 2008 23:25:24 EST
+X-IronPort-AV: E=Sophos;i="4.33,568,1220191200"; 
+   d="scan'208";a="66929"
+Date: Sun, 9 Nov 2008 15:13:39 +1100
+From: Stephen Harker <sjh@adfa.edu.au>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: s.harker@adfa.edu.au, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: PROBLEM: module a100u2w (SCSI, Initio) on ppc
+Message-ID: <20081109041339.GA6188@h42148.pems.adfa.edu.au>
+Reply-To: Stephen Harker <s.harker@adfa.edu.au>
+References: <20080712033040.GA8086@h42136.pems.adfa.edu.au> <20080711220901.e1b69adb.akpm@linux-foundation.org> <20080715233044N.fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080715233044N.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.4.2.2i
+X-Attribution: Stephen Harker
+X-Organisation: PEMS, UNSW@ADFA, Australia
+X-Phone: +61 3 9905 3632
+X-FAX: +61 3 9905 3637
+X-Operating-System: Linux h42148.pems.adfa.edu.au 2.6.25.10
+Delivery-Receipt-To: "s.harker@adfa.edu.au (Stephen Harker)"
+X-OriginalArrivalTime: 09 Nov 2008 04:13:55.0199 (UTC) FILETIME=[94A560F0:01C94221]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> On Fri, 2008-11-07 at 19:00 -0800, Piet Delaney wrote:
->> Hi Chris:
->>
->>    I've merged your recent xtensa-next with our 2.6.24-smp repo.
->> It seems to work fine and I'm in the process of cleaning it
->> up a bit and adding preliminary XTENSA kgdb support.
+On Tue, Jul 15, 2008 at 11:30:27PM +0900, FUJITA Tomonori wrote:
+> On Fri, 11 Jul 2008 22:09:01 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> 2.6.24?  In that case you probably don't have include/linux/byteorder.h,
-> or include/linux/swab.h which would explain your byteorder problems.
+> > (cc linux-scsi)
+> > 
+> > On Sat, 12 Jul 2008 13:30:41 +1000 Stephen Harker <s.harker@adfa.edu.au> wrote:
+> [...]
+> Seems that this driver has some bugs on big endian architectures
+> (though I've not looked at the patch):
 > 
-> Or is that a typo in the version numbers?
+> http://marc.info/?l=linux-scsi&m=121613124207253&w=2
 
-I was on 2.6.24 and didn't have a problem compiling the kernel -O0 other
-than a minor tweak in slab.c. Now in 2.6.27-rc3 I get a compile problem
-with rpcb_clnt.c at lines 122, 123, and 129:
+I realised I had not replied to this email.  With this patch the
+driver works fine.  I now have both drives on the Initio SCSI bus and
+am running Linux (Yellow Dog), OSX and OS9 with no problems.  A rough
+timing attempt (hdparm -t) gave something like 18 MB/sec for the IBM
+UltraStar and around 35 MB/sec for the Cheetah.  This is a big
+improvement over the built in MESH with its limit of 10 MB/sec!
 
-    /export/src/xtensa-next/net/sunrpc/rpcb_clnt.c:129: error: (near initialization for 'rpcb_in6addr_loopback.sin6_port')
-
-
-> 
-> You should be able to just pull those two headers from Linus' tree
-> and drop them in, there is no dependencies other than those two
-> headers.
-
-byteorder.h was already in sync with linus's tree and I updated swab.c
-as it had a few changes. Unfortunately the problem persist. I think the
-problem is likely in changes made to rpcb_clnt.c since 2.6.24.
-
-> 
-> If it is some other problem, let me know and I'll look into it.
-
-You can likely reproduce it by configuring NFS and compiling -O0.
-
--piet
-
-> 
-> Harvey
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+Stephen Harker                           s.harker@adfa.edu.au
+PEMS
+UNSW@ADFA
