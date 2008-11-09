@@ -1,89 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbYKIGtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYKIHGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754308AbYKIGtQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 01:49:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYKIGs7
+	id S1754498AbYKIHGk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 02:06:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbYKIHGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 01:48:59 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:41211 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751848AbYKIGs6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 01:48:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhIFAEMVFklMQWxa/2dsb2JhbACBdsYyg1g
-Date: Sun, 9 Nov 2008 01:48:55 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
-Message-ID: <20081109064855.GA23782@Krystal>
-References: <20081107201118.GB28600@flint.arm.linux.org.uk> <20081107213610.GC2654@Krystal> <9405.1226101315@redhat.com> <20081108001555.GE18378@flint.arm.linux.org.uk> <alpine.LFD.2.00.0811080939180.13034@xanadu.home> <alpine.LFD.2.00.0811081746060.13034@xanadu.home> <20081109022549.GA18508@Krystal> <alpine.LFD.2.00.0811082143320.13034@xanadu.home> <alpine.LFD.2.00.0811082356090.13034@xanadu.home> <alpine.LFD.2.00.0811090015570.13034@xanadu.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 9 Nov 2008 02:06:31 -0500
+Received: from fwc.sitour.cz ([62.209.212.18]:3106 "EHLO kali.sitour.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751779AbYKIHGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 02:06:30 -0500
+Message-ID: <49168BEB.4020702@mydatex.cz>
+Date: Sun, 09 Nov 2008 08:06:19 +0100
+From: Daniel Smolik <marvin@mydatex.cz>
+Organization: Mydatex s.r.o.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; cs-CZ; rv:1.8.0.14eol) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.13~pre080323b-0etch3)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [Bugme-new] [Bug 11886] New: without serial console system doesn't
+ poweroff
+References: <bug-11886-10286@http.bugzilla.kernel.org/> <200811040148.34707.rjw@sisk.pl> <490FEC1B.5070105@mydatex.cz> <200811090042.33219.rjw@sisk.pl>
+In-Reply-To: <200811090042.33219.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811090015570.13034@xanadu.home>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 01:43:04 up 157 days, 11:23,  6 users,  load average: 0.58, 0.74,
-	0.60
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nicolas Pitre (nico@cam.org) wrote:
-> Currently, all existing users of cnt32_to_63() are fine since the CPU
-> architectures where it is used don't do read access reordering, and user
-> mode preemption is disabled already.  It is nevertheless a good idea to
-> better elaborate usage requirements wrt preemption, and use an explicit
-> memory barrier on SMP to avoid different CPUs accessing the counter
-> value in the wrong order.  On UP a simple compiler barrier is 
-> sufficient.
+Rafael J. Wysocki napsal(a):
+> On Tuesday, 4 of November 2008, Daniel Smolik wrote:
+>> Rafael J. Wysocki napsal(a):
+>>> On Monday, 3 of November 2008, Daniel Smolik wrote:
+>>>> Andrew Morton napsal(a):
+>>>>> (switched to email.  Please respond via emailed reply-to-all, not via the
+>>>>> bugzilla web interface).
+>>>>>
+>>>>> On Wed, 29 Oct 2008 04:06:11 -0700 (PDT)
+>>>>> bugme-daemon@bugzilla.kernel.org wrote:
+>>>>>
+>>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=11886
+>>>>>>
+>>>>>>            Summary: without serial console system doesn't  poweroff
+>>>>>>            Product: Power Management
+>>>>>>            Version: 2.5
+>>>>>>      KernelVersion: 2.6.27.4
+>>>>>>           Platform: All
+>>>>>>         OS/Version: Linux
+>>>>>>               Tree: Mainline
+>>>>>>             Status: NEW
+>>>>>>           Severity: normal
+>>>>>>           Priority: P1
+>>>>>>          Component: Other
+>>>>>>         AssignedTo: power-management_other@kernel-bugs.osdl.org
+>>>>>>         ReportedBy: marvin@mydatex.cz
+>>>>>>
+>>>>>>
+>>>>>> Latest working kernel version:
+>>>>>> Earliest failing kernel version:2.6.27.2
+>>>>>> Distribution: Debian Etch
+>>>>>> Hardware Environment: Supermiro C2SBC-Q  Dual Core Intel Cpu 1G RAM
+>>>>>> Software Environment: Debian Etch
+>>>>>> Problem Description: If I does't add serial console to kernel command line
+>>>>>> system doesn't poweroff. Linux hangs there:
+>>>>>>
+>>>>>> e1000e 0000:0d:00.0: PCI INT A disabled
+>>>>>> e1000e 0000:00:19.0: PCI INT A disabled
+>>>>>> ACPI: Preparing to enter system sleep state S5
+>>>>>> Disabling non-boot CPUs ...
+>>>>>>
+>>>>>> If I disable in kernel config Suspend to Ram and Hibernate all works without
+>>>>>> console. But with Suspend and hibernate enabled and serial console  added to
+>>>>>> kernel cmd line all works too:
+>>>>>>
+>>>>>> e1000e 0000:0d:00.0: PCI INT A disabled
+>>>>>> e1000e 0000:00:19.0: PCI INT A disabled
+>>>>>> ACPI: Preparing to enter system sleep state S5
+>>>>>> Disabling non-boot CPUs ...
+>>>>>> CPU 1 is now offline
+>>>>>> SMP alternatives: switching to UP code
+>>>>>> CPU1 is down
+>>>>>> Power down.
+>>>>>> acpi_power_off called
+>>>>>>
+>>>>>> Steps to reproduce:
+>>>>>> Compile kernel with attached config and try poweroff without serial console.
+>>>>>>
+>>>>> OK, this is weird.
+>>>>>
+>>>>> But the good news is that there is a very small number of commits
+>>>>> between 2.6.27.2 and 2.6.27.4.
+>>>>>
+>>>>> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.3
+>>>>> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.4
+>>>>>
+>>>>> I'd be looking at these:
+>>>>>
+>>>>> commit 3b987ac961486373f91191b14291b331fa546072
+>>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>> Date:   Sat Sep 6 13:13:01 2008 +0200
+>>>>>
+>>>>>     ACPI suspend: Always use the 32-bit waking vector
+>>>>>     
+>>>>>     commit a6629105dd03d370fcb31e97bddf223fa4bb651e upstream.
+>>>>>
+>>>>>
+>>>>> commit 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+>>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>> Date:   Sat Oct 4 00:05:05 2008 +0200
+>>>>>
+>>>>>     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
+>>>>>     
+>>>>>     commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 upstream.
+>>>>>
+>>>>>
+>>>>>
+>>>>> presumably 2.6.28-rc3 is also broken?
+>>>> I don't know I can test it on Thu. But may be may fault or misunderstanding fist kernel which I test is 2.27.2. I don't 
+>>>> test any kernel before. I don't know if 2.6.26 works.
+>>> Can you try 2.6.26, please?
+>> Yes, no problem.
 > 
-> Signed-off-by: Nicolas Pitre <nico@marvell.com>
-> ---
+> And did it work?
 > 
-...
-> @@ -68,9 +77,10 @@ union cnt32_to_63 {
->   */
->  #define cnt32_to_63(cnt_lo) \
->  ({ \
-> -	static volatile u32 __m_cnt_hi; \
-> +	static u32 __m_cnt_hi; \
+> Rafael
+Sorry, I compile kernel but still didn't test. I try it on Monday.
 
-It's important to get the smp_rmb() here, which this patch provides, so
-consider this patch to be acked-by me. The added documentation is needed
-too.
-
-But I also think that declaring the static u32 __m_cnt_hi here is
-counter-intuitive for developers who wish to use it.
-
-I'd recommend letting the declaration be done outside of cnt32_to_63 so
-the same variable can be passed as parameter to more than one execution
-site.
-
-Mathieu
+		Dan
 
 
->  	union cnt32_to_63 __x; \
->  	__x.hi = __m_cnt_hi; \
-> + 	smp_rmb(); \
->  	__x.lo = (cnt_lo); \
->  	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
->  		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
