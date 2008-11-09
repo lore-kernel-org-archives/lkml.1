@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbYKIUJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYKIUOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758920AbYKIUJk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 15:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758664AbYKIUJU
+	id S1756604AbYKIUOU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 15:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbYKIUOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 15:09:20 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:37404 "EHLO minas.ics.muni.cz"
+	Sun, 9 Nov 2008 15:14:05 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:45961 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757068AbYKIUJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 15:09:19 -0500
-Date: Sun, 9 Nov 2008 21:09:18 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Message-ID: <20081109200918.GA4361@ics.muni.cz>
-References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz> <200811091424.10943.rjw@sisk.pl>
+	id S1754243AbYKIUOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 15:14:04 -0500
+Date: Sun, 9 Nov 2008 15:13:57 -0500
+To: Rob Landley <rob@landley.net>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, lkml <linux-kernel@vger.kernel.org>,
+       linux-doc@vger.kernel.org, corbet@lwn.net, mtk.manpages@gmail.com,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [RFC] Documentation tree sub-directories reorg.
+Message-ID: <20081109201357.GB27376@fieldses.org>
+References: <4910D1BC.9060100@xenotime.net> <200811071313.50384.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200811091424.10943.rjw@sisk.pl>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+In-Reply-To: <200811071313.50384.rob@landley.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 09 Nov 2008 21:09:11 +0100 (CET)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 09, 2008 at 02:24:10PM +0100, Rafael J. Wysocki wrote:
-> > > Do you have NO_HZ enabled?
-> > > (Cc'ing Thomas)
-> > 
-> > indeed, I have. Should I try it without NO_HZ?
+On Fri, Nov 07, 2008 at 01:13:49PM -0600, Rob Landley wrote:
+> On Tuesday 04 November 2008 16:50:36 Randy Dunlap wrote:
+> > Hi,
+> >
+> > I would like to use a few more sub-directories in the Documentation/ tree
+> > to try to help clean it up some.  E.g., move some drivers/block/ doc files
+> > to Documentation/blockdev/ and move some serial/tty/chardev doc files to
+> > Documentation/serial/  (or serial-tty/ or chardev/ or <suggestions>).
+> >
+> >
+> > A [git] diff for blockdev/ and serial/ looks like:
+> ...
+> > Comments/thoughts?
 > 
-> Yes, please.
+> That's a good start.  It would also be nice to create an "arch" subdirectory 
+> to move the arm, m68k, mips, blackfin, parisc, powerpc, s390, sparc, ia64, 
+> uml, and x86 directories into.  (Plus sgi-*, voyager.txt, zorro.txt...)
 
-I tried it, it is not better. I/O operations on /dev/sda1 often require a key
-hit. It is AHCI driver.
+I started doing some of this here:
 
--- 
-Luká¹ Hejtmánek
+	git://linux-nfs.org/~bfields/linux.git for-joncorbet
+
+but didn't get very far.  (But in the remote chance there's something
+useful there, feel free to cannibalize it.)
+
+--b.
