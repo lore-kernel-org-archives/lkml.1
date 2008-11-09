@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbYKIOTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbYKIOU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755492AbYKIOTd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 09:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYKIOTY
+	id S1755579AbYKIOU2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 09:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbYKIOUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 09:19:24 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50894 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754842AbYKIOTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 09:19:23 -0500
-Date: Sun, 9 Nov 2008 15:19:09 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Greg KH <greg@kroah.com>
-Cc: "Zhao, Yu" <yu.zhao@intel.com>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 16/16 v6] PCI: document the new PCI boot parameters
-Message-ID: <20081109141909.GA2458@ucw.cz>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084531.GP3773@yzhao12-linux.sh.intel.com> <20081106043235.GA30292@kroah.com> <4913AA03.5060807@intel.com> <20081107025032.GA12824@kroah.com> <4913B8A5.5010806@intel.com> <20081107061603.GC3860@kroah.com>
+	Sun, 9 Nov 2008 09:20:18 -0500
+Received: from cpsmtpo-eml03.KPNXCHANGE.COM ([213.75.38.152]:34743 "EHLO
+	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754842AbYKIOUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 09:20:17 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
+Date: Sun, 9 Nov 2008 15:20:12 +0100
+User-Agent: KMail/1.9.9
+Cc: arjan@infradead.org, rjw@sisk.pl, linux-kernel@vger.kernel.org
+References: <20081104173300.GF6134@ics.muni.cz> <200811090106.04579.rjw@sisk.pl> <20081108205532.7952fec6@infradead.org> <20081108205532.7952fec6@infradead.org> <20081109085649.GD4353@ics.muni.cz>
+In-reply-To: <20081109085649.GD4353@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081107061603.GC3860@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811091520.13044.elendil@planet.nl>
+X-OriginalArrivalTime: 09 Nov 2008 14:20:13.0898 (UTC) FILETIME=[480A52A0:01C94276]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> >>> If we do resource rebalance after system is up, do you think there is any 
-> >>> side effect or impact to other subsystem other than PCI (e.g. MTRR)?
-> >> I don't think so.
-> >>> I haven't had much thinking on the dynamical resource rebalance. If you 
-> >>> have any idea about this, can you please suggest?
-> >> Yeah, it's going to be hard :)
-> >> We've thought about this in the past, and even Microsoft said it was
-> >> going to happen for Vista, but they realized in the end, like we did a
-> >> few years previously, that it would require full support of all PCI
-> >> drivers as well (if you rebalance stuff that is already bound to a
-> >> driver.)  So they dropped it.
-> >> When would you want to do this kind of rebalancing?  Before any PCI
-> >> driver is bound to any devices?  Or afterwards?
-> >
-> > I guess if we want the rebalance dynamic, then we should have it full -- 
-> > the rebalance would be functional even after the driver is loaded.
-> >
-> > But in most cases, there will be problem when we unload driver from a hard 
-> > disk controller, etc. We can mount root on a ramdisk and do the rebalance 
-> > there, but it's complicated for a real user.
-> >
-> > So looks like doing rebalancing before any driver is bound to any device is 
-> > also a nice idea, if user can get a shell to do rebalance before built-in 
-> > PCI driver grabs device.
+Lukas Hejtmanek wrote:
+> Moreover, I discovered that I have to hit a keyboard several times
+> during the boot to boot up.
 > 
-> That's not going to work, it needs to happen before any PCI device is
-> bound, which is before init runs.
+> The delay depends on keyboard hit. If I do not touch the keyboard, it
+> waits forever.. Looks like something needs an interrupt..
 
-We could run shell from early initrd... And PCI is not required for
-initrd, right?
+That sounds very much like the issues described in this thread:
+http://lkml.org/lkml/2008/10/28/226
 
-(Ok, I guess this is in we could do it but is it worth the cost?-category...)
+Do you use LUKS encryption and/or LVM?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+FJP
