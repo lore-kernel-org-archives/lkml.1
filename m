@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbYKISN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYKIS1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbYKISN3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 13:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbYKISNT
+	id S1755873AbYKIS1b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 13:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYKIS1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 13:13:19 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34580 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755542AbYKISNS (ORCPT
+	Sun, 9 Nov 2008 13:27:21 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:14192 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755395AbYKIS1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 13:13:18 -0500
-Date: Sun, 9 Nov 2008 10:14:05 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, hpa@zytor.com
-Subject: Move iomap.h to arch/x86/include/asm
-Message-ID: <20081109101405.6981b835@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 9 Nov 2008 13:27:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uGFDs1QCsioWBc9FKYH+Is7O7+ivCmsnqytPJ34lVdWtIFvD3C0vUM7yZ5I2J3vsSA
+         kpFx02tuERowsIMITjVBAMkIG40Sisfr/8F3xflci4gwEzALUFgm52NiPgDIzw0oJivt
+         A+4TzQjzNZymCvhwzkNnQ9UDpIsR2weK+nw2M=
+Date: Sun, 9 Nov 2008 21:30:43 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20081109183043.GA4530@x200.localdomain>
+References: <4917263D.2090904@telenet.dn.ua>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4917263D.2090904@telenet.dn.ua>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 09, 2008 at 08:04:45PM +0200, Vitaly V. Bursov wrote:
+> I'm building small server system with openvz kernel and have ran into
+> some IO performance problems. Reading a single file via NFS delivers
+> around 9 MB/s over gigabit network, but while reading, say, 2 different
+> or same file 2 times at the same time I get >60MB/s.
 
-
-The following changes since commit
-a622cf69b806bbb1887913c04e01d0c25b892876: Linus Torvalds (1):
-        Merge branch 'sched-fixes-for-linus' of
-git://git.kernel.org/.../tip/linux-2.6-tip
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-kerneloops.git
-  for-mingo
-
-Arjan van de Ven (1):
-      x86: move iomap.h to the new include location
-
- {include/asm-x86 => arch/x86/include/asm}/iomap.h |    0
- 1 files changed, 0 insertions(+), 0 deletions(-)
- rename {include/asm-x86 => arch/x86/include/asm}/iomap.h (100%)
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+openvz kernels have very changed CFQ and, IIRC, this one-reader problem is
+fixed somewhere. Ask devel@openvz.org.
