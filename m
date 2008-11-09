@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbYKINVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYKINW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755315AbYKINVz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYKINVr
+	id S1755367AbYKINW6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYKINWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:21:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43143 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750730AbYKINVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:21:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.28-rc3: regression, thinkpad x60 will not reboot
-Date: Sun, 9 Nov 2008 14:26:24 +0100
-User-Agent: KMail/1.9.9
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20081109123335.GA1783@elf.ucw.cz>
-In-Reply-To: <20081109123335.GA1783@elf.ucw.cz>
+	Sun, 9 Nov 2008 08:22:49 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46898 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750730AbYKINWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 08:22:48 -0500
+X-Sasl-enc: n4qHFPYI3QMTBOce5+fPmnKc8d8eKjBq6z8oAKFOk1vg 1226236966
+Date: Sun, 9 Nov 2008 11:22:44 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] [GIT PATCH] thinkpad-acpi regression fix for
+	2.6.28-rc
+Message-ID: <20081109132244.GA12794@khazad-dum.debian.net>
+References: <20081109113011.GB8329@khazad-dum.debian.net> <1226235242-11130-1-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811091426.24888.rjw@sisk.pl>
+In-Reply-To: <1226235242-11130-1-git-send-email-hmh@hmh.eng.br>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 9 of November 2008, Pavel Machek wrote:
-> Hi!
-> 
-> Subject says it pretty much all. No, I do not think I have KVM
-> enabled:
-> 
-> CONFIG_HAVE_KVM=y
-> 
-> ...is the only KVM related option in my .config.
-> 
-> It seems 100% reproducible.
+On Sun, 09 Nov 2008, Henrique de Moraes Holschuh wrote:
+> This patch should fix a reported regression on fan_resume (not
+> on bugzilla, report on the LKML and ibm-acpi-devel).
 
-Can you check if
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8d00450d296dedec9ada38d43b83e79cca6fd5a3
-helps, please?
+Spoke too soon.  Bugzilla #11982.  I've sent the patch there as well.
 
-Thanks,
-Rafael
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
