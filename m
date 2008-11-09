@@ -1,103 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYKIWLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYKIWZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756732AbYKIWLk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 17:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbYKIWLb
+	id S1756782AbYKIWZg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 17:25:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbYKIWZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 17:11:31 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:37424 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755932AbYKIWLa (ORCPT
+	Sun, 9 Nov 2008 17:25:27 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:56508 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755921AbYKIWZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 17:11:30 -0500
-Date: Sun, 9 Nov 2008 23:08:54 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jonathan McDowell <noodles@earth.li>, Frans Pop <elendil@planet.nl>
-Subject: [GIT] one kbuild fix
-Message-ID: <20081109220854.GA23710@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sun, 9 Nov 2008 17:25:26 -0500
+Message-ID: <49176323.6080409@oracle.com>
+Date: Sun, 09 Nov 2008 14:24:35 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Subject: Re: [Bug #11404] BUG: in 2.6.23-rc3-git7 in do_cciss_intr
+References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera> <4B0Eqx89uNG.A.ozD.vb1FJB@chimera>
+In-Reply-To: <4B0Eqx89uNG.A.ozD.vb1FJB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49176346.00BF:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.26 and 2.6.27.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> be listed and let me know (either way).
 
-Please pull following fix the debian packager to properly support firmware
+Yes, it should still be listed.
 
-	Sam
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11404
+> Subject		: BUG: in 2.6.23-rc3-git7 in do_cciss_intr
+> Submitter	: rdunlap <randy.dunlap@oracle.com>
+> Date		: 2008-08-21 5:52 (81 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121929819616273&w=4
+> 		  http://marc.info/?l=linux-kernel&m=121932889105368&w=4
+> Handled-By	: Miller, Mike (OS Dev) <Mike.Miller@hp.com>
+> 		  James Bottomley <James.Bottomley@hansenpartnership.com>
 
-Pull from:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
-
-Jonathan McDowell (1):
-      kbuild: Fixup deb-pkg target to generate separate firmware deb
-
- scripts/package/builddeb |   24 ++++++++++++++++++++++--
- 1 files changed, 22 insertions(+), 2 deletions(-)
-
-
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index ba6bf5d..1264b8e 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -15,15 +15,18 @@ set -e
- version=$KERNELRELEASE
- revision=`cat .version`
- tmpdir="$objtree/debian/tmp"
-+fwdir="$objtree/debian/fwtmp"
- packagename=linux-$version
-+fwpackagename=linux-firmware-image
- 
- if [ "$ARCH" == "um" ] ; then
- 	packagename=user-mode-linux-$version
- fi
- 
- # Setup the directory structure
--rm -rf "$tmpdir"
-+rm -rf "$tmpdir" "$fwdir"
- mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
-+mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
- if [ "$ARCH" == "um" ] ; then
- 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
- fi
-@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
- 
- Package: $packagename
- Provides: kernel-image-$version, linux-image-$version
-+Suggests: $fwpackagename
- Architecture: any
- Description: Linux kernel, version $version
-  This package contains the Linux kernel, modules and corresponding other
-@@ -118,8 +122,24 @@ fi
- chown -R root:root "$tmpdir"
- chmod -R go-w "$tmpdir"
- 
-+# Do we have firmware? Move it out of the way and build it into a package.
-+if [ -e "$tmpdir/lib/firmware" ]; then
-+	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
-+
-+	cat <<EOF >> debian/control
-+
-+Package: $fwpackagename
-+Architecture: all
-+Description: Linux kernel firmware, version $version
-+ This package contains firmware from the Linux kernel, version $version
-+EOF
-+
-+	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
-+	dpkg --build "$fwdir" ..
-+fi
-+
- # Perform the final magic
--dpkg-gencontrol -isp
-+dpkg-gencontrol -isp -p$packagename
- dpkg --build "$tmpdir" ..
- 
- exit 0
+-- 
+~Randy
