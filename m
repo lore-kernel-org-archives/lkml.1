@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbYKILYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbYKILa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbYKILYN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 06:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYKILX4
+	id S1754861AbYKILa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 06:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbYKILaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 06:23:56 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42530 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754537AbYKILXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 06:23:55 -0500
-Message-ID: <4916C822.4080609@redhat.com>
-Date: Sun, 09 Nov 2008 13:23:14 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Sun, 9 Nov 2008 06:30:18 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:44146 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754323AbYKILaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 06:30:17 -0500
+X-Sasl-enc: Im3WXjSlI4VJpecu/ZenYgX0r3Xj0F0Dwd/A6KwyP2fJ 1226230215
+Date: Sun, 9 Nov 2008 09:30:11 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
+Message-ID: <20081109113011.GB8329@khazad-dum.debian.net>
+References: <20081105073306.GA3132@x61> <20081106082314.GA18430@x61> <20081106142107.GC23278@khazad-dum.debian.net> <200811082345.37061.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Eduardo Habkost <ehabkost@redhat.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, mingo@redhat.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, kexec@lists.infradead.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/16] x86: Emergency virtualization disable function
-References: <1225810364-8990-1-git-send-email-ehabkost@redhat.com> <1225810364-8990-9-git-send-email-ehabkost@redhat.com> <m1bpwu3wod.fsf@frodo.ebiederm.org> <20081105175235.GJ5247@blackpad> <4912BD67.8000704@redhat.com> <m1mygd2lxs.fsf@frodo.ebiederm.org> <4912C75B.8050508@redhat.com> <20081106174538.GU5247@blackpad>
-In-Reply-To: <20081106174538.GU5247@blackpad>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811082345.37061.rjw@sisk.pl>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduardo Habkost wrote:
-> On Thu, Nov 06, 2008 at 12:30:51PM +0200, Avi Kivity wrote:
->   
->> Eric W. Biederman wrote:
->>     
->>>> If you want to be extra simple and safe, remove kvm from the equation.  Make the
->>>> disabling code part of kdump/emergency_restart and only rely on the convention
->>>> that cr3.vmxe == vmxon.
->>>>     
->>>>         
->>> Convention?
->>>   
->>>       
->> There is a de-facto convention supported by at least vmware and kvm.  If  
->> cr4.vmxe is 1, then we are in vmx operation.  If cr4.vmxe is 0, then we  
->> are not in vmx operation.  This allows us to determine whether we need  
->> to execute vmxoff without any APIs.
->>     
->
-> I am just worried about the probing needed to make sure CR4 is available
-> (and that the CR4.VMXE bit means what we expect it to mean),
+On Sat, 08 Nov 2008, Rafael J. Wysocki wrote:
+> > Meanwhile, I suggest you just remove the calls to fan_suspend and fan_resume
+> > as a workaround.
+> 
+> Speaking of which, last time I looked at fan_suspend and fan_resume, they
+> were hopelessly broken (I admit that was quite some time ago, though).
 
-That's cpu_has_kvm_support() in vmx.c.  Should compile to three 
-instructions.
+And they still were. I have the patch fixing it, and it reworked that path
+entirely.  Will send it soon.
 
->  before we
-> try to read it and check VMXE. The same for SVM and the MSRs we need to
-> touch to disable SVM.
->   
+> IMO, fan_suspend() is not necessary at all and the only thing fan_resume()
+> could do is to make the kernel's data structures reflect the actual state of
+> the fan.
 
-That's has_svm() in svm.c; slightly longer but not any more dangerous.
+There are NO kernel data structures to reflect the actual state of the fan.
+The fan BELONGS to the EC in the thinkpad.  We don't store any crap about it
+in the driver, except to -track- one quirk.  We query the EC for all the
+required data (which happens to be a single byte) every time we need the
+info.  If the user asks us to do something, we send that to the EC and then
+promptly forget about it.
 
-> I prefer to reuse code that already exists on KVM and is working than
-> adding new probing code that I won't be able to test on all hardware
-> configurations.
->   
+So, I don't have to restore anything for things to just work.  The "feature"
+was added because people who set the fan to something different than AUTO
+wanted it to retain the state they set across sleep, which the box won't do
+by itself (the DSDT resets the fan on the WAK path).
 
-We could move the code to a header file, and so compile it both for kvm 
-and for emergency_restart/kdump.
+OTOH, if I want to restore anything across sleep/resume, I have to store the
+state on sleep.
+
+But there is no way I am slowing down the fan on resume: it could be in
+emergency mode due to thermal conditions.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
