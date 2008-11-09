@@ -1,115 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYKIN3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYKINbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbYKIN3m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbYKIN3e
+	id S1755349AbYKINbX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYKINbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:29:34 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:29063 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbYKIN3d (ORCPT
+	Sun, 9 Nov 2008 08:31:15 -0500
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:49409 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbYKINbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:29:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=subject:to:cc:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding:from;
-        b=tdfHrJHuRzv2A5JxcbR+IABaZBpyJYQaGmqlMuQHpbUFheDRldq7/c5RD4SHN07sqW
-         Np7UTooPgsmMiw9Gzk4b4PiHkQ8kHR9nYKqu0l7iYeZxhRqAbF9UH7WxliSRNIM9cpMa
-         gGIftr9Cf+SkxzjUHa9Tag8FPRX2YVwCK1Gzw=
-Subject: [patch] x86, bts: DS and BTS initialization
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain
-Date: Sun, 09 Nov 2008 14:29:21 +0100
-Message-Id: <1226237361.6104.20.camel@raistlin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-From: Markus Metzger <markus.t.metzger@googlemail.com>
+	Sun, 9 Nov 2008 08:31:14 -0500
+Date: Sun, 9 Nov 2008 14:31:12 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [alsa-devel] Bugs on aspire one A150
+Message-ID: <20081109133112.GA4968@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5h3ai11dpt.wl%tiwai@suse.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move BTS initialisation out of an #ifdef CONFIG_X86_64 guard.
+Hi,
 
-Assume core2 BTS and DS layout for future models of family 6 processors.
+[Takashi]:
+> Interesting.  Is it with or without model option?  There is a model
+> option specific for aspire one (acer-aspire).  Doesn't it work better?
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+I had already tried 2.6.28-rc3 on A110L (also plus hand-patched digital-mic patch of
+patch_realtek.c) and it still didn't work for me.
+I didn't use the acer one model parameter, though.
 
-Index: gits/arch/x86/kernel/ds.c
-===================================================================
---- gits.orig/arch/x86/kernel/ds.c	2008-11-09 10:55:13.000000000 -0100
-+++ gits/arch/x86/kernel/ds.c	2008-11-09 12:40:56.000000000 -0100
-@@ -821,17 +821,16 @@
- 	switch (c->x86) {
- 	case 0x6:
- 		switch (c->x86_model) {
-+		case 0 ... 0xC:
-+			/* sorry, don't know about them */
-+			break;
- 		case 0xD:
- 		case 0xE: /* Pentium M */
- 			ds_configure(&ds_cfg_var);
- 			break;
--		case 0xF: /* Core2 */
--		case 0x1C: /* Atom */
-+		default: /* Core2, Atom, ... */
- 			ds_configure(&ds_cfg_64);
- 			break;
--		default:
--			/* sorry, don't know about them */
--			break;
- 		}
- 		break;
- 	case 0xF:
-Index: gits/arch/x86/kernel/ptrace.c
-===================================================================
---- gits.orig/arch/x86/kernel/ptrace.c	2008-11-09 10:55:15.000000000
--0100
-+++ gits/arch/x86/kernel/ptrace.c	2008-11-09 12:40:57.000000000 -0100
-@@ -929,17 +929,16 @@
- 	switch (c->x86) {
- 	case 0x6:
- 		switch (c->x86_model) {
-+		case 0 ... 0xC:
-+			/* sorry, don't know about them */
-+			break;
- 		case 0xD:
- 		case 0xE: /* Pentium M */
- 			bts_configure(&bts_cfg_pentium_m);
- 			break;
--		case 0xF: /* Core2 */
--        case 0x1C: /* Atom */
-+		default: /* Core2, Atom, ... */
- 			bts_configure(&bts_cfg_core2);
- 			break;
--		default:
--			/* sorry, don't know about them */
--			break;
- 		}
- 		break;
- 	case 0xF:
-Index: gits/arch/x86/kernel/cpu/intel.c
-===================================================================
---- gits.orig/arch/x86/kernel/cpu/intel.c	2008-11-09 10:54:04.000000000
--0100
-+++ gits/arch/x86/kernel/cpu/intel.c	2008-11-09 12:41:59.000000000 -0100
-@@ -307,12 +307,11 @@
- 		set_cpu_cap(c, X86_FEATURE_P4);
- 	if (c->x86 == 6)
- 		set_cpu_cap(c, X86_FEATURE_P3);
-+#endif
- 
- 	if (cpu_has_bts)
- 		ptrace_bts_init_intel(c);
- 
--#endif
--
- 	detect_extended_topology(c);
- 	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY)) {
- 		/*
+Well, now I just did use it, and it didn't work either AFAICT, with lots
+of mixer fumbling again.
 
+And I'm not sure whether the model name should be "acer-aspire" instead
+of "acer-aspireone" since Aspire is the name of an entire series
+which might possibly have incompatible requirements.
+Also, I'm not really happy with the fact that snd_hda_intel doesn't even
+log the model name chosen/selected on module initialisation.
 
+Frankly I've had so much snd_hda_intel codec-specific trouble on pretty much all of the
+few notebooks/machines that I touched in the last year (that's not an
+understatement!) that I think it would be a very nice idea to write a _very_ visible
+HOWTO (search words: intel-hda alsa HOWTO codec etc.) detailling how to improve
+codec-specific support for snd_hda_intel (this should best be done by explaining
+how one arrived at a particular patch for a certain codec, e.g. take the
+recent ALC268 work, i.e. check /proc/asound/Intel/codec#0 and look at which part
+is not supported by the snd_hda_intel patch file yet and then explain how to add stuff
+to it, in very verbose and generic words to let layman people know how to do
+this).
+
+As already said, I've (and certainly not only me!) been bitten
+again and again and AGAIN by incomplete codec support in snd_hda_intel, thus
+we need to make damn sure people can help themselves as well as remotely
+possible, to ensure sufficiently fast and sufficiently complete support
+for new HDA codecs (which seem to appear each new month or week even,
+unfortunately!).
+If people don't even know how to tackle this easily, then patch submissions for new
+codecs aren't too likely...
+
+And the A110L has been on the shelves for 4 or 5 months already (with 5 to 6
+million units sold, they say!!), a time where full support would have been in order.
+But it's certainly a major fault of Acer to not have provided full ALSA
+support for this (note that I'm not sure about Mic support in its
+pre-installed Linpus installation), the ALSA people certainly don't have
+any responsibility for this.
+
+Thanks,
+
+Andreas Mohr
