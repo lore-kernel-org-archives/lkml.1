@@ -1,79 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbYKINbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbYKINem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbYKINbX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:31:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYKINbP
+	id S1755311AbYKINem (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:34:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYKINec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:31:15 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:49409 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbYKINbO (ORCPT
+	Sun, 9 Nov 2008 08:34:32 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:27052 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbYKINea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:31:14 -0500
-Date: Sun, 9 Nov 2008 14:31:12 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [alsa-devel] Bugs on aspire one A150
-Message-ID: <20081109133112.GA4968@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5h3ai11dpt.wl%tiwai@suse.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 9 Nov 2008 08:34:30 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 09 Nov 2008 08:34:23 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
+In-reply-to: <20081109064855.GA23782@Krystal>
+Message-id: <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
+References: <20081107201118.GB28600@flint.arm.linux.org.uk>
+ <20081107213610.GC2654@Krystal> <9405.1226101315@redhat.com>
+ <20081108001555.GE18378@flint.arm.linux.org.uk>
+ <alpine.LFD.2.00.0811080939180.13034@xanadu.home>
+ <alpine.LFD.2.00.0811081746060.13034@xanadu.home>
+ <20081109022549.GA18508@Krystal>
+ <alpine.LFD.2.00.0811082143320.13034@xanadu.home>
+ <alpine.LFD.2.00.0811082356090.13034@xanadu.home>
+ <alpine.LFD.2.00.0811090015570.13034@xanadu.home>
+ <20081109064855.GA23782@Krystal>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 9 Nov 2008, Mathieu Desnoyers wrote:
 
-[Takashi]:
-> Interesting.  Is it with or without model option?  There is a model
-> option specific for aspire one (acer-aspire).  Doesn't it work better?
+> * Nicolas Pitre (nico@cam.org) wrote:
+> > Currently, all existing users of cnt32_to_63() are fine since the CPU
+> > architectures where it is used don't do read access reordering, and user
+> > mode preemption is disabled already.  It is nevertheless a good idea to
+> > better elaborate usage requirements wrt preemption, and use an explicit
+> > memory barrier on SMP to avoid different CPUs accessing the counter
+> > value in the wrong order.  On UP a simple compiler barrier is 
+> > sufficient.
+> > 
+> > Signed-off-by: Nicolas Pitre <nico@marvell.com>
+> > ---
+> > 
+> ...
+> > @@ -68,9 +77,10 @@ union cnt32_to_63 {
+> >   */
+> >  #define cnt32_to_63(cnt_lo) \
+> >  ({ \
+> > -	static volatile u32 __m_cnt_hi; \
+> > +	static u32 __m_cnt_hi; \
+> 
+> It's important to get the smp_rmb() here, which this patch provides, so
+> consider this patch to be acked-by me. The added documentation is needed
+> too.
 
-I had already tried 2.6.28-rc3 on A110L (also plus hand-patched digital-mic patch of
-patch_realtek.c) and it still didn't work for me.
-I didn't use the acer one model parameter, though.
+Thanks.
 
-Well, now I just did use it, and it didn't work either AFAICT, with lots
-of mixer fumbling again.
+> But I also think that declaring the static u32 __m_cnt_hi here is
+> counter-intuitive for developers who wish to use it.
 
-And I'm not sure whether the model name should be "acer-aspire" instead
-of "acer-aspireone" since Aspire is the name of an entire series
-which might possibly have incompatible requirements.
-Also, I'm not really happy with the fact that snd_hda_intel doesn't even
-log the model name chosen/selected on module initialisation.
+I'm rather not convinced of that.  And this is a much bigger change 
+affecting all callers so I'd defer such change even if I was convinced 
+of it.
 
-Frankly I've had so much snd_hda_intel codec-specific trouble on pretty much all of the
-few notebooks/machines that I touched in the last year (that's not an
-understatement!) that I think it would be a very nice idea to write a _very_ visible
-HOWTO (search words: intel-hda alsa HOWTO codec etc.) detailling how to improve
-codec-specific support for snd_hda_intel (this should best be done by explaining
-how one arrived at a particular patch for a certain codec, e.g. take the
-recent ALC268 work, i.e. check /proc/asound/Intel/codec#0 and look at which part
-is not supported by the snd_hda_intel patch file yet and then explain how to add stuff
-to it, in very verbose and generic words to let layman people know how to do
-this).
+> I'd recommend letting the declaration be done outside of cnt32_to_63 so
+> the same variable can be passed as parameter to more than one execution
+> site.
 
-As already said, I've (and certainly not only me!) been bitten
-again and again and AGAIN by incomplete codec support in snd_hda_intel, thus
-we need to make damn sure people can help themselves as well as remotely
-possible, to ensure sufficiently fast and sufficiently complete support
-for new HDA codecs (which seem to appear each new month or week even,
-unfortunately!).
-If people don't even know how to tackle this easily, then patch submissions for new
-codecs aren't too likely...
+Do you really have such instances where multiple call sites are needed?  
+That sounds even more confusing to me than the current model.  Better 
+encapsulate the usage of this macro within some function which has a 
+stronger meaning, such as sched_clock(), and call _that_ from multiple 
+sites instead.
 
-And the A110L has been on the shelves for 4 or 5 months already (with 5 to 6
-million units sold, they say!!), a time where full support would have been in order.
-But it's certainly a major fault of Acer to not have provided full ALSA
-support for this (note that I'm not sure about Mic support in its
-pre-installed Linpus installation), the ALSA people certainly don't have
-any responsibility for this.
 
-Thanks,
-
-Andreas Mohr
+Nicolas
