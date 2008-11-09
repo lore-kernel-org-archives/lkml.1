@@ -1,109 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbYKIQXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbYKIQXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbYKIQXF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:23:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbYKIQWy
+	id S1755859AbYKIQXb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbYKIQXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:22:54 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:62029 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755168AbYKIQWx (ORCPT
+	Sun, 9 Nov 2008 11:23:12 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:35481 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755744AbYKIQXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:22:53 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArMEAHOZFklMQWxa/2dsb2JhbACBdsY/g1g
-Date: Sun, 9 Nov 2008 11:22:50 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
-Message-ID: <20081109162250.GB10181@Krystal>
-References: <9405.1226101315@redhat.com> <20081108001555.GE18378@flint.arm.linux.org.uk> <alpine.LFD.2.00.0811080939180.13034@xanadu.home> <alpine.LFD.2.00.0811081746060.13034@xanadu.home> <20081109022549.GA18508@Krystal> <alpine.LFD.2.00.0811082143320.13034@xanadu.home> <alpine.LFD.2.00.0811082356090.13034@xanadu.home> <alpine.LFD.2.00.0811090015570.13034@xanadu.home> <20081109064855.GA23782@Krystal> <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Nov 2008 11:23:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=exqP7R+e7H5yzi+K6n3QQLhaQaMRgJz9pjuqyXDZh4zPBm6bObfG6EngPzq10uaW0K
+         9QPaNUMqXIAfXWj4kPv5YW5CWFRP/1mD7HSE80dNOSihVr3AQlIOoIhZwOFs36ermt08
+         bW0OHXxZktoAa9qIiSJmcHFL0DKr4pVo95bpU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 3/6] rz1000: apply chipset quirks early
+Date: Sun, 9 Nov 2008 15:03:48 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20081103200244.5098.29817.sendpatchset@localhost.localdomain> <491083E9.60305@ru.mvista.com> <49109AC9.5090406@ru.mvista.com>
+In-Reply-To: <49109AC9.5090406@ru.mvista.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:18:21 up 157 days, 20:58,  6 users,  load average: 1.14, 0.75,
-	0.57
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200811091503.48842.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nicolas Pitre (nico@cam.org) wrote:
-> On Sun, 9 Nov 2008, Mathieu Desnoyers wrote:
+On Tuesday 04 November 2008, Sergei Shtylyov wrote:
+> Hello, I wrote:
 > 
-> > * Nicolas Pitre (nico@cam.org) wrote:
-> > > Currently, all existing users of cnt32_to_63() are fine since the CPU
-> > > architectures where it is used don't do read access reordering, and user
-> > > mode preemption is disabled already.  It is nevertheless a good idea to
-> > > better elaborate usage requirements wrt preemption, and use an explicit
-> > > memory barrier on SMP to avoid different CPUs accessing the counter
-> > > value in the wrong order.  On UP a simple compiler barrier is 
-> > > sufficient.
-> > > 
-> > > Signed-off-by: Nicolas Pitre <nico@marvell.com>
-> > > ---
-> > > 
-> > ...
-> > > @@ -68,9 +77,10 @@ union cnt32_to_63 {
-> > >   */
-> > >  #define cnt32_to_63(cnt_lo) \
-> > >  ({ \
-> > > -	static volatile u32 __m_cnt_hi; \
-> > > +	static u32 __m_cnt_hi; \
-> > 
-> > It's important to get the smp_rmb() here, which this patch provides, so
-> > consider this patch to be acked-by me. The added documentation is needed
-> > too.
+> >> Index: b/drivers/ide/rz1000.c
+> >> ===================================================================
+> >> --- a/drivers/ide/rz1000.c
+> >> +++ b/drivers/ide/rz1000.c
+> >> @@ -22,34 +22,48 @@
+> >>  
+> >>  #define DRV_NAME "rz1000"
+> >>  
+> >> -static void __devinit init_hwif_rz1000 (ide_hwif_t *hwif)
+> >> +static unsigned int __devinit rz1000_init_chipset(struct pci_dev *dev)
 > 
-> Thanks.
+> >    Hm, this is not a real init_chipset() method and it does just one 
+> > thing -- disables readahead, so rz1000_disable_readahead() or something 
+> > of that sort seems like a better name...
 > 
-> > But I also think that declaring the static u32 __m_cnt_hi here is
-> > counter-intuitive for developers who wish to use it.
-> 
-> I'm rather not convinced of that.  And this is a much bigger change 
-> affecting all callers so I'd defer such change even if I was convinced 
-> of it.
-> 
-> > I'd recommend letting the declaration be done outside of cnt32_to_63 so
-> > the same variable can be passed as parameter to more than one execution
-> > site.
-> 
-> Do you really have such instances where multiple call sites are needed?  
-> That sounds even more confusing to me than the current model.  Better 
-> encapsulate the usage of this macro within some function which has a 
-> stronger meaning, such as sched_clock(), and call _that_ from multiple 
-> sites instead.
-> 
-> 
-> Nicolas
+>     Hm, 'unsigned' result type wasn't terribly helpful here as well. :-)
 
-I see a few reasons for it :
+Agreed, v1->v2 interdiff:
 
-- If we want to inline the whole read function so we don't pay the extra
-  runtime cost of a function call, this would become required.
-- If we want to create a per cpu timer which updates the value
-  periodically without calling the function. We may want to add some
-  WARN_ON or some sanity tests in this periodic update that would not be
-  part of the standard read code. If we don't have access to this
-  variable outside of the macro, this becomes impossible.
+...
+v2:
+* unsigned int rz1000_init_chipset() -> int rz1000_disable_readahead()
+  per Sergei's suggestion.
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+...
+diff -u b/drivers/ide/rz1000.c b/drivers/ide/rz1000.c
+--- b/drivers/ide/rz1000.c
++++ b/drivers/ide/rz1000.c
+@@ -22,7 +22,7 @@
+ 
+ #define DRV_NAME "rz1000"
+ 
+-static unsigned int __devinit rz1000_init_chipset(struct pci_dev *dev)
++static int __devinit rz1000_disable_readahead(struct pci_dev *dev)
+ {
+ 	u16 reg;
+ 
+@@ -52,7 +52,7 @@
+ 	if (rc)
+ 		return rc;
+ 
+-	if (rz1000_init_chipset(dev)) {
++	if (rz1000_disable_readahead(dev)) {
+ 		d.host_flags |= IDE_HFLAG_SERIALIZE;
+ 		d.host_flags |= IDE_HFLAG_NO_UNMASK_IRQS;
+ 	}
