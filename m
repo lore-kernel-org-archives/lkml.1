@@ -1,238 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYKIOYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbYKIObw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbYKIOYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 09:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbYKIOYV
+	id S1755341AbYKIObw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 09:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYKIObl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 09:24:21 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46861 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbYKIOYU (ORCPT
+	Sun, 9 Nov 2008 09:31:41 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46113 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754772AbYKIObk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 09:24:20 -0500
-To: davem@redhat.com
-CC: torvalds@linux-foundation.org, a.bittau@cs.ucl.ac.uk, adobriyan@gmail.com,
-       viro@ZenIV.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, stable@kernel.org
-Subject: [patch] net: unix: fix inflight counting bug in garbage collector
-Message-Id: <E1KzBCn-00062L-Fp@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sun, 09 Nov 2008 15:23:57 +0100
+	Sun, 9 Nov 2008 09:31:40 -0500
+Date: Sun, 9 Nov 2008 09:31:37 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: David Howells <dhowells@redhat.com>
+cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Nicolas Pitre <nico@cam.org>, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org
+Subject: Re: [RFC patch 08/18] cnt32_to_63 should use smp_rmb()
+In-Reply-To: <1219.1226231496@redhat.com>
+Message-ID: <alpine.DEB.1.10.0811090919370.29560@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0811071922010.26139@gandalf.stny.rr.com> <alpine.DEB.1.10.0811071229570.28548@gandalf.stny.rr.com> <20081107053349.861709786@polymtl.ca> <20081107052336.652868737@polymtl.ca> <25257.1226055312@redhat.com> <20081107170902.GD22134@Krystal>
+ <9473.1226101838@redhat.com> <1219.1226231496@redhat.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
-This patch fixes the BUG_ON triggered by Andrea's tests.  It turned
-out to be completely independent of the stack overflow issue, but
-happens to be triggered by the same test program.
+On Sun, 9 Nov 2008, David Howells wrote:
 
-Should qualify for -stable too.
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > > Note that that does not guarantee that the two reads will be done in the
+> > > order you want.  The compiler barrier _only_ affects the compiler.  It
+> > > does not stop the CPU from doing the reads in any order it wants.  You
+> > > need something stronger than smp_rmb() if you need the reads to be so
+> > > ordered.
+> > 
+> > For reading hardware devices that can indeed be correct. But for normal 
+> > memory access on a uniprocessor, if the CPU were to reorder the reads that 
+> > would effect the actual algorithm then that CPU is broken.
 
-Thanks,
-Miklos
+Please read what I said above again.
 
-----
-From: Miklos Szeredi <mszeredi@suse.cz>
+"For reading hardware devices that can indeed be correct."
 
-Previously I assumed that the receive queues of candidates don't
-change during the GC.  This is only half true, nothing can be received
-from the queues (see comment in unix_gc()), but buffers could be added
-through the other half of the socket pair, which may still have file
-descriptors referring to it.
+There I agree that accessing devices will require a rmb.
 
-This can result in inc_inflight_move_tail() erronously increasing the
-"inflight" counter for a unix socket for which dec_inflight() wasn't
-previously called.  This in turn can trigger the "BUG_ON(total_refs <
-inflight_refs)" in a later garbage collection run.
+"But for normal memory access on a uniprocessor, if the CPU were to 
+reorder the reads that would effect the actual algorithm then that CPU is 
+broken."
 
-Fix this by only manipulating the "inflight" counter for sockets which
-are candidates themselves.  Duplicating the file references in
-unix_attach_fds() is also needed to prevent a socket becoming a
-candidate for GC while the skb that contains it is not yet queued.
+Here I'm talking about accessing normal RAM. If the CPU decides to read b 
+before reading a then that will break the code.
 
-Reported-by: Andrea Bittau <a.bittau@cs.ucl.ac.uk>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: stable@kernel.org
----
- include/net/af_unix.h |    1 +
- net/unix/af_unix.c    |   31 ++++++++++++++++++++++++-------
- net/unix/garbage.c    |   49 +++++++++++++++++++++++++++++++++++++------------
- 3 files changed, 62 insertions(+), 19 deletions(-)
+> > 
+> >  read a
+> >     <---  interrupt  - should see read a here before read b is done.
+> >  read b
+> 
+> Life isn't that simple.  Go and read the section labelled "The things cpus get
+> up to" in Documentation/memory-barriers.txt.
 
-Index: linux.git/include/net/af_unix.h
-===================================================================
---- linux.git.orig/include/net/af_unix.h	2008-11-09 14:39:04.000000000 +0100
-+++ linux.git/include/net/af_unix.h	2008-11-09 14:39:11.000000000 +0100
-@@ -54,6 +54,7 @@ struct unix_sock {
-         atomic_long_t           inflight;
-         spinlock_t		lock;
- 	unsigned int		gc_candidate : 1;
-+	unsigned int		gc_maybe_cycle : 1;
-         wait_queue_head_t       peer_wait;
- };
- #define unix_sk(__sk) ((struct unix_sock *)__sk)
-Index: linux.git/net/unix/garbage.c
-===================================================================
---- linux.git.orig/net/unix/garbage.c	2008-11-09 14:39:04.000000000 +0100
-+++ linux.git/net/unix/garbage.c	2008-11-09 14:39:11.000000000 +0100
-@@ -186,8 +186,17 @@ static void scan_inflight(struct sock *x
- 				 */
- 				struct sock *sk = unix_get_socket(*fp++);
- 				if (sk) {
--					hit = true;
--					func(unix_sk(sk));
-+					struct unix_sock *u = unix_sk(sk);
-+
-+					/*
-+					 * Ignore non-candidates, they could
-+					 * have been added to the queues after
-+					 * starting the garbage collection
-+					 */
-+					if (u->gc_candidate) {
-+						hit = true;
-+						func(u);
-+					}
- 				}
- 			}
- 			if (hit && hitlist != NULL) {
-@@ -249,11 +258,11 @@ static void inc_inflight_move_tail(struc
- {
- 	atomic_long_inc(&u->inflight);
- 	/*
--	 * If this is still a candidate, move it to the end of the
--	 * list, so that it's checked even if it was already passed
--	 * over
-+	 * If this still might be part of a cycle, move it to the end
-+	 * of the list, so that it's checked even if it was already
-+	 * passed over
- 	 */
--	if (u->gc_candidate)
-+	if (u->gc_maybe_cycle)
- 		list_move_tail(&u->link, &gc_candidates);
- }
- 
-@@ -267,6 +276,7 @@ void unix_gc(void)
- 	struct unix_sock *next;
- 	struct sk_buff_head hitlist;
- 	struct list_head cursor;
-+	LIST_HEAD(not_cycle_list);
- 
- 	spin_lock(&unix_gc_lock);
- 
-@@ -282,10 +292,14 @@ void unix_gc(void)
- 	 *
- 	 * Holding unix_gc_lock will protect these candidates from
- 	 * being detached, and hence from gaining an external
--	 * reference.  This also means, that since there are no
--	 * possible receivers, the receive queues of these sockets are
--	 * static during the GC, even though the dequeue is done
--	 * before the detach without atomicity guarantees.
-+	 * reference.  Since there are no possible receivers, all
-+	 * buffers currently on the candidates' queues stay there
-+	 * during the garbage collection.
-+	 *
-+	 * We also know that no new candidate can be added onto the
-+	 * receive queues.  Other, non candidate sockets _can_ be
-+	 * added to queue, so we must make sure only to touch
-+	 * candidates.
- 	 */
- 	list_for_each_entry_safe(u, next, &gc_inflight_list, link) {
- 		long total_refs;
-@@ -299,6 +313,7 @@ void unix_gc(void)
- 		if (total_refs == inflight_refs) {
- 			list_move_tail(&u->link, &gc_candidates);
- 			u->gc_candidate = 1;
-+			u->gc_maybe_cycle = 1;
- 		}
- 	}
- 
-@@ -325,14 +340,24 @@ void unix_gc(void)
- 		list_move(&cursor, &u->link);
- 
- 		if (atomic_long_read(&u->inflight) > 0) {
--			list_move_tail(&u->link, &gc_inflight_list);
--			u->gc_candidate = 0;
-+			list_move_tail(&u->link, &not_cycle_list);
-+			u->gc_maybe_cycle = 0;
- 			scan_children(&u->sk, inc_inflight_move_tail, NULL);
- 		}
- 	}
- 	list_del(&cursor);
- 
- 	/*
-+	 * not_cycle_list contains those sockets which do not make up a
-+	 * cycle.  Restore these to the inflight list.
-+	 */
-+	while (!list_empty(&not_cycle_list)) {
-+		u = list_entry(not_cycle_list.next, struct unix_sock, link);
-+		u->gc_candidate = 0;
-+		list_move_tail(&u->link, &gc_inflight_list);
-+	}
-+
-+	/*
- 	 * Now gc_candidates contains only garbage.  Restore original
- 	 * inflight counters for these as well, and remove the skbuffs
- 	 * which are creating the cycle(s).
-Index: linux.git/net/unix/af_unix.c
-===================================================================
---- linux.git.orig/net/unix/af_unix.c	2008-11-09 14:39:04.000000000 +0100
-+++ linux.git/net/unix/af_unix.c	2008-11-09 14:39:11.000000000 +0100
-@@ -1302,14 +1302,23 @@ static void unix_destruct_fds(struct sk_
- 	sock_wfree(skb);
- }
- 
--static void unix_attach_fds(struct scm_cookie *scm, struct sk_buff *skb)
-+static int unix_attach_fds(struct scm_cookie *scm, struct sk_buff *skb)
- {
- 	int i;
-+
-+	/*
-+	 * Need to duplicate file references for the sake of garbage
-+	 * collection.  Otherwise a socket in the fps might become a
-+	 * candidate for GC while the skb is not yet queued.
-+	 */
-+	UNIXCB(skb).fp = scm_fp_dup(scm->fp);
-+	if (!UNIXCB(skb).fp)
-+		return -ENOMEM;
-+
- 	for (i=scm->fp->count-1; i>=0; i--)
- 		unix_inflight(scm->fp->fp[i]);
--	UNIXCB(skb).fp = scm->fp;
- 	skb->destructor = unix_destruct_fds;
--	scm->fp = NULL;
-+	return 0;
- }
- 
- /*
-@@ -1368,8 +1377,11 @@ static int unix_dgram_sendmsg(struct kio
- 		goto out;
- 
- 	memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
--	if (siocb->scm->fp)
--		unix_attach_fds(siocb->scm, skb);
-+	if (siocb->scm->fp) {
-+		err = unix_attach_fds(siocb->scm, skb);
-+		if (err)
-+			goto out_free;
-+	}
- 	unix_get_secdata(siocb->scm, skb);
- 
- 	skb_reset_transport_header(skb);
-@@ -1538,8 +1550,13 @@ static int unix_stream_sendmsg(struct ki
- 		size = min_t(int, size, skb_tailroom(skb));
- 
- 		memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
--		if (siocb->scm->fp)
--			unix_attach_fds(siocb->scm, skb);
-+		if (siocb->scm->fp) {
-+			err = unix_attach_fds(siocb->scm, skb);
-+			if (err) {
-+				kfree_skb(skb);
-+				goto out_err;
-+			}
-+		}
- 
- 		if ((err = memcpy_fromiovec(skb_put(skb,size), msg->msg_iov, size)) != 0) {
- 			kfree_skb(skb);
+I've read it. Several times ;-)
+
+> 
+> The two reads we're talking about are independent of each other.  Independent
+> reads and writes can be reordered and merged at will by the CPU, subject to
+> restrictions imposed by barriers, cacheability attributes, MMIO attributes and
+> suchlike.
+> 
+> You can get read b happening before read a, but in such a case both
+> instructions will be in the CPU's execution pipeline.  When an interrupt
+> occurs, the CPU will presumably finish clearing what's in its pipeline before
+> going and servicing the interrupt handler.
+
+This above sounds like you just answered my question, and a smp_rmb is
+enough.  If an interrupt occurs, then the read a and read b will be 
+completed. Really does not matter in which order, as long as the interrupt 
+itself does not see the read b before the read a.
+
+
+> 
+> If a CPU is strictly ordered with respect to reads, do you actually need read
+> barriers?
+> 
+> The fact that a pair of reads might be part of an algorithm that is critically
+> dependent on the ordering of those reads isn't something the CPU cares about.
+> It doesn't know there's an algorithm there.
+> 
+> > Now the fact that one of the reads is a hardware clock, then this 
+> > statement might not be too strong. But the fact that it is a clock, and 
+> > not some memory mapped device register, I still think smp_rmb is 
+> > sufficient.
+> 
+> To quote again from memory-barriers.txt, section "CPU memory barriers":
+> 
+> 	Mandatory barriers should not be used to control SMP effects, since
+> 	mandatory barriers unnecessarily impose overhead on UP systems. They
+> 	may, however, be used to control MMIO effects on accesses through
+> 	relaxed memory I/O windows.  These are required even on non-SMP
+> 	systems as they affect the order in which memory operations appear to
+> 	a device by prohibiting both the compiler and the CPU from reordering
+> 	them.
+> 
+> Section "Accessing devices":
+> 
+>  (2) If the accessor functions are used to refer to an I/O memory window with
+>      relaxed memory access properties, then _mandatory_ memory barriers are
+>      required to enforce ordering.
+
+My confidence on reading a clock is not as strong that a smp_rmb is 
+enough. And it may not be. I'll have to think about this a bit more. 
+Again, the question arrises with:
+
+  read a (memory)
+       <---- interrupt
+  read b (clock)
+
+Will the b be seen before the interrupt occurred, and before the a is 
+read?  That is what will break the algorithm on UP. If we can not 
+guarantee this statement, then a rmb is needed.
+
+-- Steve
+
