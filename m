@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYKIABU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbYKIACB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754014AbYKIABU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 19:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYKIABJ
+	id S1754432AbYKIACB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 19:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbYKIABx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 19:01:09 -0500
-Received: from rv-out-0506.google.com ([209.85.198.230]:46347 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753112AbYKIABG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 19:01:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=Khb2+boFRU3z8RglQ1zn9W7GpESgVehc7+GOPOPd8ruqsuwhGHGJ5BkT9Hfx4rwl/q
-         GmMBMxSeReyiV44wmULPrPdFDMOWr3dqBkVc+JZX7YU1pmZ+1FZSoREMfXNHb0+450gD
-         DHtUXD7dgcZBrvgg2LEf5oSq/Jtj5WrEge+co=
-Message-ID: <86802c440811081601w2be45e55hc400095137831b85@mail.gmail.com>
-Date: Sat, 8 Nov 2008 16:01:05 -0800
-From: "Yinghai Lu" <yinghai@kernel.org>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 1/1] irq: Maintain user set affinity
-Cc: "Kumar Gala" <galak@kernel.crashing.org>,
-       "Linus Torvalds" <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, "Andrew Morton" <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <1226182645.13603.90.camel@pasglop>
+	Sat, 8 Nov 2008 19:01:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41724 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753150AbYKIABw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 19:01:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
+Date: Sun, 9 Nov 2008 01:06:04 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20081104173300.GF6134@ics.muni.cz>
+In-Reply-To: <20081104173300.GF6134@ics.muni.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
-	 <86802c440811081412u6d54beaam143801ce83225f40@mail.gmail.com>
-	 <1226182645.13603.90.camel@pasglop>
-X-Google-Sender-Auth: 0f013a385fefa069
+Message-Id: <200811090106.04579.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 8, 2008 at 2:17 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Sat, 2008-11-08 at 14:12 -0800, Yinghai Lu wrote:
->> On Tue, Nov 4, 2008 at 8:31 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
->> > From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
->> > From: Kumar Gala <galak@kernel.crashing.org>
->> > Date: Tue, 4 Nov 2008 10:13:53 -0600
->> > Subject: [PATCH 1/1] irq: Maintain user set affinity
->> >
->> > This addresses a regression in that if a user specified an affinity
->> > for an interrupt that affinity information would get reset between
->> > a request_irq(), free_irq() and request_irq() for the same irq.
->> >
->> > On example of this is bringing up an ethernet interface, taking
->> > it down and bringing it back up again.
->> >
->> > Instead of always using the irq_default_affinity we use the
->> > previous setting of the IRQs affinity with the assumption that
->> > at boot the IRQs affinity will be set to irq_default_affinity.
->>
->> why ?, the default_affinity is expected behavior...
->>
->> for example: when MSI is used, second driver could get same irq if
->> first driver is unloaded.
->
-> The default affinity should be set when the irq is allocated / assigned
-> to a device, not when it's requested.
+On Tuesday, 4 of November 2008, Lukas Hejtmanek wrote:
+> Hello Rafael,
 
-ok, you are right.
+Hi,
 
-for MSI, affinity is set two times.
+> not sure whether this is already reported or not. However, in 2.6.28-rc3
+> I discovered about 10 secs delay before mounting the root fs and running init
+> (not sure whether the delay is caused by mount or init). It did not appear in
+> 2.6.27. I did not try any previous 2.6.28-rcX.
 
-also in dynamic_irq_init is setting with
-#ifdef CONFIG_SMP
-        cpus_setall(desc->affinity);
-#endif
+Added to the list of recent regressions as
+http://bugzilla.kernel.org/show_bug.cgi?id=11987
 
-it seems should use irq_default_affinity instead of CPU_MASK_ALL directly there.
+Thanks,
+Rafael
 
-YH
+
+> This is from dmesg in 2.6.28-rc3. 
+> 
+> [    7.880966] IBM TrackPoint firmware: 0x0e, buttons: 3/3
+> [    8.103116] input: TPPS/2 IBM TrackPoint as
+> /devices/platform/i8042/serio1/serio2/input/input7
+> [   28.993523] kjournald starting.  Commit interval 5 seconds
+> [   28.993581] EXT3-fs: mounted filesystem with ordered data mode.
+> [   28.993638] VFS: Mounted root (ext3 filesystem) readonly.
+> [   28.993675] Freeing unused kernel memory: 332k freed
+> [   37.697648] uhci_hcd: USB Universal Host Controller Interface driver
+> [   37.697740] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ
+> 20
+> [   37.697779] uhci_hcd 0000:00:1a.0: setting latency timer to 64
+> [   37.697785] uhci_hcd 0000:00:1a.0: UHCI Host Controller
+> [   37.698005] drivers/usb/core/inode.c: creating file 'devices'
+> [   37.698008] drivers/usb/core/inode.c: creating file '001'
+> [   37.698131] uhci_hcd 0000:00:1a.0: new USB bus registered, assigned bus
+> number 1
+> [   37.698176] uhci_hcd 0000:00:1a.0: detected 2 ports
+> [   37.698205] uhci_hcd 0000:00:1a.0: uhci_check_and_reset_hc: cmd = 0x0000
+> 
+> 
+> This is from 2.6.27 kernel:
+> [    8.215972] IBM TrackPoint firmware: 0x0e, buttons: 3/3
+> [    8.452174] input: TPPS/2 IBM TrackPoint as /devices/platform/i8042/serio1/serio2/input/input7
+> [    9.016605] kjournald starting.  Commit interval 5 seconds
+> [    9.016634] EXT3-fs: mounted filesystem with ordered data mode.
+> [    9.016663] VFS: Mounted root (ext3 filesystem) readonly.
+> [    9.016756] Freeing unused kernel memory: 296k freed
+> [   18.963410] HDA Intel 0000:00:1b.0: PCI INT B -> GSI 17 (level, low) -> IRQ 17
+> [   18.963461] hda_intel: probe_mask set to 0x1 for device 17aa:20ac
+> [   18.969726] USB Universal Host Controller Interface driver v3.0
+> [   18.987703] e1000e: Intel(R) PRO/1000 Network Driver - 0.3.3.3-k6
+> [   18.987732] e1000e: Copyright (c) 1999-2008 Intel Corporation.
+> [   19.023978] sdhci: Secure Digital Host Controller Interface driver
+> [   19.024017] sdhci: Copyright(c) Pierre Ossman
+> [   19.084812] input: PC Speaker as /devices/platform/pcspkr/input/input8
+> [   19.366304] e1000e 0000:00:19.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+> [   19.372539] ACPI: WMI: Mapper loaded
+> [   19.570065] 0000:00:19.0: eth0: (PCI Express:2.5GB/s:Width x1) 00:1a:6b:d2:bd:81
+> [   19.570105] 0000:00:19.0: eth0: Intel(R) PRO/1000 Network Connection
+> [   19.570172] 0000:00:19.0: eth0: MAC: 4, PHY: 6, PBA No: ffffff-0ff
+> [   19.570301] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
+> [   19.570343] uhci_hcd 0000:00:1a.0: UHCI Host Controller
+> 
+
+
+
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
