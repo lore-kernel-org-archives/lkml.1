@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbYKINoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYKINv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbYKINoe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbYKINoV
+	id S1755309AbYKINv5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYKINvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:44:21 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56399 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754778AbYKINoU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:44:20 -0500
-Date: Sun, 9 Nov 2008 13:43:03 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
-Message-ID: <20081109134303.GA10654@flint.arm.linux.org.uk>
-Mail-Followup-To: Nicolas Pitre <nico@cam.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Howells <dhowells@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	lkml <linux-kernel@vger.kernel.org>,
-	Ralf Baechle <ralf@linux-mips.org>, benh@kernel.crashing.org,
-	paulus@samba.org, David Miller <davem@davemloft.net>,
-	Ingo Molnar <mingo@redhat.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-References: <9405.1226101315@redhat.com> <20081108001555.GE18378@flint.arm.linux.org.uk> <alpine.LFD.2.00.0811080939180.13034@xanadu.home> <alpine.LFD.2.00.0811081746060.13034@xanadu.home> <20081109022549.GA18508@Krystal> <alpine.LFD.2.00.0811082143320.13034@xanadu.home> <alpine.LFD.2.00.0811082356090.13034@xanadu.home> <alpine.LFD.2.00.0811090015570.13034@xanadu.home> <20081109064855.GA23782@Krystal> <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-Mime-Version: 1.0
+	Sun, 9 Nov 2008 08:51:49 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51278 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754788AbYKINvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 08:51:49 -0500
+Date: Sun, 9 Nov 2008 14:44:22 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: rjw@sisk.pl, ncunningham@crca.org.au, stern@rowland.harvard.edu,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
+	filesystems.
+Message-ID: <20081109134422.GA1730@ucw.cz>
+References: <Pine.LNX.4.44L0.0810291627040.3986-100000@iolanthe.rowland.org> <200810292211.49021.rjw@sisk.pl> <1225316715.18786.1.camel@nigel-laptop> <200810292307.26945.rjw@sisk.pl> <E1KvKql-0000dC-3M@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <E1KvKql-0000dC-3M@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 09, 2008 at 08:34:23AM -0500, Nicolas Pitre wrote:
-> Do you really have such instances where multiple call sites are needed?  
-> That sounds even more confusing to me than the current model.  Better 
-> encapsulate the usage of this macro within some function which has a 
-> stronger meaning, such as sched_clock(), and call _that_ from multiple 
-> sites instead.
+On Thu 2008-10-30 00:53:19, Miklos Szeredi wrote:
+> On Wed, 29 Oct 2008, Rafael J. Wysocki wrote:
+> > In any case, the freezing of user space seems to be much simpler
+> > than modifying all drivers to add suspend synchronization.
+> 
+> As I mentioned, we don't _have_ to modify all drivers.  It could start
+> out by just modifying syscalls that result in calls to drivers.  That
+> would be a 10-liner patch.
 
-What if sched_clock() is inline and uses cnt32_to_63()?  I think that's
-where the problem lies.  Better add a comment that it shouldn't be used
-inside another inline function.
+If you can solve current freezer vs. fuse in 10 lines, that would be
+useful...
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
