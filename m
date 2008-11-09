@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYKITKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbYKITYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbYKITKT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 14:10:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbYKITKH
+	id S1755998AbYKITYO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 14:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbYKITX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 14:10:07 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:59972 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755619AbYKITKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 14:10:06 -0500
-Date: Sun, 9 Nov 2008 14:09:51 -0500
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Doug Nazar <nazard@dragoninc.ca>,
-       "'David Woodhouse'" <David.Woodhouse@intel.com>,
-       "'Al Viro'" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.28-rc3 truncates nfsd results
-Message-ID: <20081109190951.GD25568@fieldses.org>
-References: <000301c93eaa$fae98460$f0bc8d20$@ca> <491097DA.9040204@garzik.org>
+	Sun, 9 Nov 2008 14:23:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42314 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755647AbYKITX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 14:23:57 -0500
+Date: Sun, 9 Nov 2008 11:23:39 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [git pull] scheduler warning fix
+In-Reply-To: <20081109071915.GA15556@elte.hu>
+Message-ID: <alpine.LFD.2.00.0811091118590.3468@nehalem.linux-foundation.org>
+References: <20081109071915.GA15556@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491097DA.9040204@garzik.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=ISO-8859-7
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 04, 2008 at 01:43:38PM -0500, Jeff Garzik wrote:
-> Doug Nazar wrote:
->> Commit 8d7c4203 "nfsd: fix failure to set eof in readdir in some situations"
->> breaks the nfsd server. Bisected it back to this commit and reverting it
->> fixes the problem.
->>
->> However, it only happens on certain machines even with the same kernel &
->> filesystem (ext3). I've two groups of similar computers, each group running
->> identical kernels. The ones listing only ~250 files are of course in error.
->> Eldritch is running 2.6.28-rc3 with that commit reverted. With 2.8.28-rc3 it
->> showed the incorrect number.
->
-> I'm seeing "weirdness" on my NFS4-mounted home directory (client and  
-> server are both x86-64 2.6.28-rc) -- gconfd locking up, and other  
-> desktop gadgets breaking.  2.6.27 works great.
->
-> I'll try reverting this and see if the behavior improves, thanks for the  
-> pointer...
 
-Any more details on that "weirdness"?
 
---b.
+On Sun, 9 Nov 2008, Ingo Molnar wrote:
+> 
+> Please pull the latest sched-fixes-for-linus git tree from:
+> 
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+> 
+> Fixes a silly build warning that slipped through yesterday, sorry 
+> about that.
+
+Whaa?
+
+  In file included from /home/torvalds/v2.6/linux/arch/x86/include/asm/timex.h:6,
+                   from include/linux/timex.h:202,
+                   from include/linux/jiffies.h:8,
+                   from include/linux/ktime.h:25,
+                   from include/linux/timer.h:5,
+                   from include/linux/workqueue.h:8,
+                   from include/linux/slub_def.h:11,
+                   from include/linux/slab.h:124,
+                   from include/linux/percpu.h:5,
+                   from include/linux/rcupdate.h:39,
+                   from include/linux/tracepoint.h:18,
+                   from include/linux/module.h:19,
+                   from include/linux/crypto.h:21,
+                   from arch/x86/kernel/asm-offsets_64.c:7,
+                   from arch/x86/kernel/asm-offsets.c:4:
+  /home/torvalds/v2.6/linux/arch/x86/include/asm/tsc.h: In function ¡vget_cycles¢:
+  /home/torvalds/v2.6/linux/arch/x86/include/asm/tsc.h:46: error: ¡cycles¢ undeclared (first use in this function)
+  /home/torvalds/v2.6/linux/arch/x86/include/asm/tsc.h:46: error: (Each undeclared identifier is reported only once
+  /home/torvalds/v2.6/linux/arch/x86/include/asm/tsc.h:46: error: for each function it appears in.)
+  make[1]: *** [arch/x86/kernel/asm-offsets.s] Error 1
+  make: *** [prepare0] Error 2
+
+That makes no sense. You've apparently done some idiotic rebasing of a 
+patch that needs to be applied on top of an earlier patch into a tree that 
+does _not_ need it, and then send it as a pull request.
+
+What _are_ you doing?
+
+			Linus
