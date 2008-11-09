@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282AbYKILpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYKILuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282AbYKILpS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 06:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbYKILpF
+	id S1755183AbYKILuz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 06:50:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYKILup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 06:45:05 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42695 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbYKILpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 06:45:04 -0500
-Date: Sun, 9 Nov 2008 12:46:41 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Dmitry <dbaryshkov@gmail.com>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Cyril Hrubis <metan@ucw.cz>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com
-Subject: Re: 2.6.28-rc3-git1: spitz still won't boot
-Message-ID: <20081109114640.GA10733@elf.ucw.cz>
-References: <20081105142329.GA1724@ucw.cz> <bc64b4640811050713i4cfb1216x822274150e929e02@mail.gmail.com> <20081105173303.GC2038@elf.ucw.cz> <bc64b4640811051500m3ea38b31o54210ba0a12b01cf@mail.gmail.com> <20081106080416.GA1531@ucw.cz> <20081106191424.GA2273@atrey.karlin.mff.cuni.cz> <f17812d70811070523k59a57d49tac1ab1e5b78d1db4@mail.gmail.com> <20081107142923.GA1616@ucw.cz> <bc64b4640811070657p668dcaedrfd442b0d439b3c78@mail.gmail.com> <20081109114545.GG6094@elf.ucw.cz>
+	Sun, 9 Nov 2008 06:50:45 -0500
+Received: from bu3sch.de ([62.75.166.246]:51362 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754629AbYKILuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 06:50:44 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] SSB: make it depend on PCI
+Date: Sun, 9 Nov 2008 12:49:51 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Mike Frysinger <vapier@gentoo.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <1225965082-31462-1-git-send-email-vapier@gentoo.org> <8bd0f97a0811060315j7d11e1a7p257a4a1bea640f7b@mail.gmail.com> <Pine.LNX.4.64.0811091149280.19341@anakin>
+In-Reply-To: <Pine.LNX.4.64.0811091149280.19341@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081109114545.GG6094@elf.ucw.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811091249.52071.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-11-09 12:45:45, Pavel Machek wrote:
-> On Fri 2008-11-07 17:57:33, Dmitry wrote:
-> > 2008/11/7 Pavel Machek <pavel@suse.cz>:
-> > > On Fri 2008-11-07 21:23:41, Eric Miao wrote:
-> > >> Well, IIRC spitz still needs the patch to change the vmlinux.ld.S.
-> > >> Did you guys ever try that?
-> > >
-> > > I never heard about that patch, do you have it handy?
-> > 
-> > http://rpsys.net/openzaurus/patches/archive/pxa-linking-bug.patch
-> > 
-> > I plan to submit a bit modified version of this patch later.
-> 
-> Could you send me full .config that is known to work?
-> 
-> Do I need pxa-linking-bug.patch to get it to boot?
+On Sunday 09 November 2008 11:51:37 Geert Uytterhoeven wrote:
+> I had the same issue on m68k, not only with SSB but also with other legacy
+> drivers (hp100 Ethernet, AIC7xxx SCSI). It was fixed in commit
+> 998aaf01c6f6f3dffc1ea9e7b20b131e38fdbc78 ("m68k: <asm/pci.h> needs
+> <asm-generic/pci-dma-compat.h>").
 
-(Note that I'm booting using kexec, not sharp bootloader).
-									Pavel
+Ok, nice.
+I'd suggest we additionally fix the architectures this way.
+
+My patch already is on its way upstream and I think that's OK.
+The codepaths that it #ifdefs out are dead code on non-PCI, so I think
+it's OK to #ifdef them.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Greetings Michael.
