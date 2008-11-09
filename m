@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYKINTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbYKINVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbYKINTW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYKINTN
+	id S1755315AbYKINVz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657AbYKINVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:19:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43126 "EHLO ogre.sisk.pl"
+	Sun, 9 Nov 2008 08:21:47 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43143 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751657AbYKINTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:19:12 -0500
+	id S1750730AbYKINVq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 08:21:46 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Date: Sun, 9 Nov 2008 14:24:10 +0100
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.28-rc3: regression, thinkpad x60 will not reboot
+Date: Sun, 9 Nov 2008 14:26:24 +0100
 User-Agent: KMail/1.9.9
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz>
-In-Reply-To: <20081109113304.GE4353@ics.muni.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <20081109123335.GA1783@elf.ucw.cz>
+In-Reply-To: <20081109123335.GA1783@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811091424.10943.rjw@sisk.pl>
+Message-Id: <200811091426.24888.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 9 of November 2008, Lukas Hejtmanek wrote:
-> On Sun, Nov 09, 2008 at 11:52:02AM +0100, Marcin Slusarz wrote:
-> > > Moreover, I discovered that I have to hit a keyboard several times during the
-> > > boot to boot up.
-> > > 
-> > > The delay depends on keyboard hit. If I do not touch the keyboard, it waits
-> > > forever.. Looks like something needs an interrupt..
-> > 
-> > Do you have NO_HZ enabled?
-> > (Cc'ing Thomas)
+On Sunday, 9 of November 2008, Pavel Machek wrote:
+> Hi!
 > 
-> indeed, I have. Should I try it without NO_HZ?
+> Subject says it pretty much all. No, I do not think I have KVM
+> enabled:
+> 
+> CONFIG_HAVE_KVM=y
+> 
+> ...is the only KVM related option in my .config.
+> 
+> It seems 100% reproducible.
 
-Yes, please.
+Can you check if
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8d00450d296dedec9ada38d43b83e79cca6fd5a3
+helps, please?
 
 Thanks,
 Rafael
-
-
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
