@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbYKINNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbYKINTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbYKINNa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYKINNV
+	id S1755226AbYKINTW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYKINTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:13:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43104 "EHLO ogre.sisk.pl"
+	Sun, 9 Nov 2008 08:19:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43126 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753755AbYKINNU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:13:20 -0500
+	id S1751657AbYKINTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 08:19:12 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
-Date: Sun, 9 Nov 2008 14:17:53 +0100
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
+Date: Sun, 9 Nov 2008 14:24:10 +0100
 User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200811081353.34442.rjw@sisk.pl> <20081108215458.1799896b.akpm@linux-foundation.org> <20081109113736.GE6094@elf.ucw.cz>
-In-Reply-To: <20081109113736.GE6094@elf.ucw.cz>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz>
+In-Reply-To: <20081109113304.GE4353@ics.muni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811091417.53663.rjw@sisk.pl>
+Message-Id: <200811091424.10943.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 9 of November 2008, Pavel Machek wrote:
-> On Sat 2008-11-08 21:54:58, Andrew Morton wrote:
-> > On Sat, 8 Nov 2008 14:12:21 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > On Saturday, 8 of November 2008, Pavel Machek wrote:
-> > > > Hi!
-> > > > 
-> > > > > This would be good to have in .28 IMO.
-> > > > 
-> > > > Actually, this makes sense even for .27-stable, AFAICT.
+On Sunday, 9 of November 2008, Lukas Hejtmanek wrote:
+> On Sun, Nov 09, 2008 at 11:52:02AM +0100, Marcin Slusarz wrote:
+> > > Moreover, I discovered that I have to hit a keyboard several times during the
+> > > boot to boot up.
 > > > 
-> > > Yes, it does, but it has to be merged first. :-)
+> > > The delay depends on keyboard hit. If I do not touch the keyboard, it waits
+> > > forever.. Looks like something needs an interrupt..
 > > 
-> > It applies to 2.6.26 (at least).  Is there no need for it in kernels
-> > earlier than 2.6.27.x?
+> > Do you have NO_HZ enabled?
+> > (Cc'ing Thomas)
 > 
-> It would be nice to fix it there, too. (OTOH that config never worked
-> and we did not see huge pile of complains, so I guess the world would
-> not fall down if it was not in 2.6.26...)
+> indeed, I have. Should I try it without NO_HZ?
 
-Yes, it's a bug, so it would be nice to fix it.  Still, the practical meaning
-of the fix would be minimal in 2.6.26 and earlier kernels IMO.
+Yes, please.
 
 Thanks,
 Rafael
+
+
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
