@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbYKIEzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbYKIFGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555AbYKIEzi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 23:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753920AbYKIEza
+	id S1753678AbYKIFGd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 00:06:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750746AbYKIFGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 23:55:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35045 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753919AbYKIEz3 (ORCPT
+	Sun, 9 Nov 2008 00:06:23 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:43873 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbYKIFGW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 23:55:29 -0500
-Date: Sat, 8 Nov 2008 20:55:32 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Message-ID: <20081108205532.7952fec6@infradead.org>
-In-Reply-To: <200811090106.04579.rjw@sisk.pl>
-References: <20081104173300.GF6134@ics.muni.cz>
-	<200811090106.04579.rjw@sisk.pl>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 9 Nov 2008 00:06:22 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 09 Nov 2008 00:06:12 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+       benh@kernel.crashing.org, paulus@samba.org,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] clarify usage expectations for cnt32_to_63()
+In-reply-to: <alpine.LFD.2.00.0811082143320.13034@xanadu.home>
+Message-id: <alpine.LFD.2.00.0811082356090.13034@xanadu.home>
+References: <20081106220530.5b0e3a96.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0811070256450.13034@xanadu.home>
+ <25363.1226056819@redhat.com> <20081107164758.GB22134@Krystal>
+ <20081107201118.GB28600@flint.arm.linux.org.uk>
+ <20081107213610.GC2654@Krystal> <9405.1226101315@redhat.com>
+ <20081108001555.GE18378@flint.arm.linux.org.uk>
+ <alpine.LFD.2.00.0811080939180.13034@xanadu.home>
+ <alpine.LFD.2.00.0811081746060.13034@xanadu.home>
+ <20081109022549.GA18508@Krystal>
+ <alpine.LFD.2.00.0811082143320.13034@xanadu.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Nov 2008 01:06:04 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sat, 8 Nov 2008, Nicolas Pitre wrote:
 
-> On Tuesday, 4 of November 2008, Lukas Hejtmanek wrote:
-> > Hello Rafael,
+> On Sat, 8 Nov 2008, Mathieu Desnoyers wrote:
 > 
-> Hi,
+> > I *think* that smp_rmb() would be enough, supposing the access to memory
+> > is done in program order wrt local interrupts in UP. This is basically
+> > Steven's question, which has not received any clear answer yet. I'd like
+> > to know what others think about it.
 > 
-> > not sure whether this is already reported or not. However, in
-> > 2.6.28-rc3 I discovered about 10 secs delay before mounting the
-> > root fs and running init (not sure whether the delay is caused by
-> > mount or init). It did not appear in 2.6.27. I did not try any
-> > previous 2.6.28-rcX.
-> 
+> In the mean time a pure rmb() is the safest thing to do now.  Once we 
+> can convince ourselves that out-of-order reads are always rolled back 
+> upon the arrival of an interrupt then this could be relaxed.
+
+After thinking about it some more, then a smp_rmb() must be correct.
+
+On UP, that would be completely  insane if an exception didn't resume 
+the whole sequence since the CPU cannot presume anything when returning 
+from it.
+
+If the instruction flows says:
+
+	READ A
+	READ B
+
+And speculative execution makes for B to be read before A, and you get 
+an interrupt after B was read but before A was read, then the program 
+counter may only point at READ A upon returning from the exception and B 
+will be read again.  Doing otherwise would require the CPU to remember 
+any reordering that it might have performed upon every exceptions which 
+is completely insane.
+
+So smp_rmb() it shall be.
 
 
-do you have RAID autoprobing enabled ?
-raid autoprobing requires that all devices have been discovered,
-to avoid getting partial RAID arrays and other nasty things...
-
-it's CONFIG_MD_AUTODETECT
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Nicolas
