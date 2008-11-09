@@ -1,80 +1,84 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164AbYKHWHE (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 8 Nov 2008 17:07:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYKHWGx
+	id S1754679AbYKIH1Y (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 9 Nov 2008 02:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbYKIH1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 17:06:53 -0500
-Received: from WWW1.scour.com ([67.29.139.176]:14842 "EHLO www1.scour.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752576AbYKHWGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 17:06:52 -0500
-X-Greylist: delayed 361 seconds by postgrey-1.27 at vger.kernel.org; Sat, 08 Nov 2008 17:06:52 EST
-User-Agent: scour
-Date: Sat, 8 Nov 2008 13:41:10 -0800
-From: "Scour" <invite@scour.com>
+	Sun, 9 Nov 2008 02:27:13 -0500
+Received: from connect-ua-210.dg.net.ua ([213.186.218.210]:47814 "EHLO
+	mail.connect.com.ua" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752647AbYKIH1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 02:27:12 -0500
 To: linux-kernel@vger.kernel.org
-Subject: pradeep annavarapu's Member Invite
-Reply-To: "invite@scour.com" <invite@scour.com>
-X-Mailer: scour
-X-Priority: 3 (Normal)
-Message-ID: <4916077653a62@scour.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Subject: =?UTF-8?B?Q29ubmVjdC51YSB8INCX0LzRltC90Lgg0LfQsCDQvtGB0YLQsNC90L3Rlg==?=  =?UTF-8?B?0Lkg0YLQuNC20LTQtdC90Yw=?=
+Date: Sun, 9 Nov 2008 09:27:02 +0200
+From: =?UTF-8?B?0JrQvtC80LDQvdC00LAgQ29ubmVjdC51YQ==?= 
+	<donotreply@connect.com.ua>
+Reply-to: Connect <donotreply@connect.com.ua>
+Message-ID: <166ed64111b6c34b1df431cc5686aebd@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer (phpmailer.sourceforge.net) [version 2.0.0 rc1]
+MIME-Version: 1.0
 Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754164AbYKHWHE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754679AbYKIH1Y@vger.kernel.org>
 
-Hey there,
+=D0=92=D1=96=D1=82=D0=B0=D1=94=D0=BC=D0=BE, =D0=92=D0=BB=D0=B0=D0=B4=D0=
+=B8=D0=BC=D0=B8=D1=80 =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=BE=D0=B2!
 
-Not too long ago pradeep annavarapu sent you an invite to join the Scou=
-r
-search community and your invite is still open!
-
-The Scour search engine is shaped by a community of users just like you=
-,
-and your contributions are what make it a success!
-
-Why use Scour?
-1. Get Yahoo, Google and MSN results in one search
-2. Vote on result relevancy
-3. Read user comments
-4. Get paid for searching!
-
-Create your profile at http://scour.com/invite/pradeep.annavarapu/r/ an=
-d
-enjoy searching the web through your favorite search engines. With time=
-,
-you=92ll get paid like these loyal users: http://www.scour.com/leaderbo=
-ard
-page.
-
-Come and be part of the largest Social Search community and help make t=
-he
-results better!
-
-See you soon,
-The Scour Team
-www.scour.com
+=D0=9D=D0=B0=D0=B9=D0=B1=D1=96=D0=BB=D1=8C=D1=88 =D1=86=D1=96=D0=BA=D0=B0=
+=D0=B2=D1=96 =D0=BF=D0=BE=D0=B4=D1=96=D1=97 =D0=BD=D0=B0 =D0=9A=D0=BE=D0=
+=BD=D0=BD=D0=B5=D0=BA=D1=82=D1=96 =D0=B7=D0=B0 =D0=BE=D1=81=D1=82=D0=B0=
+=D0=BD=D0=BD=D1=96=D0=B9 =D1=87=D0=B0=D1=81:
+=D0=9D=D0=BE=D0=B2=D0=B5 =D0=B2i=D0=B4=D0=B5=D0=BE:
+=D0=9E=D0=B1=D0=BE=D1=81=D1=81=D0=B0=D1=86=D1=86=D0=B0!!! =D0=9F=D0=BB=D0=
+=B0=D0=BA=D0=B0=D1=82=D1=8C =D0=B8=D0=BB=D0=B8 =D0=B7=D0=B0=D1=81=D0=BC=
+=D0=B5=D1=8F=D1=86=D1=86=D0=B0?, 544 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=
+=D1=8F=D0=B4=D0=B0: http://connect.ua/v2/video?view=3D167102
+=D0=AD=D0=9C=D0=9E =D0=BD=D0=B0=D0=BF=D1=83=D0=B3=D0=B0=D0=BB=D0=B8, 32=
+4 =D0=BF=D0=B5=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4=D0=B0: http://connec=
+t.ua/v2/video?view=3D168366
+=D0=94=D0=B5=D0=B2=D0=BA=D0=B8 =D0=B4=D1=83=D1=80=D1=8B, 416 =D0=BF=D0=B5=
+=D1=80=D0=B5=D0=B3=D0=BB=D1=8F=D0=B4i=D0=B2: http://connect.ua/v2/video=
+?view=3D158492
+=D0=92=D1=81i =D0=B2i=D0=B4=D0=B5=D0=BE http://connect.ua/video
 
 
+=D0=AF=D0=BA=D1=89=D0=BE =D0=B2=D0=BA=D0=B0=D0=B7=D0=B0=D0=BD=D0=B5 =D0=
+=B2=D0=B8=D1=89=D0=B5 =D0=BF=D0=BE=D1=81=D0=B8=D0=BB=D0=B0=D0=BD=D0=BD=D1=
+=8F =D0=BD=D0=B5 =D0=B2=D1=96=D0=B4=D0=BA=D1=80=D0=B8=D0=B2=D0=B0=D1=94=
+=D1=82=D1=8C=D1=81=D1=8F, =D0=B7=D0=BA=D0=BE=D0=BF=D1=96=D1=8E=D0=B9=D1=
+=82=D0=B5 =D0=B9=D0=BE=D0=B3=D0=BE =D0=B4=D0=BE =D0=B1=D1=83=D1=84=D0=B5=
+=D1=80=D0=B0 =D0=BE=D0=B1=D0=BC=D1=96=D0=BD=D1=83, =D0=B2=D1=81=D1=82=D0=
+=B0=D0=B2=D1=82=D0=B5 =D0=B2 =D0=B0=D0=B4=D1=80=D0=B5=D1=81=D0=BD=D0=B8=
+=D0=B9 =D1=80=D1=8F=D0=B4=D0=BE=D0=BA =D0=B1=D1=80=D0=B0=D1=83=D0=B7=D0=
+=B5=D1=80=D0=B0 =D1=82=D0=B0 =D0=BD=D0=B0=D1=82=D0=B8=D1=81=D0=BD=D1=96=
+=D1=82=D1=8C Enter.
 
 
+=D0=9E=D0=B1`=D1=94=D0=B4=D0=BD=D1=83=D1=94=D0=BC=D0=BE =D0=A3=D0=BA=D1=
+=80=D0=B0=D1=97=D0=BD=D1=83!
+=D0=9A=D0=BE=D0=BC=D0=B0=D0=BD=D0=B4=D0=B0 Connect.ua
 
-This message was sent to you as a friend referral to join scour.com, pl=
-ease
-feel free to review our http://scour.com/privacy page and our
-http://scour.com/communityguidelines/antispam page.
-If you prefer not to receive invitations from ANY scour members,
-please click here - http://www.scour.com/unsub/e/bGludXgta2VybmVsQHZnZX=
-Iua2VybmVsLm9yZw=3D=3D
--OR-
-Write to us at:
-Scour, Inc., 15303 Ventura Blvd. Suite 860, Sherman Oaks, CA 91403, USA=
-.
+-------------------------------
 
-campaignid: scour200811080002
+=D0=92=D0=B8 =D0=BE=D1=82=D1=80=D0=B8=D0=BC=D0=B0=D0=BB=D0=B8 =D1=86=D0=
+=B5=D0=B9 =D0=BB=D0=B8=D1=81=D1=82, =D1=82=D0=BE=D0=BC=D1=83 =D1=89=D0=BE=
+ =D0=B7=D0=B0=D1=80=D0=B5=D1=94=D1=81=D1=82=D1=80=D0=BE=D0=B2=D0=B0=D0=BD=
+=D1=96 =D0=BD=D0=B0 =D1=81=D0=B0=D0=B9=D1=82=D1=96 =D0=BD=D0=B0=D1=86=D1=
+=96=D0=BE=D0=BD=D0=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D1=83=D0=BA=D1=80=D0=
+=B0=D1=97=D0=BD=D1=81=D1=8C=D0=BA=D0=BE=D1=97 =D1=81=D0=BE=D1=86=D1=96=D0=
+=B0=D0=BB=D1=8C=D0=BD=D0=BE=D1=97 =D0=BC=D0=B5=D1=80=D0=B5=D0=B6=D1=96 =
+Connect.ua
+=D0=92=D0=B8 =D0=BC=D0=BE=D0=B6=D0=B5=D1=82=D0=B5 =D0=B7=D0=BC=D1=96=D0=
+=BD=D0=B8=D1=82=D0=B8 =D0=BF=D0=B0=D1=80=D0=B0=D0=BC=D0=B5=D1=82=D1=80=D0=
+=B8 =D0=B2=D1=96=D0=B4=D0=BF=D1=80=D0=B0=D0=B2=D0=BB=D0=B5=D0=BD=D0=BD=D1=
+=8F =D0=BF=D0=BE=D0=B2=D1=96=D0=B4=D0=BE=D0=BC=D0=BB=D0=B5=D0=BD=D1=8C =
+=D0=B2 =D0=BE=D0=BF=D1=86=D1=96=D1=8F=D1=85 =D0=B0=D0=BD=D0=BA=D0=B5=D1=
+=82=D0=B8.
 
 --
 To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
