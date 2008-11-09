@@ -1,172 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbYKIQ1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYKIQ2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbYKIQ1e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbYKIQZG
+	id S1756439AbYKIQ2K (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:28:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbYKIQZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:25:06 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:40170 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755996AbYKIQZE (ORCPT
+	Sun, 9 Nov 2008 11:25:20 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:60863 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755820AbYKIQZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:25:04 -0500
+	Sun, 9 Nov 2008 11:25:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=FOraU1ri80ocCJ5XYv0EHSDhMeFQrk+k32fIDKmp6lHuKhKeO+rl+1jXmEKcZoS+Sk
-         bET34XzpWcVx5bHnjP6L/nJ1bGdJSM63OQd7FfMV3ydZxSrCcusnU+Dcjd77sfD7oWj3
-         0GDyyUsjd7EQR64HZqHNFJsF1DpNlVrlwsfWo=
+        b=f76K3xuC+MsByQKMeSJ/5+a1MatsbUOyQarR9eiR2JGMss4tP9fdSc8k+8OIAuSmLu
+         X2TxDTirkUX3zF8WMP/qvUuWATDpEInAKwJeH6Yav5gAT9zufvVNmi2wTpa2rTb1Qj4t
+         JE+nXacHJLz+UKWRAbkAR0+jAHlSzWdVhiL1U=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 09 Nov 2008 17:23:01 +0100
-Message-Id: <20081109162301.18999.9793.sendpatchset@localhost.localdomain>
+Date: Sun, 09 Nov 2008 17:23:17 +0100
+Message-Id: <20081109162317.18999.68185.sendpatchset@localhost.localdomain>
 In-Reply-To: <20081109162219.18999.74912.sendpatchset@localhost.localdomain>
 References: <20081109162219.18999.74912.sendpatchset@localhost.localdomain>
-Subject: [PATCH 07/11] ide: use ATA_DMA_* defines in ide-dma-sff.c
+Subject: [PATCH 09/11] ide: move legacy ISA/VLB ports handling to ide-legacy.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: use ATA_DMA_* defines in ide-dma-sff.c
+Subject: [PATCH] ide: move legacy ISA/VLB ports handling to ide-legacy.c
 
-In few places open-coded values were still being used.  Fix it.
+* Move legacy ISA/VLB ports handling from ide-probe.c to ide-legacy.c.
+
+* Add CONFIG_IDE_LEGACY config option to be selected by host drivers
+  needing ide-legacy.c.
+
+There should be no functional changes caused by this patch.
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-dma-sff.c |   52 ++++++++++++++++++++--------------------------
- 1 file changed, 23 insertions(+), 29 deletions(-)
+ drivers/ide/Kconfig      |    5 ++++
+ drivers/ide/Makefile     |    1 
+ drivers/ide/ide-legacy.c |   58 +++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/ide/ide-probe.c  |   56 ---------------------------------------------
+ 4 files changed, 64 insertions(+), 56 deletions(-)
 
-Index: b/drivers/ide/ide-dma-sff.c
+Index: b/drivers/ide/Kconfig
 ===================================================================
---- a/drivers/ide/ide-dma-sff.c
-+++ b/drivers/ide/ide-dma-sff.c
-@@ -176,15 +176,10 @@ int ide_dma_setup(ide_drive_t *drive)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct request *rq = hwif->hwgroup->rq;
--	unsigned int reading;
-+	unsigned int reading = rq_data_dir(rq) ? 0 : ATA_DMA_WR;
- 	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
- 	u8 dma_stat;
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -864,6 +864,7 @@ config BLK_DEV_4DRIVES
+ config BLK_DEV_ALI14XX
+ 	tristate "ALI M14xx support"
+ 	select IDE_TIMINGS
++	select IDE_LEGACY
+ 	help
+ 	  This driver is enabled at runtime using the "ali14xx.probe" kernel
+ 	  boot parameter.  It enables support for the secondary IDE interface
+@@ -874,6 +875,7 @@ config BLK_DEV_ALI14XX
  
--	if (rq_data_dir(rq))
--		reading = 0;
--	else
--		reading = 1 << 3;
--
- 	/* fall back to pio! */
- 	if (!ide_build_dmatable(drive, rq)) {
- 		ide_map_sg(drive, rq);
-@@ -209,10 +204,11 @@ int ide_dma_setup(ide_drive_t *drive)
+ config BLK_DEV_DTC2278
+ 	tristate "DTC-2278 support"
++	select IDE_LEGACY
+ 	help
+ 	  This driver is enabled at runtime using the "dtc2278.probe" kernel
+ 	  boot parameter. It enables support for the secondary IDE interface
+@@ -884,6 +886,7 @@ config BLK_DEV_DTC2278
+ config BLK_DEV_HT6560B
+ 	tristate "Holtek HT6560B support"
+ 	select IDE_TIMINGS
++	select IDE_LEGACY
+ 	help
+ 	  This driver is enabled at runtime using the "ht6560b.probe" kernel
+ 	  boot parameter. It enables support for the secondary IDE interface
+@@ -894,6 +897,7 @@ config BLK_DEV_HT6560B
+ config BLK_DEV_QD65XX
+ 	tristate "QDI QD65xx support"
+ 	select IDE_TIMINGS
++	select IDE_LEGACY
+ 	help
+ 	  This driver is enabled at runtime using the "qd65xx.probe" kernel
+ 	  boot parameter.  It permits faster I/O speeds to be set.  See the
+@@ -902,6 +906,7 @@ config BLK_DEV_QD65XX
  
- 	/* clear INTR & ERROR flags */
- 	if (mmio)
--		writeb(dma_stat | 6,
-+		writeb(dma_stat | ATA_DMA_ERR | ATA_DMA_INTR,
- 		       (void __iomem *)(hwif->dma_base + ATA_DMA_STATUS));
- 	else
--		outb(dma_stat | 6, hwif->dma_base + ATA_DMA_STATUS);
-+		outb(dma_stat | ATA_DMA_ERR | ATA_DMA_INTR,
-+		     hwif->dma_base + ATA_DMA_STATUS);
+ config BLK_DEV_UMC8672
+ 	tristate "UMC-8672 support"
++	select IDE_LEGACY
+ 	help
+ 	  This driver is enabled at runtime using the "umc8672.probe" kernel
+ 	  boot parameter. It enables support for the secondary IDE interface
+Index: b/drivers/ide/Makefile
+===================================================================
+--- a/drivers/ide/Makefile
++++ b/drivers/ide/Makefile
+@@ -15,6 +15,7 @@ ide-core-$(CONFIG_BLK_DEV_IDEDMA)	+= ide
+ ide-core-$(CONFIG_BLK_DEV_IDEDMA_SFF)	+= ide-dma-sff.o
+ ide-core-$(CONFIG_IDE_PROC_FS)		+= ide-proc.o
+ ide-core-$(CONFIG_BLK_DEV_IDEACPI)	+= ide-acpi.o
++ide-core-$(CONFIG_IDE_LEGACY)		+= ide-legacy.o
  
- 	drive->waiting_for_dma = 1;
- 	return 0;
-@@ -246,14 +242,13 @@ static int dma_timer_expiry(ide_drive_t 
+ obj-$(CONFIG_IDE)			+= ide-core.o
  
- 	hwif->hwgroup->expiry = NULL;	/* one free ride for now */
- 
--	/* 1 dmaing, 2 error, 4 intr */
--	if (dma_stat & 2)	/* ERROR */
-+	if (dma_stat & ATA_DMA_ERR)	/* ERROR */
- 		return -1;
- 
--	if (dma_stat & 1)	/* DMAing */
-+	if (dma_stat & ATA_DMA_ACTIVE)	/* DMAing */
- 		return WAIT_CMD;
- 
--	if (dma_stat & 4)	/* Got an Interrupt */
-+	if (dma_stat & ATA_DMA_INTR)	/* Got an Interrupt */
- 		return WAIT_CMD;
- 
- 	return 0;	/* Status is unknown -- reset the bus */
-@@ -279,12 +274,11 @@ void ide_dma_start(ide_drive_t *drive)
- 	 */
- 	if (hwif->host_flags & IDE_HFLAG_MMIO) {
- 		dma_cmd = readb((void __iomem *)(hwif->dma_base + ATA_DMA_CMD));
--		/* start DMA */
--		writeb(dma_cmd | 1,
-+		writeb(dma_cmd | ATA_DMA_START,
- 		       (void __iomem *)(hwif->dma_base + ATA_DMA_CMD));
- 	} else {
- 		dma_cmd = inb(hwif->dma_base + ATA_DMA_CMD);
--		outb(dma_cmd | 1, hwif->dma_base + ATA_DMA_CMD);
-+		outb(dma_cmd | ATA_DMA_START, hwif->dma_base + ATA_DMA_CMD);
- 	}
- 
- 	wmb();
-@@ -296,19 +290,18 @@ int ide_dma_end(ide_drive_t *drive)
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	u8 mmio = (hwif->host_flags & IDE_HFLAG_MMIO) ? 1 : 0;
--	u8 dma_stat = 0, dma_cmd = 0;
-+	u8 dma_stat = 0, dma_cmd = 0, mask;
- 
- 	drive->waiting_for_dma = 0;
- 
-+	/* stop DMA */
- 	if (mmio) {
--		/* get DMA command mode */
- 		dma_cmd = readb((void __iomem *)(hwif->dma_base + ATA_DMA_CMD));
--		/* stop DMA */
--		writeb(dma_cmd & ~1,
-+		writeb(dma_cmd & ~ATA_DMA_START,
- 		       (void __iomem *)(hwif->dma_base + ATA_DMA_CMD));
- 	} else {
- 		dma_cmd = inb(hwif->dma_base + ATA_DMA_CMD);
--		outb(dma_cmd & ~1, hwif->dma_base + ATA_DMA_CMD);
-+		outb(dma_cmd & ~ATA_DMA_START, hwif->dma_base + ATA_DMA_CMD);
- 	}
- 
- 	/* get DMA status */
-@@ -316,16 +309,21 @@ int ide_dma_end(ide_drive_t *drive)
- 
- 	if (mmio)
- 		/* clear the INTR & ERROR bits */
--		writeb(dma_stat | 6,
-+		writeb(dma_stat | ATA_DMA_ERR | ATA_DMA_INTR,
- 		       (void __iomem *)(hwif->dma_base + ATA_DMA_STATUS));
- 	else
--		outb(dma_stat | 6, hwif->dma_base + ATA_DMA_STATUS);
-+		outb(dma_stat | ATA_DMA_ERR | ATA_DMA_INTR,
-+		     hwif->dma_base + ATA_DMA_STATUS);
- 
- 	/* purge DMA mappings */
- 	ide_destroy_dmatable(drive);
--	/* verify good DMA status */
- 	wmb();
--	return (dma_stat & 7) != 4 ? (0x10 | dma_stat) : 0;
+Index: b/drivers/ide/ide-legacy.c
+===================================================================
+--- /dev/null
++++ b/drivers/ide/ide-legacy.c
+@@ -0,0 +1,58 @@
++#include <linux/kernel.h>
++#include <linux/ide.h>
 +
-+	/* verify good DMA status */
-+	mask = ATA_DMA_ACTIVE | ATA_DMA_ERR | ATA_DMA_INTR;
-+	if ((dma_stat & mask) != ATA_DMA_INTR)
-+		return 0x10 | dma_stat;
-+	return 0;
++static void ide_legacy_init_one(hw_regs_t **hws, hw_regs_t *hw,
++				u8 port_no, const struct ide_port_info *d,
++				unsigned long config)
++{
++	unsigned long base, ctl;
++	int irq;
++
++	if (port_no == 0) {
++		base = 0x1f0;
++		ctl  = 0x3f6;
++		irq  = 14;
++	} else {
++		base = 0x170;
++		ctl  = 0x376;
++		irq  = 15;
++	}
++
++	if (!request_region(base, 8, d->name)) {
++		printk(KERN_ERR "%s: I/O resource 0x%lX-0x%lX not free.\n",
++				d->name, base, base + 7);
++		return;
++	}
++
++	if (!request_region(ctl, 1, d->name)) {
++		printk(KERN_ERR "%s: I/O resource 0x%lX not free.\n",
++				d->name, ctl);
++		release_region(base, 8);
++		return;
++	}
++
++	ide_std_init_ports(hw, base, ctl);
++	hw->irq = irq;
++	hw->chipset = d->chipset;
++	hw->config = config;
++
++	hws[port_no] = hw;
++}
++
++int ide_legacy_device_add(const struct ide_port_info *d, unsigned long config)
++{
++	hw_regs_t hw[2], *hws[] = { NULL, NULL, NULL, NULL };
++
++	memset(&hw, 0, sizeof(hw));
++
++	if ((d->host_flags & IDE_HFLAG_QD_2ND_PORT) == 0)
++		ide_legacy_init_one(hws, &hw[0], 0, d, config);
++	ide_legacy_init_one(hws, &hw[1], 1, d, config);
++
++	if (hws[0] == NULL && hws[1] == NULL &&
++	    (d->host_flags & IDE_HFLAG_SINGLE))
++		return -ENOENT;
++
++	return ide_host_add(d, hws, NULL);
++}
++EXPORT_SYMBOL_GPL(ide_legacy_device_add);
+Index: b/drivers/ide/ide-probe.c
+===================================================================
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1754,59 +1754,3 @@ void ide_port_scan(ide_hwif_t *hwif)
+ 	ide_proc_port_register_devices(hwif);
  }
- EXPORT_SYMBOL_GPL(ide_dma_end);
- 
-@@ -335,11 +333,7 @@ int ide_dma_test_irq(ide_drive_t *drive)
- 	ide_hwif_t *hwif = drive->hwif;
- 	u8 dma_stat = hwif->tp_ops->read_sff_dma_status(hwif);
- 
--	/* return 1 if INTR asserted */
--	if ((dma_stat & 4) == 4)
--		return 1;
+ EXPORT_SYMBOL_GPL(ide_port_scan);
 -
--	return 0;
-+	return (dma_stat & ATA_DMA_INTR) ? 1 : 0;
- }
- EXPORT_SYMBOL_GPL(ide_dma_test_irq);
- 
+-static void ide_legacy_init_one(hw_regs_t **hws, hw_regs_t *hw,
+-				u8 port_no, const struct ide_port_info *d,
+-				unsigned long config)
+-{
+-	unsigned long base, ctl;
+-	int irq;
+-
+-	if (port_no == 0) {
+-		base = 0x1f0;
+-		ctl  = 0x3f6;
+-		irq  = 14;
+-	} else {
+-		base = 0x170;
+-		ctl  = 0x376;
+-		irq  = 15;
+-	}
+-
+-	if (!request_region(base, 8, d->name)) {
+-		printk(KERN_ERR "%s: I/O resource 0x%lX-0x%lX not free.\n",
+-				d->name, base, base + 7);
+-		return;
+-	}
+-
+-	if (!request_region(ctl, 1, d->name)) {
+-		printk(KERN_ERR "%s: I/O resource 0x%lX not free.\n",
+-				d->name, ctl);
+-		release_region(base, 8);
+-		return;
+-	}
+-
+-	ide_std_init_ports(hw, base, ctl);
+-	hw->irq = irq;
+-	hw->chipset = d->chipset;
+-	hw->config = config;
+-
+-	hws[port_no] = hw;
+-}
+-
+-int ide_legacy_device_add(const struct ide_port_info *d, unsigned long config)
+-{
+-	hw_regs_t hw[2], *hws[] = { NULL, NULL, NULL, NULL };
+-
+-	memset(&hw, 0, sizeof(hw));
+-
+-	if ((d->host_flags & IDE_HFLAG_QD_2ND_PORT) == 0)
+-		ide_legacy_init_one(hws, &hw[0], 0, d, config);
+-	ide_legacy_init_one(hws, &hw[1], 1, d, config);
+-
+-	if (hws[0] == NULL && hws[1] == NULL &&
+-	    (d->host_flags & IDE_HFLAG_SINGLE))
+-		return -ENOENT;
+-
+-	return ide_host_add(d, hws, NULL);
+-}
+-EXPORT_SYMBOL_GPL(ide_legacy_device_add);
