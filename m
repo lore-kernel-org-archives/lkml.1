@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYKIQzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYKIQzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbYKIQzb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbYKIQzJ
+	id S1756057AbYKIQzt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:55:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYKIQzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:55:09 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:37619 "EHLO mgw2.diku.dk"
+	Sun, 9 Nov 2008 11:55:35 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:56827 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409AbYKIQzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:55:07 -0500
-Date: Sun, 9 Nov 2008 17:55:03 +0100 (CET)
+	id S1755950AbYKIQzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 11:55:33 -0500
+Date: Sun, 9 Nov 2008 17:55:27 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+To: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/8] drivers/media: use ARRAY_SIZE
-Message-ID: <Pine.LNX.4.64.0811091754410.32509@ask.diku.dk>
+Subject: [PATCH 4/8] drivers/message/fusion: use ARRAY_SIZE
+Message-ID: <Pine.LNX.4.64.0811091755050.32509@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -56,97 +56,54 @@ T[] E;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/common/tuners/mxl5005s.c        |    6 +++---
- drivers/media/video/gspca/gspca.c             |    2 +-
- drivers/media/video/gspca/mars.c              |    2 +-
- drivers/media/video/gspca/spca500.c           |    4 ++--
- drivers/media/video/saa7134/saa7134-tvaudio.c |    2 +-
- 5 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/message/fusion/mptbase.c    |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/media/common/tuners/mxl5005s.c b/drivers/media/common/tuners/mxl5005s.c
-index a887824..31522d2 100644
---- a/drivers/media/common/tuners/mxl5005s.c
-+++ b/drivers/media/common/tuners/mxl5005s.c
-@@ -3598,7 +3598,7 @@ static u16 MXL_GetInitRegister(struct dvb_frontend *fe, u8 *RegNum,
- 		76, 77, 91, 134, 135, 137, 147,
- 		156, 166, 167, 168, 25 };
- 
--	*count = sizeof(RegAddr) / sizeof(u8);
-+	*count = ARRAY_SIZE(RegAddr);
- 
- 	status += MXL_BlockInit(fe);
- 
-@@ -3630,7 +3630,7 @@ static u16 MXL_GetCHRegister(struct dvb_frontend *fe, u8 *RegNum, u8 *RegVal,
- 	*/
- #endif
- 
--	*count = sizeof(RegAddr) / sizeof(u8);
-+	*count = ARRAY_SIZE(RegAddr);
- 
- 	for (i = 0 ; i < *count; i++) {
- 		RegNum[i] = RegAddr[i];
-@@ -3648,7 +3648,7 @@ static u16 MXL_GetCHRegister_ZeroIF(struct dvb_frontend *fe, u8 *RegNum,
- 
- 	u8 RegAddr[] = {43, 136};
- 
--	*count = sizeof(RegAddr) / sizeof(u8);
-+	*count = ARRAY_SIZE(RegAddr);
- 
- 	for (i = 0; i < *count; i++) {
- 		RegNum[i] = RegAddr[i];
-diff --git a/drivers/media/video/gspca/gspca.c b/drivers/media/video/gspca/gspca.c
-index e48fbfc..e2bd10f 100644
---- a/drivers/media/video/gspca/gspca.c
-+++ b/drivers/media/video/gspca/gspca.c
-@@ -728,7 +728,7 @@ static int vidioc_enum_fmt_vid_cap(struct file *file, void  *priv,
- 			if (fmtdesc->index == index)
- 				break;		/* new format */
- 			index++;
--			if (index >= sizeof fmt_tb / sizeof fmt_tb[0])
-+			if (index >= ARRAY_SIZE(fmt_tb))
- 				return -EINVAL;
- 		}
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index d6a0074..7a313f3 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -4563,7 +4563,7 @@ WaitForDoorbellReply(MPT_ADAPTER *ioc, int howlong, int sleepFlag)
+ 			failcnt++;
+ 		hword = le16_to_cpu(CHIPREG_READ32(&ioc->chip->Doorbell) & 0x0000FFFF);
+ 		/* don't overflow our IOC hs_reply[] buffer! */
+-		if (u16cnt < sizeof(ioc->hs_reply) / sizeof(ioc->hs_reply[0]))
++		if (u16cnt < ARRAY_SIZE(ioc->hs_reply))
+ 			hs_reply[u16cnt] = hword;
+ 		CHIPREG_WRITE32(&ioc->chip->IntStatus, 0);
  	}
-diff --git a/drivers/media/video/gspca/mars.c b/drivers/media/video/gspca/mars.c
-index 277ca34..492cdd3 100644
---- a/drivers/media/video/gspca/mars.c
-+++ b/drivers/media/video/gspca/mars.c
-@@ -123,7 +123,7 @@ static int sd_config(struct gspca_dev *gspca_dev,
- 	cam = &gspca_dev->cam;
- 	cam->epaddr = 0x01;
- 	cam->cam_mode = vga_mode;
--	cam->nmodes = sizeof vga_mode / sizeof vga_mode[0];
-+	cam->nmodes = ARRAY_SIZE(vga_mode);
- 	sd->qindex = 1;			/* set the quantization table */
- 	return 0;
- }
-diff --git a/drivers/media/video/gspca/spca500.c b/drivers/media/video/gspca/spca500.c
-index bca106c..09ff697 100644
---- a/drivers/media/video/gspca/spca500.c
-+++ b/drivers/media/video/gspca/spca500.c
-@@ -633,10 +633,10 @@ static int sd_config(struct gspca_dev *gspca_dev,
- 	sd->subtype = id->driver_info;
- 	if (sd->subtype != LogitechClickSmart310) {
- 		cam->cam_mode = vga_mode;
--		cam->nmodes = sizeof vga_mode / sizeof vga_mode[0];
-+		cam->nmodes = ARRAY_SIZE(vga_mode);
- 	} else {
- 		cam->cam_mode = sif_mode;
--		cam->nmodes = sizeof sif_mode / sizeof sif_mode[0];
-+		cam->nmodes = ARRAY_SIZE(sif_mode);
- 	}
- 	sd->qindex = 5;
- 	sd->brightness = BRIGHTNESS_DEF;
-diff --git a/drivers/media/video/saa7134/saa7134-tvaudio.c b/drivers/media/video/saa7134/saa7134-tvaudio.c
-index c5d0b44..76b1640 100644
---- a/drivers/media/video/saa7134/saa7134-tvaudio.c
-+++ b/drivers/media/video/saa7134/saa7134-tvaudio.c
-@@ -159,7 +159,7 @@ static struct saa7134_tvaudio tvaudio[] = {
- 		.mode          = TVAUDIO_FM_MONO,
- 	}
- };
--#define TVAUDIO (sizeof(tvaudio)/sizeof(struct saa7134_tvaudio))
-+#define TVAUDIO ARRAY_SIZE(tvaudio)
+@@ -7176,7 +7176,7 @@ union loginfo_type {
  
- /* ------------------------------------------------------------------ */
+ 	sas_loginfo.loginfo = log_info;
+ 	if ((sas_loginfo.dw.bus_type != 3 /*SAS*/) &&
+-	    (sas_loginfo.dw.originator < sizeof(originator_str)/sizeof(char*)))
++	    (sas_loginfo.dw.originator < ARRAY_SIZE(originator_str)))
+ 		return;
  
+ 	originator_desc = originator_str[sas_loginfo.dw.originator];
+@@ -7185,21 +7185,21 @@ union loginfo_type {
+ 
+ 		case 0:  /* IOP */
+ 			if (sas_loginfo.dw.code <
+-			    sizeof(iop_code_str)/sizeof(char*))
++			    ARRAY_SIZE(iop_code_str))
+ 				code_desc = iop_code_str[sas_loginfo.dw.code];
+ 			break;
+ 		case 1:  /* PL */
+ 			if (sas_loginfo.dw.code <
+-			    sizeof(pl_code_str)/sizeof(char*))
++			    ARRAY_SIZE(pl_code_str))
+ 				code_desc = pl_code_str[sas_loginfo.dw.code];
+ 			break;
+ 		case 2:  /* IR */
+ 			if (sas_loginfo.dw.code >=
+-			    sizeof(ir_code_str)/sizeof(char*))
++			    ARRAY_SIZE(ir_code_str))
+ 				break;
+ 			code_desc = ir_code_str[sas_loginfo.dw.code];
+ 			if (sas_loginfo.dw.subcode >=
+-			    sizeof(raid_sub_code_str)/sizeof(char*))
++			    ARRAY_SIZE(raid_sub_code_str))
+ 			break;
+ 			if (sas_loginfo.dw.code == 0)
+ 				sub_code_desc =
