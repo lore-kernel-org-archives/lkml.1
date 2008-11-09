@@ -1,44 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYKINW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbYKIN3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755367AbYKINW6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 08:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYKINWt
+	id S1755279AbYKIN3m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 08:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbYKIN3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 08:22:49 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:46898 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750730AbYKINWs (ORCPT
+	Sun, 9 Nov 2008 08:29:34 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:29063 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbYKIN3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 08:22:48 -0500
-X-Sasl-enc: n4qHFPYI3QMTBOce5+fPmnKc8d8eKjBq6z8oAKFOk1vg 1226236966
-Date: Sun, 9 Nov 2008 11:22:44 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [ibm-acpi-devel] [GIT PATCH] thinkpad-acpi regression fix for
-	2.6.28-rc
-Message-ID: <20081109132244.GA12794@khazad-dum.debian.net>
-References: <20081109113011.GB8329@khazad-dum.debian.net> <1226235242-11130-1-git-send-email-hmh@hmh.eng.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226235242-11130-1-git-send-email-hmh@hmh.eng.br>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 9 Nov 2008 08:29:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=subject:to:cc:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding:from;
+        b=tdfHrJHuRzv2A5JxcbR+IABaZBpyJYQaGmqlMuQHpbUFheDRldq7/c5RD4SHN07sqW
+         Np7UTooPgsmMiw9Gzk4b4PiHkQ8kHR9nYKqu0l7iYeZxhRqAbF9UH7WxliSRNIM9cpMa
+         gGIftr9Cf+SkxzjUHa9Tag8FPRX2YVwCK1Gzw=
+Subject: [patch] x86, bts: DS and BTS initialization
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain
+Date: Sun, 09 Nov 2008 14:29:21 +0100
+Message-Id: <1226237361.6104.20.camel@raistlin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+From: Markus Metzger <markus.t.metzger@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 09 Nov 2008, Henrique de Moraes Holschuh wrote:
-> This patch should fix a reported regression on fan_resume (not
-> on bugzilla, report on the LKML and ibm-acpi-devel).
+Move BTS initialisation out of an #ifdef CONFIG_X86_64 guard.
 
-Spoke too soon.  Bugzilla #11982.  I've sent the patch there as well.
+Assume core2 BTS and DS layout for future models of family 6 processors.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
+
+Index: gits/arch/x86/kernel/ds.c
+===================================================================
+--- gits.orig/arch/x86/kernel/ds.c	2008-11-09 10:55:13.000000000 -0100
++++ gits/arch/x86/kernel/ds.c	2008-11-09 12:40:56.000000000 -0100
+@@ -821,17 +821,16 @@
+ 	switch (c->x86) {
+ 	case 0x6:
+ 		switch (c->x86_model) {
++		case 0 ... 0xC:
++			/* sorry, don't know about them */
++			break;
+ 		case 0xD:
+ 		case 0xE: /* Pentium M */
+ 			ds_configure(&ds_cfg_var);
+ 			break;
+-		case 0xF: /* Core2 */
+-		case 0x1C: /* Atom */
++		default: /* Core2, Atom, ... */
+ 			ds_configure(&ds_cfg_64);
+ 			break;
+-		default:
+-			/* sorry, don't know about them */
+-			break;
+ 		}
+ 		break;
+ 	case 0xF:
+Index: gits/arch/x86/kernel/ptrace.c
+===================================================================
+--- gits.orig/arch/x86/kernel/ptrace.c	2008-11-09 10:55:15.000000000
+-0100
++++ gits/arch/x86/kernel/ptrace.c	2008-11-09 12:40:57.000000000 -0100
+@@ -929,17 +929,16 @@
+ 	switch (c->x86) {
+ 	case 0x6:
+ 		switch (c->x86_model) {
++		case 0 ... 0xC:
++			/* sorry, don't know about them */
++			break;
+ 		case 0xD:
+ 		case 0xE: /* Pentium M */
+ 			bts_configure(&bts_cfg_pentium_m);
+ 			break;
+-		case 0xF: /* Core2 */
+-        case 0x1C: /* Atom */
++		default: /* Core2, Atom, ... */
+ 			bts_configure(&bts_cfg_core2);
+ 			break;
+-		default:
+-			/* sorry, don't know about them */
+-			break;
+ 		}
+ 		break;
+ 	case 0xF:
+Index: gits/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- gits.orig/arch/x86/kernel/cpu/intel.c	2008-11-09 10:54:04.000000000
+-0100
++++ gits/arch/x86/kernel/cpu/intel.c	2008-11-09 12:41:59.000000000 -0100
+@@ -307,12 +307,11 @@
+ 		set_cpu_cap(c, X86_FEATURE_P4);
+ 	if (c->x86 == 6)
+ 		set_cpu_cap(c, X86_FEATURE_P3);
++#endif
+ 
+ 	if (cpu_has_bts)
+ 		ptrace_bts_init_intel(c);
+ 
+-#endif
+-
+ 	detect_extended_topology(c);
+ 	if (!cpu_has(c, X86_FEATURE_XTOPOLOGY)) {
+ 		/*
+
+
