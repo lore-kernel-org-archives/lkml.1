@@ -1,95 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbYKIO7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbYKIPKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbYKIO7I (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 09:59:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYKIO6w
+	id S1755468AbYKIPKq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 10:10:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbYKIPKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 09:58:52 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:31644 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754765AbYKIO6v (ORCPT
+	Sun, 9 Nov 2008 10:10:36 -0500
+Received: from el-out-1112.google.com ([209.85.162.180]:57370 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755071AbYKIPKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 09:58:51 -0500
-Message-ID: <4916FAB3.4010409@panasas.com>
-Date: Sun, 09 Nov 2008 16:58:59 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Sun, 9 Nov 2008 10:10:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=j8bwg4xJqT+suSttFqQqFvhXxVMdTac6M27lFDTy8Ci44e3fDt0+llNvHwlpFVDyQ4
+         Un7V7cjFKBY/n+wysWuSVVRhCk9l9ozW6leLio8vuyxLiAjEyBKOBjElba5qRTwCIyA1
+         6c5GwyGC+aZfaif4geR8YL16ABTdja1EjaYJo=
+Message-ID: <a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
+Date: Mon, 10 Nov 2008 00:10:34 +0900
+From: "Hitoshi Mitake" <h.mitake@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Cc: "Hitoshi Mitake" <mitake@clustcom.com>, "Doug Thompson" <norsk5@yahoo.com>,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
+       ktaka@clustcom.com
+In-Reply-To: <20081106231102.aab83cd4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, linux-next@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sam Ravnborg <sam@ravnborg.org>
-CC: michaelc@cs.wisc.edu, fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org,
-       osd-dev@open-osd.org, linux-scsi@vger.kernel.org, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
-References: <48876009.8010701@panasas.com>	<491073BB.4000900@panasas.com> <20081104111923.bb19c238.akpm@linux-foundation.org>
-In-Reply-To: <20081104111923.bb19c238.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Nov 2008 14:57:30.0075 (UTC) FILETIME=[7CE7DAB0:01C9427B]
+Content-Disposition: inline
+References: <20081105222911.d76e7e1c.mitake@clustcom.com>
+	 <413709.12821.qm@web50106.mail.re2.yahoo.com>
+	 <20081106164641.ed369060.akpm@linux-foundation.org>
+	 <20081107152830.a42766f3.mitake@clustcom.com>
+	 <20081106223122.8a255211.akpm@linux-foundation.org>
+	 <20081107153824.0ec934e6.mitake@clustcom.com>
+	 <20081106231102.aab83cd4.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 04 Nov 2008 18:09:31 +0200
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->> Please consider for inclusion, an in-kernel OSD initiator
->> library. Its main users are planned to be various OSD based file
->> systems and the pNFS-Objects Layout Driver. (To be submitted soon)
->>  
->> To try out and run the library please visit
->> http://open-osd.org and follow the instructions there.
+I'm a same person as mitake@clustcom.com. h.mitake@gmail.com is my
+private mail address.
+
+On Fri, Nov 7, 2008 at 4:11 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 7 Nov 2008 15:38:24 +0000 Hitoshi Mitake <mitake@clustcom.com> wrote:
+>
 >>
->> The submitted patchset is also available via git at:
->>    git://git.open-osd.org/linux-open-osd.git osd
->>    http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=osd
+>> This patch makes x38_edac.c to use kernel's
+>> readq() function when it is compiled for x86_64.
 >>
->> Or a compact out-of-tree repository that includes sources 
->> and some extras:
->>    git://git.open-osd.org/open-osd.git master
->>    http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary
+>> Signed-off-by: Hitoshi Mitake <mitake@clustcom.com>
+>> Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+>> ---
 >>
->> ...
+>> Index: linux-2.6.28-rc3-git2/drivers/edac/Kconfig
+>> ===================================================================
+>> --- linux-2.6.28-rc3-git2.orig/drivers/edac/Kconfig   2008-11-07 11:27:05.000000000 +0000
+>> +++ linux-2.6.28-rc3-git2/drivers/edac/Kconfig        2008-11-07 11:27:14.000000000 +0000
+>> @@ -104,7 +104,7 @@
 >>
->> We would like this to sit in -mm tree for a while to make sure it is compilable
->> on all platform.
-> 
-> The best way to do that is to include your git tree in linux-next.  If
-> this code has a probably-will-be-merged-in-2.6.29 status then please
-> prepare a branch for Stephen to include in the linux-next lineup.
-> 
+>>  config EDAC_X38
+>>       tristate "Intel X38"
+>> -     depends on EDAC_MM_EDAC && PCI && X86
+>> +     depends on EDAC_MM_EDAC && PCI && (X86 || X86_64)
+>
+> CONFIG_X86 is true for both CONFIG_X86_32=y amek CONFIG_X86_64=y, so
+> this change isn't needed.  I'll fix that up.
 
-Hi Stephen and James
+Thanks for your fix up. This was redundancy, I should not change that point...
 
-I have prepared a branch for linux-next based on today's Linus tree
-It is here:
-    git://git.open-osd.org/linux-open-osd.git linux-next
-This is if it's OK with James, as these bits are his responsibility.
-They need only sit in linux-next for a couple of weeks to get some wider
-compilation exposure. Other then that they are totally new code and
-are safe. Eventually they should be included into Linux-next through
-scsi-misc-2.6.
+>
+>> --- linux-2.6.28-rc3-git2.orig/drivers/edac/x38_edac.c        2008-11-07 11:27:06.000000000 +0000
+>> +++ linux-2.6.28-rc3-git2/drivers/edac/x38_edac.c     2008-11-07 11:27:29.000000000 +0000
+>> @@ -162,10 +162,12 @@
+>>                        X38_ERRSTS_BITS);
+>>  }
+>>
+>> -static u64 x38_readq(const void __iomem *addr)
+>> +#ifndef CONFIG_X86_64
+>> +static u64 readq(const void __iomem *addr)
+>
+> hm, it'd be nice if there was some more general way of determining
+> whether the architecture provides readq/writeq.
+>
 
-I have only posted "ver 2" updates to a couple of patches that had
-comments by people but more patches changed. Mainly:
-- rename of scsi_dev => scsi_device
-- missing static keyword
-- Kbuild fixes and comments by Sam Ravnborg
-- small typos found on the way
 
-The new patchset can be reviewed at:
-    git://git.open-osd.org/linux-open-osd.git linux-next
-    http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=linux-next
+I found this code in include/asm-x86/io.h
 
-or Based on current scsi-misc-2.6:
-    git://git.open-osd.org/linux-open-osd.git osd
-    http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=osd
+#ifdef CONFIG_X86_64
 
-I did not want to spam the mailing-list with somewhat same patches.
-I will post them, if any one needs me to.
+...
 
-Thanks everyone for your help
-Boaz
+/* Let people know we have them */
+#define readq readq
+#define writeq writeq
+#endif
+
+x86 programmers are able to know existence of readq/writeq by using
+this definition.
+
+And I grepped,
+
+% grep readq `find include/asm-* -name "*.h"`
+include/asm-mips/io.h:			".set	mips3"		"\t\t# __readq"	"\n\t"	\
+include/asm-mips/io.h:#define readq_relaxed			readq
+include/asm-mips/io.h:#define readq				readq
+include/asm-mips/txx9/tx4927.h:	((__u32)__raw_readq(&tx4927_ccfgptr->crir)
+>> 16)
+include/asm-mips/txx9/tx4927.h:#define
+TX4927_SDRAMC_CR(ch)	__raw_readq(&tx4927_sdramcptr->cr[(ch)])
+include/asm-mips/txx9/tx4927.h:#define
+TX4927_EBUSC_CR(ch)	__raw_readq(&tx4927_ebuscptr->cr[(ch)])
+include/asm-mips/txx9/tx4927.h:	____raw_writeq(____raw_readq(adr) & ~bits, adr);
+include/asm-mips/txx9/tx4927.h:	____raw_writeq(____raw_readq(adr) | bits, adr);
+include/asm-mips/txx9/tx4927.h:	____raw_writeq(____raw_readq(&tx4927_ccfgptr->ccfg)
+include/asm-mips/txx9/tx4927.h:	____raw_writeq((____raw_readq(&tx4927_ccfgptr->ccfg)
+include/asm-mips/txx9/tx4927.h:	____raw_writeq((____raw_readq(&tx4927_ccfgptr->ccfg)
+include/asm-mips/txx9/tx4938.h:	((__u32)__raw_readq(&tx4938_ccfgptr->crir)
+>> 16)
+include/asm-parisc/io.h:static inline unsigned long long
+gsc_readq(unsigned long addr)
+include/asm-parisc/io.h:static inline unsigned long long
+__raw_readq(const volatile void __iomem *addr)
+include/asm-parisc/io.h:#define readq(addr) __fswab64(__raw_readq(addr))
+include/asm-parisc/io.h:#define readq_relaxed(addr) readq(addr)
+include/asm-x86/io.h:build_mmio_read(readq, "q", unsigned long, "=r", :"memory")
+include/asm-x86/io.h:build_mmio_read(__readq, "q", unsigned long, "=r", )
+include/asm-x86/io.h:#define readq_relaxed(a) __readq(a)
+include/asm-x86/io.h:#define __raw_readq __readq
+include/asm-x86/io.h:#define readq readq
+
+It seems that architectures that provide readq/writeq are
+mips, parisc and x86 (and x86_64).
+
+mips and x86 provides this line
+#define readq readq
+to let user know existence of readq (and writeq),
+and parisc doesn't provide.
+But there is,
+#define readq(addr) __fswab64(__raw_readq(addr))
+in parisc.
+
+There is a difference between mips and x86's readq/writeq and
+parisc's readq/writeq. mips and x86's definition is only token,
+but parisc's definition is macro function.
+
+But these defines can be used to determine existence of readq/writeq
+by common preprocessor like this,
+#ifndef readq
+/* programmer can define private version of readq (or writeq) */
+#endif
+
+Is this way enough general for our requirement?
+(If we use this as general way to determine existence of readq/writeq,
+I want other architecture's developer (whose architecture provides
+readq/writeq in the future)
+to support same way.)
