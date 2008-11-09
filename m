@@ -1,127 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbYKHXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754014AbYKIABU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbYKHXiS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 18:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYKHXiB
+	id S1754014AbYKIABU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 19:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYKIABJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 18:38:01 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41672 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751639AbYKHXiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 18:38:01 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Smolik <marvin@mydatex.cz>
-Subject: Re: [Bugme-new] [Bug 11886] New: without serial console system doesn't poweroff
-Date: Sun, 9 Nov 2008 00:42:32 +0100
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-References: <bug-11886-10286@http.bugzilla.kernel.org/> <200811040148.34707.rjw@sisk.pl> <490FEC1B.5070105@mydatex.cz>
-In-Reply-To: <490FEC1B.5070105@mydatex.cz>
+	Sat, 8 Nov 2008 19:01:09 -0500
+Received: from rv-out-0506.google.com ([209.85.198.230]:46347 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753112AbYKIABG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 19:01:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=Khb2+boFRU3z8RglQ1zn9W7GpESgVehc7+GOPOPd8ruqsuwhGHGJ5BkT9Hfx4rwl/q
+         GmMBMxSeReyiV44wmULPrPdFDMOWr3dqBkVc+JZX7YU1pmZ+1FZSoREMfXNHb0+450gD
+         DHtUXD7dgcZBrvgg2LEf5oSq/Jtj5WrEge+co=
+Message-ID: <86802c440811081601w2be45e55hc400095137831b85@mail.gmail.com>
+Date: Sat, 8 Nov 2008 16:01:05 -0800
+From: "Yinghai Lu" <yinghai@kernel.org>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 1/1] irq: Maintain user set affinity
+Cc: "Kumar Gala" <galak@kernel.crashing.org>,
+       "Linus Torvalds" <torvalds@osdl.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, "Andrew Morton" <akpm@osdl.org>,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <1226182645.13603.90.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811090042.33219.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0811041030520.25054@blarg.am.freescale.net>
+	 <86802c440811081412u6d54beaam143801ce83225f40@mail.gmail.com>
+	 <1226182645.13603.90.camel@pasglop>
+X-Google-Sender-Auth: 0f013a385fefa069
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 4 of November 2008, Daniel Smolik wrote:
-> Rafael J. Wysocki napsal(a):
-> > On Monday, 3 of November 2008, Daniel Smolik wrote:
-> >> Andrew Morton napsal(a):
-> >>> (switched to email.  Please respond via emailed reply-to-all, not via the
-> >>> bugzilla web interface).
-> >>>
-> >>> On Wed, 29 Oct 2008 04:06:11 -0700 (PDT)
-> >>> bugme-daemon@bugzilla.kernel.org wrote:
-> >>>
-> >>>> http://bugzilla.kernel.org/show_bug.cgi?id=11886
-> >>>>
-> >>>>            Summary: without serial console system doesn't  poweroff
-> >>>>            Product: Power Management
-> >>>>            Version: 2.5
-> >>>>      KernelVersion: 2.6.27.4
-> >>>>           Platform: All
-> >>>>         OS/Version: Linux
-> >>>>               Tree: Mainline
-> >>>>             Status: NEW
-> >>>>           Severity: normal
-> >>>>           Priority: P1
-> >>>>          Component: Other
-> >>>>         AssignedTo: power-management_other@kernel-bugs.osdl.org
-> >>>>         ReportedBy: marvin@mydatex.cz
-> >>>>
-> >>>>
-> >>>> Latest working kernel version:
-> >>>> Earliest failing kernel version:2.6.27.2
-> >>>> Distribution: Debian Etch
-> >>>> Hardware Environment: Supermiro C2SBC-Q  Dual Core Intel Cpu 1G RAM
-> >>>> Software Environment: Debian Etch
-> >>>> Problem Description: If I does't add serial console to kernel command line
-> >>>> system doesn't poweroff. Linux hangs there:
-> >>>>
-> >>>> e1000e 0000:0d:00.0: PCI INT A disabled
-> >>>> e1000e 0000:00:19.0: PCI INT A disabled
-> >>>> ACPI: Preparing to enter system sleep state S5
-> >>>> Disabling non-boot CPUs ...
-> >>>>
-> >>>> If I disable in kernel config Suspend to Ram and Hibernate all works without
-> >>>> console. But with Suspend and hibernate enabled and serial console  added to
-> >>>> kernel cmd line all works too:
-> >>>>
-> >>>> e1000e 0000:0d:00.0: PCI INT A disabled
-> >>>> e1000e 0000:00:19.0: PCI INT A disabled
-> >>>> ACPI: Preparing to enter system sleep state S5
-> >>>> Disabling non-boot CPUs ...
-> >>>> CPU 1 is now offline
-> >>>> SMP alternatives: switching to UP code
-> >>>> CPU1 is down
-> >>>> Power down.
-> >>>> acpi_power_off called
-> >>>>
-> >>>> Steps to reproduce:
-> >>>> Compile kernel with attached config and try poweroff without serial console.
-> >>>>
-> >>> OK, this is weird.
-> >>>
-> >>> But the good news is that there is a very small number of commits
-> >>> between 2.6.27.2 and 2.6.27.4.
-> >>>
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.3
-> >>> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.4
-> >>>
-> >>> I'd be looking at these:
-> >>>
-> >>> commit 3b987ac961486373f91191b14291b331fa546072
-> >>> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> >>> Date:   Sat Sep 6 13:13:01 2008 +0200
-> >>>
-> >>>     ACPI suspend: Always use the 32-bit waking vector
-> >>>     
-> >>>     commit a6629105dd03d370fcb31e97bddf223fa4bb651e upstream.
-> >>>
-> >>>
-> >>> commit 66036f5862883fcc9f7ff8550685a5a3de1a57e4
-> >>> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> >>> Date:   Sat Oct 4 00:05:05 2008 +0200
-> >>>
-> >>>     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
-> >>>     
-> >>>     commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 upstream.
-> >>>
-> >>>
-> >>>
-> >>> presumably 2.6.28-rc3 is also broken?
-> >> I don't know I can test it on Thu. But may be may fault or misunderstanding fist kernel which I test is 2.27.2. I don't 
-> >> test any kernel before. I don't know if 2.6.26 works.
-> > 
-> > Can you try 2.6.26, please?
-> Yes, no problem.
+On Sat, Nov 8, 2008 at 2:17 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Sat, 2008-11-08 at 14:12 -0800, Yinghai Lu wrote:
+>> On Tue, Nov 4, 2008 at 8:31 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>> > From 819ad3ed4660f4238e053728a8b5aa93d22b13d7 Mon Sep 17 00:00:00 2001
+>> > From: Kumar Gala <galak@kernel.crashing.org>
+>> > Date: Tue, 4 Nov 2008 10:13:53 -0600
+>> > Subject: [PATCH 1/1] irq: Maintain user set affinity
+>> >
+>> > This addresses a regression in that if a user specified an affinity
+>> > for an interrupt that affinity information would get reset between
+>> > a request_irq(), free_irq() and request_irq() for the same irq.
+>> >
+>> > On example of this is bringing up an ethernet interface, taking
+>> > it down and bringing it back up again.
+>> >
+>> > Instead of always using the irq_default_affinity we use the
+>> > previous setting of the IRQs affinity with the assumption that
+>> > at boot the IRQs affinity will be set to irq_default_affinity.
+>>
+>> why ?, the default_affinity is expected behavior...
+>>
+>> for example: when MSI is used, second driver could get same irq if
+>> first driver is unloaded.
+>
+> The default affinity should be set when the irq is allocated / assigned
+> to a device, not when it's requested.
 
-And did it work?
+ok, you are right.
 
-Rafael
+for MSI, affinity is set two times.
+
+also in dynamic_irq_init is setting with
+#ifdef CONFIG_SMP
+        cpus_setall(desc->affinity);
+#endif
+
+it seems should use irq_default_affinity instead of CPU_MASK_ALL directly there.
+
+YH
