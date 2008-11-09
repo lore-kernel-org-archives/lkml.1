@@ -1,76 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbYKIWCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756732AbYKIWLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbYKIWCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 17:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbYKIWCO
+	id S1756732AbYKIWLk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 17:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbYKIWLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 17:02:14 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:56629 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754243AbYKIWCN (ORCPT
+	Sun, 9 Nov 2008 17:11:31 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:37424 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755932AbYKIWLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 17:02:13 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: akpm@linux-foundation.org
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>, David Airlie <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/1 v2] DRM: fix radeon suspend/resume oops
-Date: Sun,  9 Nov 2008 23:01:27 +0100
-Message-Id: <1226268087-606-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.0.3
-In-Reply-To: <1226267726-32714-1-git-send-email-jirislaby@gmail.com>
-References: <1226267726-32714-1-git-send-email-jirislaby@gmail.com>
+	Sun, 9 Nov 2008 17:11:30 -0500
+Date: Sun, 9 Nov 2008 23:08:54 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jonathan McDowell <noodles@earth.li>, Frans Pop <elendil@planet.nl>
+Subject: [GIT] one kbuild fix
+Message-ID: <20081109220854.GA23710@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-me wrote:
-> As the accesses to the mmio member are not protected by anything, they
-> seem to be racy with the open/clsoe anyways, setting this down there
-> too.
+Hi Linus.
 
-On the second though it should be protected. Updated patch below...
+Please pull following fix the debian packager to properly support firmware
 
-+ added Rafael to cc list
+	Sam
 
---
+Pull from:
 
-When the driver is bound to a device and nobody opens the device node,
-it will oops on suspend and resume, since it's not mapped and
-dev_priv->mmio is NULL.
+   git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git master
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/gpu/drm/radeon/radeon_drv.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+Jonathan McDowell (1):
+      kbuild: Fixup deb-pkg target to generate separate firmware deb
 
-diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
-index 71af746..7672310 100644
---- a/drivers/gpu/drm/radeon/radeon_drv.c
-+++ b/drivers/gpu/drm/radeon/radeon_drv.c
-@@ -56,6 +56,9 @@ static int radeon_suspend(struct drm_device *dev, pm_message_t state)
- {
- 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ scripts/package/builddeb |   24 ++++++++++++++++++++++--
+ 1 files changed, 22 insertions(+), 2 deletions(-)
+
+
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index ba6bf5d..1264b8e 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -15,15 +15,18 @@ set -e
+ version=$KERNELRELEASE
+ revision=`cat .version`
+ tmpdir="$objtree/debian/tmp"
++fwdir="$objtree/debian/fwtmp"
+ packagename=linux-$version
++fwpackagename=linux-firmware-image
  
-+	if (!dev_priv->mmio)
-+		return 0;
-+
- 	/* Disable *all* interrupts */
- 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
- 		RADEON_WRITE(R500_DxMODE_INT_MASK, 0);
-@@ -67,6 +70,9 @@ static int radeon_resume(struct drm_device *dev)
- {
- 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ if [ "$ARCH" == "um" ] ; then
+ 	packagename=user-mode-linux-$version
+ fi
  
-+	if (!dev_priv->mmio)
-+		return 0;
+ # Setup the directory structure
+-rm -rf "$tmpdir"
++rm -rf "$tmpdir" "$fwdir"
+ mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
++mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
+ if [ "$ARCH" == "um" ] ; then
+ 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
+ fi
+@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
+ 
+ Package: $packagename
+ Provides: kernel-image-$version, linux-image-$version
++Suggests: $fwpackagename
+ Architecture: any
+ Description: Linux kernel, version $version
+  This package contains the Linux kernel, modules and corresponding other
+@@ -118,8 +122,24 @@ fi
+ chown -R root:root "$tmpdir"
+ chmod -R go-w "$tmpdir"
+ 
++# Do we have firmware? Move it out of the way and build it into a package.
++if [ -e "$tmpdir/lib/firmware" ]; then
++	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
 +
- 	/* Restore interrupt registers */
- 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
- 		RADEON_WRITE(R500_DxMODE_INT_MASK, dev_priv->r500_disp_irq_reg);
--- 
-1.6.0.3
-
++	cat <<EOF >> debian/control
++
++Package: $fwpackagename
++Architecture: all
++Description: Linux kernel firmware, version $version
++ This package contains firmware from the Linux kernel, version $version
++EOF
++
++	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
++	dpkg --build "$fwdir" ..
++fi
++
+ # Perform the final magic
+-dpkg-gencontrol -isp
++dpkg-gencontrol -isp -p$packagename
+ dpkg --build "$tmpdir" ..
+ 
+ exit 0
