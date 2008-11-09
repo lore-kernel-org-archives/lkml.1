@@ -1,67 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbYKIUQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbYKIUXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757210AbYKIUQr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 15:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbYKIUQe
+	id S1756365AbYKIUXY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 15:23:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747AbYKIUXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 15:16:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:57322 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756625AbYKIUQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 15:16:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=xcyUhWEUMMjQ2Bvnv41NSRDYa5zoHfPKVR/Nu2GqUTG+reFeujJf69jQAHBc0yb81D
-         ozXO3oF0rVLx/6sgIMX7XRvyLdMLs+h8u4HaT3y0MeIvycdEylkBKR+G/BbtjtYJzDFG
-         cHX6X583sDdSqqRx30c9c0SwM1N12IGQ2T5vM=
-Date: Sun, 9 Nov 2008 23:19:55 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu
-Subject: [PATCH] proc: remove useless WARN_ONs
-Message-ID: <20081109201955.GA28502@x200.localdomain>
+	Sun, 9 Nov 2008 15:23:14 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:49248 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752470AbYKIUXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 15:23:13 -0500
+Date: Sun, 9 Nov 2008 15:23:11 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, Doug Nazar <nazard@dragoninc.ca>
+Subject: nfsd change for 2.6.28
+Message-ID: <20081109202311.GC27376@fieldses.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added to proc.git]
+One more readdir fix suitable for 2.6.28 is available from the
+for-2.6.28 branch at:
 
-commit 9f5560c4df483908659fca33e7fa768832f933b2
-Author: Alexey Dobriyan <adobriyan@gmail.com>
-Date:   Sun Nov 9 23:12:18 2008 +0300
+  git://linux-nfs.org/~bfields/linux.git for-2.6.28
 
-    proc: remove useless WARN_ONs
+--b.
+
+Doug Nazar (1):
+      Fix nfsd truncation of readdir results
+
+ fs/nfsd/vfs.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
+
+commit b726e923ea4d216027e466aa602d914e4b4a63af
+Author: Doug Nazar <nazard@dragoninc.ca>
+Date:   Wed Nov 5 06:16:28 2008 -0500
+
+    Fix nfsd truncation of readdir results
     
-    NULL "struct inode *" means VFS passed NULL inode to ->open.
+    Commit 8d7c4203 "nfsd: fix failure to set eof in readdir in some
+    situations" introduced a bug: on a directory in an exported ext3
+    filesystem with dir_index unset, a READDIR will only return about 250
+    entries, even if the directory was larger.
     
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+    Bisected it back to this commit; reverting it fixes the problem.
+    
+    It turns out that in this case ext3 reads a block at a time, then
+    returns from readdir, which means we can end up with buf.full==0 but
+    with more entries in the directory still to be read.  Before 8d7c4203
+    (but after c002a6c797 "Optimise NFS readdir hack slightly"), this would
+    cause us to return the READDIR result immediately, but with the eof bit
+    unset.  That could cause a performance regression (because the client
+    would need more roundtrips to the server to read the whole directory),
+    but no loss in correctness, since the cleared eof bit caused the client
+    to send another readdir.  After 8d7c4203, the setting of the eof bit
+    made this a correctness problem.
+    
+    So, move nfserr_eof into the loop and remove the buf.full check so that
+    we loop until buf.used==0.  The following seems to do the right thing
+    and reduces the network traffic since we don't return a READDIR result
+    until the buffer is full.
+    
+    Tested on an empty directory & large directory; eof is properly sent and
+    there are no more short buffers.
+    
+    Signed-off-by: Doug Nazar <nazard@dragoninc.ca>
+    Cc: David Woodhouse <David.Woodhouse@intel.com>
+    Cc: Al Viro <viro@zeniv.linux.org.uk>
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 486cf3f..4a1c578 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1186,8 +1186,6 @@ static int sched_show(struct seq_file *m, void *v)
- 	struct inode *inode = m->private;
- 	struct task_struct *p;
+diff --git a/fs/nfsd/vfs.c b/fs/nfsd/vfs.c
+index 848a03e..4433c8f 100644
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1875,11 +1875,11 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 		return -ENOMEM;
  
--	WARN_ON(!inode);
--
- 	p = get_proc_task(inode);
- 	if (!p)
- 		return -ESRCH;
-@@ -1205,8 +1203,6 @@ sched_write(struct file *file, const char __user *buf,
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	struct task_struct *p;
+ 	offset = *offsetp;
+-	cdp->err = nfserr_eof; /* will be cleared on successful read */
  
--	WARN_ON(!inode);
--
- 	p = get_proc_task(inode);
- 	if (!p)
- 		return -ESRCH;
+ 	while (1) {
+ 		unsigned int reclen;
+ 
++		cdp->err = nfserr_eof; /* will be cleared on successful read */
+ 		buf.used = 0;
+ 		buf.full = 0;
+ 
+@@ -1912,9 +1912,6 @@ static int nfsd_buffered_readdir(struct file *file, filldir_t func,
+ 			de = (struct buffered_dirent *)((char *)de + reclen);
+ 		}
+ 		offset = vfs_llseek(file, 0, SEEK_CUR);
+-		cdp->err = nfserr_eof;
+-		if (!buf.full)
+-			break;
+ 	}
+ 
+  done:
