@@ -1,410 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbYKIAwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbYKIAwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754150AbYKIAwN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 8 Nov 2008 19:52:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbYKIAv6
+	id S1753527AbYKIAwb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 8 Nov 2008 19:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbYKIAwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 8 Nov 2008 19:51:58 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:47295 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753527AbYKIAv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 8 Nov 2008 19:51:56 -0500
-Date: Sat, 8 Nov 2008 16:51:59 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
-	V2
-Message-ID: <20081109005159.GM6917@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49129310.5000903@cn.fujitsu.com>
+	Sat, 8 Nov 2008 19:52:19 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:54843 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754095AbYKIAwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 8 Nov 2008 19:52:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=aUa55N+f9ln3EIbon4wvcj+FcWEwUyaaLdcwZO64MjzoEnJ1Iky9A0VDrMAxB/9HFa
+         wlk4EbuzhI1l04HKELj5zzCAHXpRlKfLLs2QUHFeZzBg2aG/MeEaIn755b/W3xUgssxk
+         Ms4pd6pWMu8zLrK0ubbwd7OY3W7/QomTbgppk=
+Message-ID: <49163435.20301@gmail.com>
+Date: Sun, 09 Nov 2008 02:52:05 +0200
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49129310.5000903@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       ath5k-devel@venema.h4ckr.net, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: Bugs on aspire one A150
+References: <491506DB.1070000@gmail.com> <49157E97.60503@tuffmail.co.uk>
+In-Reply-To: <49157E97.60503@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 06, 2008 at 02:47:44PM +0800, Lai Jiangshan wrote:
+Alan Jenkins wrote:
+> Maxim Levitsky wrote:
+>> I have just bought an Aspire one A150, XP version,
+>> as it was the only available here, and installed ubuntu on it.
+>>
+>> Bugs I discovered so far:
+>>
+>>
+>> ** 1 - embedded controler works in polling mode, due to this:
+>>
+>> [    0.708571] ACPI: EC: non-query interrupt received, switching to interrupt mode
+>> [    1.224043] ACPI: EC: missing confirmations, switch off interrupt mode.
+>>
+>>
+>> Maybe this is the reason for the fact that gnome power manager freezes when I unplug
+>> the AC, and freezes often when I try to see battery status.
+>>
+>>
+>> (Note: same is seen on my acer aspire 5720)
 > 
-> this fix remove ugly macro, and increase readability for rcupdate codes
+> That sounds like a known issue.  It has been resolved by "ACPI: EC: revert msleep patch".  Happily Len submitted it for mainline this week.  You will also find it if you try the acpi-test git tree.  We're all hoping 2.6.28 will be much improved in terms of reliable operation of different ECs :).
 > 
-> changed from v1:
-> use HAVE_SPECIAL_RCU_BH/SCHED instead of define duplicate version of
-> synchronize_sched().
+Yes, this almost fixes all issues with that.
+Almost because, it looks like the EC changes screen brightness on his own when battery is plugged/unplugged,
+but so does the gnome-power-manager, and thus it still hangs as before on battery removal (but doesn't hang otherwise)
+I disabled that behaver in gnome-power-manager and now no more hangs.
 
-Hello, Jiangshan!
+I see that this fix fixes the polled mode. Any chance to make irq mode work?
 
-I very much like getting rid of the ugly macro.  I of course like the
-kernel-doc fixes.  ;-)
 
-I am not yet convinced of the HAVE_SPECIAL_RCU_BH and
-HAVE_SPECIAL_RCU_SCHED pieces.  It is not clear to me that this approach
-is simpler than the current approach of simply providing the appropriate
-definitions for the symbols in the implementation-specific rcuxxx.h
-file.
 
-Am I missing something?
+>> ** 2 - wireless: not to mention the fact that ath5k wasn't installed by default in ubuntu...
+>> wireless more or less works, but kernel log is full of backtraces.
+> 
+> Well, that doesn't tell us much.  Did they still happen after upgrading to 2.6.28-rc3?  Can we see them?
+Fixed completely, looking through the git log I have seen a commit that fixes exactly same backtrace I had.
+No more errors in kernel log.
 
-							Thanx, Paul
 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
-> index 5f89b62..68e84ff 100644
-> --- a/include/linux/rcuclassic.h
-> +++ b/include/linux/rcuclassic.h
-> @@ -32,6 +32,7 @@
 > 
->  #ifndef __LINUX_RCUCLASSIC_H
->  #define __LINUX_RCUCLASSIC_H
-> +#define HAVE_SPECIAL_RCU_BH
+>> Was able to connect to my WPA2 access point.
+>> Sometimes wireless fails completely, especially after suspend to ram.
+>> Advanced features like monitor/injection work, but when I changed the card's
+>> mac address it stopped working.
+>> I also noticed that if I then start airodump, then wireless works with new mac.
+This still not fixed, I ask about this again in separate mail.
+>>
+>>
+>>
+>> ** 3 - internal mic doesn't work.
+>> tried model=acer, model=auto.
+>> Overall it seems that alsa misprograms O/B realteck
+>> codec.
+>> I talk about this later.
+Surprisingly, this is almost fixed.
+I can record from both internal mic and external mic
+(Quality is not so good, but is the same as in windows)
+
+Almost, is that to increase capture level, I have to set "one" channel of it.
+Eg: if I set 100% left and 100% right then capture level is very low.
+But when I set 100% left and 0% right or vice versa it works fine.
+
+Also the "mic boost" doesn't change capture volume for internal mic.
+also the "mic boost" if set to high value works like analog loopback
+(I hear what I say in mic in headphones, same happens on my main notebook acer 5720)
+
+
+>> Have same issue on my acer 5720
+>>
+>>
+>>
+>> ** 4 - wireless led doesn't work.
+>> ath5k devs, can you fix this?
+>>
+>>
+>> ** 5 - coretemp doesn't show cpu temperature,
+>> I have seen somewhere that atom support same thermal diode as core2
+>> and only patch to detect it is needed.
+>> Please include such path in 2.6.28 if exists.
+>>
+>>
+>> ** 6 - both card readers are missing from lspci, is this normal?
 > 
->  #include <linux/cache.h>
->  #include <linux/spinlock.h>
-> @@ -166,12 +167,7 @@ extern struct lockdep_map rcu_lock_map;
->  		local_bh_enable(); \
->  	} while (0)
+> A similar bug has been reported as a regression:
 > 
-> -#define __synchronize_sched() synchronize_rcu()
-> -
-> -#define call_rcu_sched(head, func) call_rcu(head, func)
-> -
->  extern void __rcu_init(void);
-> -#define rcu_init_sched()	do { } while (0)
->  extern void rcu_check_callbacks(int cpu, int user);
->  extern void rcu_restart_cpu(int cpu);
+> <http://bugzilla.kernel.org/show_bug.cgi?id=11828>
 > 
-> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> index 86f1f5e..7861bee 100644
-> --- a/include/linux/rcupdate.h
-> +++ b/include/linux/rcupdate.h
-> @@ -112,6 +112,7 @@ struct rcu_head {
->   */
->  #define rcu_read_unlock() __rcu_read_unlock()
+> so one assumes that it worked on the machines with linux pre-installed.  Hopefully without requiring any hacks.
 > 
-> +#ifdef HAVE_SPECIAL_RCU_BH
->  /**
->   * rcu_read_lock_bh - mark the beginning of a softirq-only RCU critical section
->   *
-> @@ -125,13 +126,19 @@ struct rcu_head {
->   */
->  #define rcu_read_lock_bh() __rcu_read_lock_bh()
+> It seems that for now a workaround may be to pass the option debug_quirks=1 to the sdhci module...
 > 
-> -/*
-> +/**
->   * rcu_read_unlock_bh - marks the end of a softirq-only RCU critical section
->   *
->   * See rcu_read_lock_bh() for more information.
->   */
->  #define rcu_read_unlock_bh() __rcu_read_unlock_bh()
+> <http://marc.info/?l=linux-kernel&m=122509648027303&w=2>
 > 
-> +#else
-> +#define rcu_bh_qsctr_inc(cpu)
-> +#define rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
-> +#define rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
-> +#endif /* HAVE_SPECIAL_RCU_BH */
-> +
->  /**
->   * rcu_read_lock_sched - mark the beginning of a RCU-classic critical section
->   *
-> @@ -189,45 +196,6 @@ struct rcu_head {
->  		(p) = (v); \
->  	})
+> ...or that it may help if you insert an SD card before booting.
 > 
-> -/* Infrastructure to implement the synchronize_() primitives. */
-> -
-> -struct rcu_synchronize {
-> -	struct rcu_head head;
-> -	struct completion completion;
-> -};
-> -
-> -extern void wakeme_after_rcu(struct rcu_head  *head);
-> -
-> -#define synchronize_rcu_xxx(name, func) \
-> -void name(void) \
-> -{ \
-> -	struct rcu_synchronize rcu; \
-> -	\
-> -	init_completion(&rcu.completion); \
-> -	/* Will wake me after RCU finished. */ \
-> -	func(&rcu.head, wakeme_after_rcu); \
-> -	/* Wait for it. */ \
-> -	wait_for_completion(&rcu.completion); \
-> -}
-> -
-> -/**
-> - * synchronize_sched - block until all CPUs have exited any non-preemptive
-> - * kernel code sequences.
-> - *
-> - * This means that all preempt_disable code sequences, including NMI and
-> - * hardware-interrupt handlers, in progress on entry will have completed
-> - * before this primitive returns.  However, this does not guarantee that
-> - * softirq handlers will have completed, since in some kernels, these
-> - * handlers can run in process context, and can block.
-> - *
-> - * This primitive provides the guarantees made by the (now removed)
-> - * synchronize_kernel() API.  In contrast, synchronize_rcu() only
-> - * guarantees that rcu_read_lock() sections will have completed.
-> - * In "classic RCU", these two guarantees happen to be one and
-> - * the same, but can differ in realtime RCU implementations.
-> - */
-> -#define synchronize_sched() __synchronize_sched()
-> -
->  /**
->   * call_rcu - Queue an RCU callback for invocation after a grace period.
->   * @head: structure to be used for queueing the RCU updates.
-> @@ -242,6 +210,11 @@ void name(void) \
->  extern void call_rcu(struct rcu_head *head,
->  			      void (*func)(struct rcu_head *head));
+> Apparently the reporter also investigated pcie hotplug.  Probably the BIOS doesn't provide the normal support.  You can try "modprobe pciehp pciehp_force=1", maybe it helps the kernel discover the devices.  It worked for something else on my EeePC.  But then it will reportedly disappear the ethernet controller.
 > 
-> +
-> +extern void synchronize_rcu(void);
-> +extern void rcu_barrier(void);
-> +
-> +#ifdef HAVE_SPECIAL_RCU_BH
->  /**
->   * call_rcu_bh - Queue an RCU for invocation after a quicker grace period.
->   * @head: structure to be used for queueing the RCU updates.
-> @@ -263,11 +236,46 @@ extern void call_rcu(struct rcu_head *head,
->  extern void call_rcu_bh(struct rcu_head *head,
->  			void (*func)(struct rcu_head *head));
+> However, at the moment pciehp can cause delays of 10s of seconds during resume.
+I am aware of this, but don't yet have a SD card to test.
+
+
+>  
+>> ** 7 - opengl is broken, I tried running neverball in fullscreen, but it shows wrong/corrupted
+>> textures (compiz is running, and working well thought)
+Without compiz neveball works fine (slow, but this is very slow hardware)
+
+>>  
+>> Now I installed 2.6.28-rc3 (actually latest -git)
+>>
+>>
+>> Sadly nothing improved.
+>> I only found few regressions:
+>>
+>>
+>>
+>> * Wireless now drops connection from my WPA2 access point after few minutes.
+>> I changed temporarily its wireless protection to WEP and open mode, and both work
+>> fine, maybe this is related to periodic key exchange WPA does?
+Now fixed, big thanks.
+
+>>
+>> * System doesn't reboot/shutdown, just hangs.
 > 
-> -/* Exported common interfaces */
-> -extern void synchronize_rcu(void);
-> -extern void rcu_barrier(void);
->  extern void rcu_barrier_bh(void);
-> +#else
-> +
-> +#define call_rcu_bh call_rcu
-> +#define rcu_barrier_bh rcu_barrier
-> +
-> +/*
-> + * Return the number of RCU batches processed thus far. Useful for debug
-> + * and statistic. The _bh variant is identifcal to straight RCU
-> + */
-> +static inline long rcu_batches_completed_bh(void)
-> +{
-> +	return rcu_batches_completed();
-> +}
-> +#endif /* HAVE_SPECIAL_RCU_BH */
-> +
-> +#ifdef HAVE_SPECIAL_RCU_SCHED
-> +/**
-> + * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
-> + * @head: structure to be used for queueing the RCU updates.
-> + * @func: actual update function to be invoked after the grace period
-> + *
-> + * The update function will be invoked some time after a full
-> + * synchronize_sched()-style grace period elapses, in other words after
-> + * all currently executing preempt-disabled sections of code (including
-> + * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
-> + * completed.
-> + */
-> +extern void call_rcu_sched(struct rcu_head *head,
-> +			   void (*func)(struct rcu_head *head));
-> +
-> +extern void synchronize_sched(void);
->  extern void rcu_barrier_sched(void);
-> +#else
-> +#define call_rcu_sched call_rcu
-> +#define synchronize_sched synchronize_rcu
-> +#define rcu_barrier_sched rcu_barrier
-> +
-> +#define rcu_init_sched()	do { } while (0)
-> +#endif /* HAVE_SPECIAL_RCU_SCHED */
+> Could be this:
 > 
->  /* Internal to kernel */
->  extern void rcu_init(void);
-> diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-> index 3e05c09..f30d1c8 100644
-> --- a/include/linux/rcupreempt.h
-> +++ b/include/linux/rcupreempt.h
-> @@ -32,6 +32,7 @@
+> <http://bugzilla.kernel.org/show_bug.cgi?id=11942>
 > 
->  #ifndef __LINUX_RCUPREEMPT_H
->  #define __LINUX_RCUPREEMPT_H
-> +#define HAVE_SPECIAL_RCU_SCHED
-> 
->  #include <linux/cache.h>
->  #include <linux/spinlock.h>
-> @@ -56,54 +57,18 @@ static inline void rcu_qsctr_inc(int cpu)
-> 
->  	rdssp->sched_qs++;
->  }
-> -#define rcu_bh_qsctr_inc(cpu)
-> -
-> -/*
-> - * Someone might want to pass call_rcu_bh as a function pointer.
-> - * So this needs to just be a rename and not a macro function.
-> - *  (no parentheses)
-> - */
-> -#define call_rcu_bh	 	call_rcu
-> -
-> -/**
-> - * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
-> - * @head: structure to be used for queueing the RCU updates.
-> - * @func: actual update function to be invoked after the grace period
-> - *
-> - * The update function will be invoked some time after a full
-> - * synchronize_sched()-style grace period elapses, in other words after
-> - * all currently executing preempt-disabled sections of code (including
-> - * hardirq handlers, NMI handlers, and local_irq_save() blocks) have
-> - * completed.
-> - */
-> -extern void call_rcu_sched(struct rcu_head *head,
-> -			   void (*func)(struct rcu_head *head));
-> 
->  extern void __rcu_read_lock(void)	__acquires(RCU);
->  extern void __rcu_read_unlock(void)	__releases(RCU);
->  extern int rcu_pending(int cpu);
->  extern int rcu_needs_cpu(int cpu);
-> 
-> -#define __rcu_read_lock_bh()	{ rcu_read_lock(); local_bh_disable(); }
-> -#define __rcu_read_unlock_bh()	{ local_bh_enable(); rcu_read_unlock(); }
-> -
-> -extern void __synchronize_sched(void);
-> -
->  extern void __rcu_init(void);
->  extern void rcu_init_sched(void);
->  extern void rcu_check_callbacks(int cpu, int user);
->  extern void rcu_restart_cpu(int cpu);
->  extern long rcu_batches_completed(void);
-> 
-> -/*
-> - * Return the number of RCU batches processed thus far. Useful for debug
-> - * and statistic. The _bh variant is identifcal to straight RCU
-> - */
-> -static inline long rcu_batches_completed_bh(void)
-> -{
-> -	return rcu_batches_completed();
-> -}
-> -
->  #ifdef CONFIG_RCU_TRACE
->  struct rcupreempt_trace;
->  extern long *rcupreempt_flipctr(int cpu);
-> diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-> index ad63af8..70cff32 100644
-> --- a/kernel/rcupdate.c
-> +++ b/kernel/rcupdate.c
-> @@ -56,11 +56,16 @@ static atomic_t rcu_barrier_cpu_count;
->  static DEFINE_MUTEX(rcu_barrier_mutex);
->  static struct completion rcu_barrier_completion;
-> 
-> +struct rcu_synchronize {
-> +	struct rcu_head head;
-> +	struct completion completion;
-> +};
-> +
->  /*
->   * Awaken the corresponding synchronize_rcu() instance now that a
->   * grace period has elapsed.
->   */
-> -void wakeme_after_rcu(struct rcu_head  *head)
-> +static void wakeme_after_rcu(struct rcu_head  *head)
->  {
->  	struct rcu_synchronize *rcu;
-> 
-> @@ -77,10 +82,48 @@ void wakeme_after_rcu(struct rcu_head  *head)
->   * sections are delimited by rcu_read_lock() and rcu_read_unlock(),
->   * and may be nested.
->   */
-> -void synchronize_rcu(void);	/* Makes kernel-doc tools happy */
-> -synchronize_rcu_xxx(synchronize_rcu, call_rcu)
-> +void synchronize_rcu(void)
-> +{
-> +	struct rcu_synchronize rcu;
-> +
-> +	init_completion(&rcu.completion);
-> +	/* Will wake me after RCU finished. */
-> +	call_rcu(&rcu.head, wakeme_after_rcu);
-> +	/* Wait for it. */
-> +	wait_for_completion(&rcu.completion);
-> +}
->  EXPORT_SYMBOL_GPL(synchronize_rcu);
-> 
-> +#ifdef HAVE_SPECIAL_RCU_SCHED
-> +/**
-> + * synchronize_sched - block until all CPUs have exited any non-preemptive
-> + * kernel code sequences.
-> + *
-> + * This means that all preempt_disable code sequences, including NMI and
-> + * hardware-interrupt handlers, in progress on entry will have completed
-> + * before this primitive returns.  However, this does not guarantee that
-> + * softirq handlers will have completed, since in some kernels, these
-> + * handlers can run in process context, and can block.
-> + *
-> + * This primitive provides the guarantees made by the (now removed)
-> + * synchronize_kernel() API.  In contrast, synchronize_rcu() only
-> + * guarantees that rcu_read_lock() sections will have completed.
-> + * In "classic RCU", these two guarantees happen to be one and
-> + * the same, but can differ in realtime RCU implementations.
-> + */
-> +void synchronize_sched(void)
-> +{
-> +	struct rcu_synchronize rcu;
-> +
-> +	init_completion(&rcu.completion);
-> +	/* Will wake me after RCU finished. */
-> +	call_rcu_sched(&rcu.head, wakeme_after_rcu);
-> +	/* Wait for it. */
-> +	wait_for_completion(&rcu.completion);
-> +}
-> +EXPORT_SYMBOL_GPL(synchronize_sched);
-> +#endif /* HAVE_SPECIAL_RCU_SCHED */
-> +
->  static void rcu_barrier_callback(struct rcu_head *notused)
->  {
->  	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
-> @@ -145,6 +188,7 @@ void rcu_barrier(void)
->  }
->  EXPORT_SYMBOL_GPL(rcu_barrier);
-> 
-> +#ifdef HAVE_SPECIAL_RCU_BH
->  /**
->   * rcu_barrier_bh - Wait until all in-flight call_rcu_bh() callbacks complete.
->   */
-> @@ -153,7 +197,9 @@ void rcu_barrier_bh(void)
->  	_rcu_barrier(RCU_BARRIER_BH);
->  }
->  EXPORT_SYMBOL_GPL(rcu_barrier_bh);
-> +#endif /* HAVE_SPECIAL_RCU_BH */
-> 
-> +#ifdef HAVE_SPECIAL_RCU_SCHED
->  /**
->   * rcu_barrier_sched - Wait for in-flight call_rcu_sched() callbacks.
->   */
-> @@ -162,6 +208,7 @@ void rcu_barrier_sched(void)
->  	_rcu_barrier(RCU_BARRIER_SCHED);
->  }
->  EXPORT_SYMBOL_GPL(rcu_barrier_sched);
-> +#endif /* HAVE_SPECIAL_RCU_SCHED */
-> 
->  void __init rcu_init(void)
->  {
-> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-> index 59236e8..2068ad9 100644
-> --- a/kernel/rcupreempt.c
-> +++ b/kernel/rcupreempt.c
-> @@ -1161,15 +1161,6 @@ void call_rcu_sched(struct rcu_head *head, void (*func)(struct rcu_head *rcu))
->  EXPORT_SYMBOL_GPL(call_rcu_sched);
-> 
->  /*
-> - * Wait until all currently running preempt_disable() code segments
-> - * (including hardware-irq-disable segments) complete.  Note that
-> - * in -rt this does -not- necessarily result in all currently executing
-> - * interrupt -handlers- having completed.
-> - */
-> -synchronize_rcu_xxx(__synchronize_sched, call_rcu_sched)
-> -EXPORT_SYMBOL_GPL(__synchronize_sched);
-> -
-> -/*
->   * kthread function that manages call_rcu_sched grace periods.
->   */
->  static int rcu_sched_grace_period(void *arg)
-> 
-> 
+> As a fix, 8fd145917fb62368a9b80db59562c20576238f5a was reverted from the acpi tree.  This has also been submitted to mainline.
+Also fixed big thanks.
+
+
+
+
+Also noticed another bug:
+
+
+If I suspend/resume with compiz running, on resume I see wallpaper and mouse cursor, everything hangs for 
+minute or two, and sometimes forever.
+
+2.6.27 worked fine.
+
+
+
+
+Also hibernate doesn't work on my main notebook, but it is probably fixed, I update kernel to really latest -git
+and tell you.
+
+
+Big thanks for bugfixes, you saved me a lot of work and bisecting.
+
+Biggest solvable problem now is sound support now I think, datasheets are there, and
+I take a look at them.
+
+
+Best regards,
+	Maxim Levitsky
+
+
+
