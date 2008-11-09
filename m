@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYKIUkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbYKIUrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYKIUkn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 15:40:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYKIUke
+	id S1756637AbYKIUrd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 15:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbYKIUrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 15:40:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59338 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755747AbYKIUkd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 15:40:33 -0500
-Date: Sun, 9 Nov 2008 12:39:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-In-Reply-To: <20081109122835.10f410fa@infradead.org>
-Message-ID: <alpine.LFD.2.00.0811091237110.3468@nehalem.linux-foundation.org>
-References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz> <200811091424.10943.rjw@sisk.pl> <20081109200918.GA4361@ics.muni.cz> <20081109122835.10f410fa@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 9 Nov 2008 15:47:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44824 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755806AbYKIUrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 15:47:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: [stable] Suspend regression in stable kernel 2.6.27.4 on Mac mini Core Duo
+Date: Sun, 9 Nov 2008 21:51:57 +0100
+User-Agent: KMail/1.9.9
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20081109202830.GA7206@x61> <20081109203441.GA4871@kroah.com>
+In-Reply-To: <20081109203441.GA4871@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811092151.57620.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 9 Nov 2008, Arjan van de Ven wrote:
+On Sunday, 9 of November 2008, Greg KH wrote:
+> On Sun, Nov 09, 2008 at 09:28:30PM +0100, Tino Keitel wrote:
+> > Hi,
+> > 
+> > my Mac mini Core Duo doesn't wake up from suspend to RAM anymore with
+> > 2.6.27.4. It works with 2.6.27.3. I enabled pm_trace, but dmesg | grep
+> > "hash matches" didn't show anything after resume. I tried 2.6.27.5,
+> > which also failed to resume.
+> > 
+> > The system is i386, the hardware is basically Intel based: Core Duo
+> > T2300 CPU, Intel graphics i945, ICH7, Marvell GbE (sky2), a SATA hard
+> > disk, PATA DVD drive, a Firewire hard disk, and a lot of USB devices.
+> > 
+> > Does that ring any bells? Any hints what commit I should try to revert?
 > 
-> for me, the plan is that we need to get Thomas' fixes tested by someone
-> who can reproduce this very reliably. If they fix it, great.
-> If they don't, time is running out and we need to remove the feature
-> for 2.6.28 (that is 1 line of change), realizing that this just papers
-> over stuff and isn't a real fix, and get back to it for 2.6.29.
+> Can you run 'git bisect' on the patches in 2.6.27.4 to see which one
+> broke your box?
 
-I'd like to see the one-liner fix, even if it turns out to just be a 
-workaround that hides the issue and makes us go back to 2.6.27 behaviour. 
-I'm about to release -rc4 today, we should be aggressive about 
-regressions.
+I would start from these commits:
 
-If somebody can test the "real fix" independently, that's obviously fine, 
-but it's not an excuse for keeping a pending regression. If people end up 
-being 100% sure they found the bug later, we can then re-enable it, but 
-again - that has zero bearing on the fact that we should get rid of the 
-regression asap.
+3b987ac961486373f91191b14291b331fa546072
+"ACPI suspend: Always use the 32-bit waking vector"
 
-			Linus
+66036f5862883fcc9f7ff8550685a5a3de1a57e4
+"ACPI Suspend: Enable ACPI during resume if SCI_EN is not set"
+
+If none of them causes this problem to happen, I have no idea what can, so
+please bisect in this case.
+
+If any of them breaks suspend for you, we'd have to find out why, because
+both of them are rather important bug fixes.
+
+Thanks,
+Rafael
