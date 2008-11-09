@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbYKIQzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYKIQ4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756057AbYKIQzt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 11:55:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbYKIQzf
+	id S1755927AbYKIQ4L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 11:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbYKIQzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 11:55:35 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:56827 "EHLO mgw1.diku.dk"
+	Sun, 9 Nov 2008 11:55:53 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:43590 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755950AbYKIQzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 11:55:33 -0500
-Date: Sun, 9 Nov 2008 17:55:27 +0100 (CET)
+	id S1755819AbYKIQzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 11:55:52 -0500
+Date: Sun, 9 Nov 2008 17:55:49 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: Eric.Moore@lsi.com, support@lsi.com, DL-MPTFusionLinux@lsi.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/8] drivers/message/fusion: use ARRAY_SIZE
-Message-ID: <Pine.LNX.4.64.0811091755050.32509@ask.diku.dk>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 5/8] drivers/mtd/maps/nettel.c: use ARRAY_SIZE
+Message-ID: <Pine.LNX.4.64.0811091755280.32509@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,67 +42,25 @@ T[] E;
 
 - (sizeof(E)/sizeof(E[...]))
 + ARRAY_SIZE(E)
-
-@depends on i using "paren.iso"@
-type T;
-T[] E;
-@@
-
-- (sizeof(E)/sizeof(T))
-+ ARRAY_SIZE(E)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/message/fusion/mptbase.c    |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/mtd/maps/nettel.c     |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index d6a0074..7a313f3 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -4563,7 +4563,7 @@ WaitForDoorbellReply(MPT_ADAPTER *ioc, int howlong, int sleepFlag)
- 			failcnt++;
- 		hword = le16_to_cpu(CHIPREG_READ32(&ioc->chip->Doorbell) & 0x0000FFFF);
- 		/* don't overflow our IOC hs_reply[] buffer! */
--		if (u16cnt < sizeof(ioc->hs_reply) / sizeof(ioc->hs_reply[0]))
-+		if (u16cnt < ARRAY_SIZE(ioc->hs_reply))
- 			hs_reply[u16cnt] = hword;
- 		CHIPREG_WRITE32(&ioc->chip->IntStatus, 0);
- 	}
-@@ -7176,7 +7176,7 @@ union loginfo_type {
+diff --git a/drivers/mtd/maps/nettel.c b/drivers/mtd/maps/nettel.c
+index 965e6c6..f38e92c 100644
+--- a/drivers/mtd/maps/nettel.c
++++ b/drivers/mtd/maps/nettel.c
+@@ -362,8 +362,7 @@ static int __init nettel_init(void)
  
- 	sas_loginfo.loginfo = log_info;
- 	if ((sas_loginfo.dw.bus_type != 3 /*SAS*/) &&
--	    (sas_loginfo.dw.originator < sizeof(originator_str)/sizeof(char*)))
-+	    (sas_loginfo.dw.originator < ARRAY_SIZE(originator_str)))
- 		return;
+ 	intel_mtd->owner = THIS_MODULE;
  
- 	originator_desc = originator_str[sas_loginfo.dw.originator];
-@@ -7185,21 +7185,21 @@ union loginfo_type {
+-	num_intel_partitions = sizeof(nettel_intel_partitions) /
+-		sizeof(nettel_intel_partitions[0]);
++	num_intel_partitions = ARRAY_SIZE(nettel_intel_partitions);
  
- 		case 0:  /* IOP */
- 			if (sas_loginfo.dw.code <
--			    sizeof(iop_code_str)/sizeof(char*))
-+			    ARRAY_SIZE(iop_code_str))
- 				code_desc = iop_code_str[sas_loginfo.dw.code];
- 			break;
- 		case 1:  /* PL */
- 			if (sas_loginfo.dw.code <
--			    sizeof(pl_code_str)/sizeof(char*))
-+			    ARRAY_SIZE(pl_code_str))
- 				code_desc = pl_code_str[sas_loginfo.dw.code];
- 			break;
- 		case 2:  /* IR */
- 			if (sas_loginfo.dw.code >=
--			    sizeof(ir_code_str)/sizeof(char*))
-+			    ARRAY_SIZE(ir_code_str))
- 				break;
- 			code_desc = ir_code_str[sas_loginfo.dw.code];
- 			if (sas_loginfo.dw.subcode >=
--			    sizeof(raid_sub_code_str)/sizeof(char*))
-+			    ARRAY_SIZE(raid_sub_code_str))
- 			break;
- 			if (sas_loginfo.dw.code == 0)
- 				sub_code_desc =
+ 	if (intelboot) {
+ 		/*
