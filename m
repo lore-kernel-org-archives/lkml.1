@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbYKILa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755098AbYKILcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbYKILa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 06:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754459AbYKILaS
+	id S1755098AbYKILcL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 06:32:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbYKILb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 06:30:18 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:44146 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754323AbYKILaR (ORCPT
+	Sun, 9 Nov 2008 06:31:57 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45163 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754459AbYKILb4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 06:30:17 -0500
-X-Sasl-enc: Im3WXjSlI4VJpecu/ZenYgX0r3Xj0F0Dwd/A6KwyP2fJ 1226230215
-Date: Sun, 9 Nov 2008 09:30:11 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [ibm-acpi-devel] Fan level 7 after resume wit 2.6.28-rc3
-Message-ID: <20081109113011.GB8329@khazad-dum.debian.net>
-References: <20081105073306.GA3132@x61> <20081106082314.GA18430@x61> <20081106142107.GC23278@khazad-dum.debian.net> <200811082345.37061.rjw@sisk.pl>
+	Sun, 9 Nov 2008 06:31:56 -0500
+Date: Sun, 9 Nov 2008 12:33:32 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Cc: Justin Mattock <justinmattock@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends,
+	but does not wakes up
+Message-ID: <20081109113332.GD6094@elf.ucw.cz>
+References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br> <1226044855.4913f5b7f2f45@webmail.ime.usp.br> <20081108075008.GA8177@ime.usp.br> <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com> <20081109024514.GA11744@ime.usp.br>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200811082345.37061.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081109024514.GA11744@ime.usp.br>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 08 Nov 2008, Rafael J. Wysocki wrote:
-> > Meanwhile, I suggest you just remove the calls to fan_suspend and fan_resume
-> > as a workaround.
+On Sun 2008-11-09 00:45:14, Rogério Brito wrote:
+> Hi, Justin and others.
 > 
-> Speaking of which, last time I looked at fan_suspend and fan_resume, they
-> were hopelessly broken (I admit that was quite some time ago, though).
+> On Nov 08 2008, Justin Mattock wrote:
+> > On Fri, Nov 7, 2008 at 11:50 PM, Rogério Brito <rbrito@ime.usp.br> wrote:
+> > > I think that I have some more information regarding the suspend/hibernate
+> > > issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, but with
+> > > vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, but it
+> > > seems to work).
+> 
+> Just some extra information here: while I can hibernate with vanilla
+> 2.6.28-rc3, upon resuming, it takes *minutes* (I don't know how many
+> minutes, but probably something like 5 minutes or so!) for the desktop to
+> have any effect (despite the fact that I can move the mouse without any
+> problems).
 
-And they still were. I have the patch fixing it, and it reworked that path
-entirely.  Will send it soon.
-
-> IMO, fan_suspend() is not necessary at all and the only thing fan_resume()
-> could do is to make the kernel's data structures reflect the actual state of
-> the fan.
-
-There are NO kernel data structures to reflect the actual state of the fan.
-The fan BELONGS to the EC in the thinkpad.  We don't store any crap about it
-in the driver, except to -track- one quirk.  We query the EC for all the
-required data (which happens to be a single byte) every time we need the
-info.  If the user asks us to do something, we send that to the EC and then
-promptly forget about it.
-
-So, I don't have to restore anything for things to just work.  The "feature"
-was added because people who set the fan to something different than AUTO
-wanted it to retain the state they set across sleep, which the box won't do
-by itself (the DSDT resets the fan on the WAK path).
-
-OTOH, if I want to restore anything across sleep/resume, I have to store the
-state on sleep.
-
-But there is no way I am slowing down the fan on resume: it could be in
-emergency mode due to thermal conditions.
+Try it from the text console, and see what exactly stops
+responding. "killall klogd" is your friend.
+								Pavel
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
