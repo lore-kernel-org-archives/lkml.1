@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYKISF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbYKISH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbYKISF3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 13:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbYKISFU
+	id S1755973AbYKISH5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 13:07:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbYKISHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 13:05:20 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:38752 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbYKISFT (ORCPT
+	Sun, 9 Nov 2008 13:07:46 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:34674 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755542AbYKISHp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 13:05:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BVdIwuJZNhD4ErUFH39M5BcZIqzQdTvCO15ZBU1WwJP22y5h6GHj3jPt+VR/Oxohl4
-         MEax/NQvErl5SIoI/36wd3psYV2cvYrasVV2vENQjYtfmLUWS4b1loFxf+jg8R2e6qKy
-         N59r7+tl/MmqTnRKQgrWSdMnPV01TUN3X3FEI=
-Date: Sun, 9 Nov 2008 21:08:41 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Ken Chen <kenchen@google.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
-Message-ID: <20081109180841.GB3127@x200.localdomain>
-References: <20081106203520.GD3578@elte.hu> <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain> <20081107083249.GD4435@elte.hu> <b040c32a0811071038g5e6faba6n55b22e52e1d2ea98@mail.gmail.com> <20081108121054.GG8354@elte.hu>
+	Sun, 9 Nov 2008 13:07:45 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.0.4
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 09 Nov 2008 10:07:29 -0800
+Message-ID: <7v8wrsbwny.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081108121054.GG8354@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Pobox-Relay-ID: 4D92E528-AE89-11DD-A3C5-4F5276724C3F-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 08, 2008 at 01:10:54PM +0100, Ingo Molnar wrote:
-> Sidenote: it would still be nice if the procfs folks converted the 
-> old-style code there to the new seqfile APIs, before requiring 
-> everyone _else_ to follow those guidelines?
+The latest maintenance release GIT 1.6.0.4 is available at the
+usual places:
 
-For every existing non seqfile /proc file, there may be (and was demonstrated)
-some userspace which is doing pread(2) on it and seqfiles don't support pread
-currently. Obviously, no such userspace exist for /proc/*/stack.
+  http://www.kernel.org/pub/software/scm/git/
+
+  git-1.6.0.4.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.0.4.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.0.4.tar.{gz,bz2}		(preformatted docs)
+
+The RPM binary packages for a few architectures are also provided
+as courtesy.
+
+  RPMS/$arch/git-*-1.6.0.4-1.fc9.$arch.rpm	(RPM)
+
+Fixes since v1.6.0.3
+--------------------
+
+* 'git add -p' said "No changes" when only binary files were changed.
+
+* 'git archive' did not work correctly in bare repositories.
+
+* 'git checkout -t -b newbranch' when you are on detached HEAD was broken.
+
+* when we refuse to detect renames because there are too many new or
+  deleted files, 'git diff' did not say how many there are.
+
+* 'git push --mirror' tried and failed to push the stash; there is no
+  point in sending it to begin with.
+
+* 'git push' did not update the remote tracking reference if the corresponding
+  ref on the remote end happened to be already up to date.
+
+* 'git pull $there $branch:$current_branch' did not work when you were on
+  a branch yet to be born.
+
+* when giving up resolving a conflicted merge, 'git reset --hard' failed
+  to remove new paths from the working tree.
+
+* 'git send-email' had a small fd leak while scanning directory.
+
+* 'git status' incorrectly reported a submodule directory as an untracked
+  directory.
+
+* 'git svn' used deprecated 'git-foo' form of subcommand invocaition.
+
+* 'git update-ref -d' to remove a reference did not honor --no-deref option.
+
+* Plugged small memleaks here and there.
+
+* Also contains many documentation updates.
