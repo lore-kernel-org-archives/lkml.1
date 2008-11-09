@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbYKIVtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbYKIV4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbYKIVtX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 16:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbYKIVqk
+	id S1756985AbYKIV4G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 16:56:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbYKIVzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 16:46:40 -0500
-Received: from ozlabs.org ([203.10.76.45]:37041 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758584AbYKIVqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 16:46:39 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] cpumask: introduce new API, without changing anything
-Date: Mon, 10 Nov 2008 08:46:34 +1100
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-References: <20081029152849.3883d072.sfr@canb.auug.org.au> <200811082024.20157.rusty@rustcorp.com.au> <alpine.LFD.2.00.0811091200090.3468@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811091200090.3468@nehalem.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811100846.35404.rusty@rustcorp.com.au>
+	Sun, 9 Nov 2008 16:55:55 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:59065 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754243AbYKIVzy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 16:55:54 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: akpm@linux-foundation.org
+Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, David Airlie <airlied@linux.ie>
+Subject: [PATCH 1/1] DRM: fix radeon suspend/resume oops
+Date: Sun,  9 Nov 2008 22:55:26 +0100
+Message-Id: <1226267726-32714-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0.3
+In-Reply-To: <49048B88.1060807@gmail.com>
+References: <49048B88.1060807@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 November 2008 07:01:50 Linus Torvalds wrote:
-> On Sat, 8 Nov 2008, Rusty Russell wrote:
-> > Ok, I sent through the latest delta on top of this before, but see below.
->
-> Can somebody send a final patch-set to me? Right now I have multiple
-> versions of patches, apparently on top of each other, and sometimes
-> multiple patches per email. Very confusing, and I do _not_ want to apply
-> the wrong thing by mistake.
+Hi,
 
-Sure, am waiting for a final run through linux-next.  There's no huge hurry 
-and it helps find obscure arch compile/include issues.
+I've sent a bugreport twice with no reply, so coming with a patch.
+Andrew please apply, if no comments or a better patch from drm
+fellows comes.
 
-Cheers,
-Rusty.
+As the accesses to the mmio member are not protected by anything, they
+seem to be racy with the open/clsoe anyways, setting this down there
+too.
+
+--
+When the driver is bound to a device and nobody opens the device node,
+it will oops on suspend and resume, since it's not mapped and
+dev_priv->mmio is NULL.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+---
+ drivers/gpu/drm/radeon/radeon_drv.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
+index 71af746..2e74a98 100644
+--- a/drivers/gpu/drm/radeon/radeon_drv.c
++++ b/drivers/gpu/drm/radeon/radeon_drv.c
+@@ -52,10 +52,14 @@ static int dri_library_name(struct drm_device *dev, char *buf)
+ 		        "r300"));
+ }
+ 
++/* FIXME all this suspend/resume races with open/close? */
+ static int radeon_suspend(struct drm_device *dev, pm_message_t state)
+ {
+ 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ 
++	if (!dev_priv->mmio)
++		return 0;
++
+ 	/* Disable *all* interrupts */
+ 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
+ 		RADEON_WRITE(R500_DxMODE_INT_MASK, 0);
+@@ -67,6 +71,9 @@ static int radeon_resume(struct drm_device *dev)
+ {
+ 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ 
++	if (!dev_priv->mmio)
++		return 0;
++
+ 	/* Restore interrupt registers */
+ 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
+ 		RADEON_WRITE(R500_DxMODE_INT_MASK, dev_priv->r500_disp_irq_reg);
+-- 
+1.6.0.3
+
