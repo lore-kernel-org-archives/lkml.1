@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYKIU32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbYKIUet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbYKIU32 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 15:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYKIU3G
+	id S1756526AbYKIUet (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 15:34:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbYKIUel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 15:29:06 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49222 "EHLO mx2.mail.elte.hu"
+	Sun, 9 Nov 2008 15:34:41 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:35417 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756031AbYKIU3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 15:29:05 -0500
-Date: Sun, 9 Nov 2008 21:28:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	id S1755710AbYKIUek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 15:34:40 -0500
+Date: Sun, 9 Nov 2008 21:34:32 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
 To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, hpa@zytor.com
-Subject: Re: Move iomap.h to arch/x86/include/asm
-Message-ID: <20081109202855.GA26895@elte.hu>
-References: <20081109101405.6981b835@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org
+Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
+Message-ID: <20081109203432.GB4361@ics.muni.cz>
+References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz> <200811091424.10943.rjw@sisk.pl> <20081109200918.GA4361@ics.muni.cz> <20081109122835.10f410fa@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20081109101405.6981b835@infradead.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081109122835.10f410fa@infradead.org>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 09 Nov 2008 21:34:26 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Nov 09, 2008 at 12:28:35PM -0800, Arjan van de Ven wrote:
+> for me, the plan is that we need to get Thomas' fixes tested by someone
+> who can reproduce this very reliably. If they fix it, great.
 
-* Arjan van de Ven <arjan@infradead.org> wrote:
+as for me, 100% of boots require a key hit to proceed in 2.6.28-rc3 (more
+precisely, the current git head).
 
-> 
-> 
-> The following changes since commit
-> a622cf69b806bbb1887913c04e01d0c25b892876: Linus Torvalds (1):
->         Merge branch 'sched-fixes-for-linus' of
-> git://git.kernel.org/.../tip/linux-2.6-tip
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/arjan/linux-2.6-kerneloops.git
->   for-mingo
-> 
-> Arjan van de Ven (1):
->       x86: move iomap.h to the new include location
-> 
->  {include/asm-x86 => arch/x86/include/asm}/iomap.h |    0
->  1 files changed, 0 insertions(+), 0 deletions(-)
->  rename {include/asm-x86 => arch/x86/include/asm}/iomap.h (100%)
-
-pulled into tip/x86/urgent, thanks Arjan!
-
-	Ingo
+-- 
+Luká¹ Hejtmánek
