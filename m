@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYKJXoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYKJXrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbYKJXoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 18:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbYKJXoG
+	id S1754387AbYKJXrz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 18:47:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750989AbYKJXrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 18:44:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41104 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752668AbYKJXoG (ORCPT
+	Mon, 10 Nov 2008 18:47:46 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50954 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752001AbYKJXrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 18:44:06 -0500
-Date: Mon, 10 Nov 2008 15:43:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: cbouatmailru@gmail.com, sameo@openedhand.com, linux-kernel@vger.kernel.org,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [PATCH] power_supply: Add support for WM8350 PMU
-Message-Id: <20081110154330.f95ec239.akpm@linux-foundation.org>
-In-Reply-To: <1225984523-15911-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1225984523-15911-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 10 Nov 2008 18:47:45 -0500
+Date: Mon, 10 Nov 2008 23:47:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial/8250: fix uninitialized warnings
+Message-ID: <20081110234744.0eb062b5@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081110143039.6f21fdc3.akpm@linux-foundation.org>
+References: <20081105022353.7CB0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081104174142.360a964a@lxorguk.ukuu.org.uk>
+	<20081110143039.6f21fdc3.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,48 +32,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  6 Nov 2008 15:15:22 +0000
-Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-
-> This patch adds support for the PMU provided by the WM8350 which
-> implements battery, line and USB supplies including a battery charger.
-> The hardware functions largely autonomously, with minimal software
-> control required to initiate fast charging.
+> hlist_for_each() can execute that loop zero times, in which case
+> serial_unlink_irq_chain will dereference an uninitialised variable.
 > 
-> Support for configuration of the USB supply is not yet implemented.
-> This means that the hardware will remain in the mode configured at
-> startup, by default limiting the current drawn from USB to 100mA.
-> 
-> This driver was originally written by Liam Girdwood with subsequent
-> updates for submission by Mark Brown.
+> Presumably the list shouldn't be empty at this stage, but this
+> is not particularly robust behaviour if that should happen..
 
-An idle question...
+And the only cases that can trip are the more important BUG_ON() checks.
+You could remove the BUG_ON() calls and make it less robust but that
+seems slightly well silly to me ?
 
-> +		supply = "Battery";
-> +		supply = "USB";
-> +		supply = "Line";
-> +		supply = "Battery and USB";
-
-> +		charge = "Charger Off";
-> +		charge = "Trickle Charging";
-> +		charge = "Fast Charging";
-
-> +		dev_err(wm8350->dev, "battery too hot\n");
-> +		dev_err(wm8350->dev, "battery too cold\n");
-> +		dev_err(wm8350->dev, "battery failed\n");
-> +		dev_err(wm8350->dev, "charger timeout\n");
-> +		dev_dbg(wm8350->dev, "charger stopped\n");
-> +		dev_dbg(wm8350->dev, "charger started\n");
-> +		dev_dbg(wm8350->dev, "fast charger ready\n");
-> +		dev_warn(wm8350->dev, "battery < 3.9V\n");
-> +		dev_warn(wm8350->dev, "battery < 3.1V\n");
-> +		dev_warn(wm8350->dev, "battery < 2.85V\n");
-
-The above constitutes a sort-of userspace interface.  A number of the
-things which are being reported there are fairly common to the
-technology and other drivers will be able to report them.
-
-But afaict this interface is unique to this particular driver.  Has any
-thought been given to standardising this interface across all similar
-drivers?  Too messy?
-
+Alan
