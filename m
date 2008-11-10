@@ -1,40 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYKJVzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYKJV5I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbYKJVzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 16:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKJVzb
+	id S1754812AbYKJV5I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 16:57:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKJV4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 16:55:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35146
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751396AbYKJVza (ORCPT
+	Mon, 10 Nov 2008 16:56:55 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:36370 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbYKJV4z convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 16:55:30 -0500
-Date: Mon, 10 Nov 2008 13:55:30 -0800 (PST)
-Message-Id: <20081110.135530.55645015.davem@davemloft.net>
-To: kay.sievers@vrfy.org
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: net: struct device - replace bus_id with dev_name(),
- dev_set_name()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1226057416.4100.18.camel@nga>
-References: <1225329299.5970.67.camel@nga.site>
-	<1226057416.4100.18.camel@nga>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 16:56:55 -0500
+From: "Altobelli, David" <david.altobelli@hp.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 10 Nov 2008 21:56:08 +0000
+Subject: Disabling hpilo (see: sharing interrupt between PCI device)
+Thread-Topic: Disabling hpilo (see: sharing interrupt between PCI device)
+Thread-Index: AclDfyMJCwraMNYRTkWAhT7lp8s/Ew==
+Message-ID: <92D64232F2316045B18937D5C9996B152252A03D21@GVW1144EXB.americas.hpqcorp.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 07 Nov 2008 12:30:16 +0100
+I stumbled across this message, unfortunately I don't have the original to respond to.
 
-> Updated patch, which does not replace BUS_ID_SIZE for now.
-> 
-> (BUS_ID_SIZE will go away from the driver core after the API switch, and
-> it has to be replaced by a local definition in the network tree, or the
-> limit can be removed entirely.)
+http://lkml.org/lkml/2008/11/10/41
 
-Applied to net-next-2.6, thanks Kay.
+The problem mentioned, that unloading hpilo causes the iLO IRC kbd/mouse (uchi_hcd) to become non-functional, is not an IRQ issue.
+
+iLO function 2 (hpilo) shares some global resources with function 4 (uhci_hcd), and when hpilo calls pci_disable_device(), the removal of busmastering (PCI_COMMAND_MASTER) means that the IRC kdb/mouse can't do what it needs to do.  Reloading hpilo will allow the IRC kdb/mouse to function correctly.
+
+I've been struggling with what to do about this, removing the pci_disable_device() from hpilo will "fix" the problem, but that is clearly a hack.
