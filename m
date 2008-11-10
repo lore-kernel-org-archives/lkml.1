@@ -1,134 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbYKJSbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYKJSdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbYKJSbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYKJSbD
+	id S1755554AbYKJSdR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:33:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbYKJSdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:31:03 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:37797 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753859AbYKJSbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:31:01 -0500
-Date: Mon, 10 Nov 2008 19:29:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>
-Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081110182928.GN26778@kernel.dk>
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua> <20081110173504.GL26778@kernel.dk> <49187D05.9050407@telenet.dn.ua>
+	Mon, 10 Nov 2008 13:33:01 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49544 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754528AbYKJSdA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:33:00 -0500
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [RFC PATCH v3 0/5] Tunable sched_mc_power_savings=n
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Tue, 11 Nov 2008 00:02:54 +0530
+Message-ID: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49187D05.9050407@telenet.dn.ua>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
-> Jens Axboe wrote:
-> > On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
-> >> Jens Axboe wrote:
-> >>> On Mon, Nov 10 2008, Jeff Moyer wrote:
-> >>>> Jens Axboe <jens.axboe@oracle.com> writes:
-> >>>>
-> >>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
-> >>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
-> >>>> you to try this patch is that nfsd may be farming off the I/O requests
-> >>>> to different threads which are then performing interleaved I/O.  The
-> >>>> above patch tries to detect this and allow cooperating processes to get
-> >>>> disk time instead of waiting for the idle timeout.
-> >>> Precisely :-)
-> >>>
-> >>> The only reason I haven't merged it yet is because of worry of extra
-> >>> cost, but I'll throw some SSD love at it and see how it turns out.
-> >>>
-> >> Sorry, but I get "oops" same moment nfs read transfer starts.
-> >> I can get directory list via nfs, read files locally (not
-> >> carefully tested, though)
-> >>
-> >> Dumps captured via netconsole, so these may not be completely accurate
-> >> but hopefully will give a hint.
-> > 
-> > Interesting, strange how that hasn't triggered here. Or perhaps the
-> > version that Jeff posted isn't the one I tried. Anyway, search for:
-> > 
-> >         RB_CLEAR_NODE(&cfqq->rb_node);
-> > 
-> > and add a
-> > 
-> >         RB_CLEAR_NODE(&cfqq->prio_node);
-> > 
-> > just below that. It's in cfq_find_alloc_queue(). I think that should fix
-> > it.
-> > 
-> 
-> Same problem.
-> 
-> I did make clean; make -j3; sync; on (2 times) patched kernel and it went OK
-> but It won't boot anymore with cfq with same error...
-> 
-> Switching cfq io scheduler at runtime (booting with "as") appears to work with
-> two parallel local dd reads.
-> 
-> But when NFS server starts up:
-> 
-> [  469.000105] BUG: unable to handle kernel
-> NULL pointer dereference
-> at 0000000000000000
-> [  469.000305] IP:
-> [<ffffffff81111f2a>] rb_erase+0x124/0x290
-> ...
-> 
-> [  469.001905] Pid: 2296, comm: md1_raid5 Not tainted 2.6.27.5 #4
-> [  469.001982] RIP: 0010:[<ffffffff81111f2a>]
-> [<ffffffff81111f2a>] rb_erase+0x124/0x290
-> ...
-> [  469.002509] Call Trace:
-> [  469.002509]  [<ffffffff8110a0b9>] ? rb_erase_init+0x9/0x17
-> [  469.002509]  [<ffffffff8110a0ff>] ? cfq_prio_tree_add+0x38/0xa8
-> [  469.002509]  [<ffffffff8110b13d>] ? cfq_add_rq_rb+0xb5/0xc8
-> [  469.002509]  [<ffffffff8110b1aa>] ? cfq_insert_request+0x5a/0x356
-> [  469.002509]  [<ffffffff811000a1>] ? elv_insert+0x14b/0x218
-> [  469.002509]  [<ffffffff810ab757>] ? bio_phys_segments+0xf/0x15
-> [  469.002509]  [<ffffffff811028dc>] ? __make_request+0x3b9/0x3eb
-> [  469.002509]  [<ffffffff8110120c>] ? generic_make_request+0x30b/0x346
-> [  469.002509]  [<ffffffff811baaf4>] ? raid5_end_write_request+0x0/0xb8
-> [  469.002509]  [<ffffffff811b8ade>] ? ops_run_io+0x16a/0x1c1
-> [  469.002509]  [<ffffffff811ba534>] ? handle_stripe5+0x9b5/0x9d6
-> [  469.002509]  [<ffffffff811bbf08>] ? handle_stripe+0xc3a/0xc6a
-> [  469.002509]  [<ffffffff810296e5>] ? pick_next_task_fair+0x8d/0x9c
-> [  469.002509]  [<ffffffff81253792>] ? thread_return+0x3a/0xaa
-> [  469.002509]  [<ffffffff811bc2ce>] ? raid5d+0x396/0x3cd
-> [  469.002509]  [<ffffffff81253bd8>] ? schedule_timeout+0x1e/0xad
-> [  469.002509]  [<ffffffff811c716f>] ? md_thread+0xdd/0xf9
-> [  469.002509]  [<ffffffff81044f9c>] ? autoremove_wake_function+0x0/0x2e
-> [  469.002509]  [<ffffffff811c7092>] ? md_thread+0x0/0xf9
-> [  469.002509]  [<ffffffff81044e80>] ? kthread+0x47/0x73
-> [  469.002509]  [<ffffffff8102f867>] ? schedule_tail+0x28/0x60
-> [  469.002509]  [<ffffffff8100cda9>] ? child_rip+0xa/0x11
-> [  469.002509]  [<ffffffff81044e39>] ? kthread+0x0/0x73
-> [  469.002509]  [<ffffffff8100cd9f>] ? child_rip+0x0/0x11
-> ...
-> [  469.002509] RIP
-> [<ffffffff81111f2a>] rb_erase+0x124/0x290
-> [  469.002509]  RSP <ffff88011d4c7a58>
-> [  469.002509] CR2: 0000000000000000
-> [  469.002509] ---[ end trace acdef779aeb56048 ]---
-> 
-> 
-> "Best" result I got with NFS was
-> avg-cpu:  %user   %nice %system %iowait  %steal   %idle
->            0,00    0,00    0,20    0,65    0,00   99,15
-> 
-> Device:         rrqm/s   wrqm/s     r/s     w/s   rsec/s   wsec/s avgrq-sz avgqu-sz   await  svctm  %util
-> sda              11,30     0,00    7,60    0,00   245,60     0,00    32,32     0,01    1,18   0,79   0,60
-> sdb              12,10     0,00    8,00    0,00   246,40     0,00    30,80     0,01    1,62   0,62   0,50
-> 
-> and it lasted around 30 seconds.
+Hi,
 
-OK, I'll throw some NFS at this patch in the morning and do some
-measurements as well, so it can get queued up.
+The existing power saving loadbalancer CONFIG_SCHED_MC attempts to run
+the workload in the system on minimum number of CPU packages and tries
+to keep rest of the CPU packages idle for longer duration. Thus
+consolidating workloads to fewer packages help other packages to be in
+idle state and save power.  The current implementation is very
+conservative and does not work effectively across different workloads.
+Initial idea of tunable sched_mc_power_savings=n was proposed to
+enable tuning of the power saving load balancer based on the system
+configuration, workload characteristics and end user requirements.
+
+The power savings and performance of the given workload in an under
+utilised system can be controlled by setting values of 0, 1 or 2 to
+/sys/devices/system/cpu/sched_mc_power_savings with 0 being highest
+performance and least power savings and level 2 indicating maximum
+power savings even at the cost of slight performance degradation.
+
+Please refer to the following discussions and article for details.
+
+[1]Making power policy just work
+http://lwn.net/Articles/287924/ 
+
+[2][RFC v1] Tunable sched_mc_power_savings=n
+http://lwn.net/Articles/287882/
+                                                                                                               
+[3][RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n                                                                                                   
+http://lwn.net/Articles/297306/
+
+The following series of patch demonstrates the basic framework for
+tunable sched_mc_power_savings.
+
+This version of the patch incorporates comments and feedback received
+on the previous post.  Thanks to Peter Zijlstra for the review and
+comments.
+
+Changes from v2:
+----------------
+
+* Fixed locking order issue in active-balance-new-idle
+* Moved the wakeup biasing code to wake_idle() function and preserve
+  wake_affine function.  Previous version would break wake_affine in
+  order to aggressively consolidate tasks  
+* Removed sched_mc_preferred_wakeup_cpu global variable and moved to
+  doms_cur/dattr_cur and added a per_cpu pointer to appropriate
+  storage in partitioned sched domain.  This changed is needed to
+  preserve functionality in case of partitioned sched domains
+* Patch on 2.6.28-rc3 kernel  
+
+Notes:
+------
+
+* The patch has been tested on x86 with basic cpusets and kernbench.  
+  Correct functionality in the case of partitioned sched domain need 
+  to be analysed.
+
+Results:
+--------
+
+Basic functionality of the code has not changed and the power vs
+performance benefits for kernbench are similar to the ones posted
+earlier.
+
+KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
+package system
+
+SchedMC Run Time     Package Idle    Energy  Power
+0	81.61s       53.07% 52.81%  1.00x J 1.00y W
+1	81.52s       40.83% 65.45%  0.96x J 0.96y W 
+2	74.66s       22.20% 83.94%  0.90x J 0.98y W
+
+*** This is RFC code and not for inclusion ***
+
+Please feel free to test, and let me know your comments and feedback.
+
+Thanks,
+Vaidy
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+
+---
+
+Gautham R Shenoy (1):
+      sched: Framework for sched_mc/smt_power_savings=N
+
+Vaidyanathan Srinivasan (4):
+      sched: activate active load balancing in new idle cpus
+      sched: bias task wakeups to preferred semi-idle packages
+      sched: nominate preferred wakeup cpu
+      sched: favour lower logical cpu number for sched_mc balance
+
+
+ include/linux/sched.h |   12 +++++++
+ kernel/sched.c        |   89 ++++++++++++++++++++++++++++++++++++++++++++++---
+ kernel/sched_fair.c   |   17 +++++++++
+ 3 files changed, 112 insertions(+), 6 deletions(-)
 
 -- 
-Jens Axboe
-
