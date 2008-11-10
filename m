@@ -1,58 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbYKJSXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYKJS1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbYKJSXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:23:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYKJSXP
+	id S1755227AbYKJS1e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYKJS1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:23:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49591 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752408AbYKJSXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:23:14 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-Date: Mon, 10 Nov 2008 19:28:03 +0100
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@suse.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20081109140726.GB1786@ucw.cz> <20081110080436.GF2093@elte.hu> <87hc6fpwof.fsf@basil.nowhere.org>
-In-Reply-To: <87hc6fpwof.fsf@basil.nowhere.org>
+	Mon, 10 Nov 2008 13:27:25 -0500
+Received: from voyager.telenet.dn.ua ([195.39.211.35]:54470 "EHLO
+	voyager.telenet.dn.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752408AbYKJS1Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:27:24 -0500
+Message-ID: <49187D05.9050407@telenet.dn.ua>
+Date: Mon, 10 Nov 2008 20:27:17 +0200
+From: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081011)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua> <20081110173504.GL26778@kernel.dk>
+In-Reply-To: <20081110173504.GL26778@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811101928.04565.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 10 of November 2008, Andi Kleen wrote:
-> Ingo Molnar <mingo@elte.hu> writes:
-> >
-> > No good ideas - the bug description gives me the impression of memory 
-> > maps save/restore hickup in the hibernation code - and memory maps are 
-> > pretty much the only thing that are significantly different on NUMA. 
+Jens Axboe wrote:
+> On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
+>> Jens Axboe wrote:
+>>> On Mon, Nov 10 2008, Jeff Moyer wrote:
+>>>> Jens Axboe <jens.axboe@oracle.com> writes:
+>>>>
+>>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
+>>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
+>>>> you to try this patch is that nfsd may be farming off the I/O requests
+>>>> to different threads which are then performing interleaved I/O.  The
+>>>> above patch tries to detect this and allow cooperating processes to get
+>>>> disk time instead of waiting for the idle timeout.
+>>> Precisely :-)
+>>>
+>>> The only reason I haven't merged it yet is because of worry of extra
+>>> cost, but I'll throw some SSD love at it and see how it turns out.
+>>>
+>> Sorry, but I get "oops" same moment nfs read transfer starts.
+>> I can get directory list via nfs, read files locally (not
+>> carefully tested, though)
+>>
+>> Dumps captured via netconsole, so these may not be completely accurate
+>> but hopefully will give a hint.
 > 
-> I assume the problem happened on a single node system.
-> On single node the memory map should be actually quite similar
-> to the UMA case.
+> Interesting, strange how that hasn't triggered here. Or perhaps the
+> version that Jeff posted isn't the one I tried. Anyway, search for:
+> 
+>         RB_CLEAR_NODE(&cfqq->rb_node);
+> 
+> and add a
+> 
+>         RB_CLEAR_NODE(&cfqq->prio_node);
+> 
+> just below that. It's in cfq_find_alloc_queue(). I think that should fix
+> it.
+> 
 
-It is.  However, the problem is 100% reproducible on any 32-bit single-node
-system with CONFIG_NUMA set, from what I can tell.
+Same problem.
 
-It doesn't happen if the kernel is booted with highmem=0, so it looks like
-the code that saves highmem causes the problem to happen.  However, this
-same code works well for all of the !CONFIG_NUMA cases and practically only
-the only non-open-coded it uses is kmap_atomic().
+I did make clean; make -j3; sync; on (2 times) patched kernel and it went OK
+but It won't boot anymore with cfq with same error...
 
-> One possibility would be to bisect if it ever worked?
+Switching cfq io scheduler at runtime (booting with "as") appears to work with
+two parallel local dd reads.
 
-Not sure it did, probably not. :-(
+But when NFS server starts up:
 
-BTW, can you please tell me why HIGHMEM64G is requisite for NUMA on 32-bit?
+[  469.000105] BUG: unable to handle kernel
+NULL pointer dereference
+at 0000000000000000
+[  469.000305] IP:
+[<ffffffff81111f2a>] rb_erase+0x124/0x290
+...
 
+[  469.001905] Pid: 2296, comm: md1_raid5 Not tainted 2.6.27.5 #4
+[  469.001982] RIP: 0010:[<ffffffff81111f2a>]
+[<ffffffff81111f2a>] rb_erase+0x124/0x290
+...
+[  469.002509] Call Trace:
+[  469.002509]  [<ffffffff8110a0b9>] ? rb_erase_init+0x9/0x17
+[  469.002509]  [<ffffffff8110a0ff>] ? cfq_prio_tree_add+0x38/0xa8
+[  469.002509]  [<ffffffff8110b13d>] ? cfq_add_rq_rb+0xb5/0xc8
+[  469.002509]  [<ffffffff8110b1aa>] ? cfq_insert_request+0x5a/0x356
+[  469.002509]  [<ffffffff811000a1>] ? elv_insert+0x14b/0x218
+[  469.002509]  [<ffffffff810ab757>] ? bio_phys_segments+0xf/0x15
+[  469.002509]  [<ffffffff811028dc>] ? __make_request+0x3b9/0x3eb
+[  469.002509]  [<ffffffff8110120c>] ? generic_make_request+0x30b/0x346
+[  469.002509]  [<ffffffff811baaf4>] ? raid5_end_write_request+0x0/0xb8
+[  469.002509]  [<ffffffff811b8ade>] ? ops_run_io+0x16a/0x1c1
+[  469.002509]  [<ffffffff811ba534>] ? handle_stripe5+0x9b5/0x9d6
+[  469.002509]  [<ffffffff811bbf08>] ? handle_stripe+0xc3a/0xc6a
+[  469.002509]  [<ffffffff810296e5>] ? pick_next_task_fair+0x8d/0x9c
+[  469.002509]  [<ffffffff81253792>] ? thread_return+0x3a/0xaa
+[  469.002509]  [<ffffffff811bc2ce>] ? raid5d+0x396/0x3cd
+[  469.002509]  [<ffffffff81253bd8>] ? schedule_timeout+0x1e/0xad
+[  469.002509]  [<ffffffff811c716f>] ? md_thread+0xdd/0xf9
+[  469.002509]  [<ffffffff81044f9c>] ? autoremove_wake_function+0x0/0x2e
+[  469.002509]  [<ffffffff811c7092>] ? md_thread+0x0/0xf9
+[  469.002509]  [<ffffffff81044e80>] ? kthread+0x47/0x73
+[  469.002509]  [<ffffffff8102f867>] ? schedule_tail+0x28/0x60
+[  469.002509]  [<ffffffff8100cda9>] ? child_rip+0xa/0x11
+[  469.002509]  [<ffffffff81044e39>] ? kthread+0x0/0x73
+[  469.002509]  [<ffffffff8100cd9f>] ? child_rip+0x0/0x11
+...
+[  469.002509] RIP
+[<ffffffff81111f2a>] rb_erase+0x124/0x290
+[  469.002509]  RSP <ffff88011d4c7a58>
+[  469.002509] CR2: 0000000000000000
+[  469.002509] ---[ end trace acdef779aeb56048 ]---
+
+
+"Best" result I got with NFS was
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0,00    0,00    0,20    0,65    0,00   99,15
+
+Device:         rrqm/s   wrqm/s     r/s     w/s   rsec/s   wsec/s avgrq-sz avgqu-sz   await  svctm  %util
+sda              11,30     0,00    7,60    0,00   245,60     0,00    32,32     0,01    1,18   0,79   0,60
+sdb              12,10     0,00    8,00    0,00   246,40     0,00    30,80     0,01    1,62   0,62   0,50
+
+and it lasted around 30 seconds.
+
+-- 
 Thanks,
-Rafael
+Vitaly
