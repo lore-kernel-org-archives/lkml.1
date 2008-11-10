@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYKJMTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbYKJMV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYKJMTi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 07:19:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYKJMTP
+	id S1755284AbYKJMV4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 07:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYKJMVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 07:19:15 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:60575 "EHLO minas.ics.muni.cz"
+	Mon, 10 Nov 2008 07:21:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57491 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754666AbYKJMTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 07:19:14 -0500
-Date: Mon, 10 Nov 2008 13:16:13 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Arjan van de Ven <arjan@infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, corsac@debian.org, elendil@planet.nl
-Subject: Re: Bootup time regression from 2.6.27 to 2.6.28-rc3+
-Message-ID: <20081110121613.GE4385@ics.muni.cz>
-References: <20081104173300.GF6134@ics.muni.cz> <20081109105159.GA5867@joi> <20081109113304.GE4353@ics.muni.cz> <200811091424.10943.rjw@sisk.pl> <20081109200918.GA4361@ics.muni.cz> <20081109122835.10f410fa@infradead.org> <20081109203432.GB4361@ics.muni.cz> <20081109132438.5d81cd74@infradead.org> <20081109214338.GB4385@ics.muni.cz> <alpine.LFD.2.00.0811092256080.12263@localhost.localdomain>
+	id S1754272AbYKJMVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 07:21:47 -0500
+Date: Mon, 10 Nov 2008 14:22:08 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11380] lockdep warning: cpu_add_remove_lock
+	at:cpu_maps_update_begin+0x14/0x16
+Message-ID: <20081110132208.GB10294@redhat.com>
+References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera> <4B0Eqx89uNG.A.J5D.9b1FJB@chimera> <20081110073047.GA28578@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0811092256080.12263@localhost.localdomain>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+In-Reply-To: <20081110073047.GA28578@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Muni-Spam-TestIP: 195.113.238.83
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 10 Nov 2008 13:17:59 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 09, 2008 at 10:57:45PM +0100, Thomas Gleixner wrote:
-> > > it would be greatly appreciated if those that see this issue can test the
-> > > patch below (which is a combo patch of thomas' fixes, to make testing
-> > > easier) and confirm if this fixes the hangs.  If they do fix the issue we
-> > > don't need to disable anything and get better power savings as bonus as
-> > > well.
+On 11/10, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.26 and 2.6.27.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11380
+> > Subject		: lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
+> > Submitter	: Ingo Molnar <mingo@elte.hu>
+> > Date		: 2008-08-20 6:44 (82 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121921480931970&w=4
+> 
+> had a quick look again: i believe this one still triggers, and it's 
+> caused by some interaction between input code and workqueue code. I 
+> think it started triggering when Oleg's workqueue annotation patches 
+> went upstream:
+> 
+> 6af8bf3: workqueues: add comments to __create_workqueue_key()
+> 8448502: workqueues: do CPU_UP_CANCELED if CPU_UP_PREPARE fails
+> 8de6d30: workqueues: schedule_on_each_cpu() can use schedule_work_on()
+> ef1ca23: workqueues: queue_work() can use queue_work_on()
+> a67da70: workqueues: lockdep annotations for flush_work()
+> 3da1c84: workqueues: make get_online_cpus() useable for work->func()
+> 8616a89: workqueues: schedule_on_each_cpu: use flush_work()
+> db70089: workqueues: implement flush_work()
+> 1a4d9b0: workqueues: insert_work: use "list_head *" instead of "int tail"
 
-another observation, it sometimes happens that a key press causes a repeat too
-fast.
+"make get_online_cpus() useable for work->func()" changed the locking.
+destroy_workqueue() was changed to take cpu_maps_update_begin() instead
+of get_online_cpus(). Other patches can't make any difference afaics.
 
--- 
-Luká¹ Hejtmánek
+Currently I don't understand why lockdep complains, will try to do
+more grepping later.
+
+Oleg.
+
