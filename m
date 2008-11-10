@@ -1,162 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755099AbYKJMdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbYKJMi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755099AbYKJMdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 07:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYKJMdI
+	id S1755215AbYKJMi2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 07:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbYKJMiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 07:33:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56572 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754648AbYKJMdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 07:33:07 -0500
-Message-ID: <491828DE.9010505@cn.fujitsu.com>
-Date: Mon, 10 Nov 2008 20:28:14 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 10 Nov 2008 07:38:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:57583 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754701AbYKJMiU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 07:38:20 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu>
+	<20081110075529.GD707@atrey.karlin.mff.cuni.cz>
+	<20081110080436.GF2093@elte.hu>
+Date: Mon, 10 Nov 2008 13:55:44 +0100
+In-Reply-To: <20081110080436.GF2093@elte.hu> (Ingo Molnar's message of "Mon, 10 Nov 2008 09:04:36 +0100")
+Message-ID: <87hc6fpwof.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuset: update top cpuset's mems after adding a node
-References: <4917D7B4.4000605@cn.fujitsu.com> <20081110155231.F82E.E1E9C6FF@jp.fujitsu.com>
-In-Reply-To: <20081110155231.F82E.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2008-11-10 14:56 Yasunori Goto wrote:
-> Did you test this patch?  Was it OK?
+Ingo Molnar <mingo@elte.hu> writes:
+>
+> No good ideas - the bug description gives me the impression of memory 
+> maps save/restore hickup in the hibernation code - and memory maps are 
+> pretty much the only thing that are significantly different on NUMA. 
 
-I did it on IA64 just now. Updating top cpuset's mems is fine.
-But I forgot to update the mems_allowed of every task in top cpuset group.
-It is difficult to fix it, because I don't know whether updating a memory-bound
-task's mem_allowed is good or not.
+I assume the problem happened on a single node system.
+On single node the memory map should be actually quite similar
+to the UMA case.
 
-cpuset_track_online_cpus() has the same problem.
+One possibility would be to bisect if it ever worked?
 
-> If yes,
-> Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> 
-> Thanks.
-> 
-> 
->> After adding a node into the machine, top cpuset's mems isn't updated.
->>
->> By reviewing the code, we found that the update function
->>   cpuset_track_online_nodes()
->> was invoked after node_states[N_ONLINE] changes. It is wrong because N_ONLINE
->> just means node has pgdat, and if node has/added memory, we use N_HIGH_MEMORY.
->> So, We should invoke the update function after node_states[N_HIGH_MEMORY]
->> changes, just like its commit says.
->>
->> This patch fixes it. And we use notifier of memory hotplug instead of direct
->> calling of cpuset_track_online_nodes().
->>
->> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
->> Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
->>
->> ---
->>  include/linux/cpuset.h |    4 ----
->>  kernel/cpuset.c        |   19 ++++++++++++++++---
->>  mm/memory_hotplug.c    |    3 ---
->>  3 files changed, 16 insertions(+), 10 deletions(-)
->>
->> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
->> index 2691926..8e540d3 100644
->> --- a/include/linux/cpuset.h
->> +++ b/include/linux/cpuset.h
->> @@ -74,8 +74,6 @@ static inline int cpuset_do_slab_mem_spread(void)
->>  	return current->flags & PF_SPREAD_SLAB;
->>  }
->>  
->> -extern void cpuset_track_online_nodes(void);
->> -
->>  extern int current_cpuset_is_being_rebound(void);
->>  
->>  extern void rebuild_sched_domains(void);
->> @@ -151,8 +149,6 @@ static inline int cpuset_do_slab_mem_spread(void)
->>  	return 0;
->>  }
->>  
->> -static inline void cpuset_track_online_nodes(void) {}
->> -
->>  static inline int current_cpuset_is_being_rebound(void)
->>  {
->>  	return 0;
->> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
->> index 3e00526..909a548 100644
->> --- a/kernel/cpuset.c
->> +++ b/kernel/cpuset.c
->> @@ -36,6 +36,7 @@
->>  #include <linux/list.h>
->>  #include <linux/mempolicy.h>
->>  #include <linux/mm.h>
->> +#include <linux/memory.h>
->>  #include <linux/module.h>
->>  #include <linux/mount.h>
->>  #include <linux/namei.h>
->> @@ -2011,12 +2012,23 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
->>   * Call this routine anytime after node_states[N_HIGH_MEMORY] changes.
->>   * See also the previous routine cpuset_track_online_cpus().
->>   */
->> -void cpuset_track_online_nodes(void)
->> +static int cpuset_track_online_nodes(struct notifier_block *self,
->> +				unsigned long action, void *arg)
->>  {
->>  	cgroup_lock();
->> -	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->> -	scan_for_empty_cpusets(&top_cpuset);
->> +	switch (action) {
->> +	case MEM_ONLINE:
->> +		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->> +		break;
->> +	case MEM_OFFLINE:
->> +		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->> +		scan_for_empty_cpusets(&top_cpuset);
->> +		break;
->> +	default:
->> +		break;
->> +	}
->>  	cgroup_unlock();
->> +	return NOTIFY_OK;
->>  }
->>  #endif
->>  
->> @@ -2032,6 +2044,7 @@ void __init cpuset_init_smp(void)
->>  	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->>  
->>  	hotcpu_notifier(cpuset_track_online_cpus, 0);
->> +	hotplug_memory_notifier(cpuset_track_online_nodes, 10);
->>  }
->>  
->>  /**
->> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->> index 6837a10..b5b2b15 100644
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -22,7 +22,6 @@
->>  #include <linux/highmem.h>
->>  #include <linux/vmalloc.h>
->>  #include <linux/ioport.h>
->> -#include <linux/cpuset.h>
->>  #include <linux/delay.h>
->>  #include <linux/migrate.h>
->>  #include <linux/page-isolation.h>
->> @@ -498,8 +497,6 @@ int add_memory(int nid, u64 start, u64 size)
->>  	/* we online node here. we can't roll back from here. */
->>  	node_set_online(nid);
->>  
->> -	cpuset_track_online_nodes();
->> -
->>  	if (new_pgdat) {
->>  		ret = register_one_node(nid);
->>  		/*
->> -- 
->> 1.5.3.8
->>
-> 
+-Andi
 
-
+-- 
+ak@linux.intel.com
