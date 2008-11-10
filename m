@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYKJF0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbYKJF21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbYKJF0z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 00:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYKJF0p
+	id S1754031AbYKJF21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 00:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYKJF2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 00:26:45 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:27798 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbYKJF0o (ORCPT
+	Mon, 10 Nov 2008 00:28:19 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:3260 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750721AbYKJF2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 00:26:44 -0500
-Date: Mon, 10 Nov 2008 00:26:35 -0500
-From: "Michael B. Trausch" <mike@trausch.us>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Bug #11942] AMD64 reboot regression
-Message-ID: <20081110002635.0230df7c@zest>
-In-Reply-To: <fa.38bTHpsfCYAW4EntXFGUmhsiGuM@ifi.uio.no>
-References: <fa.2DQVKHtKWLXQ2p0dctmcfapVlZ4@ifi.uio.no>
-	<fa.38bTHpsfCYAW4EntXFGUmhsiGuM@ifi.uio.no>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-X-Face: V.VYf~Py*A]A=Ig&q'ryc:4rZ;J![}&08<H1=7E_.O\dF8Pbw,VE~_9QSzcs]DSM%TGA4j\
- .0/Sz8G(4s<D2VQ/uwq$dEL]LbY/y5TYyD$/6It5Yv#c=zo>wpW.<5dFb>I:aB^uO~EL+FT]m5[I4H
- s,s=
-X-Operating-System: Ubuntu 8.10 (Intrepid Ibex)
+	Mon, 10 Nov 2008 00:28:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=c2wjO69BtVlGojjW/wm76mX94cB+EwYojY5xieEY8abVQd9ksLPiM7TSJSk6Gts6gW
+         XgAFjmEDJuOQadIOq139ci+YzWYouznOVyGAwOViU9tJPZOaXJt6CNrpcc6BKtnp0+iT
+         +NY7XFiIIpnHlHNz9r15pb9jCND9pmRIyuKv8=
+Subject: [PATCH] x86: x86_32 has its own irq_regs definition
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 09 Nov 2008 21:28:15 -0800
+Message-Id: <1226294895.5478.5.camel@brick>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/r+Sa1IQfyjuLetUuUD4D2/Z";
- protocol="application/pgp-signature"; micalg=PGP-RIPEMD160
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/r+Sa1IQfyjuLetUuUD4D2/Z
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Impact: prevent second percpu define of unused irq_regs
 
-On Sun, 09 Nov 2008 20:01:31 UTC
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Arches that have their own irq_regs definition are expected to
+define ARCH_HAS_OWN_IRQ_REGS or else a generic (unused) set
+will also be defined in lib/irq_regs.c
 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me
-> know (either way).
->=20
->=20
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D11942
-> Subject	: AMD64 reboot regression
+Sparse noticed the unused generic one had no prototype:
+lib/irq_regs.c:15:1: warning: symbol 'per_cpu____irq_regs' was not declared. Should it be static?
 
-This one is still present in -rc4.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/include/asm/irq_regs_32.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Any idea if the fix will make it in before release?
+diff --git a/arch/x86/include/asm/irq_regs_32.h b/arch/x86/include/asm/irq_regs_32.h
+index af2f02d..86afd74 100644
+--- a/arch/x86/include/asm/irq_regs_32.h
++++ b/arch/x86/include/asm/irq_regs_32.h
+@@ -9,6 +9,8 @@
+ 
+ #include <asm/percpu.h>
+ 
++#define ARCH_HAS_OWN_IRQ_REGS
++
+ DECLARE_PER_CPU(struct pt_regs *, irq_regs);
+ 
+ static inline struct pt_regs *get_irq_regs(void)
+-- 
+1.6.0.3.866.gc189b
 
-	Thanks,
-	Mike
 
---=20
-My sigfile ran away and is on hiatus.
-http://www.trausch.us/
 
---Sig_/r+Sa1IQfyjuLetUuUD4D2/Z
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEAREDAAYFAkkXxgsACgkQ0kE/IBnFmjBF+QCeNi8tpFZWuI0w6OztaT5aLRen
-sukAn2nXh3UcqNPV2CAM4SBKJXkymgEO
-=/8Hx
------END PGP SIGNATURE-----
-
---Sig_/r+Sa1IQfyjuLetUuUD4D2/Z--
