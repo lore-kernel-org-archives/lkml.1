@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYKJOq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbYKJOrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbYKJOq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:46:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYKJOqt
+	id S1755367AbYKJOrW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYKJOrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:46:49 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:34382 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752701AbYKJOqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:46:48 -0500
-Date: Mon, 10 Nov 2008 08:46:32 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
-       morgan@kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH -v3 3/5] AUDIT: output permitted and inheritable fcaps
-	in PATH records
-Message-ID: <20081110144632.GB11561@us.ibm.com>
-References: <20081107151355.9977.47852.stgit@paris.rdu.redhat.com> <20081107151406.9977.3167.stgit@paris.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081107151406.9977.3167.stgit@paris.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 10 Nov 2008 09:47:08 -0500
+Received: from casper.infradead.org ([85.118.1.10]:53866 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752701AbYKJOrG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:47:06 -0500
+Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
+ dm_any_congested() to properly sync up with suspend code path)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk
+In-Reply-To: <Pine.LNX.4.64.0811100929380.16965@hs20-bc2-1.build.redhat.com>
+References: <1225944008.14830.1101.camel@chandra-ubuntu>
+	 <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com>
+	 <20081110135401.GA11606@infradead.org>
+	 <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+	 <1226327210.7685.173.camel@twins>
+	 <Pine.LNX.4.64.0811100929380.16965@hs20-bc2-1.build.redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 10 Nov 2008 15:46:57 +0100
+Message-Id: <1226328417.7685.198.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> This patch will print cap_permitted and cap_inheritable data in the PATH
-> records of any file that has file capabilities set.  Files which do not
-> have fcaps set will not have different PATH records.
+On Mon, 2008-11-10 at 09:32 -0500, Mikulas Patocka wrote:
 > 
-> An example audit record if you run:
-> setcap "cap_net_admin+pie" /bin/bash
-> /bin/bash
+> On Mon, 10 Nov 2008, Peter Zijlstra wrote:
 > 
-> type=SYSCALL msg=audit(1225741937.363:230): arch=c000003e syscall=59 success=yes exit=0 a0=2119230 a1=210da30 a2=20ee290 a3=8 items=2 ppid=2149 pid=2923 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts0 ses=3 comm="ping" exe="/bin/ping" subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 key=(null)
-> type=EXECVE msg=audit(1225741937.363:230): argc=2 a0="ping" a1="www.google.com"
-> type=CWD msg=audit(1225741937.363:230):  cwd="/root"
-> type=PATH msg=audit(1225741937.363:230): item=0 name="/bin/ping" inode=49256 dev=fd:00 mode=0104755 ouid=0 ogid=0 rdev=00:00 obj=system_u:object_r:ping_exec_t:s0 cap_fp=0000000000002000 cap_fi=0000000000002000 cap_fe=1 cap_fver=2
-> type=PATH msg=audit(1225741937.363:230): item=1 name=(null) inode=507915 dev=fd:00 mode=0100755 ouid=0 ogid=0 rdev=00:00 obj=system_u:object_r:ld_so_t:s0
+> > On Mon, 2008-11-10 at 09:19 -0500, Mikulas Patocka wrote:
+> > > On Mon, 10 Nov 2008, Christoph Hellwig wrote:
+> > > 
+> > > > On Mon, Nov 10, 2008 at 08:11:51AM -0500, Mikulas Patocka wrote:
+> > > > > For upstream Linux developers: you are holding a spinlock and calling 
+> > > > > bdi*_congested functions that can take indefinite amount of time (there 
+> > > > > are even users reporting having 50 disks in one logical volume or so). I 
+> > > > > think it would be good to move these calls out of spinlocks.
+> > > > 
+> > > > Umm, they shouldn't block that long, as that completely defeats their
+> > > > purpose.  These functions are mostly used to avoid throwing more I/O at
+> > > > a congested device if pdflush could do more useful things instead.  But
+> > > > if it blocks in those functions anyway we wouldn't have to bother using
+> > > > them.  Do you have more details about the uses cases when this happens
+> > > > and where the routines spend so much time?
+> > > 
+> > > For device mapper, congested_fn asks every device in the tree and make OR 
+> > > of their bits --- so if the user has 50 devices, it asks them all.
+> > > 
+> > > For md-linear, md-raid0, md-raid1, md-raid10 and md-multipath it does the 
+> > > same --- asking every device.
+> > > 
+> > > If you have a better idea how to implement congested_fn, say it.
+> > 
+> > Fix the infrastructure by adding a function call so that you can have
+> > the individual devices report their congestion state to the aggregate.
+> > 
+> > Then congestion_fn can return a valid state in O(1) because the state is
+> > keps up-to-date by the individual state changes.
+> > 
+> > IOW, add a set_congested_fn() and clear_congested_fn().
 > 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
+> If you have a physical disk that has many LVM volumes on it, you end up in 
+> a situation when disk congestion state change is reported to all the 
+> volumes. So it will create O(n) problem at the other side.
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-...
-> +struct audit_cap_data {
-> +	kernel_cap_t		permitted;
-> +	kernel_cap_t		inheritable;
-> +	union {
-> +		unsigned int	fE;
-> +		kernel_cap_t	effective;
-> +	};
-> +};
-
-To help future readers, it might be helpful to have a comment here to
-explain that fE is used when it describes a file cap, and effective when
-it describes a process cap.  Maybe that's obvious enough, I'm not sure.
-
-thanks,
--serge
+*sigh* I can almost understand why people want to use lvm to combine
+multiple disks, but why make the partition thing even worse...
