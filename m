@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYKJJyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYKJJyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755251AbYKJJyV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 04:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbYKJJx5
+	id S1754309AbYKJJyA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 04:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYKJJxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 04:53:57 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:55486 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754807AbYKJJx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 04:53:56 -0500
-Date: Mon, 10 Nov 2008 10:53:47 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Lavinen Jarkko (Nokia-M/Helsinki)" <jarkko.lavinen@nokia.com>,
-       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>
-Subject: Re: [PATCH 1/2] mmc_block: print better data error message after
- timeout
-Message-ID: <20081110105347.27a41650@mjolnir.drzeus.cx>
-In-Reply-To: <4917EEC7.3070701@nokia.com>
-References: <48F7411F.3020109@nokia.com>
-	<20081026121155.69692474@mjolnir.drzeus.cx>
-	<49083B1C.6060803@nokia.com>
-	<4917EEC7.3070701@nokia.com>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-583-1226310832-0001-2"
+	Mon, 10 Nov 2008 04:53:50 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37812 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753918AbYKJJxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 04:53:49 -0500
+Date: Mon, 10 Nov 2008 10:53:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v10
+Message-ID: <20081110095331.GC15237@elte.hu>
+References: <20081107081249.GB4435@elte.hu> <4913F9AA.80500@kernel.org> <20081107084240.GG4435@elte.hu> <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu> <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu> <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com> <20081110094033.GL22392@elte.hu> <49180418.1050306@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49180418.1050306@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0498]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_freyr.drzeus.cx-583-1226310832-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-On Mon, 10 Nov 2008 10:20:23 +0200
-Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+> +#ifdef CONFIG_SPARSE_IRQ
+> +static void uv_ack_apic_wrapper(unsigned int irq, struct irq_desc **descp)
+> +#else
+> +static void uv_ack_apic_wrapper(unsigned int irq)
+> +#endif
 
->=20
-> What is the status of this patch?
->=20
+hm, why not change it to the new prototype unconditionally? (just pass 
+in NULL or so)
 
-Waiting for me to have time to look closer at it.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-583-1226310832-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkkYBLAACgkQ7b8eESbyJLiKBACgrIl4cuULqgv34jFj+2v74Zfp
-NuEAmwYYxp43gCXMmBQMt87uEZGpJyVe
-=xJ5t
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-583-1226310832-0001-2--
+	Ingo
