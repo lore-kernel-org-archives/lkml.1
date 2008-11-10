@@ -1,113 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbYKJSpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbYKJSpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755532AbYKJSpb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYKJSpX
+	id S1755933AbYKJSpv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbYKJSpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:45:23 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37035 "EHLO e2.ny.us.ibm.com"
+	Mon, 10 Nov 2008 13:45:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47791 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752836AbYKJSpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:45:22 -0500
-Date: Mon, 10 Nov 2008 10:45:20 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
-	V2
-Message-ID: <20081110184520.GC6685@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <49129310.5000903@cn.fujitsu.com> <20081109005159.GM6917@linux.vnet.ibm.com> <4917A8E7.8060801@cn.fujitsu.com>
+	id S1755136AbYKJSpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:45:39 -0500
+Message-ID: <4918812C.2020405@redhat.com>
+Date: Mon, 10 Nov 2008 13:45:00 -0500
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4917A8E7.8060801@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Huang Ying <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
+References: <490F468B.4040602@redhat.com> <1225762877.27266.22.camel@yhuang-dev.sh.intel.com> <20081110163135.616E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20081110163135.616E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 11:22:15AM +0800, Lai Jiangshan wrote:
-> Paul E. McKenney wrote:
-> > On Thu, Nov 06, 2008 at 02:47:44PM +0800, Lai Jiangshan wrote:
-> >> this fix remove ugly macro, and increase readability for rcupdate codes
-> >>
-> >> changed from v1:
-> >> use HAVE_SPECIAL_RCU_BH/SCHED instead of define duplicate version of
-> >> synchronize_sched().
-> > 
-> > Hello, Jiangshan!
-> > 
-> > I very much like getting rid of the ugly macro.  I of course like the
-> > kernel-doc fixes.  ;-)
-> > 
-> > I am not yet convinced of the HAVE_SPECIAL_RCU_BH and
-> > HAVE_SPECIAL_RCU_SCHED pieces.  It is not clear to me that this approach
-> > is simpler than the current approach of simply providing the appropriate
-> > definitions for the symbols in the implementation-specific rcuxxx.h
-> > file.
-> > 
-> > Am I missing something?
-> > 
-> > 							Thanx, Paul
-> > 
+KOSAKI Motohiro wrote:
+>>>> As far as I know, barriers don't cause changes to be visible on other
+>>>> CPUs faster too. It just guarantees corresponding operations after will
+>>>> not get executed until that before have finished. And, I don't think we
+>>>> need make changes to be visible on other CPUs faster.
+>>> You're correct that barrier() has no impact on other CPUs.  wmb() and rmb() do. 
+>>>   If we don't need to make changes visible any faster, what's the point in using 
+>>> atomic_set()?  It's not any less racy.  atomic_inc() and atomic_dec() would be 
+>>> less racy, but you're not using those.
+>> In default bust_spinlocks() implementation in lib/bust_spinlocks.c,
+>> atomic_inc() and atomic_dec_and_test() is used. Which is used by x86
+>> too. In some other architecture, atomic_set() is used to replace
+>> "oops_in_progress = <xxx>". So this patch fixes architectures which use
+>> default bust_spinlocks(), other architectures can be fixed by
+>> corresponding architecture developers.
 > 
-> I think:
+> I think Chris is right.
+> So, I reccomend to read Documentation/memory-barriers.txt
 > 
-> RCU_BH is not required, we can used RCU instead. so HAVE_SPECIAL_RCU_BH
-> will help for implementation which has not RCU_BH.
-> 
-> HAVE_SPECIAL_RCU_SCHED is a little different, RCU and RCU_SCHED are both
-> required for the kernel. But I think, in an implementation,
-> if rcu_read_lock_sched() implies rcu_read_lock(), we may not need implement
-> RCU_SCHED too(sometimes we may implement RCU_SCHED for performance).
-> so HAVE_SPECIAL_RCU_SCHED will help.
+> Almost architecture gurantee atomic_inc cause barrier implicitly.
+> but not _all_ architecture.
 
-If I understand correctly, this is the "old way":
+The rmb() before atomic_read() is even more critical, since that's a 
+non-barrier operation on nearly all platforms.
 
-------------------------------------------------------------------------
-
-rcupdate.h:
-
-#define rcu_read_lock_bh() __rcu_read_lock_bh()
-#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
-
-rcupreempt.h:
-
-#define __rcu_read_lock_bh()    { rcu_read_lock(); local_bh_disable(); }
-#define __rcu_read_unlock_bh()  { local_bh_enable(); rcu_read_unlock(); }
-
-------------------------------------------------------------------------
-
-And then this is the "new way":
-
-------------------------------------------------------------------------
-
-rcupdate.h:
-
-#ifdef HAVE_SPECIAL_RCU_BH
-#define rcu_read_lock_bh() __rcu_read_lock_bh()
-#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
-#else
-#define __rcu_read_lock_bh()    { rcu_read_lock(); local_bh_disable(); }
-#define __rcu_read_unlock_bh()  { local_bh_enable(); rcu_read_unlock(); }
-#endif /* HAVE_SPECIAL_RCU_BH */
-
-rcupreempt.h:
-
-#define HAVE_SPECIAL_RCU_BH
-
-------------------------------------------------------------------------
-
-If we had ten different RCU implementations, then the "new way" would save
-a little bit of code.  But the "old way" is a bit easier to figure out.
-
-So I am in favor of getting rid of the ugly macro, and also in favor
-of fixing the kerneldoc, but opposed to the HAVE_SPECIAL_RCU_BH and
-HAVE_SPECIAL_RCU_SCHED changes.
-
-Or am I missing something?
-
-							Thanx, Paul
+-- Chris
