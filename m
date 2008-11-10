@@ -1,111 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYKJXXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbYKJXaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYKJXXo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 18:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYKJXXe
+	id S1754443AbYKJXaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 18:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYKJX3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 18:23:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41716 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752126AbYKJXXd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 18:23:33 -0500
-Date: Mon, 10 Nov 2008 15:22:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicolas Pitre <nico@cam.org>
-Cc: mathieu.desnoyers@polymtl.ca, torvalds@linux-foundation.org,
-       rmk+lkml@arm.linux.org.uk, dhowells@redhat.com, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
-       davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
-Message-Id: <20081110152221.64948d23.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811101811130.13034@xanadu.home>
-References: <9405.1226101315@redhat.com>
-	<20081108001555.GE18378@flint.arm.linux.org.uk>
-	<alpine.LFD.2.00.0811080939180.13034@xanadu.home>
-	<alpine.LFD.2.00.0811081746060.13034@xanadu.home>
-	<20081109022549.GA18508@Krystal>
-	<alpine.LFD.2.00.0811082143320.13034@xanadu.home>
-	<alpine.LFD.2.00.0811082356090.13034@xanadu.home>
-	<alpine.LFD.2.00.0811090015570.13034@xanadu.home>
-	<20081109064855.GA23782@Krystal>
-	<alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-	<20081109162250.GB10181@Krystal>
-	<alpine.LFD.2.00.0811092304300.13034@xanadu.home>
-	<20081109204256.89ab7925.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0811101627510.13034@xanadu.home>
-	<20081110135850.0d620f3c.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0811101811130.13034@xanadu.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 18:29:55 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:36338 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750811AbYKJX3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 18:29:54 -0500
+Date: Mon, 10 Nov 2008 15:27:35 -0800
+From: sukadev@linux.vnet.ibm.com
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
+       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Signals to cinit
+Message-ID: <20081110232735.GA20891@us.ibm.com>
+References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110193228.GA15519@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008 18:15:32 -0500 (EST)
-Nicolas Pitre <nico@cam.org> wrote:
+Oleg Nesterov [oleg@redhat.com] wrote:
+| (lkml cced because containers list's archive is not useable)
 
-> On Mon, 10 Nov 2008, Andrew Morton wrote:
-> 
-> > On Mon, 10 Nov 2008 16:34:54 -0500 (EST)
-> > Nicolas Pitre <nico@cam.org> wrote:
-> > 
-> > > > It is far better to make the management of the state explicit and at
-> > > > the control of the caller.  Get the caller to allocate the state and
-> > > > pass its address into this function.  Simple, clear, explicit and
-> > > > robust.
-> > > 
-> > > Sigh...  What about this compromize then?
-> > > 
-> > > diff --git a/include/linux/cnt32_to_63.h b/include/linux/cnt32_to_63.h
-> > > index 7605fdd..74ce767 100644
-> > > --- a/include/linux/cnt32_to_63.h
-> > > +++ b/include/linux/cnt32_to_63.h
-> > > @@ -32,8 +32,9 @@ union cnt32_to_63 {
-> > >  
-> > >  
-> > >  /**
-> > > - * cnt32_to_63 - Expand a 32-bit counter to a 63-bit counter
-> > > + * __cnt32_to_63 - Expand a 32-bit counter to a 63-bit counter
-> > >   * @cnt_lo: The low part of the counter
-> > > + * @cnt_hi_p: Pointer to storage for the extended part of the counter
-> > >   *
-> > >   * Many hardware clock counters are only 32 bits wide and therefore have
-> > >   * a relatively short period making wrap-arounds rather frequent.  This
-> > > @@ -75,16 +76,31 @@ union cnt32_to_63 {
-> > >   * clear-bit instruction. Otherwise caller must remember to clear the top
-> > >   * bit explicitly.
-> > >   */
-> > > -#define cnt32_to_63(cnt_lo) \
-> > > +#define __cnt32_to_63(cnt_lo, cnt_hi_p) \
-> > >  ({ \
-> > > -	static u32 __m_cnt_hi; \
-> > >  	union cnt32_to_63 __x; \
-> > > -	__x.hi = __m_cnt_hi; \
-> > > +	__x.hi = *(cnt_hi_p); \
-> > >   	smp_rmb(); \
-> > >  	__x.lo = (cnt_lo); \
-> > >  	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
-> > > -		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
-> > > +		*(cnt_hi_p) = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
-> > >  	__x.val; \
-> > >  })
-> > 
-> > This references its second argument twice, which can cause correctness
-> > or efficiency problems.
-> > 
-> > There is no reason that this had to be implemented in cpp. 
-> > Implementing it in C will fix the above problem.
-> 
-> No, it won't, for correctness and efficiency reasons.
-> 
-> And I've explained why already.
+Hmm. what do you mean by not usable ? I see your email here:
+https://lists.linux-foundation.org/pipermail/containers/2008-November/014152.html
 
-I'd be very surprised if you've really found a case where a macro is
-faster than an inlined function.  I don't think that has happened
-before.
+| 
+| On 11/10, Oleg Nesterov wrote:
+| >
+| > On 11/01, sukadev@linux.vnet.ibm.com wrote:
+| > >
+| > > Other approaches to try ?
+| >
+| > I think we should try to do something simple, even if not perfect. Because
+| > most users do not care about this problem since they do not use containers
+| > at all. It would be very sad to add intrusive changes to the code.
+| >
+| > I think we should fix another problem first. send_signal()->copy_siginfo()
+| > path must be changed anyway, when the signal comes from the parent ns we
+| > report the "wrong" si_code/si_pid, yes? So, somehow send_signal() must
+| > have "bool from_parent_ns" (or whatever) annyway.
+| >
+| > Now, let's forget forget for a moment that send_signal()->__sigqueue_alloc()
+| > can fail.
+| >
+| > I think we should encode this "from_parent_ns" into "struct siginfo". I do
+| > not think it is good idea to extend this structure, I think we can introduce
+| > SI_FROM_PARENT_NS or we perhaps can use "SI_FROMUSER(info) && info->si_pid == 0".
 
+Yes, afaics, we just need to pass one extra bit of information per signal
+(whether or not sender is in ancestor-ns) from sender to receiver.
+
+| > Or something. yes, sys_rt_sigqueueinfo() is problematic...
+
+Yes, if user-space sets si_pid to 0.
+
+Can we change sys_rt_sigqueueinfo() to:
+
+	if (!info->si_pid)
+		info->si_pid = getpid();
+
+or would that change semantics adversely ? How about putting this
+under CONFIG_PID_NS or your CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
+
+| >
+| > Now, copy_process(CLONE_NEWPID) sets child->signal |= SIGNAL_UNKILLABLE, this
+| > protects cinit from unwanted signals. Then we change get_signal_to_deliver()
+| >
+| > 	-	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+| > 	+	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) && !siginfo_from_parent_ns(info)
+| >
+| > and now we can kill cinit from parent ns. This needs more checks if we want
+| > to stop/strace it, but perhaps this is enough for the start. Note that we
+| > do not need to change complete_signal(), at least for now, the code under
+| > "if (sig_fatal(p, sig)" is just optimization.
+| >
+| >
+| > So, afaics, the only real problem is how we can handle the case when
+| > __sigqueue_alloc() fails. I think for the start we can just return
+| > -ENOMEM in this case (when from_parent_ns == T). Then we can improve
+| > this behaviour. We can change complete_signal() to ensure that the
+| > fatal signal from the upper ns always kills cinit, and in this case
+| > we ignore the the failed __sigqueue_alloc(). This way at least SIGKILL
+| > always works.
+| >
+| > Yes, this is not perfect, and it is very possible I missed something
+| > else. But simple.
+
+I agree 
+| 
+| But how can send_signal() know that the signal comes from the upper ns?
+| This is not trivial, we can't blindly use current to check. The signal
+| can be sent from irq/workqueue/etc.
+
+You mean the in_interrupt() check we had in earlier patchset would
+not be enough ?
+
+| 
+| Perhaps we can start with something like the patch below. Not that I like
+| it very much though. We should really place this code under
+| CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
+
+CONFIG_PID_NS ?
