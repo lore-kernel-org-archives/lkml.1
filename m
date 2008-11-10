@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbYKJJGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYKJJGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbYKJJGJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 04:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbYKJJFx
+	id S1755239AbYKJJGs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 04:06:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYKJJGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 04:05:53 -0500
-Received: from gate.crashing.org ([63.228.1.57]:55660 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753760AbYKJJFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 04:05:52 -0500
+	Mon, 10 Nov 2008 04:06:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40882
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753478AbYKJJGa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 04:06:30 -0500
+Date: Mon, 10 Nov 2008 01:06:29 -0800 (PST)
+Message-Id: <20081110.010629.22603553.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       akpm@linux-foundation.org, cloos@jhcloos.com, paul@burly.ondioline.org,
+       torvalds@linux-foundation.org
 Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Collins <paul@burly.ondioline.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       James Cloos <cloos@jhcloos.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <87abc8rr3m.fsf@burly.wgtn.ondioline.org>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1226295985.7731.7.camel@pasglop>
 References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	 <wnN9HICUAgP.A._d.f5zFJB@chimera> <1226295985.7731.7.camel@pasglop>
-	 <87abc8rr3m.fsf@burly.wgtn.ondioline.org>
-Content-Type: text/plain
-Date: Mon, 10 Nov 2008 20:05:21 +1100
-Message-Id: <1226307921.10430.0.camel@pasglop>
+	<wnN9HICUAgP.A._d.f5zFJB@chimera>
+	<1226295985.7731.7.camel@pasglop>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-10 at 20:13 +1300, Paul Collins wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > On Sun, 2008-11-09 at 18:59 +0100, Rafael J. Wysocki wrote:
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >> 
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.27.  Please verify if it still should be listed and let me know
-> >> (either way).
-> >
-> > Allright, so I finally managed to find a machine to reproduce it and
-> > I have a patch that fixes it here. I'm basically implementing the same
-> > thing as X which is to ensure the bitmap is padded to 32 pixels.
-> 
-> Works great here (as you might expect).
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 10 Nov 2008 16:46:25 +1100
 
-Yeah, well, Albook G4 with rv350, I think we have the same machine :-)
+> David, would you mind testing on your machine ? It's the one that shows
+> the biggest performance improvement, and I would like to know how much
+> it is affected by that patch. As long as the "worst case" performance
+> is still reasonable, I'm ok to take the hit if the improvement for you
+> is still significant.
 
-Ben.
-
+I will test this out at the very next opportunity.
 
