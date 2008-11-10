@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYKJO2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbYKJOcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755895AbYKJO2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYKJO2V
+	id S1754852AbYKJOcv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbYKJOco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:28:21 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57809 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751491AbYKJO2V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:28:21 -0500
-Date: Mon, 10 Nov 2008 08:28:10 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
-       morgan@kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [PATCH -v3 1/5] Capabilities: document the order of arguments
-	to cap_issubset
-Message-ID: <20081110142810.GA11561@us.ibm.com>
-References: <20081107151355.9977.47852.stgit@paris.rdu.redhat.com>
+	Mon, 10 Nov 2008 09:32:44 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46223 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724AbYKJOcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:32:43 -0500
+Date: Mon, 10 Nov 2008 09:32:27 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
+ dm_any_congested() to properly sync up with suspend code path)
+In-Reply-To: <1226327210.7685.173.camel@twins>
+Message-ID: <Pine.LNX.4.64.0811100929380.16965@hs20-bc2-1.build.redhat.com>
+References: <1225944008.14830.1101.camel@chandra-ubuntu> 
+ <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com> 
+ <20081110135401.GA11606@infradead.org>  <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+ <1226327210.7685.173.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081107151355.9977.47852.stgit@paris.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> Document the order of arguments for cap_issubset.  It's not instantly clear
-> which order the argument should be in.  So give an example.
-> 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Thanks, Eric.
+On Mon, 10 Nov 2008, Peter Zijlstra wrote:
 
--serge
+> On Mon, 2008-11-10 at 09:19 -0500, Mikulas Patocka wrote:
+> > On Mon, 10 Nov 2008, Christoph Hellwig wrote:
+> > 
+> > > On Mon, Nov 10, 2008 at 08:11:51AM -0500, Mikulas Patocka wrote:
+> > > > For upstream Linux developers: you are holding a spinlock and calling 
+> > > > bdi*_congested functions that can take indefinite amount of time (there 
+> > > > are even users reporting having 50 disks in one logical volume or so). I 
+> > > > think it would be good to move these calls out of spinlocks.
+> > > 
+> > > Umm, they shouldn't block that long, as that completely defeats their
+> > > purpose.  These functions are mostly used to avoid throwing more I/O at
+> > > a congested device if pdflush could do more useful things instead.  But
+> > > if it blocks in those functions anyway we wouldn't have to bother using
+> > > them.  Do you have more details about the uses cases when this happens
+> > > and where the routines spend so much time?
+> > 
+> > For device mapper, congested_fn asks every device in the tree and make OR 
+> > of their bits --- so if the user has 50 devices, it asks them all.
+> > 
+> > For md-linear, md-raid0, md-raid1, md-raid10 and md-multipath it does the 
+> > same --- asking every device.
+> > 
+> > If you have a better idea how to implement congested_fn, say it.
+> 
+> Fix the infrastructure by adding a function call so that you can have
+> the individual devices report their congestion state to the aggregate.
+> 
+> Then congestion_fn can return a valid state in O(1) because the state is
+> keps up-to-date by the individual state changes.
+> 
+> IOW, add a set_congested_fn() and clear_congested_fn().
 
-> ---
-> 
->  include/linux/capability.h |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/capability.h b/include/linux/capability.h
-> index 9d1fe30..9f44150 100644
-> --- a/include/linux/capability.h
-> +++ b/include/linux/capability.h
-> @@ -454,6 +454,13 @@ static inline int cap_isclear(const kernel_cap_t a)
->  	return 1;
->  }
-> 
-> +/*
-> + * Check if "a" is a subset of "set".
-> + * return 1 if ALL of the capabilities in "a" are also in "set"
-> + *	cap_issubset(0101, 1111) will return 1
-> + * return 0 if ANY of the capabilities in "a" are not in "set"
-> + *	cap_issubset(1111, 0101) will return 0
-> + */
->  static inline int cap_issubset(const kernel_cap_t a, const kernel_cap_t set)
->  {
->  	kernel_cap_t dest;
+If you have a physical disk that has many LVM volumes on it, you end up in 
+a situation when disk congestion state change is reported to all the 
+volumes. So it will create O(n) problem at the other side.
+
+Mikulas
