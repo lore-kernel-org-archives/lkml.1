@@ -1,129 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYKJJUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754402AbYKJJXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYKJJUS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 04:20:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYKJJUD
+	id S1754402AbYKJJXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 04:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbYKJJXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 04:20:03 -0500
-Received: from sceest01.correodeempresas.telefonica.es ([212.170.236.202]:53339
-	"EHLO sceest01.correodeempresas.telefonica.es" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753478AbYKJJUA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 04:20:00 -0500
-X-Greylist: delayed 337 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Nov 2008 04:20:00 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 10 Nov 2008 04:23:34 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:51590 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbYKJJXc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 04:23:32 -0500
+Date: Mon, 10 Nov 2008 14:53:50 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Subject: [PATCH] sched: Include group statistics in /proc/sched_debug
+Message-ID: <20081110092350.GA3679@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Regression: Boot hang sizing transparent PCI-to-PCI bridge since after 2.6.25-r7.
-Date: Mon, 10 Nov 2008 10:12:22 +0100
-Message-ID: <D913A682D10DBA4097B5D068D281B09B0266F65B@S1128EXE.bbva.igrupobbva>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Regression: Boot hang sizing transparent PCI-to-PCI bridge since after 2.6.25-r7.
-Thread-Index: AclDFHCeuI4ZPT5jTkChrD6jjluHIw==
-From: "GARCIA DE SORIA LUCENA, JUAN JESUS" <juanj.g_soria@grupobbva.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Nov 2008 09:12:23.0195 (UTC) FILETIME=[710E76B0:01C94314]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Include group statistics in /proc/sched_debug.
 
-Time ago I bisected a commit that was making my OKI Anima 3300 laptop
-hang during boot.
+Since the statistics of a group entity isn't exported directly from the
+kernel, it becomes difficult to obtain some of the group statistics.
+For example, the current method to obtain exec time of a group entity
+is not always accurate. One has to read the exec times of all
+the tasks(/proc/<pid>/sched) in the group and add them. This method
+fails (or becomes difficult) if we want to collect stats of a group over
+a duration where tasks get created and terminated.
 
-The offending commit was:
+This patch makes it easier to obtain group stats by directly including
+them in /proc/sched_debug. Stats like group exec time would help user
+programs (like LTP) to accurately measure the group fairness.
 
-------------
-commit 12c22d6ef299ccf0955e5756eb57d90d7577ac68
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Wed Mar 26 11:22:40 2008 -0700
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>
+CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+---
+ kernel/sched_debug.c |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 66 insertions(+), 1 deletion(-)
 
-    Revert "PCI: remove transparent bridge sizing"
+--- a/kernel/sched_debug.c
++++ b/kernel/sched_debug.c
+@@ -53,6 +53,70 @@ static unsigned long nsec_low(unsigned l
+ 
+ #define SPLIT_NS(x) nsec_high(x), nsec_low(x)
+ 
++#ifdef CONFIG_GROUP_SCHED
++
++static void print_group_stats(struct seq_file *m, struct task_group *tg,
++	int cpu)
++{
++	struct sched_entity *se = tg->se[cpu];
++
++#if defined(CONFIG_CGROUP_SCHED)
++	char path[128] = "";
++	struct cgroup *cgroup = NULL;
++
++	if (tg)
++		cgroup = tg->css.cgroup;
++
++	if (cgroup)
++		cgroup_path(cgroup, path, sizeof(path));
++
++	SEQ_printf(m, "\ngroup[%d]:%s\n", cpu, path);
++#else
++	SEQ_printf(m, "\ngroup[%d]:\n", cpu);
++#endif
++#define P(F) \
++	SEQ_printf(m, "  .%-30s: %lld\n", #F, (long long)F)
++#define PN(F) \
++	SEQ_printf(m, "  .%-30s: %lld.%06ld\n", #F, SPLIT_NS((long long)F))
++
++	PN(se->exec_start);
++	PN(se->vruntime);
++	PN(se->sum_exec_runtime);
++#ifdef CONFIG_SCHEDSTATS
++	PN(se->wait_start);
++	PN(se->sleep_start);
++	PN(se->block_start);
++	PN(se->sleep_max);
++	PN(se->block_max);
++	PN(se->exec_max);
++	PN(se->slice_max);
++	PN(se->wait_max);
++	PN(se->wait_sum);
++	P(se->wait_count);
++#endif
++	P(se->load.weight);
++#undef PN
++#undef P
++}
++
++static void print_tg_stats(struct seq_file *m, int cpu)
++{
++	struct task_group *tg;
++
++	rcu_read_lock();
++	list_for_each_entry(tg, &task_groups, list) {
++		if (tg->se[cpu])
++			print_group_stats(m, tg, cpu);
++	}
++	rcu_read_unlock();
++}
++#else
++static void print_tg_stats(struct seq_file *m, int cpu)
++{
++	return;
++}
++#endif
++
+ static void
+ print_task(struct seq_file *m, struct rq *rq, struct task_struct *p)
+ {
+@@ -264,6 +328,7 @@ static void print_cpu(struct seq_file *m
+ 	print_rt_stats(m, cpu);
+ 
+ 	print_rq(m, rq, cpu);
++	print_tg_stats(m, cpu);
+ }
+ 
+ static int sched_debug_show(struct seq_file *m, void *v)
+@@ -271,7 +336,7 @@ static int sched_debug_show(struct seq_f
+ 	u64 now = ktime_to_ns(ktime_get());
+ 	int cpu;
+ 
+-	SEQ_printf(m, "Sched Debug Version: v0.07, %s %.*s\n",
++	SEQ_printf(m, "Sched Debug Version: v0.08, %s %.*s\n",
+ 		init_utsname()->release,
+ 		(int)strcspn(init_utsname()->version, " "),
+ 		init_utsname()->version);
+--
 
-    This reverts commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f, which
-    caused various interesting problems for people, including wrong
-resource
-    allocations.  See for example bugzilla entry "2.6.25-rc2: ohci1394
-    problem (MMIO broken)" at
+An extract of /proc/sched_debug showing group stats obtained from
+this patch:
 
-        http://bugzilla.kernel.org/show_bug.cgi?id=10080
+group[1]:/3/a/1
+  .se->exec_start                : 256484.781577
+  .se->vruntime                  : 12868.176994
+  .se->sum_exec_runtime          : 3243.669709
+  .se->wait_start                : 0.000000
+  .se->sleep_start               : 0.000000
+  .se->block_start               : 0.000000
+  .se->sleep_max                 : 0.000000
+  .se->block_max                 : 0.000000
+  .se->exec_max                  : 1.002095
+  .se->slice_max                 : 13.997073
+  .se->wait_max                  : 67.978322
+  .se->wait_sum                  : 7141.676906
+  .se->wait_count                : 203
+  .se->load.weight               : 255
 
-[...]
-------------
+group[1]:/3/a
+  .se->exec_start                : 256484.781577
+  .se->vruntime                  : 18649.700858
+  .se->sum_exec_runtime          : 3302.827997
+  .se->wait_start                : 0.000000
+  .se->sleep_start               : 0.000000
+  .se->block_start               : 0.000000
+  .se->sleep_max                 : 0.000000
+  .se->block_max                 : 0.000000
+  .se->exec_max                  : 1.009411
+  .se->slice_max                 : 7.015594
+  .se->wait_max                  : 67.978322
+  .se->wait_sum                  : 7082.536617
+  .se->wait_count                : 214
+  .se->load.weight               : 255
 
-It happenend sometime fter 2.6.25-rc7; since then I've been living on
-hand-patched kernels; I can't boot any official kernel from Ubuntu or
-Gentoo without patching them. For Ubuntu this would mean rebuilding the
-LiveCD and then manually patching every kernel update and restricted
-modules distribution...
+group[1]:/3
+  .se->exec_start                : 256484.781577
+  .se->vruntime                  : 224861.311011
+  .se->sum_exec_runtime          : 3302.827997
+  .se->wait_start                : 0.000000
+  .se->sleep_start               : 0.000000
+  .se->block_start               : 0.000000
+  .se->sleep_max                 : 0.000000
+  .se->block_max                 : 0.000000
+  .se->exec_max                  : 1.002095
+  .se->slice_max                 : 19.007546
+  .se->wait_max                  : 67.978322
+  .se->wait_sum                  : 7082.536617
+  .se->wait_count                : 214
+  .se->load.weight               : 24
 
-
-I filled this bug:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=11054
-
-that seems to be getting no attention at all. It includes detailed lspci
-output.
-
-
-The specific bridge that fails (as far as I can tell from putting
-kprintf()'s into the kernel) is:
-
-00:10.0 PCI bridge: nVidia Corporation MCP51 PCI Bridge (rev a2)
-(prog-if 01 [Subtractive decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR+ FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0
-	Bus: primary=00, secondary=04, subordinate=08, sec-latency=64
-	I/O behind bridge: 0000f000-00000fff
-	Memory behind bridge: c3000000-c30fffff
-	Prefetchable memory behind bridge: fff00000-000fffff
-	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort-
-<TAbort- <MAbort- <SERR- <PERR-
-	BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
-		PriDiscTmr- SecDiscTmr+ DiscTmrStat- DiscTmrSERREn-
-	Capabilities: [b8] Subsystem: Gammagraphx, Inc. Device 0000
-	Capabilities: [8c] HyperTransport: MSI Mapping Enable- Fixed-
-		Mapping Address Base: 00000000fee00000
-
-
-A specific weird detail of the machine (I don't know whether it's
-related at all) is that the onboard ethernet controller is recognized as
-some kind of bridge??? :
-
-00:14.0 Bridge: nVidia Corporation MCP51 Ethernet Controller (rev a3)
-	Subsystem: CLEVO/KAPOK Computer Device 5403
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B- DisINTx-
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-	Latency: 0 (250ns min, 5000ns max)
-	Interrupt: pin A routed to IRQ 23
-	Region 0: Memory at c0007000 (32-bit, non-prefetchable)
-[size=4K]
-	Region 1: I/O ports at 30b8 [size=8]
-	Capabilities: [44] Power Management version 2
-		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-		Status: D0 PME-Enable+ DSel=0 DScale=0 PME-
-	Kernel driver in use: forcedeth
-
-
-Since this issue means that either I scrap my laptop or suffer a forced
-live of kernel micromanagement no matter the distro I choose, I'm very
-interested in helping with this. I'll try to find the problem myself if
-someone directs me about what to look for.
-
-
-Regards, and thanks in advance,
-
-   Juan Jesus.
-
-
+Regards,
+Bharata.
