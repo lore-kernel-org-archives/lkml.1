@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYKJGMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754064AbYKJG3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbYKJGMg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 01:12:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbYKJGM1
+	id S1754064AbYKJG3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 01:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYKJG3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 01:12:27 -0500
-Received: from rv-out-0506.google.com ([209.85.198.230]:36622 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbYKJGM0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 01:12:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=Eb6nti4/WFvwv30is60aohTcWUgKnrvXkwop00XxJRi89VsVUxyV1tXX3mUGVyKI4p
-         sRCCS6+PWhydyThz6CtXF9SU4OCxYRI21Gf0VRySoRM+ypCgDQw+psxoM6FDy5YxBLGA
-         4m6FA5NloEnyKDTQismqB5UwdwKixbjP5/MFo=
-Subject: [RFC-PATCH] x86: really use __builtin_memcmp on x86_32
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 09 Nov 2008 22:12:23 -0800
-Message-Id: <1226297544.5478.26.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 10 Nov 2008 01:29:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60890 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbYKJG3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 01:29:08 -0500
+Message-ID: <4917D4AB.4080401@kernel.org>
+Date: Mon, 10 Nov 2008 15:28:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] block: fix add_partition() error path
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Nov 2008 06:29:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: prevent generic code from overriding __builtin_memcmp
+Partition stats structure was not freed on devt allocation failure
+path.  Fix it.
 
-lib/string.c was using a generic implementation of memcmp
-because __HAVE_ARCH_MEMCMP was not defined and it was then doing
-#undef memcmp and defining a generic version.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
- arch/x86/include/asm/string_32.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ fs/partitions/check.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/string_32.h b/arch/x86/include/asm/string_32.h
-index c86f452..b671baf 100644
---- a/arch/x86/include/asm/string_32.h
-+++ b/arch/x86/include/asm/string_32.h
-@@ -195,6 +195,7 @@ static inline void *__memcpy3d(void *to, const void *from, size_t len)
- #define __HAVE_ARCH_MEMMOVE
- void *memmove(void *dest, const void *src, size_t n);
+Index: work/fs/partitions/check.c
+===================================================================
+--- work.orig/fs/partitions/check.c
++++ work/fs/partitions/check.c
+@@ -395,7 +395,7 @@ int add_partition(struct gendisk *disk,
  
-+#define __HAVE_ARCH_MEMCMP
- #define memcmp __builtin_memcmp
+ 	err = blk_alloc_devt(p, &devt);
+ 	if (err)
+-		goto out_free;
++		goto out_free_stats;
+ 	pdev->devt = devt;
  
- #define __HAVE_ARCH_MEMCHR
--- 
-1.6.0.3.866.gc189b
-
-
-
+ 	/* delay uevent until 'holders' subdir is created */
+@@ -426,6 +426,8 @@ int add_partition(struct gendisk *disk,
+ 
+ 	return 0;
+ 
++out_free_stats:
++	free_part_stats(p);
+ out_free:
+ 	kfree(p);
+ 	return err;
