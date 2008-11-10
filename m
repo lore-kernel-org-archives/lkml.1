@@ -1,50 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbYKJWHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYKJWMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbYKJWHX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYKJWHJ
+	id S1753809AbYKJWMZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYKJWMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:07:09 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:47642 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750875AbYKJWHG (ORCPT
+	Mon, 10 Nov 2008 17:12:17 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:10943 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbYKJWMQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:07:06 -0500
-Date: Mon, 10 Nov 2008 16:06:52 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-cc: "Luck, Tony" <tony.luck@intel.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-ia64@vger.kernel.org,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: Re: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
-In-Reply-To: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0811101600490.32282@quilx.com>
-References: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com>
+	Mon, 10 Nov 2008 17:12:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DrfzHfk7nvS5Je+aTKi3KNzWXcH8GX4uYiJQkuzUM30aFEHGGG4qs/ZpLCsEdwGB73
+         FfhXXZPqclnbxW03o7YFWiUe5MShDW98mVTNXgI5dUX0v2JxkOLLiPiFOWNJpI0XWp6N
+         wUfHdI/T8/wuda4ZzNFBGqn3LB8hgxYFlzXLg=
+Message-ID: <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
+Date: Tue, 11 Nov 2008 00:12:14 +0200
+From: "Nick Kossifidis" <mickflemm@gmail.com>
+To: "Maxim Levitsky" <maximlevitsky@gmail.com>
+Subject: Re: [ath5k-devel] Bugs on aspire one A150
+Cc: "Bob Copeland" <me@bobcopeland.com>, linux-pm@lists.linux-foundation.org,
+       ath5k-devel@venema.h4ckr.net, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+In-Reply-To: <4918A8C5.3050607@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <491506DB.1070000@gmail.com>
+	 <b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com>
+	 <4918A8C5.3050607@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008, Yasunori Goto wrote:
+2008/11/10 Maxim Levitsky <maximlevitsky@gmail.com>:
+> Bob Copeland wrote:
+>> On Fri, Nov 7, 2008 at 10:26 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+>>> ** 2 - wireless: not to mention the fact that ath5k wasn't installed by
+>>> default in ubuntu...
+>>> wireless more or less works, but kernel log is full of backtraces.
+>>
+>> As you've seen, these should at least be gone now...
+>>
+>>> Was able to connect to my WPA2 access point.
+>>> Sometimes wireless fails completely, especially after suspend to ram.
+>>
+>> Did you get noise calibration failures in dmesg at this point?  Felix posted
+>> a patch recently that handles them better.
+> Yep, but they seems to be gone in latest -git too.
+> Wireless work fine now, it seems like my iwl3945.
+>
+>>
+>>> Advanced features like monitor/injection work, but when I changed the card's
+>>> mac address it stopped working.
+>>> I also noticed that if I then start airodump, then wireless works with new
+>>> mac.
+> Why it doesn't accept new mac?, can this be fixed?
+>
+>
+>>
+>>> ** 4 - wireless led doesn't work.
+>>> ath5k devs, can you fix this?
+>>
+>> Currently all the LED code we have in there is for setting a particular gpio
+>> for particular laptops (and they differ between models).  We only have quirks
+>> for IBM and HP, none for Acer.  Also, the legacy-hal seems to have a different
+>> strategy for 2425 chips.  I can try to hack up some code for you to test.
+>>
+>
+> I have seen on the web that madwifi did support the led with some gpio settings
+>
+> sysctl -w dev.wifi0.ledpin=3
+> sysctl -w dev.wifi0.softled=1
+>
+> from https://help.ubuntu.com/community/AspireOne
+>
+> Best regards,
+>        Maxim Levitsky
 
-> Even if a device allows over 4G access and the driver doesn't specify
-> GFP_DMA, dma_alloc_coherent() returns under 4G area.
-
-GFP_DMA can become 0 for configurations that have
-!CONFIG_ZONE_DMA. Then all of memory is available.
-
-The call is subarch specific. So f.e. Altix sn_dma_alloc_coherent does
-not set __GFP_DMA.
-
-If you have an IA64 arch that only support 32bit I/O then __GFP_DMA in
-dma_alloc_coherent makes sense.
+i think that some led settings are stored on EEPROM, let me check it out...
 
 
-
-
-
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
