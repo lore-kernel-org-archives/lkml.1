@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYKJUSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbYKJU1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752721AbYKJUSd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 15:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYKJUST
+	id S1753657AbYKJU1W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 15:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYKJU1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 15:18:19 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35757 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751143AbYKJUSS (ORCPT
+	Mon, 10 Nov 2008 15:27:07 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:1739 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034AbYKJU1G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 15:18:18 -0500
-Date: Mon, 10 Nov 2008 15:18:16 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Brian Kysela <brian.kysela@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, <linux-usb@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>
-Subject: Re: [BUG] usb-storage: Error in queuecommand: us->srb = ffff88006a338480
-In-Reply-To: <20081110192403.GA605@ezra.hsd1.tn.comcast.net>
-Message-ID: <Pine.LNX.4.44L0.0811101509040.2467-100000@iolanthe.rowland.org>
+	Mon, 10 Nov 2008 15:27:06 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=KKy60vrT4/HQJ1ZQJFICzMf9mlVohiJL8oYgqimLnRoMM1xmpM3ICcYAqCrjL6DRT
+	KYeoL8kY/fbym9kXi0C9Q==
+Date: Mon, 10 Nov 2008 12:26:50 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Miao Xie <miaox@cn.fujitsu.com>
+cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Paul Menage <menage@google.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpuset: update top cpuset's mems after adding a node
+In-Reply-To: <491828DE.9010505@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0811101222470.1219@chino.kir.corp.google.com>
+References: <4917D7B4.4000605@cn.fujitsu.com> <20081110155231.F82E.E1E9C6FF@jp.fujitsu.com> <491828DE.9010505@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008, Brian Kysela wrote:
+On Mon, 10 Nov 2008, Miao Xie wrote:
 
-> I tested with 2.6.27.5 and found that, although the process would hang as often
-> as usual, it always recovered instead of needing to reboot. No kernel bug or
-> system freeze, no climbing load avg, etc. Here is the usbmon output on a
-> failed copy:
+> on 2008-11-10 14:56 Yasunori Goto wrote:
+> > Did you test this patch?  Was it OK?
 > 
-> http://www.kysela.org/pub/4.mon.out
+> I did it on IA64 just now. Updating top cpuset's mems is fine.
+> But I forgot to update the mems_allowed of every task in top cpuset group.
+> It is difficult to fix it, because I don't know whether updating a memory-bound
+> task's mem_allowed is good or not.
 > 
-> The syslog:
-> 
-> [ 1003.736201] sd 6:0:0:0: [sdb] Assuming drive cache: write through
-> [ 1003.738949] sd 6:0:0:0: [sdb] Assuming drive cache: write through
-> [ 1003.741886]  sdb1
-> [ 1112.311917] end_request: I/O error, dev sdb, sector 667600
-> [ 1112.311956] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.312038] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.312074] end_request: I/O error, dev sdb, sector 667840
-> [ 1112.312121] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.312131] Buffer I/O error on device sdb1, logical block 512
-> [ 1112.312137] lost page write due to I/O error on sdb1
-> [ 1112.312159] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.312168] Buffer I/O error on device sdb1, logical block 576
-> [ 1112.312172] lost page write due to I/O error on sdb1
-> [ 1112.312181] Buffer I/O error on device sdb1, logical block 577
-> [ 1112.312185] lost page write due to I/O error on sdb1
-> [ 1112.312193] Buffer I/O error on device sdb1, logical block 578
-> [ 1112.312198] lost page write due to I/O error on sdb1
-> [ 1112.312211] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.312234] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.312247] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.379235] sd 6:0:0:0: rejecting I/O to offline device
-> [ 1112.379640] FAT: unable to read inode block for updating (i_pos 9253)
 
-This is essentially the same failure mechanism as before, but without
-the timeout-related kernel bug.
+There's a fix pending in the mmotm tree that calls 
+cpuset_update_task_memory_state() in the slow path of the page allocator, 
+so if one of these tasks fails to allocate memory, its cached mems_allowed 
+nodemask will be updated to include the new node(s).
 
-There is a communications error during one of the reads.  It takes the
-same form in both logs: A transfer receives only 4051 bytes when it
-should get 4096.  Don't ask me why that happens; it's some sort of
-hardware or firmware failure either in the drive or in your USB host
-controller.
-
-The kernel tries to recover, but it looks as though the drive is stuck 
-trying to send the remaining bytes.  Resets don't help, so the drive 
-is taken off-line.
-
-You _might_ be able to prevent these problems by reducing the drive's 
-max_sectors value, say to 128.  See
-
-	http://www.linux-usb.org/FAQ.html#i5
-
-No guarantees, though.
-
-Alan Stern
-
+The patch is available at 
+http://userweb.kernel.org/~akpm/mmotm/broken-out/cpusets-update-mems-allowed-in-page-allocator.patch
