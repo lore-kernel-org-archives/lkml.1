@@ -1,79 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbYKJNEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYKJNHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293AbYKJNEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 08:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbYKJNE0
+	id S1755294AbYKJNHz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 08:07:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYKJNHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 08:04:26 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:33816 "EHLO smtps.tip.net.au"
+	Mon, 10 Nov 2008 08:07:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34370 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754033AbYKJNEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 08:04:25 -0500
-Date: Tue, 11 Nov 2008 00:04:12 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, linux-next@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, michaelc@cs.wisc.edu,
-       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
-       linux-scsi@vger.kernel.org, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
-Message-Id: <20081111000412.b4bbaa51.sfr@canb.auug.org.au>
-In-Reply-To: <49182E85.9010405@panasas.com>
-References: <48876009.8010701@panasas.com>
-	<491073BB.4000900@panasas.com>
-	<20081104111923.bb19c238.akpm@linux-foundation.org>
-	<4916FAB3.4010409@panasas.com>
-	<20081110102607.378c3279.sfr@canb.auug.org.au>
-	<49182E85.9010405@panasas.com>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__11_Nov_2008_00_04_12_+1100_fxsYjs8bxwLF/wBs"
+	id S1754033AbYKJNHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 08:07:47 -0500
+Date: Mon, 10 Nov 2008 14:07:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       lguest@ozlabs.org, jeremy@xensource.com,
+       Steven Rostedt <srostedt@redhat.com>, Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+Message-ID: <20081110130709.GA32613@elte.hu>
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <20081110085846.GG22392@elte.hu> <1226321061.23701.1283927805@webmail.messagingengine.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1226321061.23701.1283927805@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__11_Nov_2008_00_04_12_+1100_fxsYjs8bxwLF/wBs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Boaz,
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 
-On Mon, 10 Nov 2008 14:52:21 +0200 Boaz Harrosh <bharrosh@panasas.com> wrot=
-e:
->
-> This has proven itself already. I found some warnings on some ARCHs
-> concerning printk of u64 types. I have made a sweep and fixed all these
-> places and others.
+> On Mon, 10 Nov 2008 09:58:46 +0100, "Ingo Molnar" <mingo@elte.hu> said:
+> > * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+> > > Hi all,
+> > > 
+> > > I have spent some time trying to find out how expensive the 
+> > > segment-switching patch was. I have only one computer available at 
+> > > the time: a "Sempron 2400+", 32-bit-only machine.
+> > > 
+> > > Measured were timings of "hackbench 10" in a loop. The average was 
+> > > taken of more than 100 runs. Timings were done for two seperate 
+> > > boots of the system.
+> 
+> Hi Ingo,
+> 
+> I guess you just stopped reading here?
 
-Good.  That's partly what -next is for (to find the arch dependent
-problems).
+yeah, sorry! You describe and did exactly the kind of histogram that i 
+wanted to see done ;-)
 
-> If you could keep it for the next round it could be grate. So I can make
-> sure I got rid of all the warnings.
+I'm not sure i can read out the same thing from the result though. 
+Firstly, it seems the 'after' histograms are better, because there the 
+histogram shifted towards shorter delays. (i.e. lower effective irq 
+entry overhead)
 
-Normally trees stay in linux-next until they are no longer needed
-(usually at least until they have been integrated into Linus' tree) and I
-automatically refetch the trees each day.
+OTOH, unless i'm misreading them, it's a bit hard to compare them 
+visually: the integral of the histograms does not seem to be constant, 
+they dont seem to be normalized.
+ 
+It should be made constant for them to be comparable. (i.e. the total 
+number of irq hits profiled should be equal - or should be normalized 
+with the sum after the fact)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__11_Nov_2008_00_04_12_+1100_fxsYjs8bxwLF/wBs
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkYMUwACgkQjjKRsyhoI8y9LgCcCimEtE9cNQrHI3suFGiHHsu1
-f9UAoJBZoF4pqROGMRb5Fjibly2B3BFU
-=oOYu
------END PGP SIGNATURE-----
-
---Signature=_Tue__11_Nov_2008_00_04_12_+1100_fxsYjs8bxwLF/wBs--
+	Ingo
