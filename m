@@ -1,411 +1,559 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYKJU6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYKJVJU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbYKJU6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 15:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYKJU6k
+	id S1754615AbYKJVJU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 16:09:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYKJVJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 15:58:40 -0500
-Received: from hs-out-0708.google.com ([64.233.178.240]:59019 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbYKJU6i (ORCPT
+	Mon, 10 Nov 2008 16:09:10 -0500
+Received: from ppp-111-12.adsl.restena.lu ([158.64.111.12]:45326 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752014AbYKJVJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 15:58:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Tan7qeK6d1MOpstK3z9tKuJ9MUiGHJWY0eyvf4IHLfbz8UAbNG/mmJ58+lmVhJimGr
-         kSn1PO0cT6lLm8Nx5y70BRhEoGEFQc8p6H/N1bUSsZTzQPn9ZSkjW6Yjg8xMnpG8srO1
-         e+9ipNtCWVDWj8CRaJ7RD3EfCFZwUQlZS5Fw8=
-Message-ID: <4918A074.1050003@gmail.com>
-Date: Mon, 10 Nov 2008 21:58:28 +0100
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, rientjes@google.com
-CC: balbir@linux.vnet.ibm.com, Michael Rubin <mrubin@google.com>,
-       menage@google.com, dave@linux.vnet.ibm.com, chlunde@ping.uio.no,
-       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
-       agk@sourceware.org, m.innocenti@cineca.it, s-uchida@ap.jp.nec.com,
-       ryov@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, containers@lists.osdl.org
-Subject: [PATCH -mm] mm: fine-grained dirty_ratio_pcm and dirty_background_ratio_pcm
- (v2)
-References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com> <48EB4236.1060100@linux.vnet.ibm.com> <48EB851D.2030300@gmail.com> <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com> <48ECB215.4040409@linux.vnet.ibm.com> <48EE236A.90007@gmail.com>
-In-Reply-To: <48EE236A.90007@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Nov 2008 16:09:08 -0500
+X-Greylist: delayed 491 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Nov 2008 16:09:07 EST
+Date: Mon, 10 Nov 2008 22:00:46 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, JosephChan@via.com.tw,
+       <linux-fbdev-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
+Message-ID: <20081110220046.10376327@neptune.home>
+In-Reply-To: <20081109145959.6a8d9e8e.akpm@linux-foundation.org>
+References: <20081109202537.33ead0a2@neptune.home>
+	<20081109113603.d45361ad.akpm@linux-foundation.org>
+	<20081109122515.1deb9ec2@infradead.org>
+	<20081109213811.4b85adc6@neptune.home>
+	<20081109125522.b5266352.akpm@linux-foundation.org>
+	<20081109223748.3182e31d@neptune.home>
+	<20081109145959.6a8d9e8e.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current granularity of 5% of dirtyable memory for dirty pages writeback is
-too coarse for large memory machines and this will get worse as
-memory-size/disk-speed ratio continues to increase.
+On Sun, 09 November 2008 Andrew Morton wrote:
+> > It show a nice candidate, viafb_ioctl in top-6:
+> > 0xc011612b identity_mapped [vmlinux]:                   4096
+> 
+> erk!
+> 
+> > 0xc017896b do_sys_poll [vmlinux]:                       888
+> > 0xc0178bdd do_sys_poll [vmlinux]:                       888
+> > 0xc024506b sha256_transform [vmlinux]:                  752
+> > 0xc024768b sha256_transform [vmlinux]:                  752
+> > 0xc027d933 viafb_ioctl [vmlinux]:                       728
+> > 0xc01783c8 do_select [vmlinux]:                         708
+> > 0xc0178853 do_select [vmlinux]:                         708
+> > 
+> > 
+> > On a new attempt the box survived fbset "1280x1024-60" though
+> > I did wait some time after boot up before calling it.
+> > So it's pretty probable that either it gets near the limit of stack
+> > or this time the neighborhood of the stack was not just as
+> > critical :/
+> > 
+> > Shall I trim down that function's stack usage as well?
+> > (many structs allocated from stack)
+> 
+> Yes please.
 
-These large writebacks can be unpleasant for desktop or latency-sensitive
-environments, where the time to complete each writeback can be perceived as a
-lack of responsiveness by the whole system.
+I did a first attempt, based on suggested technique.
+For viafb_ioctl() I did put all the structs in a single union (on stack)
+and used the appropriate one depending on the cmd.
+This saves 276 bytes out of 728 according to check_stack.pl
 
-Following there's a similar solution as discussed in [1], but a little
-bit simplified in order to provide the same functionality (in particular
-to avoid backward compatibility problems) and reduce the amount of code
-needed to implement an in-kernel parser to handle percentages with
-decimals digits.
+The most clean approach would probably be to split out the parts using
+bigger structs into separate functions and allocating the required
+memory from there.
 
-The kernel provides the following parameters:
- - dirty_ratio, dirty_background_ratio in percentage (1 ... 100)
- - dirty_ratio_pcm, dirty_background_ratio_pcm in units of percent mille (1 ... 100,000)
+I also switched viafb_cursor() to the struct technique.
 
-Both dirty_ratio and dirty_ratio_pcm refer to the same vm_dirty_ratio variable,
-only the interface to read/write this value is different. The same is valid for
-dirty_background_ratio.
+See patch below for both.
 
-In this way it's possible to provide a fine-grained interface to configure the
-writeback policy and at the same time preserve the compatibility with the old
-dirty_ratio / dirty_background_ratio users.
 
-Examples:
- # echo 5 > /proc/sys/vm/dirty_ratio
- # cat /proc/sys/vm/dirty_ratio
- 5
- # cat /proc/sys/vm/dirty_ratio_pcm
- 5000
 
- # echo 500 > /proc/sys/vm/dirty_ratio_pcm
- # cat /proc/sys/vm/dirty_ratio
- 0
- # cat /proc/sys/vm/dirty_ratio_pcm
- 500
 
- # echo 5500 > /proc/sys/vm/dirty_ratio_pcm
- # cat /proc/sys/vm/dirty_ratio
- 5
- # cat /proc/sys/vm/dirty_ratio_pcm
- 5500
+During conversion of viafb_ioctl() I noticed the following:
 
-Changelog: (v1 -> v2)
+Those two cases just copy_from_user and do nothing with copied data,
+incomplete implementation?:
+        case VIAFB_SET_PANEL_POSITION:
+                if (copy_from_user(&u.panel_pos_size_para, argp,
+                                   sizeof(u.panel_pos_size_para)))
+                        return -EFAULT;
+                break;
+        case VIAFB_SET_PANEL_SIZE:
+                if (copy_from_user(&u.panel_pos_size_para, argp,
+                                   sizeof(u.panel_pos_size_para)))
+                        return -EFAULT;
+                break;
 
-* fix overflow in 32bit systems (calc_period_shift needs a u64)
-* rebase (and tested) to 2.6.28-rc2-mm1
+Handling of GET/SET GAMMA looks buggy:
+In each case 256*4 bytes are allocated but only 4 bytes (size of pointer)
+are copied to/from userspace though viafb_(get|set)_gamma_table() operates
+on the full 256 elements...
+        case VIAFB_SET_GAMMA_LUT:
+                viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+                if (!viafb_gamma_table)
+                        return -ENOMEM;
+                if (copy_from_user(viafb_gamma_table, argp,
+                                sizeof(viafb_gamma_table))) {
+                        kfree(viafb_gamma_table);
+                        return -EFAULT;
+                }
+                viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
+                kfree(viafb_gamma_table);
+                break;
 
-[1] http://lkml.org/lkml/2008/10/7/230
+        case VIAFB_GET_GAMMA_LUT:
+                viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+                if (!viafb_gamma_table)
+                        return -ENOMEM;
+                viafb_get_gamma_table(viafb_gamma_table);
+                if (copy_to_user(argp, viafb_gamma_table,
+                        sizeof(viafb_gamma_table))) {
+                        kfree(viafb_gamma_table);
+                        return -EFAULT;
+                }
+                kfree(viafb_gamma_table);
+                break;
 
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+I don't know if there is a userspace app that uses these VIA IOCTLs...
+so the ioctl part is just compile-tested.
+After checking, fbset just uses some generic framebuffer IOCTLs outside
+of viafb's scope, thus not passing through viafb_ioctl().
+
+
+
 ---
- Documentation/filesystems/proc.txt |   20 +++++++++
- include/linux/sysctl.h             |    7 +++
- kernel/sysctl.c                    |   80 +++++++++++++++++++++++++++++++++--
- kernel/sysctl_check.c              |    3 +
- mm/page-writeback.c                |   31 +++++++++++---
- 5 files changed, 129 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index bcceb99..38ed5bf 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -1389,6 +1389,16 @@ pages + file cache, not including locked pages and HugePages), the number of
- pages at which the pdflush background writeback daemon will start writing out
- dirty data.
+--- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig	2008-11-09 19:36:47.000000000 +0100
++++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10 20:50:32.000000000 +0100
+@@ -546,23 +546,25 @@ static int viafb_blank(int blank_mode, s
  
-+dirty_background_ratio_pcm
-+--------------------------
-+
-+A fine-grained interface to configure dirty_background_ratio.
-+
-+Contains, as a percentage in units of pcm (percent mille) of the dirtyable
-+system memory (free pages + mapped pages + file cache, not including locked
-+pages and HugePages), the number of pages at which the pdflush background
-+writeback daemon will start writing out dirty data.
-+
- dirty_ratio
- -----------------
- 
-@@ -1397,6 +1407,16 @@ pages + file cache, not including locked pages and HugePages), the number of
- pages at which a process which is generating disk writes will itself start
- writing out dirty data.
- 
-+dirty_ratio_pcm
-+---------------
-+
-+A fine-grained interface to configure dirty_ratio.
-+
-+Contains, as a percentage in units of pcm (percent mille) of the dirtyable
-+system memory (free pages + mapped pages + file cache, not including locked
-+pages and HugePages), the number of pages at which a process which is
-+generating disk writes will itself start writing out dirty data.
-+
- dirty_writeback_centisecs
- -------------------------
- 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 39d471d..799594b 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -32,6 +32,9 @@
- struct file;
- struct completion;
- 
-+#define PERCENT_PCM	1000
-+#define ONE_HUNDRED_PCM (100 * PERCENT_PCM)
-+
- #define CTL_MAXNAME 10		/* how many path components do we allow in a
- 				   call to sysctl?   In other words, what is
- 				   the largest acceptable value for the nlen
-@@ -205,6 +208,8 @@ enum
- 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
- 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
- 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
-+	VM_DIRTY_BACKGROUND_PCM = 36, /* fine-grained dirty_background_ratio */
-+	VM_DIRTY_RATIO_PCM = 37, /* fine-grained dirty_ratio */
- };
- 
- 
-@@ -991,6 +996,8 @@ extern int proc_dointvec_userhz_jiffies(struct ctl_table *, int, struct file *,
- 					void __user *, size_t *, loff_t *);
- extern int proc_dointvec_ms_jiffies(struct ctl_table *, int, struct file *,
- 				    void __user *, size_t *, loff_t *);
-+extern int proc_dointvec_pcm_minmax(struct ctl_table *, int, struct file *,
-+				    void __user *, size_t *, loff_t *);
- extern int proc_doulongvec_minmax(struct ctl_table *, int, struct file *,
- 				  void __user *, size_t *, loff_t *);
- extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index d14953a..06ba902 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -88,9 +88,7 @@ extern int rcutorture_runnable;
- #endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
- 
- /* Constants used for minimum and  maximum */
--#if defined(CONFIG_HIGHMEM) || defined(CONFIG_DETECT_SOFTLOCKUP)
- static int one = 1;
--#endif
- 
- #ifdef CONFIG_DETECT_SOFTLOCKUP
- static int sixty = 60;
-@@ -103,6 +101,7 @@ static int two = 2;
- 
- static int zero;
- static int one_hundred = 100;
-+static int one_hundred_pcm = ONE_HUNDRED_PCM;
- 
- /* this is needed for the proc_dointvec_minmax for [fs_]overflow UID and GID */
- static int maxolduid = 65535;
-@@ -926,12 +925,23 @@ static struct ctl_table vm_table[] = {
- 		.data		= &dirty_background_ratio,
- 		.maxlen		= sizeof(dirty_background_ratio),
- 		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
-+		.proc_handler	= &proc_dointvec_pcm_minmax,
- 		.strategy	= &sysctl_intvec,
--		.extra1		= &zero,
-+		.extra1		= &one,
- 		.extra2		= &one_hundred,
- 	},
- 	{
-+		.ctl_name	= VM_DIRTY_BACKGROUND_PCM,
-+		.procname	= "dirty_background_ratio_pcm",
-+		.data		= &dirty_background_ratio,
-+		.maxlen		= sizeof(dirty_background_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &one,
-+		.extra2		= &one_hundred_pcm,
-+	},
-+	{
- 		.ctl_name	= VM_DIRTY_RATIO,
- 		.procname	= "dirty_ratio",
- 		.data		= &vm_dirty_ratio,
-@@ -939,10 +949,21 @@ static struct ctl_table vm_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &dirty_ratio_handler,
- 		.strategy	= &sysctl_intvec,
--		.extra1		= &zero,
-+		.extra1		= &one,
- 		.extra2		= &one_hundred,
- 	},
- 	{
-+		.ctl_name	= VM_DIRTY_RATIO_PCM,
-+		.procname	= "dirty_ratio_pcm",
-+		.data		= &vm_dirty_ratio,
-+		.maxlen		= sizeof(vm_dirty_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= &dirty_ratio_handler,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &one,
-+		.extra2		= &one_hundred_pcm,
-+	},
-+	{
- 		.procname	= "dirty_writeback_centisecs",
- 		.data		= &dirty_writeback_interval,
- 		.maxlen		= sizeof(dirty_writeback_interval),
-@@ -2525,6 +2546,35 @@ int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int write,
- 				     lenp, ppos, HZ, 1000l);
- }
- 
-+static int do_proc_dointvec_pcm_minmax_conv(int *negp, unsigned long *lvalp,
-+					 int *valp, int write, void *data)
-+{
-+	struct do_proc_dointvec_minmax_conv_param *param = data;
-+	int val;
-+
-+	if (write) {
-+		if (*lvalp > LONG_MAX / PERCENT_PCM)
-+			return -EINVAL;
-+		val = *negp ? -*lvalp : *lvalp;
-+		if ((param->min && *param->min > val) ||
-+		    (param->max && *param->max < val))
-+			return -EINVAL;
-+		*valp = val * PERCENT_PCM;
-+	} else {
-+		unsigned long lval;
-+
-+		val = *valp;
-+		if (val < 0) {
-+			*negp = -1;
-+			lval = (unsigned long)-val;
-+		} else {
-+			*negp = 0;
-+			lval = (unsigned long)val;
-+		}
-+		*lvalp = lval / PERCENT_PCM;
-+	}
-+	return 0;
-+}
- 
- static int do_proc_dointvec_jiffies_conv(int *negp, unsigned long *lvalp,
- 					 int *valp,
-@@ -2663,6 +2713,19 @@ int proc_dointvec_ms_jiffies(struct ctl_table *table, int write, struct file *fi
- 				do_proc_dointvec_ms_jiffies_conv, NULL);
- }
- 
-+int proc_dointvec_pcm_minmax(struct ctl_table *table, int write,
-+			struct file *filp, void __user *buffer, size_t *lenp,
-+			loff_t *ppos)
-+{
-+	struct do_proc_dointvec_minmax_conv_param param = {
-+		.min = (int *)table->extra1,
-+		.max = (int *)table->extra2,
-+	};
-+
-+	return do_proc_dointvec(table, write, filp, buffer, lenp, ppos,
-+				do_proc_dointvec_pcm_minmax_conv, &param);
-+}
-+
- static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp,
- 			   void __user *buffer, size_t *lenp, loff_t *ppos)
+ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
  {
-@@ -2711,6 +2774,13 @@ int proc_dointvec_jiffies(struct ctl_table *table, int write, struct file *filp,
- 	return -ENOSYS;
- }
+-	struct viafb_ioctl_mode viamode;
+-	struct viafb_ioctl_samm viasamm;
+-	struct viafb_driver_version driver_version;
+-	struct fb_var_screeninfo sec_var;
+-	struct _panel_size_pos_info panel_pos_size_para;
++	union {
++		struct viafb_ioctl_mode viamode;
++		struct viafb_ioctl_samm viasamm;
++		struct viafb_driver_version driver_version;
++		struct fb_var_screeninfo sec_var;
++		struct _panel_size_pos_info panel_pos_size_para;
++		struct viafb_ioctl_setting viafb_setting;
++		struct device_t active_dev;
++	} u;
+ 	u32 state_info = 0;
+-	u32 viainfo_size = sizeof(struct viafb_ioctl_info);
+ 	u32 *viafb_gamma_table;
+ 	char driver_name[] = "viafb";
  
-+int proc_dointvec_pcm_minmax(struct ctl_table *table, int write,
-+			struct file *filp, void __user *buffer, size_t *lenp,
-+			loff_t *ppos)
-+{
-+	return -ENOSYS;
-+}
+ 	u32 __user *argp = (u32 __user *) arg;
+ 	u32 gpu32;
+ 	u32 video_dev_info = 0;
+-	struct viafb_ioctl_setting viafb_setting = {};
+-	struct device_t active_dev = {};
+ 
+ 	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
++	memset(&u, 0, sizeof(u));
+ 
+ 	switch (cmd) {
+ 	case VIAFB_GET_CHIP_INFO:
+@@ -571,7 +573,7 @@ static int viafb_ioctl(struct fb_info *i
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_INFO_SIZE:
+-		return put_user(viainfo_size, argp);
++		return put_user((u32)sizeof(struct viafb_ioctl_info), argp);
+ 	case VIAFB_GET_INFO:
+ 		return viafb_ioctl_get_viafb_info(arg);
+ 	case VIAFB_HOTPLUG:
+@@ -584,60 +586,60 @@ static int viafb_ioctl(struct fb_info *i
+ 		viafb_hotplug = (gpu32) ? 1 : 0;
+ 		break;
+ 	case VIAFB_GET_RESOLUTION:
+-		viamode.xres = (u32) viafb_hotplug_Xres;
+-		viamode.yres = (u32) viafb_hotplug_Yres;
+-		viamode.refresh = (u32) viafb_hotplug_refresh;
+-		viamode.bpp = (u32) viafb_hotplug_bpp;
++		u.viamode.xres = (u32) viafb_hotplug_Xres;
++		u.viamode.yres = (u32) viafb_hotplug_Yres;
++		u.viamode.refresh = (u32) viafb_hotplug_refresh;
++		u.viamode.bpp = (u32) viafb_hotplug_bpp;
+ 		if (viafb_SAMM_ON == 1) {
+-			viamode.xres_sec = viafb_second_xres;
+-			viamode.yres_sec = viafb_second_yres;
+-			viamode.virtual_xres_sec = viafb_second_virtual_xres;
+-			viamode.virtual_yres_sec = viafb_second_virtual_yres;
+-			viamode.refresh_sec = viafb_refresh1;
+-			viamode.bpp_sec = viafb_bpp1;
++			u.viamode.xres_sec = viafb_second_xres;
++			u.viamode.yres_sec = viafb_second_yres;
++			u.viamode.virtual_xres_sec = viafb_second_virtual_xres;
++			u.viamode.virtual_yres_sec = viafb_second_virtual_yres;
++			u.viamode.refresh_sec = viafb_refresh1;
++			u.viamode.bpp_sec = viafb_bpp1;
+ 		} else {
+-			viamode.xres_sec = 0;
+-			viamode.yres_sec = 0;
+-			viamode.virtual_xres_sec = 0;
+-			viamode.virtual_yres_sec = 0;
+-			viamode.refresh_sec = 0;
+-			viamode.bpp_sec = 0;
++			u.viamode.xres_sec = 0;
++			u.viamode.yres_sec = 0;
++			u.viamode.virtual_xres_sec = 0;
++			u.viamode.virtual_yres_sec = 0;
++			u.viamode.refresh_sec = 0;
++			u.viamode.bpp_sec = 0;
+ 		}
+-		if (copy_to_user(argp, &viamode, sizeof(viamode)))
++		if (copy_to_user(argp, &u.viamode, sizeof(u.viamode)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_SAMM_INFO:
+-		viasamm.samm_status = viafb_SAMM_ON;
++		u.viasamm.samm_status = viafb_SAMM_ON;
+ 
+ 		if (viafb_SAMM_ON == 1) {
+ 			if (viafb_dual_fb) {
+-				viasamm.size_prim = viaparinfo->fbmem_free;
+-				viasamm.size_sec = viaparinfo1->fbmem_free;
++				u.viasamm.size_prim = viaparinfo->fbmem_free;
++				u.viasamm.size_sec = viaparinfo1->fbmem_free;
+ 			} else {
+ 				if (viafb_second_size) {
+-					viasamm.size_prim =
++					u.viasamm.size_prim =
+ 					    viaparinfo->fbmem_free -
+ 					    viafb_second_size * 1024 * 1024;
+-					viasamm.size_sec =
++					u.viasamm.size_sec =
+ 					    viafb_second_size * 1024 * 1024;
+ 				} else {
+-					viasamm.size_prim =
++					u.viasamm.size_prim =
+ 					    viaparinfo->fbmem_free >> 1;
+-					viasamm.size_sec =
++					u.viasamm.size_sec =
+ 					    (viaparinfo->fbmem_free >> 1);
+ 				}
+ 			}
+-			viasamm.mem_base = viaparinfo->fbmem;
+-			viasamm.offset_sec = viafb_second_offset;
++			u.viasamm.mem_base = viaparinfo->fbmem;
++			u.viasamm.offset_sec = viafb_second_offset;
+ 		} else {
+-			viasamm.size_prim =
++			u.viasamm.size_prim =
+ 			    viaparinfo->memsize - viaparinfo->fbmem_used;
+-			viasamm.size_sec = 0;
+-			viasamm.mem_base = viaparinfo->fbmem;
+-			viasamm.offset_sec = 0;
++			u.viasamm.size_sec = 0;
++			u.viasamm.mem_base = viaparinfo->fbmem;
++			u.viasamm.offset_sec = 0;
+ 		}
+ 
+-		if (copy_to_user(argp, &viasamm, sizeof(viasamm)))
++		if (copy_to_user(argp, &u.viasamm, sizeof(u.viasamm)))
+ 			return -EFAULT;
+ 
+ 		break;
+@@ -662,74 +664,75 @@ static int viafb_ioctl(struct fb_info *i
+ 			viafb_lcd_disable();
+ 		break;
+ 	case VIAFB_SET_DEVICE:
+-		if (copy_from_user(&active_dev, (void *)argp,
+-			sizeof(active_dev)))
++		if (copy_from_user(&u.active_dev, (void *)argp,
++			sizeof(u.active_dev)))
+ 			return -EFAULT;
+-		viafb_set_device(active_dev);
++		viafb_set_device(u.active_dev);
+ 		viafb_set_par(info);
+ 		break;
+ 	case VIAFB_GET_DEVICE:
+-		active_dev.crt = viafb_CRT_ON;
+-		active_dev.dvi = viafb_DVI_ON;
+-		active_dev.lcd = viafb_LCD_ON;
+-		active_dev.samm = viafb_SAMM_ON;
+-		active_dev.primary_dev = viafb_primary_dev;
+-
+-		active_dev.lcd_dsp_cent = viafb_lcd_dsp_method;
+-		active_dev.lcd_panel_id = viafb_lcd_panel_id;
+-		active_dev.lcd_mode = viafb_lcd_mode;
+-
+-		active_dev.xres = viafb_hotplug_Xres;
+-		active_dev.yres = viafb_hotplug_Yres;
+-
+-		active_dev.xres1 = viafb_second_xres;
+-		active_dev.yres1 = viafb_second_yres;
+-
+-		active_dev.bpp = viafb_bpp;
+-		active_dev.bpp1 = viafb_bpp1;
+-		active_dev.refresh = viafb_refresh;
+-		active_dev.refresh1 = viafb_refresh1;
+-
+-		active_dev.epia_dvi = viafb_platform_epia_dvi;
+-		active_dev.lcd_dual_edge = viafb_device_lcd_dualedge;
+-		active_dev.bus_width = viafb_bus_width;
++		u.active_dev.crt = viafb_CRT_ON;
++		u.active_dev.dvi = viafb_DVI_ON;
++		u.active_dev.lcd = viafb_LCD_ON;
++		u.active_dev.samm = viafb_SAMM_ON;
++		u.active_dev.primary_dev = viafb_primary_dev;
 +
- int proc_dointvec_userhz_jiffies(struct ctl_table *table, int write, struct file *filp,
- 		    void __user *buffer, size_t *lenp, loff_t *ppos)
- {
-diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
-index c35da23..83934a8 100644
---- a/kernel/sysctl_check.c
-+++ b/kernel/sysctl_check.c
-@@ -111,7 +111,9 @@ static const struct trans_ctl_table trans_vm_table[] = {
- 	{ VM_OVERCOMMIT_MEMORY,		"overcommit_memory" },
- 	{ VM_PAGE_CLUSTER,		"page-cluster" },
- 	{ VM_DIRTY_BACKGROUND,		"dirty_background_ratio" },
-+	{ VM_DIRTY_BACKGROUND_PCM,	"dirty_background_ratio_pcm" },
- 	{ VM_DIRTY_RATIO,		"dirty_ratio" },
-+	{ VM_DIRTY_RATIO_PCM,		"dirty_ratio_pcm" },
- 	{ VM_DIRTY_WB_CS,		"dirty_writeback_centisecs" },
- 	{ VM_DIRTY_EXPIRE_CS,		"dirty_expire_centisecs" },
- 	{ VM_NR_PDFLUSH_THREADS,	"nr_pdflush_threads" },
-@@ -1494,6 +1496,7 @@ int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
- 			    (table->proc_handler == proc_dostring) ||
- 			    (table->proc_handler == proc_dointvec) ||
- 			    (table->proc_handler == proc_dointvec_minmax) ||
-+			    (table->proc_handler == proc_dointvec_pcm_minmax) ||
- 			    (table->proc_handler == proc_dointvec_jiffies) ||
- 			    (table->proc_handler == proc_dointvec_userhz_jiffies) ||
- 			    (table->proc_handler == proc_dointvec_ms_jiffies) ||
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index b3584bf..e010a39 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -66,7 +66,7 @@ static inline long sync_writeback_pages(void)
- /*
-  * Start background writeback (via pdflush) at this percentage
-  */
--int dirty_background_ratio = 5;
-+int dirty_background_ratio = 5 * PERCENT_PCM;
- 
- /*
-  * free highmem will not be subtracted from the total free memory
-@@ -77,7 +77,7 @@ int vm_highmem_is_dirtyable;
- /*
-  * The generator of dirty data starts writeback at this percentage
-  */
--int vm_dirty_ratio = 10;
-+int vm_dirty_ratio = 10 * PERCENT_PCM;
- 
- /*
-  * The interval between `kupdate'-style writebacks, in jiffies
-@@ -133,9 +133,10 @@ static struct prop_descriptor vm_dirties;
-  */
- static int calc_period_shift(void)
- {
--	unsigned long dirty_total;
-+	u64 dirty_total;
- 
--	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) / 100;
-+	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory())
-+			/ ONE_HUNDRED_PCM;
- 	return 2 + ilog2(dirty_total - 1);
- }
- 
-@@ -147,7 +148,23 @@ int dirty_ratio_handler(struct ctl_table *table, int write,
- 		loff_t *ppos)
- {
- 	int old_ratio = vm_dirty_ratio;
--	int ret = proc_dointvec_minmax(table, write, filp, buffer, lenp, ppos);
-+	int ret;
++		u.active_dev.lcd_dsp_cent = viafb_lcd_dsp_method;
++		u.active_dev.lcd_panel_id = viafb_lcd_panel_id;
++		u.active_dev.lcd_mode = viafb_lcd_mode;
 +
-+	switch (table->ctl_name) {
-+	case VM_DIRTY_RATIO:
-+		ret = proc_dointvec_pcm_minmax(table, write, filp, buffer,
-+					lenp, ppos);
-+		break;
-+	case VM_DIRTY_RATIO_PCM:
-+		ret = proc_dointvec_minmax(table, write, filp, buffer,
-+					lenp, ppos);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		WARN_ON(1);
-+		break;
-+	}
++		u.active_dev.xres = viafb_hotplug_Xres;
++		u.active_dev.yres = viafb_hotplug_Yres;
 +
- 	if (ret == 0 && write && vm_dirty_ratio != old_ratio) {
- 		int shift = calc_period_shift();
- 		prop_change_shift(&vm_completions, shift);
-@@ -380,8 +397,8 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
- 	if (background_ratio >= dirty_ratio)
- 		background_ratio = dirty_ratio / 2;
++		u.active_dev.xres1 = viafb_second_xres;
++		u.active_dev.yres1 = viafb_second_yres;
++
++		u.active_dev.bpp = viafb_bpp;
++		u.active_dev.bpp1 = viafb_bpp1;
++		u.active_dev.refresh = viafb_refresh;
++		u.active_dev.refresh1 = viafb_refresh1;
++
++		u.active_dev.epia_dvi = viafb_platform_epia_dvi;
++		u.active_dev.lcd_dual_edge = viafb_device_lcd_dualedge;
++		u.active_dev.bus_width = viafb_bus_width;
  
--	background = (background_ratio * available_memory) / 100;
--	dirty = (dirty_ratio * available_memory) / 100;
-+	background = (background_ratio * available_memory) / ONE_HUNDRED_PCM;
-+	dirty = (dirty_ratio * available_memory) / ONE_HUNDRED_PCM;
- 	tsk = current;
- 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
- 		background += background / 4;
+-		if (copy_to_user(argp, &active_dev, sizeof(active_dev)))
++		if (copy_to_user(argp, &u.active_dev, sizeof(u.active_dev)))
+ 			return -EFAULT;
+ 		break;
+ 
+ 	case VIAFB_GET_DRIVER_VERSION:
+-		driver_version.iMajorNum = VERSION_MAJOR;
+-		driver_version.iKernelNum = VERSION_KERNEL;
+-		driver_version.iOSNum = VERSION_OS;
+-		driver_version.iMinorNum = VERSION_MINOR;
++		u.driver_version.iMajorNum = VERSION_MAJOR;
++		u.driver_version.iKernelNum = VERSION_KERNEL;
++		u.driver_version.iOSNum = VERSION_OS;
++		u.driver_version.iMinorNum = VERSION_MINOR;
+ 
+-		if (copy_to_user(argp, &driver_version,
+-			sizeof(driver_version)))
++		if (copy_to_user(argp, &u.driver_version,
++			sizeof(u.driver_version)))
+ 			return -EFAULT;
+ 
+ 		break;
+ 
+ 	case VIAFB_SET_DEVICE_INFO:
+-		if (copy_from_user(&viafb_setting,
+-			argp, sizeof(viafb_setting)))
++		if (copy_from_user(&u.viafb_setting,
++			argp, sizeof(u.viafb_setting)))
+ 			return -EFAULT;
+-		if (apply_device_setting(viafb_setting, info) < 0)
++		if (apply_device_setting(u.viafb_setting, info) < 0)
+ 			return -EINVAL;
+ 
+ 		break;
+ 
+ 	case VIAFB_SET_SECOND_MODE:
+-		if (copy_from_user(&sec_var, argp, sizeof(sec_var)))
++		if (copy_from_user(&u.sec_var, argp, sizeof(u.sec_var)))
+ 			return -EFAULT;
+-		apply_second_mode_setting(&sec_var);
++		apply_second_mode_setting(&u.sec_var);
+ 		break;
+ 
+ 	case VIAFB_GET_DEVICE_INFO:
+ 
+-		retrieve_device_setting(&viafb_setting);
++		retrieve_device_setting(&u.viafb_setting);
+ 
+-		if (copy_to_user(argp, &viafb_setting, sizeof(viafb_setting)))
++		if (copy_to_user(argp, &u.viafb_setting,
++				 sizeof(u.viafb_setting)))
+ 			return -EFAULT;
+ 
+ 		break;
+@@ -806,51 +809,51 @@ static int viafb_ioctl(struct fb_info *i
+ 		break;
+ 
+ 	case VIAFB_GET_PANEL_MAX_SIZE:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++		     sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_PANEL_MAX_POSITION:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++				 sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 
+ 	case VIAFB_GET_PANEL_POSITION:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++				 sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_GET_PANEL_SIZE:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+-		panel_pos_size_para.x = panel_pos_size_para.y = 0;
+-		if (copy_to_user(argp, &panel_pos_size_para,
+-		     sizeof(panel_pos_size_para)))
++		u.panel_pos_size_para.x = u.panel_pos_size_para.y = 0;
++		if (copy_to_user(argp, &u.panel_pos_size_para,
++				 sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 
+ 	case VIAFB_SET_PANEL_POSITION:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 	case VIAFB_SET_PANEL_SIZE:
+-		if (copy_from_user
+-		    (&panel_pos_size_para, argp, sizeof(panel_pos_size_para)))
++		if (copy_from_user(&u.panel_pos_size_para, argp,
++				   sizeof(u.panel_pos_size_para)))
+ 			return -EFAULT;
+ 		break;
+ 
+@@ -1052,10 +1055,8 @@ static void viafb_imageblit(struct fb_in
+ 
+ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+-	u8 data[CURSOR_SIZE / 8];
+-	u32 data_bak[CURSOR_SIZE / 32];
+ 	u32 temp, xx, yy, bg_col = 0, fg_col = 0;
+-	int size, i, j = 0;
++	int i, j = 0;
+ 	static int hw_cursor;
+ 	struct viafb_par *p_viafb_par;
+ 
+@@ -1178,22 +1179,29 @@ static int viafb_cursor(struct fb_info *
+ 	}
+ 
+ 	if (cursor->set & FB_CUR_SETSHAPE) {
+-		size =
++		struct {
++			u8 data[CURSOR_SIZE / 8];
++			u32 bak[CURSOR_SIZE / 32];
++		} *cr_data = kzalloc(sizeof(*cr_data), GFP_ATOMIC);
++		int size =
+ 		    ((viacursor.image.width + 7) >> 3) *
+ 		    viacursor.image.height;
+ 
++		if (cr_data == NULL)
++			goto out;
++
+ 		if (MAX_CURS == 32) {
+ 			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
+-				data_bak[i] = 0x0;
+-				data_bak[i + 1] = 0xFFFFFFFF;
++				cr_data->bak[i] = 0x0;
++				cr_data->bak[i + 1] = 0xFFFFFFFF;
+ 				i += 1;
+ 			}
+ 		} else if (MAX_CURS == 64) {
+ 			for (i = 0; i < (CURSOR_SIZE / 32); i++) {
+-				data_bak[i] = 0x0;
+-				data_bak[i + 1] = 0x0;
+-				data_bak[i + 2] = 0xFFFFFFFF;
+-				data_bak[i + 3] = 0xFFFFFFFF;
++				cr_data->bak[i] = 0x0;
++				cr_data->bak[i + 1] = 0x0;
++				cr_data->bak[i + 2] = 0xFFFFFFFF;
++				cr_data->bak[i + 3] = 0xFFFFFFFF;
+ 				i += 3;
+ 			}
+ 		}
+@@ -1201,12 +1209,12 @@ static int viafb_cursor(struct fb_info *
+ 		switch (viacursor.rop) {
+ 		case ROP_XOR:
+ 			for (i = 0; i < size; i++)
+-				data[i] = viacursor.mask[i];
++				cr_data->data[i] = viacursor.mask[i];
+ 			break;
+ 		case ROP_COPY:
+ 
+ 			for (i = 0; i < size; i++)
+-				data[i] = viacursor.mask[i];
++				cr_data->data[i] = viacursor.mask[i];
+ 			break;
+ 		default:
+ 			break;
+@@ -1214,23 +1222,25 @@ static int viafb_cursor(struct fb_info *
+ 
+ 		if (MAX_CURS == 32) {
+ 			for (i = 0; i < size; i++) {
+-				data_bak[j] = (u32) data[i];
+-				data_bak[j + 1] = ~data_bak[j];
++				cr_data->bak[j] = (u32) cr_data->data[i];
++				cr_data->bak[j + 1] = ~cr_data->bak[j];
+ 				j += 2;
+ 			}
+ 		} else if (MAX_CURS == 64) {
+ 			for (i = 0; i < size; i++) {
+-				data_bak[j] = (u32) data[i];
+-				data_bak[j + 1] = 0x0;
+-				data_bak[j + 2] = ~data_bak[j];
+-				data_bak[j + 3] = ~data_bak[j + 1];
++				cr_data->bak[j] = (u32) cr_data->data[i];
++				cr_data->bak[j + 1] = 0x0;
++				cr_data->bak[j + 2] = ~cr_data->bak[j];
++				cr_data->bak[j + 3] = ~cr_data->bak[j + 1];
+ 				j += 4;
+ 			}
+ 		}
+ 
+ 		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
+ 		       ((struct viafb_par *)(info->par))->cursor_start,
+-		       data_bak, CURSOR_SIZE);
++		       cr_data->bak, CURSOR_SIZE);
++out:
++		kfree(cr_data);
+ 	}
+ 
+ 	if (viacursor.enable)
