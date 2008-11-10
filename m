@@ -1,97 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYKJIrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbYKJItZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbYKJIrQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 03:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYKJIq7
+	id S1754586AbYKJItZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 03:49:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYKJItQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 03:46:59 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:6424 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753643AbYKJIq6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 03:46:58 -0500
-Message-ID: <4917F50B.3000905@panasas.com>
-Date: Mon, 10 Nov 2008 10:47:07 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Mon, 10 Nov 2008 03:49:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53520 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753991AbYKJItP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 03:49:15 -0500
+Date: Mon, 10 Nov 2008 09:49:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: Re: [PATCH v42] proc: add /proc/*/stack (was Re: linux-next: proc
+	tree build failure)
+Message-ID: <20081110084900.GF22392@elte.hu>
+References: <20081110162941.e9e9ef3a.sfr@canb.auug.org.au> <20081110055311.GA3138@x200.localdomain> <20081110073623.GA475@elte.hu> <20081110084229.GA8690@x200.localdomain>
 MIME-Version: 1.0
-To: =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       open-osd development <osd-dev@open-osd.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/18 ver2] libosd: OSDv1 Headers
-References: <491073BB.4000900@panasas.com> <1225817046-5946-1-git-send-email-bharrosh@panasas.com> <4916F934.4090205@panasas.com> <20081109174509.GB5350@logfs.org>
-In-Reply-To: <20081109174509.GB5350@logfs.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 10 Nov 2008 08:45:36.0059 (UTC) FILETIME=[B320F8B0:01C94310]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110084229.GA8690@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel wrote:
-> On Sun, 9 November 2008 16:52:36 +0200, Boaz Harrosh wrote:
->> +struct osdv1_cdb {
->> +	struct osd_cdb_head h;
->> +	u8 caps[OSDv1_CAP_LEN];
->> +	struct osd_security_parameters sec_params;
->> +} __packed;
-> 
-> __packed can result in slow code being generated.  But removing the
-> attribute can lead to bugs on other architectures.  F.e. the size of
-> the structure below is different for i386 and x86_64.
-> 
-> struct foo {
-> 	u64 bar;
-> 	u32 baz;
-> };
-> 
-> My personal solution is to use this little macro and then just follow
-> every structure defition with a size check.
-> 
-> #define SIZE_CHECK(type, size)					\
-> static inline void check_##type(void)				\
-> {								\
-> 	BUILD_BUG_ON(sizeof(struct type) != (size));		\
-> }
-> ...
-> struct foo {
-> 	u64 bar;
-> 	u32 baz;
-> };
-> 
-> SIZE_CHECK(foo, 12);
-> 
-> The above would not compile on x86_64 and clearly indicate a missing
-> __packed.  In other cases the attribute can be removed.
-> 
-> Jörn
-> 
 
-Hi Jörn
-Thank you for your comments
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-I do have a size check that governs the complete structure it is the first
-code in osd_initiator.c at build_test(). It will catch any discrepancies
-from the protocol.
+> > Alexey, would you like to carry them for v2.6.29? They are in a 
+> > separate tree here, the pull coordinates are below.
+> > 
+> > Please preserve the sha1's (do not rebase/cherry-pick, etc.) so 
+> > that i can carry it too without causing confusion.
+> 
+> Sorry, I can't.
 
-I have done some experimentation with __packed both on 32 and 64 bit x86.
-When it does nothing like the above foo in 32bit, then there is no code
-difference with it or with out it, but on 64bit I must have it otherwise
-the structure grows.
+hm, git pull did not work?
 
-These are all, on-the-wire structures. I must have __packed, otherwise
-I'm at the compiler mercy and that's bad.
+> It's two commits, PROC_BLOCK_SIZE moving chunk is now unneeded, 
+> because seqfiles are in use, grabbing tasklist_lock for protection 
+> from task dissapearing is unneeded -- proc_single_show() pins 
+> task_struct, entry is added only to tgid table.
 
-If the assembly - size and offsets - of foo is exactly the same with or
-without the __packed, but the generated code is different then clearly this
-is a compiler bug. I've herd of this myth before, and at least with my
-gcc 4.1.2 there is no such bug. Either the structure gets packed, or there is
-no difference. All the places I have __packed in the code are absolutely must
-be so, stated by the protocol.
+hm, but these are small differences that do not impact bisectability, 
+you could have done it ontop of what we have, instead of a rebase? Oh 
+well.
 
-Boaz
+> So, here is final version:
+
+thanks!
+
+I've rebased tip/core/stacktrace and zapped the history of the old 
+commits from that branch. Would have been really nice to preserve the 
+sha1 space and not force a rebase, like Linus is requesting it so 
+frequently.
+
+Had you done a git pull from me i could have carried this feature too 
+without creating conflicts, instead of it disappearing in your tree 
+for months and being hidden up until v2.6.29. This whole 'distributed 
+development' stuff that's all the rage ;-)
+
+i also regenerated tip-core, so it should now be conflict-free in 
+Stephen's tree too. (Stephen, please holler if you still get 
+conflicts)
+
+	Ingo
