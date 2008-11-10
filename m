@@ -1,74 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYKJMni@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYKJMoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbYKJMni (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 07:43:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbYKJMn1
+	id S1755533AbYKJMoc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 07:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYKJMoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 07:43:27 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:21195 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754714AbYKJMn0 (ORCPT
+	Mon, 10 Nov 2008 07:44:24 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:58389 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754773AbYKJMoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 07:43:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nbuoWDd8/aAwuCu07y6B8dUAkLOw0VfKbwMRXOsqyTPNFHV7bJI2zInn+mXpft/mQg
-         fbgl3e8tjtXARC+1vMNr2Ps5LumNaJxLjNsRNwIXNiJO1N3B5oU27vNpJ9XejssSWdtQ
-         CiGNQCCekGH6eRGKWHA+v3OJii+O0oxfYzFMI=
-Message-ID: <e2e108260811100443j18a6353cj8d47ee3f1f8bec1@mail.gmail.com>
-Date: Mon, 10 Nov 2008 13:43:24 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [PATCH][RESEND] C99 initializers for DEFINE_RATELIMIT_STATE()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Dave Young" <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <200811042114.48495.bart.vanassche@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 07:44:23 -0500
+Message-Id: <1226321061.23701.1283927805@webmail.messagingengine.com>
+X-Sasl-Enc: yCiynDSJBZanTdAEK3cHQbQL3AQrVnbFehIxn1rJhDVG 1226321061
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Andi Kleen" <andi@firstfloor.org>, "Cyrill Gorcunov" <gorcunov@gmail.com>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, lguest@ozlabs.org,
+       jeremy@xensource.com, "Steven Rostedt" <srostedt@redhat.com>,
+       "Mike Travis" <travis@sgi.com>
 Content-Disposition: inline
-References: <200811042114.48495.bart.vanassche@gmail.com>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20081104122839.GA22864@mailshack.com> 
+ <20081104150729.GC21470@localhost> 
+ <20081104170501.GE29626@one.firstfloor.org> 
+ <1225822006.21441.1282961299@webmail.messagingengine.com> 
+ <20081104204400.GC10825@elte.hu> 
+ <1226243805.27361.1283784629@webmail.messagingengine.com> 
+ <20081110085846.GG22392@elte.hu>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+In-Reply-To: <20081110085846.GG22392@elte.hu>
+Date: Mon, 10 Nov 2008 13:44:21 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could someone please be so kind to ACK the patch below, NAK it or tell
-me whether I should send the patch below to someone else ?
+On Mon, 10 Nov 2008 09:58:46 +0100, "Ingo Molnar" <mingo@elte.hu> said:
+> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
+> > Hi all,
+> > 
+> > I have spent some time trying to find out how expensive the 
+> > segment-switching patch was. I have only one computer available at 
+> > the time: a "Sempron 2400+", 32-bit-only machine.
+> > 
+> > Measured were timings of "hackbench 10" in a loop. The average was 
+> > taken of more than 100 runs. Timings were done for two seperate 
+> > boots of the system.
 
-Thanks,
+Hi Ingo,
 
-Bart.
+I guess you just stopped reading here?
 
-On Tue, Nov 4, 2008 at 9:14 PM, Bart Van Assche
-<bart.vanassche@gmail.com> wrote:
-> A few months ago (July 25, 2008) the printk ratelimiting code has been
-> rewritten. This patch added a.o. the new macro DEFINE_RATELIMIT_STATE(). The
-> patch below converts the initializers in that macro to C99 style.
->
-> For more information about the printk ratelimiting rewrite, see also commit
-> 717115e1a5856b57af0f71e1df7149108294fc10
-> (http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=commit;h=717115e1a5856b57af0f71e1df7149108294fc10).
->
-> Impact: cleanup, no functionality changed.
->
-> Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
->
-> diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
-> index 18a5b9b..61cc908 100644
-> --- a/include/linux/ratelimit.h
-> +++ b/include/linux/ratelimit.h
-> @@ -13,8 +13,9 @@ struct ratelimit_state {
->        unsigned long begin;
->  };
->
-> -#define DEFINE_RATELIMIT_STATE(name, interval, burst)          \
-> -               struct ratelimit_state name = {interval, burst,}
-> +#define DEFINE_RATELIMIT_STATE(name, interval_value, burst_value)      \
-> +       struct ratelimit_state name =                                   \
-> +               { .interval = (interval_value), .burst = (burst_value) }
->
->  extern int __ratelimit(struct ratelimit_state *rs);
->
+> hackbench is _way_ too noisy to measure such cycle-level differences 
+> as irq entry changes cause. It also does not really stress interrupts 
+> - it only stresses networking, the VFS and the scheduler.
+> 
+> a better test might have been to generate a ton of interrupts, but 
+> even then it's _very_ hard to measure it properly.
+
+I should have presented the second benchmark as the first I
+guess. I really just used hackbench as a workload. I gathered
+it would give a good amount of exceptions like page faults and
+maybe others. It would be nice to have a simple debug switch in
+the kernel to make it generate a lot of interrupts, though ;).
+
+>                    The best method is 
+> what i've suggested to you early on: run a loop in user-space and 
+> observe irq costs via RDTSC, as they happen. Then build a histogram 
+> and compare the before/after histogram. Compare best-case results as 
+> well (the first slot of the histogram), as those are statistically 
+> much more significant than a noisy average.
+
+See the rest of the mail you replied to and its attachment. I've put
+the programs I used and the histogram in
+
+http://heukelum.fastmail.fm/irqstubs/
+
+I think rdtsctest.c is pretty much what you describe.
+
+Greetings,
+    Alexander
+
+> Measuring such things in a meaningful way is really tricky business. 
+> Using hackbench to measure IRQ entry micro-costs is like trying to 
+> take a photo of a delicate flower at night, by using an atomic bomb as 
+> the flash-light: you certainly get some sort of effect to report, but 
+> there's not many nuances left in the picture to really look at ;-)
+> 
+> 	Ingo
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - Same, same, but different...
+
