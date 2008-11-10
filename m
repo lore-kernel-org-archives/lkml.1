@@ -1,58 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbYKJWWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755016AbYKJWXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754757AbYKJWWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbYKJWWK
+	id S1755016AbYKJWXa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:23:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbYKJWXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:22:10 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:46797 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYKJWWI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:22:08 -0500
-Message-ID: <4918B3DC.8000905@zytor.com>
-Date: Mon, 10 Nov 2008 14:21:16 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 10 Nov 2008 17:23:21 -0500
+Received: from fwc.sitour.cz ([62.209.212.18]:2873 "EHLO kali.sitour.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbYKJWXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 17:23:20 -0500
+Message-ID: <4918B44A.6090104@mydatex.cz>
+Date: Mon, 10 Nov 2008 23:23:06 +0100
+From: Daniel Smolik <marvin@mydatex.cz>
+Organization: Mydatex s.r.o.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; cs-CZ; rv:1.8.0.14eol) Gecko/20070505 Iceape/1.0.9 (Debian-1.0.13~pre080323b-0etch3)
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com>  <20081104150729.GC21470@localhost>  <20081104170501.GE29626@one.firstfloor.org>  <1225822006.21441.1282961299@webmail.messagingengine.com>  <20081104204400.GC10825@elte.hu>  <1226243805.27361.1283784629@webmail.messagingengine.com>  <20081110085846.GG22392@elte.hu>  <1226321061.23701.1283927805@webmail.messagingengine.com>  <20081110130709.GA32613@elte.hu> <1226352907.25721.1284024167@webmail.messagingengine.com>
-In-Reply-To: <1226352907.25721.1284024167@webmail.messagingengine.com>
-Content-Type: text/plain; charset=UTF-8
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [Bugme-new] [Bug 11886] New: without serial console system doesn't
+ poweroff
+References: <bug-11886-10286@http.bugzilla.kernel.org/> <200811040148.34707.rjw@sisk.pl> <490FEC1B.5070105@mydatex.cz> <200811090042.33219.rjw@sisk.pl>
+In-Reply-To: <200811090042.33219.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
->>
->> OTOH, unless i'm misreading them, it's a bit hard to compare them 
->> visually: the integral of the histograms does not seem to be constant, 
->> they dont seem to be normalized.
+Rafael J. Wysocki napsal(a):
+> On Tuesday, 4 of November 2008, Daniel Smolik wrote:
+>> Rafael J. Wysocki napsal(a):
+>>> On Monday, 3 of November 2008, Daniel Smolik wrote:
+>>>> Andrew Morton napsal(a):
+>>>>> (switched to email.  Please respond via emailed reply-to-all, not via the
+>>>>> bugzilla web interface).
+>>>>>
+>>>>> On Wed, 29 Oct 2008 04:06:11 -0700 (PDT)
+>>>>> bugme-daemon@bugzilla.kernel.org wrote:
+>>>>>
+>>>>>> http://bugzilla.kernel.org/show_bug.cgi?id=11886
+>>>>>>
+>>>>>>            Summary: without serial console system doesn't  poweroff
+>>>>>>            Product: Power Management
+>>>>>>            Version: 2.5
+>>>>>>      KernelVersion: 2.6.27.4
+>>>>>>           Platform: All
+>>>>>>         OS/Version: Linux
+>>>>>>               Tree: Mainline
+>>>>>>             Status: NEW
+>>>>>>           Severity: normal
+>>>>>>           Priority: P1
+>>>>>>          Component: Other
+>>>>>>         AssignedTo: power-management_other@kernel-bugs.osdl.org
+>>>>>>         ReportedBy: marvin@mydatex.cz
+>>>>>>
+>>>>>>
+>>>>>> Latest working kernel version:
+>>>>>> Earliest failing kernel version:2.6.27.2
+>>>>>> Distribution: Debian Etch
+>>>>>> Hardware Environment: Supermiro C2SBC-Q  Dual Core Intel Cpu 1G RAM
+>>>>>> Software Environment: Debian Etch
+>>>>>> Problem Description: If I does't add serial console to kernel command line
+>>>>>> system doesn't poweroff. Linux hangs there:
+>>>>>>
+>>>>>> e1000e 0000:0d:00.0: PCI INT A disabled
+>>>>>> e1000e 0000:00:19.0: PCI INT A disabled
+>>>>>> ACPI: Preparing to enter system sleep state S5
+>>>>>> Disabling non-boot CPUs ...
+>>>>>>
+>>>>>> If I disable in kernel config Suspend to Ram and Hibernate all works without
+>>>>>> console. But with Suspend and hibernate enabled and serial console  added to
+>>>>>> kernel cmd line all works too:
+>>>>>>
+>>>>>> e1000e 0000:0d:00.0: PCI INT A disabled
+>>>>>> e1000e 0000:00:19.0: PCI INT A disabled
+>>>>>> ACPI: Preparing to enter system sleep state S5
+>>>>>> Disabling non-boot CPUs ...
+>>>>>> CPU 1 is now offline
+>>>>>> SMP alternatives: switching to UP code
+>>>>>> CPU1 is down
+>>>>>> Power down.
+>>>>>> acpi_power_off called
+>>>>>>
+>>>>>> Steps to reproduce:
+>>>>>> Compile kernel with attached config and try poweroff without serial console.
+>>>>>>
+>>>>> OK, this is weird.
+>>>>>
+>>>>> But the good news is that there is a very small number of commits
+>>>>> between 2.6.27.2 and 2.6.27.4.
+>>>>>
+>>>>> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.3
+>>>>> ftp://ftp.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.27.4
+>>>>>
+>>>>> I'd be looking at these:
+>>>>>
+>>>>> commit 3b987ac961486373f91191b14291b331fa546072
+>>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>> Date:   Sat Sep 6 13:13:01 2008 +0200
+>>>>>
+>>>>>     ACPI suspend: Always use the 32-bit waking vector
+>>>>>     
+>>>>>     commit a6629105dd03d370fcb31e97bddf223fa4bb651e upstream.
+>>>>>
+>>>>>
+>>>>> commit 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+>>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>> Date:   Sat Oct 4 00:05:05 2008 +0200
+>>>>>
+>>>>>     ACPI Suspend: Enable ACPI during resume if SCI_EN is not set
+>>>>>     
+>>>>>     commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 upstream.
+>>>>>
+>>>>>
+>>>>>
+>>>>> presumably 2.6.28-rc3 is also broken?
+>>>> I don't know I can test it on Thu. But may be may fault or misunderstanding fist kernel which I test is 2.27.2. I don't 
+>>>> test any kernel before. I don't know if 2.6.26 works.
+>>> Can you try 2.6.26, please?
+>> Yes, no problem.
 > 
-> The total number of measured intervals (between two almost-adjacent
-> rdtsc's) is exactly the same for all histograms (10^10). Almost all
-> measurements are of the "nothing happened" type, i.e., around 11
-> clock cycles on this machine. The user time spent inside the
-> rdtsctest program is almost independent of the load, but it
-> measures time spent outside of the program... But what should be
-> attributed to what effect is unclear to me at the moment.
+> And did it work?
 > 
+> Rafael
+I today test 2.6.26 and it works OK.
 
-I believe you need to remove the obvious null events at the low end (no
-interrupt happened) and renormalize to the same scale for the histograms
-to make sense.
+		Dan
 
-As it is, the difference in the number of events that actually matters
-dominate the graphs; for example, there are 142187 events >= 12 in
-hack10ticks, but 136533 in hack10ticks_hpa.
 
-	-hpa
+
+
