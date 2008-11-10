@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYKJSQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbYKJSSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbYKJSQs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYKJSQj
+	id S1755243AbYKJSSn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:18:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYKJSSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:16:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59133 "EHLO mx2.redhat.com"
+	Mon, 10 Nov 2008 13:18:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49578 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752408AbYKJSQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:16:38 -0500
-Message-ID: <491879EC.5000204@redhat.com>
-Date: Mon, 10 Nov 2008 12:14:04 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1752109AbYKJSSf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:18:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+Date: Mon, 10 Nov 2008 19:23:15 +0100
+User-Agent: KMail/1.9.9
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+References: <20081109140726.GB1786@ucw.cz> <20081110172407.5584156d.kamezawa.hiroyu@jp.fujitsu.com> <20081110082802.GA22392@elte.hu>
+In-Reply-To: <20081110082802.GA22392@elte.hu>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Eugene Teo <eteo@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       Eugene Teo <eugeneteo@kernel.sg>
-Subject: Re: [patch 02/23] ext: Avoid printk floods in the face of	directory
- corruption (CVE-2008-3528)
-References: <20081107224818.593212310@mini.kroah.org> <20081107231516.GC1108@kroah.com> <49179F8C.4050103@redhat.com> <20081110180656.GA9795@suse.de>
-In-Reply-To: <20081110180656.GA9795@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811101923.16548.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Nov 10, 2008 at 10:42:20AM +0800, Eugene Teo wrote:
->> Greg KH wrote:
->>
->> Please change the description of the bug to:
->>
->> "A very large directory with many read failures (either due to storage
->> problems, or due to invalid size & blocks from corruption) will generate
->> a printk storm as the filesystem continues to try to read all the
->> blocks. This flood of messages can tie up the box until it is complete -
->> which may be a very long time, especially for very large corrupted values.
->>
->> This is fixed by only reporting the corruption once each time we try to
->> read the directory."
->>
->> http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=commitdiff;h=bd39597
+On Monday, 10 of November 2008, Ingo Molnar wrote:
 > 
-> Hm, why would I change the description to be different from what the
-> developer asked it to be?  It references the specific changeset you
-> point to above already.  I'm inclined to stick with the text that the
-> developer asked to be used (especially as this is a combined 3
-> changesets into one patch).
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Mon, 10 Nov 2008 08:55:29 +0100
+> > Pavel Machek <pavel@suse.cz> wrote:
+> > 
+> > > > 
+> > > > * Pavel Machek <pavel@suse.cz> wrote:
+> > > > 
+> > > > > ...at least on 2.6.27 and 2.6.28-rc3. Resume gets to 
+> > > > > acpi_hibernation_leave, then SLAB corruption is detected and machine 
+> > > > > ends in series of oops.
+> > > > > 
+> > > > > Any ideas how to debug that?
+> > > > 
+> > > > do you get any serial log or USB key output, so that it's debuggable 
+> > > > directly?
+> > > 
+> > > Well, I can transcribe the BUG() from a picture, I guess, but it does
+> > > not seem to contain much useful info: SLAB corruption was detected and
+> > > backtrace is not quite important at that point...
+> > > 
+> > > Serial console is probably possible, but would take few days to setup.
+> > > 									Pavel
+> > 
+> > How about this patch ?
+> > ==
+> > http://marc.info/?l=linux-mm-commits&m=122624388629106&w=2
+> > ==
+> 
+> note, that fix of Rafael's is now upstream as:
+> 
+>   c5d7124: Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
+> 
+> and included in v2.6.28-rc4.
+> 
+> But yes, this area of code (the save/restore of memory maps) would be 
+> the main suspect to investigate.
 
-There were 3 changesets upstream, one for each fs; I copied the
-changelog from the ext4 changeset because it's the patch that I
-originally authored, and combined it with the ext2 & ext3 changes as well.
+It surely is, but the root cause need not be there, actually.
 
-The upstream ext4 changelog happened to contain some color commentary
-from Ted; the ext2 & ext3 changelogs did not.
+The problem only happens with CONFIG_NUMA enabled, only on 32-bit systems
+and it _doesn't_ happen if the kernel is booted with highmem=0.
 
-I don't really give a damn what the stable changelog says, and
-personally my feelings won't be hurt with either text, I'll just be
-happy to have the bug fixed in -stable.
+Evidently, CONFIG_NUMA is sufficient for the breakage to appear, even if
+CONFIG_DISCONTIGMEM is not set (CONFIG_SPARSEMEM is set in this case, but
+hibernation works with CONFIG_SPARSEMEM and without CONFIG_NUMA, both for
+CONFIG_HIGHMEM64G=y).
+
+I've been investigating this issue for quite some time now and it's starting
+to look like a problem with kmap_atomic() or something along these lines.
 
 Thanks,
--Eric
+Rafael
