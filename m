@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYKJRsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbYKJRtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYKJRsT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 12:48:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYKJRsI
+	id S1755355AbYKJRtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 12:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYKJRsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 12:48:08 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42517 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754139AbYKJRsH (ORCPT
+	Mon, 10 Nov 2008 12:48:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47556 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbYKJRst (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 12:48:07 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-From: Andi Kleen <andi@firstfloor.org>
-References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu>
-	<20081110075529.GD707@atrey.karlin.mff.cuni.cz>
-	<20081110080436.GF2093@elte.hu> <20081110082836.GB1969@elf.ucw.cz>
-	<20081110125335.GB28643@elte.hu>
-Date: Mon, 10 Nov 2008 19:05:34 +0100
-In-Reply-To: <20081110125335.GB28643@elte.hu> (Ingo Molnar's message of "Mon, 10 Nov 2008 13:53:35 +0100")
-Message-ID: <878wrrpic1.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Mon, 10 Nov 2008 12:48:49 -0500
+Message-ID: <491873FE.2030408@zytor.com>
+Date: Mon, 10 Nov 2008 09:48:46 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: =?UTF-8?B?TWlndWVsIMOBbmdlbCDDgWx2YXJleg==?= 
+	<gotzoncabanes@gmail.com>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: EHCI "on the go"
+References: <b0438a630811100347s2d228f2cu26610f7279eb083f@mail.gmail.com>
+In-Reply-To: <b0438a630811100347s2d228f2cu26610f7279eb083f@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+Miguel Ángel Álvarez wrote:
+> Hi.
+> 
+> Due to some problems with the EHCI in an IXP465, I have found that
+> this micro has an "on the go" feature. One of its features seems to be
+> an "Embedded Transaction Translator", that seems to be quite
+> "propietary".
+> 
+> I see in ehci.h, that using CONFIG_USB_EHCI_ROOT_HUB_TT, a function
+> called "ehci_port_speed" has been added, and the comments suggest to
+> implement the particularities of each controller with other functions.
+> 
+> The question is:
+> - Are there many different implementations (it seems there are not,
+> because I cannot see code for each of them... unless they are so
+> particular that they do not even use the general interface)?
+> - Is there any place comparing the similarities / differences between them?
+> 
 
-> i can only suggest some stupid tweaking of the above options - for 
-> example, does the bug scenario change in any way if you switch it over 
-> to CONFIG_DISCONTIGMEM=y ?
+I only know of one interface for this, which is based on hardware IP I
+believe is currently owned by ChipIdea.  It's pretty straightforward; it
+functionally does the same translation for the root port as a separate
+hub would do for a full speed/low speed downstream port.
 
-iirc we removed that some time ago so it would probably need some
-source hackery. There is only vmemmap or flat left.
-
--Andi
-
--- 
-ak@linux.intel.com
+	-hpa
