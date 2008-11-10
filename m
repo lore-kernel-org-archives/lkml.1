@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbYKJTA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755217AbYKJTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbYKJTA3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 14:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbYKJTAU
+	id S1755217AbYKJTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 14:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbYKJTHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 14:00:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35097 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbYKJTAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 14:00:19 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-To: torvalds@osdl.org
-Cc: akpm@linux-foundation.org, pterjan@mandriva.com, stable@kernel.org,
-       jlayton@redhat.com, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Subject: [PATCH] KEYS: Make request key instantiate the per-user keyrings
-Date: Mon, 10 Nov 2008 19:00:05 +0000
-Message-ID: <372.1226343605@redhat.com>
+	Mon, 10 Nov 2008 14:07:15 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44680 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753231AbYKJTHN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 14:07:13 -0500
+Date: Mon, 10 Nov 2008 13:07:11 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, "Luck, Tony" <tony.luck@intel.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-ia64@vger.kernel.org,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
+Message-ID: <20081110190711.GG8483@sgi.com>
+References: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com> <87d4h3pwhe.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87d4h3pwhe.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 10, 2008 at 01:59:57PM +0100, Andi Kleen wrote:
+> Yasunori Goto <y-goto@jp.fujitsu.com> writes:
 
-Make request_key() instantiate the per-user keyrings so that it doesn't oops
-if it needs to get hold of the user session keyring because there isn't a
-session keyring in place.
+> >   3) A device which allows over 4GB is hot-added.
+> >      But dma_alloc_coherent() try to allocate DMA zone.
+> >      Then OOM occurs because there is no freeable pages.
+> >
+> > I heard there are some users who require a few GB mlock.
+> 
+> Normally mlock is limited to half the memory exactly to avoid
+> such problems.
+> 
+> Also I believe there are some issues with non continuous memory on
+> some IA64 systems -- e.g. Altixes iirc have the requirement
+> that you use the IOMMU for higher memory. So it's probably
+> not easy to change.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Tested-by: Steve French <smfrench@gmail.com>
-Tested-by: Rutger Nijlunsing <rutger.nijlunsing@gmail.com>
----
+I am not sure what is be referred to here, but all of an Altix's memory is
+DMA capable with the exception of the stuff covered by the MSPEC driver
+(that is uncached memory).  There are certainly all sort of special
+requirements for doing transfers on Altix to eliminate memory ordering
+problems, but nothing specific that I recall related to address ranges
+and DMA.
 
- security/keys/internal.h     |    1 +
- security/keys/process_keys.c |    2 +-
- security/keys/request_key.c  |    4 ++++
- 3 files changed, 6 insertions(+), 1 deletions(-)
+I appologize in advance if I am answering a different question that
+was asked.
 
-
-diff --git a/security/keys/internal.h b/security/keys/internal.h
-index b39f5c2..239098f 100644
---- a/security/keys/internal.h
-+++ b/security/keys/internal.h
-@@ -107,6 +107,7 @@ extern key_ref_t search_process_keyrings(struct key_type *type,
- 
- extern struct key *find_keyring_by_name(const char *name, bool skip_perm_check);
- 
-+extern int install_user_keyrings(struct task_struct *tsk);
- extern int install_thread_keyring(struct task_struct *tsk);
- extern int install_process_keyring(struct task_struct *tsk);
- 
-diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
-index 5be6d01..45b240a 100644
---- a/security/keys/process_keys.c
-+++ b/security/keys/process_keys.c
-@@ -40,7 +40,7 @@ struct key_user root_key_user = {
- /*
-  * install user and user session keyrings for a particular UID
-  */
--static int install_user_keyrings(struct task_struct *tsk)
-+int install_user_keyrings(struct task_struct *tsk)
- {
- 	struct user_struct *user = tsk->user;
- 	struct key *uid_keyring, *session_keyring;
-diff --git a/security/keys/request_key.c b/security/keys/request_key.c
-index ba32ca6..abea08f 100644
---- a/security/keys/request_key.c
-+++ b/security/keys/request_key.c
-@@ -74,6 +74,10 @@ static int call_sbin_request_key(struct key_construction *cons,
- 
- 	kenter("{%d},{%d},%s", key->serial, authkey->serial, op);
- 
-+	ret = install_user_keyrings(tsk);
-+	if (ret < 0)
-+		goto error_alloc;
-+
- 	/* allocate a new session keyring */
- 	sprintf(desc, "_req.%u", key->serial);
- 
+Thanks,
+Robin
