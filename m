@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYKJPk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYKJPk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbYKJPk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 10:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYKJPkS
+	id S1754410AbYKJPk4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 10:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYKJPkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 10:40:18 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45434 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751347AbYKJPkR (ORCPT
+	Mon, 10 Nov 2008 10:40:47 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33363 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbYKJPkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 10:40:17 -0500
-Message-ID: <491855AA.5060100@zytor.com>
-Date: Mon, 10 Nov 2008 07:39:22 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alexander van Heukelum <heukelum@fastmail.fm>,
-       Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <20081110085846.GG22392@elte.hu>
-In-Reply-To: <20081110085846.GG22392@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 10:40:46 -0500
+Date: Mon, 10 Nov 2008 16:49:48 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Robert Richter <robert.richter@amd.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] oprofile: re-arm APIC_DM_NMI in ppro_check_ctrs()
+Message-ID: <20081110154948.GW29626@one.firstfloor.org>
+References: <20081107171339.GQ9785@erda.amd.com> <4917EB51.9020304@cosmosbay.com> <87ljvsott2.fsf@basil.nowhere.org> <491843C4.9090306@cosmosbay.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <491843C4.9090306@cosmosbay.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
-> 
-> hackbench is _way_ too noisy to measure such cycle-level differences 
-> as irq entry changes cause. It also does not really stress interrupts 
-> - it only stresses networking, the VFS and the scheduler.
-> 
-> a better test might have been to generate a ton of interrupts, but 
-> even then it's _very_ hard to measure it properly. The best method is 
-> what i've suggested to you early on: run a loop in user-space and 
-> observe irq costs via RDTSC, as they happen. Then build a histogram 
-> and compare the before/after histogram. Compare best-case results as 
-> well (the first slot of the histogram), as those are statistically 
-> much more significant than a noisy average.
-> 
+>  			oprofile_add_sample(regs, i);
+> +			/*
+> +			 * We need to unmask the apic vector *before*
+> +			 * writing reset_value to msr counter
+> +			 */
+> +			apic_write(APIC_LVTPC, APIC_DM_NMI);
+>  			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
+>  		}
+>  	}
+>  
+> -	/* Only P6 based Pentium M need to re-unmask the apic vector but it
+> -	 * doesn't hurt other P6 variant */
+> -	apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
 
-For what it's worth, I tested this out, and I'm pretty sure you need to
-run a uniprocessor configuration (or system) for it to make sense --
-otherwise you end up missing too many of the interrupts.  I first tested
-this on an 8-processor system and, well, came up with nothing.
+Did you also test if it really needs to be inside the if () or 
+just before the wrmsrl? 
 
-I'm going to try this later on a uniprocessor, unless Alexander beats me
-to it.
-
-	-hpa
+-Andi
