@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbYKJOBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbYKJOG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbYKJOBX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYKJOBO
+	id S1755479AbYKJOG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbYKJOGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:01:14 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:56109 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754304AbYKJOBO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:01:14 -0500
-Date: Mon, 10 Nov 2008 08:00:46 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, takedakn@nttdata.co.jp,
-       haradats@nttdata.co.jp
-Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 06/11] Common functions for
-	TOMOYOLinux.
-Message-ID: <20081110140046.GA9954@us.ibm.com>
-References: <20081104060847.086543472@nttdata.co.jp> <20081104060951.618445959@nttdata.co.jp> <20081105151221.d605226f.akpm@linux-foundation.org> <200811090138.GBG65138.FVOHOJOtMLQFFS@I-love.SAKURA.ne.jp> <20081110004131.GA25021@us.ibm.com> <200811100224.mAA2ORgv096549@www262.sakura.ne.jp> <20081110025245.GA28174@us.ibm.com> <200811100330.mAA3U1Q6012264@www262.sakura.ne.jp>
+	Mon, 10 Nov 2008 09:06:18 -0500
+Received: from hope.ime.usp.br ([143.107.45.8]:45388 "HELO hope.ime.usp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755008AbYKJOGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:06:18 -0500
+Date: Mon, 10 Nov 2008 12:06:11 -0200
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: "Justin P. Mattock" <justinmattock@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "yakui.zhao@intel.com" <yakui.zhao@intel.com>,
+       Bugreport <bugme-daemon@bugzilla.kernel.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       Rafael Wysocki <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
+       acpi-bugzilla@lists.sourceforge.net, rui.zhang@inte.com,
+       rbrito@ime.usp.br
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
+Message-ID: <20081110140611.GA4450@ime.usp.br>
+References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br> <1226044855.4913f5b7f2f45@webmail.ime.usp.br> <20081108075008.GA8177@ime.usp.br> <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com> <20081109024514.GA11744@ime.usp.br> <3DCE2017-408C-45E2-8E0D-3A474E8645F6@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200811100330.mAA3U1Q6012264@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3DCE2017-408C-45E2-8E0D-3A474E8645F6@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
-> Hello.
-> 
-> Serge E. Hallyn wrote:
-> > > I need to clarify reachability of "struct task_struct".
-> > > 
-> > > A process inside a virtualized environment cannot reach "struct task_struct"
-> > > which belongs to outside the virtualized environment.
-> > > 
-> > > A process outside virtualized environments can reach "struct task_struct"
-> > > which belongs to inside virtualized environments, can't it?
-> > 
-> > To be precise, there isn't a real 'inside' and 'outside' virtualized
-> > environements.  Rather pid namespaces are hierarchical.
-> > 
-> So, processes which have non-topmost namespace cannot see processes which have
-> topmost namespace (like chroot()).
-> Then, it might be preferable if TOMOYO can prevent processes which have
-> non-topmost namespace from modifying policy information.
-> Do you think TOMOYO should do "current->nsproxy->pid_ns == &init_pid_ns"
-> checking like below one?
+Hi, Justin.
 
-Nah, I actually don't.  There is nothing to stop init or getty from
-doing an unshare(CLONE_NEWNS|CLONE_NEWPID) so noone would be able to
-make modifications.  The important thing is that the kernel won't
-use another task than what userspace intended, so I think you're ok.
+On Nov 08 2008, Justin P. Mattock wrote:
+> Appologize if this is quite brief
+> (sending from phone);
+> For the long delay try comment #2
+> Of:
+> http://bugzilla.kernel.org/show_bug.cgi?id=11220
+> Keep in mind msi.c might have been changed since then, so it might not  
+> work
 
-> static bool tomoyo_is_policy_manager(void)
-> {
-> 	struct tomoyo_policy_manager_entry *ptr;
-> 	const char *exe;
-> 	const struct task_struct *task = current;
-> 	const struct tomoyo_path_info *domainname = tomoyo_domain()->domainname;
-> 	bool found = false;
-> 
-> 	if (!tomoyo_policy_loaded)
-> 	        return true;
-> 	if (!tomoyo_manage_by_non_root && (task->cred->uid || task->cred->euid))
+I checked this patch and it seems to be already incorporated into
+2.6.28-rc3 (with a dry-run, it told me that it was already applied).
 
-Now the point of LSM is to let you decide on your own policy, so this
-is entirely up to you, but wouldn't it be nicer to use CAP_MAC_ADMIN's
-presence like SMACK does?
+Thanks for the feedback anyway. I appreciate any help that I can take.
 
-> 	        return false;
-> 	/* Don't allow modifying policy by processes not having init_pid_ns. */
-> 	if (task->nsproxy->pid_ns != &init_pid_ns)
-> 		return false;
 
-No, I think it's far better to keep this out.  (Plus you'd have to use
-task_nsproxy() under rcu_read_lock.)
+Thanks, Rogério Brito.
 
-I know at this point it might seem like I'm changing my mind left and
-right (sorry), so here is the guiding principle:  pids are appropriate
-for userspace to communicate to userspace and, if done right, to the
-kernel.  But the kernel must not cache them internally.
-
-(...and, if getting or sending them from/to user-space, must be careful
-about the pidns, of course.)
-
-So you're fine.
-
-thanks,
--serge
-
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
