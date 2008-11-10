@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbYKJMwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYKJMx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbYKJMwY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 07:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYKJMwP
+	id S1755471AbYKJMx5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 07:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYKJMxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 07:52:15 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:10087 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754701AbYKJMwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 07:52:13 -0500
-Message-ID: <49182E85.9010405@panasas.com>
-Date: Mon, 10 Nov 2008 14:52:21 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Mon, 10 Nov 2008 07:53:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45364 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754701AbYKJMxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 07:53:48 -0500
+Date: Mon, 10 Nov 2008 13:53:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+Message-ID: <20081110125335.GB28643@elte.hu>
+References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu> <20081110075529.GD707@atrey.karlin.mff.cuni.cz> <20081110080436.GF2093@elte.hu> <20081110082836.GB1969@elf.ucw.cz>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@HansenPartnership.com, linux-next@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, michaelc@cs.wisc.edu,
-       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
-       linux-scsi@vger.kernel.org, Sami.Iren@seagate.com,
-       Pete Wyckoff <pw@padd.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
-References: <48876009.8010701@panasas.com>	<491073BB.4000900@panasas.com>	<20081104111923.bb19c238.akpm@linux-foundation.org>	<4916FAB3.4010409@panasas.com> <20081110102607.378c3279.sfr@canb.auug.org.au>
-In-Reply-To: <20081110102607.378c3279.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Nov 2008 12:50:50.0731 (UTC) FILETIME=[F5C1BBB0:01C94332]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110082836.GB1969@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0022]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Boaz,
-> 
-> On Sun, 09 Nov 2008 16:58:59 +0200 Boaz Harrosh <bharrosh@panasas.com> wrote:
->> I have prepared a branch for linux-next based on today's Linus tree
->> It is here:
->>     git://git.open-osd.org/linux-open-osd.git linux-next
->> This is if it's OK with James, as these bits are his responsibility.
->> They need only sit in linux-next for a couple of weeks to get some wider
->> compilation exposure. Other then that they are totally new code and
->> are safe. Eventually they should be included into Linux-next through
->> scsi-misc-2.6.
-> 
-> I have added that tree to linux-next for today.
-> 
-> What I say to everyone:  commits in that branch must have been posted
-> somewhere appropriate, reviewed, unit tested and destined for the next
-> merge window.  Also, note that my (new) practise is to temporarily drop a
-> tree if it causes non-trivial conflicts (especially with Linus' tree), so
-> don't be too upset if you get a message from me to that effect.
-> 
 
-Thank you Stephen, very much
+* Pavel Machek <pavel@suse.cz> wrote:
 
-This has proven itself already. I found some warnings on some ARCHs
-concerning printk of u64 types. I have made a sweep and fixed all these
-places and others.
-(same place: git://git.open-osd.org/linux-open-osd.git linux-next)
+> > In any case, could you send the .config that fails please, so that 
+> > this is documented better?
+> 
+> Attached... but exact config does not seem to matter.
 
-If you could keep it for the next round it could be grate. So I can make
-sure I got rid of all the warnings.
+there are the physical memory enumeration model options:
 
-Thanks again
-Boaz
+ # CONFIG_FLATMEM_MANUAL is not set
+ # CONFIG_DISCONTIGMEM_MANUAL is not set
+ CONFIG_SPARSEMEM_MANUAL=y
+ CONFIG_SPARSEMEM=y
+ CONFIG_NEED_MULTIPLE_NODES=y
+ CONFIG_HAVE_MEMORY_PRESENT=y
+ CONFIG_SPARSEMEM_STATIC=y
+
+i can only suggest some stupid tweaking of the above options - for 
+example, does the bug scenario change in any way if you switch it over 
+to CONFIG_DISCONTIGMEM=y ?
+
+	Ingo
