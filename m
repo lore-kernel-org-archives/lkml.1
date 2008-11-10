@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbYKJVTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbYKJVa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbYKJVTF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 16:19:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbYKJVSy
+	id S1752540AbYKJVa5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 16:30:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbYKJVar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 16:18:54 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35958 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751227AbYKJVSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 16:18:53 -0500
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-Id: <F0EE8017-D08B-4520-9017-ED99B54C6703@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Trent Piepho <tpiepho@freescale.com>
-In-Reply-To: <1226351361-27115-1-git-send-email-tpiepho@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] powerpc: Repair device bindings documentation
-Date: Mon, 10 Nov 2008 15:18:12 -0600
-References: <1226351361-27115-1-git-send-email-tpiepho@freescale.com>
-X-Mailer: Apple Mail (2.929.2)
+	Mon, 10 Nov 2008 16:30:47 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:56947 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243AbYKJVaq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 16:30:46 -0500
+Date: Mon, 10 Nov 2008 22:30:35 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jianjun Kong <jianjun@zeuux.org>
+cc: spock@gentoo.org, linux-fbdev-devel@lists.sourceforge.net,
+       Linux-Kernel-Mailing-List <linux-kernel@vger.kernel.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] drivers: process failure of
+ sysfs_create_group()
+In-Reply-To: <20081110105332.GA19358@ubuntu>
+Message-ID: <Pine.LNX.4.64.0811102229170.19341@anakin>
+References: <20081110105332.GA19358@ubuntu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 10 Nov 2008, Jianjun Kong wrote:
+> drivers: drivers/video/uvesafb.c:
+> When fail to call sysfs_create_group(), it should recycle resources and return the error.
+> This patch fix for processing failure of sysfs_create_group().
 
-On Nov 10, 2008, at 3:09 PM, Trent Piepho wrote:
+IIRC, the reasoning behind the current code is that a failure to create sysfs
+entries is not critical, as it doesn't impact the correct functioning of the
+core of the driver.
 
-> Commit d0fc2eaaf4c56a95f5ed29b6bfb609e19714fc16 "powerpc/fsl: Refactor
-> device bindings" split out a number of device bindings from
-> booting-without-of.txt into separate files.  Having them all in one  
-> file
-> was a frequent source of merge conflicts.
->
-> However, in the next merge,  
-> 49997d75152b3d23c53b0fa730599f2f74c92c65, there
-> was another conflict.  Some of the bindings removed from
-> booting-without-of.txt were mistakenly added back in and the copies in
-> dts-bindings were kept as well.
->
-> This patch re-removes "Freescale Display Interface" and "Freescale  
-> on board
-> FPGA" and fixes the table of contents.
->
-> Signed-off-by: Trent Piepho <tpiepho@freescale.com>
-> Acked-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
 > ---
->
-> Maybe this should go in 2.6.28, since it fixes a doc bug and before
-> anyone modifies the version of the docs that should have been deleted.
->
-> Documentation/powerpc/booting-without-of.txt |   65 +++ 
-> +----------------------
-> 1 files changed, 10 insertions(+), 55 deletions(-)
+>  drivers/video/uvesafb.c |    6 +++++-
+>  1 files changed, 5 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+> index 6c2d37f..a78d4d9 100644
+> --- a/drivers/video/uvesafb.c
+> +++ b/drivers/video/uvesafb.c
+> @@ -1811,12 +1811,16 @@ static int __devinit uvesafb_probe(struct platform_device *dev)
+>  			info->fix.id);
+>  
+>  	err = sysfs_create_group(&dev->dev.kobj, &uvesafb_dev_attgrp);
+> -	if (err != 0)
+> +	if (err != 0) {
+>  		printk(KERN_WARNING "fb%d: failed to register attributes\n",
+>  			info->node);
+> +		goto out_frame;
+> +	}
+>  
+>  	return 0;
+>  
+> +our_frame:
+> +	unregister_framebuffer(info);
+>  out_reg:
+>  	release_region(0x3c0, 32);
+>  out_unmap:
 
-applied to merge
+Gr{oetje,eeting}s,
 
-- k
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
