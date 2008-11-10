@@ -1,108 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYKJWdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbYKJWoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756196AbYKJWdh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:33:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYKJWbO
+	id S1753962AbYKJWoU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYKJWoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:31:14 -0500
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:39076 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbYKJWbL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:31:11 -0500
-From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 7/7] PCI,
-	ACPI: remove obsolete _OSC capability support functions
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Cc: andrew.patterson@hp.com, matthew@wil.cx, kaneshige.kenji@jp.fujitsu.com,
-       bjorn.helgaas@hp.com
-Date: Mon, 10 Nov 2008 15:31:10 -0700
-Message-ID: <20081110223110.30539.19970.stgit@bob.kio>
-In-Reply-To: <20081110223035.30539.88942.stgit@bob.kio>
-References: <20081110223035.30539.88942.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Mon, 10 Nov 2008 17:44:08 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50684 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750906AbYKJWoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 17:44:07 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel Smolik <marvin@mydatex.cz>
+Subject: Re: [Bugme-new] [Bug 11886] New: without serial console system doesn't poweroff
+Date: Mon, 10 Nov 2008 23:48:38 +0100
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+References: <bug-11886-10286@http.bugzilla.kernel.org/> <200811090042.33219.rjw@sisk.pl> <4918B44A.6090104@mydatex.cz>
+In-Reply-To: <4918B44A.6090104@mydatex.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811102348.39486.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI, ACPI: remove obsolete _OSC capability support functions
+On Monday, 10 of November 2008, Daniel Smolik wrote:
+[--snip--]
+> I today test 2.6.26 and it works OK.
 
-The acpi_query_osc, __pci_osc_support_set, pci_osc_support_set, and
-pcie_osc_support_set functions have been obsoleted in favor of setting
-these capabilities during root bridge discovery with pci_acpi_osc_support.
-There are no longer any callers of these functions, so they are removed.
+OK
 
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
+Please check if this commit helps
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=8d00450d296dedec9ada38d43b83e79cca6fd5a3
 
-diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-index f457387..128ce7d 100644
---- a/drivers/pci/pci-acpi.c
-+++ b/drivers/pci/pci-acpi.c
-@@ -171,31 +171,6 @@ out:
- 	return rc;
- }
- 
--static acpi_status acpi_query_osc(acpi_handle handle, u32 level,
--				  void *context, void **retval)
--{
--	pci_acpi_osc_support(handle, (unsigned long)context);
--	return AE_OK;
--}
--
--/**
-- * __pci_osc_support_set - register OS support to Firmware
-- * @flags: OS support bits
-- * @hid: hardware ID
-- *
-- * Update OS support fields and doing a _OSC Query to obtain an update
-- * from Firmware on supported control bits.
-- **/
--acpi_status __pci_osc_support_set(u32 flags, const char *hid)
--{
--	if (!(flags & OSC_SUPPORT_MASKS))
--		return AE_TYPE;
--
--	acpi_get_devices(hid, acpi_query_osc,
--			 (void *)(unsigned long)flags, NULL);
--	return AE_OK;
--}
--
- /**
-  * pci_osc_control_set - commit requested control to Firmware
-  * @handle: acpi_handle for the target ACPI object
-diff --git a/include/linux/pci-acpi.h b/include/linux/pci-acpi.h
-index 424f06f..871e096 100644
---- a/include/linux/pci-acpi.h
-+++ b/include/linux/pci-acpi.h
-@@ -50,16 +50,7 @@
- 
- #ifdef CONFIG_ACPI
- extern acpi_status pci_osc_control_set(acpi_handle handle, u32 flags);
--extern acpi_status __pci_osc_support_set(u32 flags, const char *hid);
- int pci_acpi_osc_support(acpi_handle handle, u32 flags);
--static inline acpi_status pci_osc_support_set(u32 flags)
--{
--	return __pci_osc_support_set(flags, PCI_ROOT_HID_STRING);
--}
--static inline acpi_status pcie_osc_support_set(u32 flags)
--{
--	return __pci_osc_support_set(flags, PCI_EXPRESS_ROOT_HID_STRING);
--}
- static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
- {
- 	/* Find root host bridge */
-@@ -76,8 +67,6 @@ typedef u32 		acpi_status;
- #endif    
- static inline acpi_status pci_osc_control_set(acpi_handle handle, u32 flags)
- {return AE_ERROR;}
--static inline acpi_status pci_osc_support_set(u32 flags) {return AE_ERROR;} 
--static inline acpi_status pcie_osc_support_set(u32 flags) {return AE_ERROR;}
- static inline acpi_handle acpi_find_root_bridge_handle(struct pci_dev *pdev)
- { return NULL; }
- #endif
-
+If not, the fastest way to find the failing commit would probably be to carry
+out bisection of kernels between 2.6.26 (good) and 2.6.27 (presumably
+bad as well as 2.6.27.2).
