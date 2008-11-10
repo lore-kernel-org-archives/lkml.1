@@ -1,183 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYKJIjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbYKJIlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309AbYKJIjV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 03:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYKJIjL
+	id S1754300AbYKJIlo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 03:41:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYKJIlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 03:39:11 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:52478 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753843AbYKJIjJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 03:39:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vd9aQH0AMl0kR47HC3Jt7emny4BwqB0vdpXjpWUgFjyPOBHEGygqpVSc4ckIg7kQwG
-         qdErFeYwWQI+j3ZDHRaD1hLvyEI2GzT5qGE4IOQ/cw9y3BLl3C3av/JWnqs5F8tXuw9s
-         xjzuozOrSY4XiCkoLS38Jt2AzggM4OnSf8Bbw=
-Date: Mon, 10 Nov 2008 11:42:29 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: [PATCH v42] proc: add /proc/*/stack (was Re: linux-next: proc tree
-	build failure)
-Message-ID: <20081110084229.GA8690@x200.localdomain>
-References: <20081110162941.e9e9ef3a.sfr@canb.auug.org.au> <20081110055311.GA3138@x200.localdomain> <20081110073623.GA475@elte.hu>
+	Mon, 10 Nov 2008 03:41:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38296 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750970AbYKJIlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 03:41:35 -0500
+Date: Mon, 10 Nov 2008 09:41:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Ken Chen <kenchen@google.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
+Message-ID: <20081110084123.GE22392@elte.hu>
+References: <20081106203520.GD3578@elte.hu> <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain> <20081107083249.GD4435@elte.hu> <b040c32a0811071038g5e6faba6n55b22e52e1d2ea98@mail.gmail.com> <20081108121054.GG8354@elte.hu> <20081109180841.GB3127@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110073623.GA475@elte.hu>
+In-Reply-To: <20081109180841.GB3127@x200.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 08:36:23AM +0100, Ingo Molnar wrote:
+
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
+
+> On Sat, Nov 08, 2008 at 01:10:54PM +0100, Ingo Molnar wrote:
+> > Sidenote: it would still be nice if the procfs folks converted the 
+> > old-style code there to the new seqfile APIs, before requiring 
+> > everyone _else_ to follow those guidelines?
 > 
-> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> 
-> > On Mon, Nov 10, 2008 at 04:29:41PM +1100, Stephen Rothwell wrote:
-> > > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> > > 
-> > > fs/proc/base.c:2547: error: 'pid_stack' undeclared here (not in a function)
-> > > 
-> > > Caused by an interaction of commits
-> > > 078e9901c02d4899db5b24f708b8dfbca8935891 ("stacktrace:
-> > > add /proc/<pid>/stack to dump task's stack trace") and
-> > > 35f0b5fd7fab907a1119eaa614d9b24e5e225755 ("stacktrace:
-> > > convert /proc/<pid>/stack to seqfiles") from the tip-core tree with commit
-> > > 5d8880e3e0fb96459c652ac5e1504b90c949b3b9 ("proc: remove '##' usage") from
-> > > the proc tree.
-> > > 
-> > > The former added a new usage of INF (which the second converted to a
-> > > ONE).  I added the following patch to the merge of the proc tree and can
-> > > carry it.
-> > 
-> > Time to steal this /proc/*/stack from Ingo. :-)
-> 
-> Alexey, would you like to carry them for v2.6.29? They are in a 
-> separate tree here, the pull coordinates are below.
-> 
-> Please preserve the sha1's (do not rebase/cherry-pick, etc.) so that i 
-> can carry it too without causing confusion.
+> For every existing non seqfile /proc file, there may be (and was 
+> demonstrated) some userspace which is doing pread(2) on it and 
+> seqfiles don't support pread currently. Obviously, no such userspace 
+> exist for /proc/*/stack.
 
-Sorry, I can't.
+ok, i then dont understand why we are advocating seqfile use, while 
+seqfiles are inferior replacements in certain aspects (no pread(2) 
+support). Adding pread(2) support would remove all doubt, and it could 
+be converted all across the spectrum, eliminating any confusion about 
+which facility to use, right?
 
-It's two commits, PROC_BLOCK_SIZE moving chunk is now unneeded, because
-seqfiles are in use, grabbing tasklist_lock for protection from task
-dissapearing is unneeded -- proc_single_show() pins task_struct, entry
-is added only to tgid table.
-
-So, here is final version:
-
-
-commit 12bf5a00732a5f9512081291097d0e4a3224e8a3
-Author: Ken Chen <kenchen@google.com>
-Date:   Mon Nov 10 11:26:08 2008 +0300
-
-    proc: add /proc/*/stack
-    
-    /proc/*/stack adds the ability to query a task's stack trace. It is more
-    useful than /proc/*/wchan as it provides full stack trace instead of single
-    depth. Example output:
-    
-    	$ cat /proc/self/stack
-    	[<c010a271>] save_stack_trace_tsk+0x17/0x35
-    	[<c01827b4>] proc_pid_stack+0x4a/0x76
-    	[<c018312d>] proc_single_show+0x4a/0x5e
-    	[<c016bdec>] seq_read+0xf3/0x29f
-    	[<c015a004>] vfs_read+0x6d/0x91
-    	[<c015a0c1>] sys_read+0x3b/0x60
-    	[<c0102eda>] syscall_call+0x7/0xb
-    	[<ffffffff>] 0xffffffff
-    
-    Signed-off-by: Ken Chen <kenchen@google.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-
-diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-index bcceb99..11f5b75 100644
---- a/Documentation/filesystems/proc.txt
-+++ b/Documentation/filesystems/proc.txt
-@@ -139,6 +139,7 @@ Table 1-1: Process specific entries in /proc
-  statm		Process memory status information
-  status		Process status in human readable form
-  wchan		If CONFIG_KALLSYMS is set, a pre-decoded wchan
-+ stack		Report full stack trace, enable via CONFIG_STACKTRACE
-  smaps		Extension based on maps, the rss size for each mapped file
- ..............................................................................
- 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 6e850e9..738ea78 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -65,6 +65,7 @@
- #include <linux/mm.h>
- #include <linux/rcupdate.h>
- #include <linux/kallsyms.h>
-+#include <linux/stacktrace.h>
- #include <linux/resource.h>
- #include <linux/module.h>
- #include <linux/mount.h>
-@@ -337,6 +338,37 @@ static int proc_pid_wchan(struct task_struct *task, char *buffer)
- }
- #endif /* CONFIG_KALLSYMS */
- 
-+#ifdef CONFIG_STACKTRACE
-+
-+#define MAX_STACK_TRACE_DEPTH	64
-+
-+static int proc_pid_stack(struct seq_file *m, struct pid_namespace *ns,
-+			  struct pid *pid, struct task_struct *task)
-+{
-+	struct stack_trace trace;
-+	unsigned long *entries;
-+	int i;
-+
-+	entries = kmalloc(MAX_STACK_TRACE_DEPTH * sizeof(*entries), GFP_KERNEL);
-+	if (!entries)
-+		return -ENOMEM;
-+
-+	trace.nr_entries	= 0;
-+	trace.max_entries	= MAX_STACK_TRACE_DEPTH;
-+	trace.entries		= entries;
-+	trace.skip		= 0;
-+	save_stack_trace_tsk(task, &trace);
-+
-+	for (i = 0; i < trace.nr_entries; i++) {
-+		seq_printf(m, "[<%p>] %pS\n",
-+			   (void *)entries[i], (void *)entries[i]);
-+	}
-+	kfree(entries);
-+
-+	return 0;
-+}
-+#endif
-+
- #ifdef CONFIG_SCHEDSTATS
- /*
-  * Provides /proc/PID/schedstat
-@@ -2484,6 +2516,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- #ifdef CONFIG_KALLSYMS
- 	INF("wchan",      S_IRUGO, proc_pid_wchan),
- #endif
-+#ifdef CONFIG_STACKTRACE
-+	ONE("stack",      S_IRUSR, proc_pid_stack),
-+#endif
- #ifdef CONFIG_SCHEDSTATS
- 	INF("schedstat",  S_IRUGO, proc_pid_schedstat),
- #endif
-@@ -2819,6 +2854,9 @@ static const struct pid_entry tid_base_stuff[] = {
- #ifdef CONFIG_KALLSYMS
- 	INF("wchan",     S_IRUGO, proc_pid_wchan),
- #endif
-+#ifdef CONFIG_STACKTRACE
-+	ONE("stack",      S_IRUSR, proc_pid_stack),
-+#endif
- #ifdef CONFIG_SCHEDSTATS
- 	INF("schedstat", S_IRUGO, proc_pid_schedstat),
- #endif
+	Ingo
