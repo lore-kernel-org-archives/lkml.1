@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbYKJNyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYKJN56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbYKJNyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 08:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbYKJNyF
+	id S1755451AbYKJN56 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 08:57:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbYKJN5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 08:54:05 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:34346 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754913AbYKJNyE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 08:54:04 -0500
-Date: Mon, 10 Nov 2008 08:54:01 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Chandra Seetharaman <sekharan@us.ibm.com>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel <dm-devel@redhat.com>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk
-Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
-	dm_any_congested() to properly sync up with suspend code path)
-Message-ID: <20081110135401.GA11606@infradead.org>
-References: <1225944008.14830.1101.camel@chandra-ubuntu> <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com>
+	Mon, 10 Nov 2008 08:57:51 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:46957 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754913AbYKJN5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 08:57:50 -0500
+Date: Mon, 10 Nov 2008 14:56:18 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20081110135618.GI26778@kernel.dk>
+References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 08:11:51AM -0500, Mikulas Patocka wrote:
-> For upstream Linux developers: you are holding a spinlock and calling 
-> bdi*_congested functions that can take indefinite amount of time (there 
-> are even users reporting having 50 disks in one logical volume or so). I 
-> think it would be good to move these calls out of spinlocks.
+On Mon, Nov 10 2008, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
+> 
+> > On Sun, Nov 09 2008, Vitaly V. Bursov wrote:
+> >> Hello,
+> >> 
+> >> I'm building small server system with openvz kernel and have ran into
+> >> some IO performance problems. Reading a single file via NFS delivers
+> >> around 9 MB/s over gigabit network, but while reading, say, 2 different
+> >> or same file 2 times at the same time I get >60MB/s.
+> >> 
+> >> Changing IO scheduler to deadline or anticipatory fixes problem.
+> >> 
+> >> Tested kernels:
+> >>   OpenVZ RHEL5 028stab059.3 (9 MB/s with HZ=100, 20MB/s with HZ=1000
+> >>                  fast local reads)
+> >>   Vanilla 2.6.27.5 (40 MB/s with HZ=100, slow local reads)
+> >> 
+> >> Vanilla performs better in worst case but I believe 40 is still low
+> >> concerning test results below.
+> >
+> > Can you check with this patch applied?
+> >
+> > http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
+> 
+> Funny, I was going to ask the same question.  ;)  The reason Jens wants
+> you to try this patch is that nfsd may be farming off the I/O requests
+> to different threads which are then performing interleaved I/O.  The
+> above patch tries to detect this and allow cooperating processes to get
+> disk time instead of waiting for the idle timeout.
 
-Umm, they shouldn't block that long, as that completely defeats their
-purpose.  These functions are mostly used to avoid throwing more I/O at
-a congested device if pdflush could do more useful things instead.  But
-if it blocks in those functions anyway we wouldn't have to bother using
-them.  Do you have more details about the uses cases when this happens
-and where the routines spend so much time?
+Precisely :-)
+
+The only reason I haven't merged it yet is because of worry of extra
+cost, but I'll throw some SSD love at it and see how it turns out.
+
+-- 
+Jens Axboe
 
