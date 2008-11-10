@@ -1,112 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYKJNZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYKJNjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbYKJNZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 08:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbYKJNZB
+	id S1755327AbYKJNjo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 08:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbYKJNje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 08:25:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54410 "EHLO hera.kernel.org"
+	Mon, 10 Nov 2008 08:39:34 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57188 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754913AbYKJNZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 08:25:00 -0500
-Message-ID: <491835FF.1060403@kernel.org>
-Date: Mon, 10 Nov 2008 22:24:15 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1754913AbYKJNje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 08:39:34 -0500
+Date: Mon, 10 Nov 2008 15:39:30 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Cc: adobriyan@gmail.com, Doug Chapman <doug.chapman@hp.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] for account_group_exec_runtime(), make sure ->signal can't
+	be freed under rq->lock
+Message-ID: <20081110143930.GA28275@redhat.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: request to revert libata-convert-to-block-tagging patches
-References: <4917C449.2080504@kernel.org> <20081110120533.GB26778@kernel.dk>
-In-Reply-To: <20081110120533.GB26778@kernel.dk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Nov 2008 13:24:20 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Nov 10 2008, Tejun Heo wrote:
->> Hello, all.
->>
->> I went through libata-convert-to-block-tagging today and found several
->> issues.
->>
->> 1. libata internal data structure for command context (qc) allocation is
->> bound to tag allocation, which means that block layer tagging should be
->> enabled for all controllers which have can_queue > 1.
-> 
-> Naturally, is there a problem there?
+The patch is ugly, but I don't see the better fix for now. Needs
+the review from Peter/Ingo.
 
-Queueing wasn't enabled for ATAPI device behind PMP so it made those
-devices reuse already allocated qc's.  Not difficult to fix.
+Unlike other similar routines, account_group_exec_runtime() could be
+called "implicitly" from within scheduler after exit_notify(). This
+means we can race with the parent doing release_task(), we can't just
+check ->signal != NULL.
 
->> 2. blk-tag offsets allocation for non-sync requests.  I'm not confident
->> this is safe.  Till now, if there was only single command in flight for
->> the port, it was guaranteed that the qc gets tag zero whether the device
->> is NCQ capable or not.  qc allocation is tied tightly with hardware
->> command slot allocation and I don't think it's wise to change this
->> assumption.
->>
->> #1 is easy to fix but #2 requires either adding a spinlock or two atomic
->> variables to struct blk_queue_tag to keep the current behavior while
->> guaranteeing that tags are used in order.  Also, there's delay between
->> libata marks a request complete and the request actually gets completed
->> and the tag is freed.  If another request gets issued inbetween, the tag
->> number can't be guaranteed.  This can be worked around by re-mapping tag
->> number in libata depending on command type but, well then, it's worse
->> than the original implementation.
-> 
-> Or we could just change the blk-tag.c logic to stop of
-> find_first_zero_bit() returns >= some_value instead of starting at an
-> offset? You don't need any extra locking for that.
+Change __exit_signal() to do spin_unlock_wait(&task_rq(tsk)->lock)
+before __cleanup_signal() to make sure ->signal can't be freed under
+task_rq(tsk)->lock. Note that task_rq_unlock_wait() doesn't care
+about the case when tsk changes cpu/rq under us, this should be OK.
 
-I tried that but there's a behavior difference.  If you reserve from
-the beginning, the sync IOs prefer the reserved slots.  If you
-reserved from the end, the sync IO prefer non-reserved slots.
-ie. When 4 slots are reserved for sync IO, and 4 sync IOs are already
-in flight, the fifth sync IO competes with async IOs on the same
-ground in the former case but in the latter it either wins or is very
-likely to take another reserved slot.
+Thanks to Ingo who nacked my previous buggy patch.
 
-> The second part is more tricky I think, but I'm not sure there's a race
-> there. For normally issued IO, queueing is restarted when the tag
-> completes. There's a small softirq delay there, but that delay is before
-> the tag is completed and queueing restarted. Any non-ncq command (eg
-> through an ioctl) will have to wait for completion as well.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Reported-by: Doug Chapman <doug.chapman@hp.com>
 
-For drivers with .can_queue == 1, nothing can go wrong.  I was worried
-about NCQ -> non-NCQ transition because blk-tag doesn't know that the
-non-NCQ command is not to be scheduled with NCQ commands and will
-happily assign any tag and in this case the race window definitely is
-there.
+--- K-28/include/linux/sched.h~SIG_RQ_LOCK	2008-11-06 19:12:44.000000000 +0100
++++ K-28/include/linux/sched.h	2008-11-10 13:13:07.000000000 +0100
+@@ -247,6 +247,7 @@ extern void init_idle(struct task_struct
+ extern void init_idle_bootup_task(struct task_struct *idle);
+ 
+ extern int runqueue_is_locked(void);
++extern void task_rq_unlock_wait(struct task_struct *p);
+ 
+ extern cpumask_t nohz_cpu_mask;
+ #if defined(CONFIG_SMP) && defined(CONFIG_NO_HZ)
+--- K-28/kernel/sched.c~SIG_RQ_LOCK	2008-11-06 19:12:44.000000000 +0100
++++ K-28/kernel/sched.c	2008-11-10 13:05:09.000000000 +0100
+@@ -969,6 +969,14 @@ static struct rq *task_rq_lock(struct ta
+ 	}
+ }
+ 
++void task_rq_unlock_wait(struct task_struct *p)
++{
++	struct rq *rq = task_rq(p);
++
++	smp_mb();
++	spin_unlock_wait(&rq->lock);
++}
++
+ static void __task_rq_unlock(struct rq *rq)
+ 	__releases(rq->lock)
+ {
+--- K-28/kernel/exit.c~SIG_RQ_LOCK	2008-11-06 19:11:02.000000000 +0100
++++ K-28/kernel/exit.c	2008-11-10 15:07:22.000000000 +0100
+@@ -141,6 +141,11 @@ static void __exit_signal(struct task_st
+ 	if (sig) {
+ 		flush_sigqueue(&sig->shared_pending);
+ 		taskstats_tgid_free(sig);
++		/*
++		 * Make sure ->signal can't go away under rq->lock,
++		 * see account_group_exec_runtime().
++		 */
++		task_rq_unlock_wait(tsk);
+ 		__cleanup_signal(sig);
+ 	}
+ }
 
->> So, please revert the following commits.
->>
->> 43a49cbdf31e812c0d8f553d433b09b421f5d52c
->> e013e13bf605b9e6b702adffbe2853cfc60e7806
->> 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
-> 
-> It's not a big deal to me, it can wait for 2.6.29 if there really are
-> more issues there. But I'm not sure that your points are very valid, so
-> lets please discuss it a bit more :-)
-
-Yeap, I fully agree moving to blk tagging is good.  If we fix the
-problem from #1, it's probably gonna be okay for most cases too.  I'm
-just a little bit nervous because libata always has had this tag 0 for
-non-NCQ commands assumption and this conversion changes that, so I was
-hoping to update blk-tag such that such assumption can be guaranteed
-first and then convert libata to be on the safe side.  Some
-controllers use completely different command mechanism for different
-protocols and it's much safer and more deterministic if same tag can
-be guaranteed.
-
-Thanks.
-
--- 
-tejun
