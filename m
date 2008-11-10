@@ -1,106 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYKJHwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYKJHxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbYKJHwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 02:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbYKJHwO
+	id S1753949AbYKJHxN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 02:53:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753911AbYKJHw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 02:52:14 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58445 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656AbYKJHwM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 02:52:12 -0500
-From: Andi Kleen <andi@firstfloor.org>
-Message-Id: <20081110909.153463053@firstfloor.org>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/2] Move iomap.h into arch/x86/include/asm
-Date: Mon, 10 Nov 2008 09:09:38 +0100 (CET)
+	Mon, 10 Nov 2008 02:52:57 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50696 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753837AbYKJHw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 02:52:56 -0500
+Date: Mon, 10 Nov 2008 08:52:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+Message-ID: <20081110075216.GD2093@elte.hu>
+References: <20081109140726.GB1786@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081109140726.GB1786@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0087]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Otherwise DRM doesn't compile:
+* Pavel Machek <pavel@suse.cz> wrote:
 
-In file included from linux-2.6.28-rc4/drivers/gpu/drm/i915/i915_drv.h:34,
-                 from linux-2.6.28-rc4/drivers/gpu/drm/i915/i915_drv.c:33:
-linux-2.6.28-rc4/include/linux/io-mapping.h:24:23: error: asm/iomap.h: No such file or directory
+> ...at least on 2.6.27 and 2.6.28-rc3. Resume gets to 
+> acpi_hibernation_leave, then SLAB corruption is detected and machine 
+> ends in series of oops.
+> 
+> Any ideas how to debug that?
 
+do you get any serial log or USB key output, so that it's debuggable 
+directly?
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- arch/x86/include/asm/iomap.h |   30 ++++++++++++++++++++++++++++++
- include/asm-x86/iomap.h      |   30 ------------------------------
- 2 files changed, 30 insertions(+), 30 deletions(-)
-
-Index: linux-2.6.28-rc4-test/include/asm-x86/iomap.h
-===================================================================
---- linux-2.6.28-rc4-test.orig/include/asm-x86/iomap.h	2008-11-10 09:03:09.000000000 +0100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,30 +0,0 @@
--/*
-- * Copyright © 2008 Ingo Molnar
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful, but
-- * WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- * General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-- */
--
--#include <linux/fs.h>
--#include <linux/mm.h>
--#include <linux/uaccess.h>
--#include <asm/cacheflush.h>
--#include <asm/pgtable.h>
--#include <asm/tlbflush.h>
--
--void *
--iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot);
--
--void
--iounmap_atomic(void *kvaddr, enum km_type type);
-Index: linux-2.6.28-rc4-test/arch/x86/include/asm/iomap.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.28-rc4-test/arch/x86/include/asm/iomap.h	2008-11-10 09:03:09.000000000 +0100
-@@ -0,0 +1,30 @@
-+/*
-+ * Copyright © 2008 Ingo Molnar
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ */
-+
-+#include <linux/fs.h>
-+#include <linux/mm.h>
-+#include <linux/uaccess.h>
-+#include <asm/cacheflush.h>
-+#include <asm/pgtable.h>
-+#include <asm/tlbflush.h>
-+
-+void *
-+iomap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot);
-+
-+void
-+iounmap_atomic(void *kvaddr, enum km_type type);
+	Ingo
