@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYKJAKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbYKJAOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbYKJAKY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 19:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756294AbYKJAKK
+	id S1757096AbYKJAOS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 19:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYKJAOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 19:10:10 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:44452 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756187AbYKJAKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 19:10:09 -0500
-Date: Mon, 10 Nov 2008 00:10:06 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: akpm@linux-foundation.org, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] DRM: fix radeon suspend/resume oops
-In-Reply-To: <1226267726-32714-1-git-send-email-jirislaby@gmail.com>
-Message-ID: <alpine.DEB.0.82.0811100009340.30858@skynet.skynet.ie>
-References: <49048B88.1060807@gmail.com>
- <1226267726-32714-1-git-send-email-jirislaby@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 9 Nov 2008 19:14:05 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:45807 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756057AbYKJAOC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 19:14:02 -0500
+Subject: Re: [Bug #11830] disk statistics issue in 2.6.27
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Miquel van Smoorenburg <mikevs@xs4all.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <1226274573.6979.1.camel@localhost.localdomain>
+References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera>
+	 <4B0Eqx89uNG.A.-PC.tZ1FJB@chimera>
+	 <1226274573.6979.1.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 09 Nov 2008 18:13:58 -0600
+Message-Id: <1226276038.19841.34.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-11-10 at 00:49 +0100, Miquel van Smoorenburg wrote:
+> On Sun, 2008-11-09 at 20:43 +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.26 and 2.6.27.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> > be listed and let me know (either way).
+> 
+> The cause has been found - a bug in the dpt_i2o driver that was hidden
+> until 2.6.27.
+> 
+> I've submitted a patch for 2.6.28 which will be included in the next
+> -rc, at which point I will submit it for 2.6.27-stable as well.
 
-> Andrew please apply, if no comments or a better patch from drm
-> fellows comes.
-> 
-> As the accesses to the mmio member are not protected by anything, they
-> seem to be racy with the open/clsoe anyways, setting this down there
-> too.
+Actually, that's not quite the way it works anymore.  As long as the
+patch is similar for both trees, the way it's done now is to tag stable
+patches with cc: Stable Tree <stable@kernel.org> so they have automatic
+notifies to the stable tree.
 
-We got a patch last week from Jesse Barnes to fix this, I'll pull it and 
-send it to Linus, I was waiting for some other fixes first.
+I'm assuming this patch should be so tagged?
 
-Dave.
+James
 
-> 
-> --
-> When the driver is bound to a device and nobody opens the device node,
-> it will oops on suspend and resume, since it's not mapped and
-> dev_priv->mmio is NULL.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: David Airlie <airlied@linux.ie>
-> ---
->  drivers/gpu/drm/radeon/radeon_drv.c |    7 +++++++
->  1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
-> index 71af746..2e74a98 100644
-> --- a/drivers/gpu/drm/radeon/radeon_drv.c
-> +++ b/drivers/gpu/drm/radeon/radeon_drv.c
-> @@ -52,10 +52,14 @@ static int dri_library_name(struct drm_device *dev, char *buf)
->  		        "r300"));
->  }
->  
-> +/* FIXME all this suspend/resume races with open/close? */
->  static int radeon_suspend(struct drm_device *dev, pm_message_t state)
->  {
->  	drm_radeon_private_t *dev_priv = dev->dev_private;
->  
-> +	if (!dev_priv->mmio)
-> +		return 0;
-> +
->  	/* Disable *all* interrupts */
->  	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
->  		RADEON_WRITE(R500_DxMODE_INT_MASK, 0);
-> @@ -67,6 +71,9 @@ static int radeon_resume(struct drm_device *dev)
->  {
->  	drm_radeon_private_t *dev_priv = dev->dev_private;
->  
-> +	if (!dev_priv->mmio)
-> +		return 0;
-> +
->  	/* Restore interrupt registers */
->  	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
->  		RADEON_WRITE(R500_DxMODE_INT_MASK, dev_priv->r500_disp_irq_reg);
-> 
+
