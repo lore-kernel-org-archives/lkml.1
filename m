@@ -1,158 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbYKJG4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYKJHER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753896AbYKJG4t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 01:56:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751853AbYKJG4k
+	id S1753916AbYKJHER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 02:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234AbYKJHEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 01:56:40 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49237 "EHLO
+	Mon, 10 Nov 2008 02:04:01 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49568 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751033AbYKJG4j (ORCPT
+	with ESMTP id S1753217AbYKJHEA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 01:56:39 -0500
-Date: Mon, 10 Nov 2008 15:56:39 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: miaox@cn.fujitsu.com
-Subject: Re: [PATCH] cpuset: update top cpuset's mems after adding a node
-Cc: Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4917D7B4.4000605@cn.fujitsu.com>
-References: <4917D7B4.4000605@cn.fujitsu.com>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081110155231.F82E.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 10 Nov 2008 02:04:00 -0500
+Date: Mon, 10 Nov 2008 16:03:21 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC][PATCH 5/6] memcg: mem+swap controller
+Message-Id: <20081110160321.3ec35dd3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081110133054.b090816c.nishimura@mxp.nes.nec.co.jp>
+References: <20081105171637.1b393333.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081105172316.354c00fb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081110133054.b090816c.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Did you test this patch?  Was it OK?
+On Mon, 10 Nov 2008 13:30:54 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-If yes,
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-
-
-Thanks.
-
-
-> After adding a node into the machine, top cpuset's mems isn't updated.
+> > @@ -1062,13 +1208,55 @@ int mem_cgroup_resize_limit(struct mem_c
+> >  			break;
+> >  		}
+> >  		progress = try_to_free_mem_cgroup_pages(memcg,
+> > -				GFP_HIGHUSER_MOVABLE);
+> > +				GFP_HIGHUSER_MOVABLE, false);
+> >  		if (!progress)
+> >  			retry_count--;
+> >  	}
+> >  	return ret;
+> >  }
+> >  
+> mem_cgroup_resize_limit() should verify that mem.limit <= memsw.limit
+> as mem_cgroup_resize_memsw_limit() does.
 > 
-> By reviewing the code, we found that the update function
->   cpuset_track_online_nodes()
-> was invoked after node_states[N_ONLINE] changes. It is wrong because N_ONLINE
-> just means node has pgdat, and if node has/added memory, we use N_HIGH_MEMORY.
-> So, We should invoke the update function after node_states[N_HIGH_MEMORY]
-> changes, just like its commit says.
 > 
-> This patch fixes it. And we use notifier of memory hotplug instead of direct
-> calling of cpuset_track_online_nodes().
-> 
-> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
-> Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-> 
-> ---
->  include/linux/cpuset.h |    4 ----
->  kernel/cpuset.c        |   19 ++++++++++++++++---
->  mm/memory_hotplug.c    |    3 ---
->  3 files changed, 16 insertions(+), 10 deletions(-)
-> 
-> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
-> index 2691926..8e540d3 100644
-> --- a/include/linux/cpuset.h
-> +++ b/include/linux/cpuset.h
-> @@ -74,8 +74,6 @@ static inline int cpuset_do_slab_mem_spread(void)
->  	return current->flags & PF_SPREAD_SLAB;
->  }
->  
-> -extern void cpuset_track_online_nodes(void);
-> -
->  extern int current_cpuset_is_being_rebound(void);
->  
->  extern void rebuild_sched_domains(void);
-> @@ -151,8 +149,6 @@ static inline int cpuset_do_slab_mem_spread(void)
->  	return 0;
->  }
->  
-> -static inline void cpuset_track_online_nodes(void) {}
-> -
->  static inline int current_cpuset_is_being_rebound(void)
->  {
->  	return 0;
-> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-> index 3e00526..909a548 100644
-> --- a/kernel/cpuset.c
-> +++ b/kernel/cpuset.c
-> @@ -36,6 +36,7 @@
->  #include <linux/list.h>
->  #include <linux/mempolicy.h>
->  #include <linux/mm.h>
-> +#include <linux/memory.h>
->  #include <linux/module.h>
->  #include <linux/mount.h>
->  #include <linux/namei.h>
-> @@ -2011,12 +2012,23 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
->   * Call this routine anytime after node_states[N_HIGH_MEMORY] changes.
->   * See also the previous routine cpuset_track_online_cpus().
->   */
-> -void cpuset_track_online_nodes(void)
-> +static int cpuset_track_online_nodes(struct notifier_block *self,
-> +				unsigned long action, void *arg)
->  {
->  	cgroup_lock();
-> -	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
-> -	scan_for_empty_cpusets(&top_cpuset);
-> +	switch (action) {
-> +	case MEM_ONLINE:
-> +		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
-> +		break;
-> +	case MEM_OFFLINE:
-> +		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
-> +		scan_for_empty_cpusets(&top_cpuset);
-> +		break;
-> +	default:
-> +		break;
-> +	}
->  	cgroup_unlock();
-> +	return NOTIFY_OK;
->  }
->  #endif
->  
-> @@ -2032,6 +2044,7 @@ void __init cpuset_init_smp(void)
->  	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->  
->  	hotcpu_notifier(cpuset_track_online_cpus, 0);
-> +	hotplug_memory_notifier(cpuset_track_online_nodes, 10);
->  }
->  
->  /**
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 6837a10..b5b2b15 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -22,7 +22,6 @@
->  #include <linux/highmem.h>
->  #include <linux/vmalloc.h>
->  #include <linux/ioport.h>
-> -#include <linux/cpuset.h>
->  #include <linux/delay.h>
->  #include <linux/migrate.h>
->  #include <linux/page-isolation.h>
-> @@ -498,8 +497,6 @@ int add_memory(int nid, u64 start, u64 size)
->  	/* we online node here. we can't roll back from here. */
->  	node_set_online(nid);
->  
-> -	cpuset_track_online_nodes();
-> -
->  	if (new_pgdat) {
->  		ret = register_one_node(nid);
->  		/*
-> -- 
-> 1.5.3.8
-> 
+nice catch. will be fixed in the next version.
 
--- 
-Yasunori Goto 
+Thanks a lot!
 
+-Kame
 
