@@ -1,77 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYKJNW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbYKJNZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYKJNW1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 08:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYKJNWP
+	id S1755451AbYKJNZR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 08:25:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbYKJNZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 08:22:15 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34566 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754232AbYKJNWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 08:22:15 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/iDVJ7M+7iPVl7vy6YqLZ9kMMKwaM0etE1Bvr1CF
-	7+bSVu47iYFHXq
-Subject: Re: [regression]  benchmark throughput loss from a622cf6..f7160c7
-	pull
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Miklos Szeredi <mszeredi@suse.cz>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Miller <davem@davemloft.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>
-In-Reply-To: <20081110125001.GA28643@elte.hu>
-References: <1226313350.10058.16.camel@marge.simson.net>
-	 <20081110125001.GA28643@elte.hu>
-Content-Type: text/plain
-Date: Mon, 10 Nov 2008 14:22:10 +0100
-Message-Id: <1226323330.4846.3.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Mon, 10 Nov 2008 08:25:01 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54410 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754913AbYKJNZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 08:25:00 -0500
+Message-ID: <491835FF.1060403@kernel.org>
+Date: Mon, 10 Nov 2008 22:24:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: request to revert libata-convert-to-block-tagging patches
+References: <4917C449.2080504@kernel.org> <20081110120533.GB26778@kernel.dk>
+In-Reply-To: <20081110120533.GB26778@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Nov 2008 13:24:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-10 at 13:50 +0100, Ingo Molnar wrote:
-> * Mike Galbraith <efault@gmx.de> wrote:
+Jens Axboe wrote:
+> On Mon, Nov 10 2008, Tejun Heo wrote:
+>> Hello, all.
+>>
+>> I went through libata-convert-to-block-tagging today and found several
+>> issues.
+>>
+>> 1. libata internal data structure for command context (qc) allocation is
+>> bound to tag allocation, which means that block layer tagging should be
+>> enabled for all controllers which have can_queue > 1.
 > 
-> > Greetings,
-> > 
-> > While retesting that recent scheduler fixes/improvements had 
-> > survived integration into mainline, I found that we've regressed a 
-> > bit since.. yesterday.  In testing, it seems that CFS has finally 
-> > passed what the old O(1) scheduler could deliver in scalability and 
-> > throughput, but we already lost a bit.
+> Naturally, is there a problem there?
+
+Queueing wasn't enabled for ATAPI device behind PMP so it made those
+devices reuse already allocated qc's.  Not difficult to fix.
+
+>> 2. blk-tag offsets allocation for non-sync requests.  I'm not confident
+>> this is safe.  Till now, if there was only single command in flight for
+>> the port, it was guaranteed that the qc gets tag zero whether the device
+>> is NCQ capable or not.  qc allocation is tied tightly with hardware
+>> command slot allocation and I don't think it's wise to change this
+>> assumption.
+>>
+>> #1 is easy to fix but #2 requires either adding a spinlock or two atomic
+>> variables to struct blk_queue_tag to keep the current behavior while
+>> guaranteeing that tags are used in order.  Also, there's delay between
+>> libata marks a request complete and the request actually gets completed
+>> and the tag is freed.  If another request gets issued inbetween, the tag
+>> number can't be guaranteed.  This can be worked around by re-mapping tag
+>> number in libata depending on command type but, well then, it's worse
+>> than the original implementation.
 > 
-> but CFS backported to a kernel with no other regressions measurably 
-> surpasses O(1) performance in all the metrics you are following, 
-> right?
+> Or we could just change the blk-tag.c logic to stop of
+> find_first_zero_bit() returns >= some_value instead of starting at an
+> offset? You don't need any extra locking for that.
 
-Yes.
+I tried that but there's a behavior difference.  If you reserve from
+the beginning, the sync IOs prefer the reserved slots.  If you
+reserved from the end, the sync IO prefer non-reserved slots.
+ie. When 4 slots are reserved for sync IO, and 4 sync IOs are already
+in flight, the fifth sync IO competes with async IOs on the same
+ground in the former case but in the latter it either wins or is very
+likely to take another reserved slot.
 
-> i.e. the current state of things, when comparing these workloads to 
-> 2.6.22 is that we slowed down in non-scheduler codepaths and the CFS 
-> speedups helps offset some of that slowdown.
+> The second part is more tricky I think, but I'm not sure there's a race
+> there. For normally issued IO, queueing is restarted when the tag
+> completes. There's a small softirq delay there, but that delay is before
+> the tag is completed and queueing restarted. Any non-ncq command (eg
+> through an ioctl) will have to wait for completion as well.
 
-That's the way it looks to me, yes.
+For drivers with .can_queue == 1, nothing can go wrong.  I was worried
+about NCQ -> non-NCQ transition because blk-tag doesn't know that the
+non-NCQ command is not to be scheduled with NCQ commands and will
+happily assign any tag and in this case the race window definitely is
+there.
 
-> But not all of it, and we also have new slowdowns:
+>> So, please revert the following commits.
+>>
+>> 43a49cbdf31e812c0d8f553d433b09b421f5d52c
+>> e013e13bf605b9e6b702adffbe2853cfc60e7806
+>> 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
 > 
-> > Reverting 984f2f3 cd83e42 2d3854a and 6209344 recovered the loss.
-> 
-> hm, that's two changes in essence:
-> 
->  2d3854a: cpumask: introduce new API, without changing anything
->  6209344: net: unix: fix inflight counting bug in garbage collector
-> 
-> i'm surprised about the cpumask impact, it's just new APIs in essence, 
-> with little material changes elsewhere.
+> It's not a big deal to me, it can wait for 2.6.29 if there really are
+> more issues there. But I'm not sure that your points are very valid, so
+> lets please discuss it a bit more :-)
 
-Dunno, I try not to look while testing, just test/report, look later.
+Yeap, I fully agree moving to blk tagging is good.  If we fix the
+problem from #1, it's probably gonna be okay for most cases too.  I'm
+just a little bit nervous because libata always has had this tag 0 for
+non-NCQ commands assumption and this conversion changes that, so I was
+hoping to update blk-tag such that such assumption can be guaranteed
+first and then convert libata to be on the safe side.  Some
+controllers use completely different command mechanism for different
+protocols and it's much safer and more deterministic if same tag can
+be guaranteed.
 
-	-Mike
+Thanks.
 
+-- 
+tejun
