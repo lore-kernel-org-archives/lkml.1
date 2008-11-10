@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYKJOmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbYKJOnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbYKJOmy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbYKJOmo
+	id S1755691AbYKJOnW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYKJOnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:42:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48644 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753221AbYKJOmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:42:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to chanes in stop_machine
-Date: Mon, 10 Nov 2008 15:47:20 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.00E.N4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 10 Nov 2008 09:43:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47238 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753166AbYKJOnG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:43:06 -0500
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
+       mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
+       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0811100834500.21257@quilx.com>
+References: <1224694989.8431.23.camel@oberon>
+	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
+	 <1225219114.24204.37.camel@oberon>
+	 <1225936715.27507.44.camel@bobble.smo.corp.google.com>
+	 <1225969420.7803.4366.camel@twins>
+	 <Pine.LNX.4.64.0811060900450.3595@quilx.com>
+	 <1225984098.7803.4642.camel@twins>
+	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
+	 <1226053744.7803.5851.camel@twins>
+	 <1226081448.28191.64.camel@bobble.smo.corp.google.com>
+	 <1226089574.31966.85.camel@lappy.programming.kicks-ass.net>
+	 <Pine.LNX.4.64.0811100834500.21257@quilx.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811101547.21325.rjw@sisk.pl>
+Date: Mon, 10 Nov 2008 15:42:32 +0100
+Message-Id: <1226328152.7685.192.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 10 of November 2008, Heiko Carstens wrote:
-> On Sun, Nov 09, 2008 at 06:59:16PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.27.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11989
-> > Subject		: Suspend failure on NForce4-based boards due to chanes in stop_machine
-> > Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date		: 2008-11-03 0:28 (7 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc
-> > References	: http://marc.info/?l=linux-kernel&m=122567187604356&w=4
+On Mon, 2008-11-10 at 08:38 -0600, Christoph Lameter wrote:
+> On Fri, 7 Nov 2008, Peter Zijlstra wrote:
 > 
-> Hi Rafael,
-
-Hi,
-
-> could you provide more informations for this, please?
+> > The advantage is that the memory foot-print scales with nr_tasks and the
+> > runtime cost is min(nr_tasks, nr_cpus) where nr_cpus is limited to the
+> > cpus the process actually runs on, so this takes full advantage of
+> > things like cpusets.
 > 
-> What is your kernel configuration?
-
-Available at: http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc3/kitty-config
-
-> Do you have any binary only modules (nvidia?) loaded?
-
-No, I don't.
-
-> Is it possible to recreate the bug by e.g. just doing something like
+> Typically you want threads of a process to spread out as far as possible.
+> The point of having multiple threads is concurrency after all. So this
+> will deteriorate in the common cases where you want the full aggregate
+> processing power of a machine to work on something. Timer processing is
+> already a latency problem (isnt there some option to switch that off?) and
+> a solution like this is going to make things worse.
 > 
-> echo 0 > /sys/devices/system/cpu/cpu1/online
+> Can we at least somehow make sure that nothing significantly happens in a
+> timer interrupt on a processor if the thread has not scheduled any events
+> or not odone any system calls?
 
-I haven't checked (yet), I'll do that later today and let you know.
+Do threads actually scale that far? I thought mmap_sem contention and
+other shared state would render threads basically useless on these very
+large machines.
 
-> (or any other online cpu)? Or does it trigger any lockdep warnings?
+But afaiu this stuff, the per-cpu loop is only done when an itimer is
+actually active.
 
-Thanks,
-Rafael
+The detail I've not looked at is, if when this itimer is indeed active
+and we are running 256 threads of the same application on all cpus do we
+then do the per-cpu loop for each tick on each cpu?
+
