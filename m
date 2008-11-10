@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbYKJMuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbYKJMwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324AbYKJMuj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 07:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbYKJMu2
+	id S1755422AbYKJMwY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 07:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbYKJMwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 07:50:28 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44766 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754700AbYKJMu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 07:50:27 -0500
-Date: Mon, 10 Nov 2008 13:50:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Miklos Szeredi <mszeredi@suse.cz>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Miller <davem@davemloft.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>
-Subject: Re: [regression]  benchmark throughput loss from a622cf6..f7160c7
-	pull
-Message-ID: <20081110125001.GA28643@elte.hu>
-References: <1226313350.10058.16.camel@marge.simson.net>
+	Mon, 10 Nov 2008 07:52:15 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:10087 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754701AbYKJMwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 07:52:13 -0500
+Message-ID: <49182E85.9010405@panasas.com>
+Date: Mon, 10 Nov 2008 14:52:21 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226313350.10058.16.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@HansenPartnership.com, linux-next@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, michaelc@cs.wisc.edu,
+       fujita.tomonori@lab.ntt.co.jp, jeff@garzik.org, osd-dev@open-osd.org,
+       linux-scsi@vger.kernel.org, Sami.Iren@seagate.com,
+       Pete Wyckoff <pw@padd.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET 00/18] open-osd: OSD Initiator library for Linux
+References: <48876009.8010701@panasas.com>	<491073BB.4000900@panasas.com>	<20081104111923.bb19c238.akpm@linux-foundation.org>	<4916FAB3.4010409@panasas.com> <20081110102607.378c3279.sfr@canb.auug.org.au>
+In-Reply-To: <20081110102607.378c3279.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 Nov 2008 12:50:50.0731 (UTC) FILETIME=[F5C1BBB0:01C94332]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> Greetings,
+Stephen Rothwell wrote:
+> Hi Boaz,
 > 
-> While retesting that recent scheduler fixes/improvements had 
-> survived integration into mainline, I found that we've regressed a 
-> bit since.. yesterday.  In testing, it seems that CFS has finally 
-> passed what the old O(1) scheduler could deliver in scalability and 
-> throughput, but we already lost a bit.
+> On Sun, 09 Nov 2008 16:58:59 +0200 Boaz Harrosh <bharrosh@panasas.com> wrote:
+>> I have prepared a branch for linux-next based on today's Linus tree
+>> It is here:
+>>     git://git.open-osd.org/linux-open-osd.git linux-next
+>> This is if it's OK with James, as these bits are his responsibility.
+>> They need only sit in linux-next for a couple of weeks to get some wider
+>> compilation exposure. Other then that they are totally new code and
+>> are safe. Eventually they should be included into Linux-next through
+>> scsi-misc-2.6.
+> 
+> I have added that tree to linux-next for today.
+> 
+> What I say to everyone:  commits in that branch must have been posted
+> somewhere appropriate, reviewed, unit tested and destined for the next
+> merge window.  Also, note that my (new) practise is to temporarily drop a
+> tree if it causes non-trivial conflicts (especially with Linus' tree), so
+> don't be too upset if you get a message from me to that effect.
+> 
 
-but CFS backported to a kernel with no other regressions measurably 
-surpasses O(1) performance in all the metrics you are following, 
-right?
+Thank you Stephen, very much
 
-i.e. the current state of things, when comparing these workloads to 
-2.6.22 is that we slowed down in non-scheduler codepaths and the CFS 
-speedups helps offset some of that slowdown.
+This has proven itself already. I found some warnings on some ARCHs
+concerning printk of u64 types. I have made a sweep and fixed all these
+places and others.
+(same place: git://git.open-osd.org/linux-open-osd.git linux-next)
 
-But not all of it, and we also have new slowdowns:
+If you could keep it for the next round it could be grate. So I can make
+sure I got rid of all the warnings.
 
-> Reverting 984f2f3 cd83e42 2d3854a and 6209344 recovered the loss.
-
-hm, that's two changes in essence:
-
- 2d3854a: cpumask: introduce new API, without changing anything
- 6209344: net: unix: fix inflight counting bug in garbage collector
-
-i'm surprised about the cpumask impact, it's just new APIs in essence, 
-with little material changes elsewhere.
-
-	Ingo
+Thanks again
+Boaz
