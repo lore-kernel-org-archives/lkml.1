@@ -1,41 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbYKJFPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbYKJFRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbYKJFPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 00:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751030AbYKJFPi
+	id S1753545AbYKJFRs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 00:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYKJFRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 00:15:38 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44379 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbYKJFPi (ORCPT
+	Mon, 10 Nov 2008 00:17:40 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:54612 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750815AbYKJFRk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 00:15:38 -0500
-Message-ID: <4917C350.5080808@zytor.com>
-Date: Sun, 09 Nov 2008 21:14:56 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 10 Nov 2008 00:17:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=fStRUdem4gvf4nZQLOqRwAb+RUZiL3WC7OkNb9TWPuXDhR3hQO8t8mIBEXU5zg9MoI
+         Bl14RxkDEPTKSAxx5EmL8QuFW/yIxpnGbzwfJqMre3ptLSn1lTkRSQOPPfkNziGR2Nd7
+         aMVY7Hovwlh1lrFb+cr9Okrdy/JOgEA2h3IUo=
+Message-ID: <dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com>
+Date: Sun, 9 Nov 2008 21:17:38 -0800
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Pavel Machek" <pavel@suse.cz>
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
+Cc: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Arjan van de Ven" <arjan@linux.intel.com>,
+       linux-kernel@vger.kernel.org, yakui.zhao@intel.com,
+       bugme-daemon@bugzilla.kernel.org, linux-pm@lists.linux-foundation.org,
+       rjw@sisk.pl
+In-Reply-To: <20081109113332.GD6094@elf.ucw.cz>
 MIME-Version: 1.0
-To: w@1wt.eu
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.4.37-rc2
-References: <20081109234747.GA15813@hera.kernel.org>
-In-Reply-To: <20081109234747.GA15813@hera.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20081106194724.GB15366@ime.usp.br>
+	 <20081107014535.GA19201@ime.usp.br>
+	 <1226044855.4913f5b7f2f45@webmail.ime.usp.br>
+	 <20081108075008.GA8177@ime.usp.br>
+	 <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
+	 <20081109024514.GA11744@ime.usp.br> <20081109113332.GD6094@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> 
-> The patch and changelog will appear soon at the following locations:
->   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/
->   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/patch-2.4.37-rc2.bz2
->   ftp://ftp.all.kernel.org/pub/linux/kernel/v2.4/testing/patch-2.4.37.log
-> 
+On Sun, Nov 9, 2008 at 3:33 AM, Pavel Machek <pavel@suse.cz> wrote:
+> On Sun 2008-11-09 00:45:14, Rogério Brito wrote:
+>> Hi, Justin and others.
+>>
+>> On Nov 08 2008, Justin Mattock wrote:
+>> > On Fri, Nov 7, 2008 at 11:50 PM, Rogério Brito <rbrito@ime.usp.br> wrote:
+>> > > I think that I have some more information regarding the suspend/hibernate
+>> > > issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, but with
+>> > > vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, but it
+>> > > seems to work).
+>>
+>> Just some extra information here: while I can hibernate with vanilla
+>> 2.6.28-rc3, upon resuming, it takes *minutes* (I don't know how many
+>> minutes, but probably something like 5 minutes or so!) for the desktop to
+>> have any effect (despite the fact that I can move the mouse without any
+>> problems).
+>
+> Try it from the text console, and see what exactly stops
+> responding. "killall klogd" is your friend.
+>                                                                Pavel
+>
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
 
-You probably want to drop the .all. infix here; it gives you round-robin
-across all the kernel.org servers, instead of using geodns to get to the
-closest one.
+FWIW, running radeon and s2ram
+gives me a successful wakeup,
+no delays only bluetooth-applet fails
+to show back up as eye candy.
 
-	-hpa
+-- 
+Justin P. Mattock
