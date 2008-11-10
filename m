@@ -1,109 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbYKJWA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbYKJWDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754319AbYKJWA6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbYKJWAt
+	id S1753704AbYKJWDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750973AbYKJWDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:00:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43951 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750759AbYKJWAs (ORCPT
+	Mon, 10 Nov 2008 17:03:22 -0500
+Received: from hs-out-0708.google.com ([64.233.178.251]:2195 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbYKJWDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:00:48 -0500
-Date: Mon, 10 Nov 2008 13:58:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicolas Pitre <nico@cam.org>
-Cc: mathieu.desnoyers@polymtl.ca, torvalds@linux-foundation.org,
-       rmk+lkml@arm.linux.org.uk, dhowells@redhat.com, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
-       davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
-Message-Id: <20081110135850.0d620f3c.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811101627510.13034@xanadu.home>
-References: <9405.1226101315@redhat.com>
-	<20081108001555.GE18378@flint.arm.linux.org.uk>
-	<alpine.LFD.2.00.0811080939180.13034@xanadu.home>
-	<alpine.LFD.2.00.0811081746060.13034@xanadu.home>
-	<20081109022549.GA18508@Krystal>
-	<alpine.LFD.2.00.0811082143320.13034@xanadu.home>
-	<alpine.LFD.2.00.0811082356090.13034@xanadu.home>
-	<alpine.LFD.2.00.0811090015570.13034@xanadu.home>
-	<20081109064855.GA23782@Krystal>
-	<alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-	<20081109162250.GB10181@Krystal>
-	<alpine.LFD.2.00.0811092304300.13034@xanadu.home>
-	<20081109204256.89ab7925.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0811101627510.13034@xanadu.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Mon, 10 Nov 2008 17:03:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=wi6O7y37oCl+IeM45qm9LmJXhzQ4Cna6kJOQqFjqk1AsaVUHFrL6m0py6ZklyyemuK
+         LbYv4fMWif/GlrMUVOPIut5YoAGcXynRHCrGwCVQn7X6J5ZdfM8wdKbfKdYtFhjmiQ7W
+         4sAnJFfpmBcNjze8unmpALVHv0vEtQv7HYY4k=
+Message-ID: <4918AFA1.4000102@gmail.com>
+Date: Mon, 10 Nov 2008 23:03:13 +0100
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: kamezawa.hiroyu@jp.fujitsu.com, rientjes@google.com,
+       balbir@linux.vnet.ibm.com, mrubin@google.com, menage@google.com,
+       dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
+       m.innocenti@cineca.it, s-uchida@ap.jp.nec.com, ryov@valinux.co.jp,
+       matt@bluehost.com, dradford@bluehost.com,
+       kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Subject: Re: [PATCH -mm] mm: fine-grained dirty_ratio_pcm and dirty_background_ratio_pcm
+ (v2)
+References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com>	<20080912131816.e0cfac7a.akpm@linux-foundation.org>	<532480950809221641y3471267esff82a14be8056586@mail.gmail.com>	<48EB4236.1060100@linux.vnet.ibm.com>	<48EB851D.2030300@gmail.com>	<20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>	<48ECB215.4040409@linux.vnet.ibm.com>	<48EE236A.90007@gmail.com>	<4918A074.1050003@gmail.com> <20081110131255.ce71ce60.akpm@linux-foundation.org>
+In-Reply-To: <20081110131255.ce71ce60.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008 16:34:54 -0500 (EST)
-Nicolas Pitre <nico@cam.org> wrote:
-
-> > It is far better to make the management of the state explicit and at
-> > the control of the caller.  Get the caller to allocate the state and
-> > pass its address into this function.  Simple, clear, explicit and
-> > robust.
+On 2008-11-10 22:12, Andrew Morton wrote:
+> On Mon, 10 Nov 2008 21:58:28 +0100
+> Andrea Righi <righi.andrea@gmail.com> wrote:
 > 
-> Sigh...  What about this compromize then?
+>> The current granularity of 5% of dirtyable memory for dirty pages writeback is
+>> too coarse for large memory machines and this will get worse as
+>> memory-size/disk-speed ratio continues to increase.
+>>
+>> These large writebacks can be unpleasant for desktop or latency-sensitive
+>> environments, where the time to complete each writeback can be perceived as a
+>> lack of responsiveness by the whole system.
+>>
+>> Following there's a similar solution as discussed in [1], but a little
+>> bit simplified in order to provide the same functionality (in particular
+>> to avoid backward compatibility problems) and reduce the amount of code
+>> needed to implement an in-kernel parser to handle percentages with
+>> decimals digits.
+>>
+>> The kernel provides the following parameters:
+>>  - dirty_ratio, dirty_background_ratio in percentage (1 ... 100)
+>>  - dirty_ratio_pcm, dirty_background_ratio_pcm in units of percent mille (1 ... 100,000)
 > 
-> diff --git a/include/linux/cnt32_to_63.h b/include/linux/cnt32_to_63.h
-> index 7605fdd..74ce767 100644
-> --- a/include/linux/cnt32_to_63.h
-> +++ b/include/linux/cnt32_to_63.h
-> @@ -32,8 +32,9 @@ union cnt32_to_63 {
->  
->  
->  /**
-> - * cnt32_to_63 - Expand a 32-bit counter to a 63-bit counter
-> + * __cnt32_to_63 - Expand a 32-bit counter to a 63-bit counter
->   * @cnt_lo: The low part of the counter
-> + * @cnt_hi_p: Pointer to storage for the extended part of the counter
->   *
->   * Many hardware clock counters are only 32 bits wide and therefore have
->   * a relatively short period making wrap-arounds rather frequent.  This
-> @@ -75,16 +76,31 @@ union cnt32_to_63 {
->   * clear-bit instruction. Otherwise caller must remember to clear the top
->   * bit explicitly.
->   */
-> -#define cnt32_to_63(cnt_lo) \
-> +#define __cnt32_to_63(cnt_lo, cnt_hi_p) \
->  ({ \
-> -	static u32 __m_cnt_hi; \
->  	union cnt32_to_63 __x; \
-> -	__x.hi = __m_cnt_hi; \
-> +	__x.hi = *(cnt_hi_p); \
->   	smp_rmb(); \
->  	__x.lo = (cnt_lo); \
->  	if (unlikely((s32)(__x.hi ^ __x.lo) < 0)) \
-> -		__m_cnt_hi = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
-> +		*(cnt_hi_p) = __x.hi = (__x.hi ^ 0x80000000) + (__x.hi >> 31); \
->  	__x.val; \
->  })
+> hm, so how long until dirty_ratio_pcm becomes too coarse...
+> 
+> What happened to the idea of specifying these in units of kilobytes?
 
-This references its second argument twice, which can cause correctness
-or efficiency problems.
+The conclusion was that with units in KB requires much more complexity
+to keep in sync the old dirty_ratio (and dirty_background_ratio)
+interface with the new one.
 
-There is no reason that this had to be implemented in cpp. 
-Implementing it in C will fix the above problem.
+The KB limit is a static value, the other depends on the dirtyable
+memory. If we want to preserve the same behaviour we should do the
+following:
 
+- when dirty_ratio changes to x:
+  dirty_amount_in_bytes = x * dirtyable_memory / 100.
 
+- when dirty_amount_in_bytes changes to x:
+  dirty_ratio = x / dirtyable_memory * 100
 
-To the reader of the code, a call to cnt32_to_63() looks exactly like a
-plain old function call.  Hiding the instantiation of the state storage
-inside this macro misleads the reader and hence is bad practice.  This
-is one of the reasons why the management of that state should be
-performed by the caller and made explicit.
+But anytime the dirtyable memory changes (as well as the total memory in
+the system) we should update both values accordingly to preserve the
+coherency between them.
 
-I cannot think of any other cases in the kernel where this trick of
-instantiating static storage at a macro expansion site is performed. 
-It is unusual.  It will surprise readers.  Surprising readers is
-undesirable.
+I wonder if setting also PERCENT_PCM (that is 1% expressed in
+fine-grained units) as a parameter could be a better long-term solution.
+And also use another name for it, because in this case this would be not
+a milli-percent value anymore.
 
+-Andrea
