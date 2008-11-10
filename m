@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYKJJAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbYKJJBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYKJJAb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 04:00:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYKJJAV
+	id S1754824AbYKJJBq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 04:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbYKJJBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 04:00:21 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:2696 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750970AbYKJJAU (ORCPT
+	Mon, 10 Nov 2008 04:01:38 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:56454 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353AbYKJJBi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 04:00:20 -0500
-Message-ID: <4917F82D.2080307@panasas.com>
-Date: Mon, 10 Nov 2008 11:00:29 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Mon, 10 Nov 2008 04:01:38 -0500
+Message-ID: <4917F85E.5080306@cosmosbay.com>
+Date: Mon, 10 Nov 2008 10:01:18 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Sam Ravnborg <sam@ravnborg.org>,
-       open-osd development <osd-dev@open-osd.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       linux-scsi <linux-scsi@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [osd-dev] [PATCH 04/18] libosd: OSDv1 preliminary implementation
-References: <491073BB.4000900@panasas.com>	<1225817069-5969-1-git-send-email-bharrosh@panasas.com>	<20081104180347.GA9818@uranus.ravnborg.org> <49119BAF.6040603@panasas.com> <4916F9F5.9040409@panasas.com> <4917C89A.70909@oracle.com>
-In-Reply-To: <4917C89A.70909@oracle.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 Nov 2008 08:58:57.0955 (UTC) FILETIME=[91189730:01C94312]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Robert Richter <robert.richter@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] OProfile fixes for v2.6.28
+References: <20081107171339.GQ9785@erda.amd.com>	<4917EB51.9020304@cosmosbay.com> <87ljvsott2.fsf@basil.nowhere.org>
+In-Reply-To: <87ljvsott2.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 10 Nov 2008 10:01:20 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Boaz Harrosh wrote:
->> Boaz Harrosh wrote:
->>> Sam Ravnborg wrote:
->>>>> +EXPORT_SYMBOL(osd_dev_init);
->>>> kernel-doc comments for all exported funtions / variables.
->>>>
->>> I have some kernel-doc comments of exported functions in the Header
->>> file. I have not yet finished all of them. (Laziness on my part).
->>>
->>> Are kernel-doc comments in headers a big NO-NO. I like it this way,
->>> so when I have to learn a new Library all the information
->>> I need to know is in the header. Also the header is a much better place
->>> when you do programing by shopping, that is you don't know what you need
->>> and you look for what's available.
->>>
->>> Thanks
->>> Boaz
->> Sam please comment if kernel-doc comments are OK in headers
+Andi Kleen a écrit :
+> Eric Dumazet <dada1@cosmosbay.com> writes:
 > 
-> Hi,
+>> diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+>> index 3f1b81a..716d26f 100644
+>> --- a/arch/x86/oprofile/op_model_ppro.c
+>> +++ b/arch/x86/oprofile/op_model_ppro.c
+>> @@ -69,7 +69,7 @@ static void ppro_setup_ctrs(struct op_msrs const * const msrs)
+>>  	int i;
+>>  
+>>  	if (!reset_value) {
+>> -		reset_value = kmalloc(sizeof(unsigned) * num_counters,
+>> +		reset_value = kmalloc(sizeof(reset_value[0]) * num_counters,
 > 
-> The de facto standard for kernel-doc comments is at the implementation site,
-> which means normally in .c files, except for macros or inline functions.
+> Thanks for tracking this down.
 > 
-> Sure you can find some exceptions to that.  And there is no hard requirement
-> in Documentation/kernel-doc-nano-HOWTO.txt.
-> 
-> IMO the biggest concern is making sure that the (kernel-doc) comments are
-> updated when the function implementation changes (if updates are needed).
-> Where would be the best place for this to be more likely to happen?
-> Usually at the function implementation, I would say.
-> 
-> ~Randy
-> 
-> 
-Thanks Randy
+> But that still doesn't explain why 2.6.27 fails too?
 
-I would like to keep them in the Headers then. This is because I make
-sure that the implementation includes the declaring header, so any miss-matches
-are caught by the compiler. 
-And because these are all library routines exported to other modules. The important
-thing is the API you linked with. If the API/parametrization change it must first
-change in the header. The internal implementation is not documented only the external
-black-box functionality is documented in these places.
+No :(
 
-I will think about it some more, but for now, if it's OK I would like to keep them
-like submitted. In this particular library they make more sense to me in the header.
+In fact 2.6.24 fails too. Oprofile never worked correctly.
 
-Boaz
+Still investigating...
+
