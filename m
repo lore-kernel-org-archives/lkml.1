@@ -1,19 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbYKJWO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbYKJWRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbYKJWO1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:14:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYKJWOR
+	id S1754761AbYKJWRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYKJWQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:14:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54513 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751463AbYKJWOQ (ORCPT
+	Mon, 10 Nov 2008 17:16:52 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:31095 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751479AbYKJWQv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:14:16 -0500
-Date: Mon, 10 Nov 2008 14:12:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: righi.andrea@gmail.com
-Cc: kamezawa.hiroyu@jp.fujitsu.com, rientjes@google.com,
+	Mon, 10 Nov 2008 17:16:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type;
+	b=Zcz9nEyvUtSwq1XD/BAT8hshWYXkC4yT63WSZ0aFrKcW9Fp61FYkHy5BZjkPR6R5I
+	Hx2WCqVeWI5ZB3mfYuHvQ==
+Date: Mon, 10 Nov 2008 14:15:29 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrea Righi <righi.andrea@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, kamezawa.hiroyu@jp.fujitsu.com,
        balbir@linux.vnet.ibm.com, mrubin@google.com, menage@google.com,
        dave@linux.vnet.ibm.com, chlunde@ping.uio.no, dpshah@google.com,
        eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, agk@sourceware.org,
@@ -21,62 +27,21 @@ Cc: kamezawa.hiroyu@jp.fujitsu.com, rientjes@google.com,
        matt@bluehost.com, dradford@bluehost.com,
        kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [PATCH -mm] mm: fine-grained dirty_ratio_pcm and
- dirty_background_ratio_pcm (v2)
-Message-Id: <20081110141256.05214dbe.akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] mm: fine-grained dirty_ratio_pcm and dirty_background_ratio_pcm
+ (v2)
 In-Reply-To: <4918AFA1.4000102@gmail.com>
-References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com>
-	<20080912131816.e0cfac7a.akpm@linux-foundation.org>
-	<532480950809221641y3471267esff82a14be8056586@mail.gmail.com>
-	<48EB4236.1060100@linux.vnet.ibm.com>
-	<48EB851D.2030300@gmail.com>
-	<20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com>
-	<48ECB215.4040409@linux.vnet.ibm.com>
-	<48EE236A.90007@gmail.com>
-	<4918A074.1050003@gmail.com>
-	<20081110131255.ce71ce60.akpm@linux-foundation.org>
-	<4918AFA1.4000102@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Message-ID: <alpine.DEB.2.00.0811101410170.2108@chino.kir.corp.google.com>
+References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com> <48EB4236.1060100@linux.vnet.ibm.com> <48EB851D.2030300@gmail.com>
+ <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com> <48ECB215.4040409@linux.vnet.ibm.com> <48EE236A.90007@gmail.com> <4918A074.1050003@gmail.com> <20081110131255.ce71ce60.akpm@linux-foundation.org> <4918AFA1.4000102@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008 23:03:13 +0100
-Andrea Righi <righi.andrea@gmail.com> wrote:
+On Mon, 10 Nov 2008, Andrea Righi wrote:
 
-> On 2008-11-10 22:12, Andrew Morton wrote:
-> > On Mon, 10 Nov 2008 21:58:28 +0100
-> > Andrea Righi <righi.andrea@gmail.com> wrote:
-> > 
-> >> The current granularity of 5% of dirtyable memory for dirty pages writeback is
-> >> too coarse for large memory machines and this will get worse as
-> >> memory-size/disk-speed ratio continues to increase.
-> >>
-> >> These large writebacks can be unpleasant for desktop or latency-sensitive
-> >> environments, where the time to complete each writeback can be perceived as a
-> >> lack of responsiveness by the whole system.
-> >>
-> >> Following there's a similar solution as discussed in [1], but a little
-> >> bit simplified in order to provide the same functionality (in particular
-> >> to avoid backward compatibility problems) and reduce the amount of code
-> >> needed to implement an in-kernel parser to handle percentages with
-> >> decimals digits.
-> >>
-> >> The kernel provides the following parameters:
-> >>  - dirty_ratio, dirty_background_ratio in percentage (1 ... 100)
-> >>  - dirty_ratio_pcm, dirty_background_ratio_pcm in units of percent mille (1 ... 100,000)
-> > 
-> > hm, so how long until dirty_ratio_pcm becomes too coarse...
-> > 
-> > What happened to the idea of specifying these in units of kilobytes?
-> 
-> The conclusion was that with units in KB requires much more complexity
-> to keep in sync the old dirty_ratio (and dirty_background_ratio)
-> interface with the new one.
-> 
 > The KB limit is a static value, the other depends on the dirtyable
 > memory. If we want to preserve the same behaviour we should do the
 > following:
@@ -87,17 +52,24 @@ Andrea Righi <righi.andrea@gmail.com> wrote:
 > - when dirty_amount_in_bytes changes to x:
 >   dirty_ratio = x / dirtyable_memory * 100
 > 
+
+I think the idea is for a dynamic dirty_ratio based on a static value 
+dirty_amount_in_bytes:
+
+	dirtyable_memory = determine_dirtyable_memory() * PAGE_SIZE;
+	dirty_ratio = dirty_amount_in_bytes / dirtyable_memory;
+
 > But anytime the dirtyable memory changes (as well as the total memory in
 > the system) we should update both values accordingly to preserve the
 > coherency between them.
+> 
 
-OK.
+Only dirty_ratio is actually updated if dirty_amount_in_bytes is static.
 
-> I wonder if setting also PERCENT_PCM (that is 1% expressed in
-> fine-grained units) as a parameter could be a better long-term solution.
-> And also use another name for it, because in this case this would be not
-> a milli-percent value anymore.
+This allows you to control how many pages are NR_FILE_DIRTY or 
+NR_UNSTABLE_NFS and gives you the granularity that you want with 
+dirty_ratio_pcm, but on a byte scale instead of percent.
 
-How about we forget the percentage thing and create
-/proc/sys/vm/dirty_ratio_millionths?  That will give us a few more years
-of moores_law(memory size)/mores_law(disk speed) too..  
+It's also a clean interface:
+
+	echo 200M > /proc/sys/vm/dirty_ratio_bytes
