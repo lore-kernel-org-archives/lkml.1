@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754354AbYKJOke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYKJOma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754354AbYKJOke (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYKJOk0
+	id S1754895AbYKJOma (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbYKJOmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:40:26 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:50132 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbYKJOkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:40:25 -0500
-Date: Mon, 10 Nov 2008 09:40:18 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Alasdair G Kergon <agk@redhat.com>
-cc: Christoph Hellwig <hch@infradead.org>, axboe@kernel.dk,
-       dm-devel <dm-devel@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
- dm_any_congested() to properly sync up with suspend code path)
-In-Reply-To: <20081110142715.GD16649@agk.fab.redhat.com>
-Message-ID: <Pine.LNX.4.64.0811100933520.16965@hs20-bc2-1.build.redhat.com>
-References: <1225944008.14830.1101.camel@chandra-ubuntu>
- <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com>
- <20081110135401.GA11606@infradead.org> <20081110142715.GD16649@agk.fab.redhat.com>
+	Mon, 10 Nov 2008 09:42:21 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:40136 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbYKJOmU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:42:20 -0500
+Date: Mon, 10 Nov 2008 08:38:42 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
+       mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
+       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+In-Reply-To: <1226089574.31966.85.camel@lappy.programming.kicks-ass.net>
+Message-ID: <Pine.LNX.4.64.0811100834500.21257@quilx.com>
+References: <1224694989.8431.23.camel@oberon>  <1225132746.14792.13.camel@bobble.smo.corp.google.com>
+  <1225219114.24204.37.camel@oberon>  <1225936715.27507.44.camel@bobble.smo.corp.google.com>
+  <1225969420.7803.4366.camel@twins>  <Pine.LNX.4.64.0811060900450.3595@quilx.com>
+  <1225984098.7803.4642.camel@twins>  <1226015568.2186.20.camel@bobble.smo.corp.google.com>
+  <1226053744.7803.5851.camel@twins>  <1226081448.28191.64.camel@bobble.smo.corp.google.com>
+ <1226089574.31966.85.camel@lappy.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Nov 2008, Peter Zijlstra wrote:
 
+> The advantage is that the memory foot-print scales with nr_tasks and the
+> runtime cost is min(nr_tasks, nr_cpus) where nr_cpus is limited to the
+> cpus the process actually runs on, so this takes full advantage of
+> things like cpusets.
 
-On Mon, 10 Nov 2008, Alasdair G Kergon wrote:
+Typically you want threads of a process to spread out as far as possible.
+The point of having multiple threads is concurrency after all. So this
+will deteriorate in the common cases where you want the full aggregate
+processing power of a machine to work on something. Timer processing is
+already a latency problem (isnt there some option to switch that off?) and
+a solution like this is going to make things worse.
 
-> On Mon, Nov 10, 2008 at 08:54:01AM -0500, Christoph Hellwig wrote:
-> > On Mon, Nov 10, 2008 at 08:11:51AM -0500, Mikulas Patocka wrote:
-> > > For upstream Linux developers: you are holding a spinlock and calling 
-> > > bdi*_congested functions that can take indefinite amount of time (there 
-> > > are even users reporting having 50 disks in one logical volume or so). I 
-> > > think it would be good to move these calls out of spinlocks.
-> > Umm, they shouldn't block that long, as that completely defeats their
-> > purpose.  
-> 
-> Indeed - the blocking was a bug for which there's a patch, but that doesn't
-> deal with how the function should be operating in the first place.
-
-To me it looks like the bug is more severe --- holding a reference to 
-table can happen in other upcalls too and in many other dm places.
-
-I'm considering if we could call the table destructor just at one place 
-(that would wait until all references are gone), instead of calling the 
-destructor at each dm_table_put point (there are many of these points and 
-it's hard to check all of them for correctness).
-
-> - If one device is found to be congested, why bother checking the remaining
-> devices?
-
-Yes, that could be improved. But it doesn't solve the O(n) problem.
-
-> - If the device is suspended, the response should be that it is 
-> congested, I'd have thought.
-
-Yes, but these congestion upcalls are used only for optimization and the 
-device is suspended for so small time, that it doesn't matter if we 
-optimize io acces in small moment or not.
-
-Mikulas
-
-> Alasdair
-> -- 
-> agk@redhat.com
-> 
+Can we at least somehow make sure that nothing significantly happens in a
+timer interrupt on a processor if the thread has not scheduled any events
+or not odone any system calls?
