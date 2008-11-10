@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYKJWzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbYKJXHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbYKJWzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYKJWzW
+	id S1753565AbYKJXHY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 18:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbYKJXHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:55:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:45973 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751195AbYKJWzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:55:21 -0500
-Message-ID: <4918BBD4.3060306@garzik.org>
-Date: Mon, 10 Nov 2008 17:55:16 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 10 Nov 2008 18:07:09 -0500
+Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:56085 "HELO
+	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750811AbYKJXHI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 18:07:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=MdlZG2WcFOlHdEDd8ZMyefR7UNm29LsomwBjwXLU9Q24s0lkS+wuplL9O1VUKSg0vP1zZG6GZ49iH6lGz8nJVsHH7bK/lgazJz8u6R84D6sU1JMgSHa9McCF8keq68aC;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Mathieu Chouquet-Stringer" <mchouque@free.fr>
+Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
+Date: Mon, 10 Nov 2008 15:06:52 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.26.6-79.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+References: <20081109195033.GA1335@mobydick> <20081110094239.GA14204@atrey.karlin.mff.cuni.cz> <20081110221343.GA17951@mobydick>
+In-Reply-To: <20081110221343.GA17951@mobydick>
 MIME-Version: 1.0
-To: IDE/ATA development list <linux-ide@vger.kernel.org>
-CC: Tejun Heo <tj@kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: request to revert libata-convert-to-block-tagging patches
-References: <4917C449.2080504@kernel.org>
-In-Reply-To: <4917C449.2080504@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200811101506.53324.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Hello, all.
-> 
-> I went through libata-convert-to-block-tagging today and found several
-> issues.
-> 
-> 1. libata internal data structure for command context (qc) allocation is
-> bound to tag allocation, which means that block layer tagging should be
-> enabled for all controllers which have can_queue > 1.
-> 
-> 2. blk-tag offsets allocation for non-sync requests.  I'm not confident
-> this is safe.  Till now, if there was only single command in flight for
-> the port, it was guaranteed that the qc gets tag zero whether the device
-> is NCQ capable or not.  qc allocation is tied tightly with hardware
-> command slot allocation and I don't think it's wise to change this
-> assumption.
-> 
-> #1 is easy to fix but #2 requires either adding a spinlock or two atomic
-> variables to struct blk_queue_tag to keep the current behavior while
-> guaranteeing that tags are used in order.  Also, there's delay between
-> libata marks a request complete and the request actually gets completed
-> and the tag is freed.  If another request gets issued inbetween, the tag
-> number can't be guaranteed.  This can be worked around by re-mapping tag
-> number in libata depending on command type but, well then, it's worse
-> than the original implementation.
-> 
-> So, please revert the following commits.
-> 
-> 43a49cbdf31e812c0d8f553d433b09b421f5d52c
-> e013e13bf605b9e6b702adffbe2853cfc60e7806
-> 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
+On Monday, November 10, 2008 2:13 pm Mathieu Chouquet-Stringer wrote:
+> On Mon, Nov 10, 2008 at 10:42:39AM +0100, Pavel Machek wrote:
+> > Trying with minimum drivers is likely to help here, and should be
+> > easier than bisect. Boot with init=/bin/bash, then try "devices" >
+> > pm_dest and disk > state...
+>
+> Some progress with (2.6.28-rc4 this time)...  I've booted with /bin/bash
+> as init: works.
+>
+> Then I rebooted in single mode => works
+> Runlevel 3 => works
+> Runlevel 5 => doesn't work
+>
+> In terms of devices, lsmod says the only differences between runlevel 3
+> and runlevel 5 are that both drm and radeon are loaded...
+>
+> If I rmmod radeon and drm while X is running suspending the devices
+> works...  I guess I don't have DRI enabled???  Just looked at the logs,
+> I guess I don't [1]...
+>
+> Looking at a git log -p of gpu/drm/radeon shows lots of difference
+> between 2.6.26 and HEAD...  I see a vblank change [2] that changes the
+> way the device is suspended, not sure if it really matters though...
+>
+> Alex, Jesse and/or Dave can you think of anything before I bisect?  FYI
+> my radeon is a:
+> ATI Technologies Inc Radeon Mobility M7 LW [Radeon Mobility 7500] rev 0,
 
-A bit late, since they're already in, but, ACK.  (I'm on East Coast 
-Vampire time, apparently)
+If you have radeon loaded but DRI was never enabled, you'll likely see a 
+crash.  That's because the radeon driver doesn't map the registers it needs 
+for suspend/resume at load time; they only get mapped by DRI initialization 
+code which lives in the X driver.  There's a patch in 
+http://bugzilla.kernel.org/show_bug.cgi?id=11891 that might help you...
 
-Now that this is resolved, please allow me a bit of grumbling.  I always 
-thought the original course -- 2.6.29 -- was best for these patches.  I 
-had even queued them for 2.6.29, when they found their way into 2.6.28 
-anyway.  Without /any/ testing by libata maintainers or linux-next. 
-Without even being tested on non-NCQ setups, apparently.
-
-The process broke down completely with this patchset :(
-
-I still want to see this stuff in 2.6.29 though; it is the right way to 
-go: following the theme of using block rather than SCSI bits in libata 
-generic code [when those bits are, themselves, generic rather than 
-SCSI-specific].
-
-	Jeff
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
