@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbYKJH7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754108AbYKJIF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbYKJH7E (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 02:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbYKJH6x
+	id S1754108AbYKJIF1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 03:05:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbYKJIFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 02:58:53 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34142 "EHLO mx3.mail.elte.hu"
+	Mon, 10 Nov 2008 03:05:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36298 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYKJH6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 02:58:52 -0500
-Date: Mon, 10 Nov 2008 08:58:27 +0100
+	id S1750815AbYKJIFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 03:05:17 -0500
+Date: Mon, 10 Nov 2008 09:04:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Grant Grundler <grundler@parisc-linux.org>
-Cc: Nobin Mathew <nobin.mathew@gmail.com>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Robert Hancock <hancockr@shaw.ca>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: sharing interrupt between PCI device
-Message-ID: <20081110075827.GE2093@elte.hu>
-References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no> <4910E8AC.7050407@shaw.ca> <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com> <20081108172716.GA28039@colo.lackof.org> <4915E43E.4010206@gmail.com> <20081108191536.GC28039@colo.lackof.org> <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com> <20081110075115.GA13239@colo.lackof.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+Message-ID: <20081110080436.GF2093@elte.hu>
+References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu> <20081110075529.GD707@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110075115.GA13239@colo.lackof.org>
+In-Reply-To: <20081110075529.GD707@atrey.karlin.mff.cuni.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,16 +37,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Grant Grundler <grundler@parisc-linux.org> wrote:
+* Pavel Machek <pavel@suse.cz> wrote:
 
-> [+ingo - question for you about disable_irq() below]
+> > 
+> > * Pavel Machek <pavel@suse.cz> wrote:
+> > 
+> > > ...at least on 2.6.27 and 2.6.28-rc3. Resume gets to 
+> > > acpi_hibernation_leave, then SLAB corruption is detected and machine 
+> > > ends in series of oops.
+> > > 
+> > > Any ideas how to debug that?
+> > 
+> > do you get any serial log or USB key output, so that it's debuggable 
+> > directly?
+> 
+> Well, I can transcribe the BUG() from a picture, I guess, but it does
+> not seem to contain much useful info: SLAB corruption was detected and
+> backtrace is not quite important at that point...
+> 
+> Serial console is probably possible, but would take few days to setup.
 
-> The same problem exists with disable_irq() : only takes a global
-> IRQ# and no additional identifying information to prevent disabling
-> a shared IRQ. So I'm not sure if this is a bug with ACPI or design
-> flaw in generic IRQ APIs.  Ingo?
+No good ideas - the bug description gives me the impression of memory 
+maps save/restore hickup in the hibernation code - and memory maps are 
+pretty much the only thing that are significantly different on NUMA. 
+(amongst the things that would matter to hibernation - there's a lot 
+more other NUMA details)
 
-that's how disable_irq() always worked: it disables all handlers on 
-that IRQ#. If the IRQ# is shared, it disables all handlers.
+In any case, could you send the .config that fails please, so that 
+this is documented better?
 
 	Ingo
