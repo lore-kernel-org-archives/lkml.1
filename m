@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYKJMx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbYKJMyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbYKJMx5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 07:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYKJMxt
+	id S1755756AbYKJMyY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 07:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYKJMyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 07:53:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45364 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754701AbYKJMxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 07:53:48 -0500
-Date: Mon, 10 Nov 2008 13:53:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-Message-ID: <20081110125335.GB28643@elte.hu>
-References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu> <20081110075529.GD707@atrey.karlin.mff.cuni.cz> <20081110080436.GF2093@elte.hu> <20081110082836.GB1969@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081110082836.GB1969@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0022]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 10 Nov 2008 07:54:15 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:54750 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754752AbYKJMyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 07:54:14 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [patch] restore sched_exec load balance heuristics
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ken Chen <kenchen@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>
+In-Reply-To: <20081110092937.GJ22392@elte.hu>
+References: <b040c32a0811061140u27093e4er70a43041564617f1@mail.gmail.com>
+	 <20081106200746.GA3578@elte.hu> <1226307053.2697.3993.camel@twins>
+	 <20081110092937.GJ22392@elte.hu>
+Content-Type: text/plain
+Date: Mon, 10 Nov 2008 13:54:08 +0100
+Message-Id: <1226321648.7685.74.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Pavel Machek <pavel@suse.cz> wrote:
-
-> > In any case, could you send the .config that fails please, so that 
-> > this is documented better?
+On Mon, 2008-11-10 at 10:29 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> Attached... but exact config does not seem to matter.
+> >  void sched_exec(void)
+> >  {
+> >  	int new_cpu, this_cpu = get_cpu();
+> > -	new_cpu = sched_balance_self(this_cpu, SD_BALANCE_EXEC);
+> > +	struct task_group *tg;
+> > +	long weight, eload;
+> > +
+> > +	tg = task_group(current);
+> > +	weight = current->se.load.weight;
+> > +	eload = -effective_load(tg, this_cpu, -weight, -weight);
+> > +
+> > +	new_cpu = sched_balance_self(this_cpu, SD_BALANCE_EXEC, eload);
+> 
+> okay, i think this will work.
+> 
+> it feels somewhat backwards though on a conceptual level.
+> 
+> There's nothing particularly special about exec-balancing: the load 
+> picture is in equilibrium - it is in essence a rebalancing pass done 
+> not in the scheduler tick but in a special place in the middle of 
+> exec() where the old-task / new-task cross section is at a minimum 
+> level.
+> 
+> _fork_ balancing is what is special: there we'll get a new context so 
+> we have to take the new load into account. It's a bit like wakeup 
+> balancing. (just done before the new task is truly woken up)
+> 
+> OTOH, triggering the regular busy-balance at exec() time isnt totally 
+> straightforward either: the 'old' task is the current task so it 
+> cannot be balanced away. We have to trigger all the active-migration 
+> logic - which again makes exec() balancing special.
+> 
+> So maybe this patch is the best solution after all. 
 
-there are the physical memory enumeration model options:
+Even worse, you want to balance current, the generic load balance might
+pick two cpus to balance neither of which will have current on it. But
+even if it would pick the queue with current on it as busiest, there is
+no saying you'll actually end up moving current.
 
- # CONFIG_FLATMEM_MANUAL is not set
- # CONFIG_DISCONTIGMEM_MANUAL is not set
- CONFIG_SPARSEMEM_MANUAL=y
- CONFIG_SPARSEMEM=y
- CONFIG_NEED_MULTIPLE_NODES=y
- CONFIG_HAVE_MEMORY_PRESENT=y
- CONFIG_SPARSEMEM_STATIC=y
+So this specialized form of moving current to a possibly more idle cpu
+is afaics the best solution for balancing a particular task.
 
-i can only suggest some stupid tweaking of the above options - for 
-example, does the bug scenario change in any way if you switch it over 
-to CONFIG_DISCONTIGMEM=y ?
-
-	Ingo
