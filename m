@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYKJDgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbYKJD4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbYKJDgg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 22:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbYKJDg1
+	id S1753850AbYKJD4W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 22:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbYKJD4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 22:36:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43392 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752973AbYKJDg1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 22:36:27 -0500
-Date: Sun, 9 Nov 2008 19:37:13 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: John K <trv@freemail.gr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: /proc/ksyms and /proc/kallsyms relationship?
-Message-ID: <20081109193713.5f4894da@infradead.org>
-In-Reply-To: <491787A0.5050901@freemail.gr>
-References: <491787A0.5050901@freemail.gr>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 9 Nov 2008 22:56:12 -0500
+Received: from mx71.mail.ru ([194.67.23.4]:54208 "EHLO mx71.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750904AbYKJD4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 9 Nov 2008 22:56:11 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #11911] new PCMCIA device instance after resume - orinoco can't download firmware
+Date: Mon, 10 Nov 2008 06:55:18 +0300
+User-Agent: KMail/1.9.10
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dave" <kilroyd@googlemail.com>, linux-pcmcia@lists.infradead.org
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.W2G.74zFJB@chimera>
+In-Reply-To: <wnN9HICUAgP.A.W2G.74zFJB@chimera>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3778337.HOHMZPoxId";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200811100655.28323.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008 03:00:16 +0200
-John K <trv@freemail.gr> wrote:
+--nextPart3778337.HOHMZPoxId
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> 4. If one wants to find out what are the exported symbols from some
-> module, so to know which symbols can he use in a future module, how
-> can he achieve this?
+On Sunday 09 November 2008, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>=20
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me know
+> (either way).
+>=20
 
-you as developer can do a grep on the kernel source for
-EXPORT_SYMBOL ...
+Still present in rc4.
 
-and the module loader will also tell you if you use a symbol that's not
-exported....
+>=20
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D11911
+> Subject		: new PCMCIA device instance after resume - orinoco can't downlo=
+ad firmware
+> Submitter	: Andrey Borzenkov <arvidjaar@mail.ru>
+> Date		: 2008-10-28 19:19 (13 days old)
+> References	: http://marc.info/?l=3Dlinux-wireless&m=3D122522165719760&w=
+=3D4
+> Handled-By	: Dave <kilroyd@googlemail.com>
+> Patch		: http://marc.info/?l=3Dlinux-wireless&m=3D122539058601588&w=3D4
+>=20
+>=20
+>=20
 
-but realistically if you use the standard APIs you're not going to find
-symbols that aren't exported... what kind of driver are you trying to
-write?
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+
+--nextPart3778337.HOHMZPoxId
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkXsKkACgkQR6LMutpd94yt0QCgrQYJ6zF5aTP/vriXRdtqO+GT
+a7AAn0kunfwD9Xx0jVgs9cvP9hT8NuBJ
+=PG3I
+-----END PGP SIGNATURE-----
+
+--nextPart3778337.HOHMZPoxId--
