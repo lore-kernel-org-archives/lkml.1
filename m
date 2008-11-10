@@ -1,149 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754383AbYKJPLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbYKJPN5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754383AbYKJPLS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 10:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbYKJPLD
+	id S1754686AbYKJPN5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 10:13:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbYKJPNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 10:11:03 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:34368 "EHLO e3.ny.us.ibm.com"
+	Mon, 10 Nov 2008 10:13:49 -0500
+Received: from tservice.ru ([195.178.208.66]:34041 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752943AbYKJPLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 10:11:01 -0500
-Date: Mon, 10 Nov 2008 20:41:13 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
-	controller
-Message-ID: <20081110151113.GA3933@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com> <20081027044319.GA4386@in.ibm.com> <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com> <49057ADD.1050705@cn.fujitsu.com> <20081030171622.GA19872@linux.vnet.ibm.com> <20081031094041.194a32d9.kamezawa.hiroyu@jp.fujitsu.com> <20081104124937.GB4898@in.ibm.com> <20081104092040.781f9546.randy.dunlap@oracle.com> <20081105032440.GA3298@in.ibm.com> <20081110130937.GB32613@elte.hu>
+	id S1752418AbYKJPNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 10:13:48 -0500
+Date: Mon, 10 Nov 2008 18:13:45 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Robert Love <rlove@rlove.org>
+Cc: John McCutchan <ttb@tentacle.dhs.org>, linux-api@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mtk.manpages@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [take 2] Use pid in inotify events.
+Message-ID: <20081110151345.GA15796@ioremap.net>
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110130937.GB32613@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 02:09:37PM +0100, Ingo Molnar wrote:
-> 
-> * Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
-> 
-> > I will resend the patch with other corrections you mentioned only if 
-> > Paul/Ingo want this patch to go in.
-> 
-> yes, please resend the fixed version.
+Hi.
 
-Here it is:
+This patch allows to send IO origin PID in inotify events (using cookie
+fields for all events except moving, where it is already used to track
+move from and move to parts) when its uid matches inotify owner uid or
+when inotify owner has admin capabilities (Jeff Schroeder's idea).
 
-Add hierarchical accounting to cpu accounting controller and include
-cpuacct documentation.
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-Currently, while charging the task's cputime to its accounting group,
-the accounting group hierarchy isn't updated. This patch charges the cputime
-of a task to its accounting group and all its parent accounting groups.
-
-Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Reviewed-by: Paul Menage <menage@google.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- Documentation/controllers/cpuacct.txt |   32 ++++++++++++++++++++++++++++++++
- kernel/sched.c                        |   12 +++++++++---
- 2 files changed, 41 insertions(+), 3 deletions(-)
-
---- /dev/null
-+++ b/Documentation/controllers/cpuacct.txt
-@@ -0,0 +1,32 @@
-+CPU Accounting Controller
-+-------------------------
-+
-+The CPU accounting controller is used to group tasks using cgroups and
-+account the CPU usage of these groups of tasks.
-+
-+The CPU accounting controller supports multi-hierarchy groups. An accounting
-+group accumulates the CPU usage of all of its child groups and the tasks
-+directly present in its group.
-+
-+Accounting groups can be created by first mounting the cgroup filesystem.
-+
-+# mkdir /cgroups
-+# mount -t cgroup -ocpuacct none /cgroups
-+
-+With the above step, the initial or the parent accounting group
-+becomes visible at /cgroups. At bootup, this group includes all the
-+tasks in the system. /cgroups/tasks lists the tasks in this cgroup.
-+/cgroups/cpuacct.usage gives the CPU time (in nanoseconds) obtained by
-+this group which is essentially the CPU time obtained by all the tasks
-+in the system.
-+
-+New accounting groups can be created under the parent group /cgroups.
-+
-+# cd /cgroups
-+# mkdir g1
-+# echo $$ > g1
-+
-+The above steps create a new group g1 and move the current shell
-+process (bash) into it. CPU time consumed by this bash and its children
-+can be obtained from g1/cpuacct.usage and the same is accumulated in
-+/cgroups/cpuacct.usage also.
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9231,11 +9231,12 @@ struct cgroup_subsys cpu_cgroup_subsys =
-  * (balbir@in.ibm.com).
+diff --git a/fs/inotify.c b/fs/inotify.c
+index 690e725..835259d 100644
+--- a/fs/inotify.c
++++ b/fs/inotify.c
+@@ -69,6 +69,9 @@ static atomic_t inotify_cookie;
+  * inotify_add_watch() to the final put_inotify_watch().
   */
  
--/* track cpu usage of a group of tasks */
-+/* track cpu usage of a group of tasks and its child groups */
- struct cpuacct {
- 	struct cgroup_subsys_state css;
- 	/* cpuusage holds pointer to a u64-type object on every cpu */
- 	u64 *cpuusage;
-+	struct cpuacct *parent;
++#define IH_FLAGS_ADMIN		(0x00000001)
++/* handler owner has admin capabilities */
++
+ /*
+  * struct inotify_handle - represents an inotify instance
+  *
+@@ -80,6 +83,8 @@ struct inotify_handle {
+ 	struct list_head	watches;	/* list of watches */
+ 	atomic_t		count;		/* reference count */
+ 	u32			last_wd;	/* the last wd allocated */
++	uid_t			uid;		/* owner's uid */
++	u32			flags;		/* operation flags */
+ 	const struct inotify_operations *in_ops; /* inotify caller operations */
  };
  
- struct cgroup_subsys cpuacct_subsys;
-@@ -9269,6 +9270,9 @@ static struct cgroup_subsys_state *cpuac
- 		return ERR_PTR(-ENOMEM);
- 	}
- 
-+	if (cgrp->parent)
-+		ca->parent = cgroup_ca(cgrp->parent);
+@@ -292,6 +297,11 @@ void inotify_inode_queue_event(struct inode *inode, u32 mask, u32 cookie,
+ 			mutex_lock(&ih->mutex);
+ 			if (watch_mask & IN_ONESHOT)
+ 				remove_watch_no_event(watch, ih);
 +
- 	return &ca->css;
- }
++			if (!cookie && ((ih->flags & IH_FLAGS_ADMIN) ||
++					(current->uid == ih->uid)))
++				cookie = task_tgid_vnr(current);
++
+ 			ih->in_ops->handle_event(watch, watch->wd, mask, cookie,
+ 						 name, n_inode);
+ 			mutex_unlock(&ih->mutex);
+@@ -459,6 +469,10 @@ struct inotify_handle *inotify_init(const struct inotify_operations *ops)
+ 	mutex_init(&ih->mutex);
+ 	ih->last_wd = 0;
+ 	ih->in_ops = ops;
++	ih->uid = current->user->uid;
++	ih->flags = 0;
++	if (capable(CAP_SYS_ADMIN))
++		ih->flags |= IH_FLAGS_ADMIN;
+ 	atomic_set(&ih->count, 0);
+ 	get_inotify_handle(ih);
  
-@@ -9348,14 +9352,16 @@ static int cpuacct_populate(struct cgrou
- static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
- {
- 	struct cpuacct *ca;
-+	int cpu;
- 
- 	if (!cpuacct_subsys.active)
- 		return;
- 
-+	cpu = task_cpu(tsk);
- 	ca = task_ca(tsk);
--	if (ca) {
--		u64 *cpuusage = percpu_ptr(ca->cpuusage, task_cpu(tsk));
- 
-+	for (; ca; ca = ca->parent) {
-+		u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
- 		*cpuusage += cputime;
- 	}
- }
-
-Regards,
-Bharata.
+-- 
+	Evgeniy Polyakov
