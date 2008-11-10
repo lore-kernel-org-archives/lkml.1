@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbYKJWu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYKJWzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbYKJWu5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYKJWus
+	id S1754499AbYKJWzc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYKJWzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:50:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50713 "EHLO ogre.sisk.pl"
+	Mon, 10 Nov 2008 17:55:22 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:45973 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYKJWuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:50:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to chanes in stop_machine
-Date: Mon, 10 Nov 2008 23:55:41 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl>
-In-Reply-To: <200811101547.21325.rjw@sisk.pl>
+	id S1751195AbYKJWzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 17:55:21 -0500
+Message-ID: <4918BBD4.3060306@garzik.org>
+Date: Mon, 10 Nov 2008 17:55:16 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: IDE/ATA development list <linux-ide@vger.kernel.org>
+CC: Tejun Heo <tj@kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: request to revert libata-convert-to-block-tagging patches
+References: <4917C449.2080504@kernel.org>
+In-Reply-To: <4917C449.2080504@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811102355.42389.rjw@sisk.pl>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 10 of November 2008, Rafael J. Wysocki wrote:
-> On Monday, 10 of November 2008, Heiko Carstens wrote:
-> > On Sun, Nov 09, 2008 at 06:59:16PM +0100, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.27.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11989
-> > > Subject		: Suspend failure on NForce4-based boards due to chanes in stop_machine
-> > > Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Date		: 2008-11-03 0:28 (7 days old)
-> > > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc
-> > > References	: http://marc.info/?l=linux-kernel&m=122567187604356&w=4
-> > 
-> > Hi Rafael,
+Tejun Heo wrote:
+> Hello, all.
 > 
-> Hi,
+> I went through libata-convert-to-block-tagging today and found several
+> issues.
 > 
-> > could you provide more informations for this, please?
-> > 
-> > What is your kernel configuration?
+> 1. libata internal data structure for command context (qc) allocation is
+> bound to tag allocation, which means that block layer tagging should be
+> enabled for all controllers which have can_queue > 1.
 > 
-> Available at: http://www.sisk.pl/kernel/debug/mainline/2.6.28-rc3/kitty-config
+> 2. blk-tag offsets allocation for non-sync requests.  I'm not confident
+> this is safe.  Till now, if there was only single command in flight for
+> the port, it was guaranteed that the qc gets tag zero whether the device
+> is NCQ capable or not.  qc allocation is tied tightly with hardware
+> command slot allocation and I don't think it's wise to change this
+> assumption.
 > 
-> > Do you have any binary only modules (nvidia?) loaded?
+> #1 is easy to fix but #2 requires either adding a spinlock or two atomic
+> variables to struct blk_queue_tag to keep the current behavior while
+> guaranteeing that tags are used in order.  Also, there's delay between
+> libata marks a request complete and the request actually gets completed
+> and the tag is freed.  If another request gets issued inbetween, the tag
+> number can't be guaranteed.  This can be worked around by re-mapping tag
+> number in libata depending on command type but, well then, it's worse
+> than the original implementation.
 > 
-> No, I don't.
+> So, please revert the following commits.
 > 
-> > Is it possible to recreate the bug by e.g. just doing something like
-> > 
-> > echo 0 > /sys/devices/system/cpu/cpu1/online
-> 
-> I haven't checked (yet), I'll do that later today and let you know.
-> 
-> > (or any other online cpu)? Or does it trigger any lockdep warnings?
+> 43a49cbdf31e812c0d8f553d433b09b421f5d52c
+> e013e13bf605b9e6b702adffbe2853cfc60e7806
+> 2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
 
-It cannot be reproduced with offlining CPU1 and it doesn't trigger any
-warnings from lockdep.
+A bit late, since they're already in, but, ACK.  (I'm on East Coast 
+Vampire time, apparently)
 
-However, it is reproducible by doing
+Now that this is resolved, please allow me a bit of grumbling.  I always 
+thought the original course -- 2.6.29 -- was best for these patches.  I 
+had even queued them for 2.6.29, when they found their way into 2.6.28 
+anyway.  Without /any/ testing by libata maintainers or linux-next. 
+Without even being tested on non-NCQ setups, apparently.
 
-# echo core > /sys/power/pm_test
+The process broke down completely with this patchset :(
 
-and repeating
+I still want to see this stuff in 2.6.29 though; it is the right way to 
+go: following the theme of using block rather than SCSI bits in libata 
+generic code [when those bits are, themselves, generic rather than 
+SCSI-specific].
 
-# echo disk > /sys/power/state
+	Jeff
 
-for a couple of times, in which case the last two lines printed to the console
-before a (solid) hang are:
 
-SMP alternatives: switching to SMP code
-Booting processor 1 APIC 0x1 ip 0x6000
 
-So, it evidently fails while re-enabling the non-boot CPU and not during
-disabling it as I thought before.
-
-With commit c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc reverted the issue is
-not reproducible any more.
-
-Thanks,
-Rafael
