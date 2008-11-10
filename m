@@ -1,836 +1,638 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbYKJTfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbYKJTgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbYKJTfj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 14:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKJTfP
+	id S1752858AbYKJTgz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 14:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbYKJTgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 14:35:15 -0500
-Received: from kroah.org ([198.145.64.141]:50626 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751162AbYKJTfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 14:35:10 -0500
-Date: Mon, 10 Nov 2008 11:34:53 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.25.20
-Message-ID: <20081110193453.GB25995@kroah.com>
-References: <20081110193422.GA25995@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081110193422.GA25995@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 10 Nov 2008 14:36:47 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44895 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbYKJTgo (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 14:36:44 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz, tiwai@suse.de
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: 2.6.28-rc2-mm1 - sound semi-busted on Dell Latitude D820
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1226345758_3458P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 10 Nov 2008 14:35:58 -0500
+Message-ID: <4411.1226345758@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index 71e9d1a..008391f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 25
--EXTRAVERSION = .19
-+EXTRAVERSION = .20
- NAME = Funky Weasel is Jiggy wit it
+--==_Exmh_1226345758_3458P
+Content-Type: multipart/mixed ;
+	boundary="==_Exmh_1226345739_34580"
+
+This is a multipart MIME message.
+
+--==_Exmh_1226345739_34580
+Content-Type: text/plain; charset=us-ascii
+
+Sometime between -mmotm1017  and -rc2-mm1, something odd happened to the
+sound subsystem.  On my Dell Latitude D820, audio works OK if it's sitting
+there standalone, or in its docking station.
+
+However, when I plug in headphones, it goes silent.
+
+Sorry for not having any more detail, but I've not had a chance to bisect
+this down to a specific commit.
+
+I did run alsa-info for the two kernels, here's a diff between them. I also
+attached a copy of the full output for working -mmotm1017.
+
+(- lines are working -mmotm-1017, + are busted -rc2-mm1)
+
+--- alsa-info-mmotm1017 2008-11-10 14:17:04.000000000 -0500
++++ alsa-info-rc3-mm1   2008-11-10 14:13:17.000000000 -0500
+@@ -3,7 +3,7 @@
+ !!ALSA Information Script v 0.4.51
+ !!################################
  
- # *DOCUMENTATION*
-diff --git a/arch/sparc64/kernel/trampoline.S b/arch/sparc64/kernel/trampoline.S
-index 56ff552..d9f3f51 100644
---- a/arch/sparc64/kernel/trampoline.S
-+++ b/arch/sparc64/kernel/trampoline.S
-@@ -328,6 +328,12 @@ after_lock_tlb:
- 
- 	wrpr		%g0, 0, %wstate
- 
-+	sethi		%hi(prom_entry_lock), %g2
-+1:	ldstub		[%g2 + %lo(prom_entry_lock)], %g1
-+	membar		#StoreLoad | #StoreStore
-+	brnz,pn		%g1, 1b
-+	 nop
-+
- 	/* As a hack, put &init_thread_union into %g6.
- 	 * prom_world() loads from here to restore the %asi
- 	 * register.
-@@ -337,7 +343,7 @@ after_lock_tlb:
- 
- 	sethi		%hi(is_sun4v), %o0
- 	lduw		[%o0 + %lo(is_sun4v)], %o0
--	brz,pt		%o0, 1f
-+	brz,pt		%o0, 2f
- 	 nop
- 
- 	TRAP_LOAD_TRAP_BLOCK(%g2, %g3)
-@@ -369,10 +375,10 @@ after_lock_tlb:
- 	call		%o1
- 	 add		%sp, (2047 + 128), %o0
- 
--	ba,pt		%xcc, 2f
-+	ba,pt		%xcc, 3f
- 	 nop
- 
--1:	sethi		%hi(sparc64_ttable_tl0), %o0
-+2:	sethi		%hi(sparc64_ttable_tl0), %o0
- 	set		prom_set_trap_table_name, %g2
- 	stx		%g2, [%sp + 2047 + 128 + 0x00]
- 	mov		1, %g2
-@@ -386,7 +392,11 @@ after_lock_tlb:
- 	call		%o1
- 	 add		%sp, (2047 + 128), %o0
- 
--2:	ldx		[%l0], %g6
-+3:	sethi		%hi(prom_entry_lock), %g2
-+	stb		%g0, [%g2 + %lo(prom_entry_lock)]
-+	membar		#StoreStore | #StoreLoad
-+
-+	ldx		[%l0], %g6
- 	ldx		[%g6 + TI_TASK], %g4
- 
- 	mov		1, %g5
-diff --git a/drivers/acpi/dock.c b/drivers/acpi/dock.c
-index fa44fb9..4fdd886 100644
---- a/drivers/acpi/dock.c
-+++ b/drivers/acpi/dock.c
-@@ -599,14 +599,17 @@ static int handle_eject_request(struct dock_station *ds, u32 event)
- static void dock_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct dock_station *ds = data;
-+	struct acpi_device *tmp;
- 
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
--		if (!dock_in_progress(ds) && dock_present(ds)) {
-+		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
-+		   &tmp)) {
- 			begin_dock(ds);
- 			dock(ds);
- 			if (!dock_present(ds)) {
- 				printk(KERN_ERR PREFIX "Unable to dock!\n");
-+				complete_dock(ds);
- 				break;
- 			}
- 			atomic_notifier_call_chain(&dock_notifier_list,
-diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-index 980a741..4f65f59 100644
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -624,6 +624,76 @@ acpi_video_bus_DOS(struct acpi_video_bus *video, int bios_flag, int lcd_flag)
-  *  	device	: video output device (LCD, CRT, ..)
-  *
-  *  Return Value:
-+ *	Maximum brightness level
-+ *
-+ *  Allocate and initialize device->brightness.
-+ */
-+
-+static int
-+acpi_video_init_brightness(struct acpi_video_device *device)
-+{
-+	union acpi_object *obj = NULL;
-+	int i, max_level = 0, count = 0;
-+	union acpi_object *o;
-+	struct acpi_video_device_brightness *br = NULL;
-+
-+	if (!ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available "
-+						"LCD brightness level\n"));
-+		goto out;
-+	}
-+
-+	if (obj->package.count < 2)
-+		goto out;
-+
-+	br = kzalloc(sizeof(*br), GFP_KERNEL);
-+	if (!br) {
-+		printk(KERN_ERR "can't allocate memory\n");
-+		goto out;
-+	}
-+
-+	br->levels = kmalloc(obj->package.count * sizeof *(br->levels),
-+				GFP_KERNEL);
-+	if (!br->levels)
-+		goto out_free;
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		o = (union acpi_object *)&obj->package.elements[i];
-+		if (o->type != ACPI_TYPE_INTEGER) {
-+			printk(KERN_ERR PREFIX "Invalid data\n");
-+			continue;
-+		}
-+		br->levels[count] = (u32) o->integer.value;
-+
-+		if (br->levels[count] > max_level)
-+			max_level = br->levels[count];
-+		count++;
-+	}
-+
-+	if (count < 2)
-+		goto out_free_levels;
-+
-+	br->count = count;
-+	device->brightness = br;
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "found %d brightness levels\n", count));
-+	kfree(obj);
-+	return max_level;
-+
-+out_free_levels:
-+	kfree(br->levels);
-+out_free:
-+	kfree(br);
-+out:
-+	device->brightness = NULL;
-+	kfree(obj);
-+	return 0;
-+}
-+
-+/*
-+ *  Arg:
-+ *	device	: video output device (LCD, CRT, ..)
-+ *
-+ *  Return Value:
-  *  	None
-  *
-  *  Find out all required AML methods defined under the output
-@@ -633,10 +703,7 @@ acpi_video_bus_DOS(struct acpi_video_bus *video, int bios_flag, int lcd_flag)
- static void acpi_video_device_find_cap(struct acpi_video_device *device)
- {
- 	acpi_handle h_dummy1;
--	int i;
- 	u32 max_level = 0;
--	union acpi_object *obj = NULL;
--	struct acpi_video_device_brightness *br = NULL;
+-!!Script ran on: Mon Nov 10 14:16:47 EST 2008
++!!Script ran on: Mon Nov 10 14:12:28 EST 2008
  
  
- 	memset(&device->cap, 0, sizeof(device->cap));
-@@ -665,53 +732,7 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
- 		device->cap._DSS = 1;
- 	}
+ !!Linux Distribution
+@@ -15,7 +15,7 @@
+ !!Kernel Information
+ !!------------------
  
--	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
--
--		if (obj->package.count >= 2) {
--			int count = 0;
--			union acpi_object *o;
--
--			br = kzalloc(sizeof(*br), GFP_KERNEL);
--			if (!br) {
--				printk(KERN_ERR "can't allocate memory\n");
--			} else {
--				br->levels = kmalloc(obj->package.count *
--						     sizeof *(br->levels), GFP_KERNEL);
--				if (!br->levels)
--					goto out;
--
--				for (i = 0; i < obj->package.count; i++) {
--					o = (union acpi_object *)&obj->package.
--					    elements[i];
--					if (o->type != ACPI_TYPE_INTEGER) {
--						printk(KERN_ERR PREFIX "Invalid data\n");
--						continue;
--					}
--					br->levels[count] = (u32) o->integer.value;
--
--					if (br->levels[count] > max_level)
--						max_level = br->levels[count];
--					count++;
--				}
--			      out:
--				if (count < 2) {
--					kfree(br->levels);
--					kfree(br);
--				} else {
--					br->count = count;
--					device->brightness = br;
--					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--							  "found %d brightness levels\n",
--							  count));
--				}
--			}
--		}
--
--	} else {
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
--	}
--
--	kfree(obj);
-+	max_level = acpi_video_init_brightness(device);
+-Kernel release:    2.6.27-mmotm1017
++Kernel release:    2.6.28-rc3-mm1
+ Operating System:  GNU/Linux
+ Architecture:      x86_64
+ Processor:         x86_64
+@@ -25,7 +25,7 @@
+ !!ALSA Version
+ !!------------
  
- 	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
- 		int result;
-@@ -1710,6 +1731,8 @@ static void
- acpi_video_switch_brightness(struct acpi_video_device *device, int event)
- {
- 	unsigned long level_current, level_next;
-+	if (!device->brightness)
-+		return;
- 	acpi_video_device_lcd_get_level_current(device, &level_current);
- 	level_next = acpi_video_get_next_level(device, level_current, event);
- 	acpi_video_device_lcd_set_level(device, level_next);
-diff --git a/drivers/edac/cell_edac.c b/drivers/edac/cell_edac.c
-index b54112f..00b8539 100644
---- a/drivers/edac/cell_edac.c
-+++ b/drivers/edac/cell_edac.c
-@@ -141,7 +141,7 @@ static void __devinit cell_edac_init_csrows(struct mem_ctl_info *mci)
- 		csrow->nr_pages = (r.end - r.start + 1) >> PAGE_SHIFT;
- 		csrow->last_page = csrow->first_page + csrow->nr_pages - 1;
- 		csrow->mtype = MEM_XDR;
--		csrow->edac_mode = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-+		csrow->edac_mode = EDAC_SECDED;
- 		dev_dbg(mci->dev,
- 			"Initialized on node %d, chanmask=0x%x,"
- 			" first_page=0x%lx, nr_pages=0x%x\n",
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index d8db2f8..5ca1916 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -426,7 +426,7 @@ int gpio_get_value_cansleep(unsigned gpio)
+-Driver version:     1.0.18rc3
++Driver version:     1.0.18
+ Library version:    1.0.18rc3
+ Utilities version:  1.0.18rc3
  
- 	might_sleep_if(extra_checks);
- 	chip = gpio_to_chip(gpio);
--	return chip->get(chip, gpio - chip->base);
-+	return chip->get ? chip->get(chip, gpio - chip->base) : 0;
- }
- EXPORT_SYMBOL_GPL(gpio_get_value_cansleep);
+@@ -39,7 +39,7 @@
+ !!-----------------------------
  
-diff --git a/drivers/net/wireless/libertas/scan.c b/drivers/net/wireless/libertas/scan.c
-index 69f94c9..9335d71 100644
---- a/drivers/net/wireless/libertas/scan.c
-+++ b/drivers/net/wireless/libertas/scan.c
-@@ -787,8 +787,8 @@ static int lbs_process_bss(struct bss_descriptor *bss,
+  0 [Intel          ]: HDA-Intel - HDA Intel
+-                      HDA Intel at 0xefffc000 irq 314
++                      HDA Intel at 0xefffc000 irq 41
  
- 		switch (elem->id) {
- 		case MFIE_TYPE_SSID:
--			bss->ssid_len = elem->len;
--			memcpy(bss->ssid, elem->data, elem->len);
-+			bss->ssid_len = min_t(int, 32, elem->len);
-+			memcpy(bss->ssid, elem->data, bss->ssid_len);
- 			lbs_deb_scan("got SSID IE: '%s', len %u\n",
- 			             escape_essid(bss->ssid, bss->ssid_len),
- 			             bss->ssid_len);
-diff --git a/fs/ext2/dir.c b/fs/ext2/dir.c
-index 8dededd..bd54e81 100644
---- a/fs/ext2/dir.c
-+++ b/fs/ext2/dir.c
-@@ -103,7 +103,7 @@ static int ext2_commit_chunk(struct page *page, loff_t pos, unsigned len)
- 	return err;
- }
  
--static void ext2_check_page(struct page *page)
-+static void ext2_check_page(struct page *page, int quiet)
- {
- 	struct inode *dir = page->mapping->host;
- 	struct super_block *sb = dir->i_sb;
-@@ -146,10 +146,10 @@ out:
- 	/* Too bad, we had an error */
- 
- Ebadsize:
--	ext2_error(sb, "ext2_check_page",
--		"size of directory #%lu is not a multiple of chunk size",
--		dir->i_ino
--	);
-+	if (!quiet)
-+		ext2_error(sb, __func__,
-+			"size of directory #%lu is not a multiple "
-+			"of chunk size", dir->i_ino);
- 	goto fail;
- Eshort:
- 	error = "rec_len is smaller than minimal";
-@@ -166,32 +166,36 @@ Espan:
- Einumber:
- 	error = "inode out of bounds";
- bad_entry:
--	ext2_error (sb, "ext2_check_page", "bad entry in directory #%lu: %s - "
--		"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
--		dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
--		(unsigned long) le32_to_cpu(p->inode),
--		rec_len, p->name_len);
-+	if (!quiet)
-+		ext2_error(sb, __func__, "bad entry in directory #%lu: : %s - "
-+			"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
-+			dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
-+			(unsigned long) le32_to_cpu(p->inode),
-+			rec_len, p->name_len);
- 	goto fail;
- Eend:
--	p = (ext2_dirent *)(kaddr + offs);
--	ext2_error (sb, "ext2_check_page",
--		"entry in directory #%lu spans the page boundary"
--		"offset=%lu, inode=%lu",
--		dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
--		(unsigned long) le32_to_cpu(p->inode));
-+	if (!quiet) {
-+		p = (ext2_dirent *)(kaddr + offs);
-+		ext2_error(sb, "ext2_check_page",
-+			"entry in directory #%lu spans the page boundary"
-+			"offset=%lu, inode=%lu",
-+			dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
-+			(unsigned long) le32_to_cpu(p->inode));
-+	}
- fail:
- 	SetPageChecked(page);
- 	SetPageError(page);
- }
- 
--static struct page * ext2_get_page(struct inode *dir, unsigned long n)
-+static struct page * ext2_get_page(struct inode *dir, unsigned long n,
-+				   int quiet)
- {
- 	struct address_space *mapping = dir->i_mapping;
- 	struct page *page = read_mapping_page(mapping, n, NULL);
- 	if (!IS_ERR(page)) {
- 		kmap(page);
- 		if (!PageChecked(page))
--			ext2_check_page(page);
-+			ext2_check_page(page, quiet);
- 		if (PageError(page))
- 			goto fail;
- 	}
-@@ -292,7 +296,7 @@ ext2_readdir (struct file * filp, void * dirent, filldir_t filldir)
- 	for ( ; n < npages; n++, offset = 0) {
- 		char *kaddr, *limit;
- 		ext2_dirent *de;
--		struct page *page = ext2_get_page(inode, n);
-+		struct page *page = ext2_get_page(inode, n, 0);
- 
- 		if (IS_ERR(page)) {
- 			ext2_error(sb, __FUNCTION__,
-@@ -361,6 +365,7 @@ struct ext2_dir_entry_2 * ext2_find_entry (struct inode * dir,
- 	struct page *page = NULL;
- 	struct ext2_inode_info *ei = EXT2_I(dir);
- 	ext2_dirent * de;
-+	int dir_has_error = 0;
- 
- 	if (npages == 0)
- 		goto out;
-@@ -374,7 +379,7 @@ struct ext2_dir_entry_2 * ext2_find_entry (struct inode * dir,
- 	n = start;
- 	do {
- 		char *kaddr;
--		page = ext2_get_page(dir, n);
-+		page = ext2_get_page(dir, n, dir_has_error);
- 		if (!IS_ERR(page)) {
- 			kaddr = page_address(page);
- 			de = (ext2_dirent *) kaddr;
-@@ -391,7 +396,9 @@ struct ext2_dir_entry_2 * ext2_find_entry (struct inode * dir,
- 				de = ext2_next_entry(de);
- 			}
- 			ext2_put_page(page);
--		}
-+		} else
-+			dir_has_error = 1;
-+
- 		if (++n >= npages)
- 			n = 0;
- 		/* next page is past the blocks we've got */
-@@ -414,7 +421,7 @@ found:
- 
- struct ext2_dir_entry_2 * ext2_dotdot (struct inode *dir, struct page **p)
- {
--	struct page *page = ext2_get_page(dir, 0);
-+	struct page *page = ext2_get_page(dir, 0, 0);
- 	ext2_dirent *de = NULL;
- 
- 	if (!IS_ERR(page)) {
-@@ -487,7 +494,7 @@ int ext2_add_link (struct dentry *dentry, struct inode *inode)
- 	for (n = 0; n <= npages; n++) {
- 		char *dir_end;
- 
--		page = ext2_get_page(dir, n);
-+		page = ext2_get_page(dir, n, 0);
- 		err = PTR_ERR(page);
- 		if (IS_ERR(page))
- 			goto out;
-@@ -655,14 +662,17 @@ int ext2_empty_dir (struct inode * inode)
- {
- 	struct page *page = NULL;
- 	unsigned long i, npages = dir_pages(inode);
-+	int dir_has_error = 0;
- 
- 	for (i = 0; i < npages; i++) {
- 		char *kaddr;
- 		ext2_dirent * de;
--		page = ext2_get_page(inode, i);
-+		page = ext2_get_page(inode, i, dir_has_error);
- 
--		if (IS_ERR(page))
-+		if (IS_ERR(page)) {
-+			dir_has_error = 1;
- 			continue;
-+		}
- 
- 		kaddr = page_address(page);
- 		de = (ext2_dirent *)kaddr;
-diff --git a/fs/ext3/dir.c b/fs/ext3/dir.c
-index 8ca3bfd..fba60c0 100644
---- a/fs/ext3/dir.c
-+++ b/fs/ext3/dir.c
-@@ -102,6 +102,7 @@ static int ext3_readdir(struct file * filp,
- 	int err;
- 	struct inode *inode = filp->f_path.dentry->d_inode;
- 	int ret = 0;
-+	int dir_has_error = 0;
- 
- 	sb = inode->i_sb;
- 
-@@ -148,9 +149,12 @@ static int ext3_readdir(struct file * filp,
- 		 * of recovering data when there's a bad sector
- 		 */
- 		if (!bh) {
--			ext3_error (sb, "ext3_readdir",
--				"directory #%lu contains a hole at offset %lu",
--				inode->i_ino, (unsigned long)filp->f_pos);
-+			if (!dir_has_error) {
-+				ext3_error(sb, __func__, "directory #%lu "
-+					"contains a hole at offset %lld",
-+					inode->i_ino, filp->f_pos);
-+				dir_has_error = 1;
-+			}
- 			/* corrupt size?  Maybe no more blocks to read */
- 			if (filp->f_pos > inode->i_blocks << 9)
- 				break;
-diff --git a/fs/ext4/dir.c b/fs/ext4/dir.c
-index 2c23bad..50ea8ed 100644
---- a/fs/ext4/dir.c
-+++ b/fs/ext4/dir.c
-@@ -102,6 +102,7 @@ static int ext4_readdir(struct file * filp,
- 	int err;
- 	struct inode *inode = filp->f_path.dentry->d_inode;
- 	int ret = 0;
-+	int dir_has_error = 0;
- 
- 	sb = inode->i_sb;
- 
-@@ -147,9 +148,13 @@ static int ext4_readdir(struct file * filp,
- 		 * of recovering data when there's a bad sector
- 		 */
- 		if (!bh) {
--			ext4_error (sb, "ext4_readdir",
--				"directory #%lu contains a hole at offset %lu",
--				inode->i_ino, (unsigned long)filp->f_pos);
-+			if (!dir_has_error) {
-+				ext4_error(sb, __func__, "directory #%lu "
-+					   "contains a hole at offset %Lu",
-+					   inode->i_ino,
-+					   (unsigned long long) filp->f_pos);
-+				dir_has_error = 1;
-+			}
- 			/* corrupt size?  Maybe no more blocks to read */
- 			if (filp->f_pos > inode->i_blocks << 9)
- 				break;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 6a1e7af..b9254bc 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1256,6 +1256,8 @@ struct task_struct {
- 	atomic_t fs_excl;	/* holding fs exclusive resources */
- 	struct rcu_head rcu;
- 
-+	struct list_head	*scm_work_list;
-+
- 	/*
- 	 * cache last used pipe for splice
- 	 */
-diff --git a/include/math-emu/op-common.h b/include/math-emu/op-common.h
-index bb46e76..408f743 100644
---- a/include/math-emu/op-common.h
-+++ b/include/math-emu/op-common.h
-@@ -139,18 +139,27 @@ do {								\
- 	if (X##_e <= _FP_WFRACBITS_##fs)			\
- 	  {							\
- 	    _FP_FRAC_SRS_##wc(X, X##_e, _FP_WFRACBITS_##fs);	\
--	    _FP_ROUND(wc, X);					\
- 	    if (_FP_FRAC_HIGH_##fs(X)				\
- 		& (_FP_OVERFLOW_##fs >> 1))			\
- 	      {							\
- 	        X##_e = 1;					\
- 	        _FP_FRAC_SET_##wc(X, _FP_ZEROFRAC_##wc);	\
--	        FP_SET_EXCEPTION(FP_EX_INEXACT);		\
- 	      }							\
- 	    else						\
- 	      {							\
--		X##_e = 0;					\
--		_FP_FRAC_SRL_##wc(X, _FP_WORKBITS);		\
-+		_FP_ROUND(wc, X);				\
-+		if (_FP_FRAC_HIGH_##fs(X)			\
-+		   & (_FP_OVERFLOW_##fs >> 1))			\
-+		  {						\
-+		    X##_e = 1;					\
-+		    _FP_FRAC_SET_##wc(X, _FP_ZEROFRAC_##wc);	\
-+		    FP_SET_EXCEPTION(FP_EX_INEXACT);		\
-+		  }						\
-+		else						\
-+		  {						\
-+		    X##_e = 0;					\
-+		    _FP_FRAC_SRL_##wc(X, _FP_WORKBITS);		\
-+		  }						\
- 	      }							\
- 	    if ((FP_CUR_EXCEPTIONS & FP_EX_INEXACT) ||		\
- 		(FP_TRAPPING_EXCEPTIONS & FP_EX_UNDERFLOW))	\
-diff --git a/include/net/scm.h b/include/net/scm.h
-index 06df126..33e9986 100644
---- a/include/net/scm.h
-+++ b/include/net/scm.h
-@@ -14,8 +14,9 @@
- 
- struct scm_fp_list
- {
--	int		count;
--	struct file	*fp[SCM_MAX_FD];
-+	struct list_head	list;
-+	int			count;
-+	struct file		*fp[SCM_MAX_FD];
- };
- 
- struct scm_cookie
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 37ffd7a..bd08aa7 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3593,14 +3593,11 @@ static int dev_new_index(struct net *net)
- }
- 
- /* Delayed registration/unregisteration */
--static DEFINE_SPINLOCK(net_todo_list_lock);
- static LIST_HEAD(net_todo_list);
- 
- static void net_set_todo(struct net_device *dev)
- {
--	spin_lock(&net_todo_list_lock);
- 	list_add_tail(&dev->todo_list, &net_todo_list);
--	spin_unlock(&net_todo_list_lock);
- }
- 
- static void rollback_registered(struct net_device *dev)
-@@ -3909,33 +3906,24 @@ static void netdev_wait_allrefs(struct net_device *dev)
-  *	free_netdev(y1);
-  *	free_netdev(y2);
-  *
-- * We are invoked by rtnl_unlock() after it drops the semaphore.
-+ * We are invoked by rtnl_unlock().
-  * This allows us to deal with problems:
-  * 1) We can delete sysfs objects which invoke hotplug
-  *    without deadlocking with linkwatch via keventd.
-  * 2) Since we run with the RTNL semaphore not held, we can sleep
-  *    safely in order to wait for the netdev refcnt to drop to zero.
-+ *
-+ * We must not return until all unregister events added during
-+ * the interval the lock was held have been completed.
-  */
--static DEFINE_MUTEX(net_todo_run_mutex);
- void netdev_run_todo(void)
- {
- 	struct list_head list;
- 
--	/* Need to guard against multiple cpu's getting out of order. */
--	mutex_lock(&net_todo_run_mutex);
--
--	/* Not safe to do outside the semaphore.  We must not return
--	 * until all unregister events invoked by the local processor
--	 * have been completed (either by this todo run, or one on
--	 * another cpu).
--	 */
--	if (list_empty(&net_todo_list))
--		goto out;
--
- 	/* Snapshot list, allow later requests */
--	spin_lock(&net_todo_list_lock);
- 	list_replace_init(&net_todo_list, &list);
--	spin_unlock(&net_todo_list_lock);
-+
-+	__rtnl_unlock();
- 
- 	while (!list_empty(&list)) {
- 		struct net_device *dev
-@@ -3965,9 +3953,6 @@ void netdev_run_todo(void)
- 		/* Free network device */
- 		kobject_put(&dev->dev.kobj);
- 	}
--
--out:
--	mutex_unlock(&net_todo_run_mutex);
- }
- 
- static struct net_device_stats *internal_stats(struct net_device *dev)
-diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-index 0cb2772..aa53778 100644
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -73,7 +73,7 @@ void __rtnl_unlock(void)
- 
- void rtnl_unlock(void)
- {
--	mutex_unlock(&rtnl_mutex);
-+	/* This fellow will unlock it for us. */
- 	netdev_run_todo();
- }
- 
-diff --git a/net/core/scm.c b/net/core/scm.c
-index 10f5c65..ab242cc 100644
---- a/net/core/scm.c
-+++ b/net/core/scm.c
-@@ -75,6 +75,7 @@ static int scm_fp_copy(struct cmsghdr *cmsg, struct scm_fp_list **fplp)
- 		if (!fpl)
- 			return -ENOMEM;
- 		*fplp = fpl;
-+		INIT_LIST_HEAD(&fpl->list);
- 		fpl->count = 0;
- 	}
- 	fpp = &fpl->fp[fpl->count];
-@@ -106,9 +107,25 @@ void __scm_destroy(struct scm_cookie *scm)
- 
- 	if (fpl) {
- 		scm->fp = NULL;
--		for (i=fpl->count-1; i>=0; i--)
--			fput(fpl->fp[i]);
--		kfree(fpl);
-+		if (current->scm_work_list) {
-+			list_add_tail(&fpl->list, current->scm_work_list);
-+		} else {
-+			LIST_HEAD(work_list);
-+
-+			current->scm_work_list = &work_list;
-+
-+			list_add(&fpl->list, &work_list);
-+			while (!list_empty(&work_list)) {
-+				fpl = list_first_entry(&work_list, struct scm_fp_list, list);
-+
-+				list_del(&fpl->list);
-+				for (i=fpl->count-1; i>=0; i--)
-+					fput(fpl->fp[i]);
-+				kfree(fpl);
-+			}
-+
-+			current->scm_work_list = NULL;
-+		}
- 	}
- }
- 
-@@ -284,6 +301,7 @@ struct scm_fp_list *scm_fp_dup(struct scm_fp_list *fpl)
- 
- 	new_fpl = kmalloc(sizeof(*fpl), GFP_KERNEL);
- 	if (new_fpl) {
-+		INIT_LIST_HEAD(&new_fpl->list);
- 		for (i=fpl->count-1; i>=0; i--)
- 			get_file(fpl->fp[i]);
- 		memcpy(new_fpl, fpl, sizeof(*fpl));
-diff --git a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-index 50ad6ef..4618ea0 100644
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-@@ -138,10 +138,12 @@ static unsigned int ipv4_conntrack_defrag(unsigned int hooknum,
- 					  const struct net_device *out,
- 					  int (*okfn)(struct sk_buff *))
- {
-+#if !defined(CONFIG_NF_NAT) && !defined(CONFIG_NF_NAT_MODULE)
- 	/* Previously seen (loopback)?  Ignore.  Do this before
- 	   fragment check. */
- 	if (skb->nfct)
- 		return NF_ACCEPT;
-+#endif
- 
- 	/* Gather fragments. */
- 	if (ip_hdr(skb)->frag_off & htons(IP_MF | IP_OFFSET)) {
-diff --git a/net/ipv4/netfilter/nf_nat_snmp_basic.c b/net/ipv4/netfilter/nf_nat_snmp_basic.c
-index 8e4148d..1b0a738 100644
---- a/net/ipv4/netfilter/nf_nat_snmp_basic.c
-+++ b/net/ipv4/netfilter/nf_nat_snmp_basic.c
-@@ -742,6 +742,7 @@ static unsigned char snmp_object_decode(struct asn1_ctx *ctx,
- 			*obj = kmalloc(sizeof(struct snmp_object) + len,
- 				       GFP_ATOMIC);
- 			if (*obj == NULL) {
-+				kfree(p);
- 				kfree(id);
- 				if (net_ratelimit())
- 					printk("OOM in bsalg (%d)\n", __LINE__);
-diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
-index 12750f2..4d18fd2 100644
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -1130,7 +1130,7 @@ static void tcp_v6_send_ack(struct tcp_timewait_sock *tw,
- 		*topt++ = htonl((TCPOPT_NOP << 24) | (TCPOPT_NOP << 16) |
- 				(TCPOPT_TIMESTAMP << 8) | TCPOLEN_TIMESTAMP);
- 		*topt++ = htonl(tcp_time_stamp);
--		*topt = htonl(ts);
-+		*topt++ = htonl(ts);
- 	}
- 
- #ifdef CONFIG_TCP_MD5SIG
-diff --git a/net/netfilter/xt_iprange.c b/net/netfilter/xt_iprange.c
-index c63e933..4b5741b 100644
---- a/net/netfilter/xt_iprange.c
-+++ b/net/netfilter/xt_iprange.c
-@@ -67,7 +67,7 @@ iprange_mt4(const struct sk_buff *skb, const struct net_device *in,
- 	if (info->flags & IPRANGE_SRC) {
- 		m  = ntohl(iph->saddr) < ntohl(info->src_min.ip);
- 		m |= ntohl(iph->saddr) > ntohl(info->src_max.ip);
--		m ^= info->flags & IPRANGE_SRC_INV;
-+		m ^= !!(info->flags & IPRANGE_SRC_INV);
- 		if (m) {
- 			pr_debug("src IP " NIPQUAD_FMT " NOT in range %s"
- 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
-@@ -81,7 +81,7 @@ iprange_mt4(const struct sk_buff *skb, const struct net_device *in,
- 	if (info->flags & IPRANGE_DST) {
- 		m  = ntohl(iph->daddr) < ntohl(info->dst_min.ip);
- 		m |= ntohl(iph->daddr) > ntohl(info->dst_max.ip);
--		m ^= info->flags & IPRANGE_DST_INV;
-+		m ^= !!(info->flags & IPRANGE_DST_INV);
- 		if (m) {
- 			pr_debug("dst IP " NIPQUAD_FMT " NOT in range %s"
- 			         NIPQUAD_FMT "-" NIPQUAD_FMT "\n",
-@@ -123,14 +123,14 @@ iprange_mt6(const struct sk_buff *skb, const struct net_device *in,
- 	if (info->flags & IPRANGE_SRC) {
- 		m  = iprange_ipv6_sub(&iph->saddr, &info->src_min.in6) < 0;
- 		m |= iprange_ipv6_sub(&iph->saddr, &info->src_max.in6) > 0;
--		m ^= info->flags & IPRANGE_SRC_INV;
-+		m ^= !!(info->flags & IPRANGE_SRC_INV);
- 		if (m)
- 			return false;
- 	}
- 	if (info->flags & IPRANGE_DST) {
- 		m  = iprange_ipv6_sub(&iph->daddr, &info->dst_min.in6) < 0;
- 		m |= iprange_ipv6_sub(&iph->daddr, &info->dst_max.in6) > 0;
--		m ^= info->flags & IPRANGE_DST_INV;
-+		m ^= !!(info->flags & IPRANGE_DST_INV);
- 		if (m)
- 			return false;
- 	}
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 06d5c94..37205a1 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -244,10 +244,10 @@ static int get_file_caps(struct linux_binprm *bprm)
- 	struct vfs_cap_data vcaps;
- 	struct inode *inode;
- 
--	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID) {
--		bprm_clear_caps(bprm);
-+	bprm_clear_caps(bprm);
-+
-+	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
- 		return 0;
--	}
- 
- 	dentry = dget(bprm->file->f_dentry);
- 	inode = dentry->d_inode;
-diff --git a/sound/core/control.c b/sound/core/control.c
-index 01a1a5a..7ac4bbb 100644
---- a/sound/core/control.c
-+++ b/sound/core/control.c
-@@ -1426,12 +1426,12 @@ static int snd_ctl_dev_disconnect(struct snd_device *device)
- 	cardnum = card->number;
- 	snd_assert(cardnum >= 0 && cardnum < SNDRV_CARDS, return -ENXIO);
- 
--	down_read(&card->controls_rwsem);
-+	read_lock(&card->ctl_files_rwlock);
- 	list_for_each_entry(ctl, &card->ctl_files, list) {
- 		wake_up(&ctl->change_sleep);
- 		kill_fasync(&ctl->fasync, SIGIO, POLL_ERR);
- 	}
--	up_read(&card->controls_rwsem);
-+	read_unlock(&card->ctl_files_rwlock);
- 
- 	if ((err = snd_unregister_device(SNDRV_DEVICE_TYPE_CONTROL,
- 					 card, -1)) < 0)
+ !!PCI Soundcards installed in the system
+@@ -165,8 +165,8 @@
+   Pin Default 0x0321121f: [Jack] HP Out at Ext Left
+     Conn = 1/8, Color = Black
+     DefAssociation = 0x1, Sequence = 0xf
+-  Pin-ctls: 0xc0: OUT HP
+-  Unsolicited: tag=30, enabled=1
++  Pin-ctls: 0x00:
++  Unsolicited: tag=3d, enabled=1
+   Connection: 1
+      0x0b
+ Node 0x0e [Pin Complex] wcaps 0x400181: Stereo
+@@ -234,12 +234,12 @@
+ !!ALSA Device nodes
+ !!-----------------
+
+Looks like it lost the bits that setup the headphone jack.
+
+
+
+--==_Exmh_1226345739_34580
+Content-Type: text/plain ; name="alsa-info-mmotm1017"; charset=us-ascii
+Content-Description: alsa-info-mmotm1017
+Content-Disposition: attachment; filename="alsa-info-mmotm1017"
+
+upload=true&script=true&cardinfo=
+!!################################
+!!ALSA Information Script v 0.4.51
+!!################################
+
+!!Script ran on: Mon Nov 10 14:16:47 EST 2008
+
+
+!!Linux Distribution
+!!------------------
+
+Fedora release 9.93 (Rawhide) Fedora release 9.93 (Rawhide) Fedora release 9.93 (Rawhide) Fedora release 9.93 (Rawhide)
+
+
+!!Kernel Information
+!!------------------
+
+Kernel release:    2.6.27-mmotm1017
+Operating System:  GNU/Linux
+Architecture:      x86_64
+Processor:         x86_64
+SMP Enabled:       Yes
+
+
+!!ALSA Version
+!!------------
+
+Driver version:     1.0.18rc3
+Library version:    1.0.18rc3
+Utilities version:  1.0.18rc3
+
+
+!!Loaded ALSA modules
+!!-------------------
+
+
+
+!!Soundcards recognised by ALSA
+!!-----------------------------
+
+ 0 [Intel          ]: HDA-Intel - HDA Intel
+                      HDA Intel at 0xefffc000 irq 314
+
+
+!!PCI Soundcards installed in the system
+!!--------------------------------------
+
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition Audio Controller (rev 01)
+
+
+!!Advanced information - PCI Vendor/Device/Susbsystem ID's
+!!--------------------------------------------------------
+
+00:1b.0 0403: 8086:27d8 (rev 01)
+	Subsystem: 1028:01cc
+
+
+!!Modprobe options (Sound related)
+!!--------------------------------
+
+snd-card-0: index=0
+snd-hda-intel: index=0 enable_msi=1 power_save=5
+
+
+!!Loaded sound module options
+!!--------------------------
+
+
+!!HDA-Intel Codec information
+!!---------------------------
+--startcollapse--
+
+Codec: SigmaTel STAC9200
+Address: 0
+Vendor Id: 0x83847690
+Subsystem Id: 0x102801cc
+Revision Id: 0x102201
+No Modem Function Group found
+Default PCM:
+    rates [0x7e0]: 44100 48000 88200 96000 176400 192000
+    bits [0xe]: 16 20 24
+    formats [0x1]: PCM
+Default Amp-In caps: N/A
+Default Amp-Out caps: ofs=0x1f, nsteps=0x1f, stepsize=0x05, mute=1
+GPIO: io=4, o=0, i=0, unsolicited=1, wake=1
+  IO[0]: enable=0, dir=0, wake=0, sticky=0, data=0
+  IO[1]: enable=0, dir=0, wake=0, sticky=0, data=0
+  IO[2]: enable=0, dir=0, wake=0, sticky=0, data=0
+  IO[3]: enable=0, dir=0, wake=0, sticky=0, data=0
+Node 0x02 [Audio Output] wcaps 0xd0401: Stereo
+  Converter: stream=0, channel=0
+  Power: setting=D0, actual=D0
+  Delay: 13 samples
+Node 0x03 [Audio Input] wcaps 0x1d0541: Stereo
+  Converter: stream=0, channel=0
+  SDI-Select: 0
+  Power: setting=D0, actual=D0
+  Delay: 13 samples
+  Connection: 1
+     0x0a
+  Processing caps: benign=0, ncoeff=0
+Node 0x04 [Audio Input] wcaps 0x140311: Stereo Digital
+  Converter: stream=0, channel=0
+  SDI-Select: 0
+  Digital:
+  Digital category: 0x0
+  PCM:
+    rates [0x160]: 44100 48000 96000
+    bits [0xe]: 16 20 24
+    formats [0x5]: PCM AC3
+  Delay: 4 samples
+  Connection: 1
+     0x08
+Node 0x05 [Audio Output] wcaps 0x40211: Stereo Digital
+  Converter: stream=0, channel=0
+  Digital:
+  Digital category: 0x0
+  PCM:
+    rates [0x1e0]: 44100 48000 88200 96000
+    bits [0xe]: 16 20 24
+    formats [0x5]: PCM AC3
+  Delay: 4 samples
+Node 0x06 [Vendor Defined Widget] wcaps 0xf30201: Stereo Digital
+  Delay: 3 samples
+Node 0x07 [Audio Selector] wcaps 0x300901: Stereo R/L
+  Connection: 3
+     0x02* 0x08 0x0a
+Node 0x08 [Pin Complex] wcaps 0x430681: Stereo Digital
+  Pincap 0x00010024: IN EAPD Detect
+  EAPD 0x0:
+  Pin Default 0x40c003fa: [N/A] SPDIF In at Ext N/A
+    Conn = Unknown, Color = Unknown
+    DefAssociation = 0xf, Sequence = 0xa
+    Misc = NO_PRESENCE
+  Pin-ctls: 0x00:
+  Unsolicited: tag=00, enabled=0
+  Power: setting=D0, actual=D0
+  Delay: 3 samples
+Node 0x09 [Pin Complex] wcaps 0x400301: Stereo Digital
+  Pincap 0x00000010: OUT
+  Pin Default 0x0144131f: [Jack] SPDIF Out at Ext Rear
+    Conn = RCA, Color = Black
+    DefAssociation = 0x1, Sequence = 0xf
+    Misc = NO_PRESENCE
+  Pin-ctls: 0x40: OUT
+  Connection: 2
+     0x05* 0x0a
+Node 0x0a [Audio Selector] wcaps 0x30090d: Stereo Amp-Out R/L
+  Amp-Out caps: ofs=0x00, nsteps=0x0f, stepsize=0x05, mute=1
+  Amp-Out vals:  [0x0d 0x0d]
+  Connection: 1
+     0x0c
+Node 0x0b [Audio Selector] wcaps 0x300105: Stereo Amp-Out
+  Amp-Out caps: N/A
+  Amp-Out vals:  [0x80 0x80]
+  Connection: 1
+     0x07
+Node 0x0c [Audio Selector] wcaps 0x30010d: Stereo Amp-Out
+  Amp-Out caps: ofs=0x00, nsteps=0x04, stepsize=0x27, mute=0
+  Amp-Out vals:  [0x00 0x00]
+  Connection: 5
+     0x10 0x0f* 0x0e 0x0d 0x12
+Node 0x0d [Pin Complex] wcaps 0x400181: Stereo
+  Pincap 0x0000003f: IN OUT HP Detect Trigger ImpSense
+  Pin Default 0x0321121f: [Jack] HP Out at Ext Left
+    Conn = 1/8, Color = Black
+    DefAssociation = 0x1, Sequence = 0xf
+  Pin-ctls: 0xc0: OUT HP
+  Unsolicited: tag=30, enabled=1
+  Connection: 1
+     0x0b
+Node 0x0e [Pin Complex] wcaps 0x400181: Stereo
+  Pincap 0x0000003f: IN OUT HP Detect Trigger ImpSense
+  Pin Default 0x90170310: [Fixed] Speaker at Int N/A
+    Conn = Analog, Color = Unknown
+    DefAssociation = 0x1, Sequence = 0x0
+    Misc = NO_PRESENCE
+  Pin-ctls: 0x40: OUT
+  Unsolicited: tag=00, enabled=0
+  Connection: 1
+     0x0b
+Node 0x0f [Pin Complex] wcaps 0x400181: Stereo
+  Pincap 0x00000037: IN OUT Detect Trigger ImpSense
+  Pin Default 0x90a70321: [Fixed] Mic at Int N/A
+    Conn = Analog, Color = Unknown
+    DefAssociation = 0x2, Sequence = 0x1
+    Misc = NO_PRESENCE
+  Pin-ctls: 0x20: IN
+  Unsolicited: tag=00, enabled=0
+  Connection: 1
+     0x0b
+Node 0x10 [Pin Complex] wcaps 0x400181: Stereo
+  Pincap 0x00001737: IN OUT Detect Trigger ImpSense
+    Vref caps: HIZ 50 GRD 80
+  Pin Default 0x03a11020: [Jack] Mic at Ext Left
+    Conn = 1/8, Color = Black
+    DefAssociation = 0x2, Sequence = 0x0
+  Pin-ctls: 0x20: IN VREF_HIZ
+  Unsolicited: tag=00, enabled=0
+  Connection: 1
+     0x0b
+Node 0x11 [Pin Complex] wcaps 0x400104: Mono Amp-Out
+  Amp-Out caps: N/A
+  Amp-Out vals:  [0x00]
+  Pincap 0x00000010: OUT
+  Pin Default 0x401003fb: [N/A] Speaker at Ext N/A
+    Conn = Unknown, Color = Unknown
+    DefAssociation = 0xf, Sequence = 0xb
+    Misc = NO_PRESENCE
+  Pin-ctls: 0x00:
+  Connection: 1
+     0x13
+Node 0x12 [Pin Complex] wcaps 0x400001: Stereo
+  Pincap 0x00000020: IN
+  Pin Default 0x40f000fc: [N/A] Other at Ext N/A
+    Conn = Unknown, Color = Unknown
+    DefAssociation = 0xf, Sequence = 0xc
+  Pin-ctls: 0x20: IN
+Node 0x13 [Audio Mixer] wcaps 0x200100: Mono
+  Connection: 1
+     0x07
+Node 0x14 [Beep Generator Widget] wcaps 0x70000c: Mono Amp-Out
+  Amp-Out caps: ofs=0x03, nsteps=0x03, stepsize=0x17, mute=1
+  Amp-Out vals:  [0x00]
+Codec: Conexant ID 2bfa
+Address: 1
+Vendor Id: 0x14f12bfa
+Subsystem Id: 0x14f100c3
+Revision Id: 0x90000
+Modem Function Group: 0x2
+--endcollapse--
+
+
+!!ALSA Device nodes
+!!-----------------
+
+crw-rw----+ 1 valdis root 116, 7 2008-11-10 14:14 /dev/snd/controlC0
+crw-rw----+ 1 valdis root 116, 6 2008-11-10 14:16 /dev/snd/pcmC0D0c
+crw-rw----+ 1 valdis root 116, 5 2008-11-10 14:16 /dev/snd/pcmC0D0p
+crw-rw----+ 1 valdis root 116, 4 2008-11-10 14:14 /dev/snd/pcmC0D1p
+crw-rw----+ 1 valdis root 116, 3 2008-11-10 14:14 /dev/snd/seq
+crw-rw----+ 1 valdis root 116, 2 2008-11-10 14:14 /dev/snd/timer
+
+
+!!ALSA configuration files
+!!------------------------
+
+!!User specific config file (~/.asoundrc)
+
+pcm.!default {
+	type pulse
+}
+
+ctl.!default {
+	type pulse
+}
+
+
+!!System wide config file (/etc/asound.conf)
+
+#
+# Place your global alsa-lib configuration here...
+#
+
+@hooks [
+	{
+		func load
+		files [
+			"/etc/alsa/pulse-default.conf"
+		]
+		errors false
+	}
+]
+
+
+!!Aplay/Arecord output
+!!------------
+
+APLAY
+
+**** List of PLAYBACK Hardware Devices ****
+card 0: Intel [HDA Intel], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: Intel [HDA Intel], device 1: STAC92xx Digital [STAC92xx Digital]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+ARECORD
+
+**** List of CAPTURE Hardware Devices ****
+card 0: Intel [HDA Intel], device 0: STAC92xx Analog [STAC92xx Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+!!Amixer output
+!!-------------
+
+!!-------Mixer controls for card 0 [Intel]
+
+Card hw:0 'Intel'/'HDA Intel at 0xefffc000 irq 314'
+  Mixer name	: 'SigmaTel STAC9200'
+  Components	: 'HDA:83847690,102801cc,00102201 HDA:14f12bfa,14f100c3,00090000'
+  Controls      : 10
+  Simple ctrls  : 5
+Simple mixer control 'Master',0
+  Capabilities: pvolume pswitch
+  Playback channels: Front Left - Front Right
+  Limits: Playback 0 - 31
+  Mono:
+  Front Left: Playback 0 [0%] [-46.50dB] [off]
+  Front Right: Playback 0 [0%] [-46.50dB] [off]
+Simple mixer control 'IEC958',0
+  Capabilities: pswitch pswitch-joined
+  Playback channels: Mono
+  Mono: Playback [off]
+Simple mixer control 'IEC958 Default PCM',0
+  Capabilities: pswitch pswitch-joined
+  Playback channels: Mono
+  Mono: Playback [on]
+Simple mixer control 'Capture',0
+  Capabilities: cvolume cswitch
+  Capture channels: Front Left - Front Right
+  Limits: Capture 0 - 15
+  Front Left: Capture 13 [87%] [19.50dB] [on]
+  Front Right: Capture 13 [87%] [19.50dB] [on]
+Simple mixer control 'Input Source',0
+  Capabilities: cenum
+  Items: 'Mic' 'Front Mic'
+  Item0: 'Mic'
+
+
+!!Alsactl output
+!!-------------
+
+--startcollapse--
+state.Intel {
+	control.1 {
+		comment.access 'read write'
+		comment.type INTEGER
+		comment.count 2
+		comment.range '0 - 31'
+		comment.dbmin -4650
+		comment.dbmax 0
+		iface MIXER
+		name 'Master Playback Volume'
+		value.0 0
+		value.1 0
+	}
+	control.2 {
+		comment.access 'read write'
+		comment.type BOOLEAN
+		comment.count 2
+		iface MIXER
+		name 'Master Playback Switch'
+		value.0 false
+		value.1 false
+	}
+	control.3 {
+		comment.access 'read write'
+		comment.type ENUMERATED
+		comment.count 1
+		comment.item.0 Mic
+		comment.item.1 'Front Mic'
+		iface MIXER
+		name 'Input Source'
+		value Mic
+	}
+	control.4 {
+		comment.access 'read write'
+		comment.type INTEGER
+		comment.count 2
+		comment.range '0 - 15'
+		comment.dbmin 0
+		comment.dbmax 2250
+		iface MIXER
+		name 'Capture Volume'
+		value.0 13
+		value.1 13
+	}
+	control.5 {
+		comment.access 'read write'
+		comment.type BOOLEAN
+		comment.count 2
+		iface MIXER
+		name 'Capture Switch'
+		value.0 true
+		value.1 true
+	}
+	control.6 {
+		comment.access read
+		comment.type IEC958
+		comment.count 1
+		iface MIXER
+		name 'IEC958 Playback Con Mask'
+		value '0fff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+	}
+	control.7 {
+		comment.access read
+		comment.type IEC958
+		comment.count 1
+		iface MIXER
+		name 'IEC958 Playback Pro Mask'
+		value '0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+	}
+	control.8 {
+		comment.access 'read write'
+		comment.type IEC958
+		comment.count 1
+		iface MIXER
+		name 'IEC958 Playback Default'
+		value '0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+	}
+	control.9 {
+		comment.access 'read write'
+		comment.type BOOLEAN
+		comment.count 1
+		iface MIXER
+		name 'IEC958 Playback Switch'
+		value false
+	}
+	control.10 {
+		comment.access 'read write'
+		comment.type BOOLEAN
+		comment.count 1
+		iface MIXER
+		name 'IEC958 Default PCM Playback Switch'
+		value true
+	}
+}
+--endcollapse--
+
+
+!!All Loaded Modules
+!!------------------
+
+Module
+irnet
+ppp_generic
+slhc
+irtty_sir
+sir_dev
+ircomm_tty
+ircomm
+irda
+crc_ccitt
+coretemp
+nf_conntrack_ftp
+xt_pkttype
+ipt_REJECT
+nf_conntrack_ipv4
+nf_defrag_ipv4
+xt_ipisforif
+xt_recent
+ipt_LOG
+xt_u32
+iptable_filter
+ip_tables
+xt_tcpudp
+nf_conntrack_ipv6
+xt_state
+nf_conntrack
+ip6t_LOG
+xt_limit
+ip6table_filter
+ip6_tables
+x_tables
+sha256_generic
+aes_x86_64
+aes_generic
+rtc
+acpi_cpufreq
+tpm_tis
+tpm
+tpm_bios
+gspca_spca561
+gspca_main
+compat_ioctl32
+videodev
+arc4
+ecb
+v4l1_compat
+nvidia
+pcmcia
+iwl3945
+rfkill
+mac80211
+ohci1394
+snd_hda_intel
+ieee1394
+yenta_socket
+rsrc_nonstatic
+pcmcia_core
+video
+led_class
+uhci_hcd
+output
+iTCO_wdt
+cfg80211
+iTCO_vendor_support
+thermal
+intel_agp
+processor
+battery
+button
+dcdbas
+ac
+
+
+
+--==_Exmh_1226345739_34580--
+
+
+--==_Exmh_1226345758_3458P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJGI0ecC3lWbTT17ARAu6hAKDTS/45OfL+sJO9nl5bg8pmdNO8WgCgynLk
+74I7UDq2FSgYMRsp2tyk6pc=
+=YgmU
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1226345758_3458P--
