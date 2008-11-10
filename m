@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318AbYKJIRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752AbYKJIRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318AbYKJIRf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 03:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbYKJIR0
+	id S1754752AbYKJIRx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 03:17:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYKJIRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 03:17:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36371 "EHLO mx2.mail.elte.hu"
+	Mon, 10 Nov 2008 03:17:42 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36467 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbYKJIR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 03:17:26 -0500
-Date: Mon, 10 Nov 2008 09:17:09 +0100
+	id S1750970AbYKJIRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 03:17:41 -0500
+Date: Mon, 10 Nov 2008 09:17:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: "Maciej W. Rozycki" <macro@linux-mips.org>
 Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/2] x86: apic - calibrate_APIC_clock remove redundant
-	irq-enable-disable
-Message-ID: <20081110081709.GA17498@elte.hu>
-References: <20081109105709.222708517@gmail.com>> <4916c290.0437560a.270e.0940@mx.google.com> <alpine.LFD.1.10.0811091245000.25325@ftp.linux-mips.org>
+Subject: Re: [patch 2/2] x86: apic - use pr_ macros for logging
+Message-ID: <20081110081732.GB17498@elte.hu>
+References: <20081109105709.222708517@gmail.com>> <4916c290.0c07560a.4a14.ffffdde9@mx.google.com> <alpine.LFD.1.10.0811091239360.25325@ftp.linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0811091245000.25325@ftp.linux-mips.org>
+In-Reply-To: <alpine.LFD.1.10.0811091239360.25325@ftp.linux-mips.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -45,19 +44,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > > Impact: cleanup
 > > 
-> > lapic_timer_setup is self-protected with local_irq_save/restore
-> > no need to use them in caller and levt is the per-cpu variable so
-> > no concurrent access from another cpu.
+> > It saves us some sourcse lines and shift
+> > the code a bit righter.
+> > 
+> > And a multiline comment style is fixed too :-)
 > > 
 > > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 > > ---
-> >  arch/x86/kernel/apic.c |    4 ----
-> >  1 file changed, 4 deletions(-)
+> >  arch/x86/kernel/apic.c |  116 ++++++++++++++++++++++---------------------------
+> >  1 file changed, 53 insertions(+), 63 deletions(-)
 > 
 > Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
 > 
->  Thanks, Cyrill.
+>  Thanks, Cyrill -- it was high time to get this done.  And, BTW, at 
+> the next opportunity please fix up your date -- I think it may 
+> confuse some people and/or scripts.  Good to know it was a Thursday 
+> though. ;)
 
-applied to tip/x86/apic, thanks guys!
+applied	to tip/x86/apic, thanks guys!
 
 	Ingo
