@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbYKJPSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbYKJPUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbYKJPSc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 10:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbYKJPSW
+	id S1753938AbYKJPUx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 10:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYKJPUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 10:18:22 -0500
-Received: from lazybastard.de ([212.112.238.170]:59999 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbYKJPSV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 10:18:21 -0500
-Date: Mon, 10 Nov 2008 16:17:33 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       open-osd development <osd-dev@open-osd.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/18 ver2] libosd: OSDv1 Headers
-Message-ID: <20081110151733.GB16520@logfs.org>
-References: <491073BB.4000900@panasas.com> <1225817046-5946-1-git-send-email-bharrosh@panasas.com> <4916F934.4090205@panasas.com> <20081109174509.GB5350@logfs.org> <4917F50B.3000905@panasas.com>
+	Mon, 10 Nov 2008 10:20:45 -0500
+Received: from kandzendo.ru ([195.178.208.66]:53384 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751647AbYKJPUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 10:20:45 -0500
+Date: Mon, 10 Nov 2008 18:20:43 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: mtk.manpages@gmail.com
+Cc: linux-kernel@vger.kernel.org, Robert Love <rlove@rlove.org>,
+       linux-api@vger.kernel.org, John McCutchan <ttb@tentacle.dhs.org>
+Subject: Re: [1/1] Use pid in inotify events.
+Message-ID: <20081110152043.GB15796@ioremap.net>
+References: <20081108114225.GA22674@ioremap.net> <cfd18e0f0811080625w5b285cc0p2410e8d187b025c7@mail.gmail.com> <20081108153545.GA3859@ioremap.net> <cfd18e0f0811080858k7f6cddadg962771ed0cb3bdb8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4917F50B.3000905@panasas.com>
+In-Reply-To: <cfd18e0f0811080858k7f6cddadg962771ed0cb3bdb8@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 November 2008 10:47:07 +0200, Boaz Harrosh wrote:
+Hi Michael.
+
+On Sat, Nov 08, 2008 at 11:58:30AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
+> It's perhaps unfortunate that the structure wasn't padded out with a
+> few additional fields "for future use".  But -- maybe it is not really
+> true that we can't change things.  Two things to consider:
 > 
-> If the assembly - size and offsets - of foo is exactly the same with or
-> without the __packed, but the generated code is different then clearly this
-> is a compiler bug. I've herd of this myth before, and at least with my
-> gcc 4.1.2 there is no such bug. Either the structure gets packed, or there is
-> no difference. All the places I have __packed in the code are absolutely must
-> be so, stated by the protocol.
+> a) We now (since 2.6.27) have an inotify_init1() which has a flags argument.
+> b) There are spare bits in the mask argument of inotify_add_watch()
+> 
+> We could use a flag in either of these to say that we want a different
+> structure returned on read() from the inotify descriptor.  In the
+> first case, this would be a global setting for all inotify events on
+> that descriptor.  In the second, we could do it on a per-watch basis
+> (I'm not so sure that that is a nice idea).  Since we are in any case
+> extending the ABI, and new applications would need to be taught about
+> the extension, it seems we could consider either of the alternative
+> extensions I mentioned, which woul also allow the PID to be obtained
+> for rename() events.  What do you think?
 
-Ok, if current compilers are fine, I won't complain.
-
-Jörn
+This may be a good idea for some serious ABI change. I think we could
+extend it even more to include IO offset/size into events and attribute
+changes.
 
 -- 
-There's nothing better for promoting creativity in a medium than
-making an audience feel "Hmm ­ I could do better than that!"
--- Douglas Adams in a slashdot interview
+	Evgeniy Polyakov
