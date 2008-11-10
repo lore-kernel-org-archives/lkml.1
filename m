@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbYKJWbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbYKJWcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbYKJWbi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYKJWas
+	id S1755377AbYKJWcT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYKJWa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:30:48 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:47770 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753930AbYKJWaq (ORCPT
+	Mon, 10 Nov 2008 17:30:58 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:19974 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbYKJWa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:30:46 -0500
+	Mon, 10 Nov 2008 17:30:56 -0500
 From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 2/7] ACPI, PCI: call _OSC support during root bridge discovery
+Subject: [PATCH 4/7] ACPI,
+	PCI: PCIe ASPM _OSC support capabilities called when root bridge added
 To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        linux-acpi@vger.kernel.org
 Cc: andrew.patterson@hp.com, matthew@wil.cx, kaneshige.kenji@jp.fujitsu.com,
        bjorn.helgaas@hp.com
-Date: Mon, 10 Nov 2008 15:30:45 -0700
-Message-ID: <20081110223045.30539.6794.stgit@bob.kio>
+Date: Mon, 10 Nov 2008 15:30:55 -0700
+Message-ID: <20081110223055.30539.85625.stgit@bob.kio>
 In-Reply-To: <20081110223035.30539.88942.stgit@bob.kio>
 References: <20081110223035.30539.88942.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -28,111 +29,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI, PCI: call _OSC support during root bridge discovery
+ACPI, PCI: PCIe ASPM _OSC support capabilities called when root bridge added
 
-Added pci_acpi_osc_support() which is called when a PCI bridge is
-added, so individual PCI root bridge drivers do not have to call _OSC
-support for every root bridge in their probe functions.
+The _OSC capabilities OSC_ACTIVE_STATE_PWR_SUPPORT and
+OSC_CLOCK_PWR_CAPABILITY_SUPPORT are set when the root bridge is added
+with pci_acpi_osc_support(), so we no longer need to do it in the
+ASPM driver.
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+Added the function pcie_aspm_enabled, which returns true if pcie_aspm=off
+is not on the kernel command-line.
+
+Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
 ---
 
 diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 1b8f67d..7ca153e 100644
+index 191a510..a7068b4 100644
 --- a/drivers/acpi/pci_root.c
 +++ b/drivers/acpi/pci_root.c
-@@ -31,6 +31,7 @@
- #include <linux/spinlock.h>
- #include <linux/pm.h>
- #include <linux/pci.h>
-+#include <linux/pci-acpi.h>
- #include <linux/acpi.h>
- #include <acpi/acpi_bus.h>
- #include <acpi/acpi_drivers.h>
-@@ -193,6 +194,7 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
- 	unsigned long long value = 0;
- 	acpi_handle handle = NULL;
- 	struct acpi_device *child;
-+	u32 flags;
+@@ -347,6 +347,9 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
+ 	/* Indicate support for various _OSC capabilities. */
+ 	if (pci_ext_cfg_avail(root->bus->self))
+ 		flags |= OSC_EXT_PCI_CONFIG_SUPPORT;
++	if (pcie_aspm_enabled())
++		flags |= OSC_ACTIVE_STATE_PWR_SUPPORT |
++			OSC_CLOCK_PWR_CAPABILITY_SUPPORT;
+ 	if (flags != base_flags)
+ 		pci_acpi_osc_support(device->handle, flags);
  
- 
- 	if (!device)
-@@ -210,6 +212,13 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
- 
- 	device->ops.bind = acpi_pci_bind;
- 
-+	/*
-+	 * All supported architectures that use ACPI have support for
-+	 * PCI domains, so we indicate this in _OSC support capabilities.
-+	 */
-+	flags = OSC_PCI_SEGMENT_GROUPS_SUPPORT;
-+	pci_acpi_osc_support(device->handle, flags);
-+
- 	/* 
- 	 * Segment
- 	 * -------
-diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-index dfe7c8e..f457387 100644
---- a/drivers/pci/pci-acpi.c
-+++ b/drivers/pci/pci-acpi.c
-@@ -139,28 +139,42 @@ static acpi_status __acpi_query_osc(u32 flags, struct acpi_osc_data *osc_data,
- 	return status;
+diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+index 8f63f4c..1089f86 100644
+--- a/drivers/pci/pcie/aspm.c
++++ b/drivers/pci/pcie/aspm.c
+@@ -834,24 +834,15 @@ void pcie_no_aspm(void)
+ 		aspm_disabled = 1;
  }
  
--static acpi_status acpi_query_osc(acpi_handle handle,
--				  u32 level, void *context, void **retval)
-+/*
-+ * pci_acpi_osc_support: Invoke _OSC indicating support for the given feature
-+ * @flags: Bitmask of flags to support
+-#ifdef CONFIG_ACPI
+-#include <acpi/acpi_bus.h>
+-#include <linux/pci-acpi.h>
+-static void pcie_aspm_platform_init(void)
+-{
+-	pcie_osc_support_set(OSC_ACTIVE_STATE_PWR_SUPPORT|
+-		OSC_CLOCK_PWR_CAPABILITY_SUPPORT);
+-}
+-#else
+-static inline void pcie_aspm_platform_init(void) { }
+-#endif
+-
+-static int __init pcie_aspm_init(void)
++/**
++ * pcie_aspm_enabled - is PCIe ASPM enabled?
 + *
-+ * See the ACPI spec for the definition of the flags
-+ */
-+int pci_acpi_osc_support(acpi_handle handle, u32 flags)
++ * Returns true if ASPM has not been disabled by the command-line option
++ * pcie_aspm=off.
++ **/
++int pcie_aspm_enabled(void)
  {
-+	u32 dummy;
- 	acpi_status status;
--	struct acpi_osc_data *osc_data;
--	u32 flags = (unsigned long)context, dummy;
- 	acpi_handle tmp;
-+	struct acpi_osc_data *osc_data;
-+	int rc = 0;
- 
- 	status = acpi_get_handle(handle, "_OSC", &tmp);
- 	if (ACPI_FAILURE(status))
--		return AE_OK;
-+		return -ENOTTY;
- 
- 	mutex_lock(&pci_acpi_lock);
- 	osc_data = acpi_get_osc_data(handle);
- 	if (!osc_data) {
- 		printk(KERN_ERR "acpi osc data array is full\n");
-+		rc = -ENOMEM;
- 		goto out;
- 	}
- 
- 	__acpi_query_osc(flags, osc_data, &dummy);
- out:
- 	mutex_unlock(&pci_acpi_lock);
-+	return rc;
-+}
-+
-+static acpi_status acpi_query_osc(acpi_handle handle, u32 level,
-+				  void *context, void **retval)
-+{
-+	pci_acpi_osc_support(handle, (unsigned long)context);
- 	return AE_OK;
+-	if (aspm_disabled)
+-		return 0;
+-	pcie_aspm_platform_init();
+-	return 0;
++       return !aspm_disabled;
  }
++EXPORT_SYMBOL(pcie_aspm_enabled);
  
-diff --git a/include/linux/pci-acpi.h b/include/linux/pci-acpi.h
-index a9e4c34..424f06f 100644
---- a/include/linux/pci-acpi.h
-+++ b/include/linux/pci-acpi.h
-@@ -51,6 +51,7 @@
- #ifdef CONFIG_ACPI
- extern acpi_status pci_osc_control_set(acpi_handle handle, u32 flags);
- extern acpi_status __pci_osc_support_set(u32 flags, const char *hid);
-+int pci_acpi_osc_support(acpi_handle handle, u32 flags);
- static inline acpi_status pci_osc_support_set(u32 flags)
- {
- 	return __pci_osc_support_set(flags, PCI_ROOT_HID_STRING);
+-fs_initcall(pcie_aspm_init);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index c5d40ba..bdaf221 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -786,6 +786,15 @@ extern void msi_remove_pci_irq_vectors(struct pci_dev *dev);
+ extern void pci_restore_msi_state(struct pci_dev *dev);
+ #endif
+ 
++#ifndef CONFIG_PCIEASPM
++static inline int pcie_aspm_enabled(void)
++{
++	return 0;
++}
++#else
++extern int pcie_aspm_enabled(void);
++#endif
++
+ #ifdef CONFIG_HT_IRQ
+ /* The functions a driver should call */
+ int  ht_create_irq(struct pci_dev *dev, int idx);
 
