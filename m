@@ -1,139 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYKJSoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbYKJSpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbYKJSoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYKJSoP
+	id S1755532AbYKJSpb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYKJSpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:44:15 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:44117 "EHLO pasmtpB.tele.dk"
+	Mon, 10 Nov 2008 13:45:23 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37035 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752836AbYKJSoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:44:14 -0500
-Date: Mon, 10 Nov 2008 19:42:42 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>
-Cc: Jeff Moyer <jmoyer@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081110184241.GO26778@kernel.dk>
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua> <20081110173504.GL26778@kernel.dk> <49187D05.9050407@telenet.dn.ua> <20081110182928.GN26778@kernel.dk>
+	id S1752836AbYKJSpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:45:22 -0500
+Date: Mon, 10 Nov 2008 10:45:20 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
+	V2
+Message-ID: <20081110184520.GC6685@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <49129310.5000903@cn.fujitsu.com> <20081109005159.GM6917@linux.vnet.ibm.com> <4917A8E7.8060801@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110182928.GN26778@kernel.dk>
+In-Reply-To: <4917A8E7.8060801@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10 2008, Jens Axboe wrote:
-> On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
-> > Jens Axboe wrote:
-> > > On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
-> > >> Jens Axboe wrote:
-> > >>> On Mon, Nov 10 2008, Jeff Moyer wrote:
-> > >>>> Jens Axboe <jens.axboe@oracle.com> writes:
-> > >>>>
-> > >>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
-> > >>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
-> > >>>> you to try this patch is that nfsd may be farming off the I/O requests
-> > >>>> to different threads which are then performing interleaved I/O.  The
-> > >>>> above patch tries to detect this and allow cooperating processes to get
-> > >>>> disk time instead of waiting for the idle timeout.
-> > >>> Precisely :-)
-> > >>>
-> > >>> The only reason I haven't merged it yet is because of worry of extra
-> > >>> cost, but I'll throw some SSD love at it and see how it turns out.
-> > >>>
-> > >> Sorry, but I get "oops" same moment nfs read transfer starts.
-> > >> I can get directory list via nfs, read files locally (not
-> > >> carefully tested, though)
-> > >>
-> > >> Dumps captured via netconsole, so these may not be completely accurate
-> > >> but hopefully will give a hint.
-> > > 
-> > > Interesting, strange how that hasn't triggered here. Or perhaps the
-> > > version that Jeff posted isn't the one I tried. Anyway, search for:
-> > > 
-> > >         RB_CLEAR_NODE(&cfqq->rb_node);
-> > > 
-> > > and add a
-> > > 
-> > >         RB_CLEAR_NODE(&cfqq->prio_node);
-> > > 
-> > > just below that. It's in cfq_find_alloc_queue(). I think that should fix
-> > > it.
-> > > 
+On Mon, Nov 10, 2008 at 11:22:15AM +0800, Lai Jiangshan wrote:
+> Paul E. McKenney wrote:
+> > On Thu, Nov 06, 2008 at 02:47:44PM +0800, Lai Jiangshan wrote:
+> >> this fix remove ugly macro, and increase readability for rcupdate codes
+> >>
+> >> changed from v1:
+> >> use HAVE_SPECIAL_RCU_BH/SCHED instead of define duplicate version of
+> >> synchronize_sched().
 > > 
-> > Same problem.
+> > Hello, Jiangshan!
 > > 
-> > I did make clean; make -j3; sync; on (2 times) patched kernel and it went OK
-> > but It won't boot anymore with cfq with same error...
+> > I very much like getting rid of the ugly macro.  I of course like the
+> > kernel-doc fixes.  ;-)
 > > 
-> > Switching cfq io scheduler at runtime (booting with "as") appears to work with
-> > two parallel local dd reads.
+> > I am not yet convinced of the HAVE_SPECIAL_RCU_BH and
+> > HAVE_SPECIAL_RCU_SCHED pieces.  It is not clear to me that this approach
+> > is simpler than the current approach of simply providing the appropriate
+> > definitions for the symbols in the implementation-specific rcuxxx.h
+> > file.
 > > 
-> > But when NFS server starts up:
+> > Am I missing something?
 > > 
-> > [  469.000105] BUG: unable to handle kernel
-> > NULL pointer dereference
-> > at 0000000000000000
-> > [  469.000305] IP:
-> > [<ffffffff81111f2a>] rb_erase+0x124/0x290
-> > ...
+> > 							Thanx, Paul
 > > 
-> > [  469.001905] Pid: 2296, comm: md1_raid5 Not tainted 2.6.27.5 #4
-> > [  469.001982] RIP: 0010:[<ffffffff81111f2a>]
-> > [<ffffffff81111f2a>] rb_erase+0x124/0x290
-> > ...
-> > [  469.002509] Call Trace:
-> > [  469.002509]  [<ffffffff8110a0b9>] ? rb_erase_init+0x9/0x17
-> > [  469.002509]  [<ffffffff8110a0ff>] ? cfq_prio_tree_add+0x38/0xa8
-> > [  469.002509]  [<ffffffff8110b13d>] ? cfq_add_rq_rb+0xb5/0xc8
-> > [  469.002509]  [<ffffffff8110b1aa>] ? cfq_insert_request+0x5a/0x356
-> > [  469.002509]  [<ffffffff811000a1>] ? elv_insert+0x14b/0x218
-> > [  469.002509]  [<ffffffff810ab757>] ? bio_phys_segments+0xf/0x15
-> > [  469.002509]  [<ffffffff811028dc>] ? __make_request+0x3b9/0x3eb
-> > [  469.002509]  [<ffffffff8110120c>] ? generic_make_request+0x30b/0x346
-> > [  469.002509]  [<ffffffff811baaf4>] ? raid5_end_write_request+0x0/0xb8
-> > [  469.002509]  [<ffffffff811b8ade>] ? ops_run_io+0x16a/0x1c1
-> > [  469.002509]  [<ffffffff811ba534>] ? handle_stripe5+0x9b5/0x9d6
-> > [  469.002509]  [<ffffffff811bbf08>] ? handle_stripe+0xc3a/0xc6a
-> > [  469.002509]  [<ffffffff810296e5>] ? pick_next_task_fair+0x8d/0x9c
-> > [  469.002509]  [<ffffffff81253792>] ? thread_return+0x3a/0xaa
-> > [  469.002509]  [<ffffffff811bc2ce>] ? raid5d+0x396/0x3cd
-> > [  469.002509]  [<ffffffff81253bd8>] ? schedule_timeout+0x1e/0xad
-> > [  469.002509]  [<ffffffff811c716f>] ? md_thread+0xdd/0xf9
-> > [  469.002509]  [<ffffffff81044f9c>] ? autoremove_wake_function+0x0/0x2e
-> > [  469.002509]  [<ffffffff811c7092>] ? md_thread+0x0/0xf9
-> > [  469.002509]  [<ffffffff81044e80>] ? kthread+0x47/0x73
-> > [  469.002509]  [<ffffffff8102f867>] ? schedule_tail+0x28/0x60
-> > [  469.002509]  [<ffffffff8100cda9>] ? child_rip+0xa/0x11
-> > [  469.002509]  [<ffffffff81044e39>] ? kthread+0x0/0x73
-> > [  469.002509]  [<ffffffff8100cd9f>] ? child_rip+0x0/0x11
-> > ...
-> > [  469.002509] RIP
-> > [<ffffffff81111f2a>] rb_erase+0x124/0x290
-> > [  469.002509]  RSP <ffff88011d4c7a58>
-> > [  469.002509] CR2: 0000000000000000
-> > [  469.002509] ---[ end trace acdef779aeb56048 ]---
-> > 
-> > 
-> > "Best" result I got with NFS was
-> > avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-> >            0,00    0,00    0,20    0,65    0,00   99,15
-> > 
-> > Device:         rrqm/s   wrqm/s     r/s     w/s   rsec/s   wsec/s avgrq-sz avgqu-sz   await  svctm  %util
-> > sda              11,30     0,00    7,60    0,00   245,60     0,00    32,32     0,01    1,18   0,79   0,60
-> > sdb              12,10     0,00    8,00    0,00   246,40     0,00    30,80     0,01    1,62   0,62   0,50
-> > 
-> > and it lasted around 30 seconds.
 > 
-> OK, I'll throw some NFS at this patch in the morning and do some
-> measurements as well, so it can get queued up.
+> I think:
+> 
+> RCU_BH is not required, we can used RCU instead. so HAVE_SPECIAL_RCU_BH
+> will help for implementation which has not RCU_BH.
+> 
+> HAVE_SPECIAL_RCU_SCHED is a little different, RCU and RCU_SCHED are both
+> required for the kernel. But I think, in an implementation,
+> if rcu_read_lock_sched() implies rcu_read_lock(), we may not need implement
+> RCU_SCHED too(sometimes we may implement RCU_SCHED for performance).
+> so HAVE_SPECIAL_RCU_SCHED will help.
 
-I spotted a bug - if the ioprio of a process gets changed, it needs to
-be repositioned in the cooperator tree or we'll end up doing erase on a
-wrong root. Perhaps that is what is biting you here.
+If I understand correctly, this is the "old way":
 
--- 
-Jens Axboe
+------------------------------------------------------------------------
 
+rcupdate.h:
+
+#define rcu_read_lock_bh() __rcu_read_lock_bh()
+#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
+
+rcupreempt.h:
+
+#define __rcu_read_lock_bh()    { rcu_read_lock(); local_bh_disable(); }
+#define __rcu_read_unlock_bh()  { local_bh_enable(); rcu_read_unlock(); }
+
+------------------------------------------------------------------------
+
+And then this is the "new way":
+
+------------------------------------------------------------------------
+
+rcupdate.h:
+
+#ifdef HAVE_SPECIAL_RCU_BH
+#define rcu_read_lock_bh() __rcu_read_lock_bh()
+#define rcu_read_unlock_bh() __rcu_read_unlock_bh()
+#else
+#define __rcu_read_lock_bh()    { rcu_read_lock(); local_bh_disable(); }
+#define __rcu_read_unlock_bh()  { local_bh_enable(); rcu_read_unlock(); }
+#endif /* HAVE_SPECIAL_RCU_BH */
+
+rcupreempt.h:
+
+#define HAVE_SPECIAL_RCU_BH
+
+------------------------------------------------------------------------
+
+If we had ten different RCU implementations, then the "new way" would save
+a little bit of code.  But the "old way" is a bit easier to figure out.
+
+So I am in favor of getting rid of the ugly macro, and also in favor
+of fixing the kerneldoc, but opposed to the HAVE_SPECIAL_RCU_BH and
+HAVE_SPECIAL_RCU_SCHED changes.
+
+Or am I missing something?
+
+							Thanx, Paul
