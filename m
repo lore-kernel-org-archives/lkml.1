@@ -1,115 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbYKJXaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068AbYKJXaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754443AbYKJXaH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 18:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbYKJX3z
+	id S1755068AbYKJXaa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 18:30:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbYKJXaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 18:29:55 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36338 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbYKJX3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 18:29:54 -0500
-Date: Mon, 10 Nov 2008 15:27:35 -0800
-From: sukadev@linux.vnet.ibm.com
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081110232735.GA20891@us.ibm.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com>
+	Mon, 10 Nov 2008 18:30:11 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:41851 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754570AbYKJXaJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 18:30:09 -0500
+Date: Tue, 11 Nov 2008 00:30:15 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] Suspend regression in stable kernel 2.6.27.4 on Mac
+	mini Core Duo
+Message-ID: <20081110233014.GA5163@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20081109202830.GA7206@x61> <20081109203441.GA4871@kroah.com> <200811092151.57620.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110193228.GA15519@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200811092151.57620.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| (lkml cced because containers list's archive is not useable)
+On Sun, Nov 09, 2008 at 21:51:57 +0100, Rafael J. Wysocki wrote:
+> On Sunday, 9 of November 2008, Greg KH wrote:
+> > On Sun, Nov 09, 2008 at 09:28:30PM +0100, Tino Keitel wrote:
+> > > Hi,
+> > > 
+> > > my Mac mini Core Duo doesn't wake up from suspend to RAM anymore with
+> > > 2.6.27.4. It works with 2.6.27.3. I enabled pm_trace, but dmesg | grep
+> > > "hash matches" didn't show anything after resume. I tried 2.6.27.5,
+> > > which also failed to resume.
+> > > 
+> > > The system is i386, the hardware is basically Intel based: Core Duo
+> > > T2300 CPU, Intel graphics i945, ICH7, Marvell GbE (sky2), a SATA hard
+> > > disk, PATA DVD drive, a Firewire hard disk, and a lot of USB devices.
+> > > 
+> > > Does that ring any bells? Any hints what commit I should try to revert?
+> > 
+> > Can you run 'git bisect' on the patches in 2.6.27.4 to see which one
+> > broke your box?
+> 
+> I would start from these commits:
+> 
+> 3b987ac961486373f91191b14291b331fa546072
+> "ACPI suspend: Always use the 32-bit waking vector"
+> 
+> 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+> "ACPI Suspend: Enable ACPI during resume if SCI_EN is not set"
 
-Hmm. what do you mean by not usable ? I see your email here:
-https://lists.linux-foundation.org/pipermail/containers/2008-November/014152.html
+Thanks Rafael, 2.6.27.5 with 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+reverted resumes fine.
 
-| 
-| On 11/10, Oleg Nesterov wrote:
-| >
-| > On 11/01, sukadev@linux.vnet.ibm.com wrote:
-| > >
-| > > Other approaches to try ?
-| >
-| > I think we should try to do something simple, even if not perfect. Because
-| > most users do not care about this problem since they do not use containers
-| > at all. It would be very sad to add intrusive changes to the code.
-| >
-| > I think we should fix another problem first. send_signal()->copy_siginfo()
-| > path must be changed anyway, when the signal comes from the parent ns we
-| > report the "wrong" si_code/si_pid, yes? So, somehow send_signal() must
-| > have "bool from_parent_ns" (or whatever) annyway.
-| >
-| > Now, let's forget forget for a moment that send_signal()->__sigqueue_alloc()
-| > can fail.
-| >
-| > I think we should encode this "from_parent_ns" into "struct siginfo". I do
-| > not think it is good idea to extend this structure, I think we can introduce
-| > SI_FROM_PARENT_NS or we perhaps can use "SI_FROMUSER(info) && info->si_pid == 0".
-
-Yes, afaics, we just need to pass one extra bit of information per signal
-(whether or not sender is in ancestor-ns) from sender to receiver.
-
-| > Or something. yes, sys_rt_sigqueueinfo() is problematic...
-
-Yes, if user-space sets si_pid to 0.
-
-Can we change sys_rt_sigqueueinfo() to:
-
-	if (!info->si_pid)
-		info->si_pid = getpid();
-
-or would that change semantics adversely ? How about putting this
-under CONFIG_PID_NS or your CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
-
-| >
-| > Now, copy_process(CLONE_NEWPID) sets child->signal |= SIGNAL_UNKILLABLE, this
-| > protects cinit from unwanted signals. Then we change get_signal_to_deliver()
-| >
-| > 	-	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-| > 	+	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) && !siginfo_from_parent_ns(info)
-| >
-| > and now we can kill cinit from parent ns. This needs more checks if we want
-| > to stop/strace it, but perhaps this is enough for the start. Note that we
-| > do not need to change complete_signal(), at least for now, the code under
-| > "if (sig_fatal(p, sig)" is just optimization.
-| >
-| >
-| > So, afaics, the only real problem is how we can handle the case when
-| > __sigqueue_alloc() fails. I think for the start we can just return
-| > -ENOMEM in this case (when from_parent_ns == T). Then we can improve
-| > this behaviour. We can change complete_signal() to ensure that the
-| > fatal signal from the upper ns always kills cinit, and in this case
-| > we ignore the the failed __sigqueue_alloc(). This way at least SIGKILL
-| > always works.
-| >
-| > Yes, this is not perfect, and it is very possible I missed something
-| > else. But simple.
-
-I agree 
-| 
-| But how can send_signal() know that the signal comes from the upper ns?
-| This is not trivial, we can't blindly use current to check. The signal
-| can be sent from irq/workqueue/etc.
-
-You mean the in_interrupt() check we had in earlier patchset would
-not be enough ?
-
-| 
-| Perhaps we can start with something like the patch below. Not that I like
-| it very much though. We should really place this code under
-| CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
-
-CONFIG_PID_NS ?
+Regards,
+Tino
