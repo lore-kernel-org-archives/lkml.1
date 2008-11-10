@@ -1,276 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbYKJGgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbYKJGj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbYKJGgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 01:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYKJGgF
+	id S1754546AbYKJGj3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 01:39:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYKJGjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 01:36:05 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:4514 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbYKJGgB (ORCPT
+	Mon, 10 Nov 2008 01:39:20 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:33063 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbYKJGjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 01:36:01 -0500
+	Mon, 10 Nov 2008 01:39:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:references;
-        b=Uc9QgH46bEjsUsOLiuhHTirsWAzwdZzqnPpBJl9UW0N6jnjIXWjP+FAQVCvW69z/7t
-         rdvan9jjr81L3F7Na8jcyq7SnYsUd0QkFUdpxtxaokTWY86g2JoA9R54hHGdYcOlZoLH
-         asxK7PlEghLWQ6ZmBIh4VasAEgqC6C50vOqzc=
-Message-ID: <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com>
-Date: Mon, 10 Nov 2008 12:05:59 +0530
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=hRFbwAvCtrQ5+gZtaE6xHGMZl6zRUOx/ZR+YJRPo0nDZKqSD2jbSHxA8zUAZkGDhaW
+         Ad+VfihI9Ah22Kmi3yCvk+T+SxeJqZ2ZCT66TDpKZscZJW1BBghWEu8DF9VaRaE+l0HE
+         uHJz9WskOASmXcj1ylC7kd/EK7WNF3x6M3NNA=
+Message-ID: <8d6898730811092239s3397ef6bw4bb5934de258786e@mail.gmail.com>
+Date: Mon, 10 Nov 2008 12:09:17 +0530
 From: "Nobin Mathew" <nobin.mathew@gmail.com>
 To: "Grant Grundler" <grundler@parisc-linux.org>
 Subject: Re: sharing interrupt between PCI device
 Cc: "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
        linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>
-In-Reply-To: <20081108191536.GC28039@colo.lackof.org>
+In-Reply-To: <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_58601_21476816.1226298959429"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
 	 <4910E8AC.7050407@shaw.ca>
 	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
 	 <20081108172716.GA28039@colo.lackof.org> <4915E43E.4010206@gmail.com>
 	 <20081108191536.GC28039@colo.lackof.org>
+	 <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_58601_21476816.1226298959429
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-lspci output
-
-[root@localhost ~]# lspci -vs 1:4
-01:04.0 System peripheral: Compaq Computer Corporation Integrated
-Lights Out Controller (rev 03)
-        Subsystem: Hewlett-Packard Company Unknown device 3305
-        Flags: medium devsel, IRQ 11
-        I/O ports at 2800 [size=256]
-        Memory at fdee0000 (32-bit, non-prefetchable) [size=512]
-        Capabilities: [f0] Power Management version 3
-
-01:04.2 System peripheral: Compaq Computer Corporation Integrated
-Lights Out  Processor (rev 03)
-        Subsystem: Hewlett-Packard Company Unknown device 3305
-        Flags: medium devsel, IRQ 225
-        BIST result: 00
-        I/O ports at 1400 [disabled] [size=256]
-        Memory at fded0000 (32-bit, non-prefetchable) [disabled] [size=2K]
-        Memory at fdec0000 (32-bit, non-prefetchable) [disabled] [size=8K]
-        Memory at fde00000 (32-bit, non-prefetchable) [disabled] [size=512K]
-        [virtual] Expansion ROM at fdd20000 [disabled] [size=64K]
-        Capabilities: [f0] Power Management version 3
-
-01:04.4 USB Controller: Hewlett-Packard Company Proliant iLO2 virtual
-USB controller (prog-if 00 [UHCI])
-        Subsystem: Hewlett-Packard Company Unknown device 3305
-        Flags: medium devsel, IRQ 225
-        I/O ports at 1800 [disabled] [size=32]
-        Capabilities: [f0] Power Management version 3
-
-01:04.6 IPMI SMIC interface: Hewlett-Packard Company Proliant iLO2
-virtual UART (prog-if 01)
-        Subsystem: Hewlett-Packard Company Unknown device 3305
-        Flags: medium devsel, IRQ 50
-        Memory at fddf0000 (32-bit, non-prefetchable) [size=256]
-        Capabilities: [f0] Power Management version 3
-
-dmesg messages and /proc/interupts are attached.
-
-
-command sequence just for reference
-
-insmod hpilo
-insmod uhci_hcd
-cat /proc/interrupts
-dmesg
-rmmod hpilo
-rmmod uhci_hcd
-dmesg
+lspci -vs 1:4 is taken before inserting the drivers.
 
 Thanks
-Nobin Mathew
 
-On Sun, Nov 9, 2008 at 12:45 AM, Grant Grundler
-<grundler@parisc-linux.org> wrote:
-> On Sat, Nov 08, 2008 at 08:10:54PM +0100, Jiri Slaby wrote:
->> Grant Grundler napsal(a):
->> > So I see how the IRQ is enabled and disabled. I still don't see where
->> > an interrupt handler is bound to IRQ 225 (output you posted today in
->> > another email).
+On Mon, Nov 10, 2008 at 12:05 PM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
+> lspci output
+>
+> [root@localhost ~]# lspci -vs 1:4
+> 01:04.0 System peripheral: Compaq Computer Corporation Integrated
+> Lights Out Controller (rev 03)
+>        Subsystem: Hewlett-Packard Company Unknown device 3305
+>        Flags: medium devsel, IRQ 11
+>        I/O ports at 2800 [size=256]
+>        Memory at fdee0000 (32-bit, non-prefetchable) [size=512]
+>        Capabilities: [f0] Power Management version 3
+>
+> 01:04.2 System peripheral: Compaq Computer Corporation Integrated
+> Lights Out  Processor (rev 03)
+>        Subsystem: Hewlett-Packard Company Unknown device 3305
+>        Flags: medium devsel, IRQ 225
+>        BIST result: 00
+>        I/O ports at 1400 [disabled] [size=256]
+>        Memory at fded0000 (32-bit, non-prefetchable) [disabled] [size=2K]
+>        Memory at fdec0000 (32-bit, non-prefetchable) [disabled] [size=8K]
+>        Memory at fde00000 (32-bit, non-prefetchable) [disabled] [size=512K]
+>        [virtual] Expansion ROM at fdd20000 [disabled] [size=64K]
+>        Capabilities: [f0] Power Management version 3
+>
+> 01:04.4 USB Controller: Hewlett-Packard Company Proliant iLO2 virtual
+> USB controller (prog-if 00 [UHCI])
+>        Subsystem: Hewlett-Packard Company Unknown device 3305
+>        Flags: medium devsel, IRQ 225
+>        I/O ports at 1800 [disabled] [size=32]
+>        Capabilities: [f0] Power Management version 3
+>
+> 01:04.6 IPMI SMIC interface: Hewlett-Packard Company Proliant iLO2
+> virtual UART (prog-if 01)
+>        Subsystem: Hewlett-Packard Company Unknown device 3305
+>        Flags: medium devsel, IRQ 50
+>        Memory at fddf0000 (32-bit, non-prefetchable) [size=256]
+>        Capabilities: [f0] Power Management version 3
+>
+> dmesg messages and /proc/interupts are attached.
+>
+>
+> command sequence just for reference
+>
+> insmod hpilo
+> insmod uhci_hcd
+> cat /proc/interrupts
+> dmesg
+> rmmod hpilo
+> rmmod uhci_hcd
+> dmesg
+>
+> Thanks
+> Nobin Mathew
+>
+> On Sun, Nov 9, 2008 at 12:45 AM, Grant Grundler
+> <grundler@parisc-linux.org> wrote:
+>> On Sat, Nov 08, 2008 at 08:10:54PM +0100, Jiri Slaby wrote:
+>>> Grant Grundler napsal(a):
+>>> > So I see how the IRQ is enabled and disabled. I still don't see where
+>>> > an interrupt handler is bound to IRQ 225 (output you posted today in
+>>> > another email).
+>>>
+>>> This irq setup is done during pci_enable_device.
 >>
->> This irq setup is done during pci_enable_device.
->
-> Sorry, I wasn't quite correct: pci_enable_device() should only assign IRQs,
-> not enable them. request_irq() would enable them.
->
->> > Nobin, can you dump /proc/interrupts when both drivers
->> > are loaded and also send the dmesg output after both are loaded?
+>> Sorry, I wasn't quite correct: pci_enable_device() should only assign IRQs,
+>> not enable them. request_irq() would enable them.
 >>
->> This won't show the hp driver as it doesn't request_irq.
+>>> > Nobin, can you dump /proc/interrupts when both drivers
+>>> > are loaded and also send the dmesg output after both are loaded?
+>>>
+>>> This won't show the hp driver as it doesn't request_irq.
+>>
+>> Yup - that's what I expect too. But I was afraid something else might
+>> be calling request_irq() and I'm just not seeing it. :)
+>>
+>> grant
+>>
 >
-> Yup - that's what I expect too. But I was afraid something else might
-> be calling request_irq() and I'm just not seeing it. :)
->
-> grant
->
-
-------=_Part_58601_21476816.1226298959429
-Content-Type: text/plain; name=demsg_all_in
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fncqr0mm0
-Content-Disposition: attachment; filename=demsg_all_in
-
-UENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMTowNC4yICgwMTE0IC0+IDAxMTcpCkFDUEk6IFBD
-SSBJbnRlcnJ1cHQgMDAwMDowMTowNC4yW0JdIC0+IEdTSSAyMyAobGV2ZWwsIGxvdykgLT4gSVJR
-IDIyNQpVU0IgVW5pdmVyc2FsIEhvc3QgQ29udHJvbGxlciBJbnRlcmZhY2UgZHJpdmVyIHYzLjAK
-UENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMDoxZC4wICgwMDAwIC0+IDAwMDEpCkFDUEk6IFBD
-SSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4wW0FdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJR
-IDIxNwpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4wIHRv
-IDY0CnVoY2lfaGNkIDAwMDA6MDA6MWQuMDogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2Qg
-MDAwMDowMDoxZC4wOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVy
-IDIKdWhjaV9oY2QgMDAwMDowMDoxZC4wOiBpcnEgMjE3LCBpbyBiYXNlIDB4MDAwMDMwMDAKdXNi
-IHVzYjI6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDItMDoxLjA6
-IFVTQiBodWIgZm91bmQKaHViIDItMDoxLjA6IDIgcG9ydHMgZGV0ZWN0ZWQKUENJOiBFbmFibGlu
-ZyBkZXZpY2UgMDAwMDowMDoxZC4xICgwMDAwIC0+IDAwMDEpCkFDUEk6IFBDSSBJbnRlcnJ1cHQg
-MDAwMDowMDoxZC4xW0JdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxNwpQQ0k6IFNl
-dHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4xIHRvIDY0CnVoY2lfaGNk
-IDAwMDA6MDA6MWQuMTogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAwMDowMDoxZC4x
-OiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDMKdWhjaV9oY2Qg
-MDAwMDowMDoxZC4xOiBpcnEgMjE3LCBpbyBiYXNlIDB4MDAwMDMwMjAKdXNiIHVzYjM6IGNvbmZp
-Z3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDMtMDoxLjA6IFVTQiBodWIgZm91
-bmQKaHViIDMtMDoxLjA6IDIgcG9ydHMgZGV0ZWN0ZWQKUENJOiBFbmFibGluZyBkZXZpY2UgMDAw
-MDowMDoxZC4yICgwMDAwIC0+IDAwMDEpCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4y
-W0NdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxNwpQQ0k6IFNldHRpbmcgbGF0ZW5j
-eSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4yIHRvIDY0CnVoY2lfaGNkIDAwMDA6MDA6MWQu
-MjogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAwMDowMDoxZC4yOiBuZXcgVVNCIGJ1
-cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDQKdWhjaV9oY2QgMDAwMDowMDoxZC4y
-OiBpcnEgMjE3LCBpbyBiYXNlIDB4MDAwMDMwNDAKdXNiIHVzYjQ6IGNvbmZpZ3VyYXRpb24gIzEg
-Y2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDQtMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDQtMDox
-LjA6IDIgcG9ydHMgZGV0ZWN0ZWQKUENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMDoxZC4zICgw
-MDAwIC0+IDAwMDEpCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4zW0RdIC0+IEdTSSAy
-MSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxNwpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBk
-ZXZpY2UgMDAwMDowMDoxZC4zIHRvIDY0CnVoY2lfaGNkIDAwMDA6MDA6MWQuMzogVUhDSSBIb3N0
-IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAwMDowMDoxZC4zOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVk
-LCBhc3NpZ25lZCBidXMgbnVtYmVyIDUKdWhjaV9oY2QgMDAwMDowMDoxZC4zOiBpcnEgMjE3LCBp
-byBiYXNlIDB4MDAwMDMwNjAKdXNiIHVzYjU6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20g
-MSBjaG9pY2UKaHViIDUtMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDUtMDoxLjA6IDIgcG9ydHMg
-ZGV0ZWN0ZWQKUENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMTowNC40ICgwMTQwIC0+IDAxNDEp
-CkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMTowNC40W0JdIC0+IEdTSSAyMyAobGV2ZWwsIGxv
-dykgLT4gSVJRIDIyNQp1aGNpX2hjZCAwMDAwOjAxOjA0LjQ6IFVIQ0kgSG9zdCBDb250cm9sbGVy
-CnVoY2lfaGNkIDAwMDA6MDE6MDQuNDogbmV3IFVTQiBidXMgcmVnaXN0ZXJlZCwgYXNzaWduZWQg
-YnVzIG51bWJlciA2CnVoY2lfaGNkIDAwMDA6MDE6MDQuNDogcG9ydCBjb3VudCBtaXNkZXRlY3Rl
-ZD8gZm9yY2luZyB0byAyIHBvcnRzCnVoY2lfaGNkIDAwMDA6MDE6MDQuNDogaXJxIDIyNSwgaW8g
-YmFzZSAweDAwMDAxODAwCnVzYiB1c2I2OiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9tIDEg
-Y2hvaWNlCmh1YiA2LTA6MS4wOiBVU0IgaHViIGZvdW5kCmh1YiA2LTA6MS4wOiAyIHBvcnRzIGRl
-dGVjdGVkCnVzYiA2LTE6IG5ldyBmdWxsIHNwZWVkIFVTQiBkZXZpY2UgdXNpbmcgdWhjaV9oY2Qg
-YW5kIGFkZHJlc3MgMgp1c2IgNi0xOiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9tIDEgY2hv
-aWNlCmlucHV0OiBIUCBWaXJ0dWFsIEtleWJvYXJkIGFzIC9jbGFzcy9pbnB1dC9pbnB1dDUKaW5w
-dXQ6IFVTQiBISUQgdjEuMDEgS2V5Ym9hcmQgW0hQIFZpcnR1YWwgS2V5Ym9hcmRdIG9uIHVzYi0w
-MDAwOjAxOjA0LjQtMQppbnB1dDogSFAgVmlydHVhbCBLZXlib2FyZCBhcyAvY2xhc3MvaW5wdXQv
-aW5wdXQ2CmlucHV0OiBVU0IgSElEIHYxLjAxIE1vdXNlIFtIUCBWaXJ0dWFsIEtleWJvYXJkXSBv
-biB1c2ItMDAwMDowMTowNC40LTEKdXNiIDYtMjogbmV3IGZ1bGwgc3BlZWQgVVNCIGRldmljZSB1
-c2luZyB1aGNpX2hjZCBhbmQgYWRkcmVzcyAzCnVzYiA2LTI6IGNvbmZpZ3VyYXRpb24gIzEgY2hv
-c2VuIGZyb20gMSBjaG9pY2UKaHViIDYtMjoxLjA6IFVTQiBodWIgZm91bmQKaHViIDYtMjoxLjA6
-IDcgcG9ydHMgZGV0ZWN0ZWQK
-------=_Part_58601_21476816.1226298959429
-Content-Type: text/plain; name=interrupts_out
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fncqr6by1
-Content-Disposition: attachment; filename=interrupts_out
-
-ICAgICAgICAgICBDUFUwICAgICAgIENQVTEgICAgICAgCiAgMDogICAgIDIzNzE4NyAgICAgICAg
-ICAwICAgIElPLUFQSUMtZWRnZSAgdGltZXIKICAxOiAgICAgICAgNjk1ICAgICAgICAgIDAgICAg
-SU8tQVBJQy1lZGdlICBpODA0MgogIDc6ICAgICAgICAgIDAgICAgICAgICAgMCAgICBJTy1BUElD
-LWVkZ2UgIHBhcnBvcnQwCiAgODogICAgICAgICAgMSAgICAgICAgICAwICAgIElPLUFQSUMtZWRn
-ZSAgcnRjCiAgOTogICAgICAgICAgMCAgICAgICAgICAwICAgSU8tQVBJQy1sZXZlbCAgYWNwaQog
-MTI6ICAgICAgICAxMTUgICAgICAgMzkyMyAgICBJTy1BUElDLWVkZ2UgIGk4MDQyCiAxNDogICAg
-ICAgICA5MiAgICAgICAxNjM2ICAgIElPLUFQSUMtZWRnZSAgaWRlMAogNTA6ICAgICAgICA0MzEg
-ICAgICAgMTMzOSAgIElPLUFQSUMtbGV2ZWwgIGlwbWlfc2kKMTY5OiAgICAgICAgNDM0ICAgICAg
-IDY0MjEgICBJTy1BUElDLWxldmVsICBldGgwCjIxNzogICAgICAgICAgMCAgICAgICAgICAwICAg
-SU8tQVBJQy1sZXZlbCAgZWhjaV9oY2Q6dXNiMSwgdWhjaV9oY2Q6dXNiMiwgdWhjaV9oY2Q6dXNi
-MywgdWhjaV9oY2Q6dXNiNCwgdWhjaV9oY2Q6dXNiNQoyMjU6ICAgICAgICAgOTkgICAgICAgIDEw
-MiAgIElPLUFQSUMtbGV2ZWwgIHVoY2lfaGNkOnVzYjYKMjMzOiAgICAgICA1NjMzICAgICAgMTU0
-NTkgICBJTy1BUElDLWxldmVsICBsaWJhdGEKTk1JOiAgICAgICAgICAwICAgICAgICAgIDAgCkxP
-QzogICAgIDIzNzAxNiAgICAgMjM2OTYyIApFUlI6ICAgICAgICAgIDAKTUlTOiAgICAgICAgICAw
-Cg==
-------=_Part_58601_21476816.1226298959429
-Content-Type: text/plain; name=demsg_all_out
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fncqrap72
-Content-Disposition: attachment; filename=demsg_all_out
-
-UENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMTowNC4yICgwMTE0IC0+IDAxMTcpCkFDUEk6IFBD
-SSBJbnRlcnJ1cHQgMDAwMDowMTowNC4yW0JdIC0+IEdTSSAyMyAobGV2ZWwsIGxvdykgLT4gSVJR
-IDIyNQpVU0IgVW5pdmVyc2FsIEhvc3QgQ29udHJvbGxlciBJbnRlcmZhY2UgZHJpdmVyIHYzLjAK
-UENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMDoxZC4wICgwMDAwIC0+IDAwMDEpCkFDUEk6IFBD
-SSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4wW0FdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJR
-IDIxNwpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4wIHRv
-IDY0CnVoY2lfaGNkIDAwMDA6MDA6MWQuMDogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2Qg
-MDAwMDowMDoxZC4wOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVy
-IDIKdWhjaV9oY2QgMDAwMDowMDoxZC4wOiBpcnEgMjE3LCBpbyBiYXNlIDB4MDAwMDMwMDAKdXNi
-IHVzYjI6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDItMDoxLjA6
-IFVTQiBodWIgZm91bmQKaHViIDItMDoxLjA6IDIgcG9ydHMgZGV0ZWN0ZWQKUENJOiBFbmFibGlu
-ZyBkZXZpY2UgMDAwMDowMDoxZC4xICgwMDAwIC0+IDAwMDEpCkFDUEk6IFBDSSBJbnRlcnJ1cHQg
-MDAwMDowMDoxZC4xW0JdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxNwpQQ0k6IFNl
-dHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4xIHRvIDY0CnVoY2lfaGNk
-IDAwMDA6MDA6MWQuMTogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAwMDowMDoxZC4x
-OiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDMKdWhjaV9oY2Qg
-MDAwMDowMDoxZC4xOiBpcnEgMjE3LCBpbyBiYXNlIDB4MDAwMDMwMjAKdXNiIHVzYjM6IGNvbmZp
-Z3VyYXRpb24gIzEgY2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDMtMDoxLjA6IFVTQiBodWIgZm91
-bmQKaHViIDMtMDoxLjA6IDIgcG9ydHMgZGV0ZWN0ZWQKUENJOiBFbmFibGluZyBkZXZpY2UgMDAw
-MDowMDoxZC4yICgwMDAwIC0+IDAwMDEpCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4y
-W0NdIC0+IEdTSSAyMSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxNwpQQ0k6IFNldHRpbmcgbGF0ZW5j
-eSB0aW1lciBvZiBkZXZpY2UgMDAwMDowMDoxZC4yIHRvIDY0CnVoY2lfaGNkIDAwMDA6MDA6MWQu
-MjogVUhDSSBIb3N0IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAwMDowMDoxZC4yOiBuZXcgVVNCIGJ1
-cyByZWdpc3RlcmVkLCBhc3NpZ25lZCBidXMgbnVtYmVyIDQKdWhjaV9oY2QgMDAwMDowMDoxZC4y
-OiBpcnEgMjE3LCBpbyBiYXNlIDB4MDAwMDMwNDAKdXNiIHVzYjQ6IGNvbmZpZ3VyYXRpb24gIzEg
-Y2hvc2VuIGZyb20gMSBjaG9pY2UKaHViIDQtMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDQtMDox
-LjA6IDIgcG9ydHMgZGV0ZWN0ZWQKUENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMDoxZC4zICgw
-MDAwIC0+IDAwMDEpCkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMDoxZC4zW0RdIC0+IEdTSSAy
-MSAobGV2ZWwsIGxvdykgLT4gSVJRIDIxNwpQQ0k6IFNldHRpbmcgbGF0ZW5jeSB0aW1lciBvZiBk
-ZXZpY2UgMDAwMDowMDoxZC4zIHRvIDY0CnVoY2lfaGNkIDAwMDA6MDA6MWQuMzogVUhDSSBIb3N0
-IENvbnRyb2xsZXIKdWhjaV9oY2QgMDAwMDowMDoxZC4zOiBuZXcgVVNCIGJ1cyByZWdpc3RlcmVk
-LCBhc3NpZ25lZCBidXMgbnVtYmVyIDUKdWhjaV9oY2QgMDAwMDowMDoxZC4zOiBpcnEgMjE3LCBp
-byBiYXNlIDB4MDAwMDMwNjAKdXNiIHVzYjU6IGNvbmZpZ3VyYXRpb24gIzEgY2hvc2VuIGZyb20g
-MSBjaG9pY2UKaHViIDUtMDoxLjA6IFVTQiBodWIgZm91bmQKaHViIDUtMDoxLjA6IDIgcG9ydHMg
-ZGV0ZWN0ZWQKUENJOiBFbmFibGluZyBkZXZpY2UgMDAwMDowMTowNC40ICgwMTQwIC0+IDAxNDEp
-CkFDUEk6IFBDSSBJbnRlcnJ1cHQgMDAwMDowMTowNC40W0JdIC0+IEdTSSAyMyAobGV2ZWwsIGxv
-dykgLT4gSVJRIDIyNQp1aGNpX2hjZCAwMDAwOjAxOjA0LjQ6IFVIQ0kgSG9zdCBDb250cm9sbGVy
-CnVoY2lfaGNkIDAwMDA6MDE6MDQuNDogbmV3IFVTQiBidXMgcmVnaXN0ZXJlZCwgYXNzaWduZWQg
-YnVzIG51bWJlciA2CnVoY2lfaGNkIDAwMDA6MDE6MDQuNDogcG9ydCBjb3VudCBtaXNkZXRlY3Rl
-ZD8gZm9yY2luZyB0byAyIHBvcnRzCnVoY2lfaGNkIDAwMDA6MDE6MDQuNDogaXJxIDIyNSwgaW8g
-YmFzZSAweDAwMDAxODAwCnVzYiB1c2I2OiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9tIDEg
-Y2hvaWNlCmh1YiA2LTA6MS4wOiBVU0IgaHViIGZvdW5kCmh1YiA2LTA6MS4wOiAyIHBvcnRzIGRl
-dGVjdGVkCnVzYiA2LTE6IG5ldyBmdWxsIHNwZWVkIFVTQiBkZXZpY2UgdXNpbmcgdWhjaV9oY2Qg
-YW5kIGFkZHJlc3MgMgp1c2IgNi0xOiBjb25maWd1cmF0aW9uICMxIGNob3NlbiBmcm9tIDEgY2hv
-aWNlCmlucHV0OiBIUCBWaXJ0dWFsIEtleWJvYXJkIGFzIC9jbGFzcy9pbnB1dC9pbnB1dDUKaW5w
-dXQ6IFVTQiBISUQgdjEuMDEgS2V5Ym9hcmQgW0hQIFZpcnR1YWwgS2V5Ym9hcmRdIG9uIHVzYi0w
-MDAwOjAxOjA0LjQtMQppbnB1dDogSFAgVmlydHVhbCBLZXlib2FyZCBhcyAvY2xhc3MvaW5wdXQv
-aW5wdXQ2CmlucHV0OiBVU0IgSElEIHYxLjAxIE1vdXNlIFtIUCBWaXJ0dWFsIEtleWJvYXJkXSBv
-biB1c2ItMDAwMDowMTowNC40LTEKdXNiIDYtMjogbmV3IGZ1bGwgc3BlZWQgVVNCIGRldmljZSB1
-c2luZyB1aGNpX2hjZCBhbmQgYWRkcmVzcyAzCnVzYiA2LTI6IGNvbmZpZ3VyYXRpb24gIzEgY2hv
-c2VuIGZyb20gMSBjaG9pY2UKaHViIDYtMjoxLjA6IFVTQiBodWIgZm91bmQKaHViIDYtMjoxLjA6
-IDcgcG9ydHMgZGV0ZWN0ZWQKQUNQSTogUENJIGludGVycnVwdCBmb3IgZGV2aWNlIDAwMDA6MDE6
-MDQuMiBkaXNhYmxlZAp1aGNpX2hjZCAwMDAwOjAxOjA0LjQ6IHJlbW92ZSwgc3RhdGUgMQp1c2Ig
-dXNiNjogVVNCIGRpc2Nvbm5lY3QsIGFkZHJlc3MgMQp1c2IgNi0xOiBVU0IgZGlzY29ubmVjdCwg
-YWRkcmVzcyAyCnVzYiA2LTI6IFVTQiBkaXNjb25uZWN0LCBhZGRyZXNzIDMKdWhjaV9oY2QgMDAw
-MDowMTowNC40OiBVU0IgYnVzIDYgZGVyZWdpc3RlcmVkCkFDUEk6IFBDSSBpbnRlcnJ1cHQgZm9y
-IGRldmljZSAwMDAwOjAxOjA0LjQgZGlzYWJsZWQKdWhjaV9oY2QgMDAwMDowMDoxZC4zOiByZW1v
-dmUsIHN0YXRlIDEKdXNiIHVzYjU6IFVTQiBkaXNjb25uZWN0LCBhZGRyZXNzIDEKdWhjaV9oY2Qg
-MDAwMDowMDoxZC4zOiBVU0IgYnVzIDUgZGVyZWdpc3RlcmVkCkFDUEk6IFBDSSBpbnRlcnJ1cHQg
-Zm9yIGRldmljZSAwMDAwOjAwOjFkLjMgZGlzYWJsZWQKdWhjaV9oY2QgMDAwMDowMDoxZC4yOiBy
-ZW1vdmUsIHN0YXRlIDEKdXNiIHVzYjQ6IFVTQiBkaXNjb25uZWN0LCBhZGRyZXNzIDEKdWhjaV9o
-Y2QgMDAwMDowMDoxZC4yOiBVU0IgYnVzIDQgZGVyZWdpc3RlcmVkCkFDUEk6IFBDSSBpbnRlcnJ1
-cHQgZm9yIGRldmljZSAwMDAwOjAwOjFkLjIgZGlzYWJsZWQKdWhjaV9oY2QgMDAwMDowMDoxZC4x
-OiByZW1vdmUsIHN0YXRlIDEKdXNiIHVzYjM6IFVTQiBkaXNjb25uZWN0LCBhZGRyZXNzIDEKdWhj
-aV9oY2QgMDAwMDowMDoxZC4xOiBVU0IgYnVzIDMgZGVyZWdpc3RlcmVkCkFDUEk6IFBDSSBpbnRl
-cnJ1cHQgZm9yIGRldmljZSAwMDAwOjAwOjFkLjEgZGlzYWJsZWQKdWhjaV9oY2QgMDAwMDowMDox
-ZC4wOiByZW1vdmUsIHN0YXRlIDEKdXNiIHVzYjI6IFVTQiBkaXNjb25uZWN0LCBhZGRyZXNzIDEK
-dWhjaV9oY2QgMDAwMDowMDoxZC4wOiBVU0IgYnVzIDIgZGVyZWdpc3RlcmVkCkFDUEk6IFBDSSBp
-bnRlcnJ1cHQgZm9yIGRldmljZSAwMDAwOjAwOjFkLjAgZGlzYWJsZWQK
-------=_Part_58601_21476816.1226298959429--
