@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757255AbYKJAUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbYKJAlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757255AbYKJAUX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 19:20:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756497AbYKJAUJ
+	id S1757212AbYKJAlo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 19:41:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbYKJAle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 19:20:09 -0500
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:4016 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756321AbYKJAUI (ORCPT
+	Sun, 9 Nov 2008 19:41:34 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53395 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756447AbYKJAld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 19:20:08 -0500
-Subject: Re: [Bug #11830] disk statistics issue in 2.6.27
-From: Miquel van Smoorenburg <mikevs@xs4all.net>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <1226276038.19841.34.camel@localhost.localdomain>
-References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera>
-	 <4B0Eqx89uNG.A.-PC.tZ1FJB@chimera>
-	 <1226274573.6979.1.camel@localhost.localdomain>
-	 <1226276038.19841.34.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 10 Nov 2008 01:19:02 +0100
-Message-Id: <1226276342.6979.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 9 Nov 2008 19:41:33 -0500
+Date: Sun, 9 Nov 2008 18:41:31 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: akpm@linux-foundation.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, takedakn@nttdata.co.jp,
+       haradats@nttdata.co.jp
+Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 06/11] Common functions for
+	TOMOYOLinux.
+Message-ID: <20081110004131.GA25021@us.ibm.com>
+References: <20081104060847.086543472@nttdata.co.jp> <20081104060951.618445959@nttdata.co.jp> <20081105151221.d605226f.akpm@linux-foundation.org> <200811090138.GBG65138.FVOHOJOtMLQFFS@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811090138.GBG65138.FVOHOJOtMLQFFS@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-09 at 18:13 -0600, James Bottomley wrote:
-> On Mon, 2008-11-10 at 00:49 +0100, Miquel van Smoorenburg wrote:
-> > On Sun, 2008-11-09 at 20:43 +0100, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of regressions introduced between 2.6.26 and 2.6.27.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> > > be listed and let me know (either way).
-> > 
-> > The cause has been found - a bug in the dpt_i2o driver that was hidden
-> > until 2.6.27.
-> > 
-> > I've submitted a patch for 2.6.28 which will be included in the next
-> > -rc, at which point I will submit it for 2.6.27-stable as well.
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> Hello.
 > 
-> Actually, that's not quite the way it works anymore.  As long as the
-> patch is similar for both trees, the way it's done now is to tag stable
-> patches with cc: Stable Tree <stable@kernel.org> so they have automatic
-> notifies to the stable tree.
+> Andrew Morton wrote:
+> > > +static bool is_select_one(struct tmy_io_buffer *head, const char *data)
+> > > +{
+> > > +	unsigned int pid;
+> > > +	struct domain_info *domain = NULL;
+> > > +
+> > > +	if (sscanf(data, "pid=%u", &pid) == 1) {
+> > 
+> > PIDs are no longer system-wide unique, and here we appear to be
+> > implementing new userspace ABIs using PIDs.
+> > 
+> I'm not familiar with virtualized environment.
+> 
+> There are two PIDs, PID seen from inside virtualized environment and
+> PID seen from outside virtualized environment. To clarify, let me call
+> the former "PIDv" and the latter "PIDg".
+> 
+> PIDv is not system-wide unique. But PIDg is system-wide unique, aren't they?
+> The PID received from outside virtualized environment is PIDg and they are
+> system-wide unique, am I right?
 
-Oh OK, I did not know that. The patch applies indeed to .27 and .28 .
+You are doing find_task_by_vpid(), so you are not looking up a task by
+global pid.
 
-> I'm assuming this patch should be so tagged?
-
-Yes, thank you.
-
-Mike.
-
+-serge
