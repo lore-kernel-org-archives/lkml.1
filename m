@@ -1,126 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYKJSda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYKJSfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbYKJSda (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbYKJSdM
+	id S1755799AbYKJSfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753273AbYKJSey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:33:12 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49606 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754874AbYKJSdK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:33:10 -0500
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v3 1/5] sched: Framework for sched_mc/smt_power_savings=N
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Tue, 11 Nov 2008 00:03:06 +0530
-Message-ID: <20081110183306.562.89203.stgit@drishya.in.ibm.com>
-In-Reply-To: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
-References: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Mon, 10 Nov 2008 13:34:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38195 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752836AbYKJSex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:34:53 -0500
+Date: Mon, 10 Nov 2008 20:32:28 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: sukadev@linux.vnet.ibm.com
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
+       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Signals to cinit
+Message-ID: <20081110193228.GA15519@redhat.com>
+References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110173839.GA11121@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gautham R Shenoy <ego@in.ibm.com>
+(lkml cced because containers list's archive is not useable)
 
-***  RFC patch of work in progress and not for inclusion. ***
+On 11/10, Oleg Nesterov wrote:
+>
+> On 11/01, sukadev@linux.vnet.ibm.com wrote:
+> >
+> > Other approaches to try ?
+>
+> I think we should try to do something simple, even if not perfect. Because
+> most users do not care about this problem since they do not use containers
+> at all. It would be very sad to add intrusive changes to the code.
+>
+> I think we should fix another problem first. send_signal()->copy_siginfo()
+> path must be changed anyway, when the signal comes from the parent ns we
+> report the "wrong" si_code/si_pid, yes? So, somehow send_signal() must
+> have "bool from_parent_ns" (or whatever) annyway.
+>
+> Now, let's forget forget for a moment that send_signal()->__sigqueue_alloc()
+> can fail.
+>
+> I think we should encode this "from_parent_ns" into "struct siginfo". I do
+> not think it is good idea to extend this structure, I think we can introduce
+> SI_FROM_PARENT_NS or we perhaps can use "SI_FROMUSER(info) && info->si_pid == 0".
+> Or something. yes, sys_rt_sigqueueinfo() is problematic...
+>
+> Now, copy_process(CLONE_NEWPID) sets child->signal |= SIGNAL_UNKILLABLE, this
+> protects cinit from unwanted signals. Then we change get_signal_to_deliver()
+>
+> 	-	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
+> 	+	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) && !siginfo_from_parent_ns(info)
+>
+> and now we can kill cinit from parent ns. This needs more checks if we want
+> to stop/strace it, but perhaps this is enough for the start. Note that we
+> do not need to change complete_signal(), at least for now, the code under
+> "if (sig_fatal(p, sig)" is just optimization.
+>
+>
+> So, afaics, the only real problem is how we can handle the case when
+> __sigqueue_alloc() fails. I think for the start we can just return
+> -ENOMEM in this case (when from_parent_ns == T). Then we can improve
+> this behaviour. We can change complete_signal() to ensure that the
+> fatal signal from the upper ns always kills cinit, and in this case
+> we ignore the the failed __sigqueue_alloc(). This way at least SIGKILL
+> always works.
+>
+> Yes, this is not perfect, and it is very possible I missed something
+> else. But simple.
 
-Currently the sched_mc/smt_power_savings variable is a boolean, which either
-enables or disables topology based power savings. This extends the behaviour of
-the variable from boolean to multivalued, such that based on the value, we
-decide how aggressively do we want to perform topology based powersavings
-balance.
+But how can send_signal() know that the signal comes from the upper ns?
+This is not trivial, we can't blindly use current to check. The signal
+can be sent from irq/workqueue/etc.
 
-Variable levels of power saving tunable would benefit end user to match the
-required level of power savings vs performance trade off depending on the
-system configuration and workloads.
+Perhaps we can start with something like the patch below. Not that I like
+it very much though. We should really place this code under
+CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
 
-This initial version makes the sched_mc_power_savings global variable to take
-more values (0,1,2).
+Oleg.
 
-Later version is expected to add new member sd->powersavings_level at the multi
-core CPU level sched_domain. This make all sd->flags check for
-SD_POWERSAVINGS_BALANCE into a different macro that will check for
-powersavings_level.
-
-The power savings level setting should be in one place either in the
-sched_mc_power_savings global variable or contained within the appropriate
-sched_domain structure.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
-
- include/linux/sched.h |   11 +++++++++++
- kernel/sched.c        |   16 +++++++++++++---
- 2 files changed, 24 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b483f39..715028a 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -759,6 +759,17 @@ enum cpu_idle_type {
- #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
- #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
+--- K-IS/kernel/signal.c~T	2008-11-10 19:21:17.000000000 +0100
++++ K-IS/kernel/signal.c	2008-11-10 20:31:24.000000000 +0100
+@@ -798,11 +798,19 @@ static inline int legacy_queue(struct si
+ 	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
+ }
  
-+enum powersavings_balance_level {
-+	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
-+	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
-+					 * first for long running threads
-+					 */
-+	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
-+					 * cpu package for power savings
-+					 */
-+	MAX_POWERSAVINGS_BALANCE_LEVELS
-+};
++#define SIG_FROM_USER	INT_MIN		/* MSB */
 +
- #define BALANCE_FOR_MC_POWER	\
- 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e8819bc..0dd6cf6 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7859,14 +7859,24 @@ int arch_reinit_sched_domains(void)
- static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
+ 			int group)
  {
- 	int ret;
-+	unsigned int level = 0;
- 
--	if (buf[0] != '0' && buf[0] != '1')
-+	sscanf(buf, "%u", &level);
+ 	struct sigpending *pending;
+ 	struct sigqueue *q;
++	int from_ancestor_ns;
 +
-+	/*
-+	 * level is always be positive so don't check for
-+	 * level < POWERSAVINGS_BALANCE_NONE which is 0
-+	 * What happens on 0 or 1 byte write,
-+	 * need to check for count as well?
-+	 */
-+
-+	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
- 		return -EINVAL;
++	from_ancestor_ns = !is_si_special(info) &&
++		(info->si_signo | SIG_FROM_USER) &&
++		/* if t can't see us we are from parent ns */
++		task_pid_nr_ns(current, t->current->nsproxy->pid_ns) <= 0;
  
- 	if (smt)
--		sched_smt_power_savings = (buf[0] == '1');
-+		sched_smt_power_savings = level;
- 	else
--		sched_mc_power_savings = (buf[0] == '1');
-+		sched_mc_power_savings = level;
+ 	trace_sched_signal_send(sig, t);
  
- 	ret = arch_reinit_sched_domains();
+@@ -855,6 +863,7 @@ static int send_signal(int sig, struct s
+ 			break;
+ 		default:
+ 			copy_siginfo(&q->info, info);
++			q->info.si_signo &= ~SIG_FROM_USER;
+ 			break;
+ 		}
+ 	} else if (!is_si_special(info)) {
+@@ -2207,7 +2216,7 @@ sys_kill(pid_t pid, int sig)
+ {
+ 	struct siginfo info;
  
+-	info.si_signo = sig;
++	info.si_signo = sig | SIG_FROM_USER;
+ 	info.si_errno = 0;
+ 	info.si_code = SI_USER;
+ 	info.si_pid = task_tgid_vnr(current);
+@@ -2224,7 +2233,7 @@ static int do_tkill(pid_t tgid, pid_t pi
+ 	unsigned long flags;
+ 
+ 	error = -ESRCH;
+-	info.si_signo = sig;
++	info.si_signo = sig | SIG_FROM_USER;
+ 	info.si_errno = 0;
+ 	info.si_code = SI_TKILL;
+ 	info.si_pid = task_tgid_vnr(current);
+@@ -2296,7 +2305,7 @@ sys_rt_sigqueueinfo(pid_t pid, int sig, 
+ 	   Nor can they impersonate a kill(), which adds source info.  */
+ 	if (info.si_code >= 0)
+ 		return -EPERM;
+-	info.si_signo = sig;
++	info.si_signo = sig | SIG_FROM_USER;
+ 
+ 	/* POSIX.1b doesn't mention process groups.  */
+ 	return kill_proc_info(sig, &info, pid);
 
