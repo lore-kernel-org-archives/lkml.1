@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbYKJOYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYKJO1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755654AbYKJOYt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:24:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYKJOYl
+	id S1755327AbYKJO1E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYKJO0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:24:41 -0500
-Received: from ltw.loris.tv ([85.14.220.160]:60028 "EHLO ltw.loris.tv"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753268AbYKJOYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:24:40 -0500
-X-Greylist: delayed 1567 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Nov 2008 09:24:39 EST
-Date: Mon, 10 Nov 2008 14:58:25 +0100
-To: zippel@linux-m68.org
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       linux-kbuild@vger.kernel.org
-Subject: [PATCH 1/1] Kconfig: Correct sched-rt-group.txt pathname in init/Kconfig
-Message-ID: <20081110135825.GC2784@ltw.loris.tv>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: adi@drcomp.erfurt.thur.de (Adrian Knoth)
+	Mon, 10 Nov 2008 09:26:54 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38009 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753547AbYKJO0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:26:54 -0500
+Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
+ dm_any_congested() to properly sync up with suspend code path)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk
+In-Reply-To: <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+References: <1225944008.14830.1101.camel@chandra-ubuntu>
+	 <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com>
+	 <20081110135401.GA11606@infradead.org>
+	 <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 10 Nov 2008 15:26:50 +0100
+Message-Id: <1226327210.7685.173.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Knoth <adi@drcomp.erfurt.thur.de>
+On Mon, 2008-11-10 at 09:19 -0500, Mikulas Patocka wrote:
+> On Mon, 10 Nov 2008, Christoph Hellwig wrote:
+> 
+> > On Mon, Nov 10, 2008 at 08:11:51AM -0500, Mikulas Patocka wrote:
+> > > For upstream Linux developers: you are holding a spinlock and calling 
+> > > bdi*_congested functions that can take indefinite amount of time (there 
+> > > are even users reporting having 50 disks in one logical volume or so). I 
+> > > think it would be good to move these calls out of spinlocks.
+> > 
+> > Umm, they shouldn't block that long, as that completely defeats their
+> > purpose.  These functions are mostly used to avoid throwing more I/O at
+> > a congested device if pdflush could do more useful things instead.  But
+> > if it blocks in those functions anyway we wouldn't have to bother using
+> > them.  Do you have more details about the uses cases when this happens
+> > and where the routines spend so much time?
+> 
+> For device mapper, congested_fn asks every device in the tree and make OR 
+> of their bits --- so if the user has 50 devices, it asks them all.
+> 
+> For md-linear, md-raid0, md-raid1, md-raid10 and md-multipath it does the 
+> same --- asking every device.
+> 
+> If you have a better idea how to implement congested_fn, say it.
 
-init/Kconfig directs the user to Documentation/sched-rt-group.txt, but
-the file is actually in Documentation/scheduler/sched-rt-group.txt.
+Fix the infrastructure by adding a function call so that you can have
+the individual devices report their congestion state to the aggregate.
 
-This patch corrects the pathname mentioned in init/Kconfig.
+Then congestion_fn can return a valid state in O(1) because the state is
+keps up-to-date by the individual state changes.
 
-Signed-off-by: Adrian Knoth <adi@drcomp.erfurt.thur.de>
----
-Present in 2.6.28-rc4, though discovered in 2.6.27.5.
-
---- init/Kconfig        2008-11-10 14:35:45.000000000 +0100
-+++ init/Kconfig.new    2008-11-10 14:37:11.000000000 +0100
-@@ -354,7 +354,7 @@
-          setting below. If enabled, it will also make it impossible to
-          schedule realtime tasks for non-root users until you allocate
-          realtime bandwidth for them.
--         See Documentation/sched-rt-group.txt for more information.
-+         See Documentation/scheduler/sched-rt-group.txt for more information.
- 
- choice
-        depends on GROUP_SCHED
-
-
--- 
-mail: adi@thur.de  	http://adi.thur.de	PGP/GPG: key via keyserver
-
-Ich kann Bedenken nicht mehr hören. Ich will nur noch machen.
-					(Lutz Donnerhacke via email)
+IOW, add a set_congested_fn() and clear_congested_fn().
