@@ -1,78 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbYKJI2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYKJIjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbYKJI2u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 03:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbYKJI2l
+	id S1754309AbYKJIjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 03:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYKJIjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 03:28:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56171 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbYKJI2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 03:28:40 -0500
-Date: Mon, 10 Nov 2008 09:28:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-Message-ID: <20081110082802.GA22392@elte.hu>
-References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu> <20081110075529.GD707@atrey.karlin.mff.cuni.cz> <20081110172407.5584156d.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 10 Nov 2008 03:39:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:52478 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753843AbYKJIjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 03:39:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vd9aQH0AMl0kR47HC3Jt7emny4BwqB0vdpXjpWUgFjyPOBHEGygqpVSc4ckIg7kQwG
+         qdErFeYwWQI+j3ZDHRaD1hLvyEI2GzT5qGE4IOQ/cw9y3BLl3C3av/JWnqs5F8tXuw9s
+         xjzuozOrSY4XiCkoLS38Jt2AzggM4OnSf8Bbw=
+Date: Mon, 10 Nov 2008 11:42:29 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: [PATCH v42] proc: add /proc/*/stack (was Re: linux-next: proc tree
+	build failure)
+Message-ID: <20081110084229.GA8690@x200.localdomain>
+References: <20081110162941.e9e9ef3a.sfr@canb.auug.org.au> <20081110055311.GA3138@x200.localdomain> <20081110073623.GA475@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110172407.5584156d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081110073623.GA475@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Mon, 10 Nov 2008 08:55:29 +0100
-> Pavel Machek <pavel@suse.cz> wrote:
+On Mon, Nov 10, 2008 at 08:36:23AM +0100, Ingo Molnar wrote:
 > 
-> > > 
-> > > * Pavel Machek <pavel@suse.cz> wrote:
-> > > 
-> > > > ...at least on 2.6.27 and 2.6.28-rc3. Resume gets to 
-> > > > acpi_hibernation_leave, then SLAB corruption is detected and machine 
-> > > > ends in series of oops.
-> > > > 
-> > > > Any ideas how to debug that?
-> > > 
-> > > do you get any serial log or USB key output, so that it's debuggable 
-> > > directly?
-> > 
-> > Well, I can transcribe the BUG() from a picture, I guess, but it does
-> > not seem to contain much useful info: SLAB corruption was detected and
-> > backtrace is not quite important at that point...
-> > 
-> > Serial console is probably possible, but would take few days to setup.
-> > 									Pavel
+> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> How about this patch ?
-> ==
-> http://marc.info/?l=linux-mm-commits&m=122624388629106&w=2
-> ==
+> > On Mon, Nov 10, 2008 at 04:29:41PM +1100, Stephen Rothwell wrote:
+> > > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> > > 
+> > > fs/proc/base.c:2547: error: 'pid_stack' undeclared here (not in a function)
+> > > 
+> > > Caused by an interaction of commits
+> > > 078e9901c02d4899db5b24f708b8dfbca8935891 ("stacktrace:
+> > > add /proc/<pid>/stack to dump task's stack trace") and
+> > > 35f0b5fd7fab907a1119eaa614d9b24e5e225755 ("stacktrace:
+> > > convert /proc/<pid>/stack to seqfiles") from the tip-core tree with commit
+> > > 5d8880e3e0fb96459c652ac5e1504b90c949b3b9 ("proc: remove '##' usage") from
+> > > the proc tree.
+> > > 
+> > > The former added a new usage of INF (which the second converted to a
+> > > ONE).  I added the following patch to the merge of the proc tree and can
+> > > carry it.
+> > 
+> > Time to steal this /proc/*/stack from Ingo. :-)
+> 
+> Alexey, would you like to carry them for v2.6.29? They are in a 
+> separate tree here, the pull coordinates are below.
+> 
+> Please preserve the sha1's (do not rebase/cherry-pick, etc.) so that i 
+> can carry it too without causing confusion.
 
-note, that fix of Rafael's is now upstream as:
+Sorry, I can't.
 
-  c5d7124: Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
+It's two commits, PROC_BLOCK_SIZE moving chunk is now unneeded, because
+seqfiles are in use, grabbing tasklist_lock for protection from task
+dissapearing is unneeded -- proc_single_show() pins task_struct, entry
+is added only to tgid table.
 
-and included in v2.6.28-rc4.
+So, here is final version:
 
-But yes, this area of code (the save/restore of memory maps) would be 
-the main suspect to investigate.
 
-	Ingo
+commit 12bf5a00732a5f9512081291097d0e4a3224e8a3
+Author: Ken Chen <kenchen@google.com>
+Date:   Mon Nov 10 11:26:08 2008 +0300
+
+    proc: add /proc/*/stack
+    
+    /proc/*/stack adds the ability to query a task's stack trace. It is more
+    useful than /proc/*/wchan as it provides full stack trace instead of single
+    depth. Example output:
+    
+    	$ cat /proc/self/stack
+    	[<c010a271>] save_stack_trace_tsk+0x17/0x35
+    	[<c01827b4>] proc_pid_stack+0x4a/0x76
+    	[<c018312d>] proc_single_show+0x4a/0x5e
+    	[<c016bdec>] seq_read+0xf3/0x29f
+    	[<c015a004>] vfs_read+0x6d/0x91
+    	[<c015a0c1>] sys_read+0x3b/0x60
+    	[<c0102eda>] syscall_call+0x7/0xb
+    	[<ffffffff>] 0xffffffff
+    
+    Signed-off-by: Ken Chen <kenchen@google.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index bcceb99..11f5b75 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -139,6 +139,7 @@ Table 1-1: Process specific entries in /proc
+  statm		Process memory status information
+  status		Process status in human readable form
+  wchan		If CONFIG_KALLSYMS is set, a pre-decoded wchan
++ stack		Report full stack trace, enable via CONFIG_STACKTRACE
+  smaps		Extension based on maps, the rss size for each mapped file
+ ..............................................................................
+ 
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 6e850e9..738ea78 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -65,6 +65,7 @@
+ #include <linux/mm.h>
+ #include <linux/rcupdate.h>
+ #include <linux/kallsyms.h>
++#include <linux/stacktrace.h>
+ #include <linux/resource.h>
+ #include <linux/module.h>
+ #include <linux/mount.h>
+@@ -337,6 +338,37 @@ static int proc_pid_wchan(struct task_struct *task, char *buffer)
+ }
+ #endif /* CONFIG_KALLSYMS */
+ 
++#ifdef CONFIG_STACKTRACE
++
++#define MAX_STACK_TRACE_DEPTH	64
++
++static int proc_pid_stack(struct seq_file *m, struct pid_namespace *ns,
++			  struct pid *pid, struct task_struct *task)
++{
++	struct stack_trace trace;
++	unsigned long *entries;
++	int i;
++
++	entries = kmalloc(MAX_STACK_TRACE_DEPTH * sizeof(*entries), GFP_KERNEL);
++	if (!entries)
++		return -ENOMEM;
++
++	trace.nr_entries	= 0;
++	trace.max_entries	= MAX_STACK_TRACE_DEPTH;
++	trace.entries		= entries;
++	trace.skip		= 0;
++	save_stack_trace_tsk(task, &trace);
++
++	for (i = 0; i < trace.nr_entries; i++) {
++		seq_printf(m, "[<%p>] %pS\n",
++			   (void *)entries[i], (void *)entries[i]);
++	}
++	kfree(entries);
++
++	return 0;
++}
++#endif
++
+ #ifdef CONFIG_SCHEDSTATS
+ /*
+  * Provides /proc/PID/schedstat
+@@ -2484,6 +2516,9 @@ static const struct pid_entry tgid_base_stuff[] = {
+ #ifdef CONFIG_KALLSYMS
+ 	INF("wchan",      S_IRUGO, proc_pid_wchan),
+ #endif
++#ifdef CONFIG_STACKTRACE
++	ONE("stack",      S_IRUSR, proc_pid_stack),
++#endif
+ #ifdef CONFIG_SCHEDSTATS
+ 	INF("schedstat",  S_IRUGO, proc_pid_schedstat),
+ #endif
+@@ -2819,6 +2854,9 @@ static const struct pid_entry tid_base_stuff[] = {
+ #ifdef CONFIG_KALLSYMS
+ 	INF("wchan",     S_IRUGO, proc_pid_wchan),
+ #endif
++#ifdef CONFIG_STACKTRACE
++	ONE("stack",      S_IRUSR, proc_pid_stack),
++#endif
+ #ifdef CONFIG_SCHEDSTATS
+ 	INF("schedstat", S_IRUGO, proc_pid_schedstat),
+ #endif
