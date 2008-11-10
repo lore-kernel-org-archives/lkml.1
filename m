@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYKJFhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYKJFi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYKJFhn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 00:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKJFgu
+	id S1754413AbYKJFi5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 00:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbYKJFis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 00:36:50 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:38335 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbYKJFgs (ORCPT
+	Mon, 10 Nov 2008 00:38:48 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:54561 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751226AbYKJFis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 00:36:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=NXKN951xBZOaX3JEzp4cE7RKPv9DtGypi8DJ85y6yEX7slRTxoTetM8yrR4aa5t4TA
-         3PdzKCg/FwYWNYnZQaqLjjr1IqF9lG3rpgfSgmDUAh7R2hkBkD3Mf6YNcncjUM7VvOKZ
-         ZqLe/0+DIzb2cR3fDHbjl+Oji3xA0HnpWmWIM=
-Subject: [PATCH 2/3] lib: radix_tree.c make percpu variable static
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 09 Nov 2008 21:36:43 -0800
-Message-Id: <1226295403.5478.12.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 10 Nov 2008 00:38:48 -0500
+Message-ID: <4917C89A.70909@oracle.com>
+Date: Sun, 09 Nov 2008 21:37:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Sam Ravnborg <sam@ravnborg.org>,
+       open-osd development <osd-dev@open-osd.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       linux-scsi <linux-scsi@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [osd-dev] [PATCH 04/18] libosd: OSDv1 preliminary implementation
+References: <491073BB.4000900@panasas.com>	<1225817069-5969-1-git-send-email-bharrosh@panasas.com>	<20081104180347.GA9818@uranus.ravnborg.org> <49119BAF.6040603@panasas.com> <4916F9F5.9040409@panasas.com>
+In-Reply-To: <4916F9F5.9040409@panasas.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.4917C8BE.006D:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-radix_tree_preloads is unused outside of this file, make it static.
+Boaz Harrosh wrote:
+> Boaz Harrosh wrote:
+>> Sam Ravnborg wrote:
+>>>> +EXPORT_SYMBOL(osd_dev_init);
+>>> kernel-doc comments for all exported funtions / variables.
+>>>
+>> I have some kernel-doc comments of exported functions in the Header
+>> file. I have not yet finished all of them. (Laziness on my part).
+>>
+>> Are kernel-doc comments in headers a big NO-NO. I like it this way,
+>> so when I have to learn a new Library all the information
+>> I need to know is in the header. Also the header is a much better place
+>> when you do programing by shopping, that is you don't know what you need
+>> and you look for what's available.
+>>
+>> Thanks
+>> Boaz
+> 
+> Sam please comment if kernel-doc comments are OK in headers
 
-Noticed by sparse:
-lib/radix-tree.c:84:1: warning: symbol 'per_cpu__radix_tree_preloads' was not declared. Should it be static?
+Hi,
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- lib/radix-tree.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The de facto standard for kernel-doc comments is at the implementation site,
+which means normally in .c files, except for macros or inline functions.
 
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index be86b32..8d3fb0b 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -81,7 +81,7 @@ struct radix_tree_preload {
- 	int nr;
- 	struct radix_tree_node *nodes[RADIX_TREE_MAX_PATH];
- };
--DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = { 0, };
-+static DEFINE_PER_CPU(struct radix_tree_preload, radix_tree_preloads) = { 0, };
- 
- static inline gfp_t root_gfp_mask(struct radix_tree_root *root)
- {
+Sure you can find some exceptions to that.  And there is no hard requirement
+in Documentation/kernel-doc-nano-HOWTO.txt.
+
+IMO the biggest concern is making sure that the (kernel-doc) comments are
+updated when the function implementation changes (if updates are needed).
+Where would be the best place for this to be more likely to happen?
+Usually at the function implementation, I would say.
+
+~Randy
+
+
 -- 
-1.6.0.3.866.gc189b
-
-
+~Randy
