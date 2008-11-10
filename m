@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbYKJJaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYKJJfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbYKJJaA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 04:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYKJJ3v
+	id S1754572AbYKJJfi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 04:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbYKJJfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 04:29:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49709 "EHLO mx2.mail.elte.hu"
+	Mon, 10 Nov 2008 04:35:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35146 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753478AbYKJJ3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 04:29:49 -0500
-Date: Mon, 10 Nov 2008 10:29:37 +0100
+	id S1753478AbYKJJf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 04:35:29 -0500
+Date: Mon, 10 Nov 2008 10:35:16 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ken Chen <kenchen@google.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [patch] restore sched_exec load balance heuristics
-Message-ID: <20081110092937.GJ22392@elte.hu>
-References: <b040c32a0811061140u27093e4er70a43041564617f1@mail.gmail.com> <20081106200746.GA3578@elte.hu> <1226307053.2697.3993.camel@twins>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <Jens.Axboe@oracle.com>
+Subject: Re: [PATCH] fix smp generic helper voyager breakage
+Message-ID: <20081110093516.GK22392@elte.hu>
+References: <1225400980.19324.24.camel@localhost.localdomain> <20081030215421.GG30303@elte.hu> <1225404368.19324.49.camel@localhost.localdomain> <20081030222111.GA18600@elte.hu> <1226253194.19841.9.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1226307053.2697.3993.camel@twins>
+In-Reply-To: <1226253194.19841.9.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,53 +37,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
->  void sched_exec(void)
->  {
->  	int new_cpu, this_cpu = get_cpu();
-> -	new_cpu = sched_balance_self(this_cpu, SD_BALANCE_EXEC);
-> +	struct task_group *tg;
-> +	long weight, eload;
-> +
-> +	tg = task_group(current);
-> +	weight = current->se.load.weight;
-> +	eload = -effective_load(tg, this_cpu, -weight, -weight);
-> +
-> +	new_cpu = sched_balance_self(this_cpu, SD_BALANCE_EXEC, eload);
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date: Wed, 29 Oct 2008 14:53:06 -0500
+> Subject: [VOYAGER] fix generic smp helpers non compile
 
-okay, i think this will work.
+hm, i reported a bug to you with this patch on Oct 30.
 
-it feels somewhat backwards though on a conceptual level.
+> commit 3d4422332711ef48ef0f132f1fcbfcbd56c7f3d1
+> Author: Jens Axboe <jens.axboe@oracle.com>
+> Date:   Thu Jun 26 11:21:34 2008 +0200
+> 
+>     Add generic helpers for arch IPI function calls
+> 
+> didn't wire up the voyager smp call function correctly, so do that
+> here.  Also make CONFIG_USE_GENERIC_SMP_HELPERS a def_bool y again,
+> since we now use the generic helpers for every x86 architecture.
+> 
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+>  arch/x86/Kconfig                    |    5 ++++-
+>  arch/x86/mach-voyager/voyager_smp.c |   16 ++++++++++++++--
+>  2 files changed, 18 insertions(+), 3 deletions(-)
 
-There's nothing particularly special about exec-balancing: the load 
-picture is in equilibrium - it is in essence a rebalancing pass done 
-not in the scheduler tick but in a special place in the middle of 
-exec() where the old-task / new-task cross section is at a minimum 
-level.
-
-_fork_ balancing is what is special: there we'll get a new context so 
-we have to take the new load into account. It's a bit like wakeup 
-balancing. (just done before the new task is truly woken up)
-
-OTOH, triggering the regular busy-balance at exec() time isnt totally 
-straightforward either: the 'old' task is the current task so it 
-cannot be balanced away. We have to trigger all the active-migration 
-logic - which again makes exec() balancing special.
-
-So maybe this patch is the best solution after all. Ken, does it do 
-the trick for your workload, when applied against v2.6.28-rc4?
-
-You might even try to confirm that your testcase still works fine even 
-if you elevate the load average with +1.0 on every cpu by starting 
-infinite CPU eater loops on every CPU, via this bash oneliner:
-
-  for ((i=0;i<2;i++)); do while :; do :; done & done
-
-(change the '2' to '4' if you test this on a quad, not on a dual-core 
-box)
-
-the desired behavior would be for your "exec hopper" testcase to not 
-hop between cpus, but to stick the same CPU most of the time.
+no indication in the changelog whether that bug i reported got fixed - 
+did it? (i suspect it did, but not sure)
 
 	Ingo
