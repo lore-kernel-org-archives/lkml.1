@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753620AbYKJPc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbYKJPk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753620AbYKJPc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 10:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYKJPcs
+	id S1753906AbYKJPk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 10:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYKJPkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 10:32:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54840 "EHLO
+	Mon, 10 Nov 2008 10:40:18 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45434 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbYKJPcs (ORCPT
+	with ESMTP id S1751347AbYKJPkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 10:32:48 -0500
-Message-ID: <491853F6.7030803@zytor.com>
-Date: Mon, 10 Nov 2008 07:32:06 -0800
+	Mon, 10 Nov 2008 10:40:17 -0500
+Message-ID: <491855AA.5060100@zytor.com>
+Date: Mon, 10 Nov 2008 07:39:22 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: akataria@vmware.com, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Subject: Re: [PATCH 2/4] Hypervisor detection and get tsc_freq from	hypervisor
-References: <1224894104.28224.72.camel@alok-dev1>	 <20081027110134.GC13641@elte.hu>  <1225129306.28018.9.camel@alok-dev1> <1226320720.4068.54.camel@blaa>
-In-Reply-To: <1226320720.4068.54.camel@blaa>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
+       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
+References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <20081110085846.GG22392@elte.hu>
+In-Reply-To: <20081110085846.GG22392@elte.hu>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
->>
->> diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
->> index f73e95d..78478f2 100644
->> --- a/arch/x86/include/asm/cpufeature.h
->> +++ b/arch/x86/include/asm/cpufeature.h
->> @@ -117,6 +117,7 @@
->>  #define X86_FEATURE_XSAVE	(4*32+26) /* XSAVE/XRSTOR/XSETBV/XGETBV */
->>  #define X86_FEATURE_OSXSAVE	(4*32+27) /* "" XSAVE enabled in the OS */
->>  #define X86_FEATURE_AVX		(4*32+28) /* Advanced Vector Extensions */
->> +#define X86_FEATURE_HYPERVISOR	(4*32+31) /* Running on a hypervisor */
+Ingo Molnar wrote:
+> * Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 > 
-> I don't see you set this anywhere.
+> hackbench is _way_ too noisy to measure such cycle-level differences 
+> as irq entry changes cause. It also does not really stress interrupts 
+> - it only stresses networking, the VFS and the scheduler.
+> 
+> a better test might have been to generate a ton of interrupts, but 
+> even then it's _very_ hard to measure it properly. The best method is 
+> what i've suggested to you early on: run a loop in user-space and 
+> observe irq costs via RDTSC, as they happen. Then build a histogram 
+> and compare the before/after histogram. Compare best-case results as 
+> well (the first slot of the histogram), as those are statistically 
+> much more significant than a noisy average.
 > 
 
-This bit is set by the hypervisor in the pattern returned by the CPUID
-instruction.
+For what it's worth, I tested this out, and I'm pretty sure you need to
+run a uniprocessor configuration (or system) for it to make sense --
+otherwise you end up missing too many of the interrupts.  I first tested
+this on an 8-processor system and, well, came up with nothing.
+
+I'm going to try this later on a uniprocessor, unless Alexander beats me
+to it.
 
 	-hpa
