@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYKJOQC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbYKJOTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbYKJOQC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:16:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYKJOPx
+	id S1755495AbYKJOTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYKJOTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:15:53 -0500
-Received: from hope.ime.usp.br ([143.107.45.8]:43770 "HELO hope.ime.usp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753915AbYKJOPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:15:52 -0500
-Date: Mon, 10 Nov 2008 12:15:50 -0200
-From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
-       linux-pm@lists.linux-foundation.org, rjw@sisk.pl,
-       acpi-bugzilla@lists.sourceforge.net, rui.zhang@intel.com
-Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
-Message-ID: <20081110141550.GB4450@ime.usp.br>
-References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br> <1226044855.4913f5b7f2f45@webmail.ime.usp.br> <20081108075008.GA8177@ime.usp.br> <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com> <20081109024514.GA11744@ime.usp.br> <20081109113332.GD6094@elf.ucw.cz>
+	Mon, 10 Nov 2008 09:19:30 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:35439 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753915AbYKJOTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:19:30 -0500
+Date: Mon, 10 Nov 2008 09:19:21 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Christoph Hellwig <hch@infradead.org>
+cc: Chandra Seetharaman <sekharan@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
+ dm_any_congested() to properly sync up with suspend code path)
+In-Reply-To: <20081110135401.GA11606@infradead.org>
+Message-ID: <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+References: <1225944008.14830.1101.camel@chandra-ubuntu>
+ <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com>
+ <20081110135401.GA11606@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081109113332.GD6094@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Pavel.
+On Mon, 10 Nov 2008, Christoph Hellwig wrote:
 
-On Nov 09 2008, Pavel Machek wrote:
-> On Sun 2008-11-09 00:45:14, Rogério Brito wrote:
-> > On Nov 08 2008, Justin Mattock wrote:
-> > > On Fri, Nov 7, 2008 at 11:50 PM, Rogério Brito <rbrito@ime.usp.br> wrote:
-> > > > I think that I have some more information regarding the
-> > > > suspend/hibernate issue: with Ubuntu's 2.6.27 kernel, I can't
-> > > > hibernate my laptop, but with vanilla 2.6.28-rc3, I can hibernate
-> > > > (I have not tested it much, but it seems to work).
+> On Mon, Nov 10, 2008 at 08:11:51AM -0500, Mikulas Patocka wrote:
+> > For upstream Linux developers: you are holding a spinlock and calling 
+> > bdi*_congested functions that can take indefinite amount of time (there 
+> > are even users reporting having 50 disks in one logical volume or so). I 
+> > think it would be good to move these calls out of spinlocks.
+> 
+> Umm, they shouldn't block that long, as that completely defeats their
+> purpose.  These functions are mostly used to avoid throwing more I/O at
+> a congested device if pdflush could do more useful things instead.  But
+> if it blocks in those functions anyway we wouldn't have to bother using
+> them.  Do you have more details about the uses cases when this happens
+> and where the routines spend so much time?
 
-I spoke too soon. Depending on what I do in userland (I tried using the
-GNOME application "Cheese" just to put some load on the machine) and I
-tried:
+For device mapper, congested_fn asks every device in the tree and make OR 
+of their bits --- so if the user has 50 devices, it asks them all.
 
-# echo shutdown > /sys/power/disk
-# echo disk > /sys/power/state
+For md-linear, md-raid0, md-raid1, md-raid10 and md-multipath it does the 
+same --- asking every device.
 
-But the machine stuck: it blanked the monitor, seemed to go to a console,
-the cursor was blinking on the upper left corner of the screen, the HD
-light blinked once and then the fan went faster, the CPU hotter and the
-leds corresponding to caps lock and scroll lock were blinking.
+If you have a better idea how to implement congested_fn, say it.
 
-I'm waiting with the machine in this situation since I started composing
-this e-mail and nothing has changed.
-
-The blinking leds (caps and scroll lock) would indicate a kernel panic, is
-that correct?
-
-> Try it from the text console, and see what exactly stops
-> responding. "killall klogd" is your friend.
-
-The funny thing is that once that I could resume, it resumed
-instantly. :-( Weird.
-
-
-Thanks, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+Mikulas
