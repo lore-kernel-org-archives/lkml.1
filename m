@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbYKJOnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbYKJOq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbYKJOnW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 09:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbYKJOnH
+	id S1754410AbYKJOq5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 09:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbYKJOqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 09:43:07 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47238 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166AbYKJOnG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 09:43:06 -0500
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
-       mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
-       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0811100834500.21257@quilx.com>
-References: <1224694989.8431.23.camel@oberon>
-	 <1225132746.14792.13.camel@bobble.smo.corp.google.com>
-	 <1225219114.24204.37.camel@oberon>
-	 <1225936715.27507.44.camel@bobble.smo.corp.google.com>
-	 <1225969420.7803.4366.camel@twins>
-	 <Pine.LNX.4.64.0811060900450.3595@quilx.com>
-	 <1225984098.7803.4642.camel@twins>
-	 <1226015568.2186.20.camel@bobble.smo.corp.google.com>
-	 <1226053744.7803.5851.camel@twins>
-	 <1226081448.28191.64.camel@bobble.smo.corp.google.com>
-	 <1226089574.31966.85.camel@lappy.programming.kicks-ass.net>
-	 <Pine.LNX.4.64.0811100834500.21257@quilx.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 10 Nov 2008 15:42:32 +0100
-Message-Id: <1226328152.7685.192.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 10 Nov 2008 09:46:49 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:34382 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752701AbYKJOqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 09:46:48 -0500
+Date: Mon, 10 Nov 2008 08:46:32 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-audit@redhat.com, sgrubb@redhat.com,
+       morgan@kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [PATCH -v3 3/5] AUDIT: output permitted and inheritable fcaps
+	in PATH records
+Message-ID: <20081110144632.GB11561@us.ibm.com>
+References: <20081107151355.9977.47852.stgit@paris.rdu.redhat.com> <20081107151406.9977.3167.stgit@paris.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081107151406.9977.3167.stgit@paris.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-10 at 08:38 -0600, Christoph Lameter wrote:
-> On Fri, 7 Nov 2008, Peter Zijlstra wrote:
+Quoting Eric Paris (eparis@redhat.com):
+> This patch will print cap_permitted and cap_inheritable data in the PATH
+> records of any file that has file capabilities set.  Files which do not
+> have fcaps set will not have different PATH records.
 > 
-> > The advantage is that the memory foot-print scales with nr_tasks and the
-> > runtime cost is min(nr_tasks, nr_cpus) where nr_cpus is limited to the
-> > cpus the process actually runs on, so this takes full advantage of
-> > things like cpusets.
+> An example audit record if you run:
+> setcap "cap_net_admin+pie" /bin/bash
+> /bin/bash
 > 
-> Typically you want threads of a process to spread out as far as possible.
-> The point of having multiple threads is concurrency after all. So this
-> will deteriorate in the common cases where you want the full aggregate
-> processing power of a machine to work on something. Timer processing is
-> already a latency problem (isnt there some option to switch that off?) and
-> a solution like this is going to make things worse.
+> type=SYSCALL msg=audit(1225741937.363:230): arch=c000003e syscall=59 success=yes exit=0 a0=2119230 a1=210da30 a2=20ee290 a3=8 items=2 ppid=2149 pid=2923 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts0 ses=3 comm="ping" exe="/bin/ping" subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 key=(null)
+> type=EXECVE msg=audit(1225741937.363:230): argc=2 a0="ping" a1="www.google.com"
+> type=CWD msg=audit(1225741937.363:230):  cwd="/root"
+> type=PATH msg=audit(1225741937.363:230): item=0 name="/bin/ping" inode=49256 dev=fd:00 mode=0104755 ouid=0 ogid=0 rdev=00:00 obj=system_u:object_r:ping_exec_t:s0 cap_fp=0000000000002000 cap_fi=0000000000002000 cap_fe=1 cap_fver=2
+> type=PATH msg=audit(1225741937.363:230): item=1 name=(null) inode=507915 dev=fd:00 mode=0100755 ouid=0 ogid=0 rdev=00:00 obj=system_u:object_r:ld_so_t:s0
 > 
-> Can we at least somehow make sure that nothing significantly happens in a
-> timer interrupt on a processor if the thread has not scheduled any events
-> or not odone any system calls?
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-Do threads actually scale that far? I thought mmap_sem contention and
-other shared state would render threads basically useless on these very
-large machines.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-But afaiu this stuff, the per-cpu loop is only done when an itimer is
-actually active.
+...
+> +struct audit_cap_data {
+> +	kernel_cap_t		permitted;
+> +	kernel_cap_t		inheritable;
+> +	union {
+> +		unsigned int	fE;
+> +		kernel_cap_t	effective;
+> +	};
+> +};
 
-The detail I've not looked at is, if when this itimer is indeed active
-and we are running 256 threads of the same application on all cpus do we
-then do the per-cpu loop for each tick on each cpu?
+To help future readers, it might be helpful to have a comment here to
+explain that fE is used when it describes a file cap, and effective when
+it describes a process cap.  Maybe that's obvious enough, I'm not sure.
 
+thanks,
+-serge
