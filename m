@@ -1,64 +1,411 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754827AbYKJUsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYKJU6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754827AbYKJUsZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 15:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYKJUsP
+	id S1754722AbYKJU6t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 15:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYKJU6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 15:48:15 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50235 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751005AbYKJUsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 15:48:15 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: Make NUMA on 32-bit depend on BROKEN
-Date: Mon, 10 Nov 2008 21:52:47 +0100
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Pavel Machek <pavel@suse.cz>, Peter Zijlstra <peterz@infradead.org>
+	Mon, 10 Nov 2008 15:58:40 -0500
+Received: from hs-out-0708.google.com ([64.233.178.240]:59019 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752484AbYKJU6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 15:58:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Tan7qeK6d1MOpstK3z9tKuJ9MUiGHJWY0eyvf4IHLfbz8UAbNG/mmJ58+lmVhJimGr
+         kSn1PO0cT6lLm8Nx5y70BRhEoGEFQc8p6H/N1bUSsZTzQPn9ZSkjW6Yjg8xMnpG8srO1
+         e+9ipNtCWVDWj8CRaJ7RD3EfCFZwUQlZS5Fw8=
+Message-ID: <4918A074.1050003@gmail.com>
+Date: Mon, 10 Nov 2008 21:58:28 +0100
+From: Andrea Righi <righi.andrea@gmail.com>
+Reply-To: righi.andrea@gmail.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, rientjes@google.com
+CC: balbir@linux.vnet.ibm.com, Michael Rubin <mrubin@google.com>,
+       menage@google.com, dave@linux.vnet.ibm.com, chlunde@ping.uio.no,
+       dpshah@google.com, eric.rannaud@gmail.com, fernando@oss.ntt.co.jp,
+       agk@sourceware.org, m.innocenti@cineca.it, s-uchida@ap.jp.nec.com,
+       ryov@valinux.co.jp, matt@bluehost.com, dradford@bluehost.com,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, containers@lists.osdl.org
+Subject: [PATCH -mm] mm: fine-grained dirty_ratio_pcm and dirty_background_ratio_pcm
+ (v2)
+References: <1221232192-13553-1-git-send-email-righi.andrea@gmail.com> <20080912131816.e0cfac7a.akpm@linux-foundation.org> <532480950809221641y3471267esff82a14be8056586@mail.gmail.com> <48EB4236.1060100@linux.vnet.ibm.com> <48EB851D.2030300@gmail.com> <20081008101642.fcfb9186.kamezawa.hiroyu@jp.fujitsu.com> <48ECB215.4040409@linux.vnet.ibm.com> <48EE236A.90007@gmail.com>
+In-Reply-To: <48EE236A.90007@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811102152.47901.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: x86: Make NUMA on 32-bit depend on BROKEN
+The current granularity of 5% of dirtyable memory for dirty pages writeback is
+too coarse for large memory machines and this will get worse as
+memory-size/disk-speed ratio continues to increase.
 
-While investigating the failure of hibernation on 32-bit x86 with
-CONFIG_NUMA set, as described in this message
-http://marc.info/?l=linux-kernel&m=122634118116226&w=4
-I asked some people for help and I was told that it wasn't really
-worth the effort, because CONFIG_NUMA was generally broken on 32-bit
-x86 systems and it shouldn't be used in such configs.  For this
-reason, make CONFIG_NUMA depend on BROKEN instead of EXPERIMENTAL on
-x86-32.
+These large writebacks can be unpleasant for desktop or latency-sensitive
+environments, where the time to complete each writeback can be perceived as a
+lack of responsiveness by the whole system.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Following there's a similar solution as discussed in [1], but a little
+bit simplified in order to provide the same functionality (in particular
+to avoid backward compatibility problems) and reduce the amount of code
+needed to implement an in-kernel parser to handle percentages with
+decimals digits.
+
+The kernel provides the following parameters:
+ - dirty_ratio, dirty_background_ratio in percentage (1 ... 100)
+ - dirty_ratio_pcm, dirty_background_ratio_pcm in units of percent mille (1 ... 100,000)
+
+Both dirty_ratio and dirty_ratio_pcm refer to the same vm_dirty_ratio variable,
+only the interface to read/write this value is different. The same is valid for
+dirty_background_ratio.
+
+In this way it's possible to provide a fine-grained interface to configure the
+writeback policy and at the same time preserve the compatibility with the old
+dirty_ratio / dirty_background_ratio users.
+
+Examples:
+ # echo 5 > /proc/sys/vm/dirty_ratio
+ # cat /proc/sys/vm/dirty_ratio
+ 5
+ # cat /proc/sys/vm/dirty_ratio_pcm
+ 5000
+
+ # echo 500 > /proc/sys/vm/dirty_ratio_pcm
+ # cat /proc/sys/vm/dirty_ratio
+ 0
+ # cat /proc/sys/vm/dirty_ratio_pcm
+ 500
+
+ # echo 5500 > /proc/sys/vm/dirty_ratio_pcm
+ # cat /proc/sys/vm/dirty_ratio
+ 5
+ # cat /proc/sys/vm/dirty_ratio_pcm
+ 5500
+
+Changelog: (v1 -> v2)
+
+* fix overflow in 32bit systems (calc_period_shift needs a u64)
+* rebase (and tested) to 2.6.28-rc2-mm1
+
+[1] http://lkml.org/lkml/2008/10/7/230
+
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
 ---
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/filesystems/proc.txt |   20 +++++++++
+ include/linux/sysctl.h             |    7 +++
+ kernel/sysctl.c                    |   80 +++++++++++++++++++++++++++++++++--
+ kernel/sysctl_check.c              |    3 +
+ mm/page-writeback.c                |   31 +++++++++++---
+ 5 files changed, 129 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -957,7 +957,7 @@ config ARCH_PHYS_ADDR_T_64BIT
- config NUMA
- 	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
- 	depends on SMP
--	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && EXPERIMENTAL)
-+	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && BROKEN)
- 	default n if X86_PC
- 	default y if (X86_NUMAQ || X86_SUMMIT || X86_BIGSMP)
- 	help
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index bcceb99..38ed5bf 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -1389,6 +1389,16 @@ pages + file cache, not including locked pages and HugePages), the number of
+ pages at which the pdflush background writeback daemon will start writing out
+ dirty data.
+ 
++dirty_background_ratio_pcm
++--------------------------
++
++A fine-grained interface to configure dirty_background_ratio.
++
++Contains, as a percentage in units of pcm (percent mille) of the dirtyable
++system memory (free pages + mapped pages + file cache, not including locked
++pages and HugePages), the number of pages at which the pdflush background
++writeback daemon will start writing out dirty data.
++
+ dirty_ratio
+ -----------------
+ 
+@@ -1397,6 +1407,16 @@ pages + file cache, not including locked pages and HugePages), the number of
+ pages at which a process which is generating disk writes will itself start
+ writing out dirty data.
+ 
++dirty_ratio_pcm
++---------------
++
++A fine-grained interface to configure dirty_ratio.
++
++Contains, as a percentage in units of pcm (percent mille) of the dirtyable
++system memory (free pages + mapped pages + file cache, not including locked
++pages and HugePages), the number of pages at which a process which is
++generating disk writes will itself start writing out dirty data.
++
+ dirty_writeback_centisecs
+ -------------------------
+ 
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 39d471d..799594b 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -32,6 +32,9 @@
+ struct file;
+ struct completion;
+ 
++#define PERCENT_PCM	1000
++#define ONE_HUNDRED_PCM (100 * PERCENT_PCM)
++
+ #define CTL_MAXNAME 10		/* how many path components do we allow in a
+ 				   call to sysctl?   In other words, what is
+ 				   the largest acceptable value for the nlen
+@@ -205,6 +208,8 @@ enum
+ 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
+ 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
+ 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
++	VM_DIRTY_BACKGROUND_PCM = 36, /* fine-grained dirty_background_ratio */
++	VM_DIRTY_RATIO_PCM = 37, /* fine-grained dirty_ratio */
+ };
+ 
+ 
+@@ -991,6 +996,8 @@ extern int proc_dointvec_userhz_jiffies(struct ctl_table *, int, struct file *,
+ 					void __user *, size_t *, loff_t *);
+ extern int proc_dointvec_ms_jiffies(struct ctl_table *, int, struct file *,
+ 				    void __user *, size_t *, loff_t *);
++extern int proc_dointvec_pcm_minmax(struct ctl_table *, int, struct file *,
++				    void __user *, size_t *, loff_t *);
+ extern int proc_doulongvec_minmax(struct ctl_table *, int, struct file *,
+ 				  void __user *, size_t *, loff_t *);
+ extern int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int,
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index d14953a..06ba902 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -88,9 +88,7 @@ extern int rcutorture_runnable;
+ #endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
+ 
+ /* Constants used for minimum and  maximum */
+-#if defined(CONFIG_HIGHMEM) || defined(CONFIG_DETECT_SOFTLOCKUP)
+ static int one = 1;
+-#endif
+ 
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ static int sixty = 60;
+@@ -103,6 +101,7 @@ static int two = 2;
+ 
+ static int zero;
+ static int one_hundred = 100;
++static int one_hundred_pcm = ONE_HUNDRED_PCM;
+ 
+ /* this is needed for the proc_dointvec_minmax for [fs_]overflow UID and GID */
+ static int maxolduid = 65535;
+@@ -926,12 +925,23 @@ static struct ctl_table vm_table[] = {
+ 		.data		= &dirty_background_ratio,
+ 		.maxlen		= sizeof(dirty_background_ratio),
+ 		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec_minmax,
++		.proc_handler	= &proc_dointvec_pcm_minmax,
+ 		.strategy	= &sysctl_intvec,
+-		.extra1		= &zero,
++		.extra1		= &one,
+ 		.extra2		= &one_hundred,
+ 	},
+ 	{
++		.ctl_name	= VM_DIRTY_BACKGROUND_PCM,
++		.procname	= "dirty_background_ratio_pcm",
++		.data		= &dirty_background_ratio,
++		.maxlen		= sizeof(dirty_background_ratio),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec_minmax,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &one,
++		.extra2		= &one_hundred_pcm,
++	},
++	{
+ 		.ctl_name	= VM_DIRTY_RATIO,
+ 		.procname	= "dirty_ratio",
+ 		.data		= &vm_dirty_ratio,
+@@ -939,10 +949,21 @@ static struct ctl_table vm_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &dirty_ratio_handler,
+ 		.strategy	= &sysctl_intvec,
+-		.extra1		= &zero,
++		.extra1		= &one,
+ 		.extra2		= &one_hundred,
+ 	},
+ 	{
++		.ctl_name	= VM_DIRTY_RATIO_PCM,
++		.procname	= "dirty_ratio_pcm",
++		.data		= &vm_dirty_ratio,
++		.maxlen		= sizeof(vm_dirty_ratio),
++		.mode		= 0644,
++		.proc_handler	= &dirty_ratio_handler,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &one,
++		.extra2		= &one_hundred_pcm,
++	},
++	{
+ 		.procname	= "dirty_writeback_centisecs",
+ 		.data		= &dirty_writeback_interval,
+ 		.maxlen		= sizeof(dirty_writeback_interval),
+@@ -2525,6 +2546,35 @@ int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int write,
+ 				     lenp, ppos, HZ, 1000l);
+ }
+ 
++static int do_proc_dointvec_pcm_minmax_conv(int *negp, unsigned long *lvalp,
++					 int *valp, int write, void *data)
++{
++	struct do_proc_dointvec_minmax_conv_param *param = data;
++	int val;
++
++	if (write) {
++		if (*lvalp > LONG_MAX / PERCENT_PCM)
++			return -EINVAL;
++		val = *negp ? -*lvalp : *lvalp;
++		if ((param->min && *param->min > val) ||
++		    (param->max && *param->max < val))
++			return -EINVAL;
++		*valp = val * PERCENT_PCM;
++	} else {
++		unsigned long lval;
++
++		val = *valp;
++		if (val < 0) {
++			*negp = -1;
++			lval = (unsigned long)-val;
++		} else {
++			*negp = 0;
++			lval = (unsigned long)val;
++		}
++		*lvalp = lval / PERCENT_PCM;
++	}
++	return 0;
++}
+ 
+ static int do_proc_dointvec_jiffies_conv(int *negp, unsigned long *lvalp,
+ 					 int *valp,
+@@ -2663,6 +2713,19 @@ int proc_dointvec_ms_jiffies(struct ctl_table *table, int write, struct file *fi
+ 				do_proc_dointvec_ms_jiffies_conv, NULL);
+ }
+ 
++int proc_dointvec_pcm_minmax(struct ctl_table *table, int write,
++			struct file *filp, void __user *buffer, size_t *lenp,
++			loff_t *ppos)
++{
++	struct do_proc_dointvec_minmax_conv_param param = {
++		.min = (int *)table->extra1,
++		.max = (int *)table->extra2,
++	};
++
++	return do_proc_dointvec(table, write, filp, buffer, lenp, ppos,
++				do_proc_dointvec_pcm_minmax_conv, &param);
++}
++
+ static int proc_do_cad_pid(struct ctl_table *table, int write, struct file *filp,
+ 			   void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+@@ -2711,6 +2774,13 @@ int proc_dointvec_jiffies(struct ctl_table *table, int write, struct file *filp,
+ 	return -ENOSYS;
+ }
+ 
++int proc_dointvec_pcm_minmax(struct ctl_table *table, int write,
++			struct file *filp, void __user *buffer, size_t *lenp,
++			loff_t *ppos)
++{
++	return -ENOSYS;
++}
++
+ int proc_dointvec_userhz_jiffies(struct ctl_table *table, int write, struct file *filp,
+ 		    void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+diff --git a/kernel/sysctl_check.c b/kernel/sysctl_check.c
+index c35da23..83934a8 100644
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -111,7 +111,9 @@ static const struct trans_ctl_table trans_vm_table[] = {
+ 	{ VM_OVERCOMMIT_MEMORY,		"overcommit_memory" },
+ 	{ VM_PAGE_CLUSTER,		"page-cluster" },
+ 	{ VM_DIRTY_BACKGROUND,		"dirty_background_ratio" },
++	{ VM_DIRTY_BACKGROUND_PCM,	"dirty_background_ratio_pcm" },
+ 	{ VM_DIRTY_RATIO,		"dirty_ratio" },
++	{ VM_DIRTY_RATIO_PCM,		"dirty_ratio_pcm" },
+ 	{ VM_DIRTY_WB_CS,		"dirty_writeback_centisecs" },
+ 	{ VM_DIRTY_EXPIRE_CS,		"dirty_expire_centisecs" },
+ 	{ VM_NR_PDFLUSH_THREADS,	"nr_pdflush_threads" },
+@@ -1494,6 +1496,7 @@ int sysctl_check_table(struct nsproxy *namespaces, struct ctl_table *table)
+ 			    (table->proc_handler == proc_dostring) ||
+ 			    (table->proc_handler == proc_dointvec) ||
+ 			    (table->proc_handler == proc_dointvec_minmax) ||
++			    (table->proc_handler == proc_dointvec_pcm_minmax) ||
+ 			    (table->proc_handler == proc_dointvec_jiffies) ||
+ 			    (table->proc_handler == proc_dointvec_userhz_jiffies) ||
+ 			    (table->proc_handler == proc_dointvec_ms_jiffies) ||
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index b3584bf..e010a39 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -66,7 +66,7 @@ static inline long sync_writeback_pages(void)
+ /*
+  * Start background writeback (via pdflush) at this percentage
+  */
+-int dirty_background_ratio = 5;
++int dirty_background_ratio = 5 * PERCENT_PCM;
+ 
+ /*
+  * free highmem will not be subtracted from the total free memory
+@@ -77,7 +77,7 @@ int vm_highmem_is_dirtyable;
+ /*
+  * The generator of dirty data starts writeback at this percentage
+  */
+-int vm_dirty_ratio = 10;
++int vm_dirty_ratio = 10 * PERCENT_PCM;
+ 
+ /*
+  * The interval between `kupdate'-style writebacks, in jiffies
+@@ -133,9 +133,10 @@ static struct prop_descriptor vm_dirties;
+  */
+ static int calc_period_shift(void)
+ {
+-	unsigned long dirty_total;
++	u64 dirty_total;
+ 
+-	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory()) / 100;
++	dirty_total = (vm_dirty_ratio * determine_dirtyable_memory())
++			/ ONE_HUNDRED_PCM;
+ 	return 2 + ilog2(dirty_total - 1);
+ }
+ 
+@@ -147,7 +148,23 @@ int dirty_ratio_handler(struct ctl_table *table, int write,
+ 		loff_t *ppos)
+ {
+ 	int old_ratio = vm_dirty_ratio;
+-	int ret = proc_dointvec_minmax(table, write, filp, buffer, lenp, ppos);
++	int ret;
++
++	switch (table->ctl_name) {
++	case VM_DIRTY_RATIO:
++		ret = proc_dointvec_pcm_minmax(table, write, filp, buffer,
++					lenp, ppos);
++		break;
++	case VM_DIRTY_RATIO_PCM:
++		ret = proc_dointvec_minmax(table, write, filp, buffer,
++					lenp, ppos);
++		break;
++	default:
++		ret = -EINVAL;
++		WARN_ON(1);
++		break;
++	}
++
+ 	if (ret == 0 && write && vm_dirty_ratio != old_ratio) {
+ 		int shift = calc_period_shift();
+ 		prop_change_shift(&vm_completions, shift);
+@@ -380,8 +397,8 @@ get_dirty_limits(long *pbackground, long *pdirty, long *pbdi_dirty,
+ 	if (background_ratio >= dirty_ratio)
+ 		background_ratio = dirty_ratio / 2;
+ 
+-	background = (background_ratio * available_memory) / 100;
+-	dirty = (dirty_ratio * available_memory) / 100;
++	background = (background_ratio * available_memory) / ONE_HUNDRED_PCM;
++	dirty = (dirty_ratio * available_memory) / ONE_HUNDRED_PCM;
+ 	tsk = current;
+ 	if (tsk->flags & PF_LESS_THROTTLE || rt_task(tsk)) {
+ 		background += background / 4;
