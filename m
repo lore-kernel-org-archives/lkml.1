@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbYKJRhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYKJRsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755332AbYKJRhw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 12:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbYKJRho
+	id S1754846AbYKJRsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 12:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYKJRsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 12:37:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:50846 "EHLO
+	Mon, 10 Nov 2008 12:48:08 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42517 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753917AbYKJRho (ORCPT
+	with ESMTP id S1754139AbYKJRsH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 12:37:44 -0500
-Date: Mon, 10 Nov 2008 18:46:47 +0100
+	Mon, 10 Nov 2008 12:48:07 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pavel Machek <pavel@suse.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
 From: Andi Kleen <andi@firstfloor.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Robert Richter <robert.richter@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] oprofile: re-arm APIC_DM_NMI in ppro_check_ctrs()
-Message-ID: <20081110174647.GX29626@one.firstfloor.org>
-References: <20081107171339.GQ9785@erda.amd.com> <4917EB51.9020304@cosmosbay.com> <87ljvsott2.fsf@basil.nowhere.org> <491843C4.9090306@cosmosbay.com> <20081110154948.GW29626@one.firstfloor.org> <49185828.4090306@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49185828.4090306@cosmosbay.com>
-User-Agent: Mutt/1.4.2.1i
+References: <20081109140726.GB1786@ucw.cz> <20081110075216.GD2093@elte.hu>
+	<20081110075529.GD707@atrey.karlin.mff.cuni.cz>
+	<20081110080436.GF2093@elte.hu> <20081110082836.GB1969@elf.ucw.cz>
+	<20081110125335.GB28643@elte.hu>
+Date: Mon, 10 Nov 2008 19:05:34 +0100
+In-Reply-To: <20081110125335.GB28643@elte.hu> (Ingo Molnar's message of "Mon, 10 Nov 2008 13:53:35 +0100")
+Message-ID: <878wrrpic1.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 04:50:00PM +0100, Eric Dumazet wrote:
-> Andi Kleen a écrit 
+Ingo Molnar <mingo@elte.hu> writes:
 
+> i can only suggest some stupid tweaking of the above options - for 
+> example, does the bug scenario change in any way if you switch it over 
+> to CONFIG_DISCONTIGMEM=y ?
 
-Can you send the /proc/cpuinfo output privately please?
-I can ask around here.
-
-> >> 			oprofile_add_sample(regs, i);
-> >>+			/*
-> >>+			 * We need to unmask the apic vector *before*
-> >>+			 * writing reset_value to msr counter
-> >>+			 */
-> >>+			apic_write(APIC_LVTPC, APIC_DM_NMI);
-> >> 			wrmsrl(msrs->counters[i].addr, -reset_value[i]);
-> >> 		}
-> >> 	}
-> >> 
-> >>-	/* Only P6 based Pentium M need to re-unmask the apic vector but it
-> >>-	 * doesn't hurt other P6 variant */
-> >>-	apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
-> >
-> >Did you also test if it really needs to be inside the if () or 
-> >just before the wrmsrl? 
-> 
-> 
-> In my testings, the "if (CTR_OVERFLOWED())" condition is always true.
-> 
-> (I am profiling one event only)
-
-There can be other valid (but rare) cases of NMIs. The code handles this
-by not having any overflow events.
-
-It might be that the case where your NMI gets stuck is such
-a stray NMI?
-
-That is in theory it should be safe to unmask  that vector
-multiple times (the other NMIs should come from other vectors),
-but local APIC is an fragile area.
-
-> 
-> I felt uncomfortable issuing the apic_write() before oprofile_add_sample()
-> 
-> Do you mean doing the apic_write() right at the beginning of the 
-> ppro_check_ctrs()
-> function ?
-
-Better once, otherwise you'll do it multiple times worst case
-(multiple counters can overflow)
+iirc we removed that some time ago so it would probably need some
+source hackery. There is only vmemmap or flat left.
 
 -Andi
 
