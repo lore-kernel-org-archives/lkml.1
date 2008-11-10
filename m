@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYKJEou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbYKJEsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbYKJEou (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 9 Nov 2008 23:44:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYKJEol
+	id S1753829AbYKJEsG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 9 Nov 2008 23:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbYKJEry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 9 Nov 2008 23:44:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37304 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753132AbYKJEok (ORCPT
+	Sun, 9 Nov 2008 23:47:54 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43621 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbYKJErx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 9 Nov 2008 23:44:40 -0500
-Date: Sun, 9 Nov 2008 20:42:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nicolas Pitre <nico@cam.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       lkml <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
-       benh@kernel.crashing.org, paulus@samba.org,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
-Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
-Message-Id: <20081109204256.89ab7925.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811092304300.13034@xanadu.home>
-References: <9405.1226101315@redhat.com>
-	<20081108001555.GE18378@flint.arm.linux.org.uk>
-	<alpine.LFD.2.00.0811080939180.13034@xanadu.home>
-	<alpine.LFD.2.00.0811081746060.13034@xanadu.home>
-	<20081109022549.GA18508@Krystal>
-	<alpine.LFD.2.00.0811082143320.13034@xanadu.home>
-	<alpine.LFD.2.00.0811082356090.13034@xanadu.home>
-	<alpine.LFD.2.00.0811090015570.13034@xanadu.home>
-	<20081109064855.GA23782@Krystal>
-	<alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-	<20081109162250.GB10181@Krystal>
-	<alpine.LFD.2.00.0811092304300.13034@xanadu.home>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 9 Nov 2008 23:47:53 -0500
+Date: Mon, 10 Nov 2008 13:47:51 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Subject: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-ia64@vger.kernel.org,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 09 Nov 2008 23:20:00 -0500 (EST) Nicolas Pitre <nico@cam.org> wrote:
 
-> On Sun, 9 Nov 2008, Mathieu Desnoyers wrote:
-> 
-> > * Nicolas Pitre (nico@cam.org) wrote:
-> > > Do you really have such instances where multiple call sites are needed?  
-> > > That sounds even more confusing to me than the current model.  Better 
-> > > encapsulate the usage of this macro within some function which has a 
-> > > stronger meaning, such as sched_clock(), and call _that_ from multiple 
-> > > sites instead.
-> > 
-> > I see a few reasons for it :
-> > 
-> > - If we want to inline the whole read function so we don't pay the extra
-> >   runtime cost of a function call, this would become required.
-> 
-> You can inline it as you want as long as it remains in the same .c file.  
-> The static variable is still shared amongst all call sites in that case.
+Hello. 
 
-Please don't rely upon deep compiler behaviour like that.  It is
-unobvious to the reader and it might break if someone uses it incorrectly,
-or if the compiler implementation changes, or if a non-gcc compiler is
-used, etc.
+I have a (may be dumb) question about dma_alloc_coherent() for ia64.
 
-It is far better to make the management of the state explicit and at
-the control of the caller.  Get the caller to allocate the state and
-pass its address into this function.  Simple, clear, explicit and
-robust.
+
+Why does dma_alloc_coherent() of ia64 force GFP_DMA yet?
+And why is swiotlb_dma_alloc_coherent() default routine of
+platform_dma_alloc_coherent()?
+
+-------
+#define dma_alloc_coherent(dev, size, handle, gfp)      \
+        platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
+--------
+
+Even if a device allows over 4G access and the driver doesn't specify
+GFP_DMA, dma_alloc_coherent() returns under 4G area.
+I guess many people think this is not so big issue because drivers require
+very small memory generally.
+
+However, I think this has the possibility of a finishing blow of OOM.
+For example,
+
+  1) Page caches occupy normal zone, and DMA zone is free.
+  2) A user's application requires a few GB memory and mlock it.
+     All DMA zone is occupied by it.
+  3) A device which allows over 4GB is hot-added.
+     But dma_alloc_coherent() try to allocate DMA zone.
+     Then OOM occurs because there is no freeable pages.
+
+I heard there are some users who require a few GB mlock.
+There are similar trouble in past. 
+
+
+If GFP_DMA is removed from above definition of dma_alloc_coherent(),
+what will happen?
+
+If it is not allowed, how is followings?
+
+dma_alloc_coherent()
+  -> platform_dma_alloc_coherent()
+       -> normal_alloc_coherent()
+          {
+                 if (dma_mask allow over 4G)
+                        ret = __get_free_pages();
+				:
+                        (check validation of returned address)
+				:
+                 else 
+                        swiotlb_alloc_coherent();
+          }
+}
+
+If I'm something misunderstanding, please let me know.
+
+
+Thanks.
+
+-- 
+Yasunori Goto 
+
+
