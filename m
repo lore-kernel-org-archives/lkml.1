@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbYKJUfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbYKJUgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754876AbYKJUfZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 15:35:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYKJUfI
+	id S1755198AbYKJUgN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 15:36:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbYKJUf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 15:35:08 -0500
-Received: from colo.lackof.org ([198.49.126.79]:33384 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752543AbYKJUfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 15:35:06 -0500
-Date: Mon, 10 Nov 2008 13:34:54 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Nobin Mathew <nobin.mathew@gmail.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-       Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Robert Hancock <hancockr@shaw.ca>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: sharing interrupt between PCI device
-Message-ID: <20081110203454.GB18188@colo.lackof.org>
-References: <4910E8AC.7050407@shaw.ca> <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com> <20081108172716.GA28039@colo.lackof.org> <4915E43E.4010206@gmail.com> <20081108191536.GC28039@colo.lackof.org> <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com> <20081110075115.GA13239@colo.lackof.org> <20081110075827.GE2093@elte.hu> <8d6898730811100231j2ca5e8ceub0d5137c1ef1f9d0@mail.gmail.com> <8d6898730811100742g31711b9ck9e046d77273d0113@mail.gmail.com>
+	Mon, 10 Nov 2008 15:35:57 -0500
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:46769 "EHLO
+	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753843AbYKJUfy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 15:35:54 -0500
+Message-ID: <49189ADD.7030607@cs.columbia.edu>
+Date: Mon, 10 Nov 2008 15:34:37 -0500
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC v9][PATCH 05/13] Dump memory address space
+References: <1226335060-7061-1-git-send-email-orenl@cs.columbia.edu> <1226335060-7061-6-git-send-email-orenl@cs.columbia.edu> <20081110201251.GA7471@us.ibm.com>
+In-Reply-To: <20081110201251.GA7471@us.ibm.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8d6898730811100742g31711b9ck9e046d77273d0113@mail.gmail.com>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 09:12:05PM +0530, Nobin Mathew wrote:
-> I could not find the definition of acpi_unregister_gsi in i386/x86_64
-> code, it is defined only for ia64.
 
-Sorry - I was looking at the ia64 branch by mistake.
 
+Serge E. Hallyn wrote:
+> Quoting Oren Laadan (orenl@cs.columbia.edu):
+>> +/**
+>> + * cr_fill_fname - return pathname of a given file
+>> + * @path: path name
+>> + * @root: relative root
+>> + * @buf: buffer for pathname
+>> + * @n: buffer length (in) and pathname length (out)
+>> + */
+>> +static char *
+>> +cr_fill_fname(struct path *path, struct path *root, char *buf, int *n)
+>> +{
+>> +	struct path tmp = *root;
+>> +	char *fname;
+>> +
+>> +	BUG_ON(!buf);
+>> +	fname = __d_path(path, &tmp, buf, *n);
+>> +	if (!IS_ERR(fname))
+>> +		*n = (buf + (*n) - fname);
+>> +	/*
+>> +	 * FIXME: if __d_path() changed these, it must have stepped out of
+>> +	 * init's namespace. Since currently we require a unified namespace
+>> +	 * within the container: simply fail.
+>> +	 */
+>> +	if (tmp.mnt != root->mnt || tmp.dentry != root->dentry)
+>> +		fname = ERR_PTR(-EBADF);
+>> +
+>> +	return fname;
+>> +}
 > 
-> Since it is defined as a weak symbol, I feel it is not getting called
-> (correct if I am wrong, I searched in google for this).
-
-You are right.
-
-sorry,
-grant
-
-> /* FIXME: implement x86/x86_64 version */
-> void __attribute__ ((weak)) acpi_unregister_gsi(u32 i)
-> {
-> }
+> You still are not taking the dcache_lock around __d_path.
 > 
-> How this weak symbols work, is it something like
-> acpi_pci_irq_disable() will not call acpi_unregister_gsi() in some
-> platforms.
-> 
-> Thanks
-> Nobin Mathew.
-> 
-> On Mon, Nov 10, 2008 at 4:01 PM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
-> > Yes USB Virtual Controller has input devices like keyboard and mouse
-> > (routed through hpilo card (remote console)), so those things stops
-> > working when we remove hpilo driver.
-> >
-> > Thanks
-> > Nobin Mathew
-> >
-> > On Mon, Nov 10, 2008 at 1:28 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >>
-> >> * Grant Grundler <grundler@parisc-linux.org> wrote:
-> >>
-> >>> [+ingo - question for you about disable_irq() below]
-> >>
-> >>> The same problem exists with disable_irq() : only takes a global
-> >>> IRQ# and no additional identifying information to prevent disabling
-> >>> a shared IRQ. So I'm not sure if this is a bug with ACPI or design
-> >>> flaw in generic IRQ APIs.  Ingo?
-> >>
-> >> that's how disable_irq() always worked: it disables all handlers on
-> >> that IRQ#. If the IRQ# is shared, it disables all handlers.
-> >>
-> >>        Ingo
-> >>
-> >
+
+You still are right.
+
+Oren.
