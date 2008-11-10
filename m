@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbYKJKK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYKJKO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755145AbYKJKK3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 05:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYKJKKU
+	id S1754700AbYKJKO2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 05:14:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYKJKOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 05:10:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37295 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753974AbYKJKKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 05:10:18 -0500
-Date: Mon, 10 Nov 2008 11:09:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] sparse_irq aka dyn_irq
-Message-ID: <20081110100959.GA22927@elte.hu>
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu> <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu> <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com> <20081110094033.GL22392@elte.hu> <20081110015511.453a801e.akpm@linux-foundation.org> <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu> <49180771.1050106@kernel.org>
+	Mon, 10 Nov 2008 05:14:19 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:61276 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbYKJKOS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 05:14:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=vS4t4Xi+NC81fYgc9CsJs2M6SJHKmPEwvF91gWOi8mhMkO+X8X6UZlvDC0JXKHk/gX
+         OGebYduOJJoe2DzFHznvUQ0KuWS7PpajIK8zKah76ggeCENJw78AOa+S/SFwBtJDwZE6
+         DyWP5B9PKDAIwPn/wmTR6Z9MkfPcJ4NW1BsUI=
+Message-ID: <49180973.6080808@gmail.com>
+Date: Mon, 10 Nov 2008 11:14:11 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
+To: "GARCIA DE SORIA LUCENA, JUAN JESUS" <juanj.g_soria@grupobbva.com>
+CC: linux-kernel@vger.kernel.org, garyhade@us.ibm.com
+Subject: Re: Regression: Boot hang sizing transparent PCI-to-PCI bridge since
+ after 2.6.25-r7.
+References: <D913A682D10DBA4097B5D068D281B09B0266F65B@S1128EXE.bbva.igrupobbva>
+In-Reply-To: <D913A682D10DBA4097B5D068D281B09B0266F65B@S1128EXE.bbva.igrupobbva>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49180771.1050106@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> Andrew Morton wrote:
-> >>> On Mon, 10 Nov 2008 10:40:33 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> >>>
-> >>>>>>> @@ -987,6 +988,8 @@ void __init mem_init(void)
-> >>>>>>>
-> >>>>>>>       set_highmem_pages_init();
-> >>>>>>>
-> >>>>>>> +     after_bootmem = 1;
-> >>>>>> this hack can go away once we have a proper percpu_alloc() that can be
-> >>>>>> used early enough.
-> >>>>> where is that fancy patch? current percpu_alloc(), will keep big 
-> >>>>> pointer in array..., instead of put that pointer in percpu_area
-> >>>>>
-> >>>>> 64bit has that after_bootmem already.
-> >>>> or at least introduce a "bootmem agnostic" allocator instead of 
-> >>>> open-coding the after_bootmem flag.
-> >>>>
-> >>>> Something like:
-> >>>>
-> >>>>   early_kzalloc()
-> >>>>
-> >>>> ?
-> >>>>
-> >>>> Andrew, any preferences?
-> >>> My mind reading ain't what it was, and this after_bootmem flag is
-> >>> write-only in this patch.
-> >>>
-> >>> So what's all this about?
-> >> if i use alloc_bootmem to get some memory, and later after_bootmem, 
-> >> can I use kfree to free it?
-> > 
-> > hm, no. If we used alloc_bootmem(), then we must not free it after 
-> > after_bootmem has been set.
+On 11/10/2008 10:12 AM, GARCIA DE SORIA LUCENA, JUAN JESUS wrote:
+> Hello.
 > 
-> ok, let keep irq_desc for legacy irqs not movable...
+> Time ago I bisected a commit that was making my OKI Anima 3300 laptop
+> hang during boot.
 
-most of them are movable right now, correct? If we restrict their 
-movability now that might surprise existing usecases negatively.
+Doesn't pci=norom help in your case? There was a patch which tried to resolve
+this issue in a different manner, but it was reverted too. This boot parameter
+was introduced as a replacement IIRC.
 
-	Ingo
+> The offending commit was:
+> 
+> ------------
+> commit 12c22d6ef299ccf0955e5756eb57d90d7577ac68
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Wed Mar 26 11:22:40 2008 -0700
+> 
+>     Revert "PCI: remove transparent bridge sizing"
+> 
+>     This reverts commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f, which
+>     caused various interesting problems for people, including wrong
+> resource
+>     allocations.  See for example bugzilla entry "2.6.25-rc2: ohci1394
+>     problem (MMIO broken)" at
+> 
+>         http://bugzilla.kernel.org/show_bug.cgi?id=10080
+> 
+> [...]
