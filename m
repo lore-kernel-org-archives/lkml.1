@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYKJKO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbYKJKVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbYKJKO2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 05:14:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYKJKOT
+	id S1754653AbYKJKVi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 05:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbYKJKV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 05:14:19 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:61276 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753936AbYKJKOS (ORCPT
+	Mon, 10 Nov 2008 05:21:29 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:54597 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbYKJKV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 05:14:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=vS4t4Xi+NC81fYgc9CsJs2M6SJHKmPEwvF91gWOi8mhMkO+X8X6UZlvDC0JXKHk/gX
-         OGebYduOJJoe2DzFHznvUQ0KuWS7PpajIK8zKah76ggeCENJw78AOa+S/SFwBtJDwZE6
-         DyWP5B9PKDAIwPn/wmTR6Z9MkfPcJ4NW1BsUI=
-Message-ID: <49180973.6080808@gmail.com>
-Date: Mon, 10 Nov 2008 11:14:11 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Mon, 10 Nov 2008 05:21:28 -0500
+Date: Mon, 10 Nov 2008 15:51:15 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
+	controller
+Message-ID: <20081110102115.GA7645@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com> <20081027044319.GA4386@in.ibm.com> <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com> <49057ADD.1050705@cn.fujitsu.com> <20081030171622.GA19872@linux.vnet.ibm.com> <20081031094041.194a32d9.kamezawa.hiroyu@jp.fujitsu.com> <20081104124937.GB4898@in.ibm.com> <20081104092040.781f9546.randy.dunlap@oracle.com> <20081105032440.GA3298@in.ibm.com> <20081105032911.GC8304@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "GARCIA DE SORIA LUCENA, JUAN JESUS" <juanj.g_soria@grupobbva.com>
-CC: linux-kernel@vger.kernel.org, garyhade@us.ibm.com
-Subject: Re: Regression: Boot hang sizing transparent PCI-to-PCI bridge since
- after 2.6.25-r7.
-References: <D913A682D10DBA4097B5D068D281B09B0266F65B@S1128EXE.bbva.igrupobbva>
-In-Reply-To: <D913A682D10DBA4097B5D068D281B09B0266F65B@S1128EXE.bbva.igrupobbva>
-X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081105032911.GC8304@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10/2008 10:12 AM, GARCIA DE SORIA LUCENA, JUAN JESUS wrote:
-> Hello.
+On Wed, Nov 05, 2008 at 08:59:11AM +0530, Srivatsa Vaddagiri wrote:
+> On Wed, Nov 05, 2008 at 08:54:40AM +0530, Bharata B Rao wrote:
+> > I will resend the patch with other corrections you mentioned only if
+> > Paul/Ingo want this patch to go in.
 > 
-> Time ago I bisected a commit that was making my OKI Anima 3300 laptop
-> hang during boot.
+> I strongly recommend his patch to go in, as otherwise group accounting
+> will be broken where control hierarchy is not same as accounting
+> hierarchy. In that sense, I would treat this patch as more of a bug fix
+> than anything else.
+> 
 
-Doesn't pci=norom help in your case? There was a patch which tried to resolve
-this issue in a different manner, but it was reverted too. This boot parameter
-was introduced as a replacement IIRC.
+Wondering what the status of this patch is?
 
-> The offending commit was:
-> 
-> ------------
-> commit 12c22d6ef299ccf0955e5756eb57d90d7577ac68
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Wed Mar 26 11:22:40 2008 -0700
-> 
->     Revert "PCI: remove transparent bridge sizing"
-> 
->     This reverts commit 8fa5913d54f3b1e09948e6a0db34da887e05ff1f, which
->     caused various interesting problems for people, including wrong
-> resource
->     allocations.  See for example bugzilla entry "2.6.25-rc2: ohci1394
->     problem (MMIO broken)" at
-> 
->         http://bugzilla.kernel.org/show_bug.cgi?id=10080
-> 
-> [...]
+thanks,
+-- 
+regards,
+Dhaval
