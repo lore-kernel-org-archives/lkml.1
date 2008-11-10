@@ -1,67 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYKJXUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYKJXVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYKJXUm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 18:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYKJXUd
+	id S1753861AbYKJXVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 18:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbYKJXVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 18:20:33 -0500
-Received: from ns1.suse.de ([195.135.220.2]:44056 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752237AbYKJXUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 18:20:32 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       James Cloos <cloos@jhcloos.com>,
-       Paul Collins <paul@burly.ondioline.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	<wnN9HICUAgP.A._d.f5zFJB@chimera> <1226295985.7731.7.camel@pasglop>
-	<jetzafiad4.fsf@sykes.suse.de> <1226353979.7530.8.camel@pasglop>
-X-Yow: I was in EXCRUCIATING PAIN until I started reading JACK AND JILL
- Magazine!!
-Date: Tue, 11 Nov 2008 00:20:27 +0100
-In-Reply-To: <1226353979.7530.8.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Tue, 11 Nov 2008 08:52:59 +1100")
-Message-ID: <jefxlzi2x0.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Mon, 10 Nov 2008 18:21:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39437 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751594AbYKJXVG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 18:21:06 -0500
+Date: Mon, 10 Nov 2008 15:20:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tomas Henzl <thenzl@redhat.com>
+Cc: gernot.hillier@siemens.com, aacraid@adaptec.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mark_salyzyn@adaptec.com, Thomas Guyot-Sionnest <dermoth@aei.ca>,
+       stable@kernel.org
+Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit
+ 94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+Message-Id: <20081110152006.8982133b.akpm@linux-foundation.org>
+In-Reply-To: <48EB6600.9020204@redhat.com>
+References: <48D10E1A.8030804@siemens.com>
+	<48EB6600.9020204@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Tue, 07 Oct 2008 15:37:04 +0200
+Tomas Henzl <thenzl@redhat.com> wrote:
 
-> On Mon, 2008-11-10 at 21:39 +0100, Andreas Schwab wrote:
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> 
->> > radeonfb: Fix accel problems with new imageblit hook
->> >
->> > Some radeon chips have issues with color expansion of pixmaps that
->> > aren't a multiple of 32 pixels wide. This works around it the same
->> > way X does by requesting the right pitch alignment from fbcon and
->> > then using the chip scissors to do clipping to the requested size.
->> 
->> Unfortunately this does not fix the suspend regression on PowerBook6,7.
->> Instead I have to use the workaround in
->> <http://marc.info/?l=linux-kernel&m=122515268301239&w=2>.
->
-> Strange. The suspend problem happens also when X hasn't been launched at all ?
+> Hillier, Gernot wrote:
+> > Hi there!
+> >
+> > On our AMD64 machines equipped with old Adaptec 2200S controllers, we
+> > experienced a regression when updating to 2.6.25. The machines won't
+> > boot anymore (in a reasonable time), but instead spit out tons of those
+> > messages:
+> > aac_srb: aac_fib_send failed with status: 8195
+> >
+> > This is already reported in quite some places including LKML:
+> > http://lkml.org/lkml/2008/5/12/365
+> > https://bugzilla.redhat.com/show_bug.cgi?id=450444
+> > https://bugzilla.redhat.com/show_bug.cgi?id=453472
+> > http://www.linuxquestions.org/questions/red-hat-31/aacsrb-aacfibsend-failed-with-status-8195-651078/
+> > http://forums.gentoo.org/viewtopic-p-5077382.html?sid=a51c3a0fba6aa854c0b49b8fae5cc15a
+> >
+> > We found that this regression seems to be introduced by the bugfix
+> > "aacraid: fix driver failure with Dell PowerEdge
+> > Expandable RAID Controller 3/Di":
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+> >
+> > By simply removing the quirk flag for our controller, we could boot again.
+> >
+> > We did some quick stress tests on an AMD64bit machine with 16GB of RAM 
+> > and saw no problems after this change:
+> >
+> > diff -ur linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c
+> > --- linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c	2008-09-15 16:07:14.000000000 +0100
+> > +++ linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c	2008-09-15 16:09:26.000000000 +0100
+> > @@ -176,7 +176,7 @@
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+> > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
+> > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG }, /* Adaptec 2200S (Vulcan) */
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+> >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+> >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+> >
+> > Can this be safely changed/merged? Or is this the wrong way to fix it?
+> >
+> > Please note that we also have machines equipped with newer Adaptec 2230S
+> > controllers (PCI ID 9005:0286) which run perfectly with the current driver.
+> >
+> >   
+> Hi,
+> from what I read about this it seems to me that people are complaining also about issues with the 2120S Controller.
+> So if the patch is taken in this form the original patch should be extended to cover both controllers.
+> 
+> Signed-off-by: Tomas Henzl <thenzl@redhat.com>
+> 
+> ---
+> diff -Naurp linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c
+> --- linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c	2008-09-25 18:06:23.000000000 +0200
+> +++ linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c	2008-10-03 12:12:06.000000000 +0200
+> @@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
+>  	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
+> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
+> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
+>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+> 
+> 
 
-There seems to be some race involved here.  I cannot reproduce the
-problem ATM.
+I added this to my tree with Tomas's title&changelog (thanks - I was
+about to whine about that).  Thanks Thomas for the reminder.  I tagged
+it as backportable to 2.6.25.x, 2.6.26.x and 2.6.27.x.
 
-Andreas.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+This bugfix has been there for a month and this driver has been busted
+since 2.6.24.  Is anyone out there?  Mark?  James?
