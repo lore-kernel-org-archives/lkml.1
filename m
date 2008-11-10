@@ -1,159 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbYKJHmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbYKJHnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbYKJHmp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 02:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbYKJHmf
+	id S1754377AbYKJHnu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 02:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYKJHnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 02:42:35 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50368 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753777AbYKJHmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 02:42:35 -0500
-Message-ID: <4917E4C9.5060900@cn.fujitsu.com>
-Date: Mon, 10 Nov 2008 15:37:45 +0800
-From: Miao Xie <miaox@cn.fujitsu.com>
-Reply-To: miaox@cn.fujitsu.com
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 10 Nov 2008 02:43:42 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51384 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753547AbYKJHnl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 02:43:41 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: dcg <diegocalleja@gmail.com>
+Subject: Re: swappiness in 2.6.28-rc3?
+Cc: kosaki.motohiro@jp.fujitsu.com, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>
+In-Reply-To: <20081108184625.6a64a518@diego-desktop>
+References: <200811081211.24000.gene.heskett@gmail.com> <20081108184625.6a64a518@diego-desktop>
+Message-Id: <20081110132742.6165.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuset: update top cpuset's mems after adding a node
-References: <4917D7B4.4000605@cn.fujitsu.com> <20081110155231.F82E.E1E9C6FF@jp.fujitsu.com>
-In-Reply-To: <20081110155231.F82E.E1E9C6FF@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Mon, 10 Nov 2008 16:43:38 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 2008-11-10 14:56 Yasunori Goto wrote:
-> Did you test this patch?  Was it OK?
+Hi
 
-Sorry. I forget.
-I will do it as soon as possible. 
+CCed Rik van Riel
 
-> If yes,
-> Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> El Sat, 08 Nov 2008 12:11:23 -0500, Gene Heskett <gene.heskett@gmail.com> escribio:
 > 
+> > Greetings;
+> > 
+> > I have 2.6.28-rc3 with a 5 day uptime, and I have had to do a "swapoff -a; 
+> > swapon -a" almost daily to clear the swap.
+> > 
+> > This is about 18 hours since I last did that:
+> > Mem:   4151132k total,  2891180k used,  1259952k free,   281224k buffers
+> > Swap:  2048276k total,    85864k used,  1962412k free,  2078404k cached
+> > 
+> > I don't recall having to do this with 2.6.27 or any of its -rc's.
 > 
-> Thanks.
-> 
-> 
->> After adding a node into the machine, top cpuset's mems isn't updated.
->>
->> By reviewing the code, we found that the update function
->>   cpuset_track_online_nodes()
->> was invoked after node_states[N_ONLINE] changes. It is wrong because N_ONLINE
->> just means node has pgdat, and if node has/added memory, we use N_HIGH_MEMORY.
->> So, We should invoke the update function after node_states[N_HIGH_MEMORY]
->> changes, just like its commit says.
->>
->> This patch fixes it. And we use notifier of memory hotplug instead of direct
->> calling of cpuset_track_online_nodes().
->>
->> Signed-off-by: Miao Xie <miaox@cn.fujitsu.com>
->> Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
->>
->> ---
->>  include/linux/cpuset.h |    4 ----
->>  kernel/cpuset.c        |   19 ++++++++++++++++---
->>  mm/memory_hotplug.c    |    3 ---
->>  3 files changed, 16 insertions(+), 10 deletions(-)
->>
->> diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
->> index 2691926..8e540d3 100644
->> --- a/include/linux/cpuset.h
->> +++ b/include/linux/cpuset.h
->> @@ -74,8 +74,6 @@ static inline int cpuset_do_slab_mem_spread(void)
->>  	return current->flags & PF_SPREAD_SLAB;
->>  }
->>  
->> -extern void cpuset_track_online_nodes(void);
->> -
->>  extern int current_cpuset_is_being_rebound(void);
->>  
->>  extern void rebuild_sched_domains(void);
->> @@ -151,8 +149,6 @@ static inline int cpuset_do_slab_mem_spread(void)
->>  	return 0;
->>  }
->>  
->> -static inline void cpuset_track_online_nodes(void) {}
->> -
->>  static inline int current_cpuset_is_being_rebound(void)
->>  {
->>  	return 0;
->> diff --git a/kernel/cpuset.c b/kernel/cpuset.c
->> index 3e00526..909a548 100644
->> --- a/kernel/cpuset.c
->> +++ b/kernel/cpuset.c
->> @@ -36,6 +36,7 @@
->>  #include <linux/list.h>
->>  #include <linux/mempolicy.h>
->>  #include <linux/mm.h>
->> +#include <linux/memory.h>
->>  #include <linux/module.h>
->>  #include <linux/mount.h>
->>  #include <linux/namei.h>
->> @@ -2011,12 +2012,23 @@ static int cpuset_track_online_cpus(struct notifier_block *unused_nb,
->>   * Call this routine anytime after node_states[N_HIGH_MEMORY] changes.
->>   * See also the previous routine cpuset_track_online_cpus().
->>   */
->> -void cpuset_track_online_nodes(void)
->> +static int cpuset_track_online_nodes(struct notifier_block *self,
->> +				unsigned long action, void *arg)
->>  {
->>  	cgroup_lock();
->> -	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->> -	scan_for_empty_cpusets(&top_cpuset);
->> +	switch (action) {
->> +	case MEM_ONLINE:
->> +		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->> +		break;
->> +	case MEM_OFFLINE:
->> +		top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->> +		scan_for_empty_cpusets(&top_cpuset);
->> +		break;
->> +	default:
->> +		break;
->> +	}
->>  	cgroup_unlock();
->> +	return NOTIFY_OK;
->>  }
->>  #endif
->>  
->> @@ -2032,6 +2044,7 @@ void __init cpuset_init_smp(void)
->>  	top_cpuset.mems_allowed = node_states[N_HIGH_MEMORY];
->>  
->>  	hotcpu_notifier(cpuset_track_online_cpus, 0);
->> +	hotplug_memory_notifier(cpuset_track_online_nodes, 10);
->>  }
->>  
->>  /**
->> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->> index 6837a10..b5b2b15 100644
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -22,7 +22,6 @@
->>  #include <linux/highmem.h>
->>  #include <linux/vmalloc.h>
->>  #include <linux/ioport.h>
->> -#include <linux/cpuset.h>
->>  #include <linux/delay.h>
->>  #include <linux/migrate.h>
->>  #include <linux/page-isolation.h>
->> @@ -498,8 +497,6 @@ int add_memory(int nid, u64 start, u64 size)
->>  	/* we online node here. we can't roll back from here. */
->>  	node_set_online(nid);
->>  
->> -	cpuset_track_online_nodes();
->> -
->>  	if (new_pgdat) {
->>  		ret = register_one_node(nid);
->>  		/*
->> -- 
->> 1.5.3.8
->>
-> 
+> I've also noticed more swappiness (very probably due to the vm scanning
+> rework), but I can't say for sure if it's a bad thing...
+
+Could you please try to following patch?
+
+
+-----------------------------------------------------------------
+From: Rik van Riel <riel@redhat.com>
+
+This patch still needs some testing under various workloads
+on different hardware - the approach should work but the
+threshold may need tweaking.
+
+
+When there is a lot of streaming IO going on, we do not want
+to scan or evict pages from the working set.  The old VM used
+to skip any mapped page, but still evict indirect blocks and
+other data that is useful to cache.
+
+This patch adds logic to skip scanning the anon lists and
+the active file list if most of the file pages are on the
+inactive file list (where streaming IO pages live), while
+at the lowest scanning priority.
+
+If the system is not doing a lot of streaming IO, eg. the
+system is running a database workload, then more often used
+file pages will be on the active file list and this logic
+is automatically disabled.
+
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ include/linux/mmzone.h |    1 +
+ mm/vmscan.c            |   18 ++++++++++++++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h	2008-11-10 16:10:34.000000000 +0900
++++ b/include/linux/mmzone.h	2008-11-10 16:12:20.000000000 +0900
+@@ -453,6 +453,7 @@ static inline int zone_is_oom_locked(con
+  * queues ("queue_length >> 12") during an aging round.
+  */
+ #define DEF_PRIORITY 12
++#define PRIO_CACHE_ONLY (DEF_PRIORITY+1)
+ 
+ /* Maximum number of zones on a zonelist */
+ #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c	2008-11-10 16:10:34.000000000 +0900
++++ b/mm/vmscan.c	2008-11-10 16:11:30.000000000 +0900
+@@ -1443,6 +1443,20 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
++	/*
++	 * If there is a lot of sequential IO going on, most of the
++	 * file pages will be on the inactive file list.  We start
++	 * out by reclaiming those pages, without putting pressure on
++	 * the working set.  We only do this if the bulk of the file pages
++	 * are not in the working set (on the active file list).
++	 */
++	if (priority == PRIO_CACHE_ONLY &&
++			(nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]))
++		for_each_evictable_lru(l)
++			/* Scan only the inactive_file list. */
++			if (l != LRU_INACTIVE_FILE)
++				nr[l] = 0;
++
+ 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+ 					nr[LRU_INACTIVE_FILE]) {
+ 		for_each_evictable_lru(l) {
+@@ -1573,7 +1587,7 @@ static unsigned long do_try_to_free_page
+ 		}
+ 	}
+ 
+-	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
++	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
+ 		sc->nr_scanned = 0;
+ 		if (!priority)
+ 			disable_swap_token();
+@@ -1735,7 +1749,7 @@ loop_again:
+ 	for (i = 0; i < pgdat->nr_zones; i++)
+ 		temp_priority[i] = DEF_PRIORITY;
+ 
+-	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
++	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
+ 		int end_zone = 0;	/* Inclusive.  0 = ZONE_DMA */
+ 		unsigned long lru_pages = 0;
+ 
+
+
 
 
