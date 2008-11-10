@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbYKJPmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYKJPmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbYKJPmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 10:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYKJPmL
+	id S1755088AbYKJPmu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 10:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYKJPme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 10:42:11 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:48404 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbYKJPmK (ORCPT
+	Mon, 10 Nov 2008 10:42:34 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:59099 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754706AbYKJPmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 10:42:10 -0500
-Date: Mon, 10 Nov 2008 09:41:25 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
-       mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
-       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-In-Reply-To: <1226328152.7685.192.camel@twins>
-Message-ID: <Pine.LNX.4.64.0811100937250.22539@quilx.com>
-References: <1224694989.8431.23.camel@oberon>  <1225132746.14792.13.camel@bobble.smo.corp.google.com>
-  <1225219114.24204.37.camel@oberon>  <1225936715.27507.44.camel@bobble.smo.corp.google.com>
-  <1225969420.7803.4366.camel@twins>  <Pine.LNX.4.64.0811060900450.3595@quilx.com>
-  <1225984098.7803.4642.camel@twins>  <1226015568.2186.20.camel@bobble.smo.corp.google.com>
-  <1226053744.7803.5851.camel@twins>  <1226081448.28191.64.camel@bobble.smo.corp.google.com>
-  <1226089574.31966.85.camel@lappy.programming.kicks-ass.net> 
- <Pine.LNX.4.64.0811100834500.21257@quilx.com> <1226328152.7685.192.camel@twins>
+	Mon, 10 Nov 2008 10:42:32 -0500
+Date: Mon, 10 Nov 2008 16:42:26 +0100
+From: Domenico Andreoli <cavokz@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-parisc@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH] fix build error on hppa SMP (was Re: Linux 2.6.28-rc4)
+Message-ID: <20081110154226.GA28675@tilt.dandreoli.com>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-parisc@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+References: <alpine.LFD.2.00.0811091650250.3468@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0811091650250.3468@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008, Peter Zijlstra wrote:
+On Sun, Nov 09, 2008 at 04:55:42PM -0800, Linus Torvalds wrote:
+> 
+> Rusty Russell (3):
+>       cpumask: introduce new API, without changing anything
+>       cpumask: new API, v2
+>       cpumask: introduce new API, without changing anything, v3
 
-> > Can we at least somehow make sure that nothing significantly happens in a
-> > timer interrupt on a processor if the thread has not scheduled any events
-> > or not odone any system calls?
->
-> Do threads actually scale that far? I thought mmap_sem contention and
-> other shared state would render threads basically useless on these very
-> large machines.
+Nothing to change here, go away! :)
 
-They scale well. The problem is startup when they concurrently allocate
-memory. That has been solved with distributing the pte locks. mmap_sem is
-taken for read in the fault handler. So you have a wildly bouncing
-cacheline at startup time that causes performance issues but no busy
-spinning.
+---
+From: Domenico Andreoli <cavok@dandreoli.com>
+Date: Mon, 10 Nov 2008 16:31:07 +0100
+Subject: [PATCH] fix build error on hppa SMP
 
-> But afaiu this stuff, the per-cpu loop is only done when an itimer is
-> actually active.
->
-> The detail I've not looked at is, if when this itimer is indeed active
-> and we are running 256 threads of the same application on all cpus do we
-> then do the per-cpu loop for each tick on each cpu?
+Remove extern declaration of cpu_present_mask.
 
-I would check how 8p and 16p fare with this? How much potential latency is
-added to  thread because it is interrupted and the timer interrupt goes
-through this loop?
+Fixes build error due to new cpumask API (2d3854a37e8b767a51aba38ed6d22817b0631e33).
+
+Signed-off-by: Domenico Andreoli <cavok@dandreoli.com>
+---
+ arch/parisc/include/asm/smp.h |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/arch/parisc/include/asm/smp.h b/arch/parisc/include/asm/smp.h
+index 398cdba..409e698 100644
+--- a/arch/parisc/include/asm/smp.h
++++ b/arch/parisc/include/asm/smp.h
+@@ -44,8 +44,6 @@ extern void arch_send_call_function_ipi(cpumask_t mask);
+  
+ #define PROC_CHANGE_PENALTY	15		/* Schedule penalty */
+ 
+-extern unsigned long cpu_present_mask;
+-
+ #define raw_smp_processor_id()	(current_thread_info()->cpu)
+ 
+ #else /* CONFIG_SMP */
+---
+
+-----[ Domenico Andreoli, aka cavok
+ --[ http://www.dandreoli.com/gpgkey.asc
+   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
