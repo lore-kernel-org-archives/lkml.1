@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYKJPYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbYKJP0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYKJPYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 10:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYKJPYN
+	id S1754134AbYKJP0S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 10:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYKJP0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 10:24:13 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:25177 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbYKJPYM (ORCPT
+	Mon, 10 Nov 2008 10:26:10 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:22580 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbYKJP0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 10:24:12 -0500
+	Mon, 10 Nov 2008 10:26:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=i6qODQlWYAW+GhVi8goI9lWNzX0OGhnTk9+jTd+/wR7yWg2Cy2A6J3riUonCag3PqJ
-         f9snMd3eJP6iooXml8MFQVaAo0SGDP97d4oWheoeIUQtXEQtdp3MbOGuB4GyLPZuIbQQ
-         yg/uRITZhj+wed7bE+Ry+IyRMc7P97/4ZSXPo=
-Message-ID: <7c86c4470811100724y1f61086co6ced2510383c5ae2@mail.gmail.com>
-Date: Mon, 10 Nov 2008 16:24:10 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [patch 00/24] perfmon3: introduction
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <18711.40796.201781.605269@drongo.ozlabs.ibm.com>
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=sUxlMpODB9r0v+HpfzkY4dhlMOuz7nyT7owvBxocbj6aaHumN7xWVRGYzXO0DNwEZO
+         e2hZp5pa0BX0VmnCYCPjvJ0ikzvJdofgNBYKkd+tbPWyVHi12mlwgn4aC/I5YPJpmKyA
+         572QtJDMx4uT2gJU7HN2+E/mz/3WZRSTJsaEE=
+Date: Mon, 10 Nov 2008 23:25:18 +0800
+From: arrow.ebd@gmail.com
+To: linux_kernel <linux-kernel@vger.kernel.org>
+Subject: thinkpad x200 X.server not work with gm4500 graphics
+Message-ID: <20081110152518.GA3545@think>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <48f8a9a3.0437560a.656a.57c5@mx.google.com>
-	 <18711.40796.201781.605269@drongo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
+deal,
 
-On Mon, Nov 10, 2008 at 3:41 AM, Paul Mackerras <paulus@samba.org> wrote:
-> Stephane,
->
-> I have just looked through this set of patches and it mostly looks
-> fine to me.  There is just one thing, and that is that the way you
-> access bitmaps using cast_ulp() won't work on 32-bit big-endian
-> machines such as 32-bit PowerPC.  I suggest that instead of using
-> cast_ulp(), you have a set of abstracted bit-vector operations that
-> can be implemented by the arch code - and on x86/ia64, they would be
-> implemented with cast_ulp() + test_bit/__set_bit/etc. as at present.
->
+    My thinkpad x200's X.server can not startup on the kernel 2.6.28,
+and dmesg will show as below:
+    -->>--
+    [drm] Initialized drm 1.1.0 20060810
+    pci 0000:00:02.0: power state changed by ACPI to D0
+    pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+    pci 0000:00:02.0: setting latency timer to 64
+    [drm] Initialized i915 1.6.0 20060119 on minor 0
+    pci 0000:00:02.0: pg_start == 0x00001f7f, intel_private.gtt_entries == 0x00001fff
+    pci 0000:00:02.0: trying to insert into local/stolen memory
+    --<<--
 
-Thanks for bringing this up. I think we had talked about this a while back.
+    Then, I change file "drivers/char/agp/intel-agp.c" as this:
+    -->>--
+    --diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+    index 9cf6e9b..e681f75 100644
+    --- a/drivers/char/agp/intel-agp.c
+    +++ b/drivers/char/agp/intel-agp.c
+    @@ -528,7 +528,8 @@ static void intel_i830_init_gtt_entries(void)
+                     * stolen, ignore it in stolen gtt entries counting.  However,
+                     * 4KB of the stolen memory doesn't get mapped to the GTT.
+                     */
+    -               size = 4;
+    +               /* size = 4; */
+    +               size = 516;
+            } else {
+                    /* On previous hardware, the GTT size was just what was
+                     * required to map the aperture.
+    --<<--
 
-There is indeed a problem on big endian 32-bit machines The cast will
-pick up the wrong half of the u64. I think the best solution to this problem
-is as you suggested. Consequently, I have added a perfmon abstraction (bv)
-with its set of arch callbacks. The API takes u64 *.On x86, IA-64, it simply
-calls the bitmap_*() API. On PPC, it will have to adjust when compiling for
-32 bits.
-
-Here is the example of __set_bit() on x86:
-
-static inline void pfm_arch_bv_set_bit(int b, u64 *a)
-{
-        __set_bit(b, (unsigned long *)a);
-}
-
-
-I will push this into my linux-next tree and ask Stephen to pull from it again.
+    And Xorg can start now.
+(1) Is it correct ?
+    Because older kernel use size as "512 + 4" at here, but now use "size = 4".
+(2) How to deal with it if the patch is not right ?
+(3) How to get more specification about gm4500 ?
