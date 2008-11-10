@@ -1,149 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbYKJKWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYKJKb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbYKJKWV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 05:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbYKJKWM
+	id S1754622AbYKJKb7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 05:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYKJKbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 05:22:12 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:55194 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753834AbYKJKWL (ORCPT
+	Mon, 10 Nov 2008 05:31:50 -0500
+Received: from rn-out-0910.google.com ([64.233.170.185]:17634 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753885AbYKJKbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 05:22:11 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [PATCH] Add hierarchical accounting to cpu accounting
- controller
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: bharata@linux.vnet.ibm.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20081104124937.GB4898@in.ibm.com>
-References: <20081024050830.GA4387@in.ibm.com>
-	 <6599ad830810241037h575ec17bgb43f750d99bd1518@mail.gmail.com>
-	 <20081025060157.GA4614@in.ibm.com>
-	 <6599ad830810250838q3f96644bm6dfee8ba9f35dfa3@mail.gmail.com>
-	 <20081027101703.e954071d.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20081027044319.GA4386@in.ibm.com>
-	 <661de9470810262357y6c560facl87dcaea3ce35e3ac@mail.gmail.com>
-	 <49057ADD.1050705@cn.fujitsu.com>
-	 <20081030171622.GA19872@linux.vnet.ibm.com>
-	 <20081031094041.194a32d9.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20081104124937.GB4898@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 10 Nov 2008 11:22:41 +0100
-Message-Id: <1226312561.2697.4093.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Mon, 10 Nov 2008 05:31:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=YCnrfhKBG2uJpStS0hvM+x5aDDRa5Dt5dPhoPunIVeMbLV/GmZVX+3pzGfiCzpA9D5
+         bXxAxjVk6ZWdOo7fZe0dIKFO6G/RoTeHaBnrHzWGQl67N4RW0jVRC8tl50/dxskv+Z+X
+         3GykcURis1ErenaL18RowmHDmYl7ot0Ku5VrQ=
+Message-ID: <8d6898730811100231j2ca5e8ceub0d5137c1ef1f9d0@mail.gmail.com>
+Date: Mon, 10 Nov 2008 16:01:47 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Grant Grundler" <grundler@parisc-linux.org>
+Subject: Re: sharing interrupt between PCI device
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <20081110075827.GE2093@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.h7+lofM1lpbRM5V4/ti5d7RwXuM@ifi.uio.no>
+	 <4910E8AC.7050407@shaw.ca>
+	 <8d6898730811042349p19e65556l8e1c851b27758d5@mail.gmail.com>
+	 <20081108172716.GA28039@colo.lackof.org> <4915E43E.4010206@gmail.com>
+	 <20081108191536.GC28039@colo.lackof.org>
+	 <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com>
+	 <20081110075115.GA13239@colo.lackof.org>
+	 <20081110075827.GE2093@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-04 at 18:19 +0530, Bharata B Rao wrote:
+Yes USB Virtual Controller has input devices like keyboard and mouse
+(routed through hpilo card (remote console)), so those things stops
+working when we remove hpilo driver.
 
-> Add hierarchical accounting to cpu accounting controller and cpuacct
-> documentation.
-> 
-> Currently, while charging the task's cputime to its accounting group,
-> the accounting group hierarchy isn't updated. This patch charges the cputime
-> of a task to its accounting group and all its parent accounting groups.
-> 
-> Reported-by: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> Reviewed-by: Paul Menage <menage@google.com>
+Thanks
+Nobin Mathew
 
-Seems sane and simple enough.
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-Ingo?
-
-> ---
->  Documentation/controllers/cpuacct.txt |   32 ++++++++++++++++++++++++++++++++
->  kernel/sched.c                        |   10 ++++++++--
->  2 files changed, 40 insertions(+), 2 deletions(-)
-> 
-> --- /dev/null
-> +++ b/Documentation/controllers/cpuacct.txt
-> @@ -0,0 +1,32 @@
-> +CPU Accounting Controller
-> +-------------------------
-> +
-> +The CPU accounting controller is used to group tasks using cgroups and
-> +account the CPU usage of these group of tasks.
-> +
-> +The CPU accounting controller supports multi-hierarchy groups. An accounting
-> +group accumulates the CPU usage of all of it's child groups and
-> +the tasks directly present in it's group.
-> +
-> +Accounting groups can be created by first mounting the cgroup filesystem.
-> +
-> +# mkdir /cgroups
-> +# mount -t cgroup -ocpuacct none /cgroups
-> +
-> +With the above step, the initial or the parent accounting group
-> +becomes visible at /cgroups. At bootup, this group comprises of all the
-> +tasks in the system. /cgroups/tasks lists the tasks in this cgroup.
-> +/cgroups/cpuacct.usage gives the CPU time (in nanoseconds) obtained by
-> +this group which is essentially the CPU time obtained by all the tasks
-> +in the system.
-> +
-> +New accounting groups can be created under the parent group /cgroups.
-> +
-> +# cd /cgroups
-> +# mkdir g1
-> +# echo $$ > g1
-> +
-> +The above steps create a new group g1 and move the current shell
-> +process (bash) into it. CPU time consumed by this bash and it's children
-> +can be obtained from g1/cpuacct.usage and the same gets accumulated in
-> +/cgroups/cpuacct.usage also.
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -9236,6 +9236,7 @@ struct cpuacct {
->  	struct cgroup_subsys_state css;
->  	/* cpuusage holds pointer to a u64-type object on every cpu */
->  	u64 *cpuusage;
-> +	struct cpuacct *parent;
->  };
->  
->  struct cgroup_subsys cpuacct_subsys;
-> @@ -9269,6 +9270,9 @@ static struct cgroup_subsys_state *cpuac
->  		return ERR_PTR(-ENOMEM);
->  	}
->  
-> +	if (cgrp->parent)
-> +		ca->parent = cgroup_ca(cgrp->parent);
-> +
->  	return &ca->css;
->  }
->  
-> @@ -9348,14 +9352,16 @@ static int cpuacct_populate(struct cgrou
->  static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
->  {
->  	struct cpuacct *ca;
-> +	int cpu;
->  
->  	if (!cpuacct_subsys.active)
->  		return;
->  
-> +	cpu = task_cpu(tsk);
->  	ca = task_ca(tsk);
-> -	if (ca) {
-> -		u64 *cpuusage = percpu_ptr(ca->cpuusage, task_cpu(tsk));
->  
-> +	for (; ca; ca = ca->parent) {
-> +		u64 *cpuusage = percpu_ptr(ca->cpuusage, cpu);
->  		*cpuusage += cputime;
->  	}
->  }
-
-
+On Mon, Nov 10, 2008 at 1:28 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Grant Grundler <grundler@parisc-linux.org> wrote:
+>
+>> [+ingo - question for you about disable_irq() below]
+>
+>> The same problem exists with disable_irq() : only takes a global
+>> IRQ# and no additional identifying information to prevent disabling
+>> a shared IRQ. So I'm not sure if this is a bug with ACPI or design
+>> flaw in generic IRQ APIs.  Ingo?
+>
+> that's how disable_irq() always worked: it disables all handlers on
+> that IRQ#. If the IRQ# is shared, it disables all handlers.
+>
+>        Ingo
+>
