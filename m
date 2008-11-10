@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbYKJFRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbYKJFUC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbYKJFRs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 00:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYKJFRk
+	id S1753805AbYKJFUC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 00:20:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYKJFTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 00:17:40 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:54612 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbYKJFRk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 00:17:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fStRUdem4gvf4nZQLOqRwAb+RUZiL3WC7OkNb9TWPuXDhR3hQO8t8mIBEXU5zg9MoI
-         Bl14RxkDEPTKSAxx5EmL8QuFW/yIxpnGbzwfJqMre3ptLSn1lTkRSQOPPfkNziGR2Nd7
-         aMVY7Hovwlh1lrFb+cr9Okrdy/JOgEA2h3IUo=
-Message-ID: <dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com>
-Date: Sun, 9 Nov 2008 21:17:38 -0800
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
-Cc: "=?ISO-8859-1?Q?Rog=E9rio_Brito?=" <rbrito@ime.usp.br>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@linux.intel.com>,
-       linux-kernel@vger.kernel.org, yakui.zhao@intel.com,
-       bugme-daemon@bugzilla.kernel.org, linux-pm@lists.linux-foundation.org,
-       rjw@sisk.pl
-In-Reply-To: <20081109113332.GD6094@elf.ucw.cz>
+	Mon, 10 Nov 2008 00:19:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:54611 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751226AbYKJFTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 00:19:51 -0500
+Message-ID: <4917C449.2080504@kernel.org>
+Date: Mon, 10 Nov 2008 14:19:05 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <20081106194724.GB15366@ime.usp.br>
-	 <20081107014535.GA19201@ime.usp.br>
-	 <1226044855.4913f5b7f2f45@webmail.ime.usp.br>
-	 <20081108075008.GA8177@ime.usp.br>
-	 <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com>
-	 <20081109024514.GA11744@ime.usp.br> <20081109113332.GD6094@elf.ucw.cz>
+To: Jens Axboe <jens.axboe@oracle.com>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: request to revert libata-convert-to-block-tagging patches
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 10 Nov 2008 05:19:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 9, 2008 at 3:33 AM, Pavel Machek <pavel@suse.cz> wrote:
-> On Sun 2008-11-09 00:45:14, Rogério Brito wrote:
->> Hi, Justin and others.
->>
->> On Nov 08 2008, Justin Mattock wrote:
->> > On Fri, Nov 7, 2008 at 11:50 PM, Rogério Brito <rbrito@ime.usp.br> wrote:
->> > > I think that I have some more information regarding the suspend/hibernate
->> > > issue: with Ubuntu's 2.6.27 kernel, I can't hibernate my laptop, but with
->> > > vanilla 2.6.28-rc3, I can hibernate (I have not tested it much, but it
->> > > seems to work).
->>
->> Just some extra information here: while I can hibernate with vanilla
->> 2.6.28-rc3, upon resuming, it takes *minutes* (I don't know how many
->> minutes, but probably something like 5 minutes or so!) for the desktop to
->> have any effect (despite the fact that I can move the mouse without any
->> problems).
->
-> Try it from the text console, and see what exactly stops
-> responding. "killall klogd" is your friend.
->                                                                Pavel
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+Hello, all.
 
-FWIW, running radeon and s2ram
-gives me a successful wakeup,
-no delays only bluetooth-applet fails
-to show back up as eye candy.
+I went through libata-convert-to-block-tagging today and found several
+issues.
+
+1. libata internal data structure for command context (qc) allocation is
+bound to tag allocation, which means that block layer tagging should be
+enabled for all controllers which have can_queue > 1.
+
+2. blk-tag offsets allocation for non-sync requests.  I'm not confident
+this is safe.  Till now, if there was only single command in flight for
+the port, it was guaranteed that the qc gets tag zero whether the device
+is NCQ capable or not.  qc allocation is tied tightly with hardware
+command slot allocation and I don't think it's wise to change this
+assumption.
+
+#1 is easy to fix but #2 requires either adding a spinlock or two atomic
+variables to struct blk_queue_tag to keep the current behavior while
+guaranteeing that tags are used in order.  Also, there's delay between
+libata marks a request complete and the request actually gets completed
+and the tag is freed.  If another request gets issued inbetween, the tag
+number can't be guaranteed.  This can be worked around by re-mapping tag
+number in libata depending on command type but, well then, it's worse
+than the original implementation.
+
+So, please revert the following commits.
+
+43a49cbdf31e812c0d8f553d433b09b421f5d52c
+e013e13bf605b9e6b702adffbe2853cfc60e7806
+2fca5ccf97d2c28bcfce44f5b07d85e74e3cd18e
+
+Thanks.
 
 -- 
-Justin P. Mattock
+tejun
