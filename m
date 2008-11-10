@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYKJXhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbYKJXio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbYKJXhG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 18:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbYKJXgz
+	id S1754957AbYKJXio (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 18:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbYKJXif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 18:36:55 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40896 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbYKJXgy (ORCPT
+	Mon, 10 Nov 2008 18:38:35 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64866 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbYKJXie (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 18:36:54 -0500
-Message-ID: <4918C523.80609@zytor.com>
-Date: Mon, 10 Nov 2008 15:34:59 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 10 Nov 2008 18:38:34 -0500
+Date: Mon, 10 Nov 2008 18:38:29 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nicolas Pitre <nico@cam.org>, mathieu.desnoyers@polymtl.ca,
+       torvalds@linux-foundation.org, rmk+lkml@arm.linux.org.uk,
+       dhowells@redhat.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+       benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
+       mingo@redhat.com, tglx@linutronix.de, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
+In-Reply-To: <20081110152221.64948d23.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0811101837250.9259@gandalf.stny.rr.com>
+References: <9405.1226101315@redhat.com> <20081108001555.GE18378@flint.arm.linux.org.uk> <alpine.LFD.2.00.0811080939180.13034@xanadu.home> <alpine.LFD.2.00.0811081746060.13034@xanadu.home> <20081109022549.GA18508@Krystal> <alpine.LFD.2.00.0811082143320.13034@xanadu.home>
+ <alpine.LFD.2.00.0811082356090.13034@xanadu.home> <alpine.LFD.2.00.0811090015570.13034@xanadu.home> <20081109064855.GA23782@Krystal> <alpine.LFD.2.00.0811090827160.13034@xanadu.home> <20081109162250.GB10181@Krystal> <alpine.LFD.2.00.0811092304300.13034@xanadu.home>
+ <20081109204256.89ab7925.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101627510.13034@xanadu.home> <20081110135850.0d620f3c.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101811130.13034@xanadu.home> <20081110152221.64948d23.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com> <20081104150729.GC21470@localhost> <20081104170501.GE29626@one.firstfloor.org> <1225822006.21441.1282961299@webmail.messagingengine.com> <20081104204400.GC10825@elte.hu> <1226243805.27361.1283784629@webmail.messagingengine.com> <20081110085846.GG22392@elte.hu> <491855AA.5060100@zytor.com> <1226353458.27999.1284030023@webmail.messagingengine.com>
-In-Reply-To: <1226353458.27999.1284030023@webmail.messagingengine.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
+
+On Mon, 10 Nov 2008, Andrew Morton wrote:
+> On Mon, 10 Nov 2008 18:15:32 -0500 (EST)
+> Nicolas Pitre <nico@cam.org> wrote:
+> > > 
+> > > This references its second argument twice, which can cause correctness
+> > > or efficiency problems.
+> > > 
+> > > There is no reason that this had to be implemented in cpp. 
+> > > Implementing it in C will fix the above problem.
+> > 
+> > No, it won't, for correctness and efficiency reasons.
+> > 
+> > And I've explained why already.
 > 
-> I did the rdtsctest again for the irqstubs patch you sent. The data
-> is at http://heukelum.fastmail.fm/irqstubs/ and the latency histogram
-> is http://heukelum.fastmail.fm/irqstubs/latency_hpa.png
-> 
+> I'd be very surprised if you've really found a case where a macro is
+> faster than an inlined function.  I don't think that has happened
+> before.
 
-Okay, I've stared at a bunch of different transformations of this data
-and I'm starting to think that it's getting lost in the noise.  The
-difference between your "idleticks" and "idleticks2" data sets, for
-example, is as big as the differences between any two data sets that I
-can see.
+But that's the way my Grandpa did it. With macros!
 
-Just for reference, see this graph where I have filtered out events
-outside the [30..1000] cycle range and renormalized.
+-- Steve
 
-	http://www.zytor.com/~hpa/hist.pdf
-
-I don't know how to even figure out what a realistic error range looks
-like, other than repeating each run something like 100+ times and do an
-"eye chart" kind of diagram.
-
-	-hpa
