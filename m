@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYKJSdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbYKJSda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYKJSdR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbYKJSdB
+	id S1755958AbYKJSda (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbYKJSdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:33:01 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49544 "EHLO
+	Mon, 10 Nov 2008 13:33:12 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49606 "EHLO
 	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754528AbYKJSdA (ORCPT
+	with ESMTP id S1754874AbYKJSdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:33:00 -0500
+	Mon, 10 Nov 2008 13:33:10 -0500
 From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: [RFC PATCH v3 0/5] Tunable sched_mc_power_savings=n
+Subject: [RFC PATCH v3 1/5] sched: Framework for sched_mc/smt_power_savings=N
 To: Linux Kernel <linux-kernel@vger.kernel.org>,
        Suresh B Siddha <suresh.b.siddha@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
@@ -23,8 +23,10 @@ Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
        Tim Connors <tconnors@astro.swin.edu.au>,
        Max Krasnyansky <maxk@qualcomm.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date: Tue, 11 Nov 2008 00:02:54 +0530
-Message-ID: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
+Date: Tue, 11 Nov 2008 00:03:06 +0530
+Message-ID: <20081110183306.562.89203.stgit@drishya.in.ibm.com>
+In-Reply-To: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -33,101 +35,92 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Gautham R Shenoy <ego@in.ibm.com>
 
-The existing power saving loadbalancer CONFIG_SCHED_MC attempts to run
-the workload in the system on minimum number of CPU packages and tries
-to keep rest of the CPU packages idle for longer duration. Thus
-consolidating workloads to fewer packages help other packages to be in
-idle state and save power.  The current implementation is very
-conservative and does not work effectively across different workloads.
-Initial idea of tunable sched_mc_power_savings=n was proposed to
-enable tuning of the power saving load balancer based on the system
-configuration, workload characteristics and end user requirements.
+***  RFC patch of work in progress and not for inclusion. ***
 
-The power savings and performance of the given workload in an under
-utilised system can be controlled by setting values of 0, 1 or 2 to
-/sys/devices/system/cpu/sched_mc_power_savings with 0 being highest
-performance and least power savings and level 2 indicating maximum
-power savings even at the cost of slight performance degradation.
+Currently the sched_mc/smt_power_savings variable is a boolean, which either
+enables or disables topology based power savings. This extends the behaviour of
+the variable from boolean to multivalued, such that based on the value, we
+decide how aggressively do we want to perform topology based powersavings
+balance.
 
-Please refer to the following discussions and article for details.
+Variable levels of power saving tunable would benefit end user to match the
+required level of power savings vs performance trade off depending on the
+system configuration and workloads.
 
-[1]Making power policy just work
-http://lwn.net/Articles/287924/ 
+This initial version makes the sched_mc_power_savings global variable to take
+more values (0,1,2).
 
-[2][RFC v1] Tunable sched_mc_power_savings=n
-http://lwn.net/Articles/287882/
-                                                                                                               
-[3][RFC PATCH v2 0/7] Tunable sched_mc_power_savings=n                                                                                                   
-http://lwn.net/Articles/297306/
+Later version is expected to add new member sd->powersavings_level at the multi
+core CPU level sched_domain. This make all sd->flags check for
+SD_POWERSAVINGS_BALANCE into a different macro that will check for
+powersavings_level.
 
-The following series of patch demonstrates the basic framework for
-tunable sched_mc_power_savings.
+The power savings level setting should be in one place either in the
+sched_mc_power_savings global variable or contained within the appropriate
+sched_domain structure.
 
-This version of the patch incorporates comments and feedback received
-on the previous post.  Thanks to Peter Zijlstra for the review and
-comments.
-
-Changes from v2:
-----------------
-
-* Fixed locking order issue in active-balance-new-idle
-* Moved the wakeup biasing code to wake_idle() function and preserve
-  wake_affine function.  Previous version would break wake_affine in
-  order to aggressively consolidate tasks  
-* Removed sched_mc_preferred_wakeup_cpu global variable and moved to
-  doms_cur/dattr_cur and added a per_cpu pointer to appropriate
-  storage in partitioned sched domain.  This changed is needed to
-  preserve functionality in case of partitioned sched domains
-* Patch on 2.6.28-rc3 kernel  
-
-Notes:
-------
-
-* The patch has been tested on x86 with basic cpusets and kernbench.  
-  Correct functionality in the case of partitioned sched domain need 
-  to be analysed.
-
-Results:
---------
-
-Basic functionality of the code has not changed and the power vs
-performance benefits for kernbench are similar to the ones posted
-earlier.
-
-KERNBENCH Runs: make -j4 on a x86 8 core, dual socket quad core cpu
-package system
-
-SchedMC Run Time     Package Idle    Energy  Power
-0	81.61s       53.07% 52.81%  1.00x J 1.00y W
-1	81.52s       40.83% 65.45%  0.96x J 0.96y W 
-2	74.66s       22.20% 83.94%  0.90x J 0.98y W
-
-*** This is RFC code and not for inclusion ***
-
-Please feel free to test, and let me know your comments and feedback.
-
-Thanks,
-Vaidy
-
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
 ---
 
-Gautham R Shenoy (1):
-      sched: Framework for sched_mc/smt_power_savings=N
+ include/linux/sched.h |   11 +++++++++++
+ kernel/sched.c        |   16 +++++++++++++---
+ 2 files changed, 24 insertions(+), 3 deletions(-)
 
-Vaidyanathan Srinivasan (4):
-      sched: activate active load balancing in new idle cpus
-      sched: bias task wakeups to preferred semi-idle packages
-      sched: nominate preferred wakeup cpu
-      sched: favour lower logical cpu number for sched_mc balance
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b483f39..715028a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -759,6 +759,17 @@ enum cpu_idle_type {
+ #define SD_SERIALIZE		1024	/* Only a single load balancing instance */
+ #define SD_WAKE_IDLE_FAR	2048	/* Gain latency sacrificing cache hit */
+ 
++enum powersavings_balance_level {
++	POWERSAVINGS_BALANCE_NONE = 0,  /* No power saving load balance */
++	POWERSAVINGS_BALANCE_BASIC,	/* Fill one thread/core/package
++					 * first for long running threads
++					 */
++	POWERSAVINGS_BALANCE_WAKEUP,	/* Also bias task wakeups to semi-idle
++					 * cpu package for power savings
++					 */
++	MAX_POWERSAVINGS_BALANCE_LEVELS
++};
++
+ #define BALANCE_FOR_MC_POWER	\
+ 	(sched_smt_power_savings ? SD_POWERSAVINGS_BALANCE : 0)
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e8819bc..0dd6cf6 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7859,14 +7859,24 @@ int arch_reinit_sched_domains(void)
+ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+ {
+ 	int ret;
++	unsigned int level = 0;
+ 
+-	if (buf[0] != '0' && buf[0] != '1')
++	sscanf(buf, "%u", &level);
++
++	/*
++	 * level is always be positive so don't check for
++	 * level < POWERSAVINGS_BALANCE_NONE which is 0
++	 * What happens on 0 or 1 byte write,
++	 * need to check for count as well?
++	 */
++
++	if (level >= MAX_POWERSAVINGS_BALANCE_LEVELS)
+ 		return -EINVAL;
+ 
+ 	if (smt)
+-		sched_smt_power_savings = (buf[0] == '1');
++		sched_smt_power_savings = level;
+ 	else
+-		sched_mc_power_savings = (buf[0] == '1');
++		sched_mc_power_savings = level;
+ 
+ 	ret = arch_reinit_sched_domains();
+ 
 
-
- include/linux/sched.h |   12 +++++++
- kernel/sched.c        |   89 ++++++++++++++++++++++++++++++++++++++++++++++---
- kernel/sched_fair.c   |   17 +++++++++
- 3 files changed, 112 insertions(+), 6 deletions(-)
-
--- 
