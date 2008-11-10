@@ -1,91 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbYKJSw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYKJSxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbYKJSw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 13:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbYKJSwu
+	id S1755990AbYKJSxa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 13:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYKJSxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 13:52:50 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:21908 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715AbYKJSwu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 13:52:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QYGcleTIHCI1qGWpJsCvDEZDr4kRUJLHQfjS8E6gsXeuT0hz+cpWvNh008heoYHMfY
-         sWUyaL37wSpy6scp24XY21tSWv0BuQ55ixMlNH2id2Kp4NoYAzbew6roH+hBA2AdVFv0
-         CY9n4FXboqIvmrs8RwOxnrAdSKTqTghcHVzqM=
-Subject: Re: [RFC-PATCH 1/5] unaligned: introduce common header
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Will Newton <will.newton@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <87a5b0800811101035i721f1befi79ff76f9169fef4c@mail.gmail.com>
-References: <1225908976.5991.180.camel@brick>
-	 <87a5b0800811080447m2cebebb7j77afe9592f72ab11@mail.gmail.com>
-	 <1226290940.5478.3.camel@brick>
-	 <87a5b0800811100349n435785by27ebc4e495bb7985@mail.gmail.com>
-	 <1226335889.5478.40.camel@brick>
-	 <87a5b0800811101035i721f1befi79ff76f9169fef4c@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 10 Nov 2008 10:51:24 -0800
-Message-Id: <1226343084.22742.11.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 8bit
+	Mon, 10 Nov 2008 13:53:22 -0500
+Received: from [59.145.155.6] ([59.145.155.6]:34061 "EHLO e28smtp06.in.ibm.com"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754046AbYKJSxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 13:53:21 -0500
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: [RFC PATCH v3 5/5] sched: activate active load balancing in new idle
+	cpus
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Date: Tue, 11 Nov 2008 00:03:43 +0530
+Message-ID: <20081110183343.562.72751.stgit@drishya.in.ibm.com>
+In-Reply-To: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-10 at 18:35 +0000, Will Newton wrote:
-> On Mon, Nov 10, 2008 at 4:51 PM, Harvey Harrison
-> <harvey.harrison@gmail.com> wrote:
-> >
-> > In this particular case, packed isn't right as you know big_data is
-> > aligned (as long as you can guarantee the struct alignment), so you'd
-> > probably want:
-> >
-> > struct foo {
-> >        u64 big_data;
-> >        u8 small_data;
-> >        u32 medium_data __attribute__((__packed__));
-> > }
-> >
-> > But that's not what we're talking about in the kernel's case.
-> 
-> Perhaps that would be a neater way of expressing what is required in
-> my simple example, but it's fairly common to use packed on the whole
-> struct which could be because a field that is "packed" by default on
-> one architecture might not be on another. You could mark every field
-> as packed but few people seem to do that and as far as I am aware
-> there is no documented difference between packing all members and the
-> whole struct. The gcc documentation for packed is pretty short:
+Active load balancing is a process by which migration thread
+is woken up on the target CPU in order to pull current
+running task on another package into this newly idle
+package.
 
-Actually it's documented that putting attribute(packed) on the struct
-is equivalent to putting attribute(packed) on _every_ member of the
-struct.
+This method is already in use with normal load_balance(),
+this patch introduces this method to new idle cpus when
+sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
 
->   The packed attribute specifies that a variable or structure field
-> should have the smallest
->   possible alignment—one byte for a variable, and one bit for a field,
-> unless you specify a
->   larger value with the aligned attribute.
-> 
-> I'd love to know if the pointer alignment behaviour is widespread and
-> then maybe write a patch for the gcc manual.
+This logic provides effective consolidation of short running
+daemon jobs in a almost idle system
 
-Well, it's kind of the whole point of __packed isn't it?  Otherwise the
-struct members get naturally (or some arch-dependent value) aligned,
-which the compiler can rely on unless you say __packed.
+The side effect of this patch may be ping-ponging of tasks
+if the system is moderately utilised. May need to adjust the
+iterations before triggering.
 
-So in my example above, the compiler _knows_ how it has aligned
-big_data and small_data and can use whatever access is most efficient,
-but it can't make any assumptions about medium_data, so access through
-a pointer _must_ be done unaligned.
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+---
 
-struct foo *bar;
-bar->medium_data; // compiler must do this unaligned
+ kernel/sched.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-Harvey
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 16c5e1f..4d99509 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3687,10 +3687,45 @@ redo:
+ 	}
+ 
+ 	if (!ld_moved) {
++		int active_balance;
++		unsigned long flags;
++
+ 		schedstat_inc(sd, lb_failed[CPU_NEWLY_IDLE]);
+ 		if (!sd_idle && sd->flags & SD_SHARE_CPUPOWER &&
+ 		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+ 			return -1;
++
++		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
++			return -1;
++
++		if (sd->nr_balance_failed++ < 2)
++			return -1;
++
++		/* Release this_rq lock and take in correct order */
++		spin_unlock(&this_rq->lock);
++		double_rq_lock(this_rq, busiest);
++
++		/* don't kick the migration_thread, if the curr
++		 * task on busiest cpu can't be moved to this_cpu
++		 */
++		if (!cpu_isset(this_cpu, busiest->curr->cpus_allowed)) {
++			double_rq_unlock(this_rq, busiest);
++			spin_lock(&this_rq->lock);
++			all_pinned = 1;
++			return ld_moved;
++		}
++
++		if (!busiest->active_balance) {
++			busiest->active_balance = 1;
++			busiest->push_cpu = this_cpu;
++			active_balance = 1;
++		}
++
++		double_rq_unlock(this_rq, busiest);
++		if (active_balance)
++			wake_up_process(busiest->migration_thread);
++
++		spin_lock(&this_rq->lock);
+ 	} else
+ 		sd->nr_balance_failed = 0;
+ 
 
