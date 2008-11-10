@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbYKJV5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbYKJV6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbYKJV5I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 16:57:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKJV4z
+	id S1754898AbYKJV6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 16:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYKJV6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 16:56:55 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:36370 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbYKJV4z convert rfc822-to-8bit (ORCPT
+	Mon, 10 Nov 2008 16:58:15 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:55868 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbYKJV6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 16:56:55 -0500
-From: "Altobelli, David" <david.altobelli@hp.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 10 Nov 2008 21:56:08 +0000
-Subject: Disabling hpilo (see: sharing interrupt between PCI device)
-Thread-Topic: Disabling hpilo (see: sharing interrupt between PCI device)
-Thread-Index: AclDfyMJCwraMNYRTkWAhT7lp8s/Ew==
-Message-ID: <92D64232F2316045B18937D5C9996B152252A03D21@GVW1144EXB.americas.hpqcorp.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 10 Nov 2008 16:58:14 -0500
+Date: Mon, 10 Nov 2008 15:57:40 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Robin Holt <holt@sgi.com>
+cc: Andi Kleen <andi@firstfloor.org>, Yasunori Goto <y-goto@jp.fujitsu.com>,
+       "Luck, Tony" <tony.luck@intel.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-ia64@vger.kernel.org,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: Re: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
+In-Reply-To: <20081110190711.GG8483@sgi.com>
+Message-ID: <Pine.LNX.4.64.0811101555380.32105@quilx.com>
+References: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com> <87d4h3pwhe.fsf@basil.nowhere.org>
+ <20081110190711.GG8483@sgi.com>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I stumbled across this message, unfortunately I don't have the original to respond to.
+On Mon, 10 Nov 2008, Robin Holt wrote:
 
-http://lkml.org/lkml/2008/11/10/41
+> I am not sure what is be referred to here, but all of an Altix's memory is
+> DMA capable with the exception of the stuff covered by the MSPEC driver
+> (that is uncached memory).  There are certainly all sort of special
+> requirements for doing transfers on Altix to eliminate memory ordering
+> problems, but nothing specific that I recall related to address ranges
+> and DMA.
 
-The problem mentioned, that unloading hpilo causes the iLO IRC kbd/mouse (uchi_hcd) to become non-functional, is not an IRQ issue.
+But then ZONE_DMA has nothing to do with memory being dmaable or not.
+ZONE_DMA is for legacy devices that cannot do DMA to all of memory.
+I vaguely remember having stuffed all the memory into ZONE_NORMAL at some
+point. ZONE_DMA vanishes for Altix configurations.
 
-iLO function 2 (hpilo) shares some global resources with function 4 (uhci_hcd), and when hpilo calls pci_disable_device(), the removal of busmastering (PCI_COMMAND_MASTER) means that the IRC kdb/mouse can't do what it needs to do.  Reloading hpilo will allow the IRC kdb/mouse to function correctly.
-
-I've been struggling with what to do about this, removing the pci_disable_device() from hpilo will "fix" the problem, but that is clearly a hack.
