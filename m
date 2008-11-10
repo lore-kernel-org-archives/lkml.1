@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbYKJWbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbYKJWbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752920AbYKJWbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 17:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYKJWam
+	id S1755592AbYKJWbz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 17:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbYKJWay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 17:30:42 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:48785 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752799AbYKJWal (ORCPT
+	Mon, 10 Nov 2008 17:30:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48093 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754676AbYKJWaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 17:30:41 -0500
-From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 1/7] PCI, ACPI: include missing acpi.h file in pci-acpi.h.
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Cc: andrew.patterson@hp.com, matthew@wil.cx, kaneshige.kenji@jp.fujitsu.com,
-       bjorn.helgaas@hp.com
-Date: Mon, 10 Nov 2008 15:30:40 -0700
-Message-ID: <20081110223040.30539.93209.stgit@bob.kio>
-In-Reply-To: <20081110223035.30539.88942.stgit@bob.kio>
-References: <20081110223035.30539.88942.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 10 Nov 2008 17:30:52 -0500
+Date: Mon, 10 Nov 2008 14:30:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial/8250: fix uninitialized warnings
+Message-Id: <20081110143039.6f21fdc3.akpm@linux-foundation.org>
+In-Reply-To: <20081104174142.360a964a@lxorguk.ukuu.org.uk>
+References: <20081105022353.7CB0.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081104174142.360a964a@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI, ACPI: include missing acpi.h file in pci-acpi.h.
+On Tue, 4 Nov 2008 17:41:42 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-The pci-acpi.h file will not compile without including linux/acpi.h.
+> On Wed, 5 Nov 2008 02:26:00 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > 
+> > fix following warnings.
+> > 
+> > drivers/serial/8250.c: In function ___serial8250_shutdown___:
+> > drivers/serial/8250.c:1612: warnings: ___i___ may be used uninitialized in this function
+> 
+> NAK
+> 
+> This is an incorrect compiler warning. It's also one that current gcc
+> does not emit warnings for.
+> 
 
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
----
+That's a regression in current gcc, surely?
 
-diff --git a/include/linux/pci-acpi.h b/include/linux/pci-acpi.h
-index 8837928..a9e4c34 100644
---- a/include/linux/pci-acpi.h
-+++ b/include/linux/pci-acpi.h
-@@ -8,6 +8,8 @@
- #ifndef _PCI_ACPI_H_
- #define _PCI_ACPI_H_
- 
-+#include <linux/acpi.h>
-+
- #define OSC_QUERY_TYPE			0
- #define OSC_SUPPORT_TYPE 		1
- #define OSC_CONTROL_TYPE		2
+static void serial_unlink_irq_chain(struct uart_8250_port *up)
+{
+	struct irq_info *i;
+	struct hlist_node *n;
+	struct hlist_head *h;
 
+	mutex_lock(&hash_mutex);
+
+	h = &irq_lists[up->port.irq % NR_IRQ_HASH];
+
+	hlist_for_each(n, h) {
+		i = hlist_entry(n, struct irq_info, node);
+		if (i->irq == up->port.irq)
+			break;
+	}
+
+	BUG_ON(n == NULL);
+	BUG_ON(i->head == NULL);
+
+
+#define hlist_for_each(pos, head) \
+	for (pos = (head)->first; pos && ({ prefetch(pos->next); 1; }); \
+	     pos = pos->next)
+
+hlist_for_each() can execute that loop zero times, in which case
+serial_unlink_irq_chain will dereference an uninitialised variable.
+
+Presumably the list shouldn't be empty at this stage, but this
+is not particularly robust behaviour if that should happen..
