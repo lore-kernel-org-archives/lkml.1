@@ -1,268 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbYKKMvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbYKKMx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbYKKMvh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 07:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbYKKMv1
+	id S1756436AbYKKMx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbYKKMxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 07:51:27 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:54524 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756383AbYKKMvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 07:51:24 -0500
-Date: Tue, 11 Nov 2008 13:53:33 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, paolo.valente@unimore.it,
-       fabio@gandalf.sssup.it
-Subject: [PATCH 01/03] block: prepare I/O context code for BFQ
-Message-ID: <20081111125333.GE9508@gandalf.sssup.it>
-References: <20081111125148.GD9508@gandalf.sssup.it>
-Mime-Version: 1.0
+	Tue, 11 Nov 2008 07:53:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57259 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755207AbYKKMxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 07:53:49 -0500
+Date: Tue, 11 Nov 2008 13:53:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: sched: removed unneeded defintion
+Message-ID: <20081111125330.GA14989@elte.hu>
+References: <20081111124323.GA4684@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111125148.GD9508@gandalf.sssup.it>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <20081111124323.GA4684@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0042]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BFQ uses struct cfq_io_context to store its per-process per-device data,
-reusing the same code for cic handling of CFQ.  The code is not shared
-ATM to minimize the impact of these patches.
 
-This patch introduces a new hlist to each io_context to store all the
-cic's allocated by BFQ to allow calling the right destructor on module
-unload; the radix tree used for cic lookup needs to be duplicated
-because it can contain dead keys inserted by a scheduler and later
-retrieved by the other one.
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-Update the io_context exit and free paths to take care also of
-the BFQ cic's.
+> sched: removed unneeded defintion
+> 
+> This function no longer exists, so remove the defintion.
+> 
+> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> 
+> ---
+>  include/linux/sched.h |    2 --
+>  1 file changed, 2 deletions(-)
 
-Change the type of cfqq inside struct cfq_io_context to void *
-to use it also for BFQ per-queue data.
+applied to tip/sched/rt, thanks Dhaval!
 
-A new bfq-specific ioprio_changed field is necessary, too, to avoid
-clobbering cfq's one, so switch ioprio_changed to a bitmap, with one
-element per scheduler.
-
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
----
- block/blk-ioc.c           |   27 ++++++++++++++++-----------
- block/cfq-iosched.c       |   10 +++++++---
- fs/ioprio.c               |    9 +++++++--
- include/linux/iocontext.h |   18 +++++++++++++++---
- 4 files changed, 45 insertions(+), 19 deletions(-)
-
-diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-index 012f065..c18bb82 100644
---- a/block/blk-ioc.c
-+++ b/block/blk-ioc.c
-@@ -5,6 +5,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/bio.h>
-+#include <linux/bitmap.h>
- #include <linux/blkdev.h>
- #include <linux/bootmem.h>	/* for max_pfn/max_low_pfn */
- 
-@@ -15,13 +16,12 @@
-  */
- static struct kmem_cache *iocontext_cachep;
- 
--static void cfq_dtor(struct io_context *ioc)
-+static void hlist_sched_dtor(struct io_context *ioc, struct hlist_head *list)
- {
--	if (!hlist_empty(&ioc->cic_list)) {
-+	if (!hlist_empty(list)) {
- 		struct cfq_io_context *cic;
- 
--		cic = list_entry(ioc->cic_list.first, struct cfq_io_context,
--								cic_list);
-+		cic = list_entry(list->first, struct cfq_io_context, cic_list);
- 		cic->dtor(ioc);
- 	}
- }
-@@ -41,7 +41,9 @@ int put_io_context(struct io_context *ioc)
- 		rcu_read_lock();
- 		if (ioc->aic && ioc->aic->dtor)
- 			ioc->aic->dtor(ioc->aic);
--		cfq_dtor(ioc);
-+
-+		hlist_sched_dtor(ioc, &ioc->cic_list);
-+		hlist_sched_dtor(ioc, &ioc->bfq_cic_list);
- 		rcu_read_unlock();
- 
- 		kmem_cache_free(iocontext_cachep, ioc);
-@@ -51,18 +53,18 @@ int put_io_context(struct io_context *ioc)
- }
- EXPORT_SYMBOL(put_io_context);
- 
--static void cfq_exit(struct io_context *ioc)
-+static void hlist_sched_exit(struct io_context *ioc, struct hlist_head *list)
- {
- 	rcu_read_lock();
- 
--	if (!hlist_empty(&ioc->cic_list)) {
-+	if (!hlist_empty(list)) {
- 		struct cfq_io_context *cic;
- 
--		cic = list_entry(ioc->cic_list.first, struct cfq_io_context,
--								cic_list);
-+		cic = list_entry(list->first, struct cfq_io_context, cic_list);
- 		cic->exit(ioc);
- 	}
- 	rcu_read_unlock();
-+
- }
- 
- /* Called by the exitting task */
-@@ -78,7 +80,8 @@ void exit_io_context(void)
- 	if (atomic_dec_and_test(&ioc->nr_tasks)) {
- 		if (ioc->aic && ioc->aic->exit)
- 			ioc->aic->exit(ioc->aic);
--		cfq_exit(ioc);
-+		hlist_sched_exit(ioc, &ioc->cic_list);
-+		hlist_sched_exit(ioc, &ioc->bfq_cic_list);
- 
- 		put_io_context(ioc);
- 	}
-@@ -93,13 +96,15 @@ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
- 		atomic_set(&ret->refcount, 1);
- 		atomic_set(&ret->nr_tasks, 1);
- 		spin_lock_init(&ret->lock);
--		ret->ioprio_changed = 0;
-+		bitmap_zero(ret->ioprio_changed, IOC_IOPRIO_CHANGED_BITS);
- 		ret->ioprio = 0;
- 		ret->last_waited = jiffies; /* doesn't matter... */
- 		ret->nr_batch_requests = 0; /* because this is 0 */
- 		ret->aic = NULL;
- 		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
- 		INIT_HLIST_HEAD(&ret->cic_list);
-+		INIT_RADIX_TREE(&ret->bfq_radix_root, GFP_ATOMIC | __GFP_HIGH);
-+		INIT_HLIST_HEAD(&ret->bfq_cic_list);
- 		ret->ioc_data = NULL;
- 	}
- 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 1e2aff8..ab503ec 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1417,7 +1417,6 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
- static void cfq_ioc_set_ioprio(struct io_context *ioc)
- {
- 	call_for_each_cic(ioc, changed_ioprio);
--	ioc->ioprio_changed = 0;
- }
- 
- static struct cfq_queue *
-@@ -1664,8 +1663,13 @@ cfq_get_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
- 		goto err_free;
- 
- out:
--	smp_read_barrier_depends();
--	if (unlikely(ioc->ioprio_changed))
-+	/*
-+	 * test_and_clear_bit() implies a memory barrier, paired with
-+	 * the wmb() in fs/ioprio.c, so the value seen for ioprio is the
-+	 * new one.
-+	 */
-+	if (unlikely(test_and_clear_bit(IOC_CFQ_IOPRIO_CHANGED,
-+					ioc->ioprio_changed)))
- 		cfq_ioc_set_ioprio(ioc);
- 
- 	return cic;
-diff --git a/fs/ioprio.c b/fs/ioprio.c
-index da3cc46..9296ac3 100644
---- a/fs/ioprio.c
-+++ b/fs/ioprio.c
-@@ -29,7 +29,7 @@
- 
- static int set_task_ioprio(struct task_struct *task, int ioprio)
- {
--	int err;
-+	int err, i;
- 	struct io_context *ioc;
- 
- 	if (task->uid != current->euid &&
-@@ -53,12 +53,17 @@ static int set_task_ioprio(struct task_struct *task, int ioprio)
- 			err = -ENOMEM;
- 			break;
- 		}
-+		/* let other ioc users see the new values */
-+		smp_wmb();
- 		task->io_context = ioc;
- 	} while (1);
- 
- 	if (!err) {
- 		ioc->ioprio = ioprio;
--		ioc->ioprio_changed = 1;
-+		/* make sure schedulers see the new ioprio value */
-+		wmb();
-+		for (i = 0; i < IOC_IOPRIO_CHANGED_BITS; i++)
-+			set_bit(i, ioc->ioprio_changed);
- 	}
- 
- 	task_unlock(task);
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index 08b987b..335bbb9 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -1,6 +1,7 @@
- #ifndef IOCONTEXT_H
- #define IOCONTEXT_H
- 
-+#include <linux/bitmap.h>
- #include <linux/radix-tree.h>
- #include <linux/rcupdate.h>
- 
-@@ -30,12 +31,11 @@ struct as_io_context {
- 	sector_t seek_mean;
- };
- 
--struct cfq_queue;
- struct cfq_io_context {
- 	void *key;
- 	unsigned long dead_key;
- 
--	struct cfq_queue *cfqq[2];
-+	void *cfqq[2];
- 
- 	struct io_context *ioc;
- 
-@@ -60,6 +60,16 @@ struct cfq_io_context {
- };
- 
- /*
-+ * Indexes into the ioprio_changed bitmap.  A bit set indicates that
-+ * the corresponding I/O scheduler needs to see a ioprio update.
-+ */
-+enum {
-+	IOC_CFQ_IOPRIO_CHANGED,
-+	IOC_BFQ_IOPRIO_CHANGED,
-+	IOC_IOPRIO_CHANGED_BITS
-+};
-+
-+/*
-  * I/O subsystem state of the associated processes.  It is refcounted
-  * and kmalloc'ed. These could be shared between processes.
-  */
-@@ -71,7 +81,7 @@ struct io_context {
- 	spinlock_t lock;
- 
- 	unsigned short ioprio;
--	unsigned short ioprio_changed;
-+	DECLARE_BITMAP(ioprio_changed, IOC_IOPRIO_CHANGED_BITS);
- 
- 	/*
- 	 * For request batching
-@@ -82,6 +92,8 @@ struct io_context {
- 	struct as_io_context *aic;
- 	struct radix_tree_root radix_root;
- 	struct hlist_head cic_list;
-+	struct radix_tree_root bfq_radix_root;
-+	struct hlist_head bfq_cic_list;
- 	void *ioc_data;
- };
- 
+	Ingo
