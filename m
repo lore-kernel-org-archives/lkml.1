@@ -1,132 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbYKKMfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYKKMmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbYKKMfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 07:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbYKKMfO
+	id S1756148AbYKKMmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbYKKMmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 07:35:14 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:53756 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755625AbYKKMfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 07:35:12 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Tue, 11 Nov 2008 07:42:07 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:43880 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755207AbYKKMmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 07:42:04 -0500
+Date: Tue, 11 Nov 2008 13:42:01 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 11 Nov 2008 18:04:48 +0530
-Message-Id: <20081111123448.6566.55973.sendpatchset@balbir-laptop>
-In-Reply-To: <20081111123314.6566.54133.sendpatchset@balbir-laptop>
-References: <20081111123314.6566.54133.sendpatchset@balbir-laptop>
-Subject: [RFC][mm] [PATCH 4/4] Memory cgroup hierarchy feature selector (v3)
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
+	chanes in stop_machine
+Message-ID: <20081111124201.GA9459@osiris.boeblingen.de.ibm.com>
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111113134.GA5653@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 11, 2008 at 12:31:34PM +0100, Heiko Carstens wrote:
+> On Tue, Nov 11, 2008 at 11:52:14AM +0100, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > However, it is reproducible by doing
+> > > 
+> > > # echo core > /sys/power/pm_test
+> > > 
+> > > and repeating
+> > > 
+> > > # echo disk > /sys/power/state
+> > > 
+> > > for a couple of times, in which case the last two lines printed to the console
+> > > before a (solid) hang are:
+> > > 
+> > > SMP alternatives: switching to SMP code
+> > > Booting processor 1 APIC 0x1 ip 0x6000
+> > > 
+> > > So, it evidently fails while re-enabling the non-boot CPU and not 
+> > > during disabling it as I thought before.
+> > > 
+> > > With commit c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc reverted the 
+> > > issue is not reproducible any more.
+> > 
+> > [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
+> > 
+> > Seems like the new kernel/stop_machine.c logic has a race for the test 
+> > sequence above. (Below is the bisected commit again, maybe the race is 
+> > visible via email review as well.)
+> 
+> FWIW, I tried to reproduce this on s390 and got the following:
+> 
+> A process that would do nothing but onlining/offlining cpus would get
+> stuck after a while:
+> 
+>  0 schedule+842 [0x342522]
+>  1 schedule_timeout+200 [0x342ec4]
+>  2 wait_for_common+362 [0x341fd6]
+>  3 wait_for_completion+54 [0x342146]
+>  4 __synchronize_sched+80 [0x81670]
+>  5 cpu_down+172 [0x33c030]
+>  6 store_online+96 [0x33c488]
+>  7 sysdev_store+52 [0x1bda84]
+>  8 sysfs_write_file+242 [0x1350ba]
+>  9 vfs_write+176 [0xd2028]
+> 10 sys_write+82 [0xd21ea]
+> 11 sysc_noemu+16 [0x269d8]
+> 
+> All cpus are in cpu_idle and no other task in state TASK_INTERRUPTIBLE
+> or TASK_UNINTERRUPTIBLE. However it would continue to work as soon as
+> I login into the system or generate a console interrupt.
+> I'm going to look into the dump and see if I can figure out what is
+> broken here.
+> Dunno if it is the same bug or something else.
 
-Don't enable multiple hierarchy support by default. This patch introduces
-a features element that can be set to enable the nested depth hierarchy
-feature. This feature can only be enabled when the cgroup for which the
-feature this is enabled, has no children.
+[Cc:-ed Steven and Paul, since this backtrace seems to be RCU specific]
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- mm/memcontrol.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 51 insertions(+), 1 deletion(-)
-
-diff -puN mm/memcontrol.c~memcg-add-hierarchy-selector mm/memcontrol.c
---- linux-2.6.28-rc2/mm/memcontrol.c~memcg-add-hierarchy-selector	2008-11-11 17:51:57.000000000 +0530
-+++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-11 17:51:57.000000000 +0530
-@@ -137,6 +137,11 @@ struct mem_cgroup {
- 	 * reclaimed from. Protected by cgroup_lock()
- 	 */
- 	struct mem_cgroup *last_scanned_child;
-+	/*
-+	 * Should the accounting and control be hierarchical, per subtree?
-+	 */
-+	unsigned long use_hierarchy;
-+
- };
- static struct mem_cgroup init_mem_cgroup;
- 
-@@ -1093,6 +1098,42 @@ out:
- 	return ret;
- }
- 
-+static u64 mem_cgroup_hierarchy_read(struct cgroup *cont, struct cftype *cft)
-+{
-+	return mem_cgroup_from_cont(cont)->use_hierarchy;
-+}
-+
-+static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
-+					u64 val)
-+{
-+	int retval = 0;
-+	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-+	struct cgroup *parent = cont->parent;
-+	struct mem_cgroup *parent_mem = NULL;
-+
-+	if (parent)
-+		parent_mem = mem_cgroup_from_cont(parent);
-+
-+	/*
-+	 * If parent's use_hiearchy is set, we can't make any modifications
-+	 * in the child subtrees. If it is unset, then the change can
-+	 * occur, provided the current cgroup has no children.
-+	 *
-+	 * For the root cgroup, parent_mem is NULL, we allow value to be
-+	 * set if there are no children.
-+	 */
-+	if (!parent_mem || (!parent_mem->use_hierarchy &&
-+				(val == 1 || val == 0))) {
-+		if (list_empty(&cont->children))
-+			mem->use_hierarchy = val;
-+		else
-+			retval = -EBUSY;
-+	} else
-+		retval = -EINVAL;
-+
-+	return retval;
-+}
-+
- static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
- {
- 	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
-@@ -1227,6 +1268,11 @@ static struct cftype mem_cgroup_files[] 
- 		.name = "stat",
- 		.read_map = mem_control_stat_show,
- 	},
-+	{
-+		.name = "use_hierarchy",
-+		.write_u64 = mem_cgroup_hierarchy_write,
-+		.read_u64 = mem_cgroup_hierarchy_read,
-+	},
- };
- 
- static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-@@ -1303,9 +1349,13 @@ mem_cgroup_create(struct cgroup_subsys *
- 		parent = mem_cgroup_from_cont(cont->parent);
- 		if (!mem)
- 			return ERR_PTR(-ENOMEM);
-+		mem->use_hierarchy = parent->use_hierarchy;
- 	}
- 
--	res_counter_init(&mem->res, parent ? &parent->res : NULL);
-+	if (parent && parent->use_hierarchy)
-+		res_counter_init(&mem->res, &parent->res);
-+	else
-+		res_counter_init(&mem->res, NULL);
- 
- 	for_each_node_state(node, N_POSSIBLE)
- 		if (alloc_mem_cgroup_per_zone_info(mem, node))
-_
-
--- 
-	Balbir
+Steven, Paul, any idea what could cause the hang? I think I would
+get lost in the RCU code...
