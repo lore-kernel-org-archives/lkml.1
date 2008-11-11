@@ -1,78 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYKKGez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633AbYKKGfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbYKKGez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 01:34:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbYKKGep
+	id S1755633AbYKKGfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 01:35:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbYKKGey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 01:34:45 -0500
-Received: from ms0.nttdata.co.jp ([163.135.193.231]:37401 "EHLO
-	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbYKKGeo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 01:34:44 -0500
-Message-ID: <4919277F.9050206@nttdata.co.jp>
-Date: Tue, 11 Nov 2008 15:34:39 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
+	Tue, 11 Nov 2008 01:34:54 -0500
+Received: from kroah.org ([198.145.64.141]:37849 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755111AbYKKGew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 01:34:52 -0500
+Date: Mon, 10 Nov 2008 22:08:45 -0800
+From: Greg KH <greg@kroah.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: "Fischer, Anna" <anna.fischer@hp.com>, H L <swdevyid@yahoo.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
+       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
+       "Chiang, Alexander" <achiang@hp.com>, "matthew@wil.cx" <matthew@wil.cx>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "rdreier@cisco.com" <rdreier@cisco.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>
+Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
+Message-ID: <20081111060845.GB13025@kroah.com>
+References: <20081106154351.GA30459@kroah.com> <894107.30288.qm@web45108.mail.sp1.yahoo.com> <20081106164919.GA4099@kroah.com> <0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net> <20081106180354.GA17429@kroah.com> <4916DB16.2040709@redhat.com> <20081109192505.GA3091@kroah.com> <49173BF0.5050506@redhat.com>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: haradats@nttdata.co.jp, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, penguin-kernel@I-love.SAKURA.ne.jp
-Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 05/11] Memory and pathname management
- functions.
-References: <20081104060847.086543472@nttdata.co.jp>	<20081104060949.942652091@nttdata.co.jp>	<20081105151217.4e8d11a9.akpm@linux-foundation.org>	<49180E29.2060004@nttdata.co.jp> <20081110210405.d43458f3.akpm@linux-foundation.org>
-In-Reply-To: <20081110210405.d43458f3.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Nov 2008 06:34:40.0407 (UTC) FILETIME=[93355A70:01C943C7]
+Content-Disposition: inline
+In-Reply-To: <49173BF0.5050506@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->>> Note that I said "kmalloc", not "kzalloc".  This function zeroes
->>> everything all the time, and surely that is not necessary.  It's just a
->>> waste of CPU time.
+On Sun, Nov 09, 2008 at 09:37:20PM +0200, Avi Kivity wrote:
+> Greg KH wrote:
+>> On Sun, Nov 09, 2008 at 02:44:06PM +0200, Avi Kivity wrote:
+>>   
+>>> Greg KH wrote:
+>>>     
+>>>> It's that "second" part that I'm worried about.  How is that going to
+>>>> happen?  Do you have any patches that show this kind of "assignment"?
+>>>>
+>>>>         
+>>> For kvm, this is in 2.6.28-rc.
+>>>     
+>>
+>> Where?  I just looked and couldn't find anything, but odds are I was
+>> looking in the wrong place :(
+>>
+>>   
+>
+> arch/x86/kvm/vtd.c: iommu integration (allows assigning the device's memory 
+> resources)
+
+That file is not in 2.6.28-rc4 :(
+
+
+> virt/kvm/irq*: interrupt redirection (allows assigning the device's 
+> interrupt resources)
+
+I only see virt/kvm/irq_comm.c in 2.6.28-rc4.
+
+> the rest (pci config space, pio redirection) are in userspace.
+
+So you don't need these pci core changes at all?
+
+>>> Note there are two ways to assign a device to a guest:
 >>>
->> Callers of tmy_alloc assume that allocated memory is zeroed.
-> 
-> That isn't the point.  For programmer convenience we could make
-> __alloc_pages() and kmalloc() zero all the memory too.  But we don't
-> because it is slow.
-Are you saying "make the callers of tmy_alloc() tolerable with
-uninitialized memory"?
+>>> - run the VF driver in the guest: this has the advantage of best 
+>>> performance, but requires pinning all guest memory, makes live migration 
+>>> a tricky proposition, and ties the guest to the underlying hardware.
+>>
+>> Is this what you would prefer for kvm?
+>>
+>
+> It's not my personal preference, but it is a supported configuration.  For 
+> some use cases it is the only one that makes sense.
+>
+> Again, VF-in-guest and VF-in-host both have their places.  And since Linux 
+> can be both guest and host, it's best if the VF driver knows nothing about 
+> SR-IOV; it's just a pci driver.  The PF driver should emulate anything that 
+> SR-IOV does not provide (like missing pci config space).
 
->>>> +/**
->>>> + * tmy_read_memory_counter - Check for memory usage.
->>>> + *
->>>> + * @head: Pointer to "struct tmy_io_buffer".
->>>> + *
->>>> + * Returns memory usage.
->>> In what units?  Megabytes?
->>>
->> In bytes.
-> 
-> Let me rephrase:
-> 
-> The comment over tmy_read_memory_counter() fails to tell the reader
-> what units are used for the return value.  It should do so.
-I see. Replaced "Check for memory usage." by "Check for memory usage in bytes".
-Thanks.
+Yes, we need both.
 
->> Creating pseudo files for each variables is fine, though I don't see
->> advantage by changing from
->> "echo Shared: 16777216 > /sys/kernel/security/tomoyo/meminfo" to
->> "echo 16777216 > /sys/kernel/security/tomoyo/quota/shared_memory".
-> 
-> Well for starters, the existing interface is ugly as sin and will make
-> kernel developers unhappy.
-> 
-> There is a pretty strict one-value-per-file rule in sysfs files, and
-> "multiple tagged values in one file" violates that a lot.
-/sys/kernel/security/ is not sysfs but securityfs.
-Does "one-value-per-file rule" also apply to securityfs?
+thanks,
 
-Regards,
-
-
+greg k-h
