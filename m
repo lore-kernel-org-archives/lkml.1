@@ -1,39 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYKKK0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYKKK3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573AbYKKK0f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 05:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754651AbYKKK01
+	id S1755837AbYKKK3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 05:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbYKKK3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 05:26:27 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44295 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbYKKK00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 05:26:26 -0500
+	Tue, 11 Nov 2008 05:29:07 -0500
+Received: from mailgate6.9netweb.it ([66.71.190.69]:44883 "EHLO
+	mailgate6.9netweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753030AbYKKK3G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 05:29:06 -0500
+X-Greylist: delayed 1541 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Nov 2008 05:29:06 EST
+Message-ID: <37718.89.97.65.173.1226397803.webmail@mail.evidence.eu.com>
+Date: Tue, 11 Nov 2008 11:03:23 +0100 (CET)
+Subject: [PATCH] Unused variable 'reg' removed
+From: "Claudio Scordino" <claudio@evidence.eu.com>
+To: kernel@pengutronix.de
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+User-Agent: WebMail/1.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Christoph Hellwig <hch@lst.de>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org, Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: wierd new config options
-In-Reply-To: Christoph Hellwig's message of  Thursday, 23 October 2008 20:18:18 +0200 <20081023181818.GA25430@lst.de>
-References: <20081023181818.GA25430@lst.de>
-X-Windows: you'd better sit down.
-Message-Id: <20081111102615.2D2D61541CA@magilla.localdomain>
-Date: Tue, 11 Nov 2008 02:26:15 -0800 (PST)
+Content-Type: multipart/mixed;boundary="----=_20081111110323_45690"
+X-Priority: 3
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> CORE_DUMP_DEFAULT_ELF_HEADERS is similarly odd, it turns something on
-> that break old userspace, this really really should be a sysctl to turn
-> on instead of a config option.
+------=_20081111110323_45690
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
-Both the kconfig help text and the commit's log mention that this is
-controlled per-process via /proc/PID/coredump_filter.  The new config
-option only changes the boot-time default value to be inherited.
+Just a very trivial patch to remove one unused variable from the i.MX code.
+
+Regards,
+
+            Claudio
+------=_20081111110323_45690
+Content-Type: text/x-diff; name="0001-Unused-variable-reg-removed.patch"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment;
+      filename="0001-Unused-variable-reg-removed.patch"
+
+>From 88d1d8f62ed1dd584c13c328b52bfbbac816dcc3 Mon Sep 17 00:00:00 2001
+From: Claudio Scordino <claudio@evidence.eu.com>
+Date: Tue, 11 Nov 2008 10:56:36 +0100
+Subject: [PATCH 1/1] Unused variable 'reg' removed.
 
 
-Thanks,
-Roland
+Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
+---
+ arch/arm/plat-mxc/irq.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/plat-mxc/irq.c b/arch/arm/plat-mxc/irq.c
+index d862c9e..0cb3841 100644
+--- a/arch/arm/plat-mxc/irq.c
++++ b/arch/arm/plat-mxc/irq.c
+@@ -91,7 +91,6 @@ static struct irq_chip mxc_avic_chip = {
+ void __init mxc_init_irq(void)
+ {
+ 	int i;
+-	u32 reg;
+ 
+ 	/* put the AVIC into the reset value with
+ 	 * all interrupts disabled
+-- 
+1.5.4.3
+
+------=_20081111110323_45690--
+
