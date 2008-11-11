@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbYKKNqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYKKNr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbYKKNqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 08:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbYKKNqk
+	id S1756675AbYKKNr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 08:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbYKKNrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 08:46:40 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:47177 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755639AbYKKNqj (ORCPT
+	Tue, 11 Nov 2008 08:47:20 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:3777 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755855AbYKKNrT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 08:46:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=I9r7ZljeTjnWlcaVWFxbSno+oMTS91y8yZAcv2kaDrgmD6xlqzmvh280EQR+TPJn4J
-         O7sCm0TzT8irXqRQF7aJglIbQFC6AK9EttjxqicjpGGUcINWCSmuXWF1vuisUENB64bE
-         3Jh311fG2Elemjvqp3QwyAodsYMVOlnXNZL00=
-Message-ID: <19f34abd0811110546s39b39b96ka41b7d0d24eaec03@mail.gmail.com>
-Date: Tue, 11 Nov 2008 14:46:38 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to chanes in stop_machine
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Oleg Nesterov" <oleg@redhat.com>,
-       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 11 Nov 2008 08:47:19 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [RFC PATCH v3 5/5] sched: activate active load balancing in
+ new idle cpus
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+In-Reply-To: <20081110183343.562.72751.stgit@drishya.in.ibm.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
+	 <20081110183343.562.72751.stgit@drishya.in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 14:47:15 +0100
+Message-Id: <1226411235.7685.1775.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	 <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
-	 <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl>
-	 <20081111105214.GA15645@elte.hu>
-	 <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 2:36 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> On Tue, Nov 11, 2008 at 11:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
->
-> Heh. I am not expert, but I looked at the code. The obvious suspicious
-> thing to see is the use of unpaired barriers? Maybe like this:
+On Tue, 2008-11-11 at 00:03 +0530, Vaidyanathan Srinivasan wrote:
+> Active load balancing is a process by which migration thread
+> is woken up on the target CPU in order to pull current
+> running task on another package into this newly idle
+> package.
+> 
+> This method is already in use with normal load_balance(),
+> this patch introduces this method to new idle cpus when
+> sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
+> 
+> This logic provides effective consolidation of short running
+> daemon jobs in a almost idle system
+> 
+> The side effect of this patch may be ping-ponging of tasks
+> if the system is moderately utilised. May need to adjust the
+> iterations before triggering.
 
-...
+OK, I'm so not getting this patch..
 
-> 55 /* Last one to ack a state moves to the next state. */
-> 56 static void ack_state(void)
-> 57 {
-> 58         if (atomic_dec_and_test(&thread_ack))
->
-> Maybe
-> + /* force ordering between thread_ack/state */
-> + smp_rmb();
-> here?
+if normal newly idle balancing fails that means the other runqueue has
+only a single task on it (or some other really stubborn stuff), so then
+you go move that one task that is already running, from one cpu to
+another.
 
-Oops, I am wrong (after a small investigation).
+_why_?
 
-"1490 Any atomic operation that modifies some state in memory and
-returns information
-1491 about the state (old or new) implies an SMP-conditional general
-memory barrier
-1492 (smp_mb()) on each side of the actual operation (with the exception of
-1493 explicit lock operations, described later).  These include:
-1494
-...
-1503         atomic_dec_and_test();"
+The only answer I can come up with is that you prefer one cpu's
+idle-ness over another - which makes sense, as you try to get whole
+packages idle.
 
-Won't fix the problem at hand, but maybe something like this would be
-nice for future generations :-)
+But I'm not seeing where that package logic is hidden..
 
-diff --git a/kernel/stop_machine.c b/kernel/stop_machine.c
-index 0e688c6..6796bb1 100644
---- a/kernel/stop_machine.c
-+++ b/kernel/stop_machine.c
-@@ -55,6 +55,7 @@ static void set_state(enum stopmachine_state newstate)
- /* Last one to ack a state moves to the next state. */
- static void ack_state(void)
- {
-+       /* Implicit memory barrier; no smp_rmb() needed */
-        if (atomic_dec_and_test(&thread_ack))
-                set_state(state + 1);
- }
-
-
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
