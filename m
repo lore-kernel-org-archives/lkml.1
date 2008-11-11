@@ -1,136 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYKKJ5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYKKJ7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbYKKJ5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 04:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbYKKJ5k
+	id S1755932AbYKKJ7n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 04:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbYKKJ7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 04:57:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57753 "EHLO mx2.redhat.com"
+	Tue, 11 Nov 2008 04:59:33 -0500
+Received: from david.siemens.de ([192.35.17.14]:16672 "EHLO david.siemens.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754731AbYKKJ5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 04:57:39 -0500
-Message-ID: <491956E3.4020405@redhat.com>
-Date: Tue, 11 Nov 2008 10:56:51 +0100
-From: Tomas Henzl <thenzl@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1753299AbYKKJ7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 04:59:32 -0500
+Message-ID: <491958E3.1030501@siemens.com>
+Date: Tue, 11 Nov 2008 11:05:23 +0100
+From: "Hillier, Gernot" <gernot.hillier@siemens.com>
+Organization: Siemens AG, CT SE 2
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.9) Gecko/20070801 SUSE/2.0.0.9-0.1 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, gernot.hillier@siemens.com,
-       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com,
-       Thomas Guyot-Sionnest <dermoth@aei.ca>, stable@kernel.org,
-       Matt Domsch <Matt_Domsch@dell.com>,
-       "Leubner, Achim" <Achim_Leubner@adaptec.com>
-Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit	94cf6ba11b068b8a8f68a1e88bffb6827e92124b
-References: <48D10E1A.8030804@siemens.com> <48EB6600.9020204@redhat.com>	 <20081110152006.8982133b.akpm@linux-foundation.org> <1226377257.5014.88.camel@localhost.localdomain>
-In-Reply-To: <1226377257.5014.88.camel@localhost.localdomain>
+To: "Graham, David" <david.graham@intel.com>,
+       "Fodor, Zoltan" <zoltan.fodor@intel.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "Hockert, Jeff W" <jeff.w.hockert@intel.com>
+Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro
+ X7DB3
+References: <EA929A9653AAE14F841771FB1DE5A1365F498F4EDC@rrsmsx501.amr.corp.intel.com> <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com> <48EE04C0.6070504@siemens.com> <48F463D1.70605@siemens.com> <E3627BC91D010645BD262A1E8720005106B67989@orsmsx420.amr.corp.intel.com> <48F766CB.3030603@siemens.com>
+In-Reply-To: <48F766CB.3030603@siemens.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Mon, 2008-11-10 at 15:20 -0800, Andrew Morton wrote:
->   
->> On Tue, 07 Oct 2008 15:37:04 +0200
->> Tomas Henzl <thenzl@redhat.com> wrote:
+Dear Dave,
+
+On 2008-10-16, Hillier, Gernot wrote:
+> Hi there!
+> 
+> Graham, David wrote:
+>> It would help if you could provide a little more information. Could you
+>> provide (for one of each of the two configurations that you have - one
+>> with the IPMI card, one without):
 >>
->>     
->>> Hillier, Gernot wrote:
->>>       
->>>> Hi there!
->>>>
->>>> On our AMD64 machines equipped with old Adaptec 2200S controllers, we
->>>> experienced a regression when updating to 2.6.25. The machines won't
->>>> boot anymore (in a reasonable time), but instead spit out tons of those
->>>> messages:
->>>> aac_srb: aac_fib_send failed with status: 8195
->>>>
->>>> This is already reported in quite some places including LKML:
->>>> http://lkml.org/lkml/2008/5/12/365
->>>> https://bugzilla.redhat.com/show_bug.cgi?id=450444
->>>> https://bugzilla.redhat.com/show_bug.cgi?id=453472
->>>> http://www.linuxquestions.org/questions/red-hat-31/aacsrb-aacfibsend-failed-with-status-8195-651078/
->>>> http://forums.gentoo.org/viewtopic-p-5077382.html?sid=a51c3a0fba6aa854c0b49b8fae5cc15a
->>>>
->>>> We found that this regression seems to be introduced by the bugfix
->>>> "aacraid: fix driver failure with Dell PowerEdge
->>>> Expandable RAID Controller 3/Di":
->>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=94cf6ba11b068b8a8f68a1e88bffb6827e92124b
->>>>
->>>> By simply removing the quirk flag for our controller, we could boot again.
->>>>
->>>> We did some quick stress tests on an AMD64bit machine with 16GB of RAM 
->>>> and saw no problems after this change:
->>>>
->>>> diff -ur linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c
->>>> --- linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c	2008-09-15 16:07:14.000000000 +0100
->>>> +++ linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c	2008-09-15 16:09:26.000000000 +0100
->>>> @@ -176,7 +176,7 @@
->>>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
->>>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
->>>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
->>>> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
->>>> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG }, /* Adaptec 2200S (Vulcan) */
->>>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
->>>>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
->>>>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
->>>>
->>>> Can this be safely changed/merged? Or is this the wrong way to fix it?
->>>>
->>>> Please note that we also have machines equipped with newer Adaptec 2230S
->>>> controllers (PCI ID 9005:0286) which run perfectly with the current driver.
->>>>
->>>>   
->>>>         
->>> Hi,
->>> from what I read about this it seems to me that people are complaining also about issues with the 2120S Controller.
->>> So if the patch is taken in this form the original patch should be extended to cover both controllers.
->>>
->>> Signed-off-by: Tomas Henzl <thenzl@redhat.com>
->>>
->>> ---
->>> diff -Naurp linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c
->>> --- linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c	2008-09-25 18:06:23.000000000 +0200
->>> +++ linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c	2008-10-03 12:12:06.000000000 +0200
->>> @@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
->>>  	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
->>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
->>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
->>> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
->>> -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
->>> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
->>> +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
->>>  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
->>>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
->>>  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
->>>
->>>
->>>       
->> I added this to my tree with Tomas's title&changelog (thanks - I was
->> about to whine about that).  Thanks Thomas for the reminder.  I tagged
->> it as backportable to 2.6.25.x, 2.6.26.x and 2.6.27.x.
->>     
->
-> Could someone from Adaptec and Dell please verify that this is correct?
-> Mark Salyzyn no longer works there, but the aacraid@adaptec.com address
-> is supposed to still be working.
->
-> Thanks,
->
-> James
->   
-Adding Achim Leubner from Adaptec to the CC:list,
-he is the new person responsible for the driver.
-Achim what do you think about this patch ?
+>> 	lspci -t
+>> 	lspci -vvv -xxxx
+>> 	ethtool -e eth0
+> 
+> Ok, it turned out that we still can reproduce the problem - even after the
+> firmware upgrade. So I collected the information you requested from two
+> machines:
 
-Thanks,
-Tomas
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->   
+Wanted to let you know that this problem seems to be fixed for us.
 
+We received a preliminary update from Supermicro which contains a new NIC
+firmware 2.5 they recently received from your side with improved Shared LAN
+support (56313.eep, release date 2008-10-01) .
+
+After flashing this update together with a new BMC card firmware 1.59, the
+problem has finally vanished for us. (For some reason, only updating the
+NIC firmware wasn't possible, so we can't unfortunately nail down which
+update part really fixed the problem.)
+
+1.5 days of an rmmod/insmod loop and 2.5 days of a complete OS reboot loop
+now have been passed w/o problems. Both tests triggered the problem
+reliably within at most one day before.
+
+So thanks again for your help!
+
+-- 
+With kind regards,
+
+Gernot Hillier
+Siemens AG, Corporate Competence Center Embedded Linux
