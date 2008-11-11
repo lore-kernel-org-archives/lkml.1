@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYKKQd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbYKKQmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbYKKQd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 11:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYKKQds
+	id S1752919AbYKKQmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 11:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbYKKQmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 11:33:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54179 "EHLO ogre.sisk.pl"
+	Tue, 11 Nov 2008 11:42:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54216 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751144AbYKKQdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 11:33:47 -0500
+	id S1751486AbYKKQmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 11:42:38 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mike Isely <isely@pobox.com>
-Subject: Re: [Bug #11829] Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
-Date: Tue, 11 Nov 2008 17:38:20 +0100
+To: Pavel Machek <pavel@suse.cz>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+Date: Tue, 11 Nov 2008 17:47:27 +0100
 User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>
-References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera> <200811111453.34386.rjw@sisk.pl> <Pine.LNX.4.64.0811110938500.22093@cnc.isely.net>
-In-Reply-To: <Pine.LNX.4.64.0811110938500.22093@cnc.isely.net>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <20081109140726.GB1786@ucw.cz> <200811111520.22386.rjw@sisk.pl> <20081111150342.GB1648@ucw.cz>
+In-Reply-To: <20081111150342.GB1648@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811111738.20759.rjw@sisk.pl>
+Message-Id: <200811111747.28347.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 of November 2008, Mike Isely wrote:
-> On Tue, 11 Nov 2008, Rafael J. Wysocki wrote:
+On Tuesday, 11 of November 2008, Pavel Machek wrote:
 > 
-> > On Tuesday, 11 of November 2008, Greg KH wrote:
-> > > On Sun, Nov 09, 2008 at 08:43:22PM +0100, Rafael J. Wysocki wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of regressions introduced between 2.6.26 and 2.6.27.
+> > > > It is.  However, the problem is 100% reproducible on any 32-bit single-node
+> > > > system with CONFIG_NUMA set, from what I can tell.
 > > > > 
-> > > > The following bug entry is on the current list of known regressions
-> > > > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> > > > be listed and let me know (either way).
+> > > > It doesn't happen if the kernel is booted with highmem=0, so it looks like
+> > > > the code that saves highmem causes the problem to happen.  However, this
+> > > > same code works well for all of the !CONFIG_NUMA cases and practically only
+> > > > the only non-open-coded it uses is kmap_atomic().
 > > > > 
+> > > > > One possibility would be to bisect if it ever worked?
 > > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11829
-> > > > Subject		: Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
-> > > > Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
-> > > > Date		: 2008-10-19 11:26 (22 days old)
-> > > > References	: http://marc.info/?l=linux-kernel&m=122441560120027&w=4
-> > > > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > > > 		  Mike Isely <isely@isely.net>
-> > > > Patch		: http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+> > > > Not sure it did, probably not. :-(
 > > > 
-> > > This has been fixed already in .27 and in mainline with a patch from
-> > > Alan.
+> > > Well, interesting point would be just before this commit:
+> > > 
+> > > 
+> > > commit 8357376d3df21b7d6f857931a57ac50da9c66e26 
+> > > tree daf2c369e9b79d24c1666323b3ae75189e482a4a 
+> > > parent bf73bae6ba0dc4bd4f1e570feb34a06b72725af6 
+> > > author Rafael J. Wysocki <rjw@sisk.pl> Wed, 06 Dec 2006 20:34:18 -0800 
+> > > committer Linus Torvalds <torvalds@woody.osdl.org> Thu, 07 Dec 2006
+> > > 08:39:27 -0800 
+> > > 
+> > >     [PATCH] swsusp: Improve handling of highmem
+> > >     
+> > >     Currently swsusp saves the contents of highmem pages by copying
+> > > them to the
+> > >     normal zone which is quite inefficient (eg.  it requires two
+> > > normal pages
+> > >     to be used for saving one highmem page).  This may be improved by
+> > > using
+> > >     highmem for saving the contents of saveable highmem pages.
+> > > 
+> > > ...highmem handling was way simpler in those good old days ;-)
 > > 
-> > OK, closed it.
+> > Please stop kidding, this is a serious issue.
 > > 
-> > Do you remember which of the Alan's patches is that?
+> > The hibernation code _works_ with all kinds of highmem when CONFIG_NUMA is
+> > unset.
 > 
-> It wasn't a patch from Alan.  It was from me.  The commit ID is 
-> c82732a42896364296599b0f73f01c5e3fd781ae
+> And it does not work with single highmem page when NUMA is set... I
+> went through the highmem saving code, and it depends on highmem not
+> changing from  under it (right?) and is generally quite tricky ('if
+> they are both in highmem do this, else if one of them is do that, else
+> do something else')
 
-OK, thanks.
+It actually is quite simple, if you know the idea.
 
-I added the "Fixed by" information to the bug entry, for the record.
+> and it changes page protections on the fly, etc. 
 
+No, it doesn't do that, at least for pages it hasn't allocated itself.  I don't
+think it changes anything like page protections at all, though.
+
+> I'm not saying the bug is in that code, but before that commit we had
+> very stupid --- but very robust -- code. I'll try if that one works
+> with config_numa, perhaps we can get some debug info that way.
+
+if you can do that, it actually may be valuable information.
+
+Thanks,
 Rafael
