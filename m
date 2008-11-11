@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbYKKTVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbYKKTWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752111AbYKKTVW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 14:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKKTVN
+	id S1752674AbYKKTWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 14:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYKKTWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 14:21:13 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56777 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbYKKTVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 14:21:12 -0500
-Date: Tue, 11 Nov 2008 20:19:36 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problems with the block-layer timeouts
-Message-ID: <20081111191936.GK26778@kernel.dk>
-References: <20081111155458M.fujita.tomonori@lab.ntt.co.jp> <Pine.LNX.4.44L0.0811111205390.29125-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0811111205390.29125-100000@netrider.rowland.org>
+	Tue, 11 Nov 2008 14:22:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57314 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751183AbYKKTWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 14:22:08 -0500
+Date: Tue, 11 Nov 2008 11:20:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+Message-Id: <20081111112043.bf1af70e.akpm@linux-foundation.org>
+In-Reply-To: <4919D7DE.4000508@redhat.com>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
+	<20081111103051.979aea57.akpm@linux-foundation.org>
+	<4919D7DE.4000508@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11 2008, Alan Stern wrote:
-> On Tue, 11 Nov 2008, FUJITA Tomonori wrote:
-> 
-> > I don't worry about anything. I just think that these round_jiffies_up
-> > are pointless because they were added for the block-layer users that
-> > care about exact timeouts, however the block-layer doesn't export
-> > blk_add_timer() so the block-layer users can't control the exact time
-> > when the timer starts. So doing round_jiffies_up calculation per every
-> > request doesn't make sense for me.
-> 
-> In fact the round_jiffies_up() routines were added for other users as
-> well as the block layer.  However none of the others could be changed
-> until the routines were merged.  Now that the routines are in the 
-> mainline, you should see them start to be called in multiple places.
-> 
-> Also, the users of the block layer _don't_ care about exact timeouts.  
-> That's an important aspect of round_jiffies() and round_jiffies_up() --
-> you don't use them if you want an exact timeout.
-> 
-> The reason for using round_jiffies() is to insure that the timeout
-> will occur at a 1-second boundary.  If several timeouts are set for
-> about the same time and they all use round_jiffies() or
-> round_jiffies_up(), then they will all occur at the same tick instead
-> of spread out among several different ticks during the course of that
-> 1-second interval.  As a result, the system will need to wake up only
-> once to service all those timeouts, instead of waking up several
-> different times.  It is a power-saving scheme.
+On Tue, 11 Nov 2008 21:07:10 +0200
+Izik Eidus <ieidus@redhat.com> wrote:
 
-I can't add anything else, can't say it any better either. The main
-point of using round_jiffies_up() is to align with other timers. I don't
-understand why you (Tomo) think that timeouts are exact? They really are
-not, and within the same second is quite adequate here.
+> we have used KSM in production for about half year and the numbers that 
+> came from our QA is:
+> using KSM for desktop (KSM was tested just for windows desktop workload) 
+> you can run as many as
+> 52 windows xp with 1 giga ram each on server with just 16giga ram. (this 
+> is more than 300% overcommit)
+> the reason is that most of the kernel/dlls of this guests is shared and 
+> in addition we are sharing the windows zero
+> (windows keep making all its free memory as zero, so every time windows 
+> release memory we take the page back to the host)
+> there is slide that give this numbers you can find at:
+> http://kvm.qumranet.com/kvmwiki/KvmForum2008?action=AttachFile&do=get&target=kdf2008_3.pdf 
+> (slide 27)
+> beside more i gave presentation about ksm that can be found at:
+> http://kvm.qumranet.com/kvmwiki/KvmForum2008?action=AttachFile&do=get&target=kdf2008_12.pdf
 
--- 
-Jens Axboe
+OK, 300% isn't chicken feed.
 
+It is quite important that information such as this be prepared, added to
+the patch changelogs and maintained.  For a start, without this basic
+information, there is no reason for anyone to look at any of the code!
