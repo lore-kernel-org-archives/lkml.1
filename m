@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYKKXR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753109AbYKKXSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbYKKXR2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 18:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYKKXRT
+	id S1753109AbYKKXSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 18:18:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYKKXSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 18:17:19 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:57977 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbYKKXRS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 18:17:18 -0500
-Date: Tue, 11 Nov 2008 15:05:02 -0800 (PST)
-From: Trent Piepho <tpiepho@freescale.com>
-X-X-Sender: xyzzy@t2.domain.actdsltmp
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-cc: Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [lm-sensors] [PATCH 1/2] Create a DIV_ROUND_CLOSEST macro to do
- division with	rounding
-In-Reply-To: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
-Message-ID: <Pine.LNX.4.64.0811111459300.24267@t2.domain.actdsltmp>
-References: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
+	Tue, 11 Nov 2008 18:18:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42055 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472AbYKKXR7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 18:17:59 -0500
+Date: Wed, 12 Nov 2008 00:17:22 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       chrisw@redhat.com, avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+	one page into another
+Message-ID: <20081111231722.GR10818@random.random>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org> <20081111210655.GG10818@random.random> <Pine.LNX.4.64.0811111522150.27767@quilx.com> <20081111221753.GK10818@random.random> <Pine.LNX.4.64.0811111626520.29222@quilx.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0811111626520.29222@quilx.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008, Darrick J. Wong wrote:
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index fba141d..fb02266 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -48,6 +48,12 @@ extern const char linux_proc_banner[];
-> #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
-> #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-> #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
-> +#define DIV_ROUND_CLOSEST(x, divisor)(			\
-> +{							\
-> +	typeof(divisor) __divisor = divisor;		\
-> +	(((x) + ((__divisor) / 2)) / (__divisor));	\
-> +}							\
-> +)
+On Tue, Nov 11, 2008 at 04:30:22PM -0600, Christoph Lameter wrote:
+> On Tue, 11 Nov 2008, Andrea Arcangeli wrote:
+> 
+> > this page_count check done with only the tree_lock won't prevent a
+> > task to start O_DIRECT after page_count has been read in the above line.
+> >
+> > If a thread starts O_DIRECT on the page, and the o_direct is still in
+> > flight by the time you copy the page to the new page, the read will
+> > not be represented fully in the newpage leading to userland data
+> > corruption.
+> 
+> O_DIRECT does not take a refcount on the page in order to prevent this?
 
-Maybe you can do away with the statement-expression extension?  I've seen
-cases where it cases gcc to generate worse code.  It seems like it
-shouldn't, but it does.  I know DIV_ROUND_CLOSEST (maybe DIV_ROUND_NEAR?)
-uses divisor twice, but all the also divide macros do that too, so why does
-this one need to be different?
+It definitely does, it's also the only thing it does.
 
-Note that if divisor is a signed variable, divisor/2 generates worse code
-than divisor>>1.
+The whole point is that O_DIRECT can start the instruction after
+page_count returns as far as I can tell.
+
+If you check the three emails I linked in answer to Andrew on the
+topic, we agree the o_direct can't start under PT lock (or under
+mmap_sem in write mode but migrate.c rightefully takes the read
+mode). So the fix used in ksm page_wrprotect and in fork() is to check
+page_count vs page_mapcount inside PT lock before doing anything on
+the pte. If you just mark the page wprotect while O_DIRECT is in
+flight, that's enough for fork() to generate data corruption in the
+parent (not the child where the result would be undefined). But in the
+parent the result of the o-direct is defined and it'd never corrupt if
+this was a cached-I/O. The moment the parent pte is marked readonly, a thread
+in the parent could write to the last 512bytes of the page, leading to
+the first 512bytes coming with O_DIRECT from disk being lost (as the
+write will trigger a cow before I/O is complete and the dma will
+complete on the oldpage).
+
+We do the check in page_wprotect because that's the _first_ place
+where we mark a pte readonly. Same as fork. And we can't convert a pte
+from writeable to wrprotected without doing this check inside PT lock
+or we generate data corruption with o_direct (again same as the bug in
+fork).
+
+We don't have to check the page_count vs mapcount later in
+replace_page because we know if anybody started an O_DIRECT read from
+disk, it would have triggered a cow, and the pte_same check that we
+have to do for other reasons would take care of bailing out the
+replace_page.
+
+> Oh they could be migrated if you had a callback to the devices method for
+> giving up references. Same as slab defrag.
+
+The oldpage is a regular anonymous page for us, not the 'strange'
+object called PageKSM. And we need to migrate many anonymous pages
+having destination a single PageKSM page already preallocated and not
+being an anonymous page. We never migrate PageKSM to anything, that's
+always the destination.
+
+> Seems that we are tinkering around with the concept of what an anonymous
+> page is? Doesnt shmem have some means of converting pages to file backed?
+> Swizzling?
+
+Anonymous page is anything with page->mapping pointing to an anon_vma
+or swapcache_space instead of an address_space of a real inode backed
+by the vfs.
