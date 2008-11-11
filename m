@@ -1,88 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYKKONN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbYKKOPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYKKONN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 09:13:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbYKKOM4
+	id S1756586AbYKKOPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 09:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbYKKOPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 09:12:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53508 "EHLO ogre.sisk.pl"
+	Tue, 11 Nov 2008 09:15:08 -0500
+Received: from main.gmane.org ([80.91.229.2]:54937 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755943AbYKKOM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 09:12:56 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-Date: Tue, 11 Nov 2008 15:17:53 +0100
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-References: <20081109140726.GB1786@ucw.cz> <200811101928.04565.rjw@sisk.pl> <20081111103043.GD5464@elf.ucw.cz>
-In-Reply-To: <20081111103043.GD5464@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811111517.54470.rjw@sisk.pl>
+	id S1755581AbYKKOPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 09:15:07 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Jeremy Sanders <jeremy@jeremysanders.net>
+Subject: NFS root hangs
+Date: Tue, 11 Nov 2008 14:10:25 +0000
+Message-ID: <gfc3oh$85h$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: xpc17.ast.cam.ac.uk
+User-Agent: KNode/0.10.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 of November 2008, Pavel Machek wrote:
-> On Mon 2008-11-10 19:28:03, Rafael J. Wysocki wrote:
-> > On Monday, 10 of November 2008, Andi Kleen wrote:
-> > > Ingo Molnar <mingo@elte.hu> writes:
-> > > >
-> > > > No good ideas - the bug description gives me the impression of memory 
-> > > > maps save/restore hickup in the hibernation code - and memory maps are 
-> > > > pretty much the only thing that are significantly different on NUMA. 
-> > > 
-> > > I assume the problem happened on a single node system.
-> > > On single node the memory map should be actually quite similar
-> > > to the UMA case.
-> > 
-> > It is.  However, the problem is 100% reproducible on any 32-bit single-node
-> > system with CONFIG_NUMA set, from what I can tell.
-> > 
-> > It doesn't happen if the kernel is booted with highmem=0, so it looks like
-> > the code that saves highmem causes the problem to happen.  However, this
-> > same code works well for all of the !CONFIG_NUMA cases and practically only
-> > the only non-open-coded it uses is kmap_atomic().
-> 
-> kmap_atomic() and kernel_map_pages(), AFAICT.
-> 
-> Can kmap_atomic() modify pages in highmem, too?
-> 
-> Wait... are we putting kernel pagetables in the high memory?
-> 
-> What about this cleanup (warning: untested)
+Hi - We're running several diskless x86-64 systems with a MS-6702
+motherboard with an Athlon 64 3400+ CPU. The network driver is an onboard
+R8169 (rev 10) using gigabit ethernet. The kernel is 2.6.26.6-49.fc8 (i.e.
+the latest Fedora 8 kernel). The root partition is mounted over NFS (v3) in
+an initrd init script.
 
-Yes, I have this queued up and actually tested.
+This setup works fine for some dual core Athlon 64s and single core x86
+Pentium 4s. However the diskless single core Athlon 64 systems lock up
+randomly after minutes or tens of minutes of idleness.
 
-Thanks,
-Rafael
+The do not print any oops debugging information. They are not pingable. They
+do not respond to alt+sysctl commands. They also lock up with an active CPU
+as they generate a lot of heat while crashed. We've also tried noapic,
+noacpi boot options. We've also tried to enable nmi_watchdog=2, which
+doesn't give any debugging information either. We've also tried adjusting
+the various NFS mount options with no effect (rsize/wsize/nfsvers/udp/tcp).
+In x86 mode the systems also hang, but take a lot longer to do it.
 
- 
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 5d2ab83..f1d8336 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -966,7 +966,7 @@ static void copy_data_page(unsigned long
->  			 * data modified by kmap_atomic()
->  			 */
->  			safe_copy_page(buffer, s_page);
-> -			dst = kmap_atomic(pfn_to_page(dst_pfn), KM_USER0);
-> +			dst = kmap_atomic(d_page, KM_USER0);
->  			memcpy(dst, buffer, PAGE_SIZE);
->  			kunmap_atomic(dst, KM_USER0);
->  		} else {
-> 
-> 									Pavel
+We suspect the R8169 is at fault as our other systems work. The systems used
+to work, but something has started this problem. Old kernels do not fix the
+problem.
+
+Does anyone have any ideas or tips on how to debug this problem?
+
+Thanks
+
+Jeremy
 
 
-
--- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
