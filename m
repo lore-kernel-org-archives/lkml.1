@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYKKWtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbYKKWxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbYKKWtT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYKKWtE
+	id S1753054AbYKKWxE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYKKWwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:49:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40773 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751243AbYKKWtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:49:03 -0500
-Message-ID: <491A0BE5.1050407@redhat.com>
-Date: Wed, 12 Nov 2008 00:49:09 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 11 Nov 2008 17:52:53 -0500
+Received: from styx.suse.cz ([82.119.242.94]:42455 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750757AbYKKWww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:52:52 -0500
+Date: Tue, 11 Nov 2008 23:52:51 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] USBHID: correct start/stop cycle
+In-Reply-To: <1225579306-28524-1-git-send-email-jirislaby@gmail.com>
+Message-ID: <alpine.LNX.1.10.0811112352390.24889@jikos.suse.cz>
+References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Izik Eidus <ieidus@redhat.com>
-CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
-       chrisw@redhat.com
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com>	<1226409701-14831-4-git-send-email-ieidus@redhat.com> <20081111150345.7fff8ff2@bike.lwn.net> <491A0483.3010504@redhat.com>
-In-Reply-To: <491A0483.3010504@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Izik Eidus wrote:
->> Any benchmarks on the runtime cost of having KSM running?
->>   
->
-> This one is problematic, ksm can take anything from 0% to 100% cpu
-> its all depend on how fast you run it.
-> it have 3 parameters:
-> number of pages to scan before it go to sleep
-> maximum number of pages to merge while we scanning the above pages 
-> (merging is expensive)
-> time to sleep (when runing from userspace using /dev/ksm, we actually 
-> do it there (userspace)
+On Sat, 1 Nov 2008, Jiri Slaby wrote:
 
-The scan process priority also has its effect.  One strategy would be to 
-run it at idle priority as long as you have enough free memory, and 
-increase the priority as memory starts depleting.
+> `stop' left out usbhid->urb* pointers and so the next `start' thought
+> it needs to allocate nothing and used the memory pointers previously
+> pointed to. This led to memory corruption and device malfunction.
+> 
+> Also don't forget to clear disconnect flag on start which was left set
+> by the previous `stop'.
+
+Applied, thanks Jiri.
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Jiri Kosina
+SUSE Labs
