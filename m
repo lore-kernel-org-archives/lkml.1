@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbYKKDGI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbYKKDG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754276AbYKKDGI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 22:06:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYKKDFX
+	id S1754615AbYKKDG1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 22:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYKKDF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 22:05:23 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41822 "EHLO
+	Mon, 10 Nov 2008 22:05:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:42449 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbYKKDFU (ORCPT
+	with ESMTP id S1754518AbYKKDFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 10 Nov 2008 22:05:20 -0500
-Message-Id: <20081111030517.017566077@goodmis.org>
+Message-Id: <20081111030517.249928650@goodmis.org>
 References: <20081111025808.946638585@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Nov 2008 21:58:09 -0500
+Date: Mon, 10 Nov 2008 21:58:10 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
@@ -21,71 +21,59 @@ Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/2] ftrace: disable tracing on resize
-Content-Disposition: inline; filename=0001-ftrace-disable-tracing-on-resize.patch
+Subject: [PATCH 2/2] ring-buffer: prevent infinite looping on time stamping
+Content-Disposition: inline; filename=0002-ring-buffer-prevent-infinite-looping-on-time-stampi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix for bug on resize
+Impact: removal of unnecessary looping
 
-This patch addresses the bug found here:
+The lockless part of the ring buffer allows for reentry into the code
+from interrupts. A timestamp is taken, a test is preformed and if it
+detects that an interrupt occurred that did tracing, it tries again.
 
- http://bugzilla.kernel.org/show_bug.cgi?id=11996
+The problem arises if the timestamp code itself causes a trace.
+The detection will detect this and loop again. The difference between
+this and an interrupt doing tracing, is that this will fail every time,
+and cause an infinite loop.
 
-When ftrace converted to the new unified trace buffer, the resizing of
-the buffer was not protected as much as it was originally. If tracing
-is performed while the resize occurs, then the buffer can be corrupted.
+Currently, we test if the loop happens 1000 times, and if so, it will
+produce a warning and disable the ring buffer.
 
-This patch disables all ftrace buffer modifications before a resize
-takes place.
+The problem with this approach is that it makes it difficult to perform
+some types of tracing (tracing the timestamp code itself).
+
+Each trace entry has a delta timestamp from the previous entry.
+If a trace entry is reserved but and interrupt occurs and traces before
+the previous entry is commited, the delta timestamp for that entry will
+be zero. This actually makes sense in terms of tracing, because the
+interrupt entry happened before the preempted entry was commited, so
+one may consider the two happening at the same time. The order is
+still preserved in the buffer.
+
+With this idea, instead of trying to get a new timestamp if an interrupt
+made it in between the timestamp and the test, the entry could simply
+make the delta zero and continue. This will prevent interrupts or
+tracers in the timer code from causing the above loop.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |   17 ++++++++++++++++-
- 1 files changed, 16 insertions(+), 1 deletions(-)
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 9f3b478..abfa810 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2676,7 +2676,7 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
- {
- 	unsigned long val;
- 	char buf[64];
--	int ret;
-+	int ret, cpu;
- 	struct trace_array *tr = filp->private_data;
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 3f33806..2f76193 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1060,7 +1060,7 @@ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
  
- 	if (cnt >= sizeof(buf))
-@@ -2704,6 +2704,14 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
- 		goto out;
- 	}
+ 		/* Did the write stamp get updated already? */
+ 		if (unlikely(ts < cpu_buffer->write_stamp))
+-			goto again;
++			delta = 0;
  
-+	/* disable all cpu buffers */
-+	for_each_tracing_cpu(cpu) {
-+		if (global_trace.data[cpu])
-+			atomic_inc(&global_trace.data[cpu]->disabled);
-+		if (max_tr.data[cpu])
-+			atomic_inc(&max_tr.data[cpu]->disabled);
-+	}
-+
- 	if (val != global_trace.entries) {
- 		ret = ring_buffer_resize(global_trace.buffer, val);
- 		if (ret < 0) {
-@@ -2735,6 +2743,13 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
- 	if (tracing_disabled)
- 		cnt = -ENOMEM;
-  out:
-+	for_each_tracing_cpu(cpu) {
-+		if (global_trace.data[cpu])
-+			atomic_dec(&global_trace.data[cpu]->disabled);
-+		if (max_tr.data[cpu])
-+			atomic_dec(&max_tr.data[cpu]->disabled);
-+	}
-+
- 	max_tr.entries = global_trace.entries;
- 	mutex_unlock(&trace_types_lock);
+ 		if (test_time_stamp(delta)) {
  
 -- 
 1.5.6.5
