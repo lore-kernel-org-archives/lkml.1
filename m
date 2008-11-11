@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYKKR5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYKKSGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbYKKR5R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYKKR5D
+	id S1754805AbYKKSGD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:06:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYKKSFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:57:03 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51448 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbYKKR5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:57:02 -0500
-Date: Tue, 11 Nov 2008 18:56:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: rostedt@goodmis.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       =linux-rt-users@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] Series short description
-Message-ID: <20081111175649.GA12339@elte.hu>
-References: <20081111142323.28477.41235.stgit@dev.haskins.net>
+	Tue, 11 Nov 2008 13:05:52 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:47821 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753556AbYKKSFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 13:05:51 -0500
+Message-ID: <4919C979.3000501@euromail.se>
+Date: Tue, 11 Nov 2008 19:05:45 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081111142323.28477.41235.stgit@dev.haskins.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0010]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hid: Complete support for the new unibody macbooks
+References: <49109C91.6090207@euromail.se> <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz>
+In-Reply-To: <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1Kzxca-0002rx-7z.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Kzxca-0002rx-7z 9c8791f417f3b9efb50c8428d2f1fa98
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Gregory Haskins <ghaskins@novell.com> wrote:
-
-> Hi Ingo, Steven, Peter,
->   This series applies roughly to mainline as an enhancement to the sched_rt
->   logic.  Peter and I were discussing some of the unecessary overhead in
->   pull_rt_tasks() via IRC, and this is my RFC attempt to address the problem.
+Jiri Kosina wrote:
+> On Tue, 4 Nov 2008, Henrik Rydberg wrote:
 > 
->   I have built/booted this on a 4-way C2D Xeon box and it passes preempt-test.
+>> The unibody MacBook 5 and MacBook Pro 5 come with a new version of
+>> the bcm5974 trackpad. This patch adds the USB device ids and all
+>> the appropriate quirks, including hid_blacklist.
+>>
+>> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 > 
->   Comments, please.
+> Applied, thanks Henrik (and sorry for the delay, I have been offline for a 
+> few days).
+> 
 
-this direction looks very nifty to me. Peter, do you Ack them?
+No worries. I should have mentioned earlier that the hid update
+is best synchronized with the bcm5974 update, since the latter
+is the only driver that will pick the mouse interface up after
+the hid update. The bcm5974 patch was sent on October 23, but
+I have not received any feedback to it yet.
 
-	Ingo
+Cheers,
+Henrik
+
