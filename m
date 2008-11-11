@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbYKKOFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbYKKOGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757032AbYKKOFA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 09:05:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745AbYKKOEY
+	id S1756297AbYKKOGa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 09:06:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbYKKOGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 09:04:24 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50862 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756735AbYKKOEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 09:04:23 -0500
-Date: Tue, 11 Nov 2008 15:04:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>,
-       Andres Salomon <dilinger@debian.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86 - Make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
-Message-ID: <20081111140406.GA3244@elte.hu>
-References: <s5h3ahyqwmn.wl%tiwai@suse.de> <20081111125402.GB14989@elte.hu> <s5hzlk6pea6.wl%tiwai@suse.de> <20081111135306.GA32709@elte.hu> <s5hwsfapdoj.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hwsfapdoj.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Tue, 11 Nov 2008 09:06:18 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:1955 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755837AbYKKOGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 09:06:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=mEFc6lvm097uSWsA2mmjgeSZ3FpF0wwKzzl00ljWLkWtT45jb1pocvVGnnFDq35TjF
+         AJUWXW0AIlfprAnDwO5hAiVRgTCFanTV2zvia4uBGAwTKdeQtjKk1slOQJIJ2cpcnbA8
+         /4phIdOmD3lx5LFvoexYh5O0TxThTuEiJeg3Y=
+Date: Tue, 11 Nov 2008 08:06:11 -0600
+From: "J. K. Cliburn" <jcliburn@gmail.com>
+To: David Madore <david.madore@ens.fr>
+Cc: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>,
+       Linux NetDev Mailing-List <netdev@vger.kernel.org>,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: atl1e Ethernet driver not seeing packets sent to
+ 33:33:00:00:00:01 multicast
+Message-ID: <20081111080611.7f6d4371@osprey.hogchain.net>
+In-Reply-To: <20081111133108.GA7124@clipper.ens.fr>
+References: <20081111133108.GA7124@clipper.ens.fr>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 11 Nov 2008 14:31:08 +0100
+David Madore <david.madore@ens.fr> wrote:
 
-* Takashi Iwai <tiwai@suse.de> wrote:
-
-> At Tue, 11 Nov 2008 14:53:06 +0100,
-> Ingo Molnar wrote:
-> > 
-> > 
-> > * Takashi Iwai <tiwai@suse.de> wrote:
-> > 
-> > > At Tue, 11 Nov 2008 13:54:02 +0100,
-> > > Ingo Molnar wrote:
-> > > > 
-> > > > 
-> > > > * Takashi Iwai <tiwai@suse.de> wrote:
-> > > > 
-> > > > > The OLPC-specpfic codes require geode_gpio_*() functions although
-> > > > > these functions are defined only with CONFIG_MGEODE_LX=y.
-> > > > > Add a proper dependency to fix build errors.
-> > > > > 
-> > > > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > 
-> > > > hm, could you please send a .config that shows the build errors?
-> > > 
-> > > Here it is.  It's for today's linux-next.
-> > 
-> > hm, which tree did that build failure in linux-next originate from? 
-> > Your config builds fine here with the latest x86 tree.
+> Hi,
 > 
-> Ah, sorry, forgot to mention that the build error comes from the
-> latest ALSA code.  It contains an OLPC-specific code that is enabled
-> via CONFIG_OLPC like:
+> This is on Ubuntu 8.10 "Intrepid Ibex" using its stock kernel
+> (2.6.27-7.16), with an Eee PC 901 whose Ethernet adapter is (according
+> to lspci):
 > 
-> 	snd-cs5535audio-$(CONFIG_OLPC) += cs5535audio_olpc.o
+> 04:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit
+> Ethernet Adapter (rev b0)
+
+Just to verify your system is fitted with the L1e and not the L1 chip,
+can you please provide the output of lspci -vvnn?
+
 > 
-> where this includes geode_gpio_*() calls.
+> using driver atl1e of said kernel.
 > 
-> Of course, I can add an if in Makefile or create a new Kconfig, but 
-> since asm/olpc.h itself includes asm/geode.h and contains 
-> geode_gpio*() calls, it would be a proper fix to make CONFIG_OLPC 
-> dependent on geode.
-
-ah, okay, agreed - i was worried whether this is something affecting 
-v2.6.28 or slipping through our testing before commits hit linux-next.
-
-I've queued up your fix in tip/x86/kconfig, thanks Takashi!
-
-	Ingo
+> _Unless_ the network device is put in promiscuous mode (e.g., by
+> running tcpdump), it does not see packets sent to Ethernet multicast
+> address 33:33:00:00:00:01.  E.g., IPv6 packets to ff02::1
+> (ip6-allnodes) are not seen.
+> 
+> Practical consequence: IPv6 is broken, because router advertisements
+> are not received.
+> 
+> ("ip maddr show" does give "link  33:33:00:00:00:01" among the
+> subscribed multicast addresses, so it's not a config problem.)
+> 
+> Is this a known problem?  Is there a patch fixing it?
+> 
+> Until then, a workaround is to put the device in promiscuous mode.
+> 
+> Happy hacking,
+> 
