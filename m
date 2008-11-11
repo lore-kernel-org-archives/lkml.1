@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYKKMuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYKKMvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbYKKMuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 07:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbYKKMuc
+	id S1755949AbYKKMvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbYKKMut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 07:50:32 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56602 "EHLO
+	Tue, 11 Nov 2008 07:50:49 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56609 "EHLO
 	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755512AbYKKMub (ORCPT
+	with ESMTP id S1755765AbYKKMus (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 07:50:31 -0500
-Date: Tue, 11 Nov 2008 11:45:51 +0100
+	Tue, 11 Nov 2008 07:50:48 -0500
+Date: Tue, 11 Nov 2008 11:30:43 +0100
 From: Pavel Machek <pavel@suse.cz>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
        kernel list <linux-kernel@vger.kernel.org>,
        "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-Message-ID: <20081111104551.GE5464@elf.ucw.cz>
+Message-ID: <20081111103043.GD5464@elf.ucw.cz>
 References: <20081109140726.GB1786@ucw.cz> <20081110080436.GF2093@elte.hu> <87hc6fpwof.fsf@basil.nowhere.org> <200811101928.04565.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,32 +48,29 @@ On Mon 2008-11-10 19:28:03, Rafael J. Wysocki wrote:
 > the code that saves highmem causes the problem to happen.  However, this
 > same code works well for all of the !CONFIG_NUMA cases and practically only
 > the only non-open-coded it uses is kmap_atomic().
-> 
-> > One possibility would be to bisect if it ever worked?
-> 
-> Not sure it did, probably not. :-(
 
-Well, interesting point would be just before this commit:
+kmap_atomic() and kernel_map_pages(), AFAICT.
 
+Can kmap_atomic() modify pages in highmem, too?
 
-commit 8357376d3df21b7d6f857931a57ac50da9c66e26 
-tree daf2c369e9b79d24c1666323b3ae75189e482a4a 
-parent bf73bae6ba0dc4bd4f1e570feb34a06b72725af6 
-author Rafael J. Wysocki <rjw@sisk.pl> Wed, 06 Dec 2006 20:34:18 -0800 
-committer Linus Torvalds <torvalds@woody.osdl.org> Thu, 07 Dec 2006
-08:39:27 -0800 
+Wait... are we putting kernel pagetables in the high memory?
 
-    [PATCH] swsusp: Improve handling of highmem
-    
-    Currently swsusp saves the contents of highmem pages by copying
-them to the
-    normal zone which is quite inefficient (eg.  it requires two
-normal pages
-    to be used for saving one highmem page).  This may be improved by
-using
-    highmem for saving the contents of saveable highmem pages.
+What about this cleanup (warning: untested)
 
-...highmem handling was way simpler in those good old days ;-)
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 5d2ab83..f1d8336 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -966,7 +966,7 @@ static void copy_data_page(unsigned long
+ 			 * data modified by kmap_atomic()
+ 			 */
+ 			safe_copy_page(buffer, s_page);
+-			dst = kmap_atomic(pfn_to_page(dst_pfn), KM_USER0);
++			dst = kmap_atomic(d_page, KM_USER0);
+ 			memcpy(dst, buffer, PAGE_SIZE);
+ 			kunmap_atomic(dst, KM_USER0);
+ 		} else {
+
 									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
