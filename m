@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbYKKEP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYKKEVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbYKKEP4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:15:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYKKEPl
+	id S1755266AbYKKEVU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYKKEVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:15:41 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:53861 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754686AbYKKEPk (ORCPT
+	Mon, 10 Nov 2008 23:21:10 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:46328 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750787AbYKKEVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:15:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=k8zJPHCD9A0nFQxztxfEHHfI6D2FubhM+/LHXKCwwF5pTi8q291nl64HuR4yp62jcB
-         ob50v3m/GxToHa+F3SWDKtU/2SRlw56byi7+rhZ2xxTeyjA1TSS03E4t1ev81YKuuqNx
-         iX6bE1dFXG9o2tC7wTkT27vNJm6kt9CmTWe4g=
-Message-ID: <b9df5fa10811102015r21017451w43755bf0d97a9db4@mail.gmail.com>
-Date: Tue, 11 Nov 2008 10:15:38 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] x86: Fixing improper annotation.
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       tglx@linutronix.de, hpa@zytor.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Nov 2008 23:21:08 -0500
+Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit
+	94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tomas Henzl <thenzl@redhat.com>, gernot.hillier@siemens.com,
+       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com,
+       Thomas Guyot-Sionnest <dermoth@aei.ca>, stable@kernel.org,
+       Matt Domsch <Matt_Domsch@dell.com>
+In-Reply-To: <20081110152006.8982133b.akpm@linux-foundation.org>
+References: <48D10E1A.8030804@siemens.com> <48EB6600.9020204@redhat.com>
+	 <20081110152006.8982133b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 10 Nov 2008 20:20:57 -0800
+Message-Id: <1226377257.5014.88.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After using __cpuinit in function 'init_thread_xstate(void)', the
-following warning was generated.
+On Mon, 2008-11-10 at 15:20 -0800, Andrew Morton wrote:
+> On Tue, 07 Oct 2008 15:37:04 +0200
+> Tomas Henzl <thenzl@redhat.com> wrote:
+> 
+> > Hillier, Gernot wrote:
+> > > Hi there!
+> > >
+> > > On our AMD64 machines equipped with old Adaptec 2200S controllers, we
+> > > experienced a regression when updating to 2.6.25. The machines won't
+> > > boot anymore (in a reasonable time), but instead spit out tons of those
+> > > messages:
+> > > aac_srb: aac_fib_send failed with status: 8195
+> > >
+> > > This is already reported in quite some places including LKML:
+> > > http://lkml.org/lkml/2008/5/12/365
+> > > https://bugzilla.redhat.com/show_bug.cgi?id=450444
+> > > https://bugzilla.redhat.com/show_bug.cgi?id=453472
+> > > http://www.linuxquestions.org/questions/red-hat-31/aacsrb-aacfibsend-failed-with-status-8195-651078/
+> > > http://forums.gentoo.org/viewtopic-p-5077382.html?sid=a51c3a0fba6aa854c0b49b8fae5cc15a
+> > >
+> > > We found that this regression seems to be introduced by the bugfix
+> > > "aacraid: fix driver failure with Dell PowerEdge
+> > > Expandable RAID Controller 3/Di":
+> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+> > >
+> > > By simply removing the quirk flag for our controller, we could boot again.
+> > >
+> > > We did some quick stress tests on an AMD64bit machine with 16GB of RAM 
+> > > and saw no problems after this change:
+> > >
+> > > diff -ur linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c
+> > > --- linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c	2008-09-15 16:07:14.000000000 +0100
+> > > +++ linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c	2008-09-15 16:09:26.000000000 +0100
+> > > @@ -176,7 +176,7 @@
+> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+> > > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
+> > > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG }, /* Adaptec 2200S (Vulcan) */
+> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+> > >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+> > >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+> > >
+> > > Can this be safely changed/merged? Or is this the wrong way to fix it?
+> > >
+> > > Please note that we also have machines equipped with newer Adaptec 2230S
+> > > controllers (PCI ID 9005:0286) which run perfectly with the current driver.
+> > >
+> > >   
+> > Hi,
+> > from what I read about this it seems to me that people are complaining also about issues with the 2120S Controller.
+> > So if the patch is taken in this form the original patch should be extended to cover both controllers.
+> > 
+> > Signed-off-by: Tomas Henzl <thenzl@redhat.com>
+> > 
+> > ---
+> > diff -Naurp linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c
+> > --- linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c	2008-09-25 18:06:23.000000000 +0200
+> > +++ linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c	2008-10-03 12:12:06.000000000 +0200
+> > @@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
+> >  	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+> > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+> > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
+> > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
+> > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
+> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+> >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+> >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+> > 
+> > 
+> 
+> I added this to my tree with Tomas's title&changelog (thanks - I was
+> about to whine about that).  Thanks Thomas for the reminder.  I tagged
+> it as backportable to 2.6.25.x, 2.6.26.x and 2.6.27.x.
 
-WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x29c): Section
-mismatch in reference from the function init_thread_xstate() to the
-function .init.text:xsave_cntxt_init()
-The function __cpuinit init_thread_xstate() references
-a function __init xsave_cntxt_init().
-If xsave_cntxt_init is only used by init_thread_xstate then
-annotate xsave_cntxt_init with a matching annotation.
+Could someone from Adaptec and Dell please verify that this is correct?
+Mark Salyzyn no longer works there, but the aacraid@adaptec.com address
+is supposed to still be working.
 
-WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x233d): Section
-mismatch in reference from the function cpu_init() to the function
-.init.text:xsave_init()
-The function __cpuinit cpu_init() references
-a function __init xsave_init().
-If xsave_init is only used by cpu_init then
-annotate xsave_init with a matching annotation.
+Thanks,
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+James
 
---- linux-2.6-orig/arch/x86/kernel/xsave.c	2008-11-10 13:28:18.000000000 +0600
-+++ linux-2.6/arch/x86/kernel/xsave.c	2008-11-11 00:31:42.000000000 +0600
-@@ -301,7 +301,7 @@ void __cpuinit xsave_init(void)
- /*
-  * setup the xstate image representing the init state
-  */
--static void __init setup_xstate_init(void)
-+static void __cpuinit setup_xstate_init(void)
- {
- 	init_xstate_buf = alloc_bootmem(xstate_size);
- 	init_xstate_buf->i387.mxcsr = MXCSR_DEFAULT;
-@@ -310,7 +310,7 @@ static void __init setup_xstate_init(voi
- /*
-  * Enable and initialize the xsave feature.
-  */
--void __init xsave_cntxt_init(void)
-+void __cpuinit xsave_cntxt_init(void)
- {
- 	unsigned int eax, ebx, ecx, edx;
+
