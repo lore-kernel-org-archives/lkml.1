@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYKKObO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756185AbYKKOb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756746AbYKKObO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 09:31:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYKKOa6
+	id S1756185AbYKKOb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 09:31:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756019AbYKKOa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 11 Nov 2008 09:30:58 -0500
-Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:37604
+Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:37606
 	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755842AbYKKOa5 (ORCPT
+	with ESMTP id S1755997AbYKKOa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Nov 2008 09:30:57 -0500
-X-Greylist: delayed 518 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Nov 2008 09:30:57 EST
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH 3/3] sched: use highest_prio.next to optimize pull
-	operations
+Subject: [RFC PATCH 2/3] sched: use highest_prio.curr for pull threshold
 To: mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org
 Cc: linux-kernel@vger.kernel.org, =linux-rt-users@vger.kernel.org
-Date: Tue, 11 Nov 2008 09:26:29 -0500
-Message-ID: <20081111142629.28477.84763.stgit@dev.haskins.net>
+Date: Tue, 11 Nov 2008 09:26:24 -0500
+Message-ID: <20081111142624.28477.74329.stgit@dev.haskins.net>
 In-Reply-To: <20081111142323.28477.41235.stgit@dev.haskins.net>
 References: <20081111142323.28477.41235.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.2
@@ -28,41 +26,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently take the rq->lock for every cpu in an overload state during
-pull_rt_tasks().  However, we now have enough information via the
-highest_prio.[curr|next] fields to determine if there is any tasks of
-interest to warrant the overhead of the rq->lock, before we actually take
-it.  So we use this information to reduce lock contention during the
-pull for the case where the source-rq doesnt have tasks that preempt
-the current task.
+highest_prio.curr is actually a more accurate way to keep track of
+the pull_rt_task() threshold since it is always up to date, even
+if the "next" task migrates during double_lock.  Therefore, stop
+looking at the "next" task object and simply use the highest_prio.curr.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/sched_rt.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
+ kernel/sched_rt.c |   31 ++++++-------------------------
+ 1 files changed, 6 insertions(+), 25 deletions(-)
 
 diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index b2305c9..d722aef 100644
+index d3b54ba..b2305c9 100644
 --- a/kernel/sched_rt.c
 +++ b/kernel/sched_rt.c
-@@ -1217,6 +1217,18 @@ static int pull_rt_task(struct rq *this_rq)
- 			continue;
+@@ -1206,14 +1206,12 @@ static void push_rt_tasks(struct rq *rq)
+ static int pull_rt_task(struct rq *this_rq)
+ {
+ 	int this_cpu = this_rq->cpu, ret = 0, cpu;
+-	struct task_struct *p, *next;
++	struct task_struct *p;
+ 	struct rq *src_rq;
  
- 		src_rq = cpu_rq(cpu);
-+
-+		/*
-+		 * Don't bother taking the src_rq->lock if the next highest
-+		 * task is known to be lower-priority than our current task.
-+		 * This may look racy, but if this value is about to go
-+		 * logically higher, the src_rq will push this task away.
-+		 * And if its going logically lower, we do not care
-+		 */
-+		if (src_rq->rt.highest_prio.next >=
-+		    this_rq->rt.highest_prio.curr)
-+			continue;
-+
+ 	if (likely(!rt_overloaded(this_rq)))
+ 		return 0;
+ 
+-	next = pick_next_task_rt(this_rq);
+-
+ 	for_each_cpu_mask_nr(cpu, this_rq->rd->rto_mask) {
+ 		if (this_cpu == cpu)
+ 			continue;
+@@ -1222,17 +1220,9 @@ static int pull_rt_task(struct rq *this_rq)
  		/*
  		 * We can potentially drop this_rq's lock in
  		 * double_lock_balance, and another CPU could
+-		 * steal our next task - hence we must cause
+-		 * the caller to recalculate the next task
+-		 * in that case:
++		 * alter this_rq
+ 		 */
+-		if (double_lock_balance(this_rq, src_rq)) {
+-			struct task_struct *old_next = next;
+-
+-			next = pick_next_task_rt(this_rq);
+-			if (next != old_next)
+-				ret = 1;
+-		}
++		double_lock_balance(this_rq, src_rq);
+ 
+ 		/*
+ 		 * Are there still pullable RT tasks?
+@@ -1246,7 +1236,7 @@ static int pull_rt_task(struct rq *this_rq)
+ 		 * Do we have an RT task that preempts
+ 		 * the to-be-scheduled task?
+ 		 */
+-		if (p && (!next || (p->prio < next->prio))) {
++		if (p && (p->prio < this_rq->rt.highest_prio.curr)) {
+ 			WARN_ON(p == src_rq->curr);
+ 			WARN_ON(!p->se.on_rq);
+ 
+@@ -1256,12 +1246,9 @@ static int pull_rt_task(struct rq *this_rq)
+ 			 * This is just that p is wakeing up and hasn't
+ 			 * had a chance to schedule. We only pull
+ 			 * p if it is lower in priority than the
+-			 * current task on the run queue or
+-			 * this_rq next task is lower in prio than
+-			 * the current task on that rq.
++			 * current task on the run queue
+ 			 */
+-			if (p->prio < src_rq->curr->prio ||
+-			    (next && next->prio < src_rq->curr->prio))
++			if (p->prio < src_rq->curr->prio)
+ 				goto skip;
+ 
+ 			ret = 1;
+@@ -1274,13 +1261,7 @@ static int pull_rt_task(struct rq *this_rq)
+ 			 * case there's an even higher prio task
+ 			 * in another runqueue. (low likelyhood
+ 			 * but possible)
+-			 *
+-			 * Update next so that we won't pick a task
+-			 * on another cpu with a priority lower (or equal)
+-			 * than the one we just picked.
+ 			 */
+-			next = p;
+-
+ 		}
+  skip:
+ 		double_unlock_balance(this_rq, src_rq);
 
