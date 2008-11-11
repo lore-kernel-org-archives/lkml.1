@@ -1,132 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYKKJsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYKKJvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYKKJsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 04:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYKKJsX
+	id S1755845AbYKKJvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 04:51:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbYKKJu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 04:48:23 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:23279 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180AbYKKJsV (ORCPT
+	Tue, 11 Nov 2008 04:50:59 -0500
+Received: from rv-out-0506.google.com ([209.85.198.227]:49171 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755172AbYKKJu6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 04:48:21 -0500
+	Tue, 11 Nov 2008 04:50:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=pe8o/ZWonL/cLnHn3OYXIftka/WTm2TU2TPJWekv7rUGX2jTovcwYM3U0e1BSF7l+B
-         wH/UekPPH4CTV2emSa0WW78ONAg3bSzaFL6TikYenbAWWUYTLJtymTXs2GLdT5MbVuRj
-         UoPkH+akG7xAlfTGyJcd936FyQpUsB+3FEuLU=
-Message-ID: <491954E1.2050002@gmail.com>
-Date: Tue, 11 Nov 2008 03:48:17 -0600
-From: Roger Heflin <rogerheflin@gmail.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=xsq1e6QOXWFezb3lgUk/8RwwHoYk2ShtMVLU9M/Ng5YRyx+wU+BWA7xL/9D3nrv7nT
+         UM3/wFxYBCoC7kph0M8Wewa49aITI2eQWQUcoq3VCpndQ92wIe1Xlhx0QdEnP00bYPxe
+         3W9g9G0nRmLchOI9IXqpoa9k0dLkPd3DbkZtA=
+Message-ID: <87a5b0800811110150m407ea6b3wc265b824a448ee20@mail.gmail.com>
+Date: Tue, 11 Nov 2008 09:50:57 +0000
+From: "Will Newton" <will.newton@gmail.com>
+To: "Harvey Harrison" <harvey.harrison@gmail.com>
+Subject: Re: [RFC-PATCH 1/5] unaligned: introduce common header
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1226343084.22742.11.camel@brick>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0xfe/0x17e()
- with tg3 network
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1225908976.5991.180.camel@brick>
+	 <87a5b0800811080447m2cebebb7j77afe9592f72ab11@mail.gmail.com>
+	 <1226290940.5478.3.camel@brick>
+	 <87a5b0800811100349n435785by27ebc4e495bb7985@mail.gmail.com>
+	 <1226335889.5478.40.camel@brick>
+	 <87a5b0800811101035i721f1befi79ff76f9169fef4c@mail.gmail.com>
+	 <1226343084.22742.11.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have duplicate this with kernel 2.6.27.2 and 2.6.27.5, no
-extra modules, tg3 Gbit networking.   I have not yet tested
-earlier kernels to see if this has been around for a while.
+On Mon, Nov 10, 2008 at 6:51 PM, Harvey Harrison
+<harvey.harrison@gmail.com> wrote:
+> On Mon, 2008-11-10 at 18:35 +0000, Will Newton wrote:
+>> On Mon, Nov 10, 2008 at 4:51 PM, Harvey Harrison
+>> <harvey.harrison@gmail.com> wrote:
+>> >
+>> > In this particular case, packed isn't right as you know big_data is
+>> > aligned (as long as you can guarantee the struct alignment), so you'd
+>> > probably want:
+>> >
+>> > struct foo {
+>> >        u64 big_data;
+>> >        u8 small_data;
+>> >        u32 medium_data __attribute__((__packed__));
+>> > }
+>> >
+>> > But that's not what we're talking about in the kernel's case.
+>>
+>> Perhaps that would be a neater way of expressing what is required in
+>> my simple example, but it's fairly common to use packed on the whole
+>> struct which could be because a field that is "packed" by default on
+>> one architecture might not be on another. You could mark every field
+>> as packed but few people seem to do that and as far as I am aware
+>> there is no documented difference between packing all members and the
+>> whole struct. The gcc documentation for packed is pretty short:
+>
+> Actually it's documented that putting attribute(packed) on the struct
+> is equivalent to putting attribute(packed) on _every_ member of the
+> struct.
+>
+>>   The packed attribute specifies that a variable or structure field
+>> should have the smallest
+>>   possible alignment—one byte for a variable, and one bit for a field,
+>> unless you specify a
+>>   larger value with the aligned attribute.
+>>
+>> I'd love to know if the pointer alignment behaviour is widespread and
+>> then maybe write a patch for the gcc manual.
+>
+> Well, it's kind of the whole point of __packed isn't it?  Otherwise the
+> struct members get naturally (or some arch-dependent value) aligned,
+> which the compiler can rely on unless you say __packed.
+>
+> So in my example above, the compiler _knows_ how it has aligned
+> big_data and small_data and can use whatever access is most efficient,
+> but it can't make any assumptions about medium_data, so access through
+> a pointer _must_ be done unaligned.
+>
+> struct foo *bar;
+> bar->medium_data; // compiler must do this unaligned
 
-So far I have had this error happen 5 times (MTBF is maybe
-12 hours), 4 of the 5 times resulted in the networking being
-broken, one time things came back by itself without a reboot,
-I believe in this case the hang was traffic coming into the
-machine vs the other times going out of the machine.
+Agreed, but the packed struct unaligned access code does this:
 
-Unloading all of the network modules and reloading them did
-not correct the problem.
+struct __una_u16 { u16 x __attribute__((packed)); };
 
-Searching google finds a couple of other people getting the
-same error but they have a different network chipset (e1000
-and a rt811C chipset), which makes me thing that there is
-something interacting bad with the network.    Or does this
-error truly mean that the network chipset for some unknown reason
-locked itself up?
-
-http://www.google.com/url?sa=U&start=4&q=http://kerneltrap.org/mailarchive/linux-netdev/2008/8/6/2838184&ei=rU8ZScysAon8edz5xKgO&sig2=Wxp7IkUtdgORGZiflxvppg&usg=AFQjCNHzPwsCOmLGKmtX4q_FEpk6oubxxg
-http://article.gmane.org/gmane.linux.network/110238
-
-The changes I made recently were to upgrade my MB (old
-was E100 on a 100Mbit network,new is tg3 on a Gbit network,
-cpu and memory are the same, MB chipset is a intel 955
-chipset vs the old being a intel 915 chipset).
-
-Autoneg is turned on all around, the GBit switch is a
-8-port Dlink switch.   The network seems to otherwise be working
-correctly.
-
-I did test the network under decent load and the error did not
-appear to be any more likely under load, and typically the network
-is under very light load 2-3MB/second.
-
-The machine originally had 2 HT CPU's showing up, I turned off HT
-so that only one cpu was showing, but this did not change the error.
-
-I am first turning off all offload capabilities on tg3 and going
-to see if that changes anything.
-
-The next thing I am going to be doing is to turn of GB capability
-on the networking and see if that does anything.
-
-I also have a second tg3 port that is slightly different, so I may
-try that eventually.
-
-What else can I look at?
-
-
-
-
-
-
-Nov 11 00:44:39 computer kernel: ------------[ cut here ]------------
-Nov 11 00:44:39 computer kernel: WARNING: at net/sched/sch_generic.c:219 
-dev_watchdog+0xfe/0x17e()
-Nov 11 00:44:39 computer kernel: NETDEV WATCHDOG: eth0 (tg3): transmit timed out
-Nov 11 00:44:39 computer kernel: Modules linked in: nfsd auth_rpcgss exportfs 
-w83627ehf hwmon_vid hwmon nfs lockd nfs_acl sunrpc ipv6 xfs raid456 async_xor 
-async_memcpy async_tx xor video output sbs sbshc battery ac lgdt330x cx88_dvb 
-wm8775 cx88_vp3054_i2c cx25840 tuner_simple tuner_types tda9887 tda8290 tuner 
-mt2131 s5h1409 snd_hda_intel snd_seq_dummy ivtv cx8800 snd_seq_oss cx88_alsa 
-cx8802 cx88xx cx23885 snd_seq_midi_event snd_seq ir_common videodev v4l1_compat 
-i2c_algo_bit cx2341x firewire_ohci iTCO_wdt snd_seq_device compat_ioctl32 
-videobuf_dvb i2c_i801 firewire_core tveeprom floppy iTCO_vendor_support 
-v4l2_common snd_pcm_oss dvb_core pcspkr tg3 sata_sil i2c_core btcx_risc 
-videobuf_dma_sg crc_itu_t snd_mixer_oss libphy videobuf_core snd_pcm parport_pc 
-parport snd_timer snd soundcore button snd_page_alloc sg dm_snapshot dm_zero 
-dm_mirror dm_log dm_mod ahci ata_piix ata_generic libata sd_mod scsi_mod ext3 
-jbd mbcache ehci_hcd ohci_hcd uhci_hcd [last unloaded: eeprom]
-Nov 11 00:44:39 computer kernel: Pid: 0, comm: swapper Not tainted 2.6.27.5 #2
-Nov 11 00:44:39 computer kernel:  [<c042524f>] warn_slowpath+0x61/0x83
-Nov 11 00:44:39 computer kernel:  [<c05663a4>] usb_hcd_submit_urb+0x75c/0x811
-Nov 11 00:44:39 computer kernel:  [<c0594972>] hiddev_hid_event+0x0/0x64
-Nov 11 00:44:39 computer kernel:  [<c058ce80>] hid_process_event+0x58/0x5f
-Nov 11 00:44:39 computer kernel:  [<c04e13d6>] __next_cpu+0x12/0x21
-Nov 11 00:44:39 computer kernel:  [<c041cbe3>] find_busiest_group+0x23e/0x672
-Nov 11 00:44:39 computer kernel:  [<c0439d1e>] clocksource_get_next+0x39/0x3f
-Nov 11 00:44:39 computer kernel:  [<c0438e51>] update_wall_time+0x567/0x70c
-Nov 11 00:44:39 computer kernel:  [<c040783e>] read_tsc+0x6/0x22
-Nov 11 00:44:39 computer kernel:  [<c04387e8>] getnstimeofday+0x37/0xc1
-Nov 11 00:44:39 computer kernel:  [<f8829a83>] uhci_scan_schedule+0x11b/0x6b0 
-[uhci_hcd]
-Nov 11 00:44:39 computer kernel:  [<c05b16ba>] dev_watchdog+0xfe/0x17e
-Nov 11 00:44:39 computer kernel:  [<c042c66f>] __mod_timer+0x99/0xa3
-Nov 11 00:44:39 computer kernel:  [<c05654b6>] rh_timer_func+0x0/0x5
-Nov 11 00:44:39 computer kernel:  [<c05654ae>] usb_hcd_poll_rh_status+0x12b/0x133
-Nov 11 00:44:39 computer kernel:  [<c043bca8>] tick_dev_program_event+0x1e/0x81
-Nov 11 00:44:39 computer kernel:  [<c05b15bc>] dev_watchdog+0x0/0x17e
-Nov 11 00:44:39 computer kernel:  [<c042c2b4>] run_timer_softirq+0x10e/0x167
-Nov 11 00:44:39 computer kernel:  [<c05b15bc>] dev_watchdog+0x0/0x17e
-Nov 11 00:44:39 computer kernel:  [<c0428d3e>] __do_softirq+0x5d/0xc1
-Nov 11 00:44:39 computer kernel:  [<c0428dd4>] do_softirq+0x32/0x36
-Nov 11 00:44:39 computer kernel:  [<c0412939>] smp_apic_timer_interrupt+0x6e/0x79
-Nov 11 00:44:39 computer kernel:  [<c040431c>] apic_timer_interrupt+0x28/0x30
-Nov 11 00:44:39 computer kernel:  [<c0408582>] mwait_idle+0x32/0x38
-Nov 11 00:44:39 computer kernel:  [<c040255d>] cpu_idle+0xbd/0xd5
+On an architecture with struct alignment > 1 this will not work. Which
+is why I believe that the memmove code must stay for those
+architectures.
