@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbYKKGfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYKKGiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbYKKGfy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 01:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbYKKGfH
+	id S1755530AbYKKGiV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 01:38:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYKKGiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 01:35:07 -0500
-Received: from kroah.org ([198.145.64.141]:37870 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755541AbYKKGfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 01:35:04 -0500
-Date: Mon, 10 Nov 2008 22:26:55 -0800
-From: Greg KH <greg@kroah.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 2/5] i5k_amb: Load automatically on all 5000/5400
-	chipsets
-Message-ID: <20081111062655.GI13156@kroah.com>
-References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com> <20081107185631.13022.59600.stgit@elm3a70.beaverton.ibm.com> <20081108120950.397a3165@hyperion.delvare>
+	Tue, 11 Nov 2008 01:38:11 -0500
+Received: from crmm.lgl.lu ([158.64.72.228]:49788 "EHLO lll.lu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751854AbYKKGiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 01:38:11 -0500
+Message-ID: <49192842.8000604@knaff.lu>
+Date: Tue, 11 Nov 2008 07:37:54 +0100
+From: Alain Knaff <alain@knaff.lu>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081108120950.397a3165@hyperion.delvare>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VFS: lseek(fd, 0, SEEK_CUR) race condition
+References: <200811062021.mA6KLCEp030336@hitchhiker.org.lu> <20081110170808.831093ec.akpm@linux-foundation.org>
+In-Reply-To: <20081110170808.831093ec.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 08, 2008 at 12:09:50PM +0100, Jean Delvare wrote:
-> Hi Darrick,
+Andrew Morton wrote:
+[...]
+> OK, I think that a concurrent lseek(fd, 0, SEEK_CUR) is a sufficiently
+> sane operation that this is worth doing.  As you point out, there is no
+> other way of userspace doing what is effectively a read-only operation
+> - userspace would be entitled to wonder "ytf did the kernel rewrite the
+> file offset for that?".
 > 
-> On Fri, 07 Nov 2008 10:56:31 -0800, Darrick J. Wong wrote:
-> > It turns out that we cannot create a pci_driver in this driver because PCI will
-> > not call this module's probe function if the i5000-edac driver is already
-> > loaded.
 > 
-> I seem to recall work in progress to let multiple drivers bind to the
-> same PCI device. Greg, Kay, what's the status?
+> Do the below additions look OK?
 
-Hannes provided me with a bunch of patches, some of which applied, some
-didn't.  I had to back some of them out as they were wrong, and I need
-to revisit them when I get a chance :(
+Yes, these additions look ok to me. Thanks for your quick and easy reply.
 
-thanks,
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> - fix coding-style
+> - fix default_llseek() as well
 
-greg k-h
+Wow, that one was missing an unlock_kernel()... I'm wondering why this
+hadn't let to some major SNAFU...
+
+> - add comments
+
+Thanks,
+
+Alain
