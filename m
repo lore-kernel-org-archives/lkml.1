@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYKKBaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbYKKBal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYKKBaK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 20:30:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYKKB3z
+	id S1755371AbYKKBal (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 20:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbYKKBaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 20:29:55 -0500
-Received: from mga14.intel.com ([143.182.124.37]:38767 "EHLO mga14.intel.com"
+	Mon, 10 Nov 2008 20:30:00 -0500
+Received: from mail.tpi.com ([198.107.51.143]:4313 "EHLO mail.tpi.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbYKKB3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 20:29:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,580,1220252400"; 
-   d="scan'208";a="74035483"
-Subject: Re: ACPI crash on lid close - SMP race?
-From: Zhang Rui <rui.zhang@intel.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081110161105.GA2041@srcf.ucam.org>
-References: <20081110161105.GA2041@srcf.ucam.org>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 09:27:14 +0800
-Message-Id: <1226366834.15014.60.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S1754107AbYKKB36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 20:29:58 -0500
+Message-ID: <4918E004.8000205@canonical.com>
+Date: Mon, 10 Nov 2008 18:29:40 -0700
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: tcanonical@tpi.com, bryan.stillwell@hp.com, Mike.Miller@hp.com,
+       iss_storagedev@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cciss: firmware version is invalid
+References: <20081106201204.9C2AEF8A65@sepang.rtg.net>	<1226005890.13433.390.camel@aki.stillwell>	<49144CB8.8070604@tpi.com> <20081110165558.428566ab.akpm@linux-foundation.org>
+In-Reply-To: <20081110165558.428566ab.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-well, there is a bug report for this problem:
-http://bugzilla.kernel.org/show_bug.cgi?id=11259
-
-and there are some bug reports for a similar problem (system crashes on
-lid close if _DOS=1, but on a UP platform).
-http://bugzilla.kernel.org/show_bug.cgi?id=6001#c49
-
-but unfortunately we haven't made any progress in this issue. :(
-
-thanks,
-rui
-
-On Tue, 2008-11-11 at 00:11 +0800, Matthew Garrett wrote:
-> If the _DOS flag on my HP 2510p is set to 0 (ie, signal OS when screen 
-> notification is requested, don't change automatically) then it'll crash 
-> on random lid open/closes. The trace generally makes little sense and 
-> depends on the kernel version and phase of the moon. I'd ignored this as 
-> firmware brokenness up until lately, but since having _DOS set to 0 is 
-> the only way to get a notification when the display switch key is 
-> pressed on this machine I'd be interested in fixing it properly. 
+Andrew Morton wrote:
+> On Fri, 07 Nov 2008 07:12:08 -0700
+> Tim Gardner <tcanonical@tpi.com> wrote:
 > 
-> Unfortunately, I've got no real idea what on earth is going on. The only 
-> clue I've found so far is that booting with maxcpus=1 leaves it working 
-> perfectly. What parts of the ACPI stack could be triggering this?
+>> Stillwell, Bryan wrote:
+>>> Tim,
+>>>
+>>> Thanks for getting this merged, but I believe this patch is preferred
+>>> over the original one I attached:
+>>>
+>>> http://userweb.kernel.org/~akpm/mmotm/broken-out/cciss-fix-regression-firmware-not-displayed-in-procfs-again-and-again.patch
+>>>
+>>> The reason for this according to Mike Miller is: "The first fix could be
+>>> called anytime something changed on the controller such as number of
+>>> logical volumes, etc.  This patch will get called only once for each
+>>> controller."
+>>>
+>>> Thanks,
+>>> Bryan
+>> applied
+>>
+> 
+> I'm all confused here.
+> 
+> cciss-fix-regression-firmware-not-displayed-in-procfs-again-and-again.patch
+> is now in mainline.  Are you saying that "cciss: Firmware Version is
+> invalid" is preferred?  That "cciss: Firmware Version is invalid"
+> should still be applied?
+> 
+> If so, "cciss: Firmware Version is invalid" will need a better title
+> and changelog, please.  The one you have there is pretty skimpy. 
+> reading between the lines, I'm guessing that the driver emits "Firmware
+> Version is invalid" messages and that this patch somehow fixes that?
 > 
 
+Andrew,
+
+The patch in Linus' repo looks correct, so please drop this one. At the
+time I sent the original patch I didn't realize there was another
+version already staged for Linus.
+
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
