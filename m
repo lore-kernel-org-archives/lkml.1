@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbYKKSGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbYKKSHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbYKKSGD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:06:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYKKSFw
+	id S1754909AbYKKSHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYKKSHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:05:52 -0500
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:47821 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753556AbYKKSFv (ORCPT
+	Tue, 11 Nov 2008 13:07:25 -0500
+Received: from vms173005pub.verizon.net ([206.46.173.5]:43418 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754032AbYKKSHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:05:51 -0500
-Message-ID: <4919C979.3000501@euromail.se>
-Date: Tue, 11 Nov 2008 19:05:45 +0100
-From: Henrik Rydberg <rydberg@euromail.se>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hid: Complete support for the new unibody macbooks
-References: <49109C91.6090207@euromail.se> <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: 83.248.192.132
-X-Scan-Result: No virus found in message 1Kzxca-0002rx-7z.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1Kzxca-0002rx-7z 9c8791f417f3b9efb50c8428d2f1fa98
+	Tue, 11 Nov 2008 13:07:25 -0500
+Date: Tue, 11 Nov 2008 13:07:15 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH -next] Hibernate: Take overlapping zones into account
+In-reply-to: <200811081356.13060.rjw@sisk.pl>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0811111300580.4480@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <200811081356.13060.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> On Tue, 4 Nov 2008, Henrik Rydberg wrote:
-> 
->> The unibody MacBook 5 and MacBook Pro 5 come with a new version of
->> the bcm5974 trackpad. This patch adds the USB device ids and all
->> the appropriate quirks, including hid_blacklist.
->>
->> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-> 
-> Applied, thanks Henrik (and sorry for the delay, I have been offline for a 
-> few days).
-> 
 
-No worries. I should have mentioned earlier that the hid update
-is best synchronized with the bcm5974 update, since the latter
-is the only driver that will pick the mouse interface up after
-the hid update. The bcm5974 patch was sent on October 23, but
-I have not received any feedback to it yet.
 
-Cheers,
-Henrik
+On Sat, 8 Nov 2008, Rafael J. Wysocki wrote:
 
+> Hi Len,
+> 
+> Please add this patch to the suspend branch.
+
+Please re-send a checkpatch clean version.
+
+Also, the comments on this patch (and the next) are mal-formed.
+The commit message must be before the first "---" and the throw-away
+comments must be after it, rather thant the reverse.
+
+I ask others to get this right, so it seems most fair that I do the
+same for you -- otherwise your next patch will have the same problems
+and others will follow your example of not sending the "perfect patch"
+
+thanks,
+-Len
+
+
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: Hibernate: Take overlapping zones into account
+> 
+> It has been requested to make hibernation work with memory
+> hotplugging enabled and for this purpose the hibernation code has to
+> be reworked to take the possible overlapping of zones into account.
+> Thus, rework the hibernation memory bitmaps code to prevent
+> duplication of PFNs from occuring and add checks to make sure that
+> one page frame will not be marked as saveable many times.
+> 
+> Additionally, use list.h lists instead of open-coded lists to
+> implement the memory bitmaps.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Machek <pavel@suse.cz>
+> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+> Cc: Andy Whitcroft <apw@shadowen.org>
+> ---
+>  kernel/power/snapshot.c |  331 ++++++++++++++++++++++++------------------------
+>  1 file changed, 169 insertions(+), 162 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/snapshot.c
+> +++ linux-2.6/kernel/power/snapshot.c
+> @@ -25,6 +25,7 @@
