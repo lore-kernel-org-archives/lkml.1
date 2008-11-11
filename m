@@ -1,188 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYKKU7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbYKKU7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbYKKU7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753840AbYKKU6J
+	id S1754632AbYKKU7v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:59:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbYKKU6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:58:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39833 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753831AbYKKU6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 15:58:07 -0500
-Message-ID: <4919F1C0.2050009@redhat.com>
-Date: Tue, 11 Nov 2008 22:57:36 +0200
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com,
-       izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
- one page into another
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org>
-In-Reply-To: <20081111114555.eb808843.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 11 Nov 2008 15:58:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57833 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753873AbYKKU6V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 15:58:21 -0500
+Date: Tue, 11 Nov 2008 12:56:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, srostedt@redhat.com
+Subject: Re: [PATCH 1/1] ring-buffer: buffer record on/off switch
+Message-Id: <20081111125645.4f7a5827.akpm@linux-foundation.org>
+In-Reply-To: <20081111201034.315528609@goodmis.org>
+References: <20081111200601.147669239@goodmis.org>
+	<20081111201034.315528609@goodmis.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 11 Nov 2008 15:21:39 +0200
-> Izik Eidus <ieidus@redhat.com> wrote:
->
->   
->> From: Izik Eidus <izike@qumranet.com>
->>
->> this function is needed in cases you want to change the userspace
->> virtual mapping into diffrent physical page,
->>     
->
-> Not sure that I understand that description.  We want to replace a live
-> page in an anonymous VMA with a different one?
->
-> It looks that way.
->   
-yes but it replace it with kernel allocated page.
-> page migration already kinda does that.  Is there common ground?
->
->   
-page migration as far as i saw cant migrate anonymous page into kernel page.
-if you want we can change page_migration to do that, but i thought you 
-will rather have ksm changes separate.
+On Tue, 11 Nov 2008 15:06:02 -0500
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
->> KSM need this for merging the identical pages.
->>
->> this function is working by removing the oldpage from the rmap and
->> calling put_page on it, and by setting the virtual address pte
->> to point into the new page.
->> (note that the new page (the page that we change the pte to map to)
->> cannot be anonymous page)
->>
->>     
->
-> I don't understand the restrictions on anonymous pages.  Please expand
-> the changelog so that reviewers can understand the reasons for this
-> restriction.
->   
-the page that we are going to map into the pte going to be nonlinear 
-from the point of view of anon-vma
-therefore it cannot be anonymous.
+> +static struct file_operations rb_simple_fops = {
 
->
->   
->> ---
->>  include/linux/mm.h |    3 ++
->>  mm/memory.c        |   68 ++++++++++++++++++++++++++++++++++++++++++++++++++++
->>  2 files changed, 71 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index ffee2f7..4da7fa8 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -1207,6 +1207,9 @@ int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
->>  int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
->>  			unsigned long pfn);
->>  
->> +int replace_page(struct vm_area_struct *vma, struct page *oldpage,
->> +		 struct page *newpage, pte_t orig_pte, pgprot_t prot);
->> +
->>  struct page *follow_page(struct vm_area_struct *, unsigned long address,
->>  			unsigned int foll_flags);
->>  #define FOLL_WRITE	0x01	/* check pte is writable */
->> diff --git a/mm/memory.c b/mm/memory.c
->> index 164951c..b2c542c 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -1472,6 +1472,74 @@ int vm_insert_mixed(struct vm_area_struct *vma, unsigned long addr,
->>  }
->>  EXPORT_SYMBOL(vm_insert_mixed);
->>  
->> +/**
->> + * replace _page - replace the pte mapping related to vm area between two pages
->>     
->
-> s/replace _page/replace_page/
->
->   
->> + * (from oldpage to newpage)
->> + * NOTE: you should take into consideration the impact on the VM when replacing
->> + * anonymous pages with kernel non swappable pages.
->> + */
->>     
->
-> This _is_ a kerneldoc comment, but kernedoc comments conventionally
-> document the arguments and the return value also.
->
->   
->> +int replace_page(struct vm_area_struct *vma, struct page *oldpage,
->> +		 struct page *newpage, pte_t orig_pte, pgprot_t prot)
->> +{
->> +	struct mm_struct *mm = vma->vm_mm;
->> +	pgd_t *pgd;
->> +	pud_t *pud;
->> +	pmd_t *pmd;
->> +	pte_t *ptep;
->> +	spinlock_t *ptl;
->> +	unsigned long addr;
->> +	int ret;
->> +
->> +	BUG_ON(PageAnon(newpage));
->> +
->> +	ret = -EFAULT;
->> +	addr = page_address_in_vma(oldpage, vma);
->> +	if (addr == -EFAULT)
->> +		goto out;
->> +
->> +	pgd = pgd_offset(mm, addr);
->> +	if (!pgd_present(*pgd))
->> +		goto out;
->> +
->> +	pud = pud_offset(pgd, addr);
->> +	if (!pud_present(*pud))
->> +		goto out;
->> +
->> +	pmd = pmd_offset(pud, addr);
->> +	if (!pmd_present(*pmd))
->> +		goto out;
->> +
->> +	ptep = pte_offset_map_lock(mm, pmd, addr, &ptl);
->> +	if (!ptep)
->> +		goto out;
->> +
->> +	if (!pte_same(*ptep, orig_pte)) {
->> +		pte_unmap_unlock(ptep, ptl);
->> +		goto out;
->> +	}
->> +
->> +	ret = 0;
->> +	get_page(newpage);
->> +	page_add_file_rmap(newpage);
->> +
->> +	flush_cache_page(vma, addr, pte_pfn(*ptep));
->> +	ptep_clear_flush(vma, addr, ptep);
->> +	set_pte_at(mm, addr, ptep, mk_pte(newpage, prot));
->> +
->> +	page_remove_rmap(oldpage, vma);
->> +	if (PageAnon(oldpage)) {
->> +		dec_mm_counter(mm, anon_rss);
->> +		inc_mm_counter(mm, file_rss);
->> +	}
->> +	put_page(oldpage);
->> +
->> +	pte_unmap_unlock(ptep, ptl);
->> +
->> +out:
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL(replace_page);
->>     
->
-> Again, we could make the presence of this code selectable by subsystems
-> which want it.
->
-> ]
+should be const...
 
-sure.
+Probably it isn't worth fixing.  Someone(tm) should do period sweeps -
+10% of our file_operationses aren't const.
 
