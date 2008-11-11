@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYKKQav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYKKQd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYKKQav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 11:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKKQam
+	id S1753517AbYKKQd5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 11:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbYKKQds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 11:30:42 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:12350 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbYKKQal (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 11:30:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iuZQkbULgogpd5mNLsp0tXvQLfrWlR3/laWcL3/ze/X7GCKx70q4HBSYzZNj6SGzZO
-         SCnW18O0pjtLzQTfM9N7NPdZq+x2MZ/W4l24WZlD7kwDnrAcHuprjqOxGeGpCwmatPim
-         mrFnXFHETH7WzgRqysvxa43WqydQu7f6nqM98=
-Date: Tue, 11 Nov 2008 11:30:38 -0500
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH] atkbd: cancel delayed work before freeing its structure
-Message-ID: <20081111112741.ZZRA012@mailhub.coreip.homeip.net>
-References: <20081105153140.25132ca1@psychotron.englab.brq.redhat.com> <20081107154325.GD9368@redhat.com> <20081111145155.GA24881@anvil.corenet.prv> <20081111172050.GC18214@redhat.com>
+	Tue, 11 Nov 2008 11:33:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54179 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbYKKQdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 11:33:47 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mike Isely <isely@pobox.com>
+Subject: Re: [Bug #11829] Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
+Date: Tue, 11 Nov 2008 17:38:20 +0100
+User-Agent: KMail/1.9.9
+Cc: Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>
+References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera> <200811111453.34386.rjw@sisk.pl> <Pine.LNX.4.64.0811110938500.22093@cnc.isely.net>
+In-Reply-To: <Pine.LNX.4.64.0811110938500.22093@cnc.isely.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081111172050.GC18214@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200811111738.20759.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 06:20:50PM +0100, Oleg Nesterov wrote:
-> On 11/11, Dmitry Torokhov wrote:
-> >
-> > On Fri, Nov 07, 2008 at 04:43:25PM +0100, Oleg Nesterov wrote:
-> > >
-> > > While we are here, what is the reason for atkbd_schedule_event_work()->wmb() ?
-> > > It looks absolutely bogus. Is it for atkbd_event_work() ? In that case it
-> > > is not needed, it must see all previous STOREs because both queue_work() and
-> > > run_workqueue() take cwq->lock. And in any case,
-> > > test_and_set_bit(WORK_STRUCT_PENDING) implies mb().
-> >
-> > I wanted to be sure that event_mask is set before we schedule event_work
-> > and I don't want to rely on details of queue_delayed_work
-> > implementation. If the fact that queue_delayed_work acts as a barrier
-> > would be listed part of its published spec I would gladly remove wmb()
-> > from atkbd.
+On Tuesday, 11 of November 2008, Mike Isely wrote:
+> On Tue, 11 Nov 2008, Rafael J. Wysocki wrote:
 > 
-> Yes, queue_delayed_work() acts as a barrier for the work->func(), otherwise
-> almost any code which uses wqs is broken.
+> > On Tuesday, 11 of November 2008, Greg KH wrote:
+> > > On Sun, Nov 09, 2008 at 08:43:22PM +0100, Rafael J. Wysocki wrote:
+> > > > This message has been generated automatically as a part of a report
+> > > > of regressions introduced between 2.6.26 and 2.6.27.
+> > > > 
+> > > > The following bug entry is on the current list of known regressions
+> > > > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> > > > be listed and let me know (either way).
+> > > > 
+> > > > 
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11829
+> > > > Subject		: Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
+> > > > Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
+> > > > Date		: 2008-10-19 11:26 (22 days old)
+> > > > References	: http://marc.info/?l=linux-kernel&m=122441560120027&w=4
+> > > > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> > > > 		  Mike Isely <isely@isely.net>
+> > > > Patch		: http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+> > > 
+> > > This has been fixed already in .27 and in mainline with a patch from
+> > > Alan.
+> > 
+> > OK, closed it.
+> > 
+> > Do you remember which of the Alan's patches is that?
 > 
-> But let me repeat, if queue_delayed_work() fails becuase this work is
-> already queued we (in this particular case) need mb(), not wmb(). Or
-> atkbd_schedule_event_work() can miss a bit in ->event_mask. So I think
-> this wmb() is misleading.
+> It wasn't a patch from Alan.  It was from me.  The commit ID is 
+> c82732a42896364296599b0f73f01c5e3fd781ae
 
-Could you please explain why wmb() is not enough and full mb() is
-needed in this case? I thought that if write happens before we decide
-whether to schedule event_work or not it would be enough.
+OK, thanks.
 
-> And unneeded because queue_work() implies mb(),
-> but this is not really documented.
-> 
+I added the "Fixed by" information to the bug entry, for the record.
 
-It would be great if we can get it documented and then i'd drop *mb()
-from atkbd.
-
-Thanks.
-
--- 
-Dmitry
+Rafael
