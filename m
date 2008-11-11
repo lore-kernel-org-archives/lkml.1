@@ -1,82 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbYKKNUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbYKKNWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbYKKNUf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 08:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbYKKNU1
+	id S1756234AbYKKNWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 08:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbYKKNWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 08:20:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44781 "EHLO mx3.mail.elte.hu"
+	Tue, 11 Nov 2008 08:22:13 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33422 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754319AbYKKNU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 08:20:26 -0500
-Date: Tue, 11 Nov 2008 14:20:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ken Chen <kenchen@google.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
-Message-ID: <20081111132018.GI14989@elte.hu>
-References: <20081107003021.GA18666@google.com> <20081107004824.GA28780@x200.localdomain> <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain> <20081107083249.GD4435@elte.hu> <20081107084943.GA16147@x200.localdomain> <20081107085352.GA27245@elte.hu> <20081107090304.GA30540@elte.hu> <20081111122531.GA5836@joi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081111122531.GA5836@joi>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1755758AbYKKNWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 08:22:11 -0500
+From: Izik Eidus <ieidus@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
+       chrisw@redhat.com, avi@redhat.com
+Subject: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+Date: Tue, 11 Nov 2008 15:21:37 +0200
+Message-Id: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KSM is a linux driver that allows dynamicly sharing identical memory pages
+between one or more processes.
 
-* Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+unlike tradtional page sharing that is made at the allocation of the
+memory, ksm do it dynamicly after the memory was created.
+Memory is periodically scanned; identical pages are identified and merged.
+the sharing is unnoticeable by the process that use this memory.
+(the shared pages are marked as readonly, and in case of write
+do_wp_page() take care to create new copy of the page)
 
-> On Fri, Nov 07, 2008 at 10:03:04AM +0100, Ingo Molnar wrote:
-> > 
-> > btw., the feature works beautifully:
-> > 
-> > task sleeping/blocked:
-> > 
-> >  # cat /proc/1/stack
-> >  [<ffffffff802bfe75>] do_select+0x51a/0x582
-> >  [<ffffffff802c0059>] core_sys_select+0x17c/0x218
-> >  [<ffffffff802c0344>] sys_select+0x99/0xc1
-> >  [<ffffffff8020c23b>] system_call_fastpath+0x16/0x1b
-> >  [<ffffffffffffffff>] 0xffffffffffffffff
-> > 
-> > task running on this CPU:
-> > 
-> >  # cat /proc/self/stack
-> >  [<ffffffff80216f79>] save_stack_trace_tsk+0x26/0x44
-> >  [<ffffffff802f59a5>] proc_pid_stack+0x6e/0xd3
-> >  [<ffffffff802f6da3>] proc_info_read+0x68/0xba
-> >  [<ffffffff802b2f17>] vfs_read+0xa9/0xe3
-> >  [<ffffffff802b301f>] sys_read+0x4c/0x73
-> >  [<ffffffff8020c23b>] system_call_fastpath+0x16/0x1b
-> >  [<ffffffffffffffff>] 0xffffffffffffffff
-> > 
-> > task running on another CPU in user-space:
-> > 
-> >  # cat /proc/18579/stack
-> >  [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> so this file provides view of _kernel_ stack only?
-> shouldn't it be named kernel-stack then?
+this driver is very useful for KVM as in cases of runing multiple guests
+operation system of the same type, many pages are sharable.
+this driver can be useful by OpenVZ as well.
 
-it prints the kernel stack right now, but i'd not restrict it to the 
-kernel stack conceptually: i think we could eventually expand it to 
-print the user-space portion of the stack as well. (in the case when 
-user-space is built with frame pointers) We've got code for that in 
-the kernel already. It would be an easy one-stop-shop for full-range.
+KSM right now scan just memory that was registered to used by it, it
+does not
+scan the whole system memory (this can be changed, but the changes to
+find
+identical pages in normal linux system that doesnt run multiple guests)
 
-	Ingo
+KSM can run as kernel thread or as userspace application (or both (it is
+allowed to run more than one scanner in a time)).
+
+example for how to control the kernel thread:
+
+
+ksmctl.c
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include "ksm.h"
+
+int main(int argc, char *argv[])
+{
+	int fd;
+	int used = 0;
+	int fd_start;
+	struct ksm_kthread_info info;
+	
+
+	if (argc < 2) {
+		fprintf(stderr, "usage: %s {start npages sleep | stop |
+			info}\n", argv[0]);
+		exit(1);
+	}
+
+	fd = open("/dev/ksm", O_RDWR | O_TRUNC, (mode_t)0600);
+	if (fd == -1) {
+		fprintf(stderr, "could not open /dev/ksm\n");
+		exit(1);
+	}
+
+	if (!strncmp(argv[1], "start", strlen(argv[1]))) {
+		used = 1;
+		if (argc < 5) {
+			fprintf(stderr, "usage: %s start npages_to_scan",
+				argv[0]);
+			fprintf(stderr, "npages_max_merge sleep\n");
+			exit(1);
+		}
+		info.pages_to_scan = atoi(argv[2]);
+		info.max_pages_to_merge = atoi(argv[3]);
+		info.sleep = atoi(argv[4]);
+		info.running = 1;
+
+		fd_start = ioctl(fd, KSM_START_STOP_KTHREAD, &info);
+		if (fd_start == -1) {
+			fprintf(stderr, "KSM_START_KTHREAD failed\n");
+			exit(1);
+		}
+		printf("created scanner\n");
+	}
+
+	if (!strncmp(argv[1], "stop", strlen(argv[1]))) {
+		used = 1;
+		info.running = 0;
+		fd_start = ioctl(fd, KSM_START_STOP_KTHREAD, &info);
+		if (fd_start == -1) {
+			fprintf(stderr, "KSM_START_STOP_KTHREAD failed\n");
+			exit(1);
+		}
+		printf("stopped scanner\n");
+	}
+
+	if (!strncmp(argv[1], "info", strlen(argv[1]))) {
+		used = 1;
+		fd_start = ioctl(fd, KSM_GET_INFO_KTHREAD, &info);
+		if (fd_start == -1) {
+			fprintf(stderr, "KSM_GET_INFO_KTHREAD failed\n");
+			exit(1);
+		}
+		printf("running %d, pages_to_scan %d pages_max_merge %d",
+			info.running, info.pages_to_scan,
+			info.max_pages_to_merge);
+		printf("sleep_time %d\n", info.sleep);
+	}
+
+	if (!used)
+		fprintf(stderr, "unknown command %s\n", argv[1]);
+
+	return 0;
+}
+
+
+example of how to register qemu to ksm (or any userspace application)
+
+diff --git a/qemu/vl.c b/qemu/vl.c
+index 4721fdd..7785bf9 100644
+--- a/qemu/vl.c
++++ b/qemu/vl.c
+@@ -21,6 +21,7 @@
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  * DEALINGS IN
+  * THE SOFTWARE.
+  */
++#include "ksm.h"
+ #include "hw/hw.h"
+ #include "hw/boards.h"
+ #include "hw/usb.h"
+@@ -5799,6 +5800,37 @@ static void termsig_setup(void)
+ 
+ #endif
+ 
++int ksm_register_memory(void)
++{
++    int fd;
++    int ksm_fd;
++    int r = 1;
++    struct ksm_memory_region ksm_region;
++
++    fd = open("/dev/ksm", O_RDWR | O_TRUNC, (mode_t)0600);
++    if (fd == -1)
++        goto out;
++
++    ksm_fd = ioctl(fd, KSM_CREATE_SHARED_MEMORY_AREA);
++    if (ksm_fd == -1)
++        goto out_free;
++
++    ksm_region.npages = phys_ram_size / TARGET_PAGE_SIZE;
++    ksm_region.addr = phys_ram_base;
++    r = ioctl(ksm_fd, KSM_REGISTER_MEMORY_REGION, &ksm_region);
++    if (r)
++        goto out_free1;
++
++    return r;
++
++out_free1:
++    close(ksm_fd);
++out_free:
++    close(fd);
++out:
++    return r;
++}
++
+ int main(int argc, char **argv)
+ {
+ #ifdef CONFIG_GDBSTUB
+@@ -6735,6 +6767,8 @@ int main(int argc, char **argv)
+     /* init the dynamic translator */
+     cpu_exec_init_all(tb_size * 1024 * 1024);
+ 
++    ksm_register_memory();
++
+     bdrv_init();
+ 
+     /* we always create the cdrom drive, even if no disk is there */
