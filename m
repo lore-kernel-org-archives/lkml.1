@@ -1,129 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbYKKGWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYKKGXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755216AbYKKGWB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 01:22:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYKKGVu
+	id S1755461AbYKKGXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 01:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbYKKGXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 01:21:50 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48632 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbYKKGVs (ORCPT
+	Tue, 11 Nov 2008 01:23:00 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56479
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751821AbYKKGW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 01:21:48 -0500
-Date: Tue, 11 Nov 2008 15:21:47 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, joerg.roedel@amd.com
-In-Reply-To: <20081111144212F.fujita.tomonori@lab.ntt.co.jp>
-References: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com> <20081111144212F.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081111151827.D5D3.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 11 Nov 2008 01:22:59 -0500
+Date: Mon, 10 Nov 2008 22:22:59 -0800 (PST)
+Message-Id: <20081110.222259.261412751.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 10 Nov 2008 13:47:51 +0900
-> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> 
-> > I have a (may be dumb) question about dma_alloc_coherent() for ia64.
-> > 
-> > 
-> > Why does dma_alloc_coherent() of ia64 force GFP_DMA yet?
-> > And why is swiotlb_dma_alloc_coherent() default routine of
-> > platform_dma_alloc_coherent()?
-> > 
-> > -------
-> > #define dma_alloc_coherent(dev, size, handle, gfp)      \
-> >         platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
-> > --------
-> > 
-> > Even if a device allows over 4G access and the driver doesn't specify
-> > GFP_DMA, dma_alloc_coherent() returns under 4G area.
-> > I guess many people think this is not so big issue because drivers require
-> > very small memory generally.
-> > 
-> > However, I think this has the possibility of a finishing blow of OOM.
-> > For example,
-> > 
-> >   1) Page caches occupy normal zone, and DMA zone is free.
-> >   2) A user's application requires a few GB memory and mlock it.
-> >      All DMA zone is occupied by it.
-> >   3) A device which allows over 4GB is hot-added.
-> >      But dma_alloc_coherent() try to allocate DMA zone.
-> >      Then OOM occurs because there is no freeable pages.
-> > 
-> > I heard there are some users who require a few GB mlock.
-> > There are similar trouble in past. 
-> > 
-> > 
-> > If GFP_DMA is removed from above definition of dma_alloc_coherent(),
-> > what will happen?
-> 
-> Probably, it breaks swiotlb with devices that don't have
-> DMA_64BIT_MASK coherent_dma_mask.
-> 
-> 
-> > If it is not allowed, how is followings?
-> > 
-> > dma_alloc_coherent()
-> >   -> platform_dma_alloc_coherent()
-> >        -> normal_alloc_coherent()
-> >           {
-> >                  if (dma_mask allow over 4G)
-> >                         ret = __get_free_pages();
-> > 				:
-> >                         (check validation of returned address)
-> > 				:
-> >                  else 
-> >                         swiotlb_alloc_coherent();
-> >           }
-> > }
-> > 
-> > If I'm something misunderstanding, please let me know.
-> 
-> Hmm, platform_dma_alloc_coherent is supposed to handle multiple dma
-> ops, swiotlb, hardware IOMMUs like VT-d and sba, etc?
-> 
-> In IA64, the gfp zone flag matters for only swiotlb, I think.
-> 
-> 
-> =
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Subject: [PATCH] IA64: use GFP_DMA in dma_alloc_coherent only when necessary
-> 
-> For swiotlb, we need to set GFP_DMA if a device doesn't have
-> DMA_64BIT_MASK coherent_dma_mask. hardware IOMMUs like VT-d and sba
-> should ignore gfp zone flag.
-> 
-> diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
-> index bbab7e2..d4de41b 100644
-> --- a/arch/ia64/include/asm/dma-mapping.h
-> +++ b/arch/ia64/include/asm/dma-mapping.h
-> @@ -52,7 +52,9 @@ extern struct ia64_machine_vector ia64_mv;
->  extern void set_iommu_machvec(void);
->  
->  #define dma_alloc_coherent(dev, size, handle, gfp)	\
-> -	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
-> +	platform_dma_alloc_coherent(dev, size, handle,	\
-> +				(dev)->coherent_dma_mask != DMA_64BIT_MASK ?  \
-> +				(gfp) | GFP_DMA : gfp)
->  
->  /* coherent mem. is cheap */
->  static inline void *
 
-Wao! Seems reasonable! Ack Ack!
+1) Policy destroy on AF_KEY operations can BUG in some situations
+   because we don't make sure the policy is marked dead first,
+   fix from Alexey Dobriyan.
 
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+2) /proc/net/snmp reads can corrupt kernel memory.  Report and
+   initial patch by Alexey Dobriyan, final patch from Eric
+   Dumazet.
 
-Thanks a lot!
+3) VLAN procfs output can overrun on-stack string buffer by
+   one byte.  Fix from Ferenc Wagner
 
--- 
-Yasunori Goto 
+4) skb_recycle_check() can cause a BUG() due to incorrect ordering
+   of skb->data update.  Fix from Lennert Buytenhek.
 
+5) ip6_mr_init() error path destroys and releases in wrong order,
+   fix from Benjamin Thery.
 
+6) Two DSA layer fixes from Lennert Buytenhek, having to do with
+   device promisc/allmulti handling, and setting of skb->pkt_type
+   on receive.
+
+7) I/O AT bug fixes from Maciej Sosnowski.
+
+8) Fix empty sub-menu for CONFIG_SSB, from Mike Frysinger.
+
+9) SSB doesn't build on non-PCI platforms, from Michael Buesch.
+
+10) Several small device driver cures from Al Viro, Ben Hutchings,
+    Jonathan McDowell, Paulius Zaleckas, and Yevgeny Petrilin.
+
+Please pull, thanks a lot!
+
+The following changes since commit 4bab0ea1d42dd1927af9df6fbf0003fc00617c50:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../davem/net-2.6
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Al Viro (1):
+      el3_common_init() should be __devinit, not __init
+
+Alexey Dobriyan (1):
+      af_key: mark policy as dead before destroying
+
+Ben Hutchings (1):
+      sfc: Correct address of gPXE boot configuration in EEPROM
+
+Benjamin Thery (1):
+      ipv6: fix ip6_mr_init error path
+
+Dan Williams (1):
+      [4/4] dca: fixup initialization dependency
+
+David S. Miller (1):
+      Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
+
+Eric Dumazet (1):
+      net: fix /proc/net/snmp as memory corruptor
+
+Ferenc Wagner (1):
+      vlan: Fix typos in proc output string
+
+Harvey Harrison (1):
+      netfilter: payload_len is be16, add size of struct rather than size of pointer
+
+Jianjun Kong (1):
+      mac80211: fix a buffer overrun in station debug code
+
+Jonathan McDowell (1):
+      [netdrvr] usb/hso: Cleanup rfkill error handling
+
+Lennert Buytenhek (3):
+      net: fix setting of skb->tail in skb_recycle_check()
+      dsa: fix skb->pkt_type when mac address of slave interface differs
+      dsa: fix master interface allmulti/promisc handling
+
+Maciej Sosnowski (3):
+      [1/4] I/OAT: fix channel resources free for not allocated channels
+      [2/4] I/OAT: fix dma_pin_iovec_pages() error handling
+      [3/4] I/OAT: fix async_tx.callback checking
+
+Michael Buesch (1):
+      ssb: Fix DMA-API compilation for non-PCI systems
+
+Mike Frysinger (1):
+      SSB: hide empty sub menu
+
+Paulius Zaleckas (1):
+      hso: rfkill type should be WWAN
+
+Yevgeny Petrilin (1):
+      mlx4_en: Start port error flow bug fix
+
+ drivers/dca/dca-core.c          |    2 +-
+ drivers/dma/ioat_dma.c          |   11 +++++-
+ drivers/dma/iovlock.c           |   17 +++------
+ drivers/net/mlx4/en_netdev.c    |    2 +-
+ drivers/net/sfc/ethtool.c       |    4 +-
+ drivers/net/usb/hso.c           |   12 ++++---
+ drivers/ssb/Kconfig             |    5 ++-
+ include/linux/ssb/ssb.h         |   42 +++++++++++++++++++----
+ net/8021q/vlanproc.c            |    2 +-
+ net/core/skbuff.c               |    2 +-
+ net/dsa/slave.c                 |   72 +++++++++++++++++++++++++++++++++++++-
+ net/dsa/tag_dsa.c               |    1 +
+ net/dsa/tag_edsa.c              |    1 +
+ net/dsa/tag_trailer.c           |    1 +
+ net/ipv4/proc.c                 |   58 ++++++++++++++++---------------
+ net/ipv6/ip6mr.c                |    9 +++--
+ net/key/af_key.c                |    1 +
+ net/mac80211/debugfs_sta.c      |    2 +-
+ net/netfilter/ipvs/ip_vs_xmit.c |    3 +-
+ 19 files changed, 178 insertions(+), 69 deletions(-)
