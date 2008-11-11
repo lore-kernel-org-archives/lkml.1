@@ -1,68 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYKKUip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751866AbYKKUi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbYKKUip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbYKKUih
+	id S1751866AbYKKUi7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:38:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbYKKUip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:38:37 -0500
-Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:3489 "EHLO
-	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbYKKUig (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 15:38:36 -0500
-Date: Tue, 11 Nov 2008 21:38:33 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.27] allows to rmmod 'ide_pci_generic' with mounted
-	filesystems
-Message-ID: <20081111203833.GR10723@vanheusden.com>
-References: <20081104172513.GH23232@vanheusden.com> <20081104172727.GJ23232@vanheusden.com> <20081111200247.GQ10723@vanheusden.com>
+	Tue, 11 Nov 2008 15:38:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49635 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752627AbYKKUin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 15:38:43 -0500
+Date: Tue, 11 Nov 2008 21:38:06 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
+       avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 1/4] rmap: add page_wrprotect() function,
+Message-ID: <20081111203806.GE10818@random.random>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <20081111113948.f38b9e95.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111200247.GQ10723@vanheusden.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Tue Nov 11 11:09:27 CET 2008
-X-Message-Flag: www.vanheusden.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081111113948.f38b9e95.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hang on: it is not ide_pci_generic causing the filesystem errors. Still
-investigating.
-
-On Tue, Nov 11, 2008 at 09:02:47PM +0100, Folkert van Heusden wrote:
-> While running my http://vanheusden.com/pyk/ script (which randomly
-> inserts and removes modules), the module 'ide_pci_generic' got unloaded
-> while filesystems were mounted that used that module. Of course the
-> system crashed but I think it should not be possible to unload
-> modules when resources it serves are still in use.
+On Tue, Nov 11, 2008 at 11:39:48AM -0800, Andrew Morton wrote:
+> > +static int page_wrprotect_one(struct page *page, struct vm_area_struct *vma,
+> > +			      int *odirect_sync)
+> > +{
+> > +	struct mm_struct *mm = vma->vm_mm;
+> > +	unsigned long address;
+> > +	pte_t *pte;
+> > +	spinlock_t *ptl;
+> > +	int ret = 0;
+> > +
+> > +	address = vma_address(page, vma);
+> > +	if (address == -EFAULT)
+> > +		goto out;
+> > +
+> > +	pte = page_check_address(page, mm, address, &ptl, 0);
+> > +	if (!pte)
+> > +		goto out;
+> > +
+> > +	if (pte_write(*pte)) {
+> > +		pte_t entry;
+> > +
+> > +		if (page_mapcount(page) != page_count(page)) {
+> > +			*odirect_sync = 0;
+> > +			goto out_unlock;
+> > +		}
+> > +		flush_cache_page(vma, address, pte_pfn(*pte));
+> > +		entry = ptep_clear_flush_notify(vma, address, pte);
+> > +		entry = pte_wrprotect(entry);
+> > +		set_pte_at(mm, address, pte, entry);
+> > +	}
+> > +	ret = 1;
+> > +
+> > +out_unlock:
+> > +	pte_unmap_unlock(pte, ptl);
+> > +out:
+> > +	return ret;
+> > +}
 > 
+> OK.  I think.  We need to find a way of provoking Hugh to look at it.
+
+Yes. Please focus on the page_mapcount != page_count, which is likely
+missing from migrate.c too and in turn page migration currently breaks
+O_DIRECT like fork() is buggy as well as discussed here:
+
+http://marc.info/?l=linux-mm&m=122236799302540&w=2
+http://marc.info/?l=linux-mm&m=122524107519182&w=2
+http://marc.info/?l=linux-mm&m=122581116713932&w=2
+
+The fix implemented in ksm currently handles older kernels (like
+rhel/sles) not current mainline that does
+get_user_pages_fast. get_user_pages_fast is unfixable yet (see my last
+email to Nick above asking for a way to block gup_fast).
+
+The fix proposed by Nick plus my additional fix, should stop the
+corruption in fork the same way the above check fixes it for ksm. But
+todate gup_fast remains unfixable.
+
+> > +static int page_wrprotect_file(struct page *page, int *odirect_sync)
+> > +{
+> > +	struct address_space *mapping;
+> > +	struct prio_tree_iter iter;
+> > +	struct vm_area_struct *vma;
+> > +	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+> > +	int ret = 0;
+> > +
+> > +	mapping = page_mapping(page);
 > 
-> Folkert van Heusden
+> What pins *mapping in memory?  Usually this is done by requiring that
+> the caller has locked the page.  But no such precondition is documented
+> here.
+
+Looks buggy but we never call it from ksm 8). I guess Izik added it
+for completeness when preparing for mainline submission. We've the
+option to get rid of page_wrprotect_file entirely and only implement a
+page_wrprotect_anon! Otherwise we can add a BUG_ON(!PageLocked(page))
+before the above page_mapping to protect against truncate.
+
+> > + * set all the ptes pointed to a page as read only,
+> > + * odirect_sync is set to 0 in case we cannot protect against race with odirect
+> > + * return the number of ptes that were set as read only
+> > + * (ptes that were read only before this function was called are couned as well)
+> > + */
 > 
-> -- 
-> MultiTail cok yonlu kullanimli bir program, loglari okumak, verilen
-> kommandolari yerine getirebilen. Filter, renk verme, merge, 'diff-
-> view', vs.  http://www.vanheusden.com/multitail/
-> ----------------------------------------------------------------------
-> Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+> But it isn't.
 
+What isn't?
 
-Folkert van Heusden
+> I don't understand this odirect_sync thing.  What race?  Please expand
+> this comment to make the function of odirect_sync more understandable.
 
--- 
-MultiTail is een flexibele tool voor het volgen van logfiles en
-uitvoer van commando's. Filteren, van kleur voorzien, mergen,
-'diff-view', etc. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+I should have answered this one with the above 3 links.
+
+> What do you think about making all this new code dependent upon some
+> CONFIG_ switch which CONFIG_KVM can select?
+
+I like that too.
