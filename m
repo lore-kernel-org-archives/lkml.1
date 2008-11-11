@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYKKExV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYKKE4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755199AbYKKExV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYKKExN
+	id S1755266AbYKKE4G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:56:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbYKKEzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:53:13 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:52322 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYKKExN (ORCPT
+	Mon, 10 Nov 2008 23:55:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56324 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754389AbYKKEzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:53:13 -0500
-Message-ID: <49190FA3.3040003@linux.vnet.ibm.com>
-Date: Tue, 11 Nov 2008 10:22:51 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][mm] [PATCH 2/4] Memory cgroup resource counters for hierarchy
- (v2)
-References: <20081108091009.32236.26177.sendpatchset@localhost.localdomain> <20081108091047.32236.22994.sendpatchset@localhost.localdomain> <20081111120427.bbb64a44.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081111120427.bbb64a44.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 10 Nov 2008 23:55:51 -0500
+Date: Mon, 10 Nov 2008 20:54:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Tomas Henzl <thenzl@redhat.com>, gernot.hillier@siemens.com,
+       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com,
+       Thomas Guyot-Sionnest <dermoth@aei.ca>, stable@kernel.org,
+       Matt Domsch <Matt_Domsch@dell.com>
+Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit
+ 94cf6ba11b068b8a8f68a1e88bffb6827e92124b
+Message-Id: <20081110205453.1c0e4f69.akpm@linux-foundation.org>
+In-Reply-To: <1226377257.5014.88.camel@localhost.localdomain>
+References: <48D10E1A.8030804@siemens.com>
+	<48EB6600.9020204@redhat.com>
+	<20081110152006.8982133b.akpm@linux-foundation.org>
+	<1226377257.5014.88.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sat, 08 Nov 2008 14:40:47 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> Add support for building hierarchies in resource counters. Cgroups allows us
->> to build a deep hierarchy, but we currently don't link the resource counters
->> belonging to the memory controller control groups, in the same fashion
->> as the corresponding cgroup entries in the cgroup hierarchy. This patch
->> provides the infrastructure for resource counters that have the same hiearchy
->> as their cgroup counter parts.
->>
->> These set of patches are based on the resource counter hiearchy patches posted
->> by Pavel Emelianov.
->>
->> NOTE: Building hiearchies is expensive, deeper hierarchies imply charging
->> the all the way up to the root. It is known that hiearchies are expensive,
->> so the user needs to be careful and aware of the trade-offs before creating
->> very deep ones.
->>
-> Do you have numbers ?
-> 
+On Mon, 10 Nov 2008 20:20:57 -0800 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-I am getting those numbers, I'll post them soon.
+> Could someone from Adaptec and Dell please verify that this is correct?
+> Mark Salyzyn no longer works there, but the aacraid@adaptec.com address
+> is supposed to still be working.
 
--- 
-	Balbir
+Here is the patch:
+
+
+
+From: Tomas Henzl <thenzl@redhat.com>
+
+A lot of 64bit machines with Adaptec 2200S and 2120S controllers don't
+recognize SCSI disks any more with the patch "fix driver failure with Dell
+PowerEdge Expandable RAID Controller 3/Di", but fail with tons of "aac_srb:
+aac_fib_send failed with status: 8195" instead. This patch disables the
+quirk introduced in the change cited above for those two controllers again.
+
+Signed-off-by: Gernot Hillier <gernot.hillier@siemens.com>
+Signed-off-by: Tomas Henzl <thenzl@redhat.com>
+Cc: <aacraid@adaptec.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Tested-by: Thomas Guyot-Sionnest <dermoth@aei.ca>
+Cc: <stable@kernel.org>		[2.6.27.x, 2.6.26.x, 2.6.25.x]
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/scsi/aacraid/linit.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN drivers/scsi/aacraid/linit.c~aacraid-disable-dell-percraid-quirk-on-adaptec-2200s-and-2120s drivers/scsi/aacraid/linit.c
+--- a/drivers/scsi/aacraid/linit.c~aacraid-disable-dell-percraid-quirk-on-adaptec-2200s-and-2120s
++++ a/drivers/scsi/aacraid/linit.c
+@@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
+ 	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
+-	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
+-	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
++	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
++	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
+ 	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
+ 	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
+ 	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
+_
+
