@@ -1,65 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYKKR1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYKKR2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbYKKR1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYKKR1q
+	id S1755206AbYKKR2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYKKR2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:27:46 -0500
-Received: from styx.suse.cz ([82.119.242.94]:60832 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751852AbYKKR1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:27:45 -0500
-Date: Tue, 11 Nov 2008 18:27:42 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Henrik Rydberg <rydberg@euromail.se>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: Map missing keys to appropriate functions
-In-Reply-To: <491040AA.7010208@euromail.se>
-Message-ID: <alpine.LNX.1.10.0811111826270.24889@jikos.suse.cz>
-References: <491040AA.7010208@euromail.se>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 11 Nov 2008 12:28:14 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57401 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752944AbYKKR2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:28:12 -0500
+Date: Tue, 11 Nov 2008 23:01:53 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [RFC PATCH v3 5/5] sched: activate active load balancing in
+	new idle cpus
+Message-ID: <20081111173153.GW4646@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <20081110183343.562.72751.stgit@drishya.in.ibm.com> <1226411235.7685.1775.camel@twins> <20081111170441.GT4646@dirshya.in.ibm.com> <1226424110.7685.2038.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1226424110.7685.2038.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Henrik Rydberg wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 18:21:50]:
 
-> On macbooks there are specific keys for the user-space functions Expose
-> and Dashboard, which currently has no counterpart in input.h. This patch
-> adds KEY_SCALE and KEY_DASHBOARD, and maps the keyboard accordingly.
-> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-> ---
->  drivers/hid/hid-apple.c |    5 +++--
->  include/linux/input.h   |    2 ++
-[ ... ]
-> diff --git a/include/linux/input.h b/include/linux/input.h
-> index b86fb55..5341e82 100644
-> --- a/include/linux/input.h
-> +++ b/include/linux/input.h
-> @@ -238,6 +238,7 @@ struct input_absinfo {
->  #define KEY_KPEQUAL		117
->  #define KEY_KPPLUSMINUS		118
->  #define KEY_PAUSE		119
-> +#define KEY_SCALE		120	/* AL Compiz Scale (Expose) */
+> On Tue, 2008-11-11 at 22:34 +0530, Vaidyanathan Srinivasan wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 14:47:15]:
+> > 
+> > > On Tue, 2008-11-11 at 00:03 +0530, Vaidyanathan Srinivasan wrote:
+> > > > Active load balancing is a process by which migration thread
+> > > > is woken up on the target CPU in order to pull current
+> > > > running task on another package into this newly idle
+> > > > package.
+> > > > 
+> > > > This method is already in use with normal load_balance(),
+> > > > this patch introduces this method to new idle cpus when
+> > > > sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
+> > > > 
+> > > > This logic provides effective consolidation of short running
+> > > > daemon jobs in a almost idle system
+> > > > 
+> > > > The side effect of this patch may be ping-ponging of tasks
+> > > > if the system is moderately utilised. May need to adjust the
+> > > > iterations before triggering.
+> > > 
+> > > OK, I'm so not getting this patch..
+> > > 
+> > > if normal newly idle balancing fails that means the other runqueue has
+> > > only a single task on it (or some other really stubborn stuff), so then
+> > > you go move that one task that is already running, from one cpu to
+> > > another.
+> > > 
+> > > _why_?
+> > > 
+> > > The only answer I can come up with is that you prefer one cpu's
+> > > idle-ness over another - which makes sense, as you try to get whole
+> > > packages idle.
+> > 
+> > Your answer is correct.  We want to move that one task from a non-idle
+> > cpu to this cpu that is just going to be idle.  
+> > 
+> > This is the same method used to move task in load_balance(), I have
+> > extended it for load_balance_newidle() to make the consolidation
+> > faster at sched_mc=2.
+> > 
+> > 
+> > > But I'm not seeing where that package logic is hidden..
+> > 
+> > 
+> > The package logic comes from find_busiest_group().  If there are no
+> > imbalance, then find_busiest_group() will return NULL.  However when
+> > sched_mc={1,2} then find_busiest_group() will select a group
+> > from which a running task may be pulled to this cpu in order to make
+> > the other package idle.  If there is no opportunity to make a package
+> > idle and if there are no imbalance, then find_busiest_group() will
+> > return NULL and no action will be taken in load_balance_newidle().
+> > 
+> > Under normal task pull operation due to imbalance, there will be more
+> > than one task in the source run queue and move_tasks() will succeed.
+> > ld_moved will be true and the active balance code will not be
+> > triggered.
+> > 
+> > If we enter a scenario where we are moving the only running task from
+> > another cpu, then this should have been suggested by
+> > find_busiest_group's sched_mc balance logic and thus moving that task
+> > will potentially freeup the source package.
+> > 
+> > Thanks for the careful review.
 > 
->  #define KEY_KPCOMMA		121
->  #define KEY_HANGEUL		122
-> @@ -322,6 +323,7 @@ struct input_absinfo {
->  #define KEY_PAUSECD		201
->  #define KEY_PROG3		202
->  #define KEY_PROG4		203
-> +#define KEY_DASHBOARD		204	/* AL Dashboard */
->  #define KEY_SUSPEND		205
->  #define KEY_CLOSE		206	/* AC Close */
->  #define KEY_PLAY		207
+> Ah, right, thanks!
+> 
+> Could you clarify this by adding a comment to this effect right before
+> the added code?
 
-Dmitry, could you please Ack this? Is it OK if I take it through my tree, 
-together with the hid-apple mapping update? Thanks.
+Sure. Will add detailed comments.
 
--- 
-Jiri Kosina
-SUSE Labs
+--Vaidy
+
