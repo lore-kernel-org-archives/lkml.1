@@ -1,80 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbYKKRIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbYKKRIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbYKKRIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:08:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYKKRIE
+	id S1754374AbYKKRIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbYKKRIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:08:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59745 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751458AbYKKRID (ORCPT
+	Tue, 11 Nov 2008 12:08:12 -0500
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:57437 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601AbYKKRIK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:08:03 -0500
-Date: Tue, 11 Nov 2008 09:07:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Darrick J. Wong" <djwong@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH 1/2] Create a DIV_ROUND_CLOSEST macro to do division
- with  rounding
-Message-Id: <20081111090702.94be2a19.akpm@linux-foundation.org>
-In-Reply-To: <20081111110454.073a6d94@hyperion.delvare>
-References: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
-	<20081111110454.073a6d94@hyperion.delvare>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Nov 2008 12:08:10 -0500
+Date: Tue, 11 Nov 2008 22:34:41 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [RFC PATCH v3 5/5] sched: activate active load balancing in
+	new idle cpus
+Message-ID: <20081111170441.GT4646@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <20081110183343.562.72751.stgit@drishya.in.ibm.com> <1226411235.7685.1775.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1226411235.7685.1775.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 11:04:54 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 14:47:15]:
 
-> Hi Darrick,
+> On Tue, 2008-11-11 at 00:03 +0530, Vaidyanathan Srinivasan wrote:
+> > Active load balancing is a process by which migration thread
+> > is woken up on the target CPU in order to pull current
+> > running task on another package into this newly idle
+> > package.
+> > 
+> > This method is already in use with normal load_balance(),
+> > this patch introduces this method to new idle cpus when
+> > sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
+> > 
+> > This logic provides effective consolidation of short running
+> > daemon jobs in a almost idle system
+> > 
+> > The side effect of this patch may be ping-ponging of tasks
+> > if the system is moderately utilised. May need to adjust the
+> > iterations before triggering.
 > 
-> On Mon, 10 Nov 2008 17:01:32 -0800, Darrick J. Wong wrote:
-> > 
-> > Create a helper macro to divide two numbers and round the result to the
-> > nearest whole number.  This is a helper macro for hwmon drivers that
-> > want to convert incoming sysfs values per standard hwmon practice, though
-> > the macro itself can be used by anyone.
-> > 
-> > Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> > ---
-> > 
-> >  include/linux/kernel.h |    6 ++++++
-> >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > index fba141d..fb02266 100644
-> > --- a/include/linux/kernel.h
-> > +++ b/include/linux/kernel.h
-> > @@ -48,6 +48,12 @@ extern const char linux_proc_banner[];
-> >  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
-> >  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
-> >  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
-> > +#define DIV_ROUND_CLOSEST(x, divisor)(			\
-> > +{							\
-> > +	typeof(divisor) __divisor = divisor;		\
-> > +	(((x) + ((__divisor) / 2)) / (__divisor));	\
-> > +}							\
-> > +)
-> >  
-> >  #define _RET_IP_		(unsigned long)__builtin_return_address(0)
-> >  #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
-> > 
+> OK, I'm so not getting this patch..
 > 
-> I don't get why you implement this as a macro rather than an inline
-> function? A function would look much better.
+> if normal newly idle balancing fails that means the other runqueue has
+> only a single task on it (or some other really stubborn stuff), so then
+> you go move that one task that is already running, from one cpu to
+> another.
+> 
+> _why_?
+> 
+> The only answer I can come up with is that you prefer one cpu's
+> idle-ness over another - which makes sense, as you try to get whole
+> packages idle.
 
-The idea is that DIV_ROUND_CLOSEST() can be used with arguments of any
-size (char, short, ...  long long) and will do all the suitable
-promotion and will return a type of the appropriate width and
-signedness.
+Your answer is correct.  We want to move that one task from a non-idle
+cpu to this cpu that is just going to be idle.  
 
-It's not particularly pretty and can hide traps and pitfalls, but the
-other way is tricky as well - it'd need a family of functions and
-there's a risk that programmers will choose the wrong one.
+This is the same method used to move task in load_balance(), I have
+extended it for load_balance_newidle() to make the consolidation
+faster at sched_mc=2.
+
+
+> But I'm not seeing where that package logic is hidden..
+
+
+The package logic comes from find_busiest_group().  If there are no
+imbalance, then find_busiest_group() will return NULL.  However when
+sched_mc={1,2} then find_busiest_group() will select a group
+from which a running task may be pulled to this cpu in order to make
+the other package idle.  If there is no opportunity to make a package
+idle and if there are no imbalance, then find_busiest_group() will
+return NULL and no action will be taken in load_balance_newidle().
+
+Under normal task pull operation due to imbalance, there will be more
+than one task in the source run queue and move_tasks() will succeed.
+ld_moved will be true and the active balance code will not be
+triggered.
+
+If we enter a scenario where we are moving the only running task from
+another cpu, then this should have been suggested by
+find_busiest_group's sched_mc balance logic and thus moving that task
+will potentially freeup the source package.
+
+Thanks for the careful review.
+
+--Vaidy
 
