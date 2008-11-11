@@ -1,124 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYKKR2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYKKR3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbYKKR2X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYKKR2O
+	id S1754806AbYKKR3T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYKKR3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:28:14 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:57401 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752944AbYKKR2M (ORCPT
+	Tue, 11 Nov 2008 12:29:11 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:16369 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594AbYKKR3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:28:12 -0500
-Date: Tue, 11 Nov 2008 23:01:53 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>
-Subject: Re: [RFC PATCH v3 5/5] sched: activate active load balancing in
-	new idle cpus
-Message-ID: <20081111173153.GW4646@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>
-References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <20081110183343.562.72751.stgit@drishya.in.ibm.com> <1226411235.7685.1775.camel@twins> <20081111170441.GT4646@dirshya.in.ibm.com> <1226424110.7685.2038.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1226424110.7685.2038.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 11 Nov 2008 12:29:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:from:to:cc:in-reply-to:references:content-type:
+	organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+	b=I8W8rn4whb29kzws7gOh4vVWWuxzZF8Vkxdi4iNSTjKF9AYmJHzaHYJft328mrKd8
+	Sw/NHm4TytxY4pz0CsqTw==
+Subject: Re: [PATCH] for account_group_exec_runtime(), make sure ->signal
+	can't be freed under rq->lock
+From: Frank Mayhar <fmayhar@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, adobriyan@gmail.com,
+       Doug Chapman <doug.chapman@hp.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081111171659.GB8201@elte.hu>
+References: <20081110143930.GA28275@redhat.com>
+	 <20081111103532.GA8869@elte.hu>
+	 <1226423423.4444.8.camel@bobble.smo.corp.google.com>
+	 <20081111171659.GB8201@elte.hu>
+Content-Type: text/plain
+Organization: Google, Inc.
+Date: Tue, 11 Nov 2008 09:28:02 -0800
+Message-Id: <1226424482.4444.13.camel@bobble.smo.corp.google.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 18:21:50]:
-
-> On Tue, 2008-11-11 at 22:34 +0530, Vaidyanathan Srinivasan wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 14:47:15]:
-> > 
-> > > On Tue, 2008-11-11 at 00:03 +0530, Vaidyanathan Srinivasan wrote:
-> > > > Active load balancing is a process by which migration thread
-> > > > is woken up on the target CPU in order to pull current
-> > > > running task on another package into this newly idle
-> > > > package.
-> > > > 
-> > > > This method is already in use with normal load_balance(),
-> > > > this patch introduces this method to new idle cpus when
-> > > > sched_mc is set to POWERSAVINGS_BALANCE_WAKEUP.
-> > > > 
-> > > > This logic provides effective consolidation of short running
-> > > > daemon jobs in a almost idle system
-> > > > 
-> > > > The side effect of this patch may be ping-ponging of tasks
-> > > > if the system is moderately utilised. May need to adjust the
-> > > > iterations before triggering.
-> > > 
-> > > OK, I'm so not getting this patch..
-> > > 
-> > > if normal newly idle balancing fails that means the other runqueue has
-> > > only a single task on it (or some other really stubborn stuff), so then
-> > > you go move that one task that is already running, from one cpu to
-> > > another.
-> > > 
-> > > _why_?
-> > > 
-> > > The only answer I can come up with is that you prefer one cpu's
-> > > idle-ness over another - which makes sense, as you try to get whole
-> > > packages idle.
-> > 
-> > Your answer is correct.  We want to move that one task from a non-idle
-> > cpu to this cpu that is just going to be idle.  
-> > 
-> > This is the same method used to move task in load_balance(), I have
-> > extended it for load_balance_newidle() to make the consolidation
-> > faster at sched_mc=2.
-> > 
-> > 
-> > > But I'm not seeing where that package logic is hidden..
-> > 
-> > 
-> > The package logic comes from find_busiest_group().  If there are no
-> > imbalance, then find_busiest_group() will return NULL.  However when
-> > sched_mc={1,2} then find_busiest_group() will select a group
-> > from which a running task may be pulled to this cpu in order to make
-> > the other package idle.  If there is no opportunity to make a package
-> > idle and if there are no imbalance, then find_busiest_group() will
-> > return NULL and no action will be taken in load_balance_newidle().
-> > 
-> > Under normal task pull operation due to imbalance, there will be more
-> > than one task in the source run queue and move_tasks() will succeed.
-> > ld_moved will be true and the active balance code will not be
-> > triggered.
-> > 
-> > If we enter a scenario where we are moving the only running task from
-> > another cpu, then this should have been suggested by
-> > find_busiest_group's sched_mc balance logic and thus moving that task
-> > will potentially freeup the source package.
-> > 
-> > Thanks for the careful review.
+On Tue, 2008-11-11 at 18:16 +0100, Ingo Molnar wrote:
+> * Frank Mayhar <fmayhar@google.com> wrote:
 > 
-> Ah, right, thanks!
+> > On Tue, 2008-11-11 at 11:35 +0100, Ingo Molnar wrote:
+> > > * Oleg Nesterov <oleg@redhat.com> wrote:
+> > > > The patch is ugly, but I don't see the better fix for now. Needs the 
+> > > > review from Peter/Ingo.
+> > > this is indeed too ugly, and if we do it we'll get both this ugliness 
+> > > and the CPU loop upstream forever. Frank, if you dont have time to fix 
+> > > this code, then i guess the best thing is to do the full revert that 
+> > > Peter sent.
+> > 
+> > Well, at the moment I'm up to my armpits in alligators.  That said, 
+> > we're going to have to pull in this code regardless, ugliness and 
+> > all, since we're guaranteed to run into the soft lockup bug 
+> > otherwise.  This means that I'll have strong incentive to come back 
+> > and readdress the fix to remove the ugliness and address Peter's 
+> > concerns.  I have no idea when that will be, however.
 > 
-> Could you clarify this by adding a comment to this effect right before
-> the added code?
+> well, we wont leave buggy code in there for .28 - it could trigger 
+> anytime on any SMP box, no matter how narrow the race is.
 
-Sure. Will add detailed comments.
+Sorry, by "we" I meant where I work, not the Linux kernel folks; I guess
+it's as true for you guys as it is for us but I'm certainly not in a
+position to speak for you.
 
---Vaidy
+> I've picked up the spin-wait fix from Oleg, because it fixes the bug. 
+> But we should really fix the fundamental issues here too.
+
+Agreed, in spades.  In fact I plan to track this internally so it
+doesn't fall off my radar.
+-- 
+Frank Mayhar <fmayhar@google.com>
+Google, Inc.
 
