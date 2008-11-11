@@ -1,101 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbYKKBTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYKKBaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbYKKBTh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 20:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbYKKBT3
+	id S1754694AbYKKBaK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 20:30:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYKKB3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 20:19:29 -0500
-Received: from mga09.intel.com ([134.134.136.24]:54534 "EHLO mga09.intel.com"
+	Mon, 10 Nov 2008 20:29:55 -0500
+Received: from mga14.intel.com ([143.182.124.37]:38767 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751488AbYKKBT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 20:19:28 -0500
+	id S1751340AbYKKB3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 20:29:54 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,580,1220252400"; 
-   d="asc'?scan'208";a="358497441"
-Subject: Re: [PATH -mm -v2] Fix a race condtion of oops_in_progress
-From: Huang Ying <ying.huang@intel.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+   d="scan'208";a="74035483"
+Subject: Re: ACPI crash on lid close - SMP race?
+From: Zhang Rui <rui.zhang@intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4918DB8E.2020004@redhat.com>
-References: <490F468B.4040602@redhat.com>
-	 <1225762877.27266.22.camel@yhuang-dev.sh.intel.com>
-	 <20081110163135.616E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <1226365518.6081.90.camel@yhuang-dev.sh.intel.com>
-	 <4918DB8E.2020004@redhat.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-x3e4UxRLJxDORDFfAsEk"
-Date: Tue, 11 Nov 2008 09:19:18 +0800
-Message-Id: <1226366358.6081.96.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <20081110161105.GA2041@srcf.ucam.org>
+References: <20081110161105.GA2041@srcf.ucam.org>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 09:27:14 +0800
+Message-Id: <1226366834.15014.60.camel@rzhang-dt>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+well, there is a bug report for this problem:
+http://bugzilla.kernel.org/show_bug.cgi?id=11259
 
---=-x3e4UxRLJxDORDFfAsEk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+and there are some bug reports for a similar problem (system crashes on
+lid close if _DOS=1, but on a UP platform).
+http://bugzilla.kernel.org/show_bug.cgi?id=6001#c49
 
-On Tue, 2008-11-11 at 09:10 +0800, Chris Snook wrote:
-> Huang Ying wrote:
-> > On Mon, 2008-11-10 at 15:35 +0800, KOSAKI Motohiro wrote:
-> >>>>> As far as I know, barriers don't cause changes to be visible on oth=
-er
-> >>>>> CPUs faster too. It just guarantees corresponding operations after =
-will
-> >>>>> not get executed until that before have finished. And, I don't thin=
-k we
-> >>>>> need make changes to be visible on other CPUs faster.
-> >>>> You're correct that barrier() has no impact on other CPUs.  wmb() an=
-d rmb() do.=20
-> >>>>   If we don't need to make changes visible any faster, what's the po=
-int in using=20
-> >>>> atomic_set()?  It's not any less racy.  atomic_inc() and atomic_dec(=
-) would be=20
-> >>>> less racy, but you're not using those.
-> >>> In default bust_spinlocks() implementation in lib/bust_spinlocks.c,
-> >>> atomic_inc() and atomic_dec_and_test() is used. Which is used by x86
-> >>> too. In some other architecture, atomic_set() is used to replace
-> >>> "oops_in_progress =3D <xxx>". So this patch fixes architectures which=
- use
-> >>> default bust_spinlocks(), other architectures can be fixed by
-> >>> corresponding architecture developers.
-> >> I think Chris is right.
-> >> So, I reccomend to read Documentation/memory-barriers.txt
-> >>
-> >> Almost architecture gurantee atomic_inc cause barrier implicitly.
-> >> but not _all_ architecture.
-> >=20
-> > Yes. atomic_inc() doesn't imply barrier on all architecture. But we
-> > should not add barriers before all atomic_inc(), just ones needed. Can
-> > you figure out which ones in the patch should has barrier added?
->=20
-> You need barriers *after* writes, and *before* reads.  Adding barriers to=
- the=20
-> oops path should be extremely cheap for performance, unless oopsing is a =
-common=20
-> occurrence, in which case we have bigger problems.
+but unfortunately we haven't made any progress in this issue. :(
 
-I just suspect why we need these barriers. Do we have some memory must
-to be written after oops_in_progress? Or some memory must to be read
-before oops_in_progress?
+thanks,
+rui
 
-Best Regards,
-Huang Ying
-
---=-x3e4UxRLJxDORDFfAsEk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkY3ZEACgkQKhFGF+eHlpipfwCcDALIdyyZ4a8sav7qvLuMdhSY
-jO0AoIcfRjCz0OvLOpW/qZexPvordsyT
-=5ahY
------END PGP SIGNATURE-----
-
---=-x3e4UxRLJxDORDFfAsEk--
+On Tue, 2008-11-11 at 00:11 +0800, Matthew Garrett wrote:
+> If the _DOS flag on my HP 2510p is set to 0 (ie, signal OS when screen 
+> notification is requested, don't change automatically) then it'll crash 
+> on random lid open/closes. The trace generally makes little sense and 
+> depends on the kernel version and phase of the moon. I'd ignored this as 
+> firmware brokenness up until lately, but since having _DOS set to 0 is 
+> the only way to get a notification when the display switch key is 
+> pressed on this machine I'd be interested in fixing it properly. 
+> 
+> Unfortunately, I've got no real idea what on earth is going on. The only 
+> clue I've found so far is that booting with maxcpus=1 leaves it working 
+> perfectly. What parts of the ACPI stack could be triggering this?
+> 
 
