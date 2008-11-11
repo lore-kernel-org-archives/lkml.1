@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYKKRRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbYKKRSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754154AbYKKRRh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYKKRR2
+	id S1754568AbYKKRSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYKKRSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:17:28 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50888 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751706AbYKKRR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:17:28 -0500
-Date: Tue, 11 Nov 2008 18:16:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frank Mayhar <fmayhar@google.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, adobriyan@gmail.com,
-       Doug Chapman <doug.chapman@hp.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] for account_group_exec_runtime(), make sure ->signal
-	can't be freed under rq->lock
-Message-ID: <20081111171659.GB8201@elte.hu>
-References: <20081110143930.GA28275@redhat.com> <20081111103532.GA8869@elte.hu> <1226423423.4444.8.camel@bobble.smo.corp.google.com>
+	Tue, 11 Nov 2008 12:18:36 -0500
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:52538 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbYKKRSf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:18:35 -0500
+Date: Tue, 11 Nov 2008 22:45:55 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: vatsa@in.ibm.com, Gregory Haskins <gregory.haskins@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [RFC PATCH v3 3/5] sched: nominate preferred wakeup cpu
+Message-ID: <20081111171555.GU4646@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, vatsa@in.ibm.com,
+	Gregory Haskins <gregory.haskins@gmail.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <20081110183326.562.37718.stgit@drishya.in.ibm.com> <1226411019.7685.1767.camel@twins> <491991BE.9080405@gmail.com> <20081111152126.GF3593@linux.vnet.ibm.com> <1226417174.7685.1898.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1226423423.4444.8.camel@bobble.smo.corp.google.com>
+In-Reply-To: <1226417174.7685.1898.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 16:26:14]:
 
-* Frank Mayhar <fmayhar@google.com> wrote:
-
-> On Tue, 2008-11-11 at 11:35 +0100, Ingo Molnar wrote:
-> > * Oleg Nesterov <oleg@redhat.com> wrote:
-> > > The patch is ugly, but I don't see the better fix for now. Needs the 
-> > > review from Peter/Ingo.
-> > this is indeed too ugly, and if we do it we'll get both this ugliness 
-> > and the CPU loop upstream forever. Frank, if you dont have time to fix 
-> > this code, then i guess the best thing is to do the full revert that 
-> > Peter sent.
+> On Tue, 2008-11-11 at 20:51 +0530, Srivatsa Vaddagiri wrote:
+> > On Tue, Nov 11, 2008 at 09:07:58AM -0500, Gregory Haskins wrote:
+> > > > Would it make sense to place the preferred_wakeup_cpu stuff in the
+> > > > root_domain structure we already have?
+> > > >   
+> > > 
+> > > From the description, this is exactly what the root-domains were created
+> > > to solve.
+> > > 
+> > > Vaidyanathan,  just declare your object in "struct root_domain" and
+> > > initialize it in init_rootdomain() in kernel/sched.c, and then access it
+> > > via rq->rd to take advantage of this infrastructure.  It will
+> > > automatically follow any partitioning that happens to be configured.
+> > 
+> > If I understand correctly, we may want to have more than one preferred
+> > cpu in a given sched domain, taking into account node topology i.e if a
+> > given sched domain encompasses two nodes, then we may like to designate
+> > 2 preferred wakeup_cpu's, one per node. If that is the case, then
+> > root_domain may not be of use here?
 > 
-> Well, at the moment I'm up to my armpits in alligators.  That said, 
-> we're going to have to pull in this code regardless, ugliness and 
-> all, since we're guaranteed to run into the soft lockup bug 
-> otherwise.  This means that I'll have strong incentive to come back 
-> and readdress the fix to remove the ugliness and address Peter's 
-> concerns.  I have no idea when that will be, however.
+> Agreed, in which case this sched_domain_attr stuff might work out better
+> - but I'm not sure I fully get that.. will stare at that a bit more.
 
-well, we wont leave buggy code in there for .28 - it could trigger 
-anytime on any SMP box, no matter how narrow the race is.
+The current code that I posted assumes one preferred_wakeup_cpu per
+partitioned domain.  Moving the variable to root_domain is a good idea
+for this implementation.
 
-I've picked up the spin-wait fix from Oleg, because it fixes the bug. 
-But we should really fix the fundamental issues here too.
+In future when we need one preferred_wakeup_cpu per node per
+partitioned domain, we will need a array for each partitioned domain.
+Having the array in root_domain is better than having it in dattr.
 
-	Ingo
+Depending upon experimental results, we may choose to have only one
+preferred_wakeup_cpu per partitioned domain.  When the system
+utilisation is quite low, it is better to move all movable tasks from
+each node to a selected node (0).  This will freeup all CPUs in other
+nodes.  Just that we need to consider cache hotness and cross-node
+memory access more carefully before crossing a node boundary for
+consolidation.
+
+--Vaidy
+ 
