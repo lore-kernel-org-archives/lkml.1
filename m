@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYKKDFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbYKKDGI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755316AbYKKDFr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 22:05:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbYKKDFV
+	id S1754276AbYKKDGI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 22:06:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbYKKDFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 22:05:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45038 "EHLO
+	Mon, 10 Nov 2008 22:05:23 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41822 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754517AbYKKDFU (ORCPT
+	with ESMTP id S1754516AbYKKDFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 10 Nov 2008 22:05:20 -0500
-Message-Id: <20081111025808.946638585@goodmis.org>
+Message-Id: <20081111030517.017566077@goodmis.org>
+References: <20081111025808.946638585@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 10 Nov 2008 21:58:08 -0500
+Date: Mon, 10 Nov 2008 21:58:09 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 0/2] ftrace updates for 2.6.28
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/2] ftrace: disable tracing on resize
+Content-Disposition: inline; filename=0001-ftrace-disable-tracing-on-resize.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: fix for bug on resize
 
-Stephen and Ingo,
+This patch addresses the bug found here:
 
-The following patches are needed for 2.6.28. The first one solves a bug
-where the resizing of the buffer array was not protected against
-modifications by ftrace.
+ http://bugzilla.kernel.org/show_bug.cgi?id=11996
 
-The second patch solves an issue tha Thomas Gleixner was seeing where
-the tracer would detect the infinite recursion too easily by
-tracing the timer code. This patch prevents the loop from happening
-and still does not lose any trace entries.
+When ftrace converted to the new unified trace buffer, the resizing of
+the buffer was not protected as much as it was originally. If tracing
+is performed while the resize occurs, then the buffer can be corrupted.
 
-The changes caused by these patches are low in risk, but I would
-still like to put them through linux-next before passing them
-off to Linus.
+This patch disables all ftrace buffer modifications before a resize
+takes place.
 
-Note, these changes are based against Linus's mainline and not tip.
-Also note that the branch in this tree is "devel" and not "tip/devel".
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/trace.c |   17 ++++++++++++++++-
+ 1 files changed, 16 insertions(+), 1 deletions(-)
 
-The following patches are in:
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 9f3b478..abfa810 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2676,7 +2676,7 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ {
+ 	unsigned long val;
+ 	char buf[64];
+-	int ret;
++	int ret, cpu;
+ 	struct trace_array *tr = filp->private_data;
+ 
+ 	if (cnt >= sizeof(buf))
+@@ -2704,6 +2704,14 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 		goto out;
+ 	}
+ 
++	/* disable all cpu buffers */
++	for_each_tracing_cpu(cpu) {
++		if (global_trace.data[cpu])
++			atomic_inc(&global_trace.data[cpu]->disabled);
++		if (max_tr.data[cpu])
++			atomic_inc(&max_tr.data[cpu]->disabled);
++	}
++
+ 	if (val != global_trace.entries) {
+ 		ret = ring_buffer_resize(global_trace.buffer, val);
+ 		if (ret < 0) {
+@@ -2735,6 +2743,13 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+ 	if (tracing_disabled)
+ 		cnt = -ENOMEM;
+  out:
++	for_each_tracing_cpu(cpu) {
++		if (global_trace.data[cpu])
++			atomic_dec(&global_trace.data[cpu]->disabled);
++		if (max_tr.data[cpu])
++			atomic_dec(&max_tr.data[cpu]->disabled);
++	}
++
+ 	max_tr.entries = global_trace.entries;
+ 	mutex_unlock(&trace_types_lock);
+ 
+-- 
+1.5.6.5
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-
-    branch: devel
-
-
-Steven Rostedt (2):
-      ftrace: disable tracing on resize
-      ring-buffer: prevent infinite looping on time stamping
-
-----
- kernel/trace/ring_buffer.c |    2 +-
- kernel/trace/trace.c       |   17 ++++++++++++++++-
- 2 files changed, 17 insertions(+), 2 deletions(-)
+-- 
