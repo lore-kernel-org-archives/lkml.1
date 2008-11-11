@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYKKRZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYKKR1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbYKKRZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYKKRZa
+	id S1754530AbYKKR1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYKKR1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:25:30 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:50942 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752238AbYKKRZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:25:29 -0500
-Date: Tue, 11 Nov 2008 09:25:05 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: Q: force_quiescent_state && cpu_online_map
-Message-ID: <20081111172505.GD6736@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com> <20081111143505.GA6923@linux.vnet.ibm.com> <20081111150225.GA10743@linux.vnet.ibm.com> <20081111170327.GB18214@redhat.com>
+	Tue, 11 Nov 2008 12:27:46 -0500
+Received: from styx.suse.cz ([82.119.242.94]:60832 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751852AbYKKR1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:27:45 -0500
+Date: Tue, 11 Nov 2008 18:27:42 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Henrik Rydberg <rydberg@euromail.se>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: Map missing keys to appropriate functions
+In-Reply-To: <491040AA.7010208@euromail.se>
+Message-ID: <alpine.LNX.1.10.0811111826270.24889@jikos.suse.cz>
+References: <491040AA.7010208@euromail.se>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081111170327.GB18214@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 06:03:27PM +0100, Oleg Nesterov wrote:
-> I don't think this matters, but still...
-> 
-> 	force_quiescent_state:
-> 
-> 			 * cpu_online_map is updated by the _cpu_down()
-> 			 * using __stop_machine(). Since we're in irqs disabled
-> 			 * section, __stop_machine() is not exectuting, hence
-> 			 * the cpu_online_map is stable.
-> 			 *
-> 			 * However,  a cpu might have been offlined _just_ before
-> 			 * we disabled irqs while entering here.
-> 			 * And rcu subsystem might not yet have handled the CPU_DEAD
-> 			 * notification, leading to the offlined cpu's bit
-> 			 * being set in the rcp->cpumask.
-> 			 *
-> 			 * Hence cpumask = (rcp->cpumask & cpu_online_map) to prevent
-> 			 * sending smp_reschedule() to an offlined CPU.
-> 			 */
-> 			cpus_and(cpumask, rcp->cpumask, cpu_online_map);
-> 			cpu_clear(rdp->cpu, cpumask);
-> 			for_each_cpu_mask_nr(cpu, cpumask)
-> 				smp_send_reschedule(cpu);
-> 
-> However,
-> 
-> 	// called by __stop_machine take_cpu_down()
-> 	arch/x86/kernel/smpboot.c:cpu_disable_common()
-> 
-> 		/*
-> 		 * HACK:
-> 		 * Allow any queued timer interrupts to get serviced
-> 		 * This is only a temporary solution until we cleanup
-> 		 * fixup_irqs as we do for IA64.
-> 		 */
-> 		local_irq_enable();
-> 		mdelay(1);
-> 		local_irq_disable();
-> 		...
-> 		remove_cpu_from_maps(cpu);
-> 
-> So it is possible to send the ipi to the dying CPU. I know nothing
-> about this low-level irq code, most probably this is harmless. We
-> already did clear_local_APIC(), but I don't understand what it does.
+On Tue, 4 Nov 2008, Henrik Rydberg wrote:
 
-Indeed, some of the things I am doing as part of the hierarchical RCU
-implementation need to be applied to preemptable RCU.  :-/
+> On macbooks there are specific keys for the user-space functions Expose
+> and Dashboard, which currently has no counterpart in input.h. This patch
+> adds KEY_SCALE and KEY_DASHBOARD, and maps the keyboard accordingly.
+> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+> ---
+>  drivers/hid/hid-apple.c |    5 +++--
+>  include/linux/input.h   |    2 ++
+[ ... ]
+> diff --git a/include/linux/input.h b/include/linux/input.h
+> index b86fb55..5341e82 100644
+> --- a/include/linux/input.h
+> +++ b/include/linux/input.h
+> @@ -238,6 +238,7 @@ struct input_absinfo {
+>  #define KEY_KPEQUAL		117
+>  #define KEY_KPPLUSMINUS		118
+>  #define KEY_PAUSE		119
+> +#define KEY_SCALE		120	/* AL Compiz Scale (Expose) */
+> 
+>  #define KEY_KPCOMMA		121
+>  #define KEY_HANGEUL		122
+> @@ -322,6 +323,7 @@ struct input_absinfo {
+>  #define KEY_PAUSECD		201
+>  #define KEY_PROG3		202
+>  #define KEY_PROG4		203
+> +#define KEY_DASHBOARD		204	/* AL Dashboard */
+>  #define KEY_SUSPEND		205
+>  #define KEY_CLOSE		206	/* AC Close */
+>  #define KEY_PLAY		207
 
-							Thanx, Paul
+Dmitry, could you please Ack this? Is it OK if I take it through my tree, 
+together with the hid-apple mapping update? Thanks.
+
+-- 
+Jiri Kosina
+SUSE Labs
