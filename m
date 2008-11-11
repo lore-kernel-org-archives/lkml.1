@@ -1,88 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbYKKRXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYKKRYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbYKKRXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYKKRXp
+	id S1753801AbYKKRYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYKKRYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:23:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58152 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751594AbYKKRXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:23:44 -0500
-Date: Tue, 11 Nov 2008 19:24:21 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jiri Pirko <jpirko@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH] atkbd: cancel delayed work before freeing its structure
-Message-ID: <20081111182421.GA22518@redhat.com>
-References: <20081105153140.25132ca1@psychotron.englab.brq.redhat.com> <20081107154325.GD9368@redhat.com> <20081111145155.GA24881@anvil.corenet.prv> <20081111172050.GC18214@redhat.com> <20081111112741.ZZRA012@mailhub.coreip.homeip.net>
+	Tue, 11 Nov 2008 12:24:25 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:47122 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754565AbYKKRYX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:24:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=qkZFAI1zh/HKtDYmIwNMvYWv+UNennSz5eIWvnRM6iqTN7FYmOyNBGAjimXkVFXy1H
+         drIspC6o175EyQDcEVtAFiXi/Jc+Ymd8liOvygmO73QQAb6nSF1j7KEjBcE3CMAGkLpu
+         p4qXo3PiuT1qPlInhAtXWthV1SMhmpziqmLcI=
+Message-ID: <c62985530811110924p28d3ff7i3ce8ff0d86ca2fb8@mail.gmail.com>
+Date: Tue, 11 Nov 2008 18:24:21 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [RFC v3][PATCH 0/2] Make ftrace able to trace function return
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081111171455.GA8201@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081111112741.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <49191C31.1050402@gmail.com> <20081111094312.GA16496@elte.hu>
+	 <c62985530811110730x13bc92abo891b49934ea2ae6f@mail.gmail.com>
+	 <20081111171455.GA8201@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11, Dmitry Torokhov wrote:
+2008/11/11 Ingo Molnar <mingo@elte.hu>:
 >
-> On Tue, Nov 11, 2008 at 06:20:50PM +0100, Oleg Nesterov wrote:
-> > On 11/11, Dmitry Torokhov wrote:
-> > >
-> > But let me repeat, if queue_delayed_work() fails becuase this work is
-> > already queued we (in this particular case) need mb(), not wmb(). Or
-> > atkbd_schedule_event_work() can miss a bit in ->event_mask. So I think
-> > this wmb() is misleading.
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 >
-> Could you please explain why wmb() is not enough and full mb() is
-> needed in this case? I thought that if write happens before we decide
-> whether to schedule event_work or not it would be enough.
-
-Yes, but how we decide whether to schedule or not? Let's suppose we do
-this without mb(). say, queue_work() starts with
-
-	if (test_bit(WORK_STRUCT_PENDING)) // no barrier semantics
-		return;
-
-In that case the code in atkbd_schedule_event_work()
-
-	set_bit(event_bit, &atkbd->event_mask);
-	wmb();
-	schedule_delayed_work(atkbd->event_work);
-
-can be reordered (if ->event_work is queued) as
-
-	schedule_delayed_work(atkbd->event_work);
-	set_bit(event_bit, &atkbd->event_mask);
-
-wmb() can only serialize STOREs, not STORE vs LOAD. The result of
-set_bit() can be "delayed".
-
-Now, run_workqueue() does
-
-	// again, no barrier semantics, but this doesn't matter
-	clear_bit(WORK_STRUCT_PENDING);
-
-	call atkbd_schedule_event_work()
-		if (test_and_clear_bit(atkbd->event_mask))
-			 atkbd_set_xxx();
-
-and we can miss an event.
-
-> > And unneeded because queue_work() implies mb(),
-> > but this is not really documented.
+>> >  2) i cleaned up the arch/x86/Kconfig impact:
+>> >
+>> >      f1c4be5: tracing, x86: clean up FUNCTION_RET_TRACER Kconfig
+>>
+>>
+>> Ok.
+>> And concerning the constraint fixed in assembly. That's strange my
+>> compiler didn't even warn me about it.
 >
-> It would be great if we can get it documented and then i'd drop *mb()
-> from atkbd.
+> yep, that's common with assembly constraints - often the bugs will
+> only trigger with certain compilers and with certain config options.
+> Generally we've got enough variations of these parameters in -tip
+> testing (randconfig plus multiple tools versions) to reliably trigger
+> such issues.
 
-It is not easy document the current behaviour. Actually, perhaps
-run_workqueue() needs smp_mb__after_clear_bit()...
 
-But for this particular case this doesn't matter. Note that
-atkbd_event_work() does test_and_clear_bit(), it can't be re-ordered
-with clear_bit(WORK_STRUCT_PENDING), otherwise even mb() can't help.
+I love -tip testing :-)
 
-Oleg.
 
+>> > So lets use "function_full" and "function" tracing perhaps? The
+>> > "full" tracer is what traces both entry and exit points, and
+>> > establishes full function-call timings/costs. The "function"
+>> > tracer is more lightweight and traces function entry events.
+>>
+>> Right. I first chose function_return but it was the largest tracer
+>> name and so raised a bug that has been corrected since. And I kept
+>> this confusing name.
+>>
+>> I'm not sure function_full is really the good one because it's not
+>> really a full version of the function tracer. It doesn't do the same
+>> thing: when you look into a trace done by the function tracer, the
+>> functions appear in order of their call whereas with the function
+>> return tracer, they appear in the order of their return which is not
+>> the same. The effect is not the same. Why not function_return or
+>> something like that?
+>
+> at the risk of bikeshed-painting this issue too much, the problem with
+> function_return is that it has little meaning to actual users and even
+> to developers. What does the "return" mean? We know what it means,
+> because we know that opposed to function entry we'll also capture
+> function returns, and hence be able to do full function call tracing.
+>
+> so function_full i thought to conduct this aspect of it better. But
+> suggestions are welcome.
+
+
+Ok. Let's change into function_full, after all, I think that this tool
+will be mostly used  with a parsing pass
+of its traces with a script to produce statistics and hierarchical
+representation like does draw_functrace.py
+After that, the order of apparition of the functions in the trace will
+not really matter.
