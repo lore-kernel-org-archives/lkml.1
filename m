@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYKKBuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYKKCCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbYKKBuo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 20:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYKKBuf
+	id S1754639AbYKKCCV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 21:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753473AbYKKCCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 20:50:35 -0500
-Received: from gate.crashing.org ([63.228.1.57]:40281 "EHLO gate.crashing.org"
+	Mon, 10 Nov 2008 21:02:07 -0500
+Received: from mga09.intel.com ([134.134.136.24]:5352 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751488AbYKKBue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 20:50:34 -0500
-Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       James Cloos <cloos@jhcloos.com>,
-       Paul Collins <paul@burly.ondioline.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <je1vxji1br.fsf@sykes.suse.de>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	 <wnN9HICUAgP.A._d.f5zFJB@chimera> <1226295985.7731.7.camel@pasglop>
-	 <jetzafiad4.fsf@sykes.suse.de> <1226353979.7530.8.camel@pasglop>
-	 <jefxlzi2x0.fsf@sykes.suse.de> <1226360094.7530.18.camel@pasglop>
-	 <je1vxji1br.fsf@sykes.suse.de>
+	id S1752330AbYKKCCG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 21:02:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,580,1220252400"; 
+   d="scan'208";a="358508122"
+Subject: Re: ACPI crash on lid close - SMP race?
+From: Zhang Rui <rui.zhang@intel.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081111013359.GA11364@srcf.ucam.org>
+References: <20081110161105.GA2041@srcf.ucam.org>
+	 <1226366834.15014.60.camel@rzhang-dt>
+	 <20081111013359.GA11364@srcf.ucam.org>
 Content-Type: text/plain
-Date: Tue, 11 Nov 2008 12:49:34 +1100
-Message-Id: <1226368174.7530.47.camel@pasglop>
+Date: Tue, 11 Nov 2008 09:59:38 +0800
+Message-Id: <1226368778.15014.73.camel@rzhang-dt>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-11 at 00:54 +0100, Andreas Schwab wrote:
+On Tue, 2008-11-11 at 09:33 +0800, Matthew Garrett wrote:
+> On Tue, Nov 11, 2008 at 09:27:14AM +0800, Zhang Rui wrote:
+> > well, there is a bug report for this problem:
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11259
 > 
-> > Can you describe your problem more precisely ?
+> I'll give the noirqbalance case a go.
 > 
-> It crashes during suspend (after the console was switched away from X),
-> but I can only see a frame buffer with apparently random contents when
-> it happens.  When suspend works then those random frame buffer contents
-> are only briefly visible before the screen is cleared.
+> > and there are some bug reports for a similar problem (system crashes on
+> > lid close if _DOS=1, but on a UP platform).
+> > http://bugzilla.kernel.org/show_bug.cgi?id=6001#c49
+> 
+> I think the _DOS=1 case is somewhat different. There you'd expect 
+> significantly more system BIOS code to be run, and that's going to stand 
+> a much higher chance of causing unfortunate interactions with however 
+> Linux has set up the graphics.
+> 
+oops. sorry, I mean system crashes on lid close if _DOS=0 on some UP
+platform.
 
-Does it actually switches away from X ?
-
-IE. You see the console before the crap on console or not ?
-
-I've seen what you describe happening when doing snooze -f (direct
-kernel ioctl) straight from within X. It seems to me that the problem
-was that for some reason it didn't switch the console, which would
-definitely make it crash. I need to double check what's up, it's
-possible that the kernel fails to switch it properly or fails to wait
-for X to ack the switch.
-
-In any case, I doesn't seem to be directly related to those radeonfb
-changes, though a clash with X like that is indeed more likely to
-actually happen if radeonfb relies more heavily on acceleration.
-
-I'll have a look later today at the console switch from X in the kernel
-see if it's been broken in a way or another.
-
-Note: I just did some tests using both echo "mem" >/sys/power/state and
-snooze -f and it worked fine. IE, the console switch away from X worked.
-So while I think I observed your problem once, I also cannot reproduce
-it now.
-
-I wonder if there's a race condition in the VT switch. It's possible
-that it could be yet another case of X whacking the chip after it has
-effectively relinguished control of the VT to the kernel, or it could be
-a kernel race.
-
-Cheers,
-Ben.
+thanks,
+rui
 
 
