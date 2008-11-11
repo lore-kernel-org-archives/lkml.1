@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYKKAXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbYKKA1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753860AbYKKAXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 19:23:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYKKAWw
+	id S1754814AbYKKA1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 19:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbYKKA1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 19:22:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49217 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752226AbYKKAWv (ORCPT
+	Mon, 10 Nov 2008 19:27:00 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:39600 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbYKKA07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 19:22:51 -0500
-Date: Mon, 10 Nov 2008 16:22:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: djwong@us.ibm.com, khali@linux-fr.org, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH 3/5] adt7470: Check input range when sysfs files are
- written
-Message-Id: <20081110162214.b8202b60.akpm@linux-foundation.org>
-In-Reply-To: <20081107185636.13022.54109.stgit@elm3a70.beaverton.ibm.com>
-References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com>
-	<20081107185636.13022.54109.stgit@elm3a70.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 19:26:59 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Mon, 10 Nov 2008 19:26:36 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mathieu.desnoyers@polymtl.ca, torvalds@linux-foundation.org,
+       rmk+lkml@arm.linux.org.uk, dhowells@redhat.com, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
+       davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v2] clarify usage expectations for cnt32_to_63()
+In-reply-to: <20081110152221.64948d23.akpm@linux-foundation.org>
+Message-id: <alpine.LFD.2.00.0811101917450.13034@xanadu.home>
+References: <9405.1226101315@redhat.com>
+ <20081108001555.GE18378@flint.arm.linux.org.uk>
+ <alpine.LFD.2.00.0811080939180.13034@xanadu.home>
+ <alpine.LFD.2.00.0811081746060.13034@xanadu.home>
+ <20081109022549.GA18508@Krystal>
+ <alpine.LFD.2.00.0811082143320.13034@xanadu.home>
+ <alpine.LFD.2.00.0811082356090.13034@xanadu.home>
+ <alpine.LFD.2.00.0811090015570.13034@xanadu.home>
+ <20081109064855.GA23782@Krystal>
+ <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
+ <20081109162250.GB10181@Krystal>
+ <alpine.LFD.2.00.0811092304300.13034@xanadu.home>
+ <20081109204256.89ab7925.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0811101627510.13034@xanadu.home>
+ <20081110135850.0d620f3c.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0811101811130.13034@xanadu.home>
+ <20081110152221.64948d23.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 07 Nov 2008 10:56:36 -0800
-"Darrick J. Wong" <djwong@us.ibm.com> wrote:
+On Mon, 10 Nov 2008, Andrew Morton wrote:
 
-> Subject: [PATCH 3/5] adt7470: Check input range when sysfs files are written
+> On Mon, 10 Nov 2008 18:15:32 -0500 (EST)
+> Nicolas Pitre <nico@cam.org> wrote:
 > 
-> Implement correct rounding and range checking for adt7470.
+> > On Mon, 10 Nov 2008, Andrew Morton wrote:
+> > 
+> > > This references its second argument twice, which can cause correctness
+> > > or efficiency problems.
+> > > 
+> > > There is no reason that this had to be implemented in cpp. 
+> > > Implementing it in C will fix the above problem.
+> > 
+> > No, it won't, for correctness and efficiency reasons.
+> > 
+> > And I've explained why already.
 > 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> I'd be very surprised if you've really found a case where a macro is
+> faster than an inlined function.  I don't think that has happened
+> before.
 
-When writing changelogs, please explain _why_ a change was made, as
-well as what the change does.
+That hasn't anything to do with "a macro is faster" at all.  It's all 
+about the order used to evaluate provided arguments.  And the first one 
+might be anything like a memory value, an IO operation, an expression, 
+etc.  An inline function would work correctly with pointers only and 
+therefore totally break apart on x86 for example.
 
-Coz I'm sitting here wondering if we need this in 2.6.28 and I don't
-have all the information.
 
-Looking at it, I guess it does change the userspace interface in minor
-ways, so we should merge it into 2.6.28.  Ditto
-adt7473-check-inputs-from-sysfs-writes.patch.  Agree?
-
+Nicolas
