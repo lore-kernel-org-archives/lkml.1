@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752658AbYKKTSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752418AbYKKTTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752658AbYKKTSS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 14:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYKKTSF
+	id S1752418AbYKKTTJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 14:19:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYKKTSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 14:18:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40446 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751006AbYKKTSD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 14:18:03 -0500
-Date: Tue, 11 Nov 2008 11:18:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: rc4-mmotm1110 - Another build error
-Message-Id: <20081111111800.a0671f1e.akpm@linux-foundation.org>
-In-Reply-To: <7421.1226430297@turing-police.cc.vt.edu>
-References: <38231.1226373633@turing-police.cc.vt.edu>
-	<20081110194353.1a1f616e.akpm@linux-foundation.org>
-	<7421.1226430297@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Nov 2008 14:18:55 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59621 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751367AbYKKTSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 14:18:54 -0500
+Message-ID: <4919DA7F.5090106@redhat.com>
+Date: Tue, 11 Nov 2008 21:18:23 +0200
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
+       chrisw@redhat.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<20081111103051.979aea57.akpm@linux-foundation.org>	<4919D370.7080301@redhat.com> <20081111111110.decc0f06.akpm@linux-foundation.org>
+In-Reply-To: <20081111111110.decc0f06.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 14:04:57 -0500
-Valdis.Kletnieks@vt.edu wrote:
-
-> On Mon, 10 Nov 2008 19:43:53 PST, Andrew Morton said:
-> > On Mon, 10 Nov 2008 22:20:33 -0500 Valdis.Kletnieks@vt.edu wrote:
-> > 
-> > > gcc --version says:
-> > > gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
-> > > 
-> > > ka-blam number 2:
-> > > 
-> > >   CC      kernel/audit.o
-> > > In file included from include/net/dst.h:15,
-> > >                  from include/net/sock.h:57,
-> > >                  from kernel/audit.c:54:
-> > > include/net/neighbour.h:114: error: braced-group within expression allowed 
-> only inside a function
-> > > make[1]: *** [kernel/audit.o] Error 1
-> > > 
-> > > I'm placing bets on patches/align-avoid-evaluating-its-argument-twice.patch
-> > > 
-> > > Yep, revert that patch, and audit.o compiles again.
-> > > 
-> > 
-> > I hadn't got around to testing that one yet.
-> > 
-> > So ug.  ALIGN() is used in array sizing and hence has to be a
-> > compile-time thing.  But ALIGN(foo, bar()) will call bar() twice.
-> > 
-> > Now how do we fix that?
-> 
-> Can we abuse __builtin_constant_p somehow?  Maybe we can make a definition
-> something like:
-> 
-> #define __align_mask(x,mask) (
-> 	__builtin_constant_p(mask) ? {
-> 		(((x)+(mask))&~(mask)) :
-> 		{              \
-> 		      typeof(mask) __mask = mask;             \
-> 		       (((x) + __mask) & ~__mask);             \
-> 		}
-> 	})
-> 
-> If it's a compile-time constant, it's safe to evaluate mask twice.
-
-This seems to compile:
-
-int y;
-char x[__builtin_constant_p(1) ? 42 : y + 1];
-
-so yes, that might work.  For this gcc version.  However I suspect that
-it would blow up on us.  We keep on having problems with the
-__builtin_constant_p() in kmalloc() doing wrong things (with gcc-3.2.x,
-iirc).
-
-It'd be worth trying though.
-
-DIV_ROUND_UP() and roundup() are busted too.
+Andrew Morton wrote:
+> On Tue, 11 Nov 2008 20:48:16 +0200
+> Avi Kivity <avi@redhat.com> wrote:
+>
+>   
+>> Andrew Morton wrote:
+>>     
+>>> The whole approach seems wrong to me.  The kernel lost track of these
+>>> pages and then we run around post-facto trying to fix that up again. 
+>>> Please explain (for the changelog) why the kernel cannot get this right
+>>> via the usual sharing, refcounting and COWing approaches.
+>>>   
+>>>       
+>> For kvm, the kernel never knew those pages were shared.  They are loaded 
+>> from independent (possibly compressed and encrypted) disk images.  These 
+>> images are different; but some pages happen to be the same because they 
+>> came from the same installation media.
+>>     
+>
+> What userspace-only changes could fix this?  Identify the common data,
+> write it to a flat file and mmap it, something like that?
+>
+>   
+>> For OpenVZ the situation is less clear, but if you allow users to 
+>> independently upgrade their chroots you will eventually arrive at the 
+>> same scenario (unless of course you apply the same merging strategy at 
+>> the filesystem level).
+>>     
+>
+> hm.
+>
+> There has been the occasional discussion about idenfifying all-zeroes
+> pages and scavenging them, repointing them at the zero page.  Could
+> this infrastructure be used for that?  (And how much would we gain from
+> it?)
+>
+> [I'm looking for reasons why this is more than a muck-up-the-vm-for-kvm
+> thing here ;) ]
+KSM is separate driver , it doesn't change anything in the VM but adding 
+two helper functions.
