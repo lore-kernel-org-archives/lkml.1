@@ -1,99 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYKKMmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbYKKMns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbYKKMmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 07:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbYKKMmH
+	id S1756238AbYKKMns (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbYKKMnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 07:42:07 -0500
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:43880 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755207AbYKKMmE (ORCPT
+	Tue, 11 Nov 2008 07:43:39 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:53232 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754349AbYKKMni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 07:42:04 -0500
-Date: Tue, 11 Nov 2008 13:42:01 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
-	chanes in stop_machine
-Message-ID: <20081111124201.GA9459@osiris.boeblingen.de.ibm.com>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com>
+	Tue, 11 Nov 2008 07:43:38 -0500
+Date: Tue, 11 Nov 2008 18:13:23 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Balbir Singh <balbir@in.ibm.com>
+Subject: sched: removed unneeded defintion
+Message-ID: <20081111124323.GA4684@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111113134.GA5653@osiris.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 12:31:34PM +0100, Heiko Carstens wrote:
-> On Tue, Nov 11, 2008 at 11:52:14AM +0100, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > However, it is reproducible by doing
-> > > 
-> > > # echo core > /sys/power/pm_test
-> > > 
-> > > and repeating
-> > > 
-> > > # echo disk > /sys/power/state
-> > > 
-> > > for a couple of times, in which case the last two lines printed to the console
-> > > before a (solid) hang are:
-> > > 
-> > > SMP alternatives: switching to SMP code
-> > > Booting processor 1 APIC 0x1 ip 0x6000
-> > > 
-> > > So, it evidently fails while re-enabling the non-boot CPU and not 
-> > > during disabling it as I thought before.
-> > > 
-> > > With commit c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc reverted the 
-> > > issue is not reproducible any more.
-> > 
-> > [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
-> > 
-> > Seems like the new kernel/stop_machine.c logic has a race for the test 
-> > sequence above. (Below is the bisected commit again, maybe the race is 
-> > visible via email review as well.)
-> 
-> FWIW, I tried to reproduce this on s390 and got the following:
-> 
-> A process that would do nothing but onlining/offlining cpus would get
-> stuck after a while:
-> 
->  0 schedule+842 [0x342522]
->  1 schedule_timeout+200 [0x342ec4]
->  2 wait_for_common+362 [0x341fd6]
->  3 wait_for_completion+54 [0x342146]
->  4 __synchronize_sched+80 [0x81670]
->  5 cpu_down+172 [0x33c030]
->  6 store_online+96 [0x33c488]
->  7 sysdev_store+52 [0x1bda84]
->  8 sysfs_write_file+242 [0x1350ba]
->  9 vfs_write+176 [0xd2028]
-> 10 sys_write+82 [0xd21ea]
-> 11 sysc_noemu+16 [0x269d8]
-> 
-> All cpus are in cpu_idle and no other task in state TASK_INTERRUPTIBLE
-> or TASK_UNINTERRUPTIBLE. However it would continue to work as soon as
-> I login into the system or generate a console interrupt.
-> I'm going to look into the dump and see if I can figure out what is
-> broken here.
-> Dunno if it is the same bug or something else.
+sched: removed unneeded defintion
 
-[Cc:-ed Steven and Paul, since this backtrace seems to be RCU specific]
+This function no longer exists, so remove the defintion.
 
-Steven, Paul, any idea what could cause the hang? I think I would
-get lost in the RCU code...
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+
+---
+ include/linux/sched.h |    2 --
+ 1 file changed, 2 deletions(-)
+
+Index: linux-2.6-tip/include/linux/sched.h
+===================================================================
+--- linux-2.6-tip.orig/include/linux/sched.h	2008-11-10 23:17:53.000000000 +0530
++++ linux-2.6-tip/include/linux/sched.h	2008-11-10 23:21:45.000000000 +0530
+@@ -258,8 +258,6 @@ static inline int select_nohz_load_balan
+ }
+ #endif
+ 
+-extern unsigned long rt_needs_cpu(int cpu);
+-
+ /*
+  * Only dump TASK_* tasks. (0 for all tasks)
+  */
+
+-- 
+regards,
+Dhaval
