@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbYKKL6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbYKKMFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbYKKL6a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 06:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbYKKL6W
+	id S1755959AbYKKMFw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:05:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYKKMFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 06:58:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47131 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755451AbYKKL6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 06:58:21 -0500
-Date: Tue, 11 Nov 2008 13:58:44 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frank Mayhar <fmayhar@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, adobriyan@gmail.com,
-       Doug Chapman <doug.chapman@hp.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] for account_group_exec_runtime(), make sure ->signal
-	can't be freed under rq->lock
-Message-ID: <20081111125844.GB3503@redhat.com>
-References: <20081110143930.GA28275@redhat.com> <20081111103532.GA8869@elte.hu>
-MIME-Version: 1.0
+	Tue, 11 Nov 2008 07:05:43 -0500
+Received: from mailrelay008.isp.belgacom.be ([195.238.6.174]:18849 "EHLO
+	mailrelay008.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755465AbYKKMFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 07:05:42 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhAFABMEGUlR9dQn/2dsb2JhbACBdss6g1c
+Date: Tue, 11 Nov 2008 13:05:39 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] drivers/char/nvram.c
+Message-ID: <20081111120539.GI2690@infomag.infomag.iguana.be>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111103532.GA8869@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11, Ingo Molnar wrote:
->
-> * Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > The patch is ugly, but I don't see the better fix for now. Needs the
-> > review from Peter/Ingo.
->
-> this is indeed too ugly,
+Hi All,
 
-Agreed. It was "unless we find another fix for 2.6.28".
+the next 2 patches update the nvram driver so that:
+* it's in line with our coding style guidelines
+* and that we convert the PRINT_PROC macro's to the seq_file system.
 
-> Regarding this teardown bug. Stupid question: why cannot the signal
-> structure live as long as the last user is around? It's a tiny amount
-> of RAM.
+Please review the patches and sent me comments.
+I someone could also test this on an ATARI architecture/platform:
+please lett me know if it works.
 
-Well, release_task()->__exit_signal() clears/frees ->signal exactly
-because it doesn't (must not) have users any longer. And we have the
-code which checks ->signal != NULL to know if the task was already
-released or not.
-
-Now scheduler wants to play with ->signal. We can change the code so
-that we don't actually free it until the task does the last schedule.
-Say, we can free it __from put_task_struct(). But this means we need
-another counter in signal_struct (signal_struct->count can't work).
-And, until we change the code which checks ->signal != NULL, we need
-another pointer in task_struct.
-
-
-Perhaps this makes sense regardless of this bug, but I don't think
-this is 2.6.28 material anyway.
-
-Oleg.
+Thanks in advance,
+Wim.
 
