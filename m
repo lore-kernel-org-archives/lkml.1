@@ -1,104 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbYKKJh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbYKKJiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755703AbYKKJh2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 04:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbYKKJhQ
+	id S1755899AbYKKJiS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 04:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYKKJiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 04:37:16 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50608 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752593AbYKKJhP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 04:37:15 -0500
-Date: Tue, 11 Nov 2008 10:35:40 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081111093540.GT26778@kernel.dk>
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua> <20081110173504.GL26778@kernel.dk> <49187D05.9050407@telenet.dn.ua> <x491vxjqmg0.fsf@segfault.boston.devel.redhat.com> <20081111093426.GS26778@kernel.dk>
+	Tue, 11 Nov 2008 04:38:08 -0500
+Received: from hope.ime.usp.br ([143.107.45.8]:36838 "HELO hope.ime.usp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752180AbYKKJiG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 04:38:06 -0500
+Date: Tue, 11 Nov 2008 07:37:58 -0200
+From: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: Pavel Machek <pavel@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       yakui.zhao@intel.com, bugme-daemon@bugzilla.kernel.org,
+       linux-pm@lists.linux-foundation.org, rjw@sisk.pl,
+       bugzilla@lists.sourceforge.net, rui.zhang@intel.com, rbrito@ime.usp.br
+Subject: Re: [Bugme-new] [Bug 11717] New: Pressing suspend button suspends, but does not wakes up
+Message-ID: <20081111093758.GA18786@ime.usp.br>
+References: <20081106194724.GB15366@ime.usp.br> <20081107014535.GA19201@ime.usp.br> <1226044855.4913f5b7f2f45@webmail.ime.usp.br> <20081108075008.GA8177@ime.usp.br> <dd18b0c30811080020i23418742xc6388a5942456566@mail.gmail.com> <20081109024514.GA11744@ime.usp.br> <20081109113332.GD6094@elf.ucw.cz> <dd18b0c30811092117mc7bd310kaac33f5b1ff0a61d@mail.gmail.com> <20081110074516.GB707@atrey.karlin.mff.cuni.cz> <dd18b0c30811100700y7922ce37y8ba39ba7b43031b3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081111093426.GS26778@kernel.dk>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <dd18b0c30811100700y7922ce37y8ba39ba7b43031b3@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11 2008, Jens Axboe wrote:
-> On Mon, Nov 10 2008, Jeff Moyer wrote:
-> > "Vitaly V. Bursov" <vitalyb@telenet.dn.ua> writes:
-> > 
-> > > Jens Axboe wrote:
-> > >> On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
-> > >>> Jens Axboe wrote:
-> > >>>> On Mon, Nov 10 2008, Jeff Moyer wrote:
-> > >>>>> Jens Axboe <jens.axboe@oracle.com> writes:
-> > >>>>>
-> > >>>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
-> > >>>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
-> > >>>>> you to try this patch is that nfsd may be farming off the I/O requests
-> > >>>>> to different threads which are then performing interleaved I/O.  The
-> > >>>>> above patch tries to detect this and allow cooperating processes to get
-> > >>>>> disk time instead of waiting for the idle timeout.
-> > >>>> Precisely :-)
-> > >>>>
-> > >>>> The only reason I haven't merged it yet is because of worry of extra
-> > >>>> cost, but I'll throw some SSD love at it and see how it turns out.
-> > >>>>
-> > >>> Sorry, but I get "oops" same moment nfs read transfer starts.
-> > >>> I can get directory list via nfs, read files locally (not
-> > >>> carefully tested, though)
-> > >>>
-> > >>> Dumps captured via netconsole, so these may not be completely accurate
-> > >>> but hopefully will give a hint.
-> > >> 
-> > >> Interesting, strange how that hasn't triggered here. Or perhaps the
-> > >> version that Jeff posted isn't the one I tried. Anyway, search for:
-> > >> 
-> > >>         RB_CLEAR_NODE(&cfqq->rb_node);
-> > >> 
-> > >> and add a
-> > >> 
-> > >>         RB_CLEAR_NODE(&cfqq->prio_node);
-> > >> 
-> > >> just below that. It's in cfq_find_alloc_queue(). I think that should fix
-> > >> it.
-> > >> 
-> > >
-> > > Same problem.
-> > >
-> > > I did make clean; make -j3; sync; on (2 times) patched kernel and it went OK
-> > > but It won't boot anymore with cfq with same error...
-> > >
-> > > Switching cfq io scheduler at runtime (booting with "as") appears to work with
-> > > two parallel local dd reads.
-> > 
-> > Strange, I can't reproduce a failure.  I'll keep trying.  For now, these
-> > are the results I see:
-> > 
-> > [root@maiden ~]# mount megadeth:/export/cciss /mnt/megadeth/
-> > [root@maiden ~]# dd if=/mnt/megadeth/file1 of=/dev/null bs=1M
-> > 1024+0 records in
-> > 1024+0 records out
-> > 1073741824 bytes (1.1 GB) copied, 26.8128 s, 40.0 MB/s
-> > [root@maiden ~]# umount /mnt/megadeth/
-> > [root@maiden ~]# mount megadeth:/export/cciss /mnt/megadeth/
-> > [root@maiden ~]# dd if=/mnt/megadeth/file1 of=/dev/null bs=1M
-> > 1024+0 records in
-> > 1024+0 records out
-> > 1073741824 bytes (1.1 GB) copied, 23.7025 s, 45.3 MB/s
-> > [root@maiden ~]# umount /mnt/megadeth/
-> > 
-> > Here is the patch, with the suggestion from Jens to switch the cfqq to
-> > the right priority tree when the priority is changed.
-> 
-> I don't see the issue here either. Vitaly, are you using any openvz
-> kernel patches? IIRC, they patch cfq so it could just be that your cfq
-> version is incompatible with Jeff's patch.
+Hi, all.
 
-Heh, got it to trigger about 3 seconds after sending that email! I'll
-look more into it.
+On Nov 10 2008, Justin Mattock wrote:
+> using the manual(echo mem > /sys/power/state)
+> approach is not so good though
+> i.g. black screen when waking up
+> for a few seconds, then a automatic reboot.
+
+To answer Zhang Rui's question, what I get is an approximation of what
+Justin's posted here.
+
+Zhang Rui wrote:
+> let's focus on the suspend/resume problem in this bug entry.
+> So please stop using suspend button or lid button to do suspend/resume
+> test.
+> You can use "echo mem > /sys/power/state" to suspend and use power button
+> to resume to see how suspend/resume works on your laptop.
+
+What I get when I use this is that the notebook goes to suspend state and
+the only button that it has (power button) has a blue light that starts
+blinking.
+
+When I press the power button, as per your instructions, the machine powers
+itself off and then, suddenly, it powers itself on again! (yes, that's
+strange).
+
+I'm filming this so that you can see for yourselves. The movie is at
+<http://www.ime.usp.br/~rbrito/linux/notebook-02.mp4>.
+
+
+Thanks for all your help, Rogério Brito.
 
 -- 
-Jens Axboe
-
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
