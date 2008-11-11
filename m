@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047AbYKKTFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbYKKTIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752047AbYKKTFm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 14:05:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYKKTFe
+	id S1751869AbYKKTIV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 14:08:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYKKTIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 14:05:34 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41150 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbYKKTFd (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 14:05:33 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+	Tue, 11 Nov 2008 14:08:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42353 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751172AbYKKTIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 14:08:12 -0500
+Message-ID: <4919D7DE.4000508@redhat.com>
+Date: Tue, 11 Nov 2008 21:07:10 +0200
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: rc4-mmotm1110 - Another build error
-In-Reply-To: Your message of "Mon, 10 Nov 2008 19:43:53 PST."
-             <20081110194353.1a1f616e.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <38231.1226373633@turing-police.cc.vt.edu>
-            <20081110194353.1a1f616e.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1226430296_3887P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <20081111103051.979aea57.akpm@linux-foundation.org>
+In-Reply-To: <20081111103051.979aea57.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 11 Nov 2008 14:04:57 -0500
-Message-ID: <7421.1226430297@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1226430296_3887P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <7415.1226430296.1@turing-police.cc.vt.edu>
+Andrew Morton wrote:
+> On Tue, 11 Nov 2008 15:21:37 +0200 Izik Eidus <ieidus@redhat.com> wrote:
+>
+>   
+>> KSM is a linux driver that allows dynamicly sharing identical memory pages
+>> between one or more processes.
+>>
+>> unlike tradtional page sharing that is made at the allocation of the
+>> memory, ksm do it dynamicly after the memory was created.
+>> Memory is periodically scanned; identical pages are identified and merged.
+>> the sharing is unnoticeable by the process that use this memory.
+>> (the shared pages are marked as readonly, and in case of write
+>> do_wp_page() take care to create new copy of the page)
+>>
+>> this driver is very useful for KVM as in cases of runing multiple guests
+>> operation system of the same type, many pages are sharable.
+>> this driver can be useful by OpenVZ as well.
+>>     
+>
+> These benefits should be quantified, please.  Also any benefits to any
+> other workloads should be identified and quantified.
+>   
+Sure,
+we have used KSM in production for about half year and the numbers that 
+came from our QA is:
+using KSM for desktop (KSM was tested just for windows desktop workload) 
+you can run as many as
+52 windows xp with 1 giga ram each on server with just 16giga ram. (this 
+is more than 300% overcommit)
+the reason is that most of the kernel/dlls of this guests is shared and 
+in addition we are sharing the windows zero
+(windows keep making all its free memory as zero, so every time windows 
+release memory we take the page back to the host)
+there is slide that give this numbers you can find at:
+http://kvm.qumranet.com/kvmwiki/KvmForum2008?action=AttachFile&do=get&target=kdf2008_3.pdf 
+(slide 27)
+beside more i gave presentation about ksm that can be found at:
+http://kvm.qumranet.com/kvmwiki/KvmForum2008?action=AttachFile&do=get&target=kdf2008_12.pdf
 
-On Mon, 10 Nov 2008 19:43:53 PST, Andrew Morton said:
-> On Mon, 10 Nov 2008 22:20:33 -0500 Valdis.Kletnieks@vt.edu wrote:
-> 
-> > gcc --version says:
-> > gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
-> > 
-> > ka-blam number 2:
-> > 
-> >   CC      kernel/audit.o
-> > In file included from include/net/dst.h:15,
-> >                  from include/net/sock.h:57,
-> >                  from kernel/audit.c:54:
-> > include/net/neighbour.h:114: error: braced-group within expression allowed 
-only inside a function
-> > make[1]: *** [kernel/audit.o] Error 1
-> > 
-> > I'm placing bets on patches/align-avoid-evaluating-its-argument-twice.patch
-> > 
-> > Yep, revert that patch, and audit.o compiles again.
-> > 
-> 
-> I hadn't got around to testing that one yet.
-> 
-> So ug.  ALIGN() is used in array sizing and hence has to be a
-> compile-time thing.  But ALIGN(foo, bar()) will call bar() twice.
-> 
-> Now how do we fix that?
-
-Can we abuse __builtin_constant_p somehow?  Maybe we can make a definition
-something like:
-
-#define __align_mask(x,mask) (
-	__builtin_constant_p(mask) ? {
-		(((x)+(mask))&~(mask)) :
-		{              \
-		      typeof(mask) __mask = mask;             \
-		       (((x) + __mask) & ~__mask);             \
-		}
-	})
-
-If it's a compile-time constant, it's safe to evaluate mask twice.
-And if it's *not* a constant, it shouldn't be used for sizing arrays
-in open code.  And if it's an array local to a procedure, it probably
-should be kmalloc()'ed instead.
-
-
---==_Exmh_1226430296_3887P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFJGddYcC3lWbTT17ARAjgTAJ42nAx4sXWiwL9Id3ENE7NqTr4H9gCguyjz
-4EKe4JYMNbiZ54R606HHnIs=
-=WGSc
------END PGP SIGNATURE-----
-
---==_Exmh_1226430296_3887P--
+if more numbers are wanted for other workloads i can test it.
+(the idea of ksm is to run it slowly slowy at low priority and let it 
+merge pages when no one need the cpu)
