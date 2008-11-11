@@ -1,203 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbYKKVfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426AbYKKVgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751667AbYKKVfJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 16:35:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYKKVez
+	id S1753426AbYKKVgk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 16:36:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKKVg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 16:34:55 -0500
-Received: from kroah.org ([198.145.64.141]:37264 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750933AbYKKVex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 16:34:53 -0500
-Date: Tue, 11 Nov 2008 13:18:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linux-kernel Kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: Fwd: [PATCH v2][for 2.6.28] powerpc/mpic: Add support for
-	MPICs that only support a single CPU destination
-Message-ID: <20081111211801.GB2497@kroah.com>
-References: <1225252899-20752-1-git-send-email-galak@kernel.crashing.org> <B48FBC1A-5974-4E68-B34A-39C223328EFF@kernel.crashing.org>
+	Tue, 11 Nov 2008 16:36:29 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33960 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750886AbYKKVg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 16:36:29 -0500
+Date: Tue, 11 Nov 2008 22:35:52 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Izik Eidus <ieidus@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       chrisw@redhat.com, avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+	one page into another
+Message-ID: <20081111213552.GI10818@random.random>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org> <4919F1C0.2050009@redhat.com> <Pine.LNX.4.64.0811111520590.27767@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <B48FBC1A-5974-4E68-B34A-39C223328EFF@kernel.crashing.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0811111520590.27767@quilx.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 05, 2008 at 05:38:48PM -0600, Kumar Gala wrote:
-> Greg,
->
-> Can you pick this up for stable-2.6.27.
+On Tue, Nov 11, 2008 at 03:21:45PM -0600, Christoph Lameter wrote:
+> What do you mean by kernel page? The kernel can allocate a page and then
+> point a user space pte to it. That is how page migration works.
 
-I don't see this in Linus's tree right now.
+Just to make an example, remove_migration_pte adds the page back to
+rmap layer. We can't do that right now as rmap for the ksm pages will
+be built inside ksm, or alternatively rmap.c will have to learn to
+handle nonlinear anon-vma.
 
-Am I missing it?  Or do you know what the git commit id is?
+Migration simply migrates the page. The new page is identical to the
+original one, just backed by different physical memory.
 
-thanks,
+For us the new page is an entirely different beast that we build
+ourself (we can't let migrate.c to pretend dealing with the newpage
+like if it resembled the old page like it's doing now).
 
-greg k-h
+We replace a linear anon page with something that isn't an anonymous
+page at all right now (in the future it may become a nonlinear anon
+page if VM learns about it, or still an unknown page
+external-rmappable if we go the external-rmap way).
 
->> From: Kumar Gala <galak@kernel.crashing.org>
->> Date: October 28, 2008 11:01:39 PM CDT
->> Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, Paul Mackerras 
->> <paulus@samba.org>, davem@davemloft.net
->> Subject: [PATCH v2][for 2.6.28] powerpc/mpic: Add support for MPICs that 
->> only support a single CPU destination
->>
->> The Freescale implementation of MPIC only allows a single CPU destination
->> for non-IPI interrupts.  We add a flag to the mpic_init to distinquish
->> these variants of MPIC.  We pull in the irq_choose_cpu from sparc64 to
->> select a single CPU as the destination of the interrupt.
->>
->> This is to deal with the fact that the default smp affinity was
->> changed by commit 18404756765c713a0be4eb1082920c04822ce588.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->>
->> Changed requested by Ben to use irq_choose_cpu from sparc64 land.
->>
->> - k
->>
->> arch/powerpc/include/asm/mpic.h          |    2 +
->> arch/powerpc/platforms/85xx/mpc85xx_ds.c |    3 +-
->> arch/powerpc/platforms/86xx/pic.c        |    3 +-
->> arch/powerpc/sysdev/mpic.c               |   59 
->> ++++++++++++++++++++++++++++--
->> 4 files changed, 61 insertions(+), 6 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/mpic.h 
->> b/arch/powerpc/include/asm/mpic.h
->> index 34d9ac4..c2ccca5 100644
->> --- a/arch/powerpc/include/asm/mpic.h
->> +++ b/arch/powerpc/include/asm/mpic.h
->> @@ -355,6 +355,8 @@ struct mpic
->> #define MPIC_NO_BIAS			0x00000400
->> /* Ignore NIRQS as reported by FRR */
->> #define MPIC_BROKEN_FRR_NIRQS		0x00000800
->> +/* Destination only supports a single CPU at a time */
->> +#define MPIC_SINGLE_DEST_CPU		0x00001000
->>
->> /* MPIC HW modification ID */
->> #define MPIC_REGSET_MASK		0xf0000000
->> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c 
->> b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> index 483b65c..613bf8c 100644
->> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
->> @@ -78,7 +78,8 @@ void __init mpc85xx_ds_pic_init(void)
->>
->> 	mpic = mpic_alloc(np, r.start,
->> 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
->> -			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
->> +			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
->> +			  MPIC_SINGLE_DEST_CPU,
->> 			0, 256, " OpenPIC  ");
->> 	BUG_ON(mpic == NULL);
->> 	of_node_put(np);
->> diff --git a/arch/powerpc/platforms/86xx/pic.c 
->> b/arch/powerpc/platforms/86xx/pic.c
->> index 8881c5d..668275d 100644
->> --- a/arch/powerpc/platforms/86xx/pic.c
->> +++ b/arch/powerpc/platforms/86xx/pic.c
->> @@ -44,7 +44,8 @@ void __init mpc86xx_init_irq(void)
->>
->> 	mpic = mpic_alloc(np, res.start,
->> 			MPIC_PRIMARY | MPIC_WANTS_RESET |
->> -			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
->> +			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
->> +			MPIC_SINGLE_DEST_CPU,
->> 			0, 256, " MPIC     ");
->> 	of_node_put(np);
->> 	BUG_ON(mpic == NULL);
->> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
->> index 8e3478c..f6299cc 100644
->> --- a/arch/powerpc/sysdev/mpic.c
->> +++ b/arch/powerpc/sysdev/mpic.c
->> @@ -563,6 +563,51 @@ static void __init mpic_scan_ht_pics(struct mpic 
->> *mpic)
->>
->> #endif /* CONFIG_MPIC_U3_HT_IRQS */
->>
->> +#ifdef CONFIG_SMP
->> +static int irq_choose_cpu(unsigned int virt_irq)
->> +{
->> +	cpumask_t mask = irq_desc[virt_irq].affinity;
->> +	int cpuid;
->> +
->> +	if (cpus_equal(mask, CPU_MASK_ALL)) {
->> +		static int irq_rover;
->> +		static DEFINE_SPINLOCK(irq_rover_lock);
->> +		unsigned long flags;
->> +
->> +		/* Round-robin distribution... */
->> +	do_round_robin:
->> +		spin_lock_irqsave(&irq_rover_lock, flags);
->> +
->> +		while (!cpu_online(irq_rover)) {
->> +			if (++irq_rover >= NR_CPUS)
->> +				irq_rover = 0;
->> +		}
->> +		cpuid = irq_rover;
->> +		do {
->> +			if (++irq_rover >= NR_CPUS)
->> +				irq_rover = 0;
->> +		} while (!cpu_online(irq_rover));
->> +
->> +		spin_unlock_irqrestore(&irq_rover_lock, flags);
->> +	} else {
->> +		cpumask_t tmp;
->> +
->> +		cpus_and(tmp, cpu_online_map, mask);
->> +
->> +		if (cpus_empty(tmp))
->> +			goto do_round_robin;
->> +
->> +		cpuid = first_cpu(tmp);
->> +	}
->> +
->> +	return cpuid;
->> +}
->> +#else
->> +static int irq_choose_cpu(unsigned int virt_irq)
->> +{
->> +	return hard_smp_processor_id();
->> +}
->> +#endif
->>
->> #define mpic_irq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
->>
->> @@ -777,12 +822,18 @@ void mpic_set_affinity(unsigned int irq, cpumask_t 
->> cpumask)
->> 	struct mpic *mpic = mpic_from_irq(irq);
->> 	unsigned int src = mpic_irq_to_hw(irq);
->>
->> -	cpumask_t tmp;
->> +	if (mpic->flags & MPIC_SINGLE_DEST_CPU) {
->> +		int cpuid = irq_choose_cpu(irq);
->>
->> -	cpus_and(tmp, cpumask, cpu_online_map);
->> +		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION), 1 << cpuid);
->> +	} else {
->> +		cpumask_t tmp;
->>
->> -	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
->> -		       mpic_physmask(cpus_addr(tmp)[0]));	
->> +		cpus_and(tmp, cpumask, cpu_online_map);
->> +
->> +		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
->> +			       mpic_physmask(cpus_addr(tmp)[0]));
->> +	}
->> }
->>
->> static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int 
->> type)
->> -- 
->> 1.5.5.1
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+There's clearly something to share, but the replace_page seem to be
+the one that could be called from migrate.c. What is different is that
+we don't need the migration pte placeholder, we never block releasing
+locks, all atomic with pte wrprotected, and a final pte_same check
+under PT lock before we replace the page. There isn't a whole lot to
+share after all, but surely it'd be nice to share if we can. Us
+calling into migrate.c isn't feasible right now without some
+significant change to migrate.c where it would be misplaced IMHO as to
+share we'd need migrate.c to call into VM core instead.
