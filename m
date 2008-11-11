@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbYKKQnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbYKKQph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753852AbYKKQnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 11:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbYKKQm6
+	id S1753356AbYKKQph (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 11:45:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKKQp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 11:42:58 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:1643 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751458AbYKKQm5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 11:42:57 -0500
-Date: Tue, 11 Nov 2008 11:42:56 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Greg KH <greg@kroah.com>,
+	Tue, 11 Nov 2008 11:45:27 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43677 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbYKKQp0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 11:45:26 -0500
+Date: Tue, 11 Nov 2008 08:45:23 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, Mike Isely <isely@isely.net>
-Subject: Re: [Bug #11829] Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION]
- (USB -&gt; D_STATE)
-In-Reply-To: <200811111453.34386.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0811111141500.29125-100000@netrider.rowland.org>
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
+	chanes in stop_machine
+Message-ID: <20081111164523.GB6736@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com> <20081111143505.GA6923@linux.vnet.ibm.com> <20081111150225.GA10743@linux.vnet.ibm.com> <20081111161401.GC9459@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111161401.GC9459@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008, Rafael J. Wysocki wrote:
-
-> On Tuesday, 11 of November 2008, Greg KH wrote:
-> > On Sun, Nov 09, 2008 at 08:43:22PM +0100, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of regressions introduced between 2.6.26 and 2.6.27.
+On Tue, Nov 11, 2008 at 05:14:01PM +0100, Heiko Carstens wrote:
+> > > Could you please apply the following debug patch (due to Jiangshan and
+> > > myself)?  Then you should be able to build with CONFIG_RCU_TRACE,
+> > > then mount debugfs after boot, for example, on /debug.  This will
+> > > create a /debug/rcu directory with three files, "rcucb", "rcu_data",
+> > > and "rcu_bh_data".  Since you are still able to log in, could you
+> > > please send the contents of these three files?
 > > > 
-> > > The following bug entry is on the current list of known regressions
-> > > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> > > be listed and let me know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11829
-> > > Subject		: Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
-> > > Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
-> > > Date		: 2008-10-19 11:26 (22 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=122441560120027&w=4
-> > > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > > 		  Mike Isely <isely@isely.net>
-> > > Patch		: http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+> > > 							Thanx, Paul
 > > 
-> > This has been fixed already in .27 and in mainline with a patch from
-> > Alan.
+> > This time with the patch actually attached...  Thanks to Peter Z.
+> > for alerting me to my omission.
 > 
-> OK, closed it.
+> Well, your patch doesn't apply on git head. However I used preemptible
+> RCU instead and had tracing enabled.
+
+Were you using preemptible RCU earlier as well?  Raphael was using
+classic RCU.  Don't get me wrong, all problems need fixing, just trying
+to make sure I understand where the problems are occurring.
+
+> This is the output of the three files after it stalled (and continued,
+> because I caused an interrupt by sending a network packet) twice:
 > 
-> Do you remember which of the Alan's patches is that?
+> [root@h0545001 rcu]# cat rcuctrs 
+> CPU last cur F M
+>   1    0   0 1 1
+>   3    0   0 1 1
+>   4    0   0 0 0
+>   5    0   0 0 1
+>   6    0   0 0 0
+> ggp = 1640, state = waitack
+> 
+> [root@h0545001 rcu]# cat rcugp 
+> oldggp=1652  newggp=1655
+> 
+> [root@h0545001 rcu]# cat rcustats 
+> na=33948 nl=3 wa=33945 wl=0 da=33945 dl=0 dr=33945 di=0
+> 1=0 e1=0 i1=1674 ie1=4 g1=1670 a1=1920 ae1=251 a2=1669
+> z1=1669 ze1=0 z2=1669 m1=4411 me1=2742 m2=1669
 
-I wasn't one of mine.  The patch was written by Mike Isely: commit 
-c82732a42896364296599b0f73f01c5e3fd781ae.
+This hang also involved synchronize_sched()?  Or synchronize_rcu()?
 
-Alan Stern
+The reason I ask is that the above stats are for the synchronize_rcu()
+rather than synchronize_sched().
 
+							Thanx, Paul
