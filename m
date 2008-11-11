@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbYKKWyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbYKKW5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbYKKWyc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYKKWyH
+	id S1752900AbYKKW5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYKKW5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:54:07 -0500
-Received: from mail.gmx.net ([213.165.64.20]:60102 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752299AbYKKWyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:54:05 -0500
-X-Authenticated: #2813124
-X-Provags-ID: V01U2FsdGVkX19iajkZpnRiVhPakUT4UjSTZTl2VEEAIjVU3SLYoz
-	1/3gSYG3NDEmQ2
-Message-ID: <491A0D09.8040803@gmx.ch>
-Date: Tue, 11 Nov 2008 23:54:01 +0100
-From: Daniel Ritz <daniel.ritz@gmx.ch>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Nuno Lucas <ntlucas@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] linux-input: TSC-10 DM USB touchscreen driver assume
- 2-byte response from controller
-References: <c4f20e170811060725v2ae331f9t7b1ba48059f93170@mail.gmail.com> <20081111164953.ZZRA012@mailhub.coreip.homeip.net>
-In-Reply-To: <20081111164953.ZZRA012@mailhub.coreip.homeip.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Nov 2008 17:57:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59380 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750938AbYKKW5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:57:32 -0500
+Date: Tue, 11 Nov 2008 14:57:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: timg@tpi.com (Tim Gardner)
+Cc: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Dell Wireless 365 requires reset quirk
+Message-Id: <20081111145706.9bfb4627.akpm@linux-foundation.org>
+In-Reply-To: <20081104162448.A338EF8A65@sepang.rtg.net>
+References: <20081104162448.A338EF8A65@sepang.rtg.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.11.2008 22:52, Dmitry Torokhov wrote:
-> On Thu, Nov 06, 2008 at 03:25:40PM +0000, Nuno Lucas wrote:
->> The usbtouchscreen module implements a driver for the TSC-10 DM USB
->> touchscreen controllers, but assumes a 2-byte response for the
->> CMD_RESET and CMD_RATE commands, when they can be only a single byte
->> when no EEPROM is connected.
->>
->> The driver worked with an earlier controller revision, but new
->> revisions of the controller fail.
->>
->> It seems the problem is that the early controller had the
->> SEL4/EEPROM-CS pin high, but the new controller has it down, making
->> the response different.
->>
->> Without the fix, the controller would answer the single byte 0x06
->> (ACK), making the init fail with -ENODEV because buf[1] is 0xFF (as
->> initialized before).
->>
->> As the single byte is the only thing we need to check it was ok, there
->> is no need to verify the second byte.
->>
->> The [0x15 0x01] case is the NAK [0x15] response for when there is no
->> data in the EEPROM [bit-0 of second byte set], so I let that be, as I
->> don't have any controller with an EEPROM.
->>
->> With this patch, both the earlier and latest controller work the same.
->>
->> Note: This was previously submited as BUG #11961 [1] on the bugzilla
->> tracker, but rebased to version 2.6.27.4 and with unnecessary comments
->> and printk's removed.
->>
->>
->> Signed-off-by: Nuno Lucas <ntlucas@gmail.com>
->>
->>
->> [1] http://bugzilla.kernel.org/show_bug.cgi?id=11961
-> 
->> diff -urNp linux-2.6.27.4/drivers/input/touchscreen/usbtouchscreen.c linux-2.6.27.4-patched/drivers/input/touchscreen/usbtouchscreen.c
->> --- linux-2.6.27.4/drivers/input/touchscreen/usbtouchscreen.c	2008-10-25 23:05:07.000000000 +0100
->> +++ linux-2.6.27.4-patched/drivers/input/touchscreen/usbtouchscreen.c	2008-11-06 15:07:49.000000000 +0000
->> @@ -424,7 +424,7 @@ static int dmc_tsc10_init(struct usbtouc
->>  	                      0, 0, buf, 2, USB_CTRL_SET_TIMEOUT);
->>  	if (ret < 0)
->>  		goto err_out;
->> -	if (buf[0] != 0x06 || buf[1] != 0x00) {
->> +	if (buf[0] != 0x06) {
->>  		ret = -ENODEV;
->>  		goto err_out;
->>  	}
->> @@ -437,8 +437,7 @@ static int dmc_tsc10_init(struct usbtouc
->>  	                      TSC10_RATE_150, 0, buf, 2, USB_CTRL_SET_TIMEOUT);
->>  	if (ret < 0)
->>  		goto err_out;
->> -	if ((buf[0] != 0x06 || buf[1] != 0x00) &&
->> -	    (buf[0] != 0x15 || buf[1] != 0x01)) {
->> +	if ((buf[0] != 0x06) && (buf[0] != 0x15 || buf[1] != 0x01)) {
->>  		ret = -ENODEV;
->>  		goto err_out;
->>  	}
-> 
-> Daniel, have you seen this?
-> 
+On Tue,  4 Nov 2008 09:24:48 -0700 (MST)
+timg@tpi.com (Tim Gardner) wrote:
 
-Seems to make sense. 0x06 is always the normal response, the error responses
-start with 0x15 and only there the second byte matters...
-Besides the serial version of the controller use just one byte for the normal
-response...so i guess the protocols got aligned...
-  http://www.dmccoltd.com/files/controler/tsc10_rsa_e.pdf
+> >From 931ccb629d739aa563347a4e866bc26107e6b545 Mon Sep 17 00:00:00 2001
+> From: Tim Gardner <tim.gardner@canonical.com>
+> Date: Tue, 4 Nov 2008 09:18:06 -0700
+> Subject: [PATCH] Dell Wireless 365 needs BTUSB_RESET quirk.
+>  OriginalAuthor: Mario Limonciello <mario_limonciello@dell.com>
+> 
+> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+> Cc: stable@kernel.org
+> ---
+>  drivers/bluetooth/btusb.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+> index af472e0..051b758 100644
+> --- a/drivers/bluetooth/btusb.c
+> +++ b/drivers/bluetooth/btusb.c
+> @@ -125,6 +125,9 @@ static struct usb_device_id blacklist_table[] = {
+>  	/* Dell laptop with Broadcom chip */
+>  	{ USB_DEVICE(0x413c, 0x8126), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
+>  
+> +	/* Dell Wireless 365 */
+> +	{ USB_DEVICE(0x413c, 0x8160), .driver_info = BTUSB_RESET },
+> +
+>  	/* Dell Wireless 370 */
+>  	{ USB_DEVICE(0x413c, 0x8156), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
+>  
 
-Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
+I shall assume that this patch was authored by Mario.  This should have
+been communicated by adding his From: line right at the top of the
+changelog.  Mario's signed-off-by: is absent, but that is tolerable
+because we have yours.
+
+The (absent) changelog fails to explain what effect this patch has. 
+_why_ does this driver need this quirk?
+
+As it stands, there is insufficient information here for making
+2.6.28-vs-2.6.29 decisions, let alone 2.6.27.x, 2.6.26.x, etc.
 
