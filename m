@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbYKKXWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752649AbYKKXZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928AbYKKXWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 18:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYKKXWf
+	id S1752649AbYKKXZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 18:25:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbYKKXZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 18:22:35 -0500
-Received: from styx.suse.cz ([82.119.242.94]:42997 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751709AbYKKXWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 18:22:34 -0500
-Date: Wed, 12 Nov 2008 00:22:33 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Denys Vlasenko <vda.linux@googlemail.com>
-cc: Helge Deller <deller@gmx.de>, Jiri Slaby <jirislaby@gmail.com>,
-       Jeroen Roovers <jer@gentoo.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] USBHID: correct start/stop cycle
-In-Reply-To: <200811022024.31528.vda.linux@googlemail.com>
-Message-ID: <alpine.LNX.1.10.0811120021500.24889@jikos.suse.cz>
-References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com> <490D873D.9010005@gmail.com> <490DDA69.4000404@gmx.de> <200811022024.31528.vda.linux@googlemail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 11 Nov 2008 18:25:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47360 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751590AbYKKXZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 18:25:18 -0500
+Date: Wed, 12 Nov 2008 00:25:13 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       chrisw@redhat.com, avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+	one page into another
+Message-ID: <20081111232513.GS10818@random.random>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org> <20081111210655.GG10818@random.random> <Pine.LNX.4.64.0811111522150.27767@quilx.com> <20081111221753.GK10818@random.random> <Pine.LNX.4.64.0811111626520.29222@quilx.com> <20081111231722.GR10818@random.random>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111231722.GR10818@random.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Nov 2008, Denys Vlasenko wrote:
+On Wed, Nov 12, 2008 at 12:17:22AM +0100, Andrea Arcangeli wrote:
+> We don't have to check the page_count vs mapcount later in
+> replace_page because we know if anybody started an O_DIRECT read from
+> disk, it would have triggered a cow, and the pte_same check that we
+> have to do for other reasons would take care of bailing out the
+> replace_page.
 
-> > I fully bisected it, and the final "buggy" patch seems to have been 
-> > Denys Vlasenko's patch: cb8f488c33539f096580e202f5438a809195008f (see 
-> > http://github.com/jonsmirl/digispeaker/commit/cb8f488c33539f096580e202f5438a809195008f) 
-> > Denys: Any reason you removed "!prev" in front of "expand_stack"?
-> Looks like I erroneously thought it can't be NULL,
-> or that expand_upwards() is ok with getting NULL vma parameter.
-> I looked again and neither is true.
-> Sorry, looks like I indeed broke this.
-
-Hmm, so ... ? Seems like this didn't get fixed in Linus' tree yet?
-
--- 
-Jiri Kosina
-SUSE Labs
+Ah, for completeness: above I didn't mention the case of O_DIRECT
+writes to disk, because we never need to care about those. They're
+never a problem. If the page is replaced and the cpu writes to the
+page and by doing so triggers a cow that lead to the CPU write to go
+in a different page (not the one under dma) it'll be like if the write
+to disk completed before the cpu overwritten the page, so result is
+undefined. I don't think we've to define the case of somebody doing a
+direct read from a location where there's still an o_direct write in
+flight either.
