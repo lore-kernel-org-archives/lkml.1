@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYKKSNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYKKSOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbYKKSNq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:13:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYKKSNi
+	id S1754523AbYKKSOD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:14:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbYKKSNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:13:38 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54167 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752060AbYKKSNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:13:37 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+kZBwEBS6kjAgDNa9LkdmwQZBOLroCYWi/RjuueZ
-	6QbGNm+PB1PWx1
-Date: Tue, 11 Nov 2008 19:13:48 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Dan Williams <dan.j.williams@intel.com>
-cc: linux-kernel@vger.kernel.org, maciej.sosnowski@intel.com,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: Re: [PATCH 2/4 v1] i.MX31: Image Processing Unit DMA and IRQ drivers
-In-Reply-To: <e9c3a7c20811110737m4b17e0fcp45bcec86f937b9ea@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0811111856500.8435@axis700.grange>
-References: <Pine.LNX.4.64.0811071454000.4513@axis700.grange> 
- <Pine.LNX.4.64.0811071512500.4513@axis700.grange> 
- <Pine.LNX.4.64.0811111029120.4565@axis700.grange>
- <e9c3a7c20811110737m4b17e0fcp45bcec86f937b9ea@mail.gmail.com>
+	Tue, 11 Nov 2008 13:13:47 -0500
+Received: from outbound-mail-118.bluehost.com ([69.89.22.18]:54783 "HELO
+	outbound-mail-118.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754862AbYKKSNp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 13:13:45 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=HFCHh512BSqlkvEiIxajvAbEHnR8JLA4GFnn4VDx289A3DsuTiaZBss+biTM0lgYdqA2CndV9cmHHX5ofynPFM6Qi9OtjwimetsJMYPQ+VDNOpDH1/5F/SDrOmi4RDwl;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: [git pull] drm fixes for 2.6.27-rc5
+Date: Tue, 11 Nov 2008 10:13:34 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.26.6-79.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Dave Airlie" <airlied@linux.ie>, torvalds@linux-foundation.org,
+       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+References: <alpine.DEB.0.82.0811110811350.2182@skynet.skynet.ie> <20081111002958.7620fb56.akpm@linux-foundation.org> <21d7e9970811110037l49e7b28bl2480863682cda0c@mail.gmail.com>
+In-Reply-To: <21d7e9970811110037l49e7b28bl2480863682cda0c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811111013.35358.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dan,
-
-On Tue, 11 Nov 2008, Dan Williams wrote:
-
-> On Tue, Nov 11, 2008 at 2:36 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> > I still have no solution to this ->client_count problem. Is this a bug and
-> > there should be a way to release a channel (including decrementint the
-> > client_count) without unregistering the client, or am I missing something?
+On Tuesday, November 11, 2008 12:37 am Dave Airlie wrote:
+> On Tue, Nov 11, 2008 at 6:29 PM, Andrew Morton
+>
+> <akpm@linux-foundation.org> wrote:
+> > On Tue, 11 Nov 2008 08:15:26 +0000 (GMT) Dave Airlie <airlied@linux.ie> 
+wrote:
+> >> commit 78538bf14995a136c2d9a22159ada49937359119
+> >> Author: Dave Airlie <airlied@linux.ie>
+> >> Date:   Tue Nov 11 17:56:16 2008 +1000
+> >>
+> >>     drm/radeon: map registers at load time
+> >>
+> >>     Now that the radeon driver has suspend/resume functions, it needs to
+> >> map its registers at load time or it will likely crash if a suspend
+> >> operation occurs before the driver has been initialized.
+> >>
+> >>     This patch moves the register mapping code from firstopen to load
+> >> and makes the mapping into a _DRM_DRIVER one so that the core won't
+> >> remove it at lastclose time.
 > >
-> 
-> Hi Guennadi,
-> 
-> I am currently working on improving this situation:
-> 
-> http://marc.info/?l=linux-kernel&m=122463374500746&w=2
-> 
-> Please have a look.
+> > Does this make the below patch obsolete?
+>
+> Yes please drop this, the correct fix is the one Jesse posted + a fix
+> on top of it I made in the same patch.
 
-Thanks for the pointer, I looked at it.
+Oh geez, yeah that's ugly, thanks for catching it.
 
-1. ASYNC_TX_ACK: one either sets this flag immediately on a descriptor in 
-flags for ->device_prep_dma_memcpy() (like in 
-dma_async_memcpy_buf_to_buf()), which would mean "may be recycled 
-automatically" or you don't set it, then the descriptor is kept, until you 
-call async_tx_ack() on it. Are you going to preserve the async_tx_ack() 
-implementation? In this case dma-device drivers have to scan their 
-descriptors to do garbage-collection?... Wouldn't it be better to 
-introduce an explicit call to free a descriptor, like in this my patch: 
-http://marc.info/?l=linux-arm-kernel&m=122607472721145&w=2 (see the last 
-hank for include/linux/dmaengine.h)?
-
-2. channel client-count: am I right, that with the current implementation 
-one cannot free a channel in a way, that its client_count got decremented, 
-and the ->device_free_chan_resources() method be called for it? Is this 
-going to be addressed too or I am missing something and channel freeing 
-has to be done differently?
-
-3. you write
-
-> 3b/ Remove the client registration infrastructure
-
-which means, there should be an interface to free a channel explicitly? 
-because until now unregistering the client was the only way (that I found) 
-to free channels...
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
+Jesse
