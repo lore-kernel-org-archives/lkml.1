@@ -1,149 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYKKDLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYKKDSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbYKKDLf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 22:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbYKKDLS
+	id S1755242AbYKKDSc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 22:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbYKKDSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 22:11:18 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53658 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754998AbYKKDLR (ORCPT
+	Mon, 10 Nov 2008 22:18:23 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62471 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbYKKDSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 22:11:17 -0500
-Date: Tue, 11 Nov 2008 12:10:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][mm] [PATCH 4/4] Memory cgroup hierarchy feature selector
- (v2)
-Message-Id: <20081111121039.91017d3c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081108091113.32236.12390.sendpatchset@localhost.localdomain>
-References: <20081108091009.32236.26177.sendpatchset@localhost.localdomain>
-	<20081108091113.32236.12390.sendpatchset@localhost.localdomain>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 22:18:22 -0500
+Date: Mon, 10 Nov 2008 22:18:19 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] ftrace: disable tracing on resize
+In-Reply-To: <20081111030517.017566077@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0811102216240.10298@gandalf.stny.rr.com>
+References: <20081111025808.946638585@goodmis.org> <20081111030517.017566077@goodmis.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 08 Nov 2008 14:41:13 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
+Pekka,
+
+I forgot to add you to the Cc list. Could you test this patch to see if it 
+fixes the bug you reported. It fixed a bug I was able to reproduce, but I 
+was never able to reproduce the exact same bug you have seen.
+
+-- Steve
+
+
+On Mon, 10 Nov 2008, Steven Rostedt wrote:
+
+> Impact: fix for bug on resize
 > 
-> Don't enable multiple hierarchy support by default. This patch introduces
-> a features element that can be set to enable the nested depth hierarchy
-> feature. This feature can only be enabled when the cgroup for which the
-> feature this is enabled, has no children.
+> This patch addresses the bug found here:
 > 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>  http://bugzilla.kernel.org/show_bug.cgi?id=11996
+> 
+> When ftrace converted to the new unified trace buffer, the resizing of
+> the buffer was not protected as much as it was originally. If tracing
+> is performed while the resize occurs, then the buffer can be corrupted.
+> 
+> This patch disables all ftrace buffer modifications before a resize
+> takes place.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 > ---
+>  kernel/trace/trace.c |   17 ++++++++++++++++-
+>  1 files changed, 16 insertions(+), 1 deletions(-)
 > 
-IMHO, permission to this is not enough.
-
-I think following is sane way.
-==
-   When parent->use_hierarchy==1.
-	my->use_hierarchy must be "1" and cannot be tunrned to be "0" even if no children.
-   When parent->use_hierarchy==0
-	my->use_hierarchy can be either of "0" or "1".
-	this value can be chagned if we don't have children
-==
-
-Thanks,
--Kame
-
-
->  mm/memcontrol.c |   43 ++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 42 insertions(+), 1 deletion(-)
-> 
-> diff -puN mm/memcontrol.c~memcg-add-hierarchy-selector mm/memcontrol.c
-> --- linux-2.6.28-rc2/mm/memcontrol.c~memcg-add-hierarchy-selector	2008-11-08 14:09:33.000000000 +0530
-> +++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-08 14:10:53.000000000 +0530
-> @@ -137,6 +137,11 @@ struct mem_cgroup {
->  	 * reclaimed from.
->  	 */
->  	struct mem_cgroup *last_scanned_child;
-> +	/*
-> +	 * Should the accounting and control be hierarchical, per subtree?
-> +	 */
-> +	unsigned long use_hierarchy;
-> +
->  };
->  static struct mem_cgroup init_mem_cgroup;
->  
-> @@ -1079,6 +1084,33 @@ out:
->  	return ret;
->  }
->  
-> +static u64 mem_cgroup_hierarchy_read(struct cgroup *cont, struct cftype *cft)
-> +{
-> +	return mem_cgroup_from_cont(cont)->use_hierarchy;
-> +}
-> +
-> +static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
-> +					u64 val)
-> +{
-> +	int retval = 0;
-> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> +
-> +	if (val == 1) {
-> +		if (list_empty(&cont->children))
-> +			mem->use_hierarchy = val;
-> +		else
-> +			retval = -EBUSY;
-> +	} else if (val == 0) {
-> +		if (list_empty(&cont->children))
-> +			mem->use_hierarchy = val;
-> +		else
-> +			retval = -EBUSY;
-> +	} else
-> +		retval = -EINVAL;
-> +
-> +	return retval;
-> +}
-> +
->  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 9f3b478..abfa810 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -2676,7 +2676,7 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
 >  {
->  	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
-> @@ -1213,6 +1245,11 @@ static struct cftype mem_cgroup_files[] 
->  		.name = "stat",
->  		.read_map = mem_control_stat_show,
->  	},
-> +	{
-> +		.name = "use_hierarchy",
-> +		.write_u64 = mem_cgroup_hierarchy_write,
-> +		.read_u64 = mem_cgroup_hierarchy_read,
-> +	},
->  };
+>  	unsigned long val;
+>  	char buf[64];
+> -	int ret;
+> +	int ret, cpu;
+>  	struct trace_array *tr = filp->private_data;
 >  
->  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-> @@ -1289,9 +1326,13 @@ mem_cgroup_create(struct cgroup_subsys *
->  		parent = mem_cgroup_from_cont(cont->parent);
->  		if (!mem)
->  			return ERR_PTR(-ENOMEM);
-> +		mem->use_hierarchy = parent->use_hierarchy;
+>  	if (cnt >= sizeof(buf))
+> @@ -2704,6 +2704,14 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+>  		goto out;
 >  	}
 >  
-> -	res_counter_init(&mem->res, parent ? &parent->res : NULL);
-> +	if (parent && parent->use_hierarchy)
-> +		res_counter_init(&mem->res, &parent->res);
-> +	else
-> +		res_counter_init(&mem->res, NULL);
+> +	/* disable all cpu buffers */
+> +	for_each_tracing_cpu(cpu) {
+> +		if (global_trace.data[cpu])
+> +			atomic_inc(&global_trace.data[cpu]->disabled);
+> +		if (max_tr.data[cpu])
+> +			atomic_inc(&max_tr.data[cpu]->disabled);
+> +	}
+> +
+>  	if (val != global_trace.entries) {
+>  		ret = ring_buffer_resize(global_trace.buffer, val);
+>  		if (ret < 0) {
+> @@ -2735,6 +2743,13 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+>  	if (tracing_disabled)
+>  		cnt = -ENOMEM;
+>   out:
+> +	for_each_tracing_cpu(cpu) {
+> +		if (global_trace.data[cpu])
+> +			atomic_dec(&global_trace.data[cpu]->disabled);
+> +		if (max_tr.data[cpu])
+> +			atomic_dec(&max_tr.data[cpu]->disabled);
+> +	}
+> +
+>  	max_tr.entries = global_trace.entries;
+>  	mutex_unlock(&trace_types_lock);
 >  
->  	for_each_node_state(node, N_POSSIBLE)
->  		if (alloc_mem_cgroup_per_zone_info(mem, node))
-> _
+> -- 
+> 1.5.6.5
 > 
 > -- 
-> 	Balbir
 > 
-
+> 
