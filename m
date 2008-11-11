@@ -1,328 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbYKKCK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYKKCKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbYKKCK0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 21:10:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYKKCKP
+	id S1755232AbYKKCKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 21:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYKKCKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 21:10:15 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50930 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753992AbYKKCKM (ORCPT
+	Mon, 10 Nov 2008 21:10:38 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56108 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412AbYKKCKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 21:10:12 -0500
-Date: Tue, 11 Nov 2008 11:09:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc4 mem_cgroup_charge_common panic
-Message-Id: <20081111110934.d41fa8db.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081111101440.f531021d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1226353408.8805.12.camel@badari-desktop>
-	<20081111101440.f531021d.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 10 Nov 2008 21:10:36 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [Bug #11380] lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
+Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <20081110132208.GB10294@redhat.com>
+References: <20081110073047.GA28578@elte.hu> <20081110132208.GB10294@redhat.com>
+Message-Id: <20081111105706.6174.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 11 Nov 2008 11:10:33 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 10:14:40 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Mon, 10 Nov 2008 13:43:28 -0800
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> On 11/10, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > This message has been generated automatically as a part of a report
+> > > of regressions introduced between 2.6.26 and 2.6.27.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> > > be listed and let me know (either way).
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11380
+> > > Subject		: lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
+> > > Submitter	: Ingo Molnar <mingo@elte.hu>
+> > > Date		: 2008-08-20 6:44 (82 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=121921480931970&w=4
+> > 
+> > had a quick look again: i believe this one still triggers, and it's 
+> > caused by some interaction between input code and workqueue code. I 
+> > think it started triggering when Oleg's workqueue annotation patches 
+> > went upstream:
+> > 
+> > 6af8bf3: workqueues: add comments to __create_workqueue_key()
+> > 8448502: workqueues: do CPU_UP_CANCELED if CPU_UP_PREPARE fails
+> > 8de6d30: workqueues: schedule_on_each_cpu() can use schedule_work_on()
+> > ef1ca23: workqueues: queue_work() can use queue_work_on()
+> > a67da70: workqueues: lockdep annotations for flush_work()
+> > 3da1c84: workqueues: make get_online_cpus() useable for work->func()
+> > 8616a89: workqueues: schedule_on_each_cpu: use flush_work()
+> > db70089: workqueues: implement flush_work()
+> > 1a4d9b0: workqueues: insert_work: use "list_head *" instead of "int tail"
 > 
-> > Hi KAME,
-> > 
-> > Thank you for the fix for online/offline page_cgroup panic.
-> > 
-> > While running memory offline/online tests ran into another
-> > mem_cgroup panic.
-> > 
+> "make get_online_cpus() useable for work->func()" changed the locking.
+> destroy_workqueue() was changed to take cpu_maps_update_begin() instead
+> of get_online_cpus(). Other patches can't make any difference afaics.
 > 
-> Hm, should I avoid freeing mem_cgroup at memory Offline ?
-> (memmap is also not free AFAIK.)
-> 
-> Anyway, I'll dig this. thanks.
-> 
-it seems not the same kind of bug..
+> Currently I don't understand why lockdep complains, will try to do
+> more grepping later.
 
-Could you give me disassemble of mem_cgroup_charge_common() ?
-(I'm not sure I can read ppc asm but I want to know what is "0x20"
- of fault address....)
+I check original report.
+Is this really cpu hotplug related warnings?
 
-As first impression, it comes from page migration..
-rc4's page migration handler of memcg handles *usual* path but not so good.
-
-new migration code of memcg in mmotm is much better, I think.
-Could you try mmotm if you have time ?
-
-Thanks,
--Kame
+it seem simple ABBA lock, right?
 
 
-> -Kame
-> 
-> > Thanks,
-> > Badari
-> > 
-> > Unable to handle kernel paging request for data at address 0x00000020
-> > Faulting instruction address: 0xc0000000001055e4
-> > Oops: Kernel access of bad area, sig: 11 [#2]
-> > SMP NR_CPUS=32 NUMA pSeries
-> > Modules linked in:
-> > NIP: c0000000001055e4 LR: c00000000010557c CTR: c0000000000bfb74
-> > REGS: c0000000f6c7f1b0 TRAP: 0300   Tainted: G      D     (2.6.28-rc4)
-> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 44044422  XER: 20000018
-> > DAR: 0000000000000020, DSISR: 0000000042000000
-> > TASK = c0000000f6c56cc0[4610] 'crash' THREAD: c0000000f6c7c000 CPU: 0
-> > GPR00: c0000000e910b560 c0000000f6c7f430 c000000000b36fc0 0000000000000001 
-> > GPR04: c000000005355278 0000000000000001 0000000000000000 0000000000000000 
-> > GPR08: c000000005355290 0000000000000018 c0000000e910b558 c0000000e910b548 
-> > GPR12: 0000000000000000 c000000000b58300 00000400001ca30a 0000000000000000 
-> > GPR16: 0000000000000000 0000000000000006 c0000000d43cb5c0 c0000000e66d0b88 
-> > GPR20: 0000000000000004 0000000000000000 c0000000e64c6180 0000000000000000 
-> > GPR24: 00000000000000d0 0000000000000005 c000000000bac418 0000000000000001 
-> > GPR28: c0000000e910b538 c000000005355278 c000000000aacad8 c0000000f6c7f430 
-> > NIP [c0000000001055e4] .mem_cgroup_charge_common+0x26c/0x330
-> > LR [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > Call Trace:
-> > [c0000000f6c7f430] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330 (unreliable)
-> > [c0000000f6c7f4f0] [c000000000105c70] .mem_cgroup_cache_charge+0x130/0x154
-> > [c0000000f6c7f590] [c0000000000c29bc] .add_to_page_cache_locked+0x64/0x18c
-> > [c0000000f6c7f640] [c0000000000c2b64] .add_to_page_cache_lru+0x80/0xe4
-> > [c0000000f6c7f6e0] [c000000000144348] .mpage_readpages+0xc8/0x170
-> > [c0000000f6c7f810] [c000000000182e68] .reiserfs_readpages+0x50/0x78
-> > [c0000000f6c7f8b0] [c0000000000cee80] .__do_page_cache_readahead+0x174/0x280
-> > [c0000000f6c7f980] [c0000000000cf6e0] .do_page_cache_readahead+0xa4/0xd0
-> > [c0000000f6c7fa20] [c0000000000c5274] .filemap_fault+0x198/0x420
-> > [c0000000f6c7fb00] [c0000000000d9660] .__do_fault+0xb8/0x664
-> > [c0000000f6c7fc10] [c0000000000dbcc4] .handle_mm_fault+0x1ec/0xaf4
-> > [c0000000f6c7fd00] [c0000000005a8b10] .do_page_fault+0x384/0x570
-> > [c0000000f6c7fe30] [c00000000000517c] handle_page_fault+0x20/0x5c
-> > Instruction dump:
-> > 794a26e4 391d0018 38a00001 7d6be214 7d5c5214 7fa4eb78 e92b0048 380a0008 
-> > 39290001 f92b0048 60000000 e92a0008 <f9090008> f93d0018 f8080008 f90a0008 
-> > ---[ end trace aaa19ed35042c148 ]---
-> > BUG: soft lockup - CPU#1 stuck for 61s! [udevd:1249]
-> > Modules linked in:
-> > NIP: c0000000005a69fc LR: c0000000005a69f4 CTR: c0000000000bfb74
-> > REGS: c0000000e7f9b040 TRAP: 0901   Tainted: G      D     (2.6.28-rc4)
-> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 80004424  XER: 20000018
-> > TASK = c0000000e9b5ccc0[1249] 'udevd' THREAD: c0000000e7f98000 CPU: 1
-> > GPR00: 00000000c0000000 c0000000e7f9b2c0 c000000000b36fc0 0000000000000001 
-> > GPR04: c00000000010557c c0000000000bfb74 0000000000000000 0000000000000000 
-> > GPR08: c000000000bd7700 00000000c0000000 00000000004d3000 c0000000007296c0 
-> > GPR12: 000000000000d032 c000000000b58500 
-> > NIP [c0000000005a69fc] ._spin_lock_irqsave+0x84/0xd4
-> > LR [c0000000005a69f4] ._spin_lock_irqsave+0x7c/0xd4
-> > Call Trace:
-> > [c0000000e7f9b2c0] [c0000000005a69a0] ._spin_lock_irqsave+0x28/0xd4 (unreliable)
-> > [c0000000e7f9b360] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > [c0000000e7f9b420] [c000000000105c70] .mem_cgroup_cache_charge+0x130/0x154
-> > [c0000000e7f9b4c0] [c0000000000c29bc] .add_to_page_cache_locked+0x64/0x18c
-> > [c0000000e7f9b570] [c0000000000c2b64] .add_to_page_cache_lru+0x80/0xe4
-> > [c0000000e7f9b610] [c0000000000c2c34] .__grab_cache_page+0x6c/0xb4
-> > [c0000000e7f9b6b0] [c000000000187628] .reiserfs_write_begin+0xb0/0x2bc
-> > [c0000000e7f9b790] [c0000000000c38a8] .generic_file_buffered_write+0x150/0x354
-> > [c0000000e7f9b8d0] [c0000000000c40a8] .__generic_file_aio_write_nolock+0x384/0x3fc
-> > [c0000000e7f9b9d0] [c0000000000c41b0] .generic_file_aio_write+0x90/0x128
-> > [c0000000e7f9ba90] [c0000000001093a4] .do_sync_write+0xe0/0x148
-> > [c0000000e7f9bc30] [c000000000188868] .reiserfs_file_write+0x8c/0xd4
-> > [c0000000e7f9bcd0] [c000000000109d00] .vfs_write+0xf0/0x1c4
-> > [c0000000e7f9bd80] [c00000000010a69c] .sys_write+0x6c/0xb8
-> > [c0000000e7f9be30] [c00000000000852c] syscall_exit+0x0/0x40
-> > Instruction dump:
-> > 40a2fff0 4c00012c 2fa90000 41be0050 8b8d01da 2fbd0000 38600000 419e0008 
-> > 7fa3eb78 4ba65179 60000000 7c210b78 <801b0000> 2fa00000 40befff4 7c421378 
-> > RCU detected CPU 1 stall (t=4299517593/1725750 jiffies)
-> > Call Trace:
-> > [c0000000e7f9aa00] [c0000000000102a4] .show_stack+0x94/0x198 (unreliable)
-> > [c0000000e7f9aab0] [c0000000000103d0] .dump_stack+0x28/0x3c
-> > [c0000000e7f9ab30] [c0000000000b1020] .__rcu_pending+0xa8/0x2c4
-> > [c0000000e7f9abd0] [c0000000000b1288] .rcu_pending+0x4c/0xa0
-> > [c0000000e7f9ac60] [c000000000076a8c] .update_process_times+0x50/0xa8
-> > [c0000000e7f9ad00] [c000000000095e88] .tick_sched_timer+0xb0/0x100
-> > [c0000000e7f9adb0] [c00000000008ae98] .__run_hrtimer+0xa4/0x13c
-> > [c0000000e7f9ae50] [c00000000008c0b8] .hrtimer_interrupt+0x128/0x200
-> > [c0000000e7f9af30] [c00000000002858c] .timer_interrupt+0xc0/0x11c
-> > [c0000000e7f9afd0] [c000000000003710] decrementer_common+0x110/0x180
-> > --- Exception: 901 at ._spin_lock_irqsave+0x84/0xd4
-> >     LR = ._spin_lock_irqsave+0x7c/0xd4
-> > [c0000000e7f9b2c0] [c0000000005a69a0] ._spin_lock_irqsave+0x28/0xd4 (unreliable)
-> > [c0000000e7f9b360] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > [c0000000e7f9b420] [c000000000105c70] .mem_cgroup_cache_charge+0x130/0x154
-> > [c0000000e7f9b4c0] [c0000000000c29bc] .add_to_page_cache_locked+0x64/0x18c
-> > [c0000000e7f9b570] [c0000000000c2b64] .add_to_page_cache_lru+0x80/0xe4
-> > [c0000000e7f9b610] [c0000000000c2c34] .__grab_cache_page+0x6c/0xb4
-> > [c0000000e7f9b6b0] [c000000000187628] .reiserfs_write_begin+0xb0/0x2bc
-> > [c0000000e7f9b790] [c0000000000c38a8] .generic_file_buffered_write+0x150/0x354
-> > [c0000000e7f9b8d0] [c0000000000c40a8] .__generic_file_aio_write_nolock+0x384/0x3fc
-> > [c0000000e7f9b9d0] [c0000000000c41b0] .generic_file_aio_write+0x90/0x128
-> > [c0000000e7f9ba90] [c0000000001093a4] .do_sync_write+0xe0/0x148
-> > [c0000000e7f9bc30] [c000000000188868] .reiserfs_file_write+0x8c/0xd4
-> > [c0000000e7f9bcd0] [c000000000109d00] .vfs_write+0xf0/0x1c4
-> > [c0000000e7f9bd80] [c00000000010a69c] .sys_write+0x6c/0xb8
-> > [c0000000e7f9be30] [c00000000000852c] syscall_exit+0x0/0x40
-> > RCU detected CPU 1 stall (t=4299525093/1733250 jiffies)
-> > Call Trace:
-> > [c0000000e7f9aa00] [c0000000000102a4] .show_stack+0x94/0x198 (unreliable)
-> > [c0000000e7f9aab0] [c0000000000103d0] .dump_stack+0x28/0x3c
-> > [c0000000e7f9ab30] [c0000000000b1020] .__rcu_pending+0xa8/0x2c4
-> > [c0000000e7f9abd0] [c0000000000b1288] .rcu_pending+0x4c/0xa0
-> > [c0000000e7f9ac60] [c000000000076a8c] .update_process_times+0x50/0xa8
-> > [c0000000e7f9ad00] [c000000000095e88] .tick_sched_timer+0xb0/0x100
-> > [c0000000e7f9adb0] [c00000000008ae98] .__run_hrtimer+0xa4/0x13c
-> > [c0000000e7f9ae50] [c00000000008c0b8] .hrtimer_interrupt+0x128/0x200
-> > [c0000000e7f9af30] [c00000000002858c] .timer_interrupt+0xc0/0x11c
-> > [c0000000e7f9afd0] [c000000000003710] decrementer_common+0x110/0x180
-> > --- Exception: 901 at ._spin_lock_irqsave+0x84/0xd4
-> >     LR = ._spin_lock_irqsave+0x7c/0xd4
-> > [c0000000e7f9b2c0] [c0000000005a69a0] ._spin_lock_irqsave+0x28/0xd4 (unreliable)
-> > [c0000000e7f9b360] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > [c0000000e7f9b420] [c000000000105c70] .mem_cgroup_cache_charge+0x130/0x154
-> > [c0000000e7f9b4c0] [c0000000000c29bc] .add_to_page_cache_locked+0x64/0x18c
-> > [c0000000e7f9b570] [c0000000000c2b64] .add_to_page_cache_lru+0x80/0xe4
-> > [c0000000e7f9b610] [c0000000000c2c34] .__grab_cache_page+0x6c/0xb4
-> > [c0000000e7f9b6b0] [c000000000187628] .reiserfs_write_begin+0xb0/0x2bc
-> > [c0000000e7f9b790] [c0000000000c38a8] .generic_file_buffered_write+0x150/0x354
-> > [c0000000e7f9b8d0] [c0000000000c40a8] .__generic_file_aio_write_nolock+0x384/0x3fc
-> > [c0000000e7f9b9d0] [c0000000000c41b0] .generic_file_aio_write+0x90/0x128
-> > [c0000000e7f9ba90] [c0000000001093a4] .do_sync_write+0xe0/0x148
-> > [c0000000e7f9bc30] [c000000000188868] .reiserfs_file_write+0x8c/0xd4
-> > [c0000000e7f9bcd0] [c000000000109d00] .vfs_write+0xf0/0x1c4
-> > [c0000000e7f9bd80] [c00000000010a69c] .sys_write+0x6c/0xb8
-> > [c0000000e7f9be30] [c00000000000852c] syscall_exit+0x0/0x40
-> > RCU detected CPU 1 stall (t=4299532593/1740750 jiffies)
-> > Call Trace:
-> > [c0000000e7f9aa00] [c0000000000102a4] .show_stack+0x94/0x198 (unreliable)
-> > [c0000000e7f9aab0] [c0000000000103d0] .dump_stack+0x28/0x3c
-> > [c0000000e7f9ab30] [c0000000000b1020] .__rcu_pending+0xa8/0x2c4
-> > [c0000000e7f9abd0] [c0000000000b1288] .rcu_pending+0x4c/0xa0
-> > [c0000000e7f9ac60] [c000000000076a8c] .update_process_times+0x50/0xa8
-> > [c0000000e7f9ad00] [c000000000095e88] .tick_sched_timer+0xb0/0x100
-> > [c0000000e7f9adb0] [c00000000008ae98] .__run_hrtimer+0xa4/0x13c
-> > [c0000000e7f9ae50] [c00000000008c0b8] .hrtimer_interrupt+0x128/0x200
-> > [c0000000e7f9af30] [c00000000002858c] .timer_interrupt+0xc0/0x11c
-> > [c0000000e7f9afd0] [c000000000003710] decrementer_common+0x110/0x180
-> > --- Exception: 901 at ._spin_lock_irqsave+0x84/0xd4
-> >     LR = ._spin_lock_irqsave+0x7c/0xd4
-> > [c0000000e7f9b2c0] [c0000000005a69a0] ._spin_lock_irqsave+0x28/0xd4 (unreliable)
-> > [c0000000e7f9b360] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > [c0000000e7f9b420] [c000000000105c70] .mem_cgroup_cache_charge+0x130/0x154
-> > [c0000000e7f9b4c0] [c0000000000c29bc] .add_to_page_cache_locked+0x64/0x18c
-> > [c0000000e7f9b570] [c0000000000c2b64] .add_to_page_cache_lru+0x80/0xe4
-> > [c0000000e7f9b610] [c0000000000c2c34] .__grab_cache_page+0x6c/0xb4
-> > [c0000000e7f9b6b0] [c000000000187628] .reiserfs_write_begin+0xb0/0x2bc
-> > [c0000000e7f9b790] [c0000000000c38a8] .generic_file_buffered_write+0x150/0x354
-> > [c0000000e7f9b8d0] [c0000000000c40a8] .__generic_file_aio_write_nolock+0x384/0x3fc
-> > [c0000000e7f9b9d0] [c0000000000c41b0] .generic_file_aio_write+0x90/0x128
-> > [c0000000e7f9ba90] [c0000000001093a4] .do_sync_write+0xe0/0x148
-> > [c0000000e7f9bc30] [c000000000188868] .reiserfs_file_write+0x8c/0xd4
-> > [c0000000e7f9bcd0] [c000000000109d00] .vfs_write+0xf0/0x1c4
-> > [c0000000e7f9bd80] [c00000000010a69c] .sys_write+0x6c/0xb8
-> > [c0000000e7f9be30] [c00000000000852c] syscall_exit+0x0/0x40
-> > Unable to handle kernel paging request for data at address 0x00000008
-> > Faulting instruction address: 0xc0000000001055e4
-> > Oops: Kernel access of bad area, sig: 11 [#3]
-> > SMP NR_CPUS=32 NUMA pSeries
-> > Modules linked in:
-> > NIP: c0000000001055e4 LR: c00000000010557c CTR: c0000000000bfb74
-> > REGS: c0000000f6c87720 TRAP: 0300   Tainted: G      D     (2.6.28-rc4)
-> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 28044482  XER: 20000010
-> > DAR: 0000000000000008, DSISR: 0000000042000000
-> > TASK = c0000000f6bdecc0[4614] 'sshd' THREAD: c0000000f6c84000 CPU: 3
-> > GPR00: c0000000e9009150 c0000000f6c879a0 c000000000b36fc0 0000000000000001 
-> > GPR04: c000000005355688 0000000000000001 0000000000000001 0000000000000000 
-> > GPR08: c0000000053556a0 0000000000000000 c0000000e9009148 c0000000e9009140 
-> > GPR12: 0000000000000000 c000000000b58900 00000400000382d0 0000000000000006 
-> > GPR16: 0000000000000000 0000000000000001 0000000000000001 c0000000e612e818 
-> > GPR20: 00000fffffdba4e0 0000040000744d98 c0000000e66d2138 0000000000000001 
-> > GPR24: 00000000000000d0 0000000000000005 c000000000bac418 0000000000000001 
-> > GPR28: c0000000e9009138 c000000005355688 c000000000aacad8 c0000000f6c879a0 
-> > NIP [c0000000001055e4] .mem_cgroup_charge_common+0x26c/0x330
-> > LR [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > Call Trace:
-> > [c0000000f6c879a0] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330 (unreliable)
-> > [c0000000f6c87a60] [c0000000001057e4] .mem_cgroup_charge+0x9c/0xc8
-> > [c0000000f6c87b00] [c0000000000d96fc] .__do_fault+0x154/0x664
-> > [c0000000f6c87c10] [c0000000000dbcc4] .handle_mm_fault+0x1ec/0xaf4
-> > [c0000000f6c87d00] [c0000000005a8b10] .do_page_fault+0x384/0x570
-> > [c0000000f6c87e30] [c00000000000517c] handle_page_fault+0x20/0x5c
-> > Instruction dump:
-> > 794a26e4 391d0018 38a00001 7d6be214 7d5c5214 7fa4eb78 e92b0048 380a0008 
-> > 39290001 f92b0048 60000000 e92a0008 <f9090008> f93d0018 f8080008 f90a0008 
-> > ---[ end trace aaa19ed35042c148 ]---
-> > RCU detected CPU 1 stall (t=4299540093/1748250 jiffies)
-> > Call Trace:
-> > [c0000000e7f9aa00] [c0000000000102a4] .show_stack+0x94/0x198 (unreliable)
-> > [c0000000e7f9aab0] [c0000000000103d0] .dump_stack+0x28/0x3c
-> > [c0000000e7f9ab30] [c0000000000b1020] .__rcu_pending+0xa8/0x2c4
-> > [c0000000e7f9abd0] [c0000000000b1288] .rcu_pending+0x4c/0xa0
-> > [c0000000e7f9ac60] [c000000000076a8c] .update_process_times+0x50/0xa8
-> > [c0000000e7f9ad00] [c000000000095e88] .tick_sched_timer+0xb0/0x100
-> > [c0000000e7f9adb0] [c00000000008ae98] .__run_hrtimer+0xa4/0x13c
-> > [c0000000e7f9ae50] [c00000000008c0b8] .hrtimer_interrupt+0x128/0x200
-> > [c0000000e7f9af30] [c00000000002858c] .timer_interrupt+0xc0/0x11c
-> > [c0000000e7f9afd0] [c000000000003710] decrementer_common+0x110/0x180
-> > --- Exception: 901 at ._spin_lock_irqsave+0x84/0xd4
-> >     LR = ._spin_lock_irqsave+0x7c/0xd4
-> > [c0000000e7f9b2c0] [c0000000005a69a0] ._spin_lock_irqsave+0x28/0xd4 (unreliable)
-> > [c0000000e7f9b360] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > [c0000000e7f9b420] [c000000000105c70] .mem_cgroup_cache_charge+0x130/0x154
-> > [c0000000e7f9b4c0] [c0000000000c29bc] .add_to_page_cache_locked+0x64/0x18c
-> > [c0000000e7f9b570] [c0000000000c2b64] .add_to_page_cache_lru+0x80/0xe4
-> > [c0000000e7f9b610] [c0000000000c2c34] .__grab_cache_page+0x6c/0xb4
-> > [c0000000e7f9b6b0] [c000000000187628] .reiserfs_write_begin+0xb0/0x2bc
-> > [c0000000e7f9b790] [c0000000000c38a8] .generic_file_buffered_write+0x150/0x354
-> > [c0000000e7f9b8d0] [c0000000000c40a8] .__generic_file_aio_write_nolock+0x384/0x3fc
-> > [c0000000e7f9b9d0] [c0000000000c41b0] .generic_file_aio_write+0x90/0x128
-> > [c0000000e7f9ba90] [c0000000001093a4] .do_sync_write+0xe0/0x148
-> > [c0000000e7f9bc30] [c000000000188868] .reiserfs_file_write+0x8c/0xd4
-> > [c0000000e7f9bcd0] [c000000000109d00] .vfs_write+0xf0/0x1c4
-> > [c0000000e7f9bd80] [c00000000010a69c] .sys_write+0x6c/0xb8
-> > [c0000000e7f9be30] [c00000000000852c] syscall_exit+0x0/0x40
-> > BUG: soft lockup - CPU#0 stuck for 61s! [sshd:3665]
-> > Modules linked in:
-> > NIP: c0000000005a69fc LR: c0000000005a69f4 CTR: c0000000000bfb74
-> > REGS: c0000000e667f6c0 TRAP: 0901   Tainted: G      D     (2.6.28-rc4)
-> > MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 88004484  XER: 20000010
-> > TASK = c0000000e9905980[3665] 'sshd' THREAD: c0000000e667c000 CPU: 0
-> > GPR00: 0000000080000000 c0000000e667f940 c000000000b36fc0 0000000000000001 
-> > GPR04: c00000000010557c c0000000000bfb74 0000000000000001 0000000000000000 
-> > GPR08: c000000000bd7700 0000000080000000 00000000004cc000 c0000000007296c0 
-> > GPR12: 0000000000000000 c000000000b58300 
-> > NIP [c0000000005a69fc] ._spin_lock_irqsave+0x84/0xd4
-> > LR [c0000000005a69f4] ._spin_lock_irqsave+0x7c/0xd4
-> > Call Trace:
-> > [c0000000e667f940] [c0000000005a69a0] ._spin_lock_irqsave+0x28/0xd4 (unreliable)
-> > [c0000000e667f9e0] [c00000000010557c] .mem_cgroup_charge_common+0x204/0x330
-> > [c0000000e667faa0] [c0000000001057e4] .mem_cgroup_charge+0x9c/0xc8
-> > [c0000000e667fb40] [c0000000000da170] .do_wp_page+0x564/0x8ec
-> > [c0000000e667fc10] [c0000000000dc500] .handle_mm_fault+0xa28/0xaf4
-> > [c0000000e667fd00] [c0000000005a8b10] .do_page_fault+0x384/0x570
-> > [c0000000e667fe30] [c00000000000517c] handle_page_fault+0x20/0x5c
-> > Instruction dump:
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-> > 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+-> #4 (&dev->mutex){--..}:
+       [<c0160f87>] validate_chain+0x831/0xaa2
+       [<c0161872>] __lock_acquire+0x67a/0x6e0
+       [<c0161933>] lock_acquire+0x5b/0x81
+       [<c0a660e4>] mutex_lock_interruptible_nested+0xde/0x2f8
+       [<c0782d02>] input_register_handle+0x26/0x7a			dev->mutex
+       [<c04a62c9>] kbd_connect+0x64/0x8d
+       [<c0782842>] input_attach_handler+0x38/0x6b
+       [<c0784216>] input_register_handler+0x74/0xc3			input_mutex
+       [<c0f54e4b>] kbd_init+0x66/0x91
+       [<c0f54f7b>] vty_init+0xce/0xd7
+       [<c0f54952>] tty_init+0x193/0x197
+       [<c010112a>] do_one_initcall+0x42/0x133
+       [<c0f2d5cb>] kernel_init+0x16e/0x1d5
+       [<c0117c03>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
+
+-> #3 (input_mutex){--..}:
+       [<c0160f87>] validate_chain+0x831/0xaa2
+       [<c0161872>] __lock_acquire+0x67a/0x6e0
+       [<c0161933>] lock_acquire+0x5b/0x81
+       [<c0a660e4>] mutex_lock_interruptible_nested+0xde/0x2f8
+       [<c0783fbe>] input_register_device+0xff/0x17f		input_mutex
+       [<c048a889>] acpi_button_add+0x31e/0x429
+       [<c04889f4>] acpi_device_probe+0x43/0xde
+       [<c052c67f>] driver_probe_device+0xa5/0x120
+       [<c052c73c>] __driver_attach+0x42/0x64			dev->sem
+       [<c052be91>] bus_for_each_dev+0x43/0x65
+       [<c052c507>] driver_attach+0x19/0x1b
+       [<c052c251>] bus_add_driver+0x9e/0x1a1
+       [<c052c8de>] driver_register+0x76/0xd2
+       [<c0488dc3>] acpi_bus_register_driver+0x3f/0x41
+       [<c0f51bf2>] acpi_button_init+0x32/0x51
+       [<c010112a>] do_one_initcall+0x42/0x133
+       [<c0f2d201>] do_async_initcalls+0x1a/0x2a
+       [<c0150eec>] run_workqueue+0xc3/0x193			
+       [<c015195d>] worker_thread+0xbb/0xc7
+       [<c0153e2a>] kthread+0x40/0x66
+       [<c0117c03>] kernel_thread_helper+0x7/0x10
+       [<ffffffff>] 0xffffffff
+
 
