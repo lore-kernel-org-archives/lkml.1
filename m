@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYKKRDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbYKKRFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272AbYKKRDd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYKKRDY
+	id S1753771AbYKKRFK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:05:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYKKRE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:03:24 -0500
-Received: from mx2.suse.de ([195.135.220.15]:58669 "EHLO mx2.suse.de"
+	Tue, 11 Nov 2008 12:04:58 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58811 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751623AbYKKRDY convert rfc822-to-8bit (ORCPT
+	id S1751719AbYKKRE5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:03:24 -0500
-Date: Tue, 11 Nov 2008 18:03:22 +0100
-Message-ID: <s5hprl2yz39.wl%tiwai@suse.de>
+	Tue, 11 Nov 2008 12:04:57 -0500
+Date: Tue, 11 Nov 2008 18:04:56 +0100
+Message-ID: <s5hmyg6yz0n.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Valdis.Kletnieks@vt.edu
 Cc: Andrew Morton <akpm@linux-foundation.org>, perex@perex.cz,
        linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
 Subject: Re: 2.6.28-rc2-mm1 - sound semi-busted on Dell Latitude D820
-In-Reply-To: <s5hljvqzot1.wl%tiwai@suse.de>
+In-Reply-To: <s5hprl2yz39.wl%tiwai@suse.de>
 References: <4411.1226345758@turing-police.cc.vt.edu>
 	<s5hljvqzot1.wl%tiwai@suse.de>
+	<s5hprl2yz39.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -30,86 +31,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Tue, 11 Nov 2008 08:47:54 +0100,
+At Tue, 11 Nov 2008 18:03:22 +0100,
 I wrote:
 > 
-> At Mon, 10 Nov 2008 14:35:58 -0500,
-> Valdis.Kletnieks@vt.edu wrote:
+> At Tue, 11 Nov 2008 08:47:54 +0100,
+> I wrote:
 > > 
-> > Sometime between -mmotm1017  and -rc2-mm1, something odd happened to the
-> > sound subsystem.  On my Dell Latitude D820, audio works OK if it's sitting
-> > there standalone, or in its docking station.
+> > At Mon, 10 Nov 2008 14:35:58 -0500,
+> > Valdis.Kletnieks@vt.edu wrote:
+> > > 
+> > > Sometime between -mmotm1017  and -rc2-mm1, something odd happened to the
+> > > sound subsystem.  On my Dell Latitude D820, audio works OK if it's sitting
+> > > there standalone, or in its docking station.
+> > > 
+> > > However, when I plug in headphones, it goes silent.
 > > 
-> > However, when I plug in headphones, it goes silent.
+> > To confirm a regression, could you copy sound/pci/hda/patch_sigmatel.c
+> > from 2.6.27 kernel and check the driver works?  Does the same problem
+> > exist in 2.6.28-rc kernel?
 > 
-> To confirm a regression, could you copy sound/pci/hda/patch_sigmatel.c
-> from 2.6.27 kernel and check the driver works?  Does the same problem
-> exist in 2.6.28-rc kernel?
+> Could you try the patch below?
+> 
+> There is another patch for a missing capture mux control, but in your
+> case, it doesn't matter because you didn't change the value.
+> I'll post that patch later, too.
 
-Could you try the patch below?
+Here is another fix.
 
-There is another patch for a missing capture mux control, but in your
-case, it doesn't matter because you didn't change the value.
-I'll post that patch later, too.
-
-
-thanks,
 
 Takashi
 
 ===
->From 4f1e6bc3646ab50b8181555ab7e6eeab68b8632a Mon Sep 17 00:00:00 2001
+>From 355a0ec471377a8a907b79c8fba3f0f09b44656e Mon Sep 17 00:00:00 2001
 From: Takashi Iwai <tiwai@suse.de>
-Date: Tue, 11 Nov 2008 16:47:24 +0100
-Subject: [PATCH] ALSA: hda - Fix input pin initialization for STAC/IDT codecs
+Date: Tue, 11 Nov 2008 16:46:19 +0100
+Subject: [PATCH] ALSA: hda - Add missing analog-mux mixer creation for STAC9200
 
-The input pins are sometimes not initialized properly because
-of the optimization check of the current pinctl code.
-
-Force to initialize the mic input pins so that they can be set up
-properly even if they were in a weird state.  But keep other input
-pins if already set up as input, since this could be an extra mic
-pin.
-
-Reference: Novell bnc#443738
-	https://bugzilla.novell.com/show_bug.cgi?id=443738
+The creation of analog-mux mixer element is missing in
+patch_stac9200() due to the dynamic allocation patch.
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/pci/hda/patch_sigmatel.c |   20 ++++++++++++--------
- 1 files changed, 12 insertions(+), 8 deletions(-)
+ sound/pci/hda/patch_sigmatel.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
 diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
-index 1627756..a511601 100644
+index e608591..1627756 100644
 --- a/sound/pci/hda/patch_sigmatel.c
 +++ b/sound/pci/hda/patch_sigmatel.c
-@@ -3653,14 +3653,18 @@ static int stac92xx_init(struct hda_codec *codec)
- 	for (i = 0; i < AUTO_PIN_LAST; i++) {
- 		hda_nid_t nid = cfg->input_pins[i];
- 		if (nid) {
--			unsigned int pinctl = snd_hda_codec_read(codec, nid,
--				0, AC_VERB_GET_PIN_WIDGET_CONTROL, 0);
--			/* if PINCTL already set then skip */
--			if (pinctl & AC_PINCAP_IN)
--				continue;
--			pinctl = AC_PINCTL_IN_EN;
--			if (i == AUTO_PIN_MIC || i == AUTO_PIN_FRONT_MIC)
--				pinctl |= stac92xx_get_vref(codec, nid);
-+			unsigned int pinctl;
-+			if (i == AUTO_PIN_MIC || i == AUTO_PIN_FRONT_MIC) {
-+				/* for mic pins, force to initialize */
-+				pinctl = stac92xx_get_vref(codec, nid);
-+			} else {
-+				pinctl = snd_hda_codec_read(codec, nid, 0,
-+					AC_VERB_GET_PIN_WIDGET_CONTROL, 0);
-+				/* if PINCTL already set then skip */
-+				if (pinctl & AC_PINCTL_IN_EN)
-+					continue;
-+			}
-+			pinctl |= AC_PINCTL_IN_EN;
- 			stac92xx_auto_set_pinctl(codec, nid, pinctl);
- 		}
- 	}
+@@ -3530,6 +3530,12 @@ static int stac9200_parse_auto_config(struct hda_codec *codec)
+ 	if ((err = stac9200_auto_create_lfe_ctls(codec, &spec->autocfg)) < 0)
+ 		return err;
+ 
++	if (spec->num_muxes > 0) {
++		err = stac92xx_auto_create_mux_input_ctls(codec);
++		if (err < 0)
++			return err;
++	}
++
+ 	if (spec->autocfg.dig_out_pin)
+ 		spec->multiout.dig_out_nid = 0x05;
+ 	if (spec->autocfg.dig_in_pin)
 -- 
 1.6.0.4
 
