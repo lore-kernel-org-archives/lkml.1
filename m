@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753420AbYKKWET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbYKKWHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753420AbYKKWET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:04:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbYKKWDu
+	id S1753046AbYKKWHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:07:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbYKKWHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:03:50 -0500
-Received: from vena.lwn.net ([206.168.112.25]:58633 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751717AbYKKWDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:03:48 -0500
-Date: Tue, 11 Nov 2008 15:03:45 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
-Message-ID: <20081111150345.7fff8ff2@bike.lwn.net>
-In-Reply-To: <1226409701-14831-4-git-send-email-ieidus@redhat.com>
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-2-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-3-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-4-git-send-email-ieidus@redhat.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Tue, 11 Nov 2008 17:07:10 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:40748 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751155AbYKKWHI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:07:08 -0500
+Message-ID: <491A01E2.2010701@cosmosbay.com>
+Date: Tue, 11 Nov 2008 23:06:26 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Takashi Iwai <tiwai@suse.de>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+References: <s5htzaekp6o.wl%tiwai@suse.de>
+In-Reply-To: <s5htzaekp6o.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 11 Nov 2008 23:06:28 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't claim to begin to really understand the deep VM side of this
-patch, but I can certainly pick nits as I work through it...sorry for
-the lack of anything more substantive.
+Takashi Iwai a écrit :
+> Hi,
+> 
+> we found that the kernel module sizes and memory footprints
+> grow drastically when NR_CPUS is high.  For example, with
+> NR_CPUS=4096, SUSE kernel packages weigh over 500MB (even w/o debug
+> info).
+> 
+> A part of the reason is the fixed size array in struct module.
+> The patch below fixes the problem by allocating it dynamically.
+> With the patch, the size can go down to 20MB.
+> 
+> 
+> Any comments/suggestions appreciated.
+> 
 
-> +static struct list_head slots;
+Many attempts were done on this area on the past.
 
-Some of these file-static variable names seem a little..terse...
+Your patch has the drawback of using kcalloc(), while previously, module_ref
+space was allocated with vmalloc().
 
-> +#define PAGECMP_OFFSET 128
-> +#define PAGEHASH_SIZE (PAGECMP_OFFSET ? PAGECMP_OFFSET : PAGE_SIZE)
-> +/* hash the page */
-> +static void page_hash(struct page *page, unsigned char *digest)
+After a while, a machine could have a lot of vmalloc() space available, but not enough
+physically contiguous space to fullfill a kmalloc(large_area) call.
 
-So is this really saying that you only hash the first 128 bytes, relying on
-full compares for the rest?  I assume there's a perfectly good reason for
-doing it that way, but it's not clear to me from reading the code.  Do you
-gain performance which is not subsequently lost in the (presumably) higher
-number of hash collisions?
+So a module load could fail, while previous code could load module.
 
-> +static int ksm_scan_start(struct ksm_scan *ksm_scan, int scan_npages,
-> +			  int max_npages)
-> +{
-> +	struct ksm_mem_slot *slot;
-> +	struct page *page[1];
-> +	int val;
-> +	int ret = 0;
-> +
-> +	down_read(&slots_lock);
-> +
-> +	scan_update_old_index(ksm_scan);
-> +
-> +	while (scan_npages > 0 && max_npages > 0) {
+I believe Mike Travis has a better patch for this problem, partly using new percpu allocator.
 
-Should this loop maybe check kthread_run too?  It seems like you could loop
-for a long time after kthread_run has been set to zero.
 
-> +static int ksm_dev_open(struct inode *inode, struct file *filp)
-> +{
-> +	try_module_get(THIS_MODULE);
-> +	return 0;
-> +}
-> +
-> +static int ksm_dev_release(struct inode *inode, struct file *filp)
-> +{
-> +	module_put(THIS_MODULE);
-> +	return 0;
-> +}
-> +
-> +static struct file_operations ksm_chardev_ops = {
-> +	.open           = ksm_dev_open,
-> +	.release        = ksm_dev_release,
-> +	.unlocked_ioctl = ksm_dev_ioctl,
-> +	.compat_ioctl   = ksm_dev_ioctl,
-> +};
-
-Why do you roll your own module reference counting?  Is there a reason you
-don't just set .owner and let the VFS handle it?
-
-Given that the KSM_REGISTER_MEMORY_REGION ioctl() creates unswappable
-memory, should there be some sort of capability check done there?  A check
-for starting/stopping the thread might also make sense.  Or is that
-expected to be handled via permissions on /dev/ksm?
-
-Actually, it occurs to me that there's no sanity checks on any of the
-values passed in by ioctl().  What happens if the user tells KSM to scan a
-bogus range of memory?
-
-Any benchmarks on the runtime cost of having KSM running?
-
-jon
