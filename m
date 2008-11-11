@@ -1,93 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbYKKVeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbYKKVfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbYKKVeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 16:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYKKVeJ
+	id S1751667AbYKKVfJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 16:35:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYKKVez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 16:34:09 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:40607 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYKKVeG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 16:34:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=sEbPcStwZY43zHh50h7b3YNJJgtpk+ayW53MVqbz58Pf6iGUEu0LStwj9/196wXJkZ
-         JMeSZ9t2lchAVTlwogkcn4RoZTTgdtfs4d69iHeMsq5+Q5QB8DpFB0fjSYOcP+Vn1cZz
-         AZX6vYyn76S9YxlQcmS/kQshIDVCcP2TmnNZE=
-Message-ID: <7c86c4470811111334r2562bb1m6e4ecb15848e3835@mail.gmail.com>
-Date: Tue, 11 Nov 2008 22:34:04 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: arges@linux.vnet.ibm.com
-Subject: Re: [PATCH] perfmon2 add support for ppc970 processors
-Cc: perfmon2-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1226015978-19965-1-git-send-email-arges@linux.vnet.ibm.com>
+	Tue, 11 Nov 2008 16:34:55 -0500
+Received: from kroah.org ([198.145.64.141]:37264 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750933AbYKKVex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 16:34:53 -0500
+Date: Tue, 11 Nov 2008 13:18:01 -0800
+From: Greg KH <greg@kroah.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linux-kernel Kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: Fwd: [PATCH v2][for 2.6.28] powerpc/mpic: Add support for
+	MPICs that only support a single CPU destination
+Message-ID: <20081111211801.GB2497@kroah.com>
+References: <1225252899-20752-1-git-send-email-galak@kernel.crashing.org> <B48FBC1A-5974-4E68-B34A-39C223328EFF@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1226015978-19965-1-git-send-email-arges@linux.vnet.ibm.com>
+In-Reply-To: <B48FBC1A-5974-4E68-B34A-39C223328EFF@kernel.crashing.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris,
+On Wed, Nov 05, 2008 at 05:38:48PM -0600, Kumar Gala wrote:
+> Greg,
+>
+> Can you pick this up for stable-2.6.27.
 
-Patch applied to both perfmon2 and perfmon3 trees.
+I don't see this in Linus's tree right now.
 
-Thanks.
+Am I missing it?  Or do you know what the git commit id is?
 
+thanks,
 
-On Fri, Nov 7, 2008 at 12:59 AM,  <arges@linux.vnet.ibm.com> wrote:
-> From: Chris J Arges <arges@linux.vnet.ibm.com>
->
-> Allows ppc970(fx,mp,gx) to use the perfmon_power4 module.
-> ---
->  arch/powerpc/perfmon/perfmon.c        |    2 +-
->  arch/powerpc/perfmon/perfmon_power4.c |    8 +++++++-
->  2 files changed, 8 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/perfmon/perfmon.c b/arch/powerpc/perfmon/perfmon.c
-> index a14a1e3..f1d93ee 100644
-> --- a/arch/powerpc/perfmon/perfmon.c
-> +++ b/arch/powerpc/perfmon/perfmon.c
-> @@ -284,7 +284,7 @@ char *pfm_arch_get_pmu_module_name(void)
->        case PV_970:
->        case PV_970FX:
->        case PV_970MP:
-> -               return "perfmon_ppc970";
-> +               return "perfmon_power4";
->        case PV_BE:
->                return "perfmon_cell";
->        }
-> diff --git a/arch/powerpc/perfmon/perfmon_power4.c b/arch/powerpc/perfmon/perfmon_power4.c
-> index eba9e8c..b262de3 100644
-> --- a/arch/powerpc/perfmon/perfmon_power4.c
-> +++ b/arch/powerpc/perfmon/perfmon_power4.c
-> @@ -57,8 +57,15 @@ static int pfm_power4_probe_pmu(void)
->        unsigned long pvr = mfspr(SPRN_PVR);
->        int ver = PVR_VER(pvr);
->
-> -       if ((ver == PV_POWER4) || (ver == PV_POWER4p))
-> +       switch (ver) {
-> +       case PV_POWER4:
-> +       case PV_POWER4p:
-> +       case PV_970:
-> +       case PV_970FX:
-> +       case PV_970MP:
-> +       case PV_970GX:
->                return 0;
-> +       }
->
->        return -1;
->  }
-> --
-> 1.5.4.5
->
-> Signed-off-by: Chris J Arges <arges@linux.vnet.ibm.com>
->
->
+greg k-h
+
+>> From: Kumar Gala <galak@kernel.crashing.org>
+>> Date: October 28, 2008 11:01:39 PM CDT
+>> Cc: linuxppc-dev@ozlabs.org, tglx@linutronix.de, Paul Mackerras 
+>> <paulus@samba.org>, davem@davemloft.net
+>> Subject: [PATCH v2][for 2.6.28] powerpc/mpic: Add support for MPICs that 
+>> only support a single CPU destination
+>>
+>> The Freescale implementation of MPIC only allows a single CPU destination
+>> for non-IPI interrupts.  We add a flag to the mpic_init to distinquish
+>> these variants of MPIC.  We pull in the irq_choose_cpu from sparc64 to
+>> select a single CPU as the destination of the interrupt.
+>>
+>> This is to deal with the fact that the default smp affinity was
+>> changed by commit 18404756765c713a0be4eb1082920c04822ce588.
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>>
+>> Changed requested by Ben to use irq_choose_cpu from sparc64 land.
+>>
+>> - k
+>>
+>> arch/powerpc/include/asm/mpic.h          |    2 +
+>> arch/powerpc/platforms/85xx/mpc85xx_ds.c |    3 +-
+>> arch/powerpc/platforms/86xx/pic.c        |    3 +-
+>> arch/powerpc/sysdev/mpic.c               |   59 
+>> ++++++++++++++++++++++++++++--
+>> 4 files changed, 61 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/mpic.h 
+>> b/arch/powerpc/include/asm/mpic.h
+>> index 34d9ac4..c2ccca5 100644
+>> --- a/arch/powerpc/include/asm/mpic.h
+>> +++ b/arch/powerpc/include/asm/mpic.h
+>> @@ -355,6 +355,8 @@ struct mpic
+>> #define MPIC_NO_BIAS			0x00000400
+>> /* Ignore NIRQS as reported by FRR */
+>> #define MPIC_BROKEN_FRR_NIRQS		0x00000800
+>> +/* Destination only supports a single CPU at a time */
+>> +#define MPIC_SINGLE_DEST_CPU		0x00001000
+>>
+>> /* MPIC HW modification ID */
+>> #define MPIC_REGSET_MASK		0xf0000000
+>> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c 
+>> b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> index 483b65c..613bf8c 100644
+>> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+>> @@ -78,7 +78,8 @@ void __init mpc85xx_ds_pic_init(void)
+>>
+>> 	mpic = mpic_alloc(np, r.start,
+>> 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+>> -			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+>> +			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+>> +			  MPIC_SINGLE_DEST_CPU,
+>> 			0, 256, " OpenPIC  ");
+>> 	BUG_ON(mpic == NULL);
+>> 	of_node_put(np);
+>> diff --git a/arch/powerpc/platforms/86xx/pic.c 
+>> b/arch/powerpc/platforms/86xx/pic.c
+>> index 8881c5d..668275d 100644
+>> --- a/arch/powerpc/platforms/86xx/pic.c
+>> +++ b/arch/powerpc/platforms/86xx/pic.c
+>> @@ -44,7 +44,8 @@ void __init mpc86xx_init_irq(void)
+>>
+>> 	mpic = mpic_alloc(np, res.start,
+>> 			MPIC_PRIMARY | MPIC_WANTS_RESET |
+>> -			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
+>> +			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
+>> +			MPIC_SINGLE_DEST_CPU,
+>> 			0, 256, " MPIC     ");
+>> 	of_node_put(np);
+>> 	BUG_ON(mpic == NULL);
+>> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+>> index 8e3478c..f6299cc 100644
+>> --- a/arch/powerpc/sysdev/mpic.c
+>> +++ b/arch/powerpc/sysdev/mpic.c
+>> @@ -563,6 +563,51 @@ static void __init mpic_scan_ht_pics(struct mpic 
+>> *mpic)
+>>
+>> #endif /* CONFIG_MPIC_U3_HT_IRQS */
+>>
+>> +#ifdef CONFIG_SMP
+>> +static int irq_choose_cpu(unsigned int virt_irq)
+>> +{
+>> +	cpumask_t mask = irq_desc[virt_irq].affinity;
+>> +	int cpuid;
+>> +
+>> +	if (cpus_equal(mask, CPU_MASK_ALL)) {
+>> +		static int irq_rover;
+>> +		static DEFINE_SPINLOCK(irq_rover_lock);
+>> +		unsigned long flags;
+>> +
+>> +		/* Round-robin distribution... */
+>> +	do_round_robin:
+>> +		spin_lock_irqsave(&irq_rover_lock, flags);
+>> +
+>> +		while (!cpu_online(irq_rover)) {
+>> +			if (++irq_rover >= NR_CPUS)
+>> +				irq_rover = 0;
+>> +		}
+>> +		cpuid = irq_rover;
+>> +		do {
+>> +			if (++irq_rover >= NR_CPUS)
+>> +				irq_rover = 0;
+>> +		} while (!cpu_online(irq_rover));
+>> +
+>> +		spin_unlock_irqrestore(&irq_rover_lock, flags);
+>> +	} else {
+>> +		cpumask_t tmp;
+>> +
+>> +		cpus_and(tmp, cpu_online_map, mask);
+>> +
+>> +		if (cpus_empty(tmp))
+>> +			goto do_round_robin;
+>> +
+>> +		cpuid = first_cpu(tmp);
+>> +	}
+>> +
+>> +	return cpuid;
+>> +}
+>> +#else
+>> +static int irq_choose_cpu(unsigned int virt_irq)
+>> +{
+>> +	return hard_smp_processor_id();
+>> +}
+>> +#endif
+>>
+>> #define mpic_irq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
+>>
+>> @@ -777,12 +822,18 @@ void mpic_set_affinity(unsigned int irq, cpumask_t 
+>> cpumask)
+>> 	struct mpic *mpic = mpic_from_irq(irq);
+>> 	unsigned int src = mpic_irq_to_hw(irq);
+>>
+>> -	cpumask_t tmp;
+>> +	if (mpic->flags & MPIC_SINGLE_DEST_CPU) {
+>> +		int cpuid = irq_choose_cpu(irq);
+>>
+>> -	cpus_and(tmp, cpumask, cpu_online_map);
+>> +		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION), 1 << cpuid);
+>> +	} else {
+>> +		cpumask_t tmp;
+>>
+>> -	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
+>> -		       mpic_physmask(cpus_addr(tmp)[0]));	
+>> +		cpus_and(tmp, cpumask, cpu_online_map);
+>> +
+>> +		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
+>> +			       mpic_physmask(cpus_addr(tmp)[0]));
+>> +	}
+>> }
+>>
+>> static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int 
+>> type)
+>> -- 
+>> 1.5.5.1
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@ozlabs.org
+>> https://ozlabs.org/mailman/listinfo/linuxppc-dev
