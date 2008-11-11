@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYKKSTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYKKSVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYKKSTa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYKKSTU
+	id S1754703AbYKKSVT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbYKKSVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:19:20 -0500
-Received: from eazy.amigager.de ([213.239.192.238]:36955 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYKKSTT (ORCPT
+	Tue, 11 Nov 2008 13:21:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:39064 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512AbYKKSVE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:19:19 -0500
-Date: Tue, 11 Nov 2008 19:19:25 +0100
-From: Tino Keitel <tino.keitel@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [stable] Suspend regression in stable kernel 2.6.27.4 on Mac
-	mini Core Duo
-Message-ID: <20081111181925.GA5036@dose.home.local>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linux-kernel@vger.kernel.org, stable@kernel.org,
-	Greg KH <greg@kroah.com>
-References: <20081109202830.GA7206@x61> <200811092151.57620.rjw@sisk.pl> <20081111065643.GA11757@x61> <200811111516.09163.rjw@sisk.pl>
+	Tue, 11 Nov 2008 13:21:04 -0500
+Date: Tue, 11 Nov 2008 13:21:02 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>,
+       Mikulas Patocka <mpatocka@redhat.com>, axboe@kernel.dk,
+       dm-devel <dm-devel@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
+	dm_any_congested() to properly sync up with suspend code path)
+Message-ID: <20081111182102.GB25049@infradead.org>
+References: <1225944008.14830.1101.camel@chandra-ubuntu> <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com> <20081110135401.GA11606@infradead.org> <20081110142715.GD16649@agk.fab.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200811111516.09163.rjw@sisk.pl>
+In-Reply-To: <20081110142715.GD16649@agk.fab.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 15:16:08 +0100, Rafael J. Wysocki wrote:
-
-[...]
-
-> This really is not a good news, because this commit evidently fixes at least
-> several systems.
+On Mon, Nov 10, 2008 at 02:27:15PM +0000, Alasdair G Kergon wrote:
+> Indeed - the blocking was a bug for which there's a patch, but that doesn't
+> deal with how the function should be operating in the first place.
 > 
-> First, let's try to remove things that we shouldn't be doing.
+> - If one device is found to be congested, why bother checking the remaining
+> devices?
 > 
-> Please apply the patch below to 2.6.27.5 without reverting that commit and see
-> if that works.
+> - If the device is suspended, the response should be that it is congested, I'd
+> have thought.
 
-It doesn't work. 2.6.27.5 with the patch applied hangs at resume.
+Yes.  device congested is a quick an dirty check - if you encounter
+anything long just return congested if I/O would hit this long delay,
+too or not congested if you can't really know.
 
-Regards,
-Tino
