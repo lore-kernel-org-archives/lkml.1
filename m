@@ -1,110 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbYKKOfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbYKKOmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756864AbYKKOfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 09:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbYKKOfW
+	id S1756713AbYKKOmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 09:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYKKOmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 09:35:22 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:42009 "EHLO e6.ny.us.ibm.com"
+	Tue, 11 Nov 2008 09:42:31 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:47359 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756095AbYKKOfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 09:35:20 -0500
-Date: Tue, 11 Nov 2008 06:35:05 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
-	chanes in stop_machine
-Message-ID: <20081111143505.GA6923@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com>
+	id S1755907AbYKKOma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 09:42:30 -0500
+Date: Tue, 11 Nov 2008 14:42:24 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
+Message-ID: <20081111144224.GA7826@csn.ul.ie>
+References: <20081107093127.F84A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081107104726.GD13786@csn.ul.ie> <20081111221059.8B44.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20081111124201.GA9459@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20081111221059.8B44.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 01:42:01PM +0100, Heiko Carstens wrote:
-> On Tue, Nov 11, 2008 at 12:31:34PM +0100, Heiko Carstens wrote:
-> > On Tue, Nov 11, 2008 at 11:52:14AM +0100, Ingo Molnar wrote:
+On Tue, Nov 11, 2008 at 10:39:40PM +0900, KOSAKI Motohiro wrote:
+> > > > What your patch may help is the situation where the system is under intense
+> > > > memory pressure, is dipping routinely into the lowmem reserves and mixing
+> > > > with high-order atomic allocations. This seems a bit extreme.
 > > > 
-> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > not so extreame.
 > > > 
-> > > > However, it is reproducible by doing
-> > > > 
-> > > > # echo core > /sys/power/pm_test
-> > > > 
-> > > > and repeating
-> > > > 
-> > > > # echo disk > /sys/power/state
-> > > > 
-> > > > for a couple of times, in which case the last two lines printed to the console
-> > > > before a (solid) hang are:
-> > > > 
-> > > > SMP alternatives: switching to SMP code
-> > > > Booting processor 1 APIC 0x1 ip 0x6000
-> > > > 
-> > > > So, it evidently fails while re-enabling the non-boot CPU and not 
-> > > > during disabling it as I thought before.
-> > > > 
-> > > > With commit c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc reverted the 
-> > > > issue is not reproducible any more.
+> > > The linux page reclaim can't process in interrupt context.
+> > > Sl network subsystem and driver often use MIGRATE_RESERVE memory although
+> > > system have many reclaimable memory.
 > > > 
-> > > [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
-> > > 
-> > > Seems like the new kernel/stop_machine.c logic has a race for the test 
-> > > sequence above. (Below is the bisected commit again, maybe the race is 
-> > > visible via email review as well.)
 > > 
-> > FWIW, I tried to reproduce this on s390 and got the following:
-> > 
-> > A process that would do nothing but onlining/offlining cpus would get
-> > stuck after a while:
-> > 
-> >  0 schedule+842 [0x342522]
-> >  1 schedule_timeout+200 [0x342ec4]
-> >  2 wait_for_common+362 [0x341fd6]
-> >  3 wait_for_completion+54 [0x342146]
-> >  4 __synchronize_sched+80 [0x81670]
-> >  5 cpu_down+172 [0x33c030]
-> >  6 store_online+96 [0x33c488]
-> >  7 sysdev_store+52 [0x1bda84]
-> >  8 sysfs_write_file+242 [0x1350ba]
-> >  9 vfs_write+176 [0xd2028]
-> > 10 sys_write+82 [0xd21ea]
-> > 11 sysc_noemu+16 [0x269d8]
-> > 
-> > All cpus are in cpu_idle and no other task in state TASK_INTERRUPTIBLE
-> > or TASK_UNINTERRUPTIBLE. However it would continue to work as soon as
-> > I login into the system or generate a console interrupt.
-> > I'm going to look into the dump and see if I can figure out what is
-> > broken here.
-> > Dunno if it is the same bug or something else.
+> > Why are they often using MIGRATE_RESERVE, have you confirmed that? For that
+> > to be happening, it implies that either memory is under intense pressure and
+> > free pages are often below watermarks due to interrupt contexts or they are
+> > frequently allocating high-order pages in interrupt context. Normal order-0
+> > allocations should be getting satisified from elsewhere as if the free page
+> > counts are low, they would be direct reclaiming and that will likely be
+> > outside of the MIGRATE_RESERVE areas.
 > 
-> [Cc:-ed Steven and Paul, since this backtrace seems to be RCU specific]
+> if inserting printk() in MIGRATE_RESERVE, I can observe MIGRATE_RESERVE
+> page alloc easily although heavy workload don't run.
+> but, there aren't my point.
 > 
-> Steven, Paul, any idea what could cause the hang? I think I would
-> get lost in the RCU code...
 
-Hello, Heiko,
+That's interesting. What is the size of a pageblock on your system and
+is min_free_kbytes aligned to that value? If it's not aligned, it would
+explain why MIGRATE_RESERVE pages are being used before the watermarks
+are hit.
 
-Could you please apply the following debug patch (due to Jiangshan and
-myself)?  Then you should be able to build with CONFIG_RCU_TRACE,
-then mount debugfs after boot, for example, on /debug.  This will
-create a /debug/rcu directory with three files, "rcucb", "rcu_data",
-and "rcu_bh_data".  Since you are still able to log in, could you
-please send the contents of these three files?
+> ok, I guess my patch description was too poor (and a bit pointless).
+> So, I retry it.
+> 
+> (1) in general principal, the system should effort to avoid oom rather than
+>     performance if memory shortage happend.
+>     MIGRATE_RESERVE directly indicate memory shortage happend.
+>     and pcp caching can prevent another cpu allocation.
 
-							Thanx, Paul
+MIGRATE_RESERVE does not directly indicate a memory shortage has
+occured. Bear in mind that a number of pageblocks are marked
+MIGRATE_RESERVE based on the value of the watermarks. In general, the
+minimum number of pages kept free will be in the MIGRATE_RESERVE blocks
+but it is not mandatory.
+
+> (2) MIGRATE_RESERVE is never searched by buffered_rmqueue() because 
+>     allocflags_to_migratetype() never return MIGRATE_RESERVE.
+>     it doesn't work as cache.
+>     IOW, it don't help to increase performance.
+
+This is true. If MIGRATE_RESERVE pages are routinely being used and placed
+on the pcp lists, the lists are not being used to their full potential
+and your patch would make sense.
+
+> (3) if the system pass MIGRATE_RESERVE to free_hot_cold_page() continously,
+>     pcp queueing can reduce the number of grabing zone->lock.
+>     However, it is rate. because MIGRATE_RESERVE is emergency memory,
+
+Again, MIGRATE_RESERVE is not emergency memory.
+
+>     and it is often used interupt context processing.
+>     continuous emergency memory allocation in interrupt context isn't so sane.
+> 
+> Then, unqueueing MIGRATE_RESERVE page doesn't cause performance degression
+> and, it can (a bit) increase realibility and I think merit is much over demerit.
+> 
+
+I'm now inclined to agree if you have shown that MIGRATE_RESERVE pages are
+routinely ending up on the PCP lists.
+
+> 
+> 
+> 
+> > > static struct page *buffered_rmqueue(struct zone *preferred_zone,
+> > >                         struct zone *zone, int order, gfp_t gfp_flags)
+> > > {
+> > > (snip)
+> > >                 /* Find a page of the appropriate migrate type */
+> > >                 if (cold) {
+> > >                         list_for_each_entry_reverse(page, &pcp->list, lru)
+> > >                                 if (page_private(page) == migratetype)
+> > >                                         break;
+> > >                 } else {
+> > >                         list_for_each_entry(page, &pcp->list, lru)
+> > >                                 if (page_private(page) == migratetype)
+> > >                                         break;
+> > >                 }
+> > > 
+> > > Therefore, I'd like to make per migratetype pcp list.
+> > 
+> > That was actually how it was originally implemented and later moved to a list
+> > search. It got shot down on the grounds a per-cpu structure increased in size.
+> 
+> Yup, I believe at that time your decision is right.
+> However, I think the condision was changed (or to be able to change).
+> 
+>  (1) legacy pcp implementation deeply relate to struct zone size.
+>      and, to blow up struct zone size cause performance degression
+>      because cache miss increasing.
+>      However, it solved cristoph's cpu-alloc patch
+> 
+
+Indeed.
+
+>  (2) legacy pcp doesn't have total number of pages restriction.
+>      So, increasing lists directly cause number of pages in pcp.
+>      it can cause oom problem on large numa environment.
+>      However, I think we can implement total number of pages restriction.
+> 
+
+Yes although knowing what the right size for each of the lists should be
+so that the overall PCP lists are not huge is a tricky one.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
