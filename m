@@ -1,78 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbYKKSuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751893AbYKKSwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbYKKSuq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYKKSuf
+	id S1751893AbYKKSwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYKKSwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:50:35 -0500
-Received: from rn-out-0910.google.com ([64.233.170.191]:1867 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYKKSue (ORCPT
+	Tue, 11 Nov 2008 13:52:10 -0500
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1741 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbYKKSwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:50:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tUH7puFEucw35bRn+Qt2EwwFBRjA1O1lm7+SB535GuOdLkGWVpf8+4Mx9RgBiIwR5y
-         NuU8p78aE98df7wEXuu1JGvnqRDbSkBWeTXUFcWjOo1J29MLJiA6qcnKdM5RJyWub693
-         qJZ2bB0oTd13ZiLapQPtieJbGfUz28o+0Q3vA=
-Date: Tue, 11 Nov 2008 13:50:30 -0500
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Henrik Rydberg <rydberg@euromail.se>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: Map missing keys to appropriate functions
-Message-ID: <20081111134955.ZZRA012@mailhub.coreip.homeip.net>
-References: <491040AA.7010208@euromail.se> <alpine.LNX.1.10.0811111826270.24889@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0811111826270.24889@jikos.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 11 Nov 2008 13:52:09 -0500
+Subject: Re: [PATCH 1/2] Create a DIV_ROUND_CLOSEST macro to do division
+ with  rounding
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jean Delvare <khali@linux-fr.org>, "Darrick J. Wong" <djwong@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+In-Reply-To: <20081111090702.94be2a19.akpm@linux-foundation.org>
+References: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
+	 <20081111110454.073a6d94@hyperion.delvare>
+	 <20081111090702.94be2a19.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 10:51:50 -0800
+Message-Id: <1226429510.10478.1061.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.0-2mdv2009.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 06:27:42PM +0100, Jiri Kosina wrote:
-> On Tue, 4 Nov 2008, Henrik Rydberg wrote:
-> 
-> > On macbooks there are specific keys for the user-space functions Expose
-> > and Dashboard, which currently has no counterpart in input.h. This patch
-> > adds KEY_SCALE and KEY_DASHBOARD, and maps the keyboard accordingly.
-> > Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
-> > ---
-> >  drivers/hid/hid-apple.c |    5 +++--
-> >  include/linux/input.h   |    2 ++
-> [ ... ]
-> > diff --git a/include/linux/input.h b/include/linux/input.h
-> > index b86fb55..5341e82 100644
-> > --- a/include/linux/input.h
-> > +++ b/include/linux/input.h
-> > @@ -238,6 +238,7 @@ struct input_absinfo {
-> >  #define KEY_KPEQUAL		117
-> >  #define KEY_KPPLUSMINUS		118
-> >  #define KEY_PAUSE		119
-> > +#define KEY_SCALE		120	/* AL Compiz Scale (Expose) */
-> > 
-> >  #define KEY_KPCOMMA		121
-> >  #define KEY_HANGEUL		122
-> > @@ -322,6 +323,7 @@ struct input_absinfo {
-> >  #define KEY_PAUSECD		201
-> >  #define KEY_PROG3		202
-> >  #define KEY_PROG4		203
-> > +#define KEY_DASHBOARD		204	/* AL Dashboard */
-> >  #define KEY_SUSPEND		205
-> >  #define KEY_CLOSE		206	/* AC Close */
-> >  #define KEY_PLAY		207
-> 
-> Dmitry, could you please Ack this? Is it OK if I take it through my tree, 
-> together with the hid-apple mapping update? Thanks.
-> 
+On Tue, 2008-11-11 at 09:07 -0800, Andrew Morton wrote:
+> On Tue, 11 Nov 2008 11:04:54 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+> > On Mon, 10 Nov 2008 17:01:32 -0800, Darrick J. Wong wrote:
+> > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> > > index fba141d..fb02266 100644
+> > > --- a/include/linux/kernel.h
+> > > +++ b/include/linux/kernel.h
+> > > @@ -48,6 +48,12 @@ extern const char linux_proc_banner[];
+> > >  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+> > >  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+> > >  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+> > > +#define DIV_ROUND_CLOSEST(x, divisor)(			\
+> > > +{							\
+> > > +	typeof(divisor) __divisor = divisor;		\
+> > > +	(((x) + ((__divisor) / 2)) / (__divisor));	\
+> > > +}							\
+> > > +) 
+> > I don't get why you implement this as a macro rather than an inline
+> > function? A function would look much better.
+> The idea is that DIV_ROUND_CLOSEST() can be used with arguments of any
+> size (char, short, ...  long long) and will do all the suitable
+> promotion and will return a type of the appropriate width and
+> signedness.
 
-Sorry, running a bit behind... Yep, please take these through your
-tree.
+Perhaps the macro should be placed directly after
+DIV_ROUND_UP and should use the same argument naming.
 
--- 
-Dmitry
+Perhaps HALF_UP is more descriptive and fairly common.
+http://java.sun.com/j2se/1.5.0/docs/api/java/math/RoundingMode.html
+
+
