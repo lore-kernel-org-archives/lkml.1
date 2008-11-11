@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbYKKVK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbYKKVPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbYKKVK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 16:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYKKVKT
+	id S1753196AbYKKVPV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 16:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYKKVPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 16:10:19 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41445 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbYKKVKS (ORCPT
+	Tue, 11 Nov 2008 16:15:08 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50912 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbYKKVPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 16:10:18 -0500
-Date: Tue, 11 Nov 2008 16:10:16 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Masami Hiramatsu <mhiramat@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [PATCH 6/7] module: Add MODULE_STATE_LIVE notify
-In-Reply-To: <4919F1B9.3060300@redhat.com>
-Message-ID: <alpine.DEB.1.10.0811111608410.3275@gandalf.stny.rr.com>
-References: <4919F1B9.3060300@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 11 Nov 2008 16:15:06 -0500
+Date: Tue, 11 Nov 2008 21:13:06 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, dhowells@redhat.com, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
+       davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] convert cnt32_to_63 to inline
+Message-ID: <20081111211306.GA12739@flint.arm.linux.org.uk>
+Mail-Followup-To: Nicolas Pitre <nico@cam.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	torvalds@linux-foundation.org, dhowells@redhat.com, mingo@elte.hu,
+	a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
+	davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
+	rostedt@goodmis.org, linux-arch@vger.kernel.org
+References: <20081109162250.GB10181@Krystal> <alpine.LFD.2.00.0811092304300.13034@xanadu.home> <20081109204256.89ab7925.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101627510.13034@xanadu.home> <20081110135850.0d620f3c.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101811130.13034@xanadu.home> <20081110152221.64948d23.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101917450.13034@xanadu.home> <20081111182759.GA8052@Krystal> <alpine.LFD.2.00.0811111543060.27509@xanadu.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0811111543060.27509@xanadu.home>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 11, 2008 at 04:00:46PM -0500, Nicolas Pitre wrote:
+> No thank you.  If this trend continues I'm going to make it back private 
+> to ARM again so you could pessimize your own code as much as you want.
 
-On Tue, 11 Nov 2008, Masami Hiramatsu wrote:
+As I've already stated several days ago, I think that's the right
+course of action.  Given all the concerns raised, it's clearly not
+something that should have been allowed to become generic.
 
-> Add a module notifier call which notifies that the state of a module changes
-> from MODULE_STATE_COMING to MODULE_STATE_LIVE.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> ---
->  kernel/module.c |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Steven, Ananth told me that this patch might also help to solve
-> cmpxchg problem.
+So, let's just close this discussion off by taking that course of
+action.
 
-I'm assuming you are talking about the infamous e1000e ftrace cmpxchg
-corruption bug?
+What's required is (in order):
+1. a local copy for NM10300 needs to be created and it converted to that
+2. these two commits then need to be reverted:
 
-In anycase, ftrace has already solved those issues, and does not use 
-cmpxchg anymore.
+bc173c5789e1fc6065fd378edc815914b40ee86b
+b4f151ff899362fec952c45d166252c9912c041f
 
-Thanks anyway,
+Then our usage is again limited to sched_clock() which is well understood
+and known to be problem free.
 
--- Steve
-
-
-> 
-> Index: 2.6.28-rc4/kernel/module.c
-> ===================================================================
-> --- 2.6.28-rc4.orig/kernel/module.c
-> +++ 2.6.28-rc4/kernel/module.c
-> @@ -2346,6 +2346,8 @@ sys_init_module(void __user *umod,
->  	/* Now it's a first class citizen!  Wake up anyone waiting for it. */
->  	mod->state = MODULE_STATE_LIVE;
->  	wake_up(&module_wq);
-> +	blocking_notifier_call_chain(&module_notify_list,
-> +				     MODULE_STATE_LIVE, mod);
-> 
->  	mutex_lock(&module_mutex);
->  	/* Drop initial reference. */
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
-> 
-> 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
