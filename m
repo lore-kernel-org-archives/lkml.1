@@ -1,95 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801AbYKKRYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYKKRYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801AbYKKRYk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbYKKRYZ
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754565AbYKKRYZ (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 11 Nov 2008 12:24:25 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:47122 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754565AbYKKRYX convert rfc822-to-8bit (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYKKRYN
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 11 Nov 2008 12:24:13 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:50425 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbYKKRYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:24:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=qkZFAI1zh/HKtDYmIwNMvYWv+UNennSz5eIWvnRM6iqTN7FYmOyNBGAjimXkVFXy1H
-         drIspC6o175EyQDcEVtAFiXi/Jc+Ymd8liOvygmO73QQAb6nSF1j7KEjBcE3CMAGkLpu
-         p4qXo3PiuT1qPlInhAtXWthV1SMhmpziqmLcI=
-Message-ID: <c62985530811110924p28d3ff7i3ce8ff0d86ca2fb8@mail.gmail.com>
-Date: Tue, 11 Nov 2008 18:24:21 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [RFC v3][PATCH 0/2] Make ftrace able to trace function return
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081111171455.GA8201@elte.hu>
+	Tue, 11 Nov 2008 12:24:11 -0500
+Date: Tue, 11 Nov 2008 22:57:50 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
+       Tim Connors <tconnors@astro.swin.edu.au>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       "gregory.haskins" <gregory.haskins@gmail.com>
+Subject: Re: [RFC PATCH v3 3/5] sched: nominate preferred wakeup cpu
+Message-ID: <20081111172750.GA788@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Suresh B Siddha <suresh.b.siddha@intel.com>,
+	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
+	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	David Collier-Brown <davecb@sun.com>,
+	Tim Connors <tconnors@astro.swin.edu.au>,
+	Max Krasnyansky <maxk@qualcomm.com>,
+	"gregory.haskins" <gregory.haskins@gmail.com>
+References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <20081110183326.562.37718.stgit@drishya.in.ibm.com> <1226411019.7685.1767.camel@twins> <20081111164825.GS4646@dirshya.in.ibm.com> <4919B7AA.8060801@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <49191C31.1050402@gmail.com> <20081111094312.GA16496@elte.hu>
-	 <c62985530811110730x13bc92abo891b49934ea2ae6f@mail.gmail.com>
-	 <20081111171455.GA8201@elte.hu>
+In-Reply-To: <4919B7AA.8060801@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/11 Ingo Molnar <mingo@elte.hu>:
->
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
->
->> >  2) i cleaned up the arch/x86/Kconfig impact:
->> >
->> >      f1c4be5: tracing, x86: clean up FUNCTION_RET_TRACER Kconfig
->>
->>
->> Ok.
->> And concerning the constraint fixed in assembly. That's strange my
->> compiler didn't even warn me about it.
->
-> yep, that's common with assembly constraints - often the bugs will
-> only trigger with certain compilers and with certain config options.
-> Generally we've got enough variations of these parameters in -tip
-> testing (randconfig plus multiple tools versions) to reliably trigger
-> such issues.
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-11-11 22:19:46]:
 
+> Vaidyanathan Srinivasan wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 14:43:39]:
+> > 
+> >> On Tue, 2008-11-11 at 00:03 +0530, Vaidyanathan Srinivasan wrote:
+> >>> When the system utilisation is low and more cpus are idle,
+> >>> then the process waking up from sleep should prefer to
+> >>> wakeup an idle cpu from semi-idle cpu package (multi core
+> >>> package) rather than a completely idle cpu package which
+> >>> would waste power.
+> >>>
+> >>> Use the sched_mc balance logic in find_busiest_group() to
+> >>> nominate a preferred wakeup cpu.
+> >>>
+> >>> This info can be sored in appropriate sched_domain, but
+> >>> updating this info in all copies of sched_domain is not
+> >>> practical.  For now lets try with a per-cpu variable
+> >>> pointing to a common storage in partition sched domain
+> >>> attribute.  Global variable may not work in partitioned
+> >>> sched domain case.
+> >> Would it make sense to place the preferred_wakeup_cpu stuff in the
+> >> root_domain structure we already have?
+> > 
+> > Yep, that will be a good idea.  We can get to root_domain from each
+> > CPU's rq and we can get rid of the per-cpu pointers for
+> > preferred_wakeup_cpu as well. I will change the implementation and
+> > re-post.
+> 
+> Did you see Vatsa's comments? root_domain will no work if you have more than one
+> preferred_wakeup_cpu per domain.
 
-I love -tip testing :-)
+Hi Balbir,
 
+I just saw Vatsa's comments.  We have similar limitation with the
+current implementation also.  sched_domain_attr dattr is also per
+partitioned domain and not per numa node.  
 
->> > So lets use "function_full" and "function" tracing perhaps? The
->> > "full" tracer is what traces both entry and exit points, and
->> > establishes full function-call timings/costs. The "function"
->> > tracer is more lightweight and traces function entry events.
->>
->> Right. I first chose function_return but it was the largest tracer
->> name and so raised a bug that has been corrected since. And I kept
->> this confusing name.
->>
->> I'm not sure function_full is really the good one because it's not
->> really a full version of the function tracer. It doesn't do the same
->> thing: when you look into a trace done by the function tracer, the
->> functions appear in order of their call whereas with the function
->> return tracer, they appear in the order of their return which is not
->> the same. The effect is not the same. Why not function_return or
->> something like that?
->
-> at the risk of bikeshed-painting this issue too much, the problem with
-> function_return is that it has little meaning to actual users and even
-> to developers. What does the "return" mean? We know what it means,
-> because we know that opposed to function entry we'll also capture
-> function returns, and hence be able to do full function call tracing.
->
-> so function_full i thought to conduct this aspect of it better. But
-> suggestions are welcome.
+In the current implementation we can get rid of the per-cpu variables
+and use root_domain.  Later we can have an array in root_domain and
+index it based on the cpu's node.
 
-
-Ok. Let's change into function_full, after all, I think that this tool
-will be mostly used  with a parsing pass
-of its traces with a script to produce statistics and hierarchical
-representation like does draw_functrace.py
-After that, the order of apparition of the functions in the trace will
-not really matter.
+Thanks,
+Vaidy
