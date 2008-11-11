@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYKKEPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbYKKEPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755250AbYKKEPX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:15:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbYKKEPI
+	id S1755455AbYKKEPk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:15:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbYKKEPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:15:08 -0500
-Received: from ipx-119-252-190-80.ipxserver.de ([80.190.252.119]:51505 "EHLO
-	ipx10616.ipxserver.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750787AbYKKEPH (ORCPT
+	Mon, 10 Nov 2008 23:15:18 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:5266 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754822AbYKKEPR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:15:07 -0500
-X-Greylist: delayed 332 seconds by postgrey-1.27 at vger.kernel.org; Mon, 10 Nov 2008 23:15:06 EST
-Date: Tue, 11 Nov 2008 14:13:42 +1000
-From: Peter Hutterer <peter.hutterer@who-t.net>
-To: Arjan Opmeer <arjan@opmeer.net>
-Cc: Henrik Rydberg <rydberg@euromail.se>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
-	protocol
-Message-ID: <20081111041341.GB6776@dingo.redhat.com>
-References: <49142351.9080805@euromail.se> <20081108005125.GA24783@adopmeer.homeip.net> <49156D54.8060109@euromail.se> <20081108112901.GA12987@adopmeer.homeip.net>
+	Mon, 10 Nov 2008 23:15:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Iye2FmxJpH3atQveGr73+2CBvvMWd67H+cgB5Yyj3pMiE6ljya5gXHjJTEYnk1SGRh
+         ts8YCkI7vEHBZAQc5uC07Zdy+JdoPGUWMpveDuF+waQ9Vt1MChDS5VcSSMlF5ZBYVnGd
+         Z15pesOeI81F5R5sPKN9n0+7Vs0GPHuRsp/0k=
+Message-ID: <b9df5fa10811102015i3a9e7e5u858f9cf49735fec0@mail.gmail.com>
+Date: Tue, 11 Nov 2008 10:15:15 +0600
+From: "Rakib Mullick" <rakib.mullick@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] x86: Fixing improper annotation.
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       tglx@linutronix.de, hpa@zytor.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081108112901.GA12987@adopmeer.homeip.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 08, 2008 at 12:29:02PM +0100, Arjan Opmeer wrote:
-> > It is designed to bring advanced gestures to the linux desktop.
-> 
-> Certainly. Have you already thought about the rest of the path from driver
-> to application, ie kernel driver -> X.org driver -> X events -> toolkit
-> events -> application?
-> 
-> For instance does the X.org driver interpret the data and emit a zoom or
-> rotate event based on the finger position and movement? As far as I know
-> those event do not exist and would have to be added to X.org as well as the
-> toolkits like GTK+ and Qt. It could be a long implementation process... :(
+The macro __init used in function 'init_thread_xstate' is not
+appropriate. It should be __cpuinit , because it's been called from
+__cpuinit functions several times ( I myself found twice, once from
+'cpu_init' and other is from 'fpu_init'). Thus produces the following
+warning:
 
-IMHO the server or driver shouldn't do anything with the event but pass it on
-to the client. What the events then mean semantically depends on the client
-(or the toolkit). This replicates pretty much what we do with mouse events and
-although it puts the burden on the client side to do anything useful, it makes
-it easier to develop, debug and also to do non-standard interpretation of
-gestures.
+WARNING: arch/x86/kernel/built-in.o(.cpuinit.text+0x2237): Section
+mismatch in reference from the function cpu_init() to the function
+.init.text:init_thread_xstate()
+The function __cpuinit cpu_init() references
+a function __init init_thread_xstate().
+If init_thread_xstate is only used by cpu_init then
+annotate init_thread_xstate with a matching annotation.
 
-The X server's job is basically just to pick the right client to send the
-events to, and of course augment the events with X specific data (such as the
-window).
+This patch fixes the above warning. If anything else please notice.
 
-Cheers,
-  Peter
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+
+--- linux-2.6-orig/arch/x86/kernel/i387.c	2008-11-10 13:28:17.000000000 +0600
++++ linux-2.6/arch/x86/kernel/i387.c	2008-11-10 23:35:09.000000000 +0600
+@@ -58,7 +58,7 @@ void __cpuinit mxcsr_feature_mask_init(v
+ 	stts();
+ }
+
+-void __init init_thread_xstate(void)
++void __cpuinit init_thread_xstate(void)
+ {
+ 	if (!HAVE_HWFP) {
+ 		xstate_size = sizeof(struct i387_soft_struct);
