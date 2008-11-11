@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbYKKSQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418AbYKKSTL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbYKKSQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYKKSQW
+	id S1753418AbYKKSTL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:19:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750845AbYKKSS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:16:22 -0500
-Received: from mail.queued.net ([207.210.101.209]:1646 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754262AbYKKSQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:16:21 -0500
-Date: Sun, 9 Nov 2008 20:17:10 -0800
-From: Andres Salomon <dilinger@queued.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Takashi Iwai <tiwai@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
-       dsaxena@laptop.org, Jeremy Katz <katzj@redhat.com>
-Subject: Re: [PATCH] x86 - Make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
-Message-ID: <20081109201710.4c490f04@debxo>
-In-Reply-To: <20081111140406.GA3244@elte.hu>
-References: <s5h3ahyqwmn.wl%tiwai@suse.de>
-	<20081111125402.GB14989@elte.hu>
-	<s5hzlk6pea6.wl%tiwai@suse.de>
-	<20081111135306.GA32709@elte.hu>
-	<s5hwsfapdoj.wl%tiwai@suse.de>
-	<20081111140406.GA3244@elte.hu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Nov 2008 13:18:57 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:38847 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbYKKSS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 13:18:56 -0500
+Date: Tue, 11 Nov 2008 13:18:54 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Chandra Seetharaman <sekharan@us.ibm.com>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel <dm-devel@redhat.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk
+Subject: Re: Queue upcall locking (was: [dm-devel] [RFC][PATCH] fix
+	dm_any_congested() to properly sync up with suspend code path)
+Message-ID: <20081111181854.GA25049@infradead.org>
+References: <1225944008.14830.1101.camel@chandra-ubuntu> <Pine.LNX.4.64.0811100746180.24696@hs20-bc2-1.build.redhat.com> <20081110135401.GA11606@infradead.org> <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0811100914500.14825@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 15:04:06 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, Nov 10, 2008 at 09:19:21AM -0500, Mikulas Patocka wrote:
+> For device mapper, congested_fn asks every device in the tree and make OR 
+> of their bits --- so if the user has 50 devices, it asks them all.
+> 
+> For md-linear, md-raid0, md-raid1, md-raid10 and md-multipath it does the 
+> same --- asking every device.
+> 
+> If you have a better idea how to implement congested_fn, say it.
 
-> 
-> * Takashi Iwai <tiwai@suse.de> wrote:
-> 
-> > At Tue, 11 Nov 2008 14:53:06 +0100,
-> > Ingo Molnar wrote:
-> > > 
-> > > 
-> > > * Takashi Iwai <tiwai@suse.de> wrote:
-> > > 
-> > > > At Tue, 11 Nov 2008 13:54:02 +0100,
-> > > > Ingo Molnar wrote:
-> > > > > 
-> > > > > 
-> > > > > * Takashi Iwai <tiwai@suse.de> wrote:
-> > > > > 
-> > > > > > The OLPC-specpfic codes require geode_gpio_*() functions
-> > > > > > although these functions are defined only with
-> > > > > > CONFIG_MGEODE_LX=y. Add a proper dependency to fix build
-> > > > > > errors.
-> > > > > > 
-> > > > > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > > 
-> > > > > hm, could you please send a .config that shows the build
-> > > > > errors?
-> > > > 
-> > > > Here it is.  It's for today's linux-next.
-> > > 
-> > > hm, which tree did that build failure in linux-next originate
-> > > from? Your config builds fine here with the latest x86 tree.
-> > 
-> > Ah, sorry, forgot to mention that the build error comes from the
-> > latest ALSA code.  It contains an OLPC-specific code that is enabled
-> > via CONFIG_OLPC like:
-> > 
-> > 	snd-cs5535audio-$(CONFIG_OLPC) += cs5535audio_olpc.o
-> > 
-> > where this includes geode_gpio_*() calls.
-> > 
-> > Of course, I can add an if in Makefile or create a new Kconfig, but 
-> > since asm/olpc.h itself includes asm/geode.h and contains 
-> > geode_gpio*() calls, it would be a proper fix to make CONFIG_OLPC 
-> > dependent on geode.
-> 
-> ah, okay, agreed - i was worried whether this is something affecting 
-> v2.6.28 or slipping through our testing before commits hit linux-next.
-> 
-> I've queued up your fix in tip/x86/kconfig, thanks Takashi!
-> 
-> 	Ingo
+Well, even asking 50 devices shouldn't take that long normally.  Do you
+take some sleeping lock that might block forever?  In that case I would
+just return congested for that device as it would delay pdflush
+otherwise.
 
-
-This works for now (though it's probably going to anger some people who
-are trying to make generic distro kernels), but what we really need to
-do is to make geode_gpio* defined even when we're not specifically
-building with MGEODE_LX.  I'm not sure how best to do that, but the
-answer probably includes using the generic x86 gpio api.
