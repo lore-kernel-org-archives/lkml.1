@@ -1,268 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbYKKUqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbYKKUrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbYKKUqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbYKKUqZ
+	id S1752923AbYKKUrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYKKUq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:46:25 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51675 "EHLO
+	Tue, 11 Nov 2008 15:46:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:55215 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbYKKUqY (ORCPT
+	with ESMTP id S1751792AbYKKUqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Nov 2008 15:46:24 -0500
-Message-Id: <20081111204622.567160839@goodmis.org>
+Message-Id: <20081111204622.763579486@goodmis.org>
 References: <20081111204555.890501283@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Nov 2008 15:45:56 -0500
+Date: Tue, 11 Nov 2008 15:45:57 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/3] ring-buffer: buffer record on/off switch
-Content-Disposition: inline; filename=0001-ring-buffer-buffer-record-on-off-switch.patch
+Subject: [PATCH 2/3] ring-buffer: add reader lock
+Content-Disposition: inline; filename=0002-ring-buffer-add-reader-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: enable/disable ring buffer recording API added
+Impact: serialize reader accesses to individual CPU ring buffers
 
-Several kernel developers have requested that there be a way to stop
-recording into the ring buffers with a simple switch that can also
-be enabled from userspace. This patch addes a new kernel API to the
-ring buffers called:
-
- tracing_on()
- tracing_off()
-
-When tracing_off() is called, all ring buffers will not be able to record
-into their buffers.
-
-tracing_on() will enable the ring buffers again.
-
-These two act like an on/off switch. That is, there is no counting of the
-number of times tracing_off or tracing_on has been called.
-
-A new file is added to the debugfs/tracing directory called
-
-  tracing_on
-
-This allows for userspace applications to also flip the switch.
-
-  echo 0 > debugfs/tracing/tracing_on
-
-disables the tracing.
-
-  echo 1 > /debugfs/tracing/tracing_on
-
-enables it.
-
-Note, this does not disable or enable any tracers. It only sets or clears
-a flag that needs to be set in order for the ring buffers to write to
-their buffers. It is a global flag, and affects all ring buffers.
-
-The buffers start out with tracing_on enabled.
-
-There are now three flags that control recording into the buffers:
-
- tracing_on: which affects all ring buffer tracers.
-
- buffer->record_disabled: which affects an allocated buffer, which may be set
-     if an anomaly is detected, and tracing is disabled.
-
- cpu_buffer->record_disabled: which is set by tracing_stop() or if an
-     anomaly is detected. tracing_start can not reenable this if
-     an anomaly occurred.
-
-The userspace debugfs/tracing/tracing_enabled is implemented with
-tracing_stop() but the user space code can not enable it if the kernel
-called tracing_stop().
-
-Userspace can enable the tracing_on even if the kernel disabled it.
-It is just a switch used to stop tracing if a condition was hit.
-tracing_on is not for protecting critical areas in the kernel nor is
-it for stopping tracing if an anomaly occurred. This is because userspace
-can reenable it at any time.
-
-Side effect: With this patch, I discovered a dead variable in ftrace.c
-  called tracing_on. This patch removes it.
+The code in the ring buffer expects only one reader at a time, but currently
+it puts that requirement on the caller. This is not strong enough, and this
+patch adds a "reader_lock" that serializes the access to the reader API
+of the ring buffer.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/ring_buffer.h |    3 +
- kernel/trace/ftrace.c       |    8 +---
- kernel/trace/ring_buffer.c  |   99 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 104 insertions(+), 6 deletions(-)
+ kernel/trace/ring_buffer.c |  109 +++++++++++++++++++++++++++++++------------
+ 1 files changed, 78 insertions(+), 31 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 536b0ca..e097c2e 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -120,6 +120,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer);
- u64 ring_buffer_time_stamp(int cpu);
- void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
- 
-+void tracing_on(void);
-+void tracing_off(void);
-+
- enum ring_buffer_flags {
- 	RB_FL_OVERWRITE		= 1 << 0,
- };
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index f03fe74..beb21a5 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -212,7 +212,6 @@ enum {
- };
- 
- static int ftrace_filtered;
--static int tracing_on;
- 
- static LIST_HEAD(ftrace_new_addrs);
- 
-@@ -533,13 +532,10 @@ static int __ftrace_modify_code(void *data)
- {
- 	int *command = data;
- 
--	if (*command & FTRACE_ENABLE_CALLS) {
-+	if (*command & FTRACE_ENABLE_CALLS)
- 		ftrace_replace_code(1);
--		tracing_on = 1;
--	} else if (*command & FTRACE_DISABLE_CALLS) {
-+	else if (*command & FTRACE_DISABLE_CALLS)
- 		ftrace_replace_code(0);
--		tracing_on = 0;
--	}
- 
- 	if (*command & FTRACE_UPDATE_TRACE_FUNC)
- 		ftrace_update_ftrace_func(ftrace_trace_function);
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index a6b8f9d..0a4f5c3 100644
+index 0a4f5c3..e3703b2 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -18,6 +18,33 @@
+@@ -181,6 +181,7 @@ static inline int test_time_stamp(u64 delta)
+ struct ring_buffer_per_cpu {
+ 	int				cpu;
+ 	struct ring_buffer		*buffer;
++	spinlock_t			reader_lock;
+ 	raw_spinlock_t			lock;
+ 	struct lock_class_key		lock_key;
+ 	struct list_head		pages;
+@@ -348,6 +349,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
  
- #include "trace.h"
+ 	cpu_buffer->cpu = cpu;
+ 	cpu_buffer->buffer = buffer;
++	spin_lock_init(&cpu_buffer->reader_lock);
+ 	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+ 	INIT_LIST_HEAD(&cpu_buffer->pages);
  
-+/* Global flag to disable all recording to ring buffers */
-+static int ring_buffers_off __read_mostly;
+@@ -1509,6 +1511,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer)
+ void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
++	unsigned long flags;
 +
-+/**
-+ * tracing_on - enable all tracing buffers
-+ *
-+ * This function enables all tracing buffers that may have been
-+ * disabled with tracing_off.
-+ */
-+void tracing_on(void)
-+{
-+	ring_buffers_off = 0;
-+}
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+ 
+ 	/* Iterator usage is expected to have record disabled */
+ 	if (list_empty(&cpu_buffer->reader_page->list)) {
+@@ -1522,6 +1527,8 @@ void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
+ 		iter->read_stamp = cpu_buffer->read_stamp;
+ 	else
+ 		iter->read_stamp = iter->head_page->time_stamp;
 +
-+/**
-+ * tracing_off - turn off all tracing buffers
-+ *
-+ * This function stops all tracing buffers from recording data.
-+ * It does not disable any overhead the tracers themselves may
-+ * be causing. This function simply causes all recording to
-+ * the ring buffers to fail.
-+ */
-+void tracing_off(void)
-+{
-+	ring_buffers_off = 1;
-+}
-+
- /* Up this if you want to test the TIME_EXTENTS and normalization */
- #define DEBUG_SHIFT 0
- 
-@@ -1169,6 +1196,9 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer,
- 	struct ring_buffer_event *event;
- 	int cpu, resched;
- 
-+	if (ring_buffers_off)
-+		return NULL;
-+
- 	if (atomic_read(&buffer->record_disabled))
- 		return NULL;
- 
-@@ -1278,6 +1308,9 @@ int ring_buffer_write(struct ring_buffer *buffer,
- 	int ret = -EBUSY;
- 	int cpu, resched;
- 
-+	if (ring_buffers_off)
-+		return -EBUSY;
-+
- 	if (atomic_read(&buffer->record_disabled))
- 		return -EBUSY;
- 
-@@ -2103,3 +2136,69 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
- 	return 0;
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
  }
  
-+static ssize_t
-+rb_simple_read(struct file *filp, char __user *ubuf,
-+	       size_t cnt, loff_t *ppos)
+ /**
+@@ -1740,17 +1747,8 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
+ 		rb_advance_iter(iter);
+ }
+ 
+-/**
+- * ring_buffer_peek - peek at the next event to be read
+- * @buffer: The ring buffer to read
+- * @cpu: The cpu to peak at
+- * @ts: The timestamp counter of this event.
+- *
+- * This will return the event that will be read next, but does
+- * not consume the data.
+- */
+-struct ring_buffer_event *
+-ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
++static struct ring_buffer_event *
++rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+ 	struct ring_buffer_event *event;
+@@ -1812,16 +1810,8 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	return NULL;
+ }
+ 
+-/**
+- * ring_buffer_iter_peek - peek at the next event to be read
+- * @iter: The ring buffer iterator
+- * @ts: The timestamp counter of this event.
+- *
+- * This will return the event that will be read next, but does
+- * not increment the iterator.
+- */
+-struct ring_buffer_event *
+-ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
++static struct ring_buffer_event *
++rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ {
+ 	struct ring_buffer *buffer;
+ 	struct ring_buffer_per_cpu *cpu_buffer;
+@@ -1883,6 +1873,51 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ }
+ 
+ /**
++ * ring_buffer_peek - peek at the next event to be read
++ * @buffer: The ring buffer to read
++ * @cpu: The cpu to peak at
++ * @ts: The timestamp counter of this event.
++ *
++ * This will return the event that will be read next, but does
++ * not consume the data.
++ */
++struct ring_buffer_event *
++ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
 +{
-+	int *p = filp->private_data;
-+	char buf[64];
-+	int r;
++	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
++	struct ring_buffer_event *event;
++	unsigned long flags;
 +
-+	/* !ring_buffers_off == tracing_on */
-+	r = sprintf(buf, "%d\n", !*p);
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	event = rb_buffer_peek(buffer, cpu, ts);
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
 +
-+	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
++	return event;
 +}
 +
-+static ssize_t
-+rb_simple_write(struct file *filp, const char __user *ubuf,
-+		size_t cnt, loff_t *ppos)
++/**
++ * ring_buffer_iter_peek - peek at the next event to be read
++ * @iter: The ring buffer iterator
++ * @ts: The timestamp counter of this event.
++ *
++ * This will return the event that will be read next, but does
++ * not increment the iterator.
++ */
++struct ring_buffer_event *
++ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
 +{
-+	int *p = filp->private_data;
-+	char buf[64];
-+	long val;
-+	int ret;
++	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
++	struct ring_buffer_event *event;
++	unsigned long flags;
 +
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	event = rb_iter_peek(iter, ts);
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
 +
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* !ring_buffers_off == tracing_on */
-+	*p = !val;
-+
-+	(*ppos)++;
-+
-+	return cnt;
++	return event;
 +}
 +
-+static struct file_operations rb_simple_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= rb_simple_read,
-+	.write		= rb_simple_write,
-+};
++/**
+  * ring_buffer_consume - return an event and consume it
+  * @buffer: The ring buffer to get the next event from
+  *
+@@ -1893,19 +1928,24 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ struct ring_buffer_event *
+ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+ {
+-	struct ring_buffer_per_cpu *cpu_buffer;
++	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
+ 	struct ring_buffer_event *event;
++	unsigned long flags;
+ 
+ 	if (!cpu_isset(cpu, buffer->cpumask))
+ 		return NULL;
+ 
+-	event = ring_buffer_peek(buffer, cpu, ts);
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
 +
++	event = rb_buffer_peek(buffer, cpu, ts);
+ 	if (!event)
+-		return NULL;
++		goto out;
+ 
+-	cpu_buffer = buffer->buffers[cpu];
+ 	rb_advance_reader(cpu_buffer);
+ 
++ out:
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
 +
-+static __init int rb_init_debugfs(void)
-+{
-+	struct dentry *d_tracer;
-+	struct dentry *entry;
+ 	return event;
+ }
+ 
+@@ -1942,11 +1982,11 @@ ring_buffer_read_start(struct ring_buffer *buffer, int cpu)
+ 	atomic_inc(&cpu_buffer->record_disabled);
+ 	synchronize_sched();
+ 
+-	local_irq_save(flags);
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+ 	__raw_spin_lock(&cpu_buffer->lock);
+ 	ring_buffer_iter_reset(iter);
+ 	__raw_spin_unlock(&cpu_buffer->lock);
+-	local_irq_restore(flags);
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+ 	return iter;
+ }
+@@ -1978,12 +2018,17 @@ struct ring_buffer_event *
+ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
+ {
+ 	struct ring_buffer_event *event;
++	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
++	unsigned long flags;
+ 
+-	event = ring_buffer_iter_peek(iter, ts);
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	event = rb_iter_peek(iter, ts);
+ 	if (!event)
+-		return NULL;
++		goto out;
+ 
+ 	rb_advance_iter(iter);
++ out:
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+ 	return event;
+ }
+@@ -2032,13 +2077,15 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
+ 	if (!cpu_isset(cpu, buffer->cpumask))
+ 		return;
+ 
+-	local_irq_save(flags);
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
 +
-+	d_tracer = tracing_init_dentry();
+ 	__raw_spin_lock(&cpu_buffer->lock);
+ 
+ 	rb_reset_cpu(cpu_buffer);
+ 
+ 	__raw_spin_unlock(&cpu_buffer->lock);
+-	local_irq_restore(flags);
 +
-+	entry = debugfs_create_file("tracing_on", 0644, d_tracer,
-+				    &ring_buffers_off, &rb_simple_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'tracing_on' entry\n");
-+
-+	return 0;
-+}
-+
-+fs_initcall(rb_init_debugfs);
++	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ }
+ 
+ /**
 -- 
 1.5.6.5
 
