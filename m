@@ -1,105 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYKKE5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYKKE7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754936AbYKKE5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYKKE5O
+	id S1755386AbYKKE7R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYKKE7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:57:14 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:22205 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754525AbYKKE5M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:57:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jNa9WXmNlv4H7lalJ+nf/noc06/Pbp6izdBwIrHnsWeaNXv20mU2mZbkJA+ZM2JxIh
-         qU6d3WJ6YIy6U6uDvWfLCdbilHpTvjHsQ72kS/CNjrptUygWTdnY0Kaym7Tk3oUdsbM5
-         6t7/w0IFLecy7KRSzmCUEvOsznBQwgIqjm1lU=
-Message-ID: <8d6898730811102057u55b9495fxf640af7df3271878@mail.gmail.com>
-Date: Tue, 11 Nov 2008 10:27:10 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: "Altobelli, David" <david.altobelli@hp.com>
-Subject: Re: sharing interrupt between PCI device
-Cc: "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Grant Grundler" <grundler@parisc-linux.org>
-In-Reply-To: <20081110203454.GB18188@colo.lackof.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4910E8AC.7050407@shaw.ca> <20081108172716.GA28039@colo.lackof.org>
-	 <4915E43E.4010206@gmail.com> <20081108191536.GC28039@colo.lackof.org>
-	 <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com>
-	 <20081110075115.GA13239@colo.lackof.org>
-	 <20081110075827.GE2093@elte.hu>
-	 <8d6898730811100231j2ca5e8ceub0d5137c1ef1f9d0@mail.gmail.com>
-	 <8d6898730811100742g31711b9ck9e046d77273d0113@mail.gmail.com>
-	 <20081110203454.GB18188@colo.lackof.org>
+	Mon, 10 Nov 2008 23:59:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57871 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbYKKE7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 23:59:02 -0500
+Date: Tue, 11 Nov 2008 15:58:44 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       Ken Chen <kenchen@google.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.28-rc4-mmotm1110 - you gotta be kidding me...
+Message-Id: <20081111155844.7414bad8.sfr@canb.auug.org.au>
+In-Reply-To: <20081110193713.d94ed39a.akpm@linux-foundation.org>
+References: <30622.1226372137@turing-police.cc.vt.edu>
+	<20081110193713.d94ed39a.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding david to CC
+--Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 11, 2008 at 2:04 AM, Grant Grundler
-<grundler@parisc-linux.org> wrote:
-> On Mon, Nov 10, 2008 at 09:12:05PM +0530, Nobin Mathew wrote:
->> I could not find the definition of acpi_unregister_gsi in i386/x86_64
->> code, it is defined only for ia64.
+On Mon, 10 Nov 2008 19:37:13 -0800 Andrew Morton <akpm@linux-foundation.org=
+> wrote:
 >
-> Sorry - I was looking at the ia64 branch by mistake.
->
->>
->> Since it is defined as a weak symbol, I feel it is not getting called
->> (correct if I am wrong, I searched in google for this).
->
-> You are right.
->
-> sorry,
-> grant
->
->> /* FIXME: implement x86/x86_64 version */
->> void __attribute__ ((weak)) acpi_unregister_gsi(u32 i)
->> {
->> }
->>
->> How this weak symbols work, is it something like
->> acpi_pci_irq_disable() will not call acpi_unregister_gsi() in some
->> platforms.
->>
->> Thanks
->> Nobin Mathew.
->>
->> On Mon, Nov 10, 2008 at 4:01 PM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
->> > Yes USB Virtual Controller has input devices like keyboard and mouse
->> > (routed through hpilo card (remote console)), so those things stops
->> > working when we remove hpilo driver.
->> >
->> > Thanks
->> > Nobin Mathew
->> >
->> > On Mon, Nov 10, 2008 at 1:28 PM, Ingo Molnar <mingo@elte.hu> wrote:
->> >>
->> >> * Grant Grundler <grundler@parisc-linux.org> wrote:
->> >>
->> >>> [+ingo - question for you about disable_irq() below]
->> >>
->> >>> The same problem exists with disable_irq() : only takes a global
->> >>> IRQ# and no additional identifying information to prevent disabling
->> >>> a shared IRQ. So I'm not sure if this is a bug with ACPI or design
->> >>> flaw in generic IRQ APIs.  Ingo?
->> >>
->> >> that's how disable_irq() always worked: it disables all handlers on
->> >> that IRQ#. If the IRQ# is shared, it disables all handlers.
->> >>
->> >>        Ingo
->> >>
->> >
->
+> On Mon, 10 Nov 2008 21:55:37 -0500 Valdis.Kletnieks@vt.edu wrote:
+>=20
+> > Somebody's been hitting the phunky pharmaceuticals in the last 4 days,
+> > because this ball-of-joy snuck into linux-next.patch sometime between
+> > -mmotm1106 and --mmotm1110.
+> >=20
+> > Seen in a 'make silentallconfig'
+> >=20
+> >   Single-depth WCHAN output (SCHED_NO_NO_OMIT_FRAME_POINTER) [Y/n/?] (N=
+EW) ?
+> >=20
+> >   Calculate simpler /proc/<PID>/wchan values. If this option
+> >   is disabled then wchan values will recurse back to the
+> >   caller function. This provides more accurate wchan values,
+> >   at the expense of slightly more scheduling overhead.
+>=20
+> I got lost here.
+>=20
+> >   If in doubt, say "Y".
+> >=20
+> > So if I say 'y', is that a request to disable it, or enable it?  And
+> > what exactly do I get if I vote *against* 'more accurate wchan values'?
+> > Do I get everybody having the same wchan pointing somewhere in the
+> > scheduler code, because that's where __builtin_return_address() points?
+> >=20
+> > And please - a triple negative in the Kconfig variable name?  This has
+> > gotta be a winner for poor taste in variable naming...
+> >=20
+>=20
+> Even if that is all sorted out, how the heck is anyone to decide
+> whether or not they need this thing?
+>=20
+> Also, if we really really are so wishy-washy indecisive that we need to
+> make the function optional, it should if at all possible be made
+> runtime-configurable, not compile-time.
+
+This came from commit a87d091434ed2a34d647979ab12084139ee1fe41 ("x86,
+sched: enable wchan config menu item on 64-bit").  We have had
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER for some time on various
+architectures, this commit just made it available on x86_64 (by changing
+its dependency from X86_32 to X86).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkZEQQACgkQjjKRsyhoI8y1TwCdE/xpityLPrhe+i9Knk7PcRoO
+RIsAoL8CAlGl52VihOwaIO7dvNPZFwi1
+=iVMv
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0--
