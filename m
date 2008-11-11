@@ -1,274 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbYKKULA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753197AbYKKULq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751745AbYKKULA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYKKUKi
+	id S1753197AbYKKULq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:11:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYKKULf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:10:38 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59962 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYKKUKg (ORCPT
+	Tue, 11 Nov 2008 15:11:35 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:36788 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751160AbYKKULe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 15:10:36 -0500
-Message-Id: <20081111201034.315528609@goodmis.org>
-References: <20081111200601.147669239@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 11 Nov 2008 15:06:02 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/1] ring-buffer: buffer record on/off switch
-Content-Disposition: inline; filename=0001-ring-buffer-buffer-record-on-off-switch.patch
+	Tue, 11 Nov 2008 15:11:34 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhAFAP9zGUlMQWxa/2dsb2JhbACBdstpg1c
+Date: Tue, 11 Nov 2008 15:11:30 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Nicolas Pitre <nico@cam.org>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, dhowells@redhat.com, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
+       davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] convert cnt32_to_63 to inline
+Message-ID: <20081111201130.GA10801@Krystal>
+References: <20081109162250.GB10181@Krystal> <alpine.LFD.2.00.0811092304300.13034@xanadu.home> <20081109204256.89ab7925.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101627510.13034@xanadu.home> <20081110135850.0d620f3c.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101811130.13034@xanadu.home> <20081110152221.64948d23.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101917450.13034@xanadu.home> <20081111182759.GA8052@Krystal> <20081111191355.GA13724@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20081111191355.GA13724@flint.arm.linux.org.uk>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:32:41 up 160 days, 13 min, 12 users,  load average: 0.83,
+	1.54, 1.23
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: enable/disable ring buffer recording API added
+* Russell King (rmk+lkml@arm.linux.org.uk) wrote:
+> On Tue, Nov 11, 2008 at 01:28:00PM -0500, Mathieu Desnoyers wrote:
+> > Let's see what it gives once implemented. Only compile-tested. Assumes
+> > pxa, sa110 and mn10300 are all UP-only. Correct smp_rmb() are used for
+> > arm versatile.
+> 
+> Versatile is also UP only.
+> 
+> The following are results from PXA built with gcc 3.4.3:
+> 
+> 1. two additional registers used in sched_clock()
+> 2. 8 additional bytes of code (which are needless if gcc was more inteligent)
+> 
+> both of these I put down to inefficiencies in gcc's register allocation.
+> 
+> 3. worse instruction scheduling - two inter-dependent loads next to each
+>    other causing a pipeline stall
+> 
+> Actual reading of variables/hardware is unaffected by this patch.
+> 
+> Old code:
+> 
+>    c:   e59f3050        ldr     r3, [pc, #80]   ; load address of oscr2ns_scale
+>   10:   e59fc050        ldr     ip, [pc, #80]   ; load address of __m_cnt_hi
+>   14:   e5932000        ldr     r2, [r3]	; read oscr2ns_scale
+>   18:   e59f304c        ldr     r3, [pc, #76]   ; load address of OSCR
+>   1c:   e59c1000        ldr     r1, [ip]	; read __m_cnt_hi
+>   20:   e1a07002        mov     r7, r2
+>   24:   e3a08000        mov     r8, #0  ; 0x0
+>   28:   e5933000        ldr     r3, [r3]	; read OSCR register
+> ...
+>   58:   e1820b04        orr     r0, r2, r4, lsl #22
+>   5c:   e1a01524        lsr     r1, r4, #10
+>   60:   e89da9f0        ldm     sp, {r4, r5, r6, r7, r8, fp, sp, pc}
+> 
+> 
+> New code:
+> 
+>    c:   e59f0058        ldr     r0, [pc, #88]   ; load address of oscr2ns_scale
+>   10:   e5901000        ldr     r1, [r0]	; read oscr2ns_scale <= pipeline stall
+>   14:   e59f3054        ldr     r3, [pc, #84]   ; load address of __m_cnt_hi
+>   18:   e1a08001        mov     r8, r1
+>   1c:   e5932000        ldr     r2, [r3]	; read __m_cnt_hi
+>   20:   e59f304c        ldr     r3, [pc, #76]   ; load address of OSCR
+>   24:   e1a09002        mov     r9, r2
+>   28:   e3a0a000        mov     sl, #0  ; 0x0
+>   2c:   e5933000        ldr     r3, [r3]	; read OSCR
+> ...
+>   58:   e1825b04        orr     r5, r2, r4, lsl #22
+>   5c:   e1a06524        lsr     r6, r4, #10
+>   60:   e1a01006        mov     r1, r6
+>   64:   e1a00005        mov     r0, r5
+>   68:   e89daff0        ldm     sp, {r4, r5, r6, r7, r8, r9, sl, fp, sp, pc}
+> 
+> Versatile:
+> 
+> 1. 12 additional bytes of code
+> 2. same number of registers
+> 3. worse instruction scheduling causing pipeline stall
+> 
+> Actual reading of variables/hardware is unaffected by this patch.
+> 
+> So, we have two platforms where this patch makes things visibly worse
+> with no material benefit.
+> 
 
-Several kernel developers have requested that there be a way to stop
-recording into the ring buffers with a simple switch that can also
-be enabled from userspace. This patch addes a new kernel API to the
-ring buffers called:
+I think the added barrier() are causing these pipeline stalls. They
+don't allow the compiler to read variables such as oscr2ns_scale before
+the barrier because gcc cannot assume it won't be modified. However, to
+insure that OSCR read is done after __m_cnt_hi read, this barrier seems
+required to be safe against gcc optimizations.
 
- tracing_on()
- tracing_off()
+Have you compared my patch to Nicolas'patch, which adds a smp_rmb() in
+the macro or to a vanilla tree ?
 
-When tracing_off() is called, all ring buffers will not be able to record
-into their buffers.
+I wonder if reading those values sooner would help gcc ?
 
-tracing_on() will enable the ring buffers again.
+Mathieu
 
-These two act like an on/off switch. That is, there is no counting of the
-number of times tracing_off or tracing_on has been called.
-
-A new file is added to the debugfs/tracing directory called
-
-  tracing_on
-
-This allows for userspace applications to also flip the switch.
-
-  echo 0 > debugfs/tracing/tracing_on
-
-disables the tracing.
-
-  echo 1 > /debugfs/tracing/tracing_on
-
-enables it.
-
-Note, this does not disable or enable any tracers. It only sets or clears
-a flag that needs to be set in order for the ring buffers to write to
-their buffers. It is a global flag, and affects all ring buffers.
-
-The buffers start out with tracing_on enabled.
-
-There are now three flags that control recording into the buffers:
-
- tracing_on: which affects all ring buffer tracers.
-
- buffer->record_disabled: which affects an allocated buffer, which may be set
-     if an anomaly is detected, and tracing is disabled.
-
- cpu_buffer->record_disabled: which is set by tracing_stop() or if an
-     anomaly is detected. tracing_start can not reenable this if
-     an anomaly occurred.
-
-The userspace debugfs/tracing/tracing_enabled is implemented with
-tracing_stop() but the user space code can not enable it if the kernel
-called tracing_stop().
-
-Userspace can enable the tracing_on even if the kernel disabled it.
-It is just a switch used to stop tracing if a condition was hit.
-tracing_on is not for protecting critical areas in the kernel nor is
-it for stopping tracing if an anomaly occurred. This is because userspace
-can reenable it at any time.
-
-Side effect: With this patch, I discovered a dead variable in ftrace.c
-  called tracing_on. This patch removes it.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/ring_buffer.h |    3 +
- kernel/trace/ftrace.c       |    8 +---
- kernel/trace/ring_buffer.c  |  101 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 106 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 536b0ca..e097c2e 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -120,6 +120,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer);
- u64 ring_buffer_time_stamp(int cpu);
- void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
- 
-+void tracing_on(void);
-+void tracing_off(void);
-+
- enum ring_buffer_flags {
- 	RB_FL_OVERWRITE		= 1 << 0,
- };
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 4a39d24..14fa522 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -185,7 +185,6 @@ enum {
- };
- 
- static int ftrace_filtered;
--static int tracing_on;
- 
- static LIST_HEAD(ftrace_new_addrs);
- 
-@@ -506,13 +505,10 @@ static int __ftrace_modify_code(void *data)
- {
- 	int *command = data;
- 
--	if (*command & FTRACE_ENABLE_CALLS) {
-+	if (*command & FTRACE_ENABLE_CALLS)
- 		ftrace_replace_code(1);
--		tracing_on = 1;
--	} else if (*command & FTRACE_DISABLE_CALLS) {
-+	else if (*command & FTRACE_DISABLE_CALLS)
- 		ftrace_replace_code(0);
--		tracing_on = 0;
--	}
- 
- 	if (*command & FTRACE_UPDATE_TRACE_FUNC)
- 		ftrace_update_ftrace_func(ftrace_trace_function);
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 2f76193..b08ee9f 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -16,6 +16,35 @@
- #include <linux/list.h>
- #include <linux/fs.h>
- 
-+#include "trace.h"
-+
-+/* Global flag to disable all recording to ring buffers */
-+static int ring_buffers_off __read_mostly;
-+
-+/**
-+ * tracing_on - enable all tracing buffers
-+ *
-+ * This function enables all tracing buffers that may have been
-+ * disabled with tracing_off.
-+ */
-+void tracing_on(void)
-+{
-+	ring_buffers_off = 0;
-+}
-+
-+/**
-+ * tracing_off - turn off all tracing buffers
-+ *
-+ * This function stops all tracing buffers from recording data.
-+ * It does not disable any overhead the tracers themselves may
-+ * be causing. This function simply causes all recording to
-+ * the ring buffers to fail.
-+ */
-+void tracing_off(void)
-+{
-+	ring_buffers_off = 1;
-+}
-+
- /* Up this if you want to test the TIME_EXTENTS and normalization */
- #define DEBUG_SHIFT 0
- 
-@@ -1133,6 +1162,9 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer,
- 	struct ring_buffer_event *event;
- 	int cpu, resched;
- 
-+	if (ring_buffers_off)
-+		return NULL;
-+
- 	if (atomic_read(&buffer->record_disabled))
- 		return NULL;
- 
-@@ -1249,6 +1281,9 @@ int ring_buffer_write(struct ring_buffer *buffer,
- 	int ret = -EBUSY;
- 	int cpu, resched;
- 
-+	if (ring_buffers_off)
-+		return -EBUSY;
-+
- 	if (atomic_read(&buffer->record_disabled))
- 		return -EBUSY;
- 
-@@ -2070,3 +2105,69 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
- 	return 0;
- }
- 
-+static ssize_t
-+rb_simple_read(struct file *filp, char __user *ubuf,
-+	       size_t cnt, loff_t *ppos)
-+{
-+	int *p = filp->private_data;
-+	char buf[64];
-+	int r;
-+
-+	/* !ring_buffers_off == tracing_on */
-+	r = sprintf(buf, "%d\n", !*p);
-+
-+	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
-+}
-+
-+static ssize_t
-+rb_simple_write(struct file *filp, const char __user *ubuf,
-+		size_t cnt, loff_t *ppos)
-+{
-+	int *p = filp->private_data;
-+	char buf[64];
-+	long val;
-+	int ret;
-+
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* !ring_buffers_off == tracing_on */
-+	*p = !val;
-+
-+	(*ppos)++;
-+
-+	return cnt;
-+}
-+
-+static struct file_operations rb_simple_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= rb_simple_read,
-+	.write		= rb_simple_write,
-+};
-+
-+
-+static __init int rb_init_debugfs(void)
-+{
-+	struct dentry *d_tracer;
-+	struct dentry *entry;
-+
-+	d_tracer = tracing_init_dentry();
-+
-+	entry = debugfs_create_file("tracing_on", 0644, d_tracer,
-+				    &ring_buffers_off, &rb_simple_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs 'tracing_on' entry\n");
-+
-+	return 0;
-+}
-+
-+fs_initcall(rb_init_debugfs);
--- 
-1.5.6.5
 
 -- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
