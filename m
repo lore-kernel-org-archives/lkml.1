@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYKKOsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbYKKOsu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbYKKOsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 09:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756011AbYKKOr7
+	id S1756878AbYKKOsu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 09:48:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbYKKOsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 09:47:59 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:52389 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755831AbYKKOr5 (ORCPT
+	Tue, 11 Nov 2008 09:48:41 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47278 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755902AbYKKOsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 09:47:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=KJ44QRqZwfFU5ZtR4AswaygT4658PZDdV/H5WlVHZtiks/mNMJPxBQgfef409fUahG
-         DD4hOfibvFwaawACqpIyof6Y2ss57WDIYymP5DMkFVdVM3itjsRcxZi4z6bRzdvASuc0
-         QICoR87no7rJxBBE2Tvl86XcGX2jgcXuzC77o=
-Message-ID: <19f34abd0811110647y2a00cfbfr2b219a5aa1b3ac9f@mail.gmail.com>
-Date: Tue, 11 Nov 2008 15:47:56 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to chanes in stop_machine
-Cc: "Heiko Carstens" <heiko.carstens@de.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Oleg Nesterov" <oleg@redhat.com>,
-       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20081111105214.GA15645@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 11 Nov 2008 09:48:40 -0500
+Date: Tue, 11 Nov 2008 14:48:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] tty: trivial - fix up email addresses in tty related stuff
+Message-ID: <20081111144844.2a22c505@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	 <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
-	 <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl>
-	 <20081111105214.GA15645@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 11:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
->
-> Seems like the new kernel/stop_machine.c logic has a race for the test
-> sequence above. (Below is the bisected commit again, maybe the race is
-> visible via email review as well.)
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-I try again.
-
-I think that the test for stop_machine_data in stop_cpu() should not
-have been moved from __stop_machine(). Because now cpu_online_map may
-change in-between calls to stop_cpu() (if the callback tries to
-online/offline CPUs), and the end result may be different.
-
-Maybe?
-
-
-Vegard
+diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+index 7d30ee1..04e4549 100644
+--- a/drivers/char/isicom.c
++++ b/drivers/char/isicom.c
+@@ -7,12 +7,14 @@
+  *	Original driver code supplied by Multi-Tech
+  *
+  *	Changes
+- *	1/9/98	alan@redhat.com		Merge to 2.0.x kernel tree
++ *	1/9/98	alan@lxorguk.ukuu.org.uk
++ *					Merge to 2.0.x kernel tree
+  *					Obtain and use official major/minors
+  *					Loader switched to a misc device
+  *					(fixed range check bug as a side effect)
+  *					Printk clean up
+- *	9/12/98	alan@redhat.com		Rough port to 2.1.x
++ *	9/12/98	alan@lxorguk.ukuu.org.uk
++ *					Rough port to 2.1.x
+  *
+  *	10/6/99 sameer			Merged the ISA and PCI drivers to
+  *					a new unified driver.
+diff --git a/drivers/char/mxser.c b/drivers/char/mxser.c
+index 8beef50..0477669 100644
+--- a/drivers/char/mxser.c
++++ b/drivers/char/mxser.c
+@@ -14,7 +14,8 @@
+  *      (at your option) any later version.
+  *
+  *	Fed through a cleanup, indent and remove of non 2.6 code by Alan Cox
+- *	<alan@redhat.com>. The original 1.8 code is available on www.moxa.com.
++ *	<alan@lxorguk.ukuu.org.uk>. The original 1.8 code is available on
++ *	www.moxa.com.
+  *	- Fixed x86_64 cleanness
+  */
+ 
+diff --git a/drivers/usb/serial/ir-usb.c b/drivers/usb/serial/ir-usb.c
+index b679a55..4e2cda9 100644
+--- a/drivers/usb/serial/ir-usb.c
++++ b/drivers/usb/serial/ir-usb.c
+@@ -26,7 +26,7 @@
+  *	Introduced common header to be used also in USB Gadget Framework.
+  *	Still needs some other style fixes.
+  *
+- * 2007_Jun_21  Alan Cox <alan@redhat.com>
++ * 2007_Jun_21  Alan Cox <alan@lxorguk.ukuu.org.uk>
+  *	Minimal cleanups for some of the driver problens and tty layer abuse.
+  *	Still needs fixing to allow multiple dongles.
+  *
