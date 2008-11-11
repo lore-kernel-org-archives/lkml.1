@@ -1,59 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbYKKNsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYKKNtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbYKKNsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 08:48:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbYKKNsg
+	id S1756771AbYKKNtV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 08:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbYKKNtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 08:48:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:53377 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754906AbYKKNsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 08:48:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [Bug #11829] Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
-Date: Tue, 11 Nov 2008 14:53:33 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Tue, 11 Nov 2008 08:49:11 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:54468 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755317AbYKKNtK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 08:49:10 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
+ chanes in stop_machine
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, Mike Isely <isely@isely.net>
-References: <A3oCZU7cpuO.A.ChB.ZZ1FJB@chimera> <4B0Eqx89uNG.A.kYC.vZ1FJB@chimera> <20081111071301.GB13596@kroah.com>
-In-Reply-To: <20081111071301.GB13596@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
+	 <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
+	 <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl>
+	 <20081111105214.GA15645@elte.hu>
+	 <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 11 Nov 2008 14:49:01 +0100
+Message-Id: <1226411341.7685.1779.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811111453.34386.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 11 of November 2008, Greg KH wrote:
-> On Sun, Nov 09, 2008 at 08:43:22PM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.26 and 2.6.27.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11829
-> > Subject		: Kernel 2.6.26.5 -&gt; 2.6.27.2 [USB REGRESSION] (USB -&gt; D_STATE)
-> > Submitter	: Justin Piszcz <jpiszcz@lucidpixels.com>
-> > Date		: 2008-10-19 11:26 (22 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=122441560120027&w=4
-> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > 		  Mike Isely <isely@isely.net>
-> > Patch		: http://linuxtv.org/hg/~mcisely/pvrusb2/rev/0bb411d8d2e4
+On Tue, 2008-11-11 at 14:36 +0100, Vegard Nossum wrote:
+> On Tue, Nov 11, 2008 at 11:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
 > 
-> This has been fixed already in .27 and in mainline with a patch from
-> Alan.
+> Heh. I am not expert, but I looked at the code. The obvious suspicious
+> thing to see is the use of unpaired barriers? Maybe like this:
+> 
+>  47 static void set_state(enum stopmachine_state newstate)
+> 48 {
+> 49         /* Reset ack counter. */
+> 50         atomic_set(&thread_ack, num_threads);
+> 51         smp_wmb();
+> 
+> + /* force ordering between thread_ack/state */
+> 
+> 52         state = newstate;
+> 53 }
+> 54
+> 55 /* Last one to ack a state moves to the next state. */
+> 56 static void ack_state(void)
+> 57 {
+> 58         if (atomic_dec_and_test(&thread_ack))
+> 
+> Maybe
+> + /* force ordering between thread_ack/state */
+> + smp_rmb();
+> here?
 
-OK, closed it.
+all atomic ops that have return values imply a full barrier, iirc
 
-Do you remember which of the Alan's patches is that?
+> 59                 set_state(state + 1);
+> 60 }
+> 61
+> 
+> Or maybe I am wrong. But Documentation/memory-barriers.txt is rather
+> explicit on this point.
+> 
+> 
+> Vegard
+> 
 
-Rafael
