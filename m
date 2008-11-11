@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYKKIiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYKKIlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbYKKIiA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 03:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbYKKIhs
+	id S1755470AbYKKIlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 03:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYKKIlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 03:37:48 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:51989 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755396AbYKKIhr (ORCPT
+	Tue, 11 Nov 2008 03:41:09 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54012 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbYKKIlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 03:37:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=oXYL6gbns0gxfWoqSIUx7z45vRWt3Ki8atQOt+xxtWOPr61fa5Xh74j0wnauR+t2pd
-         3pJcJ998zPM12xSNK5oP5eV6bMjNR6KcQs1bwShHbslu89ecogwV7UPrpwEXguwfg646
-         lcaZke3jKcbGXfD9vT8qsui0rlzDFm8lShYy4=
-Message-ID: <21d7e9970811110037l49e7b28bl2480863682cda0c@mail.gmail.com>
-Date: Tue, 11 Nov 2008 18:37:46 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [git pull] drm fixes for 2.6.27-rc5
-Cc: "Dave Airlie" <airlied@linux.ie>, torvalds@linux-foundation.org,
-       dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20081111002958.7620fb56.akpm@linux-foundation.org>
+	Tue, 11 Nov 2008 03:41:09 -0500
+Date: Tue, 11 Nov 2008 09:41:04 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] x86: Make NUMA on 32-bit depend on BROKEN
+Message-ID: <20081111084104.GA19994@atrey.karlin.mff.cuni.cz>
+References: <200811102152.47901.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.DEB.0.82.0811110811350.2182@skynet.skynet.ie>
-	 <20081111002958.7620fb56.akpm@linux-foundation.org>
+In-Reply-To: <200811102152.47901.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 6:29 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 11 Nov 2008 08:15:26 +0000 (GMT) Dave Airlie <airlied@linux.ie> wrote:
->
->> commit 78538bf14995a136c2d9a22159ada49937359119
->> Author: Dave Airlie <airlied@linux.ie>
->> Date:   Tue Nov 11 17:56:16 2008 +1000
->>
->>     drm/radeon: map registers at load time
->>
->>     Now that the radeon driver has suspend/resume functions, it needs to map its
->>     registers at load time or it will likely crash if a suspend operation occurs
->>     before the driver has been initialized.
->>
->>     This patch moves the register mapping code from firstopen to load and makes
->>     the mapping into a _DRM_DRIVER one so that the core won't remove it at
->>     lastclose time.
->
-> Does this make the below patch obsolete?
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: x86: Make NUMA on 32-bit depend on BROKEN
+> 
+> While investigating the failure of hibernation on 32-bit x86 with
+> CONFIG_NUMA set, as described in this message
+> http://marc.info/?l=linux-kernel&m=122634118116226&w=4
+> I asked some people for help and I was told that it wasn't really
+> worth the effort, because CONFIG_NUMA was generally broken on 32-bit
+> x86 systems and it shouldn't be used in such configs.  For this
+> reason, make CONFIG_NUMA depend on BROKEN instead of EXPERIMENTAL on
+> x86-32.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> Cc: Pavel Machek <pavel@suse.cz>
 
-Yes please drop this, the correct fix is the one Jesse posted + a fix
-on top of it I made in the same patch.
+ACK.
 
->>     Fixes (at least partially) kernel bz #11891.
->
-> A little thing: there are (or used to be) people who troll commits for
-> bugzilla reports to close off.  I've adopted the convention of
-> indicating bugzilla reports via their full URL to make those efforts
-> easier and to increase their accuracy.
->
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> ---
+>  arch/x86/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/arch/x86/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/Kconfig
+> +++ linux-2.6/arch/x86/Kconfig
+> @@ -957,7 +957,7 @@ config ARCH_PHYS_ADDR_T_64BIT
+>  config NUMA
+>  	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
+>  	depends on SMP
+> -	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && EXPERIMENTAL)
+> +	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && BROKEN)
+>  	default n if X86_PC
+>  	default y if (X86_NUMAQ || X86_SUMMIT || X86_BIGSMP)
+>  	help
 
-Cool will try that in future.
-
-Dave.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
