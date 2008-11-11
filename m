@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYKKVHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYKKVHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbYKKVHM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 16:07:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbYKKVG5
+	id S1752735AbYKKVHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 16:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYKKVHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 16:06:57 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:44287 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbYKKVG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 16:06:57 -0500
-Date: Tue, 11 Nov 2008 16:06:43 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Tue, 11 Nov 2008 16:07:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37865 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724AbYKKVHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 16:07:01 -0500
+Date: Tue, 11 Nov 2008 22:06:55 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       srostedt@redhat.com, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH 1/1] ring-buffer: buffer record on/off switch
-In-Reply-To: <20081111125645.4f7a5827.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0811111606040.3275@gandalf.stny.rr.com>
-References: <20081111200601.147669239@goodmis.org> <20081111201034.315528609@goodmis.org> <20081111125645.4f7a5827.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
+       avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+	one page into another
+Message-ID: <20081111210655.GG10818@random.random>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111114555.eb808843.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 11, 2008 at 11:45:55AM -0800, Andrew Morton wrote:
+> page migration already kinda does that.  Is there common ground?
 
-[ Added Andy on Cc ]
+btw, page_migration likely is buggy w.r.t. o_direct too (and now
+unfixable with gup_fast until the 2.4 brlock is added around it or
+similar) if it does the same thing but without any page_mapcount vs
+page_count check.
 
-On Tue, 11 Nov 2008, Andrew Morton wrote:
+page_migration does too much for us, so us calling into migrate.c may
+not be ideal. It has to convert a fresh page to a VM page. In KSM we
+don't convert the newpage to be a VM page, we just replace the anon
+page with another page. The new page in the KSM case is not a page
+known by the VM, not in the lru etc...
 
-> On Tue, 11 Nov 2008 15:06:02 -0500
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > +static struct file_operations rb_simple_fops = {
-> 
-> should be const...
-> 
-> Probably it isn't worth fixing.  Someone(tm) should do period sweeps -
-> 10% of our file_operationses aren't const.
+The way to go could be to change the page_migration to use
+replace_page (or __replace_page if called in some shared inner-lock
+context) after preparing the newpage to be a regular VM page. If we
+can do that, migrate.c will get the o_direct race fixed too for free.
 
-I wonder if this should be added to checkpatch?
+> I don't understand the restrictions on anonymous pages.  Please expand
+> the changelog so that reviewers can understand the reasons for this
+> restriction.
 
--- Steve
+That's a good question but I don't have a definitive answer as I
+didn't account for exactly how complex it would be yet.
 
+Suppose a file has 0-4k equal to 4k-8k. A MAP_SHARED that maps both
+pages with the same physical page sounds tricky. The shared pages are
+KSM owned and invisible to the VM (later could be made visible with an
+external-rmap), but pagecache can't be just KSM owned, they at least
+must go in pagecache radix tree so that requires patching the radix
+tree etc... All things we don't need for anon ram. I think first thing
+to extend is to add external-rmap and make ksm swappable, then we can
+think if something can be done about MAP_SHARED/MAP_PRIVATE too
+(MAP_PRIVATE post-COW already works, the question is pre-COW). One
+excuse of why I didn't think too much about it yet is because in
+effect KSM it's mostly useful to the anon ram, the pagecache can be
+solved in userland with hardlinks with openvz, and shared libs already
+do all they can to share .text (the not-shared post dynamic link
+should be covered by ksm already).
+
+> Again, we could make the presence of this code selectable by subsystems
+> which want it.
+
+Indeed!!
