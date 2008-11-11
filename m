@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbYKKQIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbYKKQOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751813AbYKKQIj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 11:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbYKKQIZ
+	id S1753062AbYKKQOT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 11:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYKKQOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 11:08:25 -0500
-Received: from rn-out-0910.google.com ([64.233.170.188]:36984 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752772AbYKKQIW (ORCPT
+	Tue, 11 Nov 2008 11:14:07 -0500
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:35960 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYKKQOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 11:08:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=IgEqaVSdhvRTCp+MdVRodbttiqSlCCK7OqYGK2S+OF9pciDgVEdKObf+0iKB4QNv9k
-         QOp4Bc6O7S5TSS9KGZ6V2y/mMh6TmGvX4is6o3PcMXvhD0Z58BoEvONZy05U74rpZEu/
-         k5KWYGX1WvsNv/pA5mE/5FUP8tXgFBcb6M+TQ=
-Date: Tue, 11 Nov 2008 10:08:16 -0600
-From: "J. K. Cliburn" <jcliburn@gmail.com>
-To: David Madore <david.madore@ens.fr>
-Cc: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>,
-       Linux NetDev Mailing-List <netdev@vger.kernel.org>,
-       atl1-devel@lists.sourceforge.net
-Subject: Re: atl1e Ethernet driver not seeing packets sent to
- 33:33:00:00:00:01 multicast
-Message-ID: <20081111100816.58a7cf09@osprey.hogchain.net>
-In-Reply-To: <20081111155908.GA14665@clipper.ens.fr>
-References: <20081111133108.GA7124@clipper.ens.fr>
-	<20081111080611.7f6d4371@osprey.hogchain.net>
-	<20081111155908.GA14665@clipper.ens.fr>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Nov 2008 11:14:04 -0500
+Date: Tue, 11 Nov 2008 17:14:01 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
+	chanes in stop_machine
+Message-ID: <20081111161401.GC9459@osiris.boeblingen.de.ibm.com>
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com> <20081111143505.GA6923@linux.vnet.ibm.com> <20081111150225.GA10743@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111150225.GA10743@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 16:59:08 +0100
-David Madore <david.madore@ens.fr> wrote:
-
-> On Tue, Nov 11, 2008 at 08:06:11AM -0600, J. K. Cliburn wrote:
-> > Just to verify your system is fitted with the L1e and not the L1
-> > chip, can you please provide the output of lspci -vvnn?
+> > Could you please apply the following debug patch (due to Jiangshan and
+> > myself)?  Then you should be able to build with CONFIG_RCU_TRACE,
+> > then mount debugfs after boot, for example, on /debug.  This will
+> > create a /debug/rcu directory with three files, "rcucb", "rcu_data",
+> > and "rcu_bh_data".  Since you are still able to log in, could you
+> > please send the contents of these three files?
+> > 
+> > 							Thanx, Paul
 > 
-> Here goes (adapter in question is at the very end):
+> This time with the patch actually attached...  Thanks to Peter Z.
+> for alerting me to my omission.
 
-Thanks.
+Well, your patch doesn't apply on git head. However I used preemptible
+RCU instead and had tracing enabled.
 
-Can you please try this patch?
+This is the output of the three files after it stalled (and continued,
+because I caused an interrupt by sending a network packet) twice:
 
-diff --git a/drivers/net/atl1e/atl1e_hw.c b/drivers/net/atl1e/atl1e_hw.c
-index 949e753..c0d5f7c 100644
---- a/drivers/net/atl1e/atl1e_hw.c
-+++ b/drivers/net/atl1e/atl1e_hw.c
-@@ -163,9 +163,6 @@ int atl1e_read_mac_addr(struct atl1e_hw *hw)
-  * atl1e_hash_mc_addr
-  *  purpose
-  *      set hash value for a multicast address
-- *      hash calcu processing :
-- *          1. calcu 32bit CRC for multicast address
-- *          2. reverse crc with MSB to LSB
-  */
- u32 atl1e_hash_mc_addr(struct atl1e_hw *hw, u8 *mc_addr)
- {
-@@ -174,7 +171,6 @@ u32 atl1e_hash_mc_addr(struct atl1e_hw *hw, u8 *mc_addr)
- 	int i;
- 
- 	crc32 = ether_crc_le(6, mc_addr);
--	crc32 = ~crc32;
- 	for (i = 0; i < 32; i++)
- 		value |= (((crc32 >> i) & 1) << (31 - i));
- 
--- 
-1.5.6.5
+[root@h0545001 rcu]# cat rcuctrs 
+CPU last cur F M
+  1    0   0 1 1
+  3    0   0 1 1
+  4    0   0 0 0
+  5    0   0 0 1
+  6    0   0 0 0
+ggp = 1640, state = waitack
+
+[root@h0545001 rcu]# cat rcugp 
+oldggp=1652  newggp=1655
+
+[root@h0545001 rcu]# cat rcustats 
+na=33948 nl=3 wa=33945 wl=0 da=33945 dl=0 dr=33945 di=0
+1=0 e1=0 i1=1674 ie1=4 g1=1670 a1=1920 ae1=251 a2=1669
+z1=1669 ze1=0 z2=1669 m1=4411 me1=2742 m2=1669
+
