@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYKKWAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYKKWD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbYKKWAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbYKKWA3
+	id S1752822AbYKKWD5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbYKKWDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:00:29 -0500
-Received: from nef2.ens.fr ([129.199.96.40]:3615 "EHLO nef2.ens.fr"
+	Tue, 11 Nov 2008 17:03:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46800 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750808AbYKKWA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:00:28 -0500
-Date: Tue, 11 Nov 2008 23:00:15 +0100
-From: David Madore <david.madore@ens.fr>
-To: "J. K. Cliburn" <jcliburn@gmail.com>
-Cc: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>,
-       Linux NetDev Mailing-List <netdev@vger.kernel.org>,
-       atl1-devel@lists.sourceforge.net
-Subject: Re: atl1e Ethernet driver not seeing packets sent to 33:33:00:00:00:01 multicast
-Message-ID: <20081111220015.GA18215@clipper.ens.fr>
-References: <20081111133108.GA7124@clipper.ens.fr> <20081111080611.7f6d4371@osprey.hogchain.net> <20081111155908.GA14665@clipper.ens.fr> <20081111100816.58a7cf09@osprey.hogchain.net>
-Mime-Version: 1.0
+	id S1751172AbYKKWDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:03:45 -0500
+Date: Tue, 11 Nov 2008 23:03:12 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
+       avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
+Message-ID: <20081111220312.GJ10818@random.random>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <1226409701-14831-4-git-send-email-ieidus@redhat.com> <20081111123851.3d944f21.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111100816.58a7cf09@osprey.hogchain.net>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Tue, 11 Nov 2008 23:00:16 +0100 (CET)
+In-Reply-To: <20081111123851.3d944f21.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 10:08:16AM -0600, J. K. Cliburn wrote:
-> Can you please try this patch?
+On Tue, Nov 11, 2008 at 12:38:51PM -0800, Andrew Morton wrote:
+> Please fully document that interface in the changelog so that we can
+> review your decisions here.  This is by far the most important
+> consideration - we can change all the code, but interfaces are for
+> ever.
+
+Yes, this is the most important point in my view. Even after we make
+the ksm pages swappable it'll remain an invisible change to anybody
+but us (it'll work better under VM pressure, but that's about it).
+
+> uh-oh, ioctls.
+
+Yes, it's all ioctl based. In very short, it assigns the task and
+memory region to scan, and allows to start/stop the kernel thread that
+does the scan while selecting how many pages to execute per scan and
+how many scans to execute per second. The more pages per scan and the
+more scans per second, the higher cpu utilization of the kernel thread.
+
+It would also be possible to submit ksm in a way that has no API at
+all (besides kernel module params tunable later by sysfs to set
+pages-per-scan and scan-frequency). Doing that would allow us to defer
+the API decisions. But then all anonymous memory in the system will be
+scanned unconditionally even if there may be little to share for
+certain tasks. It would perform quite well, usually the sharable part
+is the largest part so the rest wouldn't generate an huge amount of
+cpu waste. There's some ram waste too, as some memory has to be
+allocated for every page we want to possibly share.
+
+In some ways removing the API would make it simpler to use for non
+virtualization environments where they may want to enable it
+system-wide.
+
+> ooh, a comment!
+
+8)
+
+> > +		kpage = alloc_page(GFP_KERNEL |  __GFP_HIGHMEM);
 > 
-> diff --git a/drivers/net/atl1e/atl1e_hw.c b/drivers/net/atl1e/atl1e_hw.c
-> index 949e753..c0d5f7c 100644
-> --- a/drivers/net/atl1e/atl1e_hw.c
-> +++ b/drivers/net/atl1e/atl1e_hw.c
-> @@ -163,9 +163,6 @@ int atl1e_read_mac_addr(struct atl1e_hw *hw)
->   * atl1e_hash_mc_addr
->   *  purpose
->   *      set hash value for a multicast address
-> - *      hash calcu processing :
-> - *          1. calcu 32bit CRC for multicast address
-> - *          2. reverse crc with MSB to LSB
->   */
->  u32 atl1e_hash_mc_addr(struct atl1e_hw *hw, u8 *mc_addr)
->  {
-> @@ -174,7 +171,6 @@ u32 atl1e_hash_mc_addr(struct atl1e_hw *hw, u8 *mc_addr)
->  	int i;
->  
->  	crc32 = ether_crc_le(6, mc_addr);
-> -	crc32 = ~crc32;
->  	for (i = 0; i < 32; i++)
->  		value |= (((crc32 >> i) & 1) << (31 - i));
->  
+> Stray whitepace.
+> 
+> Replace with GFP_HIGHUSER.
 
-Now it works.  Many thanks!
+So not a cleanup, but an improvement (I agree highuser is better, this
+isn't by far any higher-priority kernel alloc and it deserves to have
+lower prio in the watermarks).
 
-Happy hacking,
+> The term "shared memory" has specific meanings in Linux/Unix.  I'm
+> suspecting that its use here was inappropriate but I have insufficient
+> information to be able to suggest alternatives.
 
--- 
-     David A. Madore
-    (david.madore@ens.fr,
-     http://www.madore.org/~david/ )
+We could call it create_shared_anonymous_memory but then what if it
+ever becomes capable of sharing pagecache too? (I doubt it will, not
+in the short term at least ;)
+
+Usually when we do these kind of tricks we use the word cloning, so
+perhaps also create_cloned_memory_area, so you can later say cloned
+anonymous memory or cloned shared memory page instead of just KSM
+page. But then this module would become KCM and not KSM 8). Perhaps we
+should just go recursive and use create_ksm_memory_area.
+
+> Generally: this review was rather a waste of your time and of mine
+> because the code is inadequately documented.
+
+Well, this was a great review considering how little the code was
+documented, definitely not a waste of time on our end, it was very
+helpful and the good thing is I don't see any controversial stuff.
+
+The two inner loops are the core of the ksm scan, and they're aren't
+very simple I've to say. Documenting won't be trivial but it's surely
+possible, Izik already working on it I think! Apologies if any time
+was wasted on your side!!
