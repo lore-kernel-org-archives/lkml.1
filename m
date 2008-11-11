@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbYKKSrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752074AbYKKSs4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbYKKSrz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYKKSr2
+	id S1752074AbYKKSs4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:48:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYKKSsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:47:28 -0500
-Received: from gw.goop.org ([64.81.55.164]:57420 "EHLO mail.goop.org"
+	Tue, 11 Nov 2008 13:48:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48940 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbYKKSr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:47:27 -0500
-Message-ID: <4919D33C.3030101@goop.org>
-Date: Tue, 11 Nov 2008 10:47:24 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	id S1750865AbYKKSsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 13:48:43 -0500
+Message-ID: <4919D370.7080301@redhat.com>
+Date: Tue, 11 Nov 2008 20:48:16 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Isaku Yamahata <yamahata@valinux.co.jp>, Sam Ravnborg <sam@ravnborg.org>,
-       Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix section type conflict in arch/ia64/xen/xen_pv_ops.c
-References: <s5h1vxou7gf.wl%tiwai@suse.de>	<49133E11.8050607@goop.org>	<20081106214848.GA3579@uranus.ravnborg.org>	<s5hk5bazonk.wl%tiwai@suse.de>	<20081111081552.GA10955%yamahata@valinux.co.jp>	<s5hd4h2zndh.wl%tiwai@suse.de>	<20081111085617.GD10955%yamahata@valinux.co.jp>	<4919C43F.3030009@goop.org> <s5hej1iyx4x.wl%tiwai@suse.de>
-In-Reply-To: <s5hej1iyx4x.wl%tiwai@suse.de>
-X-Enigmail-Version: 0.95.6
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
+       chrisw@redhat.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <20081111103051.979aea57.akpm@linux-foundation.org>
+In-Reply-To: <20081111103051.979aea57.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> At Tue, 11 Nov 2008 09:43:27 -0800,
-> Jeremy Fitzhardinge wrote:
->   
->> Isaku Yamahata wrote:
->>     
->>> Here is.
->>>
->>> __initdata and const cannot be always a happy pair and
->>> x86 xen has the potential issue.
->>> This patch simply removes const from data with __initdata
->>> under arch/x86/xen/.
->>>   
->>>       
->> No, I think the proper fix is to use __initconst.
->>     
->
-> The problem is that it depends on gcc version which section it goes.
-> Thus __initconst could break some gcc versions as well.
+Andrew Morton wrote:
+> The whole approach seems wrong to me.  The kernel lost track of these
+> pages and then we run around post-facto trying to fix that up again. 
+> Please explain (for the changelog) why the kernel cannot get this right
+> via the usual sharing, refcounting and COWing approaches.
 >   
 
-Why?  __initconst explicitly puts it in .init.rodata.
+For kvm, the kernel never knew those pages were shared.  They are loaded 
+from independent (possibly compressed and encrypted) disk images.  These 
+images are different; but some pages happen to be the same because they 
+came from the same installation media.
 
-    J
+For OpenVZ the situation is less clear, but if you allow users to 
+independently upgrade their chroots you will eventually arrive at the 
+same scenario (unless of course you apply the same merging strategy at 
+the filesystem level).
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
