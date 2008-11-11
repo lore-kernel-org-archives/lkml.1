@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYKKVHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbYKKVJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752735AbYKKVHi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 16:07:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925AbYKKVHE
+	id S1753663AbYKKVJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 16:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbYKKVJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 16:07:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37865 "EHLO mx2.redhat.com"
+	Tue, 11 Nov 2008 16:09:05 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57366 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752724AbYKKVHB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 16:07:01 -0500
-Date: Tue, 11 Nov 2008 22:06:55 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
-       avi@redhat.com, izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
-	one page into another
-Message-ID: <20081111210655.GG10818@random.random>
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org>
+	id S1752130AbYKKVJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 16:09:04 -0500
+Date: Tue, 11 Nov 2008 22:08:31 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>, Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, srostedt@redhat.com
+Subject: Re: [PATCH 1/1] ring-buffer: buffer record on/off switch
+Message-ID: <20081111210831.GA16179@elte.hu>
+References: <20081111200601.147669239@goodmis.org> <20081111201034.315528609@goodmis.org> <20081111125645.4f7a5827.akpm@linux-foundation.org> <alpine.DEB.1.10.0811111603590.3275@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111114555.eb808843.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0811111603590.3275@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 11:45:55AM -0800, Andrew Morton wrote:
-> page migration already kinda does that.  Is there common ground?
 
-btw, page_migration likely is buggy w.r.t. o_direct too (and now
-unfixable with gup_fast until the 2.4 brlock is added around it or
-similar) if it does the same thing but without any page_mapcount vs
-page_count check.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-page_migration does too much for us, so us calling into migrate.c may
-not be ideal. It has to convert a fresh page to a VM page. In KSM we
-don't convert the newpage to be a VM page, we just replace the anon
-page with another page. The new page in the KSM case is not a page
-known by the VM, not in the lru etc...
+> 
+> On Tue, 11 Nov 2008, Andrew Morton wrote:
+> 
+> > On Tue, 11 Nov 2008 15:06:02 -0500
+> > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > +static struct file_operations rb_simple_fops = {
+> > 
+> > should be const...
+> > 
+> > Probably it isn't worth fixing.  Someone(tm) should do period sweeps -
+> > 10% of our file_operationses aren't const.
+> 
+> Thanks, I never really thought about it.
+> 
+> I'll add to my todo list to send out a patch that cleans all of this 
+> up. I think I'm guilty at doing this in more than one place.
 
-The way to go could be to change the page_migration to use
-replace_page (or __replace_page if called in some shared inner-lock
-context) after preparing the newpage to be a regular VM page. If we
-can do that, migrate.c will get the o_direct race fixed too for free.
+Perhaps checkpatch.pl could remind us about it? a new file_operations 
+struct definition should be const in 99.9% of the cases.
 
-> I don't understand the restrictions on anonymous pages.  Please expand
-> the changelog so that reviewers can understand the reasons for this
-> restriction.
-
-That's a good question but I don't have a definitive answer as I
-didn't account for exactly how complex it would be yet.
-
-Suppose a file has 0-4k equal to 4k-8k. A MAP_SHARED that maps both
-pages with the same physical page sounds tricky. The shared pages are
-KSM owned and invisible to the VM (later could be made visible with an
-external-rmap), but pagecache can't be just KSM owned, they at least
-must go in pagecache radix tree so that requires patching the radix
-tree etc... All things we don't need for anon ram. I think first thing
-to extend is to add external-rmap and make ksm swappable, then we can
-think if something can be done about MAP_SHARED/MAP_PRIVATE too
-(MAP_PRIVATE post-COW already works, the question is pre-COW). One
-excuse of why I didn't think too much about it yet is because in
-effect KSM it's mostly useful to the anon ram, the pagecache can be
-solved in userland with hardlinks with openvz, and shared libs already
-do all they can to share .text (the not-shared post dynamic link
-should be covered by ksm already).
-
-> Again, we could make the presence of this code selectable by subsystems
-> which want it.
-
-Indeed!!
+	Ingo
