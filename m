@@ -1,78 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYKKXoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYKKXtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYKKXoc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 18:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbYKKXoY
+	id S1752842AbYKKXtW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 18:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYKKXtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 18:44:24 -0500
-Received: from ns.suse.de ([195.135.220.2]:43943 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751754AbYKKXoY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 18:44:24 -0500
-Date: Tue, 11 Nov 2008 15:43:44 -0800
-From: Greg KH <gregkh@suse.de>
-To: NeilBrown <neilb@suse.de>
-Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>, linux-kernel@vger.kernel.org,
-       maan@systemlinux.org, stable@kernel.org
-Subject: Re: patch
-	md-linear-fix-a-division-by-zero-bug-for-very-small-arrays.patch
-	added to 2.6.27-stable tree
-Message-ID: <20081111234344.GB5589@suse.de>
-References: <20081111180958.4480949037@coco.kroah.org> <200811112328.15522.s.L-H@gmx.de> <5f46e30cc6798d8b201c2e25aa2c04e1.squirrel@neil.brown.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5f46e30cc6798d8b201c2e25aa2c04e1.squirrel@neil.brown.name>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 11 Nov 2008 18:49:05 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56701
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751997AbYKKXtD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 18:49:03 -0500
+Date: Tue, 11 Nov 2008 15:49:02 -0800 (PST)
+Message-Id: <20081111.154902.11426409.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       kernel-testers@vger.kernel.org, rjw@sisk.pl
+Subject: Re: 2.6.28-rc4: BUG: spinlock lockup on CPU#0
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081111233230.GC12456@orion>
+References: <20081111233230.GC12456@orion>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 09:46:36AM +1100, NeilBrown wrote:
-> On Wed, November 12, 2008 9:28 am, Stefan Lippers-Hollmann wrote:
-> > Hi
-> >
-> > On Dienstag, 11. November 2008, gregkh@suse.de wrote:
-> 
-> >>
-> >> --- a/drivers/md/linear.c
-> >> +++ b/drivers/md/linear.c
-> >> @@ -157,6 +157,8 @@ static linear_conf_t *linear_conf(mddev_
-> >>
-> >>  	min_spacing = conf->array_sectors / 2;
-> >>  	sector_div(min_spacing, PAGE_SIZE/sizeof(struct dev_info *));
-> >> +	if (min_sectors == 0)
-> >> +		min_sectors = 1;
-> >>
-> >>  	/* min_spacing is the minimum spacing that will fit the hash
-> >>  	 * table in one PAGE.  This may be much smaller than needed.
-> >
-> > drivers/md/linear.c: In function 'linear_conf':
-> > drivers/md/linear.c:160: error: 'min_sectors' undeclared (first use in
-> > this function)
-> > drivers/md/linear.c:160: error: (Each undeclared identifier is reported
-> > only once
-> > drivers/md/linear.c:160: error: for each function it appears in.)
-> > make[5]: *** [drivers/md/linear.o] Error 1
-> > make[4]: *** [drivers/md] Error 2
-> > make[4]: *** Waiting for unfinished jobs....
-> >
-> > This one obviously depends on:
-> >
-> > commit 23242fbb470ff4c8c4d41f178832cf1929273d7d
-> > Author: Andre Noll <maan@systemlinux.org>
-> > Date:   Mon Oct 13 11:55:12 2008 +1100
-> >
-> >     md: linear.c: Make two local variables sector-based.
-> >
-> > which in turn depends on previous changes.
-> 
-> Yes, but only syntactically, not semantically.
-> 
-> In 2.6.27, it needs to be
->    if (min_spacing == 0)
->            min_spacing = 1;
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Wed, 12 Nov 2008 02:32:30 +0300
 
-Thanks, I've adjusted the patch to look like this instead.
+> It is on sparc64 (Ultra 10). 2.6.28-rc4-00011-g3ad4f59
+> 
+> BUG: spinlock lockup on CPU#0, metalog/1322, 00000000007f1430
+> Kernel panic - not syncing: Aiee, killing interrupt handler!
+> 
+> It seems Sysrq does not work.
+> 
+> David, how can I provide more info before I reboot it ?
+> 
+> Full dmesg:
 
-greg k-h
+Hmm, this BUG message should have given you a register dump and a
+backtrace.
+
+Can you give it a "Alt-SysRQ-p" and show the output?
+
+Actually, if you got this over a serial console or
+similar, you're not getting the register dump because
+the console loglevel is filtering them out.
+
+If that's what's happening, reboot with "ignore_loglevel"
+(I always boot with this option, by adding it to the
+default kernel command line options in /etc/silo.conf)
+
+Also, in situations where the system is already booted and
+you want to see things like the Alt-SysRQ-p register dumps
+on the console, you'll need to type something like
+"Alt-SysRQ-8" to bump the console log level.
