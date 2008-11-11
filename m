@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbYKKAUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbYKKAXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755289AbYKKAUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 19:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbYKKAUM
+	id S1753860AbYKKAXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 19:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbYKKAWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 19:20:12 -0500
-Received: from smtprelay05.ispgateway.de ([80.67.18.43]:46973 "EHLO
-	smtprelay05.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754702AbYKKAUK (ORCPT
+	Mon, 10 Nov 2008 19:22:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49217 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752226AbYKKAWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 19:20:10 -0500
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-Date: Tue, 11 Nov 2008 01:20:03 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27-7-generic; KDE/4.1.3; x86_64; ; )
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Frank Mayhar <fmayhar@google.com>, Doug Chapman <doug.chapman@hp.com>,
-       mingo@elte.hu, roland@redhat.com, adobriyan@gmail.com,
-       akpm@linux-foundation.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <1224694989.8431.23.camel@oberon> <Pine.LNX.4.64.0811100834500.21257@quilx.com> <1226328152.7685.192.camel@twins>
-In-Reply-To: <1226328152.7685.192.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 10 Nov 2008 19:22:51 -0500
+Date: Mon, 10 Nov 2008 16:22:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: djwong@us.ibm.com, khali@linux-fr.org, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH 3/5] adt7470: Check input range when sysfs files are
+ written
+Message-Id: <20081110162214.b8202b60.akpm@linux-foundation.org>
+In-Reply-To: <20081107185636.13022.54109.stgit@elm3a70.beaverton.ibm.com>
+References: <20081107185621.13022.61885.stgit@elm3a70.beaverton.ibm.com>
+	<20081107185636.13022.54109.stgit@elm3a70.beaverton.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811110120.04768.ioe-lkml@rameria.de>
-X-Df-Sender: 849595
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 November 2008, Peter Zijlstra wrote:
-> The detail I've not looked at is, if when this itimer is indeed active
-> and we are running 256 threads of the same application on all cpus do we
-> then do the per-cpu loop for each tick on each cpu?
+On Fri, 07 Nov 2008 10:56:36 -0800
+"Darrick J. Wong" <djwong@us.ibm.com> wrote:
 
-Can't this kind of aggregation not be done in a tree-like manner?
+> Subject: [PATCH 3/5] adt7470: Check input range when sysfs files are written
+> 
+> Implement correct rounding and range checking for adt7470.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
 
-I mean these CPUs are not on the same node, right?
+When writing changelogs, please explain _why_ a change was made, as
+well as what the change does.
 
+Coz I'm sitting here wondering if we need this in 2.6.28 and I don't
+have all the information.
 
-Best Regards
+Looking at it, I guess it does change the userspace interface in minor
+ways, so we should merge it into 2.6.28.  Ditto
+adt7473-check-inputs-from-sysfs-writes.patch.  Agree?
 
-Ingo Oeser
