@@ -1,120 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbYKKEVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755446AbYKKEVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbYKKEVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYKKEVK
+	id S1755446AbYKKEVq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbYKKEVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:21:10 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:46328 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750787AbYKKEVI (ORCPT
+	Mon, 10 Nov 2008 23:21:36 -0500
+Received: from ipx-119-252-190-80.ipxserver.de ([80.190.252.119]:47916 "EHLO
+	ipx10616.ipxserver.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752308AbYKKEVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:21:08 -0500
-Subject: Re: aacraid: Adaptec 2200S support broken on x86_64 by commit
-	94cf6ba11b068b8a8f68a1e88bffb6827e92124b
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Tomas Henzl <thenzl@redhat.com>, gernot.hillier@siemens.com,
-       aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mark_salyzyn@adaptec.com,
-       Thomas Guyot-Sionnest <dermoth@aei.ca>, stable@kernel.org,
-       Matt Domsch <Matt_Domsch@dell.com>
-In-Reply-To: <20081110152006.8982133b.akpm@linux-foundation.org>
-References: <48D10E1A.8030804@siemens.com> <48EB6600.9020204@redhat.com>
-	 <20081110152006.8982133b.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 10 Nov 2008 20:20:57 -0800
-Message-Id: <1226377257.5014.88.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 10 Nov 2008 23:21:35 -0500
+Date: Tue, 11 Nov 2008 14:20:09 +1000
+From: Peter Hutterer <peter.hutterer@who-t.net>
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
+	protocol
+Message-ID: <20081111042009.GC6776@dingo.redhat.com>
+References: <49142351.9080805@euromail.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49142351.9080805@euromail.se>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-10 at 15:20 -0800, Andrew Morton wrote:
-> On Tue, 07 Oct 2008 15:37:04 +0200
-> Tomas Henzl <thenzl@redhat.com> wrote:
-> 
-> > Hillier, Gernot wrote:
-> > > Hi there!
-> > >
-> > > On our AMD64 machines equipped with old Adaptec 2200S controllers, we
-> > > experienced a regression when updating to 2.6.25. The machines won't
-> > > boot anymore (in a reasonable time), but instead spit out tons of those
-> > > messages:
-> > > aac_srb: aac_fib_send failed with status: 8195
-> > >
-> > > This is already reported in quite some places including LKML:
-> > > http://lkml.org/lkml/2008/5/12/365
-> > > https://bugzilla.redhat.com/show_bug.cgi?id=450444
-> > > https://bugzilla.redhat.com/show_bug.cgi?id=453472
-> > > http://www.linuxquestions.org/questions/red-hat-31/aacsrb-aacfibsend-failed-with-status-8195-651078/
-> > > http://forums.gentoo.org/viewtopic-p-5077382.html?sid=a51c3a0fba6aa854c0b49b8fae5cc15a
-> > >
-> > > We found that this regression seems to be introduced by the bugfix
-> > > "aacraid: fix driver failure with Dell PowerEdge
-> > > Expandable RAID Controller 3/Di":
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=94cf6ba11b068b8a8f68a1e88bffb6827e92124b
-> > >
-> > > By simply removing the quirk flag for our controller, we could boot again.
-> > >
-> > > We did some quick stress tests on an AMD64bit machine with 16GB of RAM 
-> > > and saw no problems after this change:
-> > >
-> > > diff -ur linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c
-> > > --- linux-2.6.25.11-0.1.ct1.orig/drivers/scsi/aacraid/linit.c	2008-09-15 16:07:14.000000000 +0100
-> > > +++ linux-2.6.25.11-0.1.ct1/drivers/scsi/aacraid/linit.c	2008-09-15 16:09:26.000000000 +0100
-> > > @@ -176,7 +176,7 @@
-> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
-> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
-> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
-> > > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
-> > > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG }, /* Adaptec 2200S (Vulcan) */
-> > >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
-> > >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
-> > >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
-> > >
-> > > Can this be safely changed/merged? Or is this the wrong way to fix it?
-> > >
-> > > Please note that we also have machines equipped with newer Adaptec 2230S
-> > > controllers (PCI ID 9005:0286) which run perfectly with the current driver.
-> > >
-> > >   
-> > Hi,
-> > from what I read about this it seems to me that people are complaining also about issues with the 2120S Controller.
-> > So if the patch is taken in this form the original patch should be extended to cover both controllers.
-> > 
-> > Signed-off-by: Tomas Henzl <thenzl@redhat.com>
-> > 
-> > ---
-> > diff -Naurp linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c
-> > --- linux-2.6.18.i686b/drivers/scsi/aacraid/linit.c	2008-09-25 18:06:23.000000000 +0200
-> > +++ linux-2.6.18.i686p6/drivers/scsi/aacraid/linit.c	2008-10-03 12:12:06.000000000 +0200
-> > @@ -175,8 +175,8 @@ static struct aac_driver_ident aac_drive
-> >  	{ aac_rx_init, "percraid", "DELL    ", "PERCRAID        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* PERC 3/Di (Boxster/PERC3DiB) */
-> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "catapult        ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* catapult */
-> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "tomcat          ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* tomcat */
-> > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2120S (Crusader) */
-> > -	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan) */
-> > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2120S   ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2120S (Crusader) */
-> > +	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG },		      /* Adaptec 2200S (Vulcan) */
-> >  	{ aac_rx_init, "aacraid",  "ADAPTEC ", "Adaptec 2200S   ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Adaptec 2200S (Vulcan-2m) */
-> >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S220     ", 1, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S220 (Legend Crusader) */
-> >  	{ aac_rx_init, "aacraid",  "Legend  ", "Legend S230     ", 2, AAC_QUIRK_31BIT | AAC_QUIRK_34SG | AAC_QUIRK_SCSI_32 }, /* Legend S230 (Legend Vulcan) */
-> > 
-> > 
-> 
-> I added this to my tree with Tomas's title&changelog (thanks - I was
-> about to whine about that).  Thanks Thomas for the reminder.  I tagged
-> it as backportable to 2.6.25.x, 2.6.26.x and 2.6.27.x.
+On Fri, Nov 07, 2008 at 12:15:29PM +0100, Henrik Rydberg wrote:
+> In order to utilize the full power of the new multi-touch devices, a
+> way to report detailed finger data to user space is needed. This patch
+> adds a multi-touch (MT) protocol which allows drivers to report details
+> for an arbitrary number of fingers.
 
-Could someone from Adaptec and Dell please verify that this is correct?
-Mark Salyzyn no longer works there, but the aacraid@adaptec.com address
-is supposed to still be working.
+[...]
 
-Thanks,
+>  /* We avoid low common keys in module aliases so they don't get huge. */
+>  #define KEY_MIN_INTERESTING	KEY_MUTE
+>  #define KEY_MAX			0x2ff
+> @@ -642,6 +645,15 @@ struct input_absinfo {
+>  #define ABS_TOOL_WIDTH		0x1c
+>  #define ABS_VOLUME		0x20
+>  #define ABS_MISC		0x28
+> +#define ABS_MT_TOUCH		0x30	/* Diameter of touching circle */
+> +#define ABS_MT_TOUCH_MAJOR	0x30	/* Major axis of touching ellipse */
+> +#define ABS_MT_TOUCH_MINOR	0x31	/* Minor axis of touching ellipse */
+> +#define ABS_MT_WIDTH		0x32	/* Diameter of approaching circle */
+> +#define ABS_MT_WIDTH_MAJOR	0x32	/* Major axis of approaching ellipse */
+> +#define ABS_MT_WIDTH_MINOR	0x33	/* Minor axis of approaching ellipse */
+> +#define ABS_MT_ORIENTATION	0x34	/* Ellipse orientation */
+> +#define ABS_MT_POSITION_X	0x35	/* Center X ellipse position */
+> +#define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
+>  #define ABS_MAX			0x3f
+>  #define ABS_CNT			(ABS_MAX+1)
 
-James
-
-
+is there hardware that can do finger identification? (i.e. thumb vs. index
+finger)? Should we accommodate for this?
+ 
+Cheers,
+  Peter
