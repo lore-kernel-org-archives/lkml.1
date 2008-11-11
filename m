@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYKKA3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYKKAk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYKKA3j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 19:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbYKKA3c
+	id S1754509AbYKKAk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 19:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYKKAkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 19:29:32 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:17434 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbYKKA3b (ORCPT
+	Mon, 10 Nov 2008 19:40:13 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:36660 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbYKKAkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 19:29:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=It/gp4HXoOq/SNt6lyWmJNHQDPRtg2BaePV/VnE9l6wtK1CnGUiUd0MNlWt5a0A7No
-         QDZ47n2ipzV7t6qtg01+ydlxuBbZ2MmMci4RJbFJloNC9yLwRlXtWRhhrYRjLQF2pSdF
-         ssb+sF2QFvlbuLxqJTXS+rHzAAGh7FlBhKkS4=
-Message-ID: <7c86c4470811101629o69e7f012wd45cd1a58cf245b@mail.gmail.com>
-Date: Tue, 11 Nov 2008 01:29:28 +0100
-From: "stephane eranian" <eranian@googlemail.com>
-Reply-To: eranian@gmail.com
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [patch 00/24] perfmon3: introduction
-Cc: linux-kernel@vger.kernel.org, "Stephen Rothwell" <sfr@canb.auug.org.au>
-In-Reply-To: <7c86c4470811100724y1f61086co6ced2510383c5ae2@mail.gmail.com>
+	Mon, 10 Nov 2008 19:40:12 -0500
+Message-ID: <4918D468.6090908@ct.jp.nec.com>
+Date: Mon, 10 Nov 2008 16:40:08 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add include list.h in binfmts.h
+References: <490907DE.2030502@ct.jp.nec.com> <20081110161238.2f1ec110.akpm@linux-foundation.org>
+In-Reply-To: <20081110161238.2f1ec110.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <48f8a9a3.0437560a.656a.57c5@mx.google.com>
-	 <18711.40796.201781.605269@drongo.ozlabs.ibm.com>
-	 <7c86c4470811100724y1f61086co6ced2510383c5ae2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
-
-I have updated the linux-next tree to fix the issue brought up
-by Paul.
-
-Please pull from linux-next tree.
-
-Thanks.
-
-
-On Mon, Nov 10, 2008 at 4:24 PM, stephane eranian
-<eranian@googlemail.com> wrote:
-> Paul,
->
-> On Mon, Nov 10, 2008 at 3:41 AM, Paul Mackerras <paulus@samba.org> wrote:
->> Stephane,
+Andrew Morton wrote:
+> On Wed, 29 Oct 2008 18:03:26 -0700
+> Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> 
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 >>
->> I have just looked through this set of patches and it mostly looks
->> fine to me.  There is just one thing, and that is that the way you
->> access bitmaps using cast_ulp() won't work on 32-bit big-endian
->> machines such as 32-bit PowerPC.  I suggest that instead of using
->> cast_ulp(), you have a set of abstracted bit-vector operations that
->> can be implemented by the arch code - and on x86/ia64, they would be
->> implemented with cast_ulp() + test_bit/__set_bit/etc. as at present.
+>> linux_binfmt uses list_head, so list.h is needed.
 >>
->
-> Thanks for bringing this up. I think we had talked about this a while back.
->
-> There is indeed a problem on big endian 32-bit machines The cast will
-> pick up the wrong half of the u64. I think the best solution to this problem
-> is as you suggested. Consequently, I have added a perfmon abstraction (bv)
-> with its set of arch callbacks. The API takes u64 *.On x86, IA-64, it simply
-> calls the bitmap_*() API. On PPC, it will have to adjust when compiling for
-> 32 bits.
->
-> Here is the example of __set_bit() on x86:
->
-> static inline void pfm_arch_bv_set_bit(int b, u64 *a)
-> {
->        __set_bit(b, (unsigned long *)a);
-> }
->
->
-> I will push this into my linux-next tree and ask Stephen to pull from it again.
->
+>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> ---
+>>  include/linux/binfmts.h |    1 +
+>>  1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
+>> index 7394b5b..06c1123 100644
+>> --- a/include/linux/binfmts.h
+>> +++ b/include/linux/binfmts.h
+>> @@ -1,6 +1,7 @@
+>>  #ifndef _LINUX_BINFMTS_H
+>>  #define _LINUX_BINFMTS_H
+>>  
+>> +#include <linux/list.h>
+>>  #include <linux/capability.h>
+>>  
+>>  struct pt_regs;
+> 
+> Did this fix a build error which you were seeing?
+
+I just noticed it modifying arch/x86/kernel/signal_32.c headers.
+I don't know any case to fail build kernel.
+
+The file signal_32.c includes <linux/list.h> first, and To remove
+including list.h causes a build error.
+
+
+thanks,
+Hiroshi Shimamoto
