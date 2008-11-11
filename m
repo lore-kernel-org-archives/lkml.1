@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbYKKSn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751603AbYKKSrZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751726AbYKKSn1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYKKSnS
+	id S1751603AbYKKSrZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:47:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbYKKSrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:43:18 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37148 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750874AbYKKSnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:43:18 -0500
-Date: Tue, 11 Nov 2008 19:43:12 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC v3][PATCH 0/2] Make ftrace able to trace function return
-Message-ID: <20081111184311.GA21151@elte.hu>
-References: <49191C31.1050402@gmail.com> <20081111094312.GA16496@elte.hu> <c62985530811110730x13bc92abo891b49934ea2ae6f@mail.gmail.com> <20081111171455.GA8201@elte.hu> <c62985530811110924p28d3ff7i3ce8ff0d86ca2fb8@mail.gmail.com>
+	Tue, 11 Nov 2008 13:47:16 -0500
+Received: from victor.provo.novell.com ([137.65.250.26]:40835 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750772AbYKKSrP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 13:47:15 -0500
+Message-ID: <4919D417.5020500@novell.com>
+Date: Tue, 11 Nov 2008 13:51:03 -0500
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811110924p28d3ff7i3ce8ff0d86ca2fb8@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: rostedt@goodmis.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: [RFC PATCH 0/3] Series short description
+References: <20081111142323.28477.41235.stgit@dev.haskins.net> <20081111175649.GA12339@elte.hu>
+In-Reply-To: <20081111175649.GA12339@elte.hu>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6F1C85D8458E34C041DB35E9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6F1C85D8458E34C041DB35E9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+Ingo Molnar wrote:
+> * Gregory Haskins <ghaskins@novell.com> wrote:
+>
+>  =20
+>> Hi Ingo, Steven, Peter,
+>>   This series applies roughly to mainline as an enhancement to the sch=
+ed_rt
+>>   logic.  Peter and I were discussing some of the unecessary overhead =
+in
+>>   pull_rt_tasks() via IRC, and this is my RFC attempt to address the p=
+roblem.
+>>
+>>   I have built/booted this on a 4-way C2D Xeon box and it passes preem=
+pt-test.
+>>
+>>   Comments, please.
+>>    =20
+>
+> this direction looks very nifty to me. Peter, do you Ack them?
+>
+> 	Ingo
+>  =20
+[I just noticed that I fat-fingered the -rt list address, so here is a
+link to the thread for those subscribed to -rt]
 
-> > at the risk of bikeshed-painting this issue too much, the problem 
-> > with function_return is that it has little meaning to actual users 
-> > and even to developers. What does the "return" mean? We know what 
-> > it means, because we know that opposed to function entry we'll 
-> > also capture function returns, and hence be able to do full 
-> > function call tracing.
-> >
-> > so function_full i thought to conduct this aspect of it better. 
-> > But suggestions are welcome.
-> 
-> 
-> Ok. Let's change into function_full, after all, I think that this 
-> tool will be mostly used with a parsing pass of its traces with a 
-> script to produce statistics and hierarchical representation like 
-> does draw_functrace.py After that, the order of apparition of the 
-> functions in the trace will not really matter.
+http://lkml.org/lkml/2008/11/11/193
 
-how about function_cost ?
+-Greg
 
-that's what it's primarily about at this stage: the ability to capture 
-entry+exit, and have the cost printed.
 
-as opposed to function tracer, which traces function entry events, but 
-does not try to build a coherent picture about per function execution 
-cost.
+--------------enig6F1C85D8458E34C041DB35E9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkkZ1BcACgkQlOSOBdgZUxnr1gCdESRbOlYbwhQfvGy3/SU/G7p0
+6iwAn0UB67EZYd1/06XdiTWeJxa/Tc3S
+=vfKT
+-----END PGP SIGNATURE-----
+
+--------------enig6F1C85D8458E34C041DB35E9--
