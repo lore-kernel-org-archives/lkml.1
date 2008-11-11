@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbYKKOa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYKKObO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbYKKOa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 09:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbYKKOaN
+	id S1756746AbYKKObO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 09:31:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYKKOa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 09:30:13 -0500
-Received: from sec.bit-consulting.com.ar ([200.69.255.76]:58274 "EHLO
-	sec.bit-consulting.com.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755837AbYKKOaM (ORCPT
+	Tue, 11 Nov 2008 09:30:58 -0500
+Received: from 68-112-229-48.dhcp.oxfr.ma.charter.com ([68.112.229.48]:37604
+	"EHLO dev.haskins.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755842AbYKKOa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 09:30:12 -0500
-From: "Diego M. Vadell" <dvadell@linuxclusters.com.ar>
-Organization: Linuxclusters
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: PAT and MTRRs
-Date: Tue, 11 Nov 2008 13:30:04 -0100
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-References: <200810262246.21807.dvadell@linuxclusters.com.ar> <59727.163.10.1.174.1225492920.squirrel@sec.bit-consulting.com.ar> <490B963D.5010100@kernel.org>
-In-Reply-To: <490B963D.5010100@kernel.org>
+	Tue, 11 Nov 2008 09:30:57 -0500
+X-Greylist: delayed 518 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Nov 2008 09:30:57 EST
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH 3/3] sched: use highest_prio.next to optimize pull
+	operations
+To: mingo@elte.hu, rostedt@goodmis.org, peterz@infradead.org
+Cc: linux-kernel@vger.kernel.org, =linux-rt-users@vger.kernel.org
+Date: Tue, 11 Nov 2008 09:26:29 -0500
+Message-ID: <20081111142629.28477.84763.stgit@dev.haskins.net>
+In-Reply-To: <20081111142323.28477.41235.stgit@dev.haskins.net>
+References: <20081111142323.28477.41235.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811111330.04624.dvadell@linuxclusters.com.ar>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> your bios doesn't cover 4g above RAM..
->
-> please do
-> 1. boot linux with "disable_mtrr_trim"
-> 2. after booting input:
-> echo "base=0x100000000 size=0x20000000 type=write-back" >/proc/mtrr
-> echo "base=0x120000000 size=0x8000000 type=write-back" >/proc/mtrr
-> echo "base=0x128000000 size=0x4000000 type=write-back" >/proc/mtrr
->
-> later you could put those three lines in one scripts and call it from
-> inittab # grep mtrrfixup /etc/inittab
-> mtrrfixup:345:once:/root/mtrrfixup.sh
->
-> YH
-> --
+We currently take the rq->lock for every cpu in an overload state during
+pull_rt_tasks().  However, we now have enough information via the
+highest_prio.[curr|next] fields to determine if there is any tasks of
+interest to warrant the overhead of the rq->lock, before we actually take
+it.  So we use this information to reduce lock contention during the
+pull for the case where the source-rq doesnt have tasks that preempt
+the current task.
 
-Hi,
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-   It worked! It takes 10 minutes to boot, but it gets speedy somewhere in the 
-booting process. I checked the memory speed with "stream" and its working.
+ kernel/sched_rt.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
 
-   Just for the record, I had to change the line in /etc/inittab 
-to "mtrr:345:once:/root/mtrrfixup.sh" or else, init would complain about the 
-first field being more than 4 characters.
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index b2305c9..d722aef 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1217,6 +1217,18 @@ static int pull_rt_task(struct rq *this_rq)
+ 			continue;
+ 
+ 		src_rq = cpu_rq(cpu);
++
++		/*
++		 * Don't bother taking the src_rq->lock if the next highest
++		 * task is known to be lower-priority than our current task.
++		 * This may look racy, but if this value is about to go
++		 * logically higher, the src_rq will push this task away.
++		 * And if its going logically lower, we do not care
++		 */
++		if (src_rq->rt.highest_prio.next >=
++		    this_rq->rt.highest_prio.curr)
++			continue;
++
+ 		/*
+ 		 * We can potentially drop this_rq's lock in
+ 		 * double_lock_balance, and another CPU could
 
-   Thank you very much
-
- -- Diego 
