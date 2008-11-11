@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbYKKHSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYKKHTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850AbYKKHSt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 02:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYKKHS3
+	id S1755662AbYKKHTg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 02:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbYKKHT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 02:18:29 -0500
-Received: from kroah.org ([198.145.64.141]:58561 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754757AbYKKHS1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 02:18:27 -0500
-Date: Mon, 10 Nov 2008 23:14:20 -0800
-From: Greg KH <greg@kroah.com>
-To: Andrey Vul <andrey.vul@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Question about CardBus support and ExpressCard?
-Message-ID: <20081111071420.GC13596@kroah.com>
-References: <e38d12ff0811101834u46065e0ft13325cbb0104f36b@mail.gmail.com> <e38d12ff0811101836s6f1d9449v4c210f2b83169e46@mail.gmail.com>
+	Tue, 11 Nov 2008 02:19:28 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:37891 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbYKKHT1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 02:19:27 -0500
+Date: Tue, 11 Nov 2008 07:56:43 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [stable] Suspend regression in stable kernel 2.6.27.4 on Mac
+	mini Core Duo
+Message-ID: <20081111065643.GA11757@x61>
+Mail-Followup-To: linux-kernel@vger.kernel.org, stable@kernel.org,
+	Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20081109202830.GA7206@x61> <20081109203441.GA4871@kroah.com> <200811092151.57620.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e38d12ff0811101836s6f1d9449v4c210f2b83169e46@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200811092151.57620.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 09:36:57PM -0500, Andrey Vul wrote:
-> On Mon, Nov 10, 2008 at 21:34, Andrey Vul <andrey.vul@gmail.com> wrote:
-> > I'm configuring 26.27.2 right now and my laptop supports ExpressCard
-> > but not CardBus?
-> > Do I still need CardBus kernel support for the ExpressCard slot to
-> > function properly?
-> Apart from PCI Express hotplug.
+On Sun, Nov 09, 2008 at 21:51:57 +0100, Rafael J. Wysocki wrote:
+> On Sunday, 9 of November 2008, Greg KH wrote:
+> > On Sun, Nov 09, 2008 at 09:28:30PM +0100, Tino Keitel wrote:
+> > > Hi,
+> > > 
+> > > my Mac mini Core Duo doesn't wake up from suspend to RAM anymore with
+> > > 2.6.27.4. It works with 2.6.27.3. I enabled pm_trace, but dmesg | grep
+> > > "hash matches" didn't show anything after resume. I tried 2.6.27.5,
+> > > which also failed to resume.
+> > > 
+> > > The system is i386, the hardware is basically Intel based: Core Duo
+> > > T2300 CPU, Intel graphics i945, ICH7, Marvell GbE (sky2), a SATA hard
+> > > disk, PATA DVD drive, a Firewire hard disk, and a lot of USB devices.
+> > > 
+> > > Does that ring any bells? Any hints what commit I should try to revert?
+> > 
+> > Can you run 'git bisect' on the patches in 2.6.27.4 to see which one
+> > broke your box?
+> 
+> I would start from these commits:
+> 
+> 3b987ac961486373f91191b14291b331fa546072
+> "ACPI suspend: Always use the 32-bit waking vector"
+> 
+> 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+> "ACPI Suspend: Enable ACPI during resume if SCI_EN is not set"
 
-No, you should not.
+Thanks Rafael, 2.6.27.5 with 66036f5862883fcc9f7ff8550685a5a3de1a57e4
+reverted resumes fine.
 
-good luck,
+Regards,
+Tino
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
-greg k-h
