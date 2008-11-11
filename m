@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755512AbYKKIYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbYKKIaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755512AbYKKIYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 03:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYKKIYK
+	id S1755409AbYKKIaz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 03:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbYKKIap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 03:24:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37159 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752481AbYKKIYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 03:24:09 -0500
-Date: Tue, 11 Nov 2008 09:23:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/2] ftrace updates for 2.6.28
-Message-ID: <20081111082347.GB29901@elte.hu>
-References: <20081111025808.946638585@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081111025808.946638585@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Tue, 11 Nov 2008 03:30:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42451 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754729AbYKKIap (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 03:30:45 -0500
+Date: Tue, 11 Nov 2008 00:29:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Airlie <airlied@linux.ie>
+Cc: torvalds@linux-foundation.org, dri-devel@lists.sf.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] drm fixes for 2.6.27-rc5
+Message-Id: <20081111002958.7620fb56.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.0.82.0811110811350.2182@skynet.skynet.ie>
+References: <alpine.DEB.0.82.0811110811350.2182@skynet.skynet.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 11 Nov 2008 08:15:26 +0000 (GMT) Dave Airlie <airlied@linux.ie> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> commit 78538bf14995a136c2d9a22159ada49937359119
+> Author: Dave Airlie <airlied@linux.ie>
+> Date:   Tue Nov 11 17:56:16 2008 +1000
+> 
+>     drm/radeon: map registers at load time
+>     
+>     Now that the radeon driver has suspend/resume functions, it needs to map its
+>     registers at load time or it will likely crash if a suspend operation occurs
+>     before the driver has been initialized.
+>     
+>     This patch moves the register mapping code from firstopen to load and makes
+>     the mapping into a _DRM_DRIVER one so that the core won't remove it at
+>     lastclose time.
 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: devel
-> 
-> Steven Rostedt (2):
->       ftrace: disable tracing on resize
->       ring-buffer: prevent infinite looping on time stamping
-> 
-> ----
->  kernel/trace/ring_buffer.c |    2 +-
->  kernel/trace/trace.c       |   17 ++++++++++++++++-
->  2 files changed, 17 insertions(+), 2 deletions(-)
+Does this make the below patch obsolete?
 
-pulled into tip/tracing/urgent, thanks Steve!
+>     Fixes (at least partially) kernel bz #11891.
 
-> The following patches are needed for 2.6.28. The first one solves a 
-> bug where the resizing of the buffer array was not protected against 
-> modifications by ftrace.
-> 
-> The second patch solves an issue tha Thomas Gleixner was seeing 
-> where the tracer would detect the infinite recursion too easily by 
-> tracing the timer code. This patch prevents the loop from happening 
-> and still does not lose any trace entries.
-> 
-> The changes caused by these patches are low in risk, but I would 
-> still like to put them through linux-next before passing them off to 
-> Linus.
-> 
-> Note, these changes are based against Linus's mainline and not tip. 
-> Also note that the branch in this tree is "devel" and not 
-> "tip/devel".
+A little thing: there are (or used to be) people who troll commits for
+bugzilla reports to close off.  I've adopted the convention of
+indicating bugzilla reports via their full URL to make those efforts
+easier and to increase their accuracy.
 
-that's OK. I resolved the (trivial) conflict with pending changes in 
-tip/tracing/ftrace and pushed out a new ftrace integration branch 
-towards linux-next.
 
-	Ingo
+
+From: Jiri Slaby <jirislaby@gmail.com>
+
+When the driver is bound to a device and nobody opens the device node, it
+will oops on suspend and resume, since it's not mapped and dev_priv->mmio
+is NULL.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/gpu/drm/radeon/radeon_drv.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff -puN drivers/gpu/drm/radeon/radeon_drv.c~drm-fix-radeon-suspend-resume-oops drivers/gpu/drm/radeon/radeon_drv.c
+--- a/drivers/gpu/drm/radeon/radeon_drv.c~drm-fix-radeon-suspend-resume-oops
++++ a/drivers/gpu/drm/radeon/radeon_drv.c
+@@ -56,6 +56,9 @@ static int radeon_suspend(struct drm_dev
+ {
+ 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ 
++	if (!dev_priv->mmio)
++		return 0;
++
+ 	/* Disable *all* interrupts */
+ 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
+ 		RADEON_WRITE(R500_DxMODE_INT_MASK, 0);
+@@ -67,6 +70,9 @@ static int radeon_resume(struct drm_devi
+ {
+ 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ 
++	if (!dev_priv->mmio)
++		return 0;
++
+ 	/* Restore interrupt registers */
+ 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
+ 		RADEON_WRITE(R500_DxMODE_INT_MASK, dev_priv->r500_disp_irq_reg);
+_
+
