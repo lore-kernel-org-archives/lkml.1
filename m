@@ -1,89 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbYKKWqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754135AbYKKWrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbYKKWqy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:46:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKKWqp
+	id S1754135AbYKKWrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbYKKWrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:46:45 -0500
-Received: from cantor.suse.de ([195.135.220.2]:41713 "EHLO mx1.suse.de"
+	Tue, 11 Nov 2008 17:47:03 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40707 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbYKKWqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:46:44 -0500
-From: "NeilBrown" <neilb@suse.de>
-To: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-Date: Wed, 12 Nov 2008 09:46:36 +1100 (EST)
-Message-ID: <5f46e30cc6798d8b201c2e25aa2c04e1.squirrel@neil.brown.name>
-In-Reply-To: <200811112328.15522.s.L-H@gmx.de>
-References: <20081111180958.4480949037@coco.kroah.org>
-    <200811112328.15522.s.L-H@gmx.de>
-Subject: Re: patch 
-     md-linear-fix-a-division-by-zero-bug-for-very-small-arrays.patch 
-     added to 2.6.27-stable tree
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, maan@systemlinux.org,
-       stable@kernel.org
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	id S1751479AbYKKWrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:47:01 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20081111203324.GA30425@redhat.com>
+References: <20081111203324.GA30425@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Jiri Pirko <jpirko@redhat.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC,PATCH] workqueues: turn queue_work() into the "barrier" for work->func()
+Date: Tue, 11 Nov 2008 22:46:21 +0000
+Message-ID: <9266.1226443581@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, November 12, 2008 9:28 am, Stefan Lippers-Hollmann wrote:
-> Hi
->
-> On Dienstag, 11. November 2008, gregkh@suse.de wrote:
+Oleg Nesterov <oleg@redhat.com> wrote:
 
->>
->> --- a/drivers/md/linear.c
->> +++ b/drivers/md/linear.c
->> @@ -157,6 +157,8 @@ static linear_conf_t *linear_conf(mddev_
->>
->>  	min_spacing = conf->array_sectors / 2;
->>  	sector_div(min_spacing, PAGE_SIZE/sizeof(struct dev_info *));
->> +	if (min_sectors == 0)
->> +		min_sectors = 1;
->>
->>  	/* min_spacing is the minimum spacing that will fit the hash
->>  	 * table in one PAGE.  This may be much smaller than needed.
->
-> drivers/md/linear.c: In function 'linear_conf':
-> drivers/md/linear.c:160: error: 'min_sectors' undeclared (first use in
-> this function)
-> drivers/md/linear.c:160: error: (Each undeclared identifier is reported
-> only once
-> drivers/md/linear.c:160: error: for each function it appears in.)
-> make[5]: *** [drivers/md/linear.o] Error 1
-> make[4]: *** [drivers/md] Error 2
-> make[4]: *** Waiting for unfinished jobs....
->
-> This one obviously depends on:
->
-> commit 23242fbb470ff4c8c4d41f178832cf1929273d7d
-> Author: Andre Noll <maan@systemlinux.org>
-> Date:   Mon Oct 13 11:55:12 2008 +1100
->
->     md: linear.c: Make two local variables sector-based.
->
-> which in turn depends on previous changes.
+> I think the caller of queue_work() has all rights to expect that
+> the next invocation of work_func() must see "VAR == 1", but this
+> is not true if the work is already pending.
 
-Yes, but only syntactically, not semantically.
+As you said, queue_work() does test_and_set_bit() which implies smp_mb()
+either side of the function, so you're half way there, and run_workqueue()
+calls spin_unlock_irq() just before calling work_clear_pending()...  So might
+it make sense to move the work_clear_pending() into locked section?  Or would
+that require an smp_mb__before_clear_bit()?
 
-In 2.6.27, it needs to be
-   if (min_spacing == 0)
-           min_spacing = 1;
-
-The other previous patches don't need to be backported.
-
-Thanks for reporting this.
-
-NeilBrown
-
-
->
-> Regards
-> 	Stefan Lippers-Hollmann
->
-
+David
