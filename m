@@ -1,35 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbYKKKkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbYKKKl0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbYKKKkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 05:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbYKKKkX
+	id S1756034AbYKKKl0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 05:41:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYKKKlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 05:40:23 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55355 "EHLO mx2.mail.elte.hu"
+	Tue, 11 Nov 2008 05:41:17 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49512 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbYKKKkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 05:40:23 -0500
-Date: Tue, 11 Nov 2008 11:40:10 +0100
+	id S1755175AbYKKKlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 05:41:16 -0500
+Date: Tue, 11 Nov 2008 11:41:12 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Cliff Wickman <cpw@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] UV: redundant creation of sgi_uv
-Message-ID: <20081111104010.GB10554@elte.hu>
-References: <E1Kzf3f-0008FR-Nh@eag09.americas.sgi.com>
+To: Rufus & Azrael <rufus-azrael@numericable.fr>
+Cc: Rakib Mullick <rakib.mullick@gmail.com>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: Fixing improper annotation.
+Message-ID: <20081111104112.GC10554@elte.hu>
+References: <49193D1A.9040000@numericable.fr> <20081111103649.GA10554@elte.hu> <491962FE.1020805@numericable.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1Kzf3f-0008FR-Nh@eag09.americas.sgi.com>
+In-Reply-To: <491962FE.1020805@numericable.fr>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
+X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0636]
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
 	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,19 +37,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cliff Wickman <cpw@sgi.com> wrote:
+* Rufus & Azrael <rufus-azrael@numericable.fr> wrote:
 
-> There is a collision between two UV functions:
->   both uv_ptc_init() and gru_proc_init() try to make /proc/sgi_uv
-> 
-> So move it's creation to a single place: uv_system_init()
+> Ingo Molnar wrote:
+>> * Rufus&  Azrael<rufus-azrael@numericable.fr>  wrote:
+>>
+>>    
+>>> Hi Rakib,
+>>>
+>>>
+>>> Your two patches set for x86 init_thread_xsate function section
+>>> mismatch is correct to fix the compilation warning, but generates
+>>> this other one :
+>>>
+>>>      
+>>>> WARNING: vmlinux.o(.cpuinit.text+0x7de): Section mismatch in reference
+>>>> from the function xsave_cntxt_init() to the function
+>>>> .init.text:__alloc_bootmem()
+>>>> The function __cpuinit xsave_cntxt_init() references
+>>>> a function __init __alloc_bootmem().
+>>>> If __alloc_bootmem is only used by xsave_cntxt_init then
+>>>> annotate __alloc_bootmem with a matching annotation.
+>>>>        
+>>
+>> that's with both 1/2 and 2/2 applied?
+>>
+>> 	Ingo
+>>
+>>    
+> Yes Ingo with the two patches applied.
 
-applied to tip/x86/uv, thanks Cliff!
-
-> Diffed against 2.6.28-rc3
-
-Seemed to have been diffed against tip/master, or with other patches 
-pending. (this patch depends on other patches pending in tip/x86/uv 
-for v2.6.29 merge)
+okay - so i wont apply them until the full scope of the problems here 
+is mapped. We might be best off by marking xsave_cntxt_init() non-init 
+altogether for the time being?
 
 	Ingo
