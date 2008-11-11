@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbYKKWi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYKKWi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbYKKWi3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYKKWiS
+	id S1754109AbYKKWi5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbYKKWir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:38:18 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:44971 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751122AbYKKWiR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:38:17 -0500
-Subject: Re: [PATCH] convert cnt32_to_63 to inline
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Howells <dhowells@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Nicolas Pitre <nico@cam.org>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, rmk+lkml@arm.linux.org.uk, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-       benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
-       mingo@redhat.com, tglx@linutronix.de, rostedt@goodmis.org,
-       linux-arch@vger.kernel.org
-In-Reply-To: <8896.1226442702@redhat.com>
-References: <20081111182759.GA8052@Krystal> <20081109064855.GA23782@Krystal>
-	 <alpine.LFD.2.00.0811090827160.13034@xanadu.home>
-	 <20081109162250.GB10181@Krystal>
-	 <alpine.LFD.2.00.0811092304300.13034@xanadu.home>
-	 <20081109204256.89ab7925.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0811101627510.13034@xanadu.home>
-	 <20081110135850.0d620f3c.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0811101811130.13034@xanadu.home>
-	 <20081110152221.64948d23.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0811101917450.13034@xanadu.home>
-	 <8896.1226442702@redhat.com>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 23:37:30 +0100
-Message-Id: <1226443050.6696.12.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 11 Nov 2008 17:38:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41700 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751235AbYKKWiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:38:46 -0500
+Message-ID: <491A0957.9060606@redhat.com>
+Date: Wed, 12 Nov 2008 00:38:15 +0200
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: Jonathan Corbet <corbet@lwn.net>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
+Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com>	<1226409701-14831-4-git-send-email-ieidus@redhat.com>	<20081111150345.7fff8ff2@bike.lwn.net>	<491A0483.3010504@redhat.com> <20081111153028.422b301a@bike.lwn.net>
+In-Reply-To: <20081111153028.422b301a@bike.lwn.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-11 at 22:31 +0000, David Howells wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > @@ -52,18 +57,22 @@ unsigned long long sched_clock(void)
-> > ...
-> > +	preempt_disable_notrace();
-> 
-> Please, no!  sched_clock() is called with preemption or interrupts disabled
-> everywhere except from some debugging code (lock tracing IIRC).  If you need
-> to insert this preemption disablement somewhere, please insert it there.  At
-> least then sched_clock() will be called consistently.
+Jonathan Corbet wrote:
+> [Let's see if I can get through the rest without premature sends...]
+>
+> On Wed, 12 Nov 2008 00:17:39 +0200
+> Izik Eidus <ieidus@redhat.com> wrote:
+>
+>   
+>>> Actually, it occurs to me that there's no sanity checks on any of
+>>> the values passed in by ioctl().  What happens if the user tells
+>>> KSM to scan a bogus range of memory?
+>>>     
+>>>       
+>> Well get_user_pages() run in context of the process, therefore it
+>> should fail in "bogus range of memory"
+>>     
+>
+> But it will fail in a totally silent and mysterious way.  Doesn't it
+> seem better to verify the values when you can return a meaningful error
+> code to the caller?
+>
+>   
 
-Agreed. You could do a WARN_ON(!in_atomic); in sched_clock() depending
-on DEBUG_PREEMPT or something to ensure this.
+Well I dont mind insert it (the above for sure is not a bug)
+but even with that, the user can still free the memory that he gave to us
+so this check if "nice to have check", we have nothing to do but to relay on
+get_user_pages return value :)
+
+> The other ioctl() calls have the same issue; you can start the thread
+> with nonsensical values for the number of pages to scan and the sleep
+> time.
+>   
+
+well about this i agree, here it make alot of logic to check the values!
+
+
 
