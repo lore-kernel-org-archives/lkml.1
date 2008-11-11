@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756771AbYKKNtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbYKKNx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756771AbYKKNtV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 08:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbYKKNtL
+	id S1756424AbYKKNx3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 08:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbYKKNxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 08:49:11 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:54468 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755317AbYKKNtK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 08:49:10 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
- chanes in stop_machine
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	 <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
-	 <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl>
-	 <20081111105214.GA15645@elte.hu>
-	 <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 14:49:01 +0100
-Message-Id: <1226411341.7685.1779.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Nov 2008 08:53:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49164 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754906AbYKKNxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 08:53:20 -0500
+Date: Tue, 11 Nov 2008 14:53:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Andres Salomon <dilinger@debian.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86 - Make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
+Message-ID: <20081111135306.GA32709@elte.hu>
+References: <s5h3ahyqwmn.wl%tiwai@suse.de> <20081111125402.GB14989@elte.hu> <s5hzlk6pea6.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5hzlk6pea6.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-11 at 14:36 +0100, Vegard Nossum wrote:
-> On Tue, Nov 11, 2008 at 11:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
-> 
-> Heh. I am not expert, but I looked at the code. The obvious suspicious
-> thing to see is the use of unpaired barriers? Maybe like this:
-> 
->  47 static void set_state(enum stopmachine_state newstate)
-> 48 {
-> 49         /* Reset ack counter. */
-> 50         atomic_set(&thread_ack, num_threads);
-> 51         smp_wmb();
-> 
-> + /* force ordering between thread_ack/state */
-> 
-> 52         state = newstate;
-> 53 }
-> 54
-> 55 /* Last one to ack a state moves to the next state. */
-> 56 static void ack_state(void)
-> 57 {
-> 58         if (atomic_dec_and_test(&thread_ack))
-> 
-> Maybe
-> + /* force ordering between thread_ack/state */
-> + smp_rmb();
-> here?
 
-all atomic ops that have return values imply a full barrier, iirc
+* Takashi Iwai <tiwai@suse.de> wrote:
 
-> 59                 set_state(state + 1);
-> 60 }
-> 61
+> At Tue, 11 Nov 2008 13:54:02 +0100,
+> Ingo Molnar wrote:
+> > 
+> > 
+> > * Takashi Iwai <tiwai@suse.de> wrote:
+> > 
+> > > The OLPC-specpfic codes require geode_gpio_*() functions although
+> > > these functions are defined only with CONFIG_MGEODE_LX=y.
+> > > Add a proper dependency to fix build errors.
+> > > 
+> > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> > 
+> > hm, could you please send a .config that shows the build errors?
 > 
-> Or maybe I am wrong. But Documentation/memory-barriers.txt is rather
-> explicit on this point.
-> 
-> 
-> Vegard
-> 
+> Here it is.  It's for today's linux-next.
 
+hm, which tree did that build failure in linux-next originate from? 
+Your config builds fine here with the latest x86 tree.
+
+	Ingo
