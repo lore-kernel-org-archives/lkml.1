@@ -1,66 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYKKWUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbYKKWVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbYKKWUL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:20:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbYKKWT6
+	id S1753502AbYKKWVr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYKKWVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:19:58 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46468 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751122AbYKKWT6 (ORCPT
+	Tue, 11 Nov 2008 17:21:37 -0500
+Received: from ey-out-2122.google.com ([74.125.78.27]:49986 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbYKKWVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:19:58 -0500
-Date: Tue, 11 Nov 2008 14:19:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: mjg59@srcf.ucam.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hp-wmi: Fix warnings
-Message-Id: <20081111141949.38c840d2.akpm@linux-foundation.org>
-In-Reply-To: <490DD6F6.8000708@lwfinger.net>
-References: <490DD6F6.8000708@lwfinger.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 11 Nov 2008 17:21:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=MAw1ZHpBHhvafcmxpMlYpT2SeR4X4NNyFxak446nPAT2L2QG+smBjIV63MCURSvB2s
+         KMweg64nZurPeLaEo58TmOH2nb43ahW8dZO4qKI2yOGKaXwdznkINkZXLqpYsTachMcf
+         n55aK4yKne98nugjim7C7derytXJz5OsA6rG0=
+Message-ID: <491A056B.2010500@gmail.com>
+Date: Tue, 11 Nov 2008 23:21:31 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] tracing/fastboot: Move boot tracer structs and funcs
+ into their own header.
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Nov 2008 08:36:06 -0800
-Larry Finger <Larry.Finger@lwfinger.net> wrote:
+Impact: Cleanups on the boot tracer and ftrace
 
-> Subject: [PATCH] hp-wmi: Fix warnings
+This patch bring some cleanups about the boot tracer headers.
+The functions and structures of this tracer have nothing related to
+ftrace and should have so their own header file.
 
-A nit: the point of such a patch is _not_ to "fix warnings".  It is to
-fix the issues which those warnings are warning us about!
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ include/linux/ftrace.h |   41 -----------------------------------------
+ include/trace/boot.h   |   43 +++++++++++++++++++++++++++++++++++++++++++
+ init/main.c            |    1 +
+ kernel/trace/trace.h   |    1 +
+ 4 files changed, 45 insertions(+), 41 deletions(-)
 
-I renamed the patch to "hp-wmi: handle rfkill_register() failure",
-thanks.
-
-> Compilation of the HP WMI hotkeys code results in the following:
-> 
->   CC [M]  drivers/misc/hp-wmi.o
-> drivers/misc/hp-wmi.c: In function hp_wmi_bios_setup:
-> drivers/misc/hp-wmi.c:431: warning: ignoring return value of rfkill_register,
-> 	 declared with attribute warn_unused_result
-> drivers/misc/hp-wmi.c:441: warning: ignoring return value of rfkill_register,
-> 	 declared with attribute warn_unused_result
-> drivers/misc/hp-wmi.c:450: warning: ignoring return value of rfkill_register,
-> 	 declared with attribute warn_unused_result
-> 
-> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-> ---
-> 
-> 
-> Index: linux-2.6/drivers/misc/hp-wmi.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/misc/hp-wmi.c
-> +++ linux-2.6/drivers/misc/hp-wmi.c
-> @@ -428,7 +428,9 @@ static int __init hp_wmi_bios_setup(stru
->  		wifi_rfkill->state = hp_wmi_wifi_state();
->  		wifi_rfkill->toggle_radio = hp_wmi_wifi_set;
->  		wifi_rfkill->user_claim_unsupported = 1;
-> -		rfkill_register(wifi_rfkill);
-> +		err = rfkill_register(wifi_rfkill);
-> +		if (err)
-> +			goto add_sysfs_error;
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index dcbbf72..4fbc4a8 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -287,45 +287,4 @@ extern trace_function_return_t ftrace_function_return;
+ extern void unregister_ftrace_return(void);
+ #endif
+ 
+-/*
+- * Structure which defines the trace of an initcall.
+- * You don't have to fill the func field since it is
+- * only used internally by the tracer.
+- */
+-struct boot_trace {
+-	pid_t			caller;
+-	char			func[KSYM_NAME_LEN];
+-	int			result;
+-	unsigned long long	duration;		/* usecs */
+-	ktime_t			calltime;
+-	ktime_t			rettime;
+-};
+-
+-#ifdef CONFIG_BOOT_TRACER
+-/* Append the trace on the ring-buffer */
+-extern void trace_boot(struct boot_trace *it, initcall_t fn);
+-
+-/* Tells the tracer that smp_pre_initcall is finished.
+- * So we can start the tracing
+- */
+-extern void start_boot_trace(void);
+-
+-/* Resume the tracing of other necessary events
+- * such as sched switches
+- */
+-extern void enable_boot_trace(void);
+-
+-/* Suspend this tracing. Actually, only sched_switches tracing have
+- * to be suspended. Initcalls doesn't need it.)
+- */
+-extern void disable_boot_trace(void);
+-#else
+-static inline void trace_boot(struct boot_trace *it, initcall_t fn) { }
+-static inline void start_boot_trace(void) { }
+-static inline void enable_boot_trace(void) { }
+-static inline void disable_boot_trace(void) { }
+-#endif
+-
+-
+-
+ #endif /* _LINUX_FTRACE_H */
+diff --git a/include/trace/boot.h b/include/trace/boot.h
+new file mode 100644
+index 0000000..4cbe64e
+--- /dev/null
++++ b/include/trace/boot.h
+@@ -0,0 +1,43 @@
++#ifndef _LINUX_TRACE_BOOT_H
++#define _LINUX_TRACE_BOOT_H
++
++/*
++ * Structure which defines the trace of an initcall.
++ * You don't have to fill the func field since it is
++ * only used internally by the tracer.
++ */
++struct boot_trace {
++	pid_t			caller;
++	char			func[KSYM_NAME_LEN];
++	int			result;
++	unsigned long long	duration;		/* usecs */
++	ktime_t			calltime;
++	ktime_t			rettime;
++};
++
++#ifdef CONFIG_BOOT_TRACER
++/* Append the trace on the ring-buffer */
++extern void trace_boot(struct boot_trace *it, initcall_t fn);
++
++/* Tells the tracer that smp_pre_initcall is finished.
++ * So we can start the tracing
++ */
++extern void start_boot_trace(void);
++
++/* Resume the tracing of other necessary events
++ * such as sched switches
++ */
++extern void enable_boot_trace(void);
++
++/* Suspend this tracing. Actually, only sched_switches tracing have
++ * to be suspended. Initcalls doesn't need it.)
++ */
++extern void disable_boot_trace(void);
++#else
++static inline void trace_boot(struct boot_trace *it, initcall_t fn) { }
++static inline void start_boot_trace(void) { }
++static inline void enable_boot_trace(void) { }
++static inline void disable_boot_trace(void) { }
++#endif /* CONFIG_BOOT_TRACER */
++
++#endif /* __LINUX_TRACE_BOOT_H */
+diff --git a/init/main.c b/init/main.c
+index f5f4f5b..2a04290 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -65,6 +65,7 @@
+ #include <linux/idr.h>
+ #include <linux/kmemcheck.h>
+ #include <linux/ftrace.h>
++#include <trace/boot.h>
+ 
+ #include <asm/io.h>
+ #include <asm/bugs.h>
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index e40ce0c..f69a519 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -8,6 +8,7 @@
+ #include <linux/ring_buffer.h>
+ #include <linux/mmiotrace.h>
+ #include <linux/ftrace.h>
++#include <trace/boot.h>
+ 
+ enum trace_type {
+ 	__TRACE_FIRST_TYPE = 0,
+-- 
+1.5.2.5
