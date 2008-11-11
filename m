@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbYKKU6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYKKU6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752880AbYKKU6Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYKKU5X
+	id S1753497AbYKKU6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYKKU55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:57:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39803 "EHLO mx2.redhat.com"
+	Tue, 11 Nov 2008 15:57:57 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39822 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753050AbYKKU5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 15:57:21 -0500
-Message-ID: <4919F188.1060900@redhat.com>
-Date: Tue, 11 Nov 2008 15:56:40 -0500
+	id S1753117AbYKKU54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 15:57:56 -0500
+Message-ID: <4919F1A9.5070601@redhat.com>
+Date: Tue, 11 Nov 2008 15:57:13 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Jim Keniston <jkenisto@us.ibm.com>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
        Rusty Russell <rusty@rustcorp.com.au>,
-       Srinivasa Ds <srinivasa@in.ibm.com>
-Subject: [PATCH 3/7] kprobes: Add __kprobes to kprobe internal functions
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [PATCH 5/7] kprobes: Remove called_from argument
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -29,83 +28,196 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __kprobes to kprobes internal functions for protecting
-from probing by kprobes itself.
+Remove called_from argument from kprobes which had been used for preventing
+self-refering of kernel module. However, since we don't keep module's refcount
+after registering kprobe any more, there is no reason to check that.
+
+This patch also simplifies registering/unregistering functions because we don't
+need to use __builtin_return_address(0) which was passed to called_from.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 ---
- kernel/kprobes.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
-
-This patch is required for the patch 5/7.
+ kernel/kprobes.c |   70 +++++++++++--------------------------------------------
+ 1 file changed, 14 insertions(+), 56 deletions(-)
 
 Index: 2.6.28-rc4/kernel/kprobes.c
 ===================================================================
 --- 2.6.28-rc4.orig/kernel/kprobes.c
 +++ 2.6.28-rc4/kernel/kprobes.c
-@@ -410,7 +410,7 @@ void __kprobes recycle_rp_inst(struct kr
- 		hlist_add_head(&ri->hlist, head);
+@@ -641,8 +641,7 @@ static kprobe_opcode_t __kprobes *kprobe
+ 	return (kprobe_opcode_t *)(((char *)addr) + p->offset);
  }
 
--void kretprobe_hash_lock(struct task_struct *tsk,
-+void __kprobes kretprobe_hash_lock(struct task_struct *tsk,
- 			 struct hlist_head **head, unsigned long *flags)
+-static int __kprobes __register_kprobe(struct kprobe *p,
+-	unsigned long called_from)
++int __kprobes register_kprobe(struct kprobe *p)
  {
- 	unsigned long hash = hash_ptr(tsk, KPROBE_HASH_BITS);
-@@ -421,13 +421,15 @@ void kretprobe_hash_lock(struct task_str
- 	spin_lock_irqsave(hlist_lock, *flags);
- }
+ 	int ret = 0;
+ 	struct kprobe *old_p;
+@@ -673,13 +672,10 @@ static int __kprobes __register_kprobe(s
+ 		 * We must hold a refcount of the probed module while updating
+ 		 * its code to prohibit unexpected unloading.
+ 		 */
+-		if (calling_mod != probed_mod) {
+-			if (unlikely(!try_module_get(probed_mod))) {
+-				preempt_enable();
+-				return -EINVAL;
+-			}
+-		} else
+-			probed_mod = NULL;
++		if (unlikely(!try_module_get(probed_mod))) {
++			preempt_enable();
++			return -EINVAL;
++		}
+ 	}
+ 	preempt_enable();
 
--static void kretprobe_table_lock(unsigned long hash, unsigned long *flags)
-+static void __kprobes kretprobe_table_lock(unsigned long hash,
-+	unsigned long *flags)
- {
- 	spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
- 	spin_lock_irqsave(hlist_lock, *flags);
- }
-
--void kretprobe_hash_unlock(struct task_struct *tsk, unsigned long *flags)
-+void __kprobes kretprobe_hash_unlock(struct task_struct *tsk,
-+	unsigned long *flags)
- {
- 	unsigned long hash = hash_ptr(tsk, KPROBE_HASH_BITS);
- 	spinlock_t *hlist_lock;
-@@ -436,7 +438,7 @@ void kretprobe_hash_unlock(struct task_s
- 	spin_unlock_irqrestore(hlist_lock, *flags);
- }
-
--void kretprobe_table_unlock(unsigned long hash, unsigned long *flags)
-+void __kprobes kretprobe_table_unlock(unsigned long hash, unsigned long *flags)
- {
- 	spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
- 	spin_unlock_irqrestore(hlist_lock, *flags);
-@@ -762,7 +764,7 @@ static void __kprobes __unregister_kprob
+@@ -773,15 +769,14 @@ static void __kprobes __unregister_kprob
  	}
  }
 
--static int __register_kprobes(struct kprobe **kps, int num,
-+static int __kprobes __register_kprobes(struct kprobe **kps, int num,
- 	unsigned long called_from)
+-static int __kprobes __register_kprobes(struct kprobe **kps, int num,
+-	unsigned long called_from)
++int __kprobes register_kprobes(struct kprobe **kps, int num)
  {
  	int i, ret = 0;
-@@ -828,7 +830,7 @@ unsigned long __weak arch_deref_entry_po
- 	return (unsigned long)entry;
- }
 
--static int __register_jprobes(struct jprobe **jps, int num,
-+static int __kprobes __register_jprobes(struct jprobe **jps, int num,
- 	unsigned long called_from)
- {
- 	struct jprobe *jp;
-@@ -990,7 +992,7 @@ static int __kprobes __register_kretprob
+ 	if (num <= 0)
+ 		return -EINVAL;
+ 	for (i = 0; i < num; i++) {
+-		ret = __register_kprobe(kps[i], called_from);
++		ret = register_kprobe(kps[i]);
+ 		if (ret < 0) {
+ 			if (i > 0)
+ 				unregister_kprobes(kps, i);
+@@ -791,26 +786,11 @@ static int __kprobes __register_kprobes(
  	return ret;
  }
 
--static int __register_kretprobes(struct kretprobe **rps, int num,
-+static int __kprobes __register_kretprobes(struct kretprobe **rps, int num,
- 	unsigned long called_from)
+-/*
+- * Registration and unregistration functions for kprobe.
+- */
+-int __kprobes register_kprobe(struct kprobe *p)
+-{
+-	return __register_kprobes(&p, 1,
+-				  (unsigned long)__builtin_return_address(0));
+-}
+-
+ void __kprobes unregister_kprobe(struct kprobe *p)
+ {
+ 	unregister_kprobes(&p, 1);
+ }
+
+-int __kprobes register_kprobes(struct kprobe **kps, int num)
+-{
+-	return __register_kprobes(kps, num,
+-				  (unsigned long)__builtin_return_address(0));
+-}
+-
+ void __kprobes unregister_kprobes(struct kprobe **kps, int num)
+ {
+ 	int i;
+@@ -839,8 +819,7 @@ unsigned long __weak arch_deref_entry_po
+ 	return (unsigned long)entry;
+ }
+
+-static int __kprobes __register_jprobes(struct jprobe **jps, int num,
+-	unsigned long called_from)
++int __kprobes register_jprobes(struct jprobe **jps, int num)
+ {
+ 	struct jprobe *jp;
+ 	int ret = 0, i;
+@@ -858,7 +837,7 @@ static int __kprobes __register_jprobes(
+ 			/* Todo: Verify probepoint is a function entry point */
+ 			jp->kp.pre_handler = setjmp_pre_handler;
+ 			jp->kp.break_handler = longjmp_break_handler;
+-			ret = __register_kprobe(&jp->kp, called_from);
++			ret = register_kprobe(&jp->kp);
+ 		}
+ 		if (ret < 0) {
+ 			if (i > 0)
+@@ -871,8 +850,7 @@ static int __kprobes __register_jprobes(
+
+ int __kprobes register_jprobe(struct jprobe *jp)
+ {
+-	return __register_jprobes(&jp, 1,
+-		(unsigned long)__builtin_return_address(0));
++	return register_jprobes(&jp, 1);
+ }
+
+ void __kprobes unregister_jprobe(struct jprobe *jp)
+@@ -880,12 +858,6 @@ void __kprobes unregister_jprobe(struct
+ 	unregister_jprobes(&jp, 1);
+ }
+
+-int __kprobes register_jprobes(struct jprobe **jps, int num)
+-{
+-	return __register_jprobes(jps, num,
+-		(unsigned long)__builtin_return_address(0));
+-}
+-
+ void __kprobes unregister_jprobes(struct jprobe **jps, int num)
+ {
+ 	int i;
+@@ -948,8 +920,7 @@ static int __kprobes pre_handler_kretpro
+ 	return 0;
+ }
+
+-static int __kprobes __register_kretprobe(struct kretprobe *rp,
+-					  unsigned long called_from)
++int __kprobes register_kretprobe(struct kretprobe *rp)
+ {
+ 	int ret = 0;
+ 	struct kretprobe_instance *inst;
+@@ -995,21 +966,20 @@ static int __kprobes __register_kretprob
+
+ 	rp->nmissed = 0;
+ 	/* Establish function entry probe point */
+-	ret = __register_kprobe(&rp->kp, called_from);
++	ret = register_kprobe(&rp->kp);
+ 	if (ret != 0)
+ 		free_rp_inst(rp);
+ 	return ret;
+ }
+
+-static int __kprobes __register_kretprobes(struct kretprobe **rps, int num,
+-	unsigned long called_from)
++int __kprobes register_kretprobes(struct kretprobe **rps, int num)
  {
  	int ret = 0, i;
+
+ 	if (num <= 0)
+ 		return -EINVAL;
+ 	for (i = 0; i < num; i++) {
+-		ret = __register_kretprobe(rps[i], called_from);
++		ret = register_kretprobe(rps[i]);
+ 		if (ret < 0) {
+ 			if (i > 0)
+ 				unregister_kretprobes(rps, i);
+@@ -1019,23 +989,11 @@ static int __kprobes __register_kretprob
+ 	return ret;
+ }
+
+-int __kprobes register_kretprobe(struct kretprobe *rp)
+-{
+-	return __register_kretprobes(&rp, 1,
+-			(unsigned long)__builtin_return_address(0));
+-}
+-
+ void __kprobes unregister_kretprobe(struct kretprobe *rp)
+ {
+ 	unregister_kretprobes(&rp, 1);
+ }
+
+-int __kprobes register_kretprobes(struct kretprobe **rps, int num)
+-{
+-	return __register_kretprobes(rps, num,
+-			(unsigned long)__builtin_return_address(0));
+-}
+-
+ void __kprobes unregister_kretprobes(struct kretprobe **rps, int num)
+ {
+ 	int i;
 
 -- 
 Masami Hiramatsu
