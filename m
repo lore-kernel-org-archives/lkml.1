@@ -1,97 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYKKE7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbYKKFBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbYKKE7R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYKKE7E
+	id S1754387AbYKKFBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 00:01:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750711AbYKKFB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:59:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57871 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbYKKE7C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:59:02 -0500
-Date: Tue, 11 Nov 2008 15:58:44 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
-       Ken Chen <kenchen@google.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.28-rc4-mmotm1110 - you gotta be kidding me...
-Message-Id: <20081111155844.7414bad8.sfr@canb.auug.org.au>
-In-Reply-To: <20081110193713.d94ed39a.akpm@linux-foundation.org>
-References: <30622.1226372137@turing-police.cc.vt.edu>
-	<20081110193713.d94ed39a.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0"
+	Tue, 11 Nov 2008 00:01:26 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:47196 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbYKKFBZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 00:01:25 -0500
+Message-ID: <4919118C.9060701@linux.vnet.ibm.com>
+Date: Tue, 11 Nov 2008 10:31:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][mm] [PATCH 4/4] Memory cgroup hierarchy feature selector
+ (v2)
+References: <20081108091009.32236.26177.sendpatchset@localhost.localdomain> <20081108091113.32236.12390.sendpatchset@localhost.localdomain> <20081111121039.91017d3c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081111121039.91017d3c.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+KAMEZAWA Hiroyuki wrote:
+> On Sat, 08 Nov 2008 14:41:13 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>> Don't enable multiple hierarchy support by default. This patch introduces
+>> a features element that can be set to enable the nested depth hierarchy
+>> feature. This feature can only be enabled when the cgroup for which the
+>> feature this is enabled, has no children.
+>>
+>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> ---
+>>
+> IMHO, permission to this is not enough.
+> 
+> I think following is sane way.
+> ==
+>    When parent->use_hierarchy==1.
+> 	my->use_hierarchy must be "1" and cannot be tunrned to be "0" even if no children.
+>    When parent->use_hierarchy==0
+> 	my->use_hierarchy can be either of "0" or "1".
+> 	this value can be chagned if we don't have children
+> ==
 
-On Mon, 10 Nov 2008 19:37:13 -0800 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
->
-> On Mon, 10 Nov 2008 21:55:37 -0500 Valdis.Kletnieks@vt.edu wrote:
->=20
-> > Somebody's been hitting the phunky pharmaceuticals in the last 4 days,
-> > because this ball-of-joy snuck into linux-next.patch sometime between
-> > -mmotm1106 and --mmotm1110.
-> >=20
-> > Seen in a 'make silentallconfig'
-> >=20
-> >   Single-depth WCHAN output (SCHED_NO_NO_OMIT_FRAME_POINTER) [Y/n/?] (N=
-EW) ?
-> >=20
-> >   Calculate simpler /proc/<PID>/wchan values. If this option
-> >   is disabled then wchan values will recurse back to the
-> >   caller function. This provides more accurate wchan values,
-> >   at the expense of slightly more scheduling overhead.
->=20
-> I got lost here.
->=20
-> >   If in doubt, say "Y".
-> >=20
-> > So if I say 'y', is that a request to disable it, or enable it?  And
-> > what exactly do I get if I vote *against* 'more accurate wchan values'?
-> > Do I get everybody having the same wchan pointing somewhere in the
-> > scheduler code, because that's where __builtin_return_address() points?
-> >=20
-> > And please - a triple negative in the Kconfig variable name?  This has
-> > gotta be a winner for poor taste in variable naming...
-> >=20
->=20
-> Even if that is all sorted out, how the heck is anyone to decide
-> whether or not they need this thing?
->=20
-> Also, if we really really are so wishy-washy indecisive that we need to
-> make the function optional, it should if at all possible be made
-> runtime-configurable, not compile-time.
+Sounds reasonable, will fix in v3.
 
-This came from commit a87d091434ed2a34d647979ab12084139ee1fe41 ("x86,
-sched: enable wchan config menu item on 64-bit").  We have had
-CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER for some time on various
-architectures, this commit just made it available on x86_64 (by changing
-its dependency from X86_32 to X86).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkZEQQACgkQjjKRsyhoI8y1TwCdE/xpityLPrhe+i9Knk7PcRoO
-RIsAoL8CAlGl52VihOwaIO7dvNPZFwi1
-=iVMv
------END PGP SIGNATURE-----
-
---Signature=_Tue__11_Nov_2008_15_58_44_+1100_9PPmursC.BFKkwS0--
+-- 
+	Balbir
