@@ -1,49 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbYKKJbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbYKKJgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbYKKJbm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 04:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYKKJbc
+	id S1755444AbYKKJgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 04:36:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYKKJgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 04:31:32 -0500
-Received: from cantor.suse.de ([195.135.220.2]:54787 "EHLO mx1.suse.de"
+	Tue, 11 Nov 2008 04:36:04 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45703 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751717AbYKKJbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 04:31:31 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       James Cloos <cloos@jhcloos.com>,
-       Paul Collins <paul@burly.ondioline.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	<wnN9HICUAgP.A._d.f5zFJB@chimera> <1226295985.7731.7.camel@pasglop>
-	<jetzafiad4.fsf@sykes.suse.de> <1226353979.7530.8.camel@pasglop>
-	<jefxlzi2x0.fsf@sykes.suse.de> <1226360094.7530.18.camel@pasglop>
-	<je1vxji1br.fsf@sykes.suse.de> <1226368174.7530.47.camel@pasglop>
-X-Yow: By MEER biz doo SCHOIN..
-Date: Tue, 11 Nov 2008 10:31:26 +0100
-In-Reply-To: <1226368174.7530.47.camel@pasglop> (Benjamin Herrenschmidt's
-	message of "Tue, 11 Nov 2008 12:49:34 +1100")
-Message-ID: <jeskpy7gnl.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	id S1752180AbYKKJgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 04:36:03 -0500
+Date: Tue, 11 Nov 2008 10:34:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20081111093426.GS26778@kernel.dk>
+References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua> <20081110173504.GL26778@kernel.dk> <49187D05.9050407@telenet.dn.ua> <x491vxjqmg0.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x491vxjqmg0.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It looks like you are observing the same failure mode that I do.
+On Mon, Nov 10 2008, Jeff Moyer wrote:
+> "Vitaly V. Bursov" <vitalyb@telenet.dn.ua> writes:
+> 
+> > Jens Axboe wrote:
+> >> On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
+> >>> Jens Axboe wrote:
+> >>>> On Mon, Nov 10 2008, Jeff Moyer wrote:
+> >>>>> Jens Axboe <jens.axboe@oracle.com> writes:
+> >>>>>
+> >>>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
+> >>>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
+> >>>>> you to try this patch is that nfsd may be farming off the I/O requests
+> >>>>> to different threads which are then performing interleaved I/O.  The
+> >>>>> above patch tries to detect this and allow cooperating processes to get
+> >>>>> disk time instead of waiting for the idle timeout.
+> >>>> Precisely :-)
+> >>>>
+> >>>> The only reason I haven't merged it yet is because of worry of extra
+> >>>> cost, but I'll throw some SSD love at it and see how it turns out.
+> >>>>
+> >>> Sorry, but I get "oops" same moment nfs read transfer starts.
+> >>> I can get directory list via nfs, read files locally (not
+> >>> carefully tested, though)
+> >>>
+> >>> Dumps captured via netconsole, so these may not be completely accurate
+> >>> but hopefully will give a hint.
+> >> 
+> >> Interesting, strange how that hasn't triggered here. Or perhaps the
+> >> version that Jeff posted isn't the one I tried. Anyway, search for:
+> >> 
+> >>         RB_CLEAR_NODE(&cfqq->rb_node);
+> >> 
+> >> and add a
+> >> 
+> >>         RB_CLEAR_NODE(&cfqq->prio_node);
+> >> 
+> >> just below that. It's in cfq_find_alloc_queue(). I think that should fix
+> >> it.
+> >> 
+> >
+> > Same problem.
+> >
+> > I did make clean; make -j3; sync; on (2 times) patched kernel and it went OK
+> > but It won't boot anymore with cfq with same error...
+> >
+> > Switching cfq io scheduler at runtime (booting with "as") appears to work with
+> > two parallel local dd reads.
+> 
+> Strange, I can't reproduce a failure.  I'll keep trying.  For now, these
+> are the results I see:
+> 
+> [root@maiden ~]# mount megadeth:/export/cciss /mnt/megadeth/
+> [root@maiden ~]# dd if=/mnt/megadeth/file1 of=/dev/null bs=1M
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 26.8128 s, 40.0 MB/s
+> [root@maiden ~]# umount /mnt/megadeth/
+> [root@maiden ~]# mount megadeth:/export/cciss /mnt/megadeth/
+> [root@maiden ~]# dd if=/mnt/megadeth/file1 of=/dev/null bs=1M
+> 1024+0 records in
+> 1024+0 records out
+> 1073741824 bytes (1.1 GB) copied, 23.7025 s, 45.3 MB/s
+> [root@maiden ~]# umount /mnt/megadeth/
+> 
+> Here is the patch, with the suggestion from Jens to switch the cfqq to
+> the right priority tree when the priority is changed.
 
-Andreas.
+I don't see the issue here either. Vitaly, are you using any openvz
+kernel patches? IIRC, they patch cfq so it could just be that your cfq
+version is incompatible with Jeff's patch.
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Jens Axboe
+
