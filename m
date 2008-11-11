@@ -1,56 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbYKKVz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbYKKV74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbYKKVz7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 16:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbYKKVzt
+	id S1752308AbYKKV74 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 16:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750808AbYKKV7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 16:55:49 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49898 "EHLO mx2.redhat.com"
+	Tue, 11 Nov 2008 16:59:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42872 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938AbYKKVzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 16:55:48 -0500
-Message-ID: <4919FF41.30800@qumranet.com>
-Date: Tue, 11 Nov 2008 23:55:13 +0200
-From: Izik Eidus <izik@qumranet.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
-       izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
- one page into another
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com> <1226409701-14831-2-git-send-email-ieidus@redhat.com> <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org> <20081111210655.GG10818@random.random> <Pine.LNX.4.64.0811111522150.27767@quilx.com> <4919FB95.4060105@redhat.com> <Pine.LNX.4.64.0811111544350.28346@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0811111544350.28346@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1750757AbYKKV7s convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 16:59:48 -0500
+Date: Tue, 11 Nov 2008 16:59:31 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20081111165931.6f98401b@tleilax.poochiereds.net>
+In-Reply-To: <20081111164104.48f4dbd8@tleilax.poochiereds.net>
+References: <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
+	<20081110135618.GI26778@kernel.dk>
+	<49186C5A.5020809@telenet.dn.ua>
+	<20081110173504.GL26778@kernel.dk>
+	<49187D05.9050407@telenet.dn.ua>
+	<x491vxjqmg0.fsf@segfault.boston.devel.redhat.com>
+	<20081111093426.GS26778@kernel.dk>
+	<20081111093540.GT26778@kernel.dk>
+	<20081111115227.GU26778@kernel.dk>
+	<4919B884.5000604@telenet.dn.ua>
+	<20081111180659.GC26778@kernel.dk>
+	<x49vduunjh4.fsf@segfault.boston.devel.redhat.com>
+	<20081111164104.48f4dbd8@tleilax.poochiereds.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 11 Nov 2008, Avi Kivity wrote:
->
->   
->> Christoph Lameter wrote:
->>     
->>> page migration requires the page to be on the LRU. That could be changed
->>> if you have a different means of isolating a page from its page tables.
->>>
->>>       
->> Isn't rmap the means of isolating a page from its page tables?  I guess I'm
->> misunderstanding something.
->>     
->
-> In order to migrate a page one first has to make sure that userspace and
-> the kernel cannot access the page in any way. User space must be made to
-> generate page faults and all kernel references must be accounted for and
-> not be in use.
->   
-This is really not the case for ksm,
-in ksm we allow the page to be accessed all the time, we dont have to 
-swap the page
-like migrate.c is doing...
+On Tue, 11 Nov 2008 16:41:04 -0500
+Jeff Layton <jlayton@redhat.com> wrote:
+
+> On Tue, 11 Nov 2008 14:36:07 -0500
+> Jeff Moyer <jmoyer@redhat.com> wrote:
+> 
+> > Jens Axboe <jens.axboe@oracle.com> writes:
+> > 
+> > > OK, that looks better. Can I talk you into just trying this little
+> > > patch, just to see what kind of performance that yields? Remove the cfq
+> > > patch first. I would have patched nfsd only, but this is just a quick'n
+> > > dirty.
+> > 
+> > I went ahead and gave it a shot.  The updated CFQ patch with no I/O
+> > context sharing does about 40MB/s reading a 1GB file.  Backing that
+> > patch out, and then adding the patch to share io_context's between
+> > kthreads yields 45MB/s.
+> > 
+> 
+> Here's a quick and dirty patch to make all of the nfsd's have the same
+> io_context. Comments appreciated -- I'm not that familiar with the IO
+> scheduling code. If this looks good, I'll clean it up, add some
+> comments and formally send it to Bruce.
+> 
+
+No sooner than I send it out than I find a bug. We need to eventually
+put the io_context reference we get. This should be more correct:
+
+----------------[snip]-------------------
+
+>From d0ee67045a12c677883f77791c6f260588c7b41f Mon Sep 17 00:00:00 2001
+From: Jeff Layton <jlayton@redhat.com>
+Date: Tue, 11 Nov 2008 16:54:16 -0500
+Subject: [PATCH] knfsd: make all nfsd threads share an io_context
+
+This apparently makes the I/O scheduler treat the threads as a group
+which helps throughput when sequential I/O is multiplexed over several
+nfsd's.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/nfsd/nfssvc.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
+
+diff --git a/fs/nfsd/nfssvc.c b/fs/nfsd/nfssvc.c
+index 07e4f5d..5cd99f9 100644
+--- a/fs/nfsd/nfssvc.c
++++ b/fs/nfsd/nfssvc.c
+@@ -22,6 +22,7 @@
+ #include <linux/freezer.h>
+ #include <linux/fs_struct.h>
+ #include <linux/kthread.h>
++#include <linux/iocontext.h>
+ 
+ #include <linux/sunrpc/types.h>
+ #include <linux/sunrpc/stats.h>
+@@ -42,6 +43,7 @@ static int			nfsd(void *vrqstp);
+ struct timeval			nfssvc_boot;
+ static atomic_t			nfsd_busy;
+ static unsigned long		nfsd_last_call;
++static struct io_context	*nfsd_io_context;
+ static DEFINE_SPINLOCK(nfsd_call_lock);
+ 
+ /*
+@@ -173,6 +175,10 @@ static void nfsd_last_thread(struct svc_serv *serv)
+ 	nfsd_serv = NULL;
+ 	nfsd_racache_shutdown();
+ 	nfs4_state_shutdown();
++	if (nfsd_io_context) {
++		put_io_context(nfsd_io_context);
++		nfsd_io_context = NULL;
++	}
+ 
+ 	printk(KERN_WARNING "nfsd: last server has exited, flushing export "
+ 			    "cache\n");
+@@ -398,6 +404,28 @@ update_thread_usage(int busy_threads)
+ }
+ 
+ /*
++ * should be called while holding nfsd_mutex
++ */
++static void
++nfsd_set_io_context(void)
++{
++	int cpu, node;
++
++	if (!nfsd_io_context) {
++		cpu = get_cpu();
++		node = cpu_to_node(cpu);
++		put_cpu();
++
++		/*
++		 * get_io_context can return NULL if the alloc_context fails.
++		 * That's not technically fatal here, so we don't bother to
++		 * check for it.
++		 */
++		nfsd_io_context = get_io_context(GFP_KERNEL, node);
++	} else
++		copy_io_context(&current->io_context, &nfsd_io_context);
++}
++/*
+  * This is the NFS server kernel thread
+  */
+ static int
+@@ -410,6 +438,8 @@ nfsd(void *vrqstp)
+ 	/* Lock module and set up kernel thread */
+ 	mutex_lock(&nfsd_mutex);
+ 
++	nfsd_set_io_context();
++
+ 	/* At this point, the thread shares current->fs
+ 	 * with the init process. We need to create files with a
+ 	 * umask of 0 instead of init's umask. */
+-- 
+1.5.5.1
 
