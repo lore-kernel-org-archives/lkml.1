@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbYKKP0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYKKP1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbYKKP0i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 10:26:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756160AbYKKP0a
+	id S1756831AbYKKP1s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 10:27:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYKKP1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 10:26:30 -0500
-Received: from viefep20-int.chello.at ([62.179.121.40]:38684 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756016AbYKKP03 (ORCPT
+	Tue, 11 Nov 2008 10:27:40 -0500
+Received: from relay1-v.mail.gandi.net ([217.70.178.75]:60547 "EHLO
+	relay1-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755470AbYKKP1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 10:26:29 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [RFC PATCH v3 3/5] sched: nominate preferred wakeup cpu
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: vatsa@in.ibm.com
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>
-In-Reply-To: <20081111152126.GF3593@linux.vnet.ibm.com>
-References: <20081110181526.562.69941.stgit@drishya.in.ibm.com>
-	 <20081110183326.562.37718.stgit@drishya.in.ibm.com>
-	 <1226411019.7685.1767.camel@twins> <491991BE.9080405@gmail.com>
-	 <20081111152126.GF3593@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 16:26:14 +0100
-Message-Id: <1226417174.7685.1898.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Nov 2008 10:27:39 -0500
+Date: Tue, 11 Nov 2008 16:27:36 +0100
+From: Mathieu Chouquet-Stringer <mchouque@free.fr>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>, Pavel Machek <pavel@suse.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
+Message-ID: <20081111152736.GA28569@mobydick>
+Mail-Followup-To: Mathieu Chouquet-Stringer <mchouque@free.fr>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Pavel Machek <pavel@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+	Alex Deucher <alexdeucher@gmail.com>,
+	Dave Airlie <airlied@redhat.com>
+References: <20081109195033.GA1335@mobydick> <20081110094239.GA14204@atrey.karlin.mff.cuni.cz> <20081110221343.GA17951@mobydick> <200811101506.53324.jbarnes@virtuousgeek.org> <20081110231524.GA18971@mobydick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110231524.GA18971@mobydick>
+X-Face: %JOeya=Dg!}[/#Go&*&cQ+)){p1c8}u\Fg2Q3&)kothIq|JnWoVzJtCFo~4X<uJ\9cHK
+	'.w 3:{EoxBR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-11 at 20:51 +0530, Srivatsa Vaddagiri wrote:
-> On Tue, Nov 11, 2008 at 09:07:58AM -0500, Gregory Haskins wrote:
-> > > Would it make sense to place the preferred_wakeup_cpu stuff in the
-> > > root_domain structure we already have?
-> > >   
-> > 
-> > From the description, this is exactly what the root-domains were created
-> > to solve.
-> > 
-> > Vaidyanathan,  just declare your object in "struct root_domain" and
-> > initialize it in init_rootdomain() in kernel/sched.c, and then access it
-> > via rq->rd to take advantage of this infrastructure.  It will
-> > automatically follow any partitioning that happens to be configured.
+On Tue, Nov 11, 2008 at 12:15:24AM +0100, Mathieu Chouquet-Stringer wrote:
+> This one I guess:
+> http://bugzilla.kernel.org/attachment.cgi?id=18644&action=view
 > 
-> If I understand correctly, we may want to have more than one preferred
-> cpu in a given sched domain, taking into account node topology i.e if a
-> given sched domain encompasses two nodes, then we may like to designate
-> 2 preferred wakeup_cpu's, one per node. If that is the case, then
-> root_domain may not be of use here?
+> Let me give it a shot, I'll keep you posted.
 
-Agreed, in which case this sched_domain_attr stuff might work out better
-- but I'm not sure I fully get that.. will stare at that a bit more.
-
+So I compiled the module, rebooted just to have a clean starting point,
+started X then tried to suspend: no go...
+-- 
+Mathieu Chouquet-Stringer                           mchouque@free.fr
+            The sun itself sees not till heaven clears.
+	             -- William Shakespeare --
