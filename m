@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYKKWsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbYKKWtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYKKWsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYKKWsd
+	id S1754209AbYKKWtT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbYKKWtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:48:33 -0500
-Received: from styx.suse.cz ([82.119.242.94]:42405 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751219AbYKKWsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:48:32 -0500
-Date: Tue, 11 Nov 2008 23:48:31 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Henrik Rydberg <rydberg@euromail.se>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hid: Complete support for the new unibody macbooks
-In-Reply-To: <4919C979.3000501@euromail.se>
-Message-ID: <alpine.LNX.1.10.0811112347260.24889@jikos.suse.cz>
-References: <49109C91.6090207@euromail.se> <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz> <4919C979.3000501@euromail.se>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 11 Nov 2008 17:49:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:40773 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751243AbYKKWtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:49:03 -0500
+Message-ID: <491A0BE5.1050407@redhat.com>
+Date: Wed, 12 Nov 2008 00:49:09 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Izik Eidus <ieidus@redhat.com>
+CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, aarcange@redhat.com,
+       chrisw@redhat.com
+Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com>	<1226409701-14831-4-git-send-email-ieidus@redhat.com> <20081111150345.7fff8ff2@bike.lwn.net> <491A0483.3010504@redhat.com>
+In-Reply-To: <491A0483.3010504@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008, Henrik Rydberg wrote:
+Izik Eidus wrote:
+>> Any benchmarks on the runtime cost of having KSM running?
+>>   
+>
+> This one is problematic, ksm can take anything from 0% to 100% cpu
+> its all depend on how fast you run it.
+> it have 3 parameters:
+> number of pages to scan before it go to sleep
+> maximum number of pages to merge while we scanning the above pages 
+> (merging is expensive)
+> time to sleep (when runing from userspace using /dev/ksm, we actually 
+> do it there (userspace)
 
-> No worries. I should have mentioned earlier that the hid update is best 
-> synchronized with the bcm5974 update, since the latter is the only 
-> driver that will pick the mouse interface up after the hid update. The 
-> bcm5974 patch was sent on October 23, but I have not received any 
-> feedback to it yet.
-
-Yes, I am aware of bcm5974 being dependent in HID driver not claiming the 
-mouse interface on this hardware.
-
-Dmitry, what are your plans with this bcm5974 patch? 2.6.28 or 2.6.29?
-
-Thanks,
+The scan process priority also has its effect.  One strategy would be to 
+run it at idle priority as long as you have enough free memory, and 
+increase the priority as memory starts depleting.
 
 -- 
-Jiri Kosina
-SUSE Labs
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
