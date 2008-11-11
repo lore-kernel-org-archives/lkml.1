@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755620AbYKKKNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYKKKNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755620AbYKKKNR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 05:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbYKKKNA
+	id S1755626AbYKKKNc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 05:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYKKKNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 05:13:00 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47205 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbYKKKNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 05:13:00 -0500
-Date: Tue, 11 Nov 2008 11:12:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing, x86: function return tracer, fix assembly
-	constraints
-Message-ID: <20081111101252.GA3355@elte.hu>
-References: <49191C31.1050402@gmail.com> <20081111094312.GA16496@elte.hu>
+	Tue, 11 Nov 2008 05:13:08 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:35943 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755396AbYKKKNH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 05:13:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nbw12HPRD4Z9mp/e1Hz5gmsOm9UXLGo7s1rmWD2v9aIHbI1HZXpP3Z6AhV5Cp/Tu0W
+         6zhww3WNFIaMl3V7k5/7y1yhg9DYLhz80VUEGK9Qb4aAgSF8Ce6QoC28m3Y/HITXQ1lc
+         NFlbdRQlH0/v2PLHlzGnIt6d/R7R1HcyEfeDs=
+Date: Tue, 11 Nov 2008 13:16:29 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: CIJOML <cijoml@volny.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Possibility to build more kernels in one shot?
+Message-ID: <20081111101629.GA3665@x200.localdomain>
+References: <200811110801.14206.cijoml@volny.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111094312.GA16496@elte.hu>
+In-Reply-To: <200811110801.14206.cijoml@volny.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Nov 11, 2008 at 08:01:14AM +0100, CIJOML wrote:
+> currently I compile kernel for 12 different machines. I would like to see 
+> profile support in kernel, so I could have all my .configs in source and 
+> compile them in one shot. and than see in profile directory subdirectories 
+> for every config with it's vmlinuz and modules.
 
->From 867f7fb3ebb831970847b179e7df5a9ab10da16d Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 11 Nov 2008 11:18:14 +0100
-Subject: [PATCH] tracing, x86: function return tracer, fix assembly constraints
+Write a script, shouldn't take more than 15 min including testing.
+And use "make O=".
 
-fix:
+> I think it would speedup also compilation time because some .o should be than 
+> reuse.
 
- arch/x86/kernel/ftrace.c: Assembler messages:
- arch/x86/kernel/ftrace.c:140: Error: missing ')'
- arch/x86/kernel/ftrace.c:140: Error: junk `(%ebp))' after expression
- arch/x86/kernel/ftrace.c:141: Error: missing ')'
- arch/x86/kernel/ftrace.c:141: Error: junk `(%ebp))' after expression
-
-the [parent_replaced] is used in an =rm fashion, so that constraint
-is correct in isolation - but [parent_old] aliases register %0 and uses
-it in an addressing mode that is only valid with registers - so change
-the constraint from =rm to =r.
-
-This fixes the build failure.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/ftrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index d68033b..9b2325a 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -151,7 +151,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 		"   .long 2b, 3b\n"
- 		".previous\n"
- 
--		: [parent_replaced] "=rm" (parent), [old] "=r" (old),
-+		: [parent_replaced] "=r" (parent), [old] "=r" (old),
- 		  [faulted] "=r" (faulted)
- 		: [parent_old] "0" (parent), [return_hooker] "r" (return_hooker)
- 		: "memory"
+Very optimistic hope. Use ccache(1) if you want .o reuse.
