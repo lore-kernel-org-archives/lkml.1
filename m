@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYKKRgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbYKKRnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbYKKRgd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:36:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYKKRgZ
+	id S1753972AbYKKRnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:43:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbYKKRne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:36:25 -0500
-Received: from styx.suse.cz ([82.119.242.94]:32934 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752246AbYKKRgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:36:24 -0500
-Date: Tue, 11 Nov 2008 18:36:23 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Henrik Rydberg <rydberg@euromail.se>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hid: Complete support for the new unibody macbooks
-In-Reply-To: <49109C91.6090207@euromail.se>
-Message-ID: <alpine.LNX.1.10.0811111835540.24889@jikos.suse.cz>
-References: <49109C91.6090207@euromail.se>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Tue, 11 Nov 2008 12:43:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:53323 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752060AbYKKRnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:43:33 -0500
+Message-ID: <4919C43F.3030009@goop.org>
+Date: Tue, 11 Nov 2008 09:43:27 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Isaku Yamahata <yamahata@valinux.co.jp>
+CC: Takashi Iwai <tiwai@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix section type conflict in arch/ia64/xen/xen_pv_ops.c
+References: <s5h1vxou7gf.wl%tiwai@suse.de> <49133E11.8050607@goop.org> <20081106214848.GA3579@uranus.ravnborg.org> <s5hk5bazonk.wl%tiwai@suse.de> <20081111081552.GA10955%yamahata@valinux.co.jp> <s5hd4h2zndh.wl%tiwai@suse.de> <20081111085617.GD10955%yamahata@valinux.co.jp>
+In-Reply-To: <20081111085617.GD10955%yamahata@valinux.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Nov 2008, Henrik Rydberg wrote:
+Isaku Yamahata wrote:
+> Here is.
+>
+> __initdata and const cannot be always a happy pair and
+> x86 xen has the potential issue.
+> This patch simply removes const from data with __initdata
+> under arch/x86/xen/.
+>   
 
-> The unibody MacBook 5 and MacBook Pro 5 come with a new version of
-> the bcm5974 trackpad. This patch adds the USB device ids and all
-> the appropriate quirks, including hid_blacklist.
-> 
-> Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+No, I think the proper fix is to use __initconst.
 
-Applied, thanks Henrik (and sorry for the delay, I have been offline for a 
-few days).
-
--- 
-Jiri Kosina
-SUSE Labs
+    J
