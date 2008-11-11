@@ -1,88 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbYKKFOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYKKFiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbYKKFOa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 00:14:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbYKKFOU
+	id S1754746AbYKKFiN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 00:38:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbYKKFhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 00:14:20 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35548 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750748AbYKKFOT (ORCPT
+	Tue, 11 Nov 2008 00:37:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55444
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751198AbYKKFhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 00:14:19 -0500
-Date: Tue, 11 Nov 2008 14:14:18 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
-Cc: "Luck, Tony" <tony.luck@intel.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-ia64@vger.kernel.org,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Joerg Roedel <joerg.roedel@amd.com>
-In-Reply-To: <87d4h3pwhe.fsf@basil.nowhere.org>
-References: <20081110121123.F82A.E1E9C6FF@jp.fujitsu.com> <87d4h3pwhe.fsf@basil.nowhere.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20081111112615.D5C5.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 11 Nov 2008 00:37:54 -0500
+Date: Mon, 10 Nov 2008 21:37:53 -0800 (PST)
+Message-Id: <20081110.213753.223716878.davem@davemloft.net>
+To: jianjun@zeuux.org
+Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] nets: fix a buffer overrun
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081108023558.GB6384@ubuntu>
+References: <20081108023558.GB6384@ubuntu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yasunori Goto <y-goto@jp.fujitsu.com> writes:
-> >
-> > However, I think this has the possibility of a finishing blow of OOM.
-> > For example,
-> >
-> >   1) Page caches occupy normal zone, and DMA zone is free.
-> >   2) A user's application requires a few GB memory and mlock it.
-> >      All DMA zone is occupied by it.
+From: Jianjun Kong <jianjun@zeuux.org>
+Date: Sat, 8 Nov 2008 10:35:58 +0800
+
+> net/mac80211/debugfs_sta.c
+> The trailing zero was written to state[4], it's out of bounds.
 > 
-> The VM has special "lower zone protection" to protect against these
-> kinds of deadlocks. They can be circumvented, but it takes effort.
+> Signed-off-by: Jianjun Kong <jianjun@zeuux.org>
 
-I wrote documentation about lowmem_reserve_ratio, which is the current name of
-lower_zone_protection, in Documantation/filesystem/proc.txt.
-But, I really doubt there are many users who can understand how to estimate
-there value.
-
-
-> 
-> >   3) A device which allows over 4GB is hot-added.
-> >      But dma_alloc_coherent() try to allocate DMA zone.
-> >      Then OOM occurs because there is no freeable pages.
-> >
-> > I heard there are some users who require a few GB mlock.
-> 
-> Normally mlock is limited to half the memory exactly to avoid
-> such problems.
-
-Half? I don't know which documentation desribes it. :-P
-Probably, the most of users don't know it...
-
-To be honest, I can understand kernel hacker hope there is NO user who 
-uses mlock for some GB memory. However, the reality is relentless.
-There were some real user who tried it. I remember the user who had 8GB memory
-box and mlocked 5GB.
-But, even if they mlocked only 4GB, OOM must occur.
-
-(In addition, Fujitsu PrimeQuest reserves about 2GB area for maximum
- I/O equipment. Then, Zone DMA is only 2GB..... (Ueeeeeeeep!))
-
-
-Anyway, I don't want to discuss about mlock's specification.
-Because users can understand the side effect of mlock if OOM occurs.
-But they can't understand why Zone DMA is used even if driver doesn't
-require Zone DMA. It looks simply BUG from user's view point
-when it was finishing blow of OOM. I have to explain why its BUG(?)
-still remains. But I'm newbie around this area. So, I would like to know.
-
-
-Thanks.
-
--- 
-Yasunori Goto 
-
-
+Applied, thank you.
