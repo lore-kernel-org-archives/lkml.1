@@ -1,59 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbYKKUKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751745AbYKKULA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752673AbYKKUKq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:10:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKKUKh
+	id S1751745AbYKKULA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYKKUKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:10:37 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57075 "EHLO
+	Tue, 11 Nov 2008 15:10:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59962 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751374AbYKKUKg (ORCPT
+	with ESMTP id S1751270AbYKKUKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Nov 2008 15:10:36 -0500
-Message-Id: <20081111200601.147669239@goodmis.org>
+Message-Id: <20081111201034.315528609@goodmis.org>
+References: <20081111200601.147669239@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Nov 2008 15:06:01 -0500
+Date: Tue, 11 Nov 2008 15:06:02 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
-Subject: [PATCH 0/1] ring-buffer: disable tracing switch
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/1] ring-buffer: buffer record on/off switch
+Content-Disposition: inline; filename=0001-ring-buffer-buffer-record-on-off-switch.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: enable/disable ring buffer recording API added
 
-Stephen and Ingo,
+Several kernel developers have requested that there be a way to stop
+recording into the ring buffers with a simple switch that can also
+be enabled from userspace. This patch addes a new kernel API to the
+ring buffers called:
 
-I've been pressured into making this patch for mainline. It is a low risk
-patch, but I would like to get it into linux-next.
+ tracing_on()
+ tracing_off()
 
-This patch adds a way for a kernel developer to stop all tracers from
-within the kernel and restart it from userspace. The previous APIs that
-allowed for kernel stopping the tracer did not allow for userspace to
-restart. This was mainly because the stopping could be for areas that
-are dangerous to be tracing, and allowing userspace to start them could
-risk the system stability.
+When tracing_off() is called, all ring buffers will not be able to record
+into their buffers.
 
-This switch is made to let userspace interact with the kernel space
-in starting and stopping tracers.
+tracing_on() will enable the ring buffers again.
 
-The following patches are in:
+These two act like an on/off switch. That is, there is no counting of the
+number of times tracing_off or tracing_on has been called.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+A new file is added to the debugfs/tracing directory called
 
-    branch: devel
+  tracing_on
 
+This allows for userspace applications to also flip the switch.
 
-Steven Rostedt (1):
-      ring-buffer: buffer record on/off switch
+  echo 0 > debugfs/tracing/tracing_on
 
-----
+disables the tracing.
+
+  echo 1 > /debugfs/tracing/tracing_on
+
+enables it.
+
+Note, this does not disable or enable any tracers. It only sets or clears
+a flag that needs to be set in order for the ring buffers to write to
+their buffers. It is a global flag, and affects all ring buffers.
+
+The buffers start out with tracing_on enabled.
+
+There are now three flags that control recording into the buffers:
+
+ tracing_on: which affects all ring buffer tracers.
+
+ buffer->record_disabled: which affects an allocated buffer, which may be set
+     if an anomaly is detected, and tracing is disabled.
+
+ cpu_buffer->record_disabled: which is set by tracing_stop() or if an
+     anomaly is detected. tracing_start can not reenable this if
+     an anomaly occurred.
+
+The userspace debugfs/tracing/tracing_enabled is implemented with
+tracing_stop() but the user space code can not enable it if the kernel
+called tracing_stop().
+
+Userspace can enable the tracing_on even if the kernel disabled it.
+It is just a switch used to stop tracing if a condition was hit.
+tracing_on is not for protecting critical areas in the kernel nor is
+it for stopping tracing if an anomaly occurred. This is because userspace
+can reenable it at any time.
+
+Side effect: With this patch, I discovered a dead variable in ftrace.c
+  called tracing_on. This patch removes it.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
  include/linux/ring_buffer.h |    3 +
  kernel/trace/ftrace.c       |    8 +---
  kernel/trace/ring_buffer.c  |  101 +++++++++++++++++++++++++++++++++++++++++++
  3 files changed, 106 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index 536b0ca..e097c2e 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -120,6 +120,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer);
+ u64 ring_buffer_time_stamp(int cpu);
+ void ring_buffer_normalize_time_stamp(int cpu, u64 *ts);
+ 
++void tracing_on(void);
++void tracing_off(void);
++
+ enum ring_buffer_flags {
+ 	RB_FL_OVERWRITE		= 1 << 0,
+ };
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 4a39d24..14fa522 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -185,7 +185,6 @@ enum {
+ };
+ 
+ static int ftrace_filtered;
+-static int tracing_on;
+ 
+ static LIST_HEAD(ftrace_new_addrs);
+ 
+@@ -506,13 +505,10 @@ static int __ftrace_modify_code(void *data)
+ {
+ 	int *command = data;
+ 
+-	if (*command & FTRACE_ENABLE_CALLS) {
++	if (*command & FTRACE_ENABLE_CALLS)
+ 		ftrace_replace_code(1);
+-		tracing_on = 1;
+-	} else if (*command & FTRACE_DISABLE_CALLS) {
++	else if (*command & FTRACE_DISABLE_CALLS)
+ 		ftrace_replace_code(0);
+-		tracing_on = 0;
+-	}
+ 
+ 	if (*command & FTRACE_UPDATE_TRACE_FUNC)
+ 		ftrace_update_ftrace_func(ftrace_trace_function);
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 2f76193..b08ee9f 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -16,6 +16,35 @@
+ #include <linux/list.h>
+ #include <linux/fs.h>
+ 
++#include "trace.h"
++
++/* Global flag to disable all recording to ring buffers */
++static int ring_buffers_off __read_mostly;
++
++/**
++ * tracing_on - enable all tracing buffers
++ *
++ * This function enables all tracing buffers that may have been
++ * disabled with tracing_off.
++ */
++void tracing_on(void)
++{
++	ring_buffers_off = 0;
++}
++
++/**
++ * tracing_off - turn off all tracing buffers
++ *
++ * This function stops all tracing buffers from recording data.
++ * It does not disable any overhead the tracers themselves may
++ * be causing. This function simply causes all recording to
++ * the ring buffers to fail.
++ */
++void tracing_off(void)
++{
++	ring_buffers_off = 1;
++}
++
+ /* Up this if you want to test the TIME_EXTENTS and normalization */
+ #define DEBUG_SHIFT 0
+ 
+@@ -1133,6 +1162,9 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer,
+ 	struct ring_buffer_event *event;
+ 	int cpu, resched;
+ 
++	if (ring_buffers_off)
++		return NULL;
++
+ 	if (atomic_read(&buffer->record_disabled))
+ 		return NULL;
+ 
+@@ -1249,6 +1281,9 @@ int ring_buffer_write(struct ring_buffer *buffer,
+ 	int ret = -EBUSY;
+ 	int cpu, resched;
+ 
++	if (ring_buffers_off)
++		return -EBUSY;
++
+ 	if (atomic_read(&buffer->record_disabled))
+ 		return -EBUSY;
+ 
+@@ -2070,3 +2105,69 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
+ 	return 0;
+ }
+ 
++static ssize_t
++rb_simple_read(struct file *filp, char __user *ubuf,
++	       size_t cnt, loff_t *ppos)
++{
++	int *p = filp->private_data;
++	char buf[64];
++	int r;
++
++	/* !ring_buffers_off == tracing_on */
++	r = sprintf(buf, "%d\n", !*p);
++
++	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
++}
++
++static ssize_t
++rb_simple_write(struct file *filp, const char __user *ubuf,
++		size_t cnt, loff_t *ppos)
++{
++	int *p = filp->private_data;
++	char buf[64];
++	long val;
++	int ret;
++
++	if (cnt >= sizeof(buf))
++		return -EINVAL;
++
++	if (copy_from_user(&buf, ubuf, cnt))
++		return -EFAULT;
++
++	buf[cnt] = 0;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret < 0)
++		return ret;
++
++	/* !ring_buffers_off == tracing_on */
++	*p = !val;
++
++	(*ppos)++;
++
++	return cnt;
++}
++
++static struct file_operations rb_simple_fops = {
++	.open		= tracing_open_generic,
++	.read		= rb_simple_read,
++	.write		= rb_simple_write,
++};
++
++
++static __init int rb_init_debugfs(void)
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++
++	entry = debugfs_create_file("tracing_on", 0644, d_tracer,
++				    &ring_buffers_off, &rb_simple_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'tracing_on' entry\n");
++
++	return 0;
++}
++
++fs_initcall(rb_init_debugfs);
+-- 
+1.5.6.5
 
 -- 
