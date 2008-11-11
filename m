@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYKKJ7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbYKKKBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbYKKJ7n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 04:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbYKKJ7d
+	id S1756011AbYKKKBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 05:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbYKKKBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 04:59:33 -0500
-Received: from david.siemens.de ([192.35.17.14]:16672 "EHLO david.siemens.de"
+	Tue, 11 Nov 2008 05:01:10 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33049 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753299AbYKKJ7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 04:59:32 -0500
-Message-ID: <491958E3.1030501@siemens.com>
-Date: Tue, 11 Nov 2008 11:05:23 +0100
-From: "Hillier, Gernot" <gernot.hillier@siemens.com>
-Organization: Siemens AG, CT SE 2
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.9) Gecko/20070801 SUSE/2.0.0.9-0.1 Thunderbird/2.0.0.9 Mnenhy/0.7.5.666
+	id S1754349AbYKKKBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 05:01:08 -0500
+Date: Tue, 11 Nov 2008 11:00:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: adobriyan@gmail.com, kenchen@google.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [patch] add /proc/pid/stack to dump task's stack trace
+Message-ID: <20081111100050.GA31766@elte.hu>
+References: <20081107074147.GA26607@elte.hu> <20081107075925.GA1825@elte.hu> <20081107082003.GA15800@x200.localdomain> <20081107083249.GD4435@elte.hu> <20081107084943.GA16147@x200.localdomain> <20081107085352.GA27245@elte.hu> <20081107090304.GA30540@elte.hu> <20081107011659.98d3788a.akpm@linux-foundation.org> <20081107092902.GB7787@elte.hu> <20081110155410.be7552e3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Graham, David" <david.graham@intel.com>,
-       "Fodor, Zoltan" <zoltan.fodor@intel.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>,
-       "Hockert, Jeff W" <jeff.w.hockert@intel.com>
-Subject: Re: e1000e: sporadic "hardware error"s with Intel 82563EB on Supermicro
- X7DB3
-References: <EA929A9653AAE14F841771FB1DE5A1365F498F4EDC@rrsmsx501.amr.corp.intel.com> <E3627BC91D010645BD262A1E8720005106A64162@orsmsx420.amr.corp.intel.com> <48EE04C0.6070504@siemens.com> <48F463D1.70605@siemens.com> <E3627BC91D010645BD262A1E8720005106B67989@orsmsx420.amr.corp.intel.com> <48F766CB.3030603@siemens.com>
-In-Reply-To: <48F766CB.3030603@siemens.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110155410.be7552e3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Dave,
 
-On 2008-10-16, Hillier, Gernot wrote:
-> Hi there!
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Fri, 7 Nov 2008 10:29:02 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> Graham, David wrote:
->> It would help if you could provide a little more information. Could you
->> provide (for one of each of the two configurations that you have - one
->> with the IPMI card, one without):
->>
->> 	lspci -t
->> 	lspci -vvv -xxxx
->> 	ethtool -e eth0
+> > > I guess the 0400 mode on that file will suffice...
+> > 
+> > correct, 0400 is used already in the present patch:
+> > 
+> >  phoenix:~> cat /proc/1/stack
+> >  cat: /proc/1/stack: Permission denied
+> > 
+> > but that is _not_ enough, it should be narrowed even more, to the 
+> > boundaries that i pointed out in my first review feedback mail, and 
+> > which is not implemented yet:
+> > 
+> >  1) only root should be allowed to do this - i.e. file needs to be 
+> >     root-owned.
+> > 
+> >  2) there also needs to be a .config entry for folks to be able to
+> >     turn it off altogether - just like folks can turn off sysrq-t 
+> >     dumping via the .config.
 > 
-> Ok, it turned out that we still can reproduce the problem - even after the
-> firmware upgrade. So I collected the information you requested from two
-> machines:
+> Doing the above is desirable for another reason: given our rather 
+> erratic history with the stack backtracer, this /proc file is 
+> possibly a convenient way of oopsing the kernel, sending of off into 
+> la-la-land, etc.
 
-Wanted to let you know that this problem seems to be fixed for us.
+the stack tracer is rock-solid on x86 since Arjan started cleaning up 
+the backtracing mess which we indeed had in x86 for years:
 
-We received a preliminary update from Supermicro which contains a new NIC
-firmware 2.5 they recently received from your side with improved Shared LAN
-support (56313.eep, release date 2008-10-01) .
+- adding frame-pointer support to 64-bit to improve the
+  quality of stack-traces
 
-After flashing this update together with a new BMC card firmware 1.59, the
-problem has finally vanished for us. (For some reason, only updating the
-NIC firmware wasn't possible, so we can't unfortunately nail down which
-update part really fixed the problem.)
+- eliminating the broken and fragile dwarf2-unwinder
 
-1.5 days of an rmmod/insmod loop and 2.5 days of a complete OS reboot loop
-now have been passed w/o problems. Both tests triggered the problem
-reliably within at most one day before.
+- expanding the use of the generic stacktrace infrastructure to
+  lockdep, ftrace and other areas of code
 
-So thanks again for your help!
+if you know about any remaining fragility please holler, we havent had 
+a backtracer induced oops for a long time :-)
 
--- 
-With kind regards,
-
-Gernot Hillier
-Siemens AG, Corporate Competence Center Embedded Linux
+	Ingo
