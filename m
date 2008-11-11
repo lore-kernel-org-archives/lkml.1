@@ -1,252 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbYKKUrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbYKKUr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923AbYKKUrI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:47:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYKKUq0
+	id S1753879AbYKKUr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbYKKUqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:46:26 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:55215 "EHLO
+	Tue, 11 Nov 2008 15:46:36 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40349 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbYKKUqY (ORCPT
+	with ESMTP id S1752900AbYKKUqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 15:46:24 -0500
-Message-Id: <20081111204622.763579486@goodmis.org>
+	Tue, 11 Nov 2008 15:46:34 -0500
+Message-Id: <20081111204622.966918607@goodmis.org>
 References: <20081111204555.890501283@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 11 Nov 2008 15:45:57 -0500
+Date: Tue, 11 Nov 2008 15:45:58 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/3] ring-buffer: add reader lock
-Content-Disposition: inline; filename=0002-ring-buffer-add-reader-lock.patch
+Subject: [PATCH 3/3] ring-buffer: clean up warn ons
+Content-Disposition: inline; filename=0003-ring-buffer-clean-up-warn-ons.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: serialize reader accesses to individual CPU ring buffers
+Impact: Restructure WARN_ONs in ring_buffer.c
 
-The code in the ring buffer expects only one reader at a time, but currently
-it puts that requirement on the caller. This is not strong enough, and this
-patch adds a "reader_lock" that serializes the access to the reader API
-of the ring buffer.
+The current WARN_ON macros in ring_buffer.c are quite ugly.
+
+This patch cleans them up and uses a single RB_WARN_ON that returns
+the value of the condition. This allows the caller to abort the
+function if the condition is true.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ring_buffer.c |  109 +++++++++++++++++++++++++++++++------------
- 1 files changed, 78 insertions(+), 31 deletions(-)
+ kernel/trace/ring_buffer.c |  143 +++++++++++++++++--------------------------
+ 1 files changed, 57 insertions(+), 86 deletions(-)
 
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 0a4f5c3..e3703b2 100644
+index e3703b2..25d77f4 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -181,6 +181,7 @@ static inline int test_time_stamp(u64 delta)
- struct ring_buffer_per_cpu {
- 	int				cpu;
- 	struct ring_buffer		*buffer;
-+	spinlock_t			reader_lock;
- 	raw_spinlock_t			lock;
- 	struct lock_class_key		lock_key;
- 	struct list_head		pages;
-@@ -348,6 +349,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
+@@ -218,60 +218,14 @@ struct ring_buffer_iter {
  
- 	cpu_buffer->cpu = cpu;
- 	cpu_buffer->buffer = buffer;
-+	spin_lock_init(&cpu_buffer->reader_lock);
- 	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
- 	INIT_LIST_HEAD(&cpu_buffer->pages);
- 
-@@ -1509,6 +1511,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer)
- void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 
- 	/* Iterator usage is expected to have record disabled */
- 	if (list_empty(&cpu_buffer->reader_page->list)) {
-@@ -1522,6 +1527,8 @@ void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
- 		iter->read_stamp = cpu_buffer->read_stamp;
- 	else
- 		iter->read_stamp = iter->head_page->time_stamp;
-+
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- }
- 
- /**
-@@ -1740,17 +1747,8 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
- 		rb_advance_iter(iter);
- }
- 
--/**
-- * ring_buffer_peek - peek at the next event to be read
-- * @buffer: The ring buffer to read
-- * @cpu: The cpu to peak at
-- * @ts: The timestamp counter of this event.
-- *
-- * This will return the event that will be read next, but does
-- * not consume the data.
-- */
--struct ring_buffer_event *
--ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
-+static struct ring_buffer_event *
-+rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- {
- 	struct ring_buffer_per_cpu *cpu_buffer;
- 	struct ring_buffer_event *event;
-@@ -1812,16 +1810,8 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	return NULL;
- }
- 
--/**
-- * ring_buffer_iter_peek - peek at the next event to be read
-- * @iter: The ring buffer iterator
-- * @ts: The timestamp counter of this event.
-- *
-- * This will return the event that will be read next, but does
-- * not increment the iterator.
-- */
--struct ring_buffer_event *
--ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
-+static struct ring_buffer_event *
-+rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
- {
- 	struct ring_buffer *buffer;
- 	struct ring_buffer_per_cpu *cpu_buffer;
-@@ -1883,6 +1873,51 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
- }
+ /* buffer may be either ring_buffer or ring_buffer_per_cpu */
+ #define RB_WARN_ON(buffer, cond)				\
+-	do {							\
+-		if (unlikely(cond)) {				\
++	({							\
++		int _____ret = unlikely(cond);			\
++		if (_____ret) {					\
+ 			atomic_inc(&buffer->record_disabled);	\
+ 			WARN_ON(1);				\
+ 		}						\
+-	} while (0)
+-
+-#define RB_WARN_ON_RET(buffer, cond)				\
+-	do {							\
+-		if (unlikely(cond)) {				\
+-			atomic_inc(&buffer->record_disabled);	\
+-			WARN_ON(1);				\
+-			return;					\
+-		}						\
+-	} while (0)
+-
+-#define RB_WARN_ON_RET_INT(buffer, cond)			\
+-	do {							\
+-		if (unlikely(cond)) {				\
+-			atomic_inc(&buffer->record_disabled);	\
+-			WARN_ON(1);				\
+-			return -1;				\
+-		}						\
+-	} while (0)
+-
+-#define RB_WARN_ON_RET_NULL(buffer, cond)			\
+-	do {							\
+-		if (unlikely(cond)) {				\
+-			atomic_inc(&buffer->record_disabled);	\
+-			WARN_ON(1);				\
+-			return NULL;				\
+-		}						\
+-	} while (0)
+-
+-#define RB_WARN_ON_ONCE(buffer, cond)				\
+-	do {							\
+-		static int once;				\
+-		if (unlikely(cond) && !once) {			\
+-			once++;					\
+-			atomic_inc(&buffer->record_disabled);	\
+-			WARN_ON(1);				\
+-		}						\
+-	} while (0)
+-
+-/* buffer must be ring_buffer not per_cpu */
+-#define RB_WARN_ON_UNLOCK(buffer, cond)				\
+-	do {							\
+-		if (unlikely(cond)) {				\
+-			mutex_unlock(&buffer->mutex);		\
+-			atomic_inc(&buffer->record_disabled);	\
+-			WARN_ON(1);				\
+-			return -1;				\
+-		}						\
+-	} while (0)
++		_____ret;					\
++	})
  
  /**
-+ * ring_buffer_peek - peek at the next event to be read
-+ * @buffer: The ring buffer to read
-+ * @cpu: The cpu to peak at
-+ * @ts: The timestamp counter of this event.
-+ *
-+ * This will return the event that will be read next, but does
-+ * not consume the data.
-+ */
-+struct ring_buffer_event *
-+ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
-+{
-+	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
-+	struct ring_buffer_event *event;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	event = rb_buffer_peek(buffer, cpu, ts);
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+
-+	return event;
-+}
-+
-+/**
-+ * ring_buffer_iter_peek - peek at the next event to be read
-+ * @iter: The ring buffer iterator
-+ * @ts: The timestamp counter of this event.
-+ *
-+ * This will return the event that will be read next, but does
-+ * not increment the iterator.
-+ */
-+struct ring_buffer_event *
-+ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
-+{
-+	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
-+	struct ring_buffer_event *event;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	event = rb_iter_peek(iter, ts);
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+
-+	return event;
-+}
-+
-+/**
-  * ring_buffer_consume - return an event and consume it
-  * @buffer: The ring buffer to get the next event from
-  *
-@@ -1893,19 +1928,24 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
- struct ring_buffer_event *
- ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
- {
--	struct ring_buffer_per_cpu *cpu_buffer;
-+	struct ring_buffer_per_cpu *cpu_buffer = buffer->buffers[cpu];
- 	struct ring_buffer_event *event;
-+	unsigned long flags;
+  * check_pages - integrity check of buffer pages
+@@ -285,14 +239,18 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
+ 	struct list_head *head = &cpu_buffer->pages;
+ 	struct buffer_page *page, *tmp;
  
- 	if (!cpu_isset(cpu, buffer->cpumask))
- 		return NULL;
+-	RB_WARN_ON_RET_INT(cpu_buffer, head->next->prev != head);
+-	RB_WARN_ON_RET_INT(cpu_buffer, head->prev->next != head);
++	if (RB_WARN_ON(cpu_buffer, head->next->prev != head))
++		return -1;
++	if (RB_WARN_ON(cpu_buffer, head->prev->next != head))
++		return -1;
  
--	event = ring_buffer_peek(buffer, cpu, ts);
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+
-+	event = rb_buffer_peek(buffer, cpu, ts);
- 	if (!event)
--		return NULL;
-+		goto out;
+ 	list_for_each_entry_safe(page, tmp, head, list) {
+-		RB_WARN_ON_RET_INT(cpu_buffer,
+-			       page->list.next->prev != &page->list);
+-		RB_WARN_ON_RET_INT(cpu_buffer,
+-			       page->list.prev->next != &page->list);
++		if (RB_WARN_ON(cpu_buffer,
++			       page->list.next->prev != &page->list))
++			return -1;
++		if (RB_WARN_ON(cpu_buffer,
++			       page->list.prev->next != &page->list))
++			return -1;
+ 	}
  
--	cpu_buffer = buffer->buffers[cpu];
- 	rb_advance_reader(cpu_buffer);
- 
-+ out:
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
-+
- 	return event;
- }
- 
-@@ -1942,11 +1982,11 @@ ring_buffer_read_start(struct ring_buffer *buffer, int cpu)
- 	atomic_inc(&cpu_buffer->record_disabled);
+ 	return 0;
+@@ -499,13 +457,15 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
  	synchronize_sched();
  
--	local_irq_save(flags);
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 	__raw_spin_lock(&cpu_buffer->lock);
- 	ring_buffer_iter_reset(iter);
- 	__raw_spin_unlock(&cpu_buffer->lock);
--	local_irq_restore(flags);
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- 
- 	return iter;
- }
-@@ -1978,12 +2018,17 @@ struct ring_buffer_event *
- ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
- {
- 	struct ring_buffer_event *event;
-+	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
-+	unsigned long flags;
- 
--	event = ring_buffer_iter_peek(iter, ts);
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	event = rb_iter_peek(iter, ts);
- 	if (!event)
--		return NULL;
-+		goto out;
- 
- 	rb_advance_iter(iter);
-+ out:
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- 
- 	return event;
- }
-@@ -2032,13 +2077,15 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
- 	if (!cpu_isset(cpu, buffer->cpumask))
- 		return;
- 
--	local_irq_save(flags);
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+
- 	__raw_spin_lock(&cpu_buffer->lock);
+ 	for (i = 0; i < nr_pages; i++) {
+-		RB_WARN_ON_RET(cpu_buffer, list_empty(&cpu_buffer->pages));
++		if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
++			return;
+ 		p = cpu_buffer->pages.next;
+ 		page = list_entry(p, struct buffer_page, list);
+ 		list_del_init(&page->list);
+ 		free_buffer_page(page);
+ 	}
+-	RB_WARN_ON_RET(cpu_buffer, list_empty(&cpu_buffer->pages));
++	if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
++		return;
  
  	rb_reset_cpu(cpu_buffer);
  
- 	__raw_spin_unlock(&cpu_buffer->lock);
--	local_irq_restore(flags);
-+
-+	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- }
+@@ -527,7 +487,8 @@ rb_insert_pages(struct ring_buffer_per_cpu *cpu_buffer,
+ 	synchronize_sched();
  
- /**
+ 	for (i = 0; i < nr_pages; i++) {
+-		RB_WARN_ON_RET(cpu_buffer, list_empty(pages));
++		if (RB_WARN_ON(cpu_buffer, list_empty(pages)))
++			return;
+ 		p = pages->next;
+ 		page = list_entry(p, struct buffer_page, list);
+ 		list_del_init(&page->list);
+@@ -582,7 +543,10 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
+ 	if (size < buffer_size) {
+ 
+ 		/* easy case, just free pages */
+-		RB_WARN_ON_UNLOCK(buffer, nr_pages >= buffer->pages);
++		if (RB_WARN_ON(buffer, nr_pages >= buffer->pages)) {
++			mutex_unlock(&buffer->mutex);
++			return -1;
++		}
+ 
+ 		rm_pages = buffer->pages - nr_pages;
+ 
+@@ -601,7 +565,10 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
+ 	 * add these pages to the cpu_buffers. Otherwise we just free
+ 	 * them all and return -ENOMEM;
+ 	 */
+-	RB_WARN_ON_UNLOCK(buffer, nr_pages <= buffer->pages);
++	if (RB_WARN_ON(buffer, nr_pages <= buffer->pages)) {
++		mutex_unlock(&buffer->mutex);
++		return -1;
++	}
+ 
+ 	new_pages = nr_pages - buffer->pages;
+ 
+@@ -625,7 +592,10 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
+ 		rb_insert_pages(cpu_buffer, &pages, new_pages);
+ 	}
+ 
+-	RB_WARN_ON_UNLOCK(buffer, !list_empty(&pages));
++	if (RB_WARN_ON(buffer, !list_empty(&pages))) {
++		mutex_unlock(&buffer->mutex);
++		return -1;
++	}
+ 
+  out:
+ 	buffer->pages = nr_pages;
+@@ -713,7 +683,8 @@ static void rb_update_overflow(struct ring_buffer_per_cpu *cpu_buffer)
+ 	     head += rb_event_length(event)) {
+ 
+ 		event = __rb_page_index(cpu_buffer->head_page, head);
+-		RB_WARN_ON_RET(cpu_buffer, rb_null_event(event));
++		if (RB_WARN_ON(cpu_buffer, rb_null_event(event)))
++			return;
+ 		/* Only count data entries */
+ 		if (event->type != RINGBUF_TYPE_DATA)
+ 			continue;
+@@ -766,8 +737,9 @@ rb_set_commit_event(struct ring_buffer_per_cpu *cpu_buffer,
+ 	addr &= PAGE_MASK;
+ 
+ 	while (cpu_buffer->commit_page->page != (void *)addr) {
+-		RB_WARN_ON(cpu_buffer,
+-			   cpu_buffer->commit_page == cpu_buffer->tail_page);
++		if (RB_WARN_ON(cpu_buffer,
++			  cpu_buffer->commit_page == cpu_buffer->tail_page))
++			return;
+ 		cpu_buffer->commit_page->commit =
+ 			cpu_buffer->commit_page->write;
+ 		rb_inc_page(cpu_buffer, &cpu_buffer->commit_page);
+@@ -923,7 +895,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+ 		reader_page = cpu_buffer->reader_page;
+ 
+ 		/* we grabbed the lock before incrementing */
+-		RB_WARN_ON(cpu_buffer, next_page == reader_page);
++		if (RB_WARN_ON(cpu_buffer, next_page == reader_page))
++			goto out_unlock;
+ 
+ 		/*
+ 		 * If for some reason, we had an interrupt storm that made
+@@ -1000,7 +973,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+ 
+ 	/* We reserved something on the buffer */
+ 
+-	RB_WARN_ON_RET_NULL(cpu_buffer, write > BUF_PAGE_SIZE);
++	if (RB_WARN_ON(cpu_buffer, write > BUF_PAGE_SIZE))
++		return NULL;
+ 
+ 	event = __rb_page_index(tail_page, tail);
+ 	rb_update_event(event, type, length);
+@@ -1099,10 +1073,8 @@ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
+ 	 * storm or we have something buggy.
+ 	 * Bail!
+ 	 */
+-	if (unlikely(++nr_loops > 1000)) {
+-		RB_WARN_ON(cpu_buffer, 1);
++	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 1000))
+ 		return NULL;
+-	}
+ 
+ 	ts = ring_buffer_time_stamp(cpu_buffer->cpu);
+ 
+@@ -1624,8 +1596,7 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
+ 	 * a case where we will loop three times. There should be no
+ 	 * reason to loop four times (that I know of).
+ 	 */
+-	if (unlikely(++nr_loops > 3)) {
+-		RB_WARN_ON(cpu_buffer, 1);
++	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 3)) {
+ 		reader = NULL;
+ 		goto out;
+ 	}
+@@ -1637,8 +1608,9 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
+ 		goto out;
+ 
+ 	/* Never should we have an index greater than the size */
+-	RB_WARN_ON(cpu_buffer,
+-		   cpu_buffer->reader_page->read > rb_page_size(reader));
++	if (RB_WARN_ON(cpu_buffer,
++		       cpu_buffer->reader_page->read > rb_page_size(reader)))
++		goto out;
+ 
+ 	/* check if we caught up to the tail */
+ 	reader = NULL;
+@@ -1692,7 +1664,8 @@ static void rb_advance_reader(struct ring_buffer_per_cpu *cpu_buffer)
+ 	reader = rb_get_reader_page(cpu_buffer);
+ 
+ 	/* This function should not be called when buffer is empty */
+-	RB_WARN_ON_RET(cpu_buffer, !reader);
++	if (RB_WARN_ON(cpu_buffer, !reader))
++		return;
+ 
+ 	event = rb_reader_event(cpu_buffer);
+ 
+@@ -1719,8 +1692,9 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
+ 	 * Check if we are at the end of the buffer.
+ 	 */
+ 	if (iter->head >= rb_page_size(iter->head_page)) {
+-		RB_WARN_ON_RET(buffer,
+-			       iter->head_page == cpu_buffer->commit_page);
++		if (RB_WARN_ON(buffer,
++			       iter->head_page == cpu_buffer->commit_page))
++			return;
+ 		rb_inc_iter(iter);
+ 		return;
+ 	}
+@@ -1733,9 +1707,10 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
+ 	 * This should not be called to advance the header if we are
+ 	 * at the tail of the buffer.
+ 	 */
+-	RB_WARN_ON_RET(cpu_buffer,
++	if (RB_WARN_ON(cpu_buffer,
+ 		       (iter->head_page == cpu_buffer->commit_page) &&
+-		       (iter->head + length > rb_commit_index(cpu_buffer)));
++		       (iter->head + length > rb_commit_index(cpu_buffer))))
++		return;
+ 
+ 	rb_update_iter_read_stamp(iter, event);
+ 
+@@ -1769,10 +1744,8 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	 * can have.  Nesting 10 deep of interrupts is clearly
+ 	 * an anomaly.
+ 	 */
+-	if (unlikely(++nr_loops > 10)) {
+-		RB_WARN_ON(cpu_buffer, 1);
++	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 10))
+ 		return NULL;
+-	}
+ 
+ 	reader = rb_get_reader_page(cpu_buffer);
+ 	if (!reader)
+@@ -1833,10 +1806,8 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+ 	 * can have. Nesting 10 deep of interrupts is clearly
+ 	 * an anomaly.
+ 	 */
+-	if (unlikely(++nr_loops > 10)) {
+-		RB_WARN_ON(cpu_buffer, 1);
++	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 10))
+ 		return NULL;
+-	}
+ 
+ 	if (rb_per_cpu_empty(cpu_buffer))
+ 		return NULL;
 -- 
 1.5.6.5
 
