@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbYKKXPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYKKXR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbYKKXPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 18:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYKKXPf
+	id S1752766AbYKKXR2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 18:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYKKXRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 18:15:35 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:45284 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbYKKXPf (ORCPT
+	Tue, 11 Nov 2008 18:17:19 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:57977 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbYKKXRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 18:15:35 -0500
-Date: Tue, 11 Nov 2008 15:15:31 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       "GARCIA DE SORIA LUCENA, JUAN JESUS" <juanj.g_soria@grupobbva.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: Boot hang sizing transparent PCI-to-PCI bridge
-	since after 2.6.25-r7.
-Message-ID: <20081111231531.GB7072@us.ibm.com>
-References: <D913A682D10DBA4097B5D068D281B09B0266F65B@S1128EXE.bbva.igrupobbva> <49180973.6080808@gmail.com> <20081110175815.GA7650@us.ibm.com>
+	Tue, 11 Nov 2008 18:17:18 -0500
+Date: Tue, 11 Nov 2008 15:05:02 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+cc: Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH 1/2] Create a DIV_ROUND_CLOSEST macro to do
+ division with	rounding
+In-Reply-To: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
+Message-ID: <Pine.LNX.4.64.0811111459300.24267@t2.domain.actdsltmp>
+References: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081110175815.GA7650@us.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 09:58:16AM -0800, Gary Hade wrote:
-> On Mon, Nov 10, 2008 at 11:14:11AM +0100, Jiri Slaby wrote:
-> > On 11/10/2008 10:12 AM, GARCIA DE SORIA LUCENA, JUAN JESUS wrote:
-> > > Hello.
-> > > 
-> > > Time ago I bisected a commit that was making my OKI Anima 3300 laptop
-> > > hang during boot.
-> > 
-> > Doesn't pci=norom help in your case? There was a patch which tried to resolve
-> > this issue in a different manner, but it was reverted too. This boot parameter
-> > was introduced as a replacement IIRC.
-> 
-> As the unfortunate author of both of the reverted patches and author
-> of the pci=norom patch I can confirm that Jiri is correct.  The issues
-> that the patches addressed (with some unintended side effects caused
-> by the reverted attempts) were PCI resource allocation failures observed
-> during PCI hotplug.  We were not seeing or trying to address boot-time
-> PCI resource allocation failures or hangs.
+On Mon, 10 Nov 2008, Darrick J. Wong wrote:
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index fba141d..fb02266 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -48,6 +48,12 @@ extern const char linux_proc_banner[];
+> #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+> #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+> #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+> +#define DIV_ROUND_CLOSEST(x, divisor)(			\
+> +{							\
+> +	typeof(divisor) __divisor = divisor;		\
+> +	(((x) + ((__divisor) / 2)) / (__divisor));	\
+> +}							\
+> +)
 
-Correction.  We were not trying to address boot-time hangs but I
-believe we may have been trying to address expansion ROM related
-PCI resource allocation failures that we were seeing during boot
-with certain PCI cards.  However, I doubt that this is relevent
-to your problem.  The transparent bridge sizing removal change is
-probably a red herring.
+Maybe you can do away with the statement-expression extension?  I've seen
+cases where it cases gcc to generate worse code.  It seems like it
+shouldn't, but it does.  I know DIV_ROUND_CLOSEST (maybe DIV_ROUND_NEAR?)
+uses divisor twice, but all the also divide macros do that too, so why does
+this one need to be different?
 
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Note that if divisor is a signed variable, divisor/2 generates worse code
+than divisor>>1.
