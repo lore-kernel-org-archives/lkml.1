@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYLAE6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756092AbYKKJEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbYLAE6U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Nov 2008 23:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbYLAE6H
+	id S1756092AbYKKJEw (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Tue, 11 Nov 2008 04:04:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbYKKJEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Nov 2008 23:58:07 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:60962 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751528AbYLAE6G (ORCPT
+	Tue, 11 Nov 2008 04:04:09 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:54201 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbYKKJEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Nov 2008 23:58:06 -0500
-Date: Mon, 1 Dec 2008 12:57:49 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Milan Broz <mbroz@redhat.com>
-Cc: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-       device-mapper development <dm-devel@redhat.com>,
-       Christophe Saout <christophe@saout.de>,
-       LKML <linux-kernel@vger.kernel.org>, Herbert@redhat.com,
-       linux-next@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [dm-devel] Re: next-20081125: crypto hard disk gets
-	unaccessable
-Message-ID: <20081201045749.GA18292@gondor.apana.org.au>
-References: <20081128063355.GA4700@denkbrett.schottelius.org> <20081129192939.925275f0.akpm@linux-foundation.org> <49332CC6.4080606@redhat.com>
+	Tue, 11 Nov 2008 04:04:07 -0500
+In-Reply-To: <adaod0nqpx4.fsf@cisco.com>
+References: <200806061835.43802.fenkes@de.ibm.com>	<48499C11.7030504@gmail.com> <200811071742.51867.fenkes@de.ibm.com> <adaod0nqpx4.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Alexander Schmidt1 <ALEXSCHM@de.ibm.com>,
+        Christoph Raisch <RAISCH@de.ibm.com>,
+        OF-EWG <ewg@lists.openfabrics.org>,
+        OF-General <general@lists.openfabrics.org>,
+        Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+        Roland Dreier <rolandd@cisco.com>,
+        Stefan Roscher <stefan.roscher@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49332CC6.4080606@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [PATCH] IB/ehca: Fix suppression of port activation events
+X-KeepSent: A167ACE2:B60DCF5C-C12574FE:00319074;
+ type=4; name=$KeepSent
+X-Mailer: Lotus Notes Release 8.0.1 HF105 April 10, 2008
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OFA167ACE2.B60DCF5C-ONC12574FE.00319074-C12574FE.0031CE5F@de.ibm.com>
+Date: Tue, 11 Nov 2008 10:04:04 +0100
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 8.0.1|February 07, 2008) at
+ 11/11/2008 10:04:04,
+	Serialize complete at 11/11/2008 10:04:04
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 01, 2008 at 01:16:06AM +0100, Milan Broz wrote:
->
-> > [69186.618468]  [<ffffffffa027226a>] ? crypto_cbc_encrypt+0xfa/0x15a [cbc]
-> > [69186.618481]  [<ffffffffa0285705>] ? aes_encrypt+0x0/0x7 [aes_x86_64]
-> > [69186.618494]  [<ffffffffa020667d>] ? async_encrypt+0x35/0x3a [crypto_blkcipher]
-> > [69186.618509]  [<ffffffffa0269a6f>] ? crypt_convert+0x1d2/0x253 [dm_crypt]
-> > [69186.618522]  [<ffffffffa0269ed6>] ? kcryptd_crypt+0x3e6/0x407 [dm_crypt]
-> > [69186.618533]  [<ffffffffa0269af0>] ? kcryptd_crypt+0x0/0x407 [dm_crypt]
-> 
-> I assume that crypto run here synchronously (not through asynchronous completion callback).
-> 
-> Herbert - is my guess ok? (The asynchronous handling in dm-crypt was the only part changed recently.)
-> (And I think that except crypto hw nobody uses asynchronous mode yet by default.)
+Roland Dreier <rdreier@cisco.com> wrote on 10.11.2008 21:36:23:
 
-Yes that's definitely synchronous.
+>  > A previous fix introduced a regression where port activation events 
+were
+>  > dropped unconditionally if port autodetection was not enabled. Fixed.
+> 
+> Is this a fix to "IB/ehca: Remove reference to special QP in case of
+> port activation failure"?  Because if so I can roll it into that patch,
+> since Linus hasn't pulled it yet.
+
+Yes, that would be splendid, thank you!
 
 Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+  Joachim
