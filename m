@@ -1,160 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbYKKWQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbYKKWQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbYKKWQi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:16:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYKKWQ1
+	id S1754010AbYKKWQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbYKKWQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:16:27 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:3269 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752839AbYKKWQ0 (ORCPT
+	Tue, 11 Nov 2008 17:16:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48748 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752047AbYKKWQo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:16:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=JMOysr/MrxULE/9hVVX/CxztdSKEf5h1x1wqjjuJnHNqD1Y7A/64CH+iyCT1NghVsj
-         hjxFsWN6VzyDBdhS9Nvj2M5zZHsP98ZMdhCQ2mbZwL4W163fdqvL4Un7ygQEXh/w5tjR
-         aVcsGvG6fTOb1jBHlF756lMz4L3o3BmaQPNP4=
-Date: Tue, 11 Nov 2008 23:17:25 +0100
-To: Dave Airlie <airlied@redhat.com>, Greg KH <greg@kroah.com>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] drm: fix leak of uninitialized data to userspace #2
-Message-ID: <20081111221725.GA4131@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Tue, 11 Nov 2008 17:16:44 -0500
+Date: Tue, 11 Nov 2008 14:16:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: cboulte@gmail.com
+Cc: Nadia.Derbey@bull.net, manfred@colorfullife.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] SYSVIPC - Fix the ipc structures initialization
+Message-Id: <20081111141603.f0e7fa8d.akpm@linux-foundation.org>
+In-Reply-To: <4f3ee3290810290211y75a2d0eaoe666496e25496260@mail.gmail.com>
+References: <20081028145952.620752409@bull.net>
+	<20081028150041.857635775@bull.net>
+	<4f3ee3290810290211y75a2d0eaoe666496e25496260@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 29 Oct 2008 10:11:06 +0100
+cboulte@gmail.com wrote:
 
-First patch had an additional problem in case snprintf() wanted to
-write a string longer than the buffer and returned a large value.
-Most likely this would never ever hit, but we can handle it by only
-setting the actual length when we _didn't_ try to overflow the
-buffer.
+> On Tue, Oct 28, 2008 at 3:59 PM,  <Nadia.Derbey@bull.net> wrote:
+> >
+> > A problem was found while reviewing the code after Bugzilla bug
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11796.
+> >
+> > In ipc_addid(), the newly allocated ipc structure is inserted into the ipcs
+> > tree (i.e made visible to readers) without locking it.
+> > This is not correct since its initialization continues after it has been
+> > inserted in the tree.
+> >
+> > This patch moves the ipc structure lock initialization + locking before
+> > the actual insertion.
+> >
+> > Regards,
+> > Nadia
+> >
+> >
+> > Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+> >
+> > ---
+> >  ipc/util.c |   14 +++++++++-----
+> >  1 file changed, 9 insertions(+), 5 deletions(-)
+> >
+> > Index: linux-2.6.27/ipc/util.c
+> > ===================================================================
+> > --- linux-2.6.27.orig/ipc/util.c        2008-10-23 15:20:46.000000000 +0200
+> > +++ linux-2.6.27/ipc/util.c     2008-10-28 16:52:17.000000000 +0100
+> > @@ -266,9 +266,17 @@ int ipc_addid(struct ipc_ids* ids, struc
+> >        if (ids->in_use >= size)
+> >                return -ENOSPC;
+> >
+> > +       spin_lock_init(&new->lock);
+> > +       new->deleted = 0;
+> > +       rcu_read_lock();
+> > +       spin_lock(&new->lock);
+> > +
+> >        err = idr_get_new(&ids->ipcs_idr, new, &id);
+> > -       if (err)
+> > +       if (err) {
+> > +               spin_unlock(&new->lock);
+> > +               rcu_read_unlock();
+> >                return err;
+> > +       }
+> >
+> >        ids->in_use++;
+> >
+> > @@ -280,10 +288,6 @@ int ipc_addid(struct ipc_ids* ids, struc
+> >                ids->seq = 0;
+> >
+> >        new->id = ipc_buildid(id, new->seq);
+> > -       spin_lock_init(&new->lock);
+> > -       new->deleted = 0;
+> > -       rcu_read_lock();
+> > -       spin_lock(&new->lock);
+> >        return id;
+> >  }
+> >
+> >
+> > --
+> >
+> 
+> Sorry but the bug is still present. It takes longer to show up...
+> 
+> [ 4028.704877] INFO: trying to register non-static key.
+> [ 4028.708007] the code is fine but needs lockdep annotation.
+> [ 4028.708007] turning off the locking correctness validator.
+> [ 4028.708007] Pid: 8051, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #2
+> [ 4028.708007]
+> [ 4028.708007] Call Trace:
+> [ 4028.708007]  [<ffffffff80257055>] static_obj+0x60/0x77
+> [ 4028.708007]  [<ffffffff8025af59>] __lock_acquire+0x1c8/0x779
+> [ 4028.708007]  [<ffffffff8025b4ac>] __lock_acquire+0x71b/0x779
+> [ 4028.708007]  [<ffffffff8025b59f>] lock_acquire+0x95/0xc2
+> [ 4028.708007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+> [ 4028.708007]  [<ffffffff8045119d>] _spin_lock+0x2d/0x5a
+> [ 4028.708007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+> [ 4028.708007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+> [ 4028.708007]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
+> [ 4028.708007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+> [ 4028.708007]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
+> [ 4028.708007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+> [ 4028.708007]  [<ffffffff8044ef84>] thread_return+0x3e/0xa8
+> [ 4028.708007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+> [ 4028.708007]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+> [ 4028.708007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+> [ 4028.708007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+> [ 4028.708007]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
+> [ 4028.708007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+> [ 4028.708007]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
+> [ 4028.708007]
+> [ 4094.180003] BUG: soft lockup - CPU#0 stuck for 61s! [sysv_test2:8051]
+> [ 4094.180007] Modules linked in: ipv6 nfs lockd nfs_acl sunrpc button
+> battery ac loop dm_mod md_mod usbkbd usbhid hid ff_memless mptctl
+> evdev tg3 iTCO_wdt libphy shpchp i2c_i801 i2c_core ehci_hcd
+> pci_hotplug rng_core uhci_hcd e752x_edac edac_core reiserfs edd fan
+> thermal processor thermal_sys mptspi mptscsih sg mptbase sr_mod cdrom
+> scsi_transport_spi ata_piix libata dock sd_mod scsi_mod [last
+> unloaded: freq_table]
+> [ 4094.180007] irq event stamp: 2118797
+> [ 4094.180007] hardirqs last  enabled at (2118797):
+> [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+> [ 4094.180007] hardirqs last disabled at (2118796):
+> [<ffffffff80450da8>] trace_hardirqs_off_thunk+0x3a/0x3c
+> [ 4094.180007] softirqs last  enabled at (2117034):
+> [<ffffffff8020d9bc>] call_softirq+0x1c/0x28
+> [ 4094.180007] softirqs last disabled at (2117029):
+> [<ffffffff8020d9bc>] call_softirq+0x1c/0x28
+> [ 4094.180007] CPU 0:
+> [ 4094.180007] Modules linked in: ipv6 nfs lockd nfs_acl sunrpc button
+> battery ac loop dm_mod md_mod usbkbd usbhid hid ff_memless mptctl
+> evdev tg3 iTCO_wdt libphy shpchp i2c_i801 i2c_core ehci_hcd
+> pci_hotplug rng_core uhci_hcd e752x_edac edac_core reiserfs edd fan
+> thermal processor thermal_sys mptspi mptscsih sg mptbase sr_mod cdrom
+> scsi_transport_spi ata_piix libata dock sd_mod scsi_mod [last
+> unloaded: freq_table]
+> [ 4094.180007] Pid: 8051, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #2
+> [ 4094.180007] RIP: 0010:[<ffffffff80213541>]  [<ffffffff80213541>]
+> native_read_tsc+0x8/0x18
+> [ 4094.180007] RSP: 0018:ffff88014580fe20  EFLAGS: 00000206
+> [ 4094.180007] RAX: 00000000f432530c RBX: fffffffff4325241 RCX:
+> 00000000ffffffff[ 4094.180007] RDX: 0000000000000ac2 RSI:
+> ffffffff8053d176 RDI: 0000000000000001[ 4094.180007] RBP:
+> 0000000000000000 R08: 0000000000000002 R09: 0000000000000000[
+> 4094.180007] R10: 0000000000000000 R11: ffffffff8033a71e R12:
+> ffff88002f1861a0[ 4094.180007] R13: ffff8800ae95f000 R14:
+> ffff88014580e000 R15: ffffffff80827890[ 4094.180007] FS:
+> 00007fa497b416d0(0000) GS:ffffffff80622a80(0000)
+> knlGS:0000000000000000
+> [ 4094.180007] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [ 4094.180007] CR2: 00007fa4978d3ae0 CR3: 000000013f980000 CR4:
+> 00000000000006e0[ 4094.180007] DR0: 0000000000000000 DR1:
+> 0000000000000000 DR2: 0000000000000000[ 4094.180007] DR3:
+> 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400[
+> 4094.180007]
+> [ 4094.180007] Call Trace:
+> [ 4094.180007]  [<ffffffff8033a73c>] delay_tsc+0x1e/0x45
+> [ 4094.180007]  [<ffffffff8033dc8b>] _raw_spin_lock+0x98/0x100
+> [ 4094.180007]  [<ffffffff804511be>] _spin_lock+0x4e/0x5a
+> [ 4094.180007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+> [ 4094.180007]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+> [ 4094.180007]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
+> [ 4094.180007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+> [ 4094.180007]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
+> [ 4094.180007]  [<ffffffff803002e3>] sys_msgctl+0x188/0x461
+> [ 4094.180007]  [<ffffffff8044ef84>] thread_return+0x3e/0xa8
+> [ 4094.180007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+> [ 4094.180007]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
+> [ 4094.180007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+> [ 4094.180007]  [<ffffffff80450d69>] trace_hardirqs_on_thunk+0x3a/0x3f
+> [ 4094.180007]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
+> [ 4094.180007]  [<ffffffff80212e09>] sched_clock+0x5/0x7
+> [ 4094.180007]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
+> [ 4094.180007]
+> 
+> I don't understand what's going on... I hope I'm not the only one who
+> still get it because I doubt about this bug.
+> 
 
-Secondly, the snprintf() won't ever write more than the given
-number of bytes given, so allocating + 1 bytes isn't ever going to
-do anything useful.
+Time is starting to press on this one.  Is there something which we can
+revert which would fix this bug?
 
-Thirdly, we also need to check whether snprintf() returned
->= unique_len. The buffer was also too small if snprintf() returns
-== unique_len. snprintf() will always ensure that the result is
-properly null-terminated, except in the case where the buffer is
-NULL or the buffer size is zero (can never happen here).
-
-It is also a bit suspicious that this function's return value is
-never checked, and that we don't free the first allocation if the
-second one fails. But maybe it's ok, didn't really check.
-
-I encourage careful review of this patch, as my first attempt was
-invalid without me noticing or anybody else saying a thing (or was
-that why it was never pushed to mainline?) :-(
-
-(And the original code was obviously in error to begin with.)
-
-
-Vegard
-
-PS: Feel free to move any/all of this text into commit message if
-patch is deemed worthy of inclusion. I just wanted to make the new
-info stand out.
-
-
->From f1035aa2e85a3908b311beea44c1c32f1135cfd1 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Tue, 11 Nov 2008 22:38:06 +0100
-Subject: [PATCH] drm: fix leak of uninitialized data to userspace
-
-On Fri, Oct 10, 2008 at 10:54 AM, Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
->
-> [  175.375036] WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (f65d2294)
-> [  175.375049] 7063693a303030303a30303a30322e3000a76c080800000000a76c080e000000
-> [  175.375096]  i i i i i i i i i i i i i i i i i u u u u u u u u u u u u u u u
-> [  175.375137]                                          ^
-> [  175.375142]
-> [  175.375148] Pid: 2288, comm: Xorg Not tainted (2.6.27-tipskw-00069-g37cb0b7-dirty #81) 900
-> [  175.375155] EIP: 0060:[<c020d283>] EFLAGS: 00003246 CPU: 0
-> [  175.375169] EIP is at __copy_to_user_ll+0x43/0x60
-> [  175.375174] EAX: 00000000 EBX: 00000028 ECX: 00000005 EDX: f65d2280
-> [  175.375180] ESI: f65d2294 EDI: 086cb6b4 EBP: f631bef4 ESP: c055bd68
-> [  175.375186]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-> [  175.375191] CR0: 8005003b CR2: f67c1c44 CR3: 36368000 CR4: 000006c0
-> [  175.375197] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> [  175.375202] DR6: ffff4ff0 DR7: 00000400
-> [  175.375206]  [<c020d6f3>] copy_to_user+0x43/0x60
-> [  175.375214]  [<c028df28>] drm_getunique+0x38/0x50
-> [  175.375224]  [<c028d329>] drm_ioctl+0x1b9/0x2f0
-> [  175.375231]  [<c0188a07>] vfs_ioctl+0x67/0x70
-> [  175.375239]  [<c0188a6c>] do_vfs_ioctl+0x5c/0x270
-> [  175.375246]  [<c0188cbe>] sys_ioctl+0x3e/0x60
-> [  175.375253]  [<c010336d>] sysenter_do_call+0x12/0x35
-> [  175.375261]  [<ffffffff>] 0xffffffff
-
-The hexdump decodes to:
-
-vegardno@thuin ~ $ ./a.out 7063693a303030303a30303a30322e3000a76c080800000000a76c080e000000
-pci:0000:00:02.0<0><167>l<8><8><0><0><0><0><167>l<8><14><0><0><0>
-
-...so drm_getunique() is trying to copy some uninitialized data to
-userspace. The ECX register contains the number of words that are
-left to copy -- so there are 5 * 4 = 20 bytes left. The offset of the
-first uninitialized byte (counting from the start of the string) is
-also 20 (i.e. 0xf65d2294&((1 << 5)-1) == 20). So somebody tried to
-copy 40 bytes when the string was only 19 long.
-
-In drm_set_busid() we have this code:
-
-        dev->unique_len = 40;
-        dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
-	...
-        len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
-
-...so it seems that dev->unique is never updated to reflect the
-actual length of the string. The remaining bytes (20 in this case)
-are random uninitialized bytes that are copied into userspace.
-
-This patch fixes the problem by setting dev->unique_len after the
-snprintf().
-
-Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
-Signed-off-by: Vegard Nossum <vegardno@thuin.ifi.uio.no>
----
- drivers/gpu/drm/drm_ioctl.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
-index 16829fb..7212c38 100644
---- a/drivers/gpu/drm/drm_ioctl.c
-+++ b/drivers/gpu/drm/drm_ioctl.c
-@@ -133,7 +133,7 @@ static int drm_set_busid(struct drm_device * dev)
- 		return 0;
- 
- 	dev->unique_len = 40;
--	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
-+	dev->unique = drm_alloc(dev->unique_len, DRM_MEM_DRIVER);
- 	if (dev->unique == NULL)
- 		return -ENOMEM;
- 
-@@ -142,8 +142,10 @@ static int drm_set_busid(struct drm_device * dev)
- 		       PCI_SLOT(dev->pdev->devfn),
- 		       PCI_FUNC(dev->pdev->devfn));
- 
--	if (len > dev->unique_len)
-+	if (len >= dev->unique_len)
- 		DRM_ERROR("Unique buffer overflowed\n");
-+	else
-+		dev->unique_len = len;
- 
- 	dev->devname =
- 	    drm_alloc(strlen(dev->driver->pci_driver.name) + dev->unique_len +
--- 
-1.5.6.5
+Thanks.
 
