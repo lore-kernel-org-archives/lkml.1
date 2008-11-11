@@ -1,125 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYKKSKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYKKSNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYKKSKf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 13:10:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbYKKSK1
+	id S1754895AbYKKSNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 13:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbYKKSNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 13:10:27 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42892 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752899AbYKKSK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 13:10:26 -0500
-Date: Tue, 11 Nov 2008 19:08:52 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081111180851.GD26778@kernel.dk>
-References: <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua> <20081110173504.GL26778@kernel.dk> <49187D05.9050407@telenet.dn.ua> <x491vxjqmg0.fsf@segfault.boston.devel.redhat.com> <20081111093426.GS26778@kernel.dk> <20081111093540.GT26778@kernel.dk> <20081111115227.GU26778@kernel.dk> <x49fxlyp5te.fsf@segfault.boston.devel.redhat.com>
+	Tue, 11 Nov 2008 13:13:38 -0500
+Received: from mail.gmx.net ([213.165.64.20]:54167 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752060AbYKKSNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 13:13:37 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+kZBwEBS6kjAgDNa9LkdmwQZBOLroCYWi/RjuueZ
+	6QbGNm+PB1PWx1
+Date: Tue, 11 Nov 2008 19:13:48 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+cc: linux-kernel@vger.kernel.org, maciej.sosnowski@intel.com,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH 2/4 v1] i.MX31: Image Processing Unit DMA and IRQ drivers
+In-Reply-To: <e9c3a7c20811110737m4b17e0fcp45bcec86f937b9ea@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0811111856500.8435@axis700.grange>
+References: <Pine.LNX.4.64.0811071454000.4513@axis700.grange> 
+ <Pine.LNX.4.64.0811071512500.4513@axis700.grange> 
+ <Pine.LNX.4.64.0811111029120.4565@axis700.grange>
+ <e9c3a7c20811110737m4b17e0fcp45bcec86f937b9ea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49fxlyp5te.fsf@segfault.boston.devel.redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.54
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11 2008, Jeff Moyer wrote:
-> Jens Axboe <jens.axboe@oracle.com> writes:
-> 
-> > On Tue, Nov 11 2008, Jens Axboe wrote:
-> >> On Tue, Nov 11 2008, Jens Axboe wrote:
-> >> > On Mon, Nov 10 2008, Jeff Moyer wrote:
-> >> > > "Vitaly V. Bursov" <vitalyb@telenet.dn.ua> writes:
-> >> > > 
-> >> > > > Jens Axboe wrote:
-> >> > > >> On Mon, Nov 10 2008, Vitaly V. Bursov wrote:
-> >> > > >>> Jens Axboe wrote:
-> >> > > >>>> On Mon, Nov 10 2008, Jeff Moyer wrote:
-> >> > > >>>>> Jens Axboe <jens.axboe@oracle.com> writes:
-> >> > > >>>>>
-> >> > > >>>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
-> >> > > >>>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
-> >> > > >>>>> you to try this patch is that nfsd may be farming off the I/O requests
-> >> > > >>>>> to different threads which are then performing interleaved I/O.  The
-> >> > > >>>>> above patch tries to detect this and allow cooperating processes to get
-> >> > > >>>>> disk time instead of waiting for the idle timeout.
-> >> > > >>>> Precisely :-)
-> >> > > >>>>
-> >> > > >>>> The only reason I haven't merged it yet is because of worry of extra
-> >> > > >>>> cost, but I'll throw some SSD love at it and see how it turns out.
-> >> > > >>>>
-> >> > > >>> Sorry, but I get "oops" same moment nfs read transfer starts.
-> >> > > >>> I can get directory list via nfs, read files locally (not
-> >> > > >>> carefully tested, though)
-> >> > > >>>
-> >> > > >>> Dumps captured via netconsole, so these may not be completely accurate
-> >> > > >>> but hopefully will give a hint.
-> >> > > >> 
-> >> > > >> Interesting, strange how that hasn't triggered here. Or perhaps the
-> >> > > >> version that Jeff posted isn't the one I tried. Anyway, search for:
-> >> > > >> 
-> >> > > >>         RB_CLEAR_NODE(&cfqq->rb_node);
-> >> > > >> 
-> >> > > >> and add a
-> >> > > >> 
-> >> > > >>         RB_CLEAR_NODE(&cfqq->prio_node);
-> >> > > >> 
-> >> > > >> just below that. It's in cfq_find_alloc_queue(). I think that should fix
-> >> > > >> it.
-> >> > > >> 
-> >> > > >
-> >> > > > Same problem.
-> >> > > >
-> >> > > > I did make clean; make -j3; sync; on (2 times) patched kernel and it went OK
-> >> > > > but It won't boot anymore with cfq with same error...
-> >> > > >
-> >> > > > Switching cfq io scheduler at runtime (booting with "as") appears to work with
-> >> > > > two parallel local dd reads.
-> >> > > 
-> >> > > Strange, I can't reproduce a failure.  I'll keep trying.  For now, these
-> >> > > are the results I see:
-> >> > > 
-> >> > > [root@maiden ~]# mount megadeth:/export/cciss /mnt/megadeth/
-> >> > > [root@maiden ~]# dd if=/mnt/megadeth/file1 of=/dev/null bs=1M
-> >> > > 1024+0 records in
-> >> > > 1024+0 records out
-> >> > > 1073741824 bytes (1.1 GB) copied, 26.8128 s, 40.0 MB/s
-> >> > > [root@maiden ~]# umount /mnt/megadeth/
-> >> > > [root@maiden ~]# mount megadeth:/export/cciss /mnt/megadeth/
-> >> > > [root@maiden ~]# dd if=/mnt/megadeth/file1 of=/dev/null bs=1M
-> >> > > 1024+0 records in
-> >> > > 1024+0 records out
-> >> > > 1073741824 bytes (1.1 GB) copied, 23.7025 s, 45.3 MB/s
-> >> > > [root@maiden ~]# umount /mnt/megadeth/
-> >> > > 
-> >> > > Here is the patch, with the suggestion from Jens to switch the cfqq to
-> >> > > the right priority tree when the priority is changed.
-> >> > 
-> >> > I don't see the issue here either. Vitaly, are you using any openvz
-> >> > kernel patches? IIRC, they patch cfq so it could just be that your cfq
-> >> > version is incompatible with Jeff's patch.
-> >> 
-> >> Heh, got it to trigger about 3 seconds after sending that email! I'll
-> >> look more into it.
+Hi Dan,
+
+On Tue, 11 Nov 2008, Dan Williams wrote:
+
+> On Tue, Nov 11, 2008 at 2:36 AM, Guennadi Liakhovetski
+> <g.liakhovetski@gmx.de> wrote:
+> > I still have no solution to this ->client_count problem. Is this a bug and
+> > there should be a way to release a channel (including decrementint the
+> > client_count) without unregistering the client, or am I missing something?
 > >
-> > OK, found the issue. A few bugs there... cfq_prio_tree_lookup() doesn't
-> > even return a hit, since it just breaks and returns NULL always. That
-> > can cause cfq_prio_tree_add() to screw up the rbtree. The code to
-> > correct on ioprio change wasn't correct either, I changed that as well.
-> > New patch below, Vitaly can you give it a spin?
 > 
-> Thanks for doing that!  Yeah, that was a stupid bug with the lookup
-> routine.  I don't know that I agree with you that the ioprio change code
-> was wrong.  I looked at all of the callers and that seemed the code path
-> that was used for I/O priority *changes*.  The initial creation was
-> already okay, wasn't it?
+> Hi Guennadi,
+> 
+> I am currently working on improving this situation:
+> 
+> http://marc.info/?l=linux-kernel&m=122463374500746&w=2
+> 
+> Please have a look.
 
-You only did it in cfq_prio_boost(), you should go one down and do it
-for all prio changes. cfq_init_prio_data() gets called to fix state up
-lazily when it notices a prio change, either due to prio boost or
-because someone ran ionice.
+Thanks for the pointer, I looked at it.
 
--- 
-Jens Axboe
+1. ASYNC_TX_ACK: one either sets this flag immediately on a descriptor in 
+flags for ->device_prep_dma_memcpy() (like in 
+dma_async_memcpy_buf_to_buf()), which would mean "may be recycled 
+automatically" or you don't set it, then the descriptor is kept, until you 
+call async_tx_ack() on it. Are you going to preserve the async_tx_ack() 
+implementation? In this case dma-device drivers have to scan their 
+descriptors to do garbage-collection?... Wouldn't it be better to 
+introduce an explicit call to free a descriptor, like in this my patch: 
+http://marc.info/?l=linux-arm-kernel&m=122607472721145&w=2 (see the last 
+hank for include/linux/dmaengine.h)?
 
+2. channel client-count: am I right, that with the current implementation 
+one cannot free a channel in a way, that its client_count got decremented, 
+and the ->device_free_chan_resources() method be called for it? Is this 
+going to be addressed too or I am missing something and channel freeing 
+has to be done differently?
+
+3. you write
+
+> 3b/ Remove the client registration infrastructure
+
+which means, there should be an interface to free a channel explicitly? 
+because until now unregistering the client was the only way (that I found) 
+to free channels...
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
