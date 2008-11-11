@@ -1,58 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYKKNbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756240AbYKKNga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756209AbYKKNbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 08:31:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755340AbYKKNbN
+	id S1756240AbYKKNga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 08:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755836AbYKKNgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 08:31:13 -0500
-Received: from nef2.ens.fr ([129.199.96.40]:3028 "EHLO nef2.ens.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753334AbYKKNbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 08:31:12 -0500
-Date: Tue, 11 Nov 2008 14:31:08 +0100
-From: David Madore <david.madore@ens.fr>
-To: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>,
-       Linux NetDev Mailing-List <netdev@vger.kernel.org>,
-       atl1-devel@lists.sourceforge.net
-Subject: atl1e Ethernet driver not seeing packets sent to 33:33:00:00:00:01 multicast
-Message-ID: <20081111133108.GA7124@clipper.ens.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Nov 2008 08:36:22 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:53374 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755741AbYKKNgU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 08:36:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=W4I2H3LRFJflzCjaBV5qwOdrkzBzm72GxCH0RCsiRg1PwcfkRfcbbcUPXcj7fInF8/
+         UwdATjb8+SQrsVQDoE86lS5teaOcmiv07evdM1alYewpAkTTattRciys9KnxClhfVdtT
+         KNscNmsj2nq1Q20MK8N8AUpf5g9ntK65qg1dk=
+Message-ID: <19f34abd0811110536i71994436q4aa78a99d201c478@mail.gmail.com>
+Date: Tue, 11 Nov 2008 14:36:19 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to chanes in stop_machine
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Rusty Russell" <rusty@rustcorp.com.au>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Oleg Nesterov" <oleg@redhat.com>,
+       "Dmitry Adamushko" <dmitry.adamushko@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20081111105214.GA15645@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Tue, 11 Nov 2008 14:31:08 +0100 (CET)
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
+	 <20081110120401.GA15518@osiris.boeblingen.de.ibm.com>
+	 <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl>
+	 <20081111105214.GA15645@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Nov 11, 2008 at 11:52 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
 
-This is on Ubuntu 8.10 "Intrepid Ibex" using its stock kernel
-(2.6.27-7.16), with an Eee PC 901 whose Ethernet adapter is (according
-to lspci):
+Heh. I am not expert, but I looked at the code. The obvious suspicious
+thing to see is the use of unpaired barriers? Maybe like this:
 
-04:00.0 Ethernet controller: Attansic Technology Corp. L1 Gigabit Ethernet Adapter (rev b0)
+ 47 static void set_state(enum stopmachine_state newstate)
+48 {
+49         /* Reset ack counter. */
+50         atomic_set(&thread_ack, num_threads);
+51         smp_wmb();
 
-using driver atl1e of said kernel.
++ /* force ordering between thread_ack/state */
 
-_Unless_ the network device is put in promiscuous mode (e.g., by
-running tcpdump), it does not see packets sent to Ethernet multicast
-address 33:33:00:00:00:01.  E.g., IPv6 packets to ff02::1
-(ip6-allnodes) are not seen.
+52         state = newstate;
+53 }
+54
+55 /* Last one to ack a state moves to the next state. */
+56 static void ack_state(void)
+57 {
+58         if (atomic_dec_and_test(&thread_ack))
 
-Practical consequence: IPv6 is broken, because router advertisements
-are not received.
+Maybe
++ /* force ordering between thread_ack/state */
++ smp_rmb();
+here?
 
-("ip maddr show" does give "link  33:33:00:00:00:01" among the
-subscribed multicast addresses, so it's not a config problem.)
+59                 set_state(state + 1);
+60 }
+61
 
-Is this a known problem?  Is there a patch fixing it?
+Or maybe I am wrong. But Documentation/memory-barriers.txt is rather
+explicit on this point.
 
-Until then, a workaround is to put the device in promiscuous mode.
 
-Happy hacking,
+Vegard
 
 -- 
-     David A. Madore
-    (david.madore@ens.fr,
-     http://www.madore.org/~david/ )
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
