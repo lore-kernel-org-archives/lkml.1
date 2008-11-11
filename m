@@ -1,15 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYKKMei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbYKKMfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbYKKMei (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 07:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbYKKMeQ
+	id S1756543AbYKKMfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbYKKMfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 07:34:16 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:49703 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756224AbYKKMeO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 07:34:14 -0500
+	Tue, 11 Nov 2008 07:35:14 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53756 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755625AbYKKMfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 07:35:12 -0500
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: linux-mm@kvack.org
 Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
@@ -21,186 +20,109 @@ Cc: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, Paul Menage <menage@google.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 11 Nov 2008 18:04:01 +0530
-Message-Id: <20081111123401.6566.375.sendpatchset@balbir-laptop>
+Date: Tue, 11 Nov 2008 18:04:48 +0530
+Message-Id: <20081111123448.6566.55973.sendpatchset@balbir-laptop>
 In-Reply-To: <20081111123314.6566.54133.sendpatchset@balbir-laptop>
 References: <20081111123314.6566.54133.sendpatchset@balbir-laptop>
-Subject: [RFC][mm] [PATCH 2/4] Memory cgroup resource counters for hierarchy (v3)
+Subject: [RFC][mm] [PATCH 4/4] Memory cgroup hierarchy feature selector (v3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add support for building hierarchies in resource counters. Cgroups allows us
-to build a deep hierarchy, but we currently don't link the resource counters
-belonging to the memory controller control groups, in the same fashion
-as the corresponding cgroup entries in the cgroup hierarchy. This patch
-provides the infrastructure for resource counters that have the same hiearchy
-as their cgroup counter parts.
-
-These set of patches are based on the resource counter hiearchy patches posted
-by Pavel Emelianov.
-
-NOTE: Building hiearchies is expensive, deeper hierarchies imply charging
-the all the way up to the root. It is known that hiearchies are expensive,
-so the user needs to be careful and aware of the trade-offs before creating
-very deep ones.
-
+Don't enable multiple hierarchy support by default. This patch introduces
+a features element that can be set to enable the nested depth hierarchy
+feature. This feature can only be enabled when the cgroup for which the
+feature this is enabled, has no children.
 
 Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 ---
 
- include/linux/res_counter.h |    8 ++++++--
- kernel/res_counter.c        |   42 ++++++++++++++++++++++++++++++++++--------
- mm/memcontrol.c             |    9 ++++++---
- 3 files changed, 46 insertions(+), 13 deletions(-)
+ mm/memcontrol.c |   52 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 51 insertions(+), 1 deletion(-)
 
-diff -puN include/linux/res_counter.h~resource-counters-hierarchy-support include/linux/res_counter.h
---- linux-2.6.28-rc2/include/linux/res_counter.h~resource-counters-hierarchy-support	2008-11-11 17:51:55.000000000 +0530
-+++ linux-2.6.28-rc2-balbir/include/linux/res_counter.h	2008-11-11 17:51:55.000000000 +0530
-@@ -43,6 +43,10 @@ struct res_counter {
- 	 * the routines below consider this to be IRQ-safe
+diff -puN mm/memcontrol.c~memcg-add-hierarchy-selector mm/memcontrol.c
+--- linux-2.6.28-rc2/mm/memcontrol.c~memcg-add-hierarchy-selector	2008-11-11 17:51:57.000000000 +0530
++++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-11 17:51:57.000000000 +0530
+@@ -137,6 +137,11 @@ struct mem_cgroup {
+ 	 * reclaimed from. Protected by cgroup_lock()
  	 */
- 	spinlock_t lock;
+ 	struct mem_cgroup *last_scanned_child;
 +	/*
-+	 * Parent counter, used for hierarchial resource accounting
++	 * Should the accounting and control be hierarchical, per subtree?
 +	 */
-+	struct res_counter *parent;
++	unsigned long use_hierarchy;
++
  };
+ static struct mem_cgroup init_mem_cgroup;
  
- /**
-@@ -87,7 +91,7 @@ enum {
-  * helpers for accounting
-  */
- 
--void res_counter_init(struct res_counter *counter);
-+void res_counter_init(struct res_counter *counter, struct res_counter *parent);
- 
- /*
-  * charge - try to consume more resource.
-@@ -103,7 +107,7 @@ void res_counter_init(struct res_counter
- int __must_check res_counter_charge_locked(struct res_counter *counter,
- 		unsigned long val);
- int __must_check res_counter_charge(struct res_counter *counter,
--		unsigned long val);
-+		unsigned long val, struct res_counter **limit_fail_at);
- 
- /*
-  * uncharge - tell that some portion of the resource is released
-diff -puN kernel/res_counter.c~resource-counters-hierarchy-support kernel/res_counter.c
---- linux-2.6.28-rc2/kernel/res_counter.c~resource-counters-hierarchy-support	2008-11-11 17:51:55.000000000 +0530
-+++ linux-2.6.28-rc2-balbir/kernel/res_counter.c	2008-11-11 17:51:55.000000000 +0530
-@@ -15,10 +15,11 @@
- #include <linux/uaccess.h>
- #include <linux/mm.h>
- 
--void res_counter_init(struct res_counter *counter)
-+void res_counter_init(struct res_counter *counter, struct res_counter *parent)
- {
- 	spin_lock_init(&counter->lock);
- 	counter->limit = (unsigned long long)LLONG_MAX;
-+	counter->parent = parent;
- }
- 
- int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
-@@ -34,14 +35,34 @@ int res_counter_charge_locked(struct res
- 	return 0;
- }
- 
--int res_counter_charge(struct res_counter *counter, unsigned long val)
-+int res_counter_charge(struct res_counter *counter, unsigned long val,
-+			struct res_counter **limit_fail_at)
- {
- 	int ret;
- 	unsigned long flags;
-+	struct res_counter *c, *u;
- 
--	spin_lock_irqsave(&counter->lock, flags);
--	ret = res_counter_charge_locked(counter, val);
--	spin_unlock_irqrestore(&counter->lock, flags);
-+	*limit_fail_at = NULL;
-+	local_irq_save(flags);
-+	for (c = counter; c != NULL; c = c->parent) {
-+		spin_lock(&c->lock);
-+		ret = res_counter_charge_locked(c, val);
-+		spin_unlock(&c->lock);
-+		if (ret < 0) {
-+			*limit_fail_at = c;
-+			goto undo;
-+		}
-+	}
-+	ret = 0;
-+	goto done;
-+undo:
-+	for (u = counter; u != c; u = u->parent) {
-+		spin_lock(&u->lock);
-+		res_counter_uncharge_locked(u, val);
-+		spin_unlock(&u->lock);
-+	}
-+done:
-+	local_irq_restore(flags);
+@@ -1093,6 +1098,42 @@ out:
  	return ret;
  }
  
-@@ -56,10 +77,15 @@ void res_counter_uncharge_locked(struct 
- void res_counter_uncharge(struct res_counter *counter, unsigned long val)
++static u64 mem_cgroup_hierarchy_read(struct cgroup *cont, struct cftype *cft)
++{
++	return mem_cgroup_from_cont(cont)->use_hierarchy;
++}
++
++static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
++					u64 val)
++{
++	int retval = 0;
++	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
++	struct cgroup *parent = cont->parent;
++	struct mem_cgroup *parent_mem = NULL;
++
++	if (parent)
++		parent_mem = mem_cgroup_from_cont(parent);
++
++	/*
++	 * If parent's use_hiearchy is set, we can't make any modifications
++	 * in the child subtrees. If it is unset, then the change can
++	 * occur, provided the current cgroup has no children.
++	 *
++	 * For the root cgroup, parent_mem is NULL, we allow value to be
++	 * set if there are no children.
++	 */
++	if (!parent_mem || (!parent_mem->use_hierarchy &&
++				(val == 1 || val == 0))) {
++		if (list_empty(&cont->children))
++			mem->use_hierarchy = val;
++		else
++			retval = -EBUSY;
++	} else
++		retval = -EINVAL;
++
++	return retval;
++}
++
+ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
  {
- 	unsigned long flags;
-+	struct res_counter *c;
+ 	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
+@@ -1227,6 +1268,11 @@ static struct cftype mem_cgroup_files[] 
+ 		.name = "stat",
+ 		.read_map = mem_control_stat_show,
+ 	},
++	{
++		.name = "use_hierarchy",
++		.write_u64 = mem_cgroup_hierarchy_write,
++		.read_u64 = mem_cgroup_hierarchy_read,
++	},
+ };
  
--	spin_lock_irqsave(&counter->lock, flags);
--	res_counter_uncharge_locked(counter, val);
--	spin_unlock_irqrestore(&counter->lock, flags);
-+	local_irq_save(flags);
-+	for (c = counter; c != NULL; c = c->parent) {
-+		spin_lock(&c->lock);
-+		res_counter_uncharge_locked(c, val);
-+		spin_unlock(&c->lock);
-+	}
-+	local_irq_restore(flags);
- }
- 
- 
-diff -puN mm/memcontrol.c~resource-counters-hierarchy-support mm/memcontrol.c
---- linux-2.6.28-rc2/mm/memcontrol.c~resource-counters-hierarchy-support	2008-11-11 17:51:55.000000000 +0530
-+++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-11 17:51:55.000000000 +0530
-@@ -485,6 +485,7 @@ int mem_cgroup_try_charge(struct mm_stru
- {
- 	struct mem_cgroup *mem;
- 	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
-+	struct res_counter *fail_res;
- 	/*
- 	 * We always charge the cgroup the mm_struct belongs to.
- 	 * The mm_struct's mem_cgroup changes on task migration if the
-@@ -510,7 +511,7 @@ int mem_cgroup_try_charge(struct mm_stru
- 	}
- 
- 
--	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
-+	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE, &fail_res))) {
- 		if (!(gfp_mask & __GFP_WAIT))
- 			goto nomem;
- 
-@@ -1175,18 +1176,20 @@ static void mem_cgroup_free(struct mem_c
- static struct cgroup_subsys_state *
- mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
- {
--	struct mem_cgroup *mem;
-+	struct mem_cgroup *mem, *parent;
- 	int node;
- 
- 	if (unlikely((cont->parent) == NULL)) {
- 		mem = &init_mem_cgroup;
-+		parent = NULL;
- 	} else {
- 		mem = mem_cgroup_alloc();
-+		parent = mem_cgroup_from_cont(cont->parent);
+ static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+@@ -1303,9 +1349,13 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		parent = mem_cgroup_from_cont(cont->parent);
  		if (!mem)
  			return ERR_PTR(-ENOMEM);
++		mem->use_hierarchy = parent->use_hierarchy;
  	}
  
--	res_counter_init(&mem->res);
-+	res_counter_init(&mem->res, parent ? &parent->res : NULL);
+-	res_counter_init(&mem->res, parent ? &parent->res : NULL);
++	if (parent && parent->use_hierarchy)
++		res_counter_init(&mem->res, &parent->res);
++	else
++		res_counter_init(&mem->res, NULL);
  
  	for_each_node_state(node, N_POSSIBLE)
  		if (alloc_mem_cgroup_per_zone_info(mem, node))
