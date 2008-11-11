@@ -1,109 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395AbYKKTQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbYKKTQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752395AbYKKTQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 14:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYKKTQ1
+	id S1752822AbYKKTQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 14:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYKKTQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 14:16:27 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57152 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbYKKTQ0 (ORCPT
+	Tue, 11 Nov 2008 14:16:28 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:8917 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYKKTQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Nov 2008 14:16:26 -0500
-Date: Tue, 11 Nov 2008 19:13:55 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Nicolas Pitre <nico@cam.org>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, dhowells@redhat.com, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
-       davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] convert cnt32_to_63 to inline
-Message-ID: <20081111191355.GA13724@flint.arm.linux.org.uk>
-Mail-Followup-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Nicolas Pitre <nico@cam.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	torvalds@linux-foundation.org, dhowells@redhat.com, mingo@elte.hu,
-	a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-	ralf@linux-mips.org, benh@kernel.crashing.org, paulus@samba.org,
-	davem@davemloft.net, mingo@redhat.com, tglx@linutronix.de,
-	rostedt@goodmis.org, linux-arch@vger.kernel.org
-References: <alpine.LFD.2.00.0811090827160.13034@xanadu.home> <20081109162250.GB10181@Krystal> <alpine.LFD.2.00.0811092304300.13034@xanadu.home> <20081109204256.89ab7925.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101627510.13034@xanadu.home> <20081110135850.0d620f3c.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101811130.13034@xanadu.home> <20081110152221.64948d23.akpm@linux-foundation.org> <alpine.LFD.2.00.0811101917450.13034@xanadu.home> <20081111182759.GA8052@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081111182759.GA8052@Krystal>
-User-Agent: Mutt/1.4.2.1i
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type
+         :content-transfer-encoding:from;
+        b=Qj6MYG/3hduT9qifbUpYJRN9oHe6VYDUGdm78TbL+my6hx/W7EgrMDWnkbJMd6C+wI
+         6ZyMHP76JtEKzokegrDgi56lyle7EGQj78OGc2fMKpfJyrGCKc8+3RTU6xZpKRTLvhO+
+         BXA0ljSR1ciWsI+5epm9QxTg0vr88kR3Nlo2k=
+Message-ID: <4919DA05.4010809@gmail.com>
+Date: Tue, 11 Nov 2008 14:16:21 -0500
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-3.13 is released
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 01:28:00PM -0500, Mathieu Desnoyers wrote:
-> Let's see what it gives once implemented. Only compile-tested. Assumes
-> pxa, sa110 and mn10300 are all UP-only. Correct smp_rmb() are used for
-> arm versatile.
+Gidday
 
-Versatile is also UP only.
+I've released man-pages-3.13.
 
-The following are results from PXA built with gcc 3.4.3:
+This release is now available for download at:
 
-1. two additional registers used in sched_clock()
-2. 8 additional bytes of code (which are needless if gcc was more inteligent)
+   http://www.kernel.org/pub/linux/docs/man-pages
+   or ftp://ftp.kernel.org/pub/linux/docs/man-pages
 
-both of these I put down to inefficiencies in gcc's register allocation.
+The online changelog is available at
+http://www.kernel.org/doc/man-pages/changelog.html
+(blogged at
+http://linux-man-pages.blogspot.com/2008/11/man-pages-313-is-released.html)
+and the current version of the pages is browsable at
+http://www.kernel.org/doc/man-pages/
 
-3. worse instruction scheduling - two inter-dependent loads next to each
-   other causing a pipeline stall
+An abridged version of the changes in this release that may be of
+particular interest to readers of this list is provided below.
 
-Actual reading of variables/hardware is unaffected by this patch.
+Cheers,
 
-Old code:
+Michael
 
-   c:   e59f3050        ldr     r3, [pc, #80]   ; load address of oscr2ns_scale
-  10:   e59fc050        ldr     ip, [pc, #80]   ; load address of __m_cnt_hi
-  14:   e5932000        ldr     r2, [r3]	; read oscr2ns_scale
-  18:   e59f304c        ldr     r3, [pc, #76]   ; load address of OSCR
-  1c:   e59c1000        ldr     r1, [ip]	; read __m_cnt_hi
-  20:   e1a07002        mov     r7, r2
-  24:   e3a08000        mov     r8, #0  ; 0x0
-  28:   e5933000        ldr     r3, [r3]	; read OSCR register
-...
-  58:   e1820b04        orr     r0, r2, r4, lsl #22
-  5c:   e1a01524        lsr     r1, r4, #10
-  60:   e89da9f0        ldm     sp, {r4, r5, r6, r7, r8, fp, sp, pc}
+==================== Changes in man-pages-3.13 ====================
+
+New and rewritten pages
+-----------------------
+
+pthread_attr_setaffinity_np.3
+     Michael Kerrisk
+         New page for pthread_attr_setaffinity_np(3) and
+         pthread_attr_getaffinity_np(3)
+
+pthread_attr_setschedparam.3
+     Michael Kerrisk
+         New page for pthread_attr_setschedparam(3) and
+         pthread_attr_getschedparam(3)
+
+pthread_attr_setschedpolicy.3
+     Michael Kerrisk
+         New page for pthread_attr_setschedpolicy(3) and
+         pthread_attr_getschedpolicy(3)
+
+pthread_setaffinity_np.3
+     Michael Kerrisk
+         New page for pthread_setaffinity_np(3) and pthread_getaffinity_np(3)
+
+pthread_setschedparam.3
+     Michael Kerrisk
+         New page for pthread_setschedparam(3) and pthread_getschedparam(3)
+
+pthread_setschedprio.3
+     Michael Kerrisk
+         New page for pthread_setschedprio(3)
 
 
-New code:
+Changes to individual pages
+---------------------------
 
-   c:   e59f0058        ldr     r0, [pc, #88]   ; load address of oscr2ns_scale
-  10:   e5901000        ldr     r1, [r0]	; read oscr2ns_scale <= pipeline stall
-  14:   e59f3054        ldr     r3, [pc, #84]   ; load address of __m_cnt_hi
-  18:   e1a08001        mov     r8, r1
-  1c:   e5932000        ldr     r2, [r3]	; read __m_cnt_hi
-  20:   e59f304c        ldr     r3, [pc, #76]   ; load address of OSCR
-  24:   e1a09002        mov     r9, r2
-  28:   e3a0a000        mov     sl, #0  ; 0x0
-  2c:   e5933000        ldr     r3, [r3]	; read OSCR
-...
-  58:   e1825b04        orr     r5, r2, r4, lsl #22
-  5c:   e1a06524        lsr     r6, r4, #10
-  60:   e1a01006        mov     r1, r6
-  64:   e1a00005        mov     r0, r5
-  68:   e89daff0        ldm     sp, {r4, r5, r6, r7, r8, r9, sl, fp, sp, pc}
+clock_getres.3
+     Michael Kerrisk
+         CLOCK_PROCESS_CPUTIME_ID and CLOCK_THREAD_CPUTIME_ID not setabble
+             According to POSIX.1-2001, the CLOCK_PROCESS_CPUTIME_ID and
+             CLOCK_THREAD_CPUTIME_ID clocks should be settable, but
+             currently they are not.
 
-Versatile:
+pthread_exit.3
+     Michael Kerrisk
+         BUGS: thread group with a dead leader and stop signals
+             Document the bug that can occur when a stop signal
+             is sent to a thread group whose leader has terminated.
+             http://thread.gmane.org/gmane.linux.kernel/611611
+             http://marc.info/?l=linux-kernel&m=122525468300823&w=2
 
-1. 12 additional bytes of code
-2. same number of registers
-3. worse instruction scheduling causing pipeline stall
-
-Actual reading of variables/hardware is unaffected by this patch.
-
-So, we have two platforms where this patch makes things visibly worse
-with no material benefit.
+epoll.7
+     Michael Kerrisk
+         Fix error handling after accept() in example code
+             Simply continuing after an error is in most cases wrong,
+             and can lead to infinite loops (e.g., for EMFILE).
+             So handle an error by terminating.
+             http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=504202
+         Add error handling for epoll_wait() call in example code
+         Improve example code
+             Fill in some gaps in example code (variable declarations,
+             adding listening socket to epoll set).
+             Give variables more meaningful names.
+             Other minor changes.
+             http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=504202
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+
