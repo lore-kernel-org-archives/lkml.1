@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752556AbYKKWap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbYKKWbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752556AbYKKWap (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:30:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbYKKWac
+	id S1753650AbYKKWbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYKKWbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:30:32 -0500
-Received: from vena.lwn.net ([206.168.112.25]:58404 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753951AbYKKWaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:30:30 -0500
-Date: Tue, 11 Nov 2008 15:30:28 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Izik Eidus <ieidus@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
-Message-ID: <20081111153028.422b301a@bike.lwn.net>
-In-Reply-To: <491A0483.3010504@redhat.com>
+	Tue, 11 Nov 2008 17:31:25 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:49195 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbYKKWbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:31:24 -0500
+Date: Tue, 11 Nov 2008 16:30:22 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       chrisw@redhat.com, avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+ one page into another
+In-Reply-To: <20081111221753.GK10818@random.random>
+Message-ID: <Pine.LNX.4.64.0811111626520.29222@quilx.com>
 References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-2-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-3-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-4-git-send-email-ieidus@redhat.com>
-	<20081111150345.7fff8ff2@bike.lwn.net>
-	<491A0483.3010504@redhat.com>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+ <1226409701-14831-2-git-send-email-ieidus@redhat.com>
+ <1226409701-14831-3-git-send-email-ieidus@redhat.com>
+ <20081111114555.eb808843.akpm@linux-foundation.org> <20081111210655.GG10818@random.random>
+ <Pine.LNX.4.64.0811111522150.27767@quilx.com> <20081111221753.GK10818@random.random>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Let's see if I can get through the rest without premature sends...]
+On Tue, 11 Nov 2008, Andrea Arcangeli wrote:
 
-On Wed, 12 Nov 2008 00:17:39 +0200
-Izik Eidus <ieidus@redhat.com> wrote:
+> this page_count check done with only the tree_lock won't prevent a
+> task to start O_DIRECT after page_count has been read in the above line.
+>
+> If a thread starts O_DIRECT on the page, and the o_direct is still in
+> flight by the time you copy the page to the new page, the read will
+> not be represented fully in the newpage leading to userland data
+> corruption.
 
-> > Actually, it occurs to me that there's no sanity checks on any of
-> > the values passed in by ioctl().  What happens if the user tells
-> > KSM to scan a bogus range of memory?
-> >     
-> 
-> Well get_user_pages() run in context of the process, therefore it
-> should fail in "bogus range of memory"
+O_DIRECT does not take a refcount on the page in order to prevent this?
 
-But it will fail in a totally silent and mysterious way.  Doesn't it
-seem better to verify the values when you can return a meaningful error
-code to the caller?
+> > Define a regular VM page? A page on the LRU?
+>
+> Yes, pages owned, allocated and worked on by the VM. So they can be
+> swapped, collected, migrated etc... You can't possibly migrate a
+> device driver page for example and infact those device driver pages
+> can't be migrated either.
 
-The other ioctl() calls have the same issue; you can start the thread
-with nonsensical values for the number of pages to scan and the sleep
-time.
+Oh they could be migrated if you had a callback to the devices method for
+giving up references. Same as slab defrag.
 
-> 
-> > Any benchmarks on the runtime cost of having KSM running?
-> >     
-> 
-> This one is problematic, ksm can take anything from 0% to 100% cpu
-> its all depend on how fast you run it.
-> it have 3 parameters:
-> number of pages to scan before it go to sleep
-> maximum number of pages to merge while we scanning the above pages 
-> (merging is expensive)
-> time to sleep (when runing from userspace using /dev/ksm, we actually
-> do it there (userspace)
+> The KSM page initially is a driver page, later we'd like to teach the
+> VM how to swap it by introducing rmap methods and adding it to the
+> LRU. As long as it's only anonymous memory that we're sharing/cloning,
+> we won't have to patch pagecache radix tree and other stuff. BTW, if
+> we ever decice to clone pagecache we could generate immense metadata
+> ram overhead in the radix tree with just a single page of data. All
+> issues that don't exist for anon ram.
 
-What about things like cache effects from scanning all those pages?  My
-guess is that, if you're trying to run dozens of Windows guests, cache
-usage is not at the top of your list of concerns, but I could be
-wrong.  Usually am...
+Seems that we are tinkering around with the concept of what an anonymous
+page is? Doesnt shmem have some means of converting pages to file backed?
+Swizzling?
 
-Thanks,
-
-jon
