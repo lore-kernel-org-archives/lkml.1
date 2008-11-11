@@ -1,111 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbYKKNjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbYKKNnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293AbYKKNjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 08:39:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbYKKNjr
+	id S1756337AbYKKNnL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 08:43:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbYKKNm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 08:39:47 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36827 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754906AbYKKNjq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 08:39:46 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC][PATCH] mm: the page of MIGRATE_RESERVE don't insert into pcp
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20081107104726.GD13786@csn.ul.ie>
-References: <20081107093127.F84A.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081107104726.GD13786@csn.ul.ie>
-Message-Id: <20081111221059.8B44.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 11 Nov 2008 08:42:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53311 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755360AbYKKNm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 08:42:56 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #11380] lockdep warning: cpu_add_remove_lock at:cpu_maps_update_begin+0x14/0x16
+Date: Tue, 11 Nov 2008 14:47:36 +0100
+User-Agent: KMail/1.9.9
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <20081110073047.GA28578@elte.hu> <20081111120111.GA3503@redhat.com> <20081111110708.GE15645@elte.hu>
+In-Reply-To: <20081111110708.GE15645@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue, 11 Nov 2008 22:39:40 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200811111447.37858.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > What your patch may help is the situation where the system is under intense
-> > > memory pressure, is dipping routinely into the lowmem reserves and mixing
-> > > with high-order atomic allocations. This seems a bit extreme.
-> > 
-> > not so extreame.
-> > 
-> > The linux page reclaim can't process in interrupt context.
-> > Sl network subsystem and driver often use MIGRATE_RESERVE memory although
-> > system have many reclaimable memory.
-> > 
+On Tuesday, 11 of November 2008, Ingo Molnar wrote:
 > 
-> Why are they often using MIGRATE_RESERVE, have you confirmed that? For that
-> to be happening, it implies that either memory is under intense pressure and
-> free pages are often below watermarks due to interrupt contexts or they are
-> frequently allocating high-order pages in interrupt context. Normal order-0
-> allocations should be getting satisified from elsewhere as if the free page
-> counts are low, they would be direct reclaiming and that will likely be
-> outside of the MIGRATE_RESERVE areas.
-
-if inserting printk() in MIGRATE_RESERVE, I can observe MIGRATE_RESERVE
-page alloc easily although heavy workload don't run.
-but, there aren't my point.
-
-ok, I guess my patch description was too poor (and a bit pointless).
-So, I retry it.
-
-(1) in general principal, the system should effort to avoid oom rather than
-    performance if memory shortage happend.
-    MIGRATE_RESERVE directly indicate memory shortage happend.
-    and pcp caching can prevent another cpu allocation.
-(2) MIGRATE_RESERVE is never searched by buffered_rmqueue() because 
-    allocflags_to_migratetype() never return MIGRATE_RESERVE.
-    it doesn't work as cache.
-    IOW, it don't help to increase performance.
-(3) if the system pass MIGRATE_RESERVE to free_hot_cold_page() continously,
-    pcp queueing can reduce the number of grabing zone->lock.
-    However, it is rate. because MIGRATE_RESERVE is emergency memory,
-    and it is often used interupt context processing.
-    continuous emergency memory allocation in interrupt context isn't so sane.
-
-Then, unqueueing MIGRATE_RESERVE page doesn't cause performance degression
-and, it can (a bit) increase realibility and I think merit is much over demerit.
-
-
-
-
-> > static struct page *buffered_rmqueue(struct zone *preferred_zone,
-> >                         struct zone *zone, int order, gfp_t gfp_flags)
-> > {
-> > (snip)
-> >                 /* Find a page of the appropriate migrate type */
-> >                 if (cold) {
-> >                         list_for_each_entry_reverse(page, &pcp->list, lru)
-> >                                 if (page_private(page) == migratetype)
-> >                                         break;
-> >                 } else {
-> >                         list_for_each_entry(page, &pcp->list, lru)
-> >                                 if (page_private(page) == migratetype)
-> >                                         break;
-> >                 }
-> > 
-> > Therefore, I'd like to make per migratetype pcp list.
+> * Oleg Nesterov <oleg@redhat.com> wrote:
 > 
-> That was actually how it was originally implemented and later moved to a list
-> search. It got shot down on the grounds a per-cpu structure increased in size.
+> > On 11/11, KOSAKI Motohiro wrote:
+> > >
+> > > it seem simple ABBA lock, right?
+> > >
+> > > -> #4 (&dev->mutex){--..}:
+> > >        [<c0160f87>] validate_chain+0x831/0xaa2
+> > >        [<c0161872>] __lock_acquire+0x67a/0x6e0
+> > >        [<c0161933>] lock_acquire+0x5b/0x81
+> > >        [<c0a660e4>] mutex_lock_interruptible_nested+0xde/0x2f8
+> > >        [<c0782d02>] input_register_handle+0x26/0x7a			dev->mutex
+> >                                                                         ^^^^^^^^^^
+> > >        [<c04a62c9>] kbd_connect+0x64/0x8d
+> > >        [<c0782842>] input_attach_handler+0x38/0x6b
+> > >        [<c0784216>] input_register_handler+0x74/0xc3			input_mutex
+> > >        [<c0f54e4b>] kbd_init+0x66/0x91
+> > >        [<c0f54f7b>] vty_init+0xce/0xd7
+> > >        [<c0f54952>] tty_init+0x193/0x197
+> > >        [<c010112a>] do_one_initcall+0x42/0x133
+> > >        [<c0f2d5cb>] kernel_init+0x16e/0x1d5
+> > >        [<c0117c03>] kernel_thread_helper+0x7/0x10
+> > >        [<ffffffff>] 0xffffffff
+> > >
+> > > -> #3 (input_mutex){--..}:
+> > >        [<c0160f87>] validate_chain+0x831/0xaa2
+> > >        [<c0161872>] __lock_acquire+0x67a/0x6e0
+> > >        [<c0161933>] lock_acquire+0x5b/0x81
+> > >        [<c0a660e4>] mutex_lock_interruptible_nested+0xde/0x2f8
+> > >        [<c0783fbe>] input_register_device+0xff/0x17f		input_mutex
+> > >        [<c048a889>] acpi_button_add+0x31e/0x429
+> > >        [<c04889f4>] acpi_device_probe+0x43/0xde
+> > >        [<c052c67f>] driver_probe_device+0xa5/0x120
+> > >        [<c052c73c>] __driver_attach+0x42/0x64			dev->sem
+> >                                                                 ^^^^^^^^
+> > input_dev->mutex != device->sem
+> > 
+> > > ...
+> > >        [<c0f2d201>] do_async_initcalls+0x1a/0x2a
+> > >        [<c0150eec>] run_workqueue+0xc3/0x193			
+> > >        [<c015195d>] worker_thread+0xbb/0xc7
+> > >        [<c0153e2a>] kthread+0x40/0x66
+> > 
+> > What is the kernel version, btw? I can't find do_async_initcalls
+> > in 2.6.27 or 2.6.28.
+> 
+> i suspect it's an older version of tip/master that still had async 
+> initcalls.
+> 
+> > Anyway, this really looks like lockdep bug to me. Even if we really 
+> > have the circular dependency (will try to grep more) I can't 
+> > understand why lockdep claims that polldev_mutex depends on 
+> > cpu_add_remove_lock.
+> 
+> ok, will re-report if i can trigger it again with latest kernels. 
+> Rafael, please close this bug as cannot-reproduce for now.
 
-Yup, I believe at that time your decision is right.
-However, I think the condision was changed (or to be able to change).
+Done.
 
- (1) legacy pcp implementation deeply relate to struct zone size.
-     and, to blow up struct zone size cause performance degression
-     because cache miss increasing.
-     However, it solved cristoph's cpu-alloc patch
-
- (2) legacy pcp doesn't have total number of pages restriction.
-     So, increasing lists directly cause number of pages in pcp.
-     it can cause oom problem on large numa environment.
-     However, I think we can implement total number of pages restriction.
-
-
-
+Thanks,
+Rafael
