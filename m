@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYKKIlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYKKIny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbYKKIlT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 03:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbYKKIlJ
+	id S1755413AbYKKIny (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 03:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYKKIno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 03:41:09 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54012 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750982AbYKKIlJ (ORCPT
+	Tue, 11 Nov 2008 03:43:44 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:49706 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751249AbYKKIno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 03:41:09 -0500
-Date: Tue, 11 Nov 2008 09:41:04 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] x86: Make NUMA on 32-bit depend on BROKEN
-Message-ID: <20081111084104.GA19994@atrey.karlin.mff.cuni.cz>
-References: <200811102152.47901.rjw@sisk.pl>
+	Tue, 11 Nov 2008 03:43:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wTlj97kE3/3pLp3TN9m6WxrekL7NGSfgB1NK6AtQXFHBts6cSH9YG2k4XE8S1u0BvE
+         MdUR+Ai/6vaGt7HTKR6H6YyY1STGCvBIO0nw76TeXgR17qhuK0eTCBQGnex4Kracna8G
+         IM7CsKqAj1Wmq+ktg73L/VxoRV82LRIShHeuk=
+Message-ID: <49195046.2050306@gmail.com>
+Date: Tue, 11 Nov 2008 10:28:38 +0100
+From: Romano Giannetti <romano.giannetti@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811102152.47901.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [Bug #11947] 2.6.28-rc VC switching with Intel graphics broken
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.00F.o4zFJB@chimera>
+In-Reply-To: <wnN9HICUAgP.A.00F.o4zFJB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86: Make NUMA on 32-bit depend on BROKEN
+Rafael J. Wysocki wrote:
 > 
-> While investigating the failure of hibernation on 32-bit x86 with
-> CONFIG_NUMA set, as described in this message
-> http://marc.info/?l=linux-kernel&m=122634118116226&w=4
-> I asked some people for help and I was told that it wasn't really
-> worth the effort, because CONFIG_NUMA was generally broken on 32-bit
-> x86 systems and it shouldn't be used in such configs.  For this
-> reason, make CONFIG_NUMA depend on BROKEN instead of EXPERIMENTAL on
-> x86-32.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: Pavel Machek <pavel@suse.cz>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11947
+> Subject		: 2.6.28-rc VC switching with Intel graphics broken
+> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
+> Date		: 2008-11-03 12:10 (7 days old)
+> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-ACK.
+Still here in 2.6.28-rc4. Complete lock switching back from a VC to X.
 
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> ---
->  arch/x86/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/x86/Kconfig
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/Kconfig
-> +++ linux-2.6/arch/x86/Kconfig
-> @@ -957,7 +957,7 @@ config ARCH_PHYS_ADDR_T_64BIT
->  config NUMA
->  	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
->  	depends on SMP
-> -	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && EXPERIMENTAL)
-> +	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && BROKEN)
->  	default n if X86_PC
->  	default y if (X86_NUMAQ || X86_SUMMIT || X86_BIGSMP)
->  	help
+Romano
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
