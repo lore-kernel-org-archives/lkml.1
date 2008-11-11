@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYKKLaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbYKKLbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYKKLaz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 06:30:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbYKKLaq
+	id S1756371AbYKKLbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 06:31:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbYKKLbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 06:30:46 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36546 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754895AbYKKLaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 06:30:46 -0500
-Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@suse.de>
+	Tue, 11 Nov 2008 06:31:38 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:56235 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755528AbYKKLbh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 06:31:37 -0500
+Date: Tue, 11 Nov 2008 12:31:34 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       James Cloos <cloos@jhcloos.com>,
-       Paul Collins <paul@burly.ondioline.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <jeskpy7gnl.fsf@sykes.suse.de>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	 <wnN9HICUAgP.A._d.f5zFJB@chimera> <1226295985.7731.7.camel@pasglop>
-	 <jetzafiad4.fsf@sykes.suse.de> <1226353979.7530.8.camel@pasglop>
-	 <jefxlzi2x0.fsf@sykes.suse.de> <1226360094.7530.18.camel@pasglop>
-	 <je1vxji1br.fsf@sykes.suse.de> <1226368174.7530.47.camel@pasglop>
-	 <jeskpy7gnl.fsf@sykes.suse.de>
-Content-Type: text/plain
-Date: Tue, 11 Nov 2008 22:30:09 +1100
-Message-Id: <1226403009.7530.158.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
+	chanes in stop_machine
+Message-ID: <20081111113134.GA5653@osiris.boeblingen.de.ibm.com>
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111105214.GA15645@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-11-11 at 10:31 +0100, Andreas Schwab wrote:
-> It looks like you are observing the same failure mode that I do.
+On Tue, Nov 11, 2008 at 11:52:14AM +0100, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > However, it is reproducible by doing
+> > 
+> > # echo core > /sys/power/pm_test
+> > 
+> > and repeating
+> > 
+> > # echo disk > /sys/power/state
+> > 
+> > for a couple of times, in which case the last two lines printed to the console
+> > before a (solid) hang are:
+> > 
+> > SMP alternatives: switching to SMP code
+> > Booting processor 1 APIC 0x1 ip 0x6000
+> > 
+> > So, it evidently fails while re-enabling the non-boot CPU and not 
+> > during disabling it as I thought before.
+> > 
+> > With commit c9583e55fa2b08a230c549bd1e3c0bde6c50d9cc reverted the 
+> > issue is not reproducible any more.
+> 
+> [ Cc:-ed workqueue/locking/suspend-race-condition experts. ]
+> 
+> Seems like the new kernel/stop_machine.c logic has a race for the test 
+> sequence above. (Below is the bisected commit again, maybe the race is 
+> visible via email review as well.)
 
-Yup, once, haven't reproduced it ever since though :-(
+FWIW, I tried to reproduce this on s390 and got the following:
 
-Ben.
+A process that would do nothing but onlining/offlining cpus would get
+stuck after a while:
 
+ 0 schedule+842 [0x342522]
+ 1 schedule_timeout+200 [0x342ec4]
+ 2 wait_for_common+362 [0x341fd6]
+ 3 wait_for_completion+54 [0x342146]
+ 4 __synchronize_sched+80 [0x81670]
+ 5 cpu_down+172 [0x33c030]
+ 6 store_online+96 [0x33c488]
+ 7 sysdev_store+52 [0x1bda84]
+ 8 sysfs_write_file+242 [0x1350ba]
+ 9 vfs_write+176 [0xd2028]
+10 sys_write+82 [0xd21ea]
+11 sysc_noemu+16 [0x269d8]
 
+All cpus are in cpu_idle and no other task in state TASK_INTERRUPTIBLE
+or TASK_UNINTERRUPTIBLE. However it would continue to work as soon as
+I login into the system or generate a console interrupt.
+I'm going to look into the dump and see if I can figure out what is
+broken here.
+Dunno if it is the same bug or something else.
