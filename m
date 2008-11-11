@@ -1,143 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYKKW22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYKKW2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbYKKW22 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 17:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYKKW2S
+	id S1753955AbYKKW2m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 17:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbYKKW22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 17:28:18 -0500
-Received: from mail.gmx.net ([213.165.64.20]:49668 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750886AbYKKW2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 17:28:18 -0500
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX18RcgxnKl4RXmKZF84i31WPss/01gK09/Lfexb78n
-	zFHGYWS3W11xrv
-From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-To: gregkh@suse.de
-Subject: Re: patch md-linear-fix-a-division-by-zero-bug-for-very-small-arrays.patch added to 2.6.27-stable tree
-Date: Tue, 11 Nov 2008 23:28:14 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, maan@systemlinux.org, neilb@suse.de,
-       stable@kernel.org
-References: <20081111180958.4480949037@coco.kroah.org>
-In-Reply-To: <20081111180958.4480949037@coco.kroah.org>
+	Tue, 11 Nov 2008 17:28:28 -0500
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:58006 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753849AbYKKW21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 17:28:27 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=nuZtY4rHZe59PEWNSWNBBuu6hrjZ0Ro5BI/jhughw6Jb2lCFxg6dhL8OJawIcqj3Se3gTSlCdUOYmiAm2j4dxBSc1J5mDsLDzOCmnClZRk7YTATg6hhFcGh/f1ixxtPQ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Subject: Re: [PATCH] documentation: move MSI-HOWTO.txt to  Doc/PCI/
+Date: Tue, 11 Nov 2008 14:28:20 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.26.6-79.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+References: <4910DA0B.1090309@xenotime.net>
+In-Reply-To: <4910DA0B.1090309@xenotime.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3558550.keiyoaXv55";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811112328.15522.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+Content-Disposition: inline
+Message-Id: <200811111428.20569.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3558550.keiyoaXv55
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Hi
-
-On Dienstag, 11. November 2008, gregkh@suse.de wrote:
->=20
-> This is a note to let you know that we have just queued up the patch titl=
-ed
->=20
->     Subject: md: linear: Fix a division by zero bug for very small arrays.
-> Subject: md: linear: Fix a division by zero bug for very small arrays.
->=20
-> to the 2.6.27-stable tree.  Its filename is
->=20
->     md-linear-fix-a-division-by-zero-bug-for-very-small-arrays.patch
->=20
-> A git repo of this tree can be found at=20
->     http://www.kernel.org/git/?p=3Dlinux/kernel/git/stable/stable-queue.g=
-it;a=3Dsummary
->=20
->=20
-> From jejb@kernel.org  Tue Nov 11 09:47:32 2008
-> From: Andre Noll <maan@systemlinux.org>
-> Date: Fri, 7 Nov 2008 00:07:46 GMT
-> Subject: md: linear: Fix a division by zero bug for very small arrays.
-> To: stable@kernel.org
-> Message-ID: <200811070007.mA707k6d006270@hera.kernel.org>
->=20
-> From: Andre Noll <maan@systemlinux.org>
->=20
-> commit f1cd14ae52985634d0389e934eba25b5ecf24565 upstream
->=20
-> Date: Thu, 6 Nov 2008 19:41:24 +1100
-> Subject: md: linear: Fix a division by zero bug for very small arrays.
->=20
-> We currently oops with a divide error on starting a linear software
-> raid array consisting of at least two very small (< 500K) devices.
->=20
-> The bug is caused by the calculation of the hash table size which
-> tries to compute sector_div(sz, base) with "base" being zero due to
-> the small size of the component devices of the array.
->=20
-> Fix this by requiring the hash spacing to be at least one which
-> implies that also "base" is non-zero.
->=20
-> This bug has existed since about 2.6.14.
->=20
-> Signed-off-by: Andre Noll <maan@systemlinux.org>
-> Signed-off-by: NeilBrown <neilb@suse.de>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->=20
+On Tuesday, November 4, 2008 3:26 pm Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Move MSI-HOWTO.txt to the PCI/ subdirectory since it is PCI-related.
+> Add PCI/ entry to top-level 00-INDEX file.
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 > ---
->  drivers/md/linear.c |    2 ++
->  1 file changed, 2 insertions(+)
->=20
-> --- a/drivers/md/linear.c
-> +++ b/drivers/md/linear.c
-> @@ -157,6 +157,8 @@ static linear_conf_t *linear_conf(mddev_
-> =20
->  	min_spacing =3D conf->array_sectors / 2;
->  	sector_div(min_spacing, PAGE_SIZE/sizeof(struct dev_info *));
-> +	if (min_sectors =3D=3D 0)
-> +		min_sectors =3D 1;
-> =20
->  	/* min_spacing is the minimum spacing that will fit the hash
->  	 * table in one PAGE.  This may be much smaller than needed.
+>  Documentation/00-INDEX          |    4
+>  Documentation/MSI-HOWTO.txt     |  509
+> ---------------------------------------- Documentation/PCI/00-INDEX      | 
+>   2
+>  Documentation/PCI/MSI-HOWTO.txt |  509
+> ++++++++++++++++++++++++++++++++++++++++ 4 files changed, 513
+> insertions(+), 511 deletions(-)
 
-drivers/md/linear.c: In function 'linear_conf':
-drivers/md/linear.c:160: error: 'min_sectors' undeclared (first use in this=
- function)
-drivers/md/linear.c:160: error: (Each undeclared identifier is reported onl=
-y once
-drivers/md/linear.c:160: error: for each function it appears in.)
-make[5]: *** [drivers/md/linear.o] Error 1
-make[4]: *** [drivers/md] Error 2
-make[4]: *** Waiting for unfinished jobs....
+This is just a move, so totally up to the doc guys, but fwiw:
 
-This one obviously depends on:
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-commit 23242fbb470ff4c8c4d41f178832cf1929273d7d
-Author: Andre Noll <maan@systemlinux.org>
-Date:   Mon Oct 13 11:55:12 2008 +1100
+Since there were some other moves going on here, I suggested on IRC that Randy 
+set up a git tree and just have Linus pull it directly.
 
-    md: linear.c: Make two local variables sector-based.
-
-which in turn depends on previous changes.
-
-Regards
-	Stefan Lippers-Hollmann
-
---nextPart3558550.keiyoaXv55
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkaBv8ACgkQORbEMfgJlPYOpQCaA7n8J9zmk5hgRuYK9PJaPAKw
-hHMAn34BAUozxSHoWH7PyrTcDlnxzjvo
-=g2LO
------END PGP SIGNATURE-----
-
---nextPart3558550.keiyoaXv55--
+Jesse
