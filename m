@@ -1,53 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYKKUC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbYKKUJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbYKKUC6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 15:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYKKUCu
+	id S1752463AbYKKUJA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 15:09:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYKKUIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 15:02:50 -0500
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:4988 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751582AbYKKUCt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 15:02:49 -0500
-Date: Tue, 11 Nov 2008 21:02:47 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6.27] allows to rmmod 'ide_pci_generic' with mounted filesystems
-Message-ID: <20081111200247.GQ10723@vanheusden.com>
-References: <20081104172513.GH23232@vanheusden.com> <20081104172727.GJ23232@vanheusden.com>
+	Tue, 11 Nov 2008 15:08:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50348 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751160AbYKKUIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 15:08:49 -0500
+Message-ID: <4919E62F.1020104@redhat.com>
+Date: Tue, 11 Nov 2008 22:08:15 +0200
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081104172727.GJ23232@vanheusden.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Tue Nov 11 11:09:27 CET 2008
-X-Message-Flag: MultiTail - tail on steroids
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: avi@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       kvm@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com
+Subject: Re: [PATCH 0/4] ksm - dynamic page sharing driver for linux
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<20081111103051.979aea57.akpm@linux-foundation.org>	<4919D370.7080301@redhat.com>	<20081111111110.decc0f06.akpm@linux-foundation.org>	<4919DA7F.5090106@redhat.com> <20081111113247.c2b0f1ac.akpm@linux-foundation.org> <4919E293.6040600@redhat.com>
+In-Reply-To: <4919E293.6040600@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While running my http://vanheusden.com/pyk/ script (which randomly
-inserts and removes modules), the module 'ide_pci_generic' got unloaded
-while filesystems were mounted that used that module. Of course the
-system crashed but I think it should not be possible to unload
-modules when resources it serves are still in use.
+Izik Eidus wrote:
+> Andrew Morton wrote:
+>> On Tue, 11 Nov 2008 21:18:23 +0200
+>> Izik Eidus <ieidus@redhat.com> wrote:
+>>
+>>  
+>>>> hm.
+>>>>
+>>>> There has been the occasional discussion about idenfifying all-zeroes
+>>>> pages and scavenging them, repointing them at the zero page.  Could
+>>>> this infrastructure be used for that?  (And how much would we gain 
+>>>> from
+>>>> it?)
+>>>>
+>>>> [I'm looking for reasons why this is more than a 
+>>>> muck-up-the-vm-for-kvm
+>>>> thing here ;) ]
+>>>>       
+>>
+>> ^^ this?
+>>
+>>  
+>>> KSM is separate driver , it doesn't change anything in the VM but 
+>>> adding two helper functions.
+>>>     
+>>
+>> What, you mean I should actually read the code?   Oh well, OK.
+>>   
+> Andrea i think what is happening here is my fault
+Sorry, meant to write here Andrew :-)
+> i will try to give here much more information about KSM:
+> first the bad things:
+> KSM shared pages are right now (we have patch that can change it but 
+> we want to wait with it) unswappable
+> this mean that the entire memory of the guest is swappable but the 
+> pages that are shared are not.
+> (when the pages are splited back by COW they become anonymous again 
+> with the help of do_wp_page()
+> the reason that the pages are not swappable is beacuse the way the 
+> Linux Rmap is working, this not allow us to create nonlinear anonymous 
+> pages
+> (we dont want to use nonlinear vma for kvm, as it will make swapping 
+> for kvm very slow)
+> the reason that ksm pages need to have nonlinear reverse mapping is 
+> that for one guest identical page can be found in whole diffrent 
+> offset than other guest have it
+> (this is from the userspace VM point of view)
+>
+> the rest is quite simple:
+> it is walking over the entire guest memory (or only some of it) and 
+> scan for identical pages using hash table
+> it merge the pages into one single write protected page
+>
+> numbers for ksm is something that i have just for desktops and just 
+> the numbers i gave you
+> what is do know is:
+> big overcommit like 300% is possible just when you take into account 
+> that some of the guest memory will be free
+> we are sharing mostly the DLLs/ KERNEL / ZERO pages, for the DLLS and 
+> KERNEL PAGEs this pages likely will never break
+> but ZERO pages will be break when windows will allocate them and will 
+> come back when windows will free the memory.
+> (i wouldnt suggest 300% overcommit for servers workload, beacuse you 
+> can end up swapping in that case,
+> but for desktops after runing in production and passed some seiroes qa 
+> tress tests it seems like 300% is a real number that can be use)
+>
+> i just ran test on two fedora 8 guests and got that results (using 
+> GNOME in both of them)
+> 9959 root      15   0  730m 537m 281m S    8  3.4   0:44.28 
+> kvm                                                                            
+>
+> 9956 root      15   0  730m 537m 246m S    4  3.4   0:41.43 kvm
+> as you can see the physical sharing was 281mb and 246mb (kernel pages 
+> are counted as shared)
+> there is small lie in this numbers beacuse pages that was shared 
+> across two guests and was splited by writing from guest number 1 will 
+> still have 1 refernce count to it
+> and will still be kernel page (untill the other guest (num 2) will 
+> write to it as well)
+>
+>
+> anyway i am willing to make much better testing or everything that 
+> needed for this patchs to be merged.
+> (just tell me what and i will do it)
+>
+> beside that you should know that patch 4 is not a must, it is just 
+> nice optimization...
+>
+> thanks.
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-
-Folkert van Heusden
-
--- 
-MultiTail cok yonlu kullanimli bir program, loglari okumak, verilen
-kommandolari yerine getirebilen. Filter, renk verme, merge, 'diff-
-view', vs.  http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
