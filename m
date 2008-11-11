@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbYKKKo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbYKKKpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbYKKKo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 05:44:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYKKKos
+	id S1756124AbYKKKpW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 05:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYKKKpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 05:44:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43028 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755248AbYKKKor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 05:44:47 -0500
-Date: Tue, 11 Nov 2008 11:44:41 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Subject: Re: [PATCH -v2] sched: Include group statistics in
-	/proc/sched_debug
-Message-ID: <20081111104441.GE10554@elte.hu>
-References: <20081110092350.GA3679@in.ibm.com> <1226309407.2697.4034.camel@twins> <20081110160409.GB3933@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Nov 2008 05:45:04 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:45544 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755997AbYKKKpD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 05:45:03 -0500
+Message-Id: <4919705F.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 11 Nov 2008 10:45:35 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: <linux-pci@vger.kernel.org>
+Cc: <grundler@parisc-linux.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] remove msix_flush_writes()
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20081110160409.GB3933@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+msix_flush_writes() is being called exclusively after calling msi_set_mask_bit(),
+and that function already does follow writel() by readl() in the MSI-X case.
 
-* Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
 
-> > Why not simply add them to the cfs_rq[n]:/path sections we already 
-> > have?
-> 
-> Makes sense. Here is the updated patch which puts group statistics 
-> under cfs_rq[n]:/path section as you suggest.
-> 
-> Include group statistics in /proc/sched_debug.
+---
+ drivers/pci/msi.c |   25 -------------------------
+ 1 file changed, 25 deletions(-)
 
-applied to tip/sched/core, thanks Bharata!
+--- linux-2.6.28-rc4/drivers/pci/msi.c	2008-11-11 11:11:20.000000000 +0100
++++ 2.6.28-rc4-pci-msix-flush-writes/drivers/pci/msi.c	2008-11-07 09:11:36.000000000 +0100
+@@ -103,29 +103,6 @@ static void msix_set_enable(struct pci_d
+ 	}
+ }
+ 
+-static void msix_flush_writes(unsigned int irq)
+-{
+-	struct msi_desc *entry;
+-
+-	entry = get_irq_msi(irq);
+-	BUG_ON(!entry || !entry->dev);
+-	switch (entry->msi_attrib.type) {
+-	case PCI_CAP_ID_MSI:
+-		/* nothing to do */
+-		break;
+-	case PCI_CAP_ID_MSIX:
+-	{
+-		int offset = entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE +
+-			PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET;
+-		readl(entry->mask_base + offset);
+-		break;
+-	}
+-	default:
+-		BUG();
+-		break;
+-	}
+-}
+-
+ /*
+  * PCI 2.3 does not specify mask bits for each MSI interrupt.  Attempting to
+  * mask all MSI interrupts by clearing the MSI enable bit does not work
+@@ -255,13 +232,11 @@ void write_msi_msg(unsigned int irq, str
+ void mask_msi_irq(unsigned int irq)
+ {
+ 	msi_set_mask_bits(irq, 1, 1);
+-	msix_flush_writes(irq);
+ }
+ 
+ void unmask_msi_irq(unsigned int irq)
+ {
+ 	msi_set_mask_bits(irq, 1, 0);
+-	msix_flush_writes(irq);
+ }
+ 
+ static int msi_free_irqs(struct pci_dev* dev);
 
-	Ingo
+
+
