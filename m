@@ -1,95 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbYKKTg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbYKKTlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbYKKTg1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 14:36:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbYKKTgS
+	id S1752005AbYKKTlT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 14:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbYKKTlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 14:36:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53924 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750929AbYKKTgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 14:36:17 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>, linux-kernel@vger.kernel.org,
-       jlayton@redhat.com
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
-	<20081110135618.GI26778@kernel.dk> <49186C5A.5020809@telenet.dn.ua>
-	<20081110173504.GL26778@kernel.dk> <49187D05.9050407@telenet.dn.ua>
-	<x491vxjqmg0.fsf@segfault.boston.devel.redhat.com>
-	<20081111093426.GS26778@kernel.dk> <20081111093540.GT26778@kernel.dk>
-	<20081111115227.GU26778@kernel.dk> <4919B884.5000604@telenet.dn.ua>
-	<20081111180659.GC26778@kernel.dk>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Tue, 11 Nov 2008 14:36:07 -0500
-In-Reply-To: <20081111180659.GC26778@kernel.dk> (Jens Axboe's message of "Tue,
-	11 Nov 2008 19:06:59 +0100")
-Message-ID: <x49vduunjh4.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 11 Nov 2008 14:41:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51542 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750725AbYKKTlC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 14:41:02 -0500
+Date: Tue, 11 Nov 2008 11:39:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com,
+       izike@qumranet.com
+Subject: Re: [PATCH 1/4] rmap: add page_wrprotect() function,
+Message-Id: <20081111113948.f38b9e95.akpm@linux-foundation.org>
+In-Reply-To: <1226409701-14831-2-git-send-email-ieidus@redhat.com>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
+	<1226409701-14831-2-git-send-email-ieidus@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+On Tue, 11 Nov 2008 15:21:38 +0200
+Izik Eidus <ieidus@redhat.com> wrote:
 
-> OK, that looks better. Can I talk you into just trying this little
-> patch, just to see what kind of performance that yields? Remove the cfq
-> patch first. I would have patched nfsd only, but this is just a quick'n
-> dirty.
+> From: Izik Eidus <izike@qumranet.com>
+> 
+> this function is useful for cases you want to compare page and know
+> that its value wont change during you compare it.
+> 
+> this function is working by walking over the whole rmap of a page
+> and mark every pte related to the page as write_protect.
+> 
+> the odirect_sync paramter is used to notify the caller of
+> page_wrprotect() if one pte or more was not marked readonly
+> in order to avoid race with odirect.
 
-I went ahead and gave it a shot.  The updated CFQ patch with no I/O
-context sharing does about 40MB/s reading a 1GB file.  Backing that
-patch out, and then adding the patch to share io_context's between
-kthreads yields 45MB/s.
+The grammar is a bit mangled.  Missing apostrophes.  Sentences start
+with capital letters.
 
-By the way, in looking at the copy_io function, I noticed what appears
-to be a (minor) bug:
+Yeah, it's a nit, but we don't actually gain anything from deliberately
+mangling the language.
 
-        if (clone_flags & CLONE_IO) {
-                tsk->io_context = ioc_task_link(ioc);
-                if (unlikely(!tsk->io_context))
-                        return -ENOMEM;
+>
+> ...
+>
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -576,6 +576,103 @@ int page_mkclean(struct page *page)
+>  }
+>  EXPORT_SYMBOL_GPL(page_mkclean);
+>  
+> +static int page_wrprotect_one(struct page *page, struct vm_area_struct *vma,
+> +			      int *odirect_sync)
+> +{
+> +	struct mm_struct *mm = vma->vm_mm;
+> +	unsigned long address;
+> +	pte_t *pte;
+> +	spinlock_t *ptl;
+> +	int ret = 0;
+> +
+> +	address = vma_address(page, vma);
+> +	if (address == -EFAULT)
+> +		goto out;
+> +
+> +	pte = page_check_address(page, mm, address, &ptl, 0);
+> +	if (!pte)
+> +		goto out;
+> +
+> +	if (pte_write(*pte)) {
+> +		pte_t entry;
+> +
+> +		if (page_mapcount(page) != page_count(page)) {
+> +			*odirect_sync = 0;
+> +			goto out_unlock;
+> +		}
+> +		flush_cache_page(vma, address, pte_pfn(*pte));
+> +		entry = ptep_clear_flush_notify(vma, address, pte);
+> +		entry = pte_wrprotect(entry);
+> +		set_pte_at(mm, address, pte, entry);
+> +	}
+> +	ret = 1;
+> +
+> +out_unlock:
+> +	pte_unmap_unlock(pte, ptl);
+> +out:
+> +	return ret;
+> +}
 
-According to comments in ioc_task_link, tsk->io_context == NULL means:
-        /*
-         * if ref count is zero, don't allow sharing (ioc is going away, it's
-         * a race).
-         */
+OK.  I think.  We need to find a way of provoking Hugh to look at it.
 
-It seems more appropriate to just create a new I/O context at this
-point, don't you think?  (Sorry, I know it's off-topic!)
+> +static int page_wrprotect_file(struct page *page, int *odirect_sync)
+> +{
+> +	struct address_space *mapping;
+> +	struct prio_tree_iter iter;
+> +	struct vm_area_struct *vma;
+> +	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+> +	int ret = 0;
+> +
+> +	mapping = page_mapping(page);
 
-Cheers,
+What pins *mapping in memory?  Usually this is done by requiring that
+the caller has locked the page.  But no such precondition is documented
+here.
 
-Jeff
+> +	if (!mapping)
+> +		return ret;
+> +
+> +	spin_lock(&mapping->i_mmap_lock);
+> +
+> +	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff)
+> +		ret += page_wrprotect_one(page, vma, odirect_sync);
+> +
+> +	spin_unlock(&mapping->i_mmap_lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static int page_wrprotect_anon(struct page *page, int *odirect_sync)
+> +{
+> +	struct vm_area_struct *vma;
+> +	struct anon_vma *anon_vma;
+> +	int ret = 0;
+> +
+> +	anon_vma = page_lock_anon_vma(page);
+> +	if (!anon_vma)
+> +		return ret;
+> +
+> +	list_for_each_entry(vma, &anon_vma->head, anon_vma_node)
+> +		ret += page_wrprotect_one(page, vma, odirect_sync);
+> +
+> +	page_unlock_anon_vma(anon_vma);
+> +
+> +	return ret;
+> +}
+> +
+> +/**
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index f608356..483d95c 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -723,10 +723,17 @@ static int copy_io(unsigned long clone_flags, struct task_struct *tsk)
- 	 * Share io context with parent, if CLONE_IO is set
- 	 */
- 	if (clone_flags & CLONE_IO) {
-+		/*
-+		 * If ioc_task_link fails, it just means that we raced
-+		 * with io context cleanup.  Continue on to allocate
-+		 * a new context in this case.
-+		 */
- 		tsk->io_context = ioc_task_link(ioc);
--		if (unlikely(!tsk->io_context))
--			return -ENOMEM;
--	} else if (ioprio_valid(ioc->ioprio)) {
-+		if (likely(tsk->io_context))
-+			return 0;
-+	}
-+
-+	if (ioprio_valid(ioc->ioprio)) {
- 		tsk->io_context = alloc_io_context(GFP_KERNEL, -1);
- 		if (unlikely(!tsk->io_context))
- 			return -ENOMEM;
+This token means "this is a kerneldoc comment".
+
+> + * set all the ptes pointed to a page as read only,
+> + * odirect_sync is set to 0 in case we cannot protect against race with odirect
+> + * return the number of ptes that were set as read only
+> + * (ptes that were read only before this function was called are couned as well)
+> + */
+
+But it isn't.
+
+I don't understand this odirect_sync thing.  What race?  Please expand
+this comment to make the function of odirect_sync more understandable.
+
+> +int page_wrprotect(struct page *page, int *odirect_sync)
+> +{
+> +	int ret =0;
+> +
+> +	*odirect_sync = 1;
+> +	if (PageAnon(page))
+> +		ret = page_wrprotect_anon(page, odirect_sync);
+> +	else
+> +		ret = page_wrprotect_file(page, odirect_sync);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(page_wrprotect);
+
+What do you think about making all this new code dependent upon some
+CONFIG_ switch which CONFIG_KVM can select?
+
