@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYKKXtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYKKXtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752842AbYKKXtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 18:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbYKKXtF
+	id S1753384AbYKKXtw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 18:49:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYKKXtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 18:49:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56701
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751997AbYKKXtD (ORCPT
+	Tue, 11 Nov 2008 18:49:43 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:64036 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751825AbYKKXtm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 18:49:03 -0500
-Date: Tue, 11 Nov 2008 15:49:02 -0800 (PST)
-Message-Id: <20081111.154902.11426409.davem@davemloft.net>
-To: a.beregalov@gmail.com
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       kernel-testers@vger.kernel.org, rjw@sisk.pl
-Subject: Re: 2.6.28-rc4: BUG: spinlock lockup on CPU#0
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081111233230.GC12456@orion>
-References: <20081111233230.GC12456@orion>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 11 Nov 2008 18:49:42 -0500
+Message-ID: <491A19E2.6090307@oracle.com>
+Date: Tue, 11 Nov 2008 15:48:50 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+CC: akpm <akpm@linux-foundation.org>, tony.luck@intel.com
+Subject: [PATCH] DOC: add min_addr, fix max_addr
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.491A19E5.0055:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
-Date: Wed, 12 Nov 2008 02:32:30 +0300
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> It is on sparc64 (Ultra 10). 2.6.28-rc4-00011-g3ad4f59
-> 
-> BUG: spinlock lockup on CPU#0, metalog/1322, 00000000007f1430
-> Kernel panic - not syncing: Aiee, killing interrupt handler!
-> 
-> It seems Sysrq does not work.
-> 
-> David, how can I provide more info before I reboot it ?
-> 
-> Full dmesg:
+Add "min_addr" documentation.
+For "max_addr", add nn before [KMG] since a number is needed and this
+is consistent with other uses of [KMG].
 
-Hmm, this BUG message should have given you a register dump and a
-backtrace.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/kernel-parameters.txt |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Can you give it a "Alt-SysRQ-p" and show the output?
+--- lin2628-rc4.orig/Documentation/kernel-parameters.txt
++++ lin2628-rc4/Documentation/kernel-parameters.txt
+@@ -1210,8 +1210,8 @@ and is between 256 and 4096 characters. 
+ 			it is equivalent to "nosmp", which also disables
+ 			the IO APIC.
+ 
+-	max_addr=[KMG]	[KNL,BOOT,ia64] All physical memory greater than or
+-			equal to this physical address is ignored.
++	max_addr=nn[KMG]	[KNL,BOOT,ia64] All physical memory greater than
++			or equal to this physical address is ignored.
+ 
+ 	max_luns=	[SCSI] Maximum number of LUNs to probe.
+ 			Should be between 1 and 2^32-1.
+@@ -1311,6 +1311,9 @@ and is between 256 and 4096 characters. 
+ 
+ 	mga=		[HW,DRM]
+ 
++	min_addr=nn[KMG]	[KNL,BOOT,ia64] All physical memory below this
++			physical address is ignored.
++
+ 	mminit_loglevel=
+ 			[KNL] When CONFIG_DEBUG_MEMORY_INIT is set, this
+ 			parameter allows control of the logging verbosity for
 
-Actually, if you got this over a serial console or
-similar, you're not getting the register dump because
-the console loglevel is filtering them out.
-
-If that's what's happening, reboot with "ignore_loglevel"
-(I always boot with this option, by adding it to the
-default kernel command line options in /etc/silo.conf)
-
-Also, in situations where the system is already booted and
-you want to see things like the Alt-SysRQ-p register dumps
-on the console, you'll need to type something like
-"Alt-SysRQ-8" to bump the console log level.
