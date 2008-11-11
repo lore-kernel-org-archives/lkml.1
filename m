@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYKKK3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbYKKKgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYKKK3S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 05:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754319AbYKKK3H
+	id S1755556AbYKKKgJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 05:36:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbYKKKf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 05:29:07 -0500
-Received: from mailgate6.9netweb.it ([66.71.190.69]:44883 "EHLO
-	mailgate6.9netweb.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753030AbYKKK3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 05:29:06 -0500
-X-Greylist: delayed 1541 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Nov 2008 05:29:06 EST
-Message-ID: <37718.89.97.65.173.1226397803.webmail@mail.evidence.eu.com>
-Date: Tue, 11 Nov 2008 11:03:23 +0100 (CET)
-Subject: [PATCH] Unused variable 'reg' removed
-From: "Claudio Scordino" <claudio@evidence.eu.com>
-To: kernel@pengutronix.de
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-User-Agent: WebMail/1.4.1
+	Tue, 11 Nov 2008 05:35:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34851 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753030AbYKKKfz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 05:35:55 -0500
+Date: Tue, 11 Nov 2008 11:35:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>, Frank Mayhar <fmayhar@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, adobriyan@gmail.com,
+       Doug Chapman <doug.chapman@hp.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] for account_group_exec_runtime(), make sure ->signal
+	can't be freed under rq->lock
+Message-ID: <20081111103532.GA8869@elte.hu>
+References: <20081110143930.GA28275@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;boundary="----=_20081111110323_45690"
-X-Priority: 3
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110143930.GA28275@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0001]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_20081111110323_45690
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
 
-Just a very trivial patch to remove one unused variable from the i.MX code.
+* Oleg Nesterov <oleg@redhat.com> wrote:
 
-Regards,
+> The patch is ugly, but I don't see the better fix for now. Needs the 
+> review from Peter/Ingo.
 
-            Claudio
-------=_20081111110323_45690
-Content-Type: text/x-diff; name="0001-Unused-variable-reg-removed.patch"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: attachment;
-      filename="0001-Unused-variable-reg-removed.patch"
+this is indeed too ugly, and if we do it we'll get both this ugliness 
+and the CPU loop upstream forever. Frank, if you dont have time to fix 
+this code, then i guess the best thing is to do the full revert that 
+Peter sent.
 
->From 88d1d8f62ed1dd584c13c328b52bfbbac816dcc3 Mon Sep 17 00:00:00 2001
-From: Claudio Scordino <claudio@evidence.eu.com>
-Date: Tue, 11 Nov 2008 10:56:36 +0100
-Subject: [PATCH 1/1] Unused variable 'reg' removed.
+Regarding this teardown bug. Stupid question: why cannot the signal 
+structure live as long as the last user is around? It's a tiny amount 
+of RAM.
 
-
-Signed-off-by: Claudio Scordino <claudio@evidence.eu.com>
----
- arch/arm/plat-mxc/irq.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/plat-mxc/irq.c b/arch/arm/plat-mxc/irq.c
-index d862c9e..0cb3841 100644
---- a/arch/arm/plat-mxc/irq.c
-+++ b/arch/arm/plat-mxc/irq.c
-@@ -91,7 +91,6 @@ static struct irq_chip mxc_avic_chip = {
- void __init mxc_init_irq(void)
- {
- 	int i;
--	u32 reg;
- 
- 	/* put the AVIC into the reset value with
- 	 * all interrupts disabled
--- 
-1.5.4.3
-
-------=_20081111110323_45690--
-
+	Ingo
