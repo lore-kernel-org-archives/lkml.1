@@ -1,169 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYKKE4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYKKE5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYKKE4d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbYKKE4X
+	id S1754936AbYKKE5X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:57:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbYKKE5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:56:23 -0500
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:43918 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754389AbYKKE4W (ORCPT
+	Mon, 10 Nov 2008 23:57:14 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:22205 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754525AbYKKE5M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:56:22 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=gIEsGjwPQHQ5X7PUSiZPEaB7D5K56at8gPkq39YRd1hMa6MwGP10KLpb07hYBvUzkaQfcUD5qdKf4cgaH/UWencd6U1BVKy16hICZRF3bTDP1w8S/t2zORjv2CJ0jKJFkIJVwR2aZ5Z4SWZ88JxZlsRjy1/eBc8oZ+ksp5RSW+U=  ;
-X-YMail-OSG: opLkDSUVM1k8SGgJ9.GL9dWCUuMrqBUZisA1Goy3gbT2D31XaVfpajb920bsH2KN_UMMpyqd0J8ZH_UAQl0JWrODDlQBSyCkWpEdZrEeiZaPwK_m.d_2Zsoswcw7uCS7hMBIjZWV9Gx4eeuy9Oo.JvkD_ka6jR6YUxVuHz8-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
-Date: Mon, 10 Nov 2008 20:56:19 -0800
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-References: <200811091531.46003.david-b@pacbell.net> <200811100743.34741.david-b@pacbell.net> <20081110165625.GE12804@sirena.org.uk>
-In-Reply-To: <20081110165625.GE12804@sirena.org.uk>
+	Mon, 10 Nov 2008 23:57:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=jNa9WXmNlv4H7lalJ+nf/noc06/Pbp6izdBwIrHnsWeaNXv20mU2mZbkJA+ZM2JxIh
+         qU6d3WJ6YIy6U6uDvWfLCdbilHpTvjHsQ72kS/CNjrptUygWTdnY0Kaym7Tk3oUdsbM5
+         6t7/w0IFLecy7KRSzmCUEvOsznBQwgIqjm1lU=
+Message-ID: <8d6898730811102057u55b9495fxf640af7df3271878@mail.gmail.com>
+Date: Tue, 11 Nov 2008 10:27:10 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Altobelli, David" <david.altobelli@hp.com>
+Subject: Re: sharing interrupt between PCI device
+Cc: "Jiri Slaby" <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, "Robert Hancock" <hancockr@shaw.ca>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Grant Grundler" <grundler@parisc-linux.org>
+In-Reply-To: <20081110203454.GB18188@colo.lackof.org>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200811102056.20008.david-b@pacbell.net>
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4910E8AC.7050407@shaw.ca> <20081108172716.GA28039@colo.lackof.org>
+	 <4915E43E.4010206@gmail.com> <20081108191536.GC28039@colo.lackof.org>
+	 <8d6898730811092235u4a41c664vd641d2792dee4c50@mail.gmail.com>
+	 <20081110075115.GA13239@colo.lackof.org>
+	 <20081110075827.GE2093@elte.hu>
+	 <8d6898730811100231j2ca5e8ceub0d5137c1ef1f9d0@mail.gmail.com>
+	 <8d6898730811100742g31711b9ck9e046d77273d0113@mail.gmail.com>
+	 <20081110203454.GB18188@colo.lackof.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 10 November 2008, Mark Brown wrote:
-> On Mon, Nov 10, 2008 at 07:43:34AM -0800, David Brownell wrote:
-> 
-> > See below; the key conceptual problem in this interface is
-> > probably the assumption that the Linux CPU isn't sharing
-> > control over the regulator.  So regulator_disable() can't
+Adding david to CC
 
-Read that as regulator_ops.disable() ... although there are
-issues with regulator_disable() too.   $SUBJECT patch relates
-to regulator_ops semantics, which of course bubble up.
-
-
-> > imply REGULATOR_MODE_OFF ... another CPU may need to keep
-> > it in some other state.
-> 
-> regulator_disable() needn't imply that the regulator will actually be
-> off -
-
-Would you say that also for regulator_ops.disable() though?
-
-
-> regulator API already does internal reference counting for shared 
-> regulators and...
-
-Very confusing refcounting.  The naming convention is unusual too,
-and that's just the start of it:
-
-    struct regulator_dev ... unique handle to the hardware, has
-	some real refcounting (use_count), and is what shows
-	up in /sys/class/regulator (vs. say .../regulator_dev).
-	This class is internal to the regulator framework.
-
-    struct regulator ... opaque client handle, wraps regulator_dev,
-	but has no refcounting:  just a boolean 'enabled' flag,
-	and KERN_CRIT messaging if you try using enable/disable
-	like you would with clocks or IRQs (N enables are fine,
-	so long as they're eventually paired with N disables).
-	Each "consumer" would normally have its own "regulator".
-
-Less surprising/confusing would be if regulator_{en,dis}able() did
-its own refcounting and called down to regulator_dev when changing
-a per-client refcount to/from zero.  (Easy patch, for later.)
-
-And, hrm, kerneldoc for regulator_is_enabled() says it returns
-a refcount, not boolean; but the refcount is unavailable to the
-regulator_ops method returning that value.
-
-
-> > So for example when any of the three requestors asks for the
-> > regulator to go ACTIVE it will do so.  This means you can have
-> > cases like:
-> 
-> ...this sounds like the same thing done in hardware.
-
-Seems to me more like a three input OR gate.  No counters.  ;)
-At least, if you ignore the additional arbitration between
-ACTIVE, STANDBY, and OFF modes.  (Highest one wins...)
-
-
-> >  - One CPU (running Linux, say) asks to disable() the regulator
-> >     * implemented by clearing that CPU's bit in a mask
-> >     * is_enabled() tests that bit and says "no, not enabled"
-> >  - Another CPU needs it active
-> >     * request might be coupled to the nSLEEP2 signal
-> >     * thus get_mode() will say it's ACTIVE
+On Tue, Nov 11, 2008 at 2:04 AM, Grant Grundler
+<grundler@parisc-linux.org> wrote:
+> On Mon, Nov 10, 2008 at 09:12:05PM +0530, Nobin Mathew wrote:
+>> I could not find the definition of acpi_unregister_gsi in i386/x86_64
+>> code, it is defined only for ia64.
 >
-> > So you see why enable/disable is orthogonal to MODE_OFF.
-> 
-> Not really.  The mode reflects the characteristics of the regulator when
-> it is enabled ...
-
-That answer doesn't make much sense to me; plus, kerneldoc
-for regulator_get_mode() -- which essentially just calls down
-to regulator_ops.get_mode() -- says it returns the "current"
-mode.  NOT some potential future mode.  Giving the "current"
-mode implies asking the hardware what it's doing right now.
-
-Consider also the scenario above, where Linux calls enable()
-and has requested STANDBY mode.  The regulator will instead
-be in ACTIVE state; answering STANDBY seems quite wrong.
-(Just like answering STANDBY when it's really OFF...)
-
-
-> The issue you see here is a divergence between the software-requested
-> state and the actual physical state of the regulator.
-
-In a general sense, yes ... but this framework splits that
-state into a "mode" and an "enable" flag (called "state" in
-sysfs, which doesn't reduce confusion at all).
-
- 
-> > It's true that it won't be OFF unless the Linux CPU is
-> > not requesting it ("disabled" its request) ... but the
-> > converse is false, because of the non-Linux requestor(s).
-> 
-> My first instinct here would be to have the software simply reflect the
-> state requested by the CPU and ignore the other enable sources.
-
-Mine is to have get_mode() report the actual hardware state,
-matching kerneldoc ... and thus the $SUBJECT patch.  Also, I
-have no set_mode(), and thus no mode "requested by the CPU"
-through this framework.
-
-
-> My 
-> second instinct would be to have is_enabled() report the actual state
-> and leave it at that.
-
-But *which* actual state?  I'd say that reporting this CPU's
-enable/request bit *is* reporting actual hardware state:  the
-request line managed by regulator_ops.disable()/enable().
-
-
-> I'm having a hard time thinking of a hardware 
-> design that could tolerate too much uncoordinated control of the
-> regulators.
-
-True; the coordination here is done in hardware.  There
-are "scripts" that get downloaded into the hardware, and
-which update things on various hardware state changes.
-
- 
-> I'm also wondering if part of what we need to do is add separate out the
-> reporting paths for the actual and requested status?  At the minute we
-> only report the actual status and there's no indication of the logical
-> status which does create some confusion here.
-
-Makes sense.  Record "requested_mode" in "struct regulator_dev"
-and expose a new sysfs attribute for it.  Should I update
-the $SUBJECT patch to do that too?
-
-- Dave
-
+> Sorry - I was looking at the ia64 branch by mistake.
+>
+>>
+>> Since it is defined as a weak symbol, I feel it is not getting called
+>> (correct if I am wrong, I searched in google for this).
+>
+> You are right.
+>
+> sorry,
+> grant
+>
+>> /* FIXME: implement x86/x86_64 version */
+>> void __attribute__ ((weak)) acpi_unregister_gsi(u32 i)
+>> {
+>> }
+>>
+>> How this weak symbols work, is it something like
+>> acpi_pci_irq_disable() will not call acpi_unregister_gsi() in some
+>> platforms.
+>>
+>> Thanks
+>> Nobin Mathew.
+>>
+>> On Mon, Nov 10, 2008 at 4:01 PM, Nobin Mathew <nobin.mathew@gmail.com> wrote:
+>> > Yes USB Virtual Controller has input devices like keyboard and mouse
+>> > (routed through hpilo card (remote console)), so those things stops
+>> > working when we remove hpilo driver.
+>> >
+>> > Thanks
+>> > Nobin Mathew
+>> >
+>> > On Mon, Nov 10, 2008 at 1:28 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>> >>
+>> >> * Grant Grundler <grundler@parisc-linux.org> wrote:
+>> >>
+>> >>> [+ingo - question for you about disable_irq() below]
+>> >>
+>> >>> The same problem exists with disable_irq() : only takes a global
+>> >>> IRQ# and no additional identifying information to prevent disabling
+>> >>> a shared IRQ. So I'm not sure if this is a bug with ACPI or design
+>> >>> flaw in generic IRQ APIs.  Ingo?
+>> >>
+>> >> that's how disable_irq() always worked: it disables all handlers on
+>> >> that IRQ#. If the IRQ# is shared, it disables all handlers.
+>> >>
+>> >>        Ingo
+>> >>
+>> >
+>
