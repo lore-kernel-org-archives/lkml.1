@@ -1,189 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbYKKIGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbYKKIHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755327AbYKKIGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 03:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYKKIGf
+	id S1755471AbYKKIHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 03:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYKKIHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 03:06:35 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:38032 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751148AbYKKIGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 03:06:34 -0500
-Date: Tue, 11 Nov 2008 03:06:32 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata fixes
-Message-ID: <20081111080632.GA22467@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 11 Nov 2008 03:07:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57689 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751717AbYKKIHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 03:07:15 -0500
+Date: Tue, 11 Nov 2008 00:06:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: allocation failure in b43/ssb
+Message-Id: <20081111000652.f581671b.akpm@linux-foundation.org>
+In-Reply-To: <20081107195403.GD3546@tuxdriver.com>
+References: <20081107190944.GA18949@redhat.com>
+	<20081107195403.GD3546@tuxdriver.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 7 Nov 2008 14:54:03 -0500 "John W. Linville" <linville@tuxdriver.com> wrote:
 
-* pata_sch failed to probe and support PATA slave devices... doh
-* another 1.5TB drive fix (Roland)
-* PMP fix from Tejun
-* other minor stuff
+> On Fri, Nov 07, 2008 at 02:09:44PM -0500, Dave Jones wrote:
+> > We just had a report from a user who spotted a bunch of messages
+> > of the form below in his logs..
+> 
+> <snip>
+> 
+> > The kernel is a little old (2.6.26).
+> > 
+> > Looking at it though, I'm puzzled..
+> > 
+> > It seems we failed to allocate an order-1 allocation, even though
+> > we had memory available in the DMA and normal zones.
+> > 
+> > What am I missing?
+> > 
+> > Full logs at https://bugzilla.redhat.com/attachment.cgi?id=322882
+> 
+> Most of those traces look a little scrambled, but as best as I can
+> tell that call to setup_rx_descbuffer comes from dma_rx.  That means
+> that the call to __dev_alloc_skb is done with GFP_ATOMIC.  I don't
+> know if that factors into the answer to what is happening or not.
+> 
 
+It does.  If there were not any two physically-contiguous free pages in
+the page allocator reserves, __alloc_pages() will not be able to
+satisfy that order-1 allocation request.
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+You can have plenty of free memory, but if it's all fragmented,
+non-order-0 atomic allocations can still fail.
 
-to receive the following updates:
+GFP_KERNEL allocations can run page reclaim to _make_ the allocation
+request succeed in this situation.
 
- drivers/ata/libata-core.c |    2 +-
- drivers/ata/libata-eh.c   |   21 +++++++++++----------
- drivers/ata/pata_cs5535.c |    1 -
- drivers/ata/pata_cs5536.c |    1 -
- drivers/ata/pata_pcmcia.c |    1 +
- drivers/ata/pata_sch.c    |    2 +-
- 6 files changed, 14 insertions(+), 14 deletions(-)
-
-Marc Pignat (1):
-      [libata] pata_pcmcia: another memory card support
-
-Mark Salter (1):
-      [libata] pata_sch: notice attached slave devices
-
-Qinghuang Feng (1):
-      [libata] pata_cs553*.c: cleanup kernel-doc
-
-Roland Dreier (1):
-      libata: Avoid overflow in ata_tf_read_block() when tf->hba_lbal > 127
-
-Tejun Heo (1):
-      libata: fix last_reset timestamp handling
-
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 0cd3ad4..4214bfb 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -612,7 +612,7 @@ u64 ata_tf_read_block(struct ata_taskfile *tf, struct ata_device *dev)
- 		if (tf->flags & ATA_TFLAG_LBA48) {
- 			block |= (u64)tf->hob_lbah << 40;
- 			block |= (u64)tf->hob_lbam << 32;
--			block |= tf->hob_lbal << 24;
-+			block |= (u64)tf->hob_lbal << 24;
- 		} else
- 			block |= (tf->device & 0xf) << 24;
- 
-diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index 8077bdf..32da9a9 100644
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -610,9 +610,6 @@ void ata_scsi_error(struct Scsi_Host *host)
- 				if (ata_ncq_enabled(dev))
- 					ehc->saved_ncq_enabled |= 1 << devno;
- 			}
--
--			/* set last reset timestamp to some time in the past */
--			ehc->last_reset = jiffies - 60 * HZ;
- 		}
- 
- 		ap->pflags |= ATA_PFLAG_EH_IN_PROGRESS;
-@@ -2281,17 +2278,21 @@ int ata_eh_reset(struct ata_link *link, int classify,
- 	if (link->flags & ATA_LFLAG_NO_SRST)
- 		softreset = NULL;
- 
--	now = jiffies;
--	deadline = ata_deadline(ehc->last_reset, ATA_EH_RESET_COOL_DOWN);
--	if (time_before(now, deadline))
--		schedule_timeout_uninterruptible(deadline - now);
-+	/* make sure each reset attemp is at least COOL_DOWN apart */
-+	if (ehc->i.flags & ATA_EHI_DID_RESET) {
-+		now = jiffies;
-+		WARN_ON(time_after(ehc->last_reset, now));
-+		deadline = ata_deadline(ehc->last_reset,
-+					ATA_EH_RESET_COOL_DOWN);
-+		if (time_before(now, deadline))
-+			schedule_timeout_uninterruptible(deadline - now);
-+	}
- 
- 	spin_lock_irqsave(ap->lock, flags);
- 	ap->pflags |= ATA_PFLAG_RESETTING;
- 	spin_unlock_irqrestore(ap->lock, flags);
- 
- 	ata_eh_about_to_do(link, NULL, ATA_EH_RESET);
--	ehc->last_reset = jiffies;
- 
- 	ata_link_for_each_dev(dev, link) {
- 		/* If we issue an SRST then an ATA drive (not ATAPI)
-@@ -2379,7 +2380,6 @@ int ata_eh_reset(struct ata_link *link, int classify,
- 	/*
- 	 * Perform reset
- 	 */
--	ehc->last_reset = jiffies;
- 	if (ata_is_host_link(link))
- 		ata_eh_freeze_port(ap);
- 
-@@ -2391,6 +2391,7 @@ int ata_eh_reset(struct ata_link *link, int classify,
- 					reset == softreset ? "soft" : "hard");
- 
- 		/* mark that this EH session started with reset */
-+		ehc->last_reset = jiffies;
- 		if (reset == hardreset)
- 			ehc->i.flags |= ATA_EHI_DID_HARDRESET;
- 		else
-@@ -2535,7 +2536,7 @@ int ata_eh_reset(struct ata_link *link, int classify,
- 	ata_eh_done(link, NULL, ATA_EH_RESET);
- 	if (slave)
- 		ata_eh_done(slave, NULL, ATA_EH_RESET);
--	ehc->last_reset = jiffies;
-+	ehc->last_reset = jiffies;	/* update to completion time */
- 	ehc->i.action |= ATA_EH_REVALIDATE;
- 
- 	rc = 0;
-diff --git a/drivers/ata/pata_cs5535.c b/drivers/ata/pata_cs5535.c
-index 1b2d4a0..8b236af 100644
---- a/drivers/ata/pata_cs5535.c
-+++ b/drivers/ata/pata_cs5535.c
-@@ -72,7 +72,6 @@
- /**
-  *	cs5535_cable_detect	-	detect cable type
-  *	@ap: Port to detect on
-- *	@deadline: deadline jiffies for the operation
-  *
-  *	Perform cable detection for ATA66 capable cable. Return a libata
-  *	cable type.
-diff --git a/drivers/ata/pata_cs5536.c b/drivers/ata/pata_cs5536.c
-index 73f8332..afed929 100644
---- a/drivers/ata/pata_cs5536.c
-+++ b/drivers/ata/pata_cs5536.c
-@@ -110,7 +110,6 @@ static inline int cs5536_write(struct pci_dev *pdev, int reg, int val)
- /**
-  *	cs5536_cable_detect	-	detect cable type
-  *	@ap: Port to detect on
-- *	@deadline: deadline jiffies for the operation
-  *
-  *	Perform cable detection for ATA66 capable cable. Return a libata
-  *	cable type.
-diff --git a/drivers/ata/pata_pcmcia.c b/drivers/ata/pata_pcmcia.c
-index 271cb64..64b2e22 100644
---- a/drivers/ata/pata_pcmcia.c
-+++ b/drivers/ata/pata_pcmcia.c
-@@ -416,6 +416,7 @@ static struct pcmcia_device_id pcmcia_devices[] = {
- 	PCMCIA_DEVICE_PROD_ID1("STI Flash", 0xe4a13209),
- 	PCMCIA_DEVICE_PROD_ID12("STI", "Flash 5.0", 0xbf2df18d, 0x8cb57a0e),
- 	PCMCIA_MFC_DEVICE_PROD_ID12(1, "SanDisk", "ConnectPlus", 0x7a954bd9, 0x74be00c6),
-+	PCMCIA_DEVICE_PROD_ID2("Flash Card", 0x5a362506),
- 	PCMCIA_DEVICE_NULL,
- };
- 
-diff --git a/drivers/ata/pata_sch.c b/drivers/ata/pata_sch.c
-index c8cc027..6aeeeeb 100644
---- a/drivers/ata/pata_sch.c
-+++ b/drivers/ata/pata_sch.c
-@@ -83,7 +83,7 @@ static struct ata_port_operations sch_pata_ops = {
- };
- 
- static struct ata_port_info sch_port_info = {
--	.flags		= 0,
-+	.flags		= ATA_FLAG_SLAVE_POSS,
- 	.pio_mask	= ATA_PIO4,   /* pio0-4 */
- 	.mwdma_mask	= ATA_MWDMA2, /* mwdma0-2 */
- 	.udma_mask	= ATA_UDMA5,  /* udma0-5 */
