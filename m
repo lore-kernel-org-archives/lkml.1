@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbYKKEtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbYKKExV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbYKKEtU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 23:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753539AbYKKEtH
+	id S1755199AbYKKExV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 23:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbYKKExN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 23:49:07 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:48094 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbYKKEtF (ORCPT
+	Mon, 10 Nov 2008 23:53:13 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:52322 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbYKKExN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 23:49:05 -0500
-Date: Tue, 11 Nov 2008 10:22:40 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>
-Subject: Re: [RFC PATCH v3 0/5] Tunable sched_mc_power_savings=n
-Message-ID: <20081111045240.GO4646@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>
-References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <1226343016.7685.444.camel@twins>
+	Mon, 10 Nov 2008 23:53:13 -0500
+Message-ID: <49190FA3.3040003@linux.vnet.ibm.com>
+Date: Tue, 11 Nov 2008 10:22:51 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <1226343016.7685.444.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][mm] [PATCH 2/4] Memory cgroup resource counters for hierarchy
+ (v2)
+References: <20081108091009.32236.26177.sendpatchset@localhost.localdomain> <20081108091047.32236.22994.sendpatchset@localhost.localdomain> <20081111120427.bbb64a44.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081111120427.bbb64a44.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-10 19:50:16]:
-
+KAMEZAWA Hiroyuki wrote:
+> On Sat, 08 Nov 2008 14:40:47 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> a quick response, I'll read them more carefully tomorrow:
-
-Hi Peter,
-
-Thanks for the quick review.
-
+>> Add support for building hierarchies in resource counters. Cgroups allows us
+>> to build a deep hierarchy, but we currently don't link the resource counters
+>> belonging to the memory controller control groups, in the same fashion
+>> as the corresponding cgroup entries in the cgroup hierarchy. This patch
+>> provides the infrastructure for resource counters that have the same hiearchy
+>> as their cgroup counter parts.
+>>
+>> These set of patches are based on the resource counter hiearchy patches posted
+>> by Pavel Emelianov.
+>>
+>> NOTE: Building hiearchies is expensive, deeper hierarchies imply charging
+>> the all the way up to the root. It is known that hiearchies are expensive,
+>> so the user needs to be careful and aware of the trade-offs before creating
+>> very deep ones.
+>>
+> Do you have numbers ?
 > 
->  - why are the preferred cpu things pointers? afaict using just the cpu
-> number is both smaller and clearer to the reader.
 
-I would need each cpu within a partitioned sched domain to point to
-the _same_ preferred wakeup cpu.  The preferred CPU will be updated in
-one place in find_busiest_group() and used by wake_idle.
+I am getting those numbers, I'll post them soon.
 
-If I have a per cpu value, then updating it for each cpu in the
-partitioned sched domain will be slow.
-
-The actual number of preferred_wakeup_cpu will be equal to the number
-of partitions.  If there are no partitions in the sched domains, then
-then all per-cpu pointers will point to the same variable.
-
->  - in patch 5/5 you do:
-> 
-> +               spin_unlock(&this_rq->lock);
-> +               double_rq_lock(this_rq, busiest);
-> 
-> we call that double_lock_balance()
-
-Will fix this. Did not look for such a routine :)
-
->  - comments go like:
-> 
->  /*
->   * this is a multi-
->   * line comment
->   */
-
-Will fix this too.
-
-Thanks,
-Vaidy
-
+-- 
+	Balbir
