@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYKKMtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbYKKMuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbYKKMtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 07:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYKKMtm
+	id S1756213AbYKKMuk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 07:50:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbYKKMuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 07:49:42 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:54425 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755403AbYKKMtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 07:49:41 -0500
-Date: Tue, 11 Nov 2008 13:51:48 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org, paolo.valente@unimore.it,
-       fabio@gandalf.sssup.it
-Subject: [PATCH 0/3] BFQ I/O Scheduler (second take)
-Message-ID: <20081111125148.GD9508@gandalf.sssup.it>
-Mime-Version: 1.0
+	Tue, 11 Nov 2008 07:50:32 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56602 "EHLO
+	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755512AbYKKMub (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 07:50:31 -0500
+Date: Tue, 11 Nov 2008 11:45:51 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
+Message-ID: <20081111104551.GE5464@elf.ucw.cz>
+References: <20081109140726.GB1786@ucw.cz> <20081110080436.GF2093@elte.hu> <87hc6fpwof.fsf@basil.nowhere.org> <200811101928.04565.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <200811101928.04565.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens, hi all,
+On Mon 2008-11-10 19:28:03, Rafael J. Wysocki wrote:
+> On Monday, 10 of November 2008, Andi Kleen wrote:
+> > Ingo Molnar <mingo@elte.hu> writes:
+> > >
+> > > No good ideas - the bug description gives me the impression of memory 
+> > > maps save/restore hickup in the hibernation code - and memory maps are 
+> > > pretty much the only thing that are significantly different on NUMA. 
+> > 
+> > I assume the problem happened on a single node system.
+> > On single node the memory map should be actually quite similar
+> > to the UMA case.
+> 
+> It is.  However, the problem is 100% reproducible on any 32-bit single-node
+> system with CONFIG_NUMA set, from what I can tell.
+> 
+> It doesn't happen if the kernel is booted with highmem=0, so it looks like
+> the code that saves highmem causes the problem to happen.  However, this
+> same code works well for all of the !CONFIG_NUMA cases and practically only
+> the only non-open-coded it uses is kmap_atomic().
+> 
+> > One possibility would be to bisect if it ever worked?
+> 
+> Not sure it did, probably not. :-(
 
-  this is an updated version of the patchset introducing the BFQ (Budget
-Fair Queueing) I/O scheduler.  It is based on CFQ and it has been
-developed trying to improve the predictability and the fairness of the
-service prvided, without penalizing the aggregate throughput.
+Well, interesting point would be just before this commit:
 
-This new version hopefully addresses the issues pointed out after the
-first submission[1]:
 
-  1) it introduces a bitmap to notify priority changes to the bfq/cfq;
-  2) it introduces a timeout to put an higher limit to the time a
-      task can take to consume its budget;
-  3) it supports hierarchical scheduling.
+commit 8357376d3df21b7d6f857931a57ac50da9c66e26 
+tree daf2c369e9b79d24c1666323b3ae75189e482a4a 
+parent bf73bae6ba0dc4bd4f1e570feb34a06b72725af6 
+author Rafael J. Wysocki <rjw@sisk.pl> Wed, 06 Dec 2006 20:34:18 -0800 
+committer Linus Torvalds <torvalds@woody.osdl.org> Thu, 07 Dec 2006
+08:39:27 -0800 
 
-With the introduction of a budget timeout, each task is still assigned
-a budget measured in number of sectors instead of amount of time,
-but a budget is not served to its exhaustion if it's taking too much
-to complete.  Budgets are still scheduled using a modified version
-of WF2Q+.
+    [PATCH] swsusp: Improve handling of highmem
+    
+    Currently swsusp saves the contents of highmem pages by copying
+them to the
+    normal zone which is quite inefficient (eg.  it requires two
+normal pages
+    to be used for saving one highmem page).  This may be improved by
+using
+    highmem for saving the contents of saveable highmem pages.
 
-Using huge values for max_budget turns the scheduler into a pure
-time-domain proportional share one, and the timeout controls the duration
-of the time quanta.
-
-WRT the support for hierarchical scheduling, that is being discussed
-so much in these days, this scheduler does not add anything new, it
-supports proportional share distribution of disk bandwidth among
-full cgroup hierarchies; the mapping from requests to cgroups is
-correct only in case of synchronous reads.
-
-The overall diffstat is the following:
-
- block/Kconfig.iosched         |   25 +
- block/Makefile                |    1 +
- block/bfq-cgroup.c            |  743 +++++++++++++++
- block/bfq-ioc.c               |  375 ++++++++
- block/bfq-iosched.c           | 2010 +++++++++++++++++++++++++++++++++++++++++
- block/bfq-sched.c             |  950 +++++++++++++++++++
- block/bfq.h                   |  514 +++++++++++
- block/blk-ioc.c               |   27 +-
- block/cfq-iosched.c           |   10 +-
- fs/ioprio.c                   |    9 +-
- include/linux/cgroup_subsys.h |    6 +
- include/linux/iocontext.h     |   18 +-
- 12 files changed, 4669 insertions(+), 19 deletions(-)
-
-For a complete description of the algorithm and of its properties
-please refer to [2], (where extensive experiments on older hw can
-also be found), and for some performance measurements and implementation
-details, to [3].
-
-[1] http://lkml.org/lkml/2008/4/1/234
-[2] http://algo.ing.unimo.it/people/paolo/disk_sched/
-[3] http://feanor.sssup.it/~fabio/linux/bfq/
-
-As usual, any kind of feedback will be greatly appreciated, thanks
-in advance.
-
-Fabio Checconi, Paolo Valente
+...highmem handling was way simpler in those good old days ;-)
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
