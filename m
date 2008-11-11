@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbYKKRPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbYKKRRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbYKKRPS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYKKRPE
+	id S1754154AbYKKRRh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYKKRR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:15:04 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50005 "EHLO mx2.mail.elte.hu"
+	Tue, 11 Nov 2008 12:17:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50888 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752469AbYKKRPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:15:03 -0500
-Date: Tue, 11 Nov 2008 18:14:55 +0100
+	id S1751706AbYKKRR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:17:28 -0500
+Date: Tue, 11 Nov 2008 18:16:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC v3][PATCH 0/2] Make ftrace able to trace function return
-Message-ID: <20081111171455.GA8201@elte.hu>
-References: <49191C31.1050402@gmail.com> <20081111094312.GA16496@elte.hu> <c62985530811110730x13bc92abo891b49934ea2ae6f@mail.gmail.com>
+To: Frank Mayhar <fmayhar@google.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, adobriyan@gmail.com,
+       Doug Chapman <doug.chapman@hp.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] for account_group_exec_runtime(), make sure ->signal
+	can't be freed under rq->lock
+Message-ID: <20081111171659.GB8201@elte.hu>
+References: <20081110143930.GA28275@redhat.com> <20081111103532.GA8869@elte.hu> <1226423423.4444.8.camel@bobble.smo.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811110730x13bc92abo891b49934ea2ae6f@mail.gmail.com>
+In-Reply-To: <1226423423.4444.8.camel@bobble.smo.corp.google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,47 +40,28 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+* Frank Mayhar <fmayhar@google.com> wrote:
 
-> >  2) i cleaned up the arch/x86/Kconfig impact:
-> >
-> >      f1c4be5: tracing, x86: clean up FUNCTION_RET_TRACER Kconfig
+> On Tue, 2008-11-11 at 11:35 +0100, Ingo Molnar wrote:
+> > * Oleg Nesterov <oleg@redhat.com> wrote:
+> > > The patch is ugly, but I don't see the better fix for now. Needs the 
+> > > review from Peter/Ingo.
+> > this is indeed too ugly, and if we do it we'll get both this ugliness 
+> > and the CPU loop upstream forever. Frank, if you dont have time to fix 
+> > this code, then i guess the best thing is to do the full revert that 
+> > Peter sent.
 > 
-> 
-> Ok.
-> And concerning the constraint fixed in assembly. That's strange my
-> compiler didn't even warn me about it.
+> Well, at the moment I'm up to my armpits in alligators.  That said, 
+> we're going to have to pull in this code regardless, ugliness and 
+> all, since we're guaranteed to run into the soft lockup bug 
+> otherwise.  This means that I'll have strong incentive to come back 
+> and readdress the fix to remove the ugliness and address Peter's 
+> concerns.  I have no idea when that will be, however.
 
-yep, that's common with assembly constraints - often the bugs will 
-only trigger with certain compilers and with certain config options. 
-Generally we've got enough variations of these parameters in -tip 
-testing (randconfig plus multiple tools versions) to reliably trigger 
-such issues.
+well, we wont leave buggy code in there for .28 - it could trigger 
+anytime on any SMP box, no matter how narrow the race is.
 
-> > So lets use "function_full" and "function" tracing perhaps? The 
-> > "full" tracer is what traces both entry and exit points, and 
-> > establishes full function-call timings/costs. The "function" 
-> > tracer is more lightweight and traces function entry events.
-> 
-> Right. I first chose function_return but it was the largest tracer 
-> name and so raised a bug that has been corrected since. And I kept 
-> this confusing name.
->
-> I'm not sure function_full is really the good one because it's not 
-> really a full version of the function tracer. It doesn't do the same 
-> thing: when you look into a trace done by the function tracer, the 
-> functions appear in order of their call whereas with the function 
-> return tracer, they appear in the order of their return which is not 
-> the same. The effect is not the same. Why not function_return or 
-> something like that?
-
-at the risk of bikeshed-painting this issue too much, the problem with 
-function_return is that it has little meaning to actual users and even 
-to developers. What does the "return" mean? We know what it means, 
-because we know that opposed to function entry we'll also capture 
-function returns, and hence be able to do full function call tracing.
-
-so function_full i thought to conduct this aspect of it better. But 
-suggestions are welcome.
+I've picked up the spin-wait fix from Oleg, because it fixes the bug. 
+But we should really fix the fundamental issues here too.
 
 	Ingo
