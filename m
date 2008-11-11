@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbYKKXDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbYKKXF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbYKKXDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 18:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYKKXDU
+	id S1752899AbYKKXF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 18:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYKKXFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 18:03:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39570 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbYKKXDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 18:03:19 -0500
-Message-ID: <491A0F17.2070706@redhat.com>
-Date: Wed, 12 Nov 2008 01:02:47 +0200
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
-Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com>	<1226409701-14831-4-git-send-email-ieidus@redhat.com>	<20081111150345.7fff8ff2@bike.lwn.net>	<491A0483.3010504@redhat.com> <20081111153028.422b301a@bike.lwn.net>
-In-Reply-To: <20081111153028.422b301a@bike.lwn.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 11 Nov 2008 18:05:47 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56171 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbYKKXFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 18:05:46 -0500
+Date: Tue, 11 Nov 2008 23:05:10 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Lee Howard <lee.howard@mainpine.com>,
+       "'Peter Alfredsen'" <loki_val@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: Is the PCI serial driver code GPL v2 or v3
+Message-ID: <20081111230510.GA31295@flint.arm.linux.org.uk>
+References: <20081106174341.GA8155@xolotl.n0ano.com> <200811061952.37490.loki_val@gentoo.org> <20081106191250.GA28514@flint.arm.linux.org.uk> <AA46BE34D4E74CB69F948F36984126A9@callisto> <20081106201501.GB28514@flint.arm.linux.org.uk> <20081107160801.5f0a4b42@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081107160801.5f0a4b42@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet wrote:
->
-> What about things like cache effects from scanning all those pages?  My
-> guess is that, if you're trying to run dozens of Windows guests, cache
-> usage is not at the top of your list of concerns, but I could be
-> wrong.  Usually am...
->   
+On Fri, Nov 07, 2008 at 04:08:01PM +0000, Alan Cox wrote:
+> Looks good to me but needs a Signed-off-by: line
 
-Ok, ksm does make the cache of the cpu dirty when scanning the pages
-(but the scanning happen slowly slowly and cache usually get dirty much 
-faster)
-But infact it improve the cache by the fact that it make many ptes point 
-to the same page
-so if before we had 12 process touching 12 diffrent physical page they 
-would dirty the page
-but now they will touch just one...
+... found this mail again ... for both patches:
 
-so i guess it depend on how you see it...
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-> Thanks,
->
-> jon
->   
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
