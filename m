@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbYKKIny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbYKKIq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755413AbYKKIny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 03:43:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbYKKIno
+	id S1755390AbYKKIq5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 03:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYKKIqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 03:43:44 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:49706 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751249AbYKKIno (ORCPT
+	Tue, 11 Nov 2008 03:46:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59365 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753026AbYKKIqr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 03:43:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wTlj97kE3/3pLp3TN9m6WxrekL7NGSfgB1NK6AtQXFHBts6cSH9YG2k4XE8S1u0BvE
-         MdUR+Ai/6vaGt7HTKR6H6YyY1STGCvBIO0nw76TeXgR17qhuK0eTCBQGnex4Kracna8G
-         IM7CsKqAj1Wmq+ktg73L/VxoRV82LRIShHeuk=
-Message-ID: <49195046.2050306@gmail.com>
-Date: Tue, 11 Nov 2008 10:28:38 +0100
-From: Romano Giannetti <romano.giannetti@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [Bug #11947] 2.6.28-rc VC switching with Intel graphics broken
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.00F.o4zFJB@chimera>
-In-Reply-To: <wnN9HICUAgP.A.00F.o4zFJB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 11 Nov 2008 03:46:47 -0500
+Date: Tue, 11 Nov 2008 00:46:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: arrow.ebd@gmail.com
+Cc: linux_kernel <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: thinkpad x200 X.server not work with gm4500 graphics
+Message-Id: <20081111004643.8f8608a3.akpm@linux-foundation.org>
+In-Reply-To: <20081110152518.GA3545@think>
+References: <20081110152518.GA3545@think>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
+On Mon, 10 Nov 2008 23:25:18 +0800 arrow.ebd@gmail.com wrote:
+
+> deal,
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11947
-> Subject		: 2.6.28-rc VC switching with Intel graphics broken
-> Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
-> Date		: 2008-11-03 12:10 (7 days old)
-> Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+>     My thinkpad x200's X.server can not startup on the kernel 2.6.28,
 
-Still here in 2.6.28-rc4. Complete lock switching back from a VC to X.
+Were any earlier kernels OK?  If so, which version(s)?
 
-Romano
+Thanks.
 
+> and dmesg will show as below:
+>     -->>--
+>     [drm] Initialized drm 1.1.0 20060810
+>     pci 0000:00:02.0: power state changed by ACPI to D0
+>     pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+>     pci 0000:00:02.0: setting latency timer to 64
+>     [drm] Initialized i915 1.6.0 20060119 on minor 0
+>     pci 0000:00:02.0: pg_start == 0x00001f7f, intel_private.gtt_entries == 0x00001fff
+>     pci 0000:00:02.0: trying to insert into local/stolen memory
+>     --<<--
+> 
+>     Then, I change file "drivers/char/agp/intel-agp.c" as this:
+>     -->>--
+>     --diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+>     index 9cf6e9b..e681f75 100644
+>     --- a/drivers/char/agp/intel-agp.c
+>     +++ b/drivers/char/agp/intel-agp.c
+>     @@ -528,7 +528,8 @@ static void intel_i830_init_gtt_entries(void)
+>                      * stolen, ignore it in stolen gtt entries counting.  However,
+>                      * 4KB of the stolen memory doesn't get mapped to the GTT.
+>                      */
+>     -               size = 4;
+>     +               /* size = 4; */
+>     +               size = 516;
+>             } else {
+>                     /* On previous hardware, the GTT size was just what was
+>                      * required to map the aperture.
+>     --<<--
+> 
+>     And Xorg can start now.
+> (1) Is it correct ?
+>     Because older kernel use size as "512 + 4" at here, but now use "size = 4".
+> (2) How to deal with it if the patch is not right ?
+> (3) How to get more specification about gm4500 ?
 
