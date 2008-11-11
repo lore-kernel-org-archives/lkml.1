@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbYKKDoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbYKKDyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbYKKDoL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 10 Nov 2008 22:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbYKKDn4
+	id S1754816AbYKKDyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 10 Nov 2008 22:54:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbYKKDyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 10 Nov 2008 22:43:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52418 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754231AbYKKDnz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 10 Nov 2008 22:43:55 -0500
-Date: Mon, 10 Nov 2008 19:43:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: rc4-mmotm1110 - Another build error
-Message-Id: <20081110194353.1a1f616e.akpm@linux-foundation.org>
-In-Reply-To: <38231.1226373633@turing-police.cc.vt.edu>
-References: <38231.1226373633@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 10 Nov 2008 22:54:08 -0500
+Received: from mga09.intel.com ([134.134.136.24]:17713 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752308AbYKKDyG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 10 Nov 2008 22:54:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,581,1220252400"; 
+   d="scan'208";a="461533650"
+Subject: Re: BUG: scheduling while atomic: iwl3945/0/3680/0x00000002 during
+	resume from suspend
+From: Zhu Yi <yi.zhu@intel.com>
+To: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Michal Hocko <mhocko@suse.cz>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <200811101049.01759.borntraeger@de.ibm.com>
+References: <20081109141412.GA5858@dhcp35.suse.cz>
+	 <49172112.60508@gmail.com> <1226279540.2604.277.camel@debian.sh.intel.com>
+	 <200811101049.01759.borntraeger@de.ibm.com>
+Content-Type: text/plain
+Organization: Intel Corp.
+Date: Tue, 11 Nov 2008 11:54:15 +0800
+Message-Id: <1226375655.2604.330.camel@debian.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008 22:20:33 -0500 Valdis.Kletnieks@vt.edu wrote:
+On Mon, 2008-11-10 at 17:49 +0800, Christian Borntraeger wrote:
+> Am Montag, 10. November 2008 schrieb Zhu Yi:
+> > On Mon, 2008-11-10 at 01:42 +0800, Jiri Slaby wrote:
+> > > I think the same as:
+> > > http://marc.info/?l=linux-wireless&m=122254514501379&w=2
+> > 
+> > Yup. Try this fix.
+> > 
+> http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commit;h=605b6cd038c5002f8dcbd3695aa934a130257af4
+> 
+> I got a similar one on
+> 03:00.0 Network controller: Intel Corporation PRO/Wireless 4965 AG or AGN 
+> [Kedron] Network Connection (rev 61)
+> 
+> with a pretty decent git: 2.6.28-rc3-00255-g6209344.
+> This version contains the fix for iwlwifi, but I still see this bug.
 
-> gcc --version says:
-> gcc (GCC) 4.3.2 20081105 (Red Hat 4.3.2-7)
-> 
-> ka-blam number 2:
-> 
->   CC      kernel/audit.o
-> In file included from include/net/dst.h:15,
->                  from include/net/sock.h:57,
->                  from kernel/audit.c:54:
-> include/net/neighbour.h:114: error: braced-group within expression allowed only inside a function
-> make[1]: *** [kernel/audit.o] Error 1
-> 
-> I'm placing bets on patches/align-avoid-evaluating-its-argument-twice.patch
-> 
-> Yep, revert that patch, and audit.o compiles again.
-> 
+I see. This is a different bug. I'll comment on the previous thread.
 
-I hadn't got around to testing that one yet.
+Thanks,
+-yi
 
-So ug.  ALIGN() is used in array sizing and hence has to be a
-compile-time thing.  But ALIGN(foo, bar()) will call bar() twice.
-
-Now how do we fix that?
