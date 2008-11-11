@@ -1,94 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbYKKRYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbYKKRZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754565AbYKKRYZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 12:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYKKRYN
+	id S1754822AbYKKRZm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 12:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYKKRZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 12:24:13 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:50425 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbYKKRYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 12:24:11 -0500
-Date: Tue, 11 Nov 2008 22:57:50 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, David Collier-Brown <davecb@sun.com>,
-       Tim Connors <tconnors@astro.swin.edu.au>,
-       Max Krasnyansky <maxk@qualcomm.com>,
-       "gregory.haskins" <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH v3 3/5] sched: nominate preferred wakeup cpu
-Message-ID: <20081111172750.GA788@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-Mail-Followup-To: Balbir Singh <balbir@linux.vnet.ibm.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Suresh B Siddha <suresh.b.siddha@intel.com>,
-	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-	Ingo Molnar <mingo@elte.hu>, Dipankar Sarma <dipankar@in.ibm.com>,
-	Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	David Collier-Brown <davecb@sun.com>,
-	Tim Connors <tconnors@astro.swin.edu.au>,
-	Max Krasnyansky <maxk@qualcomm.com>,
-	"gregory.haskins" <gregory.haskins@gmail.com>
-References: <20081110181526.562.69941.stgit@drishya.in.ibm.com> <20081110183326.562.37718.stgit@drishya.in.ibm.com> <1226411019.7685.1767.camel@twins> <20081111164825.GS4646@dirshya.in.ibm.com> <4919B7AA.8060801@linux.vnet.ibm.com>
+	Tue, 11 Nov 2008 12:25:30 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50942 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752238AbYKKRZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 12:25:29 -0500
+Date: Tue, 11 Nov 2008 09:25:05 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: Q: force_quiescent_state && cpu_online_map
+Message-ID: <20081111172505.GD6736@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081110120401.GA15518@osiris.boeblingen.de.ibm.com> <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com> <20081111143505.GA6923@linux.vnet.ibm.com> <20081111150225.GA10743@linux.vnet.ibm.com> <20081111170327.GB18214@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4919B7AA.8060801@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081111170327.GB18214@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-11-11 22:19:46]:
-
-> Vaidyanathan Srinivasan wrote:
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> [2008-11-11 14:43:39]:
-> > 
-> >> On Tue, 2008-11-11 at 00:03 +0530, Vaidyanathan Srinivasan wrote:
-> >>> When the system utilisation is low and more cpus are idle,
-> >>> then the process waking up from sleep should prefer to
-> >>> wakeup an idle cpu from semi-idle cpu package (multi core
-> >>> package) rather than a completely idle cpu package which
-> >>> would waste power.
-> >>>
-> >>> Use the sched_mc balance logic in find_busiest_group() to
-> >>> nominate a preferred wakeup cpu.
-> >>>
-> >>> This info can be sored in appropriate sched_domain, but
-> >>> updating this info in all copies of sched_domain is not
-> >>> practical.  For now lets try with a per-cpu variable
-> >>> pointing to a common storage in partition sched domain
-> >>> attribute.  Global variable may not work in partitioned
-> >>> sched domain case.
-> >> Would it make sense to place the preferred_wakeup_cpu stuff in the
-> >> root_domain structure we already have?
-> > 
-> > Yep, that will be a good idea.  We can get to root_domain from each
-> > CPU's rq and we can get rid of the per-cpu pointers for
-> > preferred_wakeup_cpu as well. I will change the implementation and
-> > re-post.
+On Tue, Nov 11, 2008 at 06:03:27PM +0100, Oleg Nesterov wrote:
+> I don't think this matters, but still...
 > 
-> Did you see Vatsa's comments? root_domain will no work if you have more than one
-> preferred_wakeup_cpu per domain.
+> 	force_quiescent_state:
+> 
+> 			 * cpu_online_map is updated by the _cpu_down()
+> 			 * using __stop_machine(). Since we're in irqs disabled
+> 			 * section, __stop_machine() is not exectuting, hence
+> 			 * the cpu_online_map is stable.
+> 			 *
+> 			 * However,  a cpu might have been offlined _just_ before
+> 			 * we disabled irqs while entering here.
+> 			 * And rcu subsystem might not yet have handled the CPU_DEAD
+> 			 * notification, leading to the offlined cpu's bit
+> 			 * being set in the rcp->cpumask.
+> 			 *
+> 			 * Hence cpumask = (rcp->cpumask & cpu_online_map) to prevent
+> 			 * sending smp_reschedule() to an offlined CPU.
+> 			 */
+> 			cpus_and(cpumask, rcp->cpumask, cpu_online_map);
+> 			cpu_clear(rdp->cpu, cpumask);
+> 			for_each_cpu_mask_nr(cpu, cpumask)
+> 				smp_send_reschedule(cpu);
+> 
+> However,
+> 
+> 	// called by __stop_machine take_cpu_down()
+> 	arch/x86/kernel/smpboot.c:cpu_disable_common()
+> 
+> 		/*
+> 		 * HACK:
+> 		 * Allow any queued timer interrupts to get serviced
+> 		 * This is only a temporary solution until we cleanup
+> 		 * fixup_irqs as we do for IA64.
+> 		 */
+> 		local_irq_enable();
+> 		mdelay(1);
+> 		local_irq_disable();
+> 		...
+> 		remove_cpu_from_maps(cpu);
+> 
+> So it is possible to send the ipi to the dying CPU. I know nothing
+> about this low-level irq code, most probably this is harmless. We
+> already did clear_local_APIC(), but I don't understand what it does.
 
-Hi Balbir,
+Indeed, some of the things I am doing as part of the hierarchical RCU
+implementation need to be applied to preemptable RCU.  :-/
 
-I just saw Vatsa's comments.  We have similar limitation with the
-current implementation also.  sched_domain_attr dattr is also per
-partitioned domain and not per numa node.  
-
-In the current implementation we can get rid of the per-cpu variables
-and use root_domain.  Later we can have an array in root_domain and
-index it based on the cpu's node.
-
-Thanks,
-Vaidy
+							Thanx, Paul
