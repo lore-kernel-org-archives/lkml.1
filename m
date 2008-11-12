@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbYKLXVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYKLXVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbYKLXVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbYKLXUB
+	id S1756164AbYKLXVe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbYKLXUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:20:01 -0500
-Received: from kroah.org ([198.145.64.141]:42330 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754074AbYKLXUA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:20:00 -0500
-Date: Wed, 12 Nov 2008 14:48:05 -0800
-From: Greg KH <greg@kroah.com>
-To: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       Ross Cohen <rcohen@snurgle.org>
-Subject: Re: [PATCH] staging: fix go7007 build failure
-Message-ID: <20081112224805.GE27479@kroah.com>
-References: <4917D726.7070406@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4917D726.7070406@cn.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 12 Nov 2008 18:20:07 -0500
+Received: from mga01.intel.com ([192.55.52.88]:57286 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755604AbYKLXUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:20:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,592,1220252400"; 
+   d="scan'208";a="638539043"
+Message-Id: <20081112212647.259698000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Nov 2008 13:26:47 -0800
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       H Peter Anvin <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh@veritas.com>, Roland Dreier <rdreier@cisco.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: [patch 0/8] x86 PAT: track pfnmap mappings with remap_pfn_range and vm_insert_pfn
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 02:39:34PM +0800, Wang Chen wrote:
-> >From 25a87bb72b5d391c3f01a623c12ce22bc5bb2467 Mon Sep 17 00:00:00 2001
-> From: Wang Chen <wangchen@cn.fujitsu.com>
-> Date: Mon, 10 Nov 2008 14:24:08 +0800
-> Subject: [PATCH] staging: fix go7007 build failure
-> 
-> Comes from commit: df20d69ec968b33526461457c219ad4ba8ba8ac8
-> "Staging: go7007 v4l fixes".
-> 
-> CC [M]  drivers/staging/go7007/go7007-v4l2.o
-> drivers/staging/go7007/go7007-v4l2.c:1457: error: 'VID_TYPE_CAPTURE' undeclared here (not in a function)
-> make[3]: *** [drivers/staging/go7007/go7007-v4l2.o] Error 1
-> make[2]: *** [drivers/staging/go7007] Error 2
-> make[1]: *** [drivers/staging] Error 2
-> make: *** [drivers] Error 2
+(Sorry about the duplicates. Resending as the original mails did not make it to
+ the list due to some errors in my email header)
 
-Now fixed by moving everything to the v4l2 api :)
+Drivers use mmap followed by pgprot_* and remap_pfn_range or vm_insert_pfn,
+in order to export reserved memory to userspace. Currently, such mappings are
+not tracked and hence not kept consistent with other mappings (/dev/mem,
+pci resource, ioremap) for the sme memory, that may exist in the system.
 
-thanks,
+The following patchset adds x86 PAT attribute tracking and untracking for
+pfnmap related APIs.
 
-greg k-h
+First four patches in the patchset are changing the generic mm code to fit
+in this tracking. Last four patches are x86 specific to make things work
+with x86 PAT code. The patchset aso introduces pgprot_writecombine interface,
+which gives writecombine mapping when enabled, falling back to
+pgprot_noncached otherwise.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+
+-- 
+
