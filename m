@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbYKLDLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbYKLDPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbYKLDLv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 22:11:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYKLDLl
+	id S1752503AbYKLDPl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 22:15:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYKLDPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 22:11:41 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:36663 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbYKLDLk (ORCPT
+	Tue, 11 Nov 2008 22:15:33 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:38910 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbYKLDPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 22:11:40 -0500
-Message-ID: <491A496B.5010505@ct.jp.nec.com>
-Date: Tue, 11 Nov 2008 19:11:39 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 11 Nov 2008 22:15:32 -0500
+Date: Tue, 11 Nov 2008 21:14:51 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+In-Reply-To: <200811121214.33150.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0811112113001.10592@quilx.com>
+References: <s5htzaekp6o.wl%tiwai@suse.de> <491A01E2.2010701@cosmosbay.com>
+ <200811121214.33150.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] x86: ia32_signal: remove unnecessary padding
-References: <491A48E9.8020909@ct.jp.nec.com>
-In-Reply-To: <491A48E9.8020909@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Wed, 12 Nov 2008, Rusty Russell wrote:
 
-Impact: cleanup
+> On Wednesday 12 November 2008 08:36:26 Eric Dumazet wrote:
+> > I believe Mike Travis has a better patch for this problem, partly using new
+> > percpu allocator.
+>
+> Actually, I think this in in Christoph's hands now.  He's been wrangling with
+> getting us a real per-cpu allocator.
 
-Remove unnecessary paddings, this saves 4 bytes.
+Please use my new email address.... Otherwise I will not see this.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/ia32/ia32_signal.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+> There's something in linux-next, but I'm not sure of the status. Christoph, is
+> this anticipated to make the next merge window, or am I best off merging a
+> patch like Eric's for the moment?
 
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index bafc0b4..e886907 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -427,12 +427,10 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
- 		u16 poplmovl;
- 		u32 val;
- 		u16 int80;
--		u16 pad;
- 	} __attribute__((packed)) code = {
- 		0xb858,		 /* popl %eax ; movl $...,%eax */
- 		__NR_ia32_sigreturn,
- 		0x80cd,		/* int $0x80 */
--		0,
- 	};
- 
- 	frame = get_sigframe(ka, regs, sizeof(*frame), &fpstate);
-@@ -508,8 +506,7 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 		u8 movl;
- 		u32 val;
- 		u16 int80;
--		u16 pad;
--		u8  pad2;
-+		u8  pad;
- 	} __attribute__((packed)) code = {
- 		0xb8,
- 		__NR_ia32_rt_sigreturn,
--- 
-1.5.6
+Yes the patch in -next is for the next merge window. This should
+actually have been in .28.
 
