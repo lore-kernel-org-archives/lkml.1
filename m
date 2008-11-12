@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbYKLNgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbYKLNgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752807AbYKLNgI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752099AbYKLNfq
+	id S1752847AbYKLNgb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbYKLNfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:35:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45161 "EHLO mx2.redhat.com"
+	Wed, 12 Nov 2008 08:35:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45162 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751828AbYKLNfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752005AbYKLNfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Nov 2008 08:35:45 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
@@ -17,36 +17,35 @@ Cc: Avi Kivity <avi@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrey Borzenkov <arvidjaar@mail.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        kexec@lists.infradead.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 0/8] Make nmi_shootdown_cpus() usable by non-kdump code
-Date: Wed, 12 Nov 2008 11:34:36 -0200
-Message-Id: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 8/8] x86: Disable IRQs before doing anything on nmi_shootdown_cpus()
+Date: Wed, 12 Nov 2008 11:34:44 -0200
+Message-Id: <1226496884-24628-9-git-send-email-ehabkost@redhat.com>
+In-Reply-To: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
+References: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ingo,
+We need to know on which CPU we are running on, and we don't want to be
+preempted while doing this.
 
-As tip/master is a moving target, I am splitting the previous kdump/reboot
-virtualization-disable code series[1] into smaller series so the simpler
-parts can be included sooner. This first series is just for making
-nmi_shootdown_cpus() usable by non-kdump code, by moving their generic
-parts to reboot.c.
+Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
+---
+ arch/x86/kernel/reboot.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-They are exactly the same patches I've sent as 01-08 in the previous
-series.
-
-The NMI IPIs method used by nmi_shootdown_cpus() is the only way
-we can make sure VMX is disabled on all CPUs before rebooting, on
-emergency_restart(), because CPUs may have IRQs disabled. That's why I
-will reuse nmi_shootdown_cpus() for the emergency_restart code when
-VMX is enabled.
-
-The virtualization-specific parts should come soon, after I implement
-the suggestions by Eric and Avi, by making the virtualization-disabling
-functions inline so they can be used directly by the core code (instead
-of using the function pointer tricks from my previous series).
-
-[1] http://marc.info/?l=linux-kernel&m=122591590923455&w=2
-
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index d0c9c77..c495687 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -582,6 +582,7 @@ static struct notifier_block crash_nmi_nb = {
+ void nmi_shootdown_cpus(nmi_shootdown_cb callback)
+ {
+ 	unsigned long msecs;
++	local_irq_disable();
+ 
+ 	/* Make a note of crashing cpu. Will be used in NMI callback.*/
+ 	crashing_cpu = safe_smp_processor_id();
 -- 
-Eduardo
+1.5.5.GIT
+
