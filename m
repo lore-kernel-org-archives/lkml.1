@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYKLNxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYKLNx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753154AbYKLNxD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:53:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYKLNww
+	id S1753509AbYKLNx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYKLNxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:52:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39058 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751984AbYKLNww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:52:52 -0500
-Date: Wed, 12 Nov 2008 15:52:26 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: sukadev@linux.vnet.ibm.com
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
+	Wed, 12 Nov 2008 08:53:14 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:53821 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752146AbYKLNxN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 08:53:13 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] ttusb-budget: make it depend on PCI
+Date: Wed, 12 Nov 2008 14:46:59 +0100
+User-Agent: KMail/1.9.9
+Cc: Mike Frysinger <vapier@gentoo.org>, v4l-dvb-maintainer@linuxtv.org,
+       linux-dvb@linuxtv.org, Holger Waechtler <holger@convergence.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081112145226.GA13269@redhat.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081110232735.GA20891@us.ibm.com>
+References: <1226491218-9281-1-git-send-email-vapier@gentoo.org> <200811121336.00521.arnd@arndb.de> <874p2ddr72.fsf@basil.nowhere.org>
+In-Reply-To: <874p2ddr72.fsf@basil.nowhere.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081110232735.GA20891@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811121447.00808.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19dXaET15Wm0vfCE3aLUse/SFfRuYUHbJChHNE
+ SZT6a50w16nqCx6CTgixq7LpRA8rWrQ7bMfX6PXDpOvQhTfj7c
+ TWerx4bHVEAej6knlC1VA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10, sukadev@linux.vnet.ibm.com wrote:
->
-> Oleg Nesterov [oleg@redhat.com] wrote:
-> | (lkml cced because containers list's archive is not useable)
->
-> Hmm. what do you mean by not usable ? I see your email here:
-> https://lists.linux-foundation.org/pipermail/containers/2008-November/014152.html
+On Wednesday 12 November 2008, Andi Kleen wrote:
+> Unless it really needs to use the 16MB DMA zone (which I doubt
+> especially for USB devices) then it should not call either with a NULL
+> device argument.
 
-Yes, but I failed to find our previous discussions via google, and actually
-I prefer to see them all on marc.info, so I can quickly find them...
+Yes, of course. It will need to pass &ttusb->dev.dev to dma_alloc_coherent.
 
-> | > Or something. yes, sys_rt_sigqueueinfo() is problematic...
->
-> Yes, if user-space sets si_pid to 0.
->
-> Can we change sys_rt_sigqueueinfo() to:
->
-> 	if (!info->si_pid)
-> 		info->si_pid = getpid();
+	Arnd <><
 
-I doubt very much we can do this. This can break the existing applications
-which can overload ->si_pid. I think it is better to pass ->si_pid as is.
-If user-space sends siginfo_t so sub-namespace, it must know what it does.
-I don't think the kernel can help, it just can't know what ->si_pid actually
-means. Unless this is documented somewhere, but I don't know.
+---
 
-> | But how can send_signal() know that the signal comes from the upper ns?
-> | This is not trivial, we can't blindly use current to check. The signal
-> | can be sent from irq/workqueue/etc.
->
-> You mean the in_interrupt() check we had in earlier patchset would
-> not be enough ?
-
-I don't think we can rely on in_interrupt() check. Thnk about some device
-drivers which can send the notification from workqueue, or from kernel
-thread... Say, can you see when drivers/usb/core/devio.c does
-async_completed() ? And note that SI_ASYNCIO is SI_FROMUSER.
-
-Even _if_ it is safe to use in_interrupt() right now, I don't think we
-can rely on this fact.
-
-> | Perhaps we can start with something like the patch below. Not that I like
-> | it very much though. We should really place this code under
-> | CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
->
-> CONFIG_PID_NS ?
-
-Ah yes, we have it ;)
-
-Oleg.
-
+Note to self: read code before commenting on it...
