@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbYKLAdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYKLAdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbYKLAdc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbYKLA01
+	id S1754677AbYKLAdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYKLA0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:27 -0500
-Received: from kroah.org ([198.145.64.141]:42285 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:32 -0500
+Received: from kroah.org ([198.145.64.141]:42296 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752335AbYKLA0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:24 -0500
-Date: Tue, 11 Nov 2008 16:23:33 -0800
+	id S1753523AbYKLA0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:25 -0500
+Date: Tue, 11 Nov 2008 16:23:35 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alok N Kataria <akataria@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 19/49] x86: dont use tsc_khz to calculate lpj if notsc is
-	passed
-Message-ID: <20081112002333.GT10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>
+Subject: [patch 20/49] net: unix: fix inflight counting bug in garbage
+	collector
+Message-ID: <20081112002335.GU10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-don-t-use-tsc_khz-to-calculate-lpj-if-notsc-is-passed.patch"
+Content-Disposition: inline; filename="net-unix-fix-inflight-counting-bug-in-garbage-collector.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,48 +40,205 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alok Kataria <akataria@vmware.com>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-commit 70de9a97049e0ba79dc040868564408d5ce697f9 upstream
+commit 6209344f5a3795d34b7f2c0061f49802283b6bdd upstream
 
-Impact: fix udelay when "notsc" boot parameter is passed
+Previously I assumed that the receive queues of candidates don't
+change during the GC.  This is only half true, nothing can be received
+from the queues (see comment in unix_gc()), but buffers could be added
+through the other half of the socket pair, which may still have file
+descriptors referring to it.
 
-With notsc passed on commandline, tsc may not be used for
-udelays, make sure that we do not use tsc_khz to calculate
-the lpj value in such cases.
+This can result in inc_inflight_move_tail() erronously increasing the
+"inflight" counter for a unix socket for which dec_inflight() wasn't
+previously called.  This in turn can trigger the "BUG_ON(total_refs <
+inflight_refs)" in a later garbage collection run.
 
-Reported-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Fix this by only manipulating the "inflight" counter for sockets which
+are candidates themselves.  Duplicating the file references in
+unix_attach_fds() is also needed to prevent a socket becoming a
+candidate for GC while the skb that contains it is not yet queued.
+
+Reported-by: Andrea Bittau <a.bittau@cs.ucl.ac.uk>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/tsc.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/net/af_unix.h |    1 +
+ net/unix/af_unix.c    |   31 ++++++++++++++++++++++++-------
+ net/unix/garbage.c    |   49 +++++++++++++++++++++++++++++++++++++------------
+ 3 files changed, 62 insertions(+), 19 deletions(-)
 
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -639,10 +639,6 @@ void __init tsc_init(void)
- 		cpu_khz = calibrate_cpu();
- #endif
+--- a/include/net/af_unix.h
++++ b/include/net/af_unix.h
+@@ -54,6 +54,7 @@ struct unix_sock {
+         atomic_long_t           inflight;
+         spinlock_t		lock;
+ 	unsigned int		gc_candidate : 1;
++	unsigned int		gc_maybe_cycle : 1;
+         wait_queue_head_t       peer_wait;
+ };
+ #define unix_sk(__sk) ((struct unix_sock *)__sk)
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -1300,14 +1300,23 @@ static void unix_destruct_fds(struct sk_
+ 	sock_wfree(skb);
+ }
  
--	lpj = ((u64)tsc_khz * 1000);
--	do_div(lpj, HZ);
--	lpj_fine = lpj;
--
- 	printk("Detected %lu.%03lu MHz processor.\n",
- 			(unsigned long)cpu_khz / 1000,
- 			(unsigned long)cpu_khz % 1000);
-@@ -662,6 +658,10 @@ void __init tsc_init(void)
- 	/* now allow native_sched_clock() to use rdtsc */
- 	tsc_disabled = 0;
- 
-+	lpj = ((u64)tsc_khz * 1000);
-+	do_div(lpj, HZ);
-+	lpj_fine = lpj;
+-static void unix_attach_fds(struct scm_cookie *scm, struct sk_buff *skb)
++static int unix_attach_fds(struct scm_cookie *scm, struct sk_buff *skb)
+ {
+ 	int i;
 +
- 	use_tsc_delay();
- 	/* Check and install the TSC clocksource */
- 	dmi_check_system(bad_tsc_dmi_table);
++	/*
++	 * Need to duplicate file references for the sake of garbage
++	 * collection.  Otherwise a socket in the fps might become a
++	 * candidate for GC while the skb is not yet queued.
++	 */
++	UNIXCB(skb).fp = scm_fp_dup(scm->fp);
++	if (!UNIXCB(skb).fp)
++		return -ENOMEM;
++
+ 	for (i=scm->fp->count-1; i>=0; i--)
+ 		unix_inflight(scm->fp->fp[i]);
+-	UNIXCB(skb).fp = scm->fp;
+ 	skb->destructor = unix_destruct_fds;
+-	scm->fp = NULL;
++	return 0;
+ }
+ 
+ /*
+@@ -1366,8 +1375,11 @@ static int unix_dgram_sendmsg(struct kio
+ 		goto out;
+ 
+ 	memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
+-	if (siocb->scm->fp)
+-		unix_attach_fds(siocb->scm, skb);
++	if (siocb->scm->fp) {
++		err = unix_attach_fds(siocb->scm, skb);
++		if (err)
++			goto out_free;
++	}
+ 	unix_get_secdata(siocb->scm, skb);
+ 
+ 	skb_reset_transport_header(skb);
+@@ -1536,8 +1548,13 @@ static int unix_stream_sendmsg(struct ki
+ 		size = min_t(int, size, skb_tailroom(skb));
+ 
+ 		memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
+-		if (siocb->scm->fp)
+-			unix_attach_fds(siocb->scm, skb);
++		if (siocb->scm->fp) {
++			err = unix_attach_fds(siocb->scm, skb);
++			if (err) {
++				kfree_skb(skb);
++				goto out_err;
++			}
++		}
+ 
+ 		if ((err = memcpy_fromiovec(skb_put(skb,size), msg->msg_iov, size)) != 0) {
+ 			kfree_skb(skb);
+--- a/net/unix/garbage.c
++++ b/net/unix/garbage.c
+@@ -186,8 +186,17 @@ static void scan_inflight(struct sock *x
+ 				 */
+ 				struct sock *sk = unix_get_socket(*fp++);
+ 				if (sk) {
+-					hit = true;
+-					func(unix_sk(sk));
++					struct unix_sock *u = unix_sk(sk);
++
++					/*
++					 * Ignore non-candidates, they could
++					 * have been added to the queues after
++					 * starting the garbage collection
++					 */
++					if (u->gc_candidate) {
++						hit = true;
++						func(u);
++					}
+ 				}
+ 			}
+ 			if (hit && hitlist != NULL) {
+@@ -249,11 +258,11 @@ static void inc_inflight_move_tail(struc
+ {
+ 	atomic_long_inc(&u->inflight);
+ 	/*
+-	 * If this is still a candidate, move it to the end of the
+-	 * list, so that it's checked even if it was already passed
+-	 * over
++	 * If this still might be part of a cycle, move it to the end
++	 * of the list, so that it's checked even if it was already
++	 * passed over
+ 	 */
+-	if (u->gc_candidate)
++	if (u->gc_maybe_cycle)
+ 		list_move_tail(&u->link, &gc_candidates);
+ }
+ 
+@@ -267,6 +276,7 @@ void unix_gc(void)
+ 	struct unix_sock *next;
+ 	struct sk_buff_head hitlist;
+ 	struct list_head cursor;
++	LIST_HEAD(not_cycle_list);
+ 
+ 	spin_lock(&unix_gc_lock);
+ 
+@@ -282,10 +292,14 @@ void unix_gc(void)
+ 	 *
+ 	 * Holding unix_gc_lock will protect these candidates from
+ 	 * being detached, and hence from gaining an external
+-	 * reference.  This also means, that since there are no
+-	 * possible receivers, the receive queues of these sockets are
+-	 * static during the GC, even though the dequeue is done
+-	 * before the detach without atomicity guarantees.
++	 * reference.  Since there are no possible receivers, all
++	 * buffers currently on the candidates' queues stay there
++	 * during the garbage collection.
++	 *
++	 * We also know that no new candidate can be added onto the
++	 * receive queues.  Other, non candidate sockets _can_ be
++	 * added to queue, so we must make sure only to touch
++	 * candidates.
+ 	 */
+ 	list_for_each_entry_safe(u, next, &gc_inflight_list, link) {
+ 		long total_refs;
+@@ -299,6 +313,7 @@ void unix_gc(void)
+ 		if (total_refs == inflight_refs) {
+ 			list_move_tail(&u->link, &gc_candidates);
+ 			u->gc_candidate = 1;
++			u->gc_maybe_cycle = 1;
+ 		}
+ 	}
+ 
+@@ -325,14 +340,24 @@ void unix_gc(void)
+ 		list_move(&cursor, &u->link);
+ 
+ 		if (atomic_long_read(&u->inflight) > 0) {
+-			list_move_tail(&u->link, &gc_inflight_list);
+-			u->gc_candidate = 0;
++			list_move_tail(&u->link, &not_cycle_list);
++			u->gc_maybe_cycle = 0;
+ 			scan_children(&u->sk, inc_inflight_move_tail, NULL);
+ 		}
+ 	}
+ 	list_del(&cursor);
+ 
+ 	/*
++	 * not_cycle_list contains those sockets which do not make up a
++	 * cycle.  Restore these to the inflight list.
++	 */
++	while (!list_empty(&not_cycle_list)) {
++		u = list_entry(not_cycle_list.next, struct unix_sock, link);
++		u->gc_candidate = 0;
++		list_move_tail(&u->link, &gc_inflight_list);
++	}
++
++	/*
+ 	 * Now gc_candidates contains only garbage.  Restore original
+ 	 * inflight counters for these as well, and remove the skbuffs
+ 	 * which are creating the cycle(s).
 
 -- 
