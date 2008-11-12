@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbYKLCJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbYKLCOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752526AbYKLCJX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 21:09:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYKLCJM
+	id S1752674AbYKLCOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 21:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbYKLCOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 21:09:12 -0500
-Received: from sh.osrg.net ([192.16.179.4]:45446 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750956AbYKLCJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 21:09:11 -0500
-Date: Wed, 12 Nov 2008 11:08:57 +0900
-To: jens.axboe@oracle.com
-Cc: stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Problems with the block-layer timeouts
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081111191936.GK26778@kernel.dk>
-References: <20081111155458M.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.44L0.0811111205390.29125-100000@netrider.rowland.org>
-	<20081111191936.GK26778@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081112110840W.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 11 Nov 2008 21:14:08 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:16731 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbYKLCOG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 21:14:06 -0500
+X-BigFish: VPS-60(z21eWz1432R936eQ1805M936fO3117K9371P542Nzzzzz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KA77IK-04-0MM-01
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Wed, 12 Nov 2008 10:13:39 +0800
+Message-ID: <6077B97E85E7374DAE87B42B5AA9979709BBA3@sshaexmb1.amd.com>
+In-Reply-To: <200811070927.57506.volker.armin.hemmann@tu-clausthal.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb lockup
+Thread-Index: AclAsvD3gaLJz47fQfesFIuxokTKlQDuP29g
+References: <200810300215.18792.volker.armin.hemmann@tu-clausthal.de> <20081030055410.GB19035@kroah.com> <B90463BC30D2E446BA423D888DC85E50E8C0EB@sshaexmb1.amd.com> <200811070927.57506.volker.armin.hemmann@tu-clausthal.de>
+From: "Yang, Libin" <Libin.Yang@amd.com>
+To: "Volker Armin Hemmann" <volker.armin.hemmann@tu-clausthal.de>
+CC: "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, "Huang, Shane" <Shane.Huang@amd.com>
+X-OriginalArrivalTime: 12 Nov 2008 02:13:43.0113 (UTC) FILETIME=[4925A390:01C9446C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 20:19:36 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Hello Volker,
 
-> On Tue, Nov 11 2008, Alan Stern wrote:
-> > On Tue, 11 Nov 2008, FUJITA Tomonori wrote:
-> > 
-> > > I don't worry about anything. I just think that these round_jiffies_up
-> > > are pointless because they were added for the block-layer users that
-> > > care about exact timeouts, however the block-layer doesn't export
-> > > blk_add_timer() so the block-layer users can't control the exact time
-> > > when the timer starts. So doing round_jiffies_up calculation per every
-> > > request doesn't make sense for me.
-> > 
-> > In fact the round_jiffies_up() routines were added for other users as
-> > well as the block layer.  However none of the others could be changed
-> > until the routines were merged.  Now that the routines are in the 
-> > mainline, you should see them start to be called in multiple places.
-> > 
-> > Also, the users of the block layer _don't_ care about exact timeouts.  
-> > That's an important aspect of round_jiffies() and round_jiffies_up() --
-> > you don't use them if you want an exact timeout.
-> > 
-> > The reason for using round_jiffies() is to insure that the timeout
-> > will occur at a 1-second boundary.  If several timeouts are set for
-> > about the same time and they all use round_jiffies() or
-> > round_jiffies_up(), then they will all occur at the same tick instead
-> > of spread out among several different ticks during the course of that
-> > 1-second interval.  As a result, the system will need to wake up only
-> > once to service all those timeouts, instead of waking up several
-> > different times.  It is a power-saving scheme.
+Can you help dump out the PCI configuration information with lspci
+-xxxx? Thanks.
 
-Hmm, but for 99.9% of the cases, the timeout of the block layer
-doesn't expire, the timeout rarely happens. The power-saving scheme
-can be applied to only 0.1%, but at the cost of the round_jiffies
-overhead per every request.
+Thanks & Regards,
+Libin
 
-If I understand correctly, round_jiffies() is designed for timers that
-will expire, such as periodic checking. The power-saving scheme nicely
-works for such usages.
+> -----Original Message-----
+> From: Volker Armin Hemmann
+[mailto:volker.armin.hemmann@tu-clausthal.de]
+> Sent: Friday, November 07, 2008 4:28 PM
+> To: Yang, Libin
+> Cc: Greg KH; linux-kernel@vger.kernel.org; linux-usb@vger.kernel.org;
+> Huang, Shane
+> Subject: Re: 2.6.27: ehci bug with AMD 770nb/SB700 southbridge. usb
+lockup
+> 
+> Hi,
+> when I load ohci-hcd first and ehci-hcd second and make sure that the
+usb-
+> port
+> for the mouse does not share its interrupt with the graphic card,
+> everything
+> works (almost) fine. With big transfers from or to a harddisk in an
+> enclosure
+> the mouse is sometimes a bit jerky.
+> 
+> Bus 007 Device 001: ID 1d6b:0002
+> Bus 006 Device 004: ID 05e3:0702 Genesys Logic, Inc. USB 2.0 IDE
+Adapter
+> Bus 006 Device 002: ID 05e3:0608 Genesys Logic, Inc. USB-2.0 4-Port
+HUB
+> Bus 006 Device 001: ID 1d6b:0002
+> Bus 005 Device 001: ID 1d6b:0001
+> Bus 004 Device 001: ID 1d6b:0001
+> Bus 003 Device 001: ID 1d6b:0001
+> Bus 002 Device 001: ID 1d6b:0001
+> Bus 001 Device 005: ID 046d:c518 Logitech, Inc. MX610 Laser Cordless
+Mouse
+> Bus 001 Device 001: ID 1d6b:0001
+> 
+> bus 1 is ohci.
+> bus 6 is ehci.
+> 
+> But if the mouse is connected to a ehci port or the ehci hub, as soon
+as
+> data
+> transfers from or to an usb connected storage device starts, it will
+lock
+> up.
 
 
-> I can't add anything else, can't say it any better either. The main
-> point of using round_jiffies_up() is to align with other timers. I don't
-> understand why you (Tomo) think that timeouts are exact? They really are
-> not, and within the same second is quite adequate here.
-
-My exact argument is for switching from round_jiffies() to
-round_jiffies_up. But I wrote above, in the first place, the
-round_jiffies didn't make sense to me.
