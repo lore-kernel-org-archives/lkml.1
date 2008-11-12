@@ -1,61 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYKLCCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbYKLCDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbYKLCCO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 21:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYKLCB5
+	id S1753188AbYKLCDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 21:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYKLCDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 21:01:57 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38072 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751384AbYKLCB4 (ORCPT
+	Tue, 11 Nov 2008 21:03:12 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:57689 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbYKLCDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 21:01:56 -0500
-Date: Tue, 11 Nov 2008 18:01:54 -0800
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] ide: ->ide_dma_clear_irq() -> ->clear_irq()
-Message-ID: <20081112020154.GD231878@sgi.com>
-References: <200808192031.40288.bzolnier@gmail.com> <48AB478B.5040209@ru.mvista.com> <48CEDD89.5060107@ru.mvista.com> <200809151529.50424.bzolnier@gmail.com> <48CF7986.2020302@ru.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48CF7986.2020302@ru.mvista.com>
-User-Agent: Mutt/1.4.1i
+	Tue, 11 Nov 2008 21:03:11 -0500
+Date: Tue, 11 Nov 2008 20:02:42 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: akpm@linux-foundation.org, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, travis@sgi.com,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Vegard Nossum <vegard.nossum@gmail.com>
+Subject: Re: [patch 7/7] cpu alloc: page allocator conversion
+In-Reply-To: <20081111150654.617F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0811111954390.2919@quilx.com>
+References: <20081107093137.F84D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+ <Pine.LNX.4.64.0811071242560.5387@quilx.com> <20081111150654.617F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 16, 2008 at 01:16:54PM +0400, Sergei Shtylyov wrote:
-> >>>>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >>>>        
-> >>>Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> >>>      
-> >>   Not feeling sure about this patch -- ->waiting_for_dma probably 
-> >>should've been left where it was...
-> >>    
-> >
-> >Well, it doesn't change behavior and I think having ->clear_irq method
-> >independent from the transfer mode is a preffered approach.
-> >  
-> 
->   But its implementations will have to depend on it anyway. And 
-> clearing the IDE interrupt in general already depends on the transfer 
-> mode -- the BMIDE interrupt which is a (delayed) reflection of INTRQ is 
-> cleared implicitly by the dma_end() method -- except in at least sgiioc4 
-> driver.
->   BTW, sgiioc4 seems another candidate for clear_irq() implementation 
-> -- currently clearing is done implicitly by the read_status() method (I 
-> don't quite understand why it clears DMA error interrupt there). 
-> However, since there's no documentation, I'm not sure how the IDE 
-> interrupt is latched by IOC4.
+Thanks for the patch. Folded into this one with your signoff (okay right?)
 
-The person who originally wrote sgiioc4 has been gone for a long time.
-
-I'm guessing that the DMA error is cleared there, because any DMA error
-status has already been processed above, and it's easier to clear
-unconditionally than to test and clear, and there's no ill effect to
-clearing something that's already clear.
-
-jeremy
