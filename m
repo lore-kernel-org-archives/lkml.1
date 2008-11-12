@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYKLSPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYKLSQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbYKLSPK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 13:15:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbYKLSOz
+	id S1753731AbYKLSQA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 13:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYKLSPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 13:14:55 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60534 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbYKLSOy (ORCPT
+	Wed, 12 Nov 2008 13:15:52 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44895 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751830AbYKLSPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 13:14:54 -0500
-Date: Wed, 12 Nov 2008 10:12:11 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081112181211.GC3230@us.ibm.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081110232735.GA20891@us.ibm.com> <20081112145226.GA13269@redhat.com> <20081112164915.GB14572@us.ibm.com>
+	Wed, 12 Nov 2008 13:15:51 -0500
+Message-ID: <491B1C7C.5000906@zytor.com>
+Date: Wed, 12 Nov 2008 10:12:12 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112164915.GB14572@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: ia32_signal: remove unnecessary padding
+References: <491A48E9.8020909@ct.jp.nec.com>	<491A496B.5010505@ct.jp.nec.com>	<20081112112937.GA6372@elte.hu> <18714.52512.213371.33245@harpo.it.uu.se> <491B0E6F.2010301@zytor.com> <491B1A40.5020900@ct.jp.nec.com>
+In-Reply-To: <491B1A40.5020900@ct.jp.nec.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn [serue@us.ibm.com] wrote:
-| Quoting Oleg Nesterov (oleg@redhat.com):
-| > > | Perhaps we can start with something like the patch below. Not that I like
-| > > | it very much though. We should really place this code under
-| > > | CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
-| > >
-| > > CONFIG_PID_NS ?
-| > 
-| > Ah yes, we have it ;)
-| 
-| Except I believe all distros at this point enable CONFIG_PID_NS, so
-| I'm not sure it's the right thing to use.
+Hiroshi Shimamoto wrote:
+> H. Peter Anvin wrote:
+>> Mikael Pettersson wrote:
+>>> It does cause each signal delivery to leak 2 uninitialised
+>>> kernel bytes to the end of retcode[], which seems unnecessary.
+>> Not just unnecessary, it is a huge no-no for security.
+> 
+> Am I missing important thing?
+> The frame->retcode is 8 bytes and packed structure with padding
+> is 10 bytes each, and the code is copied to user stack 8 bytes only.
+> 
+> err |= __copy_to_user(frame->retcode, &code, 8);
+> 
+> I don't think the behavior is changed.
+> 
 
-But if they do enable CONFIG_PID_NS they would want the signals to
-behave correctly ? IIUC, the reason we want to the hide the code
-is that it is not clean i.e if its not experimental or error-prone,
-are there other reasons someone with CONFIG_PID_NS=y want to hide it ?
+Ah, nevermind, then.  Then it fine, obviously.
+
+	-hpa
