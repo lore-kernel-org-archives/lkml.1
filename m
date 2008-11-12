@@ -1,80 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbYKLXjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbYKLXj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756986AbYKLXjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbYKLXec
+	id S1757415AbYKLXj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbYKLXef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:34:32 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:48566 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755821AbYKLXe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:34:29 -0500
-Message-Id: <20081112232258.399129838@polymtl.ca>
-References: <20081112231551.473569400@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 18:15:52 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org
-Subject: [patch 01/17] get_cycles() : kconfig HAVE_GET_CYCLES
-Content-Disposition: inline; filename=get-cycles-kconfig-have-get-cycles.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 12 Nov 2008 23:33:01 +0000
+	Wed, 12 Nov 2008 18:34:35 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:52646 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756171AbYKLXee (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:34:34 -0500
+Date: Wed, 12 Nov 2008 23:34:30 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: Add option to passively listen for PCIE hotplug events
+Message-ID: <20081112233430.GA22893@srcf.ucam.org>
+References: <20081104124706.GB19401@srcf.ucam.org> <20081104133214.GA20427@srcf.ucam.org> <49105BA6.9090403@tuffmail.co.uk> <20081104143332.GA21689@srcf.ucam.org> <491063B3.4080808@tuffmail.co.uk> <20081104151128.GA22544@srcf.ucam.org> <49106DD7.9010307@tuffmail.co.uk> <20081104155722.GA23314@srcf.ucam.org> <491076BD.1030704@tuffmail.co.uk> <49170B16.4010909@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49170B16.4010909@tuffmail.co.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create a new "HAVE_GET_CYCLES" architecture option to specify which
-architectures provide 64-bits TSC counters readable with get_cycles(). It's
-principally useful to only enable high-precision tracing code only on such
-architectures and don't even bother building it on architectures which lack such
-support.
-
-It also requires architectures to provide get_cycles_barrier() and
-get_cycles_rate().
-
-I mainly use it for the "priority-sifting rwlock" latency tracing code, which
-traces worse-case latency induced by the locking. It also provides the basic
-changes needed for the LTTng timestamping infrastructure.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: David Miller <davem@davemloft.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@redhat.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-arch@vger.kernel.org
----
- init/Kconfig |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux.trees.git/init/Kconfig
-===================================================================
---- linux.trees.git.orig/init/Kconfig	2008-11-07 00:34:11.000000000 -0500
-+++ linux.trees.git/init/Kconfig	2008-11-12 17:58:05.000000000 -0500
-@@ -330,6 +330,16 @@ config CPUSETS
- config HAVE_UNSTABLE_SCHED_CLOCK
- 	bool
- 
-+#
-+# Architectures with a 64-bits get_cycles() should select this.
-+# They should also define
-+# get_cycles_barrier() : instruction synchronization barrier if required
-+# get_cycles_rate() : cycle counter rate, in HZ. If 0, TSC are not synchronized
-+# across CPUs or their frequency may vary due to frequency scaling.
-+#
-+config HAVE_GET_CYCLES
-+	def_bool n
-+
- config GROUP_SCHED
- 	bool "Group CPU scheduler"
- 	depends on EXPERIMENTAL
+Ok, from looking at the Microsoft docs 
+(http://download.microsoft.com/download/9/c/5/9c5b2167-8017-4bae-9fde-d599bac8184a/BIOS_PCIe_HotPlug.doc) 
+I suspect this is the wrong way to go - they make it sound like native 
+PCIe hotplug is only supported in Vista and later, so we probably ought 
+to be doing something with ACPI instead. I'll look into that later this 
+week.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Matthew Garrett | mjg59@srcf.ucam.org
