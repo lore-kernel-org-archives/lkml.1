@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYKLAjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYKLAjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755497AbYKLAjM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYKLA0s
+	id S1756686AbYKLAjj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYKLA0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:48 -0500
-Received: from kroah.org ([198.145.64.141]:42527 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:49 -0500
+Received: from kroah.org ([198.145.64.141]:42536 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752354AbYKLA0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:47 -0500
-Date: Tue, 11 Nov 2008 16:24:04 -0800
+	id S1753837AbYKLA0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:48 -0500
+Date: Tue, 11 Nov 2008 16:24:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tomas Winkler <tomas.winkler@intel.com>,
-       Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-       Zhu Yi <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 34/49] iwlwifi: generic init calibrations framework
-Message-ID: <20081112002404.GI10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 35/49] zd1211rw: Add 2 device IDs
+Message-ID: <20081112002406.GJ10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="iwlwifi-generic-init-calibrations-framework.patch"
+Content-Disposition: inline; filename="zd1211rw-add-2-device-ids.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,316 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tomas Winkler <tomas.winkler@intel.com>
+From: Daniel Drake <dsd@gentoo.org>
 
-commit 6e21f2c109edd746a10e08186484bae8168cdd0c upstream
+commit 0feec9dfe7b8880ab3b4c38d7cc4107dd706ea7f upstream.
 
-This patch allows variable number of init calibrations and allows
-addition new HW.
+07fa/1196
+Bewan BWIFI-USB54AR: Tested by night1308, this device is a ZD1211B with
+an AL2230S radio.
 
-This patch also fixes critical bug. Only last calibration result
-was applied. On reception of one calibration result all the calibration
-was freed.
+0ace/b215
+HP 802.11abg: Tested by Robert Philippe
 
-Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-Signed-off-by: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-Signed-off-by: Zhu Yi <yi.zhu@intel.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-5000-hw.h |    7 +++
- drivers/net/wireless/iwlwifi/iwl-5000.c    |   63 ++++-------------------------
- drivers/net/wireless/iwlwifi/iwl-calib.c   |   60 +++++++++++++++++++++++++++
- drivers/net/wireless/iwlwifi/iwl-core.c    |   19 --------
- drivers/net/wireless/iwlwifi/iwl-core.h    |    8 +++
- drivers/net/wireless/iwlwifi/iwl-dev.h     |   14 ++----
- 6 files changed, 90 insertions(+), 81 deletions(-)
+ drivers/net/wireless/zd1211rw/zd_usb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/net/wireless/iwlwifi/iwl-5000.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-5000.c
-@@ -445,48 +445,6 @@ static int iwl5000_send_Xtal_calib(struc
- 				sizeof(cal_cmd), &cal_cmd);
- }
- 
--static int iwl5000_send_calib_results(struct iwl_priv *priv)
--{
--	int ret = 0;
--
--	struct iwl_host_cmd hcmd = {
--		.id = REPLY_PHY_CALIBRATION_CMD,
--		.meta.flags = CMD_SIZE_HUGE,
--	};
--
--	if (priv->calib_results.lo_res) {
--		hcmd.len = priv->calib_results.lo_res_len;
--		hcmd.data = priv->calib_results.lo_res;
--		ret = iwl_send_cmd_sync(priv, &hcmd);
--
--		if (ret)
--			goto err;
--	}
--
--	if (priv->calib_results.tx_iq_res) {
--		hcmd.len = priv->calib_results.tx_iq_res_len;
--		hcmd.data = priv->calib_results.tx_iq_res;
--		ret = iwl_send_cmd_sync(priv, &hcmd);
--
--		if (ret)
--			goto err;
--	}
--
--	if (priv->calib_results.tx_iq_perd_res) {
--		hcmd.len = priv->calib_results.tx_iq_perd_res_len;
--		hcmd.data = priv->calib_results.tx_iq_perd_res;
--		ret = iwl_send_cmd_sync(priv, &hcmd);
--
--		if (ret)
--			goto err;
--	}
--
--	return 0;
--err:
--	IWL_ERROR("Error %d\n", ret);
--	return ret;
--}
--
- static int iwl5000_send_calib_cfg(struct iwl_priv *priv)
- {
- 	struct iwl5000_calib_cfg_cmd calib_cfg_cmd;
-@@ -511,33 +469,30 @@ static void iwl5000_rx_calib_result(stru
- 	struct iwl_rx_packet *pkt = (void *)rxb->skb->data;
- 	struct iwl5000_calib_hdr *hdr = (struct iwl5000_calib_hdr *)pkt->u.raw;
- 	int len = le32_to_cpu(pkt->len) & FH_RSCSR_FRAME_SIZE_MSK;
--
--	iwl_free_calib_results(priv);
-+	int index;
- 
- 	/* reduce the size of the length field itself */
- 	len -= 4;
- 
-+	/* Define the order in which the results will be sent to the runtime
-+	 * uCode. iwl_send_calib_results sends them in a row according to their
-+	 * index. We sort them here */
- 	switch (hdr->op_code) {
- 	case IWL5000_PHY_CALIBRATE_LO_CMD:
--		priv->calib_results.lo_res = kzalloc(len, GFP_ATOMIC);
--		priv->calib_results.lo_res_len = len;
--		memcpy(priv->calib_results.lo_res, pkt->u.raw, len);
-+		index = IWL5000_CALIB_LO;
- 		break;
- 	case IWL5000_PHY_CALIBRATE_TX_IQ_CMD:
--		priv->calib_results.tx_iq_res = kzalloc(len, GFP_ATOMIC);
--		priv->calib_results.tx_iq_res_len = len;
--		memcpy(priv->calib_results.tx_iq_res, pkt->u.raw, len);
-+		index = IWL5000_CALIB_TX_IQ;
- 		break;
- 	case IWL5000_PHY_CALIBRATE_TX_IQ_PERD_CMD:
--		priv->calib_results.tx_iq_perd_res = kzalloc(len, GFP_ATOMIC);
--		priv->calib_results.tx_iq_perd_res_len = len;
--		memcpy(priv->calib_results.tx_iq_perd_res, pkt->u.raw, len);
-+		index = IWL5000_CALIB_TX_IQ_PERD;
- 		break;
- 	default:
- 		IWL_ERROR("Unknown calibration notification %d\n",
- 			  hdr->op_code);
- 		return;
- 	}
-+	iwl_calib_set(&priv->calib_results[index], pkt->u.raw, len);
- }
- 
- static void iwl5000_rx_calib_complete(struct iwl_priv *priv,
-@@ -832,7 +787,7 @@ static int iwl5000_alive_notify(struct i
- 	iwl5000_send_Xtal_calib(priv);
- 
- 	if (priv->ucode_type == UCODE_RT)
--		iwl5000_send_calib_results(priv);
-+		iwl_send_calib_results(priv);
- 
- 	return 0;
- }
---- a/drivers/net/wireless/iwlwifi/iwl-5000-hw.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-5000-hw.h
-@@ -129,6 +129,13 @@ struct iwl5000_shared {
- 	__le32 padding2;
- } __attribute__ ((packed));
- 
-+/* calibrations defined for 5000 */
-+/* defines the order in which results should be sent to the runtime uCode */
-+enum iwl5000_calib {
-+	IWL5000_CALIB_LO,
-+	IWL5000_CALIB_TX_IQ,
-+	IWL5000_CALIB_TX_IQ_PERD,
-+};
- 
- #endif /* __iwl_5000_hw_h__ */
- 
---- a/drivers/net/wireless/iwlwifi/iwl-calib.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-calib.c
-@@ -66,6 +66,66 @@
- #include "iwl-core.h"
- #include "iwl-calib.h"
- 
-+/*****************************************************************************
-+ * INIT calibrations framework
-+ *****************************************************************************/
-+
-+ int iwl_send_calib_results(struct iwl_priv *priv)
-+{
-+	int ret = 0;
-+	int i = 0;
-+
-+	struct iwl_host_cmd hcmd = {
-+		.id = REPLY_PHY_CALIBRATION_CMD,
-+		.meta.flags = CMD_SIZE_HUGE,
-+	};
-+
-+	for (i = 0; i < IWL_CALIB_MAX; i++)
-+		if (priv->calib_results[i].buf) {
-+			hcmd.len = priv->calib_results[i].buf_len;
-+			hcmd.data = priv->calib_results[i].buf;
-+			ret = iwl_send_cmd_sync(priv, &hcmd);
-+			if (ret)
-+				goto err;
-+		}
-+
-+	return 0;
-+err:
-+	IWL_ERROR("Error %d iteration %d\n", ret, i);
-+	return ret;
-+}
-+EXPORT_SYMBOL(iwl_send_calib_results);
-+
-+int iwl_calib_set(struct iwl_calib_result *res, const u8 *buf, int len)
-+{
-+	if (res->buf_len != len) {
-+		kfree(res->buf);
-+		res->buf = kzalloc(len, GFP_ATOMIC);
-+	}
-+	if (unlikely(res->buf == NULL))
-+		return -ENOMEM;
-+
-+	res->buf_len = len;
-+	memcpy(res->buf, buf, len);
-+	return 0;
-+}
-+EXPORT_SYMBOL(iwl_calib_set);
-+
-+void iwl_calib_free_results(struct iwl_priv *priv)
-+{
-+	int i;
-+
-+	for (i = 0; i < IWL_CALIB_MAX; i++) {
-+		kfree(priv->calib_results[i].buf);
-+		priv->calib_results[i].buf = NULL;
-+		priv->calib_results[i].buf_len = 0;
-+	}
-+}
-+
-+/*****************************************************************************
-+ * RUNTIME calibrations framework
-+ *****************************************************************************/
-+
- /* "false alarms" are signals that our DSP tries to lock onto,
-  *   but then determines that they are either noise, or transmissions
-  *   from a distant wireless network (also "noise", really) that get
---- a/drivers/net/wireless/iwlwifi/iwl-core.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.c
-@@ -956,22 +956,6 @@ err:
- }
- EXPORT_SYMBOL(iwl_init_drv);
- 
--void iwl_free_calib_results(struct iwl_priv *priv)
--{
--	kfree(priv->calib_results.lo_res);
--	priv->calib_results.lo_res = NULL;
--	priv->calib_results.lo_res_len = 0;
--
--	kfree(priv->calib_results.tx_iq_res);
--	priv->calib_results.tx_iq_res = NULL;
--	priv->calib_results.tx_iq_res_len = 0;
--
--	kfree(priv->calib_results.tx_iq_perd_res);
--	priv->calib_results.tx_iq_perd_res = NULL;
--	priv->calib_results.tx_iq_perd_res_len = 0;
--}
--EXPORT_SYMBOL(iwl_free_calib_results);
--
- int iwl_set_tx_power(struct iwl_priv *priv, s8 tx_power, bool force)
- {
- 	int ret = 0;
-@@ -999,10 +983,9 @@ int iwl_set_tx_power(struct iwl_priv *pr
- }
- EXPORT_SYMBOL(iwl_set_tx_power);
- 
--
- void iwl_uninit_drv(struct iwl_priv *priv)
- {
--	iwl_free_calib_results(priv);
-+	iwl_calib_free_results(priv);
- 	iwlcore_free_geos(priv);
- 	iwl_free_channel_map(priv);
- 	kfree(priv->scan);
---- a/drivers/net/wireless/iwlwifi/iwl-core.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-core.h
-@@ -186,7 +186,6 @@ struct ieee80211_hw *iwl_alloc_all(struc
- void iwl_hw_detect(struct iwl_priv *priv);
- 
- void iwl_clear_stations_table(struct iwl_priv *priv);
--void iwl_free_calib_results(struct iwl_priv *priv);
- void iwl_reset_qos(struct iwl_priv *priv);
- void iwl_set_rxon_chain(struct iwl_priv *priv);
- int iwl_set_rxon_channel(struct iwl_priv *priv,
-@@ -291,6 +290,13 @@ int iwl_scan_initiate(struct iwl_priv *p
- void iwl_setup_rx_scan_handlers(struct iwl_priv *priv);
- void iwl_setup_scan_deferred_work(struct iwl_priv *priv);
- 
-+/*******************************************************************************
-+ * Calibrations - implemented in iwl-calib.c
-+ ******************************************************************************/
-+int iwl_send_calib_results(struct iwl_priv *priv);
-+int iwl_calib_set(struct iwl_calib_result *res, const u8 *buf, int len);
-+void iwl_calib_free_results(struct iwl_priv *priv);
-+
- /*****************************************************
-  *   S e n d i n g     H o s t     C o m m a n d s   *
-  *****************************************************/
---- a/drivers/net/wireless/iwlwifi/iwl-dev.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
-@@ -745,13 +745,10 @@ struct statistics_general_data {
- 	u32 beacon_energy_c;
- };
- 
--struct iwl_calib_results {
--	void *tx_iq_res;
--	void *tx_iq_perd_res;
--	void *lo_res;
--	u32 tx_iq_res_len;
--	u32 tx_iq_perd_res_len;
--	u32 lo_res_len;
-+/* Opaque calibration results */
-+struct iwl_calib_result {
-+	void *buf;
-+	size_t buf_len;
- };
- 
- enum ucode_type {
-@@ -813,6 +810,7 @@ enum {
- 
- 
- #define IWL_MAX_NUM_QUEUES	20 /* FIXME: do dynamic allocation */
-+#define IWL_CALIB_MAX  3
- 
- struct iwl_priv {
- 
-@@ -857,7 +855,7 @@ struct iwl_priv {
- 	s32 last_temperature;
- 
- 	/* init calibration results */
--	struct iwl_calib_results calib_results;
-+	struct iwl_calib_result calib_results[IWL_CALIB_MAX];
- 
- 	/* Scan related variables */
- 	unsigned long last_scan_jiffies;
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -61,6 +61,7 @@ static struct usb_device_id usb_ids[] = 
+ 	{ USB_DEVICE(0x0105, 0x145f), .driver_info = DEVICE_ZD1211 },
+ 	/* ZD1211B */
+ 	{ USB_DEVICE(0x0ace, 0x1215), .driver_info = DEVICE_ZD1211B },
++	{ USB_DEVICE(0x0ace, 0xb215), .driver_info = DEVICE_ZD1211B },
+ 	{ USB_DEVICE(0x157e, 0x300d), .driver_info = DEVICE_ZD1211B },
+ 	{ USB_DEVICE(0x079b, 0x0062), .driver_info = DEVICE_ZD1211B },
+ 	{ USB_DEVICE(0x1582, 0x6003), .driver_info = DEVICE_ZD1211B },
+@@ -82,6 +83,7 @@ static struct usb_device_id usb_ids[] = 
+ 	{ USB_DEVICE(0x0cde, 0x001a), .driver_info = DEVICE_ZD1211B },
+ 	{ USB_DEVICE(0x0586, 0x340a), .driver_info = DEVICE_ZD1211B },
+ 	{ USB_DEVICE(0x0471, 0x1237), .driver_info = DEVICE_ZD1211B },
++	{ USB_DEVICE(0x07fa, 0x1196), .driver_info = DEVICE_ZD1211B },
+ 	/* "Driverless" devices that need ejecting */
+ 	{ USB_DEVICE(0x0ace, 0x2011), .driver_info = DEVICE_INSTALLER },
+ 	{ USB_DEVICE(0x0ace, 0x20ff), .driver_info = DEVICE_INSTALLER },
 
 -- 
