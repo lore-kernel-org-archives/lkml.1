@@ -1,128 +1,483 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYKLIlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYKLInW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbYKLIlx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 03:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYKLIlj
+	id S1753211AbYKLInW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 03:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYKLInN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 03:41:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:40134 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751790AbYKLIli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 03:41:38 -0500
-Message-ID: <491A96AE.3080600@kernel.org>
-Date: Wed, 12 Nov 2008 17:41:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Wed, 12 Nov 2008 03:43:13 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:47570 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402AbYKLInL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 03:43:11 -0500
+From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
+To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
+       <virtualization@lists.linux-foundation.org>, <jens.axboe@oracle.com>,
+       "'Ryo Tsuruta'" <ryov@valinux.co.jp>,
+       "'Andrea Righi'" <righi.andrea@gmail.com>, <ngupta@google.com>,
+       <fernando@oss.ntt.co.jp>, <vtaras@openvz.org>
+Cc: "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'SUGAWARA Tomoyoshi'" <tom-sugawara@ap.jp.nec.com>,
+       <menage@google.com>, <balbir@linux.vnet.ibm.com>
+References: <000c01c9449e$c5bcdc20$51369460$@jp.nec.com>
+In-Reply-To: <000c01c9449e$c5bcdc20$51369460$@jp.nec.com>
+Subject: [PATCH][cfq-cgroups][Option 2] Introduce ioprio class for top layer.
+Date: Wed, 12 Nov 2008 17:37:59 +0900
+Message-ID: <002701c944a1$f7954c70$e6bfe550$@jp.nec.com>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Nov 2008 08:41:24 +0000 (UTC)
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AclEnsU5YPNAeH0jT4OGyB1wwkbE/wAAyDtA
+Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Miklos.  Sorry about the extra long delay.  I was buried alive
-under bugs and regressions with SLE11 release date nearing and all.
+>From c13547c5758479116b6dcf10c58d0ef4f058351e Mon Sep 17 00:00:00 2001
+From: Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
+Date: Fri, 7 Nov 2008 19:21:19 +0900
+Subject: [PATCH][cfq-cgroups] Introduce ioprio class for top layer.
 
-Miklos Szeredi wrote:
-> Great.  Just yesterday evening I was looking through your patches to
-> see which ones I can submit for 2.6.28, and I've already applied
-> 
->   0001-FUSE-add-include-protectors.patch
->   0003-FUSE-implement-nonseekable-open.patch
+  This patch introduces iprio class for cfq data control layer.
+  By applying this patch, controller can also handle the RT/IDLE properties
+  among groups.
 
-Thanks.
+    Signed-off-by: Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
 
-> Comments about the others:
-> 
->   0002-FUSE-pass-nonblock-flag-to-client.patch
-> 
-> this is not needed, f_flags are already passed to userspace for read
-> and write.
+---
+ block/cfq-cgroup.c          |  344 +++++++++++++++++++++++++------------------
+ include/linux/cfq-iosched.h |    1 +
+ 2 files changed, 203 insertions(+), 142 deletions(-)
 
-Hmmm... I'll try to find out whether I can use f_flags.  There was
-something that prevented it from working properly.  I'll dig.
-
->   0004-FUSE-implement-direct-lseek-support.patch
-> 
-> this is trickier to get the interface right I think.  If we want to
-> allow filesystems to implement a custom lseek, then we also want them
-> to keep track of the file position, which means we must differentiate
-> between a write(2) and a pwrite(2) and similarly for reads.  AFAICS
-> this isn't needed for CUSE so we can leave this to later.
-
-Read/write already passes @offset, so the only thing required is an
-extra flag there.  I mainly wanted a way for a CUSE server to veto lseek
-with proper error and still think it's better to have this as we don't
-really know what wacky users are out there.  What do you think about an
-extra flag?
-
->   0005-FUSE-implement-ioctl-support.patch
-> 
-> See below.
-> 
->   0006-FUSE-implement-unsolicited-notification.patch
->   0007-FUSE-implement-poll-support.patch
-> 
-> This would be nice, but...  I don't really like the fact that it uses
-> the file handle.  Could we have a separate "poll handle" that is
-> returned in the POLL reply?
-
-Sure thing.
-
->> 1. I'll try to incorporate all other comments here but regarding ioctl I
->> don't think we've reached any better solution, so I'm sticking with the
->> original one.
-> 
-> I still got qualms about this ioctl thing.  One is the security
-> aspect, but that could be dealt with.  The other is that I really
-> really don't want people to start implementing new custom ioctls for
-> their filesystems, as I think that way lies madness.  We could limit
-> ioctls to CUSE and that would be fine with me.  Or for non-CUSE users
-> we could enforce the "standard" format where the type and length is
-> encoded in the command number.
-
-For now, I'll limit ioctl to CUSE.  Hmmm... Yeah, limiting ioctl to
-well-formatted ones sounds like a good idea.
-
-> I don't have any problems with the iterative way you implemented
-> ioctls.  We just need some additional restrictions to the current
-> implementation, I think.
-
-Cool.
-
->> 2. You told me that the version branching in the userland library wasn't
->> necessary.  Can you explain to me when FUSE version bumping is necessary?
-> 
-> The version number has to be bumped anyway.  But if you are only
-> adding new functions to the end of fuse_operations and
-> fuse_lowlevel_ops, then the interface can handle that, without needing
-> new compatibility functions.
-
-Alright.
-
->> 3. Any other things on you mind?
-> 
-> One other thing I was thinking about is that do we really need
-> emulated char devices to be char devices?  What I mean is, what would
-> happen if instead of a char device /dev/dsp would be a regular file
-> mounted on /dev/dsp (which implements all the necessary interfaces:
-> ioctls, poll, etc)?
-
-For most it would work, I suppose, but there are all sorts of wonky
-users out in the wild (and quite a few that we don't have source access
-to) and different configurations, so I think it's better to appear as
-proper character device if it is a character device.  It will also help
-udev and other desktop thingies deal with devices implemented in userland.
-
-Thanks.
-
+diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
+index bb8cb6f..993a3b6 100644
+--- a/block/cfq-cgroup.c
++++ b/block/cfq-cgroup.c
+@@ -20,11 +20,24 @@
+ 
+ static const int cfq_cgroup_slice = HZ / 10;
+ 
++/*
++ * offset from end of service tree
++ */
++#define CFQ_CGROUP_IDLE_DELAY		(HZ / 5)
++
++#define cfq_data_class_idle(cfqd)				\
++		((cfqd)->ioprio_class == IOPRIO_CLASS_IDLE)
++#define cfq_data_class_rt(cfqd)					\
++		((cfqd)->ioprio_class == IOPRIO_CLASS_RT)
++
++
++
+ static struct cfq_ops cfq_cgroup_op;
+ 
+ struct cfq_cgroup {
+ 	struct cgroup_subsys_state css;
+ 	unsigned int ioprio;
++	unsigned short ioprio_class;
+ 
+ 	struct rb_root sibling_tree;
+ 	unsigned int siblings;
+@@ -161,6 +174,7 @@ static void *cfq_cgroup_init_cfq_data(struct cfq_cgroup *cfqc,
+ 		cfqc = cgroup_to_cfq_cgroup(get_root_subsys(&cfq_subsys));
+ 		cfq_cgroup_sibling_tree_add(cfqc, cfqd);
+ 		cfqd->ioprio = cfqc->ioprio;
++		cfqd->ioprio_class = cfqc->ioprio_class;
+ 	} else {
+ 		struct cfq_data *__cfqd;
+ 		__cfqd = __cfq_cgroup_init_queue(cfqd->cfqdd->queue,
+@@ -168,7 +182,7 @@ static void *cfq_cgroup_init_cfq_data(struct cfq_cgroup *cfqc,
+ 		if (!__cfqd)
+ 			return NULL;
+ 		cfq_cgroup_sibling_tree_add(cfqc, __cfqd);
+-		__cfqd->ioprio = cfqc->ioprio;
++		__cfqd->ioprio_class = cfqc->ioprio_class;
+ 	}
+ 
+ 	/* check and create cfq_data for children */
+@@ -250,6 +264,7 @@ cfq_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	cfqc->ioprio = 3;
++	cfqc->ioprio = IOPRIO_CLASS_BE;
+ 
+ 	cfqc->sibling_tree = RB_ROOT;
+ 	cfqc->siblings = 0;
+@@ -378,7 +393,15 @@ static void cfq_cgroup_service_tree_add(struct cfq_data *cfqd, int add_front)
+ 	unsigned long rb_key;
+ 	int left;
+ 
+-	if (!add_front) {
++	if (cfq_data_class_idle(cfqd)) {
++		rb_key = CFQ_CGROUP_IDLE_DELAY;
++		parent = rb_last(&cfqdd->service_tree.rb);
++		if (parent && parent != &cfqd->rb_node) {
++			__cfqd = rb_entry(parent, struct cfq_data, rb_node);
++			rb_key += __cfqd->rb_key;
++		} else
++			rb_key += jiffies;
++	} else if (!add_front) {
+ 		rb_key = cfq_cgroup_slice_offset(cfqd) + jiffies;
+ 		rb_key += cfqd->slice_resid;
+ 		cfqd->slice_resid = 0;
+@@ -400,7 +423,23 @@ static void cfq_cgroup_service_tree_add(struct cfq_data *cfqd, int add_front)
+ 		parent = *p;
+ 		__cfqd = rb_entry(parent, struct cfq_data, rb_node);
+ 
+-		if (rb_key < __cfqd->rb_key)
++
++		/*
++		 * sort RT cfq_data first, we always want to give
++		 * preference to them. IDLE cfq_data goes to the back.
++		 * after that, sort on the next service time.
++		 */
++		if (cfq_data_class_rt(cfqd) > cfq_data_class_rt(__cfqd))
++			n = &(*p)->rb_left;
++		else if (cfq_data_class_rt(cfqd) < cfq_data_class_rt(__cfqd))
++			n = &(*p)->rb_right;
++		else if (cfq_data_class_idle(cfqd) <
++					cfq_data_class_idle(__cfqd))
++			n = &(*p)->rb_left;
++		else if (cfq_data_class_idle(cfqd) >
++					cfq_data_class_idle(__cfqd))
++			n = &(*p)->rb_right;
++		else if (rb_key < __cfqd->rb_key)
+ 			n = &(*p)->rb_left;
+ 		else
+ 			n = &(*p)->rb_right;
+@@ -542,6 +579,14 @@ int cfq_cgroup_dispatch_requests(struct request_queue *q, int force)
+ 	if (cfqd)
+ 		dispatched = cfq_queue_dispatch_requests(cfqd, force);
+ 
++	/*
++	 * idle cfq_data always expire after 1 dispatch round.
++	 */
++	if (cfqdd->busy_data > 1 && cfq_data_class_idle(cfqd)) {
++		cfqd->slice_end = jiffies + 1;
++		cfq_cgroup_slice_expired(cfqdd, 0);
++	}
++
+ 	return dispatched;
+ }
+ 
+@@ -699,149 +744,164 @@ param_separate(const char *master, char *valbuf, char *pathbuf,  int size)
+ 	*pc2 = '\0';
+ }
+ 
+-static ssize_t cfq_cgroup_read(struct cgroup *cont, struct cftype *cft,
+-			       struct file *file, char __user *userbuf,
+-			       size_t nbytes, loff_t *ppos)
+-{
+-	struct cfq_cgroup *cfqc;
+-	char *page;
+-	ssize_t ret;
+-	struct rb_node *p;
+-
+-	page = (char *)__get_free_page(GFP_TEMPORARY);
+-	if (!page)
+-		return -ENOMEM;
+-
+-	cgroup_lock();
+-	if (cgroup_is_removed(cont)) {
+-		cgroup_unlock();
+-		ret = -ENODEV;
+-		goto out;
+-	}
+-
+-	cfqc = cgroup_to_cfq_cgroup(cont);
+-
+-	cgroup_unlock();
+-
+-	/* print priority */
+-	ret = snprintf(page, PAGE_SIZE, "default priority: %d\n", cfqc->ioprio);
+-
+-	p = rb_first(&cfqc->sibling_tree);
+-	while (p) {
+-		struct cfq_data *__cfqd;
+-
+-		__cfqd = rb_entry(p, struct cfq_data, group_node);
+-
+-		ret += snprintf(page + ret, PAGE_SIZE - ret, " %s %d\n",
+-			       __cfqd->cfqdd->queue->kobj.parent->name,
+-			       __cfqd->ioprio);
+-
+-		p = rb_next(p);
+-	}
+ 
+-	ret = simple_read_from_buffer(userbuf, nbytes, ppos, page, ret);
+-
+-out:
+-	free_page((unsigned long)page);
+-	return ret;
++#define READ_FUNCTION(__FUNC, __VAR, __DEF_MSG)				\
++static ssize_t __FUNC(struct cgroup *cont, struct cftype *cft,		\
++			struct file *file, char __user *userbuf,	\
++			size_t nbytes, loff_t *ppos)			\
++{									\
++	struct cfq_cgroup *cfqc;					\
++	char *page;							\
++	ssize_t ret;							\
++	struct rb_node *p;						\
++									\
++	page = (char *)__get_free_page(GFP_TEMPORARY);			\
++	if (!page)							\
++		return -ENOMEM;						\
++									\
++	cgroup_lock();							\
++	if (cgroup_is_removed(cont)) {					\
++		cgroup_unlock();					\
++		ret = -ENODEV;						\
++		goto out;						\
++	}								\
++									\
++	cfqc = cgroup_to_cfq_cgroup(cont);				\
++									\
++	cgroup_unlock();						\
++									\
++	/* print */							\
++	ret = snprintf(page, PAGE_SIZE, "default " __DEF_MSG ": %d\n",	\
++			cfqc->__VAR);					\
++									\
++	p = rb_first(&cfqc->sibling_tree);				\
++	while (p) {							\
++		struct cfq_data *__cfqd;				\
++									\
++		__cfqd = rb_entry(p, struct cfq_data, group_node);	\
++									\
++		ret += snprintf(page + ret, PAGE_SIZE - ret, " %s %d\n",\
++			       __cfqd->cfqdd->queue->kobj.parent->name,	\
++			       __cfqd->__VAR);				\
++									\
++		p = rb_next(p);						\
++	}								\
++									\
++	ret = simple_read_from_buffer(userbuf, nbytes, ppos, page, ret);\
++									\
++out:									\
++	free_page((unsigned long)page);					\
++	return ret;							\
+ }
+-
+-static ssize_t cfq_cgroup_write(struct cgroup *cont, struct cftype *cft,
+-				struct file *file, const char __user *userbuf,
+-				size_t nbytes, loff_t *ppos)
+-{
+-	struct cfq_cgroup *cfqc;
+-	ssize_t ret;
+-	long new_prio;
+-	int err, sn;
+-	char *buffer = NULL;
+-	char *valbuf = NULL, *pathbuf = NULL;
+-	struct rb_node *p;
+-
+-	cgroup_lock();
+-	if (cgroup_is_removed(cont)) {
+-		cgroup_unlock();
+-		ret = -ENODEV;
+-		goto out;
+-	}
+-
+-	cfqc = cgroup_to_cfq_cgroup(cont);
+-	cgroup_unlock();
+-
+-	/* set priority */
+-	buffer = kmalloc(nbytes + 1, GFP_KERNEL);
+-	if (buffer == NULL)
+-		return -ENOMEM;
+-
+-	if (copy_from_user(buffer, userbuf, nbytes)) {
+-		ret = -EFAULT;
+-		goto free_buf;
+-	}
+-	buffer[nbytes] = 0;
+-
+-	valbuf = kmalloc(nbytes + 1, GFP_KERNEL);
+-	if (!valbuf) {
+-		ret = -ENOMEM;
+-		goto free_buf;
+-	}
+-
+-	pathbuf = kmalloc(nbytes + 1, GFP_KERNEL);
+-	if (!pathbuf) {
+-		ret = -ENOMEM;
+-		goto free_val;
+-	}
+-
+-	param_separate(buffer, valbuf, pathbuf, nbytes);
+-
+-	err = strict_strtoul(valbuf, 10, &new_prio);
+-	if ((err) || ((new_prio < 0) || (new_prio > CFQ_CGROUP_MAX_IOPRIO))) {
+-		ret = -EINVAL;
+-		goto free_path;
+-	}
+-
+-	sn = strlen(pathbuf);
+-
+-	p = rb_first(&cfqc->sibling_tree);
+-	while (p) {
+-		struct cfq_data *__cfqd;
+-		const char *namep;
+-
+-		__cfqd = rb_entry(p, struct cfq_data, group_node);
+-		namep = __cfqd->cfqdd->queue->kobj.parent->name;
+-
+-		if (sn == 0) {
+-			__cfqd->ioprio = new_prio;
+-		} else if ((sn == strlen(namep)) &&
+-			 (strncmp(pathbuf, namep, sn) == 0)) {
+-			__cfqd->ioprio = new_prio;
+-			break;
+-		}
+-
+-		p = rb_next(p);
+-	}
+-
+-	if ((sn == 0) ||
+-	    ((sn == 7) && (strncmp(pathbuf, "default", 7) == 0)))
+-		cfqc->ioprio = new_prio;
+-
+-	ret = nbytes;
+-
+-free_path:
+-	kfree(pathbuf);
+-free_val:
+-	kfree(valbuf);
+-free_buf:
+-	kfree(buffer);
+-out:
+-	return ret;
++READ_FUNCTION(cfq_cgroup_ioprio_read, ioprio, "priority");
++READ_FUNCTION(cfq_cgroup_ioprio_class_read, ioprio_class, "priority class");
++#undef READ_FUNCTION
++
++#define WRITE_FUNCTION(__FUNC, __VAR, MIN, MAX)				\
++static ssize_t __FUNC(struct cgroup *cont, struct cftype *cft,		\
++			struct file *file, const char __user *userbuf,	\
++			size_t nbytes, loff_t *ppos)			\
++{									\
++	struct cfq_cgroup *cfqc;					\
++	ssize_t ret;							\
++	long new_val;							\
++	int err, sn;							\
++	char *buffer = NULL;						\
++	char *valbuf = NULL, *pathbuf = NULL;				\
++	struct rb_node *p;						\
++									\
++	cgroup_lock();							\
++	if (cgroup_is_removed(cont)) {					\
++		cgroup_unlock();					\
++		ret = -ENODEV;						\
++		goto out;						\
++	}								\
++									\
++	cfqc = cgroup_to_cfq_cgroup(cont);				\
++	cgroup_unlock();						\
++									\
++	/* set */							\
++	buffer = kmalloc(nbytes + 1, GFP_KERNEL);			\
++	if (buffer == NULL)						\
++		return -ENOMEM;						\
++									\
++	if (copy_from_user(buffer, userbuf, nbytes)) {			\
++		ret = -EFAULT;						\
++		goto free_buf;						\
++	}								\
++	buffer[nbytes] = 0;						\
++									\
++	valbuf = kmalloc(nbytes + 1, GFP_KERNEL);			\
++	if (!valbuf) {							\
++		ret = -ENOMEM;						\
++		goto free_buf;						\
++	}								\
++									\
++	pathbuf = kmalloc(nbytes + 1, GFP_KERNEL);			\
++	if (!pathbuf) {							\
++		ret = -ENOMEM;						\
++		goto free_val;						\
++	}								\
++									\
++	param_separate(buffer, valbuf, pathbuf, nbytes);		\
++									\
++	err = strict_strtoul(valbuf, 10, &new_val);			\
++	if ((err) || ((new_val < (MIN)) || (new_val > (MAX)))) {	\
++		ret = -EINVAL;						\
++		goto free_path;						\
++	}								\
++									\
++	sn = strlen(pathbuf);						\
++									\
++	p = rb_first(&cfqc->sibling_tree);				\
++	while (p) {							\
++		struct cfq_data *__cfqd;				\
++		const char *namep;					\
++									\
++		__cfqd = rb_entry(p, struct cfq_data, group_node);	\
++		namep = __cfqd->cfqdd->queue->kobj.parent->name;	\
++									\
++		if (sn == 0) {						\
++			__cfqd->__VAR = new_val;			\
++		} else if ((sn == strlen(namep)) &&			\
++			 (strncmp(pathbuf, namep, sn) == 0)) {		\
++			__cfqd->__VAR = new_val;			\
++			break;						\
++		}							\
++									\
++		p = rb_next(p);						\
++	}								\
++									\
++	if ((sn == 0) ||						\
++	    ((sn == 7) && (strncmp(pathbuf, "default", 7) == 0)))	\
++		cfqc->__VAR = new_val;					\
++									\
++	ret = nbytes;							\
++									\
++free_path:								\
++	kfree(pathbuf);							\
++free_val:								\
++	kfree(valbuf);							\
++free_buf:								\
++	kfree(buffer);							\
++out:									\
++	return ret;							\
+ }
++WRITE_FUNCTION(cfq_cgroup_ioprio_write, ioprio, 0, CFQ_CGROUP_MAX_IOPRIO);
++WRITE_FUNCTION(cfq_cgroup_ioprio_class_write, ioprio_class, 0,
++							IOPRIO_CLASS_IDLE);
++#undef WRITE_FUNCTION
++
++#define CFQ_CGROUP_CTYPE_ATTR(_name)			\
++	{						\
++		.name = (__stringify(_name)),		\
++		.read = cfq_cgroup_##_name##_read,	\
++		.write = cfq_cgroup_##_name##_write,	\
++	}
+ 
+ static struct cftype files[] = {
+-	{
+-		.name = "ioprio",
+-		.read = cfq_cgroup_read,
+-		.write = cfq_cgroup_write,
+-	},
++	CFQ_CGROUP_CTYPE_ATTR(ioprio),
++	CFQ_CGROUP_CTYPE_ATTR(ioprio_class),
+ };
+ 
+ static int cfq_cgroup_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
+index 920bcb5..ca04ebd 100644
+--- a/include/linux/cfq-iosched.h
++++ b/include/linux/cfq-iosched.h
+@@ -102,6 +102,7 @@ struct cfq_data {
+ 
+ #ifdef CONFIG_IOSCHED_CFQ_CGROUP
+ 	unsigned int ioprio;
++	unsigned short ioprio_class;
+ 
+ 	/* sibling_tree member for cfq_meta_data */
+ 	struct rb_node sib_node;
 -- 
-tejun
+1.5.6.5
+
+
