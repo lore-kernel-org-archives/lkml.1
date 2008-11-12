@@ -1,90 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbYKLFPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbYKLFQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbYKLFPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 00:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbYKLFPX
+	id S1751551AbYKLFQE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 00:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYKLFPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 00:15:23 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39197 "EHLO
+	Wed, 12 Nov 2008 00:15:24 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39186 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbYKLFPU (ORCPT
+	with ESMTP id S1750798AbYKLFPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Nov 2008 00:15:20 -0500
-Message-Id: <20081112051518.503323629@goodmis.org>
+Message-Id: <20081112051518.277009700@goodmis.org>
 References: <20081112051438.843792214@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 00:14:40 -0500
+Date: Wed, 12 Nov 2008 00:14:39 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/2] ftrace: unlikely annotation tracer
-Content-Disposition: inline; filename=0002-ftrace-unlikely-annotation-tracer.patch
+Subject: [PATCH 1/2] trace: profile likely and unlikely annotations
+Content-Disposition: inline; filename=0001-trace-profile-likely-and-unlikely-annotations.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: new unlikely tracer
+Impact: new unlikely/likely profiler
 
-This patch adds a way to record the instances of the likely and unlikely
-condition annotations.
+Andrew Morton recently suggested having an in-kernel way to profile
+likely and unlikely macros. This patch achieves that goal.
 
-When "unlikely" is set in /debugfs/tracing/iter_ctrl the unlikely conditions
-will be added to any of the ftrace tracers. The change takes effect when
-a new tracer is passed into the current_tracer file.
+When configured, every(*) likely and unlikely macro gets a counter attached
+to it. When the condition is hit, the hit and misses of that condition
+are recorded. These numbers can later be retrieved by:
 
-For example:
+  /debugfs/tracing/profile_likely    - All likely markers
+  /debugfs/tracing/profile_unlikely  - All unlikely markers.
 
- bash-3471  [003]   357.014755: [INCORRECT] sched_info_dequeued:sched_stats.h:177
- bash-3471  [003]   357.014756: [correct] update_curr:sched_fair.c:489
- bash-3471  [003]   357.014758: [correct] calc_delta_fair:sched_fair.c:411
- bash-3471  [003]   357.014759: [correct] account_group_exec_runtime:sched_stats.h:356
- bash-3471  [003]   357.014761: [correct] update_curr:sched_fair.c:489
- bash-3471  [003]   357.014763: [INCORRECT] calc_delta_fair:sched_fair.c:411
- bash-3471  [003]   357.014765: [correct] calc_delta_mine:sched.c:1279
+# cat /debug/tracing/profile_unlikely | head
+ correct incorrect  %        Function                  File              Line
+ ------- ---------  -        --------                  ----              ----
+    2167        0   0 do_arch_prctl                  process_64.c         832
+       0        0   0 do_arch_prctl                  process_64.c         804
+    2670        0   0 IS_ERR                         err.h                34
+   71230     5693   7 __switch_to                    process_64.c         673
+   76919        0   0 __switch_to                    process_64.c         639
+   43184    33743  43 __switch_to                    process_64.c         624
+   12740    64181  83 __switch_to                    process_64.c         594
+   12740    64174  83 __switch_to                    process_64.c         590
 
-Which shows the normal tracer heading, as well as whether the condition was
-correct "[correct]" or was mistaken "[INCORRECT]", followed by the function,
-file name and line number.
+# cat /debug/tracing/profile_unlikely | \
+  awk '{ if ($3 > 25) print $0; }' |head -20
+   44963    35259  43 __switch_to                    process_64.c         624
+   12762    67454  84 __switch_to                    process_64.c         594
+   12762    67447  84 __switch_to                    process_64.c         590
+    1478      595  28 syscall_get_error              syscall.h            51
+       0     2821 100 syscall_trace_leave            ptrace.c             1567
+       0        1 100 native_smp_prepare_cpus        smpboot.c            1237
+   86338   265881  75 calc_delta_fair                sched_fair.c         408
+  210410   108540  34 calc_delta_mine                sched.c              1267
+       0    54550 100 sched_info_queued              sched_stats.h        222
+   51899    66435  56 pick_next_task_fair            sched_fair.c         1422
+       6       10  62 yield_task_fair                sched_fair.c         982
+    7325     2692  26 rt_policy                      sched.c              144
+       0     1270 100 pre_schedule_rt                sched_rt.c           1261
+    1268    48073  97 pick_next_task_rt              sched_rt.c           884
+       0    45181 100 sched_info_dequeued            sched_stats.h        177
+       0       15 100 sched_move_task                sched.c              8700
+       0       15 100 sched_move_task                sched.c              8690
+   53167    33217  38 schedule                       sched.c              4457
+       0    80208 100 sched_info_switch              sched_stats.h        270
+   30585    49631  61 context_switch                 sched.c              2619
+
+# cat /debug/tracing/profile_likely | awk '{ if ($3 > 25) print $0; }'
+   39900    36577  47 pick_next_task                 sched.c              4397
+   20824    15233  42 switch_mm                      mmu_context_64.h     18
+       0        7 100 __cancel_work_timer            workqueue.c          560
+     617    66484  99 clocksource_adjust             timekeeping.c        456
+       0   346340 100 audit_syscall_exit             auditsc.c            1570
+      38   347350  99 audit_get_context              auditsc.c            732
+       0   345244 100 audit_syscall_entry            auditsc.c            1541
+      38     1017  96 audit_free                     auditsc.c            1446
+       0     1090 100 audit_alloc                    auditsc.c            862
+    2618     1090  29 audit_alloc                    auditsc.c            858
+       0        6 100 move_masked_irq                migration.c          9
+       1      198  99 probe_sched_wakeup             trace_sched_switch.c 58
+       2        2  50 probe_wakeup                   trace_sched_wakeup.c 227
+       0        2 100 probe_wakeup_sched_switch      trace_sched_wakeup.c 144
+    4514     2090  31 __grab_cache_page              filemap.c            2149
+   12882   228786  94 mapping_unevictable            pagemap.h            50
+       4       11  73 __flush_cpu_slab               slub.c               1466
+  627757   330451  34 slab_free                      slub.c               1731
+    2959    61245  95 dentry_lru_del_init            dcache.c             153
+     946     1217  56 load_elf_binary                binfmt_elf.c         904
+     102       82  44 disk_put_part                  genhd.h              206
+       1        1  50 dst_gc_task                    dst.c                82
+       0       19 100 tcp_mss_split_point            tcp_output.c         1126
+
+As you can see by the above, there's a bit of work to do in rethinking
+the use of some unlikelys and likelys. Note: the unlikely case had 71 hits
+that were more than 25%.
+
+Note:  After submitting my first version of this patch, Andrew Morton
+  showed me a version written by Daniel Walker, where I picked up
+  the following ideas from:
+
+  1)  Using __builtin_constant_p to avoid profiling fixed values.
+  2)  Using __FILE__ instead of instruction pointers.
+  3)  Using the preprocessor to stop all profiling of likely
+       annotations from vsyscall_64.c.
+
+Thanks to Andrew Morton, Arjan van de Ven, Theodore Tso and Ingo Molnar
+for their feed back on this patch.
+
+(*) Not ever unlikely is recorded, those that are used by vsyscalls
+ (a few of them) had to have profiling disabled.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/Kconfig          |   22 ++++++++
- kernel/trace/Makefile         |    6 ++
- kernel/trace/trace.c          |   29 ++++++++++
- kernel/trace/trace.h          |   39 ++++++++++++++
- kernel/trace/trace_unlikely.c |  114 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 210 insertions(+), 0 deletions(-)
+ arch/x86/kernel/vsyscall_64.c     |    8 ++
+ include/asm-generic/vmlinux.lds.h |   14 +++-
+ include/linux/compiler.h          |   61 +++++++++++++-
+ kernel/trace/Kconfig              |   16 ++++
+ kernel/trace/Makefile             |    1 +
+ kernel/trace/trace_unlikely.c     |  164 +++++++++++++++++++++++++++++++++++++
+ 6 files changed, 261 insertions(+), 3 deletions(-)
+ create mode 100644 kernel/trace/trace_unlikely.c
 
+diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
+index ebf2f12..1f2e7c6 100644
+--- a/arch/x86/kernel/vsyscall_64.c
++++ b/arch/x86/kernel/vsyscall_64.c
+@@ -17,6 +17,14 @@
+  *  want per guest time just set the kernel.vsyscall64 sysctl to 0.
+  */
+ 
++/* Protect userspace from profiling */
++#ifdef CONFIG_TRACE_UNLIKELY_PROFILE
++# undef likely
++# undef unlikely
++# define likely(x)		likely_notrace(x)
++# define unlikely(x)		unlikely_notrace(x)
++#endif
++
+ #include <linux/time.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index 63709a5..2110312 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -45,6 +45,17 @@
+ #define MCOUNT_REC()
+ #endif
+ 
++#ifdef CONFIG_TRACE_UNLIKELY_PROFILE
++#define LIKELY_PROFILE()	VMLINUX_SYMBOL(__start_likely_profile) = .;   \
++				*(_ftrace_likely)			      \
++				VMLINUX_SYMBOL(__stop_likely_profile) = .;    \
++				VMLINUX_SYMBOL(__start_unlikely_profile) = .; \
++				*(_ftrace_unlikely)			      \
++				VMLINUX_SYMBOL(__stop_unlikely_profile) = .;
++#else
++#define LIKELY_PROFILE()
++#endif
++
+ /* .data section */
+ #define DATA_DATA							\
+ 	*(.data)							\
+@@ -62,7 +73,8 @@
+ 	VMLINUX_SYMBOL(__stop___markers) = .;				\
+ 	VMLINUX_SYMBOL(__start___tracepoints) = .;			\
+ 	*(__tracepoints)						\
+-	VMLINUX_SYMBOL(__stop___tracepoints) = .;
++	VMLINUX_SYMBOL(__stop___tracepoints) = .;			\
++	LIKELY_PROFILE()
+ 
+ #define RO_DATA(align)							\
+ 	. = ALIGN((align));						\
+diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+index 98115d9..935e30c 100644
+--- a/include/linux/compiler.h
++++ b/include/linux/compiler.h
+@@ -59,8 +59,65 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+  * specific implementations come from the above header files
+  */
+ 
+-#define likely(x)	__builtin_expect(!!(x), 1)
+-#define unlikely(x)	__builtin_expect(!!(x), 0)
++#ifdef CONFIG_TRACE_UNLIKELY_PROFILE
++struct ftrace_likely_data {
++	const char *func;
++	const char *file;
++	unsigned line;
++	unsigned long correct;
++	unsigned long incorrect;
++};
++void ftrace_likely_update(struct ftrace_likely_data *f, int val, int expect);
++
++#define likely_notrace(x)	__builtin_expect(!!(x), 1)
++#define unlikely_notrace(x)	__builtin_expect(!!(x), 0)
++
++#define likely_check(x) ({						\
++			int ______r;					\
++			static struct ftrace_likely_data		\
++				__attribute__((__aligned__(4)))		\
++				__attribute__((section("_ftrace_likely"))) \
++				______f = {				\
++				.func = __func__,			\
++				.file = __FILE__,			\
++				.line = __LINE__,			\
++			};						\
++			______f.line = __LINE__;			\
++			______r = likely_notrace(x);			\
++			ftrace_likely_update(&______f, ______r, 1);	\
++			______r;					\
++		})
++#define unlikely_check(x) ({						\
++			int ______r;					\
++			static struct ftrace_likely_data		\
++				__attribute__((__aligned__(4)))		\
++				__attribute__((section("_ftrace_unlikely"))) \
++				______f = {				\
++				.func = __func__,			\
++				.file = __FILE__,			\
++				.line = __LINE__,			\
++			};						\
++			______f.line = __LINE__;			\
++			______r = unlikely_notrace(x);			\
++			ftrace_likely_update(&______f, ______r, 0);	\
++			______r;					\
++		})
++
++/*
++ * Using __builtin_constant_p(x) to ignore cases where the return
++ * value is always the same.  This idea is taken from a similar patch
++ * written by Daniel Walker.
++ */
++# ifndef likely
++#  define likely(x)	(__builtin_constant_p(x) ? !!(x) : likely_check(x))
++# endif
++# ifndef unlikely
++#  define unlikely(x)	(__builtin_constant_p(x) ? !!(x) : unlikely_check(x))
++# endif
++#else
++# define likely(x)	__builtin_expect(!!(x), 1)
++# define unlikely(x)	__builtin_expect(!!(x), 0)
++#endif
+ 
+ /* Optimization barrier */
+ #ifndef barrier
 diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index a604f24..8abcaf8 100644
+index d986216..a604f24 100644
 --- a/kernel/trace/Kconfig
 +++ b/kernel/trace/Kconfig
-@@ -175,6 +175,28 @@ config TRACE_UNLIKELY_PROFILE
+@@ -159,6 +159,22 @@ config BOOT_TRACER
+ 	    selected, because the self-tests are an initcall as well and that
+ 	    would invalidate the boot trace. )
  
- 	  Say N if unsure.
- 
-+config TRACING_UNLIKELY
-+	bool
++config TRACE_UNLIKELY_PROFILE
++	bool "Trace likely/unlikely profiler"
++	depends on DEBUG_KERNEL
++	select TRACING
 +	help
-+	  Selected by tracers that will trace the likely and unlikely
-+	  conditions. This prevents the tracers themselves from being
-+	  profiled. Profiling the tracing infrastructure can only happen
-+	  when the likelys and unlikelys are not being traced.
++	  This tracer profiles all the the likely and unlikely macros
++	  in the kernel. It will display the results in:
 +
-+config UNLIKELY_TRACER
-+	bool "Trace likely/unlikely instances"
-+	depends on TRACE_UNLIKELY_PROFILE
-+	select TRACING_UNLIKELY
-+	help
-+	  This traces the events of likely and unlikely condition
-+	  calls in the kernel.  The difference between this and the
-+	  "Trace likely/unlikely profiler" is that this is not a
-+	  histogram of the callers, but actually places the calling
-+	  events into a running trace buffer to see when and where the
-+	  events happened, as well as their results.
++	  /debugfs/tracing/profile_likely
++	  /debugfs/tracing/profile_unlikely
++
++	  Note: this will add a significant overhead, only turn this
++	  on if you need to profile the system's use of these macros.
 +
 +	  Say N if unsure.
 +
@@ -92,293 +279,186 @@ index a604f24..8abcaf8 100644
  	bool "Trace max stack"
  	depends on HAVE_FUNCTION_TRACER
 diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 98e70ee..c938d03 100644
+index 3e1f361..98e70ee 100644
 --- a/kernel/trace/Makefile
 +++ b/kernel/trace/Makefile
-@@ -10,6 +10,12 @@ CFLAGS_trace_selftest_dynamic.o = -pg
- obj-y += trace_selftest_dynamic.o
- endif
+@@ -25,5 +25,6 @@ obj-$(CONFIG_STACK_TRACER) += trace_stack.o
+ obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
+ obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
+ obj-$(CONFIG_FUNCTION_RET_TRACER) += trace_functions_return.o
++obj-$(CONFIG_TRACE_UNLIKELY_PROFILE) += trace_unlikely.o
  
-+# If unlikely tracing is enabled, do not trace these files
-+ifdef CONFIG_TRACING_UNLIKELY
-+KBUILD_CFLAGS += '-Dlikely(x)=likely_notrace(x)'
-+KBUILD_CFLAGS += '-Dunlikely(x)=unlikely_notrace(x)'
-+endif
+ libftrace-y := ftrace.o
+diff --git a/kernel/trace/trace_unlikely.c b/kernel/trace/trace_unlikely.c
+new file mode 100644
+index 0000000..9493269
+--- /dev/null
++++ b/kernel/trace/trace_unlikely.c
+@@ -0,0 +1,164 @@
++/*
++ * unlikely profiler
++ *
++ * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
++ */
++#include <linux/kallsyms.h>
++#include <linux/seq_file.h>
++#include <linux/spinlock.h>
++#include <linux/debugfs.h>
++#include <linux/uaccess.h>
++#include <linux/module.h>
++#include <linux/ftrace.h>
++#include <linux/hash.h>
++#include <linux/fs.h>
++#include <asm/local.h>
++#include "trace.h"
 +
- obj-$(CONFIG_FUNCTION_TRACER) += libftrace.o
- obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
- 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a3f7ae9..83d3863 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -258,6 +258,9 @@ static const char *trace_options[] = {
- 	"sched-tree",
- 	"ftrace_printk",
- 	"ftrace_preempt",
-+#ifdef CONFIG_UNLIKELY_TRACER
-+	"unlikely",
-+#endif
- 	NULL
- };
- 
-@@ -1648,6 +1651,18 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
-+	case TRACE_UNLIKELY: {
-+		struct trace_unlikely *field;
++void ftrace_likely_update(struct ftrace_likely_data *f, int val, int expect)
++{
++	/* FIXME: Make this atomic! */
++	if (val == expect)
++		f->correct++;
++	else
++		f->incorrect++;
++}
++EXPORT_SYMBOL(ftrace_likely_update);
 +
-+		trace_assign_type(field, entry);
-+
-+		trace_seq_printf(s, "[%s] %s:%s:%d\n",
-+				 field->correct ? "correct" : "INCORRECT",
-+				 field->func,
-+				 field->file,
-+				 field->line);
-+		break;
-+	}
- 	default:
- 		trace_seq_printf(s, "Unknown type %d\n", entry->type);
- 	}
-@@ -1787,6 +1802,18 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
- 		return print_return_function(iter);
- 		break;
- 	}
-+	case TRACE_UNLIKELY: {
-+		struct trace_unlikely *field;
-+
-+		trace_assign_type(field, entry);
-+
-+		trace_seq_printf(s, "[%s] %s:%s:%d\n",
-+				 field->correct ? "correct" : "INCORRECT",
-+				 field->func,
-+				 field->file,
-+				 field->line);
-+		break;
-+	}
- 	}
- 	return TRACE_TYPE_HANDLED;
- }
-@@ -2592,6 +2619,7 @@ static int tracing_set_tracer(char *buf)
- 	if (t == current_trace)
- 		goto out;
- 
-+	trace_unlikely_disable();
- 	if (current_trace && current_trace->reset)
- 		current_trace->reset(tr);
- 
-@@ -2599,6 +2627,7 @@ static int tracing_set_tracer(char *buf)
- 	if (t->init)
- 		t->init(tr);
- 
-+	trace_unlikely_enable(tr);
-  out:
- 	mutex_unlock(&trace_types_lock);
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index e40ce0c..b20eed0 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -21,6 +21,7 @@ enum trace_type {
- 	TRACE_SPECIAL,
- 	TRACE_MMIO_RW,
- 	TRACE_MMIO_MAP,
-+	TRACE_UNLIKELY,
- 	TRACE_BOOT,
- 	TRACE_FN_RET,
- 
-@@ -127,6 +128,16 @@ struct trace_boot {
- 	struct boot_trace	initcall;
- };
- 
-+#define TRACE_FUNC_SIZE 30
-+#define TRACE_FILE_SIZE 20
-+struct trace_unlikely {
-+	struct trace_entry	ent;
-+	unsigned	        line;
-+	char			func[TRACE_FUNC_SIZE+1];
-+	char			file[TRACE_FILE_SIZE+1];
-+	char			correct;
++struct ftrace_pointer {
++	void		*start;
++	void		*stop;
 +};
 +
- /*
-  * trace_flag_type is an enumeration that holds different
-  * states when a trace occurs. These are:
-@@ -228,6 +239,7 @@ extern void __ftrace_bad_type(void);
- 		IF_ASSIGN(var, ent, struct trace_mmiotrace_map,		\
- 			  TRACE_MMIO_MAP);				\
- 		IF_ASSIGN(var, ent, struct trace_boot, TRACE_BOOT);	\
-+		IF_ASSIGN(var, ent, struct trace_unlikely, TRACE_UNLIKELY); \
- 		IF_ASSIGN(var, ent, struct ftrace_ret_entry, TRACE_FN_RET); \
- 		__ftrace_bad_type();					\
- 	} while (0)
-@@ -448,6 +460,9 @@ enum trace_iterator_flags {
- 	TRACE_ITER_SCHED_TREE		= 0x200,
- 	TRACE_ITER_PRINTK		= 0x400,
- 	TRACE_ITER_PREEMPTONLY		= 0x800,
-+#ifdef CONFIG_UNLIKELY_TRACER
-+	TRACE_ITER_UNLIKELY		= 0x1000,
-+#endif
- };
- 
- /*
-@@ -507,4 +522,28 @@ static inline void ftrace_preempt_enable(int resched)
- 		preempt_enable_notrace();
- }
- 
-+#ifdef CONFIG_UNLIKELY_TRACER
-+extern int enable_unlikely_tracing(struct trace_array *tr);
-+extern void disable_unlikely_tracing(void);
-+static inline int trace_unlikely_enable(struct trace_array *tr)
++static void *
++t_next(struct seq_file *m, void *v, loff_t *pos)
 +{
-+	if (trace_flags & TRACE_ITER_UNLIKELY)
-+		return enable_unlikely_tracing(tr);
++	struct ftrace_pointer *f = m->private;
++	struct ftrace_likely_data *p = v;
++
++	(*pos)++;
++
++	if (v == (void *)1)
++		return f->start;
++
++	++p;
++
++	if ((void *)p >= (void *)f->stop)
++		return NULL;
++
++	return p;
++}
++
++static void *t_start(struct seq_file *m, loff_t *pos)
++{
++	void *t = (void *)1;
++	loff_t l = 0;
++
++	for (; t && l < *pos; t = t_next(m, t, &l))
++		;
++
++	return t;
++}
++
++static void t_stop(struct seq_file *m, void *p)
++{
++}
++
++static int t_show(struct seq_file *m, void *v)
++{
++	struct ftrace_likely_data *p = v;
++	const char *f;
++	unsigned long percent;
++
++	if (v == (void *)1) {
++		seq_printf(m, " correct incorrect  %% "
++			      "       Function                "
++			      "  File              Line\n"
++			      " ------- ---------  - "
++			      "       --------                "
++			      "  ----              ----\n");
++		return 0;
++	}
++
++	/* Only print the file, not the path */
++	f = p->file + strlen(p->file);
++	while (f >= p->file && *f != '/')
++		f--;
++	f++;
++
++	if (p->correct) {
++		percent = p->incorrect * 100;
++		percent /= p->correct + p->incorrect;
++	} else
++		percent = p->incorrect ? 100 : 0;
++
++	seq_printf(m, "%8lu %8lu %3lu ", p->correct, p->incorrect, percent);
++	seq_printf(m, "%-30.30s %-20.20s %d\n", p->func, f, p->line);
 +	return 0;
 +}
-+static inline void trace_unlikely_disable(void)
++
++static struct seq_operations tracing_likely_seq_ops = {
++	.start		= t_start,
++	.next		= t_next,
++	.stop		= t_stop,
++	.show		= t_show,
++};
++
++static int tracing_likely_open(struct inode *inode, struct file *file)
 +{
-+	/* due to races, always disable */
-+	disable_unlikely_tracing();
-+}
-+#else
-+static inline int trace_unlikely_enable(struct trace_array *tr)
-+{
-+	return 0;
-+}
-+static inline void trace_unlikely_disable(void)
-+{
-+}
-+#endif /* CONFIG_UNLIKELY_TRACER */
++	int ret;
 +
- #endif /* _LINUX_KERNEL_TRACE_H */
-diff --git a/kernel/trace/trace_unlikely.c b/kernel/trace/trace_unlikely.c
-index 9493269..7290e0e 100644
---- a/kernel/trace/trace_unlikely.c
-+++ b/kernel/trace/trace_unlikely.c
-@@ -15,8 +15,122 @@
- #include <asm/local.h>
- #include "trace.h"
- 
-+#ifdef CONFIG_UNLIKELY_TRACER
-+
-+static int unlikely_tracing_enabled __read_mostly;
-+static DEFINE_MUTEX(unlikely_tracing_mutex);
-+static struct trace_array *unlikely_tracer;
-+
-+static void
-+probe_likely_condition(struct ftrace_likely_data *f, int val, int expect)
-+{
-+	struct trace_array *tr = unlikely_tracer;
-+	struct ring_buffer_event *event;
-+	struct trace_unlikely *entry;
-+	unsigned long flags, irq_flags;
-+	int cpu, pc;
-+	const char *p;
-+
-+	/*
-+	 * I would love to save just the ftrace_likely_data pointer, but
-+	 * this code can also be used by modules. Ugly things can happen
-+	 * if the module is unloaded, and then we go and read the
-+	 * pointer.  This is slower, but much safer.
-+	 */
-+
-+	if (unlikely(!tr))
-+		return;
-+
-+	local_irq_save(flags);
-+	cpu = raw_smp_processor_id();
-+	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
-+		goto out;
-+
-+	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
-+					 &irq_flags);
-+	if (!event)
-+		goto out;
-+
-+	pc = preempt_count();
-+	entry	= ring_buffer_event_data(event);
-+	tracing_generic_entry_update(&entry->ent, flags, pc);
-+	entry->ent.type		= TRACE_UNLIKELY;
-+
-+	/* Strip off the path, only save the file */
-+	p = f->file + strlen(f->file);
-+	while (p >= f->file && *p != '/')
-+		p--;
-+	p++;
-+
-+	strncpy(entry->func, f->func, TRACE_FUNC_SIZE);
-+	strncpy(entry->file, p, TRACE_FILE_SIZE);
-+	entry->func[TRACE_FUNC_SIZE] = 0;
-+	entry->file[TRACE_FILE_SIZE] = 0;
-+	entry->line = f->line;
-+	entry->correct = val == expect;
-+
-+	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
-+
-+ out:
-+	atomic_dec(&tr->data[cpu]->disabled);
-+	local_irq_restore(flags);
-+}
-+
-+static inline
-+void trace_likely_condition(struct ftrace_likely_data *f, int val, int expect)
-+{
-+	if (!unlikely_tracing_enabled)
-+		return;
-+
-+	probe_likely_condition(f, val, expect);
-+}
-+
-+int enable_unlikely_tracing(struct trace_array *tr)
-+{
-+	int ret = 0;
-+
-+	mutex_lock(&unlikely_tracing_mutex);
-+	unlikely_tracer = tr;
-+	/*
-+	 * Must be seen before enabling. The reader is a condition
-+	 * where we do not need a matching rmb()
-+	 */
-+	smp_wmb();
-+	unlikely_tracing_enabled++;
-+	mutex_unlock(&unlikely_tracing_mutex);
++	ret = seq_open(file, &tracing_likely_seq_ops);
++	if (!ret) {
++		struct seq_file *m = file->private_data;
++		m->private = (void *)inode->i_private;
++	}
 +
 +	return ret;
 +}
 +
-+void disable_unlikely_tracing(void)
++static struct file_operations tracing_likely_fops = {
++	.open		= tracing_likely_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++};
++
++extern unsigned long __start_likely_profile[];
++extern unsigned long __stop_likely_profile[];
++extern unsigned long __start_unlikely_profile[];
++extern unsigned long __stop_unlikely_profile[];
++
++static struct ftrace_pointer ftrace_likely_pos = {
++	.start			= __start_likely_profile,
++	.stop			= __stop_likely_profile,
++};
++
++static struct ftrace_pointer ftrace_unlikely_pos = {
++	.start			= __start_unlikely_profile,
++	.stop			= __stop_unlikely_profile,
++};
++
++static __init int ftrace_unlikely_init(void)
 +{
-+	mutex_lock(&unlikely_tracing_mutex);
++	struct dentry *d_tracer;
++	struct dentry *entry;
 +
-+	if (!unlikely_tracing_enabled)
-+		goto out_unlock;
++	d_tracer = tracing_init_dentry();
 +
-+	unlikely_tracing_enabled--;
++	entry = debugfs_create_file("profile_likely", 0444, d_tracer,
++				    &ftrace_likely_pos,
++				    &tracing_likely_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'profile_likely' entry\n");
 +
-+ out_unlock:
-+	mutex_unlock(&unlikely_tracing_mutex);
++	entry = debugfs_create_file("profile_unlikely", 0444, d_tracer,
++				    &ftrace_unlikely_pos,
++				    &tracing_likely_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs"
++			   " 'profile_unlikely' entry\n");
++
++	return 0;
 +}
-+#else
-+static inline
-+void trace_likely_condition(struct ftrace_likely_data *f, int val, int expect)
-+{
-+}
-+#endif /* CONFIG_UNLIKELY_TRACER */
 +
- void ftrace_likely_update(struct ftrace_likely_data *f, int val, int expect)
- {
-+	/*
-+	 * I would love to have a trace point here instead, but the
-+	 * trace point code is so inundated with unlikely and likely
-+	 * conditions that the recursive nightmare that exists is too
-+	 * much to try to get working. At least for now.
-+	 */
-+	trace_likely_condition(f, val, expect);
-+
- 	/* FIXME: Make this atomic! */
- 	if (val == expect)
- 		f->correct++;
++device_initcall(ftrace_unlikely_init);
 -- 
 1.5.6.5
 
