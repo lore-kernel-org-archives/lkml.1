@@ -1,114 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYKLCur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbYKLDJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476AbYKLCur (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 21:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYKLCuh
+	id S1752361AbYKLDJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 22:09:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbYKLDJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 21:50:37 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64759 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbYKLCug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 21:50:36 -0500
-Message-ID: <491A43E0.2080109@cn.fujitsu.com>
-Date: Wed, 12 Nov 2008 10:48:00 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 11 Nov 2008 22:09:31 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:36065 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbYKLDJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 22:09:30 -0500
+Message-ID: <491A48E9.8020909@ct.jp.nec.com>
+Date: Tue, 11 Nov 2008 19:09:29 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Fabio Checconi <fchecconi@gmail.com>
-CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       paolo.valente@unimore.it, fabio@gandalf.sssup.it,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH 0/3] BFQ I/O Scheduler (second take)
-References: <20081111125148.GD9508@gandalf.sssup.it>
-In-Reply-To: <20081111125148.GD9508@gandalf.sssup.it>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] x86: signal_32: introduce retcode and rt_retcode
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC: Linux Containers <containers@lists.linux-foundation.org>
-    Vivek Goyal <vgoyal@redhat.com>
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Fabio Checconi wrote:
-> Hi Jens, hi all,
-> 
+Impact: cleanup
 
-Hi Fabio,
+Introduce retcode and rt_retcode to replace setting up frame->retcode.
 
->   this is an updated version of the patchset introducing the BFQ (Budget
-> Fair Queueing) I/O scheduler.  It is based on CFQ and it has been
-> developed trying to improve the predictability and the fairness of the
-> service prvided, without penalizing the aggregate throughput.
-> 
-> This new version hopefully addresses the issues pointed out after the
-> first submission[1]:
-> 
->   1) it introduces a bitmap to notify priority changes to the bfq/cfq;
->   2) it introduces a timeout to put an higher limit to the time a
->       task can take to consume its budget;
->   3) it supports hierarchical scheduling.
-> 
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/kernel/signal_32.c |   30 ++++++++++++++++++++++++------
+ 1 files changed, 24 insertions(+), 6 deletions(-)
 
-So this is another cgroup-aware block i/o controller. ;)
-
-People are sending different proposals for bio controller. A summary
-on this can be found here:
-	http://marc.info/?l=linux-kernel&m=121798534716673&w=2
-
-And a new proposal sent by Vivek several days ago:
-	http://lkml.org/lkml/2008/11/6/227
-
-And there are some discussions about can we modify the elevator layer
-and create a common layer so we can provide group control for all
-the 4 io schedulers. (in the above mail thread)
-
-You may share some ideas with us.
-
-> With the introduction of a budget timeout, each task is still assigned
-> a budget measured in number of sectors instead of amount of time,
-> but a budget is not served to its exhaustion if it's taking too much
-> to complete.  Budgets are still scheduled using a modified version
-> of WF2Q+.
-> 
-> Using huge values for max_budget turns the scheduler into a pure
-> time-domain proportional share one, and the timeout controls the duration
-> of the time quanta.
-> 
-> WRT the support for hierarchical scheduling, that is being discussed
-> so much in these days, this scheduler does not add anything new, it
-> supports proportional share distribution of disk bandwidth among
-> full cgroup hierarchies; the mapping from requests to cgroups is
-> correct only in case of synchronous reads.
-> 
-> The overall diffstat is the following:
-> 
->  block/Kconfig.iosched         |   25 +
->  block/Makefile                |    1 +
->  block/bfq-cgroup.c            |  743 +++++++++++++++
->  block/bfq-ioc.c               |  375 ++++++++
->  block/bfq-iosched.c           | 2010 +++++++++++++++++++++++++++++++++++++++++
->  block/bfq-sched.c             |  950 +++++++++++++++++++
->  block/bfq.h                   |  514 +++++++++++
->  block/blk-ioc.c               |   27 +-
->  block/cfq-iosched.c           |   10 +-
->  fs/ioprio.c                   |    9 +-
->  include/linux/cgroup_subsys.h |    6 +
->  include/linux/iocontext.h     |   18 +-
->  12 files changed, 4669 insertions(+), 19 deletions(-)
-> 
-> For a complete description of the algorithm and of its properties
-> please refer to [2], (where extensive experiments on older hw can
-> also be found), and for some performance measurements and implementation
-> details, to [3].
-> 
-> [1] http://lkml.org/lkml/2008/4/1/234
-> [2] http://algo.ing.unimo.it/people/paolo/disk_sched/
-> [3] http://feanor.sssup.it/~fabio/linux/bfq/
-> 
-> As usual, any kind of feedback will be greatly appreciated, thanks
-> in advance.
-> 
-> Fabio Checconi, Paolo Valente
+diff --git a/arch/x86/kernel/signal_32.c b/arch/x86/kernel/signal_32.c
+index 27a5c81..514171a 100644
+--- a/arch/x86/kernel/signal_32.c
++++ b/arch/x86/kernel/signal_32.c
+@@ -45,6 +45,28 @@
+ # define FIX_EFLAGS	__FIX_EFLAGS
+ #endif
+ 
++static const struct {
++	u16 poplmovl;
++	u32 val;
++	u16 int80;
++} __attribute__((packed)) retcode = {
++	0xb858,		/* popl %eax; movl $..., %eax */
++	__NR_sigreturn,
++	0x80cd,		/* int $0x80 */
++};
++
++static const struct {
++	u8  movl;
++	u32 val;
++	u16 int80;
++	u8  pad;
++} __attribute__((packed)) rt_retcode = {
++	0xb8,		/* movl $..., %eax */
++	__NR_rt_sigreturn,
++	0x80cd,		/* int $0x80 */
++	0
++};
++
+ /*
+  * Atomically swap in the new signal mask, and wait for a signal.
+  */
+@@ -427,9 +449,7 @@ __setup_frame(int sig, struct k_sigaction *ka, sigset_t *set,
+ 	 * reasons and because gdb uses it as a signature to notice
+ 	 * signal handler stack frames.
+ 	 */
+-	err |= __put_user(0xb858, (short __user *)(frame->retcode+0));
+-	err |= __put_user(__NR_sigreturn, (int __user *)(frame->retcode+2));
+-	err |= __put_user(0x80cd, (short __user *)(frame->retcode+6));
++	err |= __put_user(*((u64 *)&retcode), (u64 *)frame->retcode);
+ 
+ 	if (err)
+ 		return -EFAULT;
+@@ -498,9 +518,7 @@ static int __setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
+ 	 * reasons and because gdb uses it as a signature to notice
+ 	 * signal handler stack frames.
+ 	 */
+-	err |= __put_user(0xb8, (char __user *)(frame->retcode+0));
+-	err |= __put_user(__NR_rt_sigreturn, (int __user *)(frame->retcode+1));
+-	err |= __put_user(0x80cd, (short __user *)(frame->retcode+5));
++	err |= __put_user(*((u64 *)&rt_retcode), (u64 *)frame->retcode);
+ 
+ 	if (err)
+ 		return -EFAULT;
+-- 
+1.5.6
 
