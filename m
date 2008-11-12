@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYKLNx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbYKLNzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbYKLNx0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:53:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYKLNxO
+	id S1753317AbYKLNzR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbYKLNzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:53:14 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:53821 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752146AbYKLNxN (ORCPT
+	Wed, 12 Nov 2008 08:55:04 -0500
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:48225 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbYKLNzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:53:13 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] ttusb-budget: make it depend on PCI
-Date: Wed, 12 Nov 2008 14:46:59 +0100
-User-Agent: KMail/1.9.9
-Cc: Mike Frysinger <vapier@gentoo.org>, v4l-dvb-maintainer@linuxtv.org,
-       linux-dvb@linuxtv.org, Holger Waechtler <holger@convergence.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-References: <1226491218-9281-1-git-send-email-vapier@gentoo.org> <200811121336.00521.arnd@arndb.de> <874p2ddr72.fsf@basil.nowhere.org>
-In-Reply-To: <874p2ddr72.fsf@basil.nowhere.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 12 Nov 2008 08:55:02 -0500
+Date: Wed, 12 Nov 2008 13:54:59 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Dotan Barak <dotanba@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: checkpatch.pl print the line twice when trailing statements in
+	the same line
+Message-ID: <20081112135459.GC8302@shadowen.org>
+References: <200810202051.38694.dotanba@gmail.com> <20081031082414.GD26593@brain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811121447.00808.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19dXaET15Wm0vfCE3aLUse/SFfRuYUHbJChHNE
- SZT6a50w16nqCx6CTgixq7LpRA8rWrQ7bMfX6PXDpOvQhTfj7c
- TWerx4bHVEAej6knlC1VA==
+In-Reply-To: <20081031082414.GD26593@brain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 November 2008, Andi Kleen wrote:
-> Unless it really needs to use the 16MB DMA zone (which I doubt
-> especially for USB devices) then it should not call either with a NULL
-> device argument.
+On Fri, Oct 31, 2008 at 08:24:14AM +0000, Andy Whitcroft wrote:
+> On Mon, Oct 20, 2008 at 08:51:38PM +0200, Dotan Barak wrote:
+> > Hi.
+> > 
+> > I executed checkpatch.pl version 0.24 on a file and i noticed that when
+> > a tailing statement is being declared at the same line with "while, checkpatch
+> > prints the erroneous line twice.
+> > 
+> > Here is an example of the output:
+> > 
+> > ERROR: trailing statements should be on next line
+> > #651: FILE: idbm.c:651:
+> > +               while (*nl && isspace(c = *nl)) nl++;
+> > +               while (*nl && isspace(c = *nl)) nl++;
+> > 
+> > Is this is the expected behavior?
+> 
+> No that would definintaly not be expected.  Will add it to my TODO list.
 
-Yes, of course. It will need to pass &ttusb->dev.dev to dma_alloc_coherent.
+Ok, this is now fixed up and should be in my next batch of updates.
 
-	Arnd <><
-
----
-
-Note to self: read code before commenting on it...
+-apw
