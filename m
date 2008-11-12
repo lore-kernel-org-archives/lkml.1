@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbYKLA1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbYKLA3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbYKLA1F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYKLA0D
+	id S1754620AbYKLA3e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:29:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbYKLA0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:03 -0500
-Received: from kroah.org ([198.145.64.141]:42047 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:12 -0500
+Received: from kroah.org ([198.145.64.141]:42140 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752312AbYKLA0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:00 -0500
-Date: Tue, 11 Nov 2008 16:22:55 -0800
+	id S1753154AbYKLA0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:10 -0500
+Date: Tue, 11 Nov 2008 16:23:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 02/49] x86: add DMI quirk for AMI BIOS which corrupts
-	address 0xc000 during resume
-Message-ID: <20081112002255.GC10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Andy Whitcroft <apw@shadowen.org>,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [patch 09/49] hugetlbfs: handle pages higher order than MAX_ORDER
+Message-ID: <20081112002309.GJ10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-add-dmi-quirk-for-ami-bios-which-corrupts-address-0xc000-during-resume.patch"
+Content-Disposition: inline; filename="hugetlbfs-handle-pages-higher-order-than-max_order.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,84 +42,145 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Andy Whitcroft <apw@shadowen.org>
 
-commit 5649b7c30316a51792808422ac03ee825d26aa5e upstream
+commit 69d177c2fc702d402b17fdca2190d5a7e3ca55c5 upstream
 
-Alan Jenkins and Andy Wettstein reported a suspend/resume memory
-corruption bug and extensively documented it here:
+When working with hugepages, hugetlbfs assumes that those hugepages are
+smaller than MAX_ORDER.  Specifically it assumes that the mem_map is
+contigious and uses that to optimise access to the elements of the mem_map
+that represent the hugepage.  Gigantic pages (such as 16GB pages on
+powerpc) by definition are of greater order than MAX_ORDER (larger than
+MAX_ORDER_NR_PAGES in size).  This means that we can no longer make use of
+the buddy alloctor guarentees for the contiguity of the mem_map, which
+ensures that the mem_map is at least contigious for maximmally aligned
+areas of MAX_ORDER_NR_PAGES pages.
 
-   http://bugzilla.kernel.org/show_bug.cgi?id=11237
+This patch adds new mem_map accessors and iterator helpers which handle
+any discontiguity at MAX_ORDER_NR_PAGES boundaries.  It then uses these to
+implement gigantic page versions of copy_huge_page and clear_huge_page,
+and to allow follow_hugetlb_page handle gigantic pages.
 
-The bug is that the BIOS overwrites 1K of memory at 0xc000 physical,
-without registering it in e820 as reserved or giving the kernel any
-idea about this.
-
-Detect AMI BIOSen and reserve that 1K.
-
-We paint this bug around with a very broad brush (reserving that 1K on all
-AMI BIOS systems), as the bug was extremely hard to find and needed several
-weeks and lots of debugging and patching.
-
-The bug was found via the CONFIG_X86_CHECK_BIOS_CORRUPTION=y debug feature,
-if similar bugs are suspected then this feature can be enabled on other
-systems as well to scan low memory for corrupted memory.
-
-Reported-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Reported-by: Andy Wettstein <ajw1980@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
 ---
- arch/x86/kernel/setup.c |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ mm/hugetlb.c  |   37 ++++++++++++++++++++++++++++++++++++-
+ mm/internal.h |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 64 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -578,6 +578,29 @@ static struct x86_quirks default_x86_qui
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -353,11 +353,26 @@ static int vma_has_reserves(struct vm_ar
+ 	return 0;
+ }
  
- struct x86_quirks *x86_quirks __initdata = &default_x86_quirks;
- 
-+static int __init dmi_low_memory_corruption(const struct dmi_system_id *d)
++static void clear_gigantic_page(struct page *page,
++			unsigned long addr, unsigned long sz)
 +{
-+	printk(KERN_NOTICE
-+		"%s detected: BIOS corrupts 0xc000, working it around.\n",
-+		d->ident);
++	int i;
++	struct page *p = page;
 +
-+	reserve_early(0xc000, 0xc400, "BIOS quirk");
++	might_sleep();
++	for (i = 0; i < sz/PAGE_SIZE; i++, p = mem_map_next(p, page, i)) {
++		cond_resched();
++		clear_user_highpage(p, addr + i * PAGE_SIZE);
++	}
++}
+ static void clear_huge_page(struct page *page,
+ 			unsigned long addr, unsigned long sz)
+ {
+ 	int i;
+ 
++	if (unlikely(sz > MAX_ORDER_NR_PAGES))
++		return clear_gigantic_page(page, addr, sz);
 +
-+	return 0;
+ 	might_sleep();
+ 	for (i = 0; i < sz/PAGE_SIZE; i++) {
+ 		cond_resched();
+@@ -365,12 +380,32 @@ static void clear_huge_page(struct page 
+ 	}
+ }
+ 
++static void copy_gigantic_page(struct page *dst, struct page *src,
++			   unsigned long addr, struct vm_area_struct *vma)
++{
++	int i;
++	struct hstate *h = hstate_vma(vma);
++	struct page *dst_base = dst;
++	struct page *src_base = src;
++	might_sleep();
++	for (i = 0; i < pages_per_huge_page(h); ) {
++		cond_resched();
++		copy_user_highpage(dst, src, addr + i*PAGE_SIZE, vma);
++
++		i++;
++		dst = mem_map_next(dst, dst_base, i);
++		src = mem_map_next(src, src_base, i);
++	}
++}
+ static void copy_huge_page(struct page *dst, struct page *src,
+ 			   unsigned long addr, struct vm_area_struct *vma)
+ {
+ 	int i;
+ 	struct hstate *h = hstate_vma(vma);
+ 
++	if (unlikely(pages_per_huge_page(h) > MAX_ORDER_NR_PAGES))
++		return copy_gigantic_page(dst, src, addr, vma);
++
+ 	might_sleep();
+ 	for (i = 0; i < pages_per_huge_page(h); i++) {
+ 		cond_resched();
+@@ -2113,7 +2148,7 @@ int follow_hugetlb_page(struct mm_struct
+ same_page:
+ 		if (pages) {
+ 			get_page(page);
+-			pages[i] = page + pfn_offset;
++			pages[i] = mem_map_offset(page, pfn_offset);
+ 		}
+ 
+ 		if (vmas)
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -54,6 +54,34 @@ static inline unsigned long page_order(s
+ }
+ 
+ /*
++ * Return the mem_map entry representing the 'offset' subpage within
++ * the maximally aligned gigantic page 'base'.  Handle any discontiguity
++ * in the mem_map at MAX_ORDER_NR_PAGES boundaries.
++ */
++static inline struct page *mem_map_offset(struct page *base, int offset)
++{
++	if (unlikely(offset >= MAX_ORDER_NR_PAGES))
++		return pfn_to_page(page_to_pfn(base) + offset);
++	return base + offset;
 +}
 +
-+/* List of systems that have known low memory corruption BIOS problems */
-+static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
-+	{
-+		.callback = dmi_low_memory_corruption,
-+		.ident = "AMI BIOS",
-+		.matches = {
-+			DMI_MATCH(DMI_BIOS_VENDOR, "American Megatrends Inc."),
-+		},
-+	},
-+	{}
-+};
++/*
++ * Iterator over all subpages withing the maximally aligned gigantic
++ * page 'base'.  Handle any discontiguity in the mem_map.
++ */
++static inline struct page *mem_map_next(struct page *iter,
++						struct page *base, int offset)
++{
++	if (unlikely((offset & (MAX_ORDER_NR_PAGES - 1)) == 0)) {
++		unsigned long pfn = page_to_pfn(base) + offset;
++		if (!pfn_valid(pfn))
++			return NULL;
++		return pfn_to_page(pfn);
++	}
++	return iter + 1;
++}
 +
- /*
-  * Determine if we were loaded by an EFI loader.  If so, then we have also been
-  * passed the efi memmap, systab, etc., so we should use these data structures
-@@ -601,6 +624,8 @@ void __init setup_arch(char **cmdline_p)
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
- #endif
- 
-+	dmi_check_system(bad_bios_dmi_table);
-+
- 	early_cpu_init();
- 	early_ioremap_init();
- 
-@@ -885,3 +910,5 @@ void __init setup_arch(char **cmdline_p)
- #endif
- #endif
- }
-+
-+
++/*
+  * FLATMEM and DISCONTIGMEM configurations use alloc_bootmem_node,
+  * so all functions starting at paging_init should be marked __init
+  * in those cases. SPARSEMEM, however, allows for memory hotplug,
 
 -- 
