@@ -1,188 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbYKLFD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbYKLFDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbYKLFD3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 00:03:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750830AbYKLFCx
+	id S1753328AbYKLFDp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 00:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKLFDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 00:02:53 -0500
-Received: from vms173005pub.verizon.net ([206.46.173.5]:58396 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbYKLFCv (ORCPT
+	Wed, 12 Nov 2008 00:03:18 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49634 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752689AbYKLFDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 00:02:51 -0500
-Date: Wed, 12 Nov 2008 00:02:47 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] ACPI: thinkpad-acpi: fix fan sleep/resume path
-In-reply-to: <1226235242-11130-2-git-send-email-hmh@hmh.eng.br>
-X-X-Sender: lenb@localhost.localdomain
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <alpine.LFD.2.00.0811120002420.3828@localhost.localdomain>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
-References: <20081109113011.GB8329@khazad-dum.debian.net>
- <1226235242-11130-2-git-send-email-hmh@hmh.eng.br>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 12 Nov 2008 00:03:16 -0500
+Date: Wed, 12 Nov 2008 14:02:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v3)
+Message-Id: <20081112140236.46448b47.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081111123417.6566.52629.sendpatchset@balbir-laptop>
+References: <20081111123314.6566.54133.sendpatchset@balbir-laptop>
+	<20081111123417.6566.52629.sendpatchset@balbir-laptop>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied.
+On Tue, 11 Nov 2008 18:04:17 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-thanks,
--Len
+> 
+> This patch introduces hierarchical reclaim. When an ancestor goes over its
+> limit, the charging routine points to the parent that is above its limit.
+> The reclaim process then starts from the last scanned child of the ancestor
+> and reclaims until the ancestor goes below its limit.
+> 
 
-On Sun, 9 Nov 2008, Henrique de Moraes Holschuh wrote:
-
-> This fixes a regression from v2.6.27, caused by commit
-> 5814f737e1cd2cfa2893badd62189acae3e1e1fd, "ACPI: thinkpad-acpi:
-> attempt to preserve fan state on resume".
-> 
-> It is possible for fan_suspend() to fail to properly initialize
-> fan_control_desired_level as required by fan_resume(), resulting on
-> the fan always being set to level 7 on resume if the user didn't
-> touch the fan controller.
-> 
-> In order to get fan sleep/resume handling to work right:
-> 
-> 1. Fix the fan_suspend handling of the T43 firmware quirk. If it is
-> still undefined, we didn't touch the fan yet and that means we have no
-> business doing it on resume.
-> 
-> 2. Store the fan level on its own variable to avoid any possible
-> issues with hijacking fan_control_desired_level (which isn't supposed
-> to have anything other than 0-7 in it, anyway).
-> 
-> 3. Change the fan_resume code to me more straightforward to understand
-> (although we DO optimize the boolean logic there, otherwise it looks
-> disgusting).
-> 
-> 4. Add comments to help understand what the code is supposed to be
-> doing.
-> 
-> 5. Change fan_set_level to be less strict about how auto and
-> full-speed modes are requested.
-> 
-> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> Reported-by: Tino Keitel <tino.keitel@tikei.de>
-> ---
->  drivers/misc/thinkpad_acpi.c |   57 +++++++++++++++++++++++++++++++++---------
->  1 files changed, 45 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-> index 4db1cf9..b7e4d47 100644
-> --- a/drivers/misc/thinkpad_acpi.c
-> +++ b/drivers/misc/thinkpad_acpi.c
-> @@ -5309,6 +5309,7 @@ static enum fan_control_commands fan_control_commands;
->  
->  static u8 fan_control_initial_status;
->  static u8 fan_control_desired_level;
-> +static u8 fan_control_resume_level;
->  static int fan_watchdog_maxinterval;
->  
->  static struct mutex fan_mutex;
-> @@ -5431,8 +5432,8 @@ static int fan_set_level(int level)
->  
->  	case TPACPI_FAN_WR_ACPI_FANS:
->  	case TPACPI_FAN_WR_TPEC:
-> -		if ((level != TP_EC_FAN_AUTO) &&
-> -		    (level != TP_EC_FAN_FULLSPEED) &&
-> +		if (!(level & TP_EC_FAN_AUTO) &&
-> +		    !(level & TP_EC_FAN_FULLSPEED) &&
->  		    ((level < 0) || (level > 7)))
->  			return -EINVAL;
->  
-> @@ -5996,38 +5997,67 @@ static void fan_exit(void)
->  
->  static void fan_suspend(pm_message_t state)
->  {
-> +	int rc;
+> +/*
+> + * Dance down the hierarchy if needed to reclaim memory. We remember the
+> + * last child we reclaimed from, so that we don't end up penalizing
+> + * one child extensively based on its position in the children list.
+> + *
+> + * root_mem is the original ancestor that we've been reclaim from.
+> + */
+> +static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *mem,
+> +						struct mem_cgroup *root_mem,
+> +						gfp_t gfp_mask)
+> +{
+> +	struct cgroup *cg_current, *cgroup;
+> +	struct mem_cgroup *mem_child;
+> +	int ret = 0;
 > +
->  	if (!fan_control_allowed)
->  		return;
->  
->  	/* Store fan status in cache */
-> -	fan_get_status_safe(NULL);
-> +	fan_control_resume_level = 0;
-> +	rc = fan_get_status_safe(&fan_control_resume_level);
-> +	if (rc < 0)
-> +		printk(TPACPI_NOTICE
-> +			"failed to read fan level for later "
-> +			"restore during resume: %d\n", rc);
+> +	/*
+> +	 * Reclaim unconditionally and don't check for return value.
+> +	 * We need to reclaim in the current group and down the tree.
+> +	 * One might think about checking for children before reclaiming,
+> +	 * but there might be left over accounting, even after children
+> +	 * have left.
+> +	 */
+> +	try_to_free_mem_cgroup_pages(mem, gfp_mask);
 > +
-> +	/* if it is undefined, don't attempt to restore it.
-> +	 * KEEP THIS LAST */
->  	if (tp_features.fan_ctrl_status_undef)
-> -		fan_control_desired_level = TP_EC_FAN_AUTO;
-> +		fan_control_resume_level = 0;
->  }
->  
->  static void fan_resume(void)
->  {
-> -	u8 saved_fan_level;
->  	u8 current_level = 7;
->  	bool do_set = false;
-> +	int rc;
->  
->  	/* DSDT *always* updates status on resume */
->  	tp_features.fan_ctrl_status_undef = 0;
->  
-> -	saved_fan_level = fan_control_desired_level;
->  	if (!fan_control_allowed ||
-> +	    !fan_control_resume_level ||
->  	    (fan_get_status_safe(&current_level) < 0))
->  		return;
->  
->  	switch (fan_control_access_mode) {
->  	case TPACPI_FAN_WR_ACPI_SFAN:
-> -		do_set = (saved_fan_level > current_level);
-> +		/* never decrease fan level */
-> +		do_set = (fan_control_resume_level > current_level);
->  		break;
->  	case TPACPI_FAN_WR_ACPI_FANS:
->  	case TPACPI_FAN_WR_TPEC:
-> -		do_set = ((saved_fan_level & TP_EC_FAN_FULLSPEED) ||
-> -			  (saved_fan_level == 7 &&
-> -			   !(current_level & TP_EC_FAN_FULLSPEED)));
-> +		/* never decrease fan level, scale is:
-> +		 * TP_EC_FAN_FULLSPEED > 7 >= TP_EC_FAN_AUTO
-> +		 *
-> +		 * We expect the firmware to set either 7 or AUTO, but we
-> +		 * handle FULLSPEED out of paranoia.
-> +		 *
-> +		 * So, we can safely only restore FULLSPEED or 7, anything
-> +		 * else could slow the fan.  Restoring AUTO is useless, at
-> +		 * best that's exactly what the DSDT already set (it is the
-> +		 * slower it uses).
-> +		 *
-> +		 * Always keep in mind that the DSDT *will* have set the
-> +		 * fans to what the vendor supposes is the best level.  We
-> +		 * muck with it only to speed the fan up.
+> +	if (res_counter_check_under_limit(&root_mem->res))
+> +		return 0;
+> +
+> +	cgroup_lock();
+> +
+> +	if (list_empty(&mem->css.cgroup->children)) {
+> +		cgroup_unlock();
+> +		return 0;
+> +	}
+> +
+> +	/*
+> +	 * Scan all children under the mem_cgroup mem
+> +	 */
+> +	if (!mem->last_scanned_child)
+> +		cgroup = list_first_entry(&mem->css.cgroup->children,
+> +				struct cgroup, sibling);
+> +	else
+> +		cgroup = mem->last_scanned_child->css.cgroup;
+> +
+> +	cg_current = cgroup;
+> +
+> +	do {
+> +		struct list_head *next;
+> +
+> +		mem_child = mem_cgroup_from_cont(cgroup);
+> +		cgroup_unlock();
+> +
+> +		ret = mem_cgroup_hierarchical_reclaim(mem_child, root_mem,
+> +							gfp_mask);
+> +		cgroup_lock();
+> +		mem->last_scanned_child = mem_child;
+> +		if (res_counter_check_under_limit(&root_mem->res)) {
+> +			ret = 0;
+> +			goto done;
+> +		}
+> +
+> +		/*
+> +		 * Since we gave up the lock, it is time to
+> +		 * start from last cgroup
 > +		 */
-> +		if (fan_control_resume_level != 7 &&
-> +		    !(fan_control_resume_level & TP_EC_FAN_FULLSPEED))
-> +			return;
+> +		cgroup = mem->last_scanned_child->css.cgroup;
+> +		next = cgroup->sibling.next;
+> +
+> +		if (next == &cg_current->parent->children)
+> +			cgroup = list_first_entry(&mem->css.cgroup->children,
+> +							struct cgroup, sibling);
 > +		else
-> +			do_set = !(current_level & TP_EC_FAN_FULLSPEED) &&
-> +				 (current_level != fan_control_resume_level);
->  		break;
->  	default:
->  		return;
-> @@ -6035,8 +6065,11 @@ static void fan_resume(void)
->  	if (do_set) {
->  		printk(TPACPI_NOTICE
->  			"restoring fan level to 0x%02x\n",
-> -			saved_fan_level);
-> -		fan_set_level_safe(saved_fan_level);
-> +			fan_control_resume_level);
-> +		rc = fan_set_level_safe(fan_control_resume_level);
-> +		if (rc < 0)
-> +			printk(TPACPI_NOTICE
-> +				"failed to restore fan level: %d\n", rc);
->  	}
->  }
->  
-> -- 
-> 1.5.6.5
-> 
+> +			cgroup = container_of(next, struct cgroup, sibling);
+> +	} while (cgroup != cg_current);
+> +
+> +done:
+> +	cgroup_unlock();
+> +	return ret;
+> +}
+
+Hmm, does this function is necessary to be complex as this ?
+I'm sorry I don't have enough time to review now. (chasing memory online/offline bug.)
+
+But I can't convice this is a good way to reclaim in hierachical manner.
+
+In following tree, Assume that processes hit limitation of Level_2.
+
+   Level_1 (no limit)
+	-> Level_2	(limit=1G)
+		-> Level_3_A (usage=30M)
+		-> Level_3_B (usage=100M)
+			-> Level_4_A (usage=50M)
+			-> Level_4_B (usage=400M)
+			-> Level_4_C (usage=420M)
+
+Even if we know Level_4_C incudes tons of Inactive file caches,
+some amount of swap-out will occur until reachin Level_4_C.
+
+Can't we do this hierarchical reclaim in another way ?
+(start from Level_4_C because we know it has tons of inactive caches.)
+
+This style of recursive call doesn't have chance to do kind of optimization.
+Can we do this reclaim in more flat manner as loop like following
+=
+try:
+  select the most inactive one
+	-> try_to_fre_memory
+		-> check limit
+			-> go to try;
+==
+
+?
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+
+
+
