@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752265AbYKLE4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbYKLFCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752265AbYKLE4l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 23:56:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbYKLE4d
+	id S1751712AbYKLFCb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 00:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbYKLFCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 23:56:33 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:49385 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbYKLE4c (ORCPT
+	Wed, 12 Nov 2008 00:02:21 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47999 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbYKLFCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 23:56:32 -0500
-Date: Wed, 12 Nov 2008 13:55:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [BUGFIX]cgroup: fix potential deadlock in pre_destroy.
-Message-Id: <20081112135548.74503b7b.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <491A6163.4040100@linux.vnet.ibm.com>
-References: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com>
-	<491A6163.4040100@linux.vnet.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Nov 2008 00:02:21 -0500
+Message-Id: <20081112050218.952245378@goodmis.org>
+References: <20081112050125.654925304@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Nov 2008 00:01:26 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/2] ring-buffer: fix deadlock from reader_lock in read_start
+Content-Disposition: inline; filename=0001-ring-buffer-fix-deadlock-from-reader_lock-in-read_s.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 10:23:55 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Impact: deadlock fix in ring_buffer_read_start
 
-> KAMEZAWA Hiroyuki wrote:
-> > Balbir, Paul, Li, How about this ?
-> > =
-> > As Balbir pointed out, memcg's pre_destroy handler has potential deadlock.
-> > 
-> > It has following lock sequence.
-> > 
-> > 	cgroup_mutex (cgroup_rmdir)
-> > 	    -> pre_destroy
-> > 		-> mem_cgroup_pre_destroy
-> > 			-> force_empty
-> > 			   -> lru_add_drain_all->
-> > 			      -> schedule_work_on_all_cpus
-> >                                  -> get_online_cpus -> cpuhotplug.lock.
-> > 
-> > But, cpuset has following.
-> > 	cpu_hotplug.lock (call notifier)
-> > 		-> cgroup_mutex. (within notifier)
-> > 
-> > Then, this lock sequence should be fixed.
-> > 
-> > Considering how pre_destroy works, it's not necessary to holding
-> > cgroup_mutex() while calling it. 
-> > 
-> > As side effect, we don't have to wait at this mutex while memcg's force_empty
-> > works.(it can be long when there are tons of pages.)
-> > 
-> > Note: memcg is an only user of pre_destroy, now.
-> > 
-> 
-> I thought about this and it seems promising. My concern is that with
-> cgroup_mutex given, the state of cgroup within pre-destroy will be
-> unpredictable. I suspect, if pre-destory really needs cgroup_mutex, we can hold
-> it within pre-destroy.
-> 
-I agree.
+The ring_buffer_iter_reset was called from ring_buffer_read_start
+where both grabbed the reader_lock.
 
-> BTW, your last check, does not seem right
-> 
-> +	if (atomic_read(&cgrp->count)
-> +	    || list_empty(&cgrp->children)
-> 
-> Why should list_empty() result in EBUSY, shouldn't it be !list_empty()?
-> 
-> +	    || cgroup_has_css_refs(cgrp)) {
->
-Oh, my bad...
+This patch separates out the internals of ring_buffer_iter_reset
+to its own function so that both APIs may grab the reader_lock.
 
-will fix soon.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/trace/ring_buffer.c |   29 +++++++++++++++++------------
+ 1 files changed, 17 insertions(+), 12 deletions(-)
 
-Thanks,
--Kame
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index c04c433..86dc353 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1475,19 +1475,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer)
+ 	return overruns;
+ }
+ 
+-/**
+- * ring_buffer_iter_reset - reset an iterator
+- * @iter: The iterator to reset
+- *
+- * Resets the iterator, so that it will start from the beginning
+- * again.
+- */
+-void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
++static void rb_iter_reset(struct ring_buffer_iter *iter)
+ {
+ 	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+ 
+ 	/* Iterator usage is expected to have record disabled */
+ 	if (list_empty(&cpu_buffer->reader_page->list)) {
+@@ -1501,7 +1491,22 @@ void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
+ 		iter->read_stamp = cpu_buffer->read_stamp;
+ 	else
+ 		iter->read_stamp = iter->head_page->time_stamp;
++}
+ 
++/**
++ * ring_buffer_iter_reset - reset an iterator
++ * @iter: The iterator to reset
++ *
++ * Resets the iterator, so that it will start from the beginning
++ * again.
++ */
++void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
++{
++	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
++	rb_iter_reset(iter);
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ }
+ 
+@@ -1957,7 +1962,7 @@ ring_buffer_read_start(struct ring_buffer *buffer, int cpu)
+ 
+ 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+ 	__raw_spin_lock(&cpu_buffer->lock);
+-	ring_buffer_iter_reset(iter);
++	rb_iter_reset(iter);
+ 	__raw_spin_unlock(&cpu_buffer->lock);
+ 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+ 
+-- 
+1.5.6.5
 
-
-
-
+-- 
