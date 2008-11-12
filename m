@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbYKLVmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYKLVp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbYKLVmw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 16:42:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKLVmo
+	id S1755535AbYKLVp3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 16:45:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYKLVpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 16:42:44 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:31625 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752176AbYKLVmn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 16:42:43 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Date:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=Jykyxxsa/KKLEWq9M/D6CUmjTZwuwfqFftqC6X7kYT1elOf43l5myPusPfx7ntB2r9tw3tX7dv6/zD5p+G3WKeB6I7n8sNPLaE3Ew52gTGGdOo+omJJDQsDcSGfZn6B7dgQyhBLsuv6XOrhdhoFCUClGZhYGMvJCqWJhvgBEVUA=  ;
-X-YMail-OSG: GSuWS7kVM1mX5WhB3C0u_anIhh0WMsjn9YXnwTS2TyXW_qq9X68SNSIf2k7XZARVnDTxCcFkl9yZtM_9MSyl775f0x9qccRcVsWsjuSdalrs9O6gvCyaA7F28CAGA9lWR9v3htwVQci96CzQvdnrPy4cHVP6SZmOavP.vKA-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-References: <200811091531.46003.david-b@pacbell.net> <200811102056.20008.david-b@pacbell.net> <20081112112525.GA8767@sirena.org.uk>
-In-Reply-To: <20081112112525.GA8767@sirena.org.uk>
-MIME-Version: 1.0
-Content-Disposition: inline
-Date: Wed, 12 Nov 2008 13:42:35 -0800
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 12 Nov 2008 16:45:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41995 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753099AbYKLVpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 16:45:17 -0500
+Subject: Re: [PATCH =-v3 11/21] fanotify: give a special access permission
+ check
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       viro@zeniv.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
+       greg@kroah.com, tytso@mit.edu, akpm@linux-foundation.org
+In-Reply-To: <20081112165325.GC19669@infradead.org>
+References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
+	 <20081112161124.25434.86250.stgit@paris.rdu.redhat.com>
+	 <20081112165325.GC19669@infradead.org>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 16:23:05 -0500
+Message-Id: <1226524985.3353.53.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811121342.36117.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 November 2008, Mark Brown wrote:
-> On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
-
-> > > I'm also wondering if part of what we need to do is add separate out the
-> > > reporting paths for the actual and requested status?  At the minute we
-> > > only report the actual status and there's no indication of the logical
-> > > status which does create some confusion here.
+On Wed, 2008-11-12 at 11:53 -0500, Christoph Hellwig wrote:
+> On Wed, Nov 12, 2008 at 11:11:24AM -0500, Eric Paris wrote:
+> >  	fsnotify_open_exec(file);
+> > +	error = fanotify(file, FAN_ACCESS_EXEC_PERM);
+> > +	if (error) {
+> > +		fput(file);
+> > +		goto out;
+> > +	}
 > 
-> > Makes sense.  Record "requested_mode" in "struct regulator_dev"
-> > and expose a new sysfs attribute for it.  Should I update
-> > the $SUBJECT patch to do that too?
-> 
-> It should be a separate patch, I'd say.
+> Adding your own fanotify calls next to the fsnotify calls completely
+> defeats th purpose of these.  Please make sure we have one set of hooks.
 
-So you think I should split my "v2" patch in two chunks?
-One distinguishing requested-vs=actual mode, and the other
-allowing the actual mode to include OFF.  (Possibly by just
-reporting mode 0 ...)
+Absolutely in this case.  Would you prefer I funneled ALL fanotify
+blocking calls through fsnotify?  I did back in patch #10 add fanotify
+calls next to some security calls (it also might be possible for me to
+pull the fsnotify calls of these paths up rather than introduce new
+fsnotify hooks, I'm not yet certain.)
 
+> And given that we now have three notification schemes I think it's
+> getting time that you also unifify the actuall backends (buffering, etc)
+> instead of faning out at the fsnotify layer and just leave dnotify and
+> inotify as tiny userspace interface layers.
 
-> Thinking about it I'm not sure if the hardware or logical state should
-> be the primary.  In terms of debugging power consumption and so on the
-> physical state is probably the more important one but from the point of
-> view of Linux it's the logical state that matters most since that's what
-> Linux is actually doing (IYSWIM).
+doing something like this would obviously require in kernel fastpaths
+(as i'm sure you are aware.)   I guess then I get to use the space in
+inode of both dnotify and inotify.  Like I said I'll try to see what I
+can do down this path.
 
-If there are both "requested opmode" and "opmode" attributes
-in sysfs, I don't see how one would be "primary"!
+No matter what I think this is going to have to be merged first as
+fanotify is quite broad in comparison to either d or i notify.
 
-The difference is that one needs to be reported by hardware,
-and the other is trivially remembered by framework software.
+-Eric
 
-- Dave
