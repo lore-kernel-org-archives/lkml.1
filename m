@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbYKLAdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbYKLAeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754677AbYKLAdu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbYKLA0c
+	id S1755172AbYKLAeR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbYKLA0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:32 -0500
-Received: from kroah.org ([198.145.64.141]:42296 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:33 -0500
+Received: from kroah.org ([198.145.64.141]:42310 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753523AbYKLA0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:25 -0500
-Date: Tue, 11 Nov 2008 16:23:35 -0800
+	id S1752335AbYKLA0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:30 -0500
+Date: Tue, 11 Nov 2008 16:23:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,18 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [patch 20/49] net: unix: fix inflight counting bug in garbage
-	collector
-Message-ID: <20081112002335.GU10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Ivan Vecera <ivecera@redhat.com>,
+       Edward Hsu <edward_hsu@realtek.com.tw>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Martin Capitanio <martin@capitanio.org>,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: [patch 21/49] r8169: get ethtool settings through the generic mii
+	helper
+Message-ID: <20081112002337.GV10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-unix-fix-inflight-counting-bug-in-garbage-collector.patch"
+Content-Disposition: inline; filename="r8169-get-ethtool-settings-through-the-generic-mii-helper.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,205 +44,227 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+From: Francois Romieu <romieu@fr.zoreil.com>
 
-commit 6209344f5a3795d34b7f2c0061f49802283b6bdd upstream
+Upstream as ccdffb9a88b2907b159538d7bfd6256621db4f84 (post 2.6.27).
 
-Previously I assumed that the receive queues of candidates don't
-change during the GC.  This is only half true, nothing can be received
-from the queues (see comment in unix_gc()), but buffers could be added
-through the other half of the socket pair, which may still have file
-descriptors referring to it.
+It avoids to report unsupported link capabilities with
+the fast-ethernet only 8101/8102.
 
-This can result in inc_inflight_move_tail() erronously increasing the
-"inflight" counter for a unix socket for which dec_inflight() wasn't
-previously called.  This in turn can trigger the "BUG_ON(total_refs <
-inflight_refs)" in a later garbage collection run.
-
-Fix this by only manipulating the "inflight" counter for sockets which
-are candidates themselves.  Duplicating the file references in
-unix_attach_fds() is also needed to prevent a socket becoming a
-candidate for GC while the skb that contains it is not yet queued.
-
-Reported-by: Andrea Bittau <a.bittau@cs.ucl.ac.uk>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+Tested-by: Martin Capitanio <martin@capitanio.org>
+Fixed-by: Ivan Vecera <ivecera@redhat.com>
+Cc: Edward Hsu <edward_hsu@realtek.com.tw>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/af_unix.h |    1 +
- net/unix/af_unix.c    |   31 ++++++++++++++++++++++++-------
- net/unix/garbage.c    |   49 +++++++++++++++++++++++++++++++++++++------------
- 3 files changed, 62 insertions(+), 19 deletions(-)
+ drivers/net/r8169.c |   97 ++++++++++++++++++++++++----------------------------
+ 1 file changed, 45 insertions(+), 52 deletions(-)
 
---- a/include/net/af_unix.h
-+++ b/include/net/af_unix.h
-@@ -54,6 +54,7 @@ struct unix_sock {
-         atomic_long_t           inflight;
-         spinlock_t		lock;
- 	unsigned int		gc_candidate : 1;
-+	unsigned int		gc_maybe_cycle : 1;
-         wait_queue_head_t       peer_wait;
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -370,8 +370,9 @@ struct ring_info {
  };
- #define unix_sk(__sk) ((struct unix_sock *)__sk)
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -1300,14 +1300,23 @@ static void unix_destruct_fds(struct sk_
- 	sock_wfree(skb);
+ 
+ enum features {
+-	RTL_FEATURE_WOL	= (1 << 0),
+-	RTL_FEATURE_MSI	= (1 << 1),
++	RTL_FEATURE_WOL		= (1 << 0),
++	RTL_FEATURE_MSI		= (1 << 1),
++	RTL_FEATURE_GMII	= (1 << 2),
+ };
+ 
+ struct rtl8169_private {
+@@ -406,13 +407,15 @@ struct rtl8169_private {
+ 	struct vlan_group *vlgrp;
+ #endif
+ 	int (*set_speed)(struct net_device *, u8 autoneg, u16 speed, u8 duplex);
+-	void (*get_settings)(struct net_device *, struct ethtool_cmd *);
++	int (*get_settings)(struct net_device *, struct ethtool_cmd *);
+ 	void (*phy_reset_enable)(void __iomem *);
+ 	void (*hw_start)(struct net_device *);
+ 	unsigned int (*phy_reset_pending)(void __iomem *);
+ 	unsigned int (*link_ok)(void __iomem *);
+ 	struct delayed_work task;
+ 	unsigned features;
++
++	struct mii_if_info mii;
+ };
+ 
+ MODULE_AUTHOR("Realtek and the Linux r8169 crew <netdev@vger.kernel.org>");
+@@ -482,6 +485,23 @@ static int mdio_read(void __iomem *ioadd
+ 	return value;
  }
  
--static void unix_attach_fds(struct scm_cookie *scm, struct sk_buff *skb)
-+static int unix_attach_fds(struct scm_cookie *scm, struct sk_buff *skb)
++static void rtl_mdio_write(struct net_device *dev, int phy_id, int location,
++			   int val)
++{
++	struct rtl8169_private *tp = netdev_priv(dev);
++	void __iomem *ioaddr = tp->mmio_addr;
++
++	mdio_write(ioaddr, location, val);
++}
++
++static int rtl_mdio_read(struct net_device *dev, int phy_id, int location)
++{
++	struct rtl8169_private *tp = netdev_priv(dev);
++	void __iomem *ioaddr = tp->mmio_addr;
++
++	return mdio_read(ioaddr, location);
++}
++
+ static void rtl8169_irq_mask_and_ack(void __iomem *ioaddr)
  {
- 	int i;
+ 	RTL_W16(IntrMask, 0x0000);
+@@ -850,7 +870,7 @@ static int rtl8169_rx_vlan_skb(struct rt
+ 
+ #endif
+ 
+-static void rtl8169_gset_tbi(struct net_device *dev, struct ethtool_cmd *cmd)
++static int rtl8169_gset_tbi(struct net_device *dev, struct ethtool_cmd *cmd)
+ {
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	void __iomem *ioaddr = tp->mmio_addr;
+@@ -867,65 +887,29 @@ static void rtl8169_gset_tbi(struct net_
+ 
+ 	cmd->speed = SPEED_1000;
+ 	cmd->duplex = DUPLEX_FULL; /* Always set */
 +
-+	/*
-+	 * Need to duplicate file references for the sake of garbage
-+	 * collection.  Otherwise a socket in the fps might become a
-+	 * candidate for GC while the skb is not yet queued.
-+	 */
-+	UNIXCB(skb).fp = scm_fp_dup(scm->fp);
-+	if (!UNIXCB(skb).fp)
-+		return -ENOMEM;
-+
- 	for (i=scm->fp->count-1; i>=0; i--)
- 		unix_inflight(scm->fp->fp[i]);
--	UNIXCB(skb).fp = scm->fp;
- 	skb->destructor = unix_destruct_fds;
--	scm->fp = NULL;
 +	return 0;
  }
  
- /*
-@@ -1366,8 +1375,11 @@ static int unix_dgram_sendmsg(struct kio
- 		goto out;
- 
- 	memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
--	if (siocb->scm->fp)
--		unix_attach_fds(siocb->scm, skb);
-+	if (siocb->scm->fp) {
-+		err = unix_attach_fds(siocb->scm, skb);
-+		if (err)
-+			goto out_free;
-+	}
- 	unix_get_secdata(siocb->scm, skb);
- 
- 	skb_reset_transport_header(skb);
-@@ -1536,8 +1548,13 @@ static int unix_stream_sendmsg(struct ki
- 		size = min_t(int, size, skb_tailroom(skb));
- 
- 		memcpy(UNIXCREDS(skb), &siocb->scm->creds, sizeof(struct ucred));
--		if (siocb->scm->fp)
--			unix_attach_fds(siocb->scm, skb);
-+		if (siocb->scm->fp) {
-+			err = unix_attach_fds(siocb->scm, skb);
-+			if (err) {
-+				kfree_skb(skb);
-+				goto out_err;
-+			}
-+		}
- 
- 		if ((err = memcpy_fromiovec(skb_put(skb,size), msg->msg_iov, size)) != 0) {
- 			kfree_skb(skb);
---- a/net/unix/garbage.c
-+++ b/net/unix/garbage.c
-@@ -186,8 +186,17 @@ static void scan_inflight(struct sock *x
- 				 */
- 				struct sock *sk = unix_get_socket(*fp++);
- 				if (sk) {
--					hit = true;
--					func(unix_sk(sk));
-+					struct unix_sock *u = unix_sk(sk);
-+
-+					/*
-+					 * Ignore non-candidates, they could
-+					 * have been added to the queues after
-+					 * starting the garbage collection
-+					 */
-+					if (u->gc_candidate) {
-+						hit = true;
-+						func(u);
-+					}
- 				}
- 			}
- 			if (hit && hitlist != NULL) {
-@@ -249,11 +258,11 @@ static void inc_inflight_move_tail(struc
+-static void rtl8169_gset_xmii(struct net_device *dev, struct ethtool_cmd *cmd)
++static int rtl8169_gset_xmii(struct net_device *dev, struct ethtool_cmd *cmd)
  {
- 	atomic_long_inc(&u->inflight);
- 	/*
--	 * If this is still a candidate, move it to the end of the
--	 * list, so that it's checked even if it was already passed
--	 * over
-+	 * If this still might be part of a cycle, move it to the end
-+	 * of the list, so that it's checked even if it was already
-+	 * passed over
- 	 */
--	if (u->gc_candidate)
-+	if (u->gc_maybe_cycle)
- 		list_move_tail(&u->link, &gc_candidates);
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+-	void __iomem *ioaddr = tp->mmio_addr;
+-	u8 status;
+-
+-	cmd->supported = SUPPORTED_10baseT_Half |
+-			 SUPPORTED_10baseT_Full |
+-			 SUPPORTED_100baseT_Half |
+-			 SUPPORTED_100baseT_Full |
+-			 SUPPORTED_1000baseT_Full |
+-			 SUPPORTED_Autoneg |
+-			 SUPPORTED_TP;
+-
+-	cmd->autoneg = 1;
+-	cmd->advertising = ADVERTISED_TP | ADVERTISED_Autoneg;
+-
+-	if (tp->phy_auto_nego_reg & ADVERTISE_10HALF)
+-		cmd->advertising |= ADVERTISED_10baseT_Half;
+-	if (tp->phy_auto_nego_reg & ADVERTISE_10FULL)
+-		cmd->advertising |= ADVERTISED_10baseT_Full;
+-	if (tp->phy_auto_nego_reg & ADVERTISE_100HALF)
+-		cmd->advertising |= ADVERTISED_100baseT_Half;
+-	if (tp->phy_auto_nego_reg & ADVERTISE_100FULL)
+-		cmd->advertising |= ADVERTISED_100baseT_Full;
+-	if (tp->phy_1000_ctrl_reg & ADVERTISE_1000FULL)
+-		cmd->advertising |= ADVERTISED_1000baseT_Full;
+-
+-	status = RTL_R8(PHYstatus);
+-
+-	if (status & _1000bpsF)
+-		cmd->speed = SPEED_1000;
+-	else if (status & _100bps)
+-		cmd->speed = SPEED_100;
+-	else if (status & _10bps)
+-		cmd->speed = SPEED_10;
+-
+-	if (status & TxFlowCtrl)
+-		cmd->advertising |= ADVERTISED_Asym_Pause;
+-	if (status & RxFlowCtrl)
+-		cmd->advertising |= ADVERTISED_Pause;
+ 
+-	cmd->duplex = ((status & _1000bpsF) || (status & FullDup)) ?
+-		      DUPLEX_FULL : DUPLEX_HALF;
++	return mii_ethtool_gset(&tp->mii, cmd);
  }
  
-@@ -267,6 +276,7 @@ void unix_gc(void)
- 	struct unix_sock *next;
- 	struct sk_buff_head hitlist;
- 	struct list_head cursor;
-+	LIST_HEAD(not_cycle_list);
+ static int rtl8169_get_settings(struct net_device *dev, struct ethtool_cmd *cmd)
+ {
+ 	struct rtl8169_private *tp = netdev_priv(dev);
+ 	unsigned long flags;
++	int rc;
  
- 	spin_lock(&unix_gc_lock);
+ 	spin_lock_irqsave(&tp->lock, flags);
  
-@@ -282,10 +292,14 @@ void unix_gc(void)
- 	 *
- 	 * Holding unix_gc_lock will protect these candidates from
- 	 * being detached, and hence from gaining an external
--	 * reference.  This also means, that since there are no
--	 * possible receivers, the receive queues of these sockets are
--	 * static during the GC, even though the dequeue is done
--	 * before the detach without atomicity guarantees.
-+	 * reference.  Since there are no possible receivers, all
-+	 * buffers currently on the candidates' queues stay there
-+	 * during the garbage collection.
-+	 *
-+	 * We also know that no new candidate can be added onto the
-+	 * receive queues.  Other, non candidate sockets _can_ be
-+	 * added to queue, so we must make sure only to touch
-+	 * candidates.
- 	 */
- 	list_for_each_entry_safe(u, next, &gc_inflight_list, link) {
- 		long total_refs;
-@@ -299,6 +313,7 @@ void unix_gc(void)
- 		if (total_refs == inflight_refs) {
- 			list_move_tail(&u->link, &gc_candidates);
- 			u->gc_candidate = 1;
-+			u->gc_maybe_cycle = 1;
- 		}
+-	tp->get_settings(dev, cmd);
++	rc = tp->get_settings(dev, cmd);
+ 
+ 	spin_unlock_irqrestore(&tp->lock, flags);
+-	return 0;
++	return rc;
+ }
+ 
+ static void rtl8169_get_regs(struct net_device *dev, struct ethtool_regs *regs,
+@@ -1513,7 +1497,7 @@ static const struct rtl_cfg_info {
+ 	unsigned int align;
+ 	u16 intr_event;
+ 	u16 napi_event;
+-	unsigned msi;
++	unsigned features;
+ } rtl_cfg_infos [] = {
+ 	[RTL_CFG_0] = {
+ 		.hw_start	= rtl_hw_start_8169,
+@@ -1522,7 +1506,7 @@ static const struct rtl_cfg_info {
+ 		.intr_event	= SYSErr | LinkChg | RxOverflow |
+ 				  RxFIFOOver | TxErr | TxOK | RxOK | RxErr,
+ 		.napi_event	= RxFIFOOver | TxErr | TxOK | RxOK | RxOverflow,
+-		.msi		= 0
++		.features	= RTL_FEATURE_GMII
+ 	},
+ 	[RTL_CFG_1] = {
+ 		.hw_start	= rtl_hw_start_8168,
+@@ -1531,7 +1515,7 @@ static const struct rtl_cfg_info {
+ 		.intr_event	= SYSErr | LinkChg | RxOverflow |
+ 				  TxErr | TxOK | RxOK | RxErr,
+ 		.napi_event	= TxErr | TxOK | RxOK | RxOverflow,
+-		.msi		= RTL_FEATURE_MSI
++		.features	= RTL_FEATURE_GMII | RTL_FEATURE_MSI
+ 	},
+ 	[RTL_CFG_2] = {
+ 		.hw_start	= rtl_hw_start_8101,
+@@ -1540,7 +1524,7 @@ static const struct rtl_cfg_info {
+ 		.intr_event	= SYSErr | LinkChg | RxOverflow | PCSTimeout |
+ 				  RxFIFOOver | TxErr | TxOK | RxOK | RxErr,
+ 		.napi_event	= RxFIFOOver | TxErr | TxOK | RxOK | RxOverflow,
+-		.msi		= RTL_FEATURE_MSI
++		.features	= RTL_FEATURE_MSI
  	}
+ };
  
-@@ -325,14 +340,24 @@ void unix_gc(void)
- 		list_move(&cursor, &u->link);
+@@ -1552,7 +1536,7 @@ static unsigned rtl_try_msi(struct pci_d
+ 	u8 cfg2;
  
- 		if (atomic_long_read(&u->inflight) > 0) {
--			list_move_tail(&u->link, &gc_inflight_list);
--			u->gc_candidate = 0;
-+			list_move_tail(&u->link, &not_cycle_list);
-+			u->gc_maybe_cycle = 0;
- 			scan_children(&u->sk, inc_inflight_move_tail, NULL);
- 		}
- 	}
- 	list_del(&cursor);
+ 	cfg2 = RTL_R8(Config2) & ~MSIEnable;
+-	if (cfg->msi) {
++	if (cfg->features & RTL_FEATURE_MSI) {
+ 		if (pci_enable_msi(pdev)) {
+ 			dev_info(&pdev->dev, "no MSI. Back to INTx.\n");
+ 		} else {
+@@ -1578,6 +1562,7 @@ rtl8169_init_one(struct pci_dev *pdev, c
+ 	const struct rtl_cfg_info *cfg = rtl_cfg_infos + ent->driver_data;
+ 	const unsigned int region = cfg->region;
+ 	struct rtl8169_private *tp;
++	struct mii_if_info *mii;
+ 	struct net_device *dev;
+ 	void __iomem *ioaddr;
+ 	unsigned int i;
+@@ -1602,6 +1587,14 @@ rtl8169_init_one(struct pci_dev *pdev, c
+ 	tp->pci_dev = pdev;
+ 	tp->msg_enable = netif_msg_init(debug.msg_enable, R8169_MSG_DEFAULT);
  
- 	/*
-+	 * not_cycle_list contains those sockets which do not make up a
-+	 * cycle.  Restore these to the inflight list.
-+	 */
-+	while (!list_empty(&not_cycle_list)) {
-+		u = list_entry(not_cycle_list.next, struct unix_sock, link);
-+		u->gc_candidate = 0;
-+		list_move_tail(&u->link, &gc_inflight_list);
-+	}
++	mii = &tp->mii;
++	mii->dev = dev;
++	mii->mdio_read = rtl_mdio_read;
++	mii->mdio_write = rtl_mdio_write;
++	mii->phy_id_mask = 0x1f;
++	mii->reg_num_mask = 0x1f;
++	mii->supports_gmii = !!(cfg->features & RTL_FEATURE_GMII);
 +
-+	/*
- 	 * Now gc_candidates contains only garbage.  Restore original
- 	 * inflight counters for these as well, and remove the skbuffs
- 	 * which are creating the cycle(s).
+ 	/* enable device (incl. PCI PM wakeup and hotplug setup) */
+ 	rc = pci_enable_device(pdev);
+ 	if (rc < 0) {
 
 -- 
