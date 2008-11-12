@@ -1,84 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbYKLMX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYKLMXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbYKLMX7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 07:23:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbYKLMXI
+	id S1753419AbYKLMXm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 07:23:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYKLMWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 07:23:08 -0500
-Received: from ozlabs.org ([203.10.76.45]:36480 "EHLO ozlabs.org"
+	Wed, 12 Nov 2008 07:22:51 -0500
+Received: from ozlabs.org ([203.10.76.45]:36470 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752789AbYKLMXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 07:23:07 -0500
+	id S1753023AbYKLMWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 07:22:50 -0500
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Wed, 12 Nov 2008 06:23:02 -0600
+Date: Wed, 12 Nov 2008 06:22:46 -0600
 Cc: Hollis Blanchard <hollisb@us.ibm.com>, aliguori@us.ibm.com,
-       markmc@redhat.com, kvm@vger.kernel.org,
-       Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: [PATCH 5/7] virtio: use KVM_S390_VIRTIO_RING_ALIGN instead of relying on pagesize
+       markmc@redhat.com, kvm@vger.kernel.org
+Subject: [PATCH 4/7] virtio: use LGUEST_VRING_ALIGN instead of relying on pagesize
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811122253.02759.rusty@rustcorp.com.au>
+Message-Id: <200811122252.47195.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This doesn't really matter, since s390 pagesize is 4k anyway.
+This doesn't really matter, since lguest is i386 only at the moment,
+but we could actually choose a different value.  (lguest doesn't have
+a guarenteed ABI).
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/s390/include/asm/kvm_virtio.h |    3 +++
- drivers/s390/kvm/kvm_virtio.c      |    9 ++++++---
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ Documentation/lguest/lguest.c   |    6 +++---
+ drivers/lguest/lguest_device.c  |    2 +-
+ include/linux/lguest_launcher.h |    2 ++
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-diff -r 5c9c0cc58458 arch/s390/include/asm/kvm_virtio.h
---- a/arch/s390/include/asm/kvm_virtio.h	Wed Nov 12 22:05:59 2008 +1030
-+++ b/arch/s390/include/asm/kvm_virtio.h	Wed Nov 12 22:10:29 2008 +1030
-@@ -50,6 +50,9 @@
- #define KVM_S390_VIRTIO_RESET		1
- #define KVM_S390_VIRTIO_SET_STATUS	2
+diff -r c6744f753314 Documentation/lguest/lguest.c
+--- a/Documentation/lguest/lguest.c	Wed Nov 12 22:02:52 2008 +1030
++++ b/Documentation/lguest/lguest.c	Wed Nov 12 22:11:03 2008 +1030
+@@ -1030,7 +1030,7 @@
+ 		/* Zero out the virtqueues. */
+ 		for (vq = dev->vq; vq; vq = vq->next) {
+ 			memset(vq->vring.desc, 0,
+-			       vring_size(vq->config.num, getpagesize()));
++			       vring_size(vq->config.num, LGUEST_VRING_ALIGN));
+ 			lg_last_avail(vq) = 0;
+ 		}
+ 	} else if (dev->desc->status & VIRTIO_CONFIG_S_FAILED) {
+@@ -1211,7 +1211,7 @@
+ 	void *p;
  
-+/* Overkill: we have the consumer and producer writing to separate pages. */
-+#define KVM_S390_VIRTIO_RING_ALIGN	4096
+ 	/* First we need some memory for this virtqueue. */
+-	pages = (vring_size(num_descs, getpagesize()) + getpagesize() - 1)
++	pages = (vring_size(num_descs, LGUEST_VRING_ALIGN) + getpagesize() - 1)
+ 		/ getpagesize();
+ 	p = get_pages(pages);
+ 
+@@ -1228,7 +1228,7 @@
+ 	vq->config.pfn = to_guest_phys(p) / getpagesize();
+ 
+ 	/* Initialize the vring. */
+-	vring_init(&vq->vring, num_descs, p, getpagesize());
++	vring_init(&vq->vring, num_descs, p, LGUEST_VRING_ALIGN);
+ 
+ 	/* Append virtqueue to this device's descriptor.  We use
+ 	 * device_config() to get the end of the device's current virtqueues;
+diff -r c6744f753314 drivers/lguest/lguest_device.c
+--- a/drivers/lguest/lguest_device.c	Wed Nov 12 22:02:52 2008 +1030
++++ b/drivers/lguest/lguest_device.c	Wed Nov 12 22:11:03 2008 +1030
+@@ -250,7 +250,7 @@
+ 	/* Figure out how many pages the ring will take, and map that memory */
+ 	lvq->pages = lguest_map((unsigned long)lvq->config.pfn << PAGE_SHIFT,
+ 				DIV_ROUND_UP(vring_size(lvq->config.num,
+-							PAGE_SIZE),
++							LGUEST_VRING_ALIGN),
+ 					     PAGE_SIZE));
+ 	if (!lvq->pages) {
+ 		err = -ENOMEM;
+diff -r c6744f753314 include/linux/lguest_launcher.h
+--- a/include/linux/lguest_launcher.h	Wed Nov 12 22:02:52 2008 +1030
++++ b/include/linux/lguest_launcher.h	Wed Nov 12 22:11:03 2008 +1030
+@@ -59,4 +59,6 @@
+ 	LHREQ_IRQ, /* + irq */
+ 	LHREQ_BREAK, /* + on/off flag (on blocks until someone does off) */
+ };
 +
- #ifdef __KERNEL__
- /* early virtio console setup */
- #ifdef CONFIG_S390_GUEST
-diff -r 5c9c0cc58458 drivers/s390/kvm/kvm_virtio.c
---- a/drivers/s390/kvm/kvm_virtio.c	Wed Nov 12 22:05:59 2008 +1030
-+++ b/drivers/s390/kvm/kvm_virtio.c	Wed Nov 12 22:10:29 2008 +1030
-@@ -188,7 +188,8 @@
- 	config = kvm_vq_config(kdev->desc)+index;
- 
- 	err = vmem_add_mapping(config->address,
--			       vring_size(config->num, PAGE_SIZE));
-+			       vring_size(config->num,
-+					  KVM_S390_VIRTIO_RING_ALIGN));
- 	if (err)
- 		goto out;
- 
-@@ -209,7 +210,8 @@
- 	return vq;
- unmap:
- 	vmem_remove_mapping(config->address,
--			    vring_size(config->num, PAGE_SIZE));
-+			    vring_size(config->num,
-+				       KVM_S390_VIRTIO_RING_ALIGN));
- out:
- 	return ERR_PTR(err);
- }
-@@ -220,7 +222,8 @@
- 
- 	vring_del_virtqueue(vq);
- 	vmem_remove_mapping(config->address,
--			    vring_size(config->num, PAGE_SIZE));
-+			    vring_size(config->num,
-+				       KVM_S390_VIRTIO_RING_ALIGN));
- }
- 
- /*
++#define LGUEST_VRING_ALIGN	4096
+ #endif /* _LINUX_LGUEST_LAUNCHER */
 
 
