@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYKLSa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbYKLSbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbYKLSa3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 13:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYKLSaS
+	id S1754056AbYKLSbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 13:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYKLSbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 13:30:18 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:48390 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751763AbYKLSaP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 13:30:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=PRv7zSvS1cHhNaS56KAvBH/O9cMXCBbiwh8z7yiQhALizZqLE22T/RYKVEySi/oH1J
-         G2bNYF/j3W8g5C3SVpxAnaU5EClB3P4ZyxT5XAF8v7HPc0l+iZvHnNJNVj4zMuY1MYK4
-         sHWcoSGK8d1kpdVvnZ0D6bZX998ne4Ikh0jaY=
-Message-ID: <8db1092f0811121030t1977b3bbu8340b582694d1e65@mail.gmail.com>
-Date: Wed, 12 Nov 2008 19:30:13 +0100
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [Linux 2.6.28-rc4] BUG: using smp_processor_id() in preemptible [00000000] code: suspend_to_disk/2934
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "lenb@kernel.org" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
+	Wed, 12 Nov 2008 13:31:15 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:49226 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752453AbYKLSbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 13:31:15 -0500
+Date: Wed, 12 Nov 2008 12:31:13 -0600
+From: Dean Nelson <dcn@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: sgi-gru drivers need of up to 8192 irqs
+Message-ID: <20081112183113.GA2488@sgi.com>
+References: <20081001114415.GA3281@sgi.com> <86802c440810020919p4391cbebva0eaa5591e7915be@mail.gmail.com> <48E4FA53.7050401@zytor.com> <20081002171821.GA31601@sgi.com> <20081003085943.GC27551@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081003085943.GC27551@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--rc3 works OK
 
-I have this bug during suspend to disk:
+Hi Ingo,
 
-[  188.592151] Enabling non-boot CPUs ...
-[  188.592151] SMP alternatives: switching to SMP code
-[  188.666058] BUG: using smp_processor_id() in preemptible [00000000]
-code: suspend_to_disk/2934
-[  188.666064] caller is native_sched_clock+0x2b/0x80
-[  188.666067] Pid: 2934, comm: suspend_to_disk Not tainted 2.6.28-rc4 #1
-[  188.666069] Call Trace:
-[  188.666074]  [<c02556ff>] debug_smp_processor_id+0xbf/0xd0
-[  188.666077]  [<c010a2db>] native_sched_clock+0x2b/0x80
-[  188.666080]  [<c03ae3a0>] init_idle+0x88/0x11a
-[  188.666083]  [<c03ad206>] native_cpu_up+0x4a6/0x75a
-[  188.666086]  [<c01de808>] sysfs_add_file_mode+0x58/0x90
-[  188.666089]  [<c03ad4ba>] do_fork_idle+0x0/0x19
-[  188.666092]  [<c014864e>] notifier_call_chain+0x3e/0x80
-[  188.666095]  [<c03ae99a>] _cpu_up+0x6a/0x103
-[  188.666097]  [<c03a1e75>] enable_nonboot_cpus+0x65/0xa0
-[  188.666101]  [<c02cd240>] device_pm_unlock+0x0/0x10
-[  188.666105]  [<c0159ba7>] hibernation_snapshot+0x137/0x200
-[  188.666107]  [<c0158dff>] freeze_processes+0x4f/0xa0
-[  188.666110]  [<c0159d4f>] hibernate+0xdf/0x190
-[  188.666112]  [<c0158910>] state_store+0x0/0xd0
-[  188.666115]  [<c01589c2>] state_store+0xb2/0xd0
-[  188.666117]  [<c0158910>] state_store+0x0/0xd0
-[  188.666120]  [<c024b1d4>] kobj_attr_store+0x24/0x30
-[  188.666122]  [<c01de221>] sysfs_write_file+0xa1/0x110
-[  188.666124]  [<c01de180>] sysfs_write_file+0x0/0x110
-[  188.666127]  [<c0198e38>] vfs_write+0xa8/0x140
-[  188.666129]  [<c0198fa1>] sys_write+0x41/0x80
-[  188.666131]  [<c0103f49>] sysenter_do_call+0x12/0x21
-[  188.666133]  [<c03b0000>] acpi_processor_start+0x690/0x69a
-[  188.666136] Booting processor 1 APIC 0x1 ip 0x6000
-[  188.590718] Initializing CPU#1
+You may remember a patch that I submitted not so long ago that added
+uv_setup_irq() and uv_teardown_irq() functions for UV on x86.
 
-dmesg and config:
-http://unixy.pl/maciek/download/kernel/2.6.28-rc4_smp/
+It gave us (SGI) a way to 'allocate' an irq/vector pair and write an MMR
+with a CPU's APCID and the vector number. (Two functions were added to
+/arch/x86/kernel/io_apic.c to accomplish this -- arch_enable_uv_irq() and
+arch_disable_uv_irq().)
 
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+This solution was what was suggested by the community after much discussion.
+
+I'm now trying to modify the GRU driver to call uv_setup_irq(). One of the
+issues that is arising is that we need to be able to allocate lots of irqs.
+For the GRU alone we need up to 32 irqs per blade (based on the number of CPUs)
+and there can be up to 256 blades per SSI. (A total of 8192 irqs per SSI.)
+
+Currently I'm finding that NR_IRQS=4352. (It is constrained to the lesser of
+NR_CPUS and MAX_IO_APICS.) But the system really runs off of nr_irqs which
+gets set down by probe_nr_irqs() to 96 in one configuration I've been running.
+This function bases its answer on io_apic_get_redir_entries().
+
+For the GRU there isn't an io_apic component, its needs are based on NR_CPUS.
+So there isn't something readily available to cause probe_nr_irqs() to
+generate a larger number.
+
+Anyway, I'm looking for any suggestions as to what we should do. (Which may
+include abandoning the using of irqs for the GRU driver and just go with two
+hardwired system vectors?
+
+Also, what has happened to the sparse irq patch? It doesn't seem to exist
+anywhere. Has it been abandoned? I thought it was the means by which we would
+be able to have huge numbers of irqs.
+
+Thanks,
+Dean
+
