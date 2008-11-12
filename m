@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbYKLUuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYKLUxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbYKLUuN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 15:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYKLUt6
+	id S1754962AbYKLUxY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 15:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYKLUxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 15:49:58 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:61328 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973AbYKLUt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 15:49:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=YBf/o5HGBDB5bLihHCHr5jgDPdWgXCpuHKaTY65RZ/5kKSB4l8el2ybzjp4YJPbOIH
-         Scj3gdnJ74t3Q1zjcC0BRm6otfewoujykfV+6hbC7xFoElhEMcKghx+BP54ue6Ud6n4e
-         7DVzFBiPhzdYU/zF0v8rjO7SAQYQ0O1Nwp8/A=
-Message-ID: <67f22cb80811121249n300177c8l26a57aaf0030120b@mail.gmail.com>
-Date: Wed, 12 Nov 2008 14:49:56 -0600
-From: "Rob Latham" <rlatham@gmail.com>
-To: "Nico -telmich- Schottelius" <nico-linux-next@schottelius.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc3(-next20081103) suspend issues on Lenovo X200
-In-Reply-To: <20081105173132.GA4289@denkbrett.schottelius.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Nov 2008 15:53:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44214 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753338AbYKLUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 15:53:15 -0500
+Subject: Re: [PATCH =-v3 07/21] fanotify: fastpath to ignore certain in
+ core inodes
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, viro@zeniv.linux.org.uk,
+       arjan@infradead.org, greg@kroah.com, tytso@mit.edu,
+       akpm@linux-foundation.org
+In-Reply-To: <20081112165820.GA26217@infradead.org>
+References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
+	 <20081112161103.25434.30104.stgit@paris.rdu.redhat.com>
+	 <20081112165055.GB19669@infradead.org>
+	 <20081112165638.54c38c5c@lxorguk.ukuu.org.uk>
+	 <20081112165820.GA26217@infradead.org>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 15:52:29 -0500
+Message-Id: <1226523149.3353.23.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081103153945.GA20618@denkbrett.schottelius.org>
-	 <200811040155.59933.rjw@sisk.pl>
-	 <200811031704.25717.jbarnes@virtuousgeek.org>
-	 <20081105173132.GA4289@denkbrett.schottelius.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 5, 2008 at 11:31 AM, Nico -telmich- Schottelius
-<nico-linux-next@schottelius.org> wrote:
-> When running xorg the system freezes on wakeup and hard reboots after
-> 20 seconds (again: looks like some kind of watchdog, though I am not
-> aware of anything like that in the X200).
->
-> Sincerly,
->
-> Nico (again: looks like some kind of watchdog, though I am not
-> aware of anything like that in the X200).
+On Wed, 2008-11-12 at 11:58 -0500, Christoph Hellwig wrote:
+> On Wed, Nov 12, 2008 at 04:56:38PM +0000, Alan Cox wrote:
+> > Sounds a good way of ruining the performance.
+> 
+> I don't think you can ruine performance of a system with AV systems
+> running even more.  While bloating the inode does cause enormous
+> problems in file serving or other extremly metadata intensive workloads.
 
-Hi Nico, all.
+Kernel Build on a 32 way machine:
+Stock kernel: 9 minutes 12 seconds
+fanotify no in kernel fastpath: 95 minutes 12 seconds
+Only events AV wants with in kernel fastpath: 10 minutes 35 seconds
 
-I've had good results disabling one core before suspending, and then
-enabling the extra core after wakeup.   The watchdog in that case
-might not be the intel driver at all, but rather something in the
-kernel that kicks in in such conditions?
+Now I could probably redo the in kernel cache as some sort of per group
+inode hash table of entries which wouldn't have to bloat the inode but
+it would be much more expensive in terms of performance.  A lock and an
+list if you want to use fanotify is as small as it can be made an is
+exactly the same method taken by inotify.
 
-http://ubuntuforums.org/showpost.php?p=6105510&postcount=12
+************
 
-(I put the "sleep before enabling 2nd core" in the background and for
-a longer period of time)
+I probably should have put this up in the patch description rather than
+burried down in the Documentation directory but here it is:
 
-Suspending/resuming in this single-core mode has worked really well
-for me for the last day or so.
+The need for fastpaths (or calling what it really is, an in kernel
+cache) has been questioned.  I decided to include a little unscientific data
+here.  On a 32 way machine a make -j 32 took about 9 minutes 12 seconds.
+With that same machine running having one group and 32 listeners receiving
+every fanotify event that the kernel could send to userspace while the 
+listeners were responding to accesses as fast as they could (just a very tight get
+event, allow loop) it took 95 minutes 12 seconds.  Same process with in kernel
+fastpaths/cache results took 19 minutes 5 seconds.  More reasonable event
+requirements and a single listener took 10 minutes 35 sec.  So about a 15%
+perf hit to do any kind of permission checking to userspace.  Anyway, the need
+for fastpaths is quite clear.
 
-Hope that helps  point to the root cause...
-==rob
+
+
+
