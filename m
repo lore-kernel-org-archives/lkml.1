@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYKLA1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYKLA3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753894AbYKLA1p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYKLA0F
+	id S1754121AbYKLA3N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:29:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYKLA0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:05 -0500
-Received: from kroah.org ([198.145.64.141]:42083 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:10 -0500
+Received: from kroah.org ([198.145.64.141]:42131 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752408AbYKLA0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:03 -0500
-Date: Tue, 11 Nov 2008 16:22:59 -0800
+	id S1752819AbYKLA0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:08 -0500
+Date: Tue, 11 Nov 2008 16:23:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 04/49] x86: add X86_RESERVE_LOW_64K
-Message-ID: <20081112002259.GE10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Andy Whitcroft <apw@shadowen.org>,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [patch 08/49] hugetlb: pull gigantic page initialisation out of
+	the default path
+Message-ID: <20081112002307.GI10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-add-x86_reserve_low_64k.patch"
+Content-Disposition: inline; filename="hugetlb-pull-gigantic-page-initialisation-out-of-the-default-path.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,90 +43,134 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ingo Molnar <mingo@elte.hu>
+From: Andy Whitcroft <apw@shadowen.org>
 
-commit fc38151947477596aa27df6c4306ad6008dc6711 upstream.
+commit 18229df5b613ed0732a766fc37850de2e7988e43 upstream
 
-This bugzilla:
+As we can determine exactly when a gigantic page is in use we can optimise
+the common regular page cases by pulling out gigantic page initialisation
+into its own function.  As gigantic pages are never released to buddy we
+do not need a destructor.  This effectivly reverts the previous change to
+the main buddy allocator.  It also adds a paranoid check to ensure we
+never release gigantic pages from hugetlbfs to the main buddy.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=11237
-
-Documents a wide range of systems where the BIOS utilizes the first
-64K of physical memory during suspend/resume and other hardware events.
-
-Currently we reserve this memory on all AMI and Phoenix BIOS systems.
-Life is too short to hunt subtle memory corruption problems like this,
-so we try to be robust by default.
-
-Still, allow this to be overriden: allow users who want that first 64K
-of memory to be available to the kernel disable the quirk, via
-CONFIG_X86_RESERVE_LOW_64K=n.
-
-Also, allow the early reservation to overlap with other
-early reservations.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Kconfig        |   20 ++++++++++++++++++++
- arch/x86/kernel/setup.c |    4 +++-
- 2 files changed, 23 insertions(+), 1 deletion(-)
+ mm/hugetlb.c    |   12 +++++++++++-
+ mm/internal.h   |    1 +
+ mm/page_alloc.c |   28 +++++++++++++++++++++-------
+ 3 files changed, 33 insertions(+), 8 deletions(-)
 
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1059,6 +1059,26 @@ config HIGHPTE
- 	  low memory.  Setting this option will put user-space page table
- 	  entries in high memory.
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -455,6 +455,8 @@ static void update_and_free_page(struct 
+ {
+ 	int i;
  
-+config X86_RESERVE_LOW_64K
-+        bool "Reserve low 64K of RAM on AMI/Phoenix BIOSen"
-+	default y
-+	help
-+	 Reserve the first 64K of physical RAM on BIOSes that are known
-+	 to potentially corrupt that memory range. A numbers of BIOSes are
-+	 known to utilize this area during suspend/resume, so it must not
-+	 be used by the kernel.
++	VM_BUG_ON(h->order >= MAX_ORDER);
 +
-+	 Set this to N if you are absolutely sure that you trust the BIOS
-+	 to get all its memory reservations and usages right.
-+
-+	 If you have doubts about the BIOS (e.g. suspend/resume does not
-+	 work or there's kernel crashes after certain hardware hotplug
-+	 events) and it's not AMI or Phoenix, then you might want to enable
-+	 X86_CHECK_BIOS_CORRUPTION=y to allow the kernel to check typical
-+	 corruption patterns.
-+
-+	 Say Y if unsure.
-+
- config MATH_EMULATION
- 	bool
- 	prompt "Math emulation" if X86_32
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -584,13 +584,14 @@ static int __init dmi_low_memory_corrupt
- 		"%s detected: BIOS may corrupt low RAM, working it around.\n",
- 		d->ident);
- 
--	reserve_early(0x0, 0x10000, "BIOS quirk");
-+	reserve_early_overlap_ok(0x0, 0x10000, "BIOS quirk");
- 
- 	return 0;
+ 	h->nr_huge_pages--;
+ 	h->nr_huge_pages_node[page_to_nid(page)]--;
+ 	for (i = 0; i < pages_per_huge_page(h); i++) {
+@@ -969,6 +971,14 @@ found:
+ 	return 1;
  }
  
- /* List of systems that have known low memory corruption BIOS problems */
- static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
-+#ifdef CONFIG_X86_RESERVE_LOW_64K
- 	{
- 		.callback = dmi_low_memory_corruption,
- 		.ident = "AMI BIOS",
-@@ -606,6 +607,7 @@ static struct dmi_system_id __initdata b
- 		},
- 	},
- 	{}
-+#endif
- };
++static void prep_compound_huge_page(struct page *page, int order)
++{
++	if (unlikely(order > (MAX_ORDER - 1)))
++		prep_compound_gigantic_page(page, order);
++	else
++		prep_compound_page(page, order);
++}
++
+ /* Put bootmem huge pages into the standard lists after mem_map is up */
+ static void __init gather_bootmem_prealloc(void)
+ {
+@@ -979,7 +989,7 @@ static void __init gather_bootmem_preall
+ 		struct hstate *h = m->hstate;
+ 		__ClearPageReserved(page);
+ 		WARN_ON(page_count(page) != 1);
+-		prep_compound_page(page, h->order);
++		prep_compound_huge_page(page, h->order);
+ 		prep_new_huge_page(h, page, page_to_nid(page));
+ 	}
+ }
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -17,6 +17,7 @@ void free_pgtables(struct mmu_gather *tl
+ 		unsigned long floor, unsigned long ceiling);
  
- /*
+ extern void prep_compound_page(struct page *page, unsigned long order);
++extern void prep_compound_gigantic_page(struct page *page, unsigned long order);
+ 
+ static inline void set_page_count(struct page *page, int v)
+ {
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -268,24 +268,39 @@ void prep_compound_page(struct page *pag
+ {
+ 	int i;
+ 	int nr_pages = 1 << order;
++
++	set_compound_page_dtor(page, free_compound_page);
++	set_compound_order(page, order);
++	__SetPageHead(page);
++	for (i = 1; i < nr_pages; i++) {
++		struct page *p = page + i;
++
++		__SetPageTail(p);
++		p->first_page = page;
++	}
++}
++
++#ifdef CONFIG_HUGETLBFS
++void prep_compound_gigantic_page(struct page *page, unsigned long order)
++{
++	int i;
++	int nr_pages = 1 << order;
+ 	struct page *p = page + 1;
+ 
+ 	set_compound_page_dtor(page, free_compound_page);
+ 	set_compound_order(page, order);
+ 	__SetPageHead(page);
+-	for (i = 1; i < nr_pages; i++, p++) {
+-		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
+-			p = pfn_to_page(page_to_pfn(page) + i);
++	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
+ 		__SetPageTail(p);
+ 		p->first_page = page;
+ 	}
+ }
++#endif
+ 
+ static void destroy_compound_page(struct page *page, unsigned long order)
+ {
+ 	int i;
+ 	int nr_pages = 1 << order;
+-	struct page *p = page + 1;
+ 
+ 	if (unlikely(compound_order(page) != order))
+ 		bad_page(page);
+@@ -293,9 +308,8 @@ static void destroy_compound_page(struct
+ 	if (unlikely(!PageHead(page)))
+ 			bad_page(page);
+ 	__ClearPageHead(page);
+-	for (i = 1; i < nr_pages; i++, p++) {
+-		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
+-			p = pfn_to_page(page_to_pfn(page) + i);
++	for (i = 1; i < nr_pages; i++) {
++		struct page *p = page + i;
+ 
+ 		if (unlikely(!PageTail(p) |
+ 				(p->first_page != page)))
 
 -- 
