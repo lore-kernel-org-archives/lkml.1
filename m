@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754969AbYKLUfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbYKLUh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754969AbYKLUfK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 15:35:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKLUe5
+	id S1754780AbYKLUh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 15:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYKLUht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 15:34:57 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:10794 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbYKLUe4 (ORCPT
+	Wed, 12 Nov 2008 15:37:49 -0500
+Received: from gv-out-0910.google.com ([216.239.58.185]:26972 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbYKLUhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 15:34:56 -0500
+	Wed, 12 Nov 2008 15:37:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=uBAjORniTDyrCZ39s6vNzMf2CXMKX8NH/ZUESdq48w+JGOKTOZDzDzlDG7jI9ZcyyS
-         m7GYJ4QhgR+sjXKtD2SZr3H0/T44ykq8I2nDcuhN34hEKqDPyBX36z2A3GH7tztnRLr+
-         RglDPd1V5GVAUiN31KXb6U/mns3ws1GRDyGDE=
-Message-ID: <8db1092f0811121234p3be15e29n5fd684e387977dab@mail.gmail.com>
-Date: Wed, 12 Nov 2008 21:34:54 +0100
-From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [Linux 2.6.28-rc4] BUG: using smp_processor_id() in preemptible [00000000] code: suspend_to_disk/2934
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, "lenb@kernel.org" <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20081112192128.GA17667@elte.hu>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :x-enigmail-version:content-type:content-transfer-encoding;
+        b=wrzvvDtKecb8dTl4xRf+Ay8lHge69B1KmX61rcE9kaIgqKKZgaF+nHxVf69dSLjNQ/
+         BYFYobKzqtWBk1sU/KSnhJOeSqd+/2Kx2IoBBCS5HDtWvaThOb26+k/1G2Dz0rIRcNNl
+         G2bqITF01MCAYGO6vXG3I7rXv/EGUK1UavsnQ=
+Message-ID: <491B3E90.5020307@gmail.com>
+Date: Wed, 12 Nov 2008 21:37:36 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
+To: Alexey Klimov <klimov.linux@gmail.com>
+CC: Tobias Lorenz <tobias.lorenz@gmx.net>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: next: 6a13378a5 (Don't allow KWorld radio...) is broken
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8db1092f0811121030t1977b3bbu8340b582694d1e65@mail.gmail.com>
-	 <alpine.LFD.2.00.0811121046360.3468@nehalem.linux-foundation.org>
-	 <20081112192128.GA17667@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/12 Ingo Molnar <mingo@elte.hu>:
+Hi guys,
 
->
-> i've queued up the fix below in tip/sched/urgent - Maciej, could you
-> please test it? I've build and boot tested it.
->
+The commit below is apparently wrong. Maybe you CCed HID maintainer, however
+linux-input didn't get the message, or at least I can't find it anywhere.
 
-Suspend to disk works OK now. Thanks.
+There is a difference between hid_blacklist and hid_ignore_list. One forbids
+generic hid driver to bind the device, while the other forces usbhid to release
+the device and move hands away from it.
 
-Tested-by: Maciej Rutecki <maciej.rutecki@gmail.com>
->
-> Reported-by: Maciej Rutecki <maciej.rutecki@gmail.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  kernel/sched.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index 3bafbe3..c94baf2 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -5870,6 +5870,8 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
->        struct rq *rq = cpu_rq(cpu);
->        unsigned long flags;
->
-> +       spin_lock_irqsave(&rq->lock, flags);
-> +
->        __sched_fork(idle);
->        idle->se.exec_start = sched_clock();
->
-> @@ -5877,7 +5879,6 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
->        idle->cpus_allowed = cpumask_of_cpu(cpu);
->        __set_task_cpu(idle, cpu);
->
-> -       spin_lock_irqsave(&rq->lock, flags);
->        rq->curr = rq->idle = idle;
->  #if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
->        idle->oncpu = 1;
->
->
+You picked up the former, which is wrong. I wonder if you were so lucky that you
+didn't hit it. Care to send a fixup with proper CCs?
 
-Regards
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+Thanks.
+
+commit 6a13378a56ce06afca9db75f3d4e663fba5f0992
+Author: Alexey Klimov <klimov.linux@gmail.com>
+Date:   Sun Oct 19 20:10:13 2008 -0300
+
+    V4L/DVB (9337a): HID: Don't allow KWorld radio fm700 be handled by usb hid d
+rivers
+
+    This device is already handled by radio-si470x driver, and we
+    therefore want usbhid to ignore it.
+
+    Signed-off-by: Alexey Klimov <klimov.linux@gmail.com>
+    Acked-by: Tobias Lorenz <tobias.lorenz@gmx.net>
+    Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+
+diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
+index 1903e75..d3671b4 100644
+--- a/drivers/hid/hid-core.c
++++ b/drivers/hid/hid-core.c
+@@ -1265,6 +1265,7 @@ static const struct hid_device_id hid_blacklist[] = {
+        { HID_USB_DEVICE(USB_VENDOR_ID_EZKEY, USB_DEVICE_ID_BTC_8193) },
+        { HID_USB_DEVICE(USB_VENDOR_ID_GENERIC_13BA, USB_DEVICE_ID_GENERIC_13BA_
+KBD_MOUSE) },
+        { HID_USB_DEVICE(USB_VENDOR_ID_GYRATION, USB_DEVICE_ID_GYRATION_REMOTE)
+},
++       { HID_USB_DEVICE(USB_VENDOR_ID_KWORLD, USB_DEVICE_ID_KWORLD_RADIO_FM700)
+ },
+        { HID_USB_DEVICE(USB_VENDOR_ID_GYRATION, USB_DEVICE_ID_GYRATION_REMOTE_2
+) },
+        { HID_USB_DEVICE(USB_VENDOR_ID_LABTEC, USB_DEVICE_ID_LABTEC_WIRELESS_KEY
+BOARD) },
+        { HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER)
+},
+
