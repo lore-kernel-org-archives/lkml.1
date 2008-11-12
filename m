@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752132AbYKLLNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYKLLSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752132AbYKLLNa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 06:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYKLLNT
+	id S1752127AbYKLLSh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 06:18:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKLLS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 06:13:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37135 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbYKLLNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 06:13:18 -0500
-Message-ID: <491AB9D0.7060802@qumranet.com>
-Date: Wed, 12 Nov 2008 13:11:12 +0200
-From: Izik Eidus <izik@qumranet.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Wed, 12 Nov 2008 06:18:28 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:49727 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbYKLLS1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 06:18:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=PzMhWVIdUhsWYUPU8MXot+2r3j+5q9z6yIfoT2pEnt091aOtgCOTdsxp8tWQLF/ty1
+         9y5myoSnwDzk5x4K3bwWVE0JTMzMFw2pag4aH6QRJYyUaY87gvfvclcYyVH7iYkOh/7k
+         /vJiozea3KagT7JTZikpFtytrxUVjxCeHj/Is=
+Message-ID: <8bd0f97a0811120318m52ccbde4g5434ddfb3f56e048@mail.gmail.com>
+Date: Wed, 12 Nov 2008 06:18:26 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Subject: Re: next-20081106: undefined reference to `__per_cpu_start'
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+In-Reply-To: <Pine.LNX.4.64.0811120859160.13217@anakin>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
-       izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
- one page into another
-References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com>	<20081111114555.eb808843.akpm@linux-foundation.org>	<4919F1C0.2050009@redhat.com>	<Pine.LNX.4.64.0811111520590.27767@quilx.com>	<4919F7EE.3070501@redhat.com>	<Pine.LNX.4.64.0811111527500.27767@quilx.com>	<20081111222421.GL10818@random.random> <20081112111931.0e40c27d.kamezawa.hiroyu@jp.fujitsu.com> <491AAA84.5040801@redhat.com>
-In-Reply-To: <491AAA84.5040801@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081106173645.e7e79071.sfr@canb.auug.org.au>
+	 <20081106183939.GA26925@x200.localdomain>
+	 <Pine.LNX.4.64.0811061310350.6009@quilx.com>
+	 <20081107162114.2a41c623.sfr@canb.auug.org.au>
+	 <Pine.LNX.4.64.0811120859160.13217@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> KAMEZAWA Hiroyuki wrote:
->> Can I make a question ? (I'm working for memory cgroup.)
+On Wed, Nov 12, 2008 at 02:59, Geert Uytterhoeven wrote:
+> On Fri, 7 Nov 2008, Stephen Rothwell wrote:
+>> On Thu, 6 Nov 2008 13:15:07 -0600 (CST) Christoph Lameter wrote:
+>> > On Thu, 6 Nov 2008, Alexey Dobriyan wrote:
+>> > > On blackfin-BF526-EZBRD and other blackfins:
+>> > >
+>> > >   LD      .tmp_vmlinux1
+>> > > mm/built-in.o: In function `cpu_alloc_init':
+>> > > (.init.text+0x1486): undefined reference to `__per_cpu_start'
+>> > > mm/built-in.o: In function `cpu_alloc_init':
+>> > > (.init.text+0x148c): undefined reference to `__per_cpu_start'
+>> > > mm/built-in.o: In function `cpu_alloc_init':
+>> > > (.init.text+0x1492): undefined reference to `__per_cpu_end'
+>> > > mm/built-in.o: In function `cpu_alloc_init':
+>> > > (.init.text+0x1496): undefined reference to `__per_cpu_end'
+>> >
+>> > Any contigencies for __per_cpu_start/end in your blackfin vmlinux.lds.h?
+>> > That is where these symbols are defined
+>> >
+>> > Or did you use generic percpu support and set
+>> > CONFIG_HAVE_ZERO_BASED_PER_CPU?
 >>
->> Now, we do charge to anonymous page when
->>   - charge(+1) when it's mapped firstly (mapcount 0->1)
->>   - uncharge(-1) it's fully unmapped (mapcount 1->0) vir 
->> page_remove_rmap().
+>> Also a avr32 allnoconfig
+>> (http://kisskb.ellerman.id.au/kisskb/buildresult/53233/) gets:
 >>
->> My quesion is
->>  - PageKSM pages are not necessary to be tracked by memory cgroup ?
-When we reaplacing page using page_replace() we have:
-oldpage - > anonymous page that is going to be replaced by newpage
-newpage -> kernel allocated page (KsmPage)
-so about oldpage we are calling page_remove_rmap() that will notify cgroup
-and about newpage it wont be count inside cgroup beacuse it is file rmap 
-page
-(we are calling to page_add_file_rmap), so right now PageKSM wont ever 
-be tracked by cgroup.
-
->>  - Can we know that "the page is just replaced and we don't necessary 
->> to do
->>    charge/uncharge".
-
-The caller of page_replace does know it, the only problem is that 
-page_remove_rmap()
-automaticly change the cgroup for anonymous pages,
-if we want it not to change the cgroup, we can:
-increase the cgroup count before page_remove (but in that case what 
-happen if we reach to the limit???)
-give parameter to page_remove_rmap() that we dont want the cgroup to be 
-changed.
-
->>  - annonymous page from KSM is worth to be tracked by memory cgroup ?
->>    (IOW, it's on LRU and can be swapped-out ?)
-
-KSM have no anonymous pages (it share anonymous pages into KsmPAGE -> 
-kernel allocated page without mapping)
-so it isnt in LRU and it cannt be swapped, only when KsmPAGEs will be 
-break by do_wp_page() the duplication will be able to swap.
-
->>   
+>> backing-dev.c:(.init.text+0xc4c): undefined reference to `__per_cpu_start'
+>> backing-dev.c:(.init.text+0xc50): undefined reference to `__per_cpu_end'
+>>
+>> and avr32 defconfig
+>> (http://kisskb.ellerman.id.au/kisskb/buildresult/53225/) gets:
+>>
+>> vmstat.c:(.init.text+0xff0): undefined reference to `__per_cpu_start'
+>> vmstat.c:(.init.text+0xff4): undefined reference to `__per_cpu_end'
 >
-> My feeling is that shared pages should be accounted as if they were 
-> not shared; that is, a share page should be accounted for each process 
-> that shares it.  Perhaps sharing within a cgroup should be counted as 
-> 1 page for all the ptes pointing to it.
+> And m68k defconfig (http://kisskb.ellerman.id.au/kisskb/buildresult/54216/):
 >
->
+> | : undefined reference to `__per_cpu_start'
+> | : undefined reference to `__per_cpu_end'
+
+i already posted a patch:
+http://lkml.org/lkml/2008/11/8/145
+-mike
