@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbYKLAmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYKLAnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbYKLAmy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYKLA1D
+	id S1754066AbYKLAnT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbYKLA1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:27:03 -0500
-Received: from kroah.org ([198.145.64.141]:42622 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:27:05 -0500
+Received: from kroah.org ([198.145.64.141]:42654 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753903AbYKLA1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:27:00 -0500
-Date: Tue, 11 Nov 2008 16:24:27 -0800
+	id S1753545AbYKLA1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:27:01 -0500
+Date: Tue, 11 Nov 2008 16:24:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@suse.cz>
-Subject: [patch 44/49] Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
-Message-ID: <20081112002427.GS10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Pierre Ossman <drzeus@drzeus.cx>
+Subject: [patch 45/49] mmc: increase SD write timeout for crappy cards
+Message-ID: <20081112002429.GT10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-__pfn_to_page-for-config_discontigmem-y.patch"
+Content-Disposition: inline; filename="mmc-increase-sd-write-timeout-for-crappy-cards.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,39 +39,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Pierre Ossman <drzeus@drzeus.cx>
 
-commit c5d712433ff57a66d8fb79a57a4fc7a7c3467b97 upstream
+commit 493890e75d98810a3470b4aae23be628ee5e9667 upstream.
 
-Fix the __pfn_to_page(pfn) macro so that it doesn't evaluate its
-argument twice in the CONFIG_DISCONTIGMEM=y case, because 'pfn' may
-be a result of a funtion call having side effects.
+It seems that some cards are slightly out of spec and occasionally
+will not be able to complete a write in the alloted 250 ms [1].
+Incease the timeout slightly to allow even these cards to function
+properly.
 
-For example, the hibernation code applies pfn_to_page(pfn) to the
-result of a function returning the pfn corresponding to the next set
-bit in a bitmap and the current bit position is modified on each
-call.  This leads to "interesting" failures for CONFIG_DISCONTIGMEM=y
-due to the current behavior of __pfn_to_page(pfn).
+[1] http://lkml.org/lkml/2008/9/23/390
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/asm-generic/memory_model.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/mmc/core/core.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/include/asm-generic/memory_model.h
-+++ b/include/asm-generic/memory_model.h
-@@ -34,7 +34,7 @@
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -280,7 +280,11 @@ void mmc_set_data_timeout(struct mmc_dat
+ 			(card->host->ios.clock / 1000);
  
- #define __pfn_to_page(pfn)			\
- ({	unsigned long __pfn = (pfn);		\
--	unsigned long __nid = arch_pfn_to_nid(pfn);  \
-+	unsigned long __nid = arch_pfn_to_nid(__pfn);  \
- 	NODE_DATA(__nid)->node_mem_map + arch_local_page_offset(__pfn, __nid);\
- })
+ 		if (data->flags & MMC_DATA_WRITE)
+-			limit_us = 250000;
++			/*
++			 * The limit is really 250 ms, but that is
++			 * insufficient for some crappy cards.
++			 */
++			limit_us = 300000;
+ 		else
+ 			limit_us = 100000;
  
 
 -- 
