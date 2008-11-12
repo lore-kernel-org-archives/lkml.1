@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbYKLQ5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbYKLQ60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbYKLQ5J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 11:57:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYKLQ44
+	id S1753904AbYKLQ60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 11:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbYKLQ6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 11:56:56 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:41751 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbYKLQ4z (ORCPT
+	Wed, 12 Nov 2008 11:58:17 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57411 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751437AbYKLQ6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 11:56:55 -0500
-Date: Wed, 12 Nov 2008 16:56:50 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Nick Warne <nick@ukfsn.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range of hardware
-Message-ID: <20081112165650.GA15594@srcf.ucam.org>
-References: <20081111074702.75e71055@sauron.linicks.net> <20081112131427.1bbc2a7c@palantir.linicks.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112131427.1bbc2a7c@palantir.linicks.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Wed, 12 Nov 2008 11:58:16 -0500
+Date: Wed, 12 Nov 2008 16:56:38 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       malware-list@lists.printk.net, viro@zeniv.linux.org.uk,
+       arjan@infradead.org, greg@kroah.com, tytso@mit.edu,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH =-v3 07/21] fanotify: fastpath to ignore certain in core
+ inodes
+Message-ID: <20081112165638.54c38c5c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081112165055.GB19669@infradead.org>
+References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
+	<20081112161103.25434.30104.stgit@paris.rdu.redhat.com>
+	<20081112165055.GB19669@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does this work?
+On Wed, 12 Nov 2008 11:50:55 -0500
+Christoph Hellwig <hch@infradead.org> wrote:
 
-diff --git a/drivers/input/keyboard/atkbd.c b/drivers/input/keyboard/atkbd.c
-index 22016ca..15479ef 100644
---- a/drivers/input/keyboard/atkbd.c
-+++ b/drivers/input/keyboard/atkbd.c
-@@ -1460,6 +1460,15 @@ static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
- 		.driver_data = atkbd_dell_laptop_keymap_fixup,
- 	},
- 	{
-+		.ident = "Dell Laptop",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer Corporation"),
-+			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /* Portable */
-+		},
-+		.callback = atkbd_setup_fixup,
-+		.driver_data = atkbd_dell_laptop_keymap_fixup,
-+	},
-+	{
- 		.ident = "HP 2133",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> On Wed, Nov 12, 2008 at 11:11:03AM -0500, Eric Paris wrote:
+> > Allows a process to ignore certain events for the given in core inodes.
+> > This does not preclude the need to keep a userspace or xattr based
+> > cache if a fanotifier listener wants something with a different lifetime
+> > than in core inode.
+> 
+> Please just do this in userspace instead of bloating the inode.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Sounds a good way of ruining the performance.
+
+Alan
