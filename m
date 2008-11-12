@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYKLOJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476AbYKLOL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753310AbYKLOJP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 09:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYKLOI7
+	id S1753476AbYKLOL3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 09:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYKLOLU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 09:08:59 -0500
-Received: from cpsmtpo-eml03.KPNXCHANGE.COM ([213.75.38.152]:27593 "EHLO
-	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751820AbYKLOI7 (ORCPT
+	Wed, 12 Nov 2008 09:11:20 -0500
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:50249 "EHLO
+	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbYKLOLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 09:08:59 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 00/49] 2.6.27.5 stable review
-Date: Wed, 12 Nov 2008 15:08:55 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-References: <20081112002215.GA10989@kroah.com>
-In-reply-To: <20081112002215.GA10989@kroah.com>
+	Wed, 12 Nov 2008 09:11:20 -0500
+Date: Wed, 12 Nov 2008 14:11:13 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, torvalds@linux-foundation.org, sfr@canb.auug.org.au,
+       linux-next@vger.kernel.org, srostedt@redhat.com
+Subject: Re: [PATCH 1/1] ring-buffer: buffer record on/off switch
+Message-ID: <20081112141113.GG8302@shadowen.org>
+References: <20081111200601.147669239@goodmis.org> <20081111201034.315528609@goodmis.org> <20081111125645.4f7a5827.akpm@linux-foundation.org> <alpine.DEB.1.10.0811111603590.3275@gandalf.stny.rr.com> <20081111210831.GA16179@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811121508.55791.elendil@planet.nl>
-X-OriginalArrivalTime: 12 Nov 2008 14:08:56.0314 (UTC) FILETIME=[336875A0:01C944D0]
+In-Reply-To: <20081111210831.GA16179@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Would it be possible to include the commit below now that it's been 
-accepted into mainline?
+On Tue, Nov 11, 2008 at 10:08:31PM +0100, Ingo Molnar wrote:
+> 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > 
+> > On Tue, 11 Nov 2008, Andrew Morton wrote:
+> > 
+> > > On Tue, 11 Nov 2008 15:06:02 -0500
+> > > Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > 
+> > > > +static struct file_operations rb_simple_fops = {
+> > > 
+> > > should be const...
+> > > 
+> > > Probably it isn't worth fixing.  Someone(tm) should do period sweeps -
+> > > 10% of our file_operationses aren't const.
+> > 
+> > Thanks, I never really thought about it.
+> > 
+> > I'll add to my todo list to send out a patch that cleans all of this 
+> > up. I think I'm guilty at doing this in more than one place.
+> 
+> Perhaps checkpatch.pl could remind us about it? a new file_operations 
+> struct definition should be const in 99.9% of the cases.
 
-Thanks,
-FJP
+Added to my TODO list.
 
-commit bf1b36445dc868cbbde194aa1dd87e38fe24cf16
-Author: Jonathan McDowell <noodles@earth.li>
-Date:   Sat Sep 13 17:08:31 2008 +0100
-
-    kbuild: Fixup deb-pkg target to generate separate firmware deb
+-apw
