@@ -1,196 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYKLNOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbYKLNPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbYKLNOl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYKLNOb
+	id S1753766AbYKLNPG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:15:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYKLNOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:14:31 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:55074 "EHLO mail.ukfsn.org"
+	Wed, 12 Nov 2008 08:14:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60717 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751984AbYKLNOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:14:30 -0500
-Date: Wed, 12 Nov 2008 13:14:27 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: linux-kernel@vger.kernel.org, mjg@redhat.com
-Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range
- of hardware
-Message-ID: <20081112131427.1bbc2a7c@palantir.linicks.net>
-In-Reply-To: <20081111074702.75e71055@sauron.linicks.net>
-References: <20081111074702.75e71055@sauron.linicks.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751392AbYKLNOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 08:14:52 -0500
+Date: Wed, 12 Nov 2008 14:14:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH] tracing: branch tracer, tweak output
+Message-ID: <20081112131409.GB24472@elte.hu>
+References: <20081112051438.843792214@goodmis.org> <20081112051518.503323629@goodmis.org> <20081112112536.GC31958@elte.hu> <alpine.DEB.1.10.0811120803141.2529@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811120803141.2529@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 07:47:02 +0000
-Nick Warne <nick@ukfsn.org> wrote:
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
 > 
-> > Dell laptops fail to send key up events for several of their
-> > special keys. There's an existing quirk in the kernel to handle
-> > this, but it's limited to the Latitude range. This patch extends it
-> > to cover all portable Dells.
+> On Wed, 12 Nov 2008, Ingo Molnar wrote:
+> 
 > > 
-> > Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> > a small detail:
 > > 
-> > ---
-> > diff --git a/drivers/input/keyboard/atkbd.c
-> > b/drivers/input/keyboard/atkbd.c index b1ce10f..e32c24d 100644
-> > --- a/drivers/input/keyboard/atkbd.c
-> > +++ b/drivers/input/keyboard/atkbd.c
-> > @@ -834,10 +834,10 @@ static void atkbd_disconnect(struct serio
-> > *serio) }
-> >  
-> >  /*
-> > - * Most special keys (Fn+F?) on Dell Latitudes do not generate
-> > release
-> > + * Most special keys (Fn+F?) on Dell laptops do not generate
-> > release
-> >   * events so we have to do it ourselves.
-> >   */
-> > -static void atkbd_latitude_keymap_fixup(struct atkbd *atkbd)
-> > +static void atkbd_dell_laptop_keymap_fixup(struct atkbd *atkbd)
-> >  {
-> >  	const unsigned int forced_release_keys[] = {
-> >  		0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8f,
-> > 0x93, @@ -1461,13 +1461,13 @@ static int __init
-> > atkbd_setup_fixup(const struct dmi_system_id *id) 
-> >  static struct dmi_system_id atkbd_dmi_quirk_table[] __initdata = {
-> >  	{
-> > -		.ident = "Dell Latitude series",
-> > +		.ident = "Dell Laptop",
-> >  		.matches = {
-> >  			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-> > -			DMI_MATCH(DMI_PRODUCT_NAME, "Latitude"),
-> > +			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /*
-> > Portable */ },
-> >  		.callback = atkbd_setup_fixup,
-> > -		.driver_data = atkbd_latitude_keymap_fixup,
-> > +		.driver_data = atkbd_dell_laptop_keymap_fixup,
-> >  	},
-> >  	{
-> >  		.ident = "HP 2133",
+> > > For example:
+> > >
+> > >  bash-3471  [003]   357.014755: [INCORRECT] sched_info_dequeued:sched_stats.h:177
+> > >  bash-3471  [003]   357.014756: [correct] update_curr:sched_fair.c:489
+> > >  bash-3471  [003]   357.014758: [correct] calc_delta_fair:sched_fair.c:411
+> > >  bash-3471  [003]   357.014759: [correct] account_group_exec_runtime:sched_stats.h:356
+> > >  bash-3471  [003]   357.014761: [correct] update_curr:sched_fair.c:489
+> > >  bash-3471  [003]   357.014763: [INCORRECT] calc_delta_fair:sched_fair.c:411
+> > >  bash-3471  [003]   357.014765: [correct] calc_delta_mine:sched.c:1279
+> > 
+> > it's always good to have such fields aligned vertically. Something 
+> > like this would be shorter and visually much easier to parse:
+> > 
+> >  bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
+> >  bash-3471  [003]   357.014756: [ .... ] update_curr:sched_fair.c:489
+> >  bash-3471  [003]   357.014758: [ .... ] calc_delta_fair:sched_fair.c:411
+> > 
+> > any objections against the patch below which implements this?
 > 
-> This issue has hit a lot of Ubuntu Dell uses (like myself), and the
-> patch indeed fixes it up - but it appears not all Dell machines are
-> alike.  One user has reported it doesn't work, and his investigation
-> reveals dmicode output shows:
-> 
-> Vendor: Dell Computer Corporation
-> 
-> So I guess this isn't totally fixed yet.  As to what the vendor output
-> is al all these machines, I don't know, but I guess now it could be
-> any permatation of Dell Inc., Dell Computer Corp. etc.
-> 
-> Ref. Ubuntu bug report thread:
-> 
-> https://bugs.launchpad.net/ubuntu/+source/acpid/+bug/285323/comments/88
-> 
-> Nick
+> How about "[ OK ]" instead of "[ .... ]". That would be easier to 
+> understand.
 
-OK, I asked for help on this - so far it seems either Dell Inc. or Dell
-Computer Corporation, so I guess this patch needs a || somewhere.
+ok, agreed - just the use of capitals is not good, as it unnecessarily 
+draws visual attention. How about:
 
+>  bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
+>  bash-3471  [003]   357.014756: [  ok  ] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014758: [  ok  ] calc_delta_fair:sched_fair.c:411
 
-1814-BIOS Information
-1831: Vendor: Dell Inc.
-1850- Version: A17
-2774- Manufacturer: Dell Inc.
-2799: Product Name: MM061
-2847- Version: Not Specified
---
-3064- Manufacturer: Dell Inc.
-3089: Product Name: 0KD882
-3111- Version: 
+via the patch below?
 
+	Ingo
 
+-------------->
+>From 68d119f0a66f7e3663304343b072e56a2693446b Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 12 Nov 2008 14:09:30 +0100
+Subject: [PATCH] tracing: finetune branch-tracer output
 
-2675-BIOS Information
-2692: Vendor: Dell Inc.
-2711- Version: A02
-3546- Manufacturer: Dell Inc.
-3571: Product Name: Latitude D620
-3619- Version: Not Specified
---
-3836- Manufacturer: Dell Inc.
-3861: Product Name: 0JK187
-3883- Version:
+Steve suggested the to change the output from this:
 
+>  bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
+>  bash-3471  [003]   357.014756: [ .... ] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014758: [ .... ] calc_delta_fair:sched_fair.c:411
 
+to this:
 
-2132-BIOS Information
-2149: Vendor: Dell Inc.
-2168- Version: A13
-3093- Manufacturer: Dell Inc.
-3118: Product Name: Inspiron 1525
-3166- Version: Not Specified
---
-3383- Manufacturer: Dell Inc.
-3408: Product Name: 0U990C
-3430- Version:
+>  bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
+>  bash-3471  [003]   357.014756: [  ok  ] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014758: [  ok  ] calc_delta_fair:sched_fair.c:411
 
+as it makes it clearer to the user what it means exactly.
 
-841-BIOS Information
-858: Vendor: Dell Computer Corporation
-893- Version: A11
-1782- Manufacturer: Dell Computer Corporation
-1823: Product Name: Inspiron 8200
-1871- Version: Not Specified
---
-2050- Manufacturer: Dell Computer Corporation
-2091: Product Name: Inspiron 8200
-2132- Version: Not Specified
+Acked-by: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/trace/trace.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-
-
-617-BIOS Information
-634: Vendor: Dell Inc.
-653- Version: A00
-1140- Manufacturer: Dell Inc.
-1165: Product Name: Inspiron 910
-1193- Version: A00
---
-1412- Manufacturer: Dell Inc.
-1437: Product Name: CN0J14
-1459- Version: A00
-
-
-1852-BIOS Information
-1869: Vendor: Dell Inc.
-1888- Version: A09
-2812- Manufacturer: Dell Inc.
-2837: Product Name: MP061
-2885- Version: Not Specified
---
-3102- Manufacturer: Dell Inc.
-3127: Product Name: 0YD479
-3149- Version:
-
-
-372-BIOS Information
-389: Vendor: Dell Computer Corporation
-424- Version: A34
-1278- Manufacturer: Dell Computer Corporation
-1319: Product Name: Inspiron 5150
-1367- Version: Not Specified
---
-1546- Manufacturer: Dell Computer Corporation
-1587: Product Name: 0W0940
-1609- Version:
-
-
-094-BIOS Information
-2111: Vendor: Dell Inc.
-2130- Version: A09
-3055- Manufacturer: Dell Inc.
-3080: Product Name: Inspiron 1720
-3128- Version: Not Specified
---
-3345- Manufacturer: Dell Inc.
-3370: Product Name:
-3392- Version:
--- 
-Free Software Foundation Associate Member 5508
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 728a46e..d842db1 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1657,7 +1657,7 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
+ 		trace_assign_type(field, entry);
+ 
+ 		trace_seq_printf(s, "[%s] %s:%s:%d\n",
+-				 field->correct ? " .... " : " MISS ",
++				 field->correct ? "  ok  " : " MISS ",
+ 				 field->func,
+ 				 field->file,
+ 				 field->line);
+@@ -1808,7 +1808,7 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
+ 		trace_assign_type(field, entry);
+ 
+ 		trace_seq_printf(s, "[%s] %s:%s:%d\n",
+-				 field->correct ? " .... " : " MISS ",
++				 field->correct ? "  ok  " : " MISS ",
+ 				 field->func,
+ 				 field->file,
+ 				 field->line);
