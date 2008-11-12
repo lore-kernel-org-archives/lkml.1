@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbYKLMwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbYKLMwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752753AbYKLMwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 07:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYKLMwO
+	id S1752060AbYKLMwm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 07:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYKLMwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 07:52:14 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54410 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751911AbYKLMwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 07:52:13 -0500
-Date: Wed, 12 Nov 2008 13:51:50 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
-       sfr@canb.auug.org.au, linux-next@vger.kernel.org, srostedt@redhat.com
-Subject: Re: [PATCH 1/1] ring-buffer: buffer record on/off switch
-Message-ID: <20081112125149.GA13192@ucw.cz>
-References: <20081111200601.147669239@goodmis.org> <20081111201034.315528609@goodmis.org> <20081111125645.4f7a5827.akpm@linux-foundation.org>
+	Wed, 12 Nov 2008 07:52:30 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33946 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752937AbYKLMw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 07:52:29 -0500
+Date: Wed, 12 Nov 2008 10:52:12 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] markers: Add missing stdargs.h include, needed due to
+	va_list usage
+Message-ID: <20081112125212.GA13263@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081111125645.4f7a5827.akpm@linux-foundation.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-11-11 12:56:45, Andrew Morton wrote:
-> On Tue, 11 Nov 2008 15:06:02 -0500
-> Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > +static struct file_operations rb_simple_fops = {
-> 
-> should be const...
-> 
-> Probably it isn't worth fixing.  Someone(tm) should do period sweeps -
-> 10% of our file_operationses aren't const.
-
-checkptch rule? struct file_operations .* = { -> needs const?
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/include/linux/marker.h b/include/linux/marker.h
+index 889196c..6213b5e 100644
+--- a/include/linux/marker.h
++++ b/include/linux/marker.h
+@@ -12,6 +12,7 @@
+  * See the file COPYING for more details.
+  */
+ 
++#include <stdarg.h>
+ #include <linux/types.h>
+ 
+ struct module;
