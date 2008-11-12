@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYKLWYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYKLW13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbYKLWYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKLWYB
+	id S1755429AbYKLW13 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 17:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYKLW1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:24:01 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:55255 "EHLO slimlogic.co.uk"
+	Wed, 12 Nov 2008 17:27:19 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43094 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752208AbYKLWYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:24:00 -0500
-Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
-In-Reply-To: <20081112112525.GA8767@sirena.org.uk>
-References: <200811091531.46003.david-b@pacbell.net>
-	 <200811100743.34741.david-b@pacbell.net>
-	 <20081110165625.GE12804@sirena.org.uk>
-	 <200811102056.20008.david-b@pacbell.net>
-	 <20081112112525.GA8767@sirena.org.uk>
-Content-Type: text/plain
-Date: Wed, 12 Nov 2008 22:23:55 +0000
-Message-Id: <1226528635.6727.256.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	id S1752350AbYKLW1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 17:27:19 -0500
+From: Thomas Renninger <trenn@suse.de>
+To: Alessandro Guido <ag@alessandroguido.name>
+Subject: Re: [sony-laptop] Fix regression caused by "sony-laptop: fingers off backlight if video.ko is serving this functionality"
+Date: Wed, 12 Nov 2008 16:27:12 -0600
+User-Agent: KMail/1.9.10
+Cc: len.brown@intel.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <200811122303.29372.ag@alessandroguido.name>
+In-Reply-To: <200811122303.29372.ag@alessandroguido.name>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811121627.13525.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-12 at 11:25 +0000, Mark Brown wrote:
-> On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
-> > On Monday 10 November 2008, Mark Brown wrote:
-> 
-> > > > imply REGULATOR_MODE_OFF ... another CPU may need to keep
-> > > > it in some other state.
-> 
-> > > regulator_disable() needn't imply that the regulator will actually be
-> > > off -
-> 
-> > Would you say that also for regulator_ops.disable() though?
-> 
-> If we ignore regulator_force_disable() (which isn't used yet) for the
-> moment I'd actually say that in your case with non-software enables it's
-> reasonable for it to still be powered by some other part of the system.
-> Mainly because it's proably easier to just ignore the other enables than
-> it is to explain to the rest of the system that there are others it
-> can't know about.
-> 
-> > Less surprising/confusing would be if regulator_{en,dis}able() did
-> > its own refcounting and called down to regulator_dev when changing
-> > a per-client refcount to/from zero.  (Easy patch, for later.)
-> 
-> Yeah, either way is fine for me - don't know if Liam has a strong
-> opinion.  The main benefit of not doing it is that encourages people to
-> avoid consumers sharing the clients which causes problems when clients
-> share the regulator.
-> 
+On Wednesday 12 November 2008 04:03:28 pm Alessandro Guido wrote:
+> After commit 540b8bb9c33935183ceb5bed466a42ad72b2af56:
+>
+>   sony-laptop: fingers off backlight if video.ko is serving this
+> functionality
+>
+> I can't set brightness on my sony laptop (nothing in /sys/class/backlight).
+> dmesg says "sony-laptop: Sony: Brightness ignored, must be controlled by
+> ACPI video driver".
+> The function acpi_video_backlight_support returns 0 if we should use the
+> vendor-specific backlight support, while non-0 if the ACPI generic should
+> be used. Because of this, the check introduced by the said commit appears
+> reversed.
+>
+> Signed-off-by: Alessandro Guido <ag@alessandroguido.name>
 
-Fwiw, the main design intention here was to have a 1:1 mapping between a
-consumer device and a struct regulator so that we could easily store per
-consumer power data (for mode switching, easier debug, sysfs) and avoid
-any issues between sharing the clients. I'd be happy for this change as
-long as we can keep the per consumer data.
+Thanks for finding this stupid typo,
 
-Thanks
+       Thomas
 
-Liam
+> ---
+> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
+> index 7bcb810..2a613d4 100644
+> --- a/drivers/misc/sony-laptop.c
+> +++ b/drivers/misc/sony-laptop.c
+> @@ -1038,7 +1038,7 @@ static int sony_nc_add(struct acpi_device *device)
+>  		goto outinput;
+>  	}
+>
+> -	if (!acpi_video_backlight_support()) {
+> +	if (acpi_video_backlight_support()) {
+>  		printk(KERN_INFO DRV_PFX "Sony: Brightness ignored, must be "
+>  		       "controlled by ACPI video driver\n");
+>  	} else if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "GBRT",
+
 
