@@ -1,154 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbYKLIld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbYKLIlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbYKLIld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 03:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYKLIkj
+	id S1754174AbYKLIlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 03:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbYKLIlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 03:40:39 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:35421 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752258AbYKLIki (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 03:40:38 -0500
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <virtualization@lists.linux-foundation.org>, <jens.axboe@oracle.com>,
-       "'Ryo Tsuruta'" <ryov@valinux.co.jp>,
-       "'Andrea Righi'" <righi.andrea@gmail.com>, <ngupta@google.com>,
-       <fernando@oss.ntt.co.jp>, <vtaras@openvz.org>
-Cc: "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'SUGAWARA Tomoyoshi'" <tom-sugawara@ap.jp.nec.com>,
-       <menage@google.com>, <balbir@linux.vnet.ibm.com>
-References: <000c01c9449e$c5bcdc20$51369460$@jp.nec.com>
-In-Reply-To: <000c01c9449e$c5bcdc20$51369460$@jp.nec.com>
-Subject: [PATCH][cfq-cgroups][Option 1] Introduce a think time valid entry.
-Date: Wed, 12 Nov 2008 17:37:24 +0900
-Message-ID: <002601c944a1$e3026c20$a9074460$@jp.nec.com>
+	Wed, 12 Nov 2008 03:41:39 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40134 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751790AbYKLIli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 03:41:38 -0500
+Message-ID: <491A96AE.3080600@kernel.org>
+Date: Wed, 12 Nov 2008 17:41:18 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AclEnsU5YPNAeH0jT4OGyB1wwkbE/wAAwj+A
-Content-Language: ja
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Nov 2008 08:41:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello, Miklos.  Sorry about the extra long delay.  I was buried alive
+under bugs and regressions with SLE11 release date nearing and all.
 
-  This patch introduces a think time valid entry.
- 
-  A think time is effective when queue is poor I/O requests
-  because its queue is handled as idle class and then
-  next queue can start to dispatch requests right after it.
-  However, if there are many tasks, a value of think time is bigger.
-  So, many queue are handled as idle class.
-  Many queue will dispatch few requests(one request) and then
-  expire slice.
-  Namely, ioprio control for their queues is invalid.
+Miklos Szeredi wrote:
+> Great.  Just yesterday evening I was looking through your patches to
+> see which ones I can submit for 2.6.28, and I've already applied
+> 
+>   0001-FUSE-add-include-protectors.patch
+>   0003-FUSE-implement-nonseekable-open.patch
 
-  A think time valid entry is decide to check think time.
-  The value 0 is always handled as idle class.
-  The value 1 is handled as same as traditional CFQ.
-  The value 2 make think time invalid.
+Thanks.
 
+> Comments about the others:
+> 
+>   0002-FUSE-pass-nonblock-flag-to-client.patch
+> 
+> this is not needed, f_flags are already passed to userspace for read
+> and write.
 
-    Signed-off-by: Satoshi UCHIDA <s-uchida@ap.jp.nec.com>
+Hmmm... I'll try to find out whether I can use f_flags.  There was
+something that prevented it from working properly.  I'll dig.
 
----
- block/cfq-cgroup.c          |    2 ++
- block/cfq-iosched.c         |    9 ++++++++-
- include/linux/cfq-iosched.h |    1 +
- 3 files changed, 11 insertions(+), 1 deletions(-)
+>   0004-FUSE-implement-direct-lseek-support.patch
+> 
+> this is trickier to get the interface right I think.  If we want to
+> allow filesystems to implement a custom lseek, then we also want them
+> to keep track of the file position, which means we must differentiate
+> between a write(2) and a pwrite(2) and similarly for reads.  AFAICS
+> this isn't needed for CUSE so we can leave this to later.
 
-diff --git a/block/cfq-cgroup.c b/block/cfq-cgroup.c
-index 776874d..b407768 100644
---- a/block/cfq-cgroup.c
-+++ b/block/cfq-cgroup.c
-@@ -922,6 +922,7 @@ SHOW_FUNCTION(cfq_cgroup_slice_sync_show, cfq_slice[1], 1);
- SHOW_FUNCTION(cfq_cgroup_slice_async_show, cfq_slice[0], 1);
- SHOW_FUNCTION(cfq_cgroup_slice_async_rq_show, cfq_slice_async_rq, 0);
- SHOW_FUNCTION(cfq_cgroup_ioprio_show, ioprio, 0);
-+SHOW_FUNCTION(cfq_cgroup_ttime_valid_show, cfq_ttime_valid, 0);
- #undef SHOW_FUNCTION
- 
- static ssize_t
-@@ -1026,6 +1027,7 @@ STORE_FUNCTION(cfq_cgroup_slice_async_store, cfq_slice[0], 1, UINT_MAX, 1);
- STORE_FUNCTION(cfq_cgroup_slice_async_rq_store, cfq_slice_async_rq, 1,
- 		UINT_MAX, 0);
- STORE_FUNCTION(cfq_cgroup_ioprio_store, ioprio, 0, CFQ_CGROUP_MAX_IOPRIO, 0);
-+STORE_FUNCTION(cfq_cgroup_ttime_valid_store, cfq_ttime_valid, 0, 2, 0);
- #undef STORE_FUNCTION
- 
- static ssize_t
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index edc23e5..51dccad 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -28,6 +28,8 @@ static const int cfq_slice_sync = HZ / 10;
- static int cfq_slice_async = HZ / 25;
- static const int cfq_slice_async_rq = 2;
- static int cfq_slice_idle = HZ / 125;
-+/* think time valid flag */
-+static int cfq_ttime_valid = 1;
- 
- /*
-  * offset from end of service tree
-@@ -1731,7 +1733,8 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	    (cfqd->cfqdd->hw_tag && CIC_SEEKY(cic)))
- 		enable_idle = 0;
- 	else if (sample_valid(cic->ttime_samples)) {
--		if (cic->ttime_mean > cfqd->cfq_slice_idle)
-+		if (cic->ttime_mean >
-+			cfqd->cfq_slice_idle * cfqd->cfq_ttime_valid)
- 			enable_idle = 0;
- 		else
- 			enable_idle = 1;
-@@ -2304,6 +2307,7 @@ struct cfq_data *cfq_init_cfq_data(struct request_queue *q,
- 	cfqd->cfq_slice[1] = cfq_slice_sync;
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
-+	cfqd->cfq_ttime_valid = cfq_ttime_valid;
- 
- 	return cfqd;
- }
-@@ -2381,6 +2385,7 @@ SHOW_FUNCTION(cfq_slice_idle_show, cfqd->cfq_slice_idle, 1);
- SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
- SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
- SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
-+SHOW_FUNCTION(cfq_ttime_valid_show, cfqd->cfq_ttime_valid, 0);
- #undef SHOW_FUNCTION
- 
- #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
-@@ -2412,6 +2417,7 @@ STORE_FUNCTION(cfq_slice_sync_store, &cfqd->cfq_slice[1], 1, UINT_MAX, 1);
- STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX, 1);
- STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
- 		UINT_MAX, 0);
-+STORE_FUNCTION(cfq_ttime_valid_store, &cfqd->cfq_ttime_valid, 0, 2, 0);
- #undef STORE_FUNCTION
- 
- #define CFQ_ATTR(name) \
-@@ -2427,6 +2433,7 @@ static struct elv_fs_entry cfq_attrs[] = {
- 	CFQ_ATTR(slice_async),
- 	CFQ_ATTR(slice_async_rq),
- 	CFQ_ATTR(slice_idle),
-+	CFQ_ATTR(ttime_valid),
- 	__ATTR_NULL
- };
- 
-diff --git a/include/linux/cfq-iosched.h b/include/linux/cfq-iosched.h
-index 920bcb5..8fd4b59 100644
---- a/include/linux/cfq-iosched.h
-+++ b/include/linux/cfq-iosched.h
-@@ -95,6 +95,7 @@ struct cfq_data {
- 	unsigned int cfq_slice[2];
- 	unsigned int cfq_slice_async_rq;
- 	unsigned int cfq_slice_idle;
-+	unsigned int cfq_ttime_valid;
- 
- 	struct list_head cic_list;
- 
+Read/write already passes @offset, so the only thing required is an
+extra flag there.  I mainly wanted a way for a CUSE server to veto lseek
+with proper error and still think it's better to have this as we don't
+really know what wacky users are out there.  What do you think about an
+extra flag?
+
+>   0005-FUSE-implement-ioctl-support.patch
+> 
+> See below.
+> 
+>   0006-FUSE-implement-unsolicited-notification.patch
+>   0007-FUSE-implement-poll-support.patch
+> 
+> This would be nice, but...  I don't really like the fact that it uses
+> the file handle.  Could we have a separate "poll handle" that is
+> returned in the POLL reply?
+
+Sure thing.
+
+>> 1. I'll try to incorporate all other comments here but regarding ioctl I
+>> don't think we've reached any better solution, so I'm sticking with the
+>> original one.
+> 
+> I still got qualms about this ioctl thing.  One is the security
+> aspect, but that could be dealt with.  The other is that I really
+> really don't want people to start implementing new custom ioctls for
+> their filesystems, as I think that way lies madness.  We could limit
+> ioctls to CUSE and that would be fine with me.  Or for non-CUSE users
+> we could enforce the "standard" format where the type and length is
+> encoded in the command number.
+
+For now, I'll limit ioctl to CUSE.  Hmmm... Yeah, limiting ioctl to
+well-formatted ones sounds like a good idea.
+
+> I don't have any problems with the iterative way you implemented
+> ioctls.  We just need some additional restrictions to the current
+> implementation, I think.
+
+Cool.
+
+>> 2. You told me that the version branching in the userland library wasn't
+>> necessary.  Can you explain to me when FUSE version bumping is necessary?
+> 
+> The version number has to be bumped anyway.  But if you are only
+> adding new functions to the end of fuse_operations and
+> fuse_lowlevel_ops, then the interface can handle that, without needing
+> new compatibility functions.
+
+Alright.
+
+>> 3. Any other things on you mind?
+> 
+> One other thing I was thinking about is that do we really need
+> emulated char devices to be char devices?  What I mean is, what would
+> happen if instead of a char device /dev/dsp would be a regular file
+> mounted on /dev/dsp (which implements all the necessary interfaces:
+> ioctls, poll, etc)?
+
+For most it would work, I suppose, but there are all sorts of wonky
+users out in the wild (and quite a few that we don't have source access
+to) and different configurations, so I think it's better to appear as
+proper character device if it is a character device.  It will also help
+udev and other desktop thingies deal with devices implemented in userland.
+
+Thanks.
+
 -- 
-1.5.6.5
-
-
+tejun
