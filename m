@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYKLTIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYKLTO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbYKLTIJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 14:08:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYKLTH4
+	id S1754544AbYKLTO4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 14:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYKLTOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 14:07:56 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40760 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753982AbYKLTHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 14:07:55 -0500
-Date: Wed, 12 Nov 2008 11:04:21 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081112190421.GE3230@us.ibm.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081111022405.GB20891@us.ibm.com> <20081112150555.GB13269@redhat.com>
+	Wed, 12 Nov 2008 14:14:47 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:51694 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbYKLTOq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 14:14:46 -0500
+Message-ID: <491B2AC2.6060603@oracle.com>
+Date: Wed, 12 Nov 2008 11:13:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112150555.GB13269@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Werner Almesberger <werner@openmoko.org>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] remove bashisms from scripts/extract-ikconfig
+References: <20081112183935.GA8443@almesberger.net>
+In-Reply-To: <20081112183935.GA8443@almesberger.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.491B2AE8.00D8:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| On 11/10, sukadev@linux.vnet.ibm.com wrote:
-| >
-| > Also, what happens if a fatal signal is first received from a descendant
-| > and while that is still pending, the same signal is received from ancestor
-| > ns ?  Won't the second one be ignored by legacy_queue() for the non-rt case ?
+Werner Almesberger wrote:
+> unbashify-extract-ikconfig.patch
+> 
+> scripts/extract-ikconfig contains a lot of gratuituous bashisms,
+> which make it fail if /bin/sh isn't bash. This patch replaces them
+> with regular Bourne shell constructs.
+> 
+> Signed-off-by: Werner Almesberger <werner@openmoko.org>
 
-On second thoughts, cinit is a normal process in its ancestor ns so it
-might very well ignore the second instance of the signal (as long as it
-does not ignore SIGKILL/SIGSTOP)
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com> # as file author
 
-| 
-| Please see my another email:
-| 
-| 	We must also change sig_ignored() to drop SIGKILL/SIGSTOP early when
-| 	it comes from the same ns. Otherwise, it can mask the next SIGKILL
-| 	from the parent ns.
 
-Ok.
+> ---
+> 
+> diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+> index 8187e6f..72997c3 100755
+> --- a/scripts/extract-ikconfig
+> +++ b/scripts/extract-ikconfig
+> @@ -8,8 +8,8 @@ test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
+>  
+>  IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
+>  IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
+> -function dump_config {
+> -    typeset file="$1"
+> +dump_config() {
+> +    file="$1"
+>  
+>      start=`$binoffset $file $IKCFG_ST 2>/dev/null`
+>      [ "$?" != "0" ] && start="-1"
+> @@ -18,8 +18,8 @@ function dump_config {
+>      fi
+>      end=`$binoffset $file $IKCFG_ED 2>/dev/null`
+>  
+> -    let start="$start + 8"
+> -    let size="$end - $start"
+> +    start=`expr $start + 8`
+> +    size=`expr $end - $start`
+>  
+>      dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
+>  
+> --
 
-| 
-| 	But this perhaps makes sense anyway, even without containers.
-| 	Currently, when the global init has the pending SIGKILL, we can't
-| 	trust __wait_event_killable/etc, and this is actually wrong.
-| 
-| We can drop other SIG_DFL signals from the same namespace early as well.
 
-I think Eric's patchset did this and iirc, we ran into the problem of
-blocked SIG_DFL signals ?
-
-| I seem to already did something like sig_init_ignored(), but I forgot.
-
-Yes, I think we had that in the patchset but that was not merged.
-
-| 
-| Or, we can just ignore this (imho) minor problem.
-
-I think so too.
-
-| The ancestor ns
-| must know it can't reliably kill cinit with (say) SIGTERM. It can
-| be ignored, or it can have have a handler, and it can be lost because
-| SIGTERM is already pending. Only SIGKILL is special.
-| 
-| Actually. I personally think that if we manage to achieve that
-| 
-| 	- the sub-namespace can't kill its init
-| 
-| 	- the ancestor can always kill cinit with SIGKILL
-
-Yep.
-
-| 
-| then imho we should not worry very much about other issues ;)
-| 
-| Oleg.
+-- 
+~Randy
