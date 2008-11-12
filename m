@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYKLAnh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbYKLAnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYKLAnh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbYKLA1J
+	id S1756464AbYKLAnx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYKLA1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:27:09 -0500
-Received: from kroah.org ([198.145.64.141]:42695 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:27:10 -0500
+Received: from kroah.org ([198.145.64.141]:42726 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752778AbYKLA1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:27:04 -0500
-Date: Tue, 11 Nov 2008 16:24:31 -0800
+	id S1753934AbYKLA1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:27:06 -0500
+Date: Tue, 11 Nov 2008 16:24:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Sesterhenn <snakebyte@gmx.de>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 46/49] hfsplus: fix Buffer overflow with a corrupted image
-	(CVE-2008-4933)
-Message-ID: <20081112002431.GU10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Paul Stoffregen <paul@pjrc.com>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 49/49] HID: fix incorrent length condition in hidraw_write()
+Message-ID: <20081112002441.GX10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hfsplus-fix-buffer-overflow-with-a-corrupted-image.patch"
+Content-Disposition: inline; filename="hid-fix-incorrent-length-condition-in-hidraw_write.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,125 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Sesterhenn <snakebyte@gmx.de>
+From: Jiri Kosina <jkosina@suse.cz>
 
-commit efc7ffcb4237f8cb9938909041c4ed38f6e1bf40 upstream
+upstream commit 2b107d629dc0c35de606bb7b010b829cd247a93a
 
-When an hfsplus image gets corrupted it might happen that the catalog
-namelength field gets b0rked.  If we mount such an image the memcpy() in
-hfsplus_cat_build_key_uni() writes more than the 255 that fit in the name
-field.  Depending on the size of the overwritten data, we either only get
-memory corruption or also trigger an oops like this:
+From: Jiri Kosina <jkosina@suse.cz>
 
-[  221.628020] BUG: unable to handle kernel paging request at c82b0000
-[  221.629066] IP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151
-[  221.629066] *pde = 0ea29163 *pte = 082b0160
-[  221.629066] Oops: 0002 [#1] PREEMPT DEBUG_PAGEALLOC
-[  221.629066] Modules linked in:
-[  221.629066]
-[  221.629066] Pid: 4845, comm: mount Not tainted (2.6.27-rc4-00123-gd3ee1b4-dirty #28)
-[  221.629066] EIP: 0060:[<c022d4b1>] EFLAGS: 00010206 CPU: 0
-[  221.629066] EIP is at hfsplus_find_cat+0x10d/0x151
-[  221.629066] EAX: 00000029 EBX: 00016210 ECX: 000042c2 EDX: 00000002
-[  221.629066] ESI: c82d70ca EDI: c82b0000 EBP: c82d1bcc ESP: c82d199c
-[  221.629066]  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
-[  221.629066] Process mount (pid: 4845, ti=c82d1000 task=c8224060 task.ti=c82d1000)
-[  221.629066] Stack: c080b3c4 c82aa8f8 c82d19c2 00016210 c080b3be c82d1bd4 c82aa8f0 00000300
-[  221.629066]        01000000 750008b1 74006e00 74006900 65006c00 c82d6400 c013bd35 c8224060
-[  221.629066]        00000036 00000046 c82d19f0 00000082 c8224548 c8224060 00000036 c0d653cc
-[  221.629066] Call Trace:
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c01302d2>] ? __kernel_text_address+0x1b/0x27
-[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
-[  221.629066]  [<c0109e32>] ? save_stack_address+0x0/0x2c
-[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
-[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
-[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
-[  221.629066]  [<c013553d>] ? down+0xc/0x2f
-[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c013da5d>] ? mark_held_locks+0x43/0x5a
-[  221.629066]  [<c013dc3a>] ? trace_hardirqs_on+0xb/0xd
-[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
-[  221.629066]  [<c06abec8>] ? _spin_unlock_irqrestore+0x42/0x58
-[  221.629066]  [<c013555c>] ? down+0x2b/0x2f
-[  221.629066]  [<c022aa68>] ? hfsplus_iget+0xa0/0x154
-[  221.629066]  [<c022b0b9>] ? hfsplus_fill_super+0x280/0x447
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  221.629066]  [<c041c9e4>] ? string+0x2b/0x74
-[  221.629066]  [<c041cd16>] ? vsnprintf+0x2e9/0x512
-[  221.629066]  [<c010487a>] ? dump_trace+0xca/0xd6
-[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  221.629066]  [<c0109eaf>] ? save_stack_trace+0x1c/0x3a
-[  221.629066]  [<c013b571>] ? save_trace+0x37/0x8d
-[  221.629066]  [<c013b62e>] ? add_lock_to_list+0x67/0x8d
-[  221.629066]  [<c013ea1c>] ? validate_chain+0x8a4/0x9f4
-[  221.629066]  [<c01354d3>] ? up+0xc/0x2f
-[  221.629066]  [<c013f1f6>] ? __lock_acquire+0x68a/0x6e0
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c013bca3>] ? trace_hardirqs_off_caller+0x14/0x9b
-[  221.629066]  [<c013bd35>] ? trace_hardirqs_off+0xb/0xd
-[  221.629066]  [<c0107aa3>] ? native_sched_clock+0x82/0x96
-[  221.629066]  [<c041cfb7>] ? snprintf+0x1b/0x1d
-[  221.629066]  [<c01ba466>] ? disk_name+0x25/0x67
-[  221.629066]  [<c0183960>] ? get_sb_bdev+0xcd/0x10b
-[  221.629066]  [<c016ad92>] ? kstrdup+0x2a/0x4c
-[  221.629066]  [<c022a7b3>] ? hfsplus_get_sb+0x13/0x15
-[  221.629066]  [<c022ae39>] ? hfsplus_fill_super+0x0/0x447
-[  221.629066]  [<c0183583>] ? vfs_kern_mount+0x3b/0x76
-[  221.629066]  [<c0183602>] ? do_kern_mount+0x32/0xba
-[  221.629066]  [<c01960d4>] ? do_new_mount+0x46/0x74
-[  221.629066]  [<c0196277>] ? do_mount+0x175/0x193
-[  221.629066]  [<c013dbf4>] ? trace_hardirqs_on_caller+0xf4/0x12f
-[  221.629066]  [<c01663b2>] ? __get_free_pages+0x1e/0x24
-[  221.629066]  [<c06ac07b>] ? lock_kernel+0x19/0x8c
-[  221.629066]  [<c01962e6>] ? sys_mount+0x51/0x9b
-[  221.629066]  [<c01962f9>] ? sys_mount+0x64/0x9b
-[  221.629066]  [<c01038bd>] ? sysenter_do_call+0x12/0x31
-[  221.629066]  =======================
-[  221.629066] Code: 89 c2 c1 e2 08 c1 e8 08 09 c2 8b 85 e8 fd ff ff 66 89 50 06 89 c7 53 83 c7 08 56 57 68 c4 b3 80 c0 e8 8c 5c ef ff 89 d9 c1 e9 02 <f3> a5 89 d9 83 e1 03 74 02 f3 a4 83 c3 06 8b 95 e8 fd ff ff 0f
-[  221.629066] EIP: [<c022d4b1>] hfsplus_find_cat+0x10d/0x151 SS:ESP 0068:c82d199c
-[  221.629066] ---[ end trace e417a1d67f0d0066 ]---
+The bound check on the buffer length
 
-Since hfsplus_cat_build_key_uni() returns void and only has one callsite,
-the check is performed at the callsite.
+	if (count > HID_MIN_BUFFER_SIZE)
 
-Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Roman Zippel <zippel@linux-m68k.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+is of course incorrent, the proper check is
+
+	if (count > HID_MAX_BUFFER_SIZE)
+
+Fix it.
+
+Reported-by: Jerry Ryle <jerry@mindtribe.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Cc: Paul Stoffregen <paul@pjrc.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/hfsplus/catalog.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/hid/hidraw.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/hfsplus/catalog.c
-+++ b/fs/hfsplus/catalog.c
-@@ -168,6 +168,11 @@ int hfsplus_find_cat(struct super_block 
- 		return -EIO;
- 	}
+--- a/drivers/hid/hidraw.c
++++ b/drivers/hid/hidraw.c
+@@ -113,7 +113,7 @@ static ssize_t hidraw_write(struct file 
+ 	if (!dev->hid_output_raw_report)
+ 		return -ENODEV;
  
-+	if (be16_to_cpu(tmp.thread.nodeName.length) > 255) {
-+		printk(KERN_ERR "hfs: catalog name length corrupted\n");
-+		return -EIO;
-+	}
-+
- 	hfsplus_cat_build_key_uni(fd->search_key, be32_to_cpu(tmp.thread.parentID),
- 				 &tmp.thread.nodeName);
- 	return hfs_brec_find(fd);
+-	if (count > HID_MIN_BUFFER_SIZE) {
++	if (count > HID_MAX_BUFFER_SIZE) {
+ 		printk(KERN_WARNING "hidraw: pid %d passed too large report\n",
+ 				task_pid_nr(current));
+ 		return -EINVAL;
 
 -- 
