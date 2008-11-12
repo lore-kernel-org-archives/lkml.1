@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbYKLJag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbYKLJeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbYKLJag (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYKLJa2
+	id S1752171AbYKLJeh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 04:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYKLJe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:30:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:47894 "EHLO hera.kernel.org"
+	Wed, 12 Nov 2008 04:34:27 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50308 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751397AbYKLJa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:30:27 -0500
-Message-ID: <491AA222.10209@kernel.org>
-Date: Wed, 12 Nov 2008 18:30:10 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Miklos Szeredi <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org> <20081112091416.GA19721@infradead.org>
-In-Reply-To: <20081112091416.GA19721@infradead.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Nov 2008 09:30:14 +0000 (UTC)
+	id S1751017AbYKLJe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 04:34:26 -0500
+From: Avi Kivity <avi@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: [GIT PULL] KVM fixes for 2.6.28-rc
+Date: Wed, 12 Nov 2008 11:34:15 +0200
+Message-Id: <1226482455-21199-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Wed, Nov 12, 2008 at 05:41:18PM +0900, Tejun Heo wrote:
->>> emulated char devices to be char devices?  What I mean is, what would
->>> happen if instead of a char device /dev/dsp would be a regular file
->>> mounted on /dev/dsp (which implements all the necessary interfaces:
->>> ioctls, poll, etc)?
->> For most it would work, I suppose, but there are all sorts of wonky
->> users out in the wild (and quite a few that we don't have source access
->> to) and different configurations, so I think it's better to appear as
->> proper character device if it is a character device.  It will also help
->> udev and other desktop thingies deal with devices implemented in userland.
-> 
-> Note that mounting a char device on /dev/dsp is exactly the same as
-> mounting a regular file on /dev/dsp - the only difference is what you
-> set i_mode to.
+Linus, please pull from the repo and branch at:
 
-A difference is how the device is located.  With proper character device
-emulation, any char device node on any filesystem would work.  Not sure
-how relevant that would be tho.
+  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git kvm-updates/2.6.28
 
-Thanks.
+to receive the current batch of KVM fixes.  These include a fix for a host
+oops under heavy guest loads, memory attribute inconsistency fix with
+Nehalem processors, a signal handling fix for ia64, and a few minor fixes.
 
--- 
-tejun
+Avi Kivity (2):
+      KVM: Require the PCI subsystem
+      KVM: Fix pit memory leak if unable to allocate irq source id
+
+Marcelo Tosatti (1):
+      KVM: MMU: increase per-vcpu rmap cache alloc size
+
+Rakib Mullick (1):
+      x86: KVM guest: fix section mismatch warning in kvmclock.c
+
+Sheng Yang (1):
+      KVM: VMX: Set IGMT bit in EPT entry
+
+Xiantao Zhang (2):
+      KVM: ia64: Use guest signal mask when blocking
+      KVM: ia64: fix vmm_spin_{un}lock for !CONFIG_SMP
+
+ arch/ia64/kvm/Kconfig      |    2 ++
+ arch/ia64/kvm/kvm-ia64.c   |   12 ++++++------
+ arch/ia64/kvm/vcpu.h       |    5 +++++
+ arch/x86/kernel/kvmclock.c |    2 +-
+ arch/x86/kvm/Kconfig       |    2 ++
+ arch/x86/kvm/i8254.c       |    4 +++-
+ arch/x86/kvm/mmu.c         |    2 +-
+ arch/x86/kvm/vmx.c         |    3 ++-
+ arch/x86/kvm/vmx.h         |    1 +
+ 9 files changed, 23 insertions(+), 10 deletions(-)
