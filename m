@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbYKLQxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYKLQxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612AbYKLQxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 11:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYKLQxX
+	id S1754109AbYKLQxp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 11:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKLQx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 11:53:23 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:34513 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751278AbYKLQxW (ORCPT
+	Wed, 12 Nov 2008 11:53:29 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33792 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbYKLQx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 11:53:22 -0500
-Date: Wed, 12 Nov 2008 10:53:19 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: sukadev@linux.vnet.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081112165319.GC14572@us.ibm.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com>
+	Wed, 12 Nov 2008 11:53:28 -0500
+Date: Wed, 12 Nov 2008 11:53:25 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
+       viro@zeniv.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
+       greg@kroah.com, tytso@mit.edu, akpm@linux-foundation.org
+Subject: Re: [PATCH =-v3 11/21] fanotify: give a special access permission
+	check
+Message-ID: <20081112165325.GC19669@infradead.org>
+References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com> <20081112161124.25434.86250.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081110193228.GA15519@redhat.com>
+In-Reply-To: <20081112161124.25434.86250.stgit@paris.rdu.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oleg Nesterov (oleg@redhat.com):
-> --- K-IS/kernel/signal.c~T	2008-11-10 19:21:17.000000000 +0100
-> +++ K-IS/kernel/signal.c	2008-11-10 20:31:24.000000000 +0100
-> @@ -798,11 +798,19 @@ static inline int legacy_queue(struct si
->  	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
->  }
-> 
-> +#define SIG_FROM_USER	INT_MIN		/* MSB */
-> +
->  static int send_signal(int sig, struct siginfo *info, struct task_struct *t,
->  			int group)
->  {
->  	struct sigpending *pending;
->  	struct sigqueue *q;
-> +	int from_ancestor_ns;
-> +
-> +	from_ancestor_ns = !is_si_special(info) &&
-> +		(info->si_signo | SIG_FROM_USER) &&
+On Wed, Nov 12, 2008 at 11:11:24AM -0500, Eric Paris wrote:
+>  	fsnotify_open_exec(file);
+> +	error = fanotify(file, FAN_ACCESS_EXEC_PERM);
+> +	if (error) {
+> +		fput(file);
+> +		goto out;
+> +	}
 
-I assume you mean '&'?
+Adding your own fanotify calls next to the fsnotify calls completely
+defeats th purpose of these.  Please make sure we have one set of hooks.
+And given that we now have three notification schemes I think it's
+getting time that you also unifify the actuall backends (buffering, etc)
+instead of faning out at the fsnotify layer and just leave dnotify and
+inotify as tiny userspace interface layers.
 
-> +		/* if t can't see us we are from parent ns */
-> +		task_pid_nr_ns(current, t->current->nsproxy->pid_ns) <= 0;
-
-This doesn't look so bad...  (but still looking through followup emails)
-
--serge
