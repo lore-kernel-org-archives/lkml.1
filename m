@@ -1,105 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbYKLOW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYKLOXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753242AbYKLOW5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 09:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbYKLOWs
+	id S1753421AbYKLOXq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 09:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbYKLOXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 09:22:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57177 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752446AbYKLOWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 09:22:48 -0500
-Subject: Re: [PATCH] x86 - Make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
-From: Jeremy Katz <katzj@redhat.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Takashi Iwai <tiwai@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
-       dsaxena@laptop.org
-In-Reply-To: <20081109201710.4c490f04@debxo>
-References: <s5h3ahyqwmn.wl%tiwai@suse.de> <20081111125402.GB14989@elte.hu>
-	 <s5hzlk6pea6.wl%tiwai@suse.de> <20081111135306.GA32709@elte.hu>
-	 <s5hwsfapdoj.wl%tiwai@suse.de> <20081111140406.GA3244@elte.hu>
-	 <20081109201710.4c490f04@debxo>
-Content-Type: text/plain
-Date: Wed, 12 Nov 2008 08:54:10 -0500
-Message-Id: <1226498050.12791.45.camel@aglarond.local>
-Mime-Version: 1.0
+	Wed, 12 Nov 2008 09:23:38 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:31864 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751617AbYKLOXh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 09:23:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=qLENOCDT6KWUCGisMbohh3e4BPfk6iPfakMOClPtWxLi3asyaZX5nk8ESXLGUAGe2A
+         /G4UFwWV9NpCFDp1NwLSrzpXIIWiz8LzTEh/ApkEr0+g3urgGdheCkYrZ4JyQCmUPNfp
+         c1icahNZ7FdQ+yqAsHAA68Yy3qn6Rxs7dRMPw=
+Message-ID: <9ea470500811120623q4334f840t4540649edba935@mail.gmail.com>
+Date: Wed, 12 Nov 2008 15:23:35 +0100
+From: "Borislav Petkov" <petkovbb@googlemail.com>
+Reply-To: petkovbb@gmail.com
+To: "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: [PATCH][RESEND] checkpatch: Add warning for p0-patches
+Cc: "Wolfram Sang" <w.sang@pengutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20081112135522.GD8302@shadowen.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1225467370-19143-1-git-send-email-w.sang@pengutronix.de>
+	 <20081112135522.GD8302@shadowen.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-09 at 20:17 -0800, Andres Salomon wrote:
-> On Tue, 11 Nov 2008 15:04:06 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Takashi Iwai <tiwai@suse.de> wrote:
-> > 
-> > > At Tue, 11 Nov 2008 14:53:06 +0100,
-> > > Ingo Molnar wrote:
-> > > > 
-> > > > 
-> > > > * Takashi Iwai <tiwai@suse.de> wrote:
-> > > > 
-> > > > > At Tue, 11 Nov 2008 13:54:02 +0100,
-> > > > > Ingo Molnar wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > * Takashi Iwai <tiwai@suse.de> wrote:
-> > > > > > 
-> > > > > > > The OLPC-specpfic codes require geode_gpio_*() functions
-> > > > > > > although these functions are defined only with
-> > > > > > > CONFIG_MGEODE_LX=y. Add a proper dependency to fix build
-> > > > > > > errors.
-> > > > > > > 
-> > > > > > > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > > > > > 
-> > > > > > hm, could you please send a .config that shows the build
-> > > > > > errors?
-> > > > > 
-> > > > > Here it is.  It's for today's linux-next.
-> > > > 
-> > > > hm, which tree did that build failure in linux-next originate
-> > > > from? Your config builds fine here with the latest x86 tree.
-> > > 
-> > > Ah, sorry, forgot to mention that the build error comes from the
-> > > latest ALSA code.  It contains an OLPC-specific code that is enabled
-> > > via CONFIG_OLPC like:
-> > > 
-> > > 	snd-cs5535audio-$(CONFIG_OLPC) += cs5535audio_olpc.o
-> > > 
-> > > where this includes geode_gpio_*() calls.
-> > > 
-> > > Of course, I can add an if in Makefile or create a new Kconfig, but 
-> > > since asm/olpc.h itself includes asm/geode.h and contains 
-> > > geode_gpio*() calls, it would be a proper fix to make CONFIG_OLPC 
-> > > dependent on geode.
-> > 
-> > ah, okay, agreed - i was worried whether this is something affecting 
-> > v2.6.28 or slipping through our testing before commits hit linux-next.
-> > 
-> > I've queued up your fix in tip/x86/kconfig, thanks Takashi!
+On Wed, Nov 12, 2008 at 2:55 PM, Andy Whitcroft <apw@shadowen.org> wrote:
+> On Fri, Oct 31, 2008 at 04:36:10PM +0100, Wolfram Sang wrote:
+>> Some people work internally with -p0-patches which has the danger that
+>> one forgets to convert them to -p1 before mainlining. Bitten myself and
+>> seen p0-patches in mailing lists occasionally, this patch adds a warning
+>> to checkpatch.pl in case a patch is -p0. If you really want, you can
+>> fool this check to generate false positives, this is why it just spits a
+>> warning. Making the check 100% proof is trickier than it looks, so let's
+>> start with a version which catches the cases of real use.
+>>
+>> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+>> ---
+>>  scripts/checkpatch.pl |    8 +++++++-
+>>  1 files changed, 7 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+>> index f88bb3e..dae5854 100755
+>> --- a/scripts/checkpatch.pl
+>> +++ b/scripts/checkpatch.pl
+>> @@ -1051,6 +1051,7 @@ sub process {
+>>       my $in_comment = 0;
+>>       my $comment_edge = 0;
+>>       my $first_line = 0;
+>> +     my $p1_prefix = '';
+>>
+>>       my $prev_values = 'E';
+>>
+>> @@ -1196,7 +1197,12 @@ sub process {
+>>               # extract the filename as it passes
+>>               if ($line=~/^\+\+\+\s+(\S+)/) {
+>>                       $realfile = $1;
+>> -                     $realfile =~ s@^[^/]*/@@;
+>> +                     $realfile =~ s@^([^/]*)/@@;
+>> +
+>> +                     $p1_prefix = $1;
+>> +                     if ($tree && -e "$root/$p1_prefix") {
+>> +                             WARN("Patch prefix '$p1_prefix' exists. Is it maybe a p0-patch?\n");
+>> +                     }
+>>
+>>                       if ($realfile =~ m@^include/asm/@) {
+>>                               ERROR("do not modify files in include/asm, change architecture specific files in include/asm-<architecture>\n" . "$here$rawline\n");
 >
-> This works for now (though it's probably going to anger some people who
-> are trying to make generic distro kernels), 
+> Looks reasonable.  Committed this with a few mods to my tree.  Will be
+> in the next batch of updates.
 
-It's not about angering, it's about causing regressions in
-functionality.  Doing this will completely break the ability to run
-generic distros on the OLPC hardware without a special kernel.  Which
-has been something that a lot of work has gone on upstream to avoid for
-all sorts of cases (VMI, Xen, SMP, ...).  
+Hi,
 
-> but what we really need to
-> do is to make geode_gpio* defined even when we're not specifically
-> building with MGEODE_LX.  I'm not sure how best to do that, but the
-> answer probably includes using the generic x86 gpio api.
+I had sent you a very similar patch (see http://lkml.org/lkml/2007/12/17/19) and
+and you turned it down then since it would trigger when the patch creates new
+files. Well, this one suffers from the exact opposite problem - it won't trigger
+even if it is a -p0 patch on new files, AFAICT.
 
-This probably needs to be done as a precondition for getting the alsa
-changes merged or the alsa changes need to have the bits which depend on
-geode_gpio ripped out until it can be done.  Or those parts
-conditionalized.  Drivers should not depend on what cpu type you're
-building for...
-
-Jeremy
-
+-- 
+Regards/Gruss,
+Boris
