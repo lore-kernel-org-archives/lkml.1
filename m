@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1756092AbYKKJEw@vger.kernel.org>
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756092AbYKKJEw (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Tue, 11 Nov 2008 04:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbYKKJEJ
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 04:04:09 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:54201 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755081AbYKKJEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 04:04:07 -0500
-In-Reply-To: <adaod0nqpx4.fsf@cisco.com>
-References: <200806061835.43802.fenkes@de.ibm.com>	<48499C11.7030504@gmail.com> <200811071742.51867.fenkes@de.ibm.com> <adaod0nqpx4.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Alexander Schmidt1 <ALEXSCHM@de.ibm.com>,
-        Christoph Raisch <RAISCH@de.ibm.com>,
-        OF-EWG <ewg@lists.openfabrics.org>,
-        OF-General <general@lists.openfabrics.org>,
-        Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-        Roland Dreier <rolandd@cisco.com>,
-        Stefan Roscher <stefan.roscher@de.ibm.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH] IB/ehca: Fix suppression of port activation events
-X-KeepSent: A167ACE2:B60DCF5C-C12574FE:00319074;
- type=4; name=$KeepSent
-X-Mailer: Lotus Notes Release 8.0.1 HF105 April 10, 2008
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFA167ACE2.B60DCF5C-ONC12574FE.00319074-C12574FE.0031CE5F@de.ibm.com>
-Date: Tue, 11 Nov 2008 10:04:04 +0100
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 8.0.1|February 07, 2008) at
- 11/11/2008 10:04:04,
-	Serialize complete at 11/11/2008 10:04:04
-Content-Type: text/plain; charset="US-ASCII"
+Return-Path: <linux@dominikbrodowski.net>
+Date: Wed, 12 Nov 2008 11:17:25 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
 Sender: linux-kernel-owner@vger.kernel.org
-List-ID: <linux-kernel.vger.kernel.org>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+        alan@redhat.com
+Subject: [git pull] PCMCIA updates and fixes for 2.6.28-rc4
+Message-ID: <20081112101725.GA14698@comet.dominikbrodowski.net>
+Mail-Followup-To: torvalds@osdl.org, akpm@osdl.org,
+	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+	alan@redhat.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-OfflineIMAP-x558136407-6973696c6d61722e6d61696c-6c696e75782d73656e74: 1225
+	241620-0981316510871-v4.0.13
 X-Mailing-List: linux-kernel@vger.kernel.org
+User-Agent: Mutt/1.5.18 (2008-05-17)
 
-Roland Dreier <rdreier@cisco.com> wrote on 10.11.2008 21:36:23:
+Linus,
 
->  > A previous fix introduced a regression where port activation events 
-were
->  > dropped unconditionally if port autodetection was not enabled. Fixed.
-> 
-> Is this a fix to "IB/ehca: Remove reference to special QP in case of
-> port activation failure"?  Because if so I can roll it into that patch,
-> since Linus hasn't pulled it yet.
+a few PCMCIA bugfixes are available at
 
-Yes, that would be splendid, thank you!
+  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git master
 
-Cheers,
-  Joachim
+The diffstat and list of changes follows, the individual diffs are sent (at
+least) to the linux-pcmcia list.
+
+Thanks,
+	Dominik
+
+----
+
+Dominik Brodowski (2):
+      pcmcia: add braces in error path
+      pcmcia: ensure correct logging in do_io_probe
+
+Ilpo Järvinen (1):
+      pcmcia: fix indentation & braces disagreement - add braces
+
+Kay Sievers (1):
+      pcmcia: struct device - replace bus_id with dev_name(), dev_set_name()
+
+Komuro (1):
+      pcmcia: setup resource information for pseudo multifunction devices.
+
+Marc Pignat (1):
+      pcmcia: add another pata/ide ID
+
+ drivers/ata/pata_pcmcia.c        |    1 +
+ drivers/ide/ide-cs.c             |    1 +
+ drivers/pcmcia/cistpl.c          |    3 ++-
+ drivers/pcmcia/cs.c              |   14 +++++++-------
+ drivers/pcmcia/ds.c              |   11 ++++++-----
+ drivers/pcmcia/pcmcia_resource.c |    3 ++-
+ drivers/pcmcia/rsrc_nonstatic.c  |    6 +++---
+ 7 files changed, 22 insertions(+), 17 deletions(-)
