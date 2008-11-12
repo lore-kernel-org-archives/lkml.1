@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbYKLJ7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYKLKBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbYKLJ7l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYKLJ7c
+	id S1752095AbYKLKBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 05:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYKLKBM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:59:32 -0500
-Received: from ozlabs.org ([203.10.76.45]:58222 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbYKLJ7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:59:31 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] Allocate module.ref array dynamically
-Date: Wed, 12 Nov 2008 20:29:23 +1030
-User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-References: <s5htzaekp6o.wl%tiwai@suse.de> <200811121214.33150.rusty@rustcorp.com.au> <Pine.LNX.4.64.0811112113001.10592@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0811112113001.10592@quilx.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200811122029.24482.rusty@rustcorp.com.au>
+	Wed, 12 Nov 2008 05:01:12 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53327 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751626AbYKLKBL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 05:01:11 -0500
+To: tj@kernel.org
+CC: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+In-reply-to: <491A96AE.3080600@kernel.org> (message from Tejun Heo on Wed, 12
+	Nov 2008 17:41:18 +0900)
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org>
+Message-Id: <E1L0CWu-0004Dk-F9@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 12 Nov 2008 11:00:56 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 November 2008 13:44:51 Christoph Lameter wrote:
-> Please use my new email address.... Otherwise I will not see this.
+On Wed, 12 Nov 2008, Tejun Heo wrote:
+> > Comments about the others:
+> > 
+> >   0002-FUSE-pass-nonblock-flag-to-client.patch
+> > 
+> > this is not needed, f_flags are already passed to userspace for read
+> > and write.
+> 
+> Hmmm... I'll try to find out whether I can use f_flags.  There was
+> something that prevented it from working properly.  I'll dig.
 
-Oops, updated thanks.
+Support for this was missing from libfuse, but now I fixed that in the
+CVS version.
 
-> > There's something in linux-next, but I'm not sure of the status.
-> > Christoph, is this anticipated to make the next merge window, or am I
-> > best off merging a patch like Eric's for the moment?
->
-> Yes the patch in -next is for the next merge window. This should
-> actually have been in .28.
+> >   0004-FUSE-implement-direct-lseek-support.patch
+> > 
+> > this is trickier to get the interface right I think.  If we want to
+> > allow filesystems to implement a custom lseek, then we also want them
+> > to keep track of the file position, which means we must differentiate
+> > between a write(2) and a pwrite(2) and similarly for reads.  AFAICS
+> > this isn't needed for CUSE so we can leave this to later.
+> 
+> Read/write already passes @offset, so the only thing required is an
+> extra flag there.  I mainly wanted a way for a CUSE server to veto lseek
+> with proper error and still think it's better to have this as we don't
+> really know what wacky users are out there.  What do you think about an
+> extra flag?
 
-Perhaps I'm missing the overarching plan here?
+OK, but that's gonna involve a fair bit of API churn, and I'm not sure
+it's worth it at this stage.  If this is not needed for the OSS
+emulation, I think we should postpone it.
 
-You've introduced a third set of per-cpu primitives, yet the second set still 
-has 0 users.
-
-Your new basic interface is:
-CPU_ALLOC/CPU_FREE/CPU_PTR/THIS_CPU/__THIS_CPU
-
-I don't think the CAPS adds anything.  I'd like to see standard docbook 
-comments.  It's not clear from your documentation whether this allocates for 
-all possible or only all online CPUs, and the difference between THIS_CPU and 
-__THIS_CPU is not immediately obvious.
-
-How about re-using alloc_percpu/free_percpu/per_cpu_ptr APIs?  Rename THIS_CPU 
-to __get_cpu_ptr and implement get_cpu_ptr and put_cpu_ptr wrappers (a-la 
-get_cpu_var).
-
-I love this work, but I think it stumbles on the final polish.  If that's just 
-a "not done yet", I'd be happy to try to put some patches together.
-
-Thanks!
-Rusty.
+Thanks,
+Miklos
