@@ -1,149 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbYKLVXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYKLV13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbYKLVXN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 16:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYKLVVz
+	id S1754434AbYKLV13 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 16:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYKLV1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 16:21:55 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:38890 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316AbYKLVVx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 16:21:53 -0500
-Message-Id: <20081112212150.482761150@goodmis.org>
-References: <20081112212127.455979814@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 16:21:30 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
+	Wed, 12 Nov 2008 16:27:22 -0500
+Received: from xenotime.net ([72.52.64.118]:51293 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751006AbYKLV1V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 16:27:21 -0500
+Date: Wed, 12 Nov 2008 13:26:40 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/4] ftrace: add tracer called branch
-Content-Disposition: inline; filename=0003-ftrace-add-tracer-called-branch.patch
+Cc: akpm@linux-foundation.org, djwong@us.ibm.com
+Subject: Re: mmotm 2008-11-10-14-54 uploaded (i5k_amb)
+Message-Id: <20081112132640.1c7ac924.rdunlap@xenotime.net>
+In-Reply-To: <200811102254.mAAMsTU5029697@imap1.linux-foundation.org>
+References: <200811102254.mAAMsTU5029697@imap1.linux-foundation.org>
+Organization: YPO4
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: added new branch tracer
 
-Currently the tracing of branch profiling (unlikelys and likelys hit)
-is only activated by the iter_ctrl. This patch adds a tracer called
-"branch" that will just trace the branch profiling. The advantage
-of adding this tracer is that it can be added to the ftrace selftests
-on startup.
+drivers/hwmon/i5K_amb.c contains a few duplicated lines, causing:
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+mmotm-2008-1112-1148/drivers/hwmon/i5k_amb.c:500: error: redefinition of 'i5k_amb_ids'
+mmotm-2008-1112-1148/drivers/hwmon/i5k_amb.c:493: error: previous definition of 'i5k_amb_ids' was here
+
+
+
+static struct pci_device_id i5k_amb_ids[] __devinitdata = {
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5400_ERR) },
+	{ 0, }
+};
+MODULE_DEVICE_TABLE(pci, i5k_amb_ids);
+
+static struct pci_device_id i5k_amb_ids[] __devinitdata = {
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5000_ERR) },
+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_5400_ERR) },
+	{ 0, },
+};
+
+MODULE_DEVICE_TABLE(pci, i5k_amb_ids);
+
 ---
- kernel/trace/trace.h          |    2 +
- kernel/trace/trace_selftest.c |   23 ++++++++++++++++++++++
- kernel/trace/trace_unlikely.c |   42 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 67 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 7fbf37b..9e015f5 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -420,6 +420,8 @@ extern int trace_selftest_startup_sched_switch(struct tracer *trace,
- 					       struct trace_array *tr);
- extern int trace_selftest_startup_sysprof(struct tracer *trace,
- 					       struct trace_array *tr);
-+extern int trace_selftest_startup_branch(struct tracer *trace,
-+					 struct trace_array *tr);
- #endif /* CONFIG_FTRACE_STARTUP_TEST */
- 
- extern void *head_page(struct trace_array_cpu *data);
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index 0728a10..24e6e07 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -13,6 +13,7 @@ static inline int trace_valid_entry(struct trace_entry *entry)
- 	case TRACE_STACK:
- 	case TRACE_PRINT:
- 	case TRACE_SPECIAL:
-+	case TRACE_BRANCH:
- 		return 1;
- 	}
- 	return 0;
-@@ -544,3 +545,25 @@ trace_selftest_startup_sysprof(struct tracer *trace, struct trace_array *tr)
- 	return ret;
- }
- #endif /* CONFIG_SYSPROF_TRACER */
-+
-+#ifdef CONFIG_BRANCH_TRACER
-+int
-+trace_selftest_startup_branch(struct tracer *trace, struct trace_array *tr)
-+{
-+	unsigned long count;
-+	int ret;
-+
-+	/* start the tracing */
-+	trace->init(tr);
-+	/* Sleep for a 1/10 of a second */
-+	msleep(100);
-+	/* stop the tracing. */
-+	tracing_stop();
-+	/* check the trace buffer */
-+	ret = trace_test_buffer(tr, &count);
-+	trace->reset(tr);
-+	tracing_start();
-+
-+	return ret;
-+}
-+#endif /* CONFIG_BRANCH_TRACER */
-diff --git a/kernel/trace/trace_unlikely.c b/kernel/trace/trace_unlikely.c
-index e5d5969..8526555 100644
---- a/kernel/trace/trace_unlikely.c
-+++ b/kernel/trace/trace_unlikely.c
-@@ -114,6 +114,48 @@ void disable_branch_tracing(void)
-  out_unlock:
- 	mutex_unlock(&branch_tracing_mutex);
- }
-+
-+static void start_branch_trace(struct trace_array *tr)
-+{
-+	enable_branch_tracing(tr);
-+}
-+
-+static void stop_branch_trace(struct trace_array *tr)
-+{
-+	disable_branch_tracing();
-+}
-+
-+static void branch_trace_init(struct trace_array *tr)
-+{
-+	int cpu;
-+
-+	for_each_online_cpu(cpu)
-+		tracing_reset(tr, cpu);
-+
-+	start_branch_trace(tr);
-+}
-+
-+static void branch_trace_reset(struct trace_array *tr)
-+{
-+	stop_branch_trace(tr);
-+}
-+
-+struct tracer branch_trace __read_mostly =
-+{
-+	.name		= "branch",
-+	.init		= branch_trace_init,
-+	.reset		= branch_trace_reset,
-+#ifdef CONFIG_FTRACE_SELFTEST
-+	.selftest	= trace_selftest_startup_branch,
-+#endif
-+};
-+
-+__init static int init_branch_trace(void)
-+{
-+	return register_tracer(&branch_trace);
-+}
-+
-+device_initcall(init_branch_trace);
- #else
- static inline
- void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
--- 
-1.5.6.5
-
--- 
+~Randy
