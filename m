@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbYKLXmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbYKLXno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbYKLXmy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757383AbYKLXjw
+	id S1756283AbYKLXno (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:43:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKLXnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:39:52 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:58712 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757380AbYKLXjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:39:51 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
+	Wed, 12 Nov 2008 18:43:33 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1378 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbYKLXnd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:43:33 -0500
+Date: Wed, 12 Nov 2008 23:43:31 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Samuel Ortiz <sameo@openedhand.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] mtd/bfin-async-flash: use parse_mtd()
-Date: Wed, 12 Nov 2008 18:39:49 -0500
-Message-Id: <1226533189-8492-2-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.3
-In-Reply-To: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
+Subject: Re: [PATCH 2.6.28] mfd: Correct WM8350 I2C return code usage
+Message-ID: <20081112234331.GB8272@sirena.org.uk>
+References: <1226324477-21022-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112184956.GA17382@sortiz.org> <20081112200007.GA31451@sirena.org.uk> <20081112230636.GB17382@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081112230636.GB17382@sortiz.org>
+X-Cookie: Your lucky color has faded.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call parse_mtd() to handle partition/device registration rather than doing
-it all ourself.
+On Thu, Nov 13, 2008 at 12:06:36AM +0100, Samuel Ortiz wrote:
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/mtd/maps/bfin-async-flash.c |   28 +++-------------------------
- 1 files changed, 3 insertions(+), 25 deletions(-)
+> I understand that. I'm just saying that I would prefer wm8350->read_dev() to
+> return the actual bytes read, be it for SPI or I2C. Same for write_dev(), of
+> course.
 
-diff --git a/drivers/mtd/maps/bfin-async-flash.c b/drivers/mtd/maps/bfin-async-flash.c
-index 6fec86a..01c9e7a 100644
---- a/drivers/mtd/maps/bfin-async-flash.c
-+++ b/drivers/mtd/maps/bfin-async-flash.c
-@@ -120,13 +120,8 @@ static void bfin_copy_to(struct map_info *map, unsigned long to, const void *fro
- 	switch_back(state);
- }
- 
--#ifdef CONFIG_MTD_PARTITIONS
--static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
--#endif
--
- static int __devinit bfin_flash_probe(struct platform_device *pdev)
- {
--	int ret;
- 	struct physmap_flash_data *pdata = pdev->dev.platform_data;
- 	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *flash_ambctl = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-@@ -150,6 +145,8 @@ static int __devinit bfin_flash_probe(struct platform_device *pdev)
- 	state->flash_ambctl0  = flash_ambctl->start;
- 	state->flash_ambctl1  = flash_ambctl->end;
- 
-+	platform_set_drvdata(pdev, state);
-+
- 	if (gpio_request(state->enet_flash_pin, DRIVER_NAME)) {
- 		pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->enet_flash_pin);
- 		return -EBUSY;
-@@ -161,26 +158,7 @@ static int __devinit bfin_flash_probe(struct platform_device *pdev)
- 	if (!state->mtd)
- 		return -ENXIO;
- 
--#ifdef CONFIG_MTD_PARTITIONS
--	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
--	if (ret > 0) {
--		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
--		add_mtd_partitions(state->mtd, pdata->parts, ret);
--
--	} else if (pdata->nr_parts) {
--		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
--		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
--
--	} else
--#endif
--	{
--		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
--		add_mtd_device(state->mtd);
--	}
--
--	platform_set_drvdata(pdev, state);
--
--	return 0;
-+	return parse_mtd(state->mtd, NULL, pdata->parts, pdata->nr_parts);
- }
- 
- static int __devexit bfin_flash_remove(struct platform_device *pdev)
--- 
-1.6.0.3
+Hrm.  That's never been the case, even with the buggy code since the
+register address was included in the physical access for at least the
+writes.
 
+> With this patch you're breaking that expectation because the read|write_dev()
+> I'd prefer to fix the callers code, so that we keep the expected semantics
+
+Just to clarify, when you say "expectation" and "fix" are you talking
+about your preference that the hardware access functions return the
+number of bytes read or written or is there something else going on
+here? 
+
+> for your read|write_dev() routines. For example with wm8350_clear_bits():
+
+> -	if (err) {
+> +	ret = wm8350_read(wm8350, reg, 1, &data);
+> +	if (ret != 1) {
+>  		dev_err(wm8350->dev, "read from reg R%d failed\n", reg);
+> +		err = -EIO;
+
+Note that wm8350_read() works a level up, only calling the physical read
+function if the register cache can't satisfy the access.  Changing that
+would be another layer of alteration.
+
+To be honest I'm really not sure it's worth changing this - I'm having a
+hard time thinking of a user that would be able to do anything useful
+with a short access.  It also seems like it'd be a rather invasive
+change for an -rc.
