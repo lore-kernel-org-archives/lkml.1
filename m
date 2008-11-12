@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbYKLAks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755237AbYKLAlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbYKLAks (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbYKLA0x
+	id S1755237AbYKLAlO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:41:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbYKLA0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:53 -0500
-Received: from kroah.org ([198.145.64.141]:42574 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:54 -0500
+Received: from kroah.org ([198.145.64.141]:42585 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753855AbYKLA0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:52 -0500
-Date: Tue, 11 Nov 2008 16:24:13 -0800
+	id S1752977AbYKLA0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:53 -0500
+Date: Tue, 11 Nov 2008 16:24:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrey Borzenkov <arvidjaar@mail.ru>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 38/49] cpqarry: fix return value of cpqarray_init()
-Message-ID: <20081112002413.GM10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Shaohua Li <shaohua.li@intel.com>,
+       Len Brown <len.brown@intel.com>
+Subject: [patch 39/49] ACPI: dock: avoid check _STA method
+Message-ID: <20081112002415.GN10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cpqarry-fix-return-value-of-cpqarray_init.patch"
+Content-Disposition: inline; filename="acpi-dock-avoid-check-_sta-method.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,51 +40,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andrey Borzenkov <arvidjaar@mail.ru>
+From: Shaohua Li <shaohua.li@intel.com>
 
-commit 2197d18ded232ef6eef63cce57b6b21eddf1b7b6 upstream.
+commit 8b59560a3baf2e7c24e0fb92ea5d09eca92805db upstream.
 
-As reported by Dick Gevers on Compaq ProLiant:
+In some BIOSes, every _STA method call will send a notification again,
+this cause freeze. And in some BIOSes, it appears _STA should be called
+after _DCK. This tries to avoid calls _STA, and still keep the device
+present check.
 
-Oct 13 18:06:51 dvgcpl kernel: Compaq SMART2 Driver (v 2.6.0)
-Oct 13 18:06:51 dvgcpl kernel: sys_init_module: 'cpqarray'->init
-suspiciously returned 1, it should follow 0/-E convention
-Oct 13 18:06:51 dvgcpl kernel: sys_init_module: loading module anyway...
-Oct 13 18:06:51 dvgcpl kernel: Pid: 315, comm: modprobe Not tainted
-2.6.27-desktop-0.rc8.2mnb #1
-Oct 13 18:06:51 dvgcpl kernel:  [<c0380612>] ? printk+0x18/0x1e
-Oct 13 18:06:51 dvgcpl kernel:  [<c0158f85>] sys_init_module+0x155/0x1c0
-Oct 13 18:06:51 dvgcpl kernel:  [<c0103f06>] syscall_call+0x7/0xb
-Oct 13 18:06:51 dvgcpl kernel:  =======================
+http://bugzilla.kernel.org/show_bug.cgi?id=10431
 
-Make it return 0 on success and -ENODEV if no array was found.
-
-Reported-by: Dick Gevers <dvgevers@xs4all.nl>
-Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/cpqarray.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/acpi/dock.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/drivers/block/cpqarray.c
-+++ b/drivers/block/cpqarray.c
-@@ -567,7 +567,12 @@ static int __init cpqarray_init(void)
- 			num_cntlrs_reg++;
- 	}
+--- a/drivers/acpi/dock.c
++++ b/drivers/acpi/dock.c
+@@ -604,14 +604,17 @@ static int handle_eject_request(struct d
+ static void dock_notify(acpi_handle handle, u32 event, void *data)
+ {
+ 	struct dock_station *ds = data;
++	struct acpi_device *tmp;
  
--	return(num_cntlrs_reg);
-+	if (num_cntlrs_reg)
-+		return 0;
-+	else {
-+		pci_unregister_driver(&cpqarray_pci_driver);
-+		return -ENODEV;
-+	}
- }
- 
- /* Function to find the first free pointer into our hba[] array */
+ 	switch (event) {
+ 	case ACPI_NOTIFY_BUS_CHECK:
+-		if (!dock_in_progress(ds) && dock_present(ds)) {
++		if (!dock_in_progress(ds) && acpi_bus_get_device(ds->handle,
++		   &tmp)) {
+ 			begin_dock(ds);
+ 			dock(ds);
+ 			if (!dock_present(ds)) {
+ 				printk(KERN_ERR PREFIX "Unable to dock!\n");
++				complete_dock(ds);
+ 				break;
+ 			}
+ 			atomic_notifier_call_chain(&dock_notifier_list,
 
 -- 
