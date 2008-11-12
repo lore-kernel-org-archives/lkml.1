@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbYKLW13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYKLWa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755429AbYKLW13 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:27:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752822AbYKLW1T
+	id S1754984AbYKLWa0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 17:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYKLWaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:27:19 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:43094 "EHLO mx2.suse.de"
+	Wed, 12 Nov 2008 17:30:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40828 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbYKLW1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:27:19 -0500
-From: Thomas Renninger <trenn@suse.de>
-To: Alessandro Guido <ag@alessandroguido.name>
-Subject: Re: [sony-laptop] Fix regression caused by "sony-laptop: fingers off backlight if video.ko is serving this functionality"
-Date: Wed, 12 Nov 2008 16:27:12 -0600
-User-Agent: KMail/1.9.10
-Cc: len.brown@intel.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <200811122303.29372.ag@alessandroguido.name>
-In-Reply-To: <200811122303.29372.ag@alessandroguido.name>
+	id S1752352AbYKLWaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 17:30:14 -0500
+Date: Wed, 12 Nov 2008 23:29:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] x86: Hibernate: Fix breakage on x86_32 with
+	CONFIG_NUMA set (was: Re: CONFIG_NUMA breaks hibernation on x86-32
+	with PAE)
+Message-ID: <20081112222927.GA13844@elte.hu>
+References: <20081109140726.GB1786@ucw.cz> <20081112104951.GB11945@ucw.cz> <200811122257.50998.rjw@sisk.pl> <200811122322.36781.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811121627.13525.trenn@suse.de>
+In-Reply-To: <200811122322.36781.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 November 2008 04:03:28 pm Alessandro Guido wrote:
-> After commit 540b8bb9c33935183ceb5bed466a42ad72b2af56:
->
->   sony-laptop: fingers off backlight if video.ko is serving this
-> functionality
->
-> I can't set brightness on my sony laptop (nothing in /sys/class/backlight).
-> dmesg says "sony-laptop: Sony: Brightness ignored, must be controlled by
-> ACPI video driver".
-> The function acpi_video_backlight_support returns 0 if we should use the
-> vendor-specific backlight support, while non-0 if the ACPI generic should
-> be used. Because of this, the check introduced by the said commit appears
-> reversed.
->
-> Signed-off-by: Alessandro Guido <ag@alessandroguido.name>
 
-Thanks for finding this stupid typo,
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-       Thomas
-
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: x86: Hibernate: Fix breakage on x86_32 with CONFIG_NUMA set
+> 
+> The NUMA code on x86_32 creates special memory mapping that allows
+> each node's pgdat to be located in this node's memory.  For this
+> purpose it allocates a memory area at the end of each node's memory
+> and maps this area so that it is accessible with virtual addresses
+> belonging to low memory.  As a result, if there is high memory,
+> these NUMA-allocated areas are physically located in high memory,
+> although they are mapped to low memory addresses.
+> 
+> Our hibernation code does not take that into account and for this
+> reason hibernation fails on all x86_32 systems with CONFIG_NUMA=y and
+> with high memory present.  Fix this by adding a special mapping for
+> the NUMA-allocated memory areas to the temporary page tables created
+> during the last phase of resume.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Machek <pavel@suse.cz>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
 > ---
-> diff --git a/drivers/misc/sony-laptop.c b/drivers/misc/sony-laptop.c
-> index 7bcb810..2a613d4 100644
-> --- a/drivers/misc/sony-laptop.c
-> +++ b/drivers/misc/sony-laptop.c
-> @@ -1038,7 +1038,7 @@ static int sony_nc_add(struct acpi_device *device)
->  		goto outinput;
->  	}
->
-> -	if (!acpi_video_backlight_support()) {
-> +	if (acpi_video_backlight_support()) {
->  		printk(KERN_INFO DRV_PFX "Sony: Brightness ignored, must be "
->  		       "controlled by ACPI video driver\n");
->  	} else if (ACPI_SUCCESS(acpi_get_handle(sony_nc_acpi_handle, "GBRT",
+>  arch/x86/include/asm/mmzone_32.h |    4 ++++
+>  arch/x86/mm/numa_32.c            |   35 +++++++++++++++++++++++++++++++++++
+>  arch/x86/power/hibernate_32.c    |    4 ++++
+>  3 files changed, 43 insertions(+)
 
+Applied to tip/x86/numa, thanks Rafael for the detective work!
 
+	Ingo
