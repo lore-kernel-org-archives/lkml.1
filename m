@@ -1,148 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYKLRJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbYKLRKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754494AbYKLRJx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 12:09:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYKLRJm
+	id S1754617AbYKLRKi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 12:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYKLRKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 12:09:42 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:16864 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751717AbYKLRJl (ORCPT
+	Wed, 12 Nov 2008 12:10:13 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:31317 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbYKLRKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 12:09:41 -0500
-Message-ID: <491B0DE2.301@panasas.com>
-Date: Wed, 12 Nov 2008 19:09:54 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Wed, 12 Nov 2008 12:10:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=W29Lal8Hz9WkSNNsPD3pSLFtOSYZUIPF7DOYxB+ylbK7GUqr9JhVj/sp2fQ1N8CXtq
+         NnLbZCKPUYPmPTNzQ9K5kQGD6Na7dAynoXp1ndruS7oLU1WJK6DK28nJUaOYEGATqNcw
+         o1BtOvK7RyrevhXXOCI5RwP+dwS0ShbWT4bTA=
+Message-ID: <8a966de80811120910r1a102576g4cf0f14fcff167e3@mail.gmail.com>
+Date: Wed, 12 Nov 2008 15:10:07 -0200
+From: "Leslie Watter" <leslie.watter@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] Adding YISO u893 usb modem vendor and product IDs
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081112050230.GA19844@kroah.com>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
-       open-osd development <osd-dev@open-osd.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       johannes@sipsolutions.net
-Subject: Re: [PATCH 03/18 ver2] libosd: OSDv1 Headers
-References: <491073BB.4000900@panasas.com>	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>	<4916F934.4090205@panasas.com> <20081110092940.57b4c169.randy.dunlap@oracle.com> <491AD5C8.8030406@panasas.com> <491B08DB.1030809@oracle.com>
-In-Reply-To: <491B08DB.1030809@oracle.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Nov 2008 17:08:17.0193 (UTC) FILETIME=[41644990:01C944E9]
+Content-Disposition: inline
+References: <8a966de80811111751x67feb700l774cbba30b21c81@mail.gmail.com>
+	 <20081112050230.GA19844@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Boaz Harrosh wrote:
->> Thank you Randy for your review, I will post a fixed
->> patch shortly. I have changed according to your comments
->> except in one place, see arguments below.
->>
->>>> ---
->>>>  include/scsi/osd_initiator.h |  332 ++++++++++++++++++++++++++++
->>>>  include/scsi/osd_protocol.h  |  497 ++++++++++++++++++++++++++++++++++++++++++
->>>>  include/scsi/osd_sec.h       |   45 ++++
->>>>  include/scsi/osd_types.h     |   40 ++++
->>>>  4 files changed, 914 insertions(+), 0 deletions(-)
->>>>  create mode 100644 include/scsi/osd_initiator.h
->>>>  create mode 100644 include/scsi/osd_protocol.h
->>>>  create mode 100644 include/scsi/osd_sec.h
->>>>  create mode 100644 include/scsi/osd_types.h
-> 
->>>> +/**
->>> Don't start comment blocks with /** when they are not kernel-doc,
->>> like this one is not.
->>>
->> OK, I must confess my kernel-doc total ignorance. I was imagining that
->> each source file's kernel-doc comments are collected into an html file.
->> I thought that this comment will be like an introduction to the following
->> function-by-function reference. Anyway it's fixed
-> 
-> You can choose to have comments included in the kernel-doc's collected
-> output.  You do this by using this notation:
-> 
-> /** DOC <topic_name>:
->  * <these lines are added to kernel-doc output when you use:
-> !P<filename> <topic_name>
->  * a Documentation/DocBook/*.tmpl file.
->  */
-> 
-> See Documentation/DocBook/mac80211.tmpl for examples.
-> 
-> Johannes, I thought that you had some usage documentation for DOC:.
-> Did you not or did it not get merged??
-> It needs to be added to Documentation/kernel-doc-nano-HOWTO.txt.
-> 
+Re-sending with Signed-of-by as requested.
 
-OK Thanks I'll give it a shot
+I would be glad if someone could take a look/apply the following patch.
 
-<snip> 
->>>> +/**
->>>> + * osd_execute_request - Execute the request synchronously through
->>>> + *                       the block-layer
->>> Function name and short description need to be on one line.
->>>
->> OK I re-worded so it will fit in one line. What happens if it does not
->> fit, both name and description, in 80 characters? is there a continuation
->> symbol or something?
-> 
-> Nope.  It can (a) be longer than 80 characters (an exception is made here)
-> or (b) split up like this:
-> 
-> /**
->  * func_name - some short description here
->  * @prm1: prm1 description
->  * @prmn: prmn description
->  *
->  * <longer function description here>
->  */
-> 
+This patch (against 2.6.27) adds YISO u893 usb modem vendor and
+product ID to option.c.
 
-OK So I guess I took (b). Thanks.
+I had a better experience using this modification and the same system.
 
-<snip>
->>>> +/* (osd-r10:4.9.2.2)
->>>> + * osd2r03:4.11.2.2 Capability format
->>>> + */
->>>> +struct osd_capability_head {
->>>> +	u8 format; /* low nibble */
->>>> +	u8 integrity_algorithm__key_version; /* MAKE_BYTE(integ_alg, key_ver) */
->>>> +	u8 security_method;
->>>> +	u8 reserved1;
->>>> +/*04*/	struct osd_timestamp expiration_time;
->>>> +/*10*/	u8 audit[30-10];
->>>> +/*30*/	u8 discriminator[42-30];
->>>> +/*42*/	struct osd_timestamp object_created_time;
->>>> +/*48*/	u8 object_type;
->>>> +	u8 permissions_bit_mask[54-49];
->>> The offset comments are OK with me, but please lose the [b-a] length specifiers.
->>>
->> I would, please, like to keep them. For the user it does not matter.
->> Because he is not suppose to care if he is doing:
->> -	memset(och->permissions_bit_mask, 0, 5); // BAD
->> +	memset(och->permissions_bit_mask, 0, sizeof(och->permissions_bit_mask)); // GOOD
->>
->> But for the protocol reader / debuggerer this is much easier since this is the
->> way he will see them on the wire and the way it is laid out in the standard text.
->>
->> It was much easier to read the standard text and develop the header this way, complicated
->> by the fact that OSD v2 was a moving target and the changes from OSD v1. And it helped in
->> finding bugs. Now to go over all of them and calculate the difference and remove it. I'm
->> loosing information, and I feel sad to loose it.
->>
->> But if you are totally not convinced I will remove them?
-> 
-> I've debugged plenty of code so I'll respectfully disagree with you.
-> It's confusing and ugly.  But I don't control whether it is merged upstream
-> or not.
-> 
+The patch follows the same principle taken by ACME and applied by
+gregkh in [1] and can be found as a file in [2].
 
-If it's "confusing and ugly" then that's bad. I guess I'm so much into the
-standard-text, that I like it this way, but not so for an onlooker.
-I'll change it. Last thing I want is ugly confusing code.
 
-Thanks again
-Boaz
+Signed-off-by: Leslie Harlley Watter <leslie@watter.org>
+----------------
+ option.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 73f8277..8d1bd76 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -124,6 +124,11 @@ static int  option_send_setup(struct tty_struct
+*tty, struct usb_serial_port *po
+
+ #define NOVATELWIRELESS_VENDOR_ID              0x1410
+
++/* YISO PRODUCTS */
++
++#define YISO_VENDOR_ID                         0x0EAB
++#define YISO_PRODUCT_U893                      0xC893
++
+ /* MERLIN EVDO PRODUCTS */
+ #define NOVATELWIRELESS_PRODUCT_V640           0x1100
+ #define NOVATELWIRELESS_PRODUCT_V620           0x1110
+@@ -324,6 +329,7 @@ static struct usb_device_id option_ids[] = {
+       { USB_DEVICE(AXESSTEL_VENDOR_ID, AXESSTEL_PRODUCT_MV110H) },
+       { USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_MSA501HS) },
+       { USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_ET502HS) },
++       { USB_DEVICE(YISO_VENDOR_ID, YISO_PRODUCT_U893) },
+       { USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_1) },
+       { USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_2) },
+       { USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1004) },
+--
+1.5.6.3.350.g6c11a
+
+
+[1] http://www.kernel.org/pub/linux/kernel/people/gregkh/usb/2.6/2.6.26-rc3/usb-option-fix-name-of-o+nda-msa501hs-hsdpa-modem.patch
+
+[2] http://www.watter.net/linux/patches/linux-2.6.27-yiso-u893.patch
+
+Thanks in advance,
+
+LEslie
