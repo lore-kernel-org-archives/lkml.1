@@ -1,108 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753833AbYKLPth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbYKLPzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753833AbYKLPth (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 10:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbYKLPt3
+	id S1753865AbYKLPzk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 10:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbYKLPzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 10:49:29 -0500
-Received: from www.tglx.de ([62.245.132.106]:39795 "EHLO www.tglx.de"
+	Wed, 12 Nov 2008 10:55:31 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:53109 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbYKLPt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 10:49:28 -0500
-Date: Wed, 12 Nov 2008 16:49:20 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Neil Armstrong <narmstrong@neotion.com>
-Cc: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] uio: add ioctl callback
-Message-ID: <20081112154919.GC2891@local>
-References: <491AF8D1.4060106@neotion.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491AF8D1.4060106@neotion.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1752751AbYKLPza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 10:55:30 -0500
+Date: Thu, 13 Nov 2008 00:55:34 +0900 (JST)
+Message-Id: <20081113.005534.56563769.anemo@mba.ocn.ne.jp>
+To: linux-mtd@lists.infradead.org
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] physmap: Fix leak of memory returned by
+ parse_mtd_partitions
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
+References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 04:40:01PM +0100, Neil Armstrong wrote:
-> Add an ioctl callback for uio devices.
-
-Hi Neil,
-sorry, but we don't want to have ioctl() for UIO. UIO devices should be
-completely controllable through their mapped memory. Additional
-functions can be added by creating custom sysfs files. To switch the
-interrupt on and off, we have the irqcontrol hook in the write()
-function. I cannot imagine a case where ioctl() could be useful.
-
-You didn't mention why you want ioctl(). If you tell us the problem, we
-can probably find a solution that uses the standard UIO interface.
-
-Thanks,
-Hans
-
+On Wed, 12 Nov 2008 23:57:33 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> The mtd partition parser returns an allocated pointer array of
+> mtd_partition.  The caller must free it.  The array is used only for
+> add_mtd_partitions(), so free it just after the call.
 > 
-> Signed-off-by: Neil Armstrong <narmstrong@neotion.com>
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 > ---
-> 
-> diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-> index 2d2440c..38044fb 100644
-> --- a/drivers/uio/uio.c
-> +++ b/drivers/uio/uio.c
-> @@ -385,6 +385,18 @@ static unsigned int uio_poll(struct file *filep,
-> poll_table *wait)
->      return 0;
->  }
->  
-> +static int uio_ioctl(struct inode *inode, struct file *filep,
-> +            unsigned int cmd, unsigned long arg)
-> +{
-> +    struct uio_listener *listener = filep->private_data;
-> +    struct uio_device *idev = listener->dev;
-> +
-> +    if (idev->info->ioctl)
-> +        return idev->info->ioctl(idev->info, cmd, arg);
-> +
-> +    return -ENOSYS;
-> +}
-> +
->  static ssize_t uio_read(struct file *filep, char __user *buf,
->              size_t count, loff_t *ppos)
->  {
-> @@ -590,6 +602,7 @@ static const struct file_operations uio_fops = {
->      .mmap        = uio_mmap,
->      .poll        = uio_poll,
->      .fasync        = uio_fasync,
-> +    .ioctl        = uio_ioctl,
->  };
->  
->  static int uio_major_init(void)
-> diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-> index cdf338d..e44e89b 100644
-> --- a/include/linux/uio_driver.h
-> +++ b/include/linux/uio_driver.h
-> @@ -68,6 +68,8 @@ struct uio_info {
->      int (*open)(struct uio_info *info, struct inode *inode);
->      int (*release)(struct uio_info *info, struct inode *inode);
->      int (*irqcontrol)(struct uio_info *info, s32 irq_on);
-> +    int (*ioctl)(struct uio_info *info, unsigned int cmd,
-> +            unsigned long arg);
->  };
->  
->  extern int __must_check
+>  drivers/mtd/maps/physmap.c |   17 ++++++++---------
+>  1 files changed, 8 insertions(+), 9 deletions(-)
 
-> begin:vcard
-> fn:Neil Armstrong
-> n:Armstrong;Neil
-> org:Neotion;Neotion Sophia Antipolis
-> adr:;;;Sophia Antipolis;;;France
-> email;internet:narmstrong@neotion.com
-> title:Embedded Linux Software Engineer
-> tel;cell:0667474169
-> note:PGP 0x1166F485
-> x-mozilla-html:FALSE
-> url:http://www.neotion.com
-> version:2.1
-> end:vcard
-> 
+And many other callers of parse_mtd_partitions() also do not free the
+returned memory.  With a quick look, 21 of 36 have same defect.
 
+drivers/mtd/devices/m25p80.c
+drivers/mtd/devices/mtd_dataflash.c
+drivers/mtd/maps/bfin-async-flash.c
+drivers/mtd/maps/edb7312.c
+drivers/mtd/maps/impa7.c
+drivers/mtd/maps/intel_vr_nor.c
+drivers/mtd/maps/solutionengine.c
+drivers/mtd/nand/atmel_nand.c
+drivers/mtd/nand/cafe_nand.c
+drivers/mtd/nand/cmx270_nand.c
+drivers/mtd/nand/cs553x_nand.c
+drivers/mtd/nand/edb7312.c
+drivers/mtd/nand/fsl_elbc_nand.c
+drivers/mtd/nand/fsl_upm.c
+drivers/mtd/nand/mxc_nand.c
+drivers/mtd/nand/orion_nand.c
+drivers/mtd/nand/ppchameleonevb.c
+drivers/mtd/nand/sharpsl.c
+drivers/mtd/nand/tmio_nand.c
+drivers/mtd/nand/ts7250.c
+drivers/mtd/onenand/generic.c
+
+Volunteers? ;)
+
+---
+Atsushi Nemoto
