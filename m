@@ -1,86 +1,361 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbYKLLSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752185AbYKLLXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbYKLLSh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 06:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbYKLLS2
+	id S1752185AbYKLLXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 06:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbYKLLXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 06:18:28 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:49727 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbYKLLS1 (ORCPT
+	Wed, 12 Nov 2008 06:23:09 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:37557 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbYKLLXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 06:18:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=PzMhWVIdUhsWYUPU8MXot+2r3j+5q9z6yIfoT2pEnt091aOtgCOTdsxp8tWQLF/ty1
-         9y5myoSnwDzk5x4K3bwWVE0JTMzMFw2pag4aH6QRJYyUaY87gvfvclcYyVH7iYkOh/7k
-         /vJiozea3KagT7JTZikpFtytrxUVjxCeHj/Is=
-Message-ID: <8bd0f97a0811120318m52ccbde4g5434ddfb3f56e048@mail.gmail.com>
-Date: Wed, 12 Nov 2008 06:18:26 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>
-Subject: Re: next-20081106: undefined reference to `__per_cpu_start'
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>,
-       "Christoph Lameter" <cl@linux-foundation.org>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-In-Reply-To: <Pine.LNX.4.64.0811120859160.13217@anakin>
+	Wed, 12 Nov 2008 06:23:07 -0500
+Date: Wed, 12 Nov 2008 16:51:41 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][mm] [PATCH 3/4] Memory cgroup hierarchical reclaim (v3)
+Message-ID: <20081112112141.GA25386@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+	Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+	linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+	David Rientjes <rientjes@google.com>,
+	Pavel Emelianov <xemul@openvz.org>,
+	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20081111123314.6566.54133.sendpatchset@balbir-laptop> <20081111123417.6566.52629.sendpatchset@balbir-laptop> <20081112140236.46448b47.kamezawa.hiroyu@jp.fujitsu.com> <491A6E71.5010307@linux.vnet.ibm.com> <20081112150126.46ac6042.kamezawa.hiroyu@jp.fujitsu.com> <491A7345.4090500@linux.vnet.ibm.com> <20081112151233.0ec8dc44.kamezawa.hiroyu@jp.fujitsu.com> <491A7637.3050402@linux.vnet.ibm.com> <20081112153314.a7162192.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20081106173645.e7e79071.sfr@canb.auug.org.au>
-	 <20081106183939.GA26925@x200.localdomain>
-	 <Pine.LNX.4.64.0811061310350.6009@quilx.com>
-	 <20081107162114.2a41c623.sfr@canb.auug.org.au>
-	 <Pine.LNX.4.64.0811120859160.13217@anakin>
+In-Reply-To: <20081112153314.a7162192.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 02:59, Geert Uytterhoeven wrote:
-> On Fri, 7 Nov 2008, Stephen Rothwell wrote:
->> On Thu, 6 Nov 2008 13:15:07 -0600 (CST) Christoph Lameter wrote:
->> > On Thu, 6 Nov 2008, Alexey Dobriyan wrote:
->> > > On blackfin-BF526-EZBRD and other blackfins:
->> > >
->> > >   LD      .tmp_vmlinux1
->> > > mm/built-in.o: In function `cpu_alloc_init':
->> > > (.init.text+0x1486): undefined reference to `__per_cpu_start'
->> > > mm/built-in.o: In function `cpu_alloc_init':
->> > > (.init.text+0x148c): undefined reference to `__per_cpu_start'
->> > > mm/built-in.o: In function `cpu_alloc_init':
->> > > (.init.text+0x1492): undefined reference to `__per_cpu_end'
->> > > mm/built-in.o: In function `cpu_alloc_init':
->> > > (.init.text+0x1496): undefined reference to `__per_cpu_end'
->> >
->> > Any contigencies for __per_cpu_start/end in your blackfin vmlinux.lds.h?
->> > That is where these symbols are defined
->> >
->> > Or did you use generic percpu support and set
->> > CONFIG_HAVE_ZERO_BASED_PER_CPU?
->>
->> Also a avr32 allnoconfig
->> (http://kisskb.ellerman.id.au/kisskb/buildresult/53233/) gets:
->>
->> backing-dev.c:(.init.text+0xc4c): undefined reference to `__per_cpu_start'
->> backing-dev.c:(.init.text+0xc50): undefined reference to `__per_cpu_end'
->>
->> and avr32 defconfig
->> (http://kisskb.ellerman.id.au/kisskb/buildresult/53225/) gets:
->>
->> vmstat.c:(.init.text+0xff0): undefined reference to `__per_cpu_start'
->> vmstat.c:(.init.text+0xff4): undefined reference to `__per_cpu_end'
->
-> And m68k defconfig (http://kisskb.ellerman.id.au/kisskb/buildresult/54216/):
->
-> | : undefined reference to `__per_cpu_start'
-> | : undefined reference to `__per_cpu_end'
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2008-11-12 15:33:14]:
 
-i already posted a patch:
-http://lkml.org/lkml/2008/11/8/145
--mike
+> On Wed, 12 Nov 2008 11:52:47 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > KAMEZAWA Hiroyuki wrote:
+> > > On Wed, 12 Nov 2008 11:40:13 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > >> I think of it as easy to update - as in the modularity, you can plug out
+> > >> hierarchical reclaim easily and implement your own hierarchical reclaim.
+> > >>
+> > > When I do so, I'll rewrite all, again.
+> > > 
+> > 
+> > I don't intend to ask you to rewrite it, rewrite all, I meant you as in a
+> > generic person. With hierarchy we will need weighted reclaim, which I'll add in
+> > later.
+> > 
+> > >>> Can you make this code iterative rather than recursive ?
+> > >>>
+> > >>> I don't like this kind of recursive call with complexed lock/unlock.
+> > >> I tried an iterative version, which ended up looking very ugly. I think the
+> > >> recursive version is easier to understand. What we do is a DFS walk - pretty
+> > >> standard algorithm.
+> > >>
+> > > But recursive one is not good for search-and-try algorithm.
+> > 
+> > OK, I'll post the iterative algorithm, but it is going to be dirty :)
+> > 
+> Ah, thanks. I think maybe you're right that ittrative one is dirty.
+> I want to compare before going further. 
+> Thank you for your patience.
+
+Here is the iterative version of this patch. I tested it in my
+test environment. NOTE: The cgroup_locked check is still present, I'll
+remove that shortly after your patch is accepted.
+
+This patch introduces hierarchical reclaim. When an ancestor goes over its
+limit, the charging routine points to the parent that is above its limit.
+The reclaim process then starts from the last scanned child of the ancestor
+and reclaims until the ancestor goes below its limit.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ mm/memcontrol.c |  190 ++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 163 insertions(+), 27 deletions(-)
+
+diff -puN mm/memcontrol.c~memcg-hierarchical-reclaim mm/memcontrol.c
+--- linux-2.6.28-rc2/mm/memcontrol.c~memcg-hierarchical-reclaim	2008-11-11 17:51:56.000000000 +0530
++++ linux-2.6.28-rc2-balbir/mm/memcontrol.c	2008-11-12 16:49:42.000000000 +0530
+@@ -132,6 +132,11 @@ struct mem_cgroup {
+ 	 * statistics.
+ 	 */
+ 	struct mem_cgroup_stat stat;
++	/*
++	 * While reclaiming in a hiearchy, we cache the last child we
++	 * reclaimed from. Protected by cgroup_lock()
++	 */
++	struct mem_cgroup *last_scanned_child;
+ };
+ static struct mem_cgroup init_mem_cgroup;
+ 
+@@ -467,6 +472,137 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	return nr_taken;
+ }
+ 
++static struct mem_cgroup *
++mem_cgroup_from_res_counter(struct res_counter *counter)
++{
++	return container_of(counter, struct mem_cgroup, res);
++}
++
++/*
++ * Dance down the hierarchy if needed to reclaim memory. We remember the
++ * last child we reclaimed from, so that we don't end up penalizing
++ * one child extensively based on its position in the children list.
++ *
++ * root_mem is the original ancestor that we've been reclaim from.
++ */
++static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *mem,
++						struct mem_cgroup *root_mem,
++						gfp_t gfp_mask)
++{
++	struct cgroup *cgroup;
++	struct mem_cgroup *mem_child;
++	int ret = 0;
++
++	/*
++	 * Reclaim unconditionally and don't check for return value.
++	 * We need to reclaim in the current group and down the tree.
++	 * One might think about checking for children before reclaiming,
++	 * but there might be left over accounting, even after children
++	 * have left.
++	 */
++reclaim_down:
++	ret = try_to_free_mem_cgroup_pages(mem, gfp_mask);
++
++	if (res_counter_check_under_limit(&root_mem->res))
++		goto loop_next;
++
++	cgroup_lock();
++
++	if (list_empty(&mem->css.cgroup->children)) {
++		cgroup_unlock();
++		goto loop_next;
++	}
++
++	/*
++	 * Scan all children under the mem_cgroup mem
++	 */
++	if (!mem->last_scanned_child)
++		cgroup = list_first_entry(&mem->css.cgroup->children,
++				struct cgroup, sibling);
++	else {
++		struct list_head *next;
++		cgroup = mem->last_scanned_child->css.cgroup;
++		next = cgroup->sibling.next;
++
++		if (next == &cgroup->parent->children)
++			cgroup = list_first_entry(&mem->css.cgroup->children,
++							struct cgroup, sibling);
++		else
++			cgroup = container_of(next, struct cgroup, sibling);
++	}
++
++reclaim_up:
++	do {
++		struct list_head *next;
++
++		mem_child = mem_cgroup_from_cont(cgroup);
++		cgroup_unlock();
++
++		mem = mem_child;
++		goto reclaim_down;
++
++loop_next:
++		cgroup_lock();
++		mem->last_scanned_child = mem_child;
++
++		/*
++		 * Since we gave up the lock, it is time to
++		 * start from last cgroup
++		 */
++		cgroup = mem->last_scanned_child->css.cgroup;
++		next = cgroup->sibling.next;
++
++		if (next == &cgroup->parent->children)
++			break;
++		else
++			cgroup = container_of(next, struct cgroup, sibling);
++	} while (cgroup != &cgroup->parent->children);
++
++	cgroup = cgroup->parent;
++	mem = mem_cgroup_from_cont(cgroup);
++	if (mem == root_mem)
++		goto done;
++	goto reclaim_up;
++done:
++	cgroup_unlock();
++	return ret;
++}
++
++/*
++ * Charge memory cgroup mem and check if it is over its limit. If so, reclaim
++ * from mem.
++ */
++static int mem_cgroup_charge_and_reclaim(struct mem_cgroup *mem, gfp_t gfp_mask)
++{
++	int ret = 0;
++	unsigned long nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
++	struct res_counter *fail_res;
++	struct mem_cgroup *mem_over_limit;
++
++	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE, &fail_res))) {
++		if (!(gfp_mask & __GFP_WAIT))
++			goto out;
++
++		/*
++		 * Is one of our ancestors over their limit?
++		 */
++		if (fail_res)
++			mem_over_limit = mem_cgroup_from_res_counter(fail_res);
++		else
++			mem_over_limit = mem;
++
++		ret = mem_cgroup_hierarchical_reclaim(mem_over_limit,
++							mem_over_limit,
++							gfp_mask);
++
++		if (!nr_retries--) {
++			mem_cgroup_out_of_memory(mem, gfp_mask);
++			goto out;
++		}
++	}
++out:
++	return ret;
++}
+ 
+ /**
+  * mem_cgroup_try_charge - get charge of PAGE_SIZE.
+@@ -484,8 +620,7 @@ int mem_cgroup_try_charge(struct mm_stru
+ 			gfp_t gfp_mask, struct mem_cgroup **memcg)
+ {
+ 	struct mem_cgroup *mem;
+-	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+-	struct res_counter *fail_res;
++
+ 	/*
+ 	 * We always charge the cgroup the mm_struct belongs to.
+ 	 * The mm_struct's mem_cgroup changes on task migration if the
+@@ -510,29 +645,9 @@ int mem_cgroup_try_charge(struct mm_stru
+ 		css_get(&mem->css);
+ 	}
+ 
++	if (mem_cgroup_charge_and_reclaim(mem, gfp_mask))
++		goto nomem;
+ 
+-	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE, &fail_res))) {
+-		if (!(gfp_mask & __GFP_WAIT))
+-			goto nomem;
+-
+-		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
+-			continue;
+-
+-		/*
+-		 * try_to_free_mem_cgroup_pages() might not give us a full
+-		 * picture of reclaim. Some pages are reclaimed and might be
+-		 * moved to swap cache or just unmapped from the cgroup.
+-		 * Check the limit again to see if the reclaim reduced the
+-		 * current usage of the cgroup before giving up
+-		 */
+-		if (res_counter_check_under_limit(&mem->res))
+-			continue;
+-
+-		if (!nr_retries--) {
+-			mem_cgroup_out_of_memory(mem, gfp_mask);
+-			goto nomem;
+-		}
+-	}
+ 	return 0;
+ nomem:
+ 	css_put(&mem->css);
+@@ -945,7 +1060,7 @@ static void mem_cgroup_force_empty_list(
+  * make mem_cgroup's charge to be 0 if there is no task.
+  * This enables deleting this mem_cgroup.
+  */
+-static int mem_cgroup_force_empty(struct mem_cgroup *mem)
++static int mem_cgroup_force_empty(struct mem_cgroup *mem, bool cgroup_locked)
+ {
+ 	int ret = -EBUSY;
+ 	int node, zid;
+@@ -959,8 +1074,20 @@ static int mem_cgroup_force_empty(struct
+ 	while (mem->res.usage > 0) {
+ 		if (atomic_read(&mem->css.cgroup->count) > 0)
+ 			goto out;
++
++		/*
++		 * We need to give up the cgroup lock if it is held, since
++		 * it creates the potential for deadlock. cgroup_mutex should
++		 * be acquired after cpu_hotplug lock. In this path, we
++		 * acquire the cpu_hotplug lock after acquiring the cgroup_mutex
++		 * Giving it up should be OK
++		 */
++		if (cgroup_locked)
++			cgroup_unlock();
+ 		/* This is for making all *used* pages to be on LRU. */
+ 		lru_add_drain_all();
++		if (cgroup_locked)
++			cgroup_lock();
+ 		for_each_node_state(node, N_POSSIBLE)
+ 			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
+ 				struct mem_cgroup_per_zone *mz;
+@@ -1025,7 +1152,7 @@ static int mem_cgroup_reset(struct cgrou
+ 
+ static int mem_force_empty_write(struct cgroup *cont, unsigned int event)
+ {
+-	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont));
++	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont), false);
+ }
+ 
+ static const struct mem_cgroup_stat_desc {
+@@ -1195,6 +1322,8 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		if (alloc_mem_cgroup_per_zone_info(mem, node))
+ 			goto free_out;
+ 
++	mem->last_scanned_child = NULL;
++
+ 	return &mem->css;
+ free_out:
+ 	for_each_node_state(node, N_POSSIBLE)
+@@ -1208,7 +1337,7 @@ static void mem_cgroup_pre_destroy(struc
+ 					struct cgroup *cont)
+ {
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+-	mem_cgroup_force_empty(mem);
++	mem_cgroup_force_empty(mem, true);
+ }
+ 
+ static void mem_cgroup_destroy(struct cgroup_subsys *ss,
+@@ -1217,6 +1346,13 @@ static void mem_cgroup_destroy(struct cg
+ 	int node;
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+ 
++	if (cont->parent) {
++		struct mem_cgroup *parent_mem =
++			mem_cgroup_from_cont(cont->parent);
++		if (parent_mem->last_scanned_child == mem)
++			parent_mem->last_scanned_child = NULL;
++	}
++
+ 	for_each_node_state(node, N_POSSIBLE)
+ 		free_mem_cgroup_per_zone_info(mem, node);
+ 
+_
+
+-- 
+	Balbir
