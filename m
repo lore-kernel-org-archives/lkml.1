@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYKLX5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755626AbYKLX6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYKLX5o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYKLX5W
+	id S1755626AbYKLX6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYKLX6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:57:22 -0500
-Received: from kroah.org ([198.145.64.141]:41239 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752245AbYKLX5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:57:22 -0500
-Date: Wed, 12 Nov 2008 15:57:00 -0800
-From: Greg KH <greg@kroah.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging/wlan-ng: kill WLAN_CPU_FAMILY and WLAN_SYSARCH
-Message-ID: <20081112235700.GB27554@kroah.com>
-References: <1226500540-9667-1-git-send-email-vapier@gentoo.org> <20081112224628.GD27479@kroah.com> <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
+	Wed, 12 Nov 2008 18:58:04 -0500
+Received: from lucidpixels.com ([75.144.35.66]:42155 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752221AbYKLX6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:58:03 -0500
+Date: Wed, 12 Nov 2008 18:58:00 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: typo in raid[456] kernel code/no change based on type?
+Message-ID: <alpine.DEB.1.10.0811121855470.10512@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 06:36:57PM -0500, Mike Frysinger wrote:
-> On Wed, Nov 12, 2008 at 17:46, Greg KH wrote:
-> > On Wed, Nov 12, 2008 at 09:35:40AM -0500, Mike Frysinger wrote:
-> >> The WLAN_CPU_FAMILY and WLAN_SYSARCH defines are used in all of three places
-> >> (two of which look pretty suspect), so just kill them off rather than
-> >> throwing up a pointless #error on processors that are not in the existing
-> >> list.
-> >
-> > Thanks, but this is already cleaned up in my tree with a patch from
-> > someone else.
-> 
-> where ?  i looked in staging.git and that hasnt been touched in 2 months.
+$ cat /proc/mdstat 
+Personalities : [raid1] [raid6] [raid5] [raid4] 
+md1 : active raid1 sdb2[1] sda2[0]
+       136448 blocks [2/2] [UU]
 
-It's at:
-	http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-05-staging/
+md2 : active raid1 sdb3[1] sda3[0]
+       276109056 blocks [2/2] [UU]
 
-Sorry, I need to delete that old git tree, but it still contains a few
-patches that haven't moved into the current tree for a variety of
-reasons.
+md3 : active raid6 sdj1[10] sdc1[4] sdl1[8] sdk1[1] sdi1[9] sdh1[7] sdg1[6] sdf1[3] sde1[2] sdd1[0]
+       2344263680 blocks level 6, 1024k chunk, algorithm 2 [10/9] [UUUUU_UUUU]
+       [===================>.]  recovery = 99.1% (290466636/293032960) finish=0.6min speed=67979K/sec
 
-I've asked it to be picked up in the -next tree as well, so that will
-also work for you.
+md0 : active raid1 sdb1[1] sda1[0]
+       16787776 blocks [2/2] [UU]
 
-thanks,
+unused devices: <none>
 
-greg k-h
+--
+
+But in the kernel logs:
+
+[ 3497.577716] md: recovery of RAID array md3
+[ 3497.577720] md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
+[ 3497.577721] md: using maximum available idle IO bandwidth (but not more than 90000 KB/sec) for recovery.
+[ 3497.577728] md: using 128k window, over a total of 293032960 blocks.
+[ 6981.488528] md: md3: recovery done.
+[ 6982.273208] RAID5 conf printout:
+                ^^^^^
+[ 6982.273215]  --- rd:10 wd:10
+[ 6982.273219]  disk 0, o:1, dev:sdd1
+[ 6982.273223]  disk 1, o:1, dev:sdk1
+[ 6982.273227]  disk 2, o:1, dev:sde1
+[ 6982.273231]  disk 3, o:1, dev:sdf1
+[ 6982.273245]  disk 4, o:1, dev:sdc1
+[ 6982.273258]  disk 5, o:1, dev:sdj1
+[ 6982.273260]  disk 6, o:1, dev:sdg1
+[ 6982.273263]  disk 7, o:1, dev:sdh1
+[ 6982.273265]  disk 8, o:1, dev:sdl1
+[ 6982.273267]  disk 9, o:1, dev:sdi1
+
+Is the type detectable via auto-assemble, if it is shouldn't it print out
+the right raid type in the logs/dmesg?
+
+Justin.
+
