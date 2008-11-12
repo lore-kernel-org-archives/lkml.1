@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYKLXLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbYKLXN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbYKLXLw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYKLXLo
+	id S1755482AbYKLXN3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYKLXNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:11:44 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:61073 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbYKLXLn (ORCPT
+	Wed, 12 Nov 2008 18:13:18 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:45218 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751278AbYKLXNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:11:43 -0500
-Date: 13 Nov 2008 00:09:00 +0100
-From: lirc@bartelmus.de (Christoph Bartelmus)
-To: linux-kernel@vger.kernel.org
-Cc: jonsmirl@gmail.com
-Cc: jrm8005@gmail.com
-Message-ID: <ApnRmVyojFB@christoph>
-In-Reply-To: <7f0c6fc9-556c-41a1-9750-ffb3455589ab@35g2000pry.googlegroups.com>
-Subject: Re: In-kernel IR remote control support
-User-Agent: OpenXP/4.10.7369 (Linux) (i386)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+19vO9+ehfRbwVSBOSuYqcW4vpjGfgsE8GxUW
- GD6jUZIqWAPoJITtpbGOwBq6oTn5SEOoFPcAAQS2OL7wCsqtFi
- LhtYQIvjj8Z3IZq6lYQ+UH8xPh8ZqjbME6X/ij1ysI=
+	Wed, 12 Nov 2008 18:13:17 -0500
+Date: Wed, 12 Nov 2008 15:10:34 -0800
+From: Matheos Worku <Matheos.Worku@Sun.COM>
+Subject: Re: NIU driver: Sun x8 Express Quad Gigabit Ethernet Adapter
+In-reply-to: <Pine.LNX.4.64.0811122213180.1212@ask.diku.dk>
+To: Jesper Dangaard Brouer <hawk@diku.dk>
+Cc: netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org
+Message-id: <491B626A.6020801@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <20081112.014923.68124784.davem@davemloft.net>
+ <1226487710.6834.53.camel@localhost.localdomain>
+ <20081112.035240.226243372.davem@davemloft.net>
+ <20081112.041143.11487260.davem@davemloft.net>
+ <Pine.LNX.4.64.0811122213180.1212@ask.diku.dk>
+User-Agent: Mozilla Thunderbird 1.0.7-1.4.1 (X11/20050929)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jesper Dangaard Brouer wrote:
 
-on 12 Nov 08 at 14:39, J.R. Mauro wrote:
-[...]
-> On Wed, Nov 5, 2008 at 3:07 PM, Jon Smirl <jonsm...@gmail.com> wrote:
->> On Wed, Nov 5, 2008 at 2:59 PM, J.R. Mauro <jrm8...@gmail.com> wrote:
->>> On Wed, Nov 5, 2008 at 2:47 PM, Jon Smirl <jonsm...@gmail.com> wrote:
->>>> New release of in-kernel IR support implementing evdev support. The goal
->>>> of in-kernel IR is to integrate IR events into the evdev input event
->>>> queue and maintain ordering of events from all input devices. Still
->>>> looking for help with this project.
+>
+> Hi Google,
+>
+> On Wed, 12 Nov 2008, David Miller wrote:
+>
+>> Guess what that does?  The packet counters live in the upper
+>> 32-bits and the MARK bits live in the lower 32-bits of the
+>> TX_CS register.
+>>
+>> So it first reads the packet counters, and as a side effect that
+>> clears the MARK bits in the TX_CS register.  So when we read the lower
+>> 32-bits the MARK bits are always seen as zero.
+>
+>
+> For the thorough reader, the TX_CS Transmit Control and Status 
+> register is described in table 26-15 page 761-762 in the PDF document 
+> titled: "UltraSPARC T2 supplement to UltraSPARC architecture 2007", 
+> downloadable from: 
+> http://opensparc-t2.sunsource.net/specs/UST2-UASuppl-current-draft-HP-EXT.pdf 
+>
+>
+> Cheers,
+>   Jesper Brouer
+>
+> -- 
+> -------------------------------------------------------------------
+> MSc. Master of Computer Science
+> Dept. of Computer Science, University of Copenhagen
+> Author of http://www.adsl-optimizer.dk
+> -------------------------------------------------------------------
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
->>> (Forgive me if this has already been asked or dealt with)
+The niu/neptune HW puts some requirement on 32 bit reads of 64 bit 
+registers. You need to read the lower 32 bits first and then the upper 
+32 bits.  The same ordering applies to writes as well.
+On some 64 bit platforms, the 64 bit reads  are split into two 32 bit 
+reads as well, regardless of the OS.
 
->>> Have you contacted the LIRC developers? Is there any overlap between
->>> your projects?
+Regards
+Matheos
 
->> The LIRC people know about this. Pieces of the code are coming from
->> the LIRC source base and being reworked for kernel inclusion.
-
-> Great, it's nice to see there's cooperation.
-
-LOL. There's just a small omission from Jon's side...
-Yes, LIRC people know about this. And Jon has a no-go from me.
-
-Decoding IR protocols in-kernel is the wrong way IMHO and this will not be  
-supported by LIRC as long as I maintain LIRC.
-It's simply not possible to decode all existing IR protocols and LIRC just  
-stores the timing data for these protocols as-is without trying to decode  
-them. With the in-kernel decoding approach these remotes cannot be  
-supported. I'm not willing to sacrifice the support for these even though  
-they only consist of a very small fraction of remotes in use.
-
-Christoph
