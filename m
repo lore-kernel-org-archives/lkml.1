@@ -1,84 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbYKLBvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752636AbYKLBzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbYKLBvW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 20:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbYKLBvN
+	id S1752636AbYKLBzy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 20:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYKLBzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 20:51:13 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:22448 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbYKLBvL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 20:51:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=KN5jRaJ9CoaA61sXkHFEOfvvbxX/997B4hRLy9eLWy6nB+N1W89JwBfv5oTJm8udCm
-         JRqp5jkIfjJqF4F7VXB4HxTJ1WJO6LpBZF+QiFSbtxV0iSJadsGkLKFyErhEgTxH1Kiz
-         WD+ljJESmgFe9oJyNfv0ag3tEkaQVZ5BtO884=
-Message-ID: <8a966de80811111751x67feb700l774cbba30b21c81@mail.gmail.com>
-Date: Tue, 11 Nov 2008 23:51:10 -0200
-From: "Leslie Watter" <leslie.watter@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Adding YISO u893 usb modem vendor and product IDs
+	Tue, 11 Nov 2008 20:55:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:36547 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347AbYKLBzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 20:55:45 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-ID: <18714.14081.378730.381602@drongo.ozlabs.ibm.com>
+Date: Wed, 12 Nov 2008 12:53:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Greg KH <greg@kroah.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       linux-kernel Kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: Fwd: [PATCH v2][for 2.6.28] powerpc/mpic: Add support for
+	MPICs that only support a single CPU destination
+In-Reply-To: <20081111211801.GB2497@kroah.com>
+References: <1225252899-20752-1-git-send-email-galak@kernel.crashing.org>
+	<B48FBC1A-5974-4E68-B34A-39C223328EFF@kernel.crashing.org>
+	<20081111211801.GB2497@kroah.com>
+X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Greg KH writes:
 
-I would be glad if someone could take a look/apply the following patch.
+> > Can you pick this up for stable-2.6.27.
+> 
+> I don't see this in Linus's tree right now.
+> 
+> Am I missing it?  Or do you know what the git commit id is?
 
-This patch (against 2.6.27) adds YISO u893 usb modem vendor and
-product ID to option.c.
+It's 3c10c9c45e290022ca7d2aa1ad33a0b6ed767520.  I changed the title to
+"powerpc/mpic: Fix regression caused by change of default IRQ
+affinity" and expanded the patch description to emphasize that it was
+fixing a regression rather than just adding a feature.
 
-I had a better experience using this modification and the same system.
-
-The patch follows the same principle taken by ACME and applied by
-gregkh in [1] and can be found as a file in [2].
-
-----------------
- option.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index 73f8277..8d1bd76 100644
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -124,6 +124,11 @@ static int  option_send_setup(struct tty_struct
-*tty, struct usb_serial_port *po
-
- #define NOVATELWIRELESS_VENDOR_ID              0x1410
-
-+/* YISO PRODUCTS */
-+
-+#define YISO_VENDOR_ID                         0x0EAB
-+#define YISO_PRODUCT_U893                      0xC893
-+
- /* MERLIN EVDO PRODUCTS */
- #define NOVATELWIRELESS_PRODUCT_V640           0x1100
- #define NOVATELWIRELESS_PRODUCT_V620           0x1110
-@@ -324,6 +329,7 @@ static struct usb_device_id option_ids[] = {
-        { USB_DEVICE(AXESSTEL_VENDOR_ID, AXESSTEL_PRODUCT_MV110H) },
-        { USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_MSA501HS) },
-        { USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_ET502HS) },
-+       { USB_DEVICE(YISO_VENDOR_ID, YISO_PRODUCT_U893) },
-        { USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_1) },
-        { USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_2) },
-        { USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_1004) },
-
-
-
-
-[1] http://www.kernel.org/pub/linux/kernel/people/gregkh/usb/2.6/2.6.26-rc3/usb-option-fix-name-of-o+nda-msa501hs-hsdpa-modem.patch
-
-[2] http://www.watter.net/linux/patches/linux-2.6.27-yiso-u893.patch
-
-Thanks in advance,
-
-LEslie
+Paul.
