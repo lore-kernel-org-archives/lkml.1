@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbYKLXno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYKLXqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbYKLXno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKLXnd
+	id S1754802AbYKLXqt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:46:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYKLXql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:43:33 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1378 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbYKLXnd (ORCPT
+	Wed, 12 Nov 2008 18:46:41 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:17048 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYKLXqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:43:33 -0500
-Date: Wed, 12 Nov 2008 23:43:31 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28] mfd: Correct WM8350 I2C return code usage
-Message-ID: <20081112234331.GB8272@sirena.org.uk>
-References: <1226324477-21022-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112184956.GA17382@sortiz.org> <20081112200007.GA31451@sirena.org.uk> <20081112230636.GB17382@sortiz.org>
+	Wed, 12 Nov 2008 18:46:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PHn+ZbZ7dhGfutg1Y6cQvqAkApS0IQ4/RPelv3N4zeFu4HuCvVCeBQ9JZAVp3GVrLJ
+         RmyqgaAB29STlMrmc4vF8MDNg2DwbrbKn8FKAeCvw5NqBvRZlZnfHBibyUviJ9b3g1nY
+         dLNUsfGIsiMRe/9Z7+U+AuGD5MvrVLadcWnWI=
+Date: Wed, 12 Nov 2008 18:46:48 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Mike Frysinger <vapier@gentoo.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging/wlan-ng: kill WLAN_CPU_FAMILY and WLAN_SYSARCH
+Message-ID: <20081112234648.GA25675@tuxbook-pro>
+References: <1226500540-9667-1-git-send-email-vapier@gentoo.org> <20081112224628.GD27479@kroah.com> <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081112230636.GB17382@sortiz.org>
-X-Cookie: Your lucky color has faded.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 12:06:36AM +0100, Samuel Ortiz wrote:
+On Wed, Nov 12, 2008 at 06:36:57PM -0500, Mike Frysinger wrote:
+> On Wed, Nov 12, 2008 at 17:46, Greg KH wrote:
+> > On Wed, Nov 12, 2008 at 09:35:40AM -0500, Mike Frysinger wrote:
+> >> The WLAN_CPU_FAMILY and WLAN_SYSARCH defines are used in all of three places
+> >> (two of which look pretty suspect), so just kill them off rather than
+> >> throwing up a pointless #error on processors that are not in the existing
+> >> list.
+> >
+> > Thanks, but this is already cleaned up in my tree with a patch from
+> > someone else.
+> 
+> where ?  i looked in staging.git and that hasnt been touched in 2 months.
+> -mike
 
-> I understand that. I'm just saying that I would prefer wm8350->read_dev() to
-> return the actual bytes read, be it for SPI or I2C. Same for write_dev(), of
-> course.
+Greg has been using patches.git, not staging.git
 
-Hrm.  That's never been the case, even with the buggy code since the
-register address was included in the physical access for at least the
-writes.
-
-> With this patch you're breaking that expectation because the read|write_dev()
-> I'd prefer to fix the callers code, so that we keep the expected semantics
-
-Just to clarify, when you say "expectation" and "fix" are you talking
-about your preference that the hardware access functions return the
-number of bytes read or written or is there something else going on
-here? 
-
-> for your read|write_dev() routines. For example with wm8350_clear_bits():
-
-> -	if (err) {
-> +	ret = wm8350_read(wm8350, reg, 1, &data);
-> +	if (ret != 1) {
->  		dev_err(wm8350->dev, "read from reg R%d failed\n", reg);
-> +		err = -EIO;
-
-Note that wm8350_read() works a level up, only calling the physical read
-function if the register cache can't satisfy the access.  Changing that
-would be another layer of alteration.
-
-To be honest I'm really not sure it's worth changing this - I'm having a
-hard time thinking of a user that would be able to do anything useful
-with a short access.  It also seems like it'd be a rather invasive
-change for an -rc.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
