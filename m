@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbYKLJOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYKLJSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbYKLJOm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:14:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYKLJO1
+	id S1752657AbYKLJSN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 04:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYKLJR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:14:27 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59693 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751488AbYKLJO0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:14:26 -0500
-Date: Wed, 12 Nov 2008 04:14:16 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-Message-ID: <20081112091416.GA19721@infradead.org>
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org>
+	Wed, 12 Nov 2008 04:17:57 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55907 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497AbYKLJR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 04:17:56 -0500
+Date: Wed, 12 Nov 2008 10:17:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/fastboot: Move boot tracer structs and
+	funcs into their own header.
+Message-ID: <20081112091745.GD4748@elte.hu>
+References: <491A056B.2010500@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <491A96AE.3080600@kernel.org>
+In-Reply-To: <491A056B.2010500@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0002]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 05:41:18PM +0900, Tejun Heo wrote:
-> > emulated char devices to be char devices?  What I mean is, what would
-> > happen if instead of a char device /dev/dsp would be a regular file
-> > mounted on /dev/dsp (which implements all the necessary interfaces:
-> > ioctls, poll, etc)?
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Impact: Cleanups on the boot tracer and ftrace
 > 
-> For most it would work, I suppose, but there are all sorts of wonky
-> users out in the wild (and quite a few that we don't have source access
-> to) and different configurations, so I think it's better to appear as
-> proper character device if it is a character device.  It will also help
-> udev and other desktop thingies deal with devices implemented in userland.
+> This patch bring some cleanups about the boot tracer headers. The 
+> functions and structures of this tracer have nothing related to 
+> ftrace and should have so their own header file.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  include/linux/ftrace.h |   41 -----------------------------------------
+>  include/trace/boot.h   |   43 +++++++++++++++++++++++++++++++++++++++++++
+>  init/main.c            |    1 +
+>  kernel/trace/trace.h   |    1 +
+>  4 files changed, 45 insertions(+), 41 deletions(-)
 
-Note that mounting a char device on /dev/dsp is exactly the same as
-mounting a regular file on /dev/dsp - the only difference is what you
-set i_mode to.
+applied to tip/tracing/fastboot, thanks Frederic!
 
+	Ingo
