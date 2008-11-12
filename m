@@ -1,99 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbYKLFCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225AbYKLFCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751712AbYKLFCb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 00:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750843AbYKLFCV
+	id S1752225AbYKLFCp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 00:02:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYKLFCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 00:02:21 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47999 "EHLO
+	Wed, 12 Nov 2008 00:02:22 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45136 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbYKLFCV (ORCPT
+	with ESMTP id S1750830AbYKLFCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Nov 2008 00:02:21 -0500
-Message-Id: <20081112050218.952245378@goodmis.org>
+Message-Id: <20081112050219.202854960@goodmis.org>
 References: <20081112050125.654925304@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 00:01:26 -0500
+Date: Wed, 12 Nov 2008 00:01:27 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/2] ring-buffer: fix deadlock from reader_lock in read_start
-Content-Disposition: inline; filename=0001-ring-buffer-fix-deadlock-from-reader_lock-in-read_s.patch
+Subject: [PATCH 2/2] ring-buffer: no preempt for sched_clock
+Content-Disposition: inline; filename=0002-ring-buffer-no-preempt-for-sched_clock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: deadlock fix in ring_buffer_read_start
+Impact: disable preemption no calling sched_clock
 
-The ring_buffer_iter_reset was called from ring_buffer_read_start
-where both grabbed the reader_lock.
-
-This patch separates out the internals of ring_buffer_iter_reset
-to its own function so that both APIs may grab the reader_lock.
+The ring_buffer_time_stamp still uses sched_clock as its counter.
+But it is a bug to call it with preemption enabled. This requirement
+should not be pushed to the ring_buffer_time_stamp callers, so
+the ring_buffer_time_stamp needs to disable preemption when calling
+sched_clock.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ring_buffer.c |   29 +++++++++++++++++------------
- 1 files changed, 17 insertions(+), 12 deletions(-)
+ kernel/trace/ring_buffer.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index c04c433..86dc353 100644
+index 86dc353..2d6c2cf 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -1475,19 +1475,9 @@ unsigned long ring_buffer_overruns(struct ring_buffer *buffer)
- 	return overruns;
- }
- 
--/**
-- * ring_buffer_iter_reset - reset an iterator
-- * @iter: The iterator to reset
-- *
-- * Resets the iterator, so that it will start from the beginning
-- * again.
-- */
--void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
-+static void rb_iter_reset(struct ring_buffer_iter *iter)
+@@ -53,8 +53,14 @@ void tracing_off(void)
+ /* FIXME!!! */
+ u64 ring_buffer_time_stamp(int cpu)
  {
- 	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
--	unsigned long flags;
--
--	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 
- 	/* Iterator usage is expected to have record disabled */
- 	if (list_empty(&cpu_buffer->reader_page->list)) {
-@@ -1501,7 +1491,22 @@ void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
- 		iter->read_stamp = cpu_buffer->read_stamp;
- 	else
- 		iter->read_stamp = iter->head_page->time_stamp;
-+}
- 
-+/**
-+ * ring_buffer_iter_reset - reset an iterator
-+ * @iter: The iterator to reset
-+ *
-+ * Resets the iterator, so that it will start from the beginning
-+ * again.
-+ */
-+void ring_buffer_iter_reset(struct ring_buffer_iter *iter)
-+{
-+	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
-+	unsigned long flags;
++	u64 time;
 +
-+	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+	rb_iter_reset(iter);
- 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
++	preempt_disable_notrace();
+ 	/* shift to debug/test normalization and TIME_EXTENTS */
+-	return sched_clock() << DEBUG_SHIFT;
++	time = sched_clock() << DEBUG_SHIFT;
++	preempt_enable_notrace();
++
++	return time;
  }
  
-@@ -1957,7 +1962,7 @@ ring_buffer_read_start(struct ring_buffer *buffer, int cpu)
- 
- 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 	__raw_spin_lock(&cpu_buffer->lock);
--	ring_buffer_iter_reset(iter);
-+	rb_iter_reset(iter);
- 	__raw_spin_unlock(&cpu_buffer->lock);
- 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- 
+ void ring_buffer_normalize_time_stamp(int cpu, u64 *ts)
 -- 
 1.5.6.5
 
