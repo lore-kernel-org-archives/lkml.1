@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbYKLAqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbYKLAqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655AbYKLAqS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYKLAfX
+	id S1757685AbYKLAqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbYKLAfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:35:23 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:24121 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754823AbYKLAfV (ORCPT
+	Tue, 11 Nov 2008 19:35:41 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51050 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754715AbYKLAfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:35:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=G7bLkkT8RsYeUPGqy6JfLaM8WM5qFzDVNvB27yjpUS0CmWzgN6HnS7BnQjy8CS8Prq
-         XToWo8Ww2k6rwDLdp3V1J4VE2ZutRCpHenDCmUoL2qanS7G3wfG2YFu8Y6BuiTWhXG6w
-         uLxejxrO8CGH6vUV16s9fdqjcPngj/3OmDBk0=
-Message-ID: <b9df5fa10811111635i1154a9a3la5b9fbcfef4df9dc@mail.gmail.com>
-Date: Wed, 12 Nov 2008 06:35:19 +0600
-From: "Rakib Mullick" <rakib.mullick@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 1/2] x86: Fixing improper annotation.
-Cc: "Rufus & Azrael" <rufus-azrael@numericable.fr>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081111104112.GC10554@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 11 Nov 2008 19:35:39 -0500
+Date: Tue, 11 Nov 2008 16:26:35 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: vapier.adi@gmail.com, linville@tuxdriver.com, vapier@gentoo.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ssb: Fix DMA-API compilation for non-PCI systems
+Message-Id: <20081111162635.0c62033d.akpm@linux-foundation.org>
+In-Reply-To: <200811062223.09400.mb@bu3sch.de>
+References: <200811062149.21841.mb@bu3sch.de>
+	<8bd0f97a0811061316u6b9a330dy279cb7dca679ab73@mail.gmail.com>
+	<200811062223.09400.mb@bu3sch.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <49193D1A.9040000@numericable.fr> <20081111103649.GA10554@elte.hu>
-	 <491962FE.1020805@numericable.fr> <20081111104112.GC10554@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/11/08, Ingo Molnar <mingo@elte.hu> wrote:
+On Thu, 6 Nov 2008 22:23:09 +0100
+Michael Buesch <mb@bu3sch.de> wrote:
 
->
-> okay - so i wont apply them until the full scope of the problems here
->  is mapped. We might be best off by marking xsave_cntxt_init() non-init
->  altogether for the time being?
-But, it's been called from an __init section, it will also trigger an
-warning too. So, it
- will remain as it was. If we goes to hunt these warnings ( I mean
-we've to replace __init __alloc_bootmem() with __cpuinit
-__alloc_bootmem() ) , it's not certain when it will stop. Likely , we
-need to replace a lots of __init with __cpuinit.
+> On Thursday 06 November 2008 22:16:00 Mike Frysinger wrote:
+> > On Thu, Nov 6, 2008 at 15:49, Michael Buesch wrote:
+> > > --- wireless-testing.orig/include/linux/ssb/ssb.h       2008-08-01 17:26:05.000000000 +0200
+> > > +++ wireless-testing/include/linux/ssb/ssb.h    2008-11-06 21:45:37.000000000 +0100
+> > > @@ -427,12 +427,16 @@ static inline int ssb_dma_mapping_error(
+> > >  {
+> > >        switch (dev->bus->bustype) {
+> > >        case SSB_BUSTYPE_PCI:
+> > > +#ifdef CONFIG_SSB_PCIHOST
+> > >                return pci_dma_mapping_error(dev->bus->host_pci, addr);
+> > > +#endif
+> > > +               break;
+> > >        case SSB_BUSTYPE_SSB:
+> > >                return dma_mapping_error(dev->dev, addr);
+> > >        default:
+> > > -               __ssb_dma_not_implemented(dev);
+> > > +               break;
+> > >        }
+> > 
+> > all these functions now read:
+> > default: break;
+> > seems kind of pointless ... why not just drop that case completely
+> 
+> Because the compiler complains "not handled all cases...".
+> And yes, we do want to trigger __ssb_dma_not_implemented() for
+> these cases.
 
-Rakib
->
->         Ingo
->
+Please always quote the compiler error messages when fixing build
+errors.  It is unobvious what the problems are here.  I could struggle
+away and create a CONFIG_PCI=n build, but what .c file do I need to
+compile?  Dunno.
+
+
+All those ifdefs are nasty.  Couldn't we do something like:
+
+#ifdef CONFIG_SSB_PCIHOST
+static inline int
+ssb_pci_dma_mapping_error(structy pci_dev *host_pci, dma_addr_t addr)
+{
+	return pci_dma_mapping_error(host_pci, addr);
+}
+
+#else
+
+static inline int
+ssb_pci_dma_mapping_error(structy pci_dev *host_pci, dma_addr_t addr)
+{
+	return -ENOSYS;
+}
+
+#endif
+
+(etc)
+
+and then leave the __ssb_dma_not_implemented() calls under the default:
+case in the switch statements?
+
