@@ -1,138 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbYKLW4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbYKLXB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755984AbYKLW4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbYKLWzJ
+	id S1755137AbYKLXB3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYKLXBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:55:09 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39178 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754071AbYKLWzI (ORCPT
+	Wed, 12 Nov 2008 18:01:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60155 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753259AbYKLXBU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:55:08 -0500
-Message-Id: <20081112225501.291179692@goodmis.org>
-References: <20081112225235.056515739@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 17:52:38 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Pekka Paalanen <pq@iki.fi>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/3] ftrace: CPU buffer start annotation clean ups
-Content-Disposition: inline; filename=0003-ftrace-CPU-buffer-start-annotation-clean-ups.patch
+	Wed, 12 Nov 2008 18:01:20 -0500
+Date: Wed, 12 Nov 2008 15:01:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
+Cc: arjan@infradead.org, JosephChan@via.com.tw,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
+Message-Id: <20081112150104.8f7a71f6.akpm@linux-foundation.org>
+In-Reply-To: <20081110220046.10376327@neptune.home>
+References: <20081109202537.33ead0a2@neptune.home>
+	<20081109113603.d45361ad.akpm@linux-foundation.org>
+	<20081109122515.1deb9ec2@infradead.org>
+	<20081109213811.4b85adc6@neptune.home>
+	<20081109125522.b5266352.akpm@linux-foundation.org>
+	<20081109223748.3182e31d@neptune.home>
+	<20081109145959.6a8d9e8e.akpm@linux-foundation.org>
+	<20081110220046.10376327@neptune.home>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: better handling of CPU buffer start annotation
+On Mon, 10 Nov 2008 22:00:46 +0100
+Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
 
-Because of the confusion with the per CPU buffers wrapping where
-one CPU might be more active at the end of the trace than the other
-CPUs causing that one CPU to have a shorter history. Kernel
-developers were confused by the "missing" data of that one CPU
-at the beginning of the trace output. An annotation was added to
-the trace output to show that the buffer had started:
+> During conversion of viafb_ioctl() I noticed the following:
+> 
+> Those two cases just copy_from_user and do nothing with copied data,
+> incomplete implementation?:
+>         case VIAFB_SET_PANEL_POSITION:
+>                 if (copy_from_user(&u.panel_pos_size_para, argp,
+>                                    sizeof(u.panel_pos_size_para)))
+>                         return -EFAULT;
+>                 break;
+>         case VIAFB_SET_PANEL_SIZE:
+>                 if (copy_from_user(&u.panel_pos_size_para, argp,
+>                                    sizeof(u.panel_pos_size_para)))
+>                         return -EFAULT;
+>                 break;
+> 
+> Handling of GET/SET GAMMA looks buggy:
+> In each case 256*4 bytes are allocated but only 4 bytes (size of pointer)
+> are copied to/from userspace though viafb_(get|set)_gamma_table() operates
+> on the full 256 elements...
+>         case VIAFB_SET_GAMMA_LUT:
+>                 viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+>                 if (!viafb_gamma_table)
+>                         return -ENOMEM;
+>                 if (copy_from_user(viafb_gamma_table, argp,
+>                                 sizeof(viafb_gamma_table))) {
+>                         kfree(viafb_gamma_table);
+>                         return -EFAULT;
+>                 }
+>                 viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
+>                 kfree(viafb_gamma_table);
+>                 break;
+> 
+>         case VIAFB_GET_GAMMA_LUT:
+>                 viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
+>                 if (!viafb_gamma_table)
+>                         return -ENOMEM;
+>                 viafb_get_gamma_table(viafb_gamma_table);
+>                 if (copy_to_user(argp, viafb_gamma_table,
+>                         sizeof(viafb_gamma_table))) {
+>                         kfree(viafb_gamma_table);
+>                         return -EFAULT;
+>                 }
+>                 kfree(viafb_gamma_table);
+>                 break;
+> 
+> I don't know if there is a userspace app that uses these VIA IOCTLs...
+> so the ioctl part is just compile-tested.
+> After checking, fbset just uses some generic framebuffer IOCTLs outside
+> of viafb's scope, thus not passing through viafb_ioctl().
+> 
+> 
+> 
+> ---
+> --- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig	2008-11-09 19:36:47.000000000 +0100
+> +++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10 20:50:32.000000000 +0100
 
-# tracer: function
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-##### CPU 3 buffer started ####
-          <idle>-0     [003]   158.192959: smp_apic_timer_interrupt
-[...]
-          <idle>-0     [003]   161.556520: default_idle
-##### CPU 1 buffer started ####
-          <idle>-0     [001]   161.592494: hrtimer_force_reprogram
-[etc]
+hm, OK, I dropped the old patch and merged this one.
 
-But this annotation gets a bit messy when tracers do not fill the
-buffers. This patch does a couple of things:
+It'd be nice to have it runtime tested and reviewed by Joseph, but we
+haven't heard from him yet.  viafb might be 8k-stacks-only in 2.6.27,
+which would be bad.
 
- One) it adds a flag to trace_options to disable these annotations
-
- Two) it does not annotate if the tracer did not overflow its buffer.
-
-This makes the output much cleaner.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace.c |   16 +++++++++++++++-
- kernel/trace/trace.h |    1 +
- 2 files changed, 16 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 32cef26..40c9cc1 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -205,7 +205,8 @@ static DEFINE_MUTEX(trace_types_lock);
- static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
- 
- /* trace_flags holds trace_options default values */
--unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK;
-+unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
-+	TRACE_ITER_ANNOTATE;
- 
- /**
-  * trace_wake_up - wake up tasks waiting for trace input
-@@ -261,6 +262,7 @@ static const char *trace_options[] = {
- #ifdef CONFIG_BRANCH_TRACER
- 	"branch",
- #endif
-+	"annotate",
- 	NULL
- };
- 
-@@ -1113,6 +1115,7 @@ void tracing_stop_function_trace(void)
- 
- enum trace_file_type {
- 	TRACE_FILE_LAT_FMT	= 1,
-+	TRACE_FILE_ANNOTATE	= 2,
- };
- 
- static void trace_iterator_increment(struct trace_iterator *iter, int cpu)
-@@ -1532,6 +1535,12 @@ static void test_cpu_buff_start(struct trace_iterator *iter)
- {
- 	struct trace_seq *s = &iter->seq;
- 
-+	if (!(trace_flags & TRACE_ITER_ANNOTATE))
-+		return;
-+
-+	if (!(iter->iter_flags & TRACE_FILE_ANNOTATE))
-+		return;
-+
- 	if (cpu_isset(iter->cpu, iter->started))
- 		return;
- 
-@@ -2132,6 +2141,11 @@ __tracing_open(struct inode *inode, struct file *file, int *ret)
- 	iter->trace = current_trace;
- 	iter->pos = -1;
- 
-+	/* Annotate start of buffers if we had overruns */
-+	if (ring_buffer_overruns(iter->tr->buffer))
-+		iter->iter_flags |= TRACE_FILE_ANNOTATE;
-+
-+
- 	for_each_tracing_cpu(cpu) {
- 
- 		iter->buffer_iter[cpu] =
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 9e015f5..790ea8c 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -473,6 +473,7 @@ enum trace_iterator_flags {
- #ifdef CONFIG_BRANCH_TRACER
- 	TRACE_ITER_BRANCH		= 0x1000,
- #endif
-+	TRACE_ITER_ANNOTATE		= 0x2000,
- };
- 
- /*
--- 
-1.5.6.5
-
--- 
