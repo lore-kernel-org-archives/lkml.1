@@ -1,44 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbYKLXZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYKLX1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756921AbYKLXZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755738AbYKLXZi
+	id S1755991AbYKLX1V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYKLX1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:25:38 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:65340 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753262AbYKLXZh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:25:37 -0500
-Date: Wed, 12 Nov 2008 18:25:35 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/function-return-tracer: Call prepare_ftrace_return
- by registers
-In-Reply-To: <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0811121824380.21116@gandalf.stny.rr.com>
-References: <491B4F63.3090909@gmail.com> <20081112221623.GB6125@elte.hu> <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 12 Nov 2008 18:27:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:44777 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbYKLX1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:27:08 -0500
+Date: Thu, 13 Nov 2008 00:27:06 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H.Peter Anvin" <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.com>, linux-kernel@vger.kernel.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [patch 3/8] x86 PAT: Add follow_pfnmp_pte routine to help tracking pfnmap pages
+Message-ID: <20081112232706.GC29363@wotan.suse.de>
+References: <20081112212647.259698000@intel.com> <20081112212900.291460000@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081112212900.291460000@intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 12 Nov 2008, Fr?d?ric Weisbecker wrote:
-
-> 2008/11/12 Ingo Molnar <mingo@elte.hu>:
-> >
-> > btw., should we now rename it all to the function-cost tracer?
+On Wed, Nov 12, 2008 at 01:26:50PM -0800, Venkatesh Pallipadi wrote:
 > 
-> Yes. I'm preparing a patch to do these renames....
+> Add a generic interface to follow pfn in a pfnmap vma range. This is used by
+> one of the subsequent x86 PAT related patch to keep track of memory types
+> for vma regions across vma copy and free.
+> 
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 
+> ---
+>  include/linux/mm.h |    3 +++
+>  mm/memory.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 46 insertions(+)
+> 
+> Index: tip/include/linux/mm.h
+> ===================================================================
+> --- tip.orig/include/linux/mm.h	2008-11-06 15:41:43.000000000 -0800
+> +++ tip/include/linux/mm.h	2008-11-10 09:44:45.000000000 -0800
+> @@ -1223,6 +1223,9 @@ struct page *follow_page(struct vm_area_
+>  #define FOLL_GET	0x04	/* do get_page on page */
+>  #define FOLL_ANON	0x08	/* give ZERO_PAGE if no pgtable */
+>  
+> +unsigned long follow_pfnmap_pte(struct vm_area_struct *vma,
+> +				unsigned long address, pte_t *ret_ptep);
+> +
+>  typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
+>  			void *data);
+>  extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
+> Index: tip/mm/memory.c
+> ===================================================================
+> --- tip.orig/mm/memory.c	2008-11-06 15:41:43.000000000 -0800
+> +++ tip/mm/memory.c	2008-11-10 09:44:45.000000000 -0800
+> @@ -1111,6 +1111,49 @@ no_page_table:
+>  	return page;
+>  }
+>  
+> +unsigned long follow_pfnmap_pte(struct vm_area_struct *vma,
+> +			unsigned long address, pte_t *ret_ptep)
+> +{
 
-I still need to look deeper at your patch set, but what about 
-"ftrace-exit"?  Perhaps in the future this could be used by other tracers 
-to record exiting of a function.
+I think we'd typically return an int for functions like this. It
+probably wouldn't hurt to return more descriptive errors either.
+-EINVAL, perhaps, seems to fit best with what existing code there
+is doing.
 
--- Steve
-
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	pmd_t *pmd;
+> +	pte_t *ptep, pte;
+> +	spinlock_t *ptl;
+> +	struct page *page;
+> +	struct mm_struct *mm = vma->vm_mm;
+> +
+> +	if (!is_pfn_mapping(vma))
+> +		goto err;
+> +
+> +	page = NULL;
+> +	pgd = pgd_offset(mm, address);
+> +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> +		goto err;
+> +
+> +	pud = pud_offset(pgd, address);
+> +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> +		goto err;
+> +
+> +	pmd = pmd_offset(pud, address);
+> +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> +		goto err;
+> +
+> +	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
+> +
+> +	pte = *ptep;
+> +	if (!pte_present(pte))
+> +		goto err_unlock;
+> +
+> +	*ret_ptep = pte;
+> +	pte_unmap_unlock(ptep, ptl);
+> +	return 0;
+> +
+> +err_unlock:
+> +	pte_unmap_unlock(ptep, ptl);
+> +err:
+> +	return -1;
+> +}
+> +
+>  /* Can we do the FOLL_ANON optimization? */
+>  static inline int use_zero_page(struct vm_area_struct *vma)
+>  {
+> 
+> -- 
