@@ -1,93 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbYKLPTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbYKLP2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbYKLPTY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 10:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYKLPTQ
+	id S1753584AbYKLP2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 10:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYKLP2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 10:19:16 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:49011 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbYKLPTP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 10:19:15 -0500
-Date: Wed, 12 Nov 2008 16:28:28 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, peterz@infradead.org
-Subject: Re: [PATCH] [4/4] SCHED: Use a lookup array in sd_level_to_string
-Message-ID: <20081112152828.GM3810@one.firstfloor.org>
-References: <20081112145.328971960@firstfloor.org> <20081112124512.6EEF63E6610@basil.firstfloor.org> <20081112144709.GB2672@cmpxchg.org>
+	Wed, 12 Nov 2008 10:28:11 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:50533 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752545AbYKLP2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 10:28:10 -0500
+Date: Thu, 13 Nov 2008 00:28:14 +0900 (JST)
+Message-Id: <20081113.002814.12191937.anemo@mba.ocn.ne.jp>
+To: linux-mtd@lists.infradead.org
+Cc: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       Matteo Croce <technoboy85@gmail.com>
+Subject: Re: [PATCH] physmap: Fix leak of memory returned by
+ parse_mtd_partitions
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
+References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112144709.GB2672@cmpxchg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 03:47:09PM +0100, Johannes Weiner wrote:
-> > +#define T(x) [SD_LV_ ## x ] = #T
-> 
-> Shouldn't                         ^ that be x?
+On Wed, 12 Nov 2008 23:57:33 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> The mtd partition parser returns an allocated pointer array of
+> mtd_partition.  The caller must free it.  The array is used only for
+> add_mtd_partitions(), so free it just after the call.
 
-Yes good point. Thanks. Revised patch appended.
+Note: all parsers except for the ar7part return kmalloced memory.
 
--Andi
+The ar7part parser returns a pointer of static array.  While currently
+there is no in-kernel user of this parser, there should not be cause
+regression.
 
----
-
-SCHED: Use a lookup array in sd_level_to_string v2
-
-Generates better/shorter code. Doesn't matter much because it's only
-a SCHED_DEBUG function. 
-
-v2: Fix stupid typo thanks to Johannes Weiner
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Anyway, I suppose ar7part parser also should return kmalloced memory,
+as like as all other parsers.
 
 ---
- kernel/sched.c |   29 +++++++++++------------------
- 1 file changed, 11 insertions(+), 18 deletions(-)
-
-Index: linux-2.6.28-rc4-test/kernel/sched.c
-===================================================================
---- linux-2.6.28-rc4-test.orig/kernel/sched.c	2008-11-12 16:35:02.000000000 +0100
-+++ linux-2.6.28-rc4-test/kernel/sched.c	2008-11-12 16:35:48.000000000 +0100
-@@ -6629,24 +6629,17 @@
- 
- static inline const char *sd_level_to_string(enum sched_domain_level lvl)
- {
--	switch (lvl) {
--	case SD_LV_NONE:
--			return "NONE";
--	case SD_LV_SIBLING:
--			return "SIBLING";
--	case SD_LV_MC:
--			return "MC";
--	case SD_LV_CPU:
--			return "CPU";
--	case SD_LV_NODE:
--			return "NODE";
--	case SD_LV_ALLNODES:
--			return "ALLNODES";
--	case SD_LV_MAX:
--			return "MAX";
--
--	}
--	return "MAX";
-+	static const char *lva[] = {
-+#define T(x) [SD_LV_ ## x ] = #x
-+		T(NONE),
-+		T(SIBLING),
-+		T(MC),
-+		T(CPU),
-+		T(NODE),
-+		T(ALLNODES),
-+#undef T
-+	};
-+	return (unsigned)lvl < ARRAY_SIZE(lva) ? lva[lvl] : "MAX";
- }
- 
- static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+Atsushi Nemoto
