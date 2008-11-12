@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYKLWWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYKLWYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbYKLWWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:22:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYKLWWk
+	id S1755249AbYKLWYR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 17:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYKLWYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:22:40 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:27715 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752932AbYKLWWj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:22:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=vfgJ0m1K+1HD1IMXmRcRYjQ8MY0keNubo6h+LzbvcQut5SW7d3pDtFnvsYHGeRe6Mq
-         XqEZp6AMcH2Fk0dQO+jgsfwUY9rZ0iaKrhzGNjbMyD2kBJxEA5evLlM5H9C6R4rbrdoB
-         JTeYC//WIY2UFD2KnCMewO0xM0pvgQ2l0aOUY=
-Message-ID: <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com>
-Date: Wed, 12 Nov 2008 23:22:37 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 2/2] tracing/function-return-tracer: Call prepare_ftrace_return by registers
-Cc: "Steven Rostedt" <rostedt@goodmis.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081112221623.GB6125@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Nov 2008 17:24:01 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:55255 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752208AbYKLWYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 17:24:00 -0500
+Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
+In-Reply-To: <20081112112525.GA8767@sirena.org.uk>
+References: <200811091531.46003.david-b@pacbell.net>
+	 <200811100743.34741.david-b@pacbell.net>
+	 <20081110165625.GE12804@sirena.org.uk>
+	 <200811102056.20008.david-b@pacbell.net>
+	 <20081112112525.GA8767@sirena.org.uk>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 22:23:55 +0000
+Message-Id: <1226528635.6727.256.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <491B4F63.3090909@gmail.com> <20081112221623.GB6125@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/12 Ingo Molnar <mingo@elte.hu>:
->
-> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
->
->> Impact: Optimize a bit the function return tracer
->>
->> This patch changes the calling convention of prepare_ftrace_return
->> to pass its arguments by register. This will optimize it a bit and
->> prepare it to support dynamic tracing.
->>
->> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> ---
->>  arch/x86/kernel/entry_32.S |    5 +----
->>  arch/x86/kernel/ftrace.c   |    1 -
->>  2 files changed, 1 insertions(+), 5 deletions(-)
->
-> applied to tip/tracing/function-return-tracer, thanks Frederic!
->
-> btw., should we now rename it all to the function-cost tracer?
->
->        Ingo
->
+On Wed, 2008-11-12 at 11:25 +0000, Mark Brown wrote:
+> On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
+> > On Monday 10 November 2008, Mark Brown wrote:
+> 
+> > > > imply REGULATOR_MODE_OFF ... another CPU may need to keep
+> > > > it in some other state.
+> 
+> > > regulator_disable() needn't imply that the regulator will actually be
+> > > off -
+> 
+> > Would you say that also for regulator_ops.disable() though?
+> 
+> If we ignore regulator_force_disable() (which isn't used yet) for the
+> moment I'd actually say that in your case with non-software enables it's
+> reasonable for it to still be powered by some other part of the system.
+> Mainly because it's proably easier to just ignore the other enables than
+> it is to explain to the rest of the system that there are others it
+> can't know about.
+> 
+> > Less surprising/confusing would be if regulator_{en,dis}able() did
+> > its own refcounting and called down to regulator_dev when changing
+> > a per-client refcount to/from zero.  (Easy patch, for later.)
+> 
+> Yeah, either way is fine for me - don't know if Liam has a strong
+> opinion.  The main benefit of not doing it is that encourages people to
+> avoid consumers sharing the clients which causes problems when clients
+> share the regulator.
+> 
 
+Fwiw, the main design intention here was to have a 1:1 mapping between a
+consumer device and a struct regulator so that we could easily store per
+consumer power data (for mode switching, easier debug, sysfs) and avoid
+any issues between sharing the clients. I'd be happy for this change as
+long as we can keep the per consumer data.
 
-Yes. I'm preparing a patch to do these renames....
+Thanks
+
+Liam
+
