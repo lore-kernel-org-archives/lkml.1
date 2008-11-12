@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbYKLQES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbYKLQIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbYKLQES (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 11:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYKLQEJ
+	id S1751719AbYKLQIS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 11:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYKLQIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 11:04:09 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:54773 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbYKLQEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 11:04:07 -0500
-Date: Wed, 12 Nov 2008 08:03:49 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>, manfred@colorfullife.com
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
-	chanes in stop_machine
-Message-ID: <20081112160349.GA6667@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com> <20081111143505.GA6923@linux.vnet.ibm.com> <20081111150225.GA10743@linux.vnet.ibm.com> <20081111161401.GC9459@osiris.boeblingen.de.ibm.com> <20081111164523.GB6736@linux.vnet.ibm.com> <20081111173451.GA24720@linux.vnet.ibm.com> <20081112090508.GA14329@osiris.boeblingen.de.ibm.com>
+	Wed, 12 Nov 2008 11:08:04 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:11052 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbYKLQIC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 11:08:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dmZohrZkoKN9YheViloRzlCtJee9kmVAUc2yDrS0URUtRGYG9hluLOzUkFAQ9QlrYl
+         wjWstYJsca6respeLXMEUWxVeDFBeehOPYZpoVvFu/KdemOjwCiHkOswcB5cfs5b5lOO
+         Y52JXaEvDx7ewSjfGPCxzjKH0np0vhpvcCszA=
+Message-ID: <8bd0f97a0811120808p5858d5adleeef43b1d374bee1@mail.gmail.com>
+Date: Wed, 12 Nov 2008 11:08:00 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Atsushi Nemoto" <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH] physmap: Fix leak of memory returned by parse_mtd_partitions
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081113.005534.56563769.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081112090508.GA14329@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
+	 <20081113.005534.56563769.anemo@mba.ocn.ne.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 10:05:08AM +0100, Heiko Carstens wrote:
-> On Tue, Nov 11, 2008 at 09:34:51AM -0800, Paul E. McKenney wrote:
-> > On Tue, Nov 11, 2008 at 08:45:23AM -0800, Paul E. McKenney wrote:
-> > > On Tue, Nov 11, 2008 at 05:14:01PM +0100, Heiko Carstens wrote:
-> > > > > > Could you please apply the following debug patch (due to Jiangshan and
-> > > > > > myself)?  Then you should be able to build with CONFIG_RCU_TRACE,
-> > > > > > then mount debugfs after boot, for example, on /debug.  This will
-> > > > > > create a /debug/rcu directory with three files, "rcucb", "rcu_data",
-> > > > > > and "rcu_bh_data".  Since you are still able to log in, could you
-> > > > > > please send the contents of these three files?
-> > > > > > 
-> > > > > > 							Thanx, Paul
-> > > > > 
-> > > > > This time with the patch actually attached...  Thanks to Peter Z.
-> > > > > for alerting me to my omission.
-> > > > 
-> > > > Well, your patch doesn't apply on git head. However I used preemptible
-> > > > RCU instead and had tracing enabled.
-> > > 
-> > > Were you using preemptible RCU earlier as well?  Raphael was using
-> > > classic RCU.  Don't get me wrong, all problems need fixing, just trying
-> > > to make sure I understand where the problems are occurring.
-> 
-> Indeed, my fault. I just try to reproduce a cpu hotplug bug with classic RCU
-> and cpu hotplug stress test, but no luck so far.
+On Wed, Nov 12, 2008 at 10:55, Atsushi Nemoto wrote:
+> On Wed, 12 Nov 2008 23:57:33 +0900 (JST), Atsushi Nemoto wrote:
+>> The mtd partition parser returns an allocated pointer array of
+>> mtd_partition.  The caller must free it.  The array is used only for
+>> add_mtd_partitions(), so free it just after the call.
+>>
+>> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+>> ---
+>>  drivers/mtd/maps/physmap.c |   17 ++++++++---------
+>>  1 files changed, 8 insertions(+), 9 deletions(-)
+>
+> And many other callers of parse_mtd_partitions() also do not free the
+> returned memory.  With a quick look, 21 of 36 have same defect.
 
-OK, then my next step will be to send Rafael an updated version of
-my hierarchical RCU, which is more robust than classic RCU against
-online/offline stress tests.  On the machines I have access to, anyway.  ;-)
+i wonder why we duplicate this same code block in so many places.  and
+why does every driver have to declare its own list of parsers ?  cant
+we unify all of these in one place ?
 
-Then I will look at preemptable RCU, which undoubtably needs some of the
-same help that I have been giving to hierarchical RCU.  Manfred thus
-wins the clairvoyance award!
+> drivers/mtd/maps/bfin-async-flash.c
 
-							Thanx, Paul
+i can fix this one if no one else gets to it
+-mikex
