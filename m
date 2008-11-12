@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbYKLBlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022AbYKLBoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbYKLBlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 20:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbYKLBkf
+	id S1753022AbYKLBoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 20:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbYKLBoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 20:40:35 -0500
-Received: from sh.osrg.net ([192.16.179.4]:55657 "EHLO sh.osrg.net"
+	Tue, 11 Nov 2008 20:44:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41840 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752355AbYKLBkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 20:40:33 -0500
-Date: Wed, 12 Nov 2008 10:40:18 +0900
-To: cl@linux-foundation.org
-Cc: fujita.tomonori@lab.ntt.co.jp, y-goto@jp.fujitsu.com, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com
-Subject: Re: [Q] Why does dma_alloc_coherent() of ia64 GFP_DMA?
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <Pine.LNX.4.64.0811111431440.26610@quilx.com>
-References: <Pine.LNX.4.64.0811101600490.32282@quilx.com>
-	<20081111145418P.fujita.tomonori@lab.ntt.co.jp>
-	<Pine.LNX.4.64.0811111431440.26610@quilx.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751428AbYKLBoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 20:44:08 -0500
+Message-ID: <491A34DE.5030406@kernel.org>
+Date: Wed, 12 Nov 2008 10:43:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Mark Lord <liml@rtr.ca>
+CC: Tim Connors <tconnors@rather.puzzling.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: sata error on ICH8M
+References: <alpine.DEB.2.00.0811040833110.24370@dirac.rather.puzzling.org> <49199029.8070802@kernel.org> <4919976E.6020205@rtr.ca>
+In-Reply-To: <4919976E.6020205@rtr.ca>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20081112104048C.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Nov 2008 01:44:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 14:32:46 -0600 (CST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
-
-> On Tue, 11 Nov 2008, FUJITA Tomonori wrote:
+Mark Lord wrote:
+>> I really need to see how the recovery attempt failed.  Can you please
+>> reproduce the problem and report the kernel log?  Also, please report
+>> how reproducible the problem is.
+> ...
 > 
-> > Is it because it does some kinda address translation
-> > (provider->dma_map_consistent) later? The zone flag is meaningless if
-> > you do sorta address translation (e.g. hardware IOMMU like VT-d).
 > 
-> Yes it can do address translation. Therefore a < 4G address can show up at
-> any 64 bit address. So no need for a special DMA zone. The same is true
-> for more x86_64 platforms that have an IOMMU.
+> I wonder if this is another scenario, where a full reset of the AHCI host
+> would recover the system, similar to the one I emailed you about last
+> month.. ?
 
-Yes, with address translation hardware such as IOMMU, the zone is
-meaningless. The IOMMU drivers ignore the zone flag
-(e.g. intel_alloc_coherent).
+The one you emailed me last month didn't require host reset after all.
+It just needed small adjustment to reset protocol and the upstream
+kernel worked fine with it w/o any modification.
 
-But the GFP_DMA in IA64's platform_dma_alloc_coherent() is still
-necessary for swiotlb with devices that don't have DMA_64BIT_MASK
-coherent_dma_mask. They need a < 4G address.
+Thanks.
 
-This is exactly what x86 and x86_64 do, dma_alloc_coherent in
-arch/x86/include/asm/dma-mapping.h. It sets GFP_DMA and GFP_DMA32 for
-swiotlb and pci-nommu.c when necessary.
+-- 
+tejun
