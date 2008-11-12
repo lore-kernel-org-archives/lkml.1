@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYKLR1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYKLRdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbYKLR1W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 12:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYKLR1O
+	id S1753136AbYKLRdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 12:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYKLRdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 12:27:14 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:52626 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbYKLR1O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 12:27:14 -0500
-Date: Wed, 12 Nov 2008 17:27:12 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Nick Warne <nick@ukfsn.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range of hardware
-Message-ID: <20081112172712.GA16382@srcf.ucam.org>
-References: <20081111074702.75e71055@sauron.linicks.net> <20081112131427.1bbc2a7c@palantir.linicks.net> <20081112165650.GA15594@srcf.ucam.org> <20081112172429.674c4ff3@palantir.linicks.net>
+	Wed, 12 Nov 2008 12:33:08 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44173 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751621AbYKLRdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 12:33:07 -0500
+Date: Wed, 12 Nov 2008 18:32:58 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       chrisw@redhat.com, avi@redhat.com, izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+	one page into another
+Message-ID: <20081112173258.GX10818@random.random>
+References: <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org> <20081111210655.GG10818@random.random> <Pine.LNX.4.64.0811111522150.27767@quilx.com> <20081111221753.GK10818@random.random> <Pine.LNX.4.64.0811111626520.29222@quilx.com> <20081111231722.GR10818@random.random> <Pine.LNX.4.64.0811111823030.31625@quilx.com> <20081112022701.GT10818@random.random> <Pine.LNX.4.64.0811112109390.10501@quilx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081112172429.674c4ff3@palantir.linicks.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <Pine.LNX.4.64.0811112109390.10501@quilx.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 05:24:29PM +0000, Nick Warne wrote:
+On Tue, Nov 11, 2008 at 09:10:45PM -0600, Christoph Lameter wrote:
+> get_user_pages() cannot get to it since the pagetables have already been
+> modified. If get_user_pages runs then the fault handling will occur
+> which will block the thread until migration is complete.
 
-> But how you determine if these certain laptops produce a keypress
-> release I don't know with having all of them at hand...
+migrate.c does nothing for ptes pointing to swap entries and
+do_swap_page won't wait for them either. Assume follow_page in
+migrate.c returns a swapcache not mapped but with a pte pointing to
+it. That means page_count 1 (+1 after you isolate it from the lru),
+page_mapcount 0, page_mapped 0, page_mapping = swap address space,
+swap_count = 2 (1 swapcache, 1 the pte with the swapentry). Now assume
+one thread does o_direct read from disk that triggers a minor fault in
+do_swap_cache called by get_user_pages. The other cpu is running
+sys_move_pages and the expected count will match the page count in
+migrate_page_move_mapping. Page is still in swapcache. So after the
+expected count matches in the migrate.c thread, the other thread
+continues in do_swap_page and runs lookup_swap_cache that succeeds
+(the page wasn't removed from swapcache yet as migrate.c needs to bail
+out if the expected count doesn't match, so it can't mess with the
+oldpage until it's sure it can migrate it). After that do_swap_page
+gets a reference on the swapcache (at that point migrate.c continues
+despite the expected count isn't 2 anymore! just a second after having
+verified that it was 2). lock_page blocks do_swap_page until migration
+is complete but pte_same in do_swap_page won't fail because the pte is
+still pointing to the same swapentry (it's just the swapcache inode
+radix tree that points to a different page, the swapentry is still the
+same as before the migration - is_swap_pte will succeed but
+is_migration_entry failed when restoring the pte). Finally the pte is
+overwritten with the old page and any data written to the new page in
+between is lost.
 
-The quirk is only applied to a small number of keys which wouldn't want 
-autorepeat anyway, so it's pretty clearly harmless even if the hardware 
-works sanely.
-
-> So it needs BOTH 'Dell Inc.' and 'Dell Computer Corporation' to cover
-> these laptops (I guess), as per the info I got from people running
-> dmidecode:
-
-That's what the patch adds. I don't have appropriate hardware to test.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+However it's not exactly the same bug as the one in fork, I was
+talking about before, it's also not o_direct specific. Still
+page_wrprotect + replace_page is orders of magnitude simpler logic
+than migrate.c and it has no bugs or at least it's certainly much
+simpler to proof as correct. Furthermore we never 'stall' any userland
+task while we do our work. We only mark the pte wrprotected, the task
+can cow or takeover it if refcount allows anytime, and later we'll
+bailout during replace_page if something has happened in between
+page_wrprotect and replace_page. So our logic is simpler and tuned for
+max performance and fewer interference with userland runtime. Not
+really sure if it worth for us to call into migrate.c.
