@@ -1,60 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbYKLQIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbYKLQKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751719AbYKLQIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 11:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbYKLQIE
+	id S1751986AbYKLQKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 11:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbYKLQKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 11:08:04 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:11052 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYKLQIC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 11:08:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=dmZohrZkoKN9YheViloRzlCtJee9kmVAUc2yDrS0URUtRGYG9hluLOzUkFAQ9QlrYl
-         wjWstYJsca6respeLXMEUWxVeDFBeehOPYZpoVvFu/KdemOjwCiHkOswcB5cfs5b5lOO
-         Y52JXaEvDx7ewSjfGPCxzjKH0np0vhpvcCszA=
-Message-ID: <8bd0f97a0811120808p5858d5adleeef43b1d374bee1@mail.gmail.com>
-Date: Wed, 12 Nov 2008 11:08:00 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Atsushi Nemoto" <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] physmap: Fix leak of memory returned by parse_mtd_partitions
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081113.005534.56563769.anemo@mba.ocn.ne.jp>
+	Wed, 12 Nov 2008 11:10:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:47045 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750873AbYKLQKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 11:10:45 -0500
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH =-v3 00/21] fanotify: novel file access notification and
+	permission system
+To: linux-kernel@vger.kernel.org, malware-list@lists.printk.net
+Cc: viro@zeniv.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
+       greg@kroah.com, tytso@mit.edu, akpm@linux-foundation.org
+Date: Wed, 12 Nov 2008 11:10:26 -0500
+Message-ID: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081112.235733.01917391.anemo@mba.ocn.ne.jp>
-	 <20081113.005534.56563769.anemo@mba.ocn.ne.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 10:55, Atsushi Nemoto wrote:
-> On Wed, 12 Nov 2008 23:57:33 +0900 (JST), Atsushi Nemoto wrote:
->> The mtd partition parser returns an allocated pointer array of
->> mtd_partition.  The caller must free it.  The array is used only for
->> add_mtd_partitions(), so free it just after the call.
->>
->> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
->> ---
->>  drivers/mtd/maps/physmap.c |   17 ++++++++---------
->>  1 files changed, 8 insertions(+), 9 deletions(-)
->
-> And many other callers of parse_mtd_partitions() also do not free the
-> returned memory.  With a quick look, 21 of 36 have same defect.
+the following is a file notification and access system intended to allow
+a variety of userspace programs to get information about filesystem
+events no matter where or how they happen on a system and use that in
+conjunction with the actual on disk data related to that event to
+provide additional services such as file change indexing or content
+based antivirus scanning.  Minor changes are almost certainly possible
+to make this notification and access interface usable for HSMs.  fscking
+all notify is generally refered to as fanotify, or for the weak of heart
+you can call it file access notify system.  The ideas behind this
+code are based on talpa the GPL antivirus interface originally written
+by Sophos and on the feedback from lkml and malware-list.  This is
+however a complete rewrite from scratch.
 
-i wonder why we duplicate this same code block in so many places.  and
-why does every driver have to declare its own list of parsers ?  cant
-we unify all of these in one place ?
+The last patch set addressed every complaint/critisism from lists.  This
+set adds a couple new features, some documentation, and a couple fixes to
+the networking headers to support bi-arch machines.
 
-> drivers/mtd/maps/bfin-async-flash.c
+**fanotify-executive-summary**
 
-i can fix this one if no one else gets to it
--mikex
+fanotify has a number of event types and only sends events for S_ISREG()
+files.  These events incluse open, read, write, and permissions checking
+for open and read.  The permissions checking events require that the
+listener return some sort of allow/deny/more_time response as the
+original process blocks until it gets an event (or times out)
+listeners may register a group which will get notifications about
+any combination of these events, it will be up to the listener to
+determine what events they are interested in hearing or mediating access
+decisions for.
+
+groups are a construct in which userspace indicates what priority (only
+really used for permission type events) and what type of events its
+listeners want to hear.  A single group may have unlimited listeners but
+each event will only go to ONE listener.  Two groups may register for
+the same type of events and one listener in EACH group will get a copy
+of the event.
+
+The user interface for fanotify is all through sockopt calls.  Userspace
+pulls events from the kernel using getsockopt and sends responses to the
+kernel using setsockopt.  These are the only socket operations defined
+for PF_FANOTIFY sockets.
+
+---
+
+Eric Paris (21):
+      fanotify: add Documentation
+      fanotify: allow fastpath entries to survive inode modification
+      fanotify: evict misbehaving clients
+      fanotify: all userspace to set timeouts
+      fanotify: add option to clear all fastpaths
+      fanotify: send file f_flags along with notifications
+      fanotify: send tgid with notification messages
+      fanotify: send pid with fanotify notification events
+      fanotify: ability for userspace to delay responses
+      fanotify: user interface for access decisions
+      fanotify: give a special access permission check
+      fanotify: blocking and access granting
+      fanotify: add group priorities
+      fanotify: add a userspace interface for fastpaths
+      fanotify: fastpath to ignore certain in core inodes
+      fanotify: add a userspace interface for fanotify notifications
+      fanotify: make use of the new fsnotify_open_exec calls
+      fsnotify: sys_execve and sys_uselib do not call into fsnotify
+      fanotify: fscking all notify, system wide file access notification
+      fsnotify: pass a file instead of an inode to open, read, and write
+      filesystem notification: create fs/notify to contain all fs notification
+
+
+ Documentation/filesystems/fanotify/fanotify.txt    |  214 ++++++
+ .../filesystems/fanotify/fanotify_tester.c         |  255 +++++++
+ fs/Kconfig                                         |   39 -
+ fs/Makefile                                        |    5 
+ fs/aio.c                                           |    7 
+ fs/compat.c                                        |    5 
+ fs/dnotify.c                                       |  194 -----
+ fs/exec.c                                          |   15 
+ fs/inode.c                                         |    6 
+ fs/inotify.c                                       |  773 --------------------
+ fs/inotify_user.c                                  |  778 --------------------
+ fs/nfsd/vfs.c                                      |    4 
+ fs/notify/Kconfig                                  |   52 +
+ fs/notify/Makefile                                 |    6 
+ fs/notify/access.c                                 |  222 ++++++
+ fs/notify/dnotify.c                                |  194 +++++
+ fs/notify/fanotify.c                               |  152 ++++
+ fs/notify/fanotify.h                               |  112 +++
+ fs/notify/fastpath.c                               |  264 +++++++
+ fs/notify/group.c                                  |  163 ++++
+ fs/notify/inotify.c                                |  773 ++++++++++++++++++++
+ fs/notify/inotify_user.c                           |  778 ++++++++++++++++++++
+ fs/notify/notification.c                           |  277 +++++++
+ fs/open.c                                          |    7 
+ fs/read_write.c                                    |   14 
+ include/linux/Kbuild                               |    1 
+ include/linux/fanotify.h                           |  197 +++++
+ include/linux/fs.h                                 |    5 
+ include/linux/fsnotify.h                           |   39 +
+ include/linux/sched.h                              |    1 
+ include/linux/socket.h                             |    5 
+ mm/mmap.c                                          |    7 
+ mm/mprotect.c                                      |    6 
+ mm/nommu.c                                         |    7 
+ net/Makefile                                       |    1 
+ net/core/sock.c                                    |    6 
+ net/fanotify/Makefile                              |    5 
+ net/fanotify/af_fanotify.c                         |  295 ++++++++
+ net/fanotify/af_fanotify.h                         |   20 +
+ 39 files changed, 4096 insertions(+), 1808 deletions(-)
+ create mode 100644 Documentation/filesystems/fanotify/fanotify.txt
+ create mode 100644 Documentation/filesystems/fanotify/fanotify_tester.c
+ delete mode 100644 fs/dnotify.c
+ delete mode 100644 fs/inotify.c
+ delete mode 100644 fs/inotify_user.c
+ create mode 100644 fs/notify/Kconfig
+ create mode 100644 fs/notify/Makefile
+ create mode 100644 fs/notify/access.c
+ create mode 100644 fs/notify/dnotify.c
+ create mode 100644 fs/notify/fanotify.c
+ create mode 100644 fs/notify/fanotify.h
+ create mode 100644 fs/notify/fastpath.c
+ create mode 100644 fs/notify/group.c
+ create mode 100644 fs/notify/inotify.c
+ create mode 100644 fs/notify/inotify_user.c
+ create mode 100644 fs/notify/notification.c
+ create mode 100644 include/linux/fanotify.h
+ create mode 100644 net/fanotify/Makefile
+ create mode 100644 net/fanotify/af_fanotify.c
+ create mode 100644 net/fanotify/af_fanotify.h
+
+-- 
+Signature
