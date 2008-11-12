@@ -1,81 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbYKLIAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117AbYKLIQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbYKLIAR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 03:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYKLIAB
+	id S1752117AbYKLIQj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 03:16:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYKLIQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 03:00:01 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:42353 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751104AbYKLIAA (ORCPT
+	Wed, 12 Nov 2008 03:16:29 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58331 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbYKLIQ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 03:00:00 -0500
-Date: Wed, 12 Nov 2008 08:59:55 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: next-20081106: undefined reference to `__per_cpu_start'
-In-Reply-To: <20081107162114.2a41c623.sfr@canb.auug.org.au>
-Message-ID: <Pine.LNX.4.64.0811120859160.13217@anakin>
-References: <20081106173645.e7e79071.sfr@canb.auug.org.au>
- <20081106183939.GA26925@x200.localdomain> <Pine.LNX.4.64.0811061310350.6009@quilx.com>
- <20081107162114.2a41c623.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 12 Nov 2008 03:16:28 -0500
+Date: Wed, 12 Nov 2008 17:15:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "menage@google.com" <menage@google.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [BUGFIX]cgroup: fix potential deadlock in pre_destroy.
+Message-Id: <20081112171549.4dacc5fa.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <491A7E7E.2070801@cn.fujitsu.com>
+References: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com>
+	<491A7E7E.2070801@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008, Stephen Rothwell wrote:
-> On Thu, 6 Nov 2008 13:15:07 -0600 (CST) Christoph Lameter <cl@linux-foundation.org> wrote:
-> >
-> > On Thu, 6 Nov 2008, Alexey Dobriyan wrote:
+On Wed, 12 Nov 2008 14:58:06 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
+
+> KAMEZAWA Hiroyuki wrote:
+> > Balbir, Paul, Li, How about this ?
+> > =
+> > As Balbir pointed out, memcg's pre_destroy handler has potential deadlock.
 > > 
-> > > On blackfin-BF526-EZBRD and other blackfins:
-> > >
-> > >   LD      .tmp_vmlinux1
-> > > mm/built-in.o: In function `cpu_alloc_init':
-> > > (.init.text+0x1486): undefined reference to `__per_cpu_start'
-> > > mm/built-in.o: In function `cpu_alloc_init':
-> > > (.init.text+0x148c): undefined reference to `__per_cpu_start'
-> > > mm/built-in.o: In function `cpu_alloc_init':
-> > > (.init.text+0x1492): undefined reference to `__per_cpu_end'
-> > > mm/built-in.o: In function `cpu_alloc_init':
-> > > (.init.text+0x1496): undefined reference to `__per_cpu_end'
+> > It has following lock sequence.
 > > 
-> > Any contigencies for __per_cpu_start/end in your blackfin vmlinux.lds.h?
-> > That is where these symbols are defined
+> > 	cgroup_mutex (cgroup_rmdir)
+> > 	    -> pre_destroy
+> > 		-> mem_cgroup_pre_destroy
+> > 			-> force_empty
+> > 			   -> lru_add_drain_all->
+> > 			      -> schedule_work_on_all_cpus
+> >                                  -> get_online_cpus -> cpuhotplug.lock.
 > > 
-> > Or did you use generic percpu support and set
-> > CONFIG_HAVE_ZERO_BASED_PER_CPU?
+> > But, cpuset has following.
+> > 	cpu_hotplug.lock (call notifier)
+> > 		-> cgroup_mutex. (within notifier)
+> > 
+> > Then, this lock sequence should be fixed.
+> > 
+> > Considering how pre_destroy works, it's not necessary to holding
+> > cgroup_mutex() while calling it. 
+> > 
 > 
-> Also a avr32 allnoconfig
-> (http://kisskb.ellerman.id.au/kisskb/buildresult/53233/) gets:
+> I think it's safe to call cgroup_call_pre_destroy() without cgroup_lock.
+> If cgroup_call_pre_destroy() gets called, it means the cgroup fs has sub-dirs,
+> so any remount/umount will fail, which means root->subsys_list won't be
+> changed during rmdir(), so using for_each_subsys() in cgroup_call_pre_destroy()
+> is safe.
+
+Thank you for review.
+
+-Kame
+
 > 
-> backing-dev.c:(.init.text+0xc4c): undefined reference to `__per_cpu_start'
-> backing-dev.c:(.init.text+0xc50): undefined reference to `__per_cpu_end'
+> > As side effect, we don't have to wait at this mutex while memcg's force_empty
+> > works.(it can be long when there are tons of pages.)
+> > 
+> > Note: memcg is an only user of pre_destroy, now.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> > ---
+> >  kernel/cgroup.c |   14 +++++++++-----
+> >  1 file changed, 9 insertions(+), 5 deletions(-)
+> > 
+> > Index: mmotm-2.6.28-Nov10/kernel/cgroup.c
+> > ===================================================================
+> > --- mmotm-2.6.28-Nov10.orig/kernel/cgroup.c
+> > +++ mmotm-2.6.28-Nov10/kernel/cgroup.c
+> > @@ -2475,10 +2475,7 @@ static int cgroup_rmdir(struct inode *un
+> >  		mutex_unlock(&cgroup_mutex);
+> >  		return -EBUSY;
+> >  	}
+> > -
+> > -	parent = cgrp->parent;
+> > -	root = cgrp->root;
+> > -	sb = root->sb;
+> > +	mutex_unlock(&cgroup_mutex);
+> >  
+> >  	/*
+> >  	 * Call pre_destroy handlers of subsys. Notify subsystems
+> > @@ -2486,7 +2483,14 @@ static int cgroup_rmdir(struct inode *un
+> >  	 */
+> >  	cgroup_call_pre_destroy(cgrp);
+> >  
+> > -	if (cgroup_has_css_refs(cgrp)) {
+> > +	mutex_lock(&cgroup_mutex);
+> > +	parent = cgrp->parent;
+> > +	root = cgrp->root;
+> > +	sb = root->sb;
+> > +
+> > +	if (atomic_read(&cgrp->count)
+> > +	    || list_empty(&cgrp->children)
+> > +	    || cgroup_has_css_refs(cgrp)) {
+> >  		mutex_unlock(&cgroup_mutex);
+> >  		return -EBUSY;
+> >  	}
+> > 
 > 
-> and avr32 defconfig
-> (http://kisskb.ellerman.id.au/kisskb/buildresult/53225/) gets:
-> 
-> vmstat.c:(.init.text+0xff0): undefined reference to `__per_cpu_start'
-> vmstat.c:(.init.text+0xff4): undefined reference to `__per_cpu_end'
 
-And m68k defconfig (http://kisskb.ellerman.id.au/kisskb/buildresult/54216/):
-
-| : undefined reference to `__per_cpu_start'
-| : undefined reference to `__per_cpu_end'
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
