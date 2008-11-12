@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbYKLKVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbYKLKVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbYKLKVW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 05:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYKLKVM
+	id S1751876AbYKLKVk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 05:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYKLKVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 05:21:12 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:44632 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751716AbYKLKVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 05:21:12 -0500
-Date: Wed, 12 Nov 2008 11:21:06 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, a.zummo@towertech.it,
-       david-b@pacbell.net, rtc-linux@googlegroups.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rtc: bunch of drivers: fix 'no irq' case handing
-Message-ID: <20081112112106.5b5062f4@i1501.lan.towertech.it>
-In-Reply-To: <20081111161728.8a0d73f1.akpm@linux-foundation.org>
-References: <20081106174111.GA21882@oksana.dev.rtsoft.ru>
-	<20081111161728.8a0d73f1.akpm@linux-foundation.org>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Nov 2008 05:21:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39639 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751596AbYKLKV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 05:21:29 -0500
+Date: Wed, 12 Nov 2008 11:21:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/2] tracing/fastboot: Use the ring-buffer timestamp
+	for initcall entries
+Message-ID: <20081112102103.GA24482@elte.hu>
+References: <20081112055454.798779203@goodmis.org> <20081112055600.657041406@goodmis.org> <20081111220051.204c43f2.akpm@linux-foundation.org> <c62985530811120045j5fc0475r8c374f4853f6823e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530811120045j5fc0475r8c374f4853f6823e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008 16:17:28 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > rtc-sh.c is using platform_get_irq, but was storing a result into an
-> > unsigned type, then was checking for < 0.  This is fixed now.
-> > 
-> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>  
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+
+> 2008/11/12 Andrew Morton <akpm@linux-foundation.org>:
+> > On Wed, 12 Nov 2008 00:54:56 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+> >
+> >> -     unsigned long long      duration;               /* usecs */
+> >> +     unsigned long long      duration;
+> >
+> > my hard-won comment got fragged.
 > 
-> Do we see any reason why this should be pushed into 2.6.28?
+> 
+> Oops. I forgot it.
+> Perhaps I should resend a patch that reset this comment?
+> BTW it is nsecs actually.
 
- We are not in hurry I'd say. Also irq is valid on some platforms,
- so the check only makes sense for drivers whose platforms
- do not use it.
--- 
+no need, i fixed it up when applying your patch to tracing/fastboot, 
+and also changed it to nsecs.
 
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+	Ingo
