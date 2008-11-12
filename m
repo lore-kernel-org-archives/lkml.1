@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbYKLAb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYKLAbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755113AbYKLAb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbYKLA0S
+	id S1755032AbYKLAbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:31:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYKLA0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:18 -0500
-Received: from kroah.org ([198.145.64.141]:42206 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:20 -0500
+Received: from kroah.org ([198.145.64.141]:42221 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753397AbYKLA0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:16 -0500
-Date: Tue, 11 Nov 2008 16:23:22 -0800
+	id S1753388AbYKLA0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:18 -0500
+Date: Tue, 11 Nov 2008 16:23:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Backlund <tmb@mandriva.org>,
-       George Spelvin <linux@horizon.com>, NeilBrown <neilb@suse.de>
-Subject: [patch 14/49] md: fix bug in raid10 recovery.
-Message-ID: <20081112002322.GO10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Richard Purdie <rpurdie@openedhand.com>,
+       David Woodhouse <David.Woodhouse@intel.com>
+Subject: [patch 15/49] JFFS2: fix race condition in jffs2_lzo_compress()
+Message-ID: <20081112002325.GP10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="md-fix-bug-in-raid10-recovery.patch"
+Content-Disposition: inline; filename="jffs2-fix-race-condition-in-jffs2_lzo_compress.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +42,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Neil Brown <neilb@suse.de>
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-commit a53a6c85756339f82ff19e001e90cfba2d6299a8 upstream
+commit dc8a0843a435b2c0891e7eaea64faaf1ebec9b11 upstream
 
-Adding a spare to a raid10 doesn't cause recovery to start.
-This is due to an silly type in
-  commit 6c2fce2ef6b4821c21b5c42c7207cb9cf8c87eda
-and so is a bug in 2.6.27 and .28-rc.
+deflate_mutex protects the globals lzo_mem and lzo_compress_buf.  However,
+jffs2_lzo_compress() unlocks deflate_mutex _before_ it has copied out the
+compressed data from lzo_compress_buf.  Correct this by moving the mutex
+unlock after the copy.
 
-Thanks to Thomas Backlund for bisecting to find this.
+In addition, document what deflate_mutex actually protects.
 
-Cc: Thomas Backlund <tmb@mandriva.org>
-Cc: George Spelvin <linux@horizon.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Acked-by: Richard Purdie <rpurdie@openedhand.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid10.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/jffs2/compr_lzo.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -1132,7 +1132,7 @@ static int raid10_add_disk(mddev_t *mdde
- 	if (!enough(conf))
- 		return -EINVAL;
+--- a/fs/jffs2/compr_lzo.c
++++ b/fs/jffs2/compr_lzo.c
+@@ -19,7 +19,7 @@
  
--	if (rdev->raid_disk)
-+	if (rdev->raid_disk >= 0)
- 		first = last = rdev->raid_disk;
+ static void *lzo_mem;
+ static void *lzo_compress_buf;
+-static DEFINE_MUTEX(deflate_mutex);
++static DEFINE_MUTEX(deflate_mutex);	/* for lzo_mem and lzo_compress_buf */
  
- 	if (rdev->saved_raid_disk >= 0 &&
+ static void free_workspace(void)
+ {
+@@ -49,18 +49,21 @@ static int jffs2_lzo_compress(unsigned c
+ 
+ 	mutex_lock(&deflate_mutex);
+ 	ret = lzo1x_1_compress(data_in, *sourcelen, lzo_compress_buf, &compress_size, lzo_mem);
+-	mutex_unlock(&deflate_mutex);
+-
+ 	if (ret != LZO_E_OK)
+-		return -1;
++		goto fail;
+ 
+ 	if (compress_size > *dstlen)
+-		return -1;
++		goto fail;
+ 
+ 	memcpy(cpage_out, lzo_compress_buf, compress_size);
+-	*dstlen = compress_size;
++	mutex_unlock(&deflate_mutex);
+ 
++	*dstlen = compress_size;
+ 	return 0;
++
++ fail:
++	mutex_unlock(&deflate_mutex);
++	return -1;
+ }
+ 
+ static int jffs2_lzo_decompress(unsigned char *data_in, unsigned char *cpage_out,
 
 -- 
