@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYKLNi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbYKLNqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753166AbYKLNi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:38:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbYKLNgG
+	id S1753036AbYKLNqX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:46:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYKLNqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:36:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45198 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752723AbYKLNgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:36:02 -0500
-From: Eduardo Habkost <ehabkost@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Simon Horman <horms@verge.net.au>, Andrew Morton <akpm@osdl.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       kexec@lists.infradead.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 3/8] x86 kdump: Create kdump_nmi_shootdown_cpus()
-Date: Wed, 12 Nov 2008 11:34:39 -0200
-Message-Id: <1226496884-24628-4-git-send-email-ehabkost@redhat.com>
-In-Reply-To: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
-References: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
+	Wed, 12 Nov 2008 08:46:14 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:53063 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752099AbYKLNqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 08:46:14 -0500
+Message-ID: <491ADE21.7080707@sgi.com>
+Date: Wed, 12 Nov 2008 05:46:09 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
+       Takashi Iwai <tiwai@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       Jan Blunck <jblunck@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+References: <s5htzaekp6o.wl%tiwai@suse.de> <491A01E2.2010701@cosmosbay.com> <200811121214.33150.rusty@rustcorp.com.au> <491A3EB9.8020203@sgi.com> <Pine.LNX.4.64.0811112115090.10592@quilx.com>
+In-Reply-To: <Pine.LNX.4.64.0811112115090.10592@quilx.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the kdump-specific code that was living on nmi_shootdown_cpus().
+Christoph Lameter wrote:
+> On Tue, 11 Nov 2008, Mike Travis wrote:
+> 
+>> I haven't looked closely at Christoph's latest but I believe the x86_64 version
+>> is waiting for the zero-based percpu variables (and hence the combined pda/percpu
+>> base.)  It's on the queue just under 4k cpus.
+> 
+> The base cpu_alloc is indepedent. And your laziness on the zero based
+> stuff only hurts the x86_64 version. Frankly, I think we should stop
+> merging 4k patches until you have finished the work on zero based because
+> that is elementary for various other things and simplifies 4k work. And it
+> has been pending for more than 6 months now.
+> 
 
-Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
----
- arch/x86/kernel/crash.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index ed2f0f9..75c468c 100644
---- a/arch/x86/kernel/crash.c
-+++ b/arch/x86/kernel/crash.c
-@@ -122,10 +122,17 @@ static void nmi_shootdown_cpus(void)
- 	}
- 
- 	/* Leave the nmi callback set */
-+}
-+
-+static void kdump_nmi_shootdown_cpus(void)
-+{
-+	nmi_shootdown_cpus();
-+
- 	disable_local_APIC();
- }
-+
- #else
--static void nmi_shootdown_cpus(void)
-+static void kdump_nmi_shootdown_cpus(void)
- {
- 	/* There are no cpus to shootdown */
- }
-@@ -144,7 +151,7 @@ void native_machine_crash_shutdown(struct pt_regs *regs)
- 	/* The kernel is broken so disable interrupts */
- 	local_irq_disable();
- 
--	nmi_shootdown_cpus();
-+	kdump_nmi_shootdown_cpus();
- 	lapic_shutdown();
- #if defined(CONFIG_X86_IO_APIC)
- 	disable_IO_APIC();
--- 
-1.5.5.GIT
+Trust me, I would have finished it by now, but the most critical objective for me
+(and hence the direction from my mgmt) is that SGI is able to ship UV systems when
+they are ready, to customers who are buying them, to perform as they are expecting.
+Nothing else comes close in priority.  I've already missed two merge windows,
+missing a third and I may have to learn hara-kiri. ;-)  [And working up to 7 days
+of 10-14+ hours per day, is not what one would normally think of as lazy.]
 
+Thanks,
+Mike
