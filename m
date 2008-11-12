@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbYKLAic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYKLAiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbYKLAic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYKLA0o
+	id S1756604AbYKLAiu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:38:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbYKLA0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:44 -0500
-Received: from kroah.org ([198.145.64.141]:42499 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:46 -0500
+Received: from kroah.org ([198.145.64.141]:42510 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753793AbYKLA0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:43 -0500
-Date: Tue, 11 Nov 2008 16:24:00 -0800
+	id S1753808AbYKLA0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:44 -0500
+Date: Tue, 11 Nov 2008 16:24:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tomas Winkler <tomas.winkler@intel.com>,
-       Zhu Yi <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 32/49] iwlwifi: use correct DMA_MASK
-Message-ID: <20081112002400.GG10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+       Tomas Winkler <tomas.winkler@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 33/49] iwlwifi: fix suspend to RAM in iwlwifi
+Message-ID: <20081112002402.GH10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="iwlwifi-use-correct-dma_mask.patch"
+Content-Disposition: inline; filename="iwlwifi-fix-suspend-to-ram-in-iwlwifi.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,38 +45,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tomas Winkler <tomas.winkler@intel.com>
 
-commit 093d874c02e8d3091aa38596faf0ff2bfd4f0ceb upstream
+commit 10d0bd56966571d0324dfd9bbb8aa913a60bef5f upstream
 
-Use correct DMA_MASK: 4964 and 5000 support 36 bit addresses for
-pci express memory access.
+This patch fixes suspend to RAM after by moving
+notify_mac out of iwlwifi mutex
 
+http://bugzilla.kernel.org/show_bug.cgi?id=11845
+
+Signed-off-by: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
 Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
-Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+Tested-by: Carlos R. Mafra <crmafra2@gmail.com>
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-agn.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-agn.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 --- a/drivers/net/wireless/iwlwifi/iwl-agn.c
 +++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -4225,13 +4225,13 @@ static int iwl4965_pci_probe(struct pci_
+@@ -2090,7 +2090,6 @@ static void iwl_alive_start(struct iwl_p
+ 		iwl4965_error_recovery(priv);
  
- 	pci_set_master(pdev);
+ 	iwl_power_update_mode(priv, 1);
+-	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
  
--	err = pci_set_dma_mask(pdev, DMA_64BIT_MASK);
-+	err = pci_set_dma_mask(pdev, DMA_BIT_MASK(36));
- 	if (!err)
--		err = pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK);
-+		err = pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(36));
- 	if (err) {
--		err = pci_set_dma_mask(pdev, DMA_32BIT_MASK);
-+		err = pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
- 		if (!err)
--			err = pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
-+			err = pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
- 		/* both attempts failed: */
- 		if (err) {
- 			printk(KERN_WARNING "%s: No suitable DMA available.\n",
+ 	if (test_and_clear_bit(STATUS_MODE_PENDING, &priv->status))
+ 		iwl4965_set_mode(priv, priv->iw_mode);
+@@ -2342,6 +2341,7 @@ static void iwl_bg_alive_start(struct wo
+ 	mutex_lock(&priv->mutex);
+ 	iwl_alive_start(priv);
+ 	mutex_unlock(&priv->mutex);
++	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+ }
+ 
+ static void iwl4965_bg_rf_kill(struct work_struct *work)
 
 -- 
