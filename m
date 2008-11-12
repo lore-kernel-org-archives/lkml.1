@@ -1,22 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbYKLSt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbYKLSx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290AbYKLSt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 13:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754146AbYKLSt2
+	id S1754080AbYKLSx7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 13:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYKLSxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 13:49:28 -0500
-Received: from mx2.suse.de ([195.135.220.15]:36013 "EHLO mx2.suse.de"
+	Wed, 12 Nov 2008 13:53:49 -0500
+Received: from mail.suse.de ([195.135.220.2]:38256 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754114AbYKLSt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 13:49:27 -0500
-Date: Wed, 12 Nov 2008 19:49:26 +0100
-Message-ID: <s5h7i78ixu1.wl%tiwai@suse.de>
+	id S1751822AbYKLSxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 13:53:48 -0500
+Date: Wed, 12 Nov 2008 19:53:47 +0100
+Message-ID: <s5h4p2cixms.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: sclark46@earthlink.net
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27.2 hda-intel weak sound from speakers
-In-Reply-To: <491B1409.9040705@earthlink.net>
-References: <491B1409.9040705@earthlink.net>
+To: Andreas Mohr <andi@lisas.de>
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: HDA-emu 0.0.1 (Re: [alsa-devel] Bugs on aspire one A150)
+In-Reply-To: <s5hiqqtkxqr.wl%tiwai@suse.de>
+References: <s5h3ai11dpt.wl%tiwai@suse.de>
+	<20081109151323.GA18705@rhlx01.hs-esslingen.de>
+	<s5h7i7c916e.wl%tiwai@suse.de>
+	<20081109200929.GA29333@rhlx01.hs-esslingen.de>
+	<s5hiqqtkxqr.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,17 +32,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 12 Nov 2008 12:36:09 -0500,
-Stephen Clark wrote:
+At Wed, 12 Nov 2008 12:08:28 +0100,
+I wrote:
 > 
-> Hi,
+> > > > i-Mic on Ekiga with lotsa mixer fiddling didn't work either this time.
+> > > 
+> > > OK, then something is missing.  But you should test by arecord first
+> > > than any complicated applications as a primary test.
+> > 
+> > Good point, will do.
+> > 
+> > Oh, and is there a way to manually alter codec registers?
 > 
-> I am running linux 2.6.27.2 ontop of a Fedora 8 distro. The sound from the 
-> speakers is barely audible with all the mixer settings at max, this includes
-> the pulseaudio settings. This is on an ASUS laptop with intel-hda.
+> Try hda-verb program.  Build your kernel with CONFIG_SND_HDA_HWDEP=y
+> and access via the hwdep device.
+> 	ftp://ftp.suse.com/pub/people/tiwai/misc/hda-verb-0.2.tar.bz2
 
-Try to pass either model=asus-a7j or model=asus-a7m.  One of them may
-give a bit better result.
+BTW, for whom would like to fulfill the masochistic joy of debugging
+on HD-audio, I uploaded my half-finished HD-audio emulator program.
+The package is found at:
+  ftp://ftp.kernel.org/pub/linux/kernel/people/tiwai/misc/hda-emu-0.0.1.tar.gz
+or
+  ftp://ftp.suse.com/pub/people/tiwai/misc/hda-emu-0.0.1.tar.gz
 
+Have fun,
 
 Takashi
