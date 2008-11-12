@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbYKLA3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbYKLA2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754121AbYKLA3N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:29:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbYKLA0K
+	id S1754340AbYKLA2b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:28:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbYKLA0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:10 -0500
-Received: from kroah.org ([198.145.64.141]:42131 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752819AbYKLA0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Nov 2008 19:26:08 -0500
-Date: Tue, 11 Nov 2008 16:23:07 -0800
+Received: from kroah.org ([198.145.64.141]:42097 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752506AbYKLA0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:05 -0500
+Date: Tue, 11 Nov 2008 16:23:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andy Whitcroft <apw@shadowen.org>,
-       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [patch 08/49] hugetlb: pull gigantic page initialisation out of
-	the default path
-Message-ID: <20081112002307.GI10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 06/49] x86: fix macro with bad_bios_dmi_table
+Message-ID: <20081112002303.GG10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hugetlb-pull-gigantic-page-initialisation-out-of-the-default-path.patch"
+Content-Disposition: inline; filename="x86-fix-macro-with-bad_bios_dmi_table.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,134 +40,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andy Whitcroft <apw@shadowen.org>
+From: Yinghai Lu <yhlu.kernel@gmail.com>
 
-commit 18229df5b613ed0732a766fc37850de2e7988e43 upstream
+commit a8b71a2810386a5ac8f43d2095fe3355f0d8db37 upstream.
 
-As we can determine exactly when a gigantic page is in use we can optimise
-the common regular page cases by pulling out gigantic page initialisation
-into its own function.  As gigantic pages are never released to buddy we
-do not need a destructor.  This effectivly reverts the previous change to
-the main buddy allocator.  It also adds a paranoid check to ensure we
-never release gigantic pages from hugetlbfs to the main buddy.
+DMI tables need a blank NULL tail.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+fixes the crash on Ingo's test box.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/hugetlb.c    |   12 +++++++++++-
- mm/internal.h   |    1 +
- mm/page_alloc.c |   28 +++++++++++++++++++++-------
- 3 files changed, 33 insertions(+), 8 deletions(-)
+ arch/x86/kernel/setup.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -455,6 +455,8 @@ static void update_and_free_page(struct 
- {
- 	int i;
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -607,8 +607,8 @@ static struct dmi_system_id __initdata b
+ 			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies, LTD"),
+ 		},
+ 	},
+-	{}
+ #endif
++	{}
+ };
  
-+	VM_BUG_ON(h->order >= MAX_ORDER);
-+
- 	h->nr_huge_pages--;
- 	h->nr_huge_pages_node[page_to_nid(page)]--;
- 	for (i = 0; i < pages_per_huge_page(h); i++) {
-@@ -969,6 +971,14 @@ found:
- 	return 1;
- }
- 
-+static void prep_compound_huge_page(struct page *page, int order)
-+{
-+	if (unlikely(order > (MAX_ORDER - 1)))
-+		prep_compound_gigantic_page(page, order);
-+	else
-+		prep_compound_page(page, order);
-+}
-+
- /* Put bootmem huge pages into the standard lists after mem_map is up */
- static void __init gather_bootmem_prealloc(void)
- {
-@@ -979,7 +989,7 @@ static void __init gather_bootmem_preall
- 		struct hstate *h = m->hstate;
- 		__ClearPageReserved(page);
- 		WARN_ON(page_count(page) != 1);
--		prep_compound_page(page, h->order);
-+		prep_compound_huge_page(page, h->order);
- 		prep_new_huge_page(h, page, page_to_nid(page));
- 	}
- }
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -17,6 +17,7 @@ void free_pgtables(struct mmu_gather *tl
- 		unsigned long floor, unsigned long ceiling);
- 
- extern void prep_compound_page(struct page *page, unsigned long order);
-+extern void prep_compound_gigantic_page(struct page *page, unsigned long order);
- 
- static inline void set_page_count(struct page *page, int v)
- {
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -268,24 +268,39 @@ void prep_compound_page(struct page *pag
- {
- 	int i;
- 	int nr_pages = 1 << order;
-+
-+	set_compound_page_dtor(page, free_compound_page);
-+	set_compound_order(page, order);
-+	__SetPageHead(page);
-+	for (i = 1; i < nr_pages; i++) {
-+		struct page *p = page + i;
-+
-+		__SetPageTail(p);
-+		p->first_page = page;
-+	}
-+}
-+
-+#ifdef CONFIG_HUGETLBFS
-+void prep_compound_gigantic_page(struct page *page, unsigned long order)
-+{
-+	int i;
-+	int nr_pages = 1 << order;
- 	struct page *p = page + 1;
- 
- 	set_compound_page_dtor(page, free_compound_page);
- 	set_compound_order(page, order);
- 	__SetPageHead(page);
--	for (i = 1; i < nr_pages; i++, p++) {
--		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
--			p = pfn_to_page(page_to_pfn(page) + i);
-+	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
- 		__SetPageTail(p);
- 		p->first_page = page;
- 	}
- }
-+#endif
- 
- static void destroy_compound_page(struct page *page, unsigned long order)
- {
- 	int i;
- 	int nr_pages = 1 << order;
--	struct page *p = page + 1;
- 
- 	if (unlikely(compound_order(page) != order))
- 		bad_page(page);
-@@ -293,9 +308,8 @@ static void destroy_compound_page(struct
- 	if (unlikely(!PageHead(page)))
- 			bad_page(page);
- 	__ClearPageHead(page);
--	for (i = 1; i < nr_pages; i++, p++) {
--		if (unlikely((i & (MAX_ORDER_NR_PAGES - 1)) == 0))
--			p = pfn_to_page(page_to_pfn(page) + i);
-+	for (i = 1; i < nr_pages; i++) {
-+		struct page *p = page + i;
- 
- 		if (unlikely(!PageTail(p) |
- 				(p->first_page != page)))
+ /*
 
 -- 
