@@ -1,49 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbYKLXlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757669AbYKLXlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbYKLXlc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbYKLXhA
+	id S1757669AbYKLXlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754871AbYKLXiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:37:00 -0500
-Received: from wf-out-1314.google.com ([209.85.200.169]:1739 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756201AbYKLXg7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:36:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=nD/R+6cM6Qqr0TD8s9+6AqiTDpJbgsvhbW4fhqezydmV06px+YuDzhGJgpos+lKxkz
-         ZQ8cJUlv58unS8xRGfe0+ANrzxp0oCpfO2bm+dH1Di3puir9BJLABw9imeqjSUpKKubk
-         qovlxb9lFhoFQvNEUZPQ03RuHqAZx/cK7xeQ8=
-Message-ID: <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
-Date: Wed, 12 Nov 2008 18:36:57 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] staging/wlan-ng: kill WLAN_CPU_FAMILY and WLAN_SYSARCH
-Cc: "Mike Frysinger" <vapier@gentoo.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20081112224628.GD27479@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1226500540-9667-1-git-send-email-vapier@gentoo.org>
-	 <20081112224628.GD27479@kroah.com>
+	Wed, 12 Nov 2008 18:38:55 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:58636 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757254AbYKLXiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:38:54 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] mtd: unify mtd partition/device registration
+Date: Wed, 12 Nov 2008 18:38:53 -0500
+Message-Id: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.0.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 17:46, Greg KH wrote:
-> On Wed, Nov 12, 2008 at 09:35:40AM -0500, Mike Frysinger wrote:
->> The WLAN_CPU_FAMILY and WLAN_SYSARCH defines are used in all of three places
->> (two of which look pretty suspect), so just kill them off rather than
->> throwing up a pointless #error on processors that are not in the existing
->> list.
->
-> Thanks, but this is already cleaned up in my tree with a patch from
-> someone else.
+Rather than having every map/mtd driver doing the same sequence of
+registering partitions and/or devices, implement common parse_mtd().
 
-where ?  i looked in staging.git and that hasnt been touched in 2 months.
--mike
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/mtd/mtdcore.c   |   37 +++++++++++++++++++++++++++++++++++++
+ include/linux/mtd/mtd.h |    3 +++
+ 2 files changed, 40 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index a9d2469..654ec1b 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -292,6 +292,43 @@ void put_mtd_device(struct mtd_info *mtd)
+ 	module_put(mtd->owner);
+ }
+ 
++#include <linux/mtd/partitions.h>
++
++/**
++ *	parse_mtd - add partitions / devices
++ *
++ *	If partitioning support is enabled, attempt to call parse_mtd_partitions()
++ *	and add_mtd_partitions() with all available parsers.  Otherwise just add
++ *	the MTD device.
++ */
++
++int parse_mtd(struct mtd_info *mtd, const char **probe_types,
++              struct mtd_partition *parts, int nr_parts)
++{
++#ifdef CONFIG_MTD_PARTITIONS
++	const char *default_part_probe_types[] = {
++		"cmdlinepart",
++		"RedBoot",
++		NULL
++	};
++	int ret;
++
++	if (!probe_types)
++		probe_types = default_part_probe_types;
++
++	ret = parse_mtd_partitions(mtd, probe_types, &parts, 0);
++	if (ret > 0) {
++		ret = add_mtd_partitions(mtd, parts, ret);
++		kfree(parts);
++		return ret;
++	} else if (nr_parts)
++		return add_mtd_partitions(mtd, parts, nr_parts);
++#endif
++
++	return add_mtd_device(mtd);
++}
++EXPORT_SYMBOL(parse_mtd);
++
+ /* default_mtd_writev - default mtd writev method for MTD devices that
+  *			don't implement their own
+  */
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index eae26bb..dec3456 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -232,6 +232,9 @@ extern struct mtd_info *get_mtd_device_nm(const char *name);
+ 
+ extern void put_mtd_device(struct mtd_info *mtd);
+ 
++struct mtd_partition;
++int parse_mtd(struct mtd_info *mtd, const char **probe_types,
++              struct mtd_partition *parts, int nr_parts);
+ 
+ struct mtd_notifier {
+ 	void (*add)(struct mtd_info *mtd);
+-- 
+1.6.0.3
+
