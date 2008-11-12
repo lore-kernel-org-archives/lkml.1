@@ -1,107 +1,254 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752066AbYKLHAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbYKLH2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752066AbYKLHAs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 02:00:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYKLHAj
+	id S1751716AbYKLH2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 02:28:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYKLH2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 02:00:39 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52255 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbYKLHAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 02:00:39 -0500
-Message-ID: <491A7E7E.2070801@cn.fujitsu.com>
-Date: Wed, 12 Nov 2008 14:58:06 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "menage@google.com" <menage@google.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [BUGFIX]cgroup: fix potential deadlock in pre_destroy.
-References: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Nov 2008 02:28:32 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51024 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751078AbYKLH2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 02:28:31 -0500
+Date: Wed, 12 Nov 2008 18:28:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 12
+Message-Id: <20081112182818.6e259488.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__12_Nov_2008_18_28_18_+1100_5pW9HJoZq1.dlxUR"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Balbir, Paul, Li, How about this ?
-> =
-> As Balbir pointed out, memcg's pre_destroy handler has potential deadlock.
-> 
-> It has following lock sequence.
-> 
-> 	cgroup_mutex (cgroup_rmdir)
-> 	    -> pre_destroy
-> 		-> mem_cgroup_pre_destroy
-> 			-> force_empty
-> 			   -> lru_add_drain_all->
-> 			      -> schedule_work_on_all_cpus
->                                  -> get_online_cpus -> cpuhotplug.lock.
-> 
-> But, cpuset has following.
-> 	cpu_hotplug.lock (call notifier)
-> 		-> cgroup_mutex. (within notifier)
-> 
-> Then, this lock sequence should be fixed.
-> 
-> Considering how pre_destroy works, it's not necessary to holding
-> cgroup_mutex() while calling it. 
-> 
+--Signature=_Wed__12_Nov_2008_18_28_18_+1100_5pW9HJoZq1.dlxUR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think it's safe to call cgroup_call_pre_destroy() without cgroup_lock.
-If cgroup_call_pre_destroy() gets called, it means the cgroup fs has sub-dirs,
-so any remount/umount will fail, which means root->subsys_list won't be
-changed during rmdir(), so using for_each_subsys() in cgroup_call_pre_destroy()
-is safe.
+Hi all,
 
-> As side effect, we don't have to wait at this mutex while memcg's force_empty
-> works.(it can be long when there are tons of pages.)
-> 
-> Note: memcg is an only user of pre_destroy, now.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> ---
->  kernel/cgroup.c |   14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
-> 
-> Index: mmotm-2.6.28-Nov10/kernel/cgroup.c
-> ===================================================================
-> --- mmotm-2.6.28-Nov10.orig/kernel/cgroup.c
-> +++ mmotm-2.6.28-Nov10/kernel/cgroup.c
-> @@ -2475,10 +2475,7 @@ static int cgroup_rmdir(struct inode *un
->  		mutex_unlock(&cgroup_mutex);
->  		return -EBUSY;
->  	}
-> -
-> -	parent = cgrp->parent;
-> -	root = cgrp->root;
-> -	sb = root->sb;
-> +	mutex_unlock(&cgroup_mutex);
->  
->  	/*
->  	 * Call pre_destroy handlers of subsys. Notify subsystems
-> @@ -2486,7 +2483,14 @@ static int cgroup_rmdir(struct inode *un
->  	 */
->  	cgroup_call_pre_destroy(cgrp);
->  
-> -	if (cgroup_has_css_refs(cgrp)) {
-> +	mutex_lock(&cgroup_mutex);
-> +	parent = cgrp->parent;
-> +	root = cgrp->root;
-> +	sb = root->sb;
-> +
-> +	if (atomic_read(&cgrp->count)
-> +	    || list_empty(&cgrp->children)
-> +	    || cgroup_has_css_refs(cgrp)) {
->  		mutex_unlock(&cgroup_mutex);
->  		return -EBUSY;
->  	}
-> 
+Changes since 20081111:
+
+New tree:
+	fatfs
+
+Undropped tree:
+	crypto
+
+Dropped trees (temporarily):
+	security-testing (build failure)
+	creds (non-trivial conflict)
+	userns (it depends on creds)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	firmware (unfixed build failure)
+
+The net tree gained a conflict against Linus' tree.
+
+The security-testing tree gained a build error and was dropped.
+
+The creds tree gained a conflict against the ttydev tree and another
+against Linus' tree so it was dropped.
+
+The cputime tree lost its conflict.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 125 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-realview/clock.c
+CONFLICT (content): Merge conflict in arch/arm/mach-versatile/clock.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+CONFLICT (content): Merge conflict in drivers/net/usb/hso.c
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/message/fusion/mptlan.c
+CONFLICT (content): Merge conflict in drivers/net/sfc/ethtool.c
+CONFLICT (content): Merge conflict in net/mac80211/debugfs_sta.c
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+CONFLICT (delete/modify): Documentation/DocBook/wanbook.tmpl deleted in hdl=
+c/hdlc-next and modified in HEAD. Version HEAD of Documentation/DocBook/wan=
+book.tmpl left in tree.
+CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
+xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
+tree.
+$ git rm -f drivers/net/wan/syncppp.c Documentation/DocBook/wanbook.tmpl
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+$ git reset --hard HEAD^
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cpu_alloc/cpu_alloc
+CONFLICT (content): Merge conflict in kernel/lockdep.c
+CONFLICT (content): Merge conflict in kernel/module.c
+Applying cpu_alloc: merge_fix_1
+Merging cputime/cputime
+Merging perfmon3/master
+Merging osd/linux-next
+Merging scsi-post-merge/master
+Merging fatfs/master
+
+--Signature=_Wed__12_Nov_2008_18_28_18_+1100_5pW9HJoZq1.dlxUR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkahZIACgkQjjKRsyhoI8y0OACeObpG0fUvywT/kbdCodHD1707
+kooAn3KPKMRjDJ7bX6bHNieh5R5py1pG
+=aYjy
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__12_Nov_2008_18_28_18_+1100_5pW9HJoZq1.dlxUR--
