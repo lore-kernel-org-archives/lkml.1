@@ -1,112 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbYKLJXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbYKLJXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbYKLJXM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:23:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbYKLJW6
+	id S1753210AbYKLJXv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 04:23:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYKLJXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:22:58 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:57761 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYKLJW4 (ORCPT
+	Wed, 12 Nov 2008 04:23:34 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:29868 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbYKLJXb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:22:56 -0500
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: "'Peter Zijlstra'" <peterz@infradead.org>
-Cc: <linux-kernel@vger.kernel.org>, <containers@lists.linux-foundation.org>,
-       <virtualization@lists.linux-foundation.org>, <jens.axboe@oracle.com>,
-       "'Ryo Tsuruta'" <ryov@valinux.co.jp>,
-       "'Andrea Righi'" <righi.andrea@gmail.com>, <ngupta@google.com>,
-       <fernando@oss.ntt.co.jp>, <vtaras@openvz.org>,
-       "'Hirokazu Takahashi'" <taka@valinux.co.jp>,
-       <balbir@linux.vnet.ibm.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>, <menage@google.com>,
-       "'SUGAWARA Tomoyoshi'" <tom-sugawara@ap.jp.nec.com>,
-       <paolo.valente@unimore.it>, "'Fabio Checconi'" <fabio@gandalf.sssup.it>
-References: <000c01c9449e$c5bcdc20$51369460$@jp.nec.com> <1226480279.7685.2980.camel@twins>
-In-Reply-To: <1226480279.7685.2980.camel@twins>
-Subject: RE: [PATCH][RFC][12+2][v3] A expanded CFQ scheduler for cgroups
-Date: Wed, 12 Nov 2008 18:22:29 +0900
-Message-ID: <000001c944a8$2f3867b0$8da93710$@jp.nec.com>
+	Wed, 12 Nov 2008 04:23:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=fLv1pScJyAlyJkqYc7HV4FuXNX33oVpGLYq8svrQ/qJ84Vnlc5q1e5ijiKuyW5xeHH
+         rMHBAoluyT6Cp3De7ots6/Q/RexVZMfYDdYZpul2pC6+oASM1qPGAbkqxF2c2d1byECm
+         7FWn6HSXE3MsYGTqubQFdaciUBcwqZwhIPnJw=
+Message-ID: <491AA08D.9080401@gmail.com>
+Date: Wed, 12 Nov 2008 10:23:25 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jiri Kosina <jkosina@suse.cz>, vda.linux@googlemail.com, hugh@veritas.com,
+       torvalds@linux-foundation.org, deller@gmx.de, jer@gentoo.org,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Who broke cb8f488c33 patch? (was Re: [PATCH 1/1] USBHID: correct
+ start/stop cycle)
+References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com>	<200811022024.31528.vda.linux@googlemail.com>	<alpine.LNX.1.10.0811120021500.24889@jikos.suse.cz>	<200811120124.41222.vda.linux@googlemail.com>	<alpine.LNX.1.10.0811120126320.24889@jikos.suse.cz> <20081111165038.fb1f2f45.akpm@linux-foundation.org>
+In-Reply-To: <20081111165038.fb1f2f45.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AclEpMnvEBuwO2gnRqiOZy5nkPKu0QAA1e2A
-Content-Language: ja
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Peter.
-
-> Just wondering,.. have you lot looked at the recently posted BFQ
-> patches?
+On 11/12/2008 01:50 AM, Andrew Morton wrote:
+>>> let's fix it for good.
+>>> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+>>> --- linux-2.6.28-rc4/mm/mmap.c	Mon Nov 10 01:36:15 2008
+>>> +++ linux-2.6.28-rc4.fix/mm/mmap.c	Wed Nov 12 01:21:39 2008
+>>> @@ -1704,7 +1704,7 @@
+>>>  	vma = find_vma_prev(mm, addr, &prev);
+>>>  	if (vma && (vma->vm_start <= addr))
+>>>  		return vma;
+>>> -	if (expand_stack(prev, addr))
+>>> +	if (!prev || expand_stack(prev, addr))
+>>>  		return NULL;
+>>>  	if (prev->vm_flags & VM_LOCKED) {
+>>>  		if (mlock_vma_pages_range(prev, addr, prev->vm_end) < 0)
 > 
-> BFQ looks like a very promising elevator, its has tighter bounds than
-> CFQ and already does the cgroup thing.
+> It looks like this was caused by me fixing rejects.  That was the fancy
+> include-lots-of-context-so-it-wont-apply patch.
 
+Great, this one got fixed. Helge, did you proceed with bisecting which another
+commit breaks parics while having this one applied?
 
-This patchset is improved our previous scheduler(sent 04/01/2008) and resolves some problems.
-
-And, we scheduler can control at the two layers.
-Namely, it can control I/O among groups and I/O among tasks within a group.
-
-I always check in containers ML mainly.
-So, I found I/O control patches in it ML, dm-iobnd, io-throttle, Naveen's Anticipatory I/O scheduler,
-Vasily's CFQ scheduler and Vivek's Another IO controller.
-And today I know the BFQ scheduler, so I'm not looked at the BFQ yet.
-Now, I'm looking its patch.
-
-Thanks, comments.
-
-
-Satoshi UCHIDA
-
-
-> -----Original Message-----
-> From: Peter Zijlstra [mailto:peterz@infradead.org]
-> Sent: Wednesday, November 12, 2008 5:58 PM
-> To: Satoshi UCHIDA
-> Cc: linux-kernel@vger.kernel.org;
-> containers@lists.linux-foundation.org;
-> virtualization@lists.linux-foundation.org; jens.axboe@oracle.com; 'Ryo
-> Tsuruta'; 'Andrea Righi'; ngupta@google.com; fernando@oss.ntt.co.jp;
-> vtaras@openvz.org; 'Hirokazu Takahashi'; balbir@linux.vnet.ibm.com;
-> 'Andrew Morton'; menage@google.com; SUGAWARA Tomoyoshi;
-> paolo.valente@unimore.it; Fabio Checconi
-> Subject: Re: [PATCH][RFC][12+2][v3] A expanded CFQ scheduler for cgroups
-> 
-> Hi,
-> 
-> Just wondering,.. have you lot looked at the recently posted BFQ
-> patches?
-> 
-> BFQ looks like a very promising elevator, its has tighter bounds than
-> CFQ and already does the cgroup thing.
-> 
-
-
-> -----Original Message-----
-> From: Peter Zijlstra [mailto:peterz@infradead.org]
-> Sent: Wednesday, November 12, 2008 5:58 PM
-> To: Satoshi UCHIDA
-> Cc: linux-kernel@vger.kernel.org;
-> containers@lists.linux-foundation.org;
-> virtualization@lists.linux-foundation.org; jens.axboe@oracle.com; 'Ryo
-> Tsuruta'; 'Andrea Righi'; ngupta@google.com; fernando@oss.ntt.co.jp;
-> vtaras@openvz.org; 'Hirokazu Takahashi'; balbir@linux.vnet.ibm.com;
-> 'Andrew Morton'; menage@google.com; SUGAWARA Tomoyoshi;
-> paolo.valente@unimore.it; Fabio Checconi
-> Subject: Re: [PATCH][RFC][12+2][v3] A expanded CFQ scheduler for cgroups
-> 
-> Hi,
-> 
-> Just wondering,.. have you lot looked at the recently posted BFQ
-> patches?
-> 
-> BFQ looks like a very promising elevator, its has tighter bounds than
-> CFQ and already does the cgroup thing.
-> 
-
-
+Thanks.
