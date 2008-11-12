@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbYKLUxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbYKLU5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbYKLUxY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 15:53:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbYKLUxQ
+	id S1754673AbYKLU5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 15:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKLU4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 15:53:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44214 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbYKLUxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 15:53:15 -0500
-Subject: Re: [PATCH =-v3 07/21] fanotify: fastpath to ignore certain in
- core inodes
-From: Eric Paris <eparis@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       malware-list@lists.printk.net, viro@zeniv.linux.org.uk,
-       arjan@infradead.org, greg@kroah.com, tytso@mit.edu,
-       akpm@linux-foundation.org
-In-Reply-To: <20081112165820.GA26217@infradead.org>
-References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
-	 <20081112161103.25434.30104.stgit@paris.rdu.redhat.com>
-	 <20081112165055.GB19669@infradead.org>
-	 <20081112165638.54c38c5c@lxorguk.ukuu.org.uk>
-	 <20081112165820.GA26217@infradead.org>
-Content-Type: text/plain
-Date: Wed, 12 Nov 2008 15:52:29 -0500
-Message-Id: <1226523149.3353.23.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Wed, 12 Nov 2008 15:56:55 -0500
+Received: from outbound-mail-111.bluehost.com ([69.89.18.7]:53482 "HELO
+	outbound-mail-111.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752692AbYKLU4z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 15:56:55 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=jVgsnRhSyQpZK8vqhYNa9NhdfKJY1w50n/LSVNggEmQRYy2jPa8T5qrXDXMbk2tqj6kKCFz15iW8bWmTi6mj5LZfQHnSo9HfzJq4nvarPxs73DxqGr1Ca6Lp78keWWNA;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: pci: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Wed, 12 Nov 2008 12:56:52 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.26.6-79.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+References: <1225329469.5970.69.camel@nga.site>
+In-Reply-To: <1225329469.5970.69.camel@nga.site>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811121256.52644.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-12 at 11:58 -0500, Christoph Hellwig wrote:
-> On Wed, Nov 12, 2008 at 04:56:38PM +0000, Alan Cox wrote:
-> > Sounds a good way of ruining the performance.
-> 
-> I don't think you can ruine performance of a system with AV systems
-> running even more.  While bloating the inode does cause enormous
-> problems in file serving or other extremly metadata intensive workloads.
+On Wednesday, October 29, 2008 6:17 pm Kay Sievers wrote:
+> This patch is part of a larger patch series which will remove
+> the "char bus_id[20]" name string from struct device. The device
+> name is managed in the kobject anyway, and without any size
+> limitation, and just needlessly copied into "struct device".
+>
+> To set and read the device name dev_name(dev) and dev_set_name(dev)
+> must be used. If your code uses static kobjects, which it shouldn't
+> do, "const char *init_name" can be used to statically provide the
+> name the registered device should have. At registration time, the
+> init_name field is cleared, to enforce the use of dev_name(dev) to
+> access the device name at a later time.
+>
+> We need to get rid of all occurrences of bus_id in the entire tree
+> to be able to enable the new interface. Please apply this patch,
+> and possibly convert any remaining remaining occurrences of bus_id.
+>
+> We want to submit a patch to -next, which will remove bus_id from
+> "struct device", to find the remaining pieces to convert, and finally
+> switch over to the new api, which will remove the 20 bytes array
+> and does no longer have a size limitation.
 
-Kernel Build on a 32 way machine:
-Stock kernel: 9 minutes 12 seconds
-fanotify no in kernel fastpath: 95 minutes 12 seconds
-Only events AV wants with in kernel fastpath: 10 minutes 35 seconds
+Applied to linux-next, thanks.
 
-Now I could probably redo the in kernel cache as some sort of per group
-inode hash table of entries which wouldn't have to bloat the inode but
-it would be much more expensive in terms of performance.  A lock and an
-list if you want to use fanotify is as small as it can be made an is
-exactly the same method taken by inotify.
-
-************
-
-I probably should have put this up in the patch description rather than
-burried down in the Documentation directory but here it is:
-
-The need for fastpaths (or calling what it really is, an in kernel
-cache) has been questioned.  I decided to include a little unscientific data
-here.  On a 32 way machine a make -j 32 took about 9 minutes 12 seconds.
-With that same machine running having one group and 32 listeners receiving
-every fanotify event that the kernel could send to userspace while the 
-listeners were responding to accesses as fast as they could (just a very tight get
-event, allow loop) it took 95 minutes 12 seconds.  Same process with in kernel
-fastpaths/cache results took 19 minutes 5 seconds.  More reasonable event
-requirements and a single listener took 10 minutes 35 sec.  So about a 15%
-perf hit to do any kind of permission checking to userspace.  Anyway, the need
-for fastpaths is quite clear.
-
-
-
-
+Jesse
