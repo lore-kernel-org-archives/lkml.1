@@ -1,114 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbYKLL02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbYKLL0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603AbYKLL02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 06:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYKLL0T
+	id S1752772AbYKLL0u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 06:26:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYKLL0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 06:26:19 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39957 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbYKLL0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 06:26:18 -0500
-Date: Wed, 12 Nov 2008 12:25:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH] tracing: branch tracer, tweak output
-Message-ID: <20081112112536.GC31958@elte.hu>
-References: <20081112051438.843792214@goodmis.org> <20081112051518.503323629@goodmis.org>
+	Wed, 12 Nov 2008 06:26:40 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:38156 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbYKLL0j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 06:26:39 -0500
+Message-ID: <491ABD61.7090502@linux.vnet.ibm.com>
+Date: Wed, 12 Nov 2008 16:56:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112051518.503323629@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [BUGFIX]cgroup: fix potential deadlock in pre_destroy
+ (v2)
+References: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com> <20081112163256.b36d6952.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081112163256.b36d6952.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+KAMEZAWA Hiroyuki wrote:
+> This is fixed one. Thank you for all help.
+> 
+> Regards,
+> -Kame
+> ==
+> As Balbir pointed out, memcg's pre_destroy handler has potential deadlock.
+> 
+> It has following lock sequence.
+> 
+> 	cgroup_mutex (cgroup_rmdir)
+> 	    -> pre_destroy -> mem_cgroup_pre_destroy-> force_empty
+> 		-> cpu_hotplug.lock. (lru_add_drain_all->
+> 				      schedule_work->
+>                                       get_online_cpus)
+> 
+> But, cpuset has following.
+> 	cpu_hotplug.lock (call notifier)
+> 		-> cgroup_mutex. (within notifier)
+> 
+> Then, this lock sequence should be fixed.
+> 
+> Considering how pre_destroy works, it's not necessary to holding
+> cgroup_mutex() while calling it. 
+> 
+> As side effect, we don't have to wait at this mutex while memcg's force_empty
+> works.(it can be long when there are tons of pages.)
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> ---
+>  kernel/cgroup.c |   14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+> 
+> Index: mmotm-2.6.28-Nov10/kernel/cgroup.c
+> ===================================================================
+> --- mmotm-2.6.28-Nov10.orig/kernel/cgroup.c
+> +++ mmotm-2.6.28-Nov10/kernel/cgroup.c
+> @@ -2475,10 +2475,7 @@ static int cgroup_rmdir(struct inode *un
+>  		mutex_unlock(&cgroup_mutex);
+>  		return -EBUSY;
+>  	}
+> -
+> -	parent = cgrp->parent;
+> -	root = cgrp->root;
+> -	sb = root->sb;
+> +	mutex_unlock(&cgroup_mutex);
+> 
+>  	/*
+>  	 * Call pre_destroy handlers of subsys. Notify subsystems
+> @@ -2486,7 +2483,14 @@ static int cgroup_rmdir(struct inode *un
+>  	 */
+>  	cgroup_call_pre_destroy(cgrp);
+> 
+> -	if (cgroup_has_css_refs(cgrp)) {
+> +	mutex_lock(&cgroup_mutex);
+> +	parent = cgrp->parent;
+> +	root = cgrp->root;
+> +	sb = root->sb;
+> +
+> +	if (atomic_read(&cgrp->count)
+> +	    || !list_empty(&cgrp->children)
+> +	    || cgroup_has_css_refs(cgrp)) {
+>  		mutex_unlock(&cgroup_mutex);
+>  		return -EBUSY;
+>  	}
+> 
 
-a small detail:
+I think the last statement deserves a comment that after re-acquiring the lock,
+we need to check if count, children or references changed. Otherwise looks good,
+though I've not yet tested it.
 
-> For example:
->
->  bash-3471  [003]   357.014755: [INCORRECT] sched_info_dequeued:sched_stats.h:177
->  bash-3471  [003]   357.014756: [correct] update_curr:sched_fair.c:489
->  bash-3471  [003]   357.014758: [correct] calc_delta_fair:sched_fair.c:411
->  bash-3471  [003]   357.014759: [correct] account_group_exec_runtime:sched_stats.h:356
->  bash-3471  [003]   357.014761: [correct] update_curr:sched_fair.c:489
->  bash-3471  [003]   357.014763: [INCORRECT] calc_delta_fair:sched_fair.c:411
->  bash-3471  [003]   357.014765: [correct] calc_delta_mine:sched.c:1279
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-it's always good to have such fields aligned vertically. Something 
-like this would be shorter and visually much easier to parse:
-
- bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
- bash-3471  [003]   357.014756: [ .... ] update_curr:sched_fair.c:489
- bash-3471  [003]   357.014758: [ .... ] calc_delta_fair:sched_fair.c:411
-
-any objections against the patch below which implements this?
-
-	Ingo
-
------------>
->From f88c4ae9f8c3939bee4337c75c7a673b5de7a8a7 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 12 Nov 2008 11:55:41 +0100
-Subject: [PATCH] tracing: branch tracer, tweak output
-
-Impact: modify the tracer output, to make it a bit easier to read
-
-Change the output from:
-
->  bash-3471  [003]   357.014755: [INCORRECT] sched_info_dequeued:sched_stats.h:177
->  bash-3471  [003]   357.014756: [correct] update_curr:sched_fair.c:489
->  bash-3471  [003]   357.014758: [correct] calc_delta_fair:sched_fair.c:411
-
-to:
-
->  bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
->  bash-3471  [003]   357.014756: [ .... ] update_curr:sched_fair.c:489
->  bash-3471  [003]   357.014758: [ .... ] calc_delta_fair:sched_fair.c:411
-
-it's good to have fields aligned vertically, and the only important
-information is a prediction miss, so display only that information.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/trace/trace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 83d3863..728a46e 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1657,7 +1657,7 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
- 		trace_assign_type(field, entry);
- 
- 		trace_seq_printf(s, "[%s] %s:%s:%d\n",
--				 field->correct ? "correct" : "INCORRECT",
-+				 field->correct ? " .... " : " MISS ",
- 				 field->func,
- 				 field->file,
- 				 field->line);
-@@ -1808,7 +1808,7 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
- 		trace_assign_type(field, entry);
- 
- 		trace_seq_printf(s, "[%s] %s:%s:%d\n",
--				 field->correct ? "correct" : "INCORRECT",
-+				 field->correct ? " .... " : " MISS ",
- 				 field->func,
- 				 field->file,
- 				 field->line);
+-- 
+	Balbir
