@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbYKLMy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbYKLMyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbYKLMy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 07:54:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYKLMyS
+	id S1753555AbYKLMyq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 07:54:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbYKLMyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 07:54:18 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:45526 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbYKLMyR convert rfc822-to-8bit (ORCPT
+	Wed, 12 Nov 2008 07:54:36 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:55218 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbYKLMyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 07:54:17 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Mike Frysinger <vapier@gentoo.org>, v4l-dvb-maintainer@linuxtv.org,
-       linux-dvb@linuxtv.org, Holger Waechtler <holger@convergence.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ttusb-budget: make it depend on PCI
-From: Andi Kleen <andi@firstfloor.org>
-References: <1226491218-9281-1-git-send-email-vapier@gentoo.org>
-	<200811121336.00521.arnd@arndb.de>
-Date: Wed, 12 Nov 2008 14:11:45 +0100
-In-Reply-To: <200811121336.00521.arnd@arndb.de> (Arnd Bergmann's message of "Wed, 12 Nov 2008 13:35:59 +0100")
-Message-ID: <874p2ddr72.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 12 Nov 2008 07:54:35 -0500
+Date: Wed, 12 Nov 2008 07:54:29 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
+       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
+       linux-kernel@vger.kernel.org, bfields@fieldses.org
+Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
+Message-ID: <20081112125429.GA12463@infradead.org>
+References: <20081111093426.GS26778@kernel.dk> <20081111093540.GT26778@kernel.dk> <20081111115227.GU26778@kernel.dk> <4919B884.5000604@telenet.dn.ua> <20081111180659.GC26778@kernel.dk> <x49vduunjh4.fsf@segfault.boston.devel.redhat.com> <20081111164104.48f4dbd8@tleilax.poochiereds.net> <20081111165931.6f98401b@tleilax.poochiereds.net> <20081112122033.GO26778@kernel.dk> <20081112074503.47e175ae@tleilax.poochiereds.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081112074503.47e175ae@tleilax.poochiereds.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> writes:
+On Wed, Nov 12, 2008 at 07:45:03AM -0500, Jeff Layton wrote:
+> Ahh Good point...I wasn't thinking about it the right way. I guess what
+> we really need is some way to tell that a series of I/O requests
+> originated from the same client thread. NFS isn't really conducive to
+> this...
+> 
+> We might be able to do something like that with NFSv4 though. Maybe an
+> io_context per state owner or something. That's probably not going to
+> be trivial to implement however...
 
-> On Wednesday 12 November 2008, Mike Frysinger wrote:
->> From: 
->> Mike Frysinger <vapier@gentoo.org>
->>   To: 
->> v4l-dvb-maintainer@linuxtv.org, linux-dvb@linuxtv.org, Holger Waechtler <holger@convergence.de>
->>   CC: 
->> Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org
->>   Date: 
->> Today 13:00:18
->>    
->> Since dvb-ttusb-budget.c relies on pci_alloc_consistent and
->> pci_free_consistent, make it depend on PCI in Kconfig.
->> 
->> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->
-> Shouldn't you just convert it (trivially) to dma_alloc_coherent and
-> dma_alloc_coherent?
+Talk to Greg Banks, he's been thinking about and working on an open
+files cache for quite a while already.
 
-Unless it really needs to use the 16MB DMA zone (which I doubt
-especially for USB devices) then it should not call either with a NULL
-device argument.
-
--Andi
-
--- 
-ak@linux.intel.com
