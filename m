@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752095AbYKLKBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbYKLKGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752095AbYKLKBU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 05:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYKLKBM
+	id S1752093AbYKLKGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 05:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbYKLKGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 05:01:12 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53327 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbYKLKBL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 05:01:11 -0500
-To: tj@kernel.org
-CC: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-In-reply-to: <491A96AE.3080600@kernel.org> (message from Tejun Heo on Wed, 12
-	Nov 2008 17:41:18 +0900)
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org>
-Message-Id: <E1L0CWu-0004Dk-F9@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 12 Nov 2008 11:00:56 +0100
+	Wed, 12 Nov 2008 05:06:12 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56341 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751746AbYKLKGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 05:06:10 -0500
+Message-ID: <491AAA84.5040801@redhat.com>
+Date: Wed, 12 Nov 2008 12:05:56 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
+       izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+ one page into another
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>	<1226409701-14831-2-git-send-email-ieidus@redhat.com>	<1226409701-14831-3-git-send-email-ieidus@redhat.com>	<20081111114555.eb808843.akpm@linux-foundation.org>	<4919F1C0.2050009@redhat.com>	<Pine.LNX.4.64.0811111520590.27767@quilx.com>	<4919F7EE.3070501@redhat.com>	<Pine.LNX.4.64.0811111527500.27767@quilx.com>	<20081111222421.GL10818@random.random> <20081112111931.0e40c27d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081112111931.0e40c27d.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008, Tejun Heo wrote:
-> > Comments about the others:
-> > 
-> >   0002-FUSE-pass-nonblock-flag-to-client.patch
-> > 
-> > this is not needed, f_flags are already passed to userspace for read
-> > and write.
-> 
-> Hmmm... I'll try to find out whether I can use f_flags.  There was
-> something that prevented it from working properly.  I'll dig.
+KAMEZAWA Hiroyuki wrote:
+> Can I make a question ? (I'm working for memory cgroup.)
+>
+> Now, we do charge to anonymous page when
+>   - charge(+1) when it's mapped firstly (mapcount 0->1)
+>   - uncharge(-1) it's fully unmapped (mapcount 1->0) vir page_remove_rmap().
+>
+> My quesion is
+>  - PageKSM pages are not necessary to be tracked by memory cgroup ?
+>  - Can we know that "the page is just replaced and we don't necessary to do
+>    charge/uncharge".
+>  - annonymous page from KSM is worth to be tracked by memory cgroup ?
+>    (IOW, it's on LRU and can be swapped-out ?)
+>   
 
-Support for this was missing from libfuse, but now I fixed that in the
-CVS version.
+My feeling is that shared pages should be accounted as if they were not 
+shared; that is, a share page should be accounted for each process that 
+shares it.  Perhaps sharing within a cgroup should be counted as 1 page 
+for all the ptes pointing to it.
 
-> >   0004-FUSE-implement-direct-lseek-support.patch
-> > 
-> > this is trickier to get the interface right I think.  If we want to
-> > allow filesystems to implement a custom lseek, then we also want them
-> > to keep track of the file position, which means we must differentiate
-> > between a write(2) and a pwrite(2) and similarly for reads.  AFAICS
-> > this isn't needed for CUSE so we can leave this to later.
-> 
-> Read/write already passes @offset, so the only thing required is an
-> extra flag there.  I mainly wanted a way for a CUSE server to veto lseek
-> with proper error and still think it's better to have this as we don't
-> really know what wacky users are out there.  What do you think about an
-> extra flag?
 
-OK, but that's gonna involve a fair bit of API churn, and I'm not sure
-it's worth it at this stage.  If this is not needed for the OSS
-emulation, I think we should postpone it.
+-- 
+error compiling committee.c: too many arguments to function
 
-Thanks,
-Miklos
