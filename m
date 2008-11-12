@@ -1,64 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535AbYKLVp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYKLVsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535AbYKLVp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 16:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYKLVpT
+	id S1754687AbYKLVsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 16:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYKLVsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 16:45:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41995 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753099AbYKLVpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 16:45:17 -0500
-Subject: Re: [PATCH =-v3 11/21] fanotify: give a special access permission
- check
-From: Eric Paris <eparis@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, malware-list@lists.printk.net,
-       viro@zeniv.linux.org.uk, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
-       greg@kroah.com, tytso@mit.edu, akpm@linux-foundation.org
-In-Reply-To: <20081112165325.GC19669@infradead.org>
-References: <20081112161002.25434.82358.stgit@paris.rdu.redhat.com>
-	 <20081112161124.25434.86250.stgit@paris.rdu.redhat.com>
-	 <20081112165325.GC19669@infradead.org>
-Content-Type: text/plain
-Date: Wed, 12 Nov 2008 16:23:05 -0500
-Message-Id: <1226524985.3353.53.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Wed, 12 Nov 2008 16:48:03 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:49778 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbYKLVsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 16:48:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=oRMV14Q+SRQNHJahzh0BKa8vJXzKuo32PYnq8yatefRPTJUrqPGwEEuhVRgIf65+yN
+         noV5uuPGRU/LXopGgc51Z0iYDF7bC/HWbjkOxBE2NYRcseQlJ71rkQ+aHDwfWziuhG4o
+         mLD9VcgAODiTlcyBDYy9ePIHRsWdAvL+HpWdY=
+Message-ID: <491B4F0A.3080901@gmail.com>
+Date: Wed, 12 Nov 2008 22:47:54 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] tracing/function-return-tracer: Make the function return
+ tracer lockless
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-12 at 11:53 -0500, Christoph Hellwig wrote:
-> On Wed, Nov 12, 2008 at 11:11:24AM -0500, Eric Paris wrote:
-> >  	fsnotify_open_exec(file);
-> > +	error = fanotify(file, FAN_ACCESS_EXEC_PERM);
-> > +	if (error) {
-> > +		fput(file);
-> > +		goto out;
-> > +	}
-> 
-> Adding your own fanotify calls next to the fsnotify calls completely
-> defeats th purpose of these.  Please make sure we have one set of hooks.
+Impact: remove spinlocks and irq disabling in function return tracer.
 
-Absolutely in this case.  Would you prefer I funneled ALL fanotify
-blocking calls through fsnotify?  I did back in patch #10 add fanotify
-calls next to some security calls (it also might be possible for me to
-pull the fsnotify calls of these paths up rather than introduce new
-fsnotify hooks, I'm not yet certain.)
+I've tried to figure out all of the race condition that could happen when
+the tracer pushes or pops a return address trace to/from the current
+thread_info.
 
-> And given that we now have three notification schemes I think it's
-> getting time that you also unifify the actuall backends (buffering, etc)
-> instead of faning out at the fsnotify layer and just leave dnotify and
-> inotify as tiny userspace interface layers.
+Theory:
 
-doing something like this would obviously require in kernel fastpaths
-(as i'm sure you are aware.)   I guess then I get to use the space in
-inode of both dnotify and inotify.  Like I said I'll try to see what I
-can do down this path.
+_ One thread can only execute on one cpu at a time. So this code doesn't need
+  to be SMP-safe. Just drop the spinlock.
+_ The only race could happen between the current thread and an interrupt. If an
+  interrupt is raised, it will increase the index of the return stack storage and
+  then execute until the end of the tracing to finally free the index it used.
+  We don't need to disable irqs.
 
-No matter what I think this is going to have to be merged first as
-fanotify is quite broad in comparison to either d or i notify.
+This is theorical. In practice, I've tested it with a two-core SMP and had no
+problem at all. Perhaps -tip testing could confirm it.
 
--Eric
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+---
+ arch/x86/kernel/ftrace.c |   43 +++++--------------------------------------
+ 1 files changed, 5 insertions(+), 38 deletions(-)
 
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 16a571d..1db0e12 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -44,62 +44,37 @@ void ftrace_nmi_exit(void)
+ 	atomic_dec(&in_nmi);
+ }
+ 
+-/*
+- * Synchronize accesses to return adresses stack with
+- * interrupts.
+- */
+-static raw_spinlock_t ret_stack_lock;
+-
+ /* Add a function return address to the trace stack on thread info.*/
+ static int push_return_trace(unsigned long ret, unsigned long long time,
+ 				unsigned long func)
+ {
+ 	int index;
+-	struct thread_info *ti;
+-	unsigned long flags;
+-	int err = 0;
+-
+-	raw_local_irq_save(flags);
+-	__raw_spin_lock(&ret_stack_lock);
++	struct thread_info *ti = current_thread_info();
+ 
+-	ti = current_thread_info();
+ 	/* The return trace stack is full */
+-	if (ti->curr_ret_stack == FTRACE_RET_STACK_SIZE - 1) {
+-		err = -EBUSY;
+-		goto out;
+-	}
++	if (ti->curr_ret_stack == FTRACE_RET_STACK_SIZE - 1)
++		return -EBUSY;
+ 
+ 	index = ++ti->curr_ret_stack;
+ 	ti->ret_stack[index].ret = ret;
+ 	ti->ret_stack[index].func = func;
+ 	ti->ret_stack[index].calltime = time;
+ 
+-out:
+-	__raw_spin_unlock(&ret_stack_lock);
+-	raw_local_irq_restore(flags);
+-	return err;
++	return 0;
+ }
+ 
+ /* Retrieve a function return address to the trace stack on thread info.*/
+ static void pop_return_trace(unsigned long *ret, unsigned long long *time,
+ 				unsigned long *func)
+ {
+-	struct thread_info *ti;
+ 	int index;
+-	unsigned long flags;
+-
+-	raw_local_irq_save(flags);
+-	__raw_spin_lock(&ret_stack_lock);
+ 
+-	ti = current_thread_info();
++	struct thread_info *ti = current_thread_info();
+ 	index = ti->curr_ret_stack;
+ 	*ret = ti->ret_stack[index].ret;
+ 	*func = ti->ret_stack[index].func;
+ 	*time = ti->ret_stack[index].calltime;
+ 	ti->curr_ret_stack--;
+-
+-	__raw_spin_unlock(&ret_stack_lock);
+-	raw_local_irq_restore(flags);
+ }
+ 
+ /*
+@@ -175,14 +150,6 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 		*parent = old;
+ }
+ 
+-static int __init init_ftrace_function_return(void)
+-{
+-	ret_stack_lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+-	return 0;
+-}
+-device_initcall(init_ftrace_function_return);
+-
+-
+ #endif
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+-- 
+1.5.2.5
