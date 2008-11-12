@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943AbYKLKua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbYKLKxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751943AbYKLKua (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 05:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096AbYKLKuV
+	id S1752054AbYKLKxB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 05:53:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbYKLKwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 05:50:21 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57884 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750873AbYKLKuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 05:50:20 -0500
-Date: Wed, 12 Nov 2008 11:49:51 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: CONFIG_NUMA breaks hibernation on x86-32 with PAE
-Message-ID: <20081112104951.GB11945@ucw.cz>
-References: <20081109140726.GB1786@ucw.cz> <200811111520.22386.rjw@sisk.pl> <20081111150342.GB1648@ucw.cz> <200811111747.28347.rjw@sisk.pl>
+	Wed, 12 Nov 2008 05:52:53 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59376 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751198AbYKLKww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 05:52:52 -0500
+Date: Wed, 12 Nov 2008 16:19:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Vaidyanathan S <svaidyan@in.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: [PATCH][mmotm] Sched fix stale value in average load per task
+Message-ID: <20081112104900.GA13896@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Vaidyanathan S <svaidyan@in.ibm.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Bharata B Rao <bharata@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200811111747.28347.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+cpu_avg_load_per_task() returns a stale value when nr_running is 0. It returns
+an older stale (caculated when nr_running was non zero) value. This patch
+returns and sets rq->avg_load_per_task to zero when nr_running is 0.
 
-> > > > Well, interesting point would be just before this commit:
-> > > > 
-> > > > 
-> > > > commit 8357376d3df21b7d6f857931a57ac50da9c66e26 
-> > > > tree daf2c369e9b79d24c1666323b3ae75189e482a4a 
-> > > > parent bf73bae6ba0dc4bd4f1e570feb34a06b72725af6 
-> > > > author Rafael J. Wysocki <rjw@sisk.pl> Wed, 06 Dec 2006 20:34:18 -0800 
-> > > > committer Linus Torvalds <torvalds@woody.osdl.org> Thu, 07 Dec 2006
-> > > > 08:39:27 -0800 
-> > > > 
-> > > >     [PATCH] swsusp: Improve handling of highmem
-...
-> > And it does not work with single highmem page when NUMA is set... I
-> > went through the highmem saving code, and it depends on highmem not
-> > changing from  under it (right?) and is generally quite tricky ('if
-> > they are both in highmem do this, else if one of them is do that, else
-> > do something else')
-> 
-> It actually is quite simple, if you know the idea.
-> 
-> > and it changes page protections on the fly, etc. 
-> 
-> No, it doesn't do that, at least for pages it hasn't allocated itself.  I don't
-> think it changes anything like page protections at all, though.
+Compile and boot tested on a x86_64 box.
 
-safe_copy_page() seems to call kernel_map_pages() on s_page... which
-is page from the system AFAICT...
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-> > I'm not saying the bug is in that code, but before that commit we had
-> > very stupid --- but very robust -- code. I'll try if that one works
-> > with config_numa, perhaps we can get some debug info that way.
-> 
-> if you can do that, it actually may be valuable information.
+ kernel/sched.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-So far I know that software suspend depends on !PAE in that old
-version. If I only recalled why...
-								Pavel
+diff -puN kernel/sched.c~sched-fix-stale-load-avg kernel/sched.c
+--- linux-2.6.28-rc4/kernel/sched.c~sched-fix-stale-load-avg	2008-11-12 15:55:38.000000000 +0530
++++ linux-2.6.28-rc4-balbir/kernel/sched.c	2008-11-12 15:56:09.000000000 +0530
+@@ -1430,6 +1430,8 @@ static unsigned long cpu_avg_load_per_ta
+ 
+ 	if (rq->nr_running)
+ 		rq->avg_load_per_task = rq->load.weight / rq->nr_running;
++	else
++		rq->avg_load_per_task = 0;
+ 
+ 	return rq->avg_load_per_task;
+ }
+_
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Balbir
