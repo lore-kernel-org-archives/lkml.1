@@ -1,65 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYKLWan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbYKLWbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbYKLWan (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbYKLWab
+	id S1755632AbYKLWbZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 17:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbYKLWbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:30:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40904 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbYKLWaa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:30:30 -0500
-Date: Wed, 12 Nov 2008 23:29:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] x86: Make NUMA on 32-bit depend on EXPERIMENTAL again
-Message-ID: <20081112222945.GB13844@elte.hu>
-References: <20081109140726.GB1786@ucw.cz> <200811122257.50998.rjw@sisk.pl> <200811122322.36781.rjw@sisk.pl> <200811122326.16107.rjw@sisk.pl>
+	Wed, 12 Nov 2008 17:31:10 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:36209 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbYKLWbI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 17:31:08 -0500
+Date: Wed, 12 Nov 2008 17:27:39 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2008-11-12
+Message-ID: <20081112222739.GK2411@tuxdriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200811122326.16107.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave,
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+A few fixes intended for 2.6.28.  Included are a couple of USB IDs, a
+mac80211 fix to avoid sleeping during RCU, and a nasty hack to hostap to
+make it's skb->cb trickery work again...
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: x86: Make NUMA on 32-bit depend on EXPERIMENTAL again
-> 
-> My previous patch to make CONFIG_NUMA on x86_32 depend on BROKEN
-> turned out to be unnecessary, after all, since the source of the
-> hibernation vs CONFIG_NUMA problem turned out to be the fact that
-> we didn't take the NUMA KVA remapping into account in the
-> hibernation code.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Machek <pavel@suse.cz>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> ---
->  arch/x86/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Please let me know if there are problems!
 
-applied to tip/x86/numa, thanks Rafael!
+Thanks,
 
-	Ingo
+John
+
+---
+
+Individual patches are available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit d809a1595610a7c0b0bd55f159e5dc37def0ac28:
+  David S. Miller (1):
+        Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Bob Jolliffe (1):
+      rtl8187 : support for Sitecom WL-168 0001 v4
+
+Ivan Kuten (1):
+      rtl8187: Add Abocom USB ID
+
+Johannes Berg (2):
+      mac80211: fix notify_mac function
+      hostap: pad the skb->cb usage in lieu of a proper fix
+
+ drivers/net/wireless/hostap/hostap_wlan.h |    5 ++++-
+ drivers/net/wireless/rtl8187_dev.c        |    3 +++
+ net/mac80211/mlme.c                       |    6 +++---
+ 3 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/wireless/hostap/hostap_wlan.h b/drivers/net/wireless/hostap/hostap_wlan.h
+index ffdf487..a68f97c 100644
+--- a/drivers/net/wireless/hostap/hostap_wlan.h
++++ b/drivers/net/wireless/hostap/hostap_wlan.h
+@@ -918,9 +918,12 @@ struct hostap_interface {
+ 
+ /*
+  * TX meta data - stored in skb->cb buffer, so this must not be increased over
+- * the 40-byte limit
++ * the 48-byte limit.
++ * THE PADDING THIS STARTS WITH IS A HORRIBLE HACK THAT SHOULD NOT LIVE
++ * TO SEE THE DAY.
+  */
+ struct hostap_skb_tx_data {
++	unsigned int __padding_for_default_qdiscs;
+ 	u32 magic; /* HOSTAP_SKB_TX_DATA_MAGIC */
+ 	u8 rate; /* transmit rate */
+ #define HOSTAP_TX_FLAGS_WDS BIT(0)
+diff --git a/drivers/net/wireless/rtl8187_dev.c b/drivers/net/wireless/rtl8187_dev.c
+index 431e3c7..69eb013 100644
+--- a/drivers/net/wireless/rtl8187_dev.c
++++ b/drivers/net/wireless/rtl8187_dev.c
+@@ -48,6 +48,9 @@ static struct usb_device_id rtl8187_table[] __devinitdata = {
+ 	{USB_DEVICE(0x03f0, 0xca02), .driver_info = DEVICE_RTL8187},
+ 	/* Sitecom */
+ 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
++	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
++	/* Abocom */
++	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
+ 	{}
+ };
+ 
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index 87665d7..14d165f 100644
+--- a/net/mac80211/mlme.c
++++ b/net/mac80211/mlme.c
+@@ -2570,14 +2570,14 @@ void ieee80211_notify_mac(struct ieee80211_hw *hw,
+ 
+ 	switch (notif_type) {
+ 	case IEEE80211_NOTIFY_RE_ASSOC:
+-		rcu_read_lock();
+-		list_for_each_entry_rcu(sdata, &local->interfaces, list) {
++		rtnl_lock();
++		list_for_each_entry(sdata, &local->interfaces, list) {
+ 			if (sdata->vif.type != NL80211_IFTYPE_STATION)
+ 				continue;
+ 
+ 			ieee80211_sta_req_auth(sdata, &sdata->u.sta);
+ 		}
+-		rcu_read_unlock();
++		rtnl_unlock();
+ 		break;
+ 	}
+ }
+-- 
+John W. Linville		Linux should be at the core
+linville@tuxdriver.com			of your literate lifestyle.
