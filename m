@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbYKLNqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753154AbYKLNxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbYKLNqX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:46:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbYKLNqO
+	id S1753154AbYKLNxD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:53:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbYKLNww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:46:14 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:53063 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752099AbYKLNqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:46:14 -0500
-Message-ID: <491ADE21.7080707@sgi.com>
-Date: Wed, 12 Nov 2008 05:46:09 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Eric Dumazet <dada1@cosmosbay.com>,
-       Takashi Iwai <tiwai@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       Jan Blunck <jblunck@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 12 Nov 2008 08:52:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39058 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751984AbYKLNww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 08:52:52 -0500
+Date: Wed, 12 Nov 2008 15:52:26 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: sukadev@linux.vnet.ibm.com
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
+       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allocate module.ref array dynamically
-References: <s5htzaekp6o.wl%tiwai@suse.de> <491A01E2.2010701@cosmosbay.com> <200811121214.33150.rusty@rustcorp.com.au> <491A3EB9.8020203@sgi.com> <Pine.LNX.4.64.0811112115090.10592@quilx.com>
-In-Reply-To: <Pine.LNX.4.64.0811112115090.10592@quilx.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: Signals to cinit
+Message-ID: <20081112145226.GA13269@redhat.com>
+References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081110232735.GA20891@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081110232735.GA20891@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 11 Nov 2008, Mike Travis wrote:
-> 
->> I haven't looked closely at Christoph's latest but I believe the x86_64 version
->> is waiting for the zero-based percpu variables (and hence the combined pda/percpu
->> base.)  It's on the queue just under 4k cpus.
-> 
-> The base cpu_alloc is indepedent. And your laziness on the zero based
-> stuff only hurts the x86_64 version. Frankly, I think we should stop
-> merging 4k patches until you have finished the work on zero based because
-> that is elementary for various other things and simplifies 4k work. And it
-> has been pending for more than 6 months now.
-> 
+On 11/10, sukadev@linux.vnet.ibm.com wrote:
+>
+> Oleg Nesterov [oleg@redhat.com] wrote:
+> | (lkml cced because containers list's archive is not useable)
+>
+> Hmm. what do you mean by not usable ? I see your email here:
+> https://lists.linux-foundation.org/pipermail/containers/2008-November/014152.html
 
+Yes, but I failed to find our previous discussions via google, and actually
+I prefer to see them all on marc.info, so I can quickly find them...
 
-Trust me, I would have finished it by now, but the most critical objective for me
-(and hence the direction from my mgmt) is that SGI is able to ship UV systems when
-they are ready, to customers who are buying them, to perform as they are expecting.
-Nothing else comes close in priority.  I've already missed two merge windows,
-missing a third and I may have to learn hara-kiri. ;-)  [And working up to 7 days
-of 10-14+ hours per day, is not what one would normally think of as lazy.]
+> | > Or something. yes, sys_rt_sigqueueinfo() is problematic...
+>
+> Yes, if user-space sets si_pid to 0.
+>
+> Can we change sys_rt_sigqueueinfo() to:
+>
+> 	if (!info->si_pid)
+> 		info->si_pid = getpid();
 
-Thanks,
-Mike
+I doubt very much we can do this. This can break the existing applications
+which can overload ->si_pid. I think it is better to pass ->si_pid as is.
+If user-space sends siginfo_t so sub-namespace, it must know what it does.
+I don't think the kernel can help, it just can't know what ->si_pid actually
+means. Unless this is documented somewhere, but I don't know.
+
+> | But how can send_signal() know that the signal comes from the upper ns?
+> | This is not trivial, we can't blindly use current to check. The signal
+> | can be sent from irq/workqueue/etc.
+>
+> You mean the in_interrupt() check we had in earlier patchset would
+> not be enough ?
+
+I don't think we can rely on in_interrupt() check. Thnk about some device
+drivers which can send the notification from workqueue, or from kernel
+thread... Say, can you see when drivers/usb/core/devio.c does
+async_completed() ? And note that SI_ASYNCIO is SI_FROMUSER.
+
+Even _if_ it is safe to use in_interrupt() right now, I don't think we
+can rely on this fact.
+
+> | Perhaps we can start with something like the patch below. Not that I like
+> | it very much though. We should really place this code under
+> | CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
+>
+> CONFIG_PID_NS ?
+
+Ah yes, we have it ;)
+
+Oleg.
+
