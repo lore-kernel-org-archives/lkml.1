@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbYKLAbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbYKLAcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbYKLAbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbYKLA0U
+	id S1754043AbYKLAcB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYKLA0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:20 -0500
-Received: from kroah.org ([198.145.64.141]:42221 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:21 -0500
+Received: from kroah.org ([198.145.64.141]:42239 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753388AbYKLA0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:18 -0500
-Date: Tue, 11 Nov 2008 16:23:25 -0800
+	id S1753446AbYKLA0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:19 -0500
+Date: Tue, 11 Nov 2008 16:23:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Richard Purdie <rpurdie@openedhand.com>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [patch 15/49] JFFS2: fix race condition in jffs2_lzo_compress()
-Message-ID: <20081112002325.GP10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, David Woodhouse <David.Woodhouse@intel.com>
+Subject: [patch 16/49] JFFS2: Fix lack of locking in thread_should_wake()
+Message-ID: <20081112002327.GQ10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="jffs2-fix-race-condition-in-jffs2_lzo_compress.patch"
+Content-Disposition: inline; filename="jffs2-fix-lack-of-locking-in-thread_should_wake.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,64 +39,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+From: David Woodhouse <David.Woodhouse@intel.com>
 
-commit dc8a0843a435b2c0891e7eaea64faaf1ebec9b11 upstream
+commit b27cf88e9592953ae292d05324887f2f44979433 upstream
 
-deflate_mutex protects the globals lzo_mem and lzo_compress_buf.  However,
-jffs2_lzo_compress() unlocks deflate_mutex _before_ it has copied out the
-compressed data from lzo_compress_buf.  Correct this by moving the mutex
-unlock after the copy.
+The thread_should_wake() function trawls through the list of 'very
+dirty' eraseblocks, determining whether the background GC thread should
+wake. Doing this without holding the appropriate locks is a bad idea.
 
-In addition, document what deflate_mutex actually protects.
+OLPC Trac #8615
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Acked-by: Richard Purdie <rpurdie@openedhand.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/jffs2/compr_lzo.c |   15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ fs/jffs2/background.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- a/fs/jffs2/compr_lzo.c
-+++ b/fs/jffs2/compr_lzo.c
-@@ -19,7 +19,7 @@
- 
- static void *lzo_mem;
- static void *lzo_compress_buf;
--static DEFINE_MUTEX(deflate_mutex);
-+static DEFINE_MUTEX(deflate_mutex);	/* for lzo_mem and lzo_compress_buf */
- 
- static void free_workspace(void)
- {
-@@ -49,18 +49,21 @@ static int jffs2_lzo_compress(unsigned c
- 
- 	mutex_lock(&deflate_mutex);
- 	ret = lzo1x_1_compress(data_in, *sourcelen, lzo_compress_buf, &compress_size, lzo_mem);
--	mutex_unlock(&deflate_mutex);
--
- 	if (ret != LZO_E_OK)
--		return -1;
-+		goto fail;
- 
- 	if (compress_size > *dstlen)
--		return -1;
-+		goto fail;
- 
- 	memcpy(cpage_out, lzo_compress_buf, compress_size);
--	*dstlen = compress_size;
-+	mutex_unlock(&deflate_mutex);
- 
-+	*dstlen = compress_size;
- 	return 0;
+--- a/fs/jffs2/background.c
++++ b/fs/jffs2/background.c
+@@ -85,15 +85,15 @@ static int jffs2_garbage_collect_thread(
+ 	for (;;) {
+ 		allow_signal(SIGHUP);
+ 	again:
++		spin_lock(&c->erase_completion_lock);
+ 		if (!jffs2_thread_should_wake(c)) {
+ 			set_current_state (TASK_INTERRUPTIBLE);
++			spin_unlock(&c->erase_completion_lock);
+ 			D1(printk(KERN_DEBUG "jffs2_garbage_collect_thread sleeping...\n"));
+-			/* Yes, there's a race here; we checked jffs2_thread_should_wake()
+-			   before setting current->state to TASK_INTERRUPTIBLE. But it doesn't
+-			   matter - We don't care if we miss a wakeup, because the GC thread
+-			   is only an optimisation anyway. */
+ 			schedule();
+-		}
++		} else
++			spin_unlock(&c->erase_completion_lock);
 +
-+ fail:
-+	mutex_unlock(&deflate_mutex);
-+	return -1;
- }
  
- static int jffs2_lzo_decompress(unsigned char *data_in, unsigned char *cpage_out,
+ 		/* This thread is purely an optimisation. But if it runs when
+ 		   other things could be running, it actually makes things a
 
 -- 
