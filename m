@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbYKLEy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYKLEyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbYKLEy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 23:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207AbYKLEyR
+	id S1752565AbYKLEyv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 23:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbYKLEyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 23:54:17 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:40042 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbYKLEyQ (ORCPT
+	Tue, 11 Nov 2008 23:54:41 -0500
+Received: from rcpt-mqugw.biglobe.ne.jp ([133.205.19.69]:50025 "EHLO
+	rcpt-mqugw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbYKLEyk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 23:54:16 -0500
-Message-ID: <491A6163.4040100@linux.vnet.ibm.com>
-Date: Wed, 12 Nov 2008 10:23:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
+	Tue, 11 Nov 2008 23:54:40 -0500
+X-Greylist: delayed 2248 seconds by postgrey-1.27 at vger.kernel.org; Tue, 11 Nov 2008 23:54:39 EST
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Wed, 12 Nov 2008 13:17:01 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [BUGFIX]cgroup: fix potential deadlock in pre_destroy.
-References: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081112133002.15c929c3.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+       "menage@google.com" <menage@google.com>
+Subject: Re: [RFC][PATCH 4/6] memcg: swap cgroup for remembering account
+Message-Id: <20081112131701.dbb7d003.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20081112122949.d17bbc7f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081112122606.76051530.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081112122949.d17bbc7f.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Balbir, Paul, Li, How about this ?
-> =
-> As Balbir pointed out, memcg's pre_destroy handler has potential deadlock.
-> 
-> It has following lock sequence.
-> 
-> 	cgroup_mutex (cgroup_rmdir)
-> 	    -> pre_destroy
-> 		-> mem_cgroup_pre_destroy
-> 			-> force_empty
-> 			   -> lru_add_drain_all->
-> 			      -> schedule_work_on_all_cpus
->                                  -> get_online_cpus -> cpuhotplug.lock.
-> 
-> But, cpuset has following.
-> 	cpu_hotplug.lock (call notifier)
-> 		-> cgroup_mutex. (within notifier)
-> 
-> Then, this lock sequence should be fixed.
-> 
-> Considering how pre_destroy works, it's not necessary to holding
-> cgroup_mutex() while calling it. 
-> 
-> As side effect, we don't have to wait at this mutex while memcg's force_empty
-> works.(it can be long when there are tons of pages.)
-> 
-> Note: memcg is an only user of pre_destroy, now.
-> 
+> +/**
+> + * lookup_swap_cgroup - lookup mem_cgroup tied to swap entry
+> + * @ent: swap entry to be looked up.
+> + *
+> + * Returns pointer to mem_cgroup at success. NULL at failure.
+> + */
+> +struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
+> +{
+> +	int type = swp_type(ent);
+> +	unsigned long flags;
+> +	unsigned long offset = swp_offset(ent);
+> +	unsigned long idx = offset / SC_PER_PAGE;
+> +	unsigned long pos = offset & SC_POS_MASK;
+> +	struct swap_cgroup_ctrl *ctrl;
+> +	struct page *mappage;
+> +	struct swap_cgroup *sc;
+> +	struct mem_cgroup *ret;
+> +
+> +	if (!do_swap_account)
+> +		return NULL;
+> +
+> +	ctrl = &swap_cgroup_ctrl[type];
+> +
+> +	mappage = ctrl->map[idx];
+> +
+> +	spin_lock_irqsave(&ctrl->lock, flags);
+> +	sc = kmap_atomic(mappage, KM_USER0);
+> +	sc += pos;
+> +	ret = sc->val;
+> +	kunmap_atomic(mapppage, KM_USER0);
+s/mapppage/mappage
 
-I thought about this and it seems promising. My concern is that with
-cgroup_mutex given, the state of cgroup within pre-destroy will be
-unpredictable. I suspect, if pre-destory really needs cgroup_mutex, we can hold
-it within pre-destroy.
-
-BTW, your last check, does not seem right
-
-+	if (atomic_read(&cgrp->count)
-+	    || list_empty(&cgrp->children)
-
-Why should list_empty() result in EBUSY, shouldn't it be !list_empty()?
-
-+	    || cgroup_has_css_refs(cgrp)) {
+I don't know why I didn't notice this while testing previous version.
 
 
--- 
-	Balbir
+Thanks,
+Daisuke Nishimura.
+
+> +	spin_unlock_irqrestore(&ctrl->lock, flags);
+> +	return ret;
+> +}
+> +
