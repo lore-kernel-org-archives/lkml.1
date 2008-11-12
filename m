@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbYKLWvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYKLWv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbYKLWvH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:51:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbYKLWuu
+	id S1755891AbYKLWv3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 17:51:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbYKLWvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:50:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39671 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755674AbYKLWus convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:50:48 -0500
-Date: Wed, 12 Nov 2008 14:50:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       p_gortmaker@yahoo.com,
-       =?ISO-8859-1?Q?M=E1rton_N=E9meth?= <nm127@freemail.hu>
-Subject: Re: mmotm 2008-11-06-13-44 uploaded (smc-ultra)
-Message-Id: <20081112145029.8034a6f5.akpm@linux-foundation.org>
-In-Reply-To: <20081108100911.e475ff0f.randy.dunlap@oracle.com>
-References: <200811062144.mA6LiWj8004200@imap1.linux-foundation.org>
-	<20081108100911.e475ff0f.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 12 Nov 2008 17:51:16 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:44391 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbYKLWvQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 17:51:16 -0500
+Date: Wed, 12 Nov 2008 16:50:46 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+In-Reply-To: <200811130831.11499.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0811121630390.2379@quilx.com>
+References: <s5htzaekp6o.wl%tiwai@suse.de> <200811122029.24482.rusty@rustcorp.com.au>
+ <Pine.LNX.4.64.0811121408290.31606@quilx.com> <200811130831.11499.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 8 Nov 2008 10:09:11 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Thu, 13 Nov 2008, Rusty Russell wrote:
 
-> On Thu, 06 Nov 2008 13:44:32 -0800 akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2008-11-06-13-44 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > It contains the following patches against 2.6.28-rc3:
-> 
-> 
-> mmotm-2008-1106-1344/drivers/net/smc-ultra.c: In function 'ultra_probe1':
-> mmotm-2008-1106-1344/drivers/net/smc-ultra.c:254: error: 'mac' undeclared (first use in this function)
-> 
+> > > You've introduced a third set of per-cpu primitives, yet the second set
+> > > still has 0 users.
+> >
+> > What second set?
+>
+> percpu_alloc().
 
-Caused by Márton's smc-ultra-get-rid-of-eth%d-message.patch.  Someone
-went and removed `mac' from linux-next, and that patch depended upon it.
+That is a variant of allocpercpu. We have thinned the allocpercpu API
+somewhat already. I can drop more portions or I can drop it completely at
+the very end of the patchset.
 
-Márton, I'll drop the patch.  Please redo and resend (against linux-next),
-thanks.
+> > cpu. The difference between THIS_CPU and __THIS_CPU is the context check
+> > by smp_processor_id()
+>
+> Thanks, I figured that out, but it's not documented.  I'll happily create a
+> patch, but see below.  BTW, did you end up using __THIS_CPU anywhere?
+
+Yes in later patches. This is a total set of 40 or so patches.
+
+> > The caps functions are macros not functions. Macros are
+> > capitalized.
+>
+> Traditionally, yes, but we seem to be more ambivalent in the kernel.
+> list_for_each() et. al spring to mind: code would be uglier if we made them
+> caps.
+
+Macros being capitalized have a reason: They may do strange things with
+the parameters. In particular CPU_ALLOC/CPU_FREE do a determination of
+the size of the type. The macros do not take an argument in the
+traditional sense. Frankly alloc_percpu(type) is something that looks not
+right to me.
+
+> > alloc_percpu must stay until the last remains have been
+> > evicted.
+>
+> OK, you anticipate replacement of all alloc_percpu users?
+
+Yes. If you look at the full patchsets that were posted at various times
+during the last year you see that allocpercpu will be gone.
+
+> > And the API does work differently.
+>
+> I'm afraid the difference has escaped me so far.  Please explain why you can't
+> use the current API.  Is this subtle difference going to make the transition
+> difficult?
+
+The old api was based on an attempt to introduce a cpu mask. That mask was
+never used. See percpu_alloc_mask. The handling is not consistent with the
+nature of the percpu sections for other percpu data because allocation is
+only done for online processors. So we have semantic differences. The API
+is inconsistent and underwent rot. Having to allocate percpu sections if
+processors are onlined and offlined causes the need for more hooks. The
+cpu alloc patchset gets rid of about half the hooks in the page allocator
+and slab allocator.
