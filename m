@@ -1,86 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKLRI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbYKLRJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYKLRI4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 12:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbYKLRIn
+	id S1754494AbYKLRJx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 12:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYKLRJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 12:08:43 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:46745 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbYKLRIm (ORCPT
+	Wed, 12 Nov 2008 12:09:42 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:16864 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751717AbYKLRJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 12:08:42 -0500
-Subject: Re: [PATCH] mac80211: add explicit padding in struct
-	ieee80211_tx_info
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-In-Reply-To: <1226502337-11085-1-git-send-email-linville@tuxdriver.com>
-References: <Pine.LNX.4.64.0811120854290.13217@anakin>
-	 <1226502337-11085-1-git-send-email-linville@tuxdriver.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-zjdn6LDXz5BFXHMnSh+o"
-Date: Wed, 12 Nov 2008 18:08:44 +0100
-Message-Id: <1226509724.14186.14.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 12 Nov 2008 12:09:41 -0500
+Message-ID: <491B0DE2.301@panasas.com>
+Date: Wed, 12 Nov 2008 19:09:54 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       open-osd development <osd-dev@open-osd.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       johannes@sipsolutions.net
+Subject: Re: [PATCH 03/18 ver2] libosd: OSDv1 Headers
+References: <491073BB.4000900@panasas.com>	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>	<4916F934.4090205@panasas.com> <20081110092940.57b4c169.randy.dunlap@oracle.com> <491AD5C8.8030406@panasas.com> <491B08DB.1030809@oracle.com>
+In-Reply-To: <491B08DB.1030809@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Nov 2008 17:08:17.0193 (UTC) FILETIME=[41644990:01C944E9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Randy Dunlap wrote:
+> Boaz Harrosh wrote:
+>> Thank you Randy for your review, I will post a fixed
+>> patch shortly. I have changed according to your comments
+>> except in one place, see arguments below.
+>>
+>>>> ---
+>>>>  include/scsi/osd_initiator.h |  332 ++++++++++++++++++++++++++++
+>>>>  include/scsi/osd_protocol.h  |  497 ++++++++++++++++++++++++++++++++++++++++++
+>>>>  include/scsi/osd_sec.h       |   45 ++++
+>>>>  include/scsi/osd_types.h     |   40 ++++
+>>>>  4 files changed, 914 insertions(+), 0 deletions(-)
+>>>>  create mode 100644 include/scsi/osd_initiator.h
+>>>>  create mode 100644 include/scsi/osd_protocol.h
+>>>>  create mode 100644 include/scsi/osd_sec.h
+>>>>  create mode 100644 include/scsi/osd_types.h
+> 
+>>>> +/**
+>>> Don't start comment blocks with /** when they are not kernel-doc,
+>>> like this one is not.
+>>>
+>> OK, I must confess my kernel-doc total ignorance. I was imagining that
+>> each source file's kernel-doc comments are collected into an html file.
+>> I thought that this comment will be like an introduction to the following
+>> function-by-function reference. Anyway it's fixed
+> 
+> You can choose to have comments included in the kernel-doc's collected
+> output.  You do this by using this notation:
+> 
+> /** DOC <topic_name>:
+>  * <these lines are added to kernel-doc output when you use:
+> !P<filename> <topic_name>
+>  * a Documentation/DocBook/*.tmpl file.
+>  */
+> 
+> See Documentation/DocBook/mac80211.tmpl for examples.
+> 
+> Johannes, I thought that you had some usage documentation for DOC:.
+> Did you not or did it not get merged??
+> It needs to be added to Documentation/kernel-doc-nano-HOWTO.txt.
+> 
 
---=-zjdn6LDXz5BFXHMnSh+o
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+OK Thanks I'll give it a shot
 
-On Wed, 2008-11-12 at 10:05 -0500, John W. Linville wrote:
-> Otherwise, the BUILD_BUG_ON calls in ieee80211_tx_info_clear_status can
-> fail on some architectures.
->=20
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> ---
-> Why do we have those BUILD_BUG_ON calls anyway?  Hmmm...
+<snip> 
+>>>> +/**
+>>>> + * osd_execute_request - Execute the request synchronously through
+>>>> + *                       the block-layer
+>>> Function name and short description need to be on one line.
+>>>
+>> OK I re-worded so it will fit in one line. What happens if it does not
+>> fit, both name and description, in 80 characters? is there a continuation
+>> symbol or something?
+> 
+> Nope.  It can (a) be longer than 80 characters (an exception is made here)
+> or (b) split up like this:
+> 
+> /**
+>  * func_name - some short description here
+>  * @prm1: prm1 description
+>  * @prmn: prmn description
+>  *
+>  * <longer function description here>
+>  */
+> 
 
-Because we actually use those offsets in places to clear things.
+OK So I guess I took (b). Thanks.
 
->  include/net/mac80211.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
->=20
-> diff --git a/include/net/mac80211.h b/include/net/mac80211.h
-> index feb52cc..38302d6 100644
-> --- a/include/net/mac80211.h
-> +++ b/include/net/mac80211.h
-> @@ -333,6 +333,7 @@ struct ieee80211_tx_info {
->  	u8 antenna_sel_tx;
-> =20
->  	/* 2 byte hole */
-> +	u8 pad[2];
-> =20
->  	union {
->  		struct {
+<snip>
+>>>> +/* (osd-r10:4.9.2.2)
+>>>> + * osd2r03:4.11.2.2 Capability format
+>>>> + */
+>>>> +struct osd_capability_head {
+>>>> +	u8 format; /* low nibble */
+>>>> +	u8 integrity_algorithm__key_version; /* MAKE_BYTE(integ_alg, key_ver) */
+>>>> +	u8 security_method;
+>>>> +	u8 reserved1;
+>>>> +/*04*/	struct osd_timestamp expiration_time;
+>>>> +/*10*/	u8 audit[30-10];
+>>>> +/*30*/	u8 discriminator[42-30];
+>>>> +/*42*/	struct osd_timestamp object_created_time;
+>>>> +/*48*/	u8 object_type;
+>>>> +	u8 permissions_bit_mask[54-49];
+>>> The offset comments are OK with me, but please lose the [b-a] length specifiers.
+>>>
+>> I would, please, like to keep them. For the user it does not matter.
+>> Because he is not suppose to care if he is doing:
+>> -	memset(och->permissions_bit_mask, 0, 5); // BAD
+>> +	memset(och->permissions_bit_mask, 0, sizeof(och->permissions_bit_mask)); // GOOD
+>>
+>> But for the protocol reader / debuggerer this is much easier since this is the
+>> way he will see them on the wire and the way it is laid out in the standard text.
+>>
+>> It was much easier to read the standard text and develop the header this way, complicated
+>> by the fact that OSD v2 was a moving target and the changes from OSD v1. And it helped in
+>> finding bugs. Now to go over all of them and calculate the difference and remove it. I'm
+>> loosing information, and I feel sad to loose it.
+>>
+>> But if you are totally not convinced I will remove them?
+> 
+> I've debugged plenty of code so I'll respectfully disagree with you.
+> It's confusing and ugly.  But I don't control whether it is merged upstream
+> or not.
+> 
 
---=-zjdn6LDXz5BFXHMnSh+o
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+If it's "confusing and ugly" then that's bad. I guess I'm so much into the
+standard-text, that I like it this way, but not so for an onlooker.
+I'll change it. Last thing I want is ugly confusing code.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJGw2YAAoJEKVg1VMiehFYQH8QAIH4pexbeKEbCwTvQCFv7vAZ
-cBwkjAkGrG5YDs5kBvlMrM0afzEKK8GQ/IUFCZxqA3cOHKLwR2NFPei1dnZK4v42
-4LXmzwfvCnUpzrDdtlcqtWFtB0kG/I6FPTrbLGsAs6qXke8My5pMtOyANJo+EAGM
-xH88gSZ4vbQRPspP487/hx3CK1SnpXBEaQ8/Hh/h12GCc6pqCOrrYewcHWY77hCo
-V0Nx7v9v/cmdn60oFudHfbAdd1kCT2o6d2cZj7RI7HL2NsKkz+j7LzrcD5KG/48u
-ZdAbxvtHn+Si68KZ8AxRM6hyzpnh9Nv5K84ervvKDvbu/Z0qXteWML67ejbYGTod
-fngLjocSsRopII153BUR9i8naM7wwYU27jBAAzsOHVzv/uP+wrAfpvrBAzKf0DRY
-3v8XMx+nz6prFu6B0w1vooOwr2U0mxssaoVT1Zmn4loME/rxnJ4BAQMp+7hMMGJv
-7zvQWMl14qAQ9Dcap+/i47DhK18FpgsNpT4AFZu+kXd0mNUo/xMlxkB1PXng9WM8
-D2ENgqIrE6H+FSRa8ccjNkf+AwpMmrOLP4tb6zaV/G4inGVf0QDCpwPHOV4aSTy/
-RmOOu6mBK1PvSFbXNlbMsZG2jtIEpRDS+NB7EiIBOTq/13R94cMasqiQjQO8Ni2c
-qED7ngc2KGQrGQfBIfq8
-=DZPO
------END PGP SIGNATURE-----
-
---=-zjdn6LDXz5BFXHMnSh+o--
-
+Thanks again
+Boaz
