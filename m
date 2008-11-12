@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYKLXXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbYKLXYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756708AbYKLXXx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:23:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbYKLXUT
+	id S1756753AbYKLXYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbYKLXUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:20:19 -0500
-Received: from mga14.intel.com ([143.182.124.37]:4164 "EHLO mga14.intel.com"
+	Wed, 12 Nov 2008 18:20:20 -0500
+Received: from mga02.intel.com ([134.134.136.20]:1030 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755833AbYKLXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755767AbYKLXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 12 Nov 2008 18:20:12 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,592,1220252400"; 
-   d="scan'208";a="75121296"
-Message-Id: <20081112212900.999435000@intel.com>
+   d="scan'208";a="462383881"
+Message-Id: <20081112212900.009132000@intel.com>
 References: <20081112212647.259698000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 13:26:55 -0800
+Date: Wed, 12 Nov 2008 13:26:48 -0800
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        H Peter Anvin <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>,
@@ -26,55 +26,89 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: linux-kernel@vger.kernel.org,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 8/8] x86 PAT: update documentation to cover pgprot and remap_pfn related changes
-Content-Disposition: inline; filename=documentation_update.patch
+Subject: [patch 1/8] x86 PAT: store vm_pgoff for all linear_over_vma_region mappings
+Content-Disposition: inline; filename=mm_vm_pgoff_changes.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add documentation related to pgprot_* change.
+Drivers use mmap followed by pgprot_* and remap_pfn_range or vm_insert_pfn,
+in order to export reserved memory to userspace. Currently, such mappings are
+not tracked and hence not kept consistent with other mappings (/dev/mem,
+pci resource, ioremap) for the sme memory, that may exist in the system.
+
+The following patchset adds x86 PAT attribute tracking and untracking for
+pfnmap related APIs.
+
+First four patches in the patchset are changing the generic mm code to fit
+in this tracking. Last four patches are x86 specific to make things work
+with x86 PAT code. The patchset aso introduces pgprot_writecombine interface,
+which gives writecombine mapping when enabled, falling back to
+pgprot_noncached otherwise.
+
+This patch:
+
+While working on x86 PAT, we faced some hurdles with trackking
+remap_pfn_range() regions, as we do not have any information to say
+whether that PFNMAP mapping is linear for the entire vma range or
+it is smaller granularity regions within the vma.
+
+A simple solution to this is to use vm_pgoff as an indicator for
+linear mapping over the vma region. Currently, remap_pfn_range
+only sets vm_pgoff for COW mappings. Below patch changes the
+logic and sets the vm_pgoff irrespective of COW. This will still not
+be enough for the case where pfn is zero (vma region mapped to
+physical address zero). But, for all the other cases, we can look at
+pfnmap VMAs and say whether the mappng is for the entire vma region
+or not.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
- Documentation/x86/pat.txt |   24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
 
-Index: tip/Documentation/x86/pat.txt
+---
+ include/linux/mm.h |    9 +++++++++
+ mm/memory.c        |    7 +++----
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+Index: tip/mm/memory.c
 ===================================================================
---- tip.orig/Documentation/x86/pat.txt	2008-11-06 09:44:10.000000000 -0800
-+++ tip/Documentation/x86/pat.txt	2008-11-06 16:19:05.000000000 -0800
-@@ -80,6 +80,30 @@ pci proc               |    --    |    -
-                        |          |            |                  |
- -------------------------------------------------------------------
+--- tip.orig/mm/memory.c	2008-11-06 09:44:18.000000000 -0800
++++ tip/mm/memory.c	2008-11-10 09:44:49.000000000 -0800
+@@ -1575,11 +1575,10 @@ int remap_pfn_range(struct vm_area_struc
+ 	 * behaviour that some programs depend on. We mark the "original"
+ 	 * un-COW'ed pages by matching them up with "vma->vm_pgoff".
+ 	 */
+-	if (is_cow_mapping(vma->vm_flags)) {
+-		if (addr != vma->vm_start || end != vma->vm_end)
+-			return -EINVAL;
++	if (addr == vma->vm_start && end == vma->vm_end)
+ 		vma->vm_pgoff = pfn;
+-	}
++	else if (is_cow_mapping(vma->vm_flags))
++		return -EINVAL;
  
-+Advanced APIs for drivers
-+-------------------------
-+A. Exporting pages to user with remap_pfn_range, io_remap_pfn_range,
-+vm_insert_pfn
-+
-+Drivers wanting to export some pages to userspace, do it by using mmap
-+interface and a combination of
-+1) pgprot_noncached()
-+2) io_remap_pfn_range() or remap_pfn_range() or vm_insert_pfn()
-+
-+With pat support, a new API pgprot_writecombine is being added. So, driver can
-+continue to use the above sequence, with either pgprot_noncached() or
-+pgprot_writecombine() in step 1, followed by step 2.
-+
-+In addition, step 2 internally tracks the region as UC or WC in memtype
-+list in order to ensure no conflicting mapping.
-+
-+Note that this set of APIs only work with IO (non RAM) regions. If driver
-+wants to export RAM region, it has to do set_memory_uc() or set_memory_wc()
-+as step 0 above and also track the usage of those pages and use set_memory_wb()
-+before the page is freed to free pool.
-+
-+
-+
- Notes:
+ 	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP;
  
- -- in the above table mean "Not suggested usage for the API". Some of the --'s
+Index: tip/include/linux/mm.h
+===================================================================
+--- tip.orig/include/linux/mm.h	2008-11-06 09:44:18.000000000 -0800
++++ tip/include/linux/mm.h	2008-11-10 09:44:47.000000000 -0800
+@@ -145,6 +145,15 @@ extern pgprot_t protection_map[16];
+ #define FAULT_FLAG_WRITE	0x01	/* Fault was a write access */
+ #define FAULT_FLAG_NONLINEAR	0x02	/* Fault was via a nonlinear mapping */
+ 
++static inline int is_linear_pfn_mapping(struct vm_area_struct *vma)
++{
++	return ((vma->vm_flags & VM_PFNMAP) && vma->vm_pgoff);
++}
++
++static inline int is_pfn_mapping(struct vm_area_struct *vma)
++{
++	return (vma->vm_flags & VM_PFNMAP);
++}
+ 
+ /*
+  * vm_fault is filled by the the pagefault handler and passed to the vma's
 
 -- 
 
