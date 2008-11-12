@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbYKLX5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYKLX5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbYKLX5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:57:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYKLX5V
+	id S1755544AbYKLX5o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:57:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYKLX5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:57:21 -0500
-Received: from kroah.org ([198.145.64.141]:41236 "EHLO coco.kroah.org"
+	Wed, 12 Nov 2008 18:57:22 -0500
+Received: from kroah.org ([198.145.64.141]:41239 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751658AbYKLX5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:57:21 -0500
-Date: Wed, 12 Nov 2008 15:56:00 -0800
+	id S1752245AbYKLX5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:57:22 -0500
+Date: Wed, 12 Nov 2008 15:57:00 -0800
 From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Can you add the staging tree to -next?
-Message-ID: <20081112235600.GA27554@kroah.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Mike Frysinger <vapier@gentoo.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] staging/wlan-ng: kill WLAN_CPU_FAMILY and WLAN_SYSARCH
+Message-ID: <20081112235700.GB27554@kroah.com>
+References: <1226500540-9667-1-git-send-email-vapier@gentoo.org> <20081112224628.GD27479@kroah.com> <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <8bd0f97a0811121536r4967b5ddh675a60216c1fb800@mail.gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Nov 12, 2008 at 06:36:57PM -0500, Mike Frysinger wrote:
+> On Wed, Nov 12, 2008 at 17:46, Greg KH wrote:
+> > On Wed, Nov 12, 2008 at 09:35:40AM -0500, Mike Frysinger wrote:
+> >> The WLAN_CPU_FAMILY and WLAN_SYSARCH defines are used in all of three places
+> >> (two of which look pretty suspect), so just kill them off rather than
+> >> throwing up a pointless #error on processors that are not in the existing
+> >> list.
+> >
+> > Thanks, but this is already cleaned up in my tree with a patch from
+> > someone else.
+> 
+> where ?  i looked in staging.git and that hasnt been touched in 2 months.
 
-I'm starting to get people sending me patches against -next for the
-drivers/staging/ tree that don't apply as -next does not include my
-quilt tree of staging patches.
-
-Can you please pick it up?  You can put it at the end of your series,
-and the 'make allmodconfig' option disables building anything in the
-drivers/staging/ subdirectory, so it should not have any build or merge
-conflicts with anything.
-
-It can be found at:
+It's at:
 	http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-05-staging/
-and is a quilt tree.
 
-It will follow all the same rules as other trees, with patches only for
-the next merge window (2.6.29 right now) in it.
+Sorry, I need to delete that old git tree, but it still contains a few
+patches that haven't moved into the current tree for a variety of
+reasons.
+
+I've asked it to be picked up in the -next tree as well, so that will
+also work for you.
 
 thanks,
 
