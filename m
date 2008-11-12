@@ -1,59 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYKLUMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYKLUQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754702AbYKLUMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 15:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYKLUMJ
+	id S1754763AbYKLUQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 15:16:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYKLUQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 15:12:09 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:56891 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbYKLUMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 15:12:08 -0500
-Date: Wed, 12 Nov 2008 14:11:32 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] Allocate module.ref array dynamically
-In-Reply-To: <200811122029.24482.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0811121408290.31606@quilx.com>
-References: <s5htzaekp6o.wl%tiwai@suse.de> <200811121214.33150.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0811112113001.10592@quilx.com> <200811122029.24482.rusty@rustcorp.com.au>
+	Wed, 12 Nov 2008 15:16:14 -0500
+Received: from gw.goop.org ([64.81.55.164]:42803 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752604AbYKLUQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 15:16:13 -0500
+Message-ID: <491B398C.9090207@goop.org>
+Date: Wed, 12 Nov 2008 12:16:12 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+To: Bernhard Walle <bwalle@suse.de>
+CC: x86@kernel.org, linux-kernel@vger.kernel.org, kexec@lists.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Always use 64 bit addresses for the firmware memory map
+References: <1226519089-21647-1-git-send-email-bwalle@suse.de>
+In-Reply-To: <1226519089-21647-1-git-send-email-bwalle@suse.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008, Rusty Russell wrote:
-
-> You've introduced a third set of per-cpu primitives, yet the second set still
-> has 0 users.
-
-What second set?
-
-> Your new basic interface is:
-> CPU_ALLOC/CPU_FREE/CPU_PTR/THIS_CPU/__THIS_CPU
+Bernhard Walle wrote:
+> I had a problem that on i386 without PAE enabled the firmware memory map was
+> wrong because a 64 bit address has been truncated:
 >
-> I don't think the CAPS adds anything.  I'd like to see standard docbook
-> comments.  It's not clear from your documentation whether this allocates for
-> all possible or only all online CPUs, and the difference between THIS_CPU and
-> __THIS_CPU is not immediately obvious.
+>         0000000000000000-000000000009f400 (System RAM)
+>         000000000009f400-00000000000a0000 (reserved)
+>         00000000fec10000-00000000fec11000 (reserved)
+>         00000000fec20000-00000000fec21000 (reserved)
+>         00000000fee00000-00000000fee10000 (reserved)
+>         00000000ff800000-0000000100000000 (reserved)
+>  --->   0000000000000000-00000000fffff000 (System RAM)  <---
+>         00000000000f0000-0000000000100000 (reserved)
+>         0000000000100000-00000000f57fa000 (System RAM)
+>         00000000f57fa000-00000000f5800000 (ACPI Tables)
+>         00000000fdc00000-00000000fdc01000 (reserved)
+>         00000000fdc10000-00000000fdc11000 (reserved)
+>         00000000fdc20000-00000000fdc21000 (reserved)
+>         00000000fdc30000-00000000fdc31000 (reserved)
+>         00000000fec00000-00000000fec01000 (reserved)
+>
+> Just always using 64 bit is the most sane approach in my opinion.
+>
+>
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> ---
+>  drivers/firmware/memmap.c    |   17 +++++++----------
+>  include/linux/firmware-map.h |   12 +++++-------
+>  2 files changed, 12 insertions(+), 17 deletions(-)
+>
+> diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
+> index 3bf8ee1..010afde 100644
+> --- a/drivers/firmware/memmap.c
+> +++ b/drivers/firmware/memmap.c
+> @@ -31,8 +31,8 @@
+>   * information is necessary as for the resource tree.
+>   */
+>  struct firmware_map_entry {
+> -	resource_size_t		start;	/* start of the memory range */
+> -	resource_size_t		end;	/* end of the memory range (incl.) */
+>   
 
-The allocation is for all allocated percpu areas which is now per possible
-cpu. The difference between THIS_CPU and __THIS_CPU is the context check
-by smp_processor_id()
+resource_size_t should always be 64-bit on PAE now.
 
-> How about re-using alloc_percpu/free_percpu/per_cpu_ptr APIs?  Rename THIS_CPU
-> to __get_cpu_ptr and implement get_cpu_ptr and put_cpu_ptr wrappers (a-la
-> get_cpu_var).
+    J
 
-The caps functions are macros not functions. Macros are
-capitalized. alloc_percpu must stay until the last remains have been
-evicted. And the API does work differently.
+> +	uint64_t		start;	/* start of the memory range */
+> +	uint64_t		end;	/* end of the memory range (incl.) */
+>  	const char		*type;	/* type of the memory range */
+>  	struct list_head	list;	/* entry for the linked list */
+>  	struct kobject		kobj;   /* kobject for each entry */
+> @@ -101,7 +101,7 @@ static LIST_HEAD(map_entries);
+>   * Common implementation of firmware_map_add() and firmware_map_add_early()
+>   * which expects a pre-allocated struct firmware_map_entry.
+>   **/
+> -static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
+> +static int firmware_map_add_entry(uint64_t start, uint64_t end,
+>  				  const char *type,
+>  				  struct firmware_map_entry *entry)
+>  {
+> @@ -132,8 +132,7 @@ static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
+>   *
+>   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+>   **/
+> -int firmware_map_add(resource_size_t start, resource_size_t end,
+> -		     const char *type)
+> +int firmware_map_add(uint64_t start, uint64_t end, const char *type)
+>  {
+>  	struct firmware_map_entry *entry;
+>  
+> @@ -157,7 +156,7 @@ int firmware_map_add(resource_size_t start, resource_size_t end,
+>   *
+>   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+>   **/
+> -int __init firmware_map_add_early(resource_size_t start, resource_size_t end,
+> +int __init firmware_map_add_early(uint64_t start, uint64_t end,
+>  				  const char *type)
+>  {
+>  	struct firmware_map_entry *entry;
+> @@ -175,14 +174,12 @@ int __init firmware_map_add_early(resource_size_t start, resource_size_t end,
+>  
+>  static ssize_t start_show(struct firmware_map_entry *entry, char *buf)
+>  {
+> -	return snprintf(buf, PAGE_SIZE, "0x%llx\n",
+> -		(unsigned long long)entry->start);
+> +	return snprintf(buf, PAGE_SIZE, "0x%llx\n", entry->start);
+>  }
+>  
+>  static ssize_t end_show(struct firmware_map_entry *entry, char *buf)
+>  {
+> -	return snprintf(buf, PAGE_SIZE, "0x%llx\n",
+> -		(unsigned long long)entry->end);
+> +	return snprintf(buf, PAGE_SIZE, "0x%llx\n", entry->end);
+>  }
+>  
+>  static ssize_t type_show(struct firmware_map_entry *entry, char *buf)
+> diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
+> index 6e199c8..209a27a 100644
+> --- a/include/linux/firmware-map.h
+> +++ b/include/linux/firmware-map.h
+> @@ -24,21 +24,19 @@
+>   */
+>  #ifdef CONFIG_FIRMWARE_MEMMAP
+>  
+> -int firmware_map_add(resource_size_t start, resource_size_t end,
+> -		     const char *type);
+> -int firmware_map_add_early(resource_size_t start, resource_size_t end,
+> -			   const char *type);
+> +int firmware_map_add(uint64_t start, uint64_t end, const char *type);
+> +int firmware_map_add_early(uint64_t start, uint64_t end, const char *type);
+>  
+>  #else /* CONFIG_FIRMWARE_MEMMAP */
+>  
+> -static inline int firmware_map_add(resource_size_t start, resource_size_t end,
+> +static inline int firmware_map_add(uint64_t start, uint64_t end,
+>  				   const char *type)
+>  {
+>  	return 0;
+>  }
+>  
+> -static inline int firmware_map_add_early(resource_size_t start,
+> -					 resource_size_t end, const char *type)
+> +static inline int firmware_map_add_early(uint64_t start, uint64_t end,
+> +					 const char *type)
+>  {
+>  	return 0;
+>  }
+>   
 
