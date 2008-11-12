@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbYKLLfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbYKLLjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbYKLLfe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 06:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYKLLf0
+	id S1752542AbYKLLjK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 06:39:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbYKLLix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 06:35:26 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58418 "EHLO mx2.mail.elte.hu"
+	Wed, 12 Nov 2008 06:38:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43571 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751525AbYKLLf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 06:35:26 -0500
-Date: Wed, 12 Nov 2008 12:35:14 +0100
+	id S1751279AbYKLLiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 06:38:52 -0500
+Date: Wed, 12 Nov 2008 12:38:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Vaidyanathan S <svaidyan@in.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [PATCH][mmotm] Sched fix stale value in average load per task
-Message-ID: <20081112113514.GB6372@elte.hu>
-References: <20081112104900.GA13896@balbir.in.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] lockdep: silence warnings
+Message-ID: <20081112113836.GC6372@elte.hu>
+References: <20081112113646.GA4629@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081112104900.GA13896@balbir.in.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081112113646.GA4629@x200.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,25 +38,95 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> cpu_avg_load_per_task() returns a stale value when nr_running is 0. 
-> It returns an older stale (caculated when nr_running was non zero) 
-> value. This patch returns and sets rq->avg_load_per_task to zero 
-> when nr_running is 0.
+> net/bluetooth/af_bluetooth.c:57: warning: 'bt_key_strings' defined but not used
+> net/bluetooth/af_bluetooth.c:68: warning: 'bt_slock_key_strings' defined but not used
 > 
-> Compile and boot tested on a x86_64 box.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  kernel/sched.c |    2 ++
->  1 file changed, 2 insertions(+)
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-applied to tip/sched/urgent, thanks Balbir!
+similar to what i did a month ago:
 
-i'm wondering, have you observed load-balancer misbehavior due to this 
-load-average imprecision bug, on some workload? (or have you found 
-this via code review)
+--------------->
+>From 15d50b15843ccea15667f0bff5eb54d389a445f9 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 17 Oct 2008 15:55:07 +0200
+Subject: [PATCH] lockdep: include/linux/lockdep.h - fix warning in net/bluetooth/af_bluetooth.c
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-	Ingo
+fix this warning:
+
+  net/bluetooth/af_bluetooth.c:60: warning: ‘bt_key_strings’ defined but not used
+  net/bluetooth/af_bluetooth.c:71: warning: ‘bt_slock_key_strings’ defined but not used
+
+this is a lockdep macro problem in the !LOCKDEP case.
+
+We cannot convert it to an inline because the macro works on multiple types,
+but we can mark the parameter used.
+
+[ also clean up a misaligned tab in sock_lock_init_class_and_name() ]
+
+[ also remove #ifdefs from around af_family_clock_key strings - which
+  were certainly added to get rid of the ugly build warnings. ]
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/lockdep.h |    5 +++--
+ include/net/sock.h      |    2 +-
+ net/core/sock.c         |    2 --
+ 3 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index 331e5f1..29aec6e 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -331,10 +331,11 @@ static inline void lockdep_on(void)
+ # define lock_set_subclass(l, s, i)		do { } while (0)
+ # define lockdep_init()				do { } while (0)
+ # define lockdep_info()				do { } while (0)
+-# define lockdep_init_map(lock, name, key, sub)	do { (void)(key); } while (0)
++# define lockdep_init_map(lock, name, key, sub) \
++		do { (void)(name); (void)(key); } while (0)
+ # define lockdep_set_class(lock, key)		do { (void)(key); } while (0)
+ # define lockdep_set_class_and_name(lock, key, name) \
+-		do { (void)(key); } while (0)
++		do { (void)(key); (void)(name); } while (0)
+ #define lockdep_set_class_and_subclass(lock, key, sub) \
+ 		do { (void)(key); } while (0)
+ #define lockdep_set_subclass(lock, sub)		do { } while (0)
+diff --git a/include/net/sock.h b/include/net/sock.h
+index ada50c0..8014a92 100644
+--- a/include/net/sock.h
++++ b/include/net/sock.h
+@@ -815,7 +815,7 @@ static inline void sk_wmem_free_skb(struct sock *sk, struct sk_buff *skb)
+  */
+ #define sock_lock_init_class_and_name(sk, sname, skey, name, key) 	\
+ do {									\
+-	sk->sk_lock.owned = 0;					\
++	sk->sk_lock.owned = 0;						\
+ 	init_waitqueue_head(&sk->sk_lock.wq);				\
+ 	spin_lock_init(&(sk)->sk_lock.slock);				\
+ 	debug_check_no_locks_freed((void *)&(sk)->sk_lock,		\
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 5e2a313..341e394 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -136,7 +136,6 @@
+ static struct lock_class_key af_family_keys[AF_MAX];
+ static struct lock_class_key af_family_slock_keys[AF_MAX];
+ 
+-#ifdef CONFIG_DEBUG_LOCK_ALLOC
+ /*
+  * Make lock validator output more readable. (we pre-construct these
+  * strings build-time, so that runtime initialization of socket
+@@ -187,7 +186,6 @@ static const char *af_family_clock_key_strings[AF_MAX+1] = {
+   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
+   "clock-AF_MAX"
+ };
+-#endif
+ 
+ /*
+  * sk_callback_lock locking rules are per-address-family,
+
