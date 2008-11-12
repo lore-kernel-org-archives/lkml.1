@@ -1,190 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYKLTBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYKLTCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbYKLTBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 14:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYKLTBW
+	id S1754913AbYKLTCV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 14:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYKLTCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 14:01:22 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:47809 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbYKLTBT (ORCPT
+	Wed, 12 Nov 2008 14:02:03 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53905 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754153AbYKLTCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 14:01:19 -0500
-X-Greylist: delayed 7825 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Nov 2008 14:01:19 EST
-Date: Wed, 12 Nov 2008 10:59:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       open-osd development <osd-dev@open-osd.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 03/18 ver3] libosd: OSDv1 Headers
-Message-Id: <20081112105945.f4ec0089.randy.dunlap@oracle.com>
-In-Reply-To: <491AD697.9030305@panasas.com>
-References: <491073BB.4000900@panasas.com>
-	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>
-	<4916F934.4090205@panasas.com>
-	<20081110092940.57b4c169.randy.dunlap@oracle.com>
-	<491AD697.9030305@panasas.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 12 Nov 2008 14:02:01 -0500
+Message-ID: <491B281D.5030701@zytor.com>
+Date: Wed, 12 Nov 2008 11:01:49 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: ebuddington@wesleyan.edu
+CC: Am??rico Wang <xiyou.wangcong@gmail.com>,
+       Eric Buddington <ebuddington@verizon.net>, linux-kernel@vger.kernel.org
+Subject: Re: /init not found in initramfs in 2.6.27.[34]
+References: <20081110232313.GA29539@pool-96-236-120-128.spfdma.east.verizon.net> <20081111111922.GA8485@hack.voiplan.pt> <20081112190214.GA26785@pool-96-236-120-128.spfdma.east.verizon.net>
+In-Reply-To: <20081112190214.GA26785@pool-96-236-120-128.spfdma.east.verizon.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.491B27C9.0037:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 15:13:59 +0200 Boaz Harrosh wrote:
-
+Eric Buddington wrote:
+> On Tue, Nov 11, 2008 at 11:19:22AM +0000, Am??rico Wang wrote:
+>> Do you use the same config for 2.6.26.5 and 2.6.27.4 ?
+>> If not, could you please send the diff between these two configs?
 > 
-> Headers only patch.
+> I used 'make oldconfig', so they're similar but not identical. Here's the diff:
 > 
-> osd_protocol.h
-> 	Contains a C-fied definition of the T10 OSD standard
-> osd_types.h
-> 	Contains CPU order common used types
-> osd_initiator.h
-> 	API definition of the osd_initiator library
-> osd_sec.h
-> 	Contains High level API for the security manager.
-> 
-> [Note that checkpatch spews errors on things that are valid in this context
-> and will not be fixed]
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> Reviewed-by: Benny Halevy <bhalevy@panasas.com>
-> ---
->  include/scsi/osd_initiator.h |  332 ++++++++++++++++++++++++++++
->  include/scsi/osd_protocol.h  |  497 ++++++++++++++++++++++++++++++++++++++++++
->  include/scsi/osd_sec.h       |   45 ++++
->  include/scsi/osd_types.h     |   40 ++++
->  4 files changed, 914 insertions(+), 0 deletions(-)
->  create mode 100644 include/scsi/osd_initiator.h
->  create mode 100644 include/scsi/osd_protocol.h
->  create mode 100644 include/scsi/osd_sec.h
->  create mode 100644 include/scsi/osd_types.h
 
-> diff --git a/include/scsi/osd_protocol.h b/include/scsi/osd_protocol.h
-> new file mode 100644
-> index 0000000..ce678c5
-> --- /dev/null
-> +++ b/include/scsi/osd_protocol.h
-> @@ -0,0 +1,497 @@
-> +#ifndef __OSD_PROTOCOL_H__
-> +#define __OSD_PROTOCOL_H__
+Please use diff -u if you're going to post a diff...
 
-...
-
-> +/* osd2r03: 5.2.1 Overview */
-> +struct osd_cdb_head {
-> +	struct scsi_varlen_cdb_hdr varlen_cdb;
-> +/*10*/	u8		options;
-> +	u8		command_specific_options;
-> +	u8		timestamp_control;
-> +/*13*/	u8		reserved1[3];
-> +/*16*/	__be64		partition;
-> +/*24*/	__be64		object;
-> +/*32*/	union { /* V1 vs V2 alignment differences */
-> +		struct __osdv1_cdb_addr_len {
-> +/*32*/			__be32 		list_identifier;/* Rarely used */
-> +/*36*/			__be64		length;
-> +/*44*/			__be64		start_address;
-> +		} __packed v1;
-> +	};
-> +/*52*/	union { /* selected attributes mode Page/List/Single */
-> +		struct osd_attributes_page_mode {
-> +/*52*/			__be32		get_attr_page;
-> +/*56*/			__be32		get_attr_alloc_length;
-> +/*60*/			osd_cdb_offset	get_attr_offset;
-> +
-> +/*64*/			__be32		set_attr_page;
-> +/*68*/			__be32		set_attr_id;
-> +/*72*/			__be32		set_attr_length;
-> +/*76*/			osd_cdb_offset	set_attr_offset;
-> +		} __packed attrs_page;
-> +
-> +		struct osd_attributes_list_mode {
-> +/*52*/			__be32		get_attr_desc_bytes;
-> +/*56*/			osd_cdb_offset	get_attr_desc_offset;
-> +
-> +/*60*/			__be32		get_attr_alloc_length;
-> +/*64*/			osd_cdb_offset	get_attr_offset;
-> +
-> +/*68*/			__be32		set_attr_bytes;
-> +/*72*/			osd_cdb_offset	set_attr_offset;
-> +			__be32 not_used;
-> +		} __packed attrs_list;
-> +
-> +		/* osd2r03:5.2.4.2 Set one attribute value using CDB fields */
-> +		struct osd_attributes_cdb_mode {
-> +/*52*/			__be32		set_attr_page;
-> +/*56*/			__be32		set_attr_id;
-> +/*60*/			__be16		set_attr_len;
-> +/*62*/			u8		set_attr_val[80-62];
-
-ugh
-
-> +		} __packed attrs_cdb;
-> +/*52*/		u8 get_set_attributes_parameters[80-52];
-
-ugh
-
-> +	};
-> +} __packed;
-> +/*80*/
-
-
-> +/* (osd-r10:4.9.2.2)
-> + * osd2r03:4.11.2.2 Capability format
-> + */
-> +struct osd_capability_head {
-> +	u8 format; /* low nibble */
-> +	u8 integrity_algorithm__key_version; /* MAKE_BYTE(integ_alg, key_ver) */
-> +	u8 security_method;
-> +	u8 reserved1;
-> +/*04*/	struct osd_timestamp expiration_time;
-> +/*10*/	u8 audit[30-10];
-> +/*30*/	u8 discriminator[42-30];
-> +/*42*/	struct osd_timestamp object_created_time;
-> +/*48*/	u8 object_type;
-> +	u8 permissions_bit_mask[54-49];
-
-more of the same
-
-> +/*54*/	u8 reserved2;
-> +/*55*/	u8 object_descriptor_type; /* high nibble */
-> +} __packed;
-> +
-> +/*56 v1*/
-> +struct osdv1_cap_object_descriptor {
-> +	union {
-> +		struct {
-> +/*56*/			__be32 policy_access_tag;
-> +/*60*/			__be64 allowed_partition_id;
-> +/*68*/			__be64 allowed_object_id;
-> +/*76*/			__be32 reserved;
-> +		} __packed obj_desc;
-> +
-> +		u8 object_descriptor[80-56];/*24*/
-
-ditto.  nice comment ;)
-
-> +	};
-> +} __packed;
-> +/*80 v1*/
-> +
-> +#endif /* ndef __OSD_PROTOCOL_H__ */
-
-
-Thanks for the fixes.
-
----
-~Randy
+	-hpa
