@@ -1,123 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbYKLX1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbYKLXdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbYKLX1V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYKLX1J
+	id S1755250AbYKLXdh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYKLXd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:27:09 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:44777 "EHLO mx2.suse.de"
+	Wed, 12 Nov 2008 18:33:28 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:48275 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbYKLX1I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:27:08 -0500
-Date: Thu, 13 Nov 2008 00:27:06 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H.Peter Anvin" <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.com>, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [patch 3/8] x86 PAT: Add follow_pfnmp_pte routine to help tracking pfnmap pages
-Message-ID: <20081112232706.GC29363@wotan.suse.de>
-References: <20081112212647.259698000@intel.com> <20081112212900.291460000@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112212900.291460000@intel.com>
-User-Agent: Mutt/1.5.9i
+	id S1752245AbYKLXd2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:33:28 -0500
+Message-Id: <20081112231551.473569400@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Wed, 12 Nov 2008 18:15:51 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: [patch 00/17] Trace Clock v3
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 12 Nov 2008 23:33:01 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 01:26:50PM -0800, Venkatesh Pallipadi wrote:
-> 
-> Add a generic interface to follow pfn in a pfnmap vma range. This is used by
-> one of the subsequent x86 PAT related patch to keep track of memory types
-> for vma regions across vma copy and free.
-> 
-> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> 
-> ---
->  include/linux/mm.h |    3 +++
->  mm/memory.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 46 insertions(+)
-> 
-> Index: tip/include/linux/mm.h
-> ===================================================================
-> --- tip.orig/include/linux/mm.h	2008-11-06 15:41:43.000000000 -0800
-> +++ tip/include/linux/mm.h	2008-11-10 09:44:45.000000000 -0800
-> @@ -1223,6 +1223,9 @@ struct page *follow_page(struct vm_area_
->  #define FOLL_GET	0x04	/* do get_page on page */
->  #define FOLL_ANON	0x08	/* give ZERO_PAGE if no pgtable */
->  
-> +unsigned long follow_pfnmap_pte(struct vm_area_struct *vma,
-> +				unsigned long address, pte_t *ret_ptep);
-> +
->  typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
->  			void *data);
->  extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
-> Index: tip/mm/memory.c
-> ===================================================================
-> --- tip.orig/mm/memory.c	2008-11-06 15:41:43.000000000 -0800
-> +++ tip/mm/memory.c	2008-11-10 09:44:45.000000000 -0800
-> @@ -1111,6 +1111,49 @@ no_page_table:
->  	return page;
->  }
->  
-> +unsigned long follow_pfnmap_pte(struct vm_area_struct *vma,
-> +			unsigned long address, pte_t *ret_ptep)
-> +{
+Hi,
 
-I think we'd typically return an int for functions like this. It
-probably wouldn't hurt to return more descriptive errors either.
--EINVAL, perhaps, seems to fit best with what existing code there
-is doing.
+In this new version, I have integrated the changes I did following the comments
+I received for v2. I also reimplemented the "generic" trace clock so it is less
+intrusive and simply use a standard timer. I is not as bound to the xtime_lock
+as it previously was and it does not have to modify kernel/time.c anymore.
 
-> +	pgd_t *pgd;
-> +	pud_t *pud;
-> +	pmd_t *pmd;
-> +	pte_t *ptep, pte;
-> +	spinlock_t *ptl;
-> +	struct page *page;
-> +	struct mm_struct *mm = vma->vm_mm;
-> +
-> +	if (!is_pfn_mapping(vma))
-> +		goto err;
-> +
-> +	page = NULL;
-> +	pgd = pgd_offset(mm, address);
-> +	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-> +		goto err;
-> +
-> +	pud = pud_offset(pgd, address);
-> +	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-> +		goto err;
-> +
-> +	pmd = pmd_offset(pud, address);
-> +	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-> +		goto err;
-> +
-> +	ptep = pte_offset_map_lock(mm, pmd, address, &ptl);
-> +
-> +	pte = *ptep;
-> +	if (!pte_present(pte))
-> +		goto err_unlock;
-> +
-> +	*ret_ptep = pte;
-> +	pte_unmap_unlock(ptep, ptl);
-> +	return 0;
-> +
-> +err_unlock:
-> +	pte_unmap_unlock(ptep, ptl);
-> +err:
-> +	return -1;
-> +}
-> +
->  /* Can we do the FOLL_ANON optimization? */
->  static inline int use_zero_page(struct vm_area_struct *vma)
->  {
-> 
-> -- 
+I think this is pretty close to a mergeable state. I plan to keep more exotic
+features, such as dealing with non-synchronized TSCs without cache-line
+bouncing, for future improvement. As a reminder, when the trace clock detects an
+unsynchronized TSC on the machine, it prints the information about which kernel
+command line arguments must be used so the user can have synchronized timestamp
+counters. However, if the user wants to use his system with non-synchronized
+TSCs, the cache-line bouncing fallback is used.
+
+This patchset applies on top of 2.6.28-rc4.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
