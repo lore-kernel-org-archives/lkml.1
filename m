@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbYKLJFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbYKLJLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752565AbYKLJFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbYKLJFP
+	id S1752434AbYKLJLp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 04:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYKLJL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:05:15 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:53265 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751497AbYKLJFM (ORCPT
+	Wed, 12 Nov 2008 04:11:28 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:49367 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751129AbYKLJL0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:05:12 -0500
-Date: Wed, 12 Nov 2008 10:05:08 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to
-	chanes in stop_machine
-Message-ID: <20081112090508.GA14329@osiris.boeblingen.de.ibm.com>
-References: <200811101547.21325.rjw@sisk.pl> <200811102355.42389.rjw@sisk.pl> <20081111105214.GA15645@elte.hu> <20081111113134.GA5653@osiris.boeblingen.de.ibm.com> <20081111124201.GA9459@osiris.boeblingen.de.ibm.com> <20081111143505.GA6923@linux.vnet.ibm.com> <20081111150225.GA10743@linux.vnet.ibm.com> <20081111161401.GC9459@osiris.boeblingen.de.ibm.com> <20081111164523.GB6736@linux.vnet.ibm.com> <20081111173451.GA24720@linux.vnet.ibm.com>
+	Wed, 12 Nov 2008 04:11:26 -0500
+Date: Wed, 12 Nov 2008 14:41:02 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: rusty@rustcorp.com.au
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sfr@canb.auug.org.au, lguest@ozlabs.org
+Subject: linux-next: Tree for November 12 - lguest build failure
+Message-ID: <20081112091102.GA8063@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20081112182818.6e259488.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20081111173451.GA24720@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20081112182818.6e259488.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 09:34:51AM -0800, Paul E. McKenney wrote:
-> On Tue, Nov 11, 2008 at 08:45:23AM -0800, Paul E. McKenney wrote:
-> > On Tue, Nov 11, 2008 at 05:14:01PM +0100, Heiko Carstens wrote:
-> > > > > Could you please apply the following debug patch (due to Jiangshan and
-> > > > > myself)?  Then you should be able to build with CONFIG_RCU_TRACE,
-> > > > > then mount debugfs after boot, for example, on /debug.  This will
-> > > > > create a /debug/rcu directory with three files, "rcucb", "rcu_data",
-> > > > > and "rcu_bh_data".  Since you are still able to log in, could you
-> > > > > please send the contents of these three files?
-> > > > > 
-> > > > > 							Thanx, Paul
-> > > > 
-> > > > This time with the patch actually attached...  Thanks to Peter Z.
-> > > > for alerting me to my omission.
-> > > 
-> > > Well, your patch doesn't apply on git head. However I used preemptible
-> > > RCU instead and had tracing enabled.
-> > 
-> > Were you using preemptible RCU earlier as well?  Raphael was using
-> > classic RCU.  Don't get me wrong, all problems need fixing, just trying
-> > to make sure I understand where the problems are occurring.
+Hi Rusty,
 
-Indeed, my fault. I just try to reproduce a cpu hotplug bug with classic RCU
-and cpu hotplug stress test, but no luck so far.
+ lguest build fails with next-20081112 kernel,
+
+drivers/lguest/lguest_device.c: In function ‘lg_find_vq’:
+drivers/lguest/lguest_device.c:252: error: too many arguments to function ‘vring_size’
+make[2]: *** [drivers/lguest/lguest_device.o] Error 1
+
+removing the extra argument passed to vring_size function.
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6/drivers/lguest/lguest_device.c	2008-09-22 15:32:33.000000000 +0530
++++ linux-2.6/drivers/lguest/~lguest_device.c	2008-11-12 14:16:17.000000000 +0530
+@@ -249,8 +249,7 @@ static struct virtqueue *lg_find_vq(stru
+ 	       (unsigned long)lvq->config.pfn << PAGE_SHIFT);
+ 	/* Figure out how many pages the ring will take, and map that memory */
+ 	lvq->pages = lguest_map((unsigned long)lvq->config.pfn << PAGE_SHIFT,
+-				DIV_ROUND_UP(vring_size(lvq->config.num,
+-							PAGE_SIZE),
++				DIV_ROUND_UP(vring_size(lvq->config.num),
+ 					     PAGE_SIZE));
+ 	if (!lvq->pages) {
+ 		err = -ENOMEM;
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
