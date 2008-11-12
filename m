@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbYKLA0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYKLA1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbYKLA0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbYKLA0A
+	id S1753894AbYKLA1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:27:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbYKLA0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:00 -0500
-Received: from kroah.org ([198.145.64.141]:42026 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:05 -0500
+Received: from kroah.org ([198.145.64.141]:42083 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752203AbYKLAZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:25:59 -0500
-Date: Tue, 11 Nov 2008 16:22:53 -0800
+	id S1752408AbYKLA0D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:03 -0500
+Date: Tue, 11 Nov 2008 16:22:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Arthur Jones <ajones@riverbed.com>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org
-Subject: [patch 01/49] ext3: wait on all pending commits in ext3_sync_fs
-Message-ID: <20081112002253.GB10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 04/49] x86: add X86_RESERVE_LOW_64K
+Message-ID: <20081112002259.GE10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext3-wait-on-all-pending-commits-in-ext3_sync_fs.patch"
+Content-Disposition: inline; filename="x86-add-x86_reserve_low_64k.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,76 +39,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Arthur Jones <ajones@riverbed.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-commit c87591b719737b4e91eb1a9fa8fd55a4ff1886d6 upstream
+commit fc38151947477596aa27df6c4306ad6008dc6711 upstream.
 
-In ext3_sync_fs, we only wait for a commit to finish if we started it, but
-there may be one already in progress which will not be synced.
+This bugzilla:
 
-In the case of a data=ordered umount with pending long symlinks which are
-delayed due to a long list of other I/O on the backing block device, this
-causes the buffer associated with the long symlinks to not be moved to the
-inode dirty list in the second phase of fsync_super.  Then, before they
-can be dirtied again, kjournald exits, seeing the UMOUNT flag and the
-dirty pages are never written to the backing block device, causing long
-symlink corruption and exposing new or previously freed block data to
-userspace.
+  http://bugzilla.kernel.org/show_bug.cgi?id=11237
 
-This can be reproduced with a script created
-by Eric Sandeen <sandeen@redhat.com>:
+Documents a wide range of systems where the BIOS utilizes the first
+64K of physical memory during suspend/resume and other hardware events.
 
-	#!/bin/bash
+Currently we reserve this memory on all AMI and Phoenix BIOS systems.
+Life is too short to hunt subtle memory corruption problems like this,
+so we try to be robust by default.
 
-	umount /mnt/test2
-	mount /dev/sdb4 /mnt/test2
-	rm -f /mnt/test2/*
-	dd if=/dev/zero of=/mnt/test2/bigfile bs=1M count=512
-	touch
-	/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-	ln -s
-	/mnt/test2/thisisveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylongfilename
-	/mnt/test2/link
-	umount /mnt/test2
-	mount /dev/sdb4 /mnt/test2
-	ls /mnt/test2/
-	umount /mnt/test2
+Still, allow this to be overriden: allow users who want that first 64K
+of memory to be available to the kernel disable the quirk, via
+CONFIG_X86_RESERVE_LOW_64K=n.
 
-To ensure all commits are synced, we flush all journal commits now when
-sync_fs'ing ext3.
+Also, allow the early reservation to overlap with other
+early reservations.
 
-Signed-off-by: Arthur Jones <ajones@riverbed.com>
-Cc: Eric Sandeen <sandeen@redhat.com>
-Cc: Theodore Ts'o <tytso@mit.edu>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext3/super.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/x86/Kconfig        |   20 ++++++++++++++++++++
+ arch/x86/kernel/setup.c |    4 +++-
+ 2 files changed, 23 insertions(+), 1 deletion(-)
 
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -2365,13 +2365,12 @@ static void ext3_write_super (struct sup
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1059,6 +1059,26 @@ config HIGHPTE
+ 	  low memory.  Setting this option will put user-space page table
+ 	  entries in high memory.
  
- static int ext3_sync_fs(struct super_block *sb, int wait)
- {
--	tid_t target;
--
- 	sb->s_dirt = 0;
--	if (journal_start_commit(EXT3_SB(sb)->s_journal, &target)) {
--		if (wait)
--			log_wait_commit(EXT3_SB(sb)->s_journal, target);
--	}
-+	if (wait)
-+		ext3_force_commit(sb);
-+	else
-+		journal_start_commit(EXT3_SB(sb)->s_journal, NULL);
++config X86_RESERVE_LOW_64K
++        bool "Reserve low 64K of RAM on AMI/Phoenix BIOSen"
++	default y
++	help
++	 Reserve the first 64K of physical RAM on BIOSes that are known
++	 to potentially corrupt that memory range. A numbers of BIOSes are
++	 known to utilize this area during suspend/resume, so it must not
++	 be used by the kernel.
 +
++	 Set this to N if you are absolutely sure that you trust the BIOS
++	 to get all its memory reservations and usages right.
++
++	 If you have doubts about the BIOS (e.g. suspend/resume does not
++	 work or there's kernel crashes after certain hardware hotplug
++	 events) and it's not AMI or Phoenix, then you might want to enable
++	 X86_CHECK_BIOS_CORRUPTION=y to allow the kernel to check typical
++	 corruption patterns.
++
++	 Say Y if unsure.
++
+ config MATH_EMULATION
+ 	bool
+ 	prompt "Math emulation" if X86_32
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -584,13 +584,14 @@ static int __init dmi_low_memory_corrupt
+ 		"%s detected: BIOS may corrupt low RAM, working it around.\n",
+ 		d->ident);
+ 
+-	reserve_early(0x0, 0x10000, "BIOS quirk");
++	reserve_early_overlap_ok(0x0, 0x10000, "BIOS quirk");
+ 
  	return 0;
  }
  
+ /* List of systems that have known low memory corruption BIOS problems */
+ static struct dmi_system_id __initdata bad_bios_dmi_table[] = {
++#ifdef CONFIG_X86_RESERVE_LOW_64K
+ 	{
+ 		.callback = dmi_low_memory_corruption,
+ 		.ident = "AMI BIOS",
+@@ -606,6 +607,7 @@ static struct dmi_system_id __initdata b
+ 		},
+ 	},
+ 	{}
++#endif
+ };
+ 
+ /*
 
 -- 
