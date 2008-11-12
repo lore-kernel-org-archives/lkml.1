@@ -1,37 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881AbYKLAp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbYKLApu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756881AbYKLAp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:45:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbYKLA3X
+	id S1757574AbYKLApu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:45:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbYKLAe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:29:23 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:45349 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754499AbYKLA3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:29:21 -0500
-Date: Tue, 11 Nov 2008 18:28:57 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       travis@sgi.com, sfr@canb.auug.org.au, vegard.nossum@gmail.com
-Subject: Re: [patch 0/7] cpu alloc stage 2
-In-Reply-To: <20081111155611.93b978df.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0811111827370.31625@quilx.com>
-References: <20081105231634.133252042@quilx.com> <20081111155611.93b978df.akpm@linux-foundation.org>
+	Tue, 11 Nov 2008 19:34:56 -0500
+Received: from styx.suse.cz ([82.119.242.94]:44709 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755984AbYKLAez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:34:55 -0500
+Date: Wed, 12 Nov 2008 01:34:54 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Denys Vlasenko <vda.linux@googlemail.com>, Hugh Dickins <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+cc: Helge Deller <deller@gmx.de>, Jiri Slaby <jirislaby@gmail.com>,
+       Jeroen Roovers <jer@gentoo.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Who broke cb8f488c33 patch? (was Re: [PATCH 1/1] USBHID: correct
+ start/stop cycle)
+In-Reply-To: <200811120124.41222.vda.linux@googlemail.com>
+Message-ID: <alpine.LNX.1.10.0811120126320.24889@jikos.suse.cz>
+References: <1225579306-28524-1-git-send-email-jirislaby@gmail.com> <200811022024.31528.vda.linux@googlemail.com> <alpine.LNX.1.10.0811120021500.24889@jikos.suse.cz> <200811120124.41222.vda.linux@googlemail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 11 Nov 2008, Andrew Morton wrote:
+On Wed, 12 Nov 2008, Denys Vlasenko wrote:
 
-> It all looks very nice to me.  It's a shame about the lack of any
-> commonality with local_t though.
+> > > > I fully bisected it, and the final "buggy" patch seems to have been 
+> > > > Denys Vlasenko's patch: cb8f488c33539f096580e202f5438a809195008f (see 
+> > > > http://github.com/jonsmirl/digispeaker/commit/cb8f488c33539f096580e202f5438a809195008f) 
+> > > > Denys: Any reason you removed "!prev" in front of "expand_stack"?
+> > > Looks like I erroneously thought it can't be NULL,
+> > > or that expand_upwards() is ok with getting NULL vma parameter.
+> > > I looked again and neither is true.
+> > > Sorry, looks like I indeed broke this.
+> > Hmm, so ... ? Seems like this didn't get fixed in Linus' tree yet?
+> I found my original email in "sent" folder. The patch in that mail does 
+> NOT remove !prev. That change had beed added by someone else. See 
+> attached file with original email.
+> Ok, I think we are not much interested in who did it, 
 
-At the end of the full patchset local_t is no more because cpu ops can
-completely replace all use cases for local_t.
+Hmm, I in fact think we would like to know who removed the check and 
+folded it into your original patch. I have added all the Signoffs and CCs 
+to the recepient list.
 
+Andrew usually puts
+
+	[someone@somewhere.com: added this and that to the patch]
+
+marker into the changelog, but it's not the case here. 
+
+Having your name in Signed-off-by field of something you are not aware of 
+should make you feel at least a little bit nervous IMHO.
+
+> let's fix it for good.
+> Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+> --- linux-2.6.28-rc4/mm/mmap.c	Mon Nov 10 01:36:15 2008
+> +++ linux-2.6.28-rc4.fix/mm/mmap.c	Wed Nov 12 01:21:39 2008
+> @@ -1704,7 +1704,7 @@
+>  	vma = find_vma_prev(mm, addr, &prev);
+>  	if (vma && (vma->vm_start <= addr))
+>  		return vma;
+> -	if (expand_stack(prev, addr))
+> +	if (!prev || expand_stack(prev, addr))
+>  		return NULL;
+>  	if (prev->vm_flags & VM_LOCKED) {
+>  		if (mlock_vma_pages_range(prev, addr, prev->vm_end) < 0)
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
