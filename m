@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbYKLWV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbYKLWWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754918AbYKLWV0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 17:21:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYKLWVR
+	id S1755441AbYKLWWt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 17:22:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbYKLWWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 17:21:17 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59854 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752246AbYKLWVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 17:21:17 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: Make NUMA on 32-bit depend on EXPERIMENTAL again
-Date: Wed, 12 Nov 2008 23:26:14 +0100
-User-Agent: KMail/1.9.9
-Cc: Pavel Machek <pavel@suse.cz>, Andi Kleen <andi@firstfloor.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <20081109140726.GB1786@ucw.cz> <200811122257.50998.rjw@sisk.pl> <200811122322.36781.rjw@sisk.pl>
-In-Reply-To: <200811122322.36781.rjw@sisk.pl>
+	Wed, 12 Nov 2008 17:22:40 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:27715 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932AbYKLWWj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 17:22:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=vfgJ0m1K+1HD1IMXmRcRYjQ8MY0keNubo6h+LzbvcQut5SW7d3pDtFnvsYHGeRe6Mq
+         XqEZp6AMcH2Fk0dQO+jgsfwUY9rZ0iaKrhzGNjbMyD2kBJxEA5evLlM5H9C6R4rbrdoB
+         JTeYC//WIY2UFD2KnCMewO0xM0pvgQ2l0aOUY=
+Message-ID: <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com>
+Date: Wed, 12 Nov 2008 23:22:37 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] tracing/function-return-tracer: Call prepare_ftrace_return by registers
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081112221623.GB6125@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200811122326.16107.rjw@sisk.pl>
+References: <491B4F63.3090909@gmail.com> <20081112221623.GB6125@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: x86: Make NUMA on 32-bit depend on EXPERIMENTAL again
+2008/11/12 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> Impact: Optimize a bit the function return tracer
+>>
+>> This patch changes the calling convention of prepare_ftrace_return
+>> to pass its arguments by register. This will optimize it a bit and
+>> prepare it to support dynamic tracing.
+>>
+>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+>> Cc: Steven Rostedt <rostedt@goodmis.org>
+>> ---
+>>  arch/x86/kernel/entry_32.S |    5 +----
+>>  arch/x86/kernel/ftrace.c   |    1 -
+>>  2 files changed, 1 insertions(+), 5 deletions(-)
+>
+> applied to tip/tracing/function-return-tracer, thanks Frederic!
+>
+> btw., should we now rename it all to the function-cost tracer?
+>
+>        Ingo
+>
 
-My previous patch to make CONFIG_NUMA on x86_32 depend on BROKEN
-turned out to be unnecessary, after all, since the source of the
-hibernation vs CONFIG_NUMA problem turned out to be the fact that
-we didn't take the NUMA KVA remapping into account in the
-hibernation code.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
----
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/Kconfig
-===================================================================
---- linux-2.6.orig/arch/x86/Kconfig
-+++ linux-2.6/arch/x86/Kconfig
-@@ -957,7 +957,7 @@ config ARCH_PHYS_ADDR_T_64BIT
- config NUMA
- 	bool "Numa Memory Allocation and Scheduler Support (EXPERIMENTAL)"
- 	depends on SMP
-+	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && EXPERIMENTAL)
--	depends on X86_64 || (X86_32 && HIGHMEM64G && (X86_NUMAQ || X86_BIGSMP || X86_SUMMIT && ACPI) && BROKEN)
- 	default n if X86_PC
- 	default y if (X86_NUMAQ || X86_SUMMIT || X86_BIGSMP)
- 	help
+Yes. I'm preparing a patch to do these renames....
