@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbYKLTGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYKLTHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbYKLTGH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 14:06:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYKLTFz
+	id S1754826AbYKLTHY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 14:07:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYKLTHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 14:05:55 -0500
-Received: from mail.openmoko.org ([88.198.124.205]:42006 "EHLO
-	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbYKLTFy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 14:05:54 -0500
-X-Greylist: delayed 1562 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Nov 2008 14:05:54 EST
-Date: Wed, 12 Nov 2008 16:39:35 -0200
-From: Werner Almesberger <werner@openmoko.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] remove bashisms from scripts/extract-ikconfig
-Message-ID: <20081112183935.GA8443@almesberger.net>
+	Wed, 12 Nov 2008 14:07:10 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40190 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbYKLTHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 14:07:09 -0500
+Date: Wed, 12 Nov 2008 13:06:55 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>, clg@fr.ibm.com,
+       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Signals to cinit
+Message-ID: <20081112190655.GB8233@us.ibm.com>
+References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081110232735.GA20891@us.ibm.com> <20081112145226.GA13269@redhat.com> <20081112164915.GB14572@us.ibm.com> <20081112181211.GC3230@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081112181211.GC3230@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unbashify-extract-ikconfig.patch
+Quoting Sukadev Bhattiprolu (sukadev@linux.vnet.ibm.com):
+> Serge E. Hallyn [serue@us.ibm.com] wrote:
+> | Quoting Oleg Nesterov (oleg@redhat.com):
+> | > > | Perhaps we can start with something like the patch below. Not that I like
+> | > > | it very much though. We should really place this code under
+> | > > | CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
+> | > >
+> | > > CONFIG_PID_NS ?
+> | > 
+> | > Ah yes, we have it ;)
+> | 
+> | Except I believe all distros at this point enable CONFIG_PID_NS, so
+> | I'm not sure it's the right thing to use.
+> 
+> But if they do enable CONFIG_PID_NS they would want the signals to
+> behave correctly ? IIUC, the reason we want to the hide the code
+> is that it is not clean i.e if its not experimental or error-prone,
+> are there other reasons someone with CONFIG_PID_NS=y want to hide it ?
 
-scripts/extract-ikconfig contains a lot of gratuituous bashisms,
-which make it fail if /bin/sh isn't bash. This patch replaces them
-with regular Bourne shell constructs.
+I was going to argue yes, but again following my reasoning to its
+logical conclusion leads us to a config parameter being bad anyway.
 
-Signed-off-by: Werner Almesberger <werner@openmoko.org>
+So yeah, never mind.
 
----
-
-diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
-index 8187e6f..72997c3 100755
---- a/scripts/extract-ikconfig
-+++ b/scripts/extract-ikconfig
-@@ -8,8 +8,8 @@ test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
- 
- IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
- IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
--function dump_config {
--    typeset file="$1"
-+dump_config() {
-+    file="$1"
- 
-     start=`$binoffset $file $IKCFG_ST 2>/dev/null`
-     [ "$?" != "0" ] && start="-1"
-@@ -18,8 +18,8 @@ function dump_config {
-     fi
-     end=`$binoffset $file $IKCFG_ED 2>/dev/null`
- 
--    let start="$start + 8"
--    let size="$end - $start"
-+    start=`expr $start + 8`
-+    size=`expr $end - $start`
- 
-     dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
- 
+-serge
