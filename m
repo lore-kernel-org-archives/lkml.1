@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbYKLARp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbYKLASK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752916AbYKLARp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYKLARh
+	id S1753538AbYKLASK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYKLARy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:17:37 -0500
-Received: from mail.gmx.net ([213.165.64.20]:35455 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751825AbYKLARg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:17:36 -0500
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1+Xu0xklT+Xc/n/olBJ7Rsl51e9EEMKtnmPNhp2u4
-	Uxgbq5r+O+VlIT
-From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-To: gregkh@suse.de
-Subject: Re: patch hfsplus-check-read_mapping_page-return-value.patch added to 2.6.27-stable tree
-Date: Wed, 12 Nov 2008 01:17:29 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-References: <20081111213503.5262649038@coco.kroah.org>
-In-Reply-To: <20081111213503.5262649038@coco.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 11 Nov 2008 19:17:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38066 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753273AbYKLARx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:17:53 -0500
+Date: Tue, 11 Nov 2008 16:17:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: a.zummo@towertech.it, david-b@pacbell.net, rtc-linux@googlegroups.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rtc: bunch of drivers: fix 'no irq' case handing
+Message-Id: <20081111161728.8a0d73f1.akpm@linux-foundation.org>
+In-Reply-To: <20081106174111.GA21882@oksana.dev.rtsoft.ru>
+References: <20081106174111.GA21882@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811120117.34978.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Thu, 6 Nov 2008 20:41:11 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-On Dienstag, 11. November 2008, gregkh@suse.de wrote:
+> This patch fixes bunch of irq checking misuses.  Most drivers were getting
+> irq via platform_get_irq(), which returns -ENXIO or r->start.  Platforms
+> may specify r->start = 0 to emphasize 'no irq' case, and drivers should
+> handle this correctly.
 > 
-> This is a note to let you know that we have just queued up the patch titled
+> rtc-cmos.c is special.  It is using PNP and platform bindings.  Hopefully
+> nobody is using PNP IRQ 0 for RTC.  So the changes should be safe.
 > 
->     Subject: hfsplus: check read_mapping_page() return value (CVE-2008-4934)
+> rtc-sh.c is using platform_get_irq, but was storing a result into an
+> unsigned type, then was checking for < 0.  This is fixed now.
 > 
-> to the 2.6.27-stable tree.  Its filename is
-> 
->     hfsplus-check-read_mapping_page-return-value.patch
-> 
-> A git repo of this tree can be found at 
->     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-> 
-> 
-> From 649f1ee6c705aab644035a7998d7b574193a598a Mon Sep 17 00:00:00 2001
-> From: Eric Sesterhenn <snakebyte@gmx.de>
-> Date: Wed, 15 Oct 2008 22:04:10 -0700
-> Subject: hfsplus: check read_mapping_page() return value (CVE-2008-4934)
-> 
-> From: Eric Sesterhenn <snakebyte@gmx.de>
-> 
-> commit 649f1ee6c705aab644035a7998d7b574193a598a upstream.
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-This exact patch is already present in 2.6.27.5 and subsequently fails to 
-apply.
-
-Regards
-	Stefan Lippers-Hollmann
+Do we see any reason why this should be pushed into 2.6.28?
