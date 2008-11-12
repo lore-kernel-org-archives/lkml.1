@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbYKLIqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbYKLIu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbYKLIqP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 03:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbYKLIp7
+	id S1752735AbYKLIu4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 03:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYKLIur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 03:45:59 -0500
-Received: from qw-out-2122.google.com ([74.125.92.24]:5269 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYKLIp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 03:45:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZjNv0P3iE3JoRS83eVaJIRF4p2Jy77daa/Mp8DLfyijflEfrznDD3J8s+g5SWHiRhx
-         Hvx/3oWbIM9fznUtVcVSit89IWy2c4OaDbSN6stNIB7SnQKIbzVU/kvXD+Y8L5XP7Lrg
-         2EMMhSLl8/xdRVx0lLikUB009EqclwMO4QmKM=
-Message-ID: <c62985530811120045j5fc0475r8c374f4853f6823e@mail.gmail.com>
-Date: Wed, 12 Nov 2008 09:45:57 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/2] tracing/fastboot: Use the ring-buffer timestamp for initcall entries
-Cc: "Steven Rostedt" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Steven Rostedt" <srostedt@redhat.com>
-In-Reply-To: <20081111220051.204c43f2.akpm@linux-foundation.org>
+	Wed, 12 Nov 2008 03:50:47 -0500
+Received: from [69.90.0.18] ([69.90.0.18]:60431 "EHLO mtl.rackplans.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497AbYKLIur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 03:50:47 -0500
+Date: Wed, 12 Nov 2008 03:51:17 -0500 (EST)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Pavel Machek <pavel@suse.cz>, mathias.schnarrenberger@gmx.de,
+       Olaf van der Spek <olafvdspek@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: security: delete BIOS password in keyboard buffer during kernel
+ bootup
+In-Reply-To: <20081111165421.4f1e836d@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.1.10.0811120349370.16188@mtl.rackplans.net>
+References: <200811081100.03966.mathias.schnarrenberger@gmx.de> <b2cc26e40811080839i387e5e94o519a5d1ff0086379@mail.gmail.com> <200811090941.20401.mathias.schnarrenberger@gmx.de> <20081109110814.13a4c099@lxorguk.ukuu.org.uk> <20081111161808.GA4473@ucw.cz>
+ <20081111165421.4f1e836d@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081112055454.798779203@goodmis.org>
-	 <20081112055600.657041406@goodmis.org>
-	 <20081111220051.204c43f2.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/12 Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 12 Nov 2008 00:54:56 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
->
->> -     unsigned long long      duration;               /* usecs */
->> +     unsigned long long      duration;
->
-> my hard-won comment got fragged.
+On Tue, 11 Nov 2008, Alan Cox wrote:
 
+> Date: Tue, 11 Nov 2008 16:54:21 +0000
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> To: Pavel Machek <pavel@suse.cz>
+> Cc: mathias.schnarrenberger@gmx.de, Olaf van der Spek <olafvdspek@gmail.com>,
+>     linux-kernel@vger.kernel.org
+> Subject: Re: security: delete BIOS password in keyboard buffer during kernel
+>     bootup
+> 
+> > OTOH we don't call BIOS from linux, so we assume that low 64K is
+> > usable memory (unless marked otherwise in memmap, I guess).
+> 
+> We use the BIOS in some cases for PCI routing, PCI services, APM, and
+> indirectly for SMM traps, ACPI and via user space for other stuff. So we
+> preserve the bottom 4K for the BIOS 0x40:xx page
+> > 
+> > Anyway, proper place to do clearing is bootloader; it interacts with
+> > bios already, anyway...
+> 
+> Agreed entirely.
 
-Oops. I forgot it.
-Perhaps I should resend a patch that reset this comment?
-BTW it is nsecs actually.
+Best place would be for the OEM to fix it.  If it's a security issue it 
+shouldn't be overly difficult to embarass them into a fix.
+
+	Gerhard
+ 
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
