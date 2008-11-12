@@ -1,204 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbYKLLZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbYKLL02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752401AbYKLLZk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 06:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYKLLZc
+	id S1752603AbYKLL02 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 06:26:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbYKLL0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 06:25:32 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:2588 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbYKLLZb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 06:25:31 -0500
-Date: Wed, 12 Nov 2008 11:25:27 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: David Brownell <david-b@pacbell.net>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
-Message-ID: <20081112112525.GA8767@sirena.org.uk>
-References: <200811091531.46003.david-b@pacbell.net> <200811100743.34741.david-b@pacbell.net> <20081110165625.GE12804@sirena.org.uk> <200811102056.20008.david-b@pacbell.net>
+	Wed, 12 Nov 2008 06:26:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39957 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbYKLL0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 06:26:18 -0500
+Date: Wed, 12 Nov 2008 12:25:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH] tracing: branch tracer, tweak output
+Message-ID: <20081112112536.GC31958@elte.hu>
+References: <20081112051438.843792214@goodmis.org> <20081112051518.503323629@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200811102056.20008.david-b@pacbell.net>
-X-Cookie: Advancement in position.
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20081112051518.503323629@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
-> On Monday 10 November 2008, Mark Brown wrote:
 
-> > > imply REGULATOR_MODE_OFF ... another CPU may need to keep
-> > > it in some other state.
+a small detail:
 
-> > regulator_disable() needn't imply that the regulator will actually be
-> > off -
+> For example:
+>
+>  bash-3471  [003]   357.014755: [INCORRECT] sched_info_dequeued:sched_stats.h:177
+>  bash-3471  [003]   357.014756: [correct] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014758: [correct] calc_delta_fair:sched_fair.c:411
+>  bash-3471  [003]   357.014759: [correct] account_group_exec_runtime:sched_stats.h:356
+>  bash-3471  [003]   357.014761: [correct] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014763: [INCORRECT] calc_delta_fair:sched_fair.c:411
+>  bash-3471  [003]   357.014765: [correct] calc_delta_mine:sched.c:1279
 
-> Would you say that also for regulator_ops.disable() though?
+it's always good to have such fields aligned vertically. Something 
+like this would be shorter and visually much easier to parse:
 
-If we ignore regulator_force_disable() (which isn't used yet) for the
-moment I'd actually say that in your case with non-software enables it's
-reasonable for it to still be powered by some other part of the system.
-Mainly because it's proably easier to just ignore the other enables than
-it is to explain to the rest of the system that there are others it
-can't know about.
+ bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
+ bash-3471  [003]   357.014756: [ .... ] update_curr:sched_fair.c:489
+ bash-3471  [003]   357.014758: [ .... ] calc_delta_fair:sched_fair.c:411
 
-> Less surprising/confusing would be if regulator_{en,dis}able() did
-> its own refcounting and called down to regulator_dev when changing
-> a per-client refcount to/from zero.  (Easy patch, for later.)
+any objections against the patch below which implements this?
 
-Yeah, either way is fine for me - don't know if Liam has a strong
-opinion.  The main benefit of not doing it is that encourages people to
-avoid consumers sharing the clients which causes problems when clients
-share the regulator.
+	Ingo
 
-> And, hrm, kerneldoc for regulator_is_enabled() says it returns
-> a refcount, not boolean; but the refcount is unavailable to the
-> regulator_ops method returning that value.
+----------->
+>From f88c4ae9f8c3939bee4337c75c7a673b5de7a8a7 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed, 12 Nov 2008 11:55:41 +0100
+Subject: [PATCH] tracing: branch tracer, tweak output
 
-Easiest to just update the documentation to reflect reality.
+Impact: modify the tracer output, to make it a bit easier to read
 
-> > > So for example when any of the three requestors asks for the
-> > > regulator to go ACTIVE it will do so.  This means you can have
-> > > cases like:
+Change the output from:
 
-> > ...this sounds like the same thing done in hardware.
+>  bash-3471  [003]   357.014755: [INCORRECT] sched_info_dequeued:sched_stats.h:177
+>  bash-3471  [003]   357.014756: [correct] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014758: [correct] calc_delta_fair:sched_fair.c:411
 
-> Seems to me more like a three input OR gate.  No counters.  ;)
-> At least, if you ignore the additional arbitration between
-> ACTIVE, STANDBY, and OFF modes.  (Highest one wins...)
+to:
 
-Logically that's what the regulator API is doing, it's just that
-currently it doesn't support reconfiguration of shared regulators.  If
-you remember the pre-submission versions you looked at they had support
-for computing the most restrictive voltage constraint from multiple
-clients, this sounds like the same thing done in hardware for the
-regulator mode.
+>  bash-3471  [003]   357.014755: [ MISS ] sched_info_dequeued:sched_stats.h:177
+>  bash-3471  [003]   357.014756: [ .... ] update_curr:sched_fair.c:489
+>  bash-3471  [003]   357.014758: [ .... ] calc_delta_fair:sched_fair.c:411
 
-> > > So you see why enable/disable is orthogonal to MODE_OFF.
+it's good to have fields aligned vertically, and the only important
+information is a prediction miss, so display only that information.
 
-> > Not really.  The mode reflects the characteristics of the regulator when
-> > it is enabled ...
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/trace/trace.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-> That answer doesn't make much sense to me; plus, kerneldoc
-> for regulator_get_mode() -- which essentially just calls down
-> to regulator_ops.get_mode() -- says it returns the "current"
-> mode.  NOT some potential future mode.  Giving the "current"
-> mode implies asking the hardware what it's doing right now.
-
-This is because you are viewing the mode as including the enabled state
-while the regulator API views the mode as being largely orthogonal to
-the operating mode.  This is the key point, most of what you're saying
-here seems to spring from this disconnect.
-
-The view of the regulator API is that the operating configuration of the
-regulator (including not only the mode but also the voltage or current)
-is done separately to enabling or disabling it.  For most clients the
-configuration will be done statically by the machine driver, they will
-never consider the configuration of the regulator at all and will simply
-enable or disable it.  This is partly because the configuration is often
-system specific and partly because a large proportion of consumers
-aren't interested in any more detail than that.  
-
-It is true that the configuration is largely irrelevant when a regulator
-isn't enabled but this isn't unusual.
-
-The kerneldoc should be updated to say "the mode currently configured by
-Linux when the regulator is enabled" or similar, I guess.  A similar
-issue applies to the documentation for all the other configuration
-readback functions.  The expectation when writing this was that anything
-software controlled would be fully software controlled.
-
-> Consider also the scenario above, where Linux calls enable()
-> and has requested STANDBY mode.  The regulator will instead
-> be in ACTIVE state; answering STANDBY seems quite wrong.
-
-Depends who's asking, really.  If you want to know what Linux is doing
-for making operational decisions or software debugging then reporting
-standby is reasonable - the fact that it's getting higher quality
-regulation shouldn't upset it at all.  If you want to know what the
-hardware is doing it's less so.
-
-> (Just like answering STANDBY when it's really OFF...)
-
-This is the same issue with enable/mode separation.
-
-> > The issue you see here is a divergence between the software-requested
-> > state and the actual physical state of the regulator.
-
-> In a general sense, yes ... but this framework splits that
-> state into a "mode" and an "enable" flag (called "state" in
-
-Right, as discussed previously.
-
-> sysfs, which doesn't reduce confusion at all).
-
-It's in there now, unfortunately.
-
-> > > It's true that it won't be OFF unless the Linux CPU is
-> > > not requesting it ("disabled" its request) ... but the
-> > > converse is false, because of the non-Linux requestor(s).
-
-> > My first instinct here would be to have the software simply reflect the
-> > state requested by the CPU and ignore the other enable sources.
-
-> Mine is to have get_mode() report the actual hardware state,
-
-Again, this comes back to the mode/enable merging.
-
-> matching kerneldoc ... and thus the $SUBJECT patch.  Also, I
-> have no set_mode(), and thus no mode "requested by the CPU"
-> through this framework.
-
-If you're not going to allow anything in Linux to configure the mode of
-the regulator then the mode is only going to be useful for diagnostic
-purposes (this is mostly what the readback is useful for anyway) so it's
-all relatively academic.
-
-> > My 
-> > second instinct would be to have is_enabled() report the actual state
-> > and leave it at that.
-
-> But *which* actual state?  I'd say that reporting this CPU's
-> enable/request bit *is* reporting actual hardware state:  the
-> request line managed by regulator_ops.disable()/enable().
-
-I had meant the physical state of the regulator since you were very keen
-on exposing that (as opposed to simply ignoring the other enables which
-had been the first option).
-
-> > I'm having a hard time thinking of a hardware 
-> > design that could tolerate too much uncoordinated control of the
-> > regulators.
-
-> True; the coordination here is done in hardware.  There
-> are "scripts" that get downloaded into the hardware, and
-> which update things on various hardware state changes.
-
-Indeed.  That is pretty much standard for these parts - you obviously
-need configuration for initial power up at least and normally there will
-be a set of alternative settings activated on suspend too.  The unusual
-thing is having something else controlling the power states while the OS
-is active.
-
-> > I'm also wondering if part of what we need to do is add separate out the
-> > reporting paths for the actual and requested status?  At the minute we
-> > only report the actual status and there's no indication of the logical
-> > status which does create some confusion here.
-
-> Makes sense.  Record "requested_mode" in "struct regulator_dev"
-> and expose a new sysfs attribute for it.  Should I update
-> the $SUBJECT patch to do that too?
-
-It should be a separate patch, I'd say.
-
-Thinking about it I'm not sure if the hardware or logical state should
-be the primary.  In terms of debugging power consumption and so on the
-physical state is probably the more important one but from the point of
-view of Linux it's the logical state that matters most since that's what
-Linux is actually doing (IYSWIM).
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 83d3863..728a46e 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1657,7 +1657,7 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
+ 		trace_assign_type(field, entry);
+ 
+ 		trace_seq_printf(s, "[%s] %s:%s:%d\n",
+-				 field->correct ? "correct" : "INCORRECT",
++				 field->correct ? " .... " : " MISS ",
+ 				 field->func,
+ 				 field->file,
+ 				 field->line);
+@@ -1808,7 +1808,7 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
+ 		trace_assign_type(field, entry);
+ 
+ 		trace_seq_printf(s, "[%s] %s:%s:%d\n",
+-				 field->correct ? "correct" : "INCORRECT",
++				 field->correct ? " .... " : " MISS ",
+ 				 field->func,
+ 				 field->file,
+ 				 field->line);
