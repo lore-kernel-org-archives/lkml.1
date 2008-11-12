@@ -1,307 +1,707 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152AbYKLVWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYKLVXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755152AbYKLVWw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 16:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbYKLVVy
+	id S1755487AbYKLVXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 16:23:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYKLVV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 16:21:54 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:63277 "EHLO
+	Wed, 12 Nov 2008 16:21:56 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:38906 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752226AbYKLVVv (ORCPT
+	with ESMTP id S1752165AbYKLVVy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 16:21:51 -0500
-Message-Id: <20081112212150.295299148@goodmis.org>
+	Wed, 12 Nov 2008 16:21:54 -0500
+Message-Id: <20081112212150.683880567@goodmis.org>
 References: <20081112212127.455979814@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 16:21:29 -0500
+Date: Wed, 12 Nov 2008 16:21:31 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/4] ftrace: rename unlikely iter_ctrl to branch
-Content-Disposition: inline; filename=0002-ftrace-rename-unlikely-iter_ctrl-to-branch.patch
+Subject: [PATCH 4/4] ftrace: rename trace_unlikely.c file
+Content-Disposition: inline; filename=0004-ftrace-rename-trace_unlikely.c-file.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: rename of iter_ctrl unlikely to branch
+Impact: File name change of trace_unlikely.c
 
-The unlikely name is ugly. This patch converts the iter_ctrl command
-"unlikely" and "nounlikely" to "branch" and "nobranch" respectively.
-
-It also renames a lot of internal functions to use "branch" instead
-of "unlikely".
+The "unlikely" name for the tracer is quite ugly. We renamed all the
+parts of it to "branch" and now it is time to rename the file too.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c          |   14 +++++-----
- kernel/trace/trace.h          |   26 ++++++++++----------
- kernel/trace/trace_unlikely.c |   50 ++++++++++++++++++++--------------------
- 3 files changed, 45 insertions(+), 45 deletions(-)
+ kernel/trace/Makefile         |    2 +-
+ kernel/trace/trace_branch.c   |  320 +++++++++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_unlikely.c |  320 -----------------------------------------
+ 3 files changed, 321 insertions(+), 321 deletions(-)
+ create mode 100644 kernel/trace/trace_branch.c
+ delete mode 100644 kernel/trace/trace_unlikely.c
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index bad59d3..4bf070b 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -259,7 +259,7 @@ static const char *trace_options[] = {
- 	"ftrace_printk",
- 	"ftrace_preempt",
- #ifdef CONFIG_BRANCH_TRACER
--	"unlikely",
-+	"branch",
- #endif
- 	NULL
- };
-@@ -1651,8 +1651,8 @@ print_lat_fmt(struct trace_iterator *iter, unsigned int trace_idx, int cpu)
- 			trace_seq_print_cont(s, iter);
- 		break;
- 	}
--	case TRACE_UNLIKELY: {
--		struct trace_unlikely *field;
-+	case TRACE_BRANCH: {
-+		struct trace_branch *field;
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 0087df7..1a8c925 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -30,6 +30,6 @@ obj-$(CONFIG_STACK_TRACER) += trace_stack.o
+ obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
+ obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
+ obj-$(CONFIG_FUNCTION_RET_TRACER) += trace_functions_return.o
+-obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_unlikely.o
++obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
  
- 		trace_assign_type(field, entry);
- 
-@@ -1802,8 +1802,8 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
- 		return print_return_function(iter);
- 		break;
- 	}
--	case TRACE_UNLIKELY: {
--		struct trace_unlikely *field;
-+	case TRACE_BRANCH: {
-+		struct trace_branch *field;
- 
- 		trace_assign_type(field, entry);
- 
-@@ -2619,7 +2619,7 @@ static int tracing_set_tracer(char *buf)
- 	if (t == current_trace)
- 		goto out;
- 
--	trace_unlikely_disable();
-+	trace_branch_disable();
- 	if (current_trace && current_trace->reset)
- 		current_trace->reset(tr);
- 
-@@ -2627,7 +2627,7 @@ static int tracing_set_tracer(char *buf)
- 	if (t->init)
- 		t->init(tr);
- 
--	trace_unlikely_enable(tr);
-+	trace_branch_enable(tr);
-  out:
- 	mutex_unlock(&trace_types_lock);
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index dccae63..7fbf37b 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -22,7 +22,7 @@ enum trace_type {
- 	TRACE_SPECIAL,
- 	TRACE_MMIO_RW,
- 	TRACE_MMIO_MAP,
--	TRACE_UNLIKELY,
-+	TRACE_BRANCH,
- 	TRACE_BOOT_CALL,
- 	TRACE_BOOT_RET,
- 	TRACE_FN_RET,
-@@ -137,7 +137,7 @@ struct trace_boot_ret {
- 
- #define TRACE_FUNC_SIZE 30
- #define TRACE_FILE_SIZE 20
--struct trace_unlikely {
-+struct trace_branch {
- 	struct trace_entry	ent;
- 	unsigned	        line;
- 	char			func[TRACE_FUNC_SIZE+1];
-@@ -247,7 +247,7 @@ extern void __ftrace_bad_type(void);
- 			  TRACE_MMIO_MAP);				\
- 		IF_ASSIGN(var, ent, struct trace_boot_call, TRACE_BOOT_CALL);\
- 		IF_ASSIGN(var, ent, struct trace_boot_ret, TRACE_BOOT_RET);\
--		IF_ASSIGN(var, ent, struct trace_unlikely, TRACE_UNLIKELY); \
-+		IF_ASSIGN(var, ent, struct trace_branch, TRACE_BRANCH); \
- 		IF_ASSIGN(var, ent, struct ftrace_ret_entry, TRACE_FN_RET);\
- 		__ftrace_bad_type();					\
- 	} while (0)
-@@ -469,7 +469,7 @@ enum trace_iterator_flags {
- 	TRACE_ITER_PRINTK		= 0x400,
- 	TRACE_ITER_PREEMPTONLY		= 0x800,
- #ifdef CONFIG_BRANCH_TRACER
--	TRACE_ITER_UNLIKELY		= 0x1000,
-+	TRACE_ITER_BRANCH		= 0x1000,
- #endif
- };
- 
-@@ -531,25 +531,25 @@ static inline void ftrace_preempt_enable(int resched)
- }
- 
- #ifdef CONFIG_BRANCH_TRACER
--extern int enable_unlikely_tracing(struct trace_array *tr);
--extern void disable_unlikely_tracing(void);
--static inline int trace_unlikely_enable(struct trace_array *tr)
-+extern int enable_branch_tracing(struct trace_array *tr);
-+extern void disable_branch_tracing(void);
-+static inline int trace_branch_enable(struct trace_array *tr)
- {
--	if (trace_flags & TRACE_ITER_UNLIKELY)
--		return enable_unlikely_tracing(tr);
-+	if (trace_flags & TRACE_ITER_BRANCH)
-+		return enable_branch_tracing(tr);
- 	return 0;
- }
--static inline void trace_unlikely_disable(void)
-+static inline void trace_branch_disable(void)
- {
- 	/* due to races, always disable */
--	disable_unlikely_tracing();
-+	disable_branch_tracing();
- }
- #else
--static inline int trace_unlikely_enable(struct trace_array *tr)
-+static inline int trace_branch_enable(struct trace_array *tr)
- {
- 	return 0;
- }
--static inline void trace_unlikely_disable(void)
-+static inline void trace_branch_disable(void)
- {
- }
- #endif /* CONFIG_BRANCH_TRACER */
-diff --git a/kernel/trace/trace_unlikely.c b/kernel/trace/trace_unlikely.c
-index 856eb3b..e5d5969 100644
---- a/kernel/trace/trace_unlikely.c
-+++ b/kernel/trace/trace_unlikely.c
-@@ -17,16 +17,16 @@
- 
- #ifdef CONFIG_BRANCH_TRACER
- 
--static int unlikely_tracing_enabled __read_mostly;
--static DEFINE_MUTEX(unlikely_tracing_mutex);
--static struct trace_array *unlikely_tracer;
+ libftrace-y := ftrace.o
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+new file mode 100644
+index 0000000..8526555
+--- /dev/null
++++ b/kernel/trace/trace_branch.c
+@@ -0,0 +1,320 @@
++/*
++ * unlikely profiler
++ *
++ * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
++ */
++#include <linux/kallsyms.h>
++#include <linux/seq_file.h>
++#include <linux/spinlock.h>
++#include <linux/debugfs.h>
++#include <linux/uaccess.h>
++#include <linux/module.h>
++#include <linux/ftrace.h>
++#include <linux/hash.h>
++#include <linux/fs.h>
++#include <asm/local.h>
++#include "trace.h"
++
++#ifdef CONFIG_BRANCH_TRACER
++
 +static int branch_tracing_enabled __read_mostly;
 +static DEFINE_MUTEX(branch_tracing_mutex);
 +static struct trace_array *branch_tracer;
- 
- static void
--probe_likely_condition(struct ftrace_likely_data *f, int val, int expect)
++
++static void
 +probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- {
--	struct trace_array *tr = unlikely_tracer;
++{
 +	struct trace_array *tr = branch_tracer;
- 	struct ring_buffer_event *event;
--	struct trace_unlikely *entry;
++	struct ring_buffer_event *event;
 +	struct trace_branch *entry;
- 	unsigned long flags, irq_flags;
- 	int cpu, pc;
- 	const char *p;
-@@ -54,7 +54,7 @@ probe_likely_condition(struct ftrace_likely_data *f, int val, int expect)
- 	pc = preempt_count();
- 	entry	= ring_buffer_event_data(event);
- 	tracing_generic_entry_update(&entry->ent, flags, pc);
--	entry->ent.type		= TRACE_UNLIKELY;
++	unsigned long flags, irq_flags;
++	int cpu, pc;
++	const char *p;
++
++	/*
++	 * I would love to save just the ftrace_likely_data pointer, but
++	 * this code can also be used by modules. Ugly things can happen
++	 * if the module is unloaded, and then we go and read the
++	 * pointer.  This is slower, but much safer.
++	 */
++
++	if (unlikely(!tr))
++		return;
++
++	local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
++		goto out;
++
++	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
++					 &irq_flags);
++	if (!event)
++		goto out;
++
++	pc = preempt_count();
++	entry	= ring_buffer_event_data(event);
++	tracing_generic_entry_update(&entry->ent, flags, pc);
 +	entry->ent.type		= TRACE_BRANCH;
- 
- 	/* Strip off the path, only save the file */
- 	p = f->file + strlen(f->file);
-@@ -77,51 +77,51 @@ probe_likely_condition(struct ftrace_likely_data *f, int val, int expect)
- }
- 
- static inline
--void trace_likely_condition(struct ftrace_likely_data *f, int val, int expect)
++
++	/* Strip off the path, only save the file */
++	p = f->file + strlen(f->file);
++	while (p >= f->file && *p != '/')
++		p--;
++	p++;
++
++	strncpy(entry->func, f->func, TRACE_FUNC_SIZE);
++	strncpy(entry->file, p, TRACE_FILE_SIZE);
++	entry->func[TRACE_FUNC_SIZE] = 0;
++	entry->file[TRACE_FILE_SIZE] = 0;
++	entry->line = f->line;
++	entry->correct = val == expect;
++
++	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
++
++ out:
++	atomic_dec(&tr->data[cpu]->disabled);
++	local_irq_restore(flags);
++}
++
++static inline
 +void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- {
--	if (!unlikely_tracing_enabled)
++{
 +	if (!branch_tracing_enabled)
- 		return;
- 
- 	probe_likely_condition(f, val, expect);
- }
- 
--int enable_unlikely_tracing(struct trace_array *tr)
++		return;
++
++	probe_likely_condition(f, val, expect);
++}
++
 +int enable_branch_tracing(struct trace_array *tr)
- {
- 	int ret = 0;
- 
--	mutex_lock(&unlikely_tracing_mutex);
--	unlikely_tracer = tr;
++{
++	int ret = 0;
++
 +	mutex_lock(&branch_tracing_mutex);
 +	branch_tracer = tr;
- 	/*
- 	 * Must be seen before enabling. The reader is a condition
- 	 * where we do not need a matching rmb()
- 	 */
- 	smp_wmb();
--	unlikely_tracing_enabled++;
--	mutex_unlock(&unlikely_tracing_mutex);
++	/*
++	 * Must be seen before enabling. The reader is a condition
++	 * where we do not need a matching rmb()
++	 */
++	smp_wmb();
 +	branch_tracing_enabled++;
 +	mutex_unlock(&branch_tracing_mutex);
- 
- 	return ret;
- }
- 
--void disable_unlikely_tracing(void)
++
++	return ret;
++}
++
 +void disable_branch_tracing(void)
- {
--	mutex_lock(&unlikely_tracing_mutex);
++{
 +	mutex_lock(&branch_tracing_mutex);
- 
--	if (!unlikely_tracing_enabled)
++
 +	if (!branch_tracing_enabled)
- 		goto out_unlock;
- 
--	unlikely_tracing_enabled--;
++		goto out_unlock;
++
 +	branch_tracing_enabled--;
- 
-  out_unlock:
--	mutex_unlock(&unlikely_tracing_mutex);
++
++ out_unlock:
 +	mutex_unlock(&branch_tracing_mutex);
- }
- #else
- static inline
--void trace_likely_condition(struct ftrace_likely_data *f, int val, int expect)
++}
++
++static void start_branch_trace(struct trace_array *tr)
++{
++	enable_branch_tracing(tr);
++}
++
++static void stop_branch_trace(struct trace_array *tr)
++{
++	disable_branch_tracing();
++}
++
++static void branch_trace_init(struct trace_array *tr)
++{
++	int cpu;
++
++	for_each_online_cpu(cpu)
++		tracing_reset(tr, cpu);
++
++	start_branch_trace(tr);
++}
++
++static void branch_trace_reset(struct trace_array *tr)
++{
++	stop_branch_trace(tr);
++}
++
++struct tracer branch_trace __read_mostly =
++{
++	.name		= "branch",
++	.init		= branch_trace_init,
++	.reset		= branch_trace_reset,
++#ifdef CONFIG_FTRACE_SELFTEST
++	.selftest	= trace_selftest_startup_branch,
++#endif
++};
++
++__init static int init_branch_trace(void)
++{
++	return register_tracer(&branch_trace);
++}
++
++device_initcall(init_branch_trace);
++#else
++static inline
 +void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- {
- }
- #endif /* CONFIG_BRANCH_TRACER */
- 
--void ftrace_likely_update(struct ftrace_likely_data *f, int val, int expect)
++{
++}
++#endif /* CONFIG_BRANCH_TRACER */
++
 +void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect)
- {
- 	/*
- 	 * I would love to have a trace point here instead, but the
-@@ -148,7 +148,7 @@ static void *
- t_next(struct seq_file *m, void *v, loff_t *pos)
- {
- 	struct ftrace_pointer *f = m->private;
--	struct ftrace_likely_data *p = v;
++{
++	/*
++	 * I would love to have a trace point here instead, but the
++	 * trace point code is so inundated with unlikely and likely
++	 * conditions that the recursive nightmare that exists is too
++	 * much to try to get working. At least for now.
++	 */
++	trace_likely_condition(f, val, expect);
++
++	/* FIXME: Make this atomic! */
++	if (val == expect)
++		f->correct++;
++	else
++		f->incorrect++;
++}
++EXPORT_SYMBOL(ftrace_likely_update);
++
++struct ftrace_pointer {
++	void		*start;
++	void		*stop;
++};
++
++static void *
++t_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	struct ftrace_pointer *f = m->private;
 +	struct ftrace_branch_data *p = v;
- 
- 	(*pos)++;
- 
-@@ -180,7 +180,7 @@ static void t_stop(struct seq_file *m, void *p)
- 
- static int t_show(struct seq_file *m, void *v)
- {
--	struct ftrace_likely_data *p = v;
++
++	(*pos)++;
++
++	if (v == (void *)1)
++		return f->start;
++
++	++p;
++
++	if ((void *)p >= (void *)f->stop)
++		return NULL;
++
++	return p;
++}
++
++static void *t_start(struct seq_file *m, loff_t *pos)
++{
++	void *t = (void *)1;
++	loff_t l = 0;
++
++	for (; t && l < *pos; t = t_next(m, t, &l))
++		;
++
++	return t;
++}
++
++static void t_stop(struct seq_file *m, void *p)
++{
++}
++
++static int t_show(struct seq_file *m, void *v)
++{
 +	struct ftrace_branch_data *p = v;
- 	const char *f;
- 	unsigned long percent;
- 
-@@ -252,7 +252,7 @@ static struct ftrace_pointer ftrace_unlikely_pos = {
- 	.stop			= __stop_unlikely_profile,
- };
- 
--static __init int ftrace_unlikely_init(void)
++	const char *f;
++	unsigned long percent;
++
++	if (v == (void *)1) {
++		seq_printf(m, " correct incorrect  %% "
++			      "       Function                "
++			      "  File              Line\n"
++			      " ------- ---------  - "
++			      "       --------                "
++			      "  ----              ----\n");
++		return 0;
++	}
++
++	/* Only print the file, not the path */
++	f = p->file + strlen(p->file);
++	while (f >= p->file && *f != '/')
++		f--;
++	f++;
++
++	if (p->correct) {
++		percent = p->incorrect * 100;
++		percent /= p->correct + p->incorrect;
++	} else
++		percent = p->incorrect ? 100 : 0;
++
++	seq_printf(m, "%8lu %8lu %3lu ", p->correct, p->incorrect, percent);
++	seq_printf(m, "%-30.30s %-20.20s %d\n", p->func, f, p->line);
++	return 0;
++}
++
++static struct seq_operations tracing_likely_seq_ops = {
++	.start		= t_start,
++	.next		= t_next,
++	.stop		= t_stop,
++	.show		= t_show,
++};
++
++static int tracing_likely_open(struct inode *inode, struct file *file)
++{
++	int ret;
++
++	ret = seq_open(file, &tracing_likely_seq_ops);
++	if (!ret) {
++		struct seq_file *m = file->private_data;
++		m->private = (void *)inode->i_private;
++	}
++
++	return ret;
++}
++
++static struct file_operations tracing_likely_fops = {
++	.open		= tracing_likely_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++};
++
++extern unsigned long __start_likely_profile[];
++extern unsigned long __stop_likely_profile[];
++extern unsigned long __start_unlikely_profile[];
++extern unsigned long __stop_unlikely_profile[];
++
++static struct ftrace_pointer ftrace_likely_pos = {
++	.start			= __start_likely_profile,
++	.stop			= __stop_likely_profile,
++};
++
++static struct ftrace_pointer ftrace_unlikely_pos = {
++	.start			= __start_unlikely_profile,
++	.stop			= __stop_unlikely_profile,
++};
++
 +static __init int ftrace_branch_init(void)
- {
- 	struct dentry *d_tracer;
- 	struct dentry *entry;
-@@ -275,4 +275,4 @@ static __init int ftrace_unlikely_init(void)
- 	return 0;
- }
- 
--device_initcall(ftrace_unlikely_init);
++{
++	struct dentry *d_tracer;
++	struct dentry *entry;
++
++	d_tracer = tracing_init_dentry();
++
++	entry = debugfs_create_file("profile_likely", 0444, d_tracer,
++				    &ftrace_likely_pos,
++				    &tracing_likely_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs 'profile_likely' entry\n");
++
++	entry = debugfs_create_file("profile_unlikely", 0444, d_tracer,
++				    &ftrace_unlikely_pos,
++				    &tracing_likely_fops);
++	if (!entry)
++		pr_warning("Could not create debugfs"
++			   " 'profile_unlikely' entry\n");
++
++	return 0;
++}
++
 +device_initcall(ftrace_branch_init);
+diff --git a/kernel/trace/trace_unlikely.c b/kernel/trace/trace_unlikely.c
+deleted file mode 100644
+index 8526555..0000000
+--- a/kernel/trace/trace_unlikely.c
++++ /dev/null
+@@ -1,320 +0,0 @@
+-/*
+- * unlikely profiler
+- *
+- * Copyright (C) 2008 Steven Rostedt <srostedt@redhat.com>
+- */
+-#include <linux/kallsyms.h>
+-#include <linux/seq_file.h>
+-#include <linux/spinlock.h>
+-#include <linux/debugfs.h>
+-#include <linux/uaccess.h>
+-#include <linux/module.h>
+-#include <linux/ftrace.h>
+-#include <linux/hash.h>
+-#include <linux/fs.h>
+-#include <asm/local.h>
+-#include "trace.h"
+-
+-#ifdef CONFIG_BRANCH_TRACER
+-
+-static int branch_tracing_enabled __read_mostly;
+-static DEFINE_MUTEX(branch_tracing_mutex);
+-static struct trace_array *branch_tracer;
+-
+-static void
+-probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+-{
+-	struct trace_array *tr = branch_tracer;
+-	struct ring_buffer_event *event;
+-	struct trace_branch *entry;
+-	unsigned long flags, irq_flags;
+-	int cpu, pc;
+-	const char *p;
+-
+-	/*
+-	 * I would love to save just the ftrace_likely_data pointer, but
+-	 * this code can also be used by modules. Ugly things can happen
+-	 * if the module is unloaded, and then we go and read the
+-	 * pointer.  This is slower, but much safer.
+-	 */
+-
+-	if (unlikely(!tr))
+-		return;
+-
+-	local_irq_save(flags);
+-	cpu = raw_smp_processor_id();
+-	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
+-		goto out;
+-
+-	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
+-					 &irq_flags);
+-	if (!event)
+-		goto out;
+-
+-	pc = preempt_count();
+-	entry	= ring_buffer_event_data(event);
+-	tracing_generic_entry_update(&entry->ent, flags, pc);
+-	entry->ent.type		= TRACE_BRANCH;
+-
+-	/* Strip off the path, only save the file */
+-	p = f->file + strlen(f->file);
+-	while (p >= f->file && *p != '/')
+-		p--;
+-	p++;
+-
+-	strncpy(entry->func, f->func, TRACE_FUNC_SIZE);
+-	strncpy(entry->file, p, TRACE_FILE_SIZE);
+-	entry->func[TRACE_FUNC_SIZE] = 0;
+-	entry->file[TRACE_FILE_SIZE] = 0;
+-	entry->line = f->line;
+-	entry->correct = val == expect;
+-
+-	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+-
+- out:
+-	atomic_dec(&tr->data[cpu]->disabled);
+-	local_irq_restore(flags);
+-}
+-
+-static inline
+-void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+-{
+-	if (!branch_tracing_enabled)
+-		return;
+-
+-	probe_likely_condition(f, val, expect);
+-}
+-
+-int enable_branch_tracing(struct trace_array *tr)
+-{
+-	int ret = 0;
+-
+-	mutex_lock(&branch_tracing_mutex);
+-	branch_tracer = tr;
+-	/*
+-	 * Must be seen before enabling. The reader is a condition
+-	 * where we do not need a matching rmb()
+-	 */
+-	smp_wmb();
+-	branch_tracing_enabled++;
+-	mutex_unlock(&branch_tracing_mutex);
+-
+-	return ret;
+-}
+-
+-void disable_branch_tracing(void)
+-{
+-	mutex_lock(&branch_tracing_mutex);
+-
+-	if (!branch_tracing_enabled)
+-		goto out_unlock;
+-
+-	branch_tracing_enabled--;
+-
+- out_unlock:
+-	mutex_unlock(&branch_tracing_mutex);
+-}
+-
+-static void start_branch_trace(struct trace_array *tr)
+-{
+-	enable_branch_tracing(tr);
+-}
+-
+-static void stop_branch_trace(struct trace_array *tr)
+-{
+-	disable_branch_tracing();
+-}
+-
+-static void branch_trace_init(struct trace_array *tr)
+-{
+-	int cpu;
+-
+-	for_each_online_cpu(cpu)
+-		tracing_reset(tr, cpu);
+-
+-	start_branch_trace(tr);
+-}
+-
+-static void branch_trace_reset(struct trace_array *tr)
+-{
+-	stop_branch_trace(tr);
+-}
+-
+-struct tracer branch_trace __read_mostly =
+-{
+-	.name		= "branch",
+-	.init		= branch_trace_init,
+-	.reset		= branch_trace_reset,
+-#ifdef CONFIG_FTRACE_SELFTEST
+-	.selftest	= trace_selftest_startup_branch,
+-#endif
+-};
+-
+-__init static int init_branch_trace(void)
+-{
+-	return register_tracer(&branch_trace);
+-}
+-
+-device_initcall(init_branch_trace);
+-#else
+-static inline
+-void trace_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+-{
+-}
+-#endif /* CONFIG_BRANCH_TRACER */
+-
+-void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect)
+-{
+-	/*
+-	 * I would love to have a trace point here instead, but the
+-	 * trace point code is so inundated with unlikely and likely
+-	 * conditions that the recursive nightmare that exists is too
+-	 * much to try to get working. At least for now.
+-	 */
+-	trace_likely_condition(f, val, expect);
+-
+-	/* FIXME: Make this atomic! */
+-	if (val == expect)
+-		f->correct++;
+-	else
+-		f->incorrect++;
+-}
+-EXPORT_SYMBOL(ftrace_likely_update);
+-
+-struct ftrace_pointer {
+-	void		*start;
+-	void		*stop;
+-};
+-
+-static void *
+-t_next(struct seq_file *m, void *v, loff_t *pos)
+-{
+-	struct ftrace_pointer *f = m->private;
+-	struct ftrace_branch_data *p = v;
+-
+-	(*pos)++;
+-
+-	if (v == (void *)1)
+-		return f->start;
+-
+-	++p;
+-
+-	if ((void *)p >= (void *)f->stop)
+-		return NULL;
+-
+-	return p;
+-}
+-
+-static void *t_start(struct seq_file *m, loff_t *pos)
+-{
+-	void *t = (void *)1;
+-	loff_t l = 0;
+-
+-	for (; t && l < *pos; t = t_next(m, t, &l))
+-		;
+-
+-	return t;
+-}
+-
+-static void t_stop(struct seq_file *m, void *p)
+-{
+-}
+-
+-static int t_show(struct seq_file *m, void *v)
+-{
+-	struct ftrace_branch_data *p = v;
+-	const char *f;
+-	unsigned long percent;
+-
+-	if (v == (void *)1) {
+-		seq_printf(m, " correct incorrect  %% "
+-			      "       Function                "
+-			      "  File              Line\n"
+-			      " ------- ---------  - "
+-			      "       --------                "
+-			      "  ----              ----\n");
+-		return 0;
+-	}
+-
+-	/* Only print the file, not the path */
+-	f = p->file + strlen(p->file);
+-	while (f >= p->file && *f != '/')
+-		f--;
+-	f++;
+-
+-	if (p->correct) {
+-		percent = p->incorrect * 100;
+-		percent /= p->correct + p->incorrect;
+-	} else
+-		percent = p->incorrect ? 100 : 0;
+-
+-	seq_printf(m, "%8lu %8lu %3lu ", p->correct, p->incorrect, percent);
+-	seq_printf(m, "%-30.30s %-20.20s %d\n", p->func, f, p->line);
+-	return 0;
+-}
+-
+-static struct seq_operations tracing_likely_seq_ops = {
+-	.start		= t_start,
+-	.next		= t_next,
+-	.stop		= t_stop,
+-	.show		= t_show,
+-};
+-
+-static int tracing_likely_open(struct inode *inode, struct file *file)
+-{
+-	int ret;
+-
+-	ret = seq_open(file, &tracing_likely_seq_ops);
+-	if (!ret) {
+-		struct seq_file *m = file->private_data;
+-		m->private = (void *)inode->i_private;
+-	}
+-
+-	return ret;
+-}
+-
+-static struct file_operations tracing_likely_fops = {
+-	.open		= tracing_likely_open,
+-	.read		= seq_read,
+-	.llseek		= seq_lseek,
+-};
+-
+-extern unsigned long __start_likely_profile[];
+-extern unsigned long __stop_likely_profile[];
+-extern unsigned long __start_unlikely_profile[];
+-extern unsigned long __stop_unlikely_profile[];
+-
+-static struct ftrace_pointer ftrace_likely_pos = {
+-	.start			= __start_likely_profile,
+-	.stop			= __stop_likely_profile,
+-};
+-
+-static struct ftrace_pointer ftrace_unlikely_pos = {
+-	.start			= __start_unlikely_profile,
+-	.stop			= __stop_unlikely_profile,
+-};
+-
+-static __init int ftrace_branch_init(void)
+-{
+-	struct dentry *d_tracer;
+-	struct dentry *entry;
+-
+-	d_tracer = tracing_init_dentry();
+-
+-	entry = debugfs_create_file("profile_likely", 0444, d_tracer,
+-				    &ftrace_likely_pos,
+-				    &tracing_likely_fops);
+-	if (!entry)
+-		pr_warning("Could not create debugfs 'profile_likely' entry\n");
+-
+-	entry = debugfs_create_file("profile_unlikely", 0444, d_tracer,
+-				    &ftrace_unlikely_pos,
+-				    &tracing_likely_fops);
+-	if (!entry)
+-		pr_warning("Could not create debugfs"
+-			   " 'profile_unlikely' entry\n");
+-
+-	return 0;
+-}
+-
+-device_initcall(ftrace_branch_init);
 -- 
 1.5.6.5
 
