@@ -1,22 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468AbYKLALS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753046AbYKLANb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753468AbYKLALS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbYKLALA
+	id S1753046AbYKLANb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbYKLANX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:11:00 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43048 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751984AbYKLAK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:10:59 -0500
-Date: Wed, 12 Nov 2008 11:10:49 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Theodore Ts'o" <tytso@mit.edu>, <adilger@sun.com>
-Cc: <linux-ext4@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       ppc-dev <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] ext4: fix some s64 printing warnings
-Message-Id: <20081112111049.68c604ff.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Tue, 11 Nov 2008 19:13:23 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:28368 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYKLANW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:13:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=EQGb6FkmtQApZXLey+gQH20G6YiUcg1yZEWK0o+cOGvv9qotgUPcLrtrDSE3niwBwr
+         FRFcxkfV7hfxkPWPgLi3mdaqiv8Wr+9voBbk+/abSpgQ/AfkGyGbWyowRSFLnnVPRqUa
+         40P8y9UDMZcHEXaOwUOYHDmAsyJ4PXS0rW/8w=
+Date: Tue, 11 Nov 2008 18:13:16 -0600
+From: "J. K. Cliburn" <jcliburn@gmail.com>
+To: David Madore <david.madore@ens.fr>
+Cc: Linux Kernel Mailing-List <linux-kernel@vger.kernel.org>,
+       Linux NetDev Mailing-List <netdev@vger.kernel.org>,
+       atl1-devel@lists.sourceforge.net
+Subject: Re: atl1e Ethernet driver not seeing packets sent to
+ 33:33:00:00:00:01 multicast
+Message-ID: <20081111181316.36e819fa@osprey.hogchain.net>
+In-Reply-To: <20081111220015.GA18215@clipper.ens.fr>
+References: <20081111133108.GA7124@clipper.ens.fr>
+	<20081111080611.7f6d4371@osprey.hogchain.net>
+	<20081111155908.GA14665@clipper.ens.fr>
+	<20081111100816.58a7cf09@osprey.hogchain.net>
+	<20081111220015.GA18215@clipper.ens.fr>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -24,56 +40,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A powerpc ppc64_defconfig build of Linus' current tree produces these
-warnings:
+On Tue, 11 Nov 2008 23:00:15 +0100
+David Madore <david.madore@ens.fr> wrote:
 
-fs/ext4/balloc.c: In function 'ext4_has_free_blocks':
-fs/ext4/balloc.c:617: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
-fs/ext4/inode.c: In function 'ext4_print_free_blocks':
-fs/ext4/inode.c:1833: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
-fs/ext4/inode.c:1835: warning: format '%lld' expects type 'long long int', but argument 2 has type 's64'
+> On Tue, Nov 11, 2008 at 10:08:16AM -0600, J. K. Cliburn wrote:
+> > Can you please try this patch?
+[...]
+> Now it works.  Many thanks!
 
-Fix them up with the usual casts.
+Thank you very much for reporting the bug and testing the fix.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- fs/ext4/balloc.c |    2 +-
- fs/ext4/inode.c  |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index d2003cd..9ce2fcd 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -614,7 +614,7 @@ int ext4_has_free_blocks(struct ext4_sb_info *sbi, s64 nblocks)
- 		if (dirty_blocks < 0) {
- 			printk(KERN_CRIT "Dirty block accounting "
- 					"went wrong %lld\n",
--					dirty_blocks);
-+					(long long)dirty_blocks);
- 		}
- 	}
- 	/* Check whether we have space after
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index be21a5a..2a3804e 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1830,9 +1830,9 @@ static void ext4_print_free_blocks(struct inode *inode)
- 			ext4_count_free_blocks(inode->i_sb));
- 	printk(KERN_EMERG "Free/Dirty block details\n");
- 	printk(KERN_EMERG "free_blocks=%lld\n",
--			percpu_counter_sum(&sbi->s_freeblocks_counter));
-+			(long long)percpu_counter_sum(&sbi->s_freeblocks_counter));
- 	printk(KERN_EMERG "dirty_blocks=%lld\n",
--			percpu_counter_sum(&sbi->s_dirtyblocks_counter));
-+			(long long)percpu_counter_sum(&sbi->s_dirtyblocks_counter));
- 	printk(KERN_EMERG "Block reservation details\n");
- 	printk(KERN_EMERG "i_reserved_data_blocks=%lu\n",
- 			EXT4_I(inode)->i_reserved_data_blocks);
--- 
-1.5.6.5
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Jay
