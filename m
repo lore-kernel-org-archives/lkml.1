@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbYKLXB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYKLXEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbYKLXB3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:01:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbYKLXBU
+	id S1755435AbYKLXEQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:04:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYKLXD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:01:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60155 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753259AbYKLXBU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:01:20 -0500
-Date: Wed, 12 Nov 2008 15:01:04 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: arjan@infradead.org, JosephChan@via.com.tw,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
-Message-Id: <20081112150104.8f7a71f6.akpm@linux-foundation.org>
-In-Reply-To: <20081110220046.10376327@neptune.home>
-References: <20081109202537.33ead0a2@neptune.home>
-	<20081109113603.d45361ad.akpm@linux-foundation.org>
-	<20081109122515.1deb9ec2@infradead.org>
-	<20081109213811.4b85adc6@neptune.home>
-	<20081109125522.b5266352.akpm@linux-foundation.org>
-	<20081109223748.3182e31d@neptune.home>
-	<20081109145959.6a8d9e8e.akpm@linux-foundation.org>
-	<20081110220046.10376327@neptune.home>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Nov 2008 18:03:59 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:54814 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753700AbYKLXD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:03:57 -0500
+Date: Thu, 13 Nov 2008 00:06:36 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@sirena.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.28] mfd: Correct WM8350 I2C return code usage
+Message-ID: <20081112230636.GB17382@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1226324477-21022-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112184956.GA17382@sortiz.org> <20081112200007.GA31451@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081112200007.GA31451@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 10 Nov 2008 22:00:46 +0100
-Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
+On Wed, Nov 12, 2008 at 08:00:07PM +0000, Mark Brown wrote:
+> On Wed, Nov 12, 2008 at 07:49:57PM +0100, Samuel Ortiz wrote:
+> > On Mon, Nov 10, 2008 at 01:41:17PM +0000, Mark Brown wrote:
+> 
+> > > The vendor BSP used for the WM8350 development provided an I2C driver
+> > > which incorrectly returned zero on succesful sends rather than the
+> > > number of transmitted bytes, an error which was then propagated into the
+> > > WM8350 I2C accessors.
+> 
+> > Shouldnt we fix the accessors behaviour instead ?
+> > Currently, that would mean fixing some of the wm8350-core static functions.
+> > Slightly bigger patch, but that would keep the i2c interface consistent.
+> 
+> I don't really understand what you mean by "keep the i2c interface
+> consistent" here?  The purpose of this abstraction is to abstract away
+> the control interface used to communicate with the chip since it
+> supports both I2C and SPI.
+I understand that. I'm just saying that I would prefer wm8350->read_dev() to
+return the actual bytes read, be it for SPI or I2C. Same for write_dev(), of
+course.
+With this patch you're breaking that expectation because the read|write_dev()
+callers basically expect it to return 0 when the you've read|written the right
+number of bytes.
+I'd prefer to fix the callers code, so that we keep the expected semantics
+for your read|write_dev() routines. For example with wm8350_clear_bits():
 
-> During conversion of viafb_ioctl() I noticed the following:
-> 
-> Those two cases just copy_from_user and do nothing with copied data,
-> incomplete implementation?:
->         case VIAFB_SET_PANEL_POSITION:
->                 if (copy_from_user(&u.panel_pos_size_para, argp,
->                                    sizeof(u.panel_pos_size_para)))
->                         return -EFAULT;
->                 break;
->         case VIAFB_SET_PANEL_SIZE:
->                 if (copy_from_user(&u.panel_pos_size_para, argp,
->                                    sizeof(u.panel_pos_size_para)))
->                         return -EFAULT;
->                 break;
-> 
-> Handling of GET/SET GAMMA looks buggy:
-> In each case 256*4 bytes are allocated but only 4 bytes (size of pointer)
-> are copied to/from userspace though viafb_(get|set)_gamma_table() operates
-> on the full 256 elements...
->         case VIAFB_SET_GAMMA_LUT:
->                 viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
->                 if (!viafb_gamma_table)
->                         return -ENOMEM;
->                 if (copy_from_user(viafb_gamma_table, argp,
->                                 sizeof(viafb_gamma_table))) {
->                         kfree(viafb_gamma_table);
->                         return -EFAULT;
->                 }
->                 viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
->                 kfree(viafb_gamma_table);
->                 break;
-> 
->         case VIAFB_GET_GAMMA_LUT:
->                 viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
->                 if (!viafb_gamma_table)
->                         return -ENOMEM;
->                 viafb_get_gamma_table(viafb_gamma_table);
->                 if (copy_to_user(argp, viafb_gamma_table,
->                         sizeof(viafb_gamma_table))) {
->                         kfree(viafb_gamma_table);
->                         return -EFAULT;
->                 }
->                 kfree(viafb_gamma_table);
->                 break;
-> 
-> I don't know if there is a userspace app that uses these VIA IOCTLs...
-> so the ioctl part is just compile-tested.
-> After checking, fbset just uses some generic framebuffer IOCTLs outside
-> of viafb's scope, thus not passing through viafb_ioctl().
-> 
-> 
-> 
-> ---
-> --- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig	2008-11-09 19:36:47.000000000 +0100
-> +++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10 20:50:32.000000000 +0100
+diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+index 0d47fb9..12ff3a6 100644
+--- a/drivers/mfd/wm8350-core.c
++++ b/drivers/mfd/wm8350-core.c
+@@ -199,19 +199,22 @@ static int wm8350_write(struct wm8350 *wm8350, u8 reg, int num_regs, u16 *src)
+ int wm8350_clear_bits(struct wm8350 *wm8350, u16 reg, u16 mask)
+ {
+ 	u16 data;
+-	int err;
++	int err = 0, ret;
+ 
+ 	mutex_lock(&io_mutex);
+-	err = wm8350_read(wm8350, reg, 1, &data);
+-	if (err) {
++	ret = wm8350_read(wm8350, reg, 1, &data);
++	if (ret != 1) {
+ 		dev_err(wm8350->dev, "read from reg R%d failed\n", reg);
++		err = -EIO;
+ 		goto out;
+ 	}
+ 
+ 	data &= ~mask;
+-	err = wm8350_write(wm8350, reg, 1, &data);
+-	if (err)
++	ret = wm8350_write(wm8350, reg, 1, &data);
++	if (ret != 1) {
+ 		dev_err(wm8350->dev, "write to reg R%d failed\n", reg);
++		err = -EIO;
++	}
+ out:
+ 	mutex_unlock(&io_mutex);
+ 	return err;
 
-hm, OK, I dropped the old patch and merged this one.
 
-It'd be nice to have it runtime tested and reviewed by Joseph, but we
-haven't heard from him yet.  viafb might be 8k-stacks-only in 2.6.27,
-which would be bad.
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
