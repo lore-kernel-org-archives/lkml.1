@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbYKLAhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbYKLAgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbYKLAhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbYKLA0k
+	id S1756235AbYKLAgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:36:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYKLA0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:40 -0500
-Received: from kroah.org ([198.145.64.141]:42453 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753694AbYKLA0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 11 Nov 2008 19:26:39 -0500
-Date: Tue, 11 Nov 2008 16:23:54 -0800
+Received: from kroah.org ([198.145.64.141]:42436 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753656AbYKLA0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:37 -0500
+Date: Tue, 11 Nov 2008 16:23:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,18 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-       Mohamed Abbas <mohamed.abbas@intel.com>,
+       alan@lxorguk.ukuu.org.uk, Ron Rindjunsky <ron.rindjunsky@intel.com>,
+       Esti Kummer <ester.kummer@intel.com>,
        Tomas Winkler <tomas.winkler@intel.com>, Zhu Yi <yi.zhu@intel.com>,
        "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 29/49] iwlwifi: allow association on radar channel in power
-	save
-Message-ID: <20081112002354.GD10989@kroah.com>
+Subject: [patch 28/49] iwlwifi: allow consecutive scans in unassociated
+	state
+Message-ID: <20081112002352.GC10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="iwlwifi-allow-association-on-radar-channel-in-power-save.patch"
+Content-Disposition: inline; filename="iwlwifi-allow-consecutive-scans-in-unassociated-state.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,182 +43,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
+From: Ron Rindjunsky <ron.rindjunsky@intel.com>
 
-commit c90a74bae10dc2a4677d1bd06b6400db229d3e1e upstream
+commit 681c0050ea3ac2e90c83d5af397d73eed848a372 upstream
 
-This patch disables power save upon association and enables it back
-after association. This allows to associate to AP on a radar channel
-if power save is enabled.
+This patch allows consecutive scans requests when driver is in
+unassociated state.
 
-Radar and passive channels are not allowed for TX (required for association)
-unless RX is received but PS may close the radio and no RX will be received
-effectively failing association.
-
-Signed-off-by: Emmanuel Grumbach <emmanuel.grumbach@intel.com>
-Signed-off-by: Mohamed Abbas <mohamed.abbas@intel.com>
+Signed-off-by: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Signed-off-by: Esti Kummer <ester.kummer@intel.com>
 Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
 Signed-off-by: Zhu Yi <yi.zhu@intel.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-agn.c   |   24 +++++++++++++++----
- drivers/net/wireless/iwlwifi/iwl-dev.h   |    1 
- drivers/net/wireless/iwlwifi/iwl-power.c |   39 ++++++++++++++++++++++++++++++-
- drivers/net/wireless/iwlwifi/iwl-power.h |    4 ++-
- 4 files changed, 61 insertions(+), 7 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-agn.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 --- a/drivers/net/wireless/iwlwifi/iwl-agn.c
 +++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -2486,6 +2486,7 @@ static void iwl4965_post_associate(struc
- 	if (!priv->vif || !priv->is_open)
- 		return;
+@@ -3214,13 +3214,15 @@ static int iwl4965_mac_hw_scan(struct ie
  
-+	iwl_power_cancel_timeout(priv);
- 	iwl_scan_cancel_timeout(priv, 200);
- 
- 	conf = ieee80211_get_hw_conf(priv->hw);
-@@ -2550,10 +2551,6 @@ static void iwl4965_post_associate(struc
- 		break;
+ 	/* we don't schedule scan within next_scan_jiffies period */
+ 	if (priv->next_scan_jiffies &&
+-			time_after(priv->next_scan_jiffies, jiffies)) {
++	    time_after(priv->next_scan_jiffies, jiffies)) {
++		IWL_DEBUG_SCAN("scan rejected: within next scan period\n");
+ 		rc = -EAGAIN;
+ 		goto out_unlock;
  	}
- 
--	/* Enable Rx differential gain and sensitivity calibrations */
--	iwl_chain_noise_reset(priv);
--	priv->start_calib = 1;
--
- 	if (priv->iw_mode == IEEE80211_IF_TYPE_IBSS)
- 		priv->assoc_station_added = 1;
- 
-@@ -2561,7 +2558,12 @@ static void iwl4965_post_associate(struc
- 	iwl_activate_qos(priv, 0);
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
--	iwl_power_update_mode(priv, 0);
-+	iwl_power_enable_management(priv);
-+
-+	/* Enable Rx differential gain and sensitivity calibrations */
-+	iwl_chain_noise_reset(priv);
-+	priv->start_calib = 1;
-+
- 	/* we have just associated, don't start scan too early */
- 	priv->next_scan_jiffies = jiffies + IWL_DELAY_NEXT_SCAN;
- }
-@@ -3548,6 +3550,16 @@ static void iwl4965_mac_reset_tsf(struct
- 	/* Per mac80211.h: This is only used in IBSS mode... */
- 	if (priv->iw_mode != IEEE80211_IF_TYPE_IBSS) {
- 
-+		/* switch to CAM during association period.
-+		 * the ucode will block any association/authentication
-+		 * frome during assiciation period if it can not hear
-+		 * the AP because of PM. the timer enable PM back is
-+		 * association do not complete
-+		 */
-+		if (priv->hw->conf.channel->flags & (IEEE80211_CHAN_PASSIVE_SCAN |
-+						     IEEE80211_CHAN_RADAR))
-+				iwl_power_disable_management(priv, 3000);
-+
- 		IWL_DEBUG_MAC80211("leave - not in IBSS\n");
- 		mutex_unlock(&priv->mutex);
- 		return;
-@@ -4085,6 +4097,7 @@ static void iwl_setup_deferred_work(stru
- 	/* FIXME : remove when resolved PENDING */
- 	INIT_WORK(&priv->scan_completed, iwl_bg_scan_completed);
- 	iwl_setup_scan_deferred_work(priv);
-+	iwl_setup_power_deferred_work(priv);
- 
- 	if (priv->cfg->ops->lib->setup_deferred_work)
- 		priv->cfg->ops->lib->setup_deferred_work(priv);
-@@ -4104,6 +4117,7 @@ static void iwl_cancel_deferred_work(str
- 
- 	cancel_delayed_work_sync(&priv->init_alive_start);
- 	cancel_delayed_work(&priv->scan_check);
-+	cancel_delayed_work_sync(&priv->set_power_save);
- 	cancel_delayed_work(&priv->alive_start);
- 	cancel_work_sync(&priv->beacon_update);
- 	del_timer_sync(&priv->statistics_periodic);
---- a/drivers/net/wireless/iwlwifi/iwl-dev.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
-@@ -1047,6 +1047,7 @@ struct iwl_priv {
- 
- 	struct tasklet_struct irq_tasklet;
- 
-+	struct delayed_work set_power_save;
- 	struct delayed_work init_alive_start;
- 	struct delayed_work alive_start;
- 	struct delayed_work scan_check;
---- a/drivers/net/wireless/iwlwifi/iwl-power.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-power.c
-@@ -324,7 +324,7 @@ EXPORT_SYMBOL(iwl_power_update_mode);
-  * this will be usefull for rate scale to disable PM during heavy
-  * Tx/Rx activities
-  */
--int iwl_power_disable_management(struct iwl_priv *priv)
-+int iwl_power_disable_management(struct iwl_priv *priv, u32 ms)
- {
- 	u16 prev_mode;
- 	int ret = 0;
-@@ -337,6 +337,11 @@ int iwl_power_disable_management(struct 
- 	ret = iwl_power_update_mode(priv, 0);
- 	priv->power_data.power_disabled = 1;
- 	priv->power_data.user_power_setting = prev_mode;
-+	cancel_delayed_work(&priv->set_power_save);
-+	if (ms)
-+		queue_delayed_work(priv->workqueue, &priv->set_power_save,
-+				   msecs_to_jiffies(ms));
-+
- 
- 	return ret;
- }
-@@ -431,3 +436,35 @@ int iwl_power_temperature_change(struct 
- 	return ret;
- }
- EXPORT_SYMBOL(iwl_power_temperature_change);
-+
-+static void iwl_bg_set_power_save(struct work_struct *work)
-+{
-+	struct iwl_priv *priv = container_of(work,
-+				struct iwl_priv, set_power_save.work);
-+	IWL_DEBUG(IWL_DL_STATE, "update power\n");
-+
-+	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
-+		return;
-+
-+	mutex_lock(&priv->mutex);
-+
-+	/* on starting association we disable power managment
-+	 * until association, if association failed then this
-+	 * timer will expire and enable PM again.
-+	 */
-+	if (!iwl_is_associated(priv))
-+		iwl_power_enable_management(priv);
-+
-+	mutex_unlock(&priv->mutex);
-+}
-+void iwl_setup_power_deferred_work(struct iwl_priv *priv)
-+{
-+	INIT_DELAYED_WORK(&priv->set_power_save, iwl_bg_set_power_save);
-+}
-+EXPORT_SYMBOL(iwl_setup_power_deferred_work);
-+
-+void iwl_power_cancel_timeout(struct iwl_priv *priv)
-+{
-+	cancel_delayed_work(&priv->set_power_save);
-+}
-+EXPORT_SYMBOL(iwl_power_cancel_timeout);
---- a/drivers/net/wireless/iwlwifi/iwl-power.h
-+++ b/drivers/net/wireless/iwlwifi/iwl-power.h
-@@ -78,8 +78,10 @@ struct iwl_power_mgr {
- 	u8 power_disabled; /* flag to disable using power saving level */
- };
- 
-+void iwl_setup_power_deferred_work(struct iwl_priv *priv);
-+void iwl_power_cancel_timeout(struct iwl_priv *priv);
- int iwl_power_update_mode(struct iwl_priv *priv, u8 refresh);
--int iwl_power_disable_management(struct iwl_priv *priv);
-+int iwl_power_disable_management(struct iwl_priv *priv, u32 ms);
- int iwl_power_enable_management(struct iwl_priv *priv);
- int iwl_power_set_user_mode(struct iwl_priv *priv, u16 mode);
- int iwl_power_set_system_mode(struct iwl_priv *priv, u16 mode);
+ 	/* if we just finished scan ask for delay */
+-	if (priv->last_scan_jiffies && time_after(priv->last_scan_jiffies +
+-				IWL_DELAY_NEXT_SCAN, jiffies)) {
++	if (iwl_is_associated(priv) && priv->last_scan_jiffies &&
++	    time_after(priv->last_scan_jiffies + IWL_DELAY_NEXT_SCAN, jiffies)) {
++		IWL_DEBUG_SCAN("scan rejected: within previous scan period\n");
+ 		rc = -EAGAIN;
+ 		goto out_unlock;
+ 	}
 
 -- 
