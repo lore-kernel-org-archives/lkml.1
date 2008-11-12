@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbYKLVb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbYKLVcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbYKLVb7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 16:31:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbYKLVbs
+	id S1755277AbYKLVcj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 16:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYKLVca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 16:31:48 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:57684 "EHLO mgw1.diku.dk"
+	Wed, 12 Nov 2008 16:32:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:59700 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165AbYKLVbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 16:31:47 -0500
-Date: Wed, 12 Nov 2008 22:31:43 +0100 (CET)
-From: Jesper Dangaard Brouer <hawk@diku.dk>
-To: netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: NIU driver: Sun x8 Express Quad Gigabit Ethernet Adapter
-In-Reply-To: <20081112.041143.11487260.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0811122213180.1212@ask.diku.dk>
-References: <20081112.014923.68124784.davem@davemloft.net>
- <1226487710.6834.53.camel@localhost.localdomain> <20081112.035240.226243372.davem@davemloft.net>
- <20081112.041143.11487260.davem@davemloft.net>
+	id S1751633AbYKLVc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 16:32:29 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
+Date: Wed, 12 Nov 2008 22:37:02 +0100
+User-Agent: KMail/1.9.9
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Mathieu Chouquet-Stringer" <mchouque@free.fr>,
+       Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+References: <20081109195033.GA1335@mobydick> <200811121033.58840.jbarnes@virtuousgeek.org> <20081112184236.GR26778@kernel.dk>
+In-Reply-To: <20081112184236.GR26778@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811122237.03882.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday, 12 of November 2008, Jens Axboe wrote:
+> On Wed, Nov 12 2008, Jesse Barnes wrote:
+> > On Tuesday, November 11, 2008 7:27 am Mathieu Chouquet-Stringer wrote:
+> > > On Tue, Nov 11, 2008 at 12:15:24AM +0100, Mathieu Chouquet-Stringer wrote:
+> > > > This one I guess:
+> > > > http://bugzilla.kernel.org/attachment.cgi?id=18644&action=view
+> > > >
+> > > > Let me give it a shot, I'll keep you posted.
+> > >
+> > > So I compiled the module, rebooted just to have a clean starting point,
+> > > started X then tried to suspend: no go...
+> > 
+> > Dave pushed a fix for this (more complete than the one in the patch you 
+> > reference), have you tried the kernel from today to see if things work now?
+> 
+> A drm enabled kernel also hangs hard on resume (just see the mouse
+> pointer) here on the x60. Removing drm makes it work just fine. 2.6.27
+> works fine as well.
 
-Hi Google,
+Is there Intel graphics in there?
 
-On Wed, 12 Nov 2008, David Miller wrote:
-
-> Guess what that does?  The packet counters live in the upper
-> 32-bits and the MARK bits live in the lower 32-bits of the
-> TX_CS register.
->
-> So it first reads the packet counters, and as a side effect that
-> clears the MARK bits in the TX_CS register.  So when we read the lower
-> 32-bits the MARK bits are always seen as zero.
-
-For the thorough reader, the TX_CS Transmit Control and Status register is 
-described in table 26-15 page 761-762 in the PDF document titled: 
-"UltraSPARC T2 supplement to UltraSPARC architecture 2007", downloadable 
-from: 
-http://opensparc-t2.sunsource.net/specs/UST2-UASuppl-current-draft-HP-EXT.pdf
-
-Cheers,
-   Jesper Brouer
-
---
--------------------------------------------------------------------
-MSc. Master of Computer Science
-Dept. of Computer Science, University of Copenhagen
-Author of http://www.adsl-optimizer.dk
--------------------------------------------------------------------
+Rafael
