@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbYKLNzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbYKLODI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbYKLNzi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYKLNz0
+	id S1753108AbYKLODI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 09:03:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbYKLOC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:55:26 -0500
-Received: from bigben2.bytemark.co.uk ([80.68.81.132]:48292 "EHLO
+	Wed, 12 Nov 2008 09:02:56 -0500
+Received: from bigben2.bytemark.co.uk ([80.68.81.132]:49259 "EHLO
 	bigben2.bytemark.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbYKLNzZ (ORCPT
+	with ESMTP id S1750995AbYKLOCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:55:25 -0500
-Date: Wed, 12 Nov 2008 13:55:22 +0000
+	Wed, 12 Nov 2008 09:02:55 -0500
+Date: Wed, 12 Nov 2008 14:02:50 +0000
 From: Andy Whitcroft <apw@shadowen.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RESEND] checkpatch: Add warning for p0-patches
-Message-ID: <20081112135522.GD8302@shadowen.org>
-References: <1225467370-19143-1-git-send-email-w.sang@pengutronix.de>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] checkpatch: try to catch missing VMLINUX_SYMBOL() in
+	vmlinux.lds.h
+Message-ID: <20081112140250.GF8302@shadowen.org>
+References: <1226184965-13502-1-git-send-email-vapier@gentoo.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1225467370-19143-1-git-send-email-w.sang@pengutronix.de>
+In-Reply-To: <1226184965-13502-1-git-send-email-vapier@gentoo.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Oct 31, 2008 at 04:36:10PM +0100, Wolfram Sang wrote:
-> Some people work internally with -p0-patches which has the danger that
-> one forgets to convert them to -p1 before mainlining. Bitten myself and
-> seen p0-patches in mailing lists occasionally, this patch adds a warning
-> to checkpatch.pl in case a patch is -p0. If you really want, you can
-> fool this check to generate false positives, this is why it just spits a
-> warning. Making the check 100% proof is trickier than it looks, so let's
-> start with a version which catches the cases of real use.
+On Sat, Nov 08, 2008 at 05:56:05PM -0500, Mike Frysinger wrote:
+> Seems like every other release we have someone who updates vmlinux.lds.h and
+> adds C-visible symbols without VMLINUX_SYMBOL() around them.  So start
+> checking the file and only allow assignments that use one of the following
+> symbols on a side:
+> 	.
+> 	ALIGN(...)
+> 	VMLINUX_SYMBOL(...)
 > 
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 > ---
->  scripts/checkpatch.pl |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
+>  scripts/checkpatch.pl |   13 +++++++++++++
+>  1 files changed, 13 insertions(+), 0 deletions(-)
 > 
 > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-> index f88bb3e..dae5854 100755
+> index f88bb3e..8e96b42 100755
 > --- a/scripts/checkpatch.pl
 > +++ b/scripts/checkpatch.pl
-> @@ -1051,6 +1051,7 @@ sub process {
->  	my $in_comment = 0;
->  	my $comment_edge = 0;
->  	my $first_line = 0;
-> +	my $p1_prefix = '';
+> @@ -2189,6 +2189,19 @@ sub process {
+>  			}
+>  		}
 >  
->  	my $prev_values = 'E';
->  
-> @@ -1196,7 +1197,12 @@ sub process {
->  		# extract the filename as it passes
->  		if ($line=~/^\+\+\+\s+(\S+)/) {
->  			$realfile = $1;
-> -			$realfile =~ s@^[^/]*/@@;
-> +			$realfile =~ s@^([^/]*)/@@;
-> +
-> +			$p1_prefix = $1;
-> +			if ($tree && -e "$root/$p1_prefix") {
-> +				WARN("Patch prefix '$p1_prefix' exists. Is it maybe a p0-patch?\n");
+> +# make sure symbols are always wrapped with VMLINUX_SYMBOL() ...
+> +# all assignments may have only one of the following with an assignment:
+> +#	.
+> +#	ALIGN(...)
+> +#	VMLINUX_SYMBOL(...)
+> +		if ($realfile =~ /vmlinux.lds.h$/) {
+> +			if ($line =~ /=/ &&
+> +			    !($line =~ /([.]|(ALIGN|VMLINUX_SYMBOL)[(][^=]*[)])\s*=\s*([.]|(ALIGN|VMLINUX_SYMBOL)[(][^=]*[)])/))
+> +			{
+> +				WARN("vmlinux.lds.h needs VMLINUX_SYMBOL() around C-visible symbols\n" . $herecurr);
 > +			}
->  
->  			if ($realfile =~ m@^include/asm/@) {
->  				ERROR("do not modify files in include/asm, change architecture specific files in include/asm-<architecture>\n" . "$here$rawline\n");
+> +		}
+> +
+>  # check for redundant bracing round if etc
+>  		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/) {
+>  			my ($level, $endln, @chunks) =
+> -- 
 
-Looks reasonable.  Committed this with a few mods to my tree.  Will be
-in the next batch of updates.
+Ok, that seems like a sane check.  I think what we are really wanting
+to check for is assigments with plain identifiers on either side?  I've
+pushed a softened version of this check to my tree for testing.
+
+  http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-testing
 
 -apw
