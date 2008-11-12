@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbYKLMp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbYKLMwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753121AbYKLMp2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 07:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbYKLMpR
+	id S1752753AbYKLMwX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 07:52:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbYKLMwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 07:45:17 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39962 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751802AbYKLMpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 07:45:16 -0500
-Date: Wed, 12 Nov 2008 07:45:03 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, bfields@fieldses.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081112074503.47e175ae@tleilax.poochiereds.net>
-In-Reply-To: <20081112122033.GO26778@kernel.dk>
-References: <49187D05.9050407@telenet.dn.ua>
-	<x491vxjqmg0.fsf@segfault.boston.devel.redhat.com>
-	<20081111093426.GS26778@kernel.dk>
-	<20081111093540.GT26778@kernel.dk>
-	<20081111115227.GU26778@kernel.dk>
-	<4919B884.5000604@telenet.dn.ua>
-	<20081111180659.GC26778@kernel.dk>
-	<x49vduunjh4.fsf@segfault.boston.devel.redhat.com>
-	<20081111164104.48f4dbd8@tleilax.poochiereds.net>
-	<20081111165931.6f98401b@tleilax.poochiereds.net>
-	<20081112122033.GO26778@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 12 Nov 2008 07:52:14 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54410 "EHLO UNKNOWN"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751911AbYKLMwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 07:52:13 -0500
+Date: Wed, 12 Nov 2008 13:51:50 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       sfr@canb.auug.org.au, linux-next@vger.kernel.org, srostedt@redhat.com
+Subject: Re: [PATCH 1/1] ring-buffer: buffer record on/off switch
+Message-ID: <20081112125149.GA13192@ucw.cz>
+References: <20081111200601.147669239@goodmis.org> <20081111201034.315528609@goodmis.org> <20081111125645.4f7a5827.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081111125645.4f7a5827.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 13:20:35 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Tue 2008-11-11 12:56:45, Andrew Morton wrote:
+> On Tue, 11 Nov 2008 15:06:02 -0500
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > +static struct file_operations rb_simple_fops = {
+> 
+> should be const...
+> 
+> Probably it isn't worth fixing.  Someone(tm) should do period sweeps -
+> 10% of our file_operationses aren't const.
 
-> On Tue, Nov 11 2008, Jeff Layton wrote:
-> > On Tue, 11 Nov 2008 16:41:04 -0500
-> > Jeff Layton <jlayton@redhat.com> wrote:
-> > 
-> > > On Tue, 11 Nov 2008 14:36:07 -0500
-> > > Jeff Moyer <jmoyer@redhat.com> wrote:
-> > > 
-> > > > Jens Axboe <jens.axboe@oracle.com> writes:
-> > > > 
-> > > > > OK, that looks better. Can I talk you into just trying this little
-> > > > > patch, just to see what kind of performance that yields? Remove the cfq
-> > > > > patch first. I would have patched nfsd only, but this is just a quick'n
-> > > > > dirty.
-> > > > 
-> > > > I went ahead and gave it a shot.  The updated CFQ patch with no I/O
-> > > > context sharing does about 40MB/s reading a 1GB file.  Backing that
-> > > > patch out, and then adding the patch to share io_context's between
-> > > > kthreads yields 45MB/s.
-> > > > 
-> > > 
-> > > Here's a quick and dirty patch to make all of the nfsd's have the same
-> > > io_context. Comments appreciated -- I'm not that familiar with the IO
-> > > scheduling code. If this looks good, I'll clean it up, add some
-> > > comments and formally send it to Bruce.
-> > > 
-> > 
-> > No sooner than I send it out than I find a bug. We need to eventually
-> > put the io_context reference we get. This should be more correct:
-> 
-> That sort of thing happens a lot, I can definitely sympathize with you
-> there :-)
-> 
-> > ----------------[snip]-------------------
-> > 
-> > From d0ee67045a12c677883f77791c6f260588c7b41f Mon Sep 17 00:00:00 2001
-> > From: Jeff Layton <jlayton@redhat.com>
-> > Date: Tue, 11 Nov 2008 16:54:16 -0500
-> > Subject: [PATCH] knfsd: make all nfsd threads share an io_context
-> > 
-> > This apparently makes the I/O scheduler treat the threads as a group
-> > which helps throughput when sequential I/O is multiplexed over several
-> > nfsd's.
-> 
-> That's a lot more nifty than my stupid CLONE_IO flag addition. Both are
-> only good for test purposes though.
-> 
-> It's a bit difficult to make this really mergeable. I don't know
-> anything about how nfsd manages its thread pool, but something more
-> appropriate would be an io context per client mount. That's still not
-> perfect as you could easily have more than one process doing simultanous
-> IO on the client side, but it's a lot better.
-> 
-
-Ahh Good point...I wasn't thinking about it the right way. I guess what
-we really need is some way to tell that a series of I/O requests
-originated from the same client thread. NFS isn't really conducive to
-this...
-
-We might be able to do something like that with NFSv4 though. Maybe an
-io_context per state owner or something. That's probably not going to
-be trivial to implement however...
+checkptch rule? struct file_operations .* = { -> needs const?
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
