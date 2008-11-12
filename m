@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbYKLJ0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbYKLJag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbYKLJ0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYKLJZ5
+	id S1752622AbYKLJag (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 04:30:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYKLJa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:25:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53891 "EHLO mx2.mail.elte.hu"
+	Wed, 12 Nov 2008 04:30:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47894 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751557AbYKLJZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:25:56 -0500
-Date: Wed, 12 Nov 2008 10:25:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/fastboot: Use the ring-buffer timestamp
-	for initcall entries
-Message-ID: <20081112092548.GE4748@elte.hu>
-References: <491A062A.8080406@gmail.com>
+	id S1751397AbYKLJa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 04:30:27 -0500
+Message-ID: <491AA222.10209@kernel.org>
+Date: Wed, 12 Nov 2008 18:30:10 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491A062A.8080406@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Christoph Hellwig <hch@infradead.org>
+CC: Miklos Szeredi <miklos@szeredi.hu>, fuse-devel@lists.sourceforge.net,
+       greg@kroah.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org> <20081112091416.GA19721@infradead.org>
+In-Reply-To: <20081112091416.GA19721@infradead.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 12 Nov 2008 09:30:14 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Impact: Split the boot tracer entries in two parts: call and return
+Christoph Hellwig wrote:
+> On Wed, Nov 12, 2008 at 05:41:18PM +0900, Tejun Heo wrote:
+>>> emulated char devices to be char devices?  What I mean is, what would
+>>> happen if instead of a char device /dev/dsp would be a regular file
+>>> mounted on /dev/dsp (which implements all the necessary interfaces:
+>>> ioctls, poll, etc)?
+>> For most it would work, I suppose, but there are all sorts of wonky
+>> users out in the wild (and quite a few that we don't have source access
+>> to) and different configurations, so I think it's better to appear as
+>> proper character device if it is a character device.  It will also help
+>> udev and other desktop thingies deal with devices implemented in userland.
 > 
-> Now that we are using the sched tracer from the boot tracer, we want 
-> to use the same timestamp than the ring-buffer to have consistent 
-> time captures between sched events and initcall events. So we get 
-> rid of the old time capture by the boot tracer and split the 
-> initcall events in two parts: call and return. This way we have the 
-> ring buffer timestamp of both.
-> 
-> There is an example of a trace in attachment.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  include/trace/boot.h      |   31 ++++++++---
->  init/main.c               |   32 ++++++------
->  kernel/trace/trace.h      |   17 ++++--
->  kernel/trace/trace_boot.c |  123 ++++++++++++++++++++++++++++++++++-----------
->  4 files changed, 144 insertions(+), 59 deletions(-)
+> Note that mounting a char device on /dev/dsp is exactly the same as
+> mounting a regular file on /dev/dsp - the only difference is what you
+> set i_mode to.
 
-applied	to tip/tracing/fastboot, thanks	Frederic! 
+A difference is how the device is located.  With proper character device
+emulation, any char device node on any filesystem would work.  Not sure
+how relevant that would be tho.
 
-one small detail, do we need these messages in the boot tracer:
+Thanks.
 
-  ##### CPU 1 buffer started ####
-
-they are helpful for latency traces but might be confusing for boot 
-traces. (they lose their attraction after having seen a dozen of them)
-
-	Ingo
+-- 
+tejun
