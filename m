@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYKLSB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbYKLSCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbYKLSB7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 13:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbYKLSBu
+	id S1753869AbYKLSCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 13:02:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbYKLSCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 13:01:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35635 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbYKLSBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 13:01:50 -0500
-Date: Wed, 12 Nov 2008 16:01:39 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] markers: Add missing stdargs.h include, needed due to
-	va_list usage
-Message-ID: <20081112180139.GH13263@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20081112125212.GA13263@ghostprotocols.net> <20081112172147.GD24126@Krystal>
+	Wed, 12 Nov 2008 13:02:42 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:56115 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbYKLSCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 13:02:41 -0500
+Message-ID: <491B1A40.5020900@ct.jp.nec.com>
+Date: Wed, 12 Nov 2008 10:02:40 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081112172147.GD24126@Krystal>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86: ia32_signal: remove unnecessary padding
+References: <491A48E9.8020909@ct.jp.nec.com>	<491A496B.5010505@ct.jp.nec.com>	<20081112112937.GA6372@elte.hu> <18714.52512.213371.33245@harpo.it.uu.se> <491B0E6F.2010301@zytor.com>
+In-Reply-To: <491B0E6F.2010301@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Nov 12, 2008 at 12:21:47PM -0500, Mathieu Desnoyers escreveu:
-> * Arnaldo Carvalho de Melo (acme@redhat.com) wrote:
-> > diff --git a/include/linux/marker.h b/include/linux/marker.h
-> > index 889196c..6213b5e 100644
-> > --- a/include/linux/marker.h
-> > +++ b/include/linux/marker.h
-> > @@ -12,6 +12,7 @@
-> >   * See the file COPYING for more details.
-> >   */
-> >  
-> > +#include <stdarg.h>
+H. Peter Anvin wrote:
+> Mikael Pettersson wrote:
+>> It does cause each signal delivery to leak 2 uninitialised
+>> kernel bytes to the end of retcode[], which seems unnecessary.
 > 
-> Hrm given it's already included in kernel.h for printk, I am not sure
-> it's required here ? Although it cannot hurt to add it explicitly.
+> Not just unnecessary, it is a huge no-no for security.
 
-Well, its just that while writing code I noticed that if I included
-marker.h as the first include the compilation would fail.
+Am I missing important thing?
+The frame->retcode is 8 bytes and packed structure with padding
+is 10 bytes each, and the code is copied to user stack 8 bytes only.
 
-My impression was that if you use something, you should include its
-definition, not relying on the includes hell.
+err |= __copy_to_user(frame->retcode, &code, 8);
 
-> Mathieu
+I don't think the behavior is changed.
+
+thanks,
+Hiroshi Shimamoto
+
 > 
-> >  #include <linux/types.h>
-> >  
-> >  struct module;
+> NAK on this.
+> 
+> 	-hpa
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
