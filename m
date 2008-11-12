@@ -1,124 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbYKLCau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476AbYKLCur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbYKLCau (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 21:30:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYKLCal
+	id S1752476AbYKLCur (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 21:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751156AbYKLCuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 21:30:41 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:51923 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbYKLCak (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 21:30:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=v9yeKBCZie/buiAnqCwJbhQmGLkI4qLhCP1hRognuFXfdFAsbqGXqmkZNMdEDaBM1D
-         uRaoAyzeYjJe2G0OT7O6QGWbYpHlIJUg+7Q0waXjPslo4Q0/CDsSawI1tlDUPM/Hao4H
-         ohEH1+vYFiiuDPNuJLJq/3u+5qDtZRkIJmTgw=
-Message-ID: <a8e1da0811111830p2fe24b36q6c2d32205f3f1fe3@mail.gmail.com>
-Date: Wed, 12 Nov 2008 10:30:39 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Folkert van Heusden" <folkert@vanheusden.com>
-Subject: Re: [2.6.26] OOPS in elv_next_request
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081101161201.GQ11214@vanheusden.com>
+	Tue, 11 Nov 2008 21:50:37 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64759 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750901AbYKLCug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 21:50:36 -0500
+Message-ID: <491A43E0.2080109@cn.fujitsu.com>
+Date: Wed, 12 Nov 2008 10:48:00 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Fabio Checconi <fchecconi@gmail.com>
+CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       paolo.valente@unimore.it, fabio@gandalf.sssup.it,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH 0/3] BFQ I/O Scheduler (second take)
+References: <20081111125148.GD9508@gandalf.sssup.it>
+In-Reply-To: <20081111125148.GD9508@gandalf.sssup.it>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081027090426.GN8318@vanheusden.com>
-	 <a8e1da0810272211s4b145bboef26801c3af0d652@mail.gmail.com>
-	 <20081030142550.GB11214@vanheusden.com>
-	 <a8e1da0810301822k3402e753m482d98f4530419a0@mail.gmail.com>
-	 <20081101161201.GQ11214@vanheusden.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 2, 2008 at 12:12 AM, Folkert van Heusden
-<folkert@vanheusden.com> wrote:
->> >> > While running my http://vanheusden.com/pyk/ script (which randomly
->> >> > inserts and removes modules) I triggered the folllowing oops in a 2.6.26
->> >> > kernel on a Celeron 400 (Mendocino):
->> >> >
->> >> > [ 4768.664021] Floppy drive(s): fd0 is 1.44M
->> > ...
->> >> > [ 4768.720058] ---[ end trace 6a50caff78c47574 ]---
->> >> > [ 4769.658313] Floppy drive(s): fd0 is 1.44M
->> >> > [ 4789.656060] no cont in shutdown!
->> >>
->> >> Hi, could you try the attached test patch?  sorry for using attachment
->> >> as there's some problem for my mail client to reply.
->> >
->> > As your patch is based on 2.6.27 I compiled the 2.6.27 kernel with it. But
->> > something odd is going on: when 2.6.27 boots, right after the initrd loading
->> > the screen-resolution gets changed or so, so that most text is no longer
->> > visible. Also the system seems to halt. Unfortunately too early for
->> > netconsole to emit the errors.
->>
->> Yes, the patch is based on 2.6.27, but it can be applied to 2.6.26
->> without problem.
->> Could you try it with 2.6.26 again?
->
-> Here are the results:
->
-> [ 7041.704567] Floppy drive(s): fd0 is 1.44M
-> [ 7041.722756] FDC 0 is a post-1991 82077
-> [ 7041.757944] BUG: unable to handle kernel NULL pointer dereference at 00000010
-> [ 7041.758250] IP: [<c01d352c>] elv_next_request+0x17f/0x190
-> [ 7041.758563] *pde = 00000000
-> [ 7041.758728] Oops: 0000 [#1] SMP
-> [ 7041.758996] Modules linked in: floppy(-) loop video output thermal ata_generic libata scsi_mod snd_mpu401_uart snd_rawmidi snd_pcm shpchp button parport ide_cd_mod cdrom fan uhci_hcd gameport snd_opl3_lib snd_hwdep pci_hotplug i2c_core snd_page_alloc dock snd_timer snd_seq_device netconsole configfs ipv6 snd soundcore via_agp agpgart evdev ext3 jbd mbcache ide_disk via82cxxx ide_pci_generic ide_core 8139too usbcore 8139cp mii pr
-> ocessor thermal_sys [last unloaded: battery]
-> [ 7041.760087]
-> [ 7041.760087] Pid: 6, comm: events/0 Not tainted (2.6.26-floppy-kerneldebug #1)
-> [ 7041.760087] EIP: 0060:[<c01d352c>] EFLAGS: 00010046 CPU: 0
-> [ 7041.760087] EIP is at elv_next_request+0x17f/0x190
-> [ 7041.760087] EAX: c888e49c EBX: c940a820 ECX: 00000000 EDX: 00000000
-> [ 7041.760087] ESI: c888e49c EDI: ca9487ca EBP: c940a824 ESP: c943ff34
-> [ 7041.760087]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [ 7041.760087] Process events/0 (pid: 6, ti=c943e000 task=c942a460 task.ti=c943e000)
-> [ 7041.760087] Stack: 00000000 c940a820 ca94f5a4 ca9487ca c940a824 ca948813 c02bd3af 00d8f000
-> [ 7041.760087]        c8150100 c03b7364 c03b9e20 c03b9e20 c942a460 c942a5ec c1148e20 00000000
-> [ 7041.760087]        878a643e 00000667 c940a820 c942a5ec ca94705d 00000286 c940a820 ca94f5a4
-> [ 7041.760087] Call Trace:
-> [ 7041.760087]  [<ca9487ca>] redo_fd_request+0x0/0xdc0 [floppy]
-> [ 7041.760087]  [<ca948813>] redo_fd_request+0x49/0xdc0 [floppy]
-> [ 7041.760087]  [<c02bd3af>] schedule+0x6f5/0x737
-> [ 7041.760087]  [<ca94705d>] reset_interrupt+0x0/0x6c [floppy]
-> [ 7041.760087]  [<ca9487ca>] redo_fd_request+0x0/0xdc0 [floppy]
-> [ 7041.760087]  [<c012f74d>] run_workqueue+0x74/0xef
-> [ 7041.760087]  [<c012f87f>] worker_thread+0xb7/0xc3
-> [ 7041.760087]  [<c013236a>] autoremove_wake_function+0x0/0x2d
-> [ 7041.760087]  [<c012f7c8>] worker_thread+0x0/0xc3
-> [ 7041.760087]  [<c0132104>] kthread+0x38/0x5d
-> [ 7041.760087]  [<c01320cc>] kthread+0x0/0x5d
-> [ 7041.760087]  [<c01045a7>] kernel_thread_helper+0x7/0x10
-> [ 7041.760087]  =======================
-> [ 7041.760087] Code: 04 24 89 e2 89 f0 e8 35 33 00 00 85 c0 74 0d 8b 1c 24 85 db 0f 85 a0 fe ff ff eb 18 8b 06 39 f0 75 dd 8b 46 0c 31 d2 8b 08 89 f0 <ff> 51 10 85 c0 75 ea 31 db 5a 89 d8 5b 5e 5f 5d c3 55 89 cd 57
-> [ 7041.760087] EIP: [<c01d352c>] elv_next_request+0x17f/0x190 SS:ESP 0068:c943ff34
-> [ 7041.760087] ---[ end trace d4b702ab996006dc ]---
->
->
->> BTW, for 2.6.27, did you set vga=normal or other things?
->
-> None.
-> I also explicitly tried to set it but that didn't help
->
->
+CC: Linux Containers <containers@lists.linux-foundation.org>
+    Vivek Goyal <vgoyal@redhat.com>
 
-Hi,
+Fabio Checconi wrote:
+> Hi Jens, hi all,
+> 
 
-Could you try move the flush_scheduled_work to the beginning of
-floppy_module_exit function and report the test result?
+Hi Fabio,
 
-If it still does not works, please file a bug in bugzilla.kernel.org
+>   this is an updated version of the patchset introducing the BFQ (Budget
+> Fair Queueing) I/O scheduler.  It is based on CFQ and it has been
+> developed trying to improve the predictability and the fairness of the
+> service prvided, without penalizing the aggregate throughput.
+> 
+> This new version hopefully addresses the issues pointed out after the
+> first submission[1]:
+> 
+>   1) it introduces a bitmap to notify priority changes to the bfq/cfq;
+>   2) it introduces a timeout to put an higher limit to the time a
+>       task can take to consume its budget;
+>   3) it supports hierarchical scheduling.
+> 
 
-(sorry for late reply)
+So this is another cgroup-aware block i/o controller. ;)
 
--- 
-Regards
-dave
+People are sending different proposals for bio controller. A summary
+on this can be found here:
+	http://marc.info/?l=linux-kernel&m=121798534716673&w=2
+
+And a new proposal sent by Vivek several days ago:
+	http://lkml.org/lkml/2008/11/6/227
+
+And there are some discussions about can we modify the elevator layer
+and create a common layer so we can provide group control for all
+the 4 io schedulers. (in the above mail thread)
+
+You may share some ideas with us.
+
+> With the introduction of a budget timeout, each task is still assigned
+> a budget measured in number of sectors instead of amount of time,
+> but a budget is not served to its exhaustion if it's taking too much
+> to complete.  Budgets are still scheduled using a modified version
+> of WF2Q+.
+> 
+> Using huge values for max_budget turns the scheduler into a pure
+> time-domain proportional share one, and the timeout controls the duration
+> of the time quanta.
+> 
+> WRT the support for hierarchical scheduling, that is being discussed
+> so much in these days, this scheduler does not add anything new, it
+> supports proportional share distribution of disk bandwidth among
+> full cgroup hierarchies; the mapping from requests to cgroups is
+> correct only in case of synchronous reads.
+> 
+> The overall diffstat is the following:
+> 
+>  block/Kconfig.iosched         |   25 +
+>  block/Makefile                |    1 +
+>  block/bfq-cgroup.c            |  743 +++++++++++++++
+>  block/bfq-ioc.c               |  375 ++++++++
+>  block/bfq-iosched.c           | 2010 +++++++++++++++++++++++++++++++++++++++++
+>  block/bfq-sched.c             |  950 +++++++++++++++++++
+>  block/bfq.h                   |  514 +++++++++++
+>  block/blk-ioc.c               |   27 +-
+>  block/cfq-iosched.c           |   10 +-
+>  fs/ioprio.c                   |    9 +-
+>  include/linux/cgroup_subsys.h |    6 +
+>  include/linux/iocontext.h     |   18 +-
+>  12 files changed, 4669 insertions(+), 19 deletions(-)
+> 
+> For a complete description of the algorithm and of its properties
+> please refer to [2], (where extensive experiments on older hw can
+> also be found), and for some performance measurements and implementation
+> details, to [3].
+> 
+> [1] http://lkml.org/lkml/2008/4/1/234
+> [2] http://algo.ing.unimo.it/people/paolo/disk_sched/
+> [3] http://feanor.sssup.it/~fabio/linux/bfq/
+> 
+> As usual, any kind of feedback will be greatly appreciated, thanks
+> in advance.
+> 
+> Fabio Checconi, Paolo Valente
+
