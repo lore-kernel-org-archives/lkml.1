@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbYKLJSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbYKLJTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbYKLJSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 04:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYKLJR5
+	id S1752922AbYKLJTN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 04:19:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbYKLJS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 04:17:57 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55907 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbYKLJR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 04:17:56 -0500
-Date: Wed, 12 Nov 2008 10:17:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/fastboot: Move boot tracer structs and
-	funcs into their own header.
-Message-ID: <20081112091745.GD4748@elte.hu>
-References: <491A056B.2010500@gmail.com>
+	Wed, 12 Nov 2008 04:18:59 -0500
+Received: from rv-out-0506.google.com ([209.85.198.227]:36374 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYKLJS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 04:18:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=c5Y9Qdlhjd+LdOjfd8DfRpgwlYq0yXyzbDEfEwXjWg9dzp9n8RNyOE+vyP9ymyr2JX
+         BgoMcs4LaorYVuUSrvH8enfbRSELnJZpt3kd7U02fXkGR0Eviio+LJpiIgpTx7O3uMMq
+         RczDrMTIFtC7rMQ67NwQd7W2cyIpF7U8Wx4Ao=
+Message-ID: <2f3bf9a60811120118n6c16760eke1f6254b278e5b5c@mail.gmail.com>
+Date: Wed, 12 Nov 2008 11:18:55 +0200
+From: "Dotan Barak" <dotanba@gmail.com>
+To: andyw@uk.ibm.com
+Subject: false error in checkpatch version 0.24
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <491A056B.2010500@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0002]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+When i execute checkpatch version 0.24 of a file which contains the
+following line:
+  return a * b;
 
-> Impact: Cleanups on the boot tracer and ftrace
-> 
-> This patch bring some cleanups about the boot tracer headers. The 
-> functions and structures of this tracer have nothing related to 
-> ftrace and should have so their own header file.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  include/linux/ftrace.h |   41 -----------------------------------------
->  include/trace/boot.h   |   43 +++++++++++++++++++++++++++++++++++++++++++
->  init/main.c            |    1 +
->  kernel/trace/trace.h   |    1 +
->  4 files changed, 45 insertions(+), 41 deletions(-)
+It complains with the following error message:
+ERROR: space prohibited after that '*' (ctx:WxW).
 
-applied to tip/tracing/fastboot, thanks Frederic!
+I think that this may be a false error.
+(maybe it fail on a rule which handles pointers declaration).
 
-	Ingo
+Thanks
+Dotan
