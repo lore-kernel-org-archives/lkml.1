@@ -1,71 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYKLRdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYKLReX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbYKLRdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 12:33:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbYKLRdI
+	id S1753958AbYKLReX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 12:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYKLReO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 12:33:08 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44173 "EHLO mx2.redhat.com"
+	Wed, 12 Nov 2008 12:34:14 -0500
+Received: from mx39.mail.ru ([194.67.23.35]:64796 "EHLO mx39.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbYKLRdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 12:33:07 -0500
-Date: Wed, 12 Nov 2008 18:32:58 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Izik Eidus <ieidus@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       chrisw@redhat.com, avi@redhat.com, izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
-	one page into another
-Message-ID: <20081112173258.GX10818@random.random>
-References: <1226409701-14831-3-git-send-email-ieidus@redhat.com> <20081111114555.eb808843.akpm@linux-foundation.org> <20081111210655.GG10818@random.random> <Pine.LNX.4.64.0811111522150.27767@quilx.com> <20081111221753.GK10818@random.random> <Pine.LNX.4.64.0811111626520.29222@quilx.com> <20081111231722.GR10818@random.random> <Pine.LNX.4.64.0811111823030.31625@quilx.com> <20081112022701.GT10818@random.random> <Pine.LNX.4.64.0811112109390.10501@quilx.com>
+	id S1750920AbYKLReN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 12:34:13 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] Fix argument type for acpi_evaluate_integer in acpi_get_physical_pci_device
+Date: Wed, 12 Nov 2008 20:34:07 +0300
+User-Agent: KMail/1.9.10
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200811031216.15690.arvidjaar@mail.ru> <alpine.LFD.2.00.0811120137070.3828@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0811120137070.3828@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811112109390.10501@quilx.com>
+Content-Type: multipart/signed;
+  boundary="nextPart18603602.VjaherT0so";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200811122034.08092.arvidjaar@mail.ru>
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 09:10:45PM -0600, Christoph Lameter wrote:
-> get_user_pages() cannot get to it since the pagetables have already been
-> modified. If get_user_pages runs then the fault handling will occur
-> which will block the thread until migration is complete.
+--nextPart18603602.VjaherT0so
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-migrate.c does nothing for ptes pointing to swap entries and
-do_swap_page won't wait for them either. Assume follow_page in
-migrate.c returns a swapcache not mapped but with a pte pointing to
-it. That means page_count 1 (+1 after you isolate it from the lru),
-page_mapcount 0, page_mapped 0, page_mapping = swap address space,
-swap_count = 2 (1 swapcache, 1 the pte with the swapentry). Now assume
-one thread does o_direct read from disk that triggers a minor fault in
-do_swap_cache called by get_user_pages. The other cpu is running
-sys_move_pages and the expected count will match the page count in
-migrate_page_move_mapping. Page is still in swapcache. So after the
-expected count matches in the migrate.c thread, the other thread
-continues in do_swap_page and runs lookup_swap_cache that succeeds
-(the page wasn't removed from swapcache yet as migrate.c needs to bail
-out if the expected count doesn't match, so it can't mess with the
-oldpage until it's sure it can migrate it). After that do_swap_page
-gets a reference on the swapcache (at that point migrate.c continues
-despite the expected count isn't 2 anymore! just a second after having
-verified that it was 2). lock_page blocks do_swap_page until migration
-is complete but pte_same in do_swap_page won't fail because the pte is
-still pointing to the same swapentry (it's just the swapcache inode
-radix tree that points to a different page, the swapentry is still the
-same as before the migration - is_swap_pte will succeed but
-is_migration_entry failed when restoring the pte). Finally the pte is
-overwritten with the old page and any data written to the new page in
-between is lost.
+On Wednesday 12 November 2008, Len Brown wrote:
+> unclear what kernel this is supposed to apply to.
+>=20
 
-However it's not exactly the same bug as the one in fork, I was
-talking about before, it's also not o_direct specific. Still
-page_wrprotect + replace_page is orders of magnitude simpler logic
-than migrate.c and it has no bugs or at least it's certainly much
-simpler to proof as correct. Furthermore we never 'stall' any userland
-task while we do our work. We only mark the pte wrprotected, the task
-can cow or takeover it if refcount allows anytime, and later we'll
-bailout during replace_page if something has happened in between
-page_wrprotect and replace_page. So our logic is simpler and tuned for
-max performance and fewer interference with userland runtime. Not
-really sure if it worth for us to call into migrate.c.
+The patch was against 2.6.28-rc3 and applies to rc4 as well. Sorry
+for not mentioning this (I thought I did)
+
+> On Mon, 3 Nov 2008, Andrey Borzenkov wrote:
+>=20
+> > Subject: [PATCH] Fix argument type for acpi_evaluate_integer in acpi_ge=
+t_physical_pci_device
+> > From: Andrey Borzenkov <arvidjaar@mail.ru>
+> >=20
+> > CC      drivers/acpi/glue.o
+> > /home/bor/src/linux-git/drivers/acpi/glue.c: In function 'acpi_get_phys=
+ical_pci_device':
+> > /home/bor/src/linux-git/drivers/acpi/glue.c:157: warning: passing argum=
+ent 4 of 'acpi_evaluate_integer' from incompatible pointer type
+> >=20
+> > acpi_evaluate_integer takes pointer to unsigned long long as fourth arg=
+ument
+> >=20
+> > Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+> >=20
+> > ---
+> >=20
+> >  drivers/acpi/glue.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >=20
+> >=20
+> > diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
+> > index 98c9c76..436c8a3 100644
+> > --- a/drivers/acpi/glue.c
+> > +++ b/drivers/acpi/glue.c
+> > @@ -150,7 +150,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
+> >  struct device *acpi_get_physical_pci_device(acpi_handle handle)
+> >  {
+> >  	struct device *dev;
+> > -	long device_id;
+> > +	unsigned long long device_id;
+> >  	acpi_status status;
+> > =20
+> >  	status =3D
+> >=20
+>=20
+>=20
+
+
+
+--nextPart18603602.VjaherT0so
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkbE48ACgkQR6LMutpd94ysiQCdEvh0C50/IIZlvZOJHtYbJwOw
+i+4AoJiquPec9lg0Zr70rppTrhahU7Kf
+=c9im
+-----END PGP SIGNATURE-----
+
+--nextPart18603602.VjaherT0so--
