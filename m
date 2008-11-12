@@ -1,584 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYKLTA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYKLTBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYKLTA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 14:00:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYKLTAl
+	id S1754825AbYKLTBm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 14:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbYKLTBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 14:00:41 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:60726 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbYKLTAi (ORCPT
+	Wed, 12 Nov 2008 14:01:22 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:47809 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753054AbYKLTBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 14:00:38 -0500
-Date: Wed, 12 Nov 2008 19:02:14 +0000
-From: Eric Buddington <ebuddington@verizon.net>
-Subject: Re: /init not found in initramfs in 2.6.27.[34]
-In-reply-to: <20081111111922.GA8485@hack.voiplan.pt>
-To: Am??rico Wang <xiyou.wangcong@gmail.com>
-Cc: Eric Buddington <ebuddington@verizon.net>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Reply-to: ebuddington@wesleyan.edu
-Message-id: <20081112190214.GA26785@pool-96-236-120-128.spfdma.east.verizon.net>
-Organization: ECS Labs
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-References: <20081110232313.GA29539@pool-96-236-120-128.spfdma.east.verizon.net>
- <20081111111922.GA8485@hack.voiplan.pt>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Eric-conspiracy: there is no conspiracy
+	Wed, 12 Nov 2008 14:01:19 -0500
+X-Greylist: delayed 7825 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Nov 2008 14:01:19 EST
+Date: Wed, 12 Nov 2008 10:59:45 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       open-osd development <osd-dev@open-osd.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/18 ver3] libosd: OSDv1 Headers
+Message-Id: <20081112105945.f4ec0089.randy.dunlap@oracle.com>
+In-Reply-To: <491AD697.9030305@panasas.com>
+References: <491073BB.4000900@panasas.com>
+	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>
+	<4916F934.4090205@panasas.com>
+	<20081110092940.57b4c169.randy.dunlap@oracle.com>
+	<491AD697.9030305@panasas.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.491B27C9.0037:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 11, 2008 at 11:19:22AM +0000, Am??rico Wang wrote:
-> Do you use the same config for 2.6.26.5 and 2.6.27.4 ?
-> If not, could you please send the diff between these two configs?
+On Wed, 12 Nov 2008 15:13:59 +0200 Boaz Harrosh wrote:
 
-I used 'make oldconfig', so they're similar but not identical. Here's the diff:
+> 
+> Headers only patch.
+> 
+> osd_protocol.h
+> 	Contains a C-fied definition of the T10 OSD standard
+> osd_types.h
+> 	Contains CPU order common used types
+> osd_initiator.h
+> 	API definition of the osd_initiator library
+> osd_sec.h
+> 	Contains High level API for the security manager.
+> 
+> [Note that checkpatch spews errors on things that are valid in this context
+> and will not be fixed]
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> Reviewed-by: Benny Halevy <bhalevy@panasas.com>
+> ---
+>  include/scsi/osd_initiator.h |  332 ++++++++++++++++++++++++++++
+>  include/scsi/osd_protocol.h  |  497 ++++++++++++++++++++++++++++++++++++++++++
+>  include/scsi/osd_sec.h       |   45 ++++
+>  include/scsi/osd_types.h     |   40 ++++
+>  4 files changed, 914 insertions(+), 0 deletions(-)
+>  create mode 100644 include/scsi/osd_initiator.h
+>  create mode 100644 include/scsi/osd_protocol.h
+>  create mode 100644 include/scsi/osd_sec.h
+>  create mode 100644 include/scsi/osd_types.h
 
-3,4c3,4
-< # Linux kernel version: 2.6.26.5
-< # Thu Sep 18 18:07:09 2008
+> diff --git a/include/scsi/osd_protocol.h b/include/scsi/osd_protocol.h
+> new file mode 100644
+> index 0000000..ce678c5
+> --- /dev/null
+> +++ b/include/scsi/osd_protocol.h
+> @@ -0,0 +1,497 @@
+> +#ifndef __OSD_PROTOCOL_H__
+> +#define __OSD_PROTOCOL_H__
+
+...
+
+> +/* osd2r03: 5.2.1 Overview */
+> +struct osd_cdb_head {
+> +	struct scsi_varlen_cdb_hdr varlen_cdb;
+> +/*10*/	u8		options;
+> +	u8		command_specific_options;
+> +	u8		timestamp_control;
+> +/*13*/	u8		reserved1[3];
+> +/*16*/	__be64		partition;
+> +/*24*/	__be64		object;
+> +/*32*/	union { /* V1 vs V2 alignment differences */
+> +		struct __osdv1_cdb_addr_len {
+> +/*32*/			__be32 		list_identifier;/* Rarely used */
+> +/*36*/			__be64		length;
+> +/*44*/			__be64		start_address;
+> +		} __packed v1;
+> +	};
+> +/*52*/	union { /* selected attributes mode Page/List/Single */
+> +		struct osd_attributes_page_mode {
+> +/*52*/			__be32		get_attr_page;
+> +/*56*/			__be32		get_attr_alloc_length;
+> +/*60*/			osd_cdb_offset	get_attr_offset;
+> +
+> +/*64*/			__be32		set_attr_page;
+> +/*68*/			__be32		set_attr_id;
+> +/*72*/			__be32		set_attr_length;
+> +/*76*/			osd_cdb_offset	set_attr_offset;
+> +		} __packed attrs_page;
+> +
+> +		struct osd_attributes_list_mode {
+> +/*52*/			__be32		get_attr_desc_bytes;
+> +/*56*/			osd_cdb_offset	get_attr_desc_offset;
+> +
+> +/*60*/			__be32		get_attr_alloc_length;
+> +/*64*/			osd_cdb_offset	get_attr_offset;
+> +
+> +/*68*/			__be32		set_attr_bytes;
+> +/*72*/			osd_cdb_offset	set_attr_offset;
+> +			__be32 not_used;
+> +		} __packed attrs_list;
+> +
+> +		/* osd2r03:5.2.4.2 Set one attribute value using CDB fields */
+> +		struct osd_attributes_cdb_mode {
+> +/*52*/			__be32		set_attr_page;
+> +/*56*/			__be32		set_attr_id;
+> +/*60*/			__be16		set_attr_len;
+> +/*62*/			u8		set_attr_val[80-62];
+
+ugh
+
+> +		} __packed attrs_cdb;
+> +/*52*/		u8 get_set_attributes_parameters[80-52];
+
+ugh
+
+> +	};
+> +} __packed;
+> +/*80*/
+
+
+> +/* (osd-r10:4.9.2.2)
+> + * osd2r03:4.11.2.2 Capability format
+> + */
+> +struct osd_capability_head {
+> +	u8 format; /* low nibble */
+> +	u8 integrity_algorithm__key_version; /* MAKE_BYTE(integ_alg, key_ver) */
+> +	u8 security_method;
+> +	u8 reserved1;
+> +/*04*/	struct osd_timestamp expiration_time;
+> +/*10*/	u8 audit[30-10];
+> +/*30*/	u8 discriminator[42-30];
+> +/*42*/	struct osd_timestamp object_created_time;
+> +/*48*/	u8 object_type;
+> +	u8 permissions_bit_mask[54-49];
+
+more of the same
+
+> +/*54*/	u8 reserved2;
+> +/*55*/	u8 object_descriptor_type; /* high nibble */
+> +} __packed;
+> +
+> +/*56 v1*/
+> +struct osdv1_cap_object_descriptor {
+> +	union {
+> +		struct {
+> +/*56*/			__be32 policy_access_tag;
+> +/*60*/			__be64 allowed_partition_id;
+> +/*68*/			__be64 allowed_object_id;
+> +/*76*/			__be32 reserved;
+> +		} __packed obj_desc;
+> +
+> +		u8 object_descriptor[80-56];/*24*/
+
+ditto.  nice comment ;)
+
+> +	};
+> +} __packed;
+> +/*80 v1*/
+> +
+> +#endif /* ndef __OSD_PROTOCOL_H__ */
+
+
+Thanks for the fixes.
+
 ---
-> # Linux kernel version: 2.6.27.4
-> # Sun Nov  9 06:46:26 2008
-27c27
-< # CONFIG_GENERIC_GPIO is not set
----
-> CONFIG_GENERIC_GPIO=y
-67c67,70
-< # CONFIG_TASKSTATS is not set
----
-> CONFIG_TASKSTATS=y
-> CONFIG_TASK_DELAY_ACCT=y
-> CONFIG_TASK_XACCT=y
-> CONFIG_TASK_IO_ACCOUNTING=y
-87c90
-< # CONFIG_RELAY is not set
----
-> CONFIG_RELAY=y
-100d102
-< CONFIG_SYSCTL_SYSCALL_CHECK=y
-126a129
-> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
-127a131
-> CONFIG_HAVE_IOREMAP_PROT=y
-129a134
-> # CONFIG_HAVE_ARCH_TRACEHOOK is not set
-130a136,137
-> # CONFIG_USE_GENERIC_SMP_HELPERS is not set
-> # CONFIG_HAVE_CLK is not set
-131a139
-> CONFIG_HAVE_GENERIC_DMA_COHERENT=y
-145c153
-< # CONFIG_BLK_DEV_IO_TRACE is not set
----
-> CONFIG_BLK_DEV_IO_TRACE=y
-147a156
-> CONFIG_BLK_DEV_INTEGRITY=y
-171a181,182
-> CONFIG_X86_FIND_SMP_CONFIG=y
-> CONFIG_X86_MPPARSE=y
-175,178d185
-< # CONFIG_X86_NUMAQ is not set
-< # CONFIG_X86_SUMMIT is not set
-< # CONFIG_X86_BIGSMP is not set
-< # CONFIG_X86_VISWS is not set
-180,181d186
-< # CONFIG_X86_ES7000 is not set
-< # CONFIG_X86_RDC321X is not set
-182a188
-> # CONFIG_X86_RDC321X is not set
-184a191
-> CONFIG_XEN_SAVE_RESTORE=y
-190a198
-> # CONFIG_MEMTEST is not set
-268a277
-> CONFIG_MMU_NOTIFIER=y
-271a281,283
-> CONFIG_MTRR_SANITIZER=y
-> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=0
-> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
-282a295
-> CONFIG_KEXEC_JUMP=y
-320a334
-> CONFIG_ACPI_PCI_SLOT=m
-457,460d470
-< 
-< #
-< # Networking
-< #
-473a484
-> CONFIG_XFRM_IPCOMP=m
-694a706
-> CONFIG_IP_NF_SECURITY=m
-718a731
-> CONFIG_IP6_NF_SECURITY=m
-735a749
-> CONFIG_BRIDGE_EBT_IP6=m
-777a792,793
-> CONFIG_STP=m
-> CONFIG_GARP=m
-779a796
-> CONFIG_VLAN_8021Q_GVRP=y
-946d962
-< # CONFIG_BT_HCIUSB is not set
-968a985
-> CONFIG_WIRELESS_EXT_SYSFS=y
-973a991
-> CONFIG_MAC80211_RC_PID=y
-975,983d992
-< # CONFIG_MAC80211_RC_DEFAULT_NONE is not set
-< 
-< #
-< # Selecting 'y' for an algorithm will
-< #
-< 
-< #
-< # build the algorithm into mac80211.
-< #
-985d993
-< CONFIG_MAC80211_RC_PID=y
-988,989c996,997
-< # CONFIG_MAC80211_DEBUG_PACKET_ALIGNMENT is not set
-< # CONFIG_MAC80211_DEBUG is not set
----
-> # CONFIG_MAC80211_DEBUGFS is not set
-> # CONFIG_MAC80211_DEBUG_MENU is not set
-1012a1021,1022
-> # CONFIG_FIRMWARE_IN_KERNEL is not set
-> CONFIG_EXTRA_FIRMWARE=""
-1215a1226
-> # CONFIG_BLK_DEV_HD is not set
-1225a1237
-> # CONFIG_FUJITSU_LAPTOP_DEBUG is not set
-1226a1239
-> CONFIG_HP_WMI=m
-1227a1241
-> CONFIG_COMPAL_LAPTOP=m
-1237a1252
-> CONFIG_HP_ILO=m
-1244a1260,1261
-> CONFIG_IDE_TIMINGS=y
-> CONFIG_IDE_ATAPI=y
-1284d1300
-< CONFIG_BLK_DEV_CY82C693=m
-1288,1289d1303
-< CONFIG_BLK_DEV_HPT34X=m
-< # CONFIG_HPT34X_AUTODMA is not set
-1321,1322d1334
-< # CONFIG_BLK_DEV_HD_ONLY is not set
-< # CONFIG_BLK_DEV_HD is not set
-1460a1473,1477
-> CONFIG_SCSI_DH=m
-> CONFIG_SCSI_DH_RDAC=m
-> CONFIG_SCSI_DH_HP_SW=m
-> CONFIG_SCSI_DH_EMC=m
-> CONFIG_SCSI_DH_ALUA=m
-1546,1549c1563
-< CONFIG_DM_MULTIPATH=y
-< CONFIG_DM_MULTIPATH_EMC=y
-< CONFIG_DM_MULTIPATH_RDAC=m
-< CONFIG_DM_MULTIPATH_HP=m
----
-> CONFIG_DM_MULTIPATH=m
-1595d1608
-< CONFIG_NETDEVICES_MULTIQUEUE=y
-1676d1688
-< # CONFIG_AMD8111E_NAPI is not set
-1678d1689
-< # CONFIG_ADAPTEC_STARFIRE_NAPI is not set
-1710d1720
-< # CONFIG_VIA_RHINE_NAPI is not set
-1721d1730
-< # CONFIG_E1000_NAPI is not set
-1724d1732
-< CONFIG_E1000E_ENABLED=y
-1726a1735
-> CONFIG_IGB_LRO=y
-1731d1739
-< # CONFIG_R8169_NAPI is not set
-1734a1743
-> # CONFIG_SKGE_DEBUG is not set
-1735a1745
-> # CONFIG_SKY2_DEBUG is not set
-1740a1751
-> CONFIG_ATL1E=m
-1744d1754
-< CONFIG_CHELSIO_T1_NAPI=y
-1748d1757
-< # CONFIG_IXGB_NAPI is not set
-1750d1758
-< # CONFIG_S2IO_NAPI is not set
-1804a1813
-> CONFIG_MAC80211_HWSIM=m
-1809a1819
-> CONFIG_ATH9K=m
-1814,1818d1823
-< CONFIG_IWL4965=m
-< CONFIG_IWL4965_HT=y
-< CONFIG_IWL4965_LEDS=y
-< CONFIG_IWL4965_SPECTRUM_MEASUREMENT=y
-< CONFIG_IWL4965_SENSITIVITY=y
-1819a1825,1829
-> CONFIG_IWLAGN=m
-> CONFIG_IWLAGN_SPECTRUM_MEASUREMENT=y
-> CONFIG_IWLAGN_LEDS=y
-> CONFIG_IWL4965=y
-> CONFIG_IWL5000=y
-1820a1831
-> CONFIG_IWL3945_RFKILL=y
-1896a1908
-> CONFIG_USB_HSO=m
-1968,1969c1980,1983
-< CONFIG_ATM_FORE200E_MAYBE=m
-< # CONFIG_ATM_FORE200E_PCA is not set
----
-> CONFIG_ATM_FORE200E=m
-> CONFIG_ATM_FORE200E_USE_TASKLET=y
-> CONFIG_ATM_FORE200E_TX_RETRY=16
-> CONFIG_ATM_FORE200E_DEBUG=0
-2033a2048
-> CONFIG_KEYBOARD_GPIO=m
-2043a2059
-> CONFIG_MOUSE_BCM5974=m
-2048a2065
-> CONFIG_MOUSE_GPIO=m
-2089a2107
-> CONFIG_TOUCHSCREEN_INEXIO=m
-2090a2109
-> CONFIG_TOUCHSCREEN_HTCPEN=m
-2110a2130
-> CONFIG_TOUCHSCREEN_TOUCHIT213=m
-2143a2164
-> CONFIG_CONSOLE_TRANSLATIONS=y
-2176a2198
-> CONFIG_VIRTIO_CONSOLE=m
-2224a2247,2250
-> 
-> #
-> # PC SMBus host controller drivers
-> #
-2231d2256
-< CONFIG_I2C_ELEKTOR=m
-2233c2258
-< CONFIG_I2C_I810=m
----
-> CONFIG_I2C_ISCH=m
-2236,2243c2261
-< CONFIG_I2C_OCORES=m
-< CONFIG_I2C_PARPORT=m
-< CONFIG_I2C_PARPORT_LIGHT=m
-< CONFIG_I2C_PROSAVAGE=m
-< CONFIG_I2C_SAVAGE4=m
-< CONFIG_I2C_SIMTEC=m
-< # CONFIG_SCx200_I2C is not set
-< CONFIG_SCx200_ACB=m
----
-> CONFIG_I2C_NFORCE2_S4985=m
-2247,2249d2264
-< CONFIG_I2C_TAOS_EVM=m
-< CONFIG_I2C_STUB=m
-< CONFIG_I2C_TINY_USB=m
-2251a2267,2285
-> 
-> #
-> # I2C system bus drivers (mostly embedded / system-on-chip)
-> #
-> CONFIG_I2C_GPIO=m
-> CONFIG_I2C_OCORES=m
-> CONFIG_I2C_SIMTEC=m
-> 
-> #
-> # External I2C/SMBus adapter drivers
-> #
-> CONFIG_I2C_PARPORT=m
-> CONFIG_I2C_PARPORT_LIGHT=m
-> CONFIG_I2C_TAOS_EVM=m
-> CONFIG_I2C_TINY_USB=m
-> 
-> #
-> # Graphics adapter I2C/DDC channel drivers
-> #
-2252a2287,2291
-> 
-> #
-> # Other I2C/SMBus bus drivers
-> #
-> CONFIG_I2C_ELEKTOR=m
-2254a2294,2296
-> CONFIG_I2C_STUB=m
-> # CONFIG_SCx200_I2C is not set
-> CONFIG_SCx200_ACB=m
-2259a2302
-> CONFIG_AT24=m
-2261,2262d2303
-< CONFIG_SENSORS_PCF8574=m
-< CONFIG_PCF8575=m
-2263a2305
-> CONFIG_TPS65010=m
-2285a2328,2347
-> CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
-> CONFIG_GPIOLIB=y
-> CONFIG_GPIO_SYSFS=y
-> 
-> #
-> # I2C GPIO expanders:
-> #
-> CONFIG_GPIO_MAX732X=m
-> CONFIG_GPIO_PCA953X=m
-> CONFIG_GPIO_PCF857X=m
-> 
-> #
-> # PCI GPIO expanders:
-> #
-> 
-> #
-> # SPI GPIO expanders:
-> #
-> CONFIG_GPIO_MAX7301=m
-> CONFIG_GPIO_MCP23S08=m
-2294a2357
-> CONFIG_W1_MASTER_GPIO=m
-2312a2376
-> CONFIG_SENSORS_AD7414=m
-2313a2378
-> CONFIG_SENSORS_ADCXX=m
-2449a2515
-> # CONFIG_MFD_CORE is not set
-2450a2517
-> CONFIG_MFD_SM501_GPIO=y
-2451a2519
-> # CONFIG_MFD_TMIO is not set
-2489a2558
-> CONFIG_MEDIA_TUNER_MXL5007T=m
-2493a2563
-> CONFIG_VIDEOBUF_DMA_CONTIG=m
-2496d2565
-< CONFIG_VIDEO_IR_I2C=m
-2502a2572
-> CONFIG_VIDEO_IR_I2C=m
-2537a2608
-> CONFIG_USB_GSPCA=m
-2550a2622
-> CONFIG_USB_S2255=m
-2552a2625
-> CONFIG_MT9M001_PCA9536_SWITCH=y
-2553a2627,2629
-> CONFIG_MT9V022_PCA9536_SWITCH=y
-> CONFIG_SOC_CAMERA_PLATFORM=m
-> CONFIG_VIDEO_SH_MOBILE_CEU=m
-2610a2687,2688
-> CONFIG_DVB_USB_DW2102=m
-> CONFIG_DVB_USB_ANYSEE=m
-2614a2693,2694
-> CONFIG_DVB_SIANO_SMS1XXX=m
-> CONFIG_DVB_SIANO_SMS1XXX_SMS_IDS=y
-2664a2745
-> CONFIG_DVB_DRX397XD=m
-2820a2902,2904
-> CONFIG_FB_CARMINE=m
-> CONFIG_FB_CARMINE_DRAM_EVAL=y
-> # CONFIG_CARMINE_DRAM_CUSTOM is not set
-2826a2911,2913
-> CONFIG_LCD_ILI9320=m
-> CONFIG_LCD_VGG2432A4=m
-> CONFIG_LCD_PLATFORM=m
-2830a2918
-> CONFIG_BACKLIGHT_MBP_NVIDIA=m
-2860,2863d2947
-< 
-< #
-< # Sound
-< #
-2865,2868d2948
-< 
-< #
-< # Advanced Linux Sound Architecture
-< #
-2887,2891d2966
-< 
-< #
-< # Generic devices
-< #
-< CONFIG_SND_PCSP=m
-2896a2972,2973
-> CONFIG_SND_DRIVERS=y
-> CONFIG_SND_PCSP=m
-2903a2981,2982
-> CONFIG_SND_AC97_POWER_SAVE=y
-> CONFIG_SND_AC97_POWER_SAVE_DEFAULT=10
-2909,2912c2988
-< 
-< #
-< # ISA devices
-< #
----
-> CONFIG_SND_ISA=y
-2927d3002
-< CONFIG_SND_GUS_SYNTH=m
-2946,2949c3021
-< 
-< #
-< # PCI devices
-< #
----
-> CONFIG_SND_PCI=y
-3012d3083
-< # CONFIG_SND_KORG1212_FIRMWARE_IN_KERNEL is not set
-3014d3084
-< # CONFIG_SND_MAESTRO3_FIRMWARE_IN_KERNEL is not set
-3030,3040c3100,3101
-< # CONFIG_SND_YMFPCI_FIRMWARE_IN_KERNEL is not set
-< CONFIG_SND_AC97_POWER_SAVE=y
-< CONFIG_SND_AC97_POWER_SAVE_DEFAULT=10
-< 
-< #
-< # SPI devices
-< #
-< 
-< #
-< # USB devices
-< #
----
-> CONFIG_SND_SPI=y
-> CONFIG_SND_USB=y
-3045,3048c3106
-< 
-< #
-< # PCMCIA devices
-< #
----
-> CONFIG_SND_PCMCIA=y
-3051,3054d3108
-< 
-< #
-< # System on Chip audio support
-< #
-3056,3067d3109
-< 
-< #
-< # ALSA SoC audio for Freescale SOCs
-< #
-< 
-< #
-< # SoC Audio for the Texas Instruments OMAP
-< #
-< 
-< #
-< # Open Sound System
-< #
-3069d3110
-< CONFIG_SOUND_TRIDENT=m
-3126a3168
-> CONFIG_USB_MON=y
-3147a3190
-> # CONFIG_USB_GADGET_MUSB_HDRC is not set
-3184d3226
-< CONFIG_USB_MON=y
-3194d3235
-< CONFIG_USB_SERIAL_AIRPRIME=m
-3215,3226d3255
-< CONFIG_USB_SERIAL_KEYSPAN_MPR=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA28=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA28X=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA28XA=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA28XB=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA19=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA18X=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA19W=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA19QW=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA19QI=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA49W=y
-< CONFIG_USB_SERIAL_KEYSPAN_USA49WLC=y
-3254d3282
-< CONFIG_USB_AUERSWALD=m
-3282a3311
-> # CONFIG_USB_GADGET_DEBUG_FS is not set
-3289c3318
-< # CONFIG_USB_GADGET_PXA2XX is not set
----
-> # CONFIG_USB_GADGET_PXA25X is not set
-3307a3337
-> CONFIG_USB_CDC_COMPOSITE=m
-3323a3354
-> CONFIG_MMC_SDHCI_PCI=m
-3326a3358
-> CONFIG_MMC_SDRICOH_CS=m
-3348a3381,3382
-> CONFIG_LEDS_PCA9532=m
-> CONFIG_LEDS_GPIO=m
-3349a3384
-> CONFIG_LEDS_PCA955X=m
-3396a3432
-> CONFIG_EDAC_I5100=m
-3428a3465,3466
-> CONFIG_RTC_DRV_M41T94=m
-> CONFIG_RTC_DRV_DS1305=m
-3459a3498
-> CONFIG_DMATEST=m
-3468a3508,3509
-> CONFIG_UIO_PDRV=m
-> CONFIG_UIO_PDRV_GENIRQ=m
-3475a3517
-> CONFIG_FIRMWARE_MEMMAP=y
-3499a3542
-> # CONFIG_JBD_DEBUG is not set
-3500a3544
-> # CONFIG_JBD2_DEBUG is not set
-3520d3563
-< CONFIG_GFS2_FS_LOCKING_NOLOCK=m
-3524a3568
-> # CONFIG_OCFS2_FS_STATS is not set
-3600a3645,3650
-> CONFIG_UBIFS_FS=m
-> CONFIG_UBIFS_FS_XATTR=y
-> CONFIG_UBIFS_FS_ADVANCED_COMPR=y
-> CONFIG_UBIFS_FS_LZO=y
-> CONFIG_UBIFS_FS_ZLIB=y
-> # CONFIG_UBIFS_FS_DEBUG is not set
-3603a3654
-> CONFIG_OMFS_FS=m
-3629d3679
-< CONFIG_SUNRPC_BIND34=y
-3636a3687
-> CONFIG_CIFS_UPCALL=y
-3641d3691
-< CONFIG_CIFS_UPCALL=y
-3653d3702
-< # CONFIG_CODA_FS_OLD_API is not set
-3739c3788
-< # CONFIG_DEBUG_FS is not set
----
-> CONFIG_DEBUG_FS=y
-3744a3794
-> CONFIG_DEBUG_MEMORY_INIT=y
-3745a3796,3803
-> CONFIG_SYSCTL_SYSCALL_CHECK=y
-> CONFIG_HAVE_FTRACE=y
-> CONFIG_HAVE_DYNAMIC_FTRACE=y
-> # CONFIG_FTRACE is not set
-> # CONFIG_IRQSOFF_TRACER is not set
-> # CONFIG_SYSPROF_TRACER is not set
-> # CONFIG_SCHED_TRACER is not set
-> # CONFIG_CONTEXT_SWITCH_TRACER is not set
-3750c3808,3809
-< CONFIG_NONPROMISC_DEVMEM=y
----
-> CONFIG_STRICT_DEVMEM=y
-> # CONFIG_X86_VERBOSE_BOOTUP is not set
-3753,3754d3811
-< CONFIG_X86_FIND_SMP_CONFIG=y
-< CONFIG_X86_MPPARSE=y
-3764a3822
-> CONFIG_OPTIMIZE_INLINING=y
-3774d3831
-< CONFIG_SECURITY_CAPABILITIES=y
-3828a3886,3889
-> CONFIG_CRYPTO_RMD128=m
-> CONFIG_CRYPTO_RMD160=m
-> CONFIG_CRYPTO_RMD256=m
-> CONFIG_CRYPTO_RMD320=m
-3889a3951
-> CONFIG_CRC_T10DIF=m
+~Randy
