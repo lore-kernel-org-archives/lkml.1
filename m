@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbYKLAjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYKLAj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756686AbYKLAjj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbYKLA0t
+	id S1754929AbYKLAj6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYKLA0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:49 -0500
-Received: from kroah.org ([198.145.64.141]:42536 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:50 -0500
+Received: from kroah.org ([198.145.64.141]:42552 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753837AbYKLA0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:48 -0500
-Date: Tue, 11 Nov 2008 16:24:06 -0800
+	id S1753843AbYKLA0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:49 -0500
+Date: Tue, 11 Nov 2008 16:24:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 35/49] zd1211rw: Add 2 device IDs
-Message-ID: <20081112002406.GJ10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Zhu Yi <yi.zhu@intel.com>,
+       Tomas Winkler <tomas.winkler@intel.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 36/49] iwl3945: fix deadlock on suspend
+Message-ID: <20081112002409.GK10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="zd1211rw-add-2-device-ids.patch"
+Content-Disposition: inline; filename="iwl3945-fix-deadlock-on-suspend.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,41 +42,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Daniel Drake <dsd@gentoo.org>
+From: Zhu Yi <yi.zhu@intel.com>
 
-commit 0feec9dfe7b8880ab3b4c38d7cc4107dd706ea7f upstream.
+commit d54bc4e3fc5c56600a13c9ebc0a7e1077ac05d59 upstream.
 
-07fa/1196
-Bewan BWIFI-USB54AR: Tested by night1308, this device is a ZD1211B with
-an AL2230S radio.
+This patch fixes iwl3945 deadlock during suspend by moving notify_mac out
+of iwl3945 mutex. This is a portion of the same fix for iwlwifi by Tomas.
 
-0ace/b215
-HP 802.11abg: Tested by Robert Philippe
-
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/zd1211rw/zd_usb.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/wireless/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zd1211rw/zd_usb.c
-@@ -61,6 +61,7 @@ static struct usb_device_id usb_ids[] = 
- 	{ USB_DEVICE(0x0105, 0x145f), .driver_info = DEVICE_ZD1211 },
- 	/* ZD1211B */
- 	{ USB_DEVICE(0x0ace, 0x1215), .driver_info = DEVICE_ZD1211B },
-+	{ USB_DEVICE(0x0ace, 0xb215), .driver_info = DEVICE_ZD1211B },
- 	{ USB_DEVICE(0x157e, 0x300d), .driver_info = DEVICE_ZD1211B },
- 	{ USB_DEVICE(0x079b, 0x0062), .driver_info = DEVICE_ZD1211B },
- 	{ USB_DEVICE(0x1582, 0x6003), .driver_info = DEVICE_ZD1211B },
-@@ -82,6 +83,7 @@ static struct usb_device_id usb_ids[] = 
- 	{ USB_DEVICE(0x0cde, 0x001a), .driver_info = DEVICE_ZD1211B },
- 	{ USB_DEVICE(0x0586, 0x340a), .driver_info = DEVICE_ZD1211B },
- 	{ USB_DEVICE(0x0471, 0x1237), .driver_info = DEVICE_ZD1211B },
-+	{ USB_DEVICE(0x07fa, 0x1196), .driver_info = DEVICE_ZD1211B },
- 	/* "Driverless" devices that need ejecting */
- 	{ USB_DEVICE(0x0ace, 0x2011), .driver_info = DEVICE_INSTALLER },
- 	{ USB_DEVICE(0x0ace, 0x20ff), .driver_info = DEVICE_INSTALLER },
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -5761,7 +5761,6 @@ static void iwl3945_alive_start(struct i
+ 	if (priv->error_recovering)
+ 		iwl3945_error_recovery(priv);
+ 
+-	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+ 	return;
+ 
+  restart:
+@@ -6006,6 +6005,7 @@ static void iwl3945_bg_alive_start(struc
+ 	mutex_lock(&priv->mutex);
+ 	iwl3945_alive_start(priv);
+ 	mutex_unlock(&priv->mutex);
++	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+ }
+ 
+ static void iwl3945_bg_rf_kill(struct work_struct *work)
 
 -- 
