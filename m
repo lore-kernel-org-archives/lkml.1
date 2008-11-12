@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbYKLBN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721AbYKLBgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470AbYKLBN6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 20:13:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbYKLBNt
+	id S1752721AbYKLBgy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 20:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbYKLBgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 20:13:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52905 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbYKLBNs (ORCPT
+	Tue, 11 Nov 2008 20:36:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:49305 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYKLBgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 20:13:48 -0500
-Date: Tue, 11 Nov 2008 20:13:45 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: David Howells <dhowells@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Nicolas Pitre <nico@cam.org>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, rmk+lkml@arm.linux.org.uk, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-       benh@kernel.crashing.org, paulus@samba.org, davem@davemloft.net,
-       mingo@redhat.com, tglx@linutronix.de, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] convert cnt32_to_63 to inline
-In-Reply-To: <1226443050.6696.12.camel@lappy.programming.kicks-ass.net>
-Message-ID: <alpine.DEB.1.10.0811112012190.12838@gandalf.stny.rr.com>
-References: <20081111182759.GA8052@Krystal> <20081109064855.GA23782@Krystal>  <alpine.LFD.2.00.0811090827160.13034@xanadu.home>  <20081109162250.GB10181@Krystal>  <alpine.LFD.2.00.0811092304300.13034@xanadu.home>  <20081109204256.89ab7925.akpm@linux-foundation.org>
-  <alpine.LFD.2.00.0811101627510.13034@xanadu.home>  <20081110135850.0d620f3c.akpm@linux-foundation.org>  <alpine.LFD.2.00.0811101811130.13034@xanadu.home>  <20081110152221.64948d23.akpm@linux-foundation.org>  <alpine.LFD.2.00.0811101917450.13034@xanadu.home>
-  <8896.1226442702@redhat.com> <1226443050.6696.12.camel@lappy.programming.kicks-ass.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 11 Nov 2008 20:36:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Q4kyVx/FLYEEBDBJpqh5E4ePuEYon5klyC2YMA9+ZN0o2yHowKkPRN7QpEuciNrrz2
+         GIBvSCLvXyHReTnRJxwVspzh3gdDSJXH6AGDo0OyvTcU5bp4Vc2Wd/7TN+gRZM3MOyOc
+         WLONT6t0klBK+61iTEHylCwLbVizCoPvnauug=
+Message-ID: <af0faace0811111736o4b6904acx9c25e06d4ebf3421@mail.gmail.com>
+Date: Wed, 12 Nov 2008 09:36:43 +0800
+From: "Pan ruochen" <panruochen@gmail.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: How kernel applies LRU to swap out physical pages?
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1226403220.7685.1601.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <af0faace0811110022j161d4e26h87f2d9624b9fa494@mail.gmail.com>
+	 <1226393845.7685.1294.camel@twins>
+	 <20081111180233.8B38.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <1226403220.7685.1601.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thanks to all, I've have a study.
 
-On Tue, 11 Nov 2008, Peter Zijlstra wrote:
-
-> On Tue, 2008-11-11 at 22:31 +0000, David Howells wrote:
-> > Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > @@ -52,18 +57,22 @@ unsigned long long sched_clock(void)
-> > > ...
-> > > +	preempt_disable_notrace();
-> > 
-> > Please, no!  sched_clock() is called with preemption or interrupts disabled
-> > everywhere except from some debugging code (lock tracing IIRC).  If you need
-> > to insert this preemption disablement somewhere, please insert it there.  At
-> > least then sched_clock() will be called consistently.
-> 
-> Agreed. You could do a WARN_ON(!in_atomic); in sched_clock() depending
-> on DEBUG_PREEMPT or something to ensure this.
-
-It would also be nice if this requirement (calling sched_clock with 
-preemption disabled) was documented somewhere more obvious.
-
-Doing as Peter suggested, adding a WARN_ON and documenting that this must 
-be called with preemption disabled, would be nice.
-
--- Steve
-
+2008/11/11 Peter Zijlstra <peterz@infradead.org>:
+> On Tue, 2008-11-11 at 18:56 +0900, KOSAKI Motohiro wrote:
+>> > On Tue, 2008-11-11 at 16:22 +0800, Pan ruochen wrote:
+>> > > Hi All,
+>> > > I'm reading the linux kernel 2.6.14. But can't understand how LRU algorithm
+>> > > is applied to page swapping. what is the 'USED' of LRU referred to? The
+>> > > reference counter which the page is mapped by processes, or the frequency that
+>> > > CPU reads/writes in the page. In common sense, the LRU algorithm will be more
+>> > > optimal for the second case. But it depends on CPU capability.
+>> > > I will be very appreciated if somebody can explain that in details.
+>> >
+>> > We don't actually use LRU but something like CLOCK.
+>
+> FWIW in case you hadn't found it yet:
+>
+>  http://en.wikipedia.org/wiki/Page_replacement_algorithm
+>
+> is a fairly decent page on the subject.
+>
