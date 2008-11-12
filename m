@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYKLAld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKLAlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754936AbYKLAld (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 11 Nov 2008 19:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbYKLA04
+	id S1754201AbYKLAlv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 11 Nov 2008 19:41:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbYKLA06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 11 Nov 2008 19:26:56 -0500
-Received: from kroah.org ([198.145.64.141]:42596 "EHLO coco.kroah.org"
+	Tue, 11 Nov 2008 19:26:58 -0500
+Received: from kroah.org ([198.145.64.141]:42610 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752246AbYKLA0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 11 Nov 2008 19:26:55 -0500
-Date: Tue, 11 Nov 2008 16:24:18 -0800
+	id S1753885AbYKLA05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 11 Nov 2008 19:26:57 -0500
+Date: Tue, 11 Nov 2008 16:24:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Pavel Machek <pavel@suse.cz>
-Subject: [patch 40/49] ARM: 5300/1: fixup spitz reset during boot
-Message-ID: <20081112002418.GO10989@kroah.com>
+       alan@lxorguk.ukuu.org.uk, David Howells <dhowells@redhat.com>
+Subject: [patch 41/49] KEYS: Make request key instantiate the per-user
+	keyrings
+Message-ID: <20081112002420.GP10989@kroah.com>
 References: <20081112001401.926965113@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="arm-5300-1-fixup-spitz-reset-during-boot.patch"
+Content-Disposition: inline; filename="keys-make-request-key-instantiate-the-per-user-keyrings.patch"
 In-Reply-To: <20081112002215.GA10989@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,94 +40,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
+From: David Howells <dhowells@redhat.com>
 
-commit 69fc7eed5f56bce15b239e5110de2575a6970df4 upstream
+commit 1f8f5cf6e4f038552a3e47b66085452c08556d71 upstream
 
-Some machines don't have the pullup/down on their reset
-pin, so configuring the reset generating pin as input makes
-them reset immediately. Fix that by making reset pin direction
-configurable.
+Make request_key() instantiate the per-user keyrings so that it doesn't oops
+if it needs to get hold of the user session keyring because there isn't a
+session keyring in place.
 
-This fixes the boot problem on Sharp Zaurus c3000
-
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+Signed-off-by: David Howells <dhowells@redhat.com>
+Tested-by: Steve French <smfrench@gmail.com>
+Tested-by: Rutger Nijlunsing <rutger.nijlunsing@gmail.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/arm/mach-pxa/include/mach/reset.h |    9 ++++++---
- arch/arm/mach-pxa/reset.c              |    9 ++++++---
- arch/arm/mach-pxa/spitz.c              |    2 +-
- arch/arm/mach-pxa/tosa.c               |    2 +-
- 4 files changed, 14 insertions(+), 8 deletions(-)
+ security/keys/internal.h     |    1 +
+ security/keys/process_keys.c |    2 +-
+ security/keys/request_key.c  |    4 ++++
+ 3 files changed, 6 insertions(+), 1 deletion(-)
 
---- a/arch/arm/mach-pxa/include/mach/reset.h
-+++ b/arch/arm/mach-pxa/include/mach/reset.h
-@@ -10,9 +10,12 @@
- extern unsigned int reset_status;
- extern void clear_reset_status(unsigned int mask);
+--- a/security/keys/internal.h
++++ b/security/keys/internal.h
+@@ -107,6 +107,7 @@ extern key_ref_t search_process_keyrings
  
--/*
-- * register GPIO as reset generator
-+/**
-+ * init_gpio_reset() - register GPIO as reset generator
-+ *
-+ * @gpio - gpio nr
-+ * @output - set gpio as out/low instead of input during normal work
+ extern struct key *find_keyring_by_name(const char *name, bool skip_perm_check);
+ 
++extern int install_user_keyrings(struct task_struct *tsk);
+ extern int install_thread_keyring(struct task_struct *tsk);
+ extern int install_process_keyring(struct task_struct *tsk);
+ 
+--- a/security/keys/process_keys.c
++++ b/security/keys/process_keys.c
+@@ -40,7 +40,7 @@ struct key_user root_key_user = {
+ /*
+  * install user and user session keyrings for a particular UID
   */
--extern int init_gpio_reset(int gpio);
-+extern int init_gpio_reset(int gpio, int output);
- 
- #endif /* __ASM_ARCH_RESET_H */
---- a/arch/arm/mach-pxa/reset.c
-+++ b/arch/arm/mach-pxa/reset.c
-@@ -20,7 +20,7 @@ static void do_hw_reset(void);
- 
- static int reset_gpio = -1;
- 
--int init_gpio_reset(int gpio)
-+int init_gpio_reset(int gpio, int output)
+-static int install_user_keyrings(struct task_struct *tsk)
++int install_user_keyrings(struct task_struct *tsk)
  {
- 	int rc;
+ 	struct user_struct *user = tsk->user;
+ 	struct key *uid_keyring, *session_keyring;
+--- a/security/keys/request_key.c
++++ b/security/keys/request_key.c
+@@ -74,6 +74,10 @@ static int call_sbin_request_key(struct 
  
-@@ -30,9 +30,12 @@ int init_gpio_reset(int gpio)
- 		goto out;
- 	}
+ 	kenter("{%d},{%d},%s", key->serial, authkey->serial, op);
  
--	rc = gpio_direction_input(gpio);
-+	if (output)
-+		rc = gpio_direction_output(gpio, 0);
-+	else
-+		rc = gpio_direction_input(gpio);
- 	if (rc) {
--		printk(KERN_ERR "Can't configure reset_gpio for input\n");
-+		printk(KERN_ERR "Can't configure reset_gpio\n");
- 		gpio_free(gpio);
- 		goto out;
- 	}
---- a/arch/arm/mach-pxa/spitz.c
-+++ b/arch/arm/mach-pxa/spitz.c
-@@ -548,7 +548,7 @@ static void spitz_restart(char mode)
++	ret = install_user_keyrings(tsk);
++	if (ret < 0)
++		goto error_alloc;
++
+ 	/* allocate a new session keyring */
+ 	sprintf(desc, "_req.%u", key->serial);
  
- static void __init common_init(void)
- {
--	init_gpio_reset(SPITZ_GPIO_ON_RESET);
-+	init_gpio_reset(SPITZ_GPIO_ON_RESET, 1);
- 	pm_power_off = spitz_poweroff;
- 	arm_pm_restart = spitz_restart;
- 
---- a/arch/arm/mach-pxa/tosa.c
-+++ b/arch/arm/mach-pxa/tosa.c
-@@ -781,7 +781,7 @@ static void __init tosa_init(void)
- 	gpio_set_wake(MFP_PIN_GPIO1, 1);
- 	/* We can't pass to gpio-keys since it will drop the Reset altfunc */
- 
--	init_gpio_reset(TOSA_GPIO_ON_RESET);
-+	init_gpio_reset(TOSA_GPIO_ON_RESET, 0);
- 
- 	pm_power_off = tosa_poweroff;
- 	arm_pm_restart = tosa_restart;
 
 -- 
