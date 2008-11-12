@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbYKLOGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbYKLOJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbYKLOGG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 09:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbYKLOFx
+	id S1753310AbYKLOJP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 09:09:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbYKLOI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 09:05:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52657 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbYKLOFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 09:05:51 -0500
-Date: Wed, 12 Nov 2008 16:05:55 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: sukadev@linux.vnet.ibm.com
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081112150555.GB13269@redhat.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081111022405.GB20891@us.ibm.com>
+	Wed, 12 Nov 2008 09:08:59 -0500
+Received: from cpsmtpo-eml03.KPNXCHANGE.COM ([213.75.38.152]:27593 "EHLO
+	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751820AbYKLOI7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 09:08:59 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 00/49] 2.6.27.5 stable review
+Date: Wed, 12 Nov 2008 15:08:55 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20081112002215.GA10989@kroah.com>
+In-reply-To: <20081112002215.GA10989@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081111022405.GB20891@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200811121508.55791.elendil@planet.nl>
+X-OriginalArrivalTime: 12 Nov 2008 14:08:56.0314 (UTC) FILETIME=[336875A0:01C944D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/10, sukadev@linux.vnet.ibm.com wrote:
->
-> Also, what happens if a fatal signal is first received from a descendant
-> and while that is still pending, the same signal is received from ancestor
-> ns ?  Won't the second one be ignored by legacy_queue() for the non-rt case ?
+Would it be possible to include the commit below now that it's been 
+accepted into mainline?
 
-Please see my another email:
+Thanks,
+FJP
 
-	We must also change sig_ignored() to drop SIGKILL/SIGSTOP early when
-	it comes from the same ns. Otherwise, it can mask the next SIGKILL
-	from the parent ns.
+commit bf1b36445dc868cbbde194aa1dd87e38fe24cf16
+Author: Jonathan McDowell <noodles@earth.li>
+Date:   Sat Sep 13 17:08:31 2008 +0100
 
-	But this perhaps makes sense anyway, even without containers.
-	Currently, when the global init has the pending SIGKILL, we can't
-	trust __wait_event_killable/etc, and this is actually wrong.
-
-We can drop other SIG_DFL signals from the same namespace early as well.
-I seem to already did something like sig_init_ignored(), but I forgot.
-
-Or, we can just ignore this (imho) minor problem. The ancestor ns
-must know it can't reliably kill cinit with (say) SIGTERM. It can
-be ignored, or it can have have a handler, and it can be lost because
-SIGTERM is already pending. Only SIGKILL is special.
-
-Actually. I personally think that if we manage to achieve that
-
-	- the sub-namespace can't kill its init
-
-	- the ancestor can always kill cinit with SIGKILL
-
-then imho we should not worry very much about other issues ;)
-
-Oleg.
-
+    kbuild: Fixup deb-pkg target to generate separate firmware deb
