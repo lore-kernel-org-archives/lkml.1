@@ -1,144 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbYKLTxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbYKLT4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbYKLTxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 14:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbYKLTx3
+	id S1754509AbYKLT4v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 14:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbYKLT4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 14:53:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:47967 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753184AbYKLTx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 14:53:28 -0500
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: linux-crypto@vger.kernel.org
-Subject: [PATCH] crypto: ansi_cprng: avoid incorrect extra call to _get_more_prng_bytes
-Date: Wed, 12 Nov 2008 14:52:59 -0500
-User-Agent: KMail/1.10.1 (Linux/2.6.27.4-79.fc10.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: Neil Horman <nhorman@tuxdriver.com>, herbert@gondor.apana.org.au,
-       davem@davemloft.net, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 12 Nov 2008 14:56:42 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:31995 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752826AbYKLT4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 14:56:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=ps/IO9lGknLNnWD9GJtmiOW9W+blAfWQyxk+1x+P3C+MD/A4VH2H9BHgzNpCRmGfp8
+         SMIacDwlDepgb/XXUiRiltC/RZAjYpMiqS029m50tW08ZpKK36iGNtcGXvYrHbfkU1nC
+         g6y3J5OVV5aU5WhOgk9dt00NVbGneCJBcWWUk=
+Date: Wed, 12 Nov 2008 21:56:30 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>, fweisbec@gmail.com
+Subject: Re: [PATCH 1/2] ftrace: disable tracing on resize
+Message-ID: <20081112215630.242ce97e@daedalus.pq.iki.fi>
+In-Reply-To: <alpine.DEB.1.10.0811102216240.10298@gandalf.stny.rr.com>
+References: <20081111025808.946638585@goodmis.org>
+	<20081111030517.017566077@goodmis.org>
+	<alpine.DEB.1.10.0811102216240.10298@gandalf.stny.rr.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811121452.59789.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While working with some FIPS RNGVS test vectors yesterday, I discovered a
-little bug in the way the ansi_cprng code works right now.
+On Mon, 10 Nov 2008 22:18:19 -0500 (EST)
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-For example, the following test vector (complete with expected result)
-from http://csrc.nist.gov/groups/STM/cavp/documents/rng/RNGVS.pdf ...
+> 
+> Pekka,
+> 
+> I forgot to add you to the Cc list. Could you test this patch to see if it 
+> fixes the bug you reported. It fixed a bug I was able to reproduce, but I 
+> was never able to reproduce the exact same bug you have seen.
 
-Key = f3b1666d13607242ed061cabb8d46202
-DT = e6b3be782a23fa62d71d4afbb0e922fc
-V = f0000000000000000000000000000000
-R = 88dda456302423e5f69da57e7b95c73a
+Thanks, Steve.
 
-...when run through ansi_cprng, yields an incorrect R value
-of e2afe0d794120103d6e86a2b503bdfaa.
+I didn't have time to try it myself yet, but a kind soul tried it for me.
+He used 2.6.28-rc4 and was immediately able to trigger the bug by just:
+cd /debug/tracing
+echo 0 > tracing_enabled
+echo 200 > trace_entries
 
-If I load up ansi_cprng w/dbg=1 though, it was fairly obvious what was
-going wrong:
+Then he applied the patch you referred to, and the bug is still present.
+He has a 32-bit x86 amd system, and I'm on x86_64.
 
-----8<----
-getting 16 random bytes for context ffff810033fb2b10
-Calling _get_more_prng_bytes for context ffff810033fb2b10
-Input DT: 00000000: e6 b3 be 78 2a 23 fa 62 d7 1d 4a fb b0 e9 22 fc 
-Input I: 00000000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-Input V: 00000000: f0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-tmp stage 0: 00000000: e6 b3 be 78 2a 23 fa 62 d7 1d 4a fb b0 e9 22 fc 
-tmp stage 1: 00000000: f4 8e cb 25 94 3e 8c 31 d6 14 cd 8a 23 f1 3f 84 
-tmp stage 2: 00000000: 8c 53 6f 73 a4 1a af d4 20 89 68 f4 58 64 f8 be 
-Returning new block for context ffff810033fb2b10
-Output DT: 00000000: e7 b3 be 78 2a 23 fa 62 d7 1d 4a fb b0 e9 22 fc 
-Output I: 00000000: 04 8e cb 25 94 3e 8c 31 d6 14 cd 8a 23 f1 3f 84 
-Output V: 00000000: 48 89 3b 71 bc e4 00 b6 5e 21 ba 37 8a 0a d5 70 
-New Random Data: 00000000: 88 dd a4 56 30 24 23 e5 f6 9d a5 7e 7b 95 c7 3a 
-Calling _get_more_prng_bytes for context ffff810033fb2b10
-Input DT: 00000000: e7 b3 be 78 2a 23 fa 62 d7 1d 4a fb b0 e9 22 fc 
-Input I: 00000000: 04 8e cb 25 94 3e 8c 31 d6 14 cd 8a 23 f1 3f 84 
-Input V: 00000000: 48 89 3b 71 bc e4 00 b6 5e 21 ba 37 8a 0a d5 70 
-tmp stage 0: 00000000: e7 b3 be 78 2a 23 fa 62 d7 1d 4a fb b0 e9 22 fc 
-tmp stage 1: 00000000: 80 6b 3a 8c 23 ae 8f 53 be 71 4c 16 fc 13 b2 ea 
-tmp stage 2: 00000000: 2a 4d e1 2a 0b 58 8e e6 36 b8 9c 0a 26 22 b8 30 
-Returning new block for context ffff810033fb2b10
-Output DT: 00000000: e8 b3 be 78 2a 23 fa 62 d7 1d 4a fb b0 e9 22 fc 
-Output I: 00000000: c8 e2 01 fd 9f 4a 8f e5 e0 50 f6 21 76 19 67 9a 
-Output V: 00000000: ba 98 e3 75 c0 1b 81 8d 03 d6 f8 e2 0c c6 54 4b 
-New Random Data: 00000000: e2 af e0 d7 94 12 01 03 d6 e8 6a 2b 50 3b df aa 
-returning 16 from get_prng_bytes in context ffff810033fb2b10
-----8<----
+I don't know why you couldn't reproduce it, maybe you have all the tracers
+enabled in the kernel config, when we only have MMIOTRACE.
 
-The expected result is there, in the first "New Random Data", but we're
-incorrectly making a second call to _get_more_prng_bytes, due to some checks
-that are slightly off, which resulted in our original bytes never being
-returned anywhere.
-
-One approach to fixing this would be to alter some byte_count checks in
-get_prng_bytes, but it would mean the last DEFAULT_BLK_SZ bytes would be
-copied a byte at a time, rather than in a single memcpy, so a slightly more
-involved, equally functional, and ultimately more efficient way of fixing this
-was suggested to me by Neil, which I'm submitting here. All of the RNGVS ANSI
-X9.31 AES128 VST test vectors I've passed through ansi_cprng are now returning
-the expected results with this change.
-
----
-
- crypto/ansi_cprng.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
-
-diff --git a/crypto/ansi_cprng.c b/crypto/ansi_cprng.c
-index 486aa93..1b3b1da 100644
---- a/crypto/ansi_cprng.c
-+++ b/crypto/ansi_cprng.c
-@@ -223,9 +223,10 @@ remainder:
- 	}
- 
- 	/*
--	 * Copy up to the next whole block size
-+	 * Copy any data less than an entire block
- 	 */
- 	if (byte_count < DEFAULT_BLK_SZ) {
-+empty_rbuf:
- 		for (; ctx->rand_data_valid < DEFAULT_BLK_SZ;
- 			ctx->rand_data_valid++) {
- 			*ptr = ctx->rand_data[ctx->rand_data_valid];
-@@ -240,18 +241,22 @@ remainder:
- 	 * Now copy whole blocks
- 	 */
- 	for (; byte_count >= DEFAULT_BLK_SZ; byte_count -= DEFAULT_BLK_SZ) {
--		if (_get_more_prng_bytes(ctx) < 0) {
--			memset(buf, 0, nbytes);
--			err = -EINVAL;
--			goto done;
-+		if (ctx->rand_data_valid == DEFAULT_BLK_SZ) {
-+			if (_get_more_prng_bytes(ctx) < 0) {
-+				memset(buf, 0, nbytes);
-+				err = -EINVAL;
-+				goto done;
-+			}
- 		}
-+		if (ctx->rand_data_valid > 0)
-+			goto empty_rbuf;
- 		memcpy(ptr, ctx->rand_data, DEFAULT_BLK_SZ);
- 		ctx->rand_data_valid += DEFAULT_BLK_SZ;
- 		ptr += DEFAULT_BLK_SZ;
- 	}
- 
- 	/*
--	 * Now copy any extra partial data
-+	 * Now go back and get any remaining partial block
- 	 */
- 	if (byte_count)
- 		goto remainder;
+I can't promise to look into this deeper in the near future :-/
 
 
+> On Mon, 10 Nov 2008, Steven Rostedt wrote:
+> 
+> > Impact: fix for bug on resize
+> > 
+> > This patch addresses the bug found here:
+> > 
+> >  http://bugzilla.kernel.org/show_bug.cgi?id=11996
+> > 
+> > When ftrace converted to the new unified trace buffer, the resizing of
+> > the buffer was not protected as much as it was originally. If tracing
+> > is performed while the resize occurs, then the buffer can be corrupted.
+> > 
+> > This patch disables all ftrace buffer modifications before a resize
+> > takes place.
+> > 
+> > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> > ---
+> >  kernel/trace/trace.c |   17 ++++++++++++++++-
+> >  1 files changed, 16 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > index 9f3b478..abfa810 100644
+> > --- a/kernel/trace/trace.c
+> > +++ b/kernel/trace/trace.c
+> > @@ -2676,7 +2676,7 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+> >  {
+> >  	unsigned long val;
+> >  	char buf[64];
+> > -	int ret;
+> > +	int ret, cpu;
+> >  	struct trace_array *tr = filp->private_data;
+> >  
+> >  	if (cnt >= sizeof(buf))
+> > @@ -2704,6 +2704,14 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+> >  		goto out;
+> >  	}
+> >  
+> > +	/* disable all cpu buffers */
+> > +	for_each_tracing_cpu(cpu) {
+> > +		if (global_trace.data[cpu])
+> > +			atomic_inc(&global_trace.data[cpu]->disabled);
+> > +		if (max_tr.data[cpu])
+> > +			atomic_inc(&max_tr.data[cpu]->disabled);
+> > +	}
+> > +
+> >  	if (val != global_trace.entries) {
+> >  		ret = ring_buffer_resize(global_trace.buffer, val);
+> >  		if (ret < 0) {
+> > @@ -2735,6 +2743,13 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
+> >  	if (tracing_disabled)
+> >  		cnt = -ENOMEM;
+> >   out:
+> > +	for_each_tracing_cpu(cpu) {
+> > +		if (global_trace.data[cpu])
+> > +			atomic_dec(&global_trace.data[cpu]->disabled);
+> > +		if (max_tr.data[cpu])
+> > +			atomic_dec(&max_tr.data[cpu]->disabled);
+> > +	}
+> > +
+> >  	max_tr.entries = global_trace.entries;
+> >  	mutex_unlock(&trace_types_lock);
+> >  
+> > -- 
+> > 1.5.6.5
 
 -- 
-Jarod Wilson
-jarod@redhat.com
-
+Pekka Paalanen
+http://www.iki.fi/pq/
