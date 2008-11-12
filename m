@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756810AbYKLXgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbYKLXhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756810AbYKLXgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbYKLXeO
+	id S1755249AbYKLXhJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:37:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbYKLXeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:34:14 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:48498 "EHLO smtp.polymtl.ca"
+	Wed, 12 Nov 2008 18:34:16 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:48504 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754472AbYKLXeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:34:12 -0500
-Message-Id: <20081112232258.559661836@polymtl.ca>
+	id S1753570AbYKLXeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:34:14 -0500
+Message-Id: <20081112232258.719387063@polymtl.ca>
 References: <20081112231551.473569400@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 18:15:53 -0500
+Date: Wed, 12 Nov 2008 18:15:54 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
        Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org
-Subject: [patch 02/17] get_cycles() : x86 HAVE_GET_CYCLES
-Content-Disposition: inline; filename=get-cycles-x86-have-get-cycles.patch
+Subject: [patch 03/17] get_cycles() : sparc64 HAVE_GET_CYCLES
+Content-Disposition: inline; filename=get-cycles-sparc64-have-get-cycles.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Wed, 12 Nov 2008 23:33:01 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,8 +30,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 This patch selects HAVE_GET_CYCLES and makes sure get_cycles_barrier() and
 get_cycles_rate() are implemented.
 
+Changelog :
+- Use tb_ticks_per_usec * 1000000 in get_cycles_rate().
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: David Miller <davem@davemloft.net>
+Acked-by: David S. Miller <davem@davemloft.net>
 CC: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: Ingo Molnar <mingo@redhat.com>
@@ -40,45 +43,67 @@ CC: Thomas Gleixner <tglx@linutronix.de>
 CC: Steven Rostedt <rostedt@goodmis.org>
 CC: linux-arch@vger.kernel.org
 ---
- arch/x86/Kconfig           |    1 +
- arch/x86/include/asm/tsc.h |   12 ++++++++++++
- 2 files changed, 13 insertions(+)
+ arch/sparc/include/asm/timex_64.h |   19 ++++++++++++++++++-
+ arch/sparc64/Kconfig              |    1 +
+ arch/sparc64/kernel/time.c        |    3 ++-
+ 3 files changed, 21 insertions(+), 2 deletions(-)
 
-Index: linux.trees.git/arch/x86/Kconfig
+Index: linux.trees.git/arch/sparc64/Kconfig
 ===================================================================
---- linux.trees.git.orig/arch/x86/Kconfig	2008-11-12 18:15:25.000000000 -0500
-+++ linux.trees.git/arch/x86/Kconfig	2008-11-12 18:15:28.000000000 -0500
-@@ -20,6 +20,7 @@ config X86
- 	def_bool y
- 	select HAVE_AOUT if X86_32
- 	select HAVE_UNSTABLE_SCHED_CLOCK
-+	select HAVE_GET_CYCLES
+--- linux.trees.git.orig/arch/sparc64/Kconfig	2008-11-07 00:34:11.000000000 -0500
++++ linux.trees.git/arch/sparc64/Kconfig	2008-11-12 18:00:04.000000000 -0500
+@@ -13,6 +13,7 @@ config SPARC64
+ 	default y
+ 	select HAVE_FUNCTION_TRACER
  	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_IOREMAP_PROT
-Index: linux.trees.git/arch/x86/include/asm/tsc.h
++	select HAVE_GET_CYCLES
+ 	select HAVE_LMB
+ 	select HAVE_ARCH_KGDB
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+Index: linux.trees.git/arch/sparc/include/asm/timex_64.h
 ===================================================================
---- linux.trees.git.orig/arch/x86/include/asm/tsc.h	2008-11-12 18:15:25.000000000 -0500
-+++ linux.trees.git/arch/x86/include/asm/tsc.h	2008-11-12 18:15:28.000000000 -0500
-@@ -56,6 +56,18 @@ extern void mark_tsc_unstable(char *reas
- extern int unsynchronized_tsc(void);
- int check_tsc_unstable(void);
+--- linux.trees.git.orig/arch/sparc/include/asm/timex_64.h	2008-11-07 00:34:11.000000000 -0500
++++ linux.trees.git/arch/sparc/include/asm/timex_64.h	2008-11-12 18:00:04.000000000 -0500
+@@ -12,7 +12,24 @@
  
-+static inline cycles_t get_cycles_rate(void)
+ /* Getting on the cycle counter on sparc64. */
+ typedef unsigned long cycles_t;
+-#define get_cycles()	tick_ops->get_tick()
++
++static inline cycles_t get_cycles(void)
 +{
-+	if (check_tsc_unstable())
-+		return 0;
-+	return tsc_khz;
++	return tick_ops->get_tick();
 +}
 +
++/* get_cycles instruction is synchronized on sparc64 */
 +static inline void get_cycles_barrier(void)
 +{
-+	rdtsc_barrier();
++	return;
 +}
 +
- /*
-  * Boot-time check whether the TSCs are synchronized across
-  * all CPUs/cores:
++extern unsigned long tb_ticks_per_usec;
++
++static inline cycles_t get_cycles_rate(void)
++{
++	return tb_ticks_per_usec * 1000000UL;
++}
+ 
+ #define ARCH_HAS_READ_CURRENT_TIMER
+ 
+Index: linux.trees.git/arch/sparc64/kernel/time.c
+===================================================================
+--- linux.trees.git.orig/arch/sparc64/kernel/time.c	2008-11-07 00:34:11.000000000 -0500
++++ linux.trees.git/arch/sparc64/kernel/time.c	2008-11-12 18:00:04.000000000 -0500
+@@ -793,7 +793,8 @@ static void __init setup_clockevent_mult
+ 	sparc64_clockevent.mult = mult;
+ }
+ 
+-static unsigned long tb_ticks_per_usec __read_mostly;
++unsigned long tb_ticks_per_usec __read_mostly;
++EXPORT_SYMBOL_GPL(tb_ticks_per_usec);
+ 
+ void __delay(unsigned long loops)
+ {
 
 -- 
 Mathieu Desnoyers
