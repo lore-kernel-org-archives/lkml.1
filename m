@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbYKLXXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYKLXXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbYKLXXh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbYKLXUS
+	id S1756708AbYKLXXx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 18:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755870AbYKLXUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:20:18 -0500
-Received: from mga14.intel.com ([143.182.124.37]:55947 "EHLO mga14.intel.com"
+	Wed, 12 Nov 2008 18:20:19 -0500
+Received: from mga14.intel.com ([143.182.124.37]:4164 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755830AbYKLXUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:20:11 -0500
+	id S1755833AbYKLXUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 18:20:12 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,592,1220252400"; 
-   d="scan'208";a="75121292"
-Message-Id: <20081112212900.719555000@intel.com>
+   d="scan'208";a="75121296"
+Message-Id: <20081112212900.999435000@intel.com>
 References: <20081112212647.259698000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 13:26:53 -0800
+Date: Wed, 12 Nov 2008 13:26:55 -0800
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        H Peter Anvin <hpa@zytor.com>, Nick Piggin <npiggin@suse.de>,
@@ -26,81 +26,55 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
 Cc: linux-kernel@vger.kernel.org,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch 6/8] x86 PAT: change pgprot_noncached to uc_minus instead of strong uc
-Content-Disposition: inline; filename=make_pgprot_noncached_ucminus.patch
+Subject: [patch 8/8] x86 PAT: update documentation to cover pgprot and remap_pfn related changes
+Content-Disposition: inline; filename=documentation_update.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make pgprot_noncached uc_minus instead of strong UC. This will make
-pgprot_noncached to be in line with ioremap_nocache() and all the other
-APIs that map page uc_minus on uc request.
+Add documentation related to pgprot_* change.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-
 ---
- arch/x86/include/asm/pgtable.h    |    8 ++++++++
- arch/x86/include/asm/pgtable_32.h |    9 ---------
- arch/x86/include/asm/pgtable_64.h |    6 ------
- 3 files changed, 8 insertions(+), 15 deletions(-)
+ Documentation/x86/pat.txt |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-Index: tip/arch/x86/include/asm/pgtable.h
+Index: tip/Documentation/x86/pat.txt
 ===================================================================
---- tip.orig/arch/x86/include/asm/pgtable.h	2008-11-06 15:58:21.000000000 -0800
-+++ tip/arch/x86/include/asm/pgtable.h	2008-11-10 09:44:38.000000000 -0800
-@@ -158,6 +158,14 @@
- #define PGD_IDENT_ATTR	 0x001		/* PRESENT (no other attributes) */
- #endif
+--- tip.orig/Documentation/x86/pat.txt	2008-11-06 09:44:10.000000000 -0800
++++ tip/Documentation/x86/pat.txt	2008-11-06 16:19:05.000000000 -0800
+@@ -80,6 +80,30 @@ pci proc               |    --    |    -
+                        |          |            |                  |
+ -------------------------------------------------------------------
  
-+/*
-+ * Macro to mark a page protection value as UC-
-+ */
-+#define pgprot_noncached(prot)					\
-+	((boot_cpu_data.x86 > 3)				\
-+	 ? (__pgprot(pgprot_val(prot) | _PAGE_CACHE_UC_MINUS))	\
-+	 : (prot))
++Advanced APIs for drivers
++-------------------------
++A. Exporting pages to user with remap_pfn_range, io_remap_pfn_range,
++vm_insert_pfn
 +
- #ifndef __ASSEMBLY__
++Drivers wanting to export some pages to userspace, do it by using mmap
++interface and a combination of
++1) pgprot_noncached()
++2) io_remap_pfn_range() or remap_pfn_range() or vm_insert_pfn()
++
++With pat support, a new API pgprot_writecombine is being added. So, driver can
++continue to use the above sequence, with either pgprot_noncached() or
++pgprot_writecombine() in step 1, followed by step 2.
++
++In addition, step 2 internally tracks the region as UC or WC in memtype
++list in order to ensure no conflicting mapping.
++
++Note that this set of APIs only work with IO (non RAM) regions. If driver
++wants to export RAM region, it has to do set_memory_uc() or set_memory_wc()
++as step 0 above and also track the usage of those pages and use set_memory_wb()
++before the page is freed to free pool.
++
++
++
+ Notes:
  
- /*
-Index: tip/arch/x86/include/asm/pgtable_32.h
-===================================================================
---- tip.orig/arch/x86/include/asm/pgtable_32.h	2008-11-06 09:44:12.000000000 -0800
-+++ tip/arch/x86/include/asm/pgtable_32.h	2008-11-06 16:17:11.000000000 -0800
-@@ -107,15 +107,6 @@ extern unsigned long pg0[];
- #endif
- 
- /*
-- * Macro to mark a page protection value as "uncacheable".
-- * On processors which do not support it, this is a no-op.
-- */
--#define pgprot_noncached(prot)					\
--	((boot_cpu_data.x86 > 3)				\
--	 ? (__pgprot(pgprot_val(prot) | _PAGE_PCD | _PAGE_PWT))	\
--	 : (prot))
--
--/*
-  * Conversion functions: convert a page and protection to a page entry,
-  * and a page entry and page directory to the page they refer to.
-  */
-Index: tip/arch/x86/include/asm/pgtable_64.h
-===================================================================
---- tip.orig/arch/x86/include/asm/pgtable_64.h	2008-11-06 09:44:12.000000000 -0800
-+++ tip/arch/x86/include/asm/pgtable_64.h	2008-11-06 16:17:11.000000000 -0800
-@@ -183,12 +183,6 @@ static inline int pmd_bad(pmd_t pmd)
- #define pages_to_mb(x)	((x) >> (20 - PAGE_SHIFT))   /* FIXME: is this right? */
- 
- /*
-- * Macro to mark a page protection value as "uncacheable".
-- */
--#define pgprot_noncached(prot)					\
--	(__pgprot(pgprot_val((prot)) | _PAGE_PCD | _PAGE_PWT))
--
--/*
-  * Conversion functions: convert a page and protection to a page entry,
-  * and a page entry and page directory to the page they refer to.
-  */
+ -- in the above table mean "Not suggested usage for the API". Some of the --'s
 
 -- 
 
