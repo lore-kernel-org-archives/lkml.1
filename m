@@ -1,181 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbYKLRtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbYKLRwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbYKLRtA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 12:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYKLRst
+	id S1752846AbYKLRwE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 12:52:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYKLRvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 12:48:49 -0500
-Received: from ik-out-1112.google.com ([66.249.90.177]:58991 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbYKLRsr (ORCPT
+	Wed, 12 Nov 2008 12:51:53 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:53700 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751054AbYKLRvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 12:48:47 -0500
+	Wed, 12 Nov 2008 12:51:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=aZDtKKeNBMoiXsIijEdgseu6jNxLFVp7FTAHAgZyuXuQCKzDjtwSmvvZB5fYSAZzuE
-         mV6P07TaLd0gPEdx98aIUhY5Qc1Xua76P9EHSclDiqpAKDNs5FpAe9ychRV2N2i9eDL7
-         O2WEJfEHjOglLOMYx3bjAlF1bM/sQeSoJWtPE=
-Message-ID: <491B16F9.8030608@gmail.com>
-Date: Wed, 12 Nov 2008 19:48:41 +0200
+        b=otLxvzS3m2LHCfZeUonqu6gG/Zvi0Jy7g6MjJWUPqwDTAZqCa6oC6FO7GPr3t9m5XM
+         UV9hQxxMPf4ZB5DlGyHZuDd7HZNlcYP1NayLTnNMQ5gvX5UD1yyZefOfcwM15/4rJyOT
+         Ebkz4ZbYQo9Tp0H/Oq4RT4C1bKEatPUqIx40g=
+Message-ID: <491B17B3.204@gmail.com>
+Date: Wed, 12 Nov 2008 19:51:47 +0200
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux acpi <linux-acpi@vger.kernel.org>
-Subject: Re: Bugs on aspire one A150
-References: <491506DB.1070000@gmail.com> <49157E97.60503@tuffmail.co.uk> <49163435.20301@gmail.com> <4916BED0.4090700@tuffmail.co.uk>
-In-Reply-To: <4916BED0.4090700@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Nick Kossifidis <mickflemm@gmail.com>
+CC: Bob Copeland <me@bobcopeland.com>, ath5k-devel@venema.h4ckr.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ath5k-devel] Bugs on aspire one A150
+References: <491506DB.1070000@gmail.com>	 <b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com>	 <4918A8C5.3050607@gmail.com> <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
+In-Reply-To: <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Maxim Levitsky wrote:
->> Alan Jenkins wrote:
->>> Maxim Levitsky wrote:
->>>> I have just bought an Aspire one A150, XP version,
->>>> as it was the only available here, and installed ubuntu on it.
->>>>
->>>> Bugs I discovered so far:
->>>>
->>>>
->>>> ** 1 - embedded controler works in polling mode, due to this:
->>>>
->>>> [    0.708571] ACPI: EC: non-query interrupt received, switching to
->>>> interrupt mode
->>>> [    1.224043] ACPI: EC: missing confirmations, switch off interrupt
->>>> mode.
->>>>
->>>>
->>>> Maybe this is the reason for the fact that gnome power manager
->>>> freezes when I unplug
->>>> the AC, and freezes often when I try to see battery status.
->>>>
->>>>
->>>> (Note: same is seen on my acer aspire 5720)
->>> That sounds like a known issue.  It has been resolved by "ACPI: EC:
->>> revert msleep patch".  Happily Len submitted it for mainline this
->>> week.  You will also find it if you try the acpi-test git tree. 
->>> We're all hoping 2.6.28 will be much improved in terms of reliable
->>> operation of different ECs :).
+Nick Kossifidis wrote:
+> 2008/11/10 Maxim Levitsky <maximlevitsky@gmail.com>:
+>> Bob Copeland wrote:
+>>> On Fri, Nov 7, 2008 at 10:26 PM, Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+>>>> ** 2 - wireless: not to mention the fact that ath5k wasn't installed by
+>>>> default in ubuntu...
+>>>> wireless more or less works, but kernel log is full of backtraces.
+>>> As you've seen, these should at least be gone now...
 >>>
->> Yes, this almost fixes all issues with that.
->> Almost because, it looks like the EC changes screen brightness on his
->> own when battery is plugged/unplugged,
->> but so does the gnome-power-manager, and thus it still hangs as before
->> on battery removal (but doesn't hang otherwise)
->> I disabled that behaver in gnome-power-manager and now no more hangs.
+>>>> Was able to connect to my WPA2 access point.
+>>>> Sometimes wireless fails completely, especially after suspend to ram.
+>>> Did you get noise calibration failures in dmesg at this point?  Felix posted
+>>> a patch recently that handles them better.
+>> Yep, but they seems to be gone in latest -git too.
+>> Wireless work fine now, it seems like my iwl3945.
 >>
-> 
-> Please do report it as an ACPI EC bug.  It's popular hardware, and if
-> nothing else it is important that upstream be aware of the workarounds
-> people are having to use.
-> 
->> I see that this fix fixes the polled mode. Any chance to make irq mode
->> work?
->>
-> 
-> Probably not.  It doesn't seem important, it may not be possible, and
-> even if you could fix the EC driver for your hardware, there's the risk
-> of breaking other peoples hardware.
-> 
-> The presumption is that you have weird hardware and it genuinely needs a
-> polling workaround.  It's not too bad, now it uses udelay() it should
-> not impose any wakeups or significant latency, just some extra cpu time
-> in a busy loop.  EC events such as acpi hotkeys are still received as
-> interrupts (although we then have to query the type of event using a
-> polled transaction).
-> 
-> 
-> I assume you get something like (text not exact):
-> 
-> "EC: started in polling mode"
-> ...
-> "EC: non-query interrupt received, switching to interrupt mode"
-> ...
-> "EC: missing confirmations, switching to polling mode"
-> 
-> all during boot.
-Yes, this is what I see.
+>>>> Advanced features like monitor/injection work, but when I changed the card's
+>>>> mac address it stopped working.
+>>>> I also noticed that if I then start airodump, then wireless works with new
+>>>> mac.
+>> Why it doesn't accept new mac?, can this be fixed?
 
-> 
-> 
-> There's one outstanding issue on a different machine, where the
-> occasional EC read fails and triggers polling mode sometime _after_
-> boot.  It can be fixed by retrying the transaction
-> 
->     http://bugzilla.kernel.org/show_bug.cgi?id=11896
-> 
-> but I don't really expect your machine has the same problem.
-> 
-> <snip non-acpi problems>
-> 
->> Also noticed another bug:
+Any update on mac changer status?
+
 >>
 >>
->> If I suspend/resume with compiz running, on resume I see wallpaper and
->> mouse cursor, everything hangs for minute or two, and sometimes forever.
+>>>> ** 4 - wireless led doesn't work.
+>>>> ath5k devs, can you fix this?
+>>> Currently all the LED code we have in there is for setting a particular gpio
+>>> for particular laptops (and they differ between models).  We only have quirks
+>>> for IBM and HP, none for Acer.  Also, the legacy-hal seems to have a different
+>>> strategy for 2425 chips.  I can try to hack up some code for you to test.
+>>>
+>> I have seen on the web that madwifi did support the led with some gpio settings
 >>
->> 2.6.27 worked fine.
-> 
-> Weird.
-> 
-> Did you try sysrq-W during the hang?  That's supposed to dump a list of
-> blocked tasks to dmesg.
-Well, I see the wallpaper and can move the mouse, I will try to suspend from console
-I think this is graphics bug.
-nether ctrl+alt+bks nor SAK kill X.
-
-After 2 minute wait, kernel log doesn't show anything unusual.
-printk times, jump that 2 minutes around wireless association, but I tested it without ath5k loaded
-and still the same happens.
-
-Also if I disable compiz, everything resumes correctly, and instantly.
-
-> 
->> Also hibernate doesn't work on my main notebook, but it is probably
->> fixed, I update kernel to really latest -git
->> and tell you.
+>> sysctl -w dev.wifi0.ledpin=3
+>> sysctl -w dev.wifi0.softled=1
 >>
-> 
-> But suspend to ram works?  Usually it is the other way round :).  If you
-> haven't already, you might read
-> 
->     Documentation/power/basic-pm-debugging.txt
-> 
-Well, this is long story
-details at http://lkml.org/lkml/2008/9/20/75
-speaking shortly, bios doesn't pass control to kernel on second resume.
-Thus I don't test it, but I see how it works now.
-
-Suspend to disk still doesn't work.
-First of all system hangs in the end of image writeout.
-If I power it down manually, and boot, system resumes from disk, and then hangs.
-2.6.27 works fine.
-
-(This is about my main notebook)
-
-
-> it suggests some tests to narrow down the problem.
-> 
->> Big thanks for bugfixes, you saved me a lot of work and bisecting.
+>> from https://help.ubuntu.com/community/AspireOne
 >>
+>> Best regards,
+>>        Maxim Levitsky
 > 
-> I can't take credit for actual fixes.  But I'm very happy to help people
-> avoid bisecting for known problems.  I hope you have time to crack the
-> unknown ones :).
-> 
-> Alan
+> i think that some led settings are stored on EEPROM, let me check it out...
+>
 
+Thanks a lot.
+
+ 
+> 
 
 Best regards,
 	Maxim Levitsky
-
-
-PS: sorry for late reply
