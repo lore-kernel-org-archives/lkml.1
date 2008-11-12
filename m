@@ -1,57 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754826AbYKLTHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbYKLTIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754826AbYKLTHY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 14:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbYKLTHK
+	id S1755050AbYKLTIJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 14:08:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYKLTH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 14:07:10 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40190 "EHLO e4.ny.us.ibm.com"
+	Wed, 12 Nov 2008 14:07:56 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40760 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbYKLTHJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 14:07:09 -0500
-Date: Wed, 12 Nov 2008 13:06:55 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+	id S1753982AbYKLTHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 14:07:55 -0500
+Date: Wed, 12 Nov 2008 11:04:21 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, clg@fr.ibm.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
        Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
        linux-kernel@vger.kernel.org
 Subject: Re: Signals to cinit
-Message-ID: <20081112190655.GB8233@us.ibm.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081110232735.GA20891@us.ibm.com> <20081112145226.GA13269@redhat.com> <20081112164915.GB14572@us.ibm.com> <20081112181211.GC3230@us.ibm.com>
+Message-ID: <20081112190421.GE3230@us.ibm.com>
+References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081111022405.GB20891@us.ibm.com> <20081112150555.GB13269@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081112181211.GC3230@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081112150555.GB13269@redhat.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Sukadev Bhattiprolu (sukadev@linux.vnet.ibm.com):
-> Serge E. Hallyn [serue@us.ibm.com] wrote:
-> | Quoting Oleg Nesterov (oleg@redhat.com):
-> | > > | Perhaps we can start with something like the patch below. Not that I like
-> | > > | it very much though. We should really place this code under
-> | > > | CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
-> | > >
-> | > > CONFIG_PID_NS ?
-> | > 
-> | > Ah yes, we have it ;)
-> | 
-> | Except I believe all distros at this point enable CONFIG_PID_NS, so
-> | I'm not sure it's the right thing to use.
-> 
-> But if they do enable CONFIG_PID_NS they would want the signals to
-> behave correctly ? IIUC, the reason we want to the hide the code
-> is that it is not clean i.e if its not experimental or error-prone,
-> are there other reasons someone with CONFIG_PID_NS=y want to hide it ?
+Oleg Nesterov [oleg@redhat.com] wrote:
+| On 11/10, sukadev@linux.vnet.ibm.com wrote:
+| >
+| > Also, what happens if a fatal signal is first received from a descendant
+| > and while that is still pending, the same signal is received from ancestor
+| > ns ?  Won't the second one be ignored by legacy_queue() for the non-rt case ?
 
-I was going to argue yes, but again following my reasoning to its
-logical conclusion leads us to a config parameter being bad anyway.
+On second thoughts, cinit is a normal process in its ancestor ns so it
+might very well ignore the second instance of the signal (as long as it
+does not ignore SIGKILL/SIGSTOP)
 
-So yeah, never mind.
+| 
+| Please see my another email:
+| 
+| 	We must also change sig_ignored() to drop SIGKILL/SIGSTOP early when
+| 	it comes from the same ns. Otherwise, it can mask the next SIGKILL
+| 	from the parent ns.
 
--serge
+Ok.
+
+| 
+| 	But this perhaps makes sense anyway, even without containers.
+| 	Currently, when the global init has the pending SIGKILL, we can't
+| 	trust __wait_event_killable/etc, and this is actually wrong.
+| 
+| We can drop other SIG_DFL signals from the same namespace early as well.
+
+I think Eric's patchset did this and iirc, we ran into the problem of
+blocked SIG_DFL signals ?
+
+| I seem to already did something like sig_init_ignored(), but I forgot.
+
+Yes, I think we had that in the patchset but that was not merged.
+
+| 
+| Or, we can just ignore this (imho) minor problem.
+
+I think so too.
+
+| The ancestor ns
+| must know it can't reliably kill cinit with (say) SIGTERM. It can
+| be ignored, or it can have have a handler, and it can be lost because
+| SIGTERM is already pending. Only SIGKILL is special.
+| 
+| Actually. I personally think that if we manage to achieve that
+| 
+| 	- the sub-namespace can't kill its init
+| 
+| 	- the ancestor can always kill cinit with SIGKILL
+
+Yep.
+
+| 
+| then imho we should not worry very much about other issues ;)
+| 
+| Oleg.
