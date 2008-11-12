@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbYKLNhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbYKLNhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753011AbYKLNhH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 08:37:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbYKLNfu
+	id S1753864AbYKLNhq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 08:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYKLNfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 08:35:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45164 "EHLO mx2.redhat.com"
+	Wed, 12 Nov 2008 08:35:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:45170 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbYKLNfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 08:35:45 -0500
+	id S1751828AbYKLNfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 08:35:46 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Avi Kivity <avi@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -17,82 +17,65 @@ Cc: Avi Kivity <avi@redhat.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
        Andrey Borzenkov <arvidjaar@mail.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        kexec@lists.infradead.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 1/8] x86 kdump: Extract kdump-specific code from crash_nmi_callback()
-Date: Wed, 12 Nov 2008 11:34:37 -0200
-Message-Id: <1226496884-24628-2-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 5/8] x86 kdump: Make nmi_shootdown_cpus() non-static
+Date: Wed, 12 Nov 2008 11:34:41 -0200
+Message-Id: <1226496884-24628-6-git-send-email-ehabkost@redhat.com>
 In-Reply-To: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
 References: <1226496884-24628-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The NMI CPU-halting code will be used on non-kdump cases, also
-(e.g. emergency_reboot when virtualization is enabled).
+Add prototype to asm/reboot.h.
 
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 ---
- arch/x86/kernel/crash.c |   31 ++++++++++++++++++++-----------
- 1 files changed, 20 insertions(+), 11 deletions(-)
+ arch/x86/include/asm/reboot.h |    5 +++++
+ arch/x86/kernel/crash.c       |    3 +--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/arch/x86/include/asm/reboot.h b/arch/x86/include/asm/reboot.h
+index df77103..562d4fd 100644
+--- a/arch/x86/include/asm/reboot.h
++++ b/arch/x86/include/asm/reboot.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_X86_REBOOT_H
+ #define _ASM_X86_REBOOT_H
+ 
++#include <linux/kdebug.h>
++
+ struct pt_regs;
+ 
+ struct machine_ops {
+@@ -18,4 +20,7 @@ void native_machine_crash_shutdown(struct pt_regs *regs);
+ void native_machine_shutdown(void);
+ void machine_real_restart(const unsigned char *code, int length);
+ 
++typedef void (*nmi_shootdown_cb)(int, struct die_args*);
++void nmi_shootdown_cpus(nmi_shootdown_cb callback);
++
+ #endif /* _ASM_X86_REBOOT_H */
 diff --git a/arch/x86/kernel/crash.c b/arch/x86/kernel/crash.c
-index 2685538..6047542 100644
+index f23c2be..fb298d1 100644
 --- a/arch/x86/kernel/crash.c
 +++ b/arch/x86/kernel/crash.c
-@@ -35,19 +35,34 @@ static int crashing_cpu;
+@@ -29,7 +29,6 @@
+ 
+ #include <mach_ipi.h>
+ 
+-typedef void (*nmi_shootdown_cb)(int, struct die_args*);
+ 
  #if defined(CONFIG_SMP) && defined(CONFIG_X86_LOCAL_APIC)
- static atomic_t waiting_for_crash_ipi;
  
--static int crash_nmi_callback(struct notifier_block *self,
--			unsigned long val, void *data)
-+static void kdump_nmi_callback(int cpu, struct die_args *args)
+@@ -100,7 +99,7 @@ static struct notifier_block crash_nmi_nb = {
+ 	.notifier_call = crash_nmi_callback,
+ };
+ 
+-static void nmi_shootdown_cpus(nmi_shootdown_cb callback)
++void nmi_shootdown_cpus(nmi_shootdown_cb callback)
  {
- 	struct pt_regs *regs;
- #ifdef CONFIG_X86_32
- 	struct pt_regs fixed_regs;
- #endif
-+
-+	regs = args->regs;
-+
-+#ifdef CONFIG_X86_32
-+	if (!user_mode_vm(regs)) {
-+		crash_fixup_ss_esp(&fixed_regs, regs);
-+		regs = &fixed_regs;
-+	}
-+#endif
-+	crash_save_cpu(regs, cpu);
-+
-+	disable_local_APIC();
-+}
-+
-+static int crash_nmi_callback(struct notifier_block *self,
-+			unsigned long val, void *data)
-+{
- 	int cpu;
+ 	unsigned long msecs;
  
- 	if (val != DIE_NMI_IPI)
- 		return NOTIFY_OK;
- 
--	regs = ((struct die_args *)data)->regs;
- 	cpu = raw_smp_processor_id();
- 
- 	/* Don't do anything if this handler is invoked on crashing cpu.
-@@ -58,14 +73,8 @@ static int crash_nmi_callback(struct notifier_block *self,
- 		return NOTIFY_STOP;
- 	local_irq_disable();
- 
--#ifdef CONFIG_X86_32
--	if (!user_mode_vm(regs)) {
--		crash_fixup_ss_esp(&fixed_regs, regs);
--		regs = &fixed_regs;
--	}
--#endif
--	crash_save_cpu(regs, cpu);
--	disable_local_APIC();
-+	kdump_nmi_callback(cpu, (struct die_args *)data);
-+
- 	atomic_dec(&waiting_for_crash_ipi);
- 	/* Assume hlt works */
- 	halt();
 -- 
 1.5.5.GIT
 
