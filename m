@@ -1,74 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbYKLPi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbYKLPk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbYKLPi3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 10:38:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbYKLPiV
+	id S1753837AbYKLPk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 10:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbYKLPkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 10:38:21 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:45602 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbYKLPiU (ORCPT
+	Wed, 12 Nov 2008 10:40:14 -0500
+Received: from 30.mail-out.ovh.net ([213.186.62.213]:46160 "HELO
+	30.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752811AbYKLPkM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 10:38:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=E+VrB7SzldLmpMQ9XgixTUKQ4iKTE0lag5GNStiMcEcYTubu7gyNIBE195J0IBTjbq
-         u4jCraVS/oh5VyNuDkIpYtFKoaEaALVm74CvstRZvnLSsmGus5hL/aMiipBexijndSMD
-         o0rsiNpBF/ec2FY0W6plGYjLZZdiErBosKJIg=
-Message-ID: <2f3bf9a60811120738s6082c9f1jdcc95820e3770b40@mail.gmail.com>
-Date: Wed, 12 Nov 2008 17:38:17 +0200
-From: "Dotan Barak" <dotanba@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: checkpatch.pl print the line twice when trailing statements in the same line
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20081112135459.GC8302@shadowen.org>
+	Wed, 12 Nov 2008 10:40:12 -0500
+Message-ID: <491AF8D1.4060106@neotion.com>
+Date: Wed, 12 Nov 2008 16:40:01 +0100
+From: Neil Armstrong <narmstrong@neotion.com>
+Reply-To: narmstrong@neotion.com
+Organization: Neotion
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810202051.38694.dotanba@gmail.com>
-	 <20081031082414.GD26593@brain> <20081112135459.GC8302@shadowen.org>
+To: hjk@linutronix.de
+CC: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] uio: add ioctl callback
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=1166F485
+Content-Type: multipart/mixed;
+ boundary="------------050703040906070006040507"
+X-Ovh-Tracer-Id: 17930800443148104849
+X-Ovh-Remote: 82.236.40.173 (sop06-1-82-236-40-173.fbx.proxad.net)
+X-Ovh-Local: 213.186.33.20 (ns0.ovh.net)
+X-Spam-Check: DONE|H 0.5/N
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
+This is a multi-part message in MIME format.
+--------------050703040906070006040507
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I noticed another issue:
+Add an ioctl callback for uio devices.
 
-for the code line:
- return (int)0;
+Signed-off-by: Neil Armstrong <narmstrong@neotion.com>
+---
 
-I get the following error message:
- ERROR: return is not a function, parentheses are not required.
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index 2d2440c..38044fb 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -385,6 +385,18 @@ static unsigned int uio_poll(struct file *filep,
+poll_table *wait)
+     return 0;
+ }
+=20
++static int uio_ioctl(struct inode *inode, struct file *filep,
++            unsigned int cmd, unsigned long arg)
++{
++    struct uio_listener *listener =3D filep->private_data;
++    struct uio_device *idev =3D listener->dev;
++
++    if (idev->info->ioctl)
++        return idev->info->ioctl(idev->info, cmd, arg);
++
++    return -ENOSYS;
++}
++
+ static ssize_t uio_read(struct file *filep, char __user *buf,
+             size_t count, loff_t *ppos)
+ {
+@@ -590,6 +602,7 @@ static const struct file_operations uio_fops =3D {
+     .mmap        =3D uio_mmap,
+     .poll        =3D uio_poll,
+     .fasync        =3D uio_fasync,
++    .ioctl        =3D uio_ioctl,
+ };
+=20
+ static int uio_major_init(void)
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+index cdf338d..e44e89b 100644
+--- a/include/linux/uio_driver.h
++++ b/include/linux/uio_driver.h
+@@ -68,6 +68,8 @@ struct uio_info {
+     int (*open)(struct uio_info *info, struct inode *inode);
+     int (*release)(struct uio_info *info, struct inode *inode);
+     int (*irqcontrol)(struct uio_info *info, s32 irq_on);
++    int (*ioctl)(struct uio_info *info, unsigned int cmd,
++            unsigned long arg);
+ };
+=20
+ extern int __must_check
 
-Thanks
-Dotan
+--------------050703040906070006040507
+Content-Type: text/x-vcard; charset=utf-8;
+ name="narmstrong.vcf"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+ filename="narmstrong.vcf"
 
-On Wed, Nov 12, 2008 at 3:54 PM, Andy Whitcroft <apw@shadowen.org> wrote:
-> On Fri, Oct 31, 2008 at 08:24:14AM +0000, Andy Whitcroft wrote:
->> On Mon, Oct 20, 2008 at 08:51:38PM +0200, Dotan Barak wrote:
->> > Hi.
->> >
->> > I executed checkpatch.pl version 0.24 on a file and i noticed that when
->> > a tailing statement is being declared at the same line with "while, checkpatch
->> > prints the erroneous line twice.
->> >
->> > Here is an example of the output:
->> >
->> > ERROR: trailing statements should be on next line
->> > #651: FILE: idbm.c:651:
->> > +               while (*nl && isspace(c = *nl)) nl++;
->> > +               while (*nl && isspace(c = *nl)) nl++;
->> >
->> > Is this is the expected behavior?
->>
->> No that would definintaly not be expected.  Will add it to my TODO list.
->
-> Ok, this is now fixed up and should be in my next batch of updates.
->
-> -apw
->
+begin:vcard
+fn:Neil Armstrong
+n:Armstrong;Neil
+org:Neotion;Neotion Sophia Antipolis
+adr:;;;Sophia Antipolis;;;France
+email;internet:narmstrong@neotion.com
+title:Embedded Linux Software Engineer
+tel;cell:0667474169
+note:PGP 0x1166F485
+x-mozilla-html:FALSE
+url:http://www.neotion.com
+version:2.1
+end:vcard
+
+
+--------------050703040906070006040507--
