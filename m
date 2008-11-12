@@ -1,101 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958AbYKLReX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYKLRgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753958AbYKLReX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 12:34:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYKLReO
+	id S1753955AbYKLRgW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 12:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYKLRgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 12:34:14 -0500
-Received: from mx39.mail.ru ([194.67.23.35]:64796 "EHLO mx39.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750920AbYKLReN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 12:34:13 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] Fix argument type for acpi_evaluate_integer in acpi_get_physical_pci_device
-Date: Wed, 12 Nov 2008 20:34:07 +0300
-User-Agent: KMail/1.9.10
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200811031216.15690.arvidjaar@mail.ru> <alpine.LFD.2.00.0811120137070.3828@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0811120137070.3828@localhost.localdomain>
+	Wed, 12 Nov 2008 12:36:12 -0500
+Received: from elasmtp-curtail.atl.sa.earthlink.net ([209.86.89.64]:46269 "EHLO
+	elasmtp-curtail.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751368AbYKLRgL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 12:36:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=qSTV+rRbFqiob3/Z9Gh0KBPAuvDHJVuk6qqBUPSdBBa8atDxAC60ky7Y2sj3URJE;
+  h=Received:Message-ID:Date:From:Reply-To:User-Agent:MIME-Version:To:Subject:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <491B1409.9040705@earthlink.net>
+Date: Wed, 12 Nov 2008 12:36:09 -0500
+From: Stephen Clark <sclark46@earthlink.net>
+Reply-To: sclark46@earthlink.net
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart18603602.VjaherT0so";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: 2.6.27.2 hda-intel weak sound from speakers
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811122034.08092.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: OK
+X-ELNK-Trace: a437fbc6971e80f61aa676d7e74259b7b3291a7d08dfec79f86fd22e9cdf90a598e58ebcfe3d17be350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 208.118.36.229
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart18603602.VjaherT0so
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi,
 
-On Wednesday 12 November 2008, Len Brown wrote:
-> unclear what kernel this is supposed to apply to.
->=20
+I am running linux 2.6.27.2 ontop of a Fedora 8 distro. The sound from the 
+speakers is barely audible with all the mixer settings at max, this includes
+the pulseaudio settings. This is on an ASUS laptop with intel-hda. I ran
+alsa-info and the results are at:
 
-The patch was against 2.6.28-rc3 and applies to rc4 as well. Sorry
-for not mentioning this (I thought I did)
+http://www.alsa-project.org/db/?f=7c83d3e5d89101f8e9a0a4aa18cd76f499e02fda
 
-> On Mon, 3 Nov 2008, Andrey Borzenkov wrote:
->=20
-> > Subject: [PATCH] Fix argument type for acpi_evaluate_integer in acpi_ge=
-t_physical_pci_device
-> > From: Andrey Borzenkov <arvidjaar@mail.ru>
-> >=20
-> > CC      drivers/acpi/glue.o
-> > /home/bor/src/linux-git/drivers/acpi/glue.c: In function 'acpi_get_phys=
-ical_pci_device':
-> > /home/bor/src/linux-git/drivers/acpi/glue.c:157: warning: passing argum=
-ent 4 of 'acpi_evaluate_integer' from incompatible pointer type
-> >=20
-> > acpi_evaluate_integer takes pointer to unsigned long long as fourth arg=
-ument
-> >=20
-> > Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
-> >=20
-> > ---
-> >=20
-> >  drivers/acpi/glue.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> >=20
-> >=20
-> > diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
-> > index 98c9c76..436c8a3 100644
-> > --- a/drivers/acpi/glue.c
-> > +++ b/drivers/acpi/glue.c
-> > @@ -150,7 +150,7 @@ EXPORT_SYMBOL(acpi_get_physical_device);
-> >  struct device *acpi_get_physical_pci_device(acpi_handle handle)
-> >  {
-> >  	struct device *dev;
-> > -	long device_id;
-> > +	unsigned long long device_id;
-> >  	acpi_status status;
-> > =20
-> >  	status =3D
-> >=20
->=20
->=20
+There has been some minor improvement in the volume over the past year I have
+had the laptop. I am hoping that someone can identify a way to make the sound
+loud enough so I don't have to put my ear by the speakers to hear the sound.
+
+Any insight would be greatly appreciated.
+
+Thank,
+Steve
 
 
 
---nextPart18603602.VjaherT0so
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkkbE48ACgkQR6LMutpd94ysiQCdEvh0C50/IIZlvZOJHtYbJwOw
-i+4AoJiquPec9lg0Zr70rppTrhahU7Kf
-=c9im
------END PGP SIGNATURE-----
-
---nextPart18603602.VjaherT0so--
