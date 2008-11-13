@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYKMWKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbYKMWK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbYKMWKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 17:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYKMWK2
+	id S1755853AbYKMWK5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 17:10:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbYKMWKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 17:10:28 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:52588 "EHLO
+	Thu, 13 Nov 2008 17:10:46 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:52590 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752766AbYKMWK2 (ORCPT
+	with ESMTP id S1753381AbYKMWKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 17:10:28 -0500
+	Thu, 13 Nov 2008 17:10:45 -0500
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Andi Kleen <andi@firstfloor.org>, Jiri Kosina <jkosina@suse.cz>,
        linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1 v2] HID: don't grab devices with no input
-Date: Thu, 13 Nov 2008 23:10:21 +0100
-Message-Id: <1226614221-17118-1-git-send-email-jirislaby@gmail.com>
+       Jiri Slaby <jirislaby@gmail.com>, David Airlie <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 1/1 v2] DRM: fix radeon suspend/resume oops
+Date: Thu, 13 Nov 2008 23:09:56 +0100
+Message-Id: <1226614196-17019-1-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <491CA495.7010007@gmail.com>
 References: <491CA495.7010007@gmail.com>
@@ -25,61 +26,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some devices have no input interrupt endpoint. These won't be handled
-by usbhid, but currently they are not refused and reside on hid bus.
+me wrote:
+> As the accesses to the mmio member are not protected by anything, they
+> seem to be racy with the open/clsoe anyways, setting this down there
+> too.
 
-Perform this checking earlier so that we refuse to control such
-a device early enough (and not pass it to the hid bus at all).
+On the second though it should be protected. Updated patch below...
+
++ added Rafael to cc list
+
+--
+
+When the driver is bound to a device and nobody opens the device node,
+it will oops on suspend and resume, since it's not mapped and
+dev_priv->mmio is NULL.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- drivers/hid/usbhid/hid-core.c |   17 +++++++++++------
- 1 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/radeon/radeon_drv.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index 05402e9..9c9bd4c 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -850,12 +850,6 @@ static int usbhid_start(struct hid_device *hid)
- 		}
- 	}
- 
--	if (!usbhid->urbin) {
--		err_hid("couldn't find an input interrupt endpoint");
--		ret = -ENODEV;
--		goto fail;
--	}
--
- 	init_waitqueue_head(&usbhid->wait);
- 	INIT_WORK(&usbhid->reset_work, hid_reset);
- 	setup_timer(&usbhid->io_retry, hid_retry_timeout, (unsigned long) hid);
-@@ -958,15 +952,26 @@ static struct hid_ll_driver usb_hid_driver = {
- 
- static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
+diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
+index 71af746..7672310 100644
+--- a/drivers/gpu/drm/radeon/radeon_drv.c
++++ b/drivers/gpu/drm/radeon/radeon_drv.c
+@@ -56,6 +56,9 @@ static int radeon_suspend(struct drm_device *dev, pm_message_t state)
  {
-+	struct usb_host_interface *interface = intf->cur_altsetting;
- 	struct usb_device *dev = interface_to_usbdev(intf);
- 	struct usbhid_device *usbhid;
- 	struct hid_device *hid;
-+	unsigned int n, has_in = 0;
- 	size_t len;
- 	int ret;
+ 	drm_radeon_private_t *dev_priv = dev->dev_private;
  
- 	dbg_hid("HID probe called for ifnum %d\n",
- 			intf->altsetting->desc.bInterfaceNumber);
- 
-+	for (n = 0; n < interface->desc.bNumEndpoints; n++)
-+		if (usb_endpoint_is_int_in(&interface->endpoint[n].desc))
-+			has_in++;
-+	if (!has_in) {
-+		dev_err(&intf->dev, "couldn't find an input interrupt "
-+				"endpoint");
-+		return -ENODEV;
-+	}
++	if (!dev_priv->mmio)
++		return 0;
 +
- 	hid = hid_allocate_device();
- 	if (IS_ERR(hid))
- 		return PTR_ERR(hid);
+ 	/* Disable *all* interrupts */
+ 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
+ 		RADEON_WRITE(R500_DxMODE_INT_MASK, 0);
+@@ -67,6 +70,9 @@ static int radeon_resume(struct drm_device *dev)
+ {
+ 	drm_radeon_private_t *dev_priv = dev->dev_private;
+ 
++	if (!dev_priv->mmio)
++		return 0;
++
+ 	/* Restore interrupt registers */
+ 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
+ 		RADEON_WRITE(R500_DxMODE_INT_MASK, dev_priv->r500_disp_irq_reg);
 -- 
-1.6.0.4
+1.6.0.3
 
