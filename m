@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbYKMQii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYKMQjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752872AbYKMQii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 11:38:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYKMQi3
+	id S1753575AbYKMQjs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 11:39:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYKMQjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 11:38:29 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44854 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750948AbYKMQi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 11:38:29 -0500
-Date: Thu, 13 Nov 2008 17:38:02 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Takashi Iwai <tiwai@suse.de>, Jeremy Katz <katzj@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
-       dsaxena@laptop.org
-Subject: Re: [PATCH] ALSA: cs5535audio: only build OLPC support if
-	MGEODE_LX is defined
-Message-ID: <20081113163802.GA1734@ucw.cz>
-References: <s5hwsfapdoj.wl%tiwai@suse.de> <20081111140406.GA3244@elte.hu> <20081109201710.4c490f04@debxo> <1226498050.12791.45.camel@aglarond.local> <s5hbpwlj9w1.wl%tiwai@suse.de> <1226547898.13077.83.camel@aglarond.local> <s5h63msru7z.wl%tiwai@suse.de> <20081113153714.GA1520@ucw.cz> <s5h3ahvhb9w.wl%tiwai@suse.de> <20081113111428.59aa36cb@ephemeral>
+	Thu, 13 Nov 2008 11:39:39 -0500
+Received: from [69.90.0.18] ([69.90.0.18]:41122 "EHLO mtl.rackplans.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750948AbYKMQjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 11:39:39 -0500
+Date: Thu, 13 Nov 2008 11:40:20 -0500 (EST)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.27.5 tun/tap problem.
+Message-ID: <alpine.DEB.1.10.0811131133560.11705@mtl.rackplans.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113111428.59aa36cb@ephemeral>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-11-13 11:14:28, Andres Salomon wrote:
-> On Thu, 13 Nov 2008 16:54:19 +0100
-> Takashi Iwai <tiwai@suse.de> wrote:
-> 
-> > At Thu, 13 Nov 2008 16:37:14 +0100,
-> > Pavel Machek wrote:
-> [...]
-> > > 
-> > > > IMO, the basic problem is rather that the platform and the CPU
-> > > > selection is mixed up.  The geode GPIO stuff shouldn't belong to
-> > > > CPU selection.
-> > > 
-> > > ACK... and suggested patch makes it worse.
-> > > 
-> > > There should be option 'support OLPC' somewhere, and that should
-> > > enable the gpio bits. Alsa driver should depend on that one.
-> > 
-> > Any better fix patch is welcome, of course :)
-> > This would make save a lot time than writing mails...
 
-> 
-> Okay, how about something like the following?
+I have one machine that refuses to keep it's ssh tunnels up.  None of the 
+other interfaces show any errors and I've checked for mtu problems etc.
 
-It is wrong. It is valid & useful to compile kernel for i386 and
-expect all the features on OLPC (with small performance hit).
+About 40 seconds after the tunnel comes up it stops recieving 
+packets.  If I start a ping on the machine it shows outgoing but not 
+incomming icmp.  The machine on the far side is getting the packets and 
+replying but it's not making it over the tunnel.  Both machines are 
+2.6.27.5.
 
-								Pavel
+tun0      Link encap:UNSPEC  HWaddr 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+          inet addr:172.16.1.2  P-t-P:172.16.1.1  Mask:255.255.255.252
+          UP POINTOPOINT RUNNING NOARP MULTICAST  MTU:1000  Metric:1
+          RX packets:0 errors:0 dropped:1 overruns:0 frame:0
+          TX packets:23 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:500
+          RX bytes:0 (0.0 B)  TX bytes:1884 (1.8 KiB)
 
-> This is a temporary work-around until the geode_gpio* calls are moved out
-> into a separate config option.  We don't want to force generic kernel
-> maintainers to have to build a specific OLPC kernel.
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  sound/pci/cs5535audio/Makefile |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/sound/pci/cs5535audio/Makefile b/sound/pci/cs5535audio/Makefile
-> index ccc6422..fda7a94 100644
-> --- a/sound/pci/cs5535audio/Makefile
-> +++ b/sound/pci/cs5535audio/Makefile
-> @@ -4,7 +4,9 @@
->  
->  snd-cs5535audio-y := cs5535audio.o cs5535audio_pcm.o
->  snd-cs5535audio-$(CONFIG_PM) += cs5535audio_pm.o
-> +ifdef CONFIG_MGEODE_LX
->  snd-cs5535audio-$(CONFIG_OLPC) += cs5535audio_olpc.o
-> +endif
->  
->  # Toplevel Module Dependency
->  obj-$(CONFIG_SND_CS5535AUDIO) += snd-cs5535audio.o
+Not even sure where to even begin debugging this.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
+	Gerhard
+
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
