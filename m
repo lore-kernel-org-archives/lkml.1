@@ -1,108 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbYKMPLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbYKMPPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbYKMPLQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 10:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYKMPK5
+	id S1752530AbYKMPPb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 10:15:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYKMPPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 10:10:57 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44036 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbYKMPK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 10:10:56 -0500
-Message-ID: <491C436C.6060603@kernel.org>
-Date: Fri, 14 Nov 2008 00:10:36 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491BC87F.4050108@kernel.org> <E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu> <491C1588.2060907@kernel.org> <E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu> <E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu> <491C2A63.1030804@kernel.org> <E1L0cSz-0006xF-0O@pomaz-ex.szeredi.hu> <491C39BD.8050108@kernel.org> <E1L0dUS-00074L-Uz@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1L0dUS-00074L-Uz@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Nov 2008 10:15:22 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:63085 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbYKMPPV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 10:15:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=DPaV6y9yrXTJkM0IEMQx/F7ZF44CcL4lfKaaNCPU1SL2xec8kHh1pGg8b2BBi8N5K7
+         1jEFInMc3SUn+MwEZDYNj6SP9ou9FnZawd3ydJDcK3AvunvDlszyWA+eoMjHiXShHc5g
+         eJWdydwBW6giTRMlQFkp8CaGsgjWsFLs8SN4w=
+Date: Fri, 14 Nov 2008 00:15:14 +0900
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hitoshi Mitake <mitake@clustcom.com>, Doug Thompson <norsk5@yahoo.com>,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
+       ktaka@clustcom.com, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-Id: <20081114001514.ea469b4f.h.mitake@gmail.com>
+In-Reply-To: <20081111061140.GB32733@linux-sh.org>
+References: <20081105222911.d76e7e1c.mitake@clustcom.com>
+	<413709.12821.qm@web50106.mail.re2.yahoo.com>
+	<20081106164641.ed369060.akpm@linux-foundation.org>
+	<20081107152830.a42766f3.mitake@clustcom.com>
+	<20081106223122.8a255211.akpm@linux-foundation.org>
+	<20081107153824.0ec934e6.mitake@clustcom.com>
+	<20081106231102.aab83cd4.akpm@linux-foundation.org>
+	<a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com>
+	<20081109112646.97c594b5.akpm@linux-foundation.org>
+	<20081111061140.GB32733@linux-sh.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 15:10:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 11 Nov 2008 15:11:40 +0900
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-Miklos Szeredi wrote:
->> I kind of like the original implementation tho.  The f_ops->poll
->> interface is designed to be used like ->poll returning events if
->> available immediately and queue for later notification as necessary.
->> Notification is asynchronous and can be spurious (this actually comes
->> pretty handy for low level implementation).  When notified, upper layer
->> queries the same way using ->poll.  This is quite convenient for low
->> level implementation as the actual logic of poll can live in ->poll
->> proper while notifications can be scattered around places where events
->> can occur.
+> On Sun, Nov 09, 2008 at 11:26:46AM -0800, Andrew Morton wrote:
+> > (cc linux-arch)
+> > 
+> > > It seems that architectures that provide readq/writeq are
+> > > mips, parisc and x86 (and x86_64).
+> > > 
+> There are more than that, grep arch/*/include also.
 > 
-> Yes, that kind of interface is nice for f_ops->poll, and for libfuse.
+> In addition to mips, parisc, and x86, there is ia64, alpha, sh, and
+> sparc.
+
+I didn't noticed these functions, thanks.
+
 > 
-> But for the kernel interface it's inefficient.  A wake up event is 3
-> context switches instead of one.  And that's inherent in the interface
-> itself for no good reason.
-
-Event notification performance problem is usually in its scalability
-not in each notification.  It's nice to optimize that too but I don't
-think it weighs too much especially for FUSE.  Doing it request/reply
-way could have scalability concerns, please see below.
-
-> Also there's again the question of userspace filesystem messing with
-> the caller: your original implementation allows the userspace
-> filesystem to block f_ops->poll() forever, which really isn't what
-> poll/select is about.
-
-That would simply be a broken poll implementation just as O_NONBLOCK
-read can block in ->read forever.
-
-> So I'd still argue for the simple POLL-request/POLL-notify protocol on
-> the kernel API, and possibly have the async notification similar to
-> the kernel interface on the library API.
+> > #ifdef readq
+> > 
+> > Is a suitable way of determining whether the architecture implements
+> > readq and writeq.  It isn't pretty, but it will suffice.
+> > 
+> > A problem with it is that drivers will then do
+> > 
+> > #ifndef readq
+> > <provide a local implementation here>
+> > #endif
+> > 
+> > which rather sucks - we don't want lots of little private readq/writeq
+> > implementations all over the tree.
+> > 
+> > Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
+> > disable these drivers on the architectures which don't provide
+> > readq/writeq support.
+> > 
+> However this is handled, we don't want a rehash of the read/writes{b,w,l} fiasco.
 > 
-> Implementation wise I don't care all that much, but I'd actually
-> prefer if it was implemented using the traditional request/reply thing
-> and optimized (possibly later) to find requests in a more efficient
-> way than searching the linear list, which would benefit not just poll
-> but all requests.
+> Allowing drivers to do their own local implementations of these things
+> has always been a complete disaster. A Kconfig option will at least take
+> care of having these craptastic ifdef lists for architectures in every
+> driver that rolls its own implementation.
+> 
+> Even a sub-optimal asm-generic version would be preferable, if the
+> semantics are well enough defined and consistently adhered to.
 
-Given that the number of in-flight requests are not too high, I think
-linear search is fine for now but switching it to b-tree shouldn't be
-difficult.
+I found nice source file, lib/iomap.c.
+There are architecture independent read/write{b,w,l} (named like ioread8).
 
-So, pros for req/reply approach.
+I want to implement architecture independent readq/writeq in lib/iomap.c .
+Andrew told,
 
-* Less context switch per event notification.
+> Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
+> disable these drivers on the architectures which don't provide
+> readq/writeq support.
 
-* No need for separate async notification mechanism.
+But I want to use x38_edac.c on x86_32 environment,
+and I think similar desire may occur in the future.
 
-Cons.
-
-* More interface impedence matching from libfuse.
-
-* Higher overhead when poll/select finishes.  Either all outstanding
-  requests need to be cancelled using INTERRUPT whenever poll/select
-  returns or kernel needs to keep persistent list of outstanding polls
-  so that later poll/select can reuse them.  The problem here is that
-  kernel doesn't know when or whether they'll be re-used.  We can put
-  in LRU-based heuristics but it's getting too complex.  Note that
-  it's different from userland server keeping track.  The same problem
-  exists with userland based tracking but for many servers it would be
-  just a bit in existing structure and we can be much more lax on
-  userland.  ie. actual storage backed files usually don't need
-  notification at all as data is always available, so the amount of
-  overhead is limited in most cases but we can't assume things like
-  that for the kernel.
-
-Overall, I think being lazy about cancellation and let userland notify
-asynchronously would be better performance and simplicity wise.  What
-do you think?
-
-Thanks.
-
--- 
-tejun
+Is this way good enough? Request for comment.
