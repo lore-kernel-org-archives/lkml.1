@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbYKMTEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbYKMTEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146AbYKMTEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYKMTDy
+	id S1753292AbYKMTEb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:04:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYKMTD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:03:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59599 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751840AbYKMTDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:03:53 -0500
-Date: Thu, 13 Nov 2008 20:03:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Pavel Machek <pavel@suse.cz>, Takashi Iwai <tiwai@suse.de>,
-       Jeremy Katz <katzj@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
-       dsaxena@laptop.org
-Subject: Re: [PATCH] ALSA: cs5535audio: only build OLPC support if
-	MGEODE_LX is defined
-Message-ID: <20081113190339.GE17851@elte.hu>
-References: <20081109201710.4c490f04@debxo> <1226498050.12791.45.camel@aglarond.local> <s5hbpwlj9w1.wl%tiwai@suse.de> <1226547898.13077.83.camel@aglarond.local> <s5h63msru7z.wl%tiwai@suse.de> <20081113153714.GA1520@ucw.cz> <s5h3ahvhb9w.wl%tiwai@suse.de> <20081113111428.59aa36cb@ephemeral> <20081113163802.GA1734@ucw.cz> <20081113120147.2ecde3c8@ephemeral>
+	Thu, 13 Nov 2008 14:03:59 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62318 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbYKMTD6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:03:58 -0500
+Date: Thu, 13 Nov 2008 14:03:56 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function
+ return tracer lockless
+In-Reply-To: <20081113185515.GA3810@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0811131349090.31899@gandalf.stny.rr.com>
+References: <491B4F0A.3080901@gmail.com> <87od0jd6ds.fsf@basil.nowhere.org> <c62985530811130901t7ddf84beof39a964582fb94a0@mail.gmail.com> <20081113171220.GX3810@one.firstfloor.org> <alpine.DEB.1.10.0811131219250.23751@gandalf.stny.rr.com>
+ <20081113173451.GY3810@one.firstfloor.org> <alpine.DEB.1.10.0811131230470.23751@gandalf.stny.rr.com> <20081113182937.GZ3810@one.firstfloor.org> <alpine.DEB.1.10.0811131330350.23751@gandalf.stny.rr.com> <20081113185515.GA3810@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113120147.2ecde3c8@ephemeral>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andres Salomon <dilinger@queued.net> wrote:
+On Thu, 13 Nov 2008, Andi Kleen wrote:
+>>> 
+>>> I did not refer to CPU caches, but the compiler's register allocation
+>>> [ok if you want the registers are the "level 0 cache"]. A memory barrier
+>>> all messes it up. That is why it is better to only clobber specific
+>>> memory regions, which is what local_* does.
+>>> 
 
-> On Thu, 13 Nov 2008 17:38:02 +0100
-> Pavel Machek <pavel@suse.cz> wrote:
+>> Now tell me again how local_* is more efficient than barrier?
 > 
-> > On Thu 2008-11-13 11:14:28, Andres Salomon wrote:
-> > > On Thu, 13 Nov 2008 16:54:19 +0100
-> > > Takashi Iwai <tiwai@suse.de> wrote:
-> > > 
-> > > > At Thu, 13 Nov 2008 16:37:14 +0100,
-> > > > Pavel Machek wrote:
-> > > [...]
-> > > > > 
-> > > > > > IMO, the basic problem is rather that the platform and the CPU
-> > > > > > selection is mixed up.  The geode GPIO stuff shouldn't belong
-> > > > > > to CPU selection.
-> > > > > 
-> > > > > ACK... and suggested patch makes it worse.
-> > > > > 
-> > > > > There should be option 'support OLPC' somewhere, and that should
-> > > > > enable the gpio bits. Alsa driver should depend on that one.
-> > > > 
-> > > > Any better fix patch is welcome, of course :)
-> > > > This would make save a lot time than writing mails...
-> > 
-> > > 
-> > > Okay, how about something like the following?
-> > 
-> > It is wrong. It is valid & useful to compile kernel for i386 and
-> > expect all the features on OLPC (with small performance hit).
+> Look at the generated assembler, not the source. The M386 check is two instructions
+> with the i386 stuff just moved away somewhere out of line that is
+> about never taken. The rest is short and straight forward in asm too.
+> And a lot of kernels are not compiled with 386 support anyways.
 > 
-> No one's debating that.  That requires additional work that will 
-> take longer, however.
 
-i've zapped this patch meanwhile:
+OK, lets look at just the asm.
 
- 1355c96: x86/olpc: make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
+barrier:
+	__asm__ __volatile__("": : :"memory")
 
-because it cripples the ability to run distribution kernels on the 
-OLPC.
+local_add_return:
+	asm volatile(_ASM_XADD "%0, %1;"
+		     : "+r" (i), "+m" (l->a.counter)
+		     : : "memory");
 
-	Ingo
+
+Your argument was that barrier clobbers memory, but it looks like the 
+local_add_return does the same.
+
+Lets go look at the code that we are talking about:
+
+ 	index = ++ti->curr_ret_stack;
+ 	ti->ret_stack[index].ret = ret;
+ 	ti->ret_stack[index].func = func;
+ 	ti->ret_stack[index].calltime = time;
+
+Which as you stated was incorrect, and it is. But you suggested that we 
+should switch to using local_add_return which would cause us to change a 
+lot of code to handle the type change. When this is ported to other archs, 
+they will copy that too, and then be using a lesser efficient algorithm.
+
+All that is needed is to change the pointer to always point to the next 
+item, and then do:
+
+        index = ti->curr_ret_stack++;
+	barrier();
+        ti->ret_stack[index].ret = ret;
+        ti->ret_stack[index].func = func;
+        ti->ret_stack[index].calltime = time;
+
+I don't see any major gain in switching to local_add_return.
+
+-- Steve
