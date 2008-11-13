@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYKMTnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbYKMTn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbYKMTnj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:43:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKMTe3
+	id S1756987AbYKMTn5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYKMTea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:29 -0500
-Received: from gw.goop.org ([64.81.55.164]:34434 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:30 -0500
+Received: from gw.goop.org ([64.81.55.164]:34377 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753221AbYKMTeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:10 -0500
+	id S1752919AbYKMTeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:09 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 28 of 38] paravirt/xen: add pvop for page_is_ram
-X-Mercurial-Node: 79d4bb7c2d2875753e7ce497e13a55ce9e9f5d66
-Message-Id: <79d4bb7c2d2875753e7c.1226603426@abulafia.goop.org>
+Subject: [PATCH 27 of 38] xen/dom0: use _PAGE_IOMAP in ioremap to do machine
+	mappings
+X-Mercurial-Node: 3bb42a3945f477187ce439062237ccd028c8dd49
+Message-Id: <3bb42a3945f477187ce4.1226603425@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:26 -0800
+Date: Thu, 13 Nov 2008 11:10:25 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -26,114 +27,177 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A guest domain may have external pages mapped into its address space,
-in order to share memory with other domains.  These shared pages are
-more akin to io mappings than real RAM, and should not pass the
-page_is_ram test.  Add a paravirt op for this so that a hypervisor
-backend can validate whether a page should be considered ram or not.
+In a Xen domain, ioremap operates on machine addresses, not
+pseudo-physical addresses.  We use _PAGE_IOMAP to determine whether a
+mapping is intended for machine addresses.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/page.h     |    9 ++++++++-
- arch/x86/include/asm/paravirt.h |    7 +++++++
- arch/x86/kernel/paravirt.c      |    1 +
- arch/x86/mm/ioremap.c           |    2 +-
- arch/x86/xen/enlighten.c        |   11 +++++++++++
- 5 files changed, 28 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/xen/page.h |    8 +----
+ arch/x86/xen/enlighten.c        |   14 +++++++--
+ arch/x86/xen/mmu.c              |   60 ++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 73 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/include/asm/page.h b/arch/x86/include/asm/page.h
---- a/arch/x86/include/asm/page.h
-+++ b/arch/x86/include/asm/page.h
-@@ -56,7 +56,14 @@
- typedef struct { pgdval_t pgd; } pgd_t;
- typedef struct { pgprotval_t pgprot; } pgprot_t;
- 
--extern int page_is_ram(unsigned long pagenr);
-+extern int native_page_is_ram(unsigned long pagenr);
-+#ifndef CONFIG_PARAVIRT
-+static inline int page_is_ram(unsigned long pagenr)
-+{
-+	return native_page_is_ram(pagenr);
-+}
-+#endif
-+
- extern int pagerange_is_ram(unsigned long start, unsigned long end);
- extern int devmem_is_allowed(unsigned long pagenr);
- extern void map_devmem(unsigned long pfn, unsigned long size,
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -321,6 +321,8 @@
- 	   an mfn.  We can tell which is which from the index. */
- 	void (*set_fixmap)(unsigned /* enum fixed_addresses */ idx,
- 			   unsigned long phys, pgprot_t flags);
-+
-+	int (*page_is_ram)(unsigned long pfn);
- };
- 
- struct raw_spinlock;
-@@ -1386,6 +1388,11 @@
- 	pv_mmu_ops.set_fixmap(idx, phys, flags);
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -112,13 +112,9 @@
+  */
+ static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
+ {
+-	extern unsigned long max_mapnr;
+ 	unsigned long pfn = mfn_to_pfn(mfn);
+-	if ((pfn < max_mapnr)
+-	    && !xen_feature(XENFEAT_auto_translated_physmap)
+-	    && (get_phys_to_machine(pfn) != mfn))
+-		return max_mapnr; /* force !pfn_valid() */
+-	/* XXX fixme; not true with sparsemem */
++	if (get_phys_to_machine(pfn) != mfn)
++		return -1; /* force !pfn_valid() */
+ 	return pfn;
  }
  
-+static inline int page_is_ram(unsigned long pfn)
-+{
-+	return PVOP_CALL1(int, pv_mmu_ops.page_is_ram, pfn);
-+}
-+
- void _paravirt_nop(void);
- #define paravirt_nop	((void *)_paravirt_nop)
- 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -451,6 +451,7 @@
- 	},
- 
- 	.set_fixmap = native_set_fixmap,
-+	.page_is_ram = native_page_is_ram,
- };
- 
- EXPORT_SYMBOL_GPL(pv_time_ops);
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -97,7 +97,7 @@
- 
- #endif
- 
--int page_is_ram(unsigned long pagenr)
-+int native_page_is_ram(unsigned long pagenr)
- {
- 	resource_size_t addr, end;
- 	int i;
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1190,6 +1190,16 @@
+@@ -1162,11 +1162,19 @@
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	case FIX_APIC_BASE:	/* maps dummy local APIC */
  #endif
++		/* All local page mappings */
+ 		pte = pfn_pte(phys, prot);
+ 		break;
+ 
++	case FIX_PARAVIRT_BOOTMAP:
++		/* This is an MFN, but it isn't an IO mapping from the
++		   IO domain */
++		pte = mfn_pte(phys, prot);
++		break;
++
+ 	default:
+-		pte = mfn_pte(phys, prot);
++		/* By default, set_fixmap is used for hardware mappings */
++		pte = mfn_pte(phys, __pgprot(pgprot_val(prot) | _PAGE_IOMAP));
+ 		break;
+ 	}
+ 
+@@ -1695,7 +1703,9 @@
+ 
+ 	/* Prevent unwanted bits from being set in PTEs. */
+ 	__supported_pte_mask &= ~_PAGE_GLOBAL;
+-	if (!xen_initial_domain())
++	if (xen_initial_domain())
++		__supported_pte_mask |= _PAGE_IOMAP;
++	else
+ 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
+ 
+ 	/* Don't do the full vcpu_info placement stuff until we have a
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -302,6 +302,28 @@
+ 	return PagePinned(page);
  }
  
-+static int xen_page_is_ram(unsigned long pfn)
++static bool xen_iomap_pte(pte_t pte)
 +{
-+	/* Granted pages are not RAM.  They will not have a proper
-+	   identity pfn<->mfn translation. */
-+	if (mfn_to_local_pfn(pfn_to_mfn(pfn)) != pfn)
-+		return 0;
-+
-+	return native_page_is_ram(pfn);
++	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
 +}
 +
- static const struct pv_info xen_info __initdata = {
- 	.paravirt_enabled = 1,
- 	.shared_kernel_pmd = 0,
-@@ -1364,6 +1374,7 @@
- 	},
++static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
++{
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++
++	/* ptep might be kmapped when using 32-bit HIGHPTE */
++	u->ptr = arbitrary_virt_to_machine(ptep).maddr;
++	u->val = pte_val_ma(pteval);
++
++	MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_IO);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++}
++
+ static void xen_extend_mmu_update(const struct mmu_update *update)
+ {
+ 	struct multicall_space mcs;
+@@ -382,6 +404,11 @@
+ 	if (mm == &init_mm)
+ 		preempt_disable();
  
- 	.set_fixmap = xen_set_fixmap,
-+	.page_is_ram = xen_page_is_ram,
- };
++	if (xen_iomap_pte(pteval)) {
++		xen_set_iomap_pte(ptep, pteval);
++		goto out;
++	}
++
+ 	ADD_STATS(set_pte_at, 1);
+ //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(set_pte_at_current, mm == current->mm);
+@@ -454,8 +481,25 @@
+ 	return val;
+ }
  
- static void xen_reboot(int reason)
++static pteval_t iomap_pte(pteval_t val)
++{
++	if (val & _PAGE_PRESENT) {
++		unsigned long pfn = (val & PTE_PFN_MASK) >> PAGE_SHIFT;
++		pteval_t flags = val & PTE_FLAGS_MASK;
++
++		/* We assume the pte frame number is a MFN, so
++		   just use it as-is. */
++		val = ((pteval_t)pfn << PAGE_SHIFT) | flags;
++	}
++
++	return val;
++}
++
+ pteval_t xen_pte_val(pte_t pte)
+ {
++	if (xen_initial_domain() && (pte.pte & _PAGE_IOMAP))
++		return pte.pte;
++
+ 	return pte_mfn_to_pfn(pte.pte);
+ }
+ 
+@@ -466,7 +510,11 @@
+ 
+ pte_t xen_make_pte(pteval_t pte)
+ {
+-	pte = pte_pfn_to_mfn(pte);
++	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
++		pte = iomap_pte(pte);
++	else
++		pte = pte_pfn_to_mfn(pte);
++
+ 	return native_make_pte(pte);
+ }
+ 
+@@ -519,6 +567,11 @@
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	ADD_STATS(pte_update, 1);
+ //	ADD_STATS(pte_update_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(pte_update_batched, paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU);
+@@ -535,6 +588,11 @@
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	set_64bit((u64 *)ptep, native_pte_val(pte));
+ }
+ 
 
 
