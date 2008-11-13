@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYKMTgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYKMTg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYKMTgD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:36:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYKMTeI
+	id S1755323AbYKMTg0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:36:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbYKMTeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:08 -0500
-Received: from gw.goop.org ([64.81.55.164]:34377 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:10 -0500
+Received: from gw.goop.org ([64.81.55.164]:34384 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbYKMTeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:03 -0500
+	id S1752174AbYKMTeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:04 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 05 of 38] swiotlb: allow architectures to override
-	virt<->bus<->virt conversions
-X-Mercurial-Node: 472ba94d2e2313c8bda52af6d15c5eed3da6c7ce
-Message-Id: <472ba94d2e2313c8bda5.1226603403@abulafia.goop.org>
+Subject: [PATCH 06 of 38] xen: clean up asm-x86/xen/hypervisor.h
+X-Mercurial-Node: 1f3a43fef28cb05384c13aa93f53b83eae50795c
+Message-Id: <1f3a43fef28cb05384c1.1226603404@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:03 -0800
+Date: Thu, 13 Nov 2008 11:10:04 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -27,194 +26,190 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+hypervisor.h had accumulated a lot of crud, including lots of spurious
+#includes.  Clean it all up, and go around fixing up everything else
+accordingly.
 
-Architectures may need to override these conversions. Implement a
-__weak hook point containing the default implementation.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- include/linux/swiotlb.h |    3 +++
- lib/swiotlb.c           |   42 ++++++++++++++++++++++++++----------------
- 2 files changed, 29 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/xen/hypercall.h  |    6 +++++
+ arch/x86/include/asm/xen/hypervisor.h |   39 ++++++---------------------------
+ arch/x86/include/asm/xen/page.h       |    5 ++++
+ arch/x86/xen/enlighten.c              |    1
+ drivers/xen/balloon.c                 |    4 ++-
+ drivers/xen/features.c                |    6 ++++-
+ drivers/xen/grant-table.c             |    1
+ include/xen/interface/event_channel.h |    2 +
+ 8 files changed, 31 insertions(+), 33 deletions(-)
 
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -27,6 +27,9 @@
- extern void *swiotlb_alloc_boot(size_t bytes, unsigned long nslabs);
- extern void *swiotlb_alloc(unsigned order, unsigned long nslabs);
+diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
+--- a/arch/x86/include/asm/xen/hypercall.h
++++ b/arch/x86/include/asm/xen/hypercall.h
+@@ -33,8 +33,14 @@
+ #ifndef _ASM_X86_XEN_HYPERCALL_H
+ #define _ASM_X86_XEN_HYPERCALL_H
  
-+extern unsigned long __weak swiotlb_virt_to_bus(volatile void *address);
-+extern void * __weak swiotlb_bus_to_virt(unsigned long address);
++#include <linux/kernel.h>
++#include <linux/spinlock.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
++#include <linux/types.h>
 +
- extern void
- *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
- 			dma_addr_t *dma_handle, gfp_t flags);
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -125,6 +125,16 @@
- 	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
- }
++#include <asm/page.h>
++#include <asm/pgtable.h>
  
-+unsigned long __weak swiotlb_virt_to_bus(volatile void *address)
-+{
-+	return virt_to_bus(address);
-+}
+ #include <xen/interface/xen.h>
+ #include <xen/interface/sched.h>
+diff --git a/arch/x86/include/asm/xen/hypervisor.h b/arch/x86/include/asm/xen/hypervisor.h
+--- a/arch/x86/include/asm/xen/hypervisor.h
++++ b/arch/x86/include/asm/xen/hypervisor.h
+@@ -33,39 +33,10 @@
+ #ifndef _ASM_X86_XEN_HYPERVISOR_H
+ #define _ASM_X86_XEN_HYPERVISOR_H
+ 
+-#include <linux/types.h>
+-#include <linux/kernel.h>
+-
+-#include <xen/interface/xen.h>
+-#include <xen/interface/version.h>
+-
+-#include <asm/ptrace.h>
+-#include <asm/page.h>
+-#include <asm/desc.h>
+-#if defined(__i386__)
+-#  ifdef CONFIG_X86_PAE
+-#   include <asm-generic/pgtable-nopud.h>
+-#  else
+-#   include <asm-generic/pgtable-nopmd.h>
+-#  endif
+-#endif
+-#include <asm/xen/hypercall.h>
+-
+ /* arch/i386/kernel/setup.c */
+ extern struct shared_info *HYPERVISOR_shared_info;
+ extern struct start_info *xen_start_info;
+ 
+-/* arch/i386/mach-xen/evtchn.c */
+-/* Force a proper event-channel callback from Xen. */
+-extern void force_evtchn_callback(void);
+-
+-/* Turn jiffies into Xen system time. */
+-u64 jiffies_to_st(unsigned long jiffies);
+-
+-
+-#define MULTI_UVMFLAGS_INDEX 3
+-#define MULTI_UVMDOMID_INDEX 4
+-
+ enum xen_domain_type {
+ 	XEN_NATIVE,
+ 	XEN_PV_DOMAIN,
+@@ -74,9 +45,15 @@
+ 
+ extern enum xen_domain_type xen_domain_type;
+ 
++#ifdef CONFIG_XEN
+ #define xen_domain()		(xen_domain_type != XEN_NATIVE)
+-#define xen_pv_domain()		(xen_domain_type == XEN_PV_DOMAIN)
++#else
++#define xen_domain()		(0)
++#endif
 +
-+void * __weak swiotlb_bus_to_virt(unsigned long address)
-+{
-+	return bus_to_virt(address);
-+}
++#define xen_pv_domain()		(xen_domain() && xen_domain_type == XEN_PV_DOMAIN)
++#define xen_hvm_domain()	(xen_domain() && xen_domain_type == XEN_HVM_DOMAIN)
 +
- /*
-  * Statically reserve bounce buffer space and initialize bounce buffer data
-  * structures for the software IO TLB used to implement the DMA API.
-@@ -168,7 +178,7 @@
- 		panic("Cannot allocate SWIOTLB overflow buffer!\n");
+ #define xen_initial_domain()	(xen_pv_domain() && xen_start_info->flags & SIF_INITDOMAIN)
+-#define xen_hvm_domain()	(xen_domain_type == XEN_HVM_DOMAIN)
  
- 	printk(KERN_INFO "Placing software IO TLB between 0x%lx - 0x%lx\n",
--	       virt_to_bus(io_tlb_start), virt_to_bus(io_tlb_end));
-+	       swiotlb_virt_to_bus(io_tlb_start), swiotlb_virt_to_bus(io_tlb_end));
- }
+ #endif /* _ASM_X86_XEN_HYPERVISOR_H */
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -1,11 +1,16 @@
+ #ifndef _ASM_X86_XEN_PAGE_H
+ #define _ASM_X86_XEN_PAGE_H
  
- void __init
-@@ -250,7 +260,7 @@
++#include <linux/kernel.h>
++#include <linux/types.h>
++#include <linux/spinlock.h>
+ #include <linux/pfn.h>
  
- 	printk(KERN_INFO "Placing %luMB software IO TLB between 0x%lx - "
- 	       "0x%lx\n", bytes >> 20,
--	       virt_to_bus(io_tlb_start), virt_to_bus(io_tlb_end));
-+	       swiotlb_virt_to_bus(io_tlb_start), swiotlb_virt_to_bus(io_tlb_end));
+ #include <asm/uaccess.h>
++#include <asm/page.h>
+ #include <asm/pgtable.h>
  
- 	return 0;
++#include <xen/interface/xen.h>
+ #include <xen/features.h>
  
-@@ -298,7 +308,7 @@
- 	unsigned long max_slots;
+ /* Xen machine address */
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -28,6 +28,7 @@
+ #include <linux/console.h>
  
- 	mask = dma_get_seg_boundary(hwdev);
--	start_dma_addr = virt_to_bus(io_tlb_start) & mask;
-+	start_dma_addr = swiotlb_virt_to_bus(io_tlb_start) & mask;
+ #include <xen/interface/xen.h>
++#include <xen/interface/version.h>
+ #include <xen/interface/physdev.h>
+ #include <xen/interface/vcpu.h>
+ #include <xen/features.h>
+diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -44,13 +44,15 @@
+ #include <linux/list.h>
+ #include <linux/sysdev.h>
  
- 	offset_slots = ALIGN(start_dma_addr, 1 << IO_TLB_SHIFT) >> IO_TLB_SHIFT;
- 	max_slots = mask + 1
-@@ -467,7 +477,7 @@
- 	int order = get_order(size);
+-#include <asm/xen/hypervisor.h>
+ #include <asm/page.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+ #include <asm/tlb.h>
  
- 	ret = (void *)__get_free_pages(flags, order);
--	if (ret && address_needs_mapping(hwdev, virt_to_bus(ret), size)) {
-+	if (ret && address_needs_mapping(hwdev, swiotlb_virt_to_bus(ret), size)) {
- 		/*
- 		 * The allocated memory isn't reachable by the device.
- 		 * Fall back on swiotlb_map_single().
-@@ -488,7 +498,7 @@
- 	}
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++#include <xen/interface/xen.h>
+ #include <xen/interface/memory.h>
+ #include <xen/xenbus.h>
+ #include <xen/features.h>
+diff --git a/drivers/xen/features.c b/drivers/xen/features.c
+--- a/drivers/xen/features.c
++++ b/drivers/xen/features.c
+@@ -8,7 +8,11 @@
+ #include <linux/types.h>
+ #include <linux/cache.h>
+ #include <linux/module.h>
+-#include <asm/xen/hypervisor.h>
++
++#include <asm/xen/hypercall.h>
++
++#include <xen/interface/xen.h>
++#include <xen/interface/version.h>
+ #include <xen/features.h>
  
- 	memset(ret, 0, size);
--	dev_addr = virt_to_bus(ret);
-+	dev_addr = swiotlb_virt_to_bus(ret);
+ u8 xen_features[XENFEAT_NR_SUBMAPS * 32] __read_mostly;
+diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+--- a/drivers/xen/grant-table.c
++++ b/drivers/xen/grant-table.c
+@@ -40,6 +40,7 @@
+ #include <xen/interface/xen.h>
+ #include <xen/page.h>
+ #include <xen/grant_table.h>
++#include <asm/xen/hypercall.h>
  
- 	/* Confirm address can be DMA'd by device */
- 	if (address_needs_mapping(hwdev, dev_addr, size)) {
-@@ -548,7 +558,7 @@
- swiotlb_map_single_attrs(struct device *hwdev, void *ptr, size_t size,
- 			 int dir, struct dma_attrs *attrs)
- {
--	dma_addr_t dev_addr = virt_to_bus(ptr);
-+	dma_addr_t dev_addr = swiotlb_virt_to_bus(ptr);
- 	void *map;
+ #include <asm/pgtable.h>
+ #include <asm/sync_bitops.h>
+diff --git a/include/xen/interface/event_channel.h b/include/xen/interface/event_channel.h
+--- a/include/xen/interface/event_channel.h
++++ b/include/xen/interface/event_channel.h
+@@ -9,6 +9,8 @@
+ #ifndef __XEN_PUBLIC_EVENT_CHANNEL_H__
+ #define __XEN_PUBLIC_EVENT_CHANNEL_H__
  
- 	BUG_ON(dir == DMA_NONE);
-@@ -569,7 +579,7 @@
- 		map = io_tlb_overflow_buffer;
- 	}
++#include <xen/interface/xen.h>
++
+ typedef uint32_t evtchn_port_t;
+ DEFINE_GUEST_HANDLE(evtchn_port_t);
  
--	dev_addr = virt_to_bus(map);
-+	dev_addr = swiotlb_virt_to_bus(map);
- 
- 	/*
- 	 * Ensure that the address returned is DMA'ble
-@@ -599,7 +609,7 @@
- swiotlb_unmap_single_attrs(struct device *hwdev, dma_addr_t dev_addr,
- 			   size_t size, int dir, struct dma_attrs *attrs)
- {
--	char *dma_addr = bus_to_virt(dev_addr);
-+	char *dma_addr = swiotlb_bus_to_virt(dev_addr);
- 
- 	BUG_ON(dir == DMA_NONE);
- 	if (is_swiotlb_buffer(dma_addr))
-@@ -629,7 +639,7 @@
- swiotlb_sync_single(struct device *hwdev, dma_addr_t dev_addr,
- 		    size_t size, int dir, int target)
- {
--	char *dma_addr = bus_to_virt(dev_addr);
-+	char *dma_addr = swiotlb_bus_to_virt(dev_addr);
- 
- 	BUG_ON(dir == DMA_NONE);
- 	if (is_swiotlb_buffer(dma_addr))
-@@ -660,7 +670,7 @@
- 			  unsigned long offset, size_t size,
- 			  int dir, int target)
- {
--	char *dma_addr = bus_to_virt(dev_addr) + offset;
-+	char *dma_addr = swiotlb_bus_to_virt(dev_addr) + offset;
- 
- 	BUG_ON(dir == DMA_NONE);
- 	if (is_swiotlb_buffer(dma_addr))
-@@ -716,7 +726,7 @@
- 
- 	for_each_sg(sgl, sg, nelems, i) {
- 		addr = SG_ENT_VIRT_ADDRESS(sg);
--		dev_addr = virt_to_bus(addr);
-+		dev_addr = swiotlb_virt_to_bus(addr);
- 		if (swiotlb_force ||
- 		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
- 			void *map = map_single(hwdev, addr, sg->length, dir);
-@@ -729,7 +739,7 @@
- 				sgl[0].dma_length = 0;
- 				return 0;
- 			}
--			sg->dma_address = virt_to_bus(map);
-+			sg->dma_address = swiotlb_virt_to_bus(map);
- 		} else
- 			sg->dma_address = dev_addr;
- 		sg->dma_length = sg->length;
-@@ -760,7 +770,7 @@
- 
- 	for_each_sg(sgl, sg, nelems, i) {
- 		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
--			unmap_single(hwdev, bus_to_virt(sg->dma_address),
-+			unmap_single(hwdev, swiotlb_bus_to_virt(sg->dma_address),
- 				     sg->dma_length, dir);
- 		else if (dir == DMA_FROM_DEVICE)
- 			dma_mark_clean(SG_ENT_VIRT_ADDRESS(sg), sg->dma_length);
-@@ -793,7 +803,7 @@
- 
- 	for_each_sg(sgl, sg, nelems, i) {
- 		if (sg->dma_address != SG_ENT_PHYS_ADDRESS(sg))
--			sync_single(hwdev, bus_to_virt(sg->dma_address),
-+			sync_single(hwdev, swiotlb_bus_to_virt(sg->dma_address),
- 				    sg->dma_length, dir, target);
- 		else if (dir == DMA_FROM_DEVICE)
- 			dma_mark_clean(SG_ENT_VIRT_ADDRESS(sg), sg->dma_length);
-@@ -817,7 +827,7 @@
- int
- swiotlb_dma_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
- {
--	return (dma_addr == virt_to_bus(io_tlb_overflow_buffer));
-+	return (dma_addr == swiotlb_virt_to_bus(io_tlb_overflow_buffer));
- }
- 
- /*
-@@ -829,7 +839,7 @@
- int
- swiotlb_dma_supported(struct device *hwdev, u64 mask)
- {
--	return virt_to_bus(io_tlb_end - 1) <= mask;
-+	return swiotlb_virt_to_bus(io_tlb_end - 1) <= mask;
- }
- 
- EXPORT_SYMBOL(swiotlb_map_single);
 
 
