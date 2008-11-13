@@ -1,73 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbYKMAYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbYKMAbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751712AbYKMAYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 19:24:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYKMAYB
+	id S1751920AbYKMAbe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 19:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYKMAbW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 19:24:01 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35261 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbYKMAYA (ORCPT
+	Wed, 12 Nov 2008 19:31:22 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35882
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750777AbYKMAbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 19:24:00 -0500
-Message-ID: <491B7395.8040606@linux.vnet.ibm.com>
-Date: Thu, 13 Nov 2008 05:53:49 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
-       menage@google.com
-Subject: Re: [RFC][PATCH 1/6] memcg: free all at rmdir
-References: <20081112122606.76051530.kamezawa.hiroyu@jp.fujitsu.com> <20081112122656.c6e56248.kamezawa.hiroyu@jp.fujitsu.com> <20081112160758.3dca0b22.akpm@linux-foundation.org>
-In-Reply-To: <20081112160758.3dca0b22.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 12 Nov 2008 19:31:21 -0500
+Date: Wed, 12 Nov 2008 16:31:21 -0800 (PST)
+Message-Id: <20081112.163121.175570126.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 12 Nov 2008 12:26:56 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
->> +5.1 on_rmdir
->> +set behavior of memcg at rmdir (Removing cgroup) default is "drop".
->> +
->> +5.1.1 drop
->> +       #echo on_rmdir drop > memory.attribute
->> +       This is default. All pages on the memcg will be freed.
->> +       If pages are locked or too busy, they will be moved up to the parent.
->> +       Useful when you want to drop (large) page caches used in this memcg.
->> +       But some of in-use page cache can be dropped by this.
->> +
->> +5.1.2 keep
->> +       #echo on_rmdir keep > memory.attribute
->> +       All pages on the memcg will be moved to its parent.
->> +       Useful when you don't want to drop page caches used in this memcg.
->> +       You can keep page caches from some library or DB accessed by this
->> +       memcg on memory.
-> 
-> Would it not be more useful to implement a per-memcg version of
-> /proc/sys/vm/drop_caches?  (One without drop_caches' locking bug,
-> hopefully).
-> 
-> If we do this then we can make the above "keep" behaviour non-optional,
-> and the operator gets to choose whether or not to drop the caches
-> before doing the rmdir.
-> 
-> Plus, we get a new per-memcg drop_caches capability.  And it's a nicer
-> interface, and it doesn't have the obvious races which on_rmdir has,
-> etc.
-> 
 
-Andrew, I suspect that will not be easy, since we don't track address spaces
-that belong to a particular memcg. If page cache ends up being shared across
-memcg's, dropping them would impact both mem cgroups.
+Mostly driver fixes, as usual:
 
+1) NIU driver doesn't work properly on 32-bit
 
--- 
-	Balbir
+2) BNX2 driver passes wrong object down into interrupt handler from
+   ->poll_controller() and also doesn't check all RX queues.  Fix from
+   Neil Horman.
+
+3) put_cmsg_compat() uses SO_TIMESTAMP* instead of SCM_TIMESTAMP*
+   They are the same values, but it makes the code super confusing
+   to read.
+
+4) EEPROM handling and multiqueue fixes to CXGB3 from Divy Le Ray.
+
+5) HTCP congestion control module does not handle state transitions
+   properly in all cases.  Certain actions, in particular the
+   recording of the "last congestion event" timestamp, should only
+   occur when we transition back to TCP_CA_OPEN from a state where we
+   know loss occurred.  Fix from Doug Leith.
+
+6) CXGB3 can deadlock due to incorrect RTNL semaphore grabbing, fix
+   from Steve Wise.
+
+7) Add new device IDs to rtl8187 driver, from Bob Jolliffe.
+
+8) Fix smc911x resume, from Romit Dasgupta.
+
+Please pull, thanks a lot!
+
+The following changes since commit f21f237cf55494c3a4209de323281a3b0528da10:
+  Linus Torvalds (1):
+        Merge branch 'timers-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Bob Jolliffe (1):
+      rtl8187 : support for Sitecom WL-168 0001 v4
+
+Brice Goglin (1):
+      myri10ge: fix stop/go ordering even more
+
+Dasgupta, Romit (1):
+      [netdrvr] smc911x: fix for driver resume (and compilation warning)
+
+David S. Miller (3):
+      Merge branch 'davem-fixes' of master.kernel.org:/.../jgarzik/netdev-2.6
+      niu: Fix readq implementation when architecture does not provide one.
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+
+Divy Le Ray (2):
+      cxgb3 - eeprom read fixes
+      cxgb3 - Limit multiqueue setting to msi-x
+
+Doug Leith (1):
+      tcp_htcp: last_cong bug fix
+
+Ivan Kuten (1):
+      rtl8187: Add Abocom USB ID
+
+Johannes Berg (2):
+      mac80211: fix notify_mac function
+      hostap: pad the skb->cb usage in lieu of a proper fix
+
+Neil Horman (1):
+      bnx2: fix poll_controller to pass proper structures and check all rx queues
+
+Patrick Ohly (1):
+      net: put_cmsg_compat + SO_TIMESTAMP[NS]: use same name for value as caller
+
+Steve Wise (1):
+      RDMA/cxgb3: deadlock in iw_cxgb3 can cause hang when configuring interface.
+
+ drivers/infiniband/hw/cxgb3/iwch_provider.c |    6 ------
+ drivers/net/bnx2.c                          |    9 ++++++---
+ drivers/net/cxgb3/cxgb3_main.c              |    4 +++-
+ drivers/net/cxgb3/t3_hw.c                   |    8 +++++++-
+ drivers/net/myri10ge/myri10ge.c             |    4 +++-
+ drivers/net/niu.c                           |    3 +--
+ drivers/net/smc911x.c                       |    4 +++-
+ drivers/net/wireless/hostap/hostap_wlan.h   |    5 ++++-
+ drivers/net/wireless/rtl8187_dev.c          |    3 +++
+ net/compat.c                                |    4 ++--
+ net/ipv4/tcp_htcp.c                         |   14 ++++++++++----
+ net/mac80211/mlme.c                         |    6 +++---
+ 12 files changed, 45 insertions(+), 25 deletions(-)
