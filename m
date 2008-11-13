@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYKMACt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYKMADi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbYKMACt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 19:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYKMACk
+	id S1756002AbYKMADi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 19:03:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYKMAD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 19:02:40 -0500
-Received: from mga01.intel.com ([192.55.52.88]:61936 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753597AbYKMACk convert rfc822-to-8bit (ORCPT
+	Wed, 12 Nov 2008 19:03:28 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46670 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753805AbYKMAD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 19:02:40 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,592,1220252400"; 
-   d="scan'208";a="402959137"
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       H Peter Anvin <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Date: Wed, 12 Nov 2008 16:02:47 -0800
-Subject: RE: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
-Thread-Topic: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
-Thread-Index: AclFHafQxzuoc2l2QPWPiQyZvDNKcgABFZzg
-Message-ID: <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
-References: <20081112212647.259698000@intel.com>
- <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de>
-In-Reply-To: <20081112232312.GB29363@wotan.suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 12 Nov 2008 19:03:27 -0500
+Date: Wed, 12 Nov 2008 19:03:24 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>, fweisbec@gmail.com
+Subject: Re: [PATCH 1/2] ftrace: disable tracing on resize
+In-Reply-To: <20081112215630.242ce97e@daedalus.pq.iki.fi>
+Message-ID: <alpine.DEB.1.10.0811121902490.30248@gandalf.stny.rr.com>
+References: <20081111025808.946638585@goodmis.org> <20081111030517.017566077@goodmis.org> <alpine.DEB.1.10.0811102216240.10298@gandalf.stny.rr.com> <20081112215630.242ce97e@daedalus.pq.iki.fi>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
 
->-----Original Message-----
->From: Nick Piggin [mailto:npiggin@suse.de] 
->Sent: Wednesday, November 12, 2008 3:23 PM
->To: Pallipadi, Venkatesh
->Cc: Ingo Molnar; Thomas Gleixner; H.Peter Anvin; Hugh Dickins; 
->Roland Dreier; Jesse Barnes; Jeremy Fitzhardinge; Arjan van de 
->Ven; linux-kernel@vger.kernel.org; Siddha, Suresh B
->Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
->
->You have to be careful of this, because it can be called with mmap_sem
->held for read only. Hmm, I guess vm_insert_page is doing the 
->same thing.
->Probably mostly works because all other modifiers of vm_flags 
->are holding
->mmap_sem.
+On Wed, 12 Nov 2008, Pekka Paalanen wrote:
 
-Yes. I did the patch looking at vm_insert_page doing similar thing.
+> On Mon, 10 Nov 2008 22:18:19 -0500 (EST)
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > 
+> > Pekka,
+> > 
+> > I forgot to add you to the Cc list. Could you test this patch to see if it 
+> > fixes the bug you reported. It fixed a bug I was able to reproduce, but I 
+> > was never able to reproduce the exact same bug you have seen.
+> 
+> Thanks, Steve.
+> 
+> I didn't have time to try it myself yet, but a kind soul tried it for me.
+> He used 2.6.28-rc4 and was immediately able to trigger the bug by just:
+> cd /debug/tracing
+> echo 0 > tracing_enabled
+> echo 200 > trace_entries
+> 
+> Then he applied the patch you referred to, and the bug is still present.
+> He has a 32-bit x86 amd system, and I'm on x86_64.
+> 
+> I don't know why you couldn't reproduce it, maybe you have all the tracers
+> enabled in the kernel config, when we only have MMIOTRACE.
 
->
->However, in some cases, code can do vm_insert_pfn and vm_insert_page
->(actually hmm, no vm_insert_mixed actually should cover most of those
->cases).
->
->Still, I'd be much happier if we could make these into BUG_ON, and then
->teach callers to set it in their .mmap routines.
+After disabling all other tracers, you are right. This sequence crashes.
 
-Actually, vm_insert_pfn() already has a BUG_ON() at the start for cases
-where neither (or both) MIXEDMAP and PFNMAP is not set. So, that should
-cover the case we are worried about it here and we can eliminate this
-patch altogether. Only part I am not sure about is why we are looking
-for MIXEDMAP here. Shouldn't they be using vm_insert_mixed instead?
+I'll look into it, and I should have a patch sometime tonight.
 
-Thanks,
-Venki
+-- Steve
 
