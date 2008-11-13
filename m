@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752785AbYKMDjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbYKMDom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752785AbYKMDjL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 22:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYKMDi4
+	id S1752940AbYKMDom (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 22:44:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYKMDoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 22:38:56 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36090 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751298AbYKMDiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 22:38:55 -0500
-Date: Thu, 13 Nov 2008 12:38:15 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC][PATCH 1/6] memcg: free all at rmdir
-Message-Id: <20081113123816.873477a1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <491B9E8B.3080301@linux.vnet.ibm.com>
-References: <20081112122606.76051530.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081112122656.c6e56248.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081112160758.3dca0b22.akpm@linux-foundation.org>
-	<20081113114908.42a6a8a7.kamezawa.hiroyu@jp.fujitsu.com>
-	<491B9BB3.6010701@linux.vnet.ibm.com>
-	<20081113122241.b77a0d14.kamezawa.hiroyu@jp.fujitsu.com>
-	<491B9E8B.3080301@linux.vnet.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 12 Nov 2008 22:44:32 -0500
+Received: from ns1.suse.de ([195.135.220.2]:57749 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751016AbYKMDob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 22:44:31 -0500
+Date: Thu, 13 Nov 2008 04:44:25 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       H Peter Anvin <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+Message-ID: <20081113034425.GA23434@wotan.suse.de>
+References: <20081112212647.259698000@intel.com> <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de> <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 08:57:07 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-> > On Thu, 13 Nov 2008 08:44:59 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> >> KAMEZAWA Hiroyuki wrote:
-> >>> On Wed, 12 Nov 2008 16:07:58 -0800
-> >>> Andrew Morton <akpm@linux-foundation.org> wrote:
-> >>>> If we do this then we can make the above "keep" behaviour non-optional,
-> >>>> and the operator gets to choose whether or not to drop the caches
-> >>>> before doing the rmdir.
-> >>>>
-> >>>> Plus, we get a new per-memcg drop_caches capability.  And it's a nicer
-> >>>> interface, and it doesn't have the obvious races which on_rmdir has,
-> >>>> etc.
-> >>>>
-> >>>> hm?
-> >>>>
-> >>> Balbir, how would you want to do ?
-> >>>
-> >>> I planned to post shrink_uage patch later (it's easy to be implemented) regardless
-> >>> of acceptance of this patch.
-> >>>
-> >>> So, I think we should add shrink_usage now and drop this is a way to go.
-> >> I am a bit concerned about dropping stuff at will later. Ubuntu 8.10 has memory
-> >> controller enabled and we exposed memory.force_empty interface there and now
-> >> we've dropped it (bad on our part). I think we should have deprecated it and
-> >> dropped it later.
-> >>
-> > I *was* documented as "for debug only".
-> > 
+On Wed, Nov 12, 2008 at 04:02:47PM -0800, Pallipadi, Venkatesh wrote:
+>  
 > 
-> I know, but I suspect users won't. I am not blaming you in person, just trying
-> the find way to do such things. I think I've seen sysfs add a deprecated option
-> and put all deprecated files there, they are only created if someone cares about
-> them.
->
-Ah, but it should be done in cgroup layer. 
-
-> > Hmm, adding force_empty again to do "shrink usage to 0" is another choice.
+> >-----Original Message-----
+> >From: Nick Piggin [mailto:npiggin@suse.de] 
+> >Sent: Wednesday, November 12, 2008 3:23 PM
+> >To: Pallipadi, Venkatesh
+> >Cc: Ingo Molnar; Thomas Gleixner; H.Peter Anvin; Hugh Dickins; 
+> >Roland Dreier; Jesse Barnes; Jeremy Fitzhardinge; Arjan van de 
+> >Ven; linux-kernel@vger.kernel.org; Siddha, Suresh B
+> >Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+> >
+> >You have to be careful of this, because it can be called with mmap_sem
+> >held for read only. Hmm, I guess vm_insert_page is doing the 
+> >same thing.
+> >Probably mostly works because all other modifiers of vm_flags 
+> >are holding
+> >mmap_sem.
 > 
-> Yes, sounds reasonable.
+> Yes. I did the patch looking at vm_insert_page doing similar thing.
 > 
-ok, will post a patch today.
+> >
+> >However, in some cases, code can do vm_insert_pfn and vm_insert_page
+> >(actually hmm, no vm_insert_mixed actually should cover most of those
+> >cases).
+> >
+> >Still, I'd be much happier if we could make these into BUG_ON, and then
+> >teach callers to set it in their .mmap routines.
+> 
+> Actually, vm_insert_pfn() already has a BUG_ON() at the start for cases
+> where neither (or both) MIXEDMAP and PFNMAP is not set. So, that should
+> cover the case we are worried about it here and we can eliminate this
+> patch altogether. Only part I am not sure about is why we are looking
+> for MIXEDMAP here. Shouldn't they be using vm_insert_mixed instead?
 
-Thanks,
--Kame
-
+They should, but it will do an inesrt_pfn in some cases, won't it?
