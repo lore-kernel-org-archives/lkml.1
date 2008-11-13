@@ -1,110 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYKMTNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbYKMTTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbYKMTNl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYKMTNW
+	id S1753381AbYKMTTe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKMTTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:13:22 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50821 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752876AbYKMTNU (ORCPT
+	Thu, 13 Nov 2008 14:19:25 -0500
+Received: from ik-out-1112.google.com ([66.249.90.178]:23379 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbYKMTTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:13:20 -0500
-Date: Thu, 13 Nov 2008 11:10:39 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
-       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
-       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Signals to cinit
-Message-ID: <20081113191039.GA22303@us.ibm.com>
-References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081110193228.GA15519@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 13 Nov 2008 14:19:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type;
+        b=Dozy/IEtBkS1/ONS8yg2/pdFYAEgtYpaXCDx7R5EHcLZ1YexdRGaNiJKsop4C5naBH
+         CI7y89hnziTSrLi5Ni9Yd3TbOxg9NFIlW/U8Y3ZMwrTfI1wUERzZSWKZ3SSjyvToj+qt
+         SK33PgD8FHEnhXeBSLXuZaTmCioINBQE8064o=
+Date: Thu, 13 Nov 2008 21:19:47 +0100
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Recommended books for new kernel programmers
+Message-Id: <20081113211947.a39079bf.kristoffer.ericson@gmail.com>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.4; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__13_Nov_2008_21_19_47_+0100_M.kBJTR9cK3jVk88"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| (lkml cced because containers list's archive is not useable)
-| 
-| On 11/10, Oleg Nesterov wrote:
-| >
-| > On 11/01, sukadev@linux.vnet.ibm.com wrote:
-| > >
-| > > Other approaches to try ?
-| >
-| > I think we should try to do something simple, even if not perfect. Because
-| > most users do not care about this problem since they do not use containers
-| > at all. It would be very sad to add intrusive changes to the code.
-| >
-| > I think we should fix another problem first. send_signal()->copy_siginfo()
-| > path must be changed anyway, when the signal comes from the parent ns we
-| > report the "wrong" si_code/si_pid, yes? So, somehow send_signal() must
-| > have "bool from_parent_ns" (or whatever) annyway.
-| >
-| > Now, let's forget forget for a moment that send_signal()->__sigqueue_alloc()
-| > can fail.
-| >
-| > I think we should encode this "from_parent_ns" into "struct siginfo". I do
-| > not think it is good idea to extend this structure, I think we can introduce
-| > SI_FROM_PARENT_NS or we perhaps can use "SI_FROMUSER(info) && info->si_pid == 0".
-| > Or something. yes, sys_rt_sigqueueinfo() is problematic...
-| >
-| > Now, copy_process(CLONE_NEWPID) sets child->signal |= SIGNAL_UNKILLABLE, this
-| > protects cinit from unwanted signals. Then we change get_signal_to_deliver()
-| >
-| > 	-	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) &&
-| > 	+	if (unlikely(signal->flags & SIGNAL_UNKILLABLE) && !siginfo_from_parent_ns(info)
-| >
-| > and now we can kill cinit from parent ns. This needs more checks if we want
-| > to stop/strace it, but perhaps this is enough for the start. Note that we
-| > do not need to change complete_signal(), at least for now, the code under
-| > "if (sig_fatal(p, sig)" is just optimization.
-| >
-| >
-| > So, afaics, the only real problem is how we can handle the case when
-| > __sigqueue_alloc() fails. I think for the start we can just return
-| > -ENOMEM in this case (when from_parent_ns == T). Then we can improve
-| > this behaviour. We can change complete_signal() to ensure that the
-| > fatal signal from the upper ns always kills cinit, and in this case
-| > we ignore the the failed __sigqueue_alloc(). This way at least SIGKILL
-| > always works.
-| >
-| > Yes, this is not perfect, and it is very possible I missed something
-| > else. But simple.
-| 
-| But how can send_signal() know that the signal comes from the upper ns?
-| This is not trivial, we can't blindly use current to check. The signal
-| can be sent from irq/workqueue/etc.
-| 
-| Perhaps we can start with something like the patch below. Not that I like
-| it very much though. We should really place this code under
-| CONFIG_I_DO_CARE_ABOUT_NAMESPACES ;)
-| 
-| Oleg.
-| 
-| --- K-IS/kernel/signal.c~T	2008-11-10 19:21:17.000000000 +0100
-| +++ K-IS/kernel/signal.c	2008-11-10 20:31:24.000000000 +0100
-| @@ -798,11 +798,19 @@ static inline int legacy_queue(struct si
-|  	return (sig < SIGRTMIN) && sigismember(&signals->signal, sig);
-|  }
-| 
-| +#define SIG_FROM_USER	INT_MIN		/* MSB */
-| +
+--Signature=_Thu__13_Nov_2008_21_19_47_+0100_M.kBJTR9cK3jVk88
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Not necessarily for the problem at hand, but in the long run, is it
-worth isolating kernel's siginfo from user's siginfo_t (which is pretty
-much carved in stone).
+Greetings,
 
-Like the existing 'struct k_sigaction' and 'struct sigaction' have
-a 'struct k_siginfo' that is a superset of 'siginfo_t' ?
+Ive gotten this question alot lately and thought
+people could name their favourite books.
 
-That might give us more flexibility in passing any additional flags/
-values we need in the kernel ?
+I usually recommend "Linux Device Drivers" by
+Jonathan Corbet, Alessandro Rubini and
+Greg Kroah-Hartman.
+
+Anything else worth telling people?
+
+/Kristoffer
+
+--=20
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+--Signature=_Thu__13_Nov_2008_21_19_47_+0100_M.kBJTR9cK3jVk88
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkci+MACgkQPQls10ERAGfi/ACfVeMwiE02JQLV44wXZCq1vu7Q
+O5UAnjKy96qSQ1F53Nv3909HSJayIOek
+=jOlG
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Nov_2008_21_19_47_+0100_M.kBJTR9cK3jVk88--
