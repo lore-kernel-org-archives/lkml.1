@@ -1,94 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbYKML2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYKMLaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbYKML2q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 06:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYKML2i
+	id S1753499AbYKMLaA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 06:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYKML3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 06:28:38 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46139 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751593AbYKML2h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 06:28:37 -0500
-Date: Thu, 13 Nov 2008 20:27:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [BUGFIX][PATCH] memory hotplug: fix notiier chain return value (Was
- Re: 2.6.28-rc4 mem_cgroup_charge_common panic)
-Message-Id: <20081113202758.2f12915a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1226353408.8805.12.camel@badari-desktop>
-References: <1226353408.8805.12.camel@badari-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Nov 2008 06:29:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50038 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751906AbYKML3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 06:29:51 -0500
+Message-ID: <491C0FA0.5070500@kernel.org>
+Date: Thu, 13 Nov 2008 20:29:36 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org> <491BC3E3.7040903@kernel.org> <E1L0aEn-0006dh-BK@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1L0aEn-0006dh-BK@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 11:29:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari, I think you used SLUB. If so, page_cgroup's notifier callback was not
-called and newly allocated page's page_cgroup wasn't allocated.
-This is a fix. (notifier saw STOP_HERE flag added by slub's notifier.)
+Hello,
 
-I'm now testing modified kernel, which does alloc/free page_cgroup by notifier.
-(Usually, all page_cgroups are from bootmem and not freed.
- so, modified a bit for test)
+Miklos Szeredi wrote:
+> Not with '-oallow_other'.  Consider the case that the caller invoked a
+> non well formed ioctl, but since there's no way to know this we
+> allowed the fuse server to tinker with the caller's address space
+> _as if_ the ioctl was well formed.
 
-And I cannot reproduce panic. I think you do "real" memory hotplug other than
-online/offline and saw panic caused by this. 
+Right, allow_other.
 
-Is this slub's behavior intentional ? page_cgroup's notifier has lower priority
-than slub, now.
+> So we should always make sure that the server has enough privilege to
+> read/write the caller's memory, i.e. it can ptrace the caller.
+> 
+> At this point we could allow any ioctls, not just well formed ones.
+> But I don't want that for a different reason: if the possibility is
+> there people will find new "innovative" uses for it and just get
+> themselves into a big mess.
 
-Thanks,
--Kame
-==
-notifier callback's notifier_from_errno() just works well in error
-route. (It adds mask for "stop here")
+I don't really mind people doing strange things in userland as long as
+it's safe but you're the maintainer.  It's a bit strange to export the
+feature only for CUSE, so I'm a little bit hesitant.  I wanna make it
+useful for both.  So, at the kernel level, only well formed for FUSE and
+everything goes for CUSE.  Does that sound good enough?
 
-Hanlder should return NOTIFY_OK in explict way.
-
-Signed-off-by:KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/page_cgroup.c |    5 ++++-
- mm/slub.c        |    6 ++++--
- 2 files changed, 8 insertions(+), 3 deletions(-)
-
-Index: mmotm-2.6.28-Nov10/mm/slub.c
-===================================================================
---- mmotm-2.6.28-Nov10.orig/mm/slub.c
-+++ mmotm-2.6.28-Nov10/mm/slub.c
-@@ -3220,8 +3220,10 @@ static int slab_memory_callback(struct n
- 	case MEM_CANCEL_OFFLINE:
- 		break;
- 	}
--
--	ret = notifier_from_errno(ret);
-+	if (ret)
-+		ret = notifier_from_errno(ret);
-+	else
-+		ret = NOTIFY_OK;
- 	return ret;
- }
- 
-Index: mmotm-2.6.28-Nov10/mm/page_cgroup.c
-===================================================================
---- mmotm-2.6.28-Nov10.orig/mm/page_cgroup.c
-+++ mmotm-2.6.28-Nov10/mm/page_cgroup.c
-@@ -216,7 +216,10 @@ static int page_cgroup_callback(struct n
- 		break;
- 	}
- 
--	ret = notifier_from_errno(ret);
-+	if (ret)
-+		ret = notifier_from_errno(ret);
-+	else
-+		ret = NOTIFY_OK;
- 
- 	return ret;
- }
-
-
+-- 
+tejun
