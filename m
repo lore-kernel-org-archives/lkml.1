@@ -1,147 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYKMTsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758060AbYKMTtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbYKMTsz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:48:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYKMTkV
+	id S1758060AbYKMTtY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbYKMTmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:40:21 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:42676 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755804AbYKMTkS (ORCPT
+	Thu, 13 Nov 2008 14:42:07 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:31059 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756598AbYKMTmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:40:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Date:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=B0afWGKCoIlTYxrIYEux0jbYzgoqqpsd9K1UzXhB40+Mppi4k9kgLTHh7gRfpBjnSC9CdhNGOfKKw5jFKxwhFJdbtvVrTFdDWgcK4mp5S/oytk21FnZzBN2vwphB7G0MFXD28LjMM/dksUFYfPW/Wsxyr7oPctCXfc2g48TByhw=  ;
-X-YMail-OSG: DrhVNegVM1lMjwj1VdbrOaZF5hVcGIXE9VrlfCLH3zClOms3xL99GZaUQAzeJL3JIxagHfrmwtCXRvVxUInP4dJw8H6eEE1lmrFOEtftc.VNeALDhBCmAJNOWRCgIffwK.9K5hQGiMBIpUHtOm.nrN.VlyMka55PhelAaFg-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
-References: <200811091531.46003.david-b@pacbell.net> <200811102056.20008.david-b@pacbell.net> <20081112112525.GA8767@sirena.org.uk>
-In-Reply-To: <20081112112525.GA8767@sirena.org.uk>
+	Thu, 13 Nov 2008 14:42:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=unoT6XAqP+jBZe1mWiENLA3uYli+72n2GOc0HfSsuf4WnWUkOvXyciYfzx4ATqzHqi
+         IMwIgjY/pSWqqUnz90xc/1SQcBjKPwr+6Dp1rwRw7nfh2OBgnGojxy8RB82+7y29fyZS
+         Zo7baR5IQ39NjKlLsb4B/2iP4W5APh2e4JApc=
+Message-ID: <43e72e890811131142p3f72c964t802d424b0ddb3456@mail.gmail.com>
+Date: Thu, 13 Nov 2008 11:42:02 -0800
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Pavel Roskin" <proski@gnu.org>
+Subject: Re: [madwifi-project] [RFC] Closing the project
+Cc: "Michael Renzmann" <mrenzmann@madwifi-project.org>,
+       madwifi-project@venema.h4ckr.net,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1226547092.11785.49.camel@dv>
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Thu, 13 Nov 2008 11:40:15 -0800
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200811131140.15646.david-b@pacbell.net>
+Content-Disposition: inline
+References: <2576.194.45.26.221.1226491274.squirrel@webmail.madwifi.org>
+	 <1226511194.9952.38.camel@dv>
+	 <43e72e890811121224w4fc53e1s29080a42111186e9@mail.gmail.com>
+	 <1226547092.11785.49.camel@dv>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 November 2008, Mark Brown wrote:
-> On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
-> > On Monday 10 November 2008, Mark Brown wrote:
+On Wed, Nov 12, 2008 at 7:31 PM, Pavel Roskin <proski@gnu.org> wrote:
+> On Wed, 2008-11-12 at 12:24 -0800, Luis R. Rodriguez wrote:
 >
-> > > regulator_disable() needn't imply that the regulator will actually be
-> > > off -
-> 
-> > Would you say that also for regulator_ops.disable() though?
-> 
-> If we ignore regulator_force_disable() (which isn't used yet) for the
-> moment I'd actually say that in your case with non-software enables it's
-> reasonable for it to still be powered by some other part of the system.
+>> Those who are interested in this should work on it if no one else is,
+>> just take it and go. Bureaucracy gets in the way here IMHO.
+>
+> It's not about bureaucracy.  I need help with porting the code from one
+> branch to another.  In particular, with fixing SMP locking issues in the
+> 0.9.4 branch.  The trunk doesn't have those issues.
 
-I'll read that as a "yes"...
+If you are not getting help its because there is a lack of interest
+from developers. I expected this once ath5k got upstream and once more
+documentation was available.
 
-... but I don't know what you mean by "non-software enables".  Maybe you
-mean "non-Linux"?  One of the other inputs would normally be controlled
-by software -- just not from Linux.  Maybe it'd help if you think about
-a system structured like:
+>> Distributions will soon prefer ath5k over MadWifi. At that point
+>> MadWifi becomes a relic. Its surely good to keep MadWifi code
+>> somewhere for reference, or maybe for the last few devices maybe not
+>> yet supported, but any other effort put into seems like fruitless
+>> effort spent IMHO.
+>
+> As far as I know, we don't have DFS in mac80211.  In fact, the AP mode
+> in mac80211 has just been enabled.
 
-  - one ARM running Linux for UI, Internet access, etc
-  - another one running some realtime cell modem firmware
-  - both coordinating through a PMIC
+Right, more notes on this below.
 
-So the regulator's hardware ENABLE signal is is fed by an OR gate from
-both CPUs.  Similarly with a signal that's high to put the regulator
-in "normal" mode (else it goes into low-current "standby" when enabled).
+>> I don't have experience with bounties but I do know I get random
+>> requests to support one thing or another for money. I am going to be
+>> redirecting these request more to bounties put up for upstream
+>> development. I know people will work on things anyway but what I want
+>> to try to do is get monetary support one way or another to those
+>> working upstream.
+>
+> OK, let's consider it on the case-by-case basis.
 
-Those two signals (enable, normal-mode) would be under software control.
-Or hardware ... the key point is that some inputs aren't from Linux.
+Well I'm just going to direct people towards bounties myself for
+upstream work. That's the advice I will be giving personally. But I do
+think it would be good for the project to also reward upstream work
+too, wasn't that the whole point behind the project?
 
+>> I'd like to encourage the money left for the project for similar
+>> purposes. Reward upstream development.
+>
+> Maybe we could have a bounty for DFS implementation in mac80211?  Just
+> to try how it would work.  I also this that there should be a strong
+> moral incentive for the winner.  Not just a name in the log, but a web
+> page about the winner on kernel.org.  This way, we would attract people
+> striving to improve their resumes, not just get extra money.
 
-> Mainly because it's proably easier to just ignore the other enables than
-> it is to explain to the rest of the system that there are others it
-> can't know about.
+We will be working on DFS on mac80211, I will start first with STA
+DFS. Also expect a lot of work from us on AP support.
 
-My recently posted v2 of this patch solves this easily enough.
+>> I think MadWifi has become a big bureaucratic entity and this large
+>> bureaucracy is simply not needed.
+>
+> I agree that we have a lot of documentation that is becoming irrelevant.
+> I prefer to keep documentation to the minimum, as it stimulates
+> developers to write software that just works, without lengthy
+> instructions.
+>
+> But the bug tracking system has some important information that we still
+> may need.
+>
+> I think the biggest impediment to MadWifi development was not
+> bureaucracy.  It was the non-free HAL.
 
-It suffices to have one method report the actual hardware state
-(if that includes OFF as well as NORMAL, STANDBY, etc) ... that
-seems to be what you mean by calling one value "primary".  Others
-can report what Linux has requested.
+Not really, even with an alternative people are still used to coding
+with it and find it easier to commit into an svn repository than
+submit  patches upstream. Maybe our process is move involved but there
+its also why Linux code has a certain quality in it. We tend to frown
+upon crap. If MadWifi ever were to touch Linux it would be tainted
+with CRAP.
 
-And having regulator_ops.get_mode() be the call to report that
-hardware state is straightforward.  Especially once you consider
-that the actual state *will* be what Linux requested, except in
-cases like:  (a) shared regulators, like the scenario above, for
-which I suspect twl4030 is the first case in Linux; (b) hardware
-fault handling, like overcurrent/overtemp shutdown; and maybe
-(c) "smart" regulators that switch modes automatically.
+> Many bugs are too hard or
+> impossible to solve without having access to HAL.  As the easy bugs get
+> fixed, the ratio of HAL-related bugs grows further.
+>
+> We have HAL sources, but it's not the sources we could use in Madwifi
+> without losing some functionality.  Sure enough, the HAL sources could
+> help with some issues.  But it's still impossible to put debug
+> statements into the HAL uses in MadWifi.
+>
+> I'm thinking of having "MadWifi free edition" with limited hardware
+> support specifically to address the issue of "debuggability".  Also,
+> some users may free code plus MadWifi features.
 
-That seems to be a minimal-disruption change.
+I really think this is good for those interested and I respect it but
+I am going to be very very honest here: this is a complete fucking
+waste of time. People, MadWifi is dead, stop trying to keep it a live
+by injecting its heart with adrenaline, it won't work, just pull the
+plug already. If any feature is missing I think it would be more
+productive to identify it and point it out and those interested in
+upstream work will add it.
 
- 
-> > > > So for example when any of the three requestors asks for the
-> > > > regulator to go ACTIVE it will do so.  This means you can have
-> > > > cases like:
-> 
-> > > ...this sounds like the same thing done in hardware.
-> 
-> > Seems to me more like a three input OR gate.  No counters.  ;)
-> > At least, if you ignore the additional arbitration between
-> > ACTIVE, STANDBY, and OFF modes.  (Highest one wins...)
-> 
-> Logically that's what the regulator API is doing, it's just that
-> currently it doesn't support reconfiguration of shared regulators.
+>  Some users may want
+> support for exotic CPUs not supported by any non-free HAL.
 
-Not entirely true.  In this case the issue is exposing regulator
-output state ... the regulator_ops suffice for inputs, which would
-combine with other inputs to determine the actual regulator state
-that's reported using by regulator_ops.get_mode().
+For that you can use the Linux kernel which will get you support on
+the largest number of CPUs possible.
 
+>>  We wanted free drivers, we have them
+>> now, we have opened up the HAL and have even opened up more drivers
+>> and continue to do so. What I find useful from MadWifi from an
+>> upstream perspective is the mailing lists and a central place for
+>> people to get information/news regarding Atheros devices supported
+>> upstream but I guess we can just keep this in the wireless wiki.
+>
+> I agree that it's better to start anew with the documentation for the
+> free drivers.
+>
+>> Mailing lists are pretty useful though.
+>
+> Yes.
+>
+>> I agree there is some useful information present but a lot of it is
+>> purely historical and I don't think much resources is needed to keep
+>> that around. I suspect distributions will start preferring ath5k over
+>> MadWifi around December if not already so I'm indifferent in closing
+>> MadWifi. In my head MadWifi is dead already though and would recommend
+>> we only promise users it will be in maintenance mode, meaning the
+>> MadWifi driver will only get submitted bug fixes and security fixes.
+>
+> I agree with you.  We should fix the code already in MadWifi branches.
+> It means we should not be _closing_ the project now.
 
-> If 
-> you remember the pre-submission versions you looked at they had support
-> for computing the most restrictive voltage constraint from multiple
-> clients, this sounds like the same thing done in hardware for the
-> regulator mode.
+Just my advice: let MadWifi die already, stop wasting your time.
 
-Yes ... the current "Dynamic Regulator Mode Switching" (DRMS) code
-does some of that:  the point of having different client handles
-is that those handles can encapsulate different load constraints.
-And then when the load changes, the requested mode can change.
-
-
-> The view of the regulator API is that the operating configuration of the
-> regulator (including not only the mode but also the voltage or current)
-> is done separately to enabling or disabling it.
-
-OK, but configuration inputs to the regulator drivers are
-a different issue from how to expose regulator state.
-
-It seems we've almost converged on the result of get_mode()
-being that regulator state output, which is a function of more
-than just the inputs from Linux.
-
-
-> The expectation when writing this was that anything 
-> software controlled would be fully software controlled.
-
-The problem is that the current code *also* ignores the fact
-that hardware status is a function of more inputs than just
-those from Linux.  Like thermal shutdown from overcurrent.
-The configuration inputs might be fine, but the output of
-a regulator necessarily incorporates other inputs.
-
-The top reason to display system state in sysfs is to support
-troubleshooting ... and hiding the actual system state makes
-that needlessly difficult.
-
-- Dave
+  Luis
