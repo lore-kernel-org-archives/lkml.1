@@ -1,57 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYKMOx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbYKMO5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753005AbYKMOx7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 09:53:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYKMOxj
+	id S1752303AbYKMO5v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 09:57:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYKMO5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 09:53:39 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37157 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbYKMOxj (ORCPT
+	Thu, 13 Nov 2008 09:57:42 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:3261 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbYKMO5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 09:53:39 -0500
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function return tracer lockless
-From: Andi Kleen <andi@firstfloor.org>
-References: <491B4F0A.3080901@gmail.com>
-Date: Thu, 13 Nov 2008 15:53:35 +0100
-In-Reply-To: <491B4F0A.3080901@gmail.com> (Frederic Weisbecker's message of "Wed, 12 Nov 2008 22:47:54 +0100")
-Message-ID: <87od0jd6ds.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 13 Nov 2008 09:57:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=qL3JWkbND1NMiobFtPEnFKYWZcTnMyJ4t4Z7ToM5lmRD2LpKpNx0fmmq58POLWo2dw
+         1VoT1n5eegh5hStyzOhapFKscOFheMYKOsJirbL6Wr6ZyNbm9Y7dgyb4Mg2mxcjft3TA
+         w3d0wIrNIGY95HBQUhW01WsTSAWTTg82JELz4=
+Message-ID: <84144f020811130657u6a8d62f6q619f25f53828141c@mail.gmail.com>
+Date: Thu, 13 Nov 2008 16:57:40 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: [PATCH] slab: document SLAB_DESTROY_BY_RCU
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, hugh <hugh@veritas.com>,
+       "Paul E McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>
+In-Reply-To: <1226586509.7685.4929.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1226586509.7685.4929.camel@twins>
+X-Google-Sender-Auth: eddd7ffaa1fccc2c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker <fweisbec@gmail.com> writes:
-O
-
-> _ The only race could happen between the current thread and an interrupt. If an
->   interrupt is raised, it will increase the index of the return stack storage and
->   then execute until the end of the tracing to finally free the index it used.
->   We don't need to disable irqs.
+On Thu, Nov 13, 2008 at 4:28 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> Subject: slab: document SLAB_DESTROY_BY_RCU
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Wed, 02 Apr 2008 14:13:42 +0200
 >
-> This is theorical. In practice, I've tested it with a two-core SMP and had no
-> problem at all. Perhaps -tip testing could confirm it.
+> Explain this SLAB_DESTROY_BY_RCU thing...
+>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Acked-by: Jens Axboe <jens.axboe@oracle.com>
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The problem I think is that you assume the ++ is atomic against
-interrupts, which is not guaranteed by the C compiler. e.g.
-it would be perfectly legal for the compiler to generate code like
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-local register i
-i = index;
-write to index'ed array using i
-                            <--------- interrupt here would overwrite data
-...
-index = i + 1;
-
-You would need to convert the index access to a "local_add_return()" and 
-possibly also add memory barriers.
-
--Andi
-
--- 
-ak@linux.intel.com
+> ---
+>  include/linux/slab.h |   26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>
+> Index: linux-2.6/include/linux/slab.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/slab.h
+> +++ linux-2.6/include/linux/slab.h
+> @@ -23,6 +23,32 @@
+>  #define SLAB_CACHE_DMA         0x00004000UL    /* Use GFP_DMA memory */
+>  #define SLAB_STORE_USER                0x00010000UL    /* DEBUG: Store the last owner for bug hunting */
+>  #define SLAB_PANIC             0x00040000UL    /* Panic if kmem_cache_create() fails */
+> +/*
+> + * SLAB_DESTROY_BY_RCU - **WARNING** READ THIS!
+> + *
+> + * This delays freeing the SLAB page by a grace period, it does _NOT_
+> + * delay object freeing. This means that if you do kmem_cache_free()
+> + * that memory location is free to be reused at any time. Thus it may
+> + * be possible to see another object there in the same RCU grace period.
+> + *
+> + * This feature only ensures the memory location backing the object
+> + * stays valid, the trick to using this is relying on an independent
+> + * object validation pass. Something like:
+> + *
+> + *  rcu_read_lock()
+> + * again:
+> + *  obj = lockless_lookup(key);
+> + *  if (obj) {
+> + *    if (!try_get_ref(obj)) // might fail for free objects
+> + *      goto again;
+> + *
+> + *    if (obj->key != key) { // not the object we expected
+> + *      put_ref(obj);
+> + *      goto again;
+> + *    }
+> + *  }
+> + *  rcu_read_unlock();
+> + */
+>  #define SLAB_DESTROY_BY_RCU    0x00080000UL    /* Defer freeing slabs to RCU */
+>  #define SLAB_MEM_SPREAD                0x00100000UL    /* Spread some memory over cpuset */
+>  #define SLAB_TRACE             0x00200000UL    /* Trace allocations and frees */
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
