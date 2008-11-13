@@ -1,134 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752041AbYKMFnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbYKMFxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752041AbYKMFnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 00:43:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYKMFnb
+	id S1751988AbYKMFxj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 00:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYKMFxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 00:43:31 -0500
-Received: from out5.smtp.messagingengine.com ([66.111.4.29]:43240 "EHLO
-	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750740AbYKMFna (ORCPT
+	Thu, 13 Nov 2008 00:53:30 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60666 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbYKMFx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 00:43:30 -0500
-X-Sasl-enc: 7RPBj3ZzI7mjM1Kl4VN3qbKkBjYtn+4lqffI8QCTAtLf 1226555006
-Date: Thu, 13 Nov 2008 14:43:21 +0900 (WST)
-From: Ian Kent <raven@themaw.net>
-To: Michael Dressel <Michael.Dressel@bruker-biospin.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: pthread_mutex_lock hangs on unlocked mutex
-In-Reply-To: <alpine.LSU.2.00.0811070856260.5231@eleven.esr.bruker.de>
-Message-ID: <alpine.LFD.2.00.0811131433580.10195@zeus.themaw.net>
-References: <alpine.LSU.2.00.0811070856260.5231@eleven.esr.bruker.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 13 Nov 2008 00:53:29 -0500
+Date: Thu, 13 Nov 2008 14:52:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: [PATCH] memcg: add  force_empty again in reasonable style.
+Message-Id: <20081113145250.3eecdc37.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 7 Nov 2008, Michael Dressel wrote:
+tested on x86-64 box + mmotm-Nov10.
+after this, force_empty is not only for debug but for usual use.
 
-> Hi,
-> 
-> (I'm not subscribed to the list, please CC me.)
-> 
-> in our software three processes are using several pthread mutexes.
-> Sometimes a process hangs inside pthread_mutex_lock even though the mutex is
-> not locked. I can tell it's not locked because another process is still
-> running and locking and unlocking the mutex.
+Thanks,
+-Kame
+=
+By memcg-move-all-accounts-to-parent-at-rmdir.patch, there is no leak
+of memory usage and force_empty is removed. force_empty allows users to leak
+account. 
 
-pthreads is implemented in glibc.
-If you really think there is a bug in the ptheads implementation then 
-the glibc maintainers will require you to produce a simple example program 
-which demonstrates the bug before it's accepted as a bug.
+This patch adds "force_empty" again, in reasonable style.
 
-When you say processes you mean threads, right?
+memory.force_empty file works when
 
-If you can't produce such an example program and you can you prove (to 
-yourself) there are no use after free or execution order issues with your 
-code then your only option is to develop a workaround.
+  #echo 0 (or some) > memory.force_empty
+  and have following function.
 
-You code wouldn't happen to be doing thread synchronization with 
-pthread_cond_wait()/pthread_cond_signal() would it?
+  1. only works when there are no task in this cgroup.
+  2. free all page under this cgroup as much as possible.
+  3. page which cannot be freed will be moved up to parent. (locked pages etc.)
+  4. Then, memcg will be empty after echo returns.
 
-> When I connect with gdb to the hanging process I find:
-> 
-> #0  0xffffe430 in __kernel_vsyscall ()
-> #1  0xf7d5e7a9 in __lll_lock_wait () from /lib/libpthread.so.0
-> #2  0xf7d59c75 in _L_lock_288 () from /lib/libpthread.so.0
-> #3  0xf7d596c5 in pthread_mutex_lock () from /lib/libpthread.so.0
-> #4  0xf7e444b6 in pthread_mutex_lock () from /lib/libc.so.6
-> #5  0x080fb338 in <myfunction> (mutexP=0x70f4165c)
-> 
-> And the mutexP looks like this:
-> $1 = {__data = {__lock = 0, __count = 0, __owner = 0, __kind = 1,
->     __nusers = 0, {__spins = 0, __list = {__next = 0x0}}},
->   __size = '\0' <repeats 12 times>,
-> "\001\000\000\000\000\000\000\000\000\000\00
-> 0", __align = 0}
-> 
-> I guess the process had to wait for the mutex but when the mutex was unlocked
-> the signal to the waiting process got lost.
-> 
-> Our software was build on a SUUSE 10.1
-> 	kernel 2.6.16.13-4-default
-> 	glibc-32bit-2.4-27
-> system as 32 bit binary. On This system the problem does not occur.
-> 
-> The system showing the problem is a dual processor SUSE 11.0
-> 	kernel 2.6.25.18-0.2-default
-> 	glibc-32bit-2.8-14.1
-> system. Also if the second core is disabled in the BIOS we have the
-> problem. Some more details of the system are listed below.
-> 
-> When the system hangs it does not recover from that situation. But if
-> I send a kill -STOP <pid>; kill -CONT <pid> sequence to the hanging
-> process it does continue.
-> The same effect is reached by connecting and disconnecting with gdb.
-> 
-> Is there any way, either in configuring the system or pthread, to prevent
-> this problem?
-> 
-> Cheers,
-> Michael
-> 
-> openSUSE 11.0 (X86-64)
-> 
-> Linux 2.6.25.18-0.2-default #1 SMP 2008-10-21 16:30:26 +0200 x86_64 x86_64
-> x86_64 GNU/Linux
-> 
-> glibc-32bit-2.8-14.1
-> 
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 Duo CPU     E6550  @ 2.33GHz
-> stepping        : 11
-> cpu MHz         : 1998.000
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 1
-> core id         : 0
-> cpu cores       : 1
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca
-> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm
-> constant_tsc arch_perfmon pebs bts rep_good pni monitor ds_cpl vmx smx est tm2
-> ssse3 cx16 xtpr lahf_lm
-> bogomips        : 4658.50
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 36 bits physical, 48 bits virtual
-> power management:
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+This is much better behavior than old "force_empty" which just forget
+all accounts. This patch also check signal_pending() and above "echo"
+can be stopped by "Ctrl-C".
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+ Documentation/controllers/memory.txt |   27 +++++++++++++++++++++++----
+ mm/memcontrol.c                      |   34 ++++++++++++++++++++++++++++++----
+ 2 files changed, 53 insertions(+), 8 deletions(-)
+
+Index: mmotm-2.6.28-Nov10/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.28-Nov10.orig/mm/memcontrol.c
++++ mmotm-2.6.28-Nov10/mm/memcontrol.c
+@@ -1062,7 +1062,7 @@ static int mem_cgroup_force_empty_list(s
+  * make mem_cgroup's charge to be 0 if there is no task.
+  * This enables deleting this mem_cgroup.
+  */
+-static int mem_cgroup_force_empty(struct mem_cgroup *mem)
++static int mem_cgroup_force_empty(struct mem_cgroup *mem, bool free_all)
+ {
+ 	int ret;
+ 	int node, zid, shrink;
+@@ -1071,12 +1071,17 @@ static int mem_cgroup_force_empty(struct
+ 	css_get(&mem->css);
+ 
+ 	shrink = 0;
++	/* should free all ? */
++	if (free_all)
++		goto try_to_free;
+ move_account:
+ 	while (mem->res.usage > 0) {
+ 		ret = -EBUSY;
+ 		if (atomic_read(&mem->css.cgroup->count) > 0)
+ 			goto out;
+-
++		ret = -EINTR;
++		if (signal_pending(current))
++			goto out;
+ 		/* This is for making all *used* pages to be on LRU. */
+ 		lru_add_drain_all();
+ 		ret = 0;
+@@ -1111,14 +1116,24 @@ try_to_free:
+ 		ret = -EBUSY;
+ 		goto out;
+ 	}
++	/* we call try-to-free pages for make this cgroup empty */
++	lru_add_drain_all();
+ 	/* try to free all pages in this cgroup */
+ 	shrink = 1;
+ 	while (nr_retries && mem->res.usage > 0) {
+ 		int progress;
++
++		if (signal_pending(current)) {
++			ret = -EINTR;
++			goto out;
++		}
+ 		progress = try_to_free_mem_cgroup_pages(mem,
+ 						  GFP_HIGHUSER_MOVABLE);
+-		if (!progress)
++		if (!progress) {
+ 			nr_retries--;
++			/* maybe some writeback is necessary */
++			congestion_wait(WRITE, HZ/10);
++		}
+ 
+ 	}
+ 	/* try move_account...there may be some *locked* pages. */
+@@ -1128,6 +1143,12 @@ try_to_free:
+ 	goto out;
+ }
+ 
++int mem_cgroup_force_empty_write(struct cgroup *cont, unsigned int event)
++{
++	return mem_cgroup_force_empty(mem_cgroup_from_cont(cont), true);
++}
++
++
+ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+ {
+ 	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
+@@ -1225,6 +1246,7 @@ static int mem_control_stat_show(struct 
+ 	return 0;
+ }
+ 
++
+ static struct cftype mem_cgroup_files[] = {
+ 	{
+ 		.name = "usage_in_bytes",
+@@ -1253,6 +1275,10 @@ static struct cftype mem_cgroup_files[] 
+ 		.name = "stat",
+ 		.read_map = mem_control_stat_show,
+ 	},
++	{
++		.name = "force_empty",
++		.trigger = mem_cgroup_force_empty_write,
++	},
+ };
+ 
+ static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+@@ -1348,7 +1374,7 @@ static void mem_cgroup_pre_destroy(struc
+ 					struct cgroup *cont)
+ {
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+-	mem_cgroup_force_empty(mem);
++	mem_cgroup_force_empty(mem, false);
+ }
+ 
+ static void mem_cgroup_destroy(struct cgroup_subsys *ss,
+Index: mmotm-2.6.28-Nov10/Documentation/controllers/memory.txt
+===================================================================
+--- mmotm-2.6.28-Nov10.orig/Documentation/controllers/memory.txt
++++ mmotm-2.6.28-Nov10/Documentation/controllers/memory.txt
+@@ -237,11 +237,30 @@ reclaimed.
+ A cgroup can be removed by rmdir, but as discussed in sections 4.1 and 4.2, a
+ cgroup might have some charge associated with it, even though all
+ tasks have migrated away from it.
+-Such charges are moved to its parent as much as possible and freed if parent
+-is full. Both of RSS and CACHES are moved to parent.
+-If both of them are busy, rmdir() returns -EBUSY.
++Such charges are freed(at default) or moved to its parent. When moved,
++both of RSS and CACHES are moved to parent.
++If both of them are busy, rmdir() returns -EBUSY. See 5.1 Also.
+ 
+-5. TODO
++5. Misc. interfaces.
++
++5.1 force_empty
++  memory.force_empty interface is provided to make cgroup's memory usage empty.
++  You can use this interface only when the cgroup has no tasks.
++  When writing anything to this
++
++  # echo 0 > memory.force_empty
++
++  Almost all pages tracked by this memcg will be unmapped and freed. Some of
++  pages cannot be freed because it's locked or in-use. Such pages are moved
++  to parent and this cgroup will be empty. But this may return -EBUSY in
++  some too busy case.
++
++  Typical usage of this interface is calling this before rmdir().
++  Because rmdir() moves all pages to parent, some out-of-use page caches can be
++  moved to the parent. If you want to avoid that, force_empty will be useful.
++
++
++6. TODO
+ 
+ 1. Add support for accounting huge pages (as a separate controller)
+ 2. Make per-cgroup scanner reclaim not-shared pages first
+
