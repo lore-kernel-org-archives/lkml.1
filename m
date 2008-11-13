@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbYKMWH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYKMWKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbYKMWH4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 17:07:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYKMWHm
+	id S1755278AbYKMWKi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 17:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbYKMWK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 17:07:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56114 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752181AbYKMWHk (ORCPT
+	Thu, 13 Nov 2008 17:10:28 -0500
+Received: from smtp.wellnetcz.com ([212.24.148.102]:52588 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752766AbYKMWK2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 17:07:40 -0500
-Date: Thu, 13 Nov 2008 14:05:41 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michael Kerrisk" <mtk.manpages@gmail.com>
-Cc: subrata@linux.vnet.ibm.com, linux-arch@vger.kernel.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-api@vger.kernel.org, linux-man@vger.kernel.org,
-       davidel@xmailserver.org, netdev@vger.kernel.org, roland@redhat.com,
-       oleg@tv-sign.ru, hch@lst.de, davem@davemloft.net, alan@redhat.com,
-       jakub@redhat.com, mtk.manpages@gmail.com
-Subject: Re: [PATCH] reintroduce accept4
-Message-Id: <20081113140541.23754cad.akpm@linux-foundation.org>
-In-Reply-To: <517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
-References: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
-	<517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 17:10:28 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andi Kleen <andi@firstfloor.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 1/1 v2] HID: don't grab devices with no input
+Date: Thu, 13 Nov 2008 23:10:21 +0100
+Message-Id: <1226614221-17118-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <491CA495.7010007@gmail.com>
+References: <491CA495.7010007@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 16:51:56 -0500
-"Michael Kerrisk" <mtk.manpages@gmail.com> wrote:
+Some devices have no input interrupt endpoint. These won't be handled
+by usbhid, but currently they are not refused and reside on hid bus.
 
-> Andrew,
-> 
-> On 10/26/08, Ulrich Drepper <drepper@redhat.com> wrote:
-> > This patch reintroduces accept4, replacing paccept.  It's easy to see that
-> > the patch only removes code and then redirects existing code away from the
-> > removed functions.  Since the paccept code sans signal handling was never
-> > in question I think there is no reason to quarantine the patch first.
-> 
-> I see you accepted this patch into -mm.  I've finally got to looking
-> at and testing this, so:
-> 
-> Tested-by: Michael Kerrisk <mtk.manpages@gmail.com>
-> Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+Perform this checking earlier so that we refuse to control such
+a device early enough (and not pass it to the hid bus at all).
 
-Cool, thanks.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+---
+ drivers/hid/usbhid/hid-core.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
-> In my tests, everything looks fine.  I'll forward my test program in a
-> follow-up mail.
-
-OK, I'll add that to the changelog as well.
-
-> I think Ulrich wanted to try to see this patch in for 2.6.28; it's
-> past the merge window of course, so it's up to you, but I have no
-> problem with that.
-
-That's easy - I'll send it to Linus and let him decide ;)
-
-Realistically, this isn't likely to get much third-party testing in -rc
-anyway.  Our best defence at this time is careful review and developer
-runtime testing, which you've done, thanks.
-
-If it's buggy, we can live with that - fix it later, backport the
-fixes.  It's security holes (including DoS ones) which we need to be
-most concerned about.
-
->  The API is the one that Ulrich initially proposed,
-> before taking a detour into paccept()
-> (http://thread.gmane.org/gmane.linux.kernel/671443 ), which I argued
-> against (http://thread.gmane.org/gmane.linux.kernel/723952,
-> http://thread.gmane.org/gmane.linux.network/106071/), since I (and
-> Roland) could see no reason for the added complexity of a signal set
-> argument (like pselect()/ppoll()/epoll_pwait()).  (In any case, if
-> someone does come up with a compelling reason to add a sigset
-> argument, then we can add it via the use of a new flag bit.)
-> 
-> My only argument is with the name of the new sysytem call.
-> 
-> > I've updated the test program which now looks as follows:
-> 
-> (I assume that there had been no testing on x86-32, since, the
-> __i386__ ifdef's notwithstanding,  the program below can't work on
-> x86-32 -- sys_socketcall() takes its arguments packaged into an array
-> on x86-32, not as an inline list.)
-> 
-> Andrew, you noted a lack of explanation accompanying the original
-> patch.  Here's something to fill the gap, and which may be suitable
-> for the changelog.
-> 
-> ==
-> Introduce a new accept4() system call.  The addition of this system
-> call matches analogous changes in 2.6.27 (dup3(), evenfd2(),
-> signalfd4(), inotify_init1(), epoll_create1(), pipe2()) which added
-> new system calls that differed from analogous traditional system calls
-> in adding a flags argument that can be used to access additional
-> functionality. The accept4() system call is exactly the same as
-> accept(), except that it adds a flags bit-mask argument.  Two flags
-> are initially implemented.  (Most of the new system calls in 2.6.27
-> also had both of these flags.)  SOCK_CLOEXEC causes the close-on-exec
-> (FD_CLOEXEC) flag to be enabled for the new file descriptor returned
-> by accept4().  This is a useful security feature to avoid leaking
-> information in a multithreaded program where one thread is doing an
-> accept() at the same time as another thread is doing a fork() plus
-> exec().  (More details here:
-> http://udrepper.livejournal.com/20407.html "Secure File Descriptor
-> Handling", Ulrich Drepper)  The other flag is SOCK_NONBLOCK, which
-> causes the O_NONBLOCK flag to be enabled on the new open file
-> description created by accept4().  (This flag is merely a convenience,
-> saving the use of additional calls fcntl(F_GETFL) and fcntl (F_SETFL)
-> to achieve the same result.)
-
-I replaced the existing changelog with the above (plus some paragraph
-breaks ;)).  Will add the new test app when it comes along.
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index 05402e9..9c9bd4c 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -850,12 +850,6 @@ static int usbhid_start(struct hid_device *hid)
+ 		}
+ 	}
+ 
+-	if (!usbhid->urbin) {
+-		err_hid("couldn't find an input interrupt endpoint");
+-		ret = -ENODEV;
+-		goto fail;
+-	}
+-
+ 	init_waitqueue_head(&usbhid->wait);
+ 	INIT_WORK(&usbhid->reset_work, hid_reset);
+ 	setup_timer(&usbhid->io_retry, hid_retry_timeout, (unsigned long) hid);
+@@ -958,15 +952,26 @@ static struct hid_ll_driver usb_hid_driver = {
+ 
+ static int hid_probe(struct usb_interface *intf, const struct usb_device_id *id)
+ {
++	struct usb_host_interface *interface = intf->cur_altsetting;
+ 	struct usb_device *dev = interface_to_usbdev(intf);
+ 	struct usbhid_device *usbhid;
+ 	struct hid_device *hid;
++	unsigned int n, has_in = 0;
+ 	size_t len;
+ 	int ret;
+ 
+ 	dbg_hid("HID probe called for ifnum %d\n",
+ 			intf->altsetting->desc.bInterfaceNumber);
+ 
++	for (n = 0; n < interface->desc.bNumEndpoints; n++)
++		if (usb_endpoint_is_int_in(&interface->endpoint[n].desc))
++			has_in++;
++	if (!has_in) {
++		dev_err(&intf->dev, "couldn't find an input interrupt "
++				"endpoint");
++		return -ENODEV;
++	}
++
+ 	hid = hid_allocate_device();
+ 	if (IS_ERR(hid))
+ 		return PTR_ERR(hid);
+-- 
+1.6.0.4
 
