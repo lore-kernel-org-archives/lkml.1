@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbYKMNnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYKMNny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbYKMNnA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 08:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYKMNmv
+	id S1754193AbYKMNny (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 08:43:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYKMNnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 08:42:51 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55251 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751919AbYKMNmv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 08:42:51 -0500
-To: tj@kernel.org
-CC: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net, greg@kroah.com,
+	Thu, 13 Nov 2008 08:43:46 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:53918 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919AbYKMNnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 08:43:45 -0500
+Date: Thu, 13 Nov 2008 22:43:50 +0900 (JST)
+Message-Id: <20081113.224350.18312549.anemo@mba.ocn.ne.jp>
+To: vapier@gentoo.org
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
        linux-kernel@vger.kernel.org
-In-reply-to: <491C2A63.1030804@kernel.org> (message from Tejun Heo on Thu, 13
-	Nov 2008 22:23:47 +0900)
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491BC87F.4050108@kernel.org> <E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu> <491C1588.2060907@kernel.org> <E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu> <E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu> <491C2A63.1030804@kernel.org>
-Message-Id: <E1L0cSz-0006xF-0O@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 13 Nov 2008 14:42:37 +0100
+Subject: Re: [PATCH] mtd: unify mtd partition/device registration
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
+References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008, Tejun Heo wrote:
-> We don't need POLL_RELEASE
+On Wed, 12 Nov 2008 18:38:53 -0500, Mike Frysinger <vapier@gentoo.org> wrote:
+> Rather than having every map/mtd driver doing the same sequence of
+> registering partitions and/or devices, implement common parse_mtd().
+> 
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> ---
+>  drivers/mtd/mtdcore.c   |   37 +++++++++++++++++++++++++++++++++++++
+>  include/linux/mtd/mtd.h |    3 +++
+>  2 files changed, 40 insertions(+), 0 deletions(-)
 
-What happens on timeout?  Do we just let userspace continue polling
-the file descriptor, and then ignore the notification?
+I like this idea.
 
->  but we still need POLL-reply (to request) to
-> send revents.  We can put that into notification too.  Hmmm... Yeah,
-> that could be simpler for FUSE servers.  I'll venture that way.
+> +int parse_mtd(struct mtd_info *mtd, const char **probe_types,
+> +              struct mtd_partition *parts, int nr_parts)
+> +{
+> +#ifdef CONFIG_MTD_PARTITIONS
+> +	const char *default_part_probe_types[] = {
+> +		"cmdlinepart",
+> +		"RedBoot",
+> +		NULL
+> +	};
 
-Then in fact the notification could just become the reply:
+But I'm not sure this default_part_probe_types is appropriate.
 
-<- POLL-request (sent with request_send_nowait())
-...
--> POLL-reply  (calls req->end())
+How about enclose each parser with #ifdefs?
 
-So there won't even be a need to implement notification (we'll need
-that for other things in the future) simplifying things even further.
-Even if we want to cancel the request because of a timeout, that could
-be done with the existing INTERRUPT request.
+	const char *default_part_probe_types[] = {
+#ifdef CONFIG_MTD_CMDLINE_PARTS
+		"cmdlinepart",
+#endif
+#ifdef CONFIG_MTD_REDBOOT_PARTS
+		"RedBoot",
+#endif
+		NULL
+	};
 
-Miklos
+This get rid of "RedBoot partition parsing not available" noise in
+boot message when you use default_part_probe_types without
+MTD_REDBOOT_PARTS.
+
+---
+Atsushi Nemoto
