@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYKMXp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755397AbYKMXsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbYKMXp4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:45:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYKMXpe
+	id S1755397AbYKMXsZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbYKMXsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:45:34 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:55244 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753116AbYKMXpd (ORCPT
+	Thu, 13 Nov 2008 18:48:16 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:23383 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751143AbYKMXsP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:45:33 -0500
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
-       containers@lists.osdl.org
-Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task directories
-References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
-	<m1abcd2kqk.fsf@frodo.ebiederm.org>
-	<20081106172617.dd51d0af.akpm@linux-foundation.org>
-	<m1abccxpc5.fsf@frodo.ebiederm.org>
-	<20081106184945.179c248a.akpm@linux-foundation.org>
-	<m1iqr0urb8.fsf@frodo.ebiederm.org>
-	<20081106202822.a1af8a6e.akpm@linux-foundation.org>
-	<m1d4h7v8jf.fsf@frodo.ebiederm.org>
-	<20081107080529.6f4de3ad.akpm@linux-foundation.org>
-Date: Thu, 13 Nov 2008 15:39:44 -0800
-In-Reply-To: <20081107080529.6f4de3ad.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Fri, 7 Nov 2008 08:05:29 -0800")
-Message-ID: <m1zlk3kxfj.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 13 Nov 2008 18:48:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=bw+HSsEcKE+XHLGFrBRRyCFbTIqZ8aQzLXcQMowBYs3GF8QpexoD9KwYxaqJySsf7Q
+         2WFKa9JMu0YHicg0kAp/zlsZfWnUwNZ93Okg4yayrREebv/6vpuXvz9Yii9LMWXfJXWW
+         q8EbV7Cib/V+zqnyTPmrr1fBYuT7SbHX5njQY=
+Message-ID: <c62985530811131548i176af7e4k2d3b8300f7c425f@mail.gmail.com>
+Date: Fri, 14 Nov 2008 00:48:14 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] tracing/function-return-tracer: Call prepare_ftrace_return by registers
+Cc: "Steven Rostedt" <rostedt@goodmis.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081113100938.GA24602@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <491B4F63.3090909@gmail.com> <20081112221623.GB6125@elte.hu>
+	 <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com>
+	 <alpine.DEB.1.10.0811121824380.21116@gandalf.stny.rr.com>
+	 <c62985530811121535t13a60c93y9e4c22e365ca1b34@mail.gmail.com>
+	 <alpine.DEB.1.10.0811121911340.30248@gandalf.stny.rr.com>
+	 <20081113085949.GG25479@elte.hu> <20081113091454.GH25479@elte.hu>
+	 <c62985530811130202r7721c927w58beb34ec92c34f7@mail.gmail.com>
+	 <20081113100938.GA24602@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2008/11/13 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> That's right, it's much more better for the eyes. I didn't want to
+>> output such a disposition from the kernel because I thought that
+>> would result in too much strings work from kernel-space. But
+>> actually, as you suggest,
+>>  if I append a depth field in the trace that could be easy and not
+>> so costly. I just have a last thought about post-processing parsing.
+>> Would it make it harder for that?
+>
+> humans are the priority targets for tracer output - tools are a
+> distant second target. Whatever is nice for humans is also usually
+> easy to process via tools. A tool can set an option flag just fine.
+>
+> To help tooling, add a trace_options flag for more predictable/faster
+> output. We already have the binary output format for example.
+>
+>> Why not a flag that could be set through iter_ctrl (which has
+>> changed its name yesterday) and that could let the user to choose
+>> its output? That's where I renew my proposition to make the tracers
+>> able to propose custom flags for this file with a new callback such
+>> as tracer_ctrl, or tracer_opt.
+>
+> yes, your proposal is fine.
+>
+>> But as you say, why not set it through a flag.
+>
+> yes - and make the defaults for flags favor human visual parsing.
+>
+>> > Easiest would be to add a depth field to the trace entry as well, to
+>> > make sure we get the right depth in the end, even if we somehow mix up
+>> > the trace entries.
+>>
+>> Yeah, that's good! I will just have to output "\t" * depth to have
+>> the correct indentation.
+>
+> i'd suggest spaces for the function indentation, because we'll also
+> have quite deep call stacks in practice.
+>
+> and i'd suggest you flip around the cost field to something like:
+>
+>  [...]
+>               getnstimeofday() {
+>                set_normalized_timespec() {
+>                 clocksource_read() {
+>  ( 1547 ns)       acpi_pm_read()
+>  ( 1951 ns)      } clocksource_read()
+>  ( 2200 ns)     } set_normalized_timespec()
+>  ( 2354 ns)    } getnstimeofday()
+>
+> that makes it fixed-width up to the inevitable variable-length field,
+> the function name.
+>
+>        Ingo
+>
 
-On this patchset it looks like the conversation has wound down with no
-real objects except that some very simple pieces of the code appear
-magic.
-
-
-What looks to be the best path for getting this set of patches merged
-into /proc?
-
-Alexy will you pick this up in your /proc tree as Andrew suggested?
-Do I need to keep my own tree?
-
-Can I have some clear guidance on which hurdles to jump through to
-make forward progress?
-
-Eric
-
+Ok, I will add all of these in my workqueue. Thanks :)
