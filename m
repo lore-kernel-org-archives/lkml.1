@@ -1,52 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903AbYKML6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbYKML6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753903AbYKML6Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 06:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbYKML6R
+	id S1752107AbYKML6w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 06:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYKML6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 06:58:17 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40845 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbYKML6Q (ORCPT
+	Thu, 13 Nov 2008 06:58:41 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34244 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbYKML6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 06:58:16 -0500
-Message-ID: <491C164F.4030907@jp.fujitsu.com>
-Date: Thu, 13 Nov 2008 20:58:07 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH] accelerate newidle balancing in relax_domain
-References: <491C0A01.5040106@jp.fujitsu.com> <20081113111040.GA26461@elte.hu>
-In-Reply-To: <20081113111040.GA26461@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 06:58:41 -0500
+To: tj@kernel.org
+CC: miklos@szeredi.hu, fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+In-reply-to: <491C1588.2060907@kernel.org> (message from Tejun Heo on Thu, 13
+	Nov 2008 20:54:48 +0900)
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491BC87F.4050108@kernel.org> <E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu> <491C1588.2060907@kernel.org>
+Message-Id: <E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 13 Nov 2008 12:58:29 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> I agree with making it more sensitive to momentary load fluctuations. 
-> (as long as other metrics do not degrade).
-> 
-> But this solutin basically overrides the newidle_idx tuning in 
-> topology.h.
-> 
-> Is there a strong reason to do this tuning dynamically, or could we 
-> just decrease newidle_idx in the appropriate templates in the 
-> topology.h files?
+On Thu, 13 Nov 2008, Tejun Heo wrote:
+> Hmm... yeah, allocating handle from kernel should work fine, but I
+> wouldn't worry about race here.  We can just use 64 bit and guarantee
+> that any handle won't be reused ever.
 
-IMHO topology.h should have proper values that will fit 'standard'
-system usage.  I'm not sure that the current values (such as 2 in
-SD_NODE) is best number or not... And I think it can differ by archs.
-
-If there are no features that will be affected by the changing
-default newidle_idx values, then we can fix it in the templates.
-It would be a strong reason - I don't like regression :-)
-
+Right, that sounds perfect.
 
 Thanks,
-H.Seto
-
+Miklos
