@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbYKMTje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYKMTjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbYKMTje (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbYKMTeR
+	id S1756075AbYKMTjt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:39:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYKMTeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:17 -0500
-Received: from gw.goop.org ([64.81.55.164]:34391 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:19 -0500
+Received: from gw.goop.org ([64.81.55.164]:34398 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752603AbYKMTeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:07 -0500
+	id S1752827AbYKMTeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:08 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 17 of 38] x86: add swiotlb allocation functions
-X-Mercurial-Node: c171d938f6ca950ab8ef0f9fb032f2f56750fd3a
-Message-Id: <c171d938f6ca950ab8ef.1226603415@abulafia.goop.org>
+Subject: [PATCH 21 of 38] xen dom0: Initialize xenbus for dom0
+X-Mercurial-Node: c91af5fdca49a2305c5a8a7afb64c07b62ddcece
+Message-Id: <c91af5fdca49a2305c5a.1226603419@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:15 -0800
+Date: Thu, 13 Nov 2008 11:10:19 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -26,42 +26,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add x86-specific swiotlb allocation functions.  These are purely
-default for the moment.
+From: Juan Quintela <quintela@redhat.com>
+
+Do initial xenbus/xenstore setup in dom0.  In dom0 we need to actually
+allocate the xenstore resources, rather than being given them from
+outside.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- arch/x86/kernel/pci-swiotlb_64.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ drivers/xen/xenbus/xenbus_probe.c |   30 +++++++++++++++++++++++++++++-
+ 1 file changed, 29 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
---- a/arch/x86/kernel/pci-swiotlb_64.c
-+++ b/arch/x86/kernel/pci-swiotlb_64.c
-@@ -3,6 +3,8 @@
- #include <linux/pci.h>
- #include <linux/cache.h>
- #include <linux/module.h>
-+#include <linux/swiotlb.h>
-+#include <linux/bootmem.h>
- #include <linux/dma-mapping.h>
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -810,6 +810,7 @@
+ static int __init xenbus_probe_init(void)
+ {
+ 	int err = 0;
++	unsigned long page = 0;
  
- #include <asm/iommu.h>
-@@ -11,6 +13,16 @@
+ 	DPRINTK("");
  
- int swiotlb __read_mostly;
- 
-+void *swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-+{
-+	return alloc_bootmem_low_pages(size);
-+}
+@@ -830,7 +831,31 @@
+ 	 * Domain0 doesn't have a store_evtchn or store_mfn yet.
+ 	 */
+ 	if (xen_initial_domain()) {
+-		/* dom0 not yet supported */
++		struct evtchn_alloc_unbound alloc_unbound;
 +
-+void *swiotlb_alloc(unsigned order, unsigned long nslabs)
-+{
-+	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
-+}
++		/* Allocate Xenstore page */
++		page = get_zeroed_page(GFP_KERNEL);
++		if (!page)
++			return -ENOMEM;
 +
- static dma_addr_t
- swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
- 			int direction)
++		xen_store_mfn = xen_start_info->store_mfn =
++			pfn_to_mfn(virt_to_phys((void *)page) >>
++				   PAGE_SHIFT);
++
++		/* Next allocate a local port which xenstored can bind to */
++		alloc_unbound.dom        = DOMID_SELF;
++		alloc_unbound.remote_dom = 0;
++
++		err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
++						  &alloc_unbound);
++		if (err == -ENOSYS)
++			goto out_unreg_front;
++
++		BUG_ON(err);
++		xen_store_evtchn = xen_start_info->store_evtchn =
++			alloc_unbound.port;
++
++		xen_store_interface = mfn_to_virt(xen_store_mfn);
+ 	} else {
+ 		xenstored_ready = 1;
+ 		xen_store_evtchn = xen_start_info->store_evtchn;
+@@ -858,6 +883,9 @@
+ 	bus_unregister(&xenbus_frontend.bus);
+ 
+   out_error:
++	if (page != 0)
++		free_page(page);
++
+ 	return err;
+ }
+ 
 
 
