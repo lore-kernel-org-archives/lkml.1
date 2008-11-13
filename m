@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYKMTen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbYKMTe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYKMTen (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:34:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYKMTeE
+	id S1754954AbYKMTe5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYKMTeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:04 -0500
-Received: from gw.goop.org ([64.81.55.164]:34367 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:05 -0500
+Received: from gw.goop.org ([64.81.55.164]:34372 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbYKMTeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:00 -0500
+	id S1751880AbYKMTeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:01 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 01 of 38] xen: various whitespace and other formatting cleanups
-X-Mercurial-Node: 0e9ff9a5f50cb25874629e80995133f6f0cfce41
-Message-Id: <0e9ff9a5f50cb2587462.1226603399@abulafia.goop.org>
+Subject: [PATCH 02 of 38] x86: remove unused iommu_nr_pages
+X-Mercurial-Node: c76bd960c45757fe0b99aff31f9664fbc81adfab
+Message-Id: <c76bd960c45757fe0b99.1226603400@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:09:59 -0800
+Date: Thu, 13 Nov 2008 11:10:00 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -26,203 +26,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tej <bewith.tej@gmail.com>
+The last usage was removed by the patch set culminating in
 
-Signed-off-by: Tej <bewith.tej@gmail.com>
+commit e3c449f526cebb8d287241c7e82faafd9709668b
+Author: Joerg Roedel <joerg.roedel@amd.com>
+Date:   Wed Oct 15 22:02:11 2008 -0700
+
+    x86, AMD IOMMU: convert driver to generic iommu_num_pages function
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.orgdiff -r 9b89e3b4ca90 arch/x86/include/asm/iommu.h
 ---
- arch/x86/xen/enlighten.c  |   18 ++++++++++--------
- arch/x86/xen/mmu.c        |   17 ++++++++++-------
- arch/x86/xen/multicalls.c |    2 +-
- arch/x86/xen/setup.c      |    9 +++++----
- 4 files changed, 26 insertions(+), 20 deletions(-)
+ arch/x86/include/asm/iommu.h |    2 --
+ arch/x86/kernel/pci-dma.c    |    7 -------
+ 2 files changed, 9 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -793,7 +793,7 @@
+diff --git a/arch/x86/include/asm/iommu.h b/arch/x86/include/asm/iommu.h
+--- a/arch/x86/include/asm/iommu.h
++++ b/arch/x86/include/asm/iommu.h
+@@ -8,8 +8,6 @@
+ extern int iommu_detected;
+ extern int dmar_disabled;
  
- 	ret = 0;
+-extern unsigned long iommu_nr_pages(unsigned long addr, unsigned long len);
+-
+ /* 10 seconds */
+ #define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000)
  
--	switch(msr) {
-+	switch (msr) {
- #ifdef CONFIG_X86_64
- 		unsigned which;
- 		u64 base;
-@@ -1453,7 +1453,7 @@
- 
- 	ident_pte = 0;
- 	pfn = 0;
--	for(pmdidx = 0; pmdidx < PTRS_PER_PMD && pfn < max_pfn; pmdidx++) {
-+	for (pmdidx = 0; pmdidx < PTRS_PER_PMD && pfn < max_pfn; pmdidx++) {
- 		pte_t *pte_page;
- 
- 		/* Reuse or allocate a page of ptes */
-@@ -1471,7 +1471,7 @@
- 		}
- 
- 		/* Install mappings */
--		for(pteidx = 0; pteidx < PTRS_PER_PTE; pteidx++, pfn++) {
-+		for (pteidx = 0; pteidx < PTRS_PER_PTE; pteidx++, pfn++) {
- 			pte_t pte;
- 
- 			if (pfn > max_pfn_mapped)
-@@ -1485,7 +1485,7 @@
- 		}
- 	}
- 
--	for(pteidx = 0; pteidx < ident_pte; pteidx += PTRS_PER_PTE)
-+	for (pteidx = 0; pteidx < ident_pte; pteidx += PTRS_PER_PTE)
- 		set_page_prot(&level1_ident_pgt[pteidx], PAGE_KERNEL_RO);
- 
- 	set_page_prot(pmd, PAGE_KERNEL_RO);
-@@ -1499,7 +1499,7 @@
- 
- 	/* All levels are converted the same way, so just treat them
- 	   as ptes. */
--	for(i = 0; i < PTRS_PER_PTE; i++)
-+	for (i = 0; i < PTRS_PER_PTE; i++)
- 		pte[i] = xen_make_pte(pte[i].pte);
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -125,13 +125,6 @@
+ 	pci_swiotlb_init();
  }
  
-@@ -1514,7 +1514,8 @@
-  * of the physical mapping once some sort of allocator has been set
-  * up.
-  */
--static __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn)
-+static __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
-+						unsigned long max_pfn)
- {
- 	pud_t *l3;
- 	pmd_t *l2;
-@@ -1577,7 +1578,8 @@
- #else	/* !CONFIG_X86_64 */
- static pmd_t level2_kernel_pgt[PTRS_PER_PMD] __page_aligned_bss;
+-unsigned long iommu_nr_pages(unsigned long addr, unsigned long len)
+-{
+-	unsigned long size = roundup((addr & ~PAGE_MASK) + len, PAGE_SIZE);
+-
+-	return size >> PAGE_SHIFT;
+-}
+-EXPORT_SYMBOL(iommu_nr_pages);
+ #endif
  
--static __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn)
-+static __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
-+						unsigned long max_pfn)
- {
- 	pmd_t *kernel_pmd;
- 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -154,13 +154,13 @@
- {
- 	unsigned pfn, idx;
- 
--	for(pfn = 0; pfn < MAX_DOMAIN_PAGES; pfn += P2M_ENTRIES_PER_PAGE) {
-+	for (pfn = 0; pfn < MAX_DOMAIN_PAGES; pfn += P2M_ENTRIES_PER_PAGE) {
- 		unsigned topidx = p2m_top_index(pfn);
- 
- 		p2m_top_mfn[topidx] = virt_to_mfn(p2m_top[topidx]);
- 	}
- 
--	for(idx = 0; idx < ARRAY_SIZE(p2m_top_mfn_list); idx++) {
-+	for (idx = 0; idx < ARRAY_SIZE(p2m_top_mfn_list); idx++) {
- 		unsigned topidx = idx * P2M_ENTRIES_PER_PAGE;
- 		p2m_top_mfn_list[idx] = virt_to_mfn(&p2m_top_mfn[topidx]);
- 	}
-@@ -179,7 +179,7 @@
- 	unsigned long max_pfn = min(MAX_DOMAIN_PAGES, xen_start_info->nr_pages);
- 	unsigned pfn;
- 
--	for(pfn = 0; pfn < max_pfn; pfn += P2M_ENTRIES_PER_PAGE) {
-+	for (pfn = 0; pfn < max_pfn; pfn += P2M_ENTRIES_PER_PAGE) {
- 		unsigned topidx = p2m_top_index(pfn);
- 
- 		p2m_top[topidx] = &mfn_list[pfn];
-@@ -207,7 +207,7 @@
- 	p = (void *)__get_free_page(GFP_KERNEL | __GFP_NOFAIL);
- 	BUG_ON(p == NULL);
- 
--	for(i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
-+	for (i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
- 		p[i] = INVALID_P2M_ENTRY;
- 
- 	if (cmpxchg(pp, p2m_missing, p) != p2m_missing)
-@@ -407,7 +407,8 @@
- 		preempt_enable();
- }
- 
--pte_t xen_ptep_modify_prot_start(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
-+pte_t xen_ptep_modify_prot_start(struct mm_struct *mm,
-+				 unsigned long addr, pte_t *ptep)
- {
- 	/* Just return the pte as-is.  We preserve the bits on commit */
- 	return *ptep;
-@@ -871,7 +872,8 @@
- 
- 		if (user_pgd) {
- 			xen_pin_page(mm, virt_to_page(user_pgd), PT_PGD);
--			xen_do_pin(MMUEXT_PIN_L4_TABLE, PFN_DOWN(__pa(user_pgd)));
-+			xen_do_pin(MMUEXT_PIN_L4_TABLE,
-+				   PFN_DOWN(__pa(user_pgd)));
- 		}
- 	}
- #else /* CONFIG_X86_32 */
-@@ -986,7 +988,8 @@
- 		pgd_t *user_pgd = xen_get_user_pgd(pgd);
- 
- 		if (user_pgd) {
--			xen_do_pin(MMUEXT_UNPIN_TABLE, PFN_DOWN(__pa(user_pgd)));
-+			xen_do_pin(MMUEXT_UNPIN_TABLE,
-+				   PFN_DOWN(__pa(user_pgd)));
- 			xen_unpin_page(mm, virt_to_page(user_pgd), PT_PGD);
- 		}
- 	}
-diff --git a/arch/x86/xen/multicalls.c b/arch/x86/xen/multicalls.c
---- a/arch/x86/xen/multicalls.c
-+++ b/arch/x86/xen/multicalls.c
-@@ -154,7 +154,7 @@
- 			       ret, smp_processor_id());
- 			dump_stack();
- 			for (i = 0; i < b->mcidx; i++) {
--				printk("  call %2d/%d: op=%lu arg=[%lx] result=%ld\n",
-+				printk(KERN_DEBUG "  call %2d/%d: op=%lu arg=[%lx] result=%ld\n",
- 				       i+1, b->mcidx,
- 				       b->debug[i].op,
- 				       b->debug[i].args[0],
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -28,6 +28,9 @@
- /* These are code, but not functions.  Defined in entry.S */
- extern const char xen_hypervisor_callback[];
- extern const char xen_failsafe_callback[];
-+extern void xen_sysenter_target(void);
-+extern void xen_syscall_target(void);
-+extern void xen_syscall32_target(void);
- 
- 
- /**
-@@ -110,7 +113,6 @@
- 
- void __cpuinit xen_enable_sysenter(void)
- {
--	extern void xen_sysenter_target(void);
- 	int ret;
- 	unsigned sysenter_feature;
- 
-@@ -132,8 +134,6 @@
- {
- #ifdef CONFIG_X86_64
- 	int ret;
--	extern void xen_syscall_target(void);
--	extern void xen_syscall32_target(void);
- 
- 	ret = register_callback(CALLBACKTYPE_syscall, xen_syscall_target);
- 	if (ret != 0) {
-@@ -160,7 +160,8 @@
- 	HYPERVISOR_vm_assist(VMASST_CMD_enable, VMASST_TYPE_writable_pagetables);
- 
- 	if (!xen_feature(XENFEAT_auto_translated_physmap))
--		HYPERVISOR_vm_assist(VMASST_CMD_enable, VMASST_TYPE_pae_extended_cr3);
-+		HYPERVISOR_vm_assist(VMASST_CMD_enable,
-+				     VMASST_TYPE_pae_extended_cr3);
- 
- 	if (register_callback(CALLBACKTYPE_event, xen_hypervisor_callback) ||
- 	    register_callback(CALLBACKTYPE_failsafe, xen_failsafe_callback))
+ void *dma_generic_alloc_coherent(struct device *dev, size_t size,
 
 
