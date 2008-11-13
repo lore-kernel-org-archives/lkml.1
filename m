@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbYKMUam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbYKMUqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbYKMUam (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 15:30:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYKMUae
+	id S1753650AbYKMUqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 15:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYKMUp7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 15:30:34 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39760 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbYKMUad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 15:30:33 -0500
-Subject: Re: [PATCH 25 of 38] xen mtrr: Add mtrr_ops support for Xen mtrr
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>
-In-Reply-To: <61b4b844fb80206fbda1.1226603423@abulafia.goop.org>
-References: <61b4b844fb80206fbda1.1226603423@abulafia.goop.org>
-Content-Type: text/plain
-Date: Thu, 13 Nov 2008 20:28:48 +0000
-Message-Id: <1226608128.19068.10.camel@blaa>
-Mime-Version: 1.0
+	Thu, 13 Nov 2008 15:45:59 -0500
+Received: from rn-out-0910.google.com ([64.233.170.184]:2000 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751846AbYKMUp6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 15:45:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=uxOTmUknL75WWk8AFdBQ8zmSdoffTqVVwamrXAW4oV/O17QNaJdTrTF1Fp2FSVo9Ns
+         Wbk8YtUP0gnusQL3bPsHkGf+qh+RhESPeyF4CZCypKsKMZ/dNyEiPMH+8slhg5h5TdOS
+         pif1qI0rz1pUO3mE0s9YpBWA7giNOfbciW3iw=
+Message-ID: <43e72e890811131238s1cda9f9dsadaa23fc36c3cd93@mail.gmail.com>
+Date: Thu, 13 Nov 2008 12:38:24 -0800
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: sclark46@earthlink.net
+Subject: Re: [madwifi-project] [RFC] Closing the project
+Cc: "Pavel Roskin" <proski@gnu.org>,
+       "Michael Renzmann" <mrenzmann@madwifi-project.org>,
+       madwifi-project@venema.h4ckr.net,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <491C8C48.3030602@earthlink.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2576.194.45.26.221.1226491274.squirrel@webmail.madwifi.org>
+	 <1226511194.9952.38.camel@dv>
+	 <43e72e890811121224w4fc53e1s29080a42111186e9@mail.gmail.com>
+	 <1226547092.11785.49.camel@dv>
+	 <43e72e890811131142p3f72c964t802d424b0ddb3456@mail.gmail.com>
+	 <491C8C48.3030602@earthlink.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-13 at 11:10 -0800, Jeremy Fitzhardinge wrote:
+On Thu, Nov 13, 2008 at 12:21 PM, Stephen Clark <sclark46@earthlink.net> wrote:
+> Luis R. Rodriguez wrote:
 
-> diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
-> new file mode 100644
-> --- /dev/null
-> +++ b/arch/x86/kernel/cpu/mtrr/xen.c
-> @@ -0,0 +1,59 @@
-...
-> +
-> +/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
-> + * working userland mtrr support. */
-> +static struct mtrr_ops xen_mtrr_ops = {
-> +	.vendor            = X86_VENDOR_UNKNOWN,
-> +//	.set               = xen_set_mtrr,
-> +//	.get               = xen_get_mtrr,
-> +	.get_free_region   = generic_get_free_region,
-> +//	.validate_add_page = xen_validate_add_page,
-> +	.have_wrcomb       = positive_have_wrcomb,
-> +	.use_intel_if	   = 0,
-> +	.num_var_ranges	   = xen_num_var_ranges,
-> +};
+>> Just my advice: let MadWifi die already, stop wasting your time.
+>
+> Yeah but ath5k doesn't work on my zyxel ar5212 based wireless card only
+> madwifi works!
 
-...
+The discussion is about further pushing MadWifi vs keeping it in only
+maintenance mode. In your case the code would still exist until ath5k
+make it work appropriately.
 
-I'm vague on the details now, but looking back at the dom0 patch set
-here:
+Also -- what kernel have you tried ath5k on that it does not work on?
+Have you tried compat-wireless? Keep in mind to use the latest you'll
+need at least 2.6.27 installed.
 
-http://git.et.redhat.com/?p=linux-2.6-dom0-pvops.git;a=shortlog;h=55abc194080b5cf31cd66f5e35e8e5c5af2aa927
-
-I see we did have a bunch more mtrr work e.g. fixing the TODO above:
-
-http://git.et.redhat.com/?p=linux-2.6-dom0-pvops.git;a=commitdiff;h=93f779bf3d79f28d0933bfbc53f7b8c5b6496081
-
-Cheers,
-Mark.
-
+  Luis
