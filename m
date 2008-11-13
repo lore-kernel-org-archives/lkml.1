@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbYKMSqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752366AbYKMSq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbYKMSqf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 13:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYKMSqX
+	id S1752366AbYKMSq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 13:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYKMSqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 13:46:23 -0500
-Received: from voyager.telenet.dn.ua ([195.39.211.35]:49509 "EHLO
-	voyager.telenet.dn.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbYKMSqX (ORCPT
+	Thu, 13 Nov 2008 13:46:45 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:34929 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbYKMSqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 13:46:23 -0500
-Message-ID: <491C75FC.1000409@telenet.dn.ua>
-Date: Thu, 13 Nov 2008 20:46:20 +0200
-From: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081011)
+	Thu, 13 Nov 2008 13:46:44 -0500
+Date: Thu, 13 Nov 2008 13:44:31 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: linux-crypto@vger.kernel.org, herbert@gondor.apana.org.au,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: ansi_cprng: fix inverted DT increment routine
+Message-ID: <20081113184431.GB18604@hmsendeavour.rdu.redhat.com>
+References: <200811131136.15875.jarod@redhat.com>
 MIME-Version: 1.0
-To: Wu Fengguang <wfg@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de>
-In-Reply-To: <1226566313.199910.29888@de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811131136.15875.jarod@redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> Hi all,
+On Thu, Nov 13, 2008 at 11:36:11AM -0500, Jarod Wilson wrote:
+> The ANSI X9.31 PRNG docs aren't particularly clear on how to increment DT,
+> but empirical testing shows we're incrementing from the wrong end. A 10,000
+> iteration Monte Carlo RNG test currently winds up not getting the expected
+> result.
 > 
-> //Sorry for being late. 
+> From http://csrc.nist.gov/groups/STM/cavp/documents/rng/RNGVS.pdf :
 > 
-> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
-> [...]
->> I already talked about this with Jeff on irc, but I guess should post it
->> here as well.
->>
->> nfsd aside (which does seem to have some different behaviour skewing the
->> results), the original patch came about because dump(8) has a really
->> stupid design that offloads IO to a number of processes. This basically
->> makes fairly sequential IO more random with CFQ, since each process gets
->> its own io context. My feeling is that we should fix dump instead of
->> introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
->> aware of any other good programs out there that would do something
->> similar, so I don't think there's a lot of merrit to spending cycles on
->> detecting cooperating processes.
->>
->> Jeff will take a look at fixing dump instead, and I may have promised
->> him that santa will bring him something nice this year if he does (since
->> I'm sure it'll be painful on the eyes).
+> # CAVS 4.3
+> # ANSI931 MCT
+> [X9.31]
+> [AES 128-Key]
 > 
-> This could also be fixed at the VFS readahead level.
+> COUNT = 0
+> Key = 9f5b51200bf334b5d82be8c37255c848
+> DT = 6376bbe52902ba3b67c925fa701f11ac
+> V = 572c8e76872647977e74fbddc49501d1
+> R = 48e9bd0d06ee18fbe45790d5c3fc9b73
 > 
-> In fact I've seen many kinds of interleaved accesses:
-> - concurrently reading 40 files that are in fact hard links of one single file
-> - a backup tool that splits a big file into 8k chunks, and serve the
->   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
->   chunks in another one
-> - a pool of NFSDs randomly serving some originally sequential read requests 
-> - now dump(8) seems to have some similar problem.
+> Currently, we get 0dd08496c4f7178bfa70a2161a79459a after 10000 loops.
 > 
-> In summary there have been all kinds of efforts on trying to
-> parallelize I/O tasks, but unfortunately they can easily screw up the
-> sequential pattern. It may not be easily fixable for many of them.
+> Inverting the DT increment routine results in us obtaining the expected result
+> of 48e9bd0d06ee18fbe45790d5c3fc9b73. Verified on both x86_64 and ppc64.
 > 
-> It is however possible to detect most of these patterns at the
-> readahead layer and restore sequential I/Os, before they propagate
-> into the block layer and hurt performance.
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
 > 
-> Vitaly, if that's what you need, I can try to prepare a patch for testing out.
+> ---
+> 
+>  crypto/ansi_cprng.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/crypto/ansi_cprng.c b/crypto/ansi_cprng.c
+> index 486aa93..a7c703d 100644
+> --- a/crypto/ansi_cprng.c
+> +++ b/crypto/ansi_cprng.c
+> @@ -161,7 +161,7 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
+>  	/*
+>  	 * Now update our DT value
+>  	 */
+> -	for (i = 0; i < DEFAULT_BLK_SZ; i++) {
+> +	for (i = DEFAULT_BLK_SZ - 1; i >= 0; i--) {
+>  		ctx->DT[i] += 1;
+>  		if (ctx->DT[i] != 0)
+>  			break;
+> 
+> -- 
+> Jarod Wilson
+> jarod@redhat.com
+> 
+> 
 
-Deadline scheduler should fit my needs, I believe. I can test a patch which
-tries to resolve the issue or run some more tests, though.
+Looks good, thanks Jarod!
+
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
 -- 
-Thanks,
-Vitaly
+/***************************************************
+ *Neil Horman
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
