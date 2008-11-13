@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYKMXP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYKMXPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbYKMXP1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbYKMXPQ
+	id S1755810AbYKMXPp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbYKMXPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:15:16 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:56246 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752768AbYKMXPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:15:15 -0500
-Message-ID: <491CB500.8090203@sgi.com>
-Date: Thu, 13 Nov 2008 15:15:12 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Yinghai Lu <yinghai@kernel.org>, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-References: <491434FB.2050904@kernel.org>	<86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	<20081110094033.GL22392@elte.hu>	<20081110015511.453a801e.akpm@linux-foundation.org>	<4918065A.6050402@kernel.org>	<20081110100329.GA19970@elte.hu>	<491A9F87.8040403@kernel.org>	<20081112120814.GG11352@elte.hu>	<491C8B38.9060901@kernel.org>	<20081113131850.d94fb229.akpm@linux-foundation.org>	<86802c440811131401v5e031240r56686b4ab8a1b1fb@mail.gmail.com>	<20081113141340.7e17bdca.akpm@linux-foundation.org>	<491CAD20.9020202@kernel.org> <20081113145846.bef2bb90.akpm@linux-foundation.org>
-In-Reply-To: <20081113145846.bef2bb90.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Nov 2008 18:15:34 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:50851 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752849AbYKMXPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:15:33 -0500
+Date: Fri, 14 Nov 2008 08:15:32 +0900 (JST)
+Message-Id: <20081114.081532.16574084.taka@valinux.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
+       xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@sourceware.org, fernando@oss.ntt.co.jp,
+       xemul@openvz.org
+Subject: Re: [dm-devel] Re: [PATCH 0/8] I/O bandwidth controller and BIO
+ tracking
+From: Hirokazu Takahashi <taka@valinux.co.jp>
+In-Reply-To: <491C53CF.3010208@linux.vnet.ibm.com>
+References: <20081113153019.cc50d42c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081113.162623.74628639.taka@valinux.co.jp>
+	<491C53CF.3010208@linux.vnet.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 13 Nov 2008 14:41:36 -0800
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> Andrew Morton wrote:
->>
->>>> ...
->>>>
->>>>>> +static unsigned int kstat_irqs_legacy[NR_IRQS_LEGACY][NR_CPUS];
->>>>> Do these need to be 32-bit?  Maybe they'll fit in 16-bit, dunno.
->>>>>
->>>> struct irq_desc {
->>>>         unsigned int            irq;
->>>> #ifdef CONFIG_SPARSE_IRQ
->>>>         struct list_head        list;
->>>>         struct list_head        hash_entry;
->>>>         struct timer_rand_state *timer_rand_state;
->>>>         unsigned int            *kstat_irqs;
->>> That doesn't address my question.
->>>
->>> The above array can be very large.  Can we halve its size by using
->>> 16-bit quantities?  Will this code ever encounter IRQ numbers larger
->>> than 65536?
->>>
->> NR_CPUS=4096, NR_IRQS_LEGACY=16, and that array will be 256k bytes
->>
->> later could change that alloc_bootmem, so NR_CPUS will be replaced to nr_cpu_ids
-> 
-> Do the entries in that array need to be 32-bit?
+Hi, Balbir,
 
-That's a good question.  If there are 4k or 16k cpus, would the number of
-irq's being "kstat'd" need to be > 64k?  (I'm not exactly sure why there
-are NR_CPUS * NR_IRQS_LEGACY kstat entries per IRQ?)
+> Hirokazu Takahashi wrote:
+> > Hi, Kamezawa-san,
+> > 
+> > This patch makes the page_cgroup framework be able to be used even if
+> > the compile option of the cgroup memory controller is off.
+> > So bio-cgroup can use this framework without the memory controller.
+> > 
+> > Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+> > 
+> > diff -dupr linux-2.6.28-rc2.bc0/include/linux/memcontrol.h linux-2.6.28-rc2/include/linux/memcontrol.h
+> > --- linux-2.6.28-rc2.bc0/include/linux/memcontrol.h	2008-11-10 18:31:34.000000000 +0900
+> > +++ linux-2.6.28-rc2/include/linux/memcontrol.h	2008-11-11 13:51:42.000000000 +0900
+> > @@ -27,6 +27,9 @@ struct mm_struct;
+> > 
+> >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > 
+> > +extern void __init_mem_page_cgroup(struct page_cgroup *pc);
+> > +#define  mem_cgroup_disabled() mem_cgroup_subsys.disabled
+> > +
+> >  extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+> >  				gfp_t gfp_mask);
+> >  /* for swap handling */
+> > @@ -81,6 +84,15 @@ extern long mem_cgroup_calc_reclaim(stru
+> >  #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+> >  struct mem_cgroup;
+> > 
+> > +static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
+> > +{
+> > +}
+> > +
+> > +static inline int mem_cgroup_disabled(void)
+> > +{
+> > +	return 1;
+> > +}
+> > +
+> 
+> With CONFIG_CGROUP_MEM_RES_CTLR not defined, page_cgroup init routines will just
+> return, is that what bio page_cgroup needs?
+> 
+> -- 
+> 	Balbir
+
+One of the other patches includes the following code, which calls 
+__init_bio_page_cgroup() to initialize bio-cgroup thing.
+
++++ linux-2.6.28-rc2/mm/page_cgroup.c	2008-11-12 11:20:33.000000000 +0900
+@@ -9,6 +9,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/cgroup.h>
+ #include <linux/memcontrol.h>
++#include <linux/biotrack.h>
+ 
+ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+@@ -16,6 +17,7 @@ __init_page_cgroup(struct page_cgroup *p
+ 	pc->flags = 0;
+ 	pc->page = pfn_to_page(pfn);
+ 	__init_mem_page_cgroup(pc);
++	__init_bio_page_cgroup(pc);
+ }
+ static unsigned long total_usage;
