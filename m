@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbYKMXuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYKMXu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbYKMXuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:50:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbYKMXtl
+	id S1756041AbYKMXu3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:50:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbYKMXt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:49:41 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53788 "EHLO mx2.redhat.com"
+	Thu, 13 Nov 2008 18:49:57 -0500
+Received: from ozlabs.org ([203.10.76.45]:47911 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754590AbYKMXtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:49:39 -0500
-Date: Thu, 13 Nov 2008 23:49:33 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <mauelshagen@redhat.com>,
-       Mikulas Patocka <mpatocka@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Chandra Seetharaman <sekharan@us.ibm.com>
-Subject: [git pull] 2.6.28-rc5 device-mapper fixes
-Message-ID: <20081113234933.GW5098@agk.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Heinz Mauelshagen <mauelshagen@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Milan Broz <mbroz@redhat.com>,
-	Chandra Seetharaman <sekharan@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754662AbYKMXt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:49:56 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+Date: Fri, 14 Nov 2008 10:19:48 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+References: <s5htzaekp6o.wl%tiwai@suse.de> <200811131951.07686.rusty@rustcorp.com.au> <Pine.LNX.4.64.0811130830210.19293@quilx.com>
+In-Reply-To: <Pine.LNX.4.64.0811130830210.19293@quilx.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Message-Id: <200811141019.49493.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull the following device-mapper fixes from:
+On Friday 14 November 2008 01:10:32 Christoph Lameter wrote:
+> On Thu, 13 Nov 2008, Rusty Russell wrote:
+> > > The cpu alloc patchset gets rid of about half the hooks in the page
+> > > allocator and slab allocator.
+> >
+> > Sure, but we could convert those today to alloc_percpu etc.
+>
+> The percpu_ptr macros etc are not upercase suggesting that it is a
+> function but the functions do weird things like passing through the
+> type. This is confusing.
 
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git
+No it's not, we have several like that.  And noone's going to somehow get 
+confused and misuse it.  Finally, we don't change APIs just to meet some sense 
+of neatness.
 
-Chandra Seetharaman (3):
-      dm mpath: avoid attempting to activate null path
-      dm mpath: warn if args ignored
-      dm: avoid destroying table in dm_any_congested
+> alloc_percpu() does not allow specifying a GFP mask therefore does not
+> support zeroing and is not extendable for the future.
 
-Heinz Mauelshagen (1):
-      dm stripe: fix init failure
+It is defined to be zeroing.  And it is very unclear that (1) future 
+implementations will be able to support GFP_ATOMIC reasonably, and (2) that we 
+want people to do that.  If we do, we fix it.
 
-Mikulas Patocka (2):
-      dm raid1: flush workqueue before destruction
-      dm: move pending queue wake_up end_io_acct
+> It does not allow
+> specifying an alignment therefore tight packing is not possible.
 
- drivers/md/dm-mpath.c  |    8 ++++++--
- drivers/md/dm-raid1.c  |    1 +
- drivers/md/dm-stripe.c |    4 +++-
- drivers/md/dm.c        |   34 +++++++++++++++++++++-------------
- 4 files changed, 31 insertions(+), 16 deletions(-)
+It absolutely does.  That's why it takes a type!
 
-Thanks,
-Alasdair
--- 
-agk@redhat.com
+> Plus the name alloc_percpu() suggests that it is a function but its a
+> macro doing things with typing.
+
+You said that before.
+
+> CPU_PTR and THIS_CPU can be applied both to percpu pointers and
+> percpu variables. The new API unifies the handling which is required in
+> order for the new cpu_ops to work both on statically and dynamically
+> allocated percpu data.
+
+And if you called them per_cpu_ptr and __get_cpu_ptr they would have these 
+same properties.  But now the names would be consistent.
+
+So let's just reimplement the original API and be done.
+Rusty.
