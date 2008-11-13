@@ -1,46 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752816AbYKMKdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbYKMKeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752816AbYKMKdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 05:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYKMKdc
+	id S1753467AbYKMKeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 05:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYKMKd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 05:33:32 -0500
-Received: from main.gmane.org ([80.91.229.2]:35855 "EHLO ciao.gmane.org"
+	Thu, 13 Nov 2008 05:33:59 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:51499 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYKMKdb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 05:33:31 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jeremy Sanders <jeremy@jeremysanders.net>
-Subject: Re: NFS root hangs
-Date: Thu, 13 Nov 2008 10:33:16 +0000
-Message-ID: <gfgvpc$h3g$1@ger.gmane.org>
-References: <gfc3oh$85h$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: xpc17.ast.cam.ac.uk
-User-Agent: KNode/0.10.9
+	id S1751658AbYKMKd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 05:33:58 -0500
+Date: Thu, 13 Nov 2008 11:33:54 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/pcmcia/cistpl.c: introduce missing braces
+Message-ID: <Pine.LNX.4.64.0811131133010.9563@pc-004.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Sanders wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> Hi - We're running several diskless x86-64 systems with a MS-6702
-> motherboard with an Athlon 64 3400+ CPU. The network driver is an onboard
-> R8169 (rev 10) using gigabit ethernet. The kernel is 2.6.26.6-49.fc8 (i.e.
-> the latest Fedora 8 kernel). The root partition is mounted over NFS (v3)
-> in an initrd init script.
-> 
-> This setup works fine for some dual core Athlon 64s and single core x86
-> Pentium 4s. However the diskless single core Athlon 64 systems lock up
-> randomly after minutes or tens of minutes of idleness.
+The indentation and behavior of the code below suggests that braces are
+intended around the if branch.
 
-Just to report they also hang with 2.6.27.5, but it takes a few hours of
-usage to hang now rather than tens of minutes.
+The semantic match that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-Jeremy
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
 
+(
+if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
+|
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x == NULL) S
+)
+<... when != x
+     when != if (...) { <+...x...+> }
+x->f = E
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
 
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ drivers/pcmcia/cistpl.c       |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/pcmcia/cistpl.c b/drivers/pcmcia/cistpl.c
+index dcce9f5..4a110b7 100644
+--- a/drivers/pcmcia/cistpl.c
++++ b/drivers/pcmcia/cistpl.c
+@@ -351,10 +351,11 @@ int verify_cis_cache(struct pcmcia_socket *s)
+ 	char *buf;
+ 
+ 	buf = kmalloc(256, GFP_KERNEL);
+-	if (buf == NULL)
++	if (buf == NULL) {
+ 		dev_printk(KERN_WARNING, &s->dev,
+ 			   "no memory for verifying CIS\n");
+ 		return -ENOMEM;
++	}
+ 	list_for_each_entry(cis, &s->cis_cache, node) {
+ 		int len = cis->len;
+ 
