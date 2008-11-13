@@ -1,88 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbYKMGKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbYKMGMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752131AbYKMGKO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 01:10:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbYKMGJ6
+	id S1752467AbYKMGMX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 01:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYKMGMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 01:09:58 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:42387 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYKMGJ5 (ORCPT
+	Thu, 13 Nov 2008 01:12:14 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42001 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbYKMGMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 01:09:57 -0500
-Message-ID: <491BC4B8.1050406@colorfullife.com>
-Date: Thu, 13 Nov 2008 07:10:00 +0100
-From: Manfred Spraul <manfred@colorfullife.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: cboulte@gmail.com, Nadia.Derbey@bull.net, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] SYSVIPC - Fix the ipc structures initialization
-References: <20081028145952.620752409@bull.net> <20081028150041.857635775@bull.net> <4f3ee3290810290211y75a2d0eaoe666496e25496260@mail.gmail.com> <20081111141603.f0e7fa8d.akpm@linux-foundation.org>
-In-Reply-To: <20081111141603.f0e7fa8d.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 13 Nov 2008 01:12:12 -0500
+Date: Thu, 13 Nov 2008 15:11:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Izik Eidus <izik@qumranet.com>
+Cc: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Izik Eidus <ieidus@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
+       izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+ one page into another
+Message-Id: <20081113151129.35c17962.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <491AB9D0.7060802@qumranet.com>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
+	<1226409701-14831-2-git-send-email-ieidus@redhat.com>
+	<1226409701-14831-3-git-send-email-ieidus@redhat.com>
+	<20081111114555.eb808843.akpm@linux-foundation.org>
+	<4919F1C0.2050009@redhat.com>
+	<Pine.LNX.4.64.0811111520590.27767@quilx.com>
+	<4919F7EE.3070501@redhat.com>
+	<Pine.LNX.4.64.0811111527500.27767@quilx.com>
+	<20081111222421.GL10818@random.random>
+	<20081112111931.0e40c27d.kamezawa.hiroyu@jp.fujitsu.com>
+	<491AAA84.5040801@redhat.com>
+	<491AB9D0.7060802@qumranet.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Time is starting to press on this one.  Is there something which we can
-> revert which would fix this bug?
->   
-My previous analysis was bogus, let's start from scratch:
+Thank you for answers.
 
-1) the initial oops report:
-http://bugzilla.kernel.org/show_bug.cgi?id=11796#c0
+On Wed, 12 Nov 2008 13:11:12 +0200
+Izik Eidus <izik@qumranet.com> wrote:
 
-- lockdep is enabled, the oops is somewhere in __lock_acquire
-- the instruction that oopses is
+> Avi Kivity wrote:
+> > KAMEZAWA Hiroyuki wrote:
+> >> Can I make a question ? (I'm working for memory cgroup.)
+> >>
+> >> Now, we do charge to anonymous page when
+> >>   - charge(+1) when it's mapped firstly (mapcount 0->1)
+> >>   - uncharge(-1) it's fully unmapped (mapcount 1->0) vir 
+> >> page_remove_rmap().
+> >>
+> >> My quesion is
+> >>  - PageKSM pages are not necessary to be tracked by memory cgroup ?
+> When we reaplacing page using page_replace() we have:
+> oldpage - > anonymous page that is going to be replaced by newpage
+> newpage -> kernel allocated page (KsmPage)
+> so about oldpage we are calling page_remove_rmap() that will notify cgroup
+> and about newpage it wont be count inside cgroup beacuse it is file rmap 
+> page
+> (we are calling to page_add_file_rmap), so right now PageKSM wont ever 
+> be tracked by cgroup.
+> 
+If not in radix-tree, it's not tracked.
+(But we don't want to track non-LRU pages which are not freeable.)
 
- >>>  lock incl 0x138(%r12)
-R12 is 0x0038004000000000
 
-That could be an debug_atomic_inc() in __lock_acquire. The class pointer 
-in the spinlock_t is not initialized, thus it crashes.
-Ingo - is that possible?
+> >>  - Can we know that "the page is just replaced and we don't necessary 
+> >> to do
+> >>    charge/uncharge".
+> 
+> The caller of page_replace does know it, the only problem is that 
+> page_remove_rmap()
+> automaticly change the cgroup for anonymous pages,
+> if we want it not to change the cgroup, we can:
+> increase the cgroup count before page_remove (but in that case what 
+> happen if we reach to the limit???)
+> give parameter to page_remove_rmap() that we dont want the cgroup to be 
+> changed.
 
-2) the latest oops was actually a soft lockup:
+Hmm, current mem cgroup works via page_cgroup struct to track pages.
 
-It starts with:
-> [  400.393024] INFO: trying to register non-static key.
-> [  400.397005] the code is fine but needs lockdep annotation.
-> [  400.397005] turning off the locking correctness validator.
-> [  400.397005] Pid: 4207, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #1
-> [  400.397005] Call Trace:
-> [  400.397005]  [<ffffffff80257055>] static_obj+0x60/0x77
-> [  400.397005]  [<ffffffff8025af59>] __lock_acquire+0x1c8/0x779
-> [  400.397005]  [<ffffffff8025b59f>] lock_acquire+0x95/0xc2
-> [  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> [  400.397005]  [<ffffffff8045117d>] _spin_lock+0x2d/0x5a
-> [  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> [  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> [  400.397005]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
-> [  400.397005]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
-> [  400.397005]  [<ffffffff803002c3>] sys_msgctl+0x188/0x461
-> [  400.397005]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
-> [  400.397005]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
-> [  400.397005]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
-> [  400.397005]  [<ffffffff80212e09>] sched_clock+0x5/0x7
-> [  400.397005]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
-> [  400.397005]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
-> [  400.397005]  [<ffffffff80212e09>] sched_clock+0x5/0x7
-> [  400.397005]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
-> [  400.397005]
-> [  464.933003] BUG: soft lockup - CPU#2 stuck for 61s! [sysv_test2:4207]
-> [  464.933006] Call Trace:
-> [  464.933006]  [<ffffffff8033dc6b>] _raw_spin_lock+0x98/0x100
-> [  464.933006]  [<ffffffff8045119e>] _spin_lock+0x4e/0x5a
-> [  464.933006]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
+   page <-> page_cgroup has one-to-one relation ship.
 
-For me, it reads like an uninitialized spinlock_t:
-The static_obj test in kernel/lockdep.c notices that something is wrong and disables itself.
-But then _raw_spin_lock() tries to acquire the uninitialized spinlock and loops forever, because noone does spin_unlock().
-after 60 seconds, the soft lockup detection notices the problem and oopses.
+So, "exchanging page" itself causes trouble. But I may be able to provide
+necessary hooks to you as I did in page migraiton.
+
+> 
+> >>  - annonymous page from KSM is worth to be tracked by memory cgroup ?
+> >>    (IOW, it's on LRU and can be swapped-out ?)
+> 
+> KSM have no anonymous pages (it share anonymous pages into KsmPAGE -> 
+> kernel allocated page without mapping)
+> so it isnt in LRU and it cannt be swapped, only when KsmPAGEs will be 
+> break by do_wp_page() the duplication will be able to swap.
+> 
+Ok, thank you for confirmation.
+
+> >>   
+> >
+> > My feeling is that shared pages should be accounted as if they were 
+> > not shared; that is, a share page should be accounted for each process 
+> > that shares it.  Perhaps sharing within a cgroup should be counted as 
+> > 1 page for all the ptes pointing to it.
+> >
+> >
+
+If KSM pages are on radix-tree, it will be accounted automatically.
+Now, we have "Unevictable" LRU and mlocked() pages are smartly isolated into its
+own LRU. So, just doing
+
+ - inode's radix-tree
+ - make all pages mlocked.
+ - provide special page fault handler for your purpose
+
+is simple one. But ok, whatever implementation you'll do, I have to check it
+and consider whether it should be tracked or not. Then, add codes to memcg to
+track it or ignore it or comments on your patches ;)
+
+It's helpful to add me to CC: when you post this set again.
+
+Thanks,
+-Kame
+
+
+
 
 
 
