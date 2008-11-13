@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751143AbYKMXpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYKMXp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751143AbYKMXpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:45:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbYKMXpc
+	id S1756067AbYKMXp4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYKMXpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:45:32 -0500
-Received: from poseidon.rz.tu-clausthal.de ([139.174.2.21]:62782 "EHLO
-	poseidon.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751717AbYKMXpb convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:45:31 -0500
-From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-To: linux-kernel@vger.kernel.org
-Subject: build error with 2.6.27.6+reiser4+ehci-hub patch. ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
-Date: Fri, 14 Nov 2008 00:45:19 +0100
-User-Agent: KMail/1.10.90 (Linux/2.6.27.5r4; KDE/4.1.73; x86_64; ; )
-Cc: Greg KH <greg@kroah.com>, stable@kernel.org, netdev@vger.kernel.org
+	Thu, 13 Nov 2008 18:45:34 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:55244 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753116AbYKMXpd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:45:33 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, viro@ZenIV.linux.org.uk,
+       containers@lists.osdl.org
+Subject: Re: [PATCH 2/7] proc: Implement support for automounts in task directories
+References: <m1ej1p2l6u.fsf@frodo.ebiederm.org>
+	<m1abcd2kqk.fsf@frodo.ebiederm.org>
+	<20081106172617.dd51d0af.akpm@linux-foundation.org>
+	<m1abccxpc5.fsf@frodo.ebiederm.org>
+	<20081106184945.179c248a.akpm@linux-foundation.org>
+	<m1iqr0urb8.fsf@frodo.ebiederm.org>
+	<20081106202822.a1af8a6e.akpm@linux-foundation.org>
+	<m1d4h7v8jf.fsf@frodo.ebiederm.org>
+	<20081107080529.6f4de3ad.akpm@linux-foundation.org>
+Date: Thu, 13 Nov 2008 15:39:44 -0800
+In-Reply-To: <20081107080529.6f4de3ad.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 7 Nov 2008 08:05:29 -0800")
+Message-ID: <m1zlk3kxfj.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200811140045.20166.volker.armin.hemmann@tu-clausthal.de>
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, containers@lists.osdl.org, viro@ZenIV.linux.org.uk, adobriyan@gmail.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-with my old config from 2.6.27.5 (which has the same patches) I get this 
-error:
-make all modules_install install
-<snip>
-  OBJCOPY arch/x86/boot/setup.bin
-  OBJCOPY arch/x86/boot/vmlinux.bin
-  HOSTCC  arch/x86/boot/tools/build
-  BUILD   arch/x86/boot/bzImage
-Root device is (9, 1)
-Setup is 11436 bytes (padded to 11776 bytes).
-System is 2180 kB
-CRC 54816509
-Kernel: arch/x86/boot/bzImage is ready  (#1)
-  Building modules, stage 2.
-  MODPOST 136 modules
-ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
-make[1]: *** [__modpost] Fehler 1
-make: *** [modules] Fehler 2
 
-Glück Auf,
-Volker
+On this patchset it looks like the conversation has wound down with no
+real objects except that some very simple pieces of the code appear
+magic.
+
+
+What looks to be the best path for getting this set of patches merged
+into /proc?
+
+Alexy will you pick this up in your /proc tree as Andrew suggested?
+Do I need to keep my own tree?
+
+Can I have some clear guidance on which hurdles to jump through to
+make forward progress?
+
+Eric
+
