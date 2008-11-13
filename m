@@ -1,143 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYKMXyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYKMX5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbYKMXyX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:54:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYKMXyA
+	id S1754766AbYKMX5s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYKMX5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:54:00 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:41205 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbYKMXx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:53:58 -0500
-Date: Thu, 13 Nov 2008 23:53:54 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-pci@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/2] acpiphp: Call _LCK method
-Message-ID: <20081113235354.GB17709@srcf.ucam.org>
-References: <20081113235255.GA17709@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113235255.GA17709@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Thu, 13 Nov 2008 18:57:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:34934 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751420AbYKMX5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:57:38 -0500
+Subject: Re: [PATCH] Store the relevant miscdevice in file->private_data in
+ misc_open()
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       viro@zeniv.linux.org.uk
+In-Reply-To: <20081113173127.GB30811@kroah.com>
+References: <b0f1032863818f2834094e2ca9ce4b1c13122748.1226551772.git.michael@ellerman.id.au>
+	 <20081113173127.GB30811@kroah.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-SHv6lGynNv5N6wstqqc4"
+Date: Fri, 14 Nov 2008 10:54:41 +1100
+Message-Id: <1226620481.8066.18.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Garrett <mjg@redhat.com>
 
-Removable ACPI devices may have _LCK methods to indicate a software 
-controlled lock. These should be locked on device insertion and unlocked 
-when the user requests the device be ejected. Add support for flagging 
-devices with a _LCK method and then call appropriately on the add and 
-eject paths.
+--=-SHv6lGynNv5N6wstqqc4
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
----
- drivers/pci/hotplug/acpiphp.h      |    1 +
- drivers/pci/hotplug/acpiphp_glue.c |   45 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 45 insertions(+), 1 deletions(-)
+On Thu, 2008-11-13 at 09:31 -0800, Greg KH wrote:=20
+> On Thu, Nov 13, 2008 at 03:49:50PM +1100, Michael Ellerman wrote:
+> > Currently it's not easy to share file_operations between multiple
+> > instances of a miscdevice. In order to do this, the device code needs t=
+o
+> > store a list of all it's miscdevice instances, and when fops->open() is
+> > called, search the list and find the right device based on the minor
+> > number.
+> >=20
+> > However the generic miscdevice code already has a list of miscdevices,
+> > and uses this to find the right device in misc_open(). If misc_open()
+> > would store the miscdevice it found in file->private_data, then the
+> > device code wouldn't need to worry about storing it's own separate list
+> > and searching that as well.
+> >=20
+> > The rest of the miscdevice code does not use file->private_data, so the
+> > device code is still free to use file->private_data for something else
+> > if it wants to.
+> >=20
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>=20
+> Do you have a follow-on patch for some misc device using code that would
+> take advantage of this change?
 
-diff --git a/drivers/pci/hotplug/acpiphp.h b/drivers/pci/hotplug/acpiphp.h
-index f9e244d..c07a4e8 100644
---- a/drivers/pci/hotplug/acpiphp.h
-+++ b/drivers/pci/hotplug/acpiphp.h
-@@ -194,6 +194,7 @@ struct acpiphp_ioapic {
- #define FUNC_HAS_PS2		(0x00000040)
- #define FUNC_HAS_PS3		(0x00000080)
- #define FUNC_HAS_DCK            (0x00000100)
-+#define FUNC_HAS_LCK            (0x00000200)
- 
- /* function prototypes */
- 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index e8cef99..a83788d 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -222,6 +222,9 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	if (ACPI_SUCCESS(acpi_get_handle(handle, "_DCK", &tmp)))
- 		newfunc->flags |= FUNC_HAS_DCK;
- 
-+	if (ACPI_SUCCESS(acpi_get_handle(handle, "_LCK", &tmp)))
-+		newfunc->flags |= FUNC_HAS_LCK;
-+
- 	status = acpi_evaluate_integer(handle, "_SUN", NULL, &sun);
- 	if (ACPI_FAILURE(status)) {
- 		/*
-@@ -1310,6 +1313,21 @@ int acpiphp_eject_slot(struct acpiphp_slot *slot)
- 	list_for_each (l, &slot->funcs) {
- 		func = list_entry(l, struct acpiphp_func, sibling);
- 
-+		if ((func->flags & FUNC_HAS_LCK)) {
-+			arg_list.count = 1;
-+			arg_list.pointer = &arg;
-+			arg.type = ACPI_TYPE_INTEGER;
-+			arg.integer.value = 0;
-+
-+			status = acpi_evaluate_object(func->handle, "_LCK",
-+						      &arg_list, NULL);
-+			if (ACPI_FAILURE(status)) {
-+				warn("%s: _LCK failed\n", __func__);
-+				return -1;
-+			} else
-+				break;
-+		}
-+
- 		/* We don't want to call _EJ0 on non-existing functions. */
- 		if ((func->flags & FUNC_HAS_EJ0)) {
- 			/* _EJ0 method take one argument */
-@@ -1318,7 +1336,8 @@ int acpiphp_eject_slot(struct acpiphp_slot *slot)
- 			arg.type = ACPI_TYPE_INTEGER;
- 			arg.integer.value = 1;
- 
--			status = acpi_evaluate_object(func->handle, "_EJ0", &arg_list, NULL);
-+			status = acpi_evaluate_object(func->handle, "_EJ0",
-+						      &arg_list, NULL);
- 			if (ACPI_FAILURE(status)) {
- 				warn("%s: _EJ0 failed\n", __func__);
- 				return -1;
-@@ -1802,6 +1821,11 @@ static int acpiphp_for_each_slot(acpiphp_callback fn, void *data)
- int acpiphp_enable_slot(struct acpiphp_slot *slot)
- {
- 	int retval;
-+	acpi_status status;
-+	struct acpiphp_func *func;
-+	struct list_head *l;
-+	struct acpi_object_list arg_list;
-+	union acpi_object arg;
- 
- 	mutex_lock(&slot->crit_sect);
- 
-@@ -1810,6 +1834,25 @@ int acpiphp_enable_slot(struct acpiphp_slot *slot)
- 	if (retval)
- 		goto err_exit;
- 
-+	list_for_each(l, &slot->funcs) {
-+		func = list_entry(l, struct acpiphp_func, sibling);
-+
-+		if ((func->flags & FUNC_HAS_LCK)) {
-+			arg_list.count = 1;
-+			arg_list.pointer = &arg;
-+			arg.type = ACPI_TYPE_INTEGER;
-+			arg.integer.value = 1;
-+
-+			status = acpi_evaluate_object(func->handle, "_LCK",
-+						      &arg_list, NULL);
-+			if (ACPI_FAILURE(status)) {
-+				warn("%s: _LCK failed\n", __func__);
-+				return -1;
-+			} else
-+				break;
-+		}
-+	}
-+
- 	if (get_slot_status(slot) == ACPI_STA_ALL) {
- 		/* configure all functions */
- 		retval = enable_device(slot);
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Ah, good point. I do, but not for upstream :/
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-SHv6lGynNv5N6wstqqc4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkkcvkEACgkQdSjSd0sB4dJt/QCeJKpSWDBNzeWjw8ZWrLoDoScb
+mTcAoLxTeZN7Szs0rOVN6hvrHi61UXM+
+=HEQ8
+-----END PGP SIGNATURE-----
+
+--=-SHv6lGynNv5N6wstqqc4--
+
