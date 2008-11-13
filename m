@@ -1,127 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYKMOe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbYKMOju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbYKMOe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 09:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbYKMOes
+	id S1752158AbYKMOju (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 09:39:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKMOjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 09:34:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55892 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751358AbYKMOer convert rfc822-to-8bit (ORCPT
+	Thu, 13 Nov 2008 09:39:40 -0500
+Received: from qmta07.westchester.pa.mail.comcast.net ([76.96.62.64]:39788
+	"EHLO QMTA07.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750966AbYKMOjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 09:34:47 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <4917263D.2090904@telenet.dn.ua>
-	<20081110104423.GA26778@kernel.dk>
-	<x493ahzsn8p.fsf@segfault.boston.devel.redhat.com>
-	<20081110135618.GI26778@kernel.dk>
-	<x491vxgkd61.fsf@segfault.boston.devel.redhat.com>
-	<491BCF0D.8050502@telenet.dn.ua>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 13 Nov 2008 09:32:27 -0500
-In-Reply-To: <491BCF0D.8050502@telenet.dn.ua> (Vitaly V. Bursov's message of
-	"Thu, 13 Nov 2008 08:54:05 +0200")
-Message-ID: <x49skpvg0hw.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Nov 2008 09:39:39 -0500
+X-Authority-Analysis: v=1.0 c=1 a=CYKONpC1OwUA:10 a=zn7U-nhvGoYA:10
+ a=2iNgh9swn-kA:10 a=08xF6tDYrsdgJydUtqQA:9 a=sCJX3O-BtZDHIudx7iQA:7
+ a=XzVQizrypMvrU85mD_-a9gb9-AkA:4 a=d4CUUju0HPYA:10 a=b8hG5vVbyAkA:10
+Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
+From: Jim Gettys <jg@laptop.org>
+Reply-To: jg@laptop.org
+To: rydberg@euromail.se, Peter Hutterer <peter.hutterer@who-t.net>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: One Laptop Per Child
+Date: Thu, 13 Nov 2008 09:39:23 -0500
+Message-Id: <1226587163.6651.65.camel@jg-vaio>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Vitaly V. Bursov" <vitalyb@telenet.dn.ua> writes:
+Henrik Rydberg wrote:
 
-> Jeff Moyer пишет:
->> Jens Axboe <jens.axboe@oracle.com> writes:
->> 
->>> On Mon, Nov 10 2008, Jeff Moyer wrote:
->>>> Jens Axboe <jens.axboe@oracle.com> writes:
->>>>
->>>>> On Sun, Nov 09 2008, Vitaly V. Bursov wrote:
->>>>>> Hello,
->>>>>>
->>>>>> I'm building small server system with openvz kernel and have ran into
->>>>>> some IO performance problems. Reading a single file via NFS delivers
->>>>>> around 9 MB/s over gigabit network, but while reading, say, 2 different
->>>>>> or same file 2 times at the same time I get >60MB/s.
->>>>>>
->>>>>> Changing IO scheduler to deadline or anticipatory fixes problem.
->>>>>>
->>>>>> Tested kernels:
->>>>>>   OpenVZ RHEL5 028stab059.3 (9 MB/s with HZ=100, 20MB/s with HZ=1000
->>>>>>                  fast local reads)
->>>>>>   Vanilla 2.6.27.5 (40 MB/s with HZ=100, slow local reads)
->>>>>>
->>>>>> Vanilla performs better in worst case but I believe 40 is still low
->>>>>> concerning test results below.
->>>>> Can you check with this patch applied?
->>>>>
->>>>> http://bugzilla.kernel.org/attachment.cgi?id=18473&action=view
->>>> Funny, I was going to ask the same question.  ;)  The reason Jens wants
->>>> you to try this patch is that nfsd may be farming off the I/O requests
->>>> to different threads which are then performing interleaved I/O.  The
->>>> above patch tries to detect this and allow cooperating processes to get
->>>> disk time instead of waiting for the idle timeout.
->>> Precisely :-)
->>>
->>> The only reason I haven't merged it yet is because of worry of extra
->>> cost, but I'll throw some SSD love at it and see how it turns out.
->> 
->> OK, I'm not actually able to reproduce the horrible 9MB/s reported by
->> Vitaly.  Here are the numbers I see.
->
-> It's 2.6.18-openvz-rhel5 kernel gives me 9MB/s, and with 2.6.27 I get ~40-50MB/s
-> instead of 80-90 MB/s as there should be no bottlenecks except the network.
+Sorry I'm slightly late to this discussion.
 
-Reading back through your original problem report, I'm not seeing what
-your numbers were with deadline; you simply mentioned that it "fixed"
-the problem.  Are you sure you'll get 80-90MB/s for this?  The local
-disks in my configuration, when performing a dd on the server system,
-can produce numbers around 85 MB/s, yet the NFS performance is around 65
-MB/s (and this is a gigabit network).
+> > is there hardware that can do finger identification? (i.e. thumb 
+> > vs. index finger)? 
 
->> Single dd performing a cold cache read of a 1GB file from an
->> nfs server.  read_ahead_kb is 128 (the default) for all tests.
->> cfq-cc denotes that the cfq scheduler was patched with the close
->> cooperator patch.  All numbers are in MB/s.
->> 
->> nfsd threads|   1  |  2   |  4   |  8  
->> ----------------------------------------
->> deadline    | 65.3 | 52.2 | 46.7 | 46.1
->> cfq         | 64.1 | 57.8 | 53.3 | 46.9
->> cfq-cc      | 65.7 | 55.8 | 52.1 | 40.3
->> 
->> So, in my configuration, cfq and deadline both degrade in performance as
->> the number of nfsd threads is increased.  The close cooperator patch
->> seems to hurt a bit more at 8 threads, instead of helping;  I'm not sure
->> why that is.
->
-> Interesting, I'll try to change nfsd threads number and see how it performs
-> on my setup. Setting it to 1 seems like a good idea for cfq and a non-high-end
-> hardware.
+Yes, in the extreme case.  There are research table systems which image
+the surface, and you get an image of the hand above the surface; they
+then compute the fingers position relative to the general hand outline,
+and which ones/how much of the hand is touching (which are in-focus).
+These can also tell you something about proximity (not yet touching the
+surface), very much the way magnetic tablet technologies can tell you
+proximity. After processing, you get which finger(s) are touching (or
+have proximity), associated with a right or left hand, for information.
 
-I think you're looking at this backwards.  I'm no nfsd tuning expert,
-but I'm pretty sure that you would tune the numbe,r of threads based on
-the number of active clients and the amount of memory on the server
-(since each thread has to reserve memory for incoming requests).
+> Should we accommodate for this?
 
-> I'll look into it this evening.
+Should we bother right now? The extreme often becomes the norm with
+time, but we need to draw a line at a sane place.  The closely related
+case to identifying fingers that I think *is* worth accommodating
+immediately I describe below.
 
-The real reason I tried varying the number of nfsd threads was to show,
-at least for CFQ, that spreading a sequential I/O load across multiple
-threads would result in suboptimal performance.  What I found, instead,
-was that it hurt performance for cfq *and* deadline (and that the close
-cooperator patches did not help in this regard).  This tells me that
-there is something else which is affecting the performance.  What that
-something is I don't know, I think we'd have to take a closer look at
-what's going on on the server to figure it out.
+> 
+> I believe we should start with events that fit the general idea of
+> detailed finger information, and which can be produced by at least one
+> existing kernel driver, so that we can test it immediately. I believe
+> the proposed set pretty much covers it. I would love to be wrong. :-)
+> 
+> Regarding identification, one of the harder problems involved in
+> making use of finger data is that of matching an anonymous finger at a
+> certain position to an identified finger, tagged with a number.  This
+> is very important in order to know if the fingers moved, which finger
+> did the tapping, how much rotation was made, etc. Generally, this is
+> the (euclidian) bipartite matching problem, and is one of the major
+> computations a multi-touch X driver needs to perform. I can imagine
+> such identification features eventually ending up on a chip. Maybe
+> someone more knowledgeable in hardware can give us a hint.
+> 
+> 
+> 
 
-Cheers,
+I agree with Peter's point that modeling all of this (fingers, markers,
+etc) as multiple pointers will cause madness to ensue.
 
-Jeff
+I distinguish devices in my mind is by "sensors".  If there are multiple
+touches, markers, fingers, users, all using the same sensor (of
+the same resolution), then the information should start off life
+together in the same input stream: this way the relative time ordering
+of events all makes sense.
+
+Some systems (e.g. Merl's Diamond Touch), also give you an ID 
+associated with the user for each touch (in that case, it works
+by knowing where you are sitting by capacitive coupling with your
+seat). 
+
+Another case that will be common *soon* is to be able to sense and 
+identify markers on the surface (which can be distinguished from each
+other).  I know of at least three hardware systems able to do this. One
+of these will be in commodity hardware soon enough to worry about
+immediately.  So having and ID reported with a touch is clearly
+needed, whether thumb, index finger, or some marker. 
+
+Whether such markers would have any user identity or other association
+with them is less than clear, though we'll certainly start giving them
+such identity either by convention or fiat somewhere in the system as
+the events get processed.
+
+We may also face co-located sensors, where two sensors
+are geometrically on top of each other (but might even report different
+coordinates of differing resolutions), but co-aligned.  I'm thinking of
+the Dell Latitude XT in this case,  though I don't yet know enough about
+it to know if in fact its pen uses a different sensor than the
+capacitive multi-touch screen.  I'm still trying to get precise details
+on this device.
+
+Another question is whether an ellipse models a touch adequately at the
+moment; other sensors may report more complex geometric information.
+There is a slippery slope here, of course. In the extreme case noted
+above, research systems give you a full image, which seems like
+overkill.
+
+I also note the current input system does not provide any mechanism or
+hint to associate an input device with a particular frame buffer or with
+each other.  Maybe it should, maybe it shouldn't... Opinions?
+
+Hope this helps.  The problem here is to draw a line *before* we win our
+complexity merit badge, while leaving things open to be extended as we
+have more instances of real hardware and we have more experience.
+                        - Jim
+-- 
+Jim Gettys <jg@laptop.org>
+One Laptop Per Child
+
