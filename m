@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbYKMTrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757824AbYKMTr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbYKMTrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:47:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbYKMTek
+	id S1757824AbYKMTr5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbYKMTem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:40 -0500
-Received: from gw.goop.org ([64.81.55.164]:34445 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:42 -0500
+Received: from gw.goop.org ([64.81.55.164]:34426 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753721AbYKMTeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:12 -0500
+	id S1754428AbYKMTeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:17 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 32 of 38] xen: use our own eventchannel->irq path
-X-Mercurial-Node: 8e0d2520b48d674e8a4c5c7ead5fc20748381fda
-Message-Id: <8e0d2520b48d674e8a4c.1226603430@abulafia.goop.org>
+Subject: [PATCH 26 of 38] xen: forcibly disable PAT support
+X-Mercurial-Node: 5e0d410e482fd53786aa899f1dd80b747315061f
+Message-Id: <5e0d410e482fd53786aa.1226603424@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:30 -0800
+Date: Thu, 13 Nov 2008 11:10:24 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -26,114 +26,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than overloading vectors for event channels, take full
-responsibility for mapping an event channel to irq directly.  With
-this patch Xen has its own irq allocator.
+From: Ian Campbell <ian.campbell@citrix.com>
 
-When the kernel gets an event channel upcall, it maps the event
-channel number to an irq and injects it into the normal interrupt
-path.
+Xen imposes a particular PAT layout on all paravirtual guests which
+does not match the layout Linux would like to use.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Force PAT to be disabled until this is resolved.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 ---
- arch/x86/include/asm/xen/events.h |    6 ------
- arch/x86/xen/irq.c                |   17 +----------------
- drivers/xen/events.c              |   22 ++++++++++++++++++++--
- 3 files changed, 21 insertions(+), 24 deletions(-)
+ arch/x86/include/asm/pat.h |    4 ++--
+ arch/x86/xen/enlighten.c   |    3 +++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/events.h b/arch/x86/include/asm/xen/events.h
---- a/arch/x86/include/asm/xen/events.h
-+++ b/arch/x86/include/asm/xen/events.h
-@@ -15,10 +15,4 @@
- 	return raw_irqs_disabled_flags(regs->flags);
- }
+diff --git a/arch/x86/include/asm/pat.h b/arch/x86/include/asm/pat.h
+--- a/arch/x86/include/asm/pat.h
++++ b/arch/x86/include/asm/pat.h
+@@ -6,9 +6,11 @@
+ #ifdef CONFIG_X86_PAT
+ extern int pat_enabled;
+ extern void validate_pat_support(struct cpuinfo_x86 *c);
++extern void pat_disable(char *reason);
+ #else
+ static const int pat_enabled;
+ static inline void validate_pat_support(struct cpuinfo_x86 *c) { }
++static inline void pat_disable(char *reason) { }
+ #endif
  
--static inline void xen_do_IRQ(int irq, struct pt_regs *regs)
--{
--	regs->orig_ax = ~irq;
--	do_IRQ(regs);
--}
+ extern void pat_init(void);
+@@ -17,6 +19,4 @@
+ 		unsigned long req_type, unsigned long *ret_type);
+ extern int free_memtype(u64 start, u64 end);
+ 
+-extern void pat_disable(char *reason);
 -
- #endif /* _ASM_X86_XEN_EVENTS_H */
-diff --git a/arch/x86/xen/irq.c b/arch/x86/xen/irq.c
---- a/arch/x86/xen/irq.c
-+++ b/arch/x86/xen/irq.c
-@@ -19,21 +19,6 @@
- 	(void)HYPERVISOR_xen_version(0, NULL);
- }
+ #endif /* _ASM_X86_PAT_H */
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -48,6 +48,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/reboot.h>
++#include <asm/pat.h>
  
--static void __init __xen_init_IRQ(void)
--{
--	int i;
--
--	/* Create identity vector->irq map */
--	for(i = 0; i < NR_VECTORS; i++) {
--		int cpu;
--
--		for_each_possible_cpu(cpu)
--			per_cpu(vector_irq, cpu)[i] = i;
--	}
--
--	xen_init_IRQ();
--}
--
- static unsigned long xen_save_fl(void)
- {
- 	struct vcpu_info *vcpu;
-@@ -123,7 +108,7 @@
- }
+ #include "xen-ops.h"
+ #include "mmu.h"
+@@ -1743,6 +1744,8 @@
+ 		add_preferred_console("hvc", 0, NULL);
+ 	}
  
- static const struct pv_irq_ops xen_irq_ops __initdata = {
--	.init_IRQ = __xen_init_IRQ,
-+	.init_IRQ = xen_init_IRQ,
- 	.save_fl = xen_save_fl,
- 	.restore_fl = xen_restore_fl,
- 	.irq_disable = xen_irq_disable,
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -29,6 +29,7 @@
- 
- #include <asm/ptrace.h>
- #include <asm/irq.h>
-+#include <asm/idle.h>
- #include <asm/sync_bitops.h>
- #include <asm/xen/hypercall.h>
- #include <asm/xen/hypervisor.h>
-@@ -503,6 +504,24 @@
- }
- 
- 
-+static void xen_do_irq(unsigned irq, struct pt_regs *regs)
-+{
-+	struct pt_regs *old_regs = set_irq_regs(regs);
++	pat_disable("PAT disabled on Xen");
 +
-+	if (WARN_ON(irq == -1))
-+		return;
-+
-+	exit_idle();
-+	irq_enter();
-+
-+	//printk("cpu %d handling irq %d\n", smp_processor_id(), info->irq);
-+	handle_irq(irq, regs);
-+
-+	irq_exit();
-+
-+	set_irq_regs(old_regs);
-+}
-+
- /*
-  * Search the CPUs pending events bitmasks.  For each one found, map
-  * the event number to an irq, and feed it into do_IRQ() for
-@@ -543,8 +562,7 @@
- 				int port = (word_idx * BITS_PER_LONG) + bit_idx;
- 				int irq = evtchn_to_irq[port];
+ 	xen_raw_console_write("about to get started...\n");
  
--				if (irq != -1)
--					xen_do_IRQ(irq, regs);
-+				xen_do_irq(irq, regs);
- 			}
- 		}
- 
+ 	/* Start the world */
 
 
