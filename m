@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbYKMSU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYKMSUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413AbYKMSU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 13:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYKMSUT
+	id S1754716AbYKMSUn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 13:20:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYKMSUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 13:20:19 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36887 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751898AbYKMSUT (ORCPT
+	Thu, 13 Nov 2008 13:20:31 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:9784 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754362AbYKMSU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 13:20:19 -0500
-Date: Thu, 13 Nov 2008 19:29:37 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function return tracer lockless
-Message-ID: <20081113182937.GZ3810@one.firstfloor.org>
-References: <491B4F0A.3080901@gmail.com> <87od0jd6ds.fsf@basil.nowhere.org> <c62985530811130901t7ddf84beof39a964582fb94a0@mail.gmail.com> <20081113171220.GX3810@one.firstfloor.org> <alpine.DEB.1.10.0811131219250.23751@gandalf.stny.rr.com> <20081113173451.GY3810@one.firstfloor.org> <alpine.DEB.1.10.0811131230470.23751@gandalf.stny.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811131230470.23751@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 13 Nov 2008 13:20:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=vwy5XAOFIrnVVwI8s3zjf+by7WrBjKsYaKyF8rqMG/x95rf9O2yuJ6kPocCjKOOUhl
+         LmR6fqmQbmgsd95dfB6X0I0pvlp7Cc2msfgmKd2oJRk8E5oegZTYSZsnXMy1WB5pAuwc
+         K0qkfP8wu6TuJSfeOaMSeHV/o+UySPfmaHn5A=
+Message-ID: <491C6FE6.6000601@gmail.com>
+Date: Thu, 13 Nov 2008 20:20:22 +0200
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Christoph Bartelmus <lirc@bartelmus.de>
+CC: linux-kernel@vger.kernel.org, jonsmirl@gmail.com, jrm8005@gmail.com
+Subject: Re: In-kernel IR remote control support
+References: <ApnRmVyojFB@christoph>
+In-Reply-To: <ApnRmVyojFB@christoph>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 12:32:23PM -0500, Steven Rostedt wrote:
+Christoph Bartelmus wrote:
+> Hi,
 > 
-> On Thu, 13 Nov 2008, Andi Kleen wrote:
+> on 12 Nov 08 at 14:39, J.R. Mauro wrote:
+> [...]
+>> On Wed, Nov 5, 2008 at 3:07 PM, Jon Smirl <jonsm...@gmail.com> wrote:
+>>> On Wed, Nov 5, 2008 at 2:59 PM, J.R. Mauro <jrm8...@gmail.com> wrote:
+>>>> On Wed, Nov 5, 2008 at 2:47 PM, Jon Smirl <jonsm...@gmail.com> wrote:
+>>>>> New release of in-kernel IR support implementing evdev support. The goal
+>>>>> of in-kernel IR is to integrate IR events into the evdev input event
+>>>>> queue and maintain ordering of events from all input devices. Still
+>>>>> looking for help with this project.
 > 
-> > > So the answer to this is:
-> > > 
-> > >   i = index++;
-> > >   barrier();
-> > >   write to index i (not index);
-> > 
-> > That was my first thought when I wrote the original email,
-> > but the disadvantage is that barrier() is a big hammer
-> > that flushes everything and can make the code much worse.
-> > That is why I suggested local_add_return() instead.
+>>>> (Forgive me if this has already been asked or dealt with)
 > 
-> barrier() is a compiler barrier, does nothing with the caches, and is 
-> quite cheap. We only need a compiler barrier because we are only 
+>>>> Have you contacted the LIRC developers? Is there any overlap between
+>>>> your projects?
+> 
+>>> The LIRC people know about this. Pieces of the code are coming from
+>>> the LIRC source base and being reworked for kernel inclusion.
+> 
+>> Great, it's nice to see there's cooperation.
+> 
+> LOL. There's just a small omission from Jon's side...
+> Yes, LIRC people know about this. And Jon has a no-go from me.
+> 
+> Decoding IR protocols in-kernel is the wrong way IMHO and this will not be  
+> supported by LIRC as long as I maintain LIRC.
+> It's simply not possible to decode all existing IR protocols and LIRC just  
+> stores the timing data for these protocols as-is without trying to decode  
+> them. With the in-kernel decoding approach these remotes cannot be  
+> supported. I'm not willing to sacrifice the support for these even though  
+> they only consist of a very small fraction of remotes in use.
++1 
 
-I did not refer to CPU caches, but the compiler's register allocation
-[ok if you want the registers are the "level 0 cache"]. A memory barrier
-all messes it up. That is why it is better to only clobber specific
-memory regions, which is what local_* does.
+I agree completely.
+This way we can make lirc to recognize any remote.
 
--Andi
+Don't yet have a general receiver, but when I have one, I would like to use my remotes,
+and who knows what protocols they use...
 
--- 
-ak@linux.intel.com
+
+Best solution is to make new input layer message, a raw PCM data.
+or, you can even keep the daemon, but make it inject input events back to input system.
+
+The only think I don't like at all about lirc is that you need special library to talk to it
+while I want remotes to be used as a keyboards.
+
+Btw, one can write a lirc client that does the above, but this is hackish.
+
+Some standard ir protocols can be decoded in kernel, but there should be standard (not debug) way
+to do so in userspace.
+
+Just my .02 cents,
+
+Best regards,
+	Maxim Levitsky
+
+> 
+> Christoph
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
