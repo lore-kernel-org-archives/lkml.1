@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYKMXSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753328AbYKMXZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYKMXSv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:18:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYKMXSm
+	id S1753328AbYKMXZY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:25:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYKMXZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:18:42 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:51202 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751143AbYKMXSm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:18:42 -0500
-Date: Fri, 14 Nov 2008 08:18:40 +0900 (JST)
-Message-Id: <20081114.081840.114538392.taka@valinux.co.jp>
-To: psusi@cfl.rr.com
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, xemul@openvz.org,
-       kamezawa.hiroyu@jp.fujitsu.com, agk@sourceware.org
-Subject: Re: [dm-devel] [PATCH 1/8] dm-ioband: Introduction
-From: Hirokazu Takahashi <taka@valinux.co.jp>
-In-Reply-To: <491C81CB.7010705@cfl.rr.com>
-References: <20081113.121019.104237699577193919.ryov@valinux.co.jp>
-	<20081113.121146.623571555980959797.ryov@valinux.co.jp>
-	<491C81CB.7010705@cfl.rr.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 13 Nov 2008 18:25:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37484 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751878AbYKMXZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:25:09 -0500
+Message-ID: <491CB73E.3030202@kernel.org>
+Date: Thu, 13 Nov 2008 15:24:46 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Mike Travis <travis@sgi.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491434FB.2050904@kernel.org>	<86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	<20081110094033.GL22392@elte.hu>	<20081110015511.453a801e.akpm@linux-foundation.org>	<4918065A.6050402@kernel.org>	<20081110100329.GA19970@elte.hu>	<491A9F87.8040403@kernel.org>	<20081112120814.GG11352@elte.hu>	<491C8B38.9060901@kernel.org>	<20081113131850.d94fb229.akpm@linux-foundation.org>	<86802c440811131401v5e031240r56686b4ab8a1b1fb@mail.gmail.com>	<20081113141340.7e17bdca.akpm@linux-foundation.org>	<491CAD20.9020202@kernel.org> <20081113145846.bef2bb90.akpm@linux-foundation.org> <491CB500.8090203@sgi.com>
+In-Reply-To: <491CB500.8090203@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> Ryo Tsuruta wrote:
-> > Create two ioband devices "ioband1" and "ioband2". "ioband1" is mapped
-> > to "/dev/sda1" and has a weight of 40. "ioband2" is mapped to "/dev/sda2"
-> > and has a weight of 10. "ioband1" can use 80% --- 40/(40+10)*100 ---
-> > of the bandwidth of the physical disk "/dev/sda" while "ioband2" can use 20%.
+Mike Travis wrote:
+> Andrew Morton wrote:
+>> On Thu, 13 Nov 2008 14:41:36 -0800
+>> Yinghai Lu <yinghai@kernel.org> wrote:
+>>
 > 
-> Just to clarify, when you say ioband1 can use 80% of the bandwidh, you 
-> mean that is how much it will get if both io bands are loaded right?  If 
-> there is no activity on ioband2, then ioband1 will get the full disk 
-> bandwidth right?
+> That's a good question.  If there are 4k or 16k cpus, would the number of
+> irq's being "kstat'd" need to be > 64k?  (I'm not exactly sure why there
+> are NR_CPUS * NR_IRQS_LEGACY kstat entries per IRQ?)
 
-Absolutely, you are right!
+can be replaced with nr_cpu_ids * NR_IRQS_LEGACY...
 
-Thank you,
-Hirokazu Takahashi.
+YH
