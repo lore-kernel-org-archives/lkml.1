@@ -1,71 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYKMQBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbYKMQGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbYKMQBh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 11:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYKMQBK
+	id S1752831AbYKMQGB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 11:06:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYKMQFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 11:01:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53319 "EHLO hera.kernel.org"
+	Thu, 13 Nov 2008 11:05:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39403 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751662AbYKMQBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 11:01:09 -0500
-Message-ID: <491C4F2C.6000709@kernel.org>
-Date: Fri, 14 Nov 2008 01:00:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1751646AbYKMQFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 11:05:51 -0500
+Date: Thu, 13 Nov 2008 10:58:34 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
+       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081113155834.GE7542@redhat.com>
+References: <20081106153022.215696930@redhat.com> <20081113.180558.519459540419535699.ryov@valinux.co.jp>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491BC87F.4050108@kernel.org> <E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu> <491C1588.2060907@kernel.org> <E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu> <E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu> <491C2A63.1030804@kernel.org> <E1L0cSz-0006xF-0O@pomaz-ex.szeredi.hu> <491C39BD.8050108@kernel.org> <E1L0dUS-00074L-Uz@pomaz-ex.szeredi.hu> <491C436C.6060603@kernel.org> <E1L0eUz-0007D0-Tp@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1L0eUz-0007D0-Tp@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 16:00:55 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081113.180558.519459540419535699.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Miklos Szeredi wrote:
->> * Higher overhead when poll/select finishes.  Either all outstanding
->>   requests need to be cancelled using INTERRUPT whenever poll/select
->>   returns or kernel needs to keep persistent list of outstanding polls
->>   so that later poll/select can reuse them.  The problem here is that
->>   kernel doesn't know when or whether they'll be re-used.  We can put
->>   in LRU-based heuristics but it's getting too complex.
+On Thu, Nov 13, 2008 at 06:05:58PM +0900, Ryo Tsuruta wrote:
+> Hi,
 > 
-> Why not just link the outstanding poll requests into a list anchored
-> in 'fuse_file'?  Easy to reuse, don't care about cancellation.
-
-Ah, that's the right place.
-
->> Overall, I think being lazy about cancellation and let userland notify
->> asynchronously would be better performance and simplicity wise.  What
->> do you think?
+> From: vgoyal@redhat.com
+> Subject: [patch 0/4] [RFC] Another proportional weight IO controller 
+> Date: Thu, 06 Nov 2008 10:30:22 -0500
 > 
-> Lazy cancellation (no cancellation, esentially) sounds good.  But that
-> works fine with the simplified protocol.
+> > Hi,
+> > 
+> > If you are not already tired of so many io controller implementations, here
+> > is another one.
+> > 
+> > This is a very eary very crude implementation to get early feedback to see
+> > if this approach makes any sense or not.
+> > 
+> > This controller is a proportional weight IO controller primarily
+> > based on/inspired by dm-ioband. One of the things I personally found little
+> > odd about dm-ioband was need of a dm-ioband device for every device we want
+> > to control.  I thought that probably we can make this control per request
+> > queue and get rid of device mapper driver. This should make configuration
+> > aspect easy.
+> > 
+> > I have picked up quite some amount of code from dm-ioband especially for
+> > biocgroup implementation.
+> > 
+> > I have done very basic testing and that is running 2-3 dd commands in different
+> > cgroups on x86_64. Wanted to throw out the code early to get some feedback.
+> > 
+> > More details about the design and how to are in documentation patch.
+> > 
+> > Your comments are welcome.
 > 
-> Think of it this way, this is what a poll event would look like with
-> your scheme:
+> Do you have any benchmark results?
+> I'm especially interested in the followings:
+> - Comparison of disk performance with and without the I/O controller patch.
+
+If I dynamically disable the bio control, then I did not observe any
+impact on performance. Because in that case practically it boils down
+to just an additional variable check in __make_request().
+
+> - Put uneven I/O loads. Processes, which belong to a cgroup which is
+>   given a smaller weight than another cgroup, put heavier I/O load
+>   like the following.
 > 
-> 1) -> POLL-notification
-> 2) <- POLL-req
-> 3) -> POLL-reply (revents)
+>      echo 1024 > /cgroup/bio/test1/bio.shares
+>      echo 8192 > /cgroup/bio/test2/bio.shares
 > 
-> Notice, how 1) and 2) don't carry _any_ information (the notification
-> can be spurious, the events in the POLL request is just repeated from
-> the original request).  All the info is in 3), so I really don't see
-> any reason why the above would be better than just omitting the first
-> two steps.
+>      echo $$ > /cgroup/bio/test1/tasks
+>      dd if=/somefile1-1 of=/dev/null &
+>      dd if=/somefile1-2 of=/dev/null &
+>      ... 
+>      dd if=/somefile1-100 of=/dev/null
+>      echo $$ > /cgroup/bio/test2/tasks
+>      dd if=/somefile2-1 of=/dev/null &
+>      dd if=/somefile2-2 of=/dev/null &
+>      ...
+>      dd if=/somefile2-10 of=/dev/null &
 
-Alrighty then.  I'll convert it.
+I have not tried this case.
 
-Thanks.
+Ryo, do you still want to stick to two level scheduling? Given the problem
+of it breaking down underlying scheduler's assumptions, probably it makes
+more sense to the IO control at each individual IO scheduler.
 
--- 
-tejun
+I have had a very brief look at BFQ's hierarchical proportional
+weight/priority IO control and it looks good. May be we can adopt it for
+other IO schedulers also. 
+
+Thanks
+Vivek
