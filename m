@@ -1,102 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753187AbYKMBno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbYKMBy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753187AbYKMBno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 20:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbYKMBnd
+	id S1752663AbYKMBy0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 20:54:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYKMByM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 20:43:33 -0500
-Received: from rcsinet14.oracle.com ([148.87.113.126]:49167 "EHLO
-	rgminet14.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751620AbYKMBnc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 20:43:32 -0500
-Message-ID: <491B84AB.6060302@oracle.com>
-Date: Thu, 13 Nov 2008 09:36:43 +0800
-From: Wenji Huang <wenji.huang@oracle.com>
-Reply-To: wenji.huang@oracle.com
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
+	Wed, 12 Nov 2008 20:54:12 -0500
+Received: from mail.windriver.com ([147.11.1.11]:37112 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751611AbYKMByL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 20:54:11 -0500
+From: Kevin Hao <kexin.hao@windriver.com>
 To: LKML <linux-kernel@vger.kernel.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Elena Zannoni <elena.zannoni@oracle.com>,
-       "VAN HEES,KRIS" <kris.van.hees@oracle.com>
-Subject: [PATCH v1] Kbuild: generate debug info in building
-Content-Type: text/plain; charset=windows-1251; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.491B85E2.00B7:SCFSTAT928724,ss=1,fgs=0
+Cc: gregkh@suse.de, Alan Cox <alan@redhat.com>, linux-usb@vger.kernel.org
+Subject: [PATCH 2/2] add device function for usb serial console
+Date: Thu, 13 Nov 2008 09:53:37 +0800
+Message-Id: <2fdffab7c5a36049b81ec63f2ee1fbdd4dd25a8a.1226366228.git.kexin.hao@windriver.com>
+X-Mailer: git-send-email 1.6.0.3.640.g6331a
+In-Reply-To: <23d0e3c26b7580b20c76900e16a53e42950ffaab.1226366228.git.kexin.hao@windriver.com>
+References: <1226541217-32673-1-git-send-email-kexin.hao@windriver.com>
+ <23d0e3c26b7580b20c76900e16a53e42950ffaab.1226366228.git.kexin.hao@windriver.com>
+In-Reply-To: <23d0e3c26b7580b20c76900e16a53e42950ffaab.1226366228.git.kexin.hao@windriver.com>
+References: <23d0e3c26b7580b20c76900e16a53e42950ffaab.1226366228.git.kexin.hao@windriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch will generate kernel debuginfo in Kbuild when invoking "make
-debug_info". The separate debug files are in .debug under building tree.
-They can help the cases of requiring debug info for tracing/debug tools,
-especially cross-compilation. Moreover, it can simplify or standardize 
-the packaging process for the distributions those will provide 
-kernel-debuginfo.
+Add device funtion for usb serial console, so we can open /dev/console
+when we use a usb serial device as console.
 
-Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
 ---
-  Makefile                 |   14 ++++++++++++++
-  scripts/Makefile.modpost |   14 ++++++++++++++
-  2 files changed, 28 insertions(+), 0 deletions(-)
+ drivers/usb/serial/console.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 7f9ff9b..eed7510 100644
---- a/Makefile
-+++ b/Makefile
-@@ -814,6 +814,20 @@ define rule_vmlinux-modpost
-  	$(Q)echo 'cmd_$@ := $(cmd_vmlinux-modpost)' > $(dot-target).cmd
-  endef
-
-+ifdef CONFIG_DEBUG_INFO
-+quiet_cmd_vmlinux_debug = GEN     $<.debug
-+      cmd_vmlinux_debug = mkdir -p .debug;                          \
-+                          $(OBJCOPY) --only-keep-debug              \
-+                                     $< .debug/$<.debug
-+targets += vmlinux.debug
-+endif
+diff --git a/drivers/usb/serial/console.c b/drivers/usb/serial/console.c
+index 5b95009..1dbb203 100644
+--- a/drivers/usb/serial/console.c
++++ b/drivers/usb/serial/console.c
+@@ -241,12 +241,25 @@ static void usb_console_write(struct console *co,
+ 	}
+ }
+ 
++static struct tty_driver *usb_console_device(struct console *co, int *index)
++{
++	struct tty_driver **p = (struct tty_driver **)co->data;
 +
-+debug_info: vmlinux FORCE
-+ifdef CONFIG_DEBUG_INFO
-+	$(call if_changed,vmlinux_debug)
-+	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-+endif
++	if (!*p)
++		return NULL;
 +
-  # vmlinux image - including updated kernel symbols
-  vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o
-$(kallsyms.o) FORCE
-  ifdef CONFIG_HEADERS_CHECK
-diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index f4053dc..0df73b2 100644
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -137,6 +137,20 @@ $(modules): %.ko :%.o %.mod.o FORCE
-
-  targets += $(modules)
-
-+modules-debug := $(modules:.ko=.ko.debug)
-+ifdef CONFIG_DEBUG_INFO
-+quiet_cmd_debug_ko = GEN     $@
-+      cmd_debug_ko = mkdir -p .debug/`dirname $@`;			\
-+		     $(OBJCOPY) --only-keep-debug $< .debug/$@
-+targets += $(modules-debug)
-+endif
++	*index = co->index;
++	return (struct tty_driver *)(*p);
++}
 +
-+debug_info: $(modules-debug) FORCE
-+
-+$(modules-debug): $(modules) FORCE
-+ifdef CONFIG_DEBUG_INFO
-+	$(call if_changed,debug_ko)
-+endif
-
-  # Add FORCE to the prequisites of a target to force it to be always
-rebuilt.
-  #
----------------------------------------------------------------------------
+ static struct console usbcons = {
+ 	.name =		"ttyUSB",
+ 	.write =	usb_console_write,
++	.device =	usb_console_device,
+ 	.setup =	usb_console_setup,
+ 	.flags =	CON_PRINTBUFFER,
+ 	.index =	-1,
++	.data = 	&usb_serial_tty_driver,
+ };
+ 
+ void usb_serial_console_disconnect(struct usb_serial *serial)
 -- 
-1.5.6
+1.6.0.3.640.g6331a
 
