@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752553AbYKMIHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbYKMI03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752553AbYKMIHR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 03:07:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYKMIHD
+	id S1751975AbYKMI03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 03:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbYKMI0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 03:07:03 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53775 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbYKMIHB (ORCPT
+	Thu, 13 Nov 2008 03:26:20 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:39756 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751006AbYKMI0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 03:07:01 -0500
-Subject: Re: [PATCH] SYSVIPC - Fix the ipc structures initialization
-From: Peter Zijlstra <peterz@infradead.org>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cboulte@gmail.com,
-       Nadia.Derbey@bull.net, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <491BC4B8.1050406@colorfullife.com>
-References: <20081028145952.620752409@bull.net>
-	 <20081028150041.857635775@bull.net>
-	 <4f3ee3290810290211y75a2d0eaoe666496e25496260@mail.gmail.com>
-	 <20081111141603.f0e7fa8d.akpm@linux-foundation.org>
-	 <491BC4B8.1050406@colorfullife.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 13 Nov 2008 09:06:34 +0100
-Message-Id: <1226563594.7685.4394.camel@twins>
+	Thu, 13 Nov 2008 03:26:20 -0500
+Date: Thu, 13 Nov 2008 09:35:36 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] x86: optimise page fault path a little
+Message-ID: <20081113083536.GQ3810@one.firstfloor.org>
+References: <20081113072821.GB2946@wotan.suse.de> <20081113074109.GB1723@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081113074109.GB1723@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-13 at 07:10 +0100, Manfred Spraul wrote:
-> Andrew Morton wrote:
-> > Time is starting to press on this one.  Is there something which we can
-> > revert which would fix this bug?
-> >   
-> My previous analysis was bogus, let's start from scratch:
+> this flow could be cleaned up further:
 > 
-> 1) the initial oops report:
-> http://bugzilla.kernel.org/show_bug.cgi?id=11796#c0
+> [...]
+> > +		bad_area(regs, error_code, address);
+> > +		return;
+> [...]
+> > +		bad_area(regs, error_code, address);
+> > +		return;
+> [...]
+> > +			bad_area(regs, error_code, address);
+> > +			return;
+> [...]
+> > +		bad_area(regs, error_code, address);
+> > +		return;
 > 
-> - lockdep is enabled, the oops is somewhere in __lock_acquire
-> - the instruction that oopses is
+> Any reason why that pattern shouldnt be changed to an appropriate goto 
+> bad_area? (probably the same goes for the nosemaphore error paths too)
 
-> For me, it reads like an uninitialized spinlock_t:
+The tail call is already effectively a goto.
 
-Yes, most (if not all) oopsen in either __lock_acquire or __lock_release
-are stomped on spinlocks, either use after free or otherwise.
+-Andi
+
+-- 
+ak@linux.intel.com
