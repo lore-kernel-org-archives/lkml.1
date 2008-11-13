@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbYKMTh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbYKMThs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbYKMTh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYKMTeN
+	id S1755761AbYKMThs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbYKMTeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:13 -0500
-Received: from gw.goop.org ([64.81.55.164]:34388 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:14 -0500
+Received: from gw.goop.org ([64.81.55.164]:34372 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752291AbYKMTeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752446AbYKMTeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Nov 2008 14:34:05 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 07 of 38] x86: add io_apic_ops
-X-Mercurial-Node: 43f6a940f3f0db210a84d05adde777dcb92b3340
-Message-Id: <43f6a940f3f0db210a84.1226603405@abulafia.goop.org>
+Subject: [PATCH 11 of 38] x86: define no-op exit_idle() on 32-bit
+X-Mercurial-Node: 97ff5883641d4b7828615e63f6ab56a991cb603c
+Message-Id: <97ff5883641d4b782861.1226603409@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:05 -0800
+Date: Thu, 13 Nov 2008 11:10:09 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -26,129 +26,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen dom0 needs to paravirtualize IO operations to the IO APIC, so add
-a io_apic_ops for it to intercept.  Do this as ops structure because
-there's at least some chance that another paravirtualized environment
-may want to intercept these.
+exit_idle() is only used on 64-bit, but define a noop version on
+32-bit to allow subsequent unification.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/io_apic.h |    9 +++++++
- arch/x86/kernel/io_apic.c      |   50 +++++++++++++++++++++++++++++++++++++---
- 2 files changed, 56 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/idle.h |   10 ++++++++++
+ arch/x86/kernel/apic.c      |    7 +------
+ arch/x86/kernel/io_apic.c   |    2 --
+ 3 files changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -21,6 +21,15 @@
- #define IO_APIC_REDIR_LEVEL_TRIGGER	(1 << 15)
- #define IO_APIC_REDIR_MASKED		(1 << 16)
+diff --git a/arch/x86/include/asm/idle.h b/arch/x86/include/asm/idle.h
+--- a/arch/x86/include/asm/idle.h
++++ b/arch/x86/include/asm/idle.h
+@@ -8,8 +8,18 @@
+ void idle_notifier_register(struct notifier_block *n);
+ void idle_notifier_unregister(struct notifier_block *n);
  
-+struct io_apic_ops {
-+	void (*init)(void);
-+	unsigned int (*read)(unsigned int apic, unsigned int reg);
-+	void (*write)(unsigned int apic, unsigned int reg, unsigned int value);
-+	void (*modify)(unsigned int apic, unsigned int reg, unsigned int value);
-+};
++#ifdef CONFIG_X86_64
+ void enter_idle(void);
+ void exit_idle(void);
++#else
++static inline void enter_idle(void)
++{
++}
 +
-+void __init set_io_apic_ops(const struct io_apic_ops *);
++static inline void exit_idle(void)
++{
++}
++#endif	/* CONFIG_X86_64 */
+ 
+ void c1e_remove_cpu(int cpu);
+ 
+diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
+--- a/arch/x86/kernel/apic.c
++++ b/arch/x86/kernel/apic.c
+@@ -808,9 +808,8 @@
+ 	 * Besides, if we don't timer interrupts ignore the global
+ 	 * interrupt lock, which is the WrongThing (tm) to do.
+ 	 */
+-#ifdef CONFIG_X86_64
+ 	exit_idle();
+-#endif
 +
- /*
-  * The structure of the IO-APIC:
-  */
+ 	irq_enter();
+ 	local_apic_timer_interrupt();
+ 	irq_exit();
+@@ -1668,9 +1667,7 @@
+ {
+ 	u32 v;
+ 
+-#ifdef CONFIG_X86_64
+ 	exit_idle();
+-#endif
+ 	irq_enter();
+ 	/*
+ 	 * Check if this really is a spurious interrupt and ACK it
+@@ -1699,9 +1696,7 @@
+ {
+ 	u32 v, v1;
+ 
+-#ifdef CONFIG_X86_64
+ 	exit_idle();
+-#endif
+ 	irq_enter();
+ 	/* First tickle the hardware, only then report what went on. -- REW */
+ 	v = apic_read(APIC_ESR);
 diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
 --- a/arch/x86/kernel/io_apic.c
 +++ b/arch/x86/kernel/io_apic.c
-@@ -67,6 +67,25 @@
- 
- #define __apicdebuginit(type) static type __init
- 
-+static void __init __ioapic_init_mappings(void);
-+static unsigned int __io_apic_read(unsigned int apic, unsigned int reg);
-+static void __io_apic_write(unsigned int apic, unsigned int reg,
-+			    unsigned int val);
-+static void __io_apic_modify(unsigned int apic, unsigned int reg,
-+			     unsigned int val);
-+
-+static struct io_apic_ops io_apic_ops = {
-+	.init = __ioapic_init_mappings,
-+	.read = __io_apic_read,
-+	.write = __io_apic_write,
-+	.modify = __io_apic_modify,
-+};
-+
-+void __init set_io_apic_ops(const struct io_apic_ops *ops)
-+{
-+	io_apic_ops = *ops;
-+}
-+
- /*
-  *      Is the SiS APIC rmw bug present ?
-  *      -1 = don't know, 0 = no, 1 = yes
-@@ -196,6 +215,24 @@
- 	return pin;
- }
- 
-+static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
-+{
-+	return io_apic_ops.read(apic, reg);
-+}
-+
-+static inline void io_apic_write(unsigned int apic, unsigned int reg,
-+				 unsigned int value)
-+{
-+	io_apic_ops.write(apic, reg, value);
-+}
-+
-+static inline void io_apic_modify(unsigned int apic, unsigned int reg,
-+				  unsigned int value)
-+{
-+	io_apic_ops.modify(apic, reg, value);
-+}
-+
-+
- struct io_apic {
- 	unsigned int index;
- 	unsigned int unused[3];
-@@ -208,14 +245,15 @@
- 		+ (mp_ioapics[idx].mp_apicaddr & ~PAGE_MASK);
- }
- 
--static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
-+static unsigned int __io_apic_read(unsigned int apic, unsigned int reg)
+@@ -2242,9 +2242,7 @@
  {
- 	struct io_apic __iomem *io_apic = io_apic_base(apic);
- 	writel(reg, &io_apic->index);
- 	return readl(&io_apic->data);
- }
+ 	unsigned vector, me;
+ 	ack_APIC_irq();
+-#ifdef CONFIG_X86_64
+ 	exit_idle();
+-#endif
+ 	irq_enter();
  
--static inline void io_apic_write(unsigned int apic, unsigned int reg, unsigned int value)
-+static void __io_apic_write(unsigned int apic, unsigned int reg,
-+			    unsigned int value)
- {
- 	struct io_apic __iomem *io_apic = io_apic_base(apic);
- 	writel(reg, &io_apic->index);
-@@ -228,7 +266,8 @@
-  *
-  * Older SiS APIC requires we rewrite the index register
-  */
--static inline void io_apic_modify(unsigned int apic, unsigned int reg, unsigned int value)
-+static void __io_apic_modify(unsigned int apic, unsigned int reg,
-+			     unsigned int value)
- {
- 	struct io_apic __iomem *io_apic = io_apic_base(apic);
- 
-@@ -3848,6 +3887,11 @@
- 
- void __init ioapic_init_mappings(void)
- {
-+	io_apic_ops.init();
-+}
-+
-+static void __init __ioapic_init_mappings(void)
-+{
- 	unsigned long ioapic_phys, idx = FIX_IO_APIC_BASE_0;
- 	struct resource *ioapic_res;
- 	int i;
+ 	me = smp_processor_id();
 
 
