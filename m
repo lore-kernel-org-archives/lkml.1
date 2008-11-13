@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYKMEuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752396AbYKMFFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751AbYKMEuE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 23:50:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYKMEtw
+	id S1752396AbYKMFFJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 00:05:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbYKMFE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 23:49:52 -0500
-Received: from ozlabs.org ([203.10.76.45]:58805 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbYKMEtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 23:49:52 -0500
+	Thu, 13 Nov 2008 00:04:56 -0500
+Received: from mail.southa.com ([125.215.237.177]:52852 "HELO southa.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750728AbYKMFE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 00:04:56 -0500
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Nov 2008 00:04:55 EST
+Message-ID: <009401c9454c$6e3a8610$b902a8c0@kyle>
+From: "kyle" <kylewong@southa.com>
 To: <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Greg Kroah-Hartman <greg@kroah.com>,
-       <viro@zeniv.linux.org.uk>
-Message-Id: <b0f1032863818f2834094e2ca9ce4b1c13122748.1226551772.git.michael@ellerman.id.au>
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH] Store the relevant miscdevice in file->private_data in misc_open()
-Date: Thu, 13 Nov 2008 15:49:50 +1100 (EST)
+Subject: apache threads not balanced over all CPU cores, schedular problem or apache?
+Date: Thu, 13 Nov 2008 12:58:12 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1914
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1914
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently it's not easy to share file_operations between multiple
-instances of a miscdevice. In order to do this, the device code needs to
-store a list of all it's miscdevice instances, and when fops->open() is
-called, search the list and find the right device based on the minor
-number.
+Hi,
 
-However the generic miscdevice code already has a list of miscdevices,
-and uses this to find the right device in misc_open(). If misc_open()
-would store the miscdevice it found in file->private_data, then the
-device code wouldn't need to worry about storing it's own separate list
-and searching that as well.
+Please cc me if possible.
 
-The rest of the miscdevice code does not use file->private_data, so the
-device code is still free to use file->private_data for something else
-if it wants to.
+I have a machine with Intel Q9300 4-core CPU, 8GB RAM. It runs apache 2.0.63
+with traditional prefork MPM.
+It's a high traffic site, most of the time there's over 100 httpd processes
+running and at peak hours around 200.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+I found that most of the time, all httpd processes are running at 2 CPU
+cores only, sometime it's cpu0 and cpu1, sometime it's cpu1 and cpu3,
+sometime it's cpu0 and cpu2 ... etc. It may take several hours the processes
+"migrate" from 2 cores to another 2. To make it clear:
 
----
-I'm not all that across VFS or driver core stuff, but this looks safe to
-me, lots of other devices use file->private_data and this should be no
-different AFAICT.
+top - 12:44:42 up 8 days, 15:45,  7 users,  load average: 2.07, 1.86, 2.02
+Tasks: 251 total,   1 running, 249 sleeping,   0 stopped,   1 zombie
+Cpu0  :  0.5%us,  0.5%sy,  0.0%ni, 99.0%id,  0.0%wa,  0.0%hi,  0.0%si,
+0.0%st
+Cpu1  : 14.6%us,  4.4%sy,  0.0%ni, 62.6%id, 17.0%wa,  0.0%hi,  1.5%si,
+0.0%st
+Cpu2  :  4.3%us,  1.4%sy,  0.0%ni, 93.8%id,  0.0%wa,  0.5%hi,  0.0%si,
+0.0%st
+Cpu3  :  0.0%us,  0.0%sy,  0.0%ni, 98.0%id,  2.0%wa,  0.0%hi,  0.0%si,
+0.0%st
+Mem:   8117172k total,  8060936k used,    56236k free,   357488k buffers
+Swap:   208824k total,     8436k used,   200388k free,  5765168k cached
 
+All httpd are running on cpu1 and cpu2 only for several hours, after that,
+all httpd may run on cpu1 and cpu3, or cpu2 and cpu3, etc. again for several
+hours.
 
- drivers/char/misc.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Since the apache is in prefork mode, every httpd instance should be quite
+independant, I suppose the CPU schedular should balance the processes over
+the avaiable cores. However never seen httpd processes evenly distributed to
+3 cores, or 4 cores.
 
-diff --git a/drivers/char/misc.c b/drivers/char/misc.c
-index a5e0db9..bb91d68 100644
---- a/drivers/char/misc.c
-+++ b/drivers/char/misc.c
-@@ -147,11 +147,13 @@ static int misc_open(struct inode * inode, struct file * file)
- 	err = 0;
- 	old_fops = file->f_op;
- 	file->f_op = new_fops;
-+	file->private_data = c;
- 	if (file->f_op->open) {
- 		err=file->f_op->open(inode,file);
- 		if (err) {
- 			fops_put(file->f_op);
- 			file->f_op = fops_get(old_fops);
-+			file->private_data = NULL;
- 		}
- 	}
- 	fops_put(old_fops);
--- 
-1.5.5
+Any help?
+
+Regards,
+Kyle
 
