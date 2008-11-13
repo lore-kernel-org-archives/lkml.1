@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYKMXL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYKMXLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbYKMXL2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:11:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753511AbYKMXLT
+	id S1756075AbYKMXLn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbYKMXL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:11:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50270
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753575AbYKMXLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:11:18 -0500
-Date: Thu, 13 Nov 2008 15:11:16 -0800 (PST)
-Message-Id: <20081113.151116.139760511.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       akpm@linux-foundation.org, cloos@jhcloos.com, paul@burly.ondioline.org,
-       torvalds@linux-foundation.org
-Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1226295985.7731.7.camel@pasglop>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera>
-	<wnN9HICUAgP.A._d.f5zFJB@chimera>
-	<1226295985.7731.7.camel@pasglop>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 18:11:26 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58345 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755513AbYKMXLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:11:24 -0500
+Date: Fri, 14 Nov 2008 00:11:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RESEND] tracing: fix a build error on alpha
+Message-ID: <20081113231118.GA23539@elte.hu>
+References: <4906D0AE.7020903@gmail.com> <b6fcc0a0811131452x6531f52dg79845c9f6da1c561@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b6fcc0a0811131452x6531f52dg79845c9f6da1c561@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 10 Nov 2008 16:46:25 +1100
 
-> David, would you mind testing on your machine ? It's the one that shows
-> the biggest performance improvement, and I would like to know how much
-> it is affected by that patch. As long as the "worst case" performance
-> is still reasonable, I'm ok to take the hit if the improvement for you
-> is still significant.
+* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-Finally got around to this, we lose about a full second in the
-"cat rfc3261.txt" benchmark:
+> On Tue, Oct 28, 2008 at 11:43 AM, Frederic Weisbecker
+> <fweisbec@gmail.com> wrote:
+> > +#include <linux/irqflags.h>
+> 
+> Already fixed.
 
-2.6.28-rc4 vanilla:
+Note that it's already fixed because the patch you are replying to 
+(and which was sent 16 days ago) is already upstream:
 
-7.634
-7.704
-7.688
+  21798a8: tracing: fix a build error on alpha
 
-2.6.28rc4+patch:
-
-8.712
-8.685
-8.702
+	Ingo
