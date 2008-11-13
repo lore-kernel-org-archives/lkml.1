@@ -1,403 +1,656 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837AbYKMHwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbYKMIDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837AbYKMHwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 02:52:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYKMHwf
+	id S1752274AbYKMIDU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 03:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbYKMIDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 02:52:35 -0500
-Received: from ports.donpac.ru ([80.254.111.81]:50532 "EHLO ports.donpac.ru"
+	Thu, 13 Nov 2008 03:03:11 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59494 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbYKMHwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 02:52:33 -0500
-X-Greylist: delayed 2664 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Nov 2008 02:52:33 EST
-Date: Thu, 13 Nov 2008 10:07:56 +0300
-From: Andrey Panin <pazke@donpac.ru>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] 8250: Oxford Semiconductor Devices
-Message-ID: <20081113070756.GA30213@ports.donpac.ru>
-Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20081017192309.9308.74370.stgit@localhost.localdomain> <20081017192830.9308.94462.stgit@localhost.localdomain>
+	id S1750728AbYKMIDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 03:03:09 -0500
+Date: Thu, 13 Nov 2008 09:02:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] x86: optimise page fault path a little
+Message-ID: <20081113080247.GA21144@elte.hu>
+References: <20081113072821.GB2946@wotan.suse.de> <20081113074109.GB1723@elte.hu> <20081113075022.GC2946@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081017192830.9308.94462.stgit@localhost.localdomain>
-X-Uname: Linux 2.6.18-4-powerpc64 ppc64
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20081113075022.GC2946@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 291, 10 17, 2008 at 08:28:44PM +0100, Alan Cox wrote:
-> From: Lee Howard <lee.howard@mainpine.com>
-> 
-> Add support for the OxSemi 'Tornado' devices.
-> 
-> Orginal from Lee Howard
-> Reformatted and reworked a bit by Alan Cox
-> 
-> 
-> Signed-off-by: Lee Howard <lee.howard@mainpine.com>
-> Signed-off-by: Alan Cox <alan@redhat.com>
-> ---
-> 
->  drivers/parport/parport_pc.c |   20 ++++
->  drivers/serial/8250_pci.c    |  211 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pci_ids.h      |    8 ++
->  3 files changed, 238 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/drivers/parport/parport_pc.c b/drivers/parport/parport_pc.c
-> index 8a846ad..96f3bdf 100644
-> --- a/drivers/parport/parport_pc.c
-> +++ b/drivers/parport/parport_pc.c
-> @@ -2791,6 +2791,7 @@ enum parport_pc_pci_cards {
->  	oxsemi_952,
->  	oxsemi_954,
->  	oxsemi_840,
-> +	oxsemi_pcie_pport,
->  	aks_0100,
->  	mobility_pp,
->  	netmos_9705,
-> @@ -2868,6 +2869,7 @@ static struct parport_pc_pci {
->  	/* oxsemi_952 */		{ 1, { { 0, 1 }, } },
->  	/* oxsemi_954 */		{ 1, { { 0, -1 }, } },
->  	/* oxsemi_840 */		{ 1, { { 0, 1 }, } },
-> +	/* oxsemi_pcie_pport */		{ 1, { { 0, 1 }, } },
->  	/* aks_0100 */                  { 1, { { 0, -1 }, } },
->  	/* mobility_pp */		{ 1, { { 0, 1 }, } },
->  	/* netmos_9705 */               { 1, { { 0, -1 }, } }, /* untested */
-> @@ -2928,7 +2930,6 @@ static const struct pci_device_id parport_pc_pci_tbl[] = {
->  	{ 0x1409, 0x7268, 0x1409, 0x0103, 0, 0, timedia_4008a },
->  	{ 0x1409, 0x7268, 0x1409, 0x0104, 0, 0, timedia_4018 },
->  	{ 0x1409, 0x7268, 0x1409, 0x9018, 0, 0, timedia_9018a },
-> -	{ 0x14f2, 0x0121, PCI_ANY_ID, PCI_ANY_ID, 0, 0, mobility_pp },
->  	{ PCI_VENDOR_ID_SYBA, PCI_DEVICE_ID_SYBA_2P_EPP,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, syba_2p_epp },
->  	{ PCI_VENDOR_ID_SYBA, PCI_DEVICE_ID_SYBA_1P_ECP,
-> @@ -2946,8 +2947,25 @@ static const struct pci_device_id parport_pc_pci_tbl[] = {
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_954 },
->  	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_12PCI840,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_840 },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe840,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe840_G,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe952_0,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe952_0_G,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe952_1,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe952_1_G,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe952_1_U,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
-> +	{ PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_PCIe952_1_GU,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, oxsemi_pcie_pport },
->  	{ PCI_VENDOR_ID_AKS, PCI_DEVICE_ID_AKS_ALADDINCARD,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, aks_0100 },
-> +	{ 0x14f2, 0x0121, PCI_ANY_ID, PCI_ANY_ID, 0, 0, mobility_pp },
->  	/* NetMos communication controllers */
->  	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9705,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9705 },
-> diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-> index c014ffb..43c990a 100644
-> --- a/drivers/serial/8250_pci.c
-> +++ b/drivers/serial/8250_pci.c
-> @@ -1100,6 +1100,8 @@ enum pci_board_num_t {
->  	pbn_b0_4_1843200_200,
->  	pbn_b0_8_1843200_200,
->  
-> +	pbn_b0_1_4000000,
-> +
->  	pbn_b0_bt_1_115200,
->  	pbn_b0_bt_2_115200,
->  	pbn_b0_bt_8_115200,
-> @@ -1167,6 +1169,10 @@ enum pci_board_num_t {
->  	pbn_exsys_4055,
->  	pbn_plx_romulus,
->  	pbn_oxsemi,
-> +	pbn_oxsemi_1_4000000,
-> +	pbn_oxsemi_2_4000000,
-> +	pbn_oxsemi_4_4000000,
-> +	pbn_oxsemi_8_4000000,
->  	pbn_intel_i960,
->  	pbn_sgi_ioc3,
->  	pbn_computone_4,
-> @@ -1290,6 +1296,12 @@ static struct pciserial_board pci_boards[] __devinitdata = {
->  		.base_baud	= 1843200,
->  		.uart_offset	= 0x200,
->  	},
-> +	[pbn_b0_1_4000000] = {
-> +		.flags		= FL_BASE0,
-> +		.num_ports	= 1,
-> +		.base_baud	= 4000000,
-> +		.uart_offset	= 8,
-> +	},
->  
->  	[pbn_b0_bt_1_115200] = {
->  		.flags		= FL_BASE0|FL_BASE_BARS,
-> @@ -1625,6 +1637,35 @@ static struct pciserial_board pci_boards[] __devinitdata = {
->  		.base_baud	= 115200,
->  		.uart_offset	= 8,
->  	},
-> +	[pbn_oxsemi_1_4000000] = {
-> +		.flags		= FL_BASE0,
-> +		.num_ports	= 1,
-> +		.base_baud	= 4000000,
-> +		.uart_offset    = 0x200,
-> +        .first_offset   = 0x1000,
-> +	},
-> +	[pbn_oxsemi_2_4000000] = {
-> +		.flags		= FL_BASE0,
-> +		.num_ports	= 2,
-> +		.base_baud	= 4000000,
-> +		.uart_offset    = 0x200,
-> +        .first_offset   = 0x1000,
-> +	},
-> +	[pbn_oxsemi_4_4000000] = {
-> +		.flags		= FL_BASE0,
-> +		.num_ports	= 4,
-> +		.base_baud	= 4000000,
-> +		.uart_offset    = 0x200,
-> +        .first_offset   = 0x1000,
-> +	},
-> +	[pbn_oxsemi_8_4000000] = {
-> +		.flags		= FL_BASE0,
-> +		.num_ports	= 8,
-> +		.base_baud	= 4000000,
-> +		.uart_offset    = 0x200,
-> +        .first_offset   = 0x1000,
-> +	},
-> +
->  
->  	/*
->  	 * EKF addition for i960 Boards form EKF with serial port.
-> @@ -1813,6 +1854,34 @@ serial_pci_matches(struct pciserial_board *board,
->  	    board->first_offset == guessed->first_offset;
->  }
->  
-> +/*
-> + * Oxford Semiconductor Inc.
-> + * Check that device is part of the Tornado range of devices, then determine
-> + * the number of ports available on the device.
-> + */
-> +static int pci_oxsemi_tornado_init(struct pci_dev *dev, struct pciserial_board *board)
-> +{
-> +	u8 __iomem *p;
-> +	unsigned long deviceID;
-> +	unsigned int  number_uarts;
-> +
-> +	p = pci_iomap(dev, 0, 5);
-> +	if (p == NULL)
-> +		return -ENOMEM;
-> +    
-> +	deviceID = ioread32(p);
-> +	/* Tornado device */
-> +	if (deviceID == 0x07000200) {
-> +		number_uarts = ioread8(p + 4);
-> +		board->num_ports = number_uarts;
 
-Why not just return number of ports here ?
+* Nick Piggin <npiggin@suse.de> wrote:
 
-> +		printk(KERN_DEBUG
-> +			"%d ports detected on Oxford PCI Express device\n",
-> +								number_uarts);
+> [...] The comment was actually just in relation to my oom-killer 
+> page fault patches that are in -mm. I'm not proposing this for merge 
+> just yet, but will wait for Andrew.
 
-Is this printk really necessary ?
+We definitely want to carry and test this in the x86 tree, so we 
+should either move the x86 bits of your oom-killer page fault patches 
+from -mm into the x86 tree - or (if that's not possible due to 
+cross-arch impact) this patch should be rebased to -git and the 
+oom-killer patches based ontop of that.
 
-> +	}
-> +	pci_iounmap(dev, p);
-> +	return 0;
-> +}
-> +
->  struct serial_private *
->  pciserial_init_ports(struct pci_dev *dev, struct pciserial_board *board)
->  {
-> @@ -1821,6 +1890,12 @@ pciserial_init_ports(struct pci_dev *dev, struct pciserial_board *board)
->  	struct pci_serial_quirk *quirk;
->  	int rc, nr_ports, i;
->  
-> +	/*
-> +	 * Find number of ports on board
-> +	 */
-> +	 if (dev->vendor == PCI_VENDOR_ID_OXSEMI)
-> +	 	pci_oxsemi_tornado_init(dev, board);
-> +    
+Below is a first (completely untested!) raw attempt at porting your 
+patch to -git. (I resolved a good deal of conflicts without testing 
+the end result, so take care.)
 
-WTF is this ? Why existing pci_serial_quirks[] infrastructure cannot be used here ?
+	Ingo
 
->  	nr_ports = board->num_ports;
->  
->  	/*
-> @@ -2300,6 +2375,142 @@ static struct pci_device_id serial_pci_tbl[] = {
->  		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
->  		pbn_b0_bt_2_921600 },
->  
-> +    /*
-> +     * Oxford Semiconductor Inc. Tornado PCI express device range.
-> +     */
-> + 	{	PCI_VENDOR_ID_OXSEMI, 0xc101,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> + 	{	PCI_VENDOR_ID_OXSEMI, 0xc105,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc11b,    /* OXPCIe952 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc11f,    /* OXPCIe952 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> + 	{	PCI_VENDOR_ID_OXSEMI, 0xc120,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> + 	{	PCI_VENDOR_ID_OXSEMI, 0xc124,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc138,    /* OXPCIe952 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc13d,    /* OXPCIe952 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc140,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc141,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc144,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc145,    /* OXPCIe952 1 Legacy UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_b0_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc158,    /* OXPCIe952 2 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_2_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc15d,    /* OXPCIe952 2 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_2_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc208,    /* OXPCIe954 4 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_4_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc20d,    /* OXPCIe954 4 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_4_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc308,    /* OXPCIe958 8 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_8_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc30d,    /* OXPCIe958 8 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_8_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc40b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc40f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc41b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc41f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc42b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc42f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc43b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc43f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc44b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc44f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc45b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc45f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc46b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc46f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc47b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc47f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc48b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc48f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc49b,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc49f,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc4ab,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc4af,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc4bb,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc4bf,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc4cb,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +	{	PCI_VENDOR_ID_OXSEMI, 0xc4cf,    /* OXPCIe200 1 Native UART */
-> +		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-> +		pbn_oxsemi_1_4000000 },
-> +
->  	/*
->  	 * SBS Technologies, Inc. P-Octal and PMC-OCTPRO cards,
->  	 * from skokodyn@yahoo.com
-> diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-> index 8edddc2..df6e42b 100644
-> --- a/include/linux/pci_ids.h
-> +++ b/include/linux/pci_ids.h
-> @@ -1944,6 +1944,14 @@
->  
->  #define PCI_VENDOR_ID_OXSEMI		0x1415
->  #define PCI_DEVICE_ID_OXSEMI_12PCI840	0x8403
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe840		0xC000
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe840_G		0xC004
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe952_0		0xC100
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe952_0_G	0xC104
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe952_1		0xC110
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe952_1_G	0xC114
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe952_1_U	0xC118
-> +#define PCI_DEVICE_ID_OXSEMI_PCIe952_1_GU	0xC11C
->  #define PCI_DEVICE_ID_OXSEMI_16PCI954	0x9501
->  #define PCI_DEVICE_ID_OXSEMI_16PCI95N	0x9511
->  #define PCI_DEVICE_ID_OXSEMI_16PCI954PP	0x9513
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+---------------->
+Subject: x86: optimise page fault path a little
+From: Nick Piggin <npiggin@suse.de>
+Date: Thu, 13 Nov 2008 08:28:21 +0100
+
+I was just looking around the page fault code for any obvious performance
+improvements. I noticed do_page_fault is rather big, uses a lot of stack,
+and generates some branch mispredicts.
+
+It's only about 1.1% on the profile of the workload I'm looking at, so my
+improvement is pretty close to in the noise, but I wonder if micro
+optimisations like the following would be welcome?
+
+This patch adds branch hints and moves error condition code out of line.
+It shrinks do_page_fault from 2410 bytes to 603 bytes, and from 352 to 64
+bytes of stack. Total text size does grow by about 500 bytes due to the
+additional functions added.
+
+---
+ arch/x86/mm/fault.c |  439 +++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 251 insertions(+), 188 deletions(-)
+
+Index: tip/arch/x86/mm/fault.c
+===================================================================
+--- tip.orig/arch/x86/mm/fault.c
++++ tip/arch/x86/mm/fault.c
+@@ -93,8 +93,8 @@ static inline int notify_page_fault(stru
+  *
+  * Opcode checker based on code by Richard Brunner
+  */
+-static int is_prefetch(struct pt_regs *regs, unsigned long addr,
+-		       unsigned long error_code)
++static int is_prefetch(struct pt_regs *regs, unsigned long error_code,
++			unsigned long addr)
+ {
+ 	unsigned char *instr;
+ 	int scan_more = 1;
+@@ -411,17 +411,16 @@ static void show_fault_oops(struct pt_re
+ }
+ 
+ #ifdef CONFIG_X86_64
+-static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
+-				 unsigned long error_code)
++static noinline void pgtable_bad(struct pt_regs *regs,
++			 unsigned long error_code, unsigned long address)
+ {
+ 	unsigned long flags = oops_begin();
+ 	int sig = SIGKILL;
+-	struct task_struct *tsk;
++	struct task_struct *tsk = current;
+ 
+ 	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
+-	       current->comm, address);
++	       tsk->comm, address);
+ 	dump_pagetable(address);
+-	tsk = current;
+ 	tsk->thread.cr2 = address;
+ 	tsk->thread.trap_no = 14;
+ 	tsk->thread.error_code = error_code;
+@@ -431,6 +430,197 @@ static noinline void pgtable_bad(unsigne
+ }
+ #endif
+ 
++static noinline void no_context(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address)
++{
++	struct task_struct *tsk = current;
++#ifdef CONFIG_X86_64
++	unsigned long flags;
++#endif
++
++	/* Are we prepared to handle this kernel fault?  */
++	if (fixup_exception(regs))
++		return;
++
++	/*
++	 * X86_32
++	 * Valid to do another page fault here, because if this fault
++	 * had been triggered by is_prefetch fixup_exception would have
++	 * handled it.
++	 *
++	 * X86_64
++	 * Hall of shame of CPU/BIOS bugs.
++	 */
++	if (is_prefetch(regs, error_code, address))
++		return;
++
++	if (is_errata93(regs, address))
++		return;
++
++	/*
++	 * Oops. The kernel tried to access some bad page. We'll have to
++	 * terminate things with extreme prejudice.
++	 */
++#ifdef CONFIG_X86_32
++	bust_spinlocks(1);
++#else
++	flags = oops_begin();
++#endif
++
++	show_fault_oops(regs, error_code, address);
++
++	tsk->thread.cr2 = address;
++	tsk->thread.trap_no = 14;
++	tsk->thread.error_code = error_code;
++
++#ifdef CONFIG_X86_32
++	die("Oops", regs, error_code);
++	bust_spinlocks(0);
++	do_exit(SIGKILL);
++#else
++	if (__die("Oops", regs, error_code))
++		regs = NULL;
++	/* Executive summary in case the body of the oops scrolled away */
++	printk(KERN_EMERG "CR2: %016lx\n", address);
++	oops_end(flags, regs, SIGKILL);
++#endif
++}
++
++static void __bad_area_nosemaphore(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address,
++			int si_code)
++{
++	struct task_struct *tsk = current;
++
++	/* User mode accesses just cause a SIGSEGV */
++	if (error_code & PF_USER) {
++		/*
++		 * It's possible to have interrupts off here.
++		 */
++		local_irq_enable();
++
++		/*
++		 * Valid to do another page fault here because this one came
++		 * from user space.
++		 */
++		if (is_prefetch(regs, error_code, address))
++			return;
++
++		if (is_errata100(regs, address))
++			return;
++
++		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
++		    printk_ratelimit()) {
++			printk(
++			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
++			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
++			tsk->comm, task_pid_nr(tsk), address,
++			(void *) regs->ip, (void *) regs->sp, error_code);
++			print_vma_addr(" in ", regs->ip);
++			printk("\n");
++		}
++
++		tsk->thread.cr2 = address;
++		/* Kernel addresses are always protection faults */
++		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
++		tsk->thread.trap_no = 14;
++		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
++		return;
++	}
++
++	if (is_f00f_bug(regs, address))
++		return;
++
++	no_context(regs, error_code, address);
++}
++
++static noinline void bad_area_nosemaphore(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address)
++{
++	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
++}
++
++static void __bad_area(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address,
++			int si_code)
++{
++	struct mm_struct *mm = current->mm;
++
++	/*
++	 * Something tried to access memory that isn't in our memory map..
++	 * Fix it, but check if it's kernel or user first..
++	 */
++	up_read(&mm->mmap_sem);
++
++	__bad_area_nosemaphore(regs, error_code, address, si_code);
++}
++
++static noinline void bad_area(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address)
++{
++	__bad_area(regs, error_code, address, SEGV_MAPERR);
++}
++
++static noinline void bad_area_accerr(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address)
++{
++	__bad_area(regs, error_code, address, SEGV_ACCERR);
++}
++
++static void out_of_memory(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address)
++{
++	struct task_struct *tsk = current;
++	struct mm_struct *mm = tsk->mm;
++	/*
++	 * We ran out of memory, or some other thing happened to us that made
++	 * us unable to handle the page fault gracefully.
++	 */
++	up_read(&mm->mmap_sem);
++	if (is_global_init(tsk)) {
++		yield();
++		return;
++	}
++
++	printk("VM: killing process %s\n", tsk->comm);
++	if (error_code & PF_USER)
++		do_group_exit(SIGKILL);
++	no_context(regs, error_code, address);
++}
++
++static void do_sigbus(struct pt_regs *regs,
++			unsigned long error_code, unsigned long address)
++{
++	struct task_struct *tsk = current;
++	struct mm_struct *mm = tsk->mm;
++
++	up_read(&mm->mmap_sem);
++
++	/* Kernel mode? Handle exceptions or die */
++	if (!(error_code & PF_USER))
++		no_context(regs, error_code, address);
++#ifdef CONFIG_X86_32
++	/* User space => ok to do another page fault */
++	if (is_prefetch(regs, error_code, address))
++		return;
++#endif
++	tsk->thread.cr2 = address;
++	tsk->thread.error_code = error_code;
++	tsk->thread.trap_no = 14;
++	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
++}
++
++static noinline void mm_fault_error(struct pt_regs *regs,
++		unsigned long error_code, unsigned long address, unsigned int fault)
++{
++	if (fault & VM_FAULT_OOM)
++		out_of_memory(regs, error_code, address);
++	else if (fault & VM_FAULT_SIGBUS)
++		do_sigbus(regs, error_code, address);
++	else
++		BUG();
++}
++
+ static int spurious_fault_check(unsigned long error_code, pte_t *pte)
+ {
+ 	if ((error_code & PF_WRITE) && !pte_write(*pte))
+@@ -450,8 +640,8 @@ static int spurious_fault_check(unsigned
+  * There are no security implications to leaving a stale TLB when
+  * increasing the permissions on a page.
+  */
+-static int spurious_fault(unsigned long address,
+-			  unsigned long error_code)
++static noinline int spurious_fault(unsigned long error_code,
++				unsigned long address)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+@@ -496,7 +686,7 @@ static int spurious_fault(unsigned long 
+  *
+  * This assumes no large pages in there.
+  */
+-static int vmalloc_fault(unsigned long address)
++static noinline int vmalloc_fault(unsigned long address)
+ {
+ #ifdef CONFIG_X86_32
+ 	unsigned long pgd_paddr;
+@@ -585,18 +775,15 @@ asmlinkage
+ #endif
+ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+ {
++	unsigned long address;
+ 	struct task_struct *tsk;
+ 	struct mm_struct *mm;
+ 	struct vm_area_struct *vma;
+-	unsigned long address;
+ 	int write, si_code;
+ 	int fault;
+ 	unsigned long *stackend;
+ 
+-#ifdef CONFIG_X86_64
+-	unsigned long flags;
+ 	int sig;
+-#endif
+ 
+ 	tsk = current;
+ 	mm = tsk->mm;
+@@ -614,7 +801,7 @@ void __kprobes do_page_fault(struct pt_r
+ 	if(kmemcheck_active(regs))
+ 		kmemcheck_hide(regs);
+ 
+-	if (notify_page_fault(regs))
++	if (unlikely(notify_page_fault(regs)))
+ 		return;
+ 	if (unlikely(kmmio_fault(regs, address)))
+ 		return;
+@@ -653,7 +840,8 @@ void __kprobes do_page_fault(struct pt_r
+ 		 * Don't take the mm semaphore here. If we fixup a prefetch
+ 		 * fault we could otherwise deadlock.
+ 		 */
+-		goto bad_area_nosemaphore;
++		bad_area_nosemaphore(regs, error_code, address);
++		return;
+ 	}
+ 
+ 
+@@ -672,17 +860,18 @@ void __kprobes do_page_fault(struct pt_r
+ 
+ #ifdef CONFIG_X86_64
+ 	if (unlikely(error_code & PF_RSVD))
+-		pgtable_bad(address, regs, error_code);
++		pgtable_bad(regs, error_code, address);
+ #endif
+ 
+ 	/*
+ 	 * If we're in an interrupt, have no user context or are running in an
+ 	 * atomic region then we must not take the fault.
+ 	 */
+-	if (unlikely(in_atomic() || !mm))
+-		goto bad_area_nosemaphore;
++	if (unlikely(in_atomic() || !mm)) {
++		bad_area_nosemaphore(regs, error_code, address);
++		return;
++	}
+ 
+-again:
+ 	/*
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in the
+@@ -699,20 +888,26 @@ again:
+ 	 * source.  If this is invalid we can skip the address space check,
+ 	 * thus avoiding the deadlock.
+ 	 */
+-	if (!down_read_trylock(&mm->mmap_sem)) {
++	if (unlikely(!down_read_trylock(&mm->mmap_sem))) {
+ 		if ((error_code & PF_USER) == 0 &&
+-		    !search_exception_tables(regs->ip))
+-			goto bad_area_nosemaphore;
++		    !search_exception_tables(regs->ip)) {
++			bad_area_nosemaphore(regs, error_code, address);
++			return;
++		}
+ 		down_read(&mm->mmap_sem);
+ 	}
+ 
+ 	vma = find_vma(mm, address);
+-	if (!vma)
+-		goto bad_area;
+-	if (vma->vm_start <= address)
++	if (unlikely(!vma)) {
++		bad_area(regs, error_code, address);
++		return;
++	}
++	if (likely(vma->vm_start <= address))
+ 		goto good_area;
+-	if (!(vma->vm_flags & VM_GROWSDOWN))
+-		goto bad_area;
++	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
++		bad_area(regs, error_code, address);
++		return;
++	}
+ 	if (error_code & PF_USER) {
+ 		/*
+ 		 * Accessing the stack below %sp is always a bug.
+@@ -720,31 +915,34 @@ again:
+ 		 * and pusha to work.  ("enter $65535,$31" pushes
+ 		 * 32 pointers and then decrements %sp by 65535.)
+ 		 */
+-		if (address + 65536 + 32 * sizeof(unsigned long) < regs->sp)
+-			goto bad_area;
++		if (unlikely(address + 65536 + 32 * sizeof(unsigned long) < regs->sp)) {
++			bad_area(regs, error_code, address);
++			return;
++		}
+ 	}
+-	if (expand_stack(vma, address))
+-		goto bad_area;
+-/*
+- * Ok, we have a good vm_area for this memory access, so
+- * we can handle it..
+- */
++	if (unlikely(expand_stack(vma, address))) {
++		bad_area(regs, error_code, address);
++		return;
++	}
++
++	/*
++	 * Ok, we have a good vm_area for this memory access, so
++	 * we can handle it..
++	 */
+ good_area:
+ 	si_code = SEGV_ACCERR;
+-	write = 0;
+-	switch (error_code & (PF_PROT|PF_WRITE)) {
+-	default:	/* 3: write, present */
+-		/* fall through */
+-	case PF_WRITE:		/* write, not present */
+-		if (!(vma->vm_flags & VM_WRITE))
+-			goto bad_area;
+-		write++;
+-		break;
+-	case PF_PROT:		/* read, present */
+-		goto bad_area;
+-	case 0:			/* read, not present */
+-		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
+-			goto bad_area;
++	write = error_code & PF_WRITE;
++	if (write) {
++		if (unlikely(!(vma->vm_flags & VM_WRITE))) {
++			bad_area_accerr(regs, error_code, address);
++			return;
++		}
++	} else if (unlikely(error_code & PF_PROT)) {
++		bad_area_accerr(regs, error_code, address);
++		return;
++	} else if (unlikely(!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))) {
++		bad_area_accerr(regs, error_code, address);
++		return;
+ 	}
+ 
+ 	/*
+@@ -754,11 +952,8 @@ good_area:
+ 	 */
+ 	fault = handle_mm_fault(mm, vma, address, write);
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+-		if (fault & VM_FAULT_OOM)
+-			goto out_of_memory;
+-		else if (fault & VM_FAULT_SIGBUS)
+-			goto do_sigbus;
+-		BUG();
++		mm_fault_error(regs, error_code, address, fault);
++		return;
+ 	}
+ 	if (fault & VM_FAULT_MAJOR)
+ 		tsk->maj_flt++;
+@@ -769,150 +964,18 @@ good_area:
+ 	/*
+ 	 * Did it hit the DOS screen memory VA from vm86 mode?
+ 	 */
+-	if (v8086_mode(regs)) {
++	if (unlikely(v8086_mode(regs))) {
+ 		unsigned long bit = (address - 0xA0000) >> PAGE_SHIFT;
+ 		if (bit < 32)
+ 			tsk->thread.screen_bitmap |= 1 << bit;
+ 	}
+ #endif
+ 	up_read(&mm->mmap_sem);
+-	return;
+-
+-/*
+- * Something tried to access memory that isn't in our memory map..
+- * Fix it, but check if it's kernel or user first..
+- */
+-bad_area:
+-	up_read(&mm->mmap_sem);
+-
+-bad_area_nosemaphore:
+-	/* User mode accesses just cause a SIGSEGV */
+-	if (error_code & PF_USER) {
+-		/*
+-		 * It's possible to have interrupts off here.
+-		 */
+-		local_irq_enable();
+-
+-		/*
+-		 * Valid to do another page fault here because this one came
+-		 * from user space.
+-		 */
+-		if (is_prefetch(regs, address, error_code))
+-			return;
+-
+-		if (is_errata100(regs, address))
+-			return;
+-
+-		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
+-		    printk_ratelimit()) {
+-			printk(
+-			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
+-			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
+-			tsk->comm, task_pid_nr(tsk), address,
+-			(void *) regs->ip, (void *) regs->sp, error_code);
+-			print_vma_addr(" in ", regs->ip);
+-			printk("\n");
+-		}
+-
+-		tsk->thread.cr2 = address;
+-		/* Kernel addresses are always protection faults */
+-		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
+-		tsk->thread.trap_no = 14;
+-		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
+-		return;
+-	}
+-
+-	if (is_f00f_bug(regs, address))
+-		return;
+-
+-no_context:
+-	/* Are we prepared to handle this kernel fault?  */
+-	if (fixup_exception(regs))
+-		return;
+-
+-	/*
+-	 * X86_32
+-	 * Valid to do another page fault here, because if this fault
+-	 * had been triggered by is_prefetch fixup_exception would have
+-	 * handled it.
+-	 *
+-	 * X86_64
+-	 * Hall of shame of CPU/BIOS bugs.
+-	 */
+-	if (is_prefetch(regs, address, error_code))
+-		return;
+-
+-	if (is_errata93(regs, address))
+-		return;
+-
+-/*
+- * Oops. The kernel tried to access some bad page. We'll have to
+- * terminate things with extreme prejudice.
+- */
+-#ifdef CONFIG_X86_32
+-	bust_spinlocks(1);
+-#else
+-	flags = oops_begin();
+-#endif
+-
+-	show_fault_oops(regs, error_code, address);
+-
+  	stackend = end_of_stack(tsk);
+ 	if (*stackend != STACK_END_MAGIC)
+ 		printk(KERN_ALERT "Thread overran stack, or stack corrupted\n");
+ 
+-	tsk->thread.cr2 = address;
+-	tsk->thread.trap_no = 14;
+-	tsk->thread.error_code = error_code;
+-
+-#ifdef CONFIG_X86_32
+-	die("Oops", regs, error_code);
+-	bust_spinlocks(0);
+-	do_exit(SIGKILL);
+-#else
+ 	sig = SIGKILL;
+-	if (__die("Oops", regs, error_code))
+-		sig = 0;
+-	/* Executive summary in case the body of the oops scrolled away */
+-	printk(KERN_EMERG "CR2: %016lx\n", address);
+-	oops_end(flags, regs, sig);
+-#endif
+-
+-/*
+- * We ran out of memory, or some other thing happened to us that made
+- * us unable to handle the page fault gracefully.
+- */
+-out_of_memory:
+-	up_read(&mm->mmap_sem);
+-	if (is_global_init(tsk)) {
+-		yield();
+-		/*
+-		 * Re-lookup the vma - in theory the vma tree might
+-		 * have changed:
+-		 */
+-		goto again;
+-	}
+-
+-	printk("VM: killing process %s\n", tsk->comm);
+-	if (error_code & PF_USER)
+-		do_group_exit(SIGKILL);
+-	goto no_context;
+-
+-do_sigbus:
+-	up_read(&mm->mmap_sem);
+-
+-	/* Kernel mode? Handle exceptions or die */
+-	if (!(error_code & PF_USER))
+-		goto no_context;
+-#ifdef CONFIG_X86_32
+-	/* User space => ok to do another page fault */
+-	if (is_prefetch(regs, address, error_code))
+-		return;
+-#endif
+-	tsk->thread.cr2 = address;
+-	tsk->thread.error_code = error_code;
+-	tsk->thread.trap_no = 14;
+-	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
+ }
+ 
+ DEFINE_SPINLOCK(pgd_lock);
