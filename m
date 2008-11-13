@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbYKMOln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbYKMOnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbYKMOln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 09:41:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYKMOlf
+	id S1752063AbYKMOnx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 09:43:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbYKMOno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 09:41:35 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:58487 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbYKMOle (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 09:41:34 -0500
-Date: Thu, 13 Nov 2008 08:40:32 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] Allocate module.ref array dynamically
-In-Reply-To: <200811131951.07686.rusty@rustcorp.com.au>
-Message-ID: <Pine.LNX.4.64.0811130830210.19293@quilx.com>
-References: <s5htzaekp6o.wl%tiwai@suse.de> <200811130831.11499.rusty@rustcorp.com.au>
- <Pine.LNX.4.64.0811121630390.2379@quilx.com> <200811131951.07686.rusty@rustcorp.com.au>
+	Thu, 13 Nov 2008 09:43:44 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:41038 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750852AbYKMOno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 09:43:44 -0500
+Message-ID: <491C3D16.1050501@atmel.com>
+Date: Thu, 13 Nov 2008 15:43:34 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+To: Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus@drzeus.cx>
+CC: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: Re: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
+References: <491C0C05.6040301@atmel.com> <20081113134818.GA9161@fluff.org.uk>
+In-Reply-To: <20081113134818.GA9161@fluff.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008, Rusty Russell wrote:
+Ben Dooks :
+> On Thu, Nov 13, 2008 at 12:14:13PM +0100, Nicolas Ferre wrote:
+>> Needed to use the atmel-mci driver in a architecture
+>> independent manner.
+>>
+>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>> ---
+>> arch/avr32/boards/atngw100/setup.c       |    2 +-
+>> arch/avr32/boards/atstk1000/atstk1002.c  |    2 +-
+>> arch/avr32/boards/atstk1000/atstk1003.c  |    2 +-
+>> arch/avr32/boards/atstk1000/atstk1004.c  |    2 +-
+>> arch/avr32/include/asm/atmel-mci.h       |   39 ------
+>> arch/avr32/mach-at32ap/at32ap700x.c      |    2 +-
+>> drivers/mmc/host/atmel-mci.c             |    2 +-
+>> include/linux/atmel-mci.h                |   39 ++++++
+> 
+> Would people object to putting this in include/linux/mmc/atmel.h
+> to avoid making include/linux abound with device/subsystem/machine
+> specific header files?
 
-> > The cpu alloc patchset gets rid of about half the hooks in the page
-> > allocator and slab allocator.
->
-> Sure, but we could convert those today to alloc_percpu etc.
+I tend to agree *but* it seems that header files in include/linux/mmc
+are mostly sd/mmc subsystem core files (I mean, not driver ones).
+Although, a bunch of atmel-a_driver.h files are already in include/linux...
 
-The percpu_ptr macros etc are not upercase suggesting that it is a
-function but the functions do weird things like passing through the
-type. This is confusing.
+Pierre, a comment ?
 
-alloc_percpu() does not allow specifying a GFP mask therefore does not
-support zeroing and is not extendable for the future. It does not allow
-specifying an alignment therefore tight packing is not possible.
-
-Plus the name alloc_percpu() suggests that it is a function but its a
-macro doing things with typing.
-
-CPU_PTR and THIS_CPU can be applied both to percpu pointers and
-percpu variables. The new API unifies the handling which is required in
-order for the new cpu_ops to work both on statically and dynamically
-allocated percpu data.
+Regards,
+-- 
+Nicolas Ferre
 
