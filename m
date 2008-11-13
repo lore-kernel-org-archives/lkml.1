@@ -1,56 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYKMLaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbYKMLdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYKMLaA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 06:30:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYKML3w
+	id S1753208AbYKMLdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 06:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYKMLdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 06:29:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:50038 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751906AbYKML3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 06:29:51 -0500
-Message-ID: <491C0FA0.5070500@kernel.org>
-Date: Thu, 13 Nov 2008 20:29:36 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org> <491BC3E3.7040903@kernel.org> <E1L0aEn-0006dh-BK@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1L0aEn-0006dh-BK@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 13 Nov 2008 06:33:31 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39946 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbYKMLd3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 06:33:29 -0500
+Date: Thu, 13 Nov 2008 20:32:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: Izik Eidus <izik@qumranet.com>, Avi Kivity <avi@redhat.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
+       izike@qumranet.com
+Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
+ one page into another
+Message-Id: <20081113203247.b5e24e26.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <491C038F.5020007@redhat.com>
+References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
+	<1226409701-14831-2-git-send-email-ieidus@redhat.com>
+	<1226409701-14831-3-git-send-email-ieidus@redhat.com>
+	<20081111114555.eb808843.akpm@linux-foundation.org>
+	<4919F1C0.2050009@redhat.com>
+	<Pine.LNX.4.64.0811111520590.27767@quilx.com>
+	<4919F7EE.3070501@redhat.com>
+	<Pine.LNX.4.64.0811111527500.27767@quilx.com>
+	<20081111222421.GL10818@random.random>
+	<20081112111931.0e40c27d.kamezawa.hiroyu@jp.fujitsu.com>
+	<491AAA84.5040801@redhat.com>
+	<491AB9D0.7060802@qumranet.com>
+	<20081113151129.35c17962.kamezawa.hiroyu@jp.fujitsu.com>
+	<491C038F.5020007@redhat.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 11:29:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Miklos Szeredi wrote:
-> Not with '-oallow_other'.  Consider the case that the caller invoked a
-> non well formed ioctl, but since there's no way to know this we
-> allowed the fuse server to tinker with the caller's address space
-> _as if_ the ioctl was well formed.
-
-Right, allow_other.
-
-> So we should always make sure that the server has enough privilege to
-> read/write the caller's memory, i.e. it can ptrace the caller.
+On Thu, 13 Nov 2008 12:38:07 +0200
+Izik Eidus <ieidus@redhat.com> wrote:
+> > If KSM pages are on radix-tree, it will be accounted automatically.
+> > Now, we have "Unevictable" LRU and mlocked() pages are smartly isolated into its
+> > own LRU. So, just doing
+> >
+> >  - inode's radix-tree
+> >  - make all pages mlocked.
+> >  - provide special page fault handler for your purpose
+> >   
 > 
-> At this point we could allow any ioctls, not just well formed ones.
-> But I don't want that for a different reason: if the possibility is
-> there people will find new "innovative" uses for it and just get
-> themselves into a big mess.
+> Well in this version that i am going to merge the pages arent going to 
+> be swappable,
+> Latter after Ksm will get merged we will make the KsmPages swappable...
+good to hear
 
-I don't really mind people doing strange things in userland as long as
-it's safe but you're the maintainer.  It's a bit strange to export the
-feature only for CUSE, so I'm a little bit hesitant.  I wanna make it
-useful for both.  So, at the kernel level, only well formed for FUSE and
-everything goes for CUSE.  Does that sound good enough?
+> so i think working with cgroups would be effective / useful only when 
+> KsmPages will start be swappable...
+> Do you agree?
+> (What i am saying is that right now lets dont count the KsmPages inside 
+> the cgroup, lets do it when KsmPages
+> will be swappable)
+> 
+ok.
 
--- 
-tejun
+> If you feel this pages should be counted in the cgroup i have no problem 
+> to do it via hooks like page migration is doing.
+> 
+> thanks.
+> 
+> > is simple one. But ok, whatever implementation you'll do, I have to check it
+> > and consider whether it should be tracked or not. Then, add codes to memcg to
+> > track it or ignore it or comments on your patches ;)
+> >
+> > It's helpful to add me to CC: when you post this set again.
+> >   
+> 
+> Sure will.
+> 
+
+If necessary, I'll have to add "ignore in this case" hook in memcg.
+(ex. checking PageKSM flag in memcg.)
+
+If you are sufferred from memcg in your test, cgroup_disable=memory boot option
+will allow you to disable memcg.
+
+
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
