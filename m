@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbYKMSOe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbYKMSSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbYKMSOe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 13:14:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYKMSOZ
+	id S1753924AbYKMSSd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 13:18:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYKMSSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 13:14:25 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:41343 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbYKMSOZ (ORCPT
+	Thu, 13 Nov 2008 13:18:23 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:45494 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbYKMSSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 13:14:25 -0500
-Date: Thu, 13 Nov 2008 20:14:16 +0200
-From: Felipe Balbi <me@felipebalbi.com>
-To: Richard Purdie <rpurdie@linux.intel.com>
-Cc: Felipe Balbi <me@felipebalbi.com>, linux-kernel@vger.kernel.org,
-       Felipe Balbi <felipe.balbi@nokia.com>, Anton Vorontsov <cbou@mail.ru>,
-       David Woodhouse <dwmw2@infradead.org>, Greg KH <greg@kroah.com>,
-       Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: [PATCH] led: simplify led_trigger_register_simple
-Message-ID: <20081113181407.GC17166@frodo>
-Reply-To: me@felipebalbi.com
-References: <1226545753-6640-1-git-send-email-me@felipebalbi.com> <1226579912.5402.21.camel@dax.rpnet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226579912.5402.21.camel@dax.rpnet.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Thu, 13 Nov 2008 13:18:22 -0500
+Date: Thu, 13 Nov 2008 10:16:54 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       open-osd development <osd-dev@open-osd.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/18 ver4] libosd: OSDv1 Headers
+Message-Id: <20081113101654.f2f25b1b.randy.dunlap@oracle.com>
+In-Reply-To: <491C1CBF.6080504@panasas.com>
+References: <491073BB.4000900@panasas.com>
+	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>
+	<4916F934.4090205@panasas.com>
+	<20081110092940.57b4c169.randy.dunlap@oracle.com>
+	<491AD697.9030305@panasas.com>
+	<20081112105945.f4ec0089.randy.dunlap@oracle.com>
+	<491C1CBF.6080504@panasas.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020A.491C6F1C.0175:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 12:38:32PM +0000, Richard Purdie wrote:
-> The simple triggers were designed to cause minimum interference to the
-> usually external subsystem code they were added into. As an example this
-> meant things like errors were just handled gracefully with a printk
-> warning and did not take down the whole subsystem. I therefore don't
-> regard this patch as a simplification, more a complication.
+On Thu, 13 Nov 2008 14:25:35 +0200 Boaz Harrosh wrote:
 
-That's a matter of changing the return ERR_PTR(err); back to a printk.
+> Headers only patch.
+> 
+> osd_protocol.h
+> 	Contains a C-fied definition of the T10 OSD standard
+> osd_types.h
+> 	Contains CPU order common used types
+> osd_initiator.h
+> 	API definition of the osd_initiator library
+> osd_sec.h
+> 	Contains High level API for the security manager.
+> 
+> [Note that checkpatch spews errors on things that are valid in this context
+> and will not be fixed]
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> Reviewed-by: Benny Halevy <bhalevy@panasas.com>
 
--- 
-balbi
+OK by me.  Thanks for the changes.
+
+> ---
+>  include/scsi/osd_initiator.h |  332 ++++++++++++++++++++++++++++
+>  include/scsi/osd_protocol.h  |  497 ++++++++++++++++++++++++++++++++++++++++++
+>  include/scsi/osd_sec.h       |   45 ++++
+>  include/scsi/osd_types.h     |   40 ++++
+>  4 files changed, 914 insertions(+), 0 deletions(-)
+>  create mode 100644 include/scsi/osd_initiator.h
+>  create mode 100644 include/scsi/osd_protocol.h
+>  create mode 100644 include/scsi/osd_sec.h
+>  create mode 100644 include/scsi/osd_types.h
+
+---
+~Randy
