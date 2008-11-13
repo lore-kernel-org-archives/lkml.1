@@ -1,84 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbYKMKgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbYKMKia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbYKMKgq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 05:36:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYKMKgg
+	id S1753299AbYKMKia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 05:38:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbYKMKiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 05:36:36 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:58182 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYKMKgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 05:36:35 -0500
-Date: Thu, 13 Nov 2008 11:34:56 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: stern@rowland.harvard.edu, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Problems with the block-layer timeouts
-Message-ID: <20081113103456.GB26778@kernel.dk>
-References: <20081111155458M.fujita.tomonori@lab.ntt.co.jp> <Pine.LNX.4.44L0.0811111205390.29125-100000@netrider.rowland.org> <20081111191936.GK26778@kernel.dk> <20081112110840W.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 13 Nov 2008 05:38:20 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37190 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbYKMKiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 05:38:19 -0500
+From: Mark Nelson <markn@au1.ibm.com>
+Organization: IBM
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] genirq: __irq_set_trigger: change pr_warning to pr_debug
+Date: Thu, 13 Nov 2008 21:37:41 +1100
+User-Agent: KMail/1.9.9
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+References: <200811131730.11506.markn@au1.ibm.com> <20081113074300.GC1723@elte.hu>
+In-Reply-To: <20081113074300.GC1723@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081112110840W.fujita.tomonori@lab.ntt.co.jp>
+Message-Id: <200811132137.41863.markn@au1.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12 2008, FUJITA Tomonori wrote:
-> On Tue, 11 Nov 2008 20:19:36 +0100
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Tue, Nov 11 2008, Alan Stern wrote:
-> > > On Tue, 11 Nov 2008, FUJITA Tomonori wrote:
-> > > 
-> > > > I don't worry about anything. I just think that these round_jiffies_up
-> > > > are pointless because they were added for the block-layer users that
-> > > > care about exact timeouts, however the block-layer doesn't export
-> > > > blk_add_timer() so the block-layer users can't control the exact time
-> > > > when the timer starts. So doing round_jiffies_up calculation per every
-> > > > request doesn't make sense for me.
-> > > 
-> > > In fact the round_jiffies_up() routines were added for other users as
-> > > well as the block layer.  However none of the others could be changed
-> > > until the routines were merged.  Now that the routines are in the 
-> > > mainline, you should see them start to be called in multiple places.
-> > > 
-> > > Also, the users of the block layer _don't_ care about exact timeouts.  
-> > > That's an important aspect of round_jiffies() and round_jiffies_up() --
-> > > you don't use them if you want an exact timeout.
-> > > 
-> > > The reason for using round_jiffies() is to insure that the timeout
-> > > will occur at a 1-second boundary.  If several timeouts are set for
-> > > about the same time and they all use round_jiffies() or
-> > > round_jiffies_up(), then they will all occur at the same tick instead
-> > > of spread out among several different ticks during the course of that
-> > > 1-second interval.  As a result, the system will need to wake up only
-> > > once to service all those timeouts, instead of waking up several
-> > > different times.  It is a power-saving scheme.
-> 
-> Hmm, but for 99.9% of the cases, the timeout of the block layer
-> doesn't expire, the timeout rarely happens. The power-saving scheme
-> can be applied to only 0.1%, but at the cost of the round_jiffies
-> overhead per every request.
-> 
-> If I understand correctly, round_jiffies() is designed for timers that
-> will expire, such as periodic checking. The power-saving scheme nicely
-> works for such usages.
+Commit 0c5d1eb77a8be917b638344a22afe1398236482b (genirq: record trigger
+type) caused powerpc platforms that had no set_type() function in their
+struct irq_chip to spew out warnings about "No set_type function for
+IRQ...". This warning isn't necessarily justified though because the
+generic powerpc platform code calls set_irq_type() (which in turn calls
+__irq_set_trigger) with information from the device tree to establish
+the interrupt mappings, regardless of whether the PIC can actually set
+a type.
 
-Your understanding is correct. The overhead of round_jiffies() is not
-large, though.
+A platform's irq_chip might not have a set_type function for a variety
+of reasons, for example: the platform may have the type essentially
+hard-coded, or as in the case for Cell interrupts are just messages
+past around that have no real concept of type, or the platform
+could even have a virtual PIC as on the PS3.
 
-I want to get rid of this in blk_delete_timer():
+Signed-off-by: Mark Nelson <markn@au1.ibm.com>
+---
+Thanks Ingo! Much appreciated
 
-        if (list_empty(&q->timeout_list))
-                del_timer(&q->timeout);
+ kernel/irq/manage.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-though and simply let the timer run even if the list is empty, since for
-sync sequential IO we'll be fiddling a much with the timer as we did
-before unifying it. And then the timer will expire every x seconds
-always and it becomes more important with the grouping.
-
--- 
-Jens Axboe
-
+Index: upstream/kernel/irq/manage.c
+===================================================================
+--- upstream.orig/kernel/irq/manage.c
++++ upstream/kernel/irq/manage.c
+@@ -327,7 +327,7 @@ int __irq_set_trigger(struct irq_desc *d
+ 		 * IRQF_TRIGGER_* but the PIC does not support multiple
+ 		 * flow-types?
+ 		 */
+-		pr_warning("No set_type function for IRQ %d (%s)\n", irq,
++		pr_debug("No set_type function for IRQ %d (%s)\n", irq,
+ 				chip ? (chip->name ? : "unknown") : "unknown");
+ 		return 0;
+ 	}
