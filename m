@@ -1,114 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbYKMKJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751671AbYKMKJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbYKMKJl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 05:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbYKMKJ3
+	id S1751671AbYKMKJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 05:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYKMKJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 05:09:29 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34773 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbYKMKJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 05:09:27 -0500
-Subject: Re: [PATCH] SYSVIPC - Fix the ipc structures initialization
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cboulte@gmail.com,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-In-Reply-To: <491BC4B8.1050406@colorfullife.com>
-References: <20081028145952.620752409@bull.net>
-	 <20081028150041.857635775@bull.net>
-	 <4f3ee3290810290211y75a2d0eaoe666496e25496260@mail.gmail.com>
-	 <20081111141603.f0e7fa8d.akpm@linux-foundation.org>
-	 <491BC4B8.1050406@colorfullife.com>
-Content-Type: text/plain
-Date: Thu, 13 Nov 2008 11:08:00 +0100
-Message-Id: <1226570880.2585.41.camel@frecb000730.frec.bull.fr>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 05:09:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42017 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751831AbYKMKJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 05:09:44 -0500
+Date: Thu, 13 Nov 2008 11:09:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] tracing/function-return-tracer: Call
+	prepare_ftrace_return by registers
+Message-ID: <20081113100938.GA24602@elte.hu>
+References: <491B4F63.3090909@gmail.com> <20081112221623.GB6125@elte.hu> <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com> <alpine.DEB.1.10.0811121824380.21116@gandalf.stny.rr.com> <c62985530811121535t13a60c93y9e4c22e365ca1b34@mail.gmail.com> <alpine.DEB.1.10.0811121911340.30248@gandalf.stny.rr.com> <20081113085949.GG25479@elte.hu> <20081113091454.GH25479@elte.hu> <c62985530811130202r7721c927w58beb34ec92c34f7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530811130202r7721c927w58beb34ec92c34f7@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-13 at 07:10 +0100, Manfred Spraul wrote:
-> Andrew Morton wrote:
-> > Time is starting to press on this one.  Is there something which we can
-> > revert which would fix this bug?
-> >   
-> My previous analysis was bogus, let's start from scratch:
-> 
-> 1) the initial oops report:
-> http://bugzilla.kernel.org/show_bug.cgi?id=11796#c0
-> 
-> - lockdep is enabled, the oops is somewhere in __lock_acquire
-> - the instruction that oopses is
-> 
->  >>>  lock incl 0x138(%r12)
-> R12 is 0x0038004000000000
-> 
-> That could be an debug_atomic_inc() in __lock_acquire. The class pointer 
-> in the spinlock_t is not initialized, thus it crashes.
-> Ingo - is that possible?
-> 
-> 2) the latest oops was actually a soft lockup:
-> 
-> It starts with:
-> > [  400.393024] INFO: trying to register non-static key.
-> > [  400.397005] the code is fine but needs lockdep annotation.
-> > [  400.397005] turning off the locking correctness validator.
-> > [  400.397005] Pid: 4207, comm: sysv_test2 Not tainted 2.6.27-ipc_lock #1
-> > [  400.397005] Call Trace:
-> > [  400.397005]  [<ffffffff80257055>] static_obj+0x60/0x77
-> > [  400.397005]  [<ffffffff8025af59>] __lock_acquire+0x1c8/0x779
-> > [  400.397005]  [<ffffffff8025b59f>] lock_acquire+0x95/0xc2
-> > [  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> > [  400.397005]  [<ffffffff8045117d>] _spin_lock+0x2d/0x5a
-> > [  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> > [  400.397005]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> > [  400.397005]  [<ffffffff802feaa5>] ipc_lock+0x0/0x99
-> > [  400.397005]  [<ffffffff802feb46>] ipc_lock_check+0x8/0x53
-> > [  400.397005]  [<ffffffff803002c3>] sys_msgctl+0x188/0x461
-> > [  400.397005]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
-> > [  400.397005]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
-> > [  400.397005]  [<ffffffff80259ac7>] trace_hardirqs_on_caller+0x100/0x12a
-> > [  400.397005]  [<ffffffff80212e09>] sched_clock+0x5/0x7
-> > [  400.397005]  [<ffffffff80450d49>] trace_hardirqs_on_thunk+0x3a/0x3f
-> > [  400.397005]  [<ffffffff80213021>] native_sched_clock+0x8c/0xa5
-> > [  400.397005]  [<ffffffff80212e09>] sched_clock+0x5/0x7
-> > [  400.397005]  [<ffffffff8020bf7a>] system_call_fastpath+0x16/0x1b
-> > [  400.397005]
-> > [  464.933003] BUG: soft lockup - CPU#2 stuck for 61s! [sysv_test2:4207]
-> > [  464.933006] Call Trace:
-> > [  464.933006]  [<ffffffff8033dc6b>] _raw_spin_lock+0x98/0x100
-> > [  464.933006]  [<ffffffff8045119e>] _spin_lock+0x4e/0x5a
-> > [  464.933006]  [<ffffffff802feb07>] ipc_lock+0x62/0x99
-> 
-> For me, it reads like an uninitialized spinlock_t:
 
-That's what the patch I sent at the beginning of this thread
-(http://lkml.org/lkml/2008/10/28/177) fixes: the ipc structure is not
-completely initialized before being inserted in the tree.
+* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
 
-The patched kernel has been running for 4 days on my victim without any
-problem, but Clement is still facing a problem (that comes later).
+> That's right, it's much more better for the eyes. I didn't want to 
+> output such a disposition from the kernel because I thought that 
+> would result in too much strings work from kernel-space. But 
+> actually, as you suggest,
+>  if I append a depth field in the trace that could be easy and not 
+> so costly. I just have a last thought about post-processing parsing. 
+> Would it make it harder for that?
 
-I think this patch should be included anyways, because ipc structures
-initialization is not correct the way it is done today.
+humans are the priority targets for tracer output - tools are a 
+distant second target. Whatever is nice for humans is also usually 
+easy to process via tools. A tool can set an option flag just fine.
 
-I'm still reviewing the code to see what else could be wrong.
+To help tooling, add a trace_options flag for more predictable/faster 
+output. We already have the binary output format for example.
 
-Regards,
-Nadia
+> Why not a flag that could be set through iter_ctrl (which has 
+> changed its name yesterday) and that could let the user to choose 
+> its output? That's where I renew my proposition to make the tracers 
+> able to propose custom flags for this file with a new callback such 
+> as tracer_ctrl, or tracer_opt.
 
-> The static_obj test in kernel/lockdep.c notices that something is wrong and disables itself.
-> But then _raw_spin_lock() tries to acquire the uninitialized spinlock and loops forever, because noone does spin_unlock().
-> after 60 seconds, the soft lockup detection notices the problem and oopses.
+yes, your proposal is fine.
+
+> But as you say, why not set it through a flag.
+
+yes - and make the defaults for flags favor human visual parsing.
+
+> > Easiest would be to add a depth field to the trace entry as well, to
+> > make sure we get the right depth in the end, even if we somehow mix up
+> > the trace entries.
 > 
-> 
-> 
-> 
--- 
-Nadia Derbey <Nadia.Derbey@bull.net>
+> Yeah, that's good! I will just have to output "\t" * depth to have 
+> the correct indentation.
 
+i'd suggest spaces for the function indentation, because we'll also 
+have quite deep call stacks in practice.
+
+and i'd suggest you flip around the cost field to something like:
+
+ [...]
+               getnstimeofday() {
+                set_normalized_timespec() {
+                 clocksource_read() { 
+ ( 1547 ns)       acpi_pm_read()                     
+ ( 1951 ns)      } clocksource_read()
+ ( 2200 ns)     } set_normalized_timespec()
+ ( 2354 ns)    } getnstimeofday()
+
+that makes it fixed-width up to the inevitable variable-length field, 
+the function name.
+
+	Ingo
