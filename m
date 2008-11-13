@@ -1,168 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbYKMATd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbYKMAYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754470AbYKMATd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 19:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbYKMATX
+	id S1751712AbYKMAYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 19:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbYKMAYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 19:19:23 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:54948 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbYKMATW (ORCPT
+	Wed, 12 Nov 2008 19:24:01 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35261 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYKMAYA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 19:19:22 -0500
-Subject: Re: [PATCH] filesystems: use has_capability_noaudit interface for
-	reserved blocks checks
-From: Mingming Cao <cmm@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
-       adilger@sun.com, tytso@mit.edu, linux-ext4@vger.kernel.org,
-       dedekind@infradead.org, ext-adrian.hunter@nokia.com,
-       linux-mtd@lists.infradead.org, dushistov@mail.ru, jmorris@namei.org
-In-Reply-To: <1226430769.3353.5.camel@localhost.localdomain>
-References: <1226430769.3353.5.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 12 Nov 2008 19:24:00 -0500
+Message-ID: <491B7395.8040606@linux.vnet.ibm.com>
+Date: Thu, 13 Nov 2008 05:53:49 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
 Organization: IBM
-Date: Wed, 12 Nov 2008 16:19:18 -0800
-Message-Id: <1226535558.12488.30.camel@mingming-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 8bit
+User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, nishimura@mxp.nes.nec.co.jp,
+       menage@google.com
+Subject: Re: [RFC][PATCH 1/6] memcg: free all at rmdir
+References: <20081112122606.76051530.kamezawa.hiroyu@jp.fujitsu.com> <20081112122656.c6e56248.kamezawa.hiroyu@jp.fujitsu.com> <20081112160758.3dca0b22.akpm@linux-foundation.org>
+In-Reply-To: <20081112160758.3dca0b22.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> On Wed, 12 Nov 2008 12:26:56 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+>> +5.1 on_rmdir
+>> +set behavior of memcg at rmdir (Removing cgroup) default is "drop".
+>> +
+>> +5.1.1 drop
+>> +       #echo on_rmdir drop > memory.attribute
+>> +       This is default. All pages on the memcg will be freed.
+>> +       If pages are locked or too busy, they will be moved up to the parent.
+>> +       Useful when you want to drop (large) page caches used in this memcg.
+>> +       But some of in-use page cache can be dropped by this.
+>> +
+>> +5.1.2 keep
+>> +       #echo on_rmdir keep > memory.attribute
+>> +       All pages on the memcg will be moved to its parent.
+>> +       Useful when you don't want to drop page caches used in this memcg.
+>> +       You can keep page caches from some library or DB accessed by this
+>> +       memcg on memory.
+> 
+> Would it not be more useful to implement a per-memcg version of
+> /proc/sys/vm/drop_caches?  (One without drop_caches' locking bug,
+> hopefully).
+> 
+> If we do this then we can make the above "keep" behaviour non-optional,
+> and the operator gets to choose whether or not to drop the caches
+> before doing the rmdir.
+> 
+> Plus, we get a new per-memcg drop_caches capability.  And it's a nicer
+> interface, and it doesn't have the obvious races which on_rmdir has,
+> etc.
+> 
 
-在 2008-11-11二的 14:12 -0500，Eric Paris写道：
-> ext[2,3,4], ufs, and ubifs all check for  CAP_SYS_RESOURCE to determine
-> if they should allow reserved blocks to be used.  A process not having
-> this capability is not failing some security decision and should not be
-> audited.  Thus move to using has_capability_noaudit.
-> 
-Looks fine to me.
-
-Eric Sandeen has  mentioned earlier about the security audit issue with
-ext4. We fixed it in ext4, with this it is even better.
+Andrew, I suspect that will not be easy, since we don't track address spaces
+that belong to a particular memcg. If page cache ends up being shared across
+memcg's, dropping them would impact both mem cgroups.
 
 
-Reviewed-by: Mingming Cao <cmm@us.ibm.com>
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> ---
-> 
-> I would like to push this patch through the security tree (since that's
-> the only place the new cap_noaudit interface exists), but I'd like to
-> get an ACK from each subsystem maintainer.
-> 
->  fs/ext2/balloc.c     |    2 +-
->  fs/ext3/balloc.c     |    2 +-
->  fs/ext4/balloc.c     |    2 +-
->  fs/ubifs/budget.c    |    3 ++-
->  fs/ufs/balloc.c      |    2 +-
->  security/commoncap.c |    1 +
->  security/security.c  |    1 +
->  7 files changed, 8 insertions(+), 5 deletions(-)
-> 
-> 
-> diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-> index 6dac7ba..e06d96d 100644
-> --- a/fs/ext2/balloc.c
-> +++ b/fs/ext2/balloc.c
-> @@ -1192,7 +1192,7 @@ static int ext2_has_free_blocks(struct ext2_sb_info *sbi)
-> 
->  	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
->  	root_blocks = le32_to_cpu(sbi->s_es->s_r_blocks_count);
-> -	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
-> +	if (free_blocks < root_blocks + 1 && !has_capability_noaudit(current, CAP_SYS_RESOURCE) &&
->  		sbi->s_resuid != current->fsuid &&
->  		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
->  		return 0;
-> diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
-> index f5b57a2..f224ee4 100644
-> --- a/fs/ext3/balloc.c
-> +++ b/fs/ext3/balloc.c
-> @@ -1421,7 +1421,7 @@ static int ext3_has_free_blocks(struct ext3_sb_info *sbi)
-> 
->  	free_blocks = percpu_counter_read_positive(&sbi->s_freeblocks_counter);
->  	root_blocks = le32_to_cpu(sbi->s_es->s_r_blocks_count);
-> -	if (free_blocks < root_blocks + 1 && !capable(CAP_SYS_RESOURCE) &&
-> +	if (free_blocks < root_blocks + 1 && !has_capability_noaudit(current, CAP_SYS_RESOURCE) &&
->  		sbi->s_resuid != current->fsuid &&
->  		(sbi->s_resgid == 0 || !in_group_p (sbi->s_resgid))) {
->  		return 0;
-> diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-> index d2003cd..a7c7c52 100644
-> --- a/fs/ext4/balloc.c
-> +++ b/fs/ext4/balloc.c
-> @@ -626,7 +626,7 @@ int ext4_has_free_blocks(struct ext4_sb_info *sbi, s64 nblocks)
->  	/* Hm, nope.  Are (enough) root reserved blocks available? */
->  	if (sbi->s_resuid == current->fsuid ||
->  	    ((sbi->s_resgid != 0) && in_group_p(sbi->s_resgid)) ||
-> -	    capable(CAP_SYS_RESOURCE)) {
-> +	    has_capability_noaudit(current, CAP_SYS_RESOURCE)) {
->  		if (free_blocks >= (nblocks + dirty_blocks))
->  			return 1;
->  	}
-> diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
-> index 1a4973e..d17b8b4 100644
-> --- a/fs/ubifs/budget.c
-> +++ b/fs/ubifs/budget.c
-> @@ -32,6 +32,7 @@
-> 
->  #include "ubifs.h"
->  #include <linux/writeback.h>
-> +#include <linux/capability.h>
->  #include <asm/div64.h>
-> 
->  /*
-> @@ -363,7 +364,7 @@ long long ubifs_calc_available(const struct ubifs_info *c, int min_idx_lebs)
->   */
->  static int can_use_rp(struct ubifs_info *c)
->  {
-> -	if (current->fsuid == c->rp_uid || capable(CAP_SYS_RESOURCE) ||
-> +	if (current->fsuid == c->rp_uid || has_capability_noaudit(current, CAP_SYS_RESOURCE) ||
->  	    (c->rp_gid != 0 && in_group_p(c->rp_gid)))
->  		return 1;
->  	return 0;
-> diff --git a/fs/ufs/balloc.c b/fs/ufs/balloc.c
-> index 0d9ada1..ad4398b 100644
-> --- a/fs/ufs/balloc.c
-> +++ b/fs/ufs/balloc.c
-> @@ -411,7 +411,7 @@ u64 ufs_new_fragments(struct inode *inode, void *p, u64 fragment,
->  	/*
->  	 * There is not enough space for user on the device
->  	 */
-> -	if (!capable(CAP_SYS_RESOURCE) && ufs_freespace(uspi, UFS_MINFREE) <= 0) {
-> +	if (!has_capability_noaudit(current, CAP_SYS_RESOURCE) && ufs_freespace(uspi, UFS_MINFREE) <= 0) {
->  		unlock_super (sb);
->  		UFSD("EXIT (FAILED)\n");
->  		return 0;
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 73999f6..5401e77 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -55,6 +55,7 @@ int cap_capable(struct task_struct *tsk, int cap, int audit)
->  		return 0;
->  	return -EPERM;
->  }
-> +EXPORT_SYMBOL(cap_capable);
-> 
->  int cap_settime(struct timespec *ts, struct timezone *tz)
->  {
-> diff --git a/security/security.c b/security/security.c
-> index 346f21e..d061eb1 100644
-> --- a/security/security.c
-> +++ b/security/security.c
-> @@ -170,6 +170,7 @@ int security_capable_noaudit(struct task_struct *tsk, int cap)
->  {
->  	return security_ops->capable(tsk, cap, SECURITY_CAP_NOAUDIT);
->  }
-> +EXPORT_SYMBOL(security_capable_noaudit);
-> 
->  int security_acct(struct file *file)
->  {
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+-- 
+	Balbir
