@@ -1,72 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbYKMNny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYKMNrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbYKMNny (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 08:43:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbYKMNnq
+	id S1753920AbYKMNrc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 08:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYKMNrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 08:43:46 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:53918 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbYKMNnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 08:43:45 -0500
-Date: Thu, 13 Nov 2008 22:43:50 +0900 (JST)
-Message-Id: <20081113.224350.18312549.anemo@mba.ocn.ne.jp>
-To: vapier@gentoo.org
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd: unify mtd partition/device registration
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 13 Nov 2008 08:47:23 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:36690 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752042AbYKMNrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 08:47:23 -0500
+Date: Thu, 13 Nov 2008 14:49:49 +0100
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       Hirokazu Takahashi <taka@valinux.co.jp>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
+       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>, "dpshah@google.com" <dpshah@google.com>,
+       Mike Waychison <mikew@google.com>, rohitseth@google.com,
+       paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081113134949.GH14817@gandalf.sssup.it>
+References: <20081106163957.GB7461@redhat.com> <1225990327.7803.4776.camel@twins> <20081106170830.GD7461@redhat.com> <e98e18940811061507t3e19183byf2b8b291458ba81b@mail.gmail.com> <20081107141943.GC21884@redhat.com> <e98e18940811071336n58a073d8w2cbaeddd5657d1e9@mail.gmail.com> <20081110141143.GC26956@redhat.com> <e98e18940811111155q4bd73480pebe088fa1adbe2e4@mail.gmail.com> <20081111223024.GA31527@redhat.com> <e98e18940811121320w5f321302n13b526887cbb4012@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e98e18940811121320w5f321302n13b526887cbb4012@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 18:38:53 -0500, Mike Frysinger <vapier@gentoo.org> wrote:
-> Rather than having every map/mtd driver doing the same sequence of
-> registering partitions and/or devices, implement common parse_mtd().
+Hi,
+
+> From: Nauman Rafique <nauman@google.com>
+> Date: Wed, Nov 12, 2008 01:20:13PM -0800
+>
+...
+> >> CFQ can be trivially
+> >> modified to do proportional division (i.e give time slices in
+> >> proportion to weight instead of priority).
+> >> And such a solution would
+> >> avoid idleness problem like the one you mentioned above.
+> >
+> > Can you just elaborate a little on how do you get around idleness problem?
+> > If you don't create idleness than if two tasks in two cgroups are doing
+> > sequential IO, they might simply get into lockstep and we will not achieve
+> > any differentiated service proportionate to their weight.
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
->  drivers/mtd/mtdcore.c   |   37 +++++++++++++++++++++++++++++++++++++
->  include/linux/mtd/mtd.h |    3 +++
->  2 files changed, 40 insertions(+), 0 deletions(-)
+> I was thinking of a more cfq-like solution for proportional division
+> at the elevator level (i.e. not a token based solution). There are two
+> options for proportional bandwidth division at elevator level: 1)
+> change the size of the time slice in proportion to the weights or 2)
+> allocate equal time slice each time but allocate more slices to cgroup
+> with more weight. For (2), we can actually keep track of time taken to
+> serve requests and allocate time slices in such a way that the actual
+> disk time is proportional to the weight. We can adopt a fair-queuing
+> (http://lkml.org/lkml/2008/4/1/234) like approach for this if we want
+> to go that way.
+> 
+> I am not sure if the solutions mentioned above will have the lockstep
+> problem you mentioned above or not. Since we are allocating time
+> slices, and would have anticipation built in (just like cfq), we would
+> have some level of idleness. But this idleness can be predicted based
+> on a thread behavior.
 
-I like this idea.
+  if I understand that correctly, the problem may arise whenever you
+have to deal with *synchronous* I/O, where you may not see the streams
+of requests generated by tasks as continuously backlogged (and the
+algorithm used to distribute bandwidth does the implicit assumption
+that they are, as in the cfq case).
 
-> +int parse_mtd(struct mtd_info *mtd, const char **probe_types,
-> +              struct mtd_partition *parts, int nr_parts)
-> +{
-> +#ifdef CONFIG_MTD_PARTITIONS
-> +	const char *default_part_probe_types[] = {
-> +		"cmdlinepart",
-> +		"RedBoot",
-> +		NULL
-> +	};
-
-But I'm not sure this default_part_probe_types is appropriate.
-
-How about enclose each parser with #ifdefs?
-
-	const char *default_part_probe_types[] = {
-#ifdef CONFIG_MTD_CMDLINE_PARTS
-		"cmdlinepart",
-#endif
-#ifdef CONFIG_MTD_REDBOOT_PARTS
-		"RedBoot",
-#endif
-		NULL
-	};
-
-This get rid of "RedBoot partition parsing not available" noise in
-boot message when you use default_part_probe_types without
-MTD_REDBOOT_PARTS.
-
----
-Atsushi Nemoto
+A cfq-like solution with idling enabled AFAIK should not suffer from
+this problem, as it creates backlog for the process being anticipated.
+But anticipation is not always used, and cfq currently disables it for
+SSDs and in other cases where it may hurt performance (e.g., NCQ drives
+in presence of seeky loads, etc).  So, in these cases, something still
+needs to be done if we want a proportional bandwidth distribution, and
+we don't want to pay the extra cost of idling when it's not strictly
+necessary.
