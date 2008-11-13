@@ -1,103 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbYKMQGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753166AbYKMQHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752831AbYKMQGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 11:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbYKMQFw
+	id S1753166AbYKMQHA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 11:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbYKMQGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 11:05:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39403 "EHLO mx2.redhat.com"
+	Thu, 13 Nov 2008 11:06:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59407 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751646AbYKMQFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 11:05:51 -0500
-Date: Thu, 13 Nov 2008 10:58:34 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081113155834.GE7542@redhat.com>
-References: <20081106153022.215696930@redhat.com> <20081113.180558.519459540419535699.ryov@valinux.co.jp>
+	id S1751392AbYKMQGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 11:06:51 -0500
+Date: Thu, 13 Nov 2008 17:06:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] x86: optimise page fault path a little
+Message-ID: <20081113160633.GA13095@elte.hu>
+References: <20081113072821.GB2946@wotan.suse.de> <20081113074109.GB1723@elte.hu> <20081113075022.GC2946@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081113.180558.519459540419535699.ryov@valinux.co.jp>
+In-Reply-To: <20081113075022.GC2946@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 06:05:58PM +0900, Ryo Tsuruta wrote:
-> Hi,
+
+* Nick Piggin <npiggin@suse.de> wrote:
+
+> > 32-bit should use oops_begin() too. Solves the previous comment as 
+> > well.
+> > 
+> > > +#ifdef CONFIG_X86_32
+> > > +	die("Oops", regs, error_code);
+> > > +	bust_spinlocks(0);
+> > > +	do_exit(SIGKILL);
+> > > +#else
+> > > +	if (__die("Oops", regs, error_code))
+> > > +		regs = NULL;
+> > > +	/* Executive summary in case the body of the oops scrolled away */
+> > > +	printk(KERN_EMERG "CR2: %016lx\n", address);
+> > > +	oops_end(flags, regs, SIGKILL);
+> > > +#endif
+> > 
+> > this difference seems unnecessary too - 32-bit should use oops_end() 
+> > too.
 > 
-> From: vgoyal@redhat.com
-> Subject: [patch 0/4] [RFC] Another proportional weight IO controller 
-> Date: Thu, 06 Nov 2008 10:30:22 -0500
-> 
-> > Hi,
-> > 
-> > If you are not already tired of so many io controller implementations, here
-> > is another one.
-> > 
-> > This is a very eary very crude implementation to get early feedback to see
-> > if this approach makes any sense or not.
-> > 
-> > This controller is a proportional weight IO controller primarily
-> > based on/inspired by dm-ioband. One of the things I personally found little
-> > odd about dm-ioband was need of a dm-ioband device for every device we want
-> > to control.  I thought that probably we can make this control per request
-> > queue and get rid of device mapper driver. This should make configuration
-> > aspect easy.
-> > 
-> > I have picked up quite some amount of code from dm-ioband especially for
-> > biocgroup implementation.
-> > 
-> > I have done very basic testing and that is running 2-3 dd commands in different
-> > cgroups on x86_64. Wanted to throw out the code early to get some feedback.
-> > 
-> > More details about the design and how to are in documentation patch.
-> > 
-> > Your comments are welcome.
-> 
-> Do you have any benchmark results?
-> I'm especially interested in the followings:
-> - Comparison of disk performance with and without the I/O controller patch.
+> Probably all 3 good comments, but I didn't want to be tempted into 
+> changing behaviour (modulo adding bugs). Easy to merge them up in a 
+> subsequent patch, however...
 
-If I dynamically disable the bio control, then I did not observe any
-impact on performance. Because in that case practically it boils down
-to just an additional variable check in __make_request().
+please do feel tempted to clean this code up - and if it changes 
+behavior, split it up into smaller steps. The patch is already quite 
+large with a flux of 430 lines:
 
-> - Put uneven I/O loads. Processes, which belong to a cgroup which is
->   given a smaller weight than another cgroup, put heavier I/O load
->   like the following.
-> 
->      echo 1024 > /cgroup/bio/test1/bio.shares
->      echo 8192 > /cgroup/bio/test2/bio.shares
-> 
->      echo $$ > /cgroup/bio/test1/tasks
->      dd if=/somefile1-1 of=/dev/null &
->      dd if=/somefile1-2 of=/dev/null &
->      ... 
->      dd if=/somefile1-100 of=/dev/null
->      echo $$ > /cgroup/bio/test2/tasks
->      dd if=/somefile2-1 of=/dev/null &
->      dd if=/somefile2-2 of=/dev/null &
->      ...
->      dd if=/somefile2-10 of=/dev/null &
+ 1 file changed, 251 insertions(+), 188 deletions(-)
 
-I have not tried this case.
+... your primary goal is faster code, we also want cleaner code. I 
+think we can meet in the middle, have faster _and_ cleaner code, and 
+it's a done deal ;)
 
-Ryo, do you still want to stick to two level scheduling? Given the problem
-of it breaking down underlying scheduler's assumptions, probably it makes
-more sense to the IO control at each individual IO scheduler.
-
-I have had a very brief look at BFQ's hierarchical proportional
-weight/priority IO control and it looks good. May be we can adopt it for
-other IO schedulers also. 
-
-Thanks
-Vivek
+	Ingo
