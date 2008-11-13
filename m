@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYKMDro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbYKMDsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbYKMDro (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 22:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYKMDrf
+	id S1753617AbYKMDsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 22:48:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYKMDsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 22:47:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44037 "EHLO mx2.redhat.com"
+	Wed, 12 Nov 2008 22:48:36 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:41162 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751016AbYKMDrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 22:47:35 -0500
-Subject: Re: [PATCH] x86 - Make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
-From: Jeremy Katz <katzj@redhat.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Andres Salomon <dilinger@queued.net>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
-       dsaxena@laptop.org
-In-Reply-To: <s5hbpwlj9w1.wl%tiwai@suse.de>
-References: <s5h3ahyqwmn.wl%tiwai@suse.de> <20081111125402.GB14989@elte.hu>
-	 <s5hzlk6pea6.wl%tiwai@suse.de> <20081111135306.GA32709@elte.hu>
-	 <s5hwsfapdoj.wl%tiwai@suse.de> <20081111140406.GA3244@elte.hu>
-	 <20081109201710.4c490f04@debxo> <1226498050.12791.45.camel@aglarond.local>
-	 <s5hbpwlj9w1.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Wed, 12 Nov 2008 22:44:58 -0500
-Message-Id: <1226547898.13077.83.camel@aglarond.local>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751016AbYKMDsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 22:48:35 -0500
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>
+Subject: [PATCH 0/4] integrity
+Date: Wed, 12 Nov 2008 22:47:10 -0500
+Message-Id: <cover.1226547084.git.zohar@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-11-12 at 15:29 +0100, Takashi Iwai wrote:
-> At Wed, 12 Nov 2008 08:54:10 -0500, Jeremy Katz wrote:
-> > It's not about angering, it's about causing regressions in
-> > functionality.  Doing this will completely break the ability to run
-> > generic distros on the OLPC hardware without a special kernel.  Which
-> > has been something that a lot of work has gone on upstream to avoid for
-> > all sorts of cases (VMI, Xen, SMP, ...).  
-> 
-> But, it is broken.  The asm/olpc includes asm/geode.h and it refers
-> geode_gpio*() there.
+The Linux Integrity Module (LIM) Framework provides hooks
+for modules to perform collection, appraisal, and storage
+of system integrity measurements. One such module, IMA,
+collects measurements of file data, maintains this list
+in the kernel, and if available, stores (extends) the
+measurements into a hardware TPM. These measurements are
+collected, appraised, and stored before any access
+(read or execute) to the data, so that malicious code or
+data cannot remove or cover up its own measurement, to avoid
+detection. If the measurements are anchored in a TPM, the
+TPM can sign the measurements, for proof of integrity
+to a third party, such as in enterprise client management.
 
-The geode_gpio() users in asm/olpc.h are for some defines that really
-probably don't belong there and which aren't used elsewhere in the main
-tree afaict from a quick grep.  I'd be glad to send the patch to remove
-it :-)
+Integrity measurement is complementary to LSM mandatory
+access control, which can be used to protect the integrity
+of system files. Integrity measurement policies can take
+advantage of LSM labels in deciding what to measure and
+to detect when the protection fails, with hardware strength.
 
-> > > but what we really need to
-> > > do is to make geode_gpio* defined even when we're not specifically
-> > > building with MGEODE_LX.  I'm not sure how best to do that, but the
-> > > answer probably includes using the generic x86 gpio api.
-> > 
-> > This probably needs to be done as a precondition for getting the alsa
-> > changes merged or the alsa changes need to have the bits which depend on
-> > geode_gpio ripped out until it can be done.
-> 
-> Then let's stop inclusion of asm/geode.h from asm/olpc.h at first.
-> Any driver codes including asm/geode.h can be broken potentially
-> without a proper dependency.
+This patch set addresses a couple of concerns raised on
+the mailing list:
 
-Yes, but having a driver dependent on building for a specific x86
-variant is quite wrong.  What would people think about a driver which
-was dependent on CONFIG_M586?  Keep in mind that CONFIG_M686 wouldn't
-then apply...
+- Uses a radix tree to store integrity information
+  associated with an inode, instead of extending the
+  inode structure.
+- Moves hooks out of vfs_permission and file_permission,
+  which are deprecated.
+- Fixes the template list locking.
+- Updates and clarifies the integrity_audit kernel
+  command line option.
 
-Jeremy
-
+Dave Safford
+Mimi Zohar (4):
+  integrity: TPM internel kernel interface
+  integrity: Linux Integrity Module(LIM)
+  integrity: IMA as an integrity service provider
+  integrity: IMA radix tree
