@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYKLX65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYKMAAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbYKLX65 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 18:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYKLX6p
+	id S1755363AbYKMAAv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 19:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYKMAAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 18:58:45 -0500
-Received: from lucidpixels.com ([75.144.35.66]:59358 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbYKLX6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 18:58:44 -0500
-Date: Wed, 12 Nov 2008 18:58:43 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-cc: linux-raid@vger.kernel.org
-Subject: Re: typo in raid[456] kernel code/no change based on type?
-In-Reply-To: <alpine.DEB.1.10.0811121855470.10512@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0811121858300.10512@p34.internal.lan>
-References: <alpine.DEB.1.10.0811121855470.10512@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 12 Nov 2008 19:00:42 -0500
+Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:41284 "HELO
+	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752407AbYKMAAm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 19:00:42 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=OQsdVBAA8sAWSzxpd00+/abwzgLirGBlqQk6dOBPVdRbAGONBfefI0jqG3GdvfwELrXC05zDWazxO9hfvwZTlCdxQJeAlApTuzPBMcN8ygq8IRWabQ0y5LDGy31Sdt6V/ZTel1zBmUSqXq0gaddLjL8BSqHeyv7sDyQmi8Zrmtc=  ;
+X-YMail-OSG: fod7.FEVM1nAFI4wWrlKcJJ7nsLqfVnUHkUdfSA43Sjd6QxyIETov_VVFBzlzfIPNfWZhqtTYZmkIRFC8g4cIB52.pNpaHVHZksaWXQ1p8CGfcxwiei3jY03XsxEkfjlLxWl8T4vHbrIo4DKzkg4XSk9
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
+Date: Wed, 12 Nov 2008 16:00:34 -0800
+User-Agent: KMail/1.9.10
+Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
+References: <200811091531.46003.david-b@pacbell.net> <20081112112525.GA8767@sirena.org.uk> <1226528635.6727.256.camel@vega.slimlogic.co.uk>
+In-Reply-To: <1226528635.6727.256.camel@vega.slimlogic.co.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811121600.34399.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 12 November 2008, Liam Girdwood wrote:
+> On Wed, 2008-11-12 at 11:25 +0000, Mark Brown wrote:
+> > On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
+>
+> > > Less surprising/confusing would be if regulator_{en,dis}able() did
+> > > its own refcounting and called down to regulator_dev when changing
+> > > a per-client refcount to/from zero.  (Easy patch, for later.)
+> > 
+> > Yeah, either way is fine for me - don't know if Liam has a strong
+> > opinion.  The main benefit of not doing it is that encourages people to
+> > avoid consumers sharing the clients which causes problems when clients
+> > share the regulator.
+
+Not refcounting enables/disables gets to be a PITA though; that's
+why the the IRQ and clock frameworks gave up on the not-counted
+versions of their enable/disable calls a long time ago.
+
+The typical problem scenario is that two parts of the same driver
+have independent needs to make sure something is enabled.  If it's
+not OK to enable() something that's already enabled(), the driver
+itself will need to reinvent a refcounting scheme.
+
+That kind of refcount patch would be a net code shrink anyway.  :)
 
 
-On Wed, 12 Nov 2008, Justin Piszcz wrote:
+> Fwiw, the main design intention here was to have a 1:1 mapping between a
+> consumer device and a struct regulator 
 
-> $ cat /proc/mdstat Personalities : [raid1] [raid6] [raid5] [raid4] md1 : 
-> active raid1 sdb2[1] sda2[0]
->      136448 blocks [2/2] [UU]
->
-> md2 : active raid1 sdb3[1] sda3[0]
->      276109056 blocks [2/2] [UU]
->
-> md3 : active raid6 sdj1[10] sdc1[4] sdl1[8] sdk1[1] sdi1[9] sdh1[7] sdg1[6] 
-> sdf1[3] sde1[2] sdd1[0]
->      2344263680 blocks level 6, 1024k chunk, algorithm 2 [10/9] [UUUUU_UUUU]
->      [===================>.]  recovery = 99.1% (290466636/293032960) 
-> finish=0.6min speed=67979K/sec
->
-> md0 : active raid1 sdb1[1] sda1[0]
->      16787776 blocks [2/2] [UU]
->
-> unused devices: <none>
->
-> --
->
-> But in the kernel logs:
->
-> [ 3497.577716] md: recovery of RAID array md3
-> [ 3497.577720] md: minimum _guaranteed_  speed: 1000 KB/sec/disk.
-> [ 3497.577721] md: using maximum available idle IO bandwidth (but not more 
-> than 90000 KB/sec) for recovery.
-> [ 3497.577728] md: using 128k window, over a total of 293032960 blocks.
-> [ 6981.488528] md: md3: recovery done.
-> [ 6982.273208] RAID5 conf printout:
->               ^^^^^
-> [ 6982.273215]  --- rd:10 wd:10
-> [ 6982.273219]  disk 0, o:1, dev:sdd1
-> [ 6982.273223]  disk 1, o:1, dev:sdk1
-> [ 6982.273227]  disk 2, o:1, dev:sde1
-> [ 6982.273231]  disk 3, o:1, dev:sdf1
-> [ 6982.273245]  disk 4, o:1, dev:sdc1
-> [ 6982.273258]  disk 5, o:1, dev:sdj1
-> [ 6982.273260]  disk 6, o:1, dev:sdg1
-> [ 6982.273263]  disk 7, o:1, dev:sdh1
-> [ 6982.273265]  disk 8, o:1, dev:sdl1
-> [ 6982.273267]  disk 9, o:1, dev:sdi1
->
-> Is the type detectable via auto-assemble, if it is shouldn't it print out
-> the right raid type in the logs/dmesg?
->
-> Justin.
->
->
+As in, an LCD display and its touchscreen might be in
+the same power domain (regulator_dev, internal to the
+framework) but would have different regulator structs.
 
-Forgot to cc linux-raid.
+In that case the most likely scenario would be two
+drivers needing to enable() so it's not trying to
+talk to controllers that are powered off.  Voltage
+would normally be fixed.
+
+
+> so that we could easily store per 
+> consumer power data (for mode switching, easier debug, sysfs) and avoid
+> any issues between sharing the clients. I'd be happy for this change as
+> long as we can keep the per consumer data.
+
+Right, I wasn't talking about changing that model.
+
+- Dave
 
