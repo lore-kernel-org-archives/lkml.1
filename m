@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753748AbYKMTHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbYKMTK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753748AbYKMTHQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKMTHC
+	id S1753821AbYKMTK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYKMTKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:07:02 -0500
-Received: from fk-out-0910.google.com ([209.85.128.184]:31485 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbYKMTHA (ORCPT
+	Thu, 13 Nov 2008 14:10:12 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:57036 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbYKMTKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:07:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=fEFBiU9k13SKFXP8STws30juYo8PIGFc4/QapDWiWgBSzSoeYv/nyKFol87ze4R6HW
-         BEXLEMtdjzkUFVj/pZMEWSaylnwSHKzz6J7RFs7jNllGwF3RZbYAoub72CM+FBbR2/nN
-         T1qqJAYAKiOHyD3u3R9zkWbbm1dLvdfCFVyfo=
-Message-ID: <b2cc26e40811131106g7a1c46d0y89d24b11cb0570fb@mail.gmail.com>
-Date: Thu, 13 Nov 2008 20:06:58 +0100
-From: "Olaf van der Spek" <olafvdspek@gmail.com>
-To: "Arnaldo Carvalho de Melo" <acme@redhat.com>,
-       "Olaf van der Spek" <olafvdspek@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
-In-Reply-To: <20081113112409.GK13263@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 14:10:11 -0500
+Date: Thu, 13 Nov 2008 20:19:31 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function return tracer lockless
+Message-ID: <20081113191931.GB3810@one.firstfloor.org>
+References: <87od0jd6ds.fsf@basil.nowhere.org> <c62985530811130901t7ddf84beof39a964582fb94a0@mail.gmail.com> <20081113171220.GX3810@one.firstfloor.org> <alpine.DEB.1.10.0811131219250.23751@gandalf.stny.rr.com> <20081113173451.GY3810@one.firstfloor.org> <alpine.DEB.1.10.0811131230470.23751@gandalf.stny.rr.com> <20081113182937.GZ3810@one.firstfloor.org> <alpine.DEB.1.10.0811131330350.23751@gandalf.stny.rr.com> <20081113185515.GA3810@one.firstfloor.org> <alpine.DEB.1.10.0811131349090.31899@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com>
-	 <20081113112409.GK13263@ghostprotocols.net>
+In-Reply-To: <alpine.DEB.1.10.0811131349090.31899@gandalf.stny.rr.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 12:24 PM, Arnaldo Carvalho de Melo
-<acme@redhat.com> wrote:
-> Em Thu, Nov 13, 2008 at 12:20:44AM +0100, Olaf van der Spek escreveu:
->> Hi,
->>
->> Quite often in discussions, I see people claiming Unix sockets are
->> faster then TCP sockets on a connection that stays inside localhost.
->> Let's say from app A to app B.
->> Is this indeed the case and if so, how much and why?
->> My assumption is that the kernel can optimize the 'connection' and let
->> any performance differences disappear.
->
-> How much? Please measure.
+> barrier:
+> 	__asm__ __volatile__("": : :"memory")
+> 
+> local_add_return:
+> 	asm volatile(_ASM_XADD "%0, %1;"
+> 		     : "+r" (i), "+m" (l->a.counter)
+> 		     : : "memory");
+> 
+> 
+> Your argument was that barrier clobbers memory, but it looks like the 
+> local_add_return does the same.
 
-I can't be the first one to wonder about this. Has nobody done this
-kind of benchmark before?
+That's a fair point. I'm not sure why the local_add_* has a memory
+barrier at all, imho it shouldn't need it. I bet it's just
+a hold over from the atomic code this was based one.
 
-> Faster? Not necessarily, Nagle comes to mind,
+> I don't see any major gain in switching to local_add_return.
 
-Eh, wouldn't that make TCP slower instead of faster?
+That's true with the current implementation. It would
+be a good idea to consider dropping that explicit 
+barrier though, then it would be likely a slight win.
 
-> among others. What kind of traffic? That matters too.
->
-> Start here: http://en.wikipedia.org/wiki/Nagle's_algorithm
+-Andi
 
-Eh, I assume that algorithm is disabled on localhost.
+-- 
+ak@linux.intel.com
