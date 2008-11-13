@@ -1,111 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752586AbYKMBNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709AbYKMBPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752586AbYKMBNs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 20:13:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYKMBNh
+	id S1752709AbYKMBPr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 20:15:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYKMBPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 20:13:37 -0500
-Received: from exchtp08.via.com.tw ([61.66.243.7]:56548 "EHLO
-	exchtp08.via.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbYKMBNh convert rfc822-to-8bit (ORCPT
+	Wed, 12 Nov 2008 20:15:39 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43826 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbYKMBPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 20:13:37 -0500
-X-Greylist: delayed 911 seconds by postgrey-1.27 at vger.kernel.org; Wed, 12 Nov 2008 20:13:36 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] Fix crash in viafb due to 4k stack overflow
-Date: Thu, 13 Nov 2008 08:58:22 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB8081F500A@exchtp03.taipei.via.com.tw>
-In-Reply-To: <20081112150104.8f7a71f6.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Fix crash in viafb due to 4k stack overflow
-Thread-Index: AclFGpiN1zqkXWX5T3+lCZxgh33mYQAEBNww
-From: <JosephChan@via.com.tw>
-To: <akpm@linux-foundation.org>, <bonbons@linux-vserver.org>
-Cc: <arjan@infradead.org>, <linux-fbdev-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 13 Nov 2008 00:58:23.0937 (UTC) FILETIME=[EDEBDB10:01C9452A]
+	Wed, 12 Nov 2008 20:15:39 -0500
+Date: Thu, 13 Nov 2008 10:13:44 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
+       menage@google.com
+Subject: Re: [RFC][PATCH 1/6] memcg: free all at rmdir
+Message-Id: <20081113101344.6882c209.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081112160758.3dca0b22.akpm@linux-foundation.org>
+References: <20081112122606.76051530.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081112122656.c6e56248.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081112160758.3dca0b22.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I will try this new patch later. :)
+On Wed, 12 Nov 2008 16:07:58 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-BRs,
-Joseph Chan
+> On Wed, 12 Nov 2008 12:26:56 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > +5.1 on_rmdir
+> > +set behavior of memcg at rmdir (Removing cgroup) default is "drop".
+> > +
+> > +5.1.1 drop
+> > +       #echo on_rmdir drop > memory.attribute
+> > +       This is default. All pages on the memcg will be freed.
+> > +       If pages are locked or too busy, they will be moved up to the parent.
+> > +       Useful when you want to drop (large) page caches used in this memcg.
+> > +       But some of in-use page cache can be dropped by this.
+> > +
+> > +5.1.2 keep
+> > +       #echo on_rmdir keep > memory.attribute
+> > +       All pages on the memcg will be moved to its parent.
+> > +       Useful when you don't want to drop page caches used in this memcg.
+> > +       You can keep page caches from some library or DB accessed by this
+> > +       memcg on memory.
+> 
+> Would it not be more useful to implement a per-memcg version of
+> /proc/sys/vm/drop_caches?  (One without drop_caches' locking bug,
+> hopefully).
+> 
+> If we do this then we can make the above "keep" behaviour non-optional,
+> and the operator gets to choose whether or not to drop the caches
+> before doing the rmdir.
+> 
+> Plus, we get a new per-memcg drop_caches capability.  And it's a nicer
+> interface, and it doesn't have the obvious races which on_rmdir has,
+> etc.
+> 
+> hm?
+> 
+In my plan, I'll add
 
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Thursday, November 13, 2008 7:01 AM
-To: Bruno Prémont
-Cc: arjan@infradead.org; Joseph Chan; linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
+memory.shrink_usage interface to do and allows
 
-On Mon, 10 Nov 2008 22:00:46 +0100
-Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
+#echo 0M > memory.shrink_memory_usage
+(you may swap tasks out if there is task..)
 
-> During conversion of viafb_ioctl() I noticed the following:
-> 
-> Those two cases just copy_from_user and do nothing with copied data, 
-> incomplete implementation?:
->         case VIAFB_SET_PANEL_POSITION:
->                 if (copy_from_user(&u.panel_pos_size_para, argp,
->                                    sizeof(u.panel_pos_size_para)))
->                         return -EFAULT;
->                 break;
->         case VIAFB_SET_PANEL_SIZE:
->                 if (copy_from_user(&u.panel_pos_size_para, argp,
->                                    sizeof(u.panel_pos_size_para)))
->                         return -EFAULT;
->                 break;
-> 
-> Handling of GET/SET GAMMA looks buggy:
-> In each case 256*4 bytes are allocated but only 4 bytes (size of 
-> pointer) are copied to/from userspace though 
-> viafb_(get|set)_gamma_table() operates on the full 256 elements...
->         case VIAFB_SET_GAMMA_LUT:
->                 viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
->                 if (!viafb_gamma_table)
->                         return -ENOMEM;
->                 if (copy_from_user(viafb_gamma_table, argp,
->                                 sizeof(viafb_gamma_table))) {
->                         kfree(viafb_gamma_table);
->                         return -EFAULT;
->                 }
->                 viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
->                 kfree(viafb_gamma_table);
->                 break;
-> 
->         case VIAFB_GET_GAMMA_LUT:
->                 viafb_gamma_table = kmalloc(256 * sizeof(u32), GFP_KERNEL);
->                 if (!viafb_gamma_table)
->                         return -ENOMEM;
->                 viafb_get_gamma_table(viafb_gamma_table);
->                 if (copy_to_user(argp, viafb_gamma_table,
->                         sizeof(viafb_gamma_table))) {
->                         kfree(viafb_gamma_table);
->                         return -EFAULT;
->                 }
->                 kfree(viafb_gamma_table);
->                 break;
-> 
-> I don't know if there is a userspace app that uses these VIA IOCTLs...
-> so the ioctl part is just compile-tested.
-> After checking, fbset just uses some generic framebuffer IOCTLs 
-> outside of viafb's scope, thus not passing through viafb_ioctl().
-> 
-> 
-> 
-> ---
-> --- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig	2008-11-09 19:36:47.000000000 +0100
-> +++ linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10 20:50:32.000000000 +0100
+to drop pages.
 
-hm, OK, I dropped the old patch and merged this one.
+Balbir, how do you think ? I've already removed "force_empty".
 
-It'd be nice to have it runtime tested and reviewed by Joseph, but we haven't heard from him yet.  viafb might be 8k-stacks-only in 2.6.27, which would be bad.
+Thanks,
+-Kame
+
+
+
+
+
 
