@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYKMTqI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbYKMTqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYKMTqI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:46:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbYKMTei
+	id S1757452AbYKMTqi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYKMTei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 13 Nov 2008 14:34:38 -0500
-Received: from gw.goop.org ([64.81.55.164]:34372 "EHLO mail.goop.org"
+Received: from gw.goop.org ([64.81.55.164]:34455 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752876AbYKMTeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:12 -0500
+	id S1753904AbYKMTeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:16 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 24 of 38] xen dom0: Add support for the platform_ops hypercall
-X-Mercurial-Node: 7a8af4186a897a9f26bf2d17ca6375304f635b72
-Message-Id: <7a8af4186a897a9f26bf.1226603422@abulafia.goop.org>
+Subject: [PATCH 37 of 38] xen: bind pirq to vector and event channel
+X-Mercurial-Node: 9246f7451e9785194a13c5a844ce6809dfb7ddb5
+Message-Id: <9246f7451e9785194a13.1226603435@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:22 -0800
+Date: Thu, 13 Nov 2008 11:10:35 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -26,292 +26,106 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Tweedie <sct@redhat.com>
+Having converting a dev+pin to a gsi, and that gsi to an irq, and
+allocated a vector for the irq, we must program the IO APIC to deliver
+an interrupt on a pin to the vector, so Xen can deliver it as an event
+channel.
 
-Minimal changes to get platform ops (renamed dom0_ops on pv_ops) working
-on pv_ops builds.  Pulls in upstream linux-2.6.18-xen.hg's platform.h
+Given the pirq, we can get the gsi and vector.  We map the gsi to a
+specific IO APIC's pin, and set the routing entry.
 
-Signed-off-by: Stephen Tweedie <sct@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/xen/hypercall.h |    8 +
- include/xen/interface/platform.h     |  232 ++++++++++++++++++++++++++++++++++
- include/xen/interface/xen.h          |    2
- 3 files changed, 242 insertions(+)
+ arch/x86/xen/apic.c |    4 ++--
+ arch/x86/xen/pci.c  |   34 +++++++++++++++++++++++++++++++---
+ 2 files changed, 33 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
---- a/arch/x86/include/asm/xen/hypercall.h
-+++ b/arch/x86/include/asm/xen/hypercall.h
-@@ -45,6 +45,7 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/sched.h>
- #include <xen/interface/physdev.h>
-+#include <xen/interface/platform.h>
+diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
+--- a/arch/x86/xen/apic.c
++++ b/arch/x86/xen/apic.c
+@@ -4,6 +4,7 @@
  
- /*
-  * The hypercall asms have to meet several constraints:
-@@ -282,6 +283,13 @@
+ #include <asm/io_apic.h>
+ #include <asm/acpi.h>
++#include <asm/hw_irq.h>
+ 
+ #include <asm/xen/hypervisor.h>
+ #include <asm/xen/hypercall.h>
+@@ -13,8 +14,7 @@
+ 
+ static void __init xen_io_apic_init(void)
+ {
+-	printk("xen apic init\n");
+-	dump_stack();
++	enable_IO_APIC();
  }
  
- static inline int
-+HYPERVISOR_dom0_op(struct xen_platform_op *platform_op)
+ static unsigned int xen_io_apic_read(unsigned apic, unsigned reg)
+diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
+--- a/arch/x86/xen/pci.c
++++ b/arch/x86/xen/pci.c
+@@ -2,8 +2,10 @@
+ #include <linux/acpi.h>
+ #include <linux/pci.h>
+ 
++#include <asm/mpspec.h>
++#include <asm/io_apic.h>
++
+ #include <asm/xen/hypervisor.h>
+-
+ #include <xen/interface/xen.h>
+ #include <xen/events.h>
+ 
+@@ -11,6 +13,31 @@
+ 
+ #include "xen-ops.h"
+ 
++static void xen_set_io_apic_routing(int irq, int trigger, int polarity)
 +{
-+	platform_op->interface_version = XENPF_INTERFACE_VERSION;
-+	return _hypercall1(int, dom0_op, platform_op);
++	int ioapic, ioapic_pin;
++	int vector, gsi;
++	struct IO_APIC_route_entry entry;
++
++	gsi = xen_gsi_from_irq(irq);
++	vector = xen_vector_from_irq(irq);
++
++	ioapic = mp_find_ioapic(gsi);
++	if (ioapic == -1) {
++		printk(KERN_WARNING "xen_set_ioapic_routing: irq %d gsi %d ioapic %d\n",
++			irq, gsi, ioapic);
++		return;
++	}
++
++	ioapic_pin = mp_find_ioapic_pin(ioapic, gsi);
++
++	printk(KERN_INFO "xen_set_ioapic_routing: irq %d gsi %d vector %d ioapic %d pin %d triggering %d polarity %d\n",
++		irq, gsi, vector, ioapic, ioapic_pin, trigger, polarity);
++
++	setup_ioapic_entry(ioapic, -1, &entry, ~0, trigger, polarity, vector);
++	ioapic_write_entry(ioapic, ioapic_pin, entry);
 +}
 +
-+static inline int
- HYPERVISOR_set_debugreg(int reg, unsigned long value)
+ int xen_register_gsi(u32 gsi, int triggering, int polarity)
  {
- 	return _hypercall2(int, set_debugreg, reg, value);
-diff --git a/include/xen/interface/platform.h b/include/xen/interface/platform.h
-new file mode 100644
---- /dev/null
-+++ b/include/xen/interface/platform.h
-@@ -0,0 +1,232 @@
-+/******************************************************************************
-+ * platform.h
-+ *
-+ * Hardware platform operations. Intended for use by domain-0 kernel.
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ *
-+ * Copyright (c) 2002-2006, K Fraser
-+ */
-+
-+#ifndef __XEN_PUBLIC_PLATFORM_H__
-+#define __XEN_PUBLIC_PLATFORM_H__
-+
-+#include "xen.h"
-+
-+#define XENPF_INTERFACE_VERSION 0x03000001
-+
-+/*
-+ * Set clock such that it would read <secs,nsecs> after 00:00:00 UTC,
-+ * 1 January, 1970 if the current system time was <system_time>.
-+ */
-+#define XENPF_settime             17
-+struct xenpf_settime {
-+    /* IN variables. */
-+    uint32_t secs;
-+    uint32_t nsecs;
-+    uint64_t system_time;
-+};
-+typedef struct xenpf_settime xenpf_settime_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_settime_t);
-+
-+/*
-+ * Request memory range (@mfn, @mfn+@nr_mfns-1) to have type @type.
-+ * On x86, @type is an architecture-defined MTRR memory type.
-+ * On success, returns the MTRR that was used (@reg) and a handle that can
-+ * be passed to XENPF_DEL_MEMTYPE to accurately tear down the new setting.
-+ * (x86-specific).
-+ */
-+#define XENPF_add_memtype         31
-+struct xenpf_add_memtype {
-+    /* IN variables. */
-+    unsigned long mfn;
-+    uint64_t nr_mfns;
-+    uint32_t type;
-+    /* OUT variables. */
-+    uint32_t handle;
-+    uint32_t reg;
-+};
-+typedef struct xenpf_add_memtype xenpf_add_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_add_memtype_t);
-+
-+/*
-+ * Tear down an existing memory-range type. If @handle is remembered then it
-+ * should be passed in to accurately tear down the correct setting (in case
-+ * of overlapping memory regions with differing types). If it is not known
-+ * then @handle should be set to zero. In all cases @reg must be set.
-+ * (x86-specific).
-+ */
-+#define XENPF_del_memtype         32
-+struct xenpf_del_memtype {
-+    /* IN variables. */
-+    uint32_t handle;
-+    uint32_t reg;
-+};
-+typedef struct xenpf_del_memtype xenpf_del_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_del_memtype_t);
-+
-+/* Read current type of an MTRR (x86-specific). */
-+#define XENPF_read_memtype        33
-+struct xenpf_read_memtype {
-+    /* IN variables. */
-+    uint32_t reg;
-+    /* OUT variables. */
-+    unsigned long mfn;
-+    uint64_t nr_mfns;
-+    uint32_t type;
-+};
-+typedef struct xenpf_read_memtype xenpf_read_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_read_memtype_t);
-+
-+#define XENPF_microcode_update    35
-+struct xenpf_microcode_update {
-+    /* IN variables. */
-+    GUEST_HANDLE(void) data;          /* Pointer to microcode data */
-+    uint32_t length;                  /* Length of microcode data. */
-+};
-+typedef struct xenpf_microcode_update xenpf_microcode_update_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_microcode_update_t);
-+
-+#define XENPF_platform_quirk      39
-+#define QUIRK_NOIRQBALANCING      1 /* Do not restrict IO-APIC RTE targets */
-+#define QUIRK_IOAPIC_BAD_REGSEL   2 /* IO-APIC REGSEL forgets its value    */
-+#define QUIRK_IOAPIC_GOOD_REGSEL  3 /* IO-APIC REGSEL behaves properly     */
-+struct xenpf_platform_quirk {
-+    /* IN variables. */
-+    uint32_t quirk_id;
-+};
-+typedef struct xenpf_platform_quirk xenpf_platform_quirk_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_platform_quirk_t);
-+
-+#define XENPF_firmware_info       50
-+#define XEN_FW_DISK_INFO          1 /* from int 13 AH=08/41/48 */
-+#define XEN_FW_DISK_MBR_SIGNATURE 2 /* from MBR offset 0x1b8 */
-+#define XEN_FW_VBEDDC_INFO        3 /* from int 10 AX=4f15 */
-+struct xenpf_firmware_info {
-+    /* IN variables. */
-+    uint32_t type;
-+    uint32_t index;
-+    /* OUT variables. */
-+    union {
-+        struct {
-+            /* Int13, Fn48: Check Extensions Present. */
-+            uint8_t device;                   /* %dl: bios device number */
-+            uint8_t version;                  /* %ah: major version      */
-+            uint16_t interface_support;       /* %cx: support bitmap     */
-+            /* Int13, Fn08: Legacy Get Device Parameters. */
-+            uint16_t legacy_max_cylinder;     /* %cl[7:6]:%ch: max cyl # */
-+            uint8_t legacy_max_head;          /* %dh: max head #         */
-+            uint8_t legacy_sectors_per_track; /* %cl[5:0]: max sector #  */
-+            /* Int13, Fn41: Get Device Parameters (as filled into %ds:%esi). */
-+            /* NB. First uint16_t of buffer must be set to buffer size.      */
-+            GUEST_HANDLE(void) edd_params;
-+        } disk_info; /* XEN_FW_DISK_INFO */
-+        struct {
-+            uint8_t device;                   /* bios device number  */
-+            uint32_t mbr_signature;           /* offset 0x1b8 in mbr */
-+        } disk_mbr_signature; /* XEN_FW_DISK_MBR_SIGNATURE */
-+        struct {
-+            /* Int10, AX=4F15: Get EDID info. */
-+            uint8_t capabilities;
-+            uint8_t edid_transfer_time;
-+            /* must refer to 128-byte buffer */
-+            GUEST_HANDLE(uchar) edid;
-+        } vbeddc_info; /* XEN_FW_VBEDDC_INFO */
-+    } u;
-+};
-+typedef struct xenpf_firmware_info xenpf_firmware_info_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_firmware_info_t);
-+
-+#define XENPF_enter_acpi_sleep    51
-+struct xenpf_enter_acpi_sleep {
-+    /* IN variables */
-+    uint16_t pm1a_cnt_val;      /* PM1a control value. */
-+    uint16_t pm1b_cnt_val;      /* PM1b control value. */
-+    uint32_t sleep_state;       /* Which state to enter (Sn). */
-+    uint32_t flags;             /* Must be zero. */
-+};
-+typedef struct xenpf_enter_acpi_sleep xenpf_enter_acpi_sleep_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_enter_acpi_sleep_t);
-+
-+#define XENPF_change_freq         52
-+struct xenpf_change_freq {
-+    /* IN variables */
-+    uint32_t flags; /* Must be zero. */
-+    uint32_t cpu;   /* Physical cpu. */
-+    uint64_t freq;  /* New frequency (Hz). */
-+};
-+typedef struct xenpf_change_freq xenpf_change_freq_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_change_freq_t);
-+
-+/*
-+ * Get idle times (nanoseconds since boot) for physical CPUs specified in the
-+ * @cpumap_bitmap with range [0..@cpumap_nr_cpus-1]. The @idletime array is
-+ * indexed by CPU number; only entries with the corresponding @cpumap_bitmap
-+ * bit set are written to. On return, @cpumap_bitmap is modified so that any
-+ * non-existent CPUs are cleared. Such CPUs have their @idletime array entry
-+ * cleared.
-+ */
-+#define XENPF_getidletime         53
-+struct xenpf_getidletime {
-+    /* IN/OUT variables */
-+    /* IN: CPUs to interrogate; OUT: subset of IN which are present */
-+    GUEST_HANDLE(uchar) cpumap_bitmap;
-+    /* IN variables */
-+    /* Size of cpumap bitmap. */
-+    uint32_t cpumap_nr_cpus;
-+    /* Must be indexable for every cpu in cpumap_bitmap. */
-+    GUEST_HANDLE(uint64_t) idletime;
-+    /* OUT variables */
-+    /* System time when the idletime snapshots were taken. */
-+    uint64_t now;
-+};
-+typedef struct xenpf_getidletime xenpf_getidletime_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_getidletime_t);
-+
-+struct xen_platform_op {
-+    uint32_t cmd;
-+    uint32_t interface_version; /* XENPF_INTERFACE_VERSION */
-+    union {
-+        struct xenpf_settime           settime;
-+        struct xenpf_add_memtype       add_memtype;
-+        struct xenpf_del_memtype       del_memtype;
-+        struct xenpf_read_memtype      read_memtype;
-+        struct xenpf_microcode_update  microcode;
-+        struct xenpf_platform_quirk    platform_quirk;
-+        struct xenpf_firmware_info     firmware_info;
-+        struct xenpf_enter_acpi_sleep  enter_acpi_sleep;
-+        struct xenpf_change_freq       change_freq;
-+        struct xenpf_getidletime       getidletime;
-+        uint8_t                        pad[128];
-+    } u;
-+};
-+typedef struct xen_platform_op xen_platform_op_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xen_platform_op_t);
-+
-+#endif /* __XEN_PUBLIC_PLATFORM_H__ */
-+
-+/*
-+ * Local variables:
-+ * mode: C
-+ * c-set-style: "BSD"
-+ * c-basic-offset: 4
-+ * tab-width: 4
-+ * indent-tabs-mode: nil
-+ * End:
-+ */
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -461,6 +461,8 @@
- #define __mk_unsigned_long(x) x ## UL
- #define mk_unsigned_long(x) __mk_unsigned_long(x)
+ 	int irq;
+@@ -25,6 +52,9 @@
  
-+DEFINE_GUEST_HANDLE(uint64_t);
-+
- #else /* __ASSEMBLY__ */
+ 	printk(KERN_DEBUG "xen: --> irq=%d\n", irq);
  
- /* In assembly code we cannot use C numeric constant suffixes. */
++	if (irq > 0)
++		xen_set_io_apic_routing(irq, triggering, polarity);
++
+ 	return irq;
+ }
+ 
+@@ -45,8 +75,6 @@
+ 
+ 		printk(KERN_INFO "xen: PCI device %s pin %d -> irq %d\n",
+ 		       pci_name(dev), dev->pin, irq);
+-
+-		/* install vector in ioapic? */
+ 	} else
+ 		printk(KERN_INFO "xen: irq enable for %s failed: rc=%d pin=%d irq=%d\n",
+ 			pci_name(dev), rc, dev->pin, dev->irq);
 
 
