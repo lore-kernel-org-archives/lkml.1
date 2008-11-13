@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbYKMMOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbYKMMWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbYKMMOo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 07:14:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbYKMMOf
+	id S1753373AbYKMMWe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 07:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYKMMWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 07:14:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48824 "EHLO hera.kernel.org"
+	Thu, 13 Nov 2008 07:22:25 -0500
+Received: from ns1.suse.de ([195.135.220.2]:49716 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751963AbYKMMOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 07:14:34 -0500
-Message-ID: <491C1A1D.4090908@kernel.org>
-Date: Thu, 13 Nov 2008 21:14:21 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1751635AbYKMMWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 07:22:24 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Make /proc/sys/vm/drop_caches write only
+Date: Thu, 13 Nov 2008 17:54:11 +0530
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
-References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491A96AE.3080600@kernel.org> <491BC3E3.7040903@kernel.org> <E1L0aEn-0006dh-BK@pomaz-ex.szeredi.hu> <491C0FA0.5070500@kernel.org> <E1L0aox-0006iY-2L@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1L0aox-0006iY-2L@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 12:14:25 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200811131754.11863.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Thu, 13 Nov 2008, Tejun Heo wrote:
->> I don't really mind people doing strange things in userland as long as
->> it's safe but you're the maintainer.  It's a bit strange to export the
->> feature only for CUSE, so I'm a little bit hesitant.
-> 
-> You are starting from the fact that ioctl is a good API.  It's not,
-> it's a bad API, so I don't want to encourage the use of it.
+ /proc/sys/vm/drop_caches is used only to trigger dropping caches. It does not 
+disable the cache. The ability to read the value written to this file long 
+back gives wrong impression.
 
-Heh heh, I don't think ioctl is a good API but it's fun to watch people
-screw up themselves.  :-P
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
 
->>  I wanna make it
->> useful for both.  So, at the kernel level, only well formed for FUSE and
->> everything goes for CUSE.  Does that sound good enough?
-> 
-> With additional restrictions for ptraceability yes.  But if you just
-> restrict it to CUSE at first, that's fine by me as well :)
+---
 
-It actually wasn't a big change.  Now only well formed ioctls are
-allowed for FUSE server and kernel will dispatch the correct amount of
-input data and feed back the correct amount of output data without any
-retry.  With proper massaging of FUSE ioctl API, ioctl, at least for
-FUSE, will be very straight forward.
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index 3e5637f..9892e1b 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -66,11 +66,9 @@ int drop_caches_sysctl_handler(ctl_table *table, int write,
+ 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
+ {
+ 	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+-	if (write) {
+-		if (sysctl_drop_caches & 1)
+-			drop_pagecache();
+-		if (sysctl_drop_caches & 2)
+-			drop_slab();
+-	}
++	if (sysctl_drop_caches & 1)
++		drop_pagecache();
++	if (sysctl_drop_caches & 2)
++		drop_slab();
+ 	return 0;
+ }
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 9d048fa..dff3c13 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1015,7 +1015,7 @@ static struct ctl_table vm_table[] = {
+ 		.procname	= "drop_caches",
+ 		.data		= &sysctl_drop_caches,
+ 		.maxlen		= sizeof(int),
+-		.mode		= 0644,
++		.mode		= 0200,
+ 		.proc_handler	= drop_caches_sysctl_handler,
+ 		.strategy	= &sysctl_intvec,
+ 	},
 
-Thanks.
-
--- 
-tejun
