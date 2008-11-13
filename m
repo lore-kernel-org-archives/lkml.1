@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbYKMAAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbYKMACt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755363AbYKMAAv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 19:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbYKMAAm
+	id S1755825AbYKMACt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 19:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYKMACk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 19:00:42 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:41284 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752407AbYKMAAm (ORCPT
+	Wed, 12 Nov 2008 19:02:40 -0500
+Received: from mga01.intel.com ([192.55.52.88]:61936 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753597AbYKMACk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 19:00:42 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=OQsdVBAA8sAWSzxpd00+/abwzgLirGBlqQk6dOBPVdRbAGONBfefI0jqG3GdvfwELrXC05zDWazxO9hfvwZTlCdxQJeAlApTuzPBMcN8ygq8IRWabQ0y5LDGy31Sdt6V/ZTel1zBmUSqXq0gaddLjL8BSqHeyv7sDyQmi8Zrmtc=  ;
-X-YMail-OSG: fod7.FEVM1nAFI4wWrlKcJJ7nsLqfVnUHkUdfSA43Sjd6QxyIETov_VVFBzlzfIPNfWZhqtTYZmkIRFC8g4cIB52.pNpaHVHZksaWXQ1p8CGfcxwiei3jY03XsxEkfjlLxWl8T4vHbrIo4DKzkg4XSk9
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
-Date: Wed, 12 Nov 2008 16:00:34 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
-References: <200811091531.46003.david-b@pacbell.net> <20081112112525.GA8767@sirena.org.uk> <1226528635.6727.256.camel@vega.slimlogic.co.uk>
-In-Reply-To: <1226528635.6727.256.camel@vega.slimlogic.co.uk>
+	Wed, 12 Nov 2008 19:02:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,592,1220252400"; 
+   d="scan'208";a="402959137"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       H Peter Anvin <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Date: Wed, 12 Nov 2008 16:02:47 -0800
+Subject: RE: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+Thread-Topic: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+Thread-Index: AclFHafQxzuoc2l2QPWPiQyZvDNKcgABFZzg
+Message-ID: <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
+References: <20081112212647.259698000@intel.com>
+ <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de>
+In-Reply-To: <20081112232312.GB29363@wotan.suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811121600.34399.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 12 November 2008, Liam Girdwood wrote:
-> On Wed, 2008-11-12 at 11:25 +0000, Mark Brown wrote:
-> > On Mon, Nov 10, 2008 at 08:56:19PM -0800, David Brownell wrote:
+ 
+
+>-----Original Message-----
+>From: Nick Piggin [mailto:npiggin@suse.de] 
+>Sent: Wednesday, November 12, 2008 3:23 PM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Thomas Gleixner; H.Peter Anvin; Hugh Dickins; 
+>Roland Dreier; Jesse Barnes; Jeremy Fitzhardinge; Arjan van de 
+>Ven; linux-kernel@vger.kernel.org; Siddha, Suresh B
+>Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
 >
-> > > Less surprising/confusing would be if regulator_{en,dis}able() did
-> > > its own refcounting and called down to regulator_dev when changing
-> > > a per-client refcount to/from zero.  (Easy patch, for later.)
-> > 
-> > Yeah, either way is fine for me - don't know if Liam has a strong
-> > opinion.  The main benefit of not doing it is that encourages people to
-> > avoid consumers sharing the clients which causes problems when clients
-> > share the regulator.
+>You have to be careful of this, because it can be called with mmap_sem
+>held for read only. Hmm, I guess vm_insert_page is doing the 
+>same thing.
+>Probably mostly works because all other modifiers of vm_flags 
+>are holding
+>mmap_sem.
 
-Not refcounting enables/disables gets to be a PITA though; that's
-why the the IRQ and clock frameworks gave up on the not-counted
-versions of their enable/disable calls a long time ago.
+Yes. I did the patch looking at vm_insert_page doing similar thing.
 
-The typical problem scenario is that two parts of the same driver
-have independent needs to make sure something is enabled.  If it's
-not OK to enable() something that's already enabled(), the driver
-itself will need to reinvent a refcounting scheme.
+>
+>However, in some cases, code can do vm_insert_pfn and vm_insert_page
+>(actually hmm, no vm_insert_mixed actually should cover most of those
+>cases).
+>
+>Still, I'd be much happier if we could make these into BUG_ON, and then
+>teach callers to set it in their .mmap routines.
 
-That kind of refcount patch would be a net code shrink anyway.  :)
+Actually, vm_insert_pfn() already has a BUG_ON() at the start for cases
+where neither (or both) MIXEDMAP and PFNMAP is not set. So, that should
+cover the case we are worried about it here and we can eliminate this
+patch altogether. Only part I am not sure about is why we are looking
+for MIXEDMAP here. Shouldn't they be using vm_insert_mixed instead?
 
-
-> Fwiw, the main design intention here was to have a 1:1 mapping between a
-> consumer device and a struct regulator 
-
-As in, an LCD display and its touchscreen might be in
-the same power domain (regulator_dev, internal to the
-framework) but would have different regulator structs.
-
-In that case the most likely scenario would be two
-drivers needing to enable() so it's not trying to
-talk to controllers that are powered off.  Voltage
-would normally be fixed.
-
-
-> so that we could easily store per 
-> consumer power data (for mode switching, easier debug, sysfs) and avoid
-> any issues between sharing the clients. I'd be happy for this change as
-> long as we can keep the per consumer data.
-
-Right, I wasn't talking about changing that model.
-
-- Dave
+Thanks,
+Venki
 
