@@ -1,95 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751671AbYKMKJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbYKMKPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751671AbYKMKJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 05:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbYKMKJp
+	id S1752687AbYKMKPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 05:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYKMKPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 05:09:45 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42017 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751831AbYKMKJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 05:09:44 -0500
-Date: Thu, 13 Nov 2008 11:09:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] tracing/function-return-tracer: Call
-	prepare_ftrace_return by registers
-Message-ID: <20081113100938.GA24602@elte.hu>
-References: <491B4F63.3090909@gmail.com> <20081112221623.GB6125@elte.hu> <c62985530811121422w6d33de3cp506bdf1aa96efd81@mail.gmail.com> <alpine.DEB.1.10.0811121824380.21116@gandalf.stny.rr.com> <c62985530811121535t13a60c93y9e4c22e365ca1b34@mail.gmail.com> <alpine.DEB.1.10.0811121911340.30248@gandalf.stny.rr.com> <20081113085949.GG25479@elte.hu> <20081113091454.GH25479@elte.hu> <c62985530811130202r7721c927w58beb34ec92c34f7@mail.gmail.com>
+	Thu, 13 Nov 2008 05:15:09 -0500
+Received: from smtp-out-45.synserver.de ([217.119.50.45]:1067 "HELO
+	smtp-out-45.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750728AbYKMKPI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 05:15:08 -0500
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 7107
+Date: Thu, 13 Nov 2008 11:14:57 +0100
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [arch/x86/vdso/vdso32-syms.lds] Error 1
+Message-ID: <20081113101457.GA4793@gentoox2.trippelsdorf.de>
+References: <20081107181117.GA29006@gentoox2.trippelsdorf.de> <20081112185617.4A1C71541FE@magilla.localdomain> <20081112213459.GA2315@gentoox2.trippelsdorf.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811130202r7721c927w58beb34ec92c34f7@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <20081112213459.GA2315@gentoox2.trippelsdorf.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-
-> That's right, it's much more better for the eyes. I didn't want to 
-> output such a disposition from the kernel because I thought that 
-> would result in too much strings work from kernel-space. But 
-> actually, as you suggest,
->  if I append a depth field in the trace that could be easy and not 
-> so costly. I just have a last thought about post-processing parsing. 
-> Would it make it harder for that?
-
-humans are the priority targets for tracer output - tools are a 
-distant second target. Whatever is nice for humans is also usually 
-easy to process via tools. A tool can set an option flag just fine.
-
-To help tooling, add a trace_options flag for more predictable/faster 
-output. We already have the binary output format for example.
-
-> Why not a flag that could be set through iter_ctrl (which has 
-> changed its name yesterday) and that could let the user to choose 
-> its output? That's where I renew my proposition to make the tracers 
-> able to propose custom flags for this file with a new callback such 
-> as tracer_ctrl, or tracer_opt.
-
-yes, your proposal is fine.
-
-> But as you say, why not set it through a flag.
-
-yes - and make the defaults for flags favor human visual parsing.
-
-> > Easiest would be to add a depth field to the trace entry as well, to
-> > make sure we get the right depth in the end, even if we somehow mix up
-> > the trace entries.
+On Wed, Nov 12, 2008 at 10:34:59PM +0100, Markus Trippelsdorf wrote:
+> On Wed, Nov 12, 2008 at 10:56:17AM -0800, Roland McGrath wrote:
+> > Sorry for the delay, I've been offline.
+> > 
+> > > All of a sudden I get the following error when I build the kernel:
+> > 
+> > Suddenly when?  What changed to make this start happening?
+> > Is it recent kernel sources?  If so, can you git-bisect to
+> > which change did it?  If not, did something else change in
+> > your build environment that made this problem appear?
+> > Does it come or go with some .config change?
+> > 
+> > > --- -   2008-11-07 18:51:36.392997346 +0100
+> > > +++ arch/x86/vdso/vdso32-int80-syms.lds 2008-11-07 18:51:36.283820343 +0100
+> > > @@ -3,5 +3,3 @@
+> > >  VDSO32_sigreturn = 0x0400;
+> > >  VDSO32_vsyscall = 0x0420;
+> > >  VDSO32_vsyscall_eh_frame_size = 0x040;
+> > > -VDSO32_vsyscall = 0x0420;
+> > > -VDSO32_vsyscall_eh_frame_size = 0x040;
+> > > make[1]: *** [arch/x86/vdso/vdso32-syms.lds] Error 1
+> > > make: *** [arch/x86/vdso] Error 2
+> > 
+> > That sure looks odd.  It looks like sort -u failed to uniquify those lines.
+> > 
+> > Can you try something like this:
+> > 
+> > > -	else rm -f $(@D)/.tmp_$(@F); exit 1; \
+> > > +	else cat >&2 $(@D)/.tmp_$(@F); exit 1; \
+> > 
+> > and run make V=1 to see the full output on the failure?
 > 
-> Yeah, that's good! I will just have to output "\t" * depth to have 
-> the correct indentation.
+> Something odd is going on with my system:
 
-i'd suggest spaces for the function indentation, because we'll also 
-have quite deep call stacks in practice.
+> I will try to figure out what causes this behaviour, but it is not
+> kernel related I guess. So I apologize for the noise.
 
-and i'd suggest you flip around the cost field to something like:
+It turned out that my version of glibc, which was compiled with a
+gcc-4.4.0 snapshot, was the cause of the problem.
 
- [...]
-               getnstimeofday() {
-                set_normalized_timespec() {
-                 clocksource_read() { 
- ( 1547 ns)       acpi_pm_read()                     
- ( 1951 ns)      } clocksource_read()
- ( 2200 ns)     } set_normalized_timespec()
- ( 2354 ns)    } getnstimeofday()
+However simply compiling glibc again with gcc-4.3.2 did not work,
+because glibc uses "LC_ALL=C sort -u" in many Makefiles. So I had to find
+an old binary version of glibc, install that version in a chroot
+environment and finally compile glibc again with a sane compiler in that
+chroot. 
 
-that makes it fixed-width up to the inevitable variable-length field, 
-the function name.
-
-	Ingo
+-- 
+Markus
