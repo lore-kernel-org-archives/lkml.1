@@ -1,130 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbYKMKts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbYKMLF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbYKMKts (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 05:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYKMKth
+	id S1752561AbYKMLF5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 06:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYKMLFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 05:49:37 -0500
-Received: from mail0.lsil.com ([147.145.40.20]:64782 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751747AbYKMKtf convert rfc822-to-8bit (ORCPT
+	Thu, 13 Nov 2008 06:05:47 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38869 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751671AbYKMLFq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 05:49:35 -0500
-From: "Prakash, Sathya" <Sathya.Prakash@lsi.com>
-To: Julia Lawall <julia@diku.dk>, "Moore, Eric" <Eric.Moore@lsi.com>,
-       "Support, Software" <support@lsi.com>,
-       DL-MPT Fusion Linux <DL-MPTFusionLinux@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Date: Thu, 13 Nov 2008 16:19:24 +0530
-Subject: RE: [PATCH 4/8] drivers/message/fusion: use ARRAY_SIZE
-Thread-Topic: [PATCH 4/8] drivers/message/fusion: use ARRAY_SIZE
-Thread-Index: AclCjAM2iByjfiXUQNKZgnWCpYIrtgC8XFYQ
-Message-ID: <B73941C4DE6A3D4EA1AE128E9565E244238A2D123F@inbmail01.lsi.com>
-In-Reply-To: <Pine.LNX.4.64.0811091755050.32509@ask.diku.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 13 Nov 2008 06:05:46 -0500
+Message-ID: <491C0A01.5040106@jp.fujitsu.com>
+Date: Thu, 13 Nov 2008 20:05:37 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Ingo Molnar <mingo@elte.hu>, Paul Menage <menage@google.com>
+Subject: [PATCH] accelerate newidle balancing in relax_domain
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK
---Sathya
+Increasing the value of 'sched_relax_domain_level' in cpuset expands
+the searching range of task balancing on some schedule events.
+As the result it makes the task balancing in the range more aggressive,
+so it will benefit some situation, such as where the latency is required
+even it sacrifices cache hit rate etc. (for such situation, it would be
+ideally best that cpus do not be idle until there are no runnable task.)
 
------Original Message-----
-From: Julia Lawall [mailto:julia@diku.dk]
-Sent: Sunday, November 09, 2008 10:25 PM
-To: Moore, Eric; Support, Software; DL-MPT Fusion Linux; linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/8] drivers/message/fusion: use ARRAY_SIZE
+This patch aimed to accelerate the balancing in the relax_domain.
 
-From: Julia Lawall <julia@diku.dk>
+The newidle balancing is kicked when tasks in a runqueue run out.
+It finds and pulls runnable tasks from other busy cpus, checking load
+imbalance between cpus.  Considering above situation, using loads in
+short term is preferred than that in long term because it makes balancing
+more aggressive otherwise it becomes relatively conservative.
+The referenced load is selected by the newidle_idx parameter of scheduler
+domains, so this patch tunes the parameters only when domains are in the
+relax_domain's range.  There are no effects if you don't use relax_domain.
 
-ARRAY_SIZE is more concise to use when the size of an array is divided by the size of its type or the size of its first element.
+Following is a result of my short-lightweight-transaction test, showing
+average of requester's latency (ms), 300 couple of threads running 30 sec
+on 8cpu/Itanium:
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+  1) v2.6.28-rc4
+     Average 0.748783 Std Div 1.688022 Throughput 165313
+  2) v2.6.28-rc4 + relax_domain
+     Average 0.536867 Std Div 1.115383 Throughput 168492
+  3) v2.6.28-rc4 + relax_domain + patch
+     Average 0.385164 Std Div 0.801875 Throughput 170069
 
-// <smpl>
-@i@
-@@
-
-#include <linux/kernel.h>
-
-@depends on i using "paren.iso"@
-type T;
-T[] E;
-@@
-
-- (sizeof(E)/sizeof(E[...]))
-+ ARRAY_SIZE(E)
-
-@depends on i using "paren.iso"@
-type T;
-T[] E;
-@@
-
-- (sizeof(E)/sizeof(T))
-+ ARRAY_SIZE(E)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/message/fusion/mptbase.c    |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ kernel/sched.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index d6a0074..7a313f3 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -4563,7 +4563,7 @@ WaitForDoorbellReply(MPT_ADAPTER *ioc, int howlong, int sleepFlag)
-                        failcnt++;
-                hword = le16_to_cpu(CHIPREG_READ32(&ioc->chip->Doorbell) & 0x0000FFFF);
-                /* don't overflow our IOC hs_reply[] buffer! */
--               if (u16cnt < sizeof(ioc->hs_reply) / sizeof(ioc->hs_reply[0]))
-+               if (u16cnt < ARRAY_SIZE(ioc->hs_reply))
-                        hs_reply[u16cnt] = hword;
-                CHIPREG_WRITE32(&ioc->chip->IntStatus, 0);
-        }
-@@ -7176,7 +7176,7 @@ union loginfo_type {
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 57c933f..c970239 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7366,6 +7366,8 @@ static void set_domain_attribute(struct sched_domain *sd,
+ 	} else {
+ 		/* turn on idle balance on this domain */
+ 		sd->flags |= (SD_WAKE_IDLE_FAR|SD_BALANCE_NEWIDLE);
++		/* make newidle balancing more aggressive */
++		sd->newidle_idx = 0;
+ 	}
+ }
+ 
+-- 
+1.6.0.GIT
 
-        sas_loginfo.loginfo = log_info;
-        if ((sas_loginfo.dw.bus_type != 3 /*SAS*/) &&
--           (sas_loginfo.dw.originator < sizeof(originator_str)/sizeof(char*)))
-+           (sas_loginfo.dw.originator < ARRAY_SIZE(originator_str)))
-                return;
-
-        originator_desc = originator_str[sas_loginfo.dw.originator];
-@@ -7185,21 +7185,21 @@ union loginfo_type {
-
-                case 0:  /* IOP */
-                        if (sas_loginfo.dw.code <
--                           sizeof(iop_code_str)/sizeof(char*))
-+                           ARRAY_SIZE(iop_code_str))
-                                code_desc = iop_code_str[sas_loginfo.dw.code];
-                        break;
-                case 1:  /* PL */
-                        if (sas_loginfo.dw.code <
--                           sizeof(pl_code_str)/sizeof(char*))
-+                           ARRAY_SIZE(pl_code_str))
-                                code_desc = pl_code_str[sas_loginfo.dw.code];
-                        break;
-                case 2:  /* IR */
-                        if (sas_loginfo.dw.code >=
--                           sizeof(ir_code_str)/sizeof(char*))
-+                           ARRAY_SIZE(ir_code_str))
-                                break;
-                        code_desc = ir_code_str[sas_loginfo.dw.code];
-                        if (sas_loginfo.dw.subcode >=
--                           sizeof(raid_sub_code_str)/sizeof(char*))
-+                           ARRAY_SIZE(raid_sub_code_str))
-                        break;
-                        if (sas_loginfo.dw.code == 0)
-                                sub_code_desc =
