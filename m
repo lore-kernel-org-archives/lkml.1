@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbYKMNUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbYKMNYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbYKMNUZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 08:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbYKMNUM
+	id S1754036AbYKMNYT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 08:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYKMNYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 08:20:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51793 "EHLO mx3.mail.elte.hu"
+	Thu, 13 Nov 2008 08:24:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37401 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbYKMNUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 08:20:10 -0500
-Date: Thu, 13 Nov 2008 14:19:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Pekka Paalanen <pq@iki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH v2 1/1] ftrace: do not update max buffer with no users
-Message-ID: <20081113131939.GA2669@elte.hu>
-References: <20081113043449.751885305@goodmis.org> <20081113043751.796120007@goodmis.org> <20081113084040.GD25479@elte.hu> <alpine.DEB.1.10.0811130752480.7458@gandalf.stny.rr.com>
+	id S1752597AbYKMNYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 08:24:07 -0500
+Message-ID: <491C2A63.1030804@kernel.org>
+Date: Thu, 13 Nov 2008 22:23:47 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811130752480.7458@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491BC87F.4050108@kernel.org> <E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu> <491C1588.2060907@kernel.org> <E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu> <E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 13:23:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> The line count is very misleading. The 83 insertions and deletions where 
-> moved code or indentation:
-
-but that indentation is completely unnecessary:
-
-> -               ret = ring_buffer_resize(max_tr.buffer, val);
-> -               if (ret < 0) {
-> -                       int r;
-> -                       cnt = ret;
-> -                       r = ring_buffer_resize(global_trace.buffer,
-> -                                              global_trace.entries);
-> -                       if (r < 0) {
-> -                               /* AARGH! We are left with different
-> -                                * size max buffer!!!! */
-> -                               WARN_ON(1);
-> -                               tracing_disabled = 1;
->                         }
-> -                       goto out;
->                 }
+Miklos Szeredi wrote:
+>> Hmm... yeah, allocating handle from kernel should work fine, but I
+>> wouldn't worry about race here.  We can just use 64 bit and guarantee
+>> that any handle won't be reused ever.
 > 
+> Btw, the protocol could be simplified even more by getting rid of all
+> acknowledgements:
 > 
-> +               if (max_tr.buffer) {
-> +                       ret = ring_buffer_resize(max_tr.buffer, val);
-> +                       if (ret < 0) {
-> +                               int r;
-> +                               cnt = ret;
-> +                               r = ring_buffer_resize(global_trace.buffer,
-> +                                                      global_trace.entries);
-> +                               if (r < 0) {
-> +                                       /* AARGH! We are left with different
-> +                                        * size max buffer!!!! */
-> +                                       WARN_ON(1);
-> +                                       tracing_disabled = 1;
-> +                               }
-> +                               goto out;
->                         }
->                 }
+> <- POLL-request(pollhandle) (alloc handle)
+> ...
+> -> POLL-notification(pollhandle)
+> ...
+> <- POLL_RELEASE(pollhandle)
+> 
+> So normally ->poll() wouldn't have to sleep at all.  If the POLL
+> request fails for some reason, userspace just sends a notification
+> with the respective error.
 
-the obvious solution is to add this to ring_buffer_resize():
+We don't need POLL_RELEASE but we still need POLL-reply (to request) to
+send revents.  We can put that into notification too.  Hmmm... Yeah,
+that could be simpler for FUSE servers.  I'll venture that way.
 
-	if (!buffer)
-		return size;
+Thanks.
 
-resizing a non-existent buffer should succeed. A two-liner patch. Not 
-160 lines of flux.
-
-Really, you need to think _hard_ how to avoid invasive-looking changes 
-in late -rc's, because every extra line to review uses up precious 
-review resources.
-
-	Ingo
+-- 
+tejun
