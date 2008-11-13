@@ -1,136 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbYKMCSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYKMCYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753650AbYKMCSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 21:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYKMCSI
+	id S1753158AbYKMCYk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 21:24:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYKMCY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 21:18:08 -0500
-Received: from norsk5.dsl.xmission.com ([166.70.24.44]:17189 "EHLO
-	master.douglaskthompson.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752095AbYKMCSH (ORCPT
+	Wed, 12 Nov 2008 21:24:26 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:15774 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYKMCYZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 21:18:07 -0500
-Date: Wed, 12 Nov 2008 19:18:03 -0700
-From: dougthompson@xmission.com
-To: dougthompson@xmission.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH 1/1] edac: fix mpc85xx and add mpc8536 mpc8560
-Message-ID: <491b8e5b.uSc1E4+nIKbPbwoT%dougthompson@xmission.com>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Wed, 12 Nov 2008 21:24:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=DEAsIFXassCGSeftlALMbUPnkVEzneyQdZgYCjdJmlkuy959YhLJo3WD2YoK2WF46z
+         M2NQUcAtECjlujBAxnE/qX2e8Ja2X7t/Vvt3zlDznEmnEvxul6T3uRLt9WOReltVpnQ7
+         vZolPTg2AnyKvuxzYC5uJzKyHhuLLXvtliYoE=
+Message-ID: <208cbae30811121824g2e2d4f3bvf2c982c9f54b30a2@mail.gmail.com>
+Date: Thu, 13 Nov 2008 05:24:24 +0300
+From: "Alexey Klimov" <klimov.linux@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>, "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: next: 6a13378a5 (Don't allow KWorld radio...) is broken
+Cc: "Tobias Lorenz" <tobias.lorenz@gmx.net>,
+       "Mauro Carvalho Chehab" <mchehab@redhat.com>,
+       linux-input@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <491B3E90.5020307@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <491B3E90.5020307@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kumar Gala <galak@kernel.crashing.org>
+On Wed, Nov 12, 2008 at 11:37 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> There is a difference between hid_blacklist and hid_ignore_list. One forbids
+> generic hid driver to bind the device, while the other forces usbhid to release
+> the device and move hands away from it.
 
-All other compatibles that are uniquely identifying the processor use
-a prefix of the form fsl,mpc85...'.  We add support for it so we
-can deprecate the older 'fsl,85...' that was improperly used here.
+I figured that out and remembered that this thing needed to be fixed and
+then got side-tracked by other things. Sorry.
 
-Additionally added mpc8536 & mpc8560 to the compatible lists.
+On Thu, Nov 13, 2008 at 3:33 AM, Jiri Kosina <jkosina@suse.cz> wrote:
+> Alexey, did you actually test it?
+> I'd prefer taking this through my tree, if it doesn't impose any problem
+> on your side. Could you please fix it up and resend?
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Acked-by: Dave Jiang <djiang@mvista.com>
----
+It good thing to do. May i make patch against current kernel tree (rc4-git3) ?
+I also going to make patch for radio-mr800 that has wrong hidquirks too.
+I can send now, because this two patches ready.
 
-This patch is based on Nate's 8572 patch.
-
- drivers/edac/mpc85xx_edac.c |   74 ++++++++++++++++++------------------------
- 1 files changed, 32 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 63bdc47..184799a 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -630,27 +630,22 @@ static int mpc85xx_l2_err_remove(struct of_device *op)
- }
-
- static struct of_device_id mpc85xx_l2_err_of_match[] = {
--	{
--	 .compatible = "fsl,8540-l2-cache-controller",
--	 },
--	{
--	 .compatible = "fsl,8541-l2-cache-controller",
--	 },
--	{
--	 .compatible = "fsl,8544-l2-cache-controller",
--	 },
--	{
--	 .compatible = "fsl,8548-l2-cache-controller",
--	 },
--	{
--	 .compatible = "fsl,8555-l2-cache-controller",
--	 },
--	{
--	 .compatible = "fsl,8568-l2-cache-controller",
--	 },
--	{
--	 .compatible = "fsl,mpc8572-l2-cache-controller",
--	 },
-+/* deprecate the fsl,85.. forms in the future, 2.6.30? */
-+	{ .compatible = "fsl,8540-l2-cache-controller", },
-+	{ .compatible = "fsl,8541-l2-cache-controller", },
-+	{ .compatible = "fsl,8544-l2-cache-controller", },
-+	{ .compatible = "fsl,8548-l2-cache-controller", },
-+	{ .compatible = "fsl,8555-l2-cache-controller", },
-+	{ .compatible = "fsl,8568-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8536-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8540-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8541-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8544-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8548-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8555-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8560-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8568-l2-cache-controller", },
-+	{ .compatible = "fsl,mpc8572-l2-cache-controller", },
- 	{},
- };
-
-@@ -967,27 +962,22 @@ static int mpc85xx_mc_err_remove(struct of_device *op)
- }
-
- static struct of_device_id mpc85xx_mc_err_of_match[] = {
--	{
--	 .compatible = "fsl,8540-memory-controller",
--	 },
--	{
--	 .compatible = "fsl,8541-memory-controller",
--	 },
--	{
--	 .compatible = "fsl,8544-memory-controller",
--	 },
--	{
--	 .compatible = "fsl,8548-memory-controller",
--	 },
--	{
--	 .compatible = "fsl,8555-memory-controller",
--	 },
--	{
--	 .compatible = "fsl,8568-memory-controller",
--	 },
--	{
--	 .compatible = "fsl,mpc8572-memory-controller",
--	 },
-+/* deprecate the fsl,85.. forms in the future, 2.6.30? */
-+	{ .compatible = "fsl,8540-memory-controller", },
-+	{ .compatible = "fsl,8541-memory-controller", },
-+	{ .compatible = "fsl,8544-memory-controller", },
-+	{ .compatible = "fsl,8548-memory-controller", },
-+	{ .compatible = "fsl,8555-memory-controller", },
-+	{ .compatible = "fsl,8568-memory-controller", },
-+	{ .compatible = "fsl,mpc8536-memory-controller", },
-+	{ .compatible = "fsl,mpc8540-memory-controller", },
-+	{ .compatible = "fsl,mpc8541-memory-controller", },
-+	{ .compatible = "fsl,mpc8544-memory-controller", },
-+	{ .compatible = "fsl,mpc8548-memory-controller", },
-+	{ .compatible = "fsl,mpc8555-memory-controller", },
-+	{ .compatible = "fsl,mpc8560-memory-controller", },
-+	{ .compatible = "fsl,mpc8568-memory-controller", },
-+	{ .compatible = "fsl,mpc8572-memory-controller", },
- 	{},
- };
-
+-- 
+Best regards, Klimov Alexey
