@@ -1,105 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYKMVwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755932AbYKMVyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755932AbYKMVwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 16:52:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbYKMVwN
+	id S1755932AbYKMVyQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 16:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbYKMVx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 16:52:13 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:29591 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754912AbYKMVwL (ORCPT
+	Thu, 13 Nov 2008 16:53:58 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2383 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbYKMVx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 16:52:11 -0500
-Message-ID: <491CA154.6020609@oracle.com>
-Date: Thu, 13 Nov 2008 13:51:16 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 13 Nov 2008 16:53:57 -0500
+Date: Thu, 13 Nov 2008 21:53:46 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <david-b@pacbell.net>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+Message-ID: <20081113215346.GA3199@sirena.org.uk>
+References: <200811091531.46003.david-b@pacbell.net> <200811102056.20008.david-b@pacbell.net> <20081112112525.GA8767@sirena.org.uk> <200811131140.15646.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: sfr@canb.auug.org.au, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL/RFC] Doc tree moves: use more sub-directory structure
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.491CA15A.01C0:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811131140.15646.david-b@pacbell.net>
+X-Cookie: May cause drowsiness.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [patch 2.6.28-rc3] regulator: add REGULATOR_MODE_OFF
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RFC part:  when is the best time to request a pull of this git tree?
-In the -rc1 merge window or some other time?
+On Thu, Nov 13, 2008 at 11:40:15AM -0800, David Brownell wrote:
 
-[It currently applies cleanly to linux-next and with only some of my
-Documentation/ changes to mmotm.]
+> ... but I don't know what you mean by "non-software enables".  Maybe you
+> mean "non-Linux"?  One of the other inputs would normally be controlled
+> by software -- just not from Linux.  Maybe it'd help if you think about
+> a system structured like:
 
+Yes, I mean non-Linux.  The fact that there may be some other software
+running on the other hardware isn't terribly interesting here - it's an
+implementation detail the user may not even be aware of.
 
-As a git novice, it's quite possible (or likely) that I did
-something wrong here...
+> And having regulator_ops.get_mode() be the call to report that
+> hardware state is straightforward.  Especially once you consider
+> that the actual state *will* be what Linux requested, except in
+> cases like:  (a) shared regulators, like the scenario above, for
+> which I suspect twl4030 is the first case in Linux; (b) hardware
+> fault handling, like overcurrent/overtemp shutdown; and maybe
+> (c) "smart" regulators that switch modes automatically.
 
+So.  This does rather assume that the mode should be expected to change
+in a software visible fashion and that this should be the main thing
+reported.  What the existing drivers are doing is making get_mode() the
+inverse of set_mode().  
 
-<trial run>
+Of the cases you have above I'd be surprised if there were any devices
+that didn't implement (b) and (c) is provided to at least some extent by
+the DC-DC convertors in the existing Wolfson drivers (one of the modes
+they offer automatically adjusts the regulation mode based on load).
 
+If reporting the full state via get_mode() the error reporting case in
+particular would seem to be more involved than adding an off state -
+you'd probably want an explicit out of regulation state, for example.
+If a regulator goes out of regulation it's clearly neither off nor
+functioning properly in the mode the hardware is configured for.
 
-Please pull from
+> Not entirely true.  In this case the issue is exposing regulator
+> output state ... the regulator_ops suffice for inputs, which would
+> combine with other inputs to determine the actual regulator state
+> that's reported using by regulator_ops.get_mode().
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/rdunlap/linux-docs doc-subdirs
+Right, if we assume that it reports the instantaneous hardware state.
 
-to get these changes:
+> It seems we've almost converged on the result of get_mode()
+> being that regulator state output, which is a function of more
+> than just the inputs from Linux.
 
- Documentation/00-INDEX                      |   42 +-------------------------
- Documentation/PCI/00-INDEX                  |    2 +
- Documentation/{ => PCI}/MSI-HOWTO.txt       |    0
- Documentation/blockdev/00-INDEX             |   16 ++++++++++
- Documentation/{ => blockdev}/README.DAC960  |    0
- Documentation/{ => blockdev}/cciss.txt      |    0
- Documentation/{ => blockdev}/cpqarray.txt   |    0
- Documentation/{ => blockdev}/floppy.txt     |    0
- Documentation/{ => blockdev}/nbd.txt        |    0
- Documentation/{ => blockdev}/paride.txt     |    0
- Documentation/{ => blockdev}/ramdisk.txt    |    0
- Documentation/ioctl/00-INDEX                |   10 ++++++
- Documentation/{ => ioctl}/ioctl-number.txt  |    0
- Documentation/kernel-parameters.txt         |   24 +++++++-------
- Documentation/serial/00-INDEX               |   24 +++++++++++++++
- Documentation/{ => serial}/README.cycladesZ |    0
- Documentation/{ => serial}/computone.txt    |    2 +-
- Documentation/{ => serial}/digiepca.txt     |    0
- Documentation/{ => serial}/hayes-esp.txt    |    0
- Documentation/{ => serial}/moxa-smartio     |    0
- Documentation/{ => serial}/riscom8.txt      |    0
- Documentation/{ => serial}/rocket.txt       |    0
- Documentation/{ => serial}/specialix.txt    |    0
- Documentation/{ => serial}/stallion.txt     |    0
- Documentation/{ => serial}/sx.txt           |    0
- Documentation/{ => serial}/tty.txt          |    0
- drivers/block/Kconfig                       |   29 +++++++++---------
- drivers/block/floppy.c                      |    2 +-
- drivers/char/Kconfig                        |   24 +++++++-------
- drivers/char/specialix.c                    |    2 +-
- 30 files changed, 96 insertions(+), 81 deletions(-)
- rename Documentation/{ => PCI}/MSI-HOWTO.txt (100%)
- create mode 100644 Documentation/blockdev/00-INDEX
- rename Documentation/{ => blockdev}/README.DAC960 (100%)
- rename Documentation/{ => blockdev}/cciss.txt (100%)
- rename Documentation/{ => blockdev}/cpqarray.txt (100%)
- rename Documentation/{ => blockdev}/floppy.txt (100%)
- rename Documentation/{ => blockdev}/nbd.txt (100%)
- rename Documentation/{ => blockdev}/paride.txt (100%)
- rename Documentation/{ => blockdev}/ramdisk.txt (100%)
- create mode 100644 Documentation/ioctl/00-INDEX
- rename Documentation/{ => ioctl}/ioctl-number.txt (100%)
- create mode 100644 Documentation/serial/00-INDEX
- rename Documentation/{ => serial}/README.cycladesZ (100%)
- rename Documentation/{ => serial}/computone.txt (99%)
- rename Documentation/{ => serial}/digiepca.txt (100%)
- rename Documentation/{ => serial}/hayes-esp.txt (100%)
- rename Documentation/{ => serial}/moxa-smartio (100%)
- rename Documentation/{ => serial}/riscom8.txt (100%)
- rename Documentation/{ => serial}/rocket.txt (100%)
- rename Documentation/{ => serial}/specialix.txt (100%)
- rename Documentation/{ => serial}/stallion.txt (100%)
- rename Documentation/{ => serial}/sx.txt (100%)
- rename Documentation/{ => serial}/tty.txt (100%)
+I'm not sure about that to be honest.  From that point of view it'd seem
+we'd also need to consider all the other configuration that the
+regulator might have since there's no reason why that couldn't also be
+overridden by other sources too.
+
+> > The expectation when writing this was that anything 
+> > software controlled would be fully software controlled.
+
+> The problem is that the current code *also* ignores the fact
+> that hardware status is a function of more inputs than just
+> those from Linux.  Like thermal shutdown from overcurrent.
+> The configuration inputs might be fine, but the output of
+> a regulator necessarily incorporates other inputs.
+
+That's all good and I agree - what you're saying that the only facility
+in the existing API for reporting back the current hardware status is
+the error notifier callbacks and that this is really rather too limited.
+
+> The top reason to display system state in sysfs is to support
+> troubleshooting ... and hiding the actual system state makes
+> that needlessly difficult.
+
+No argument here, either.  What I'm not so sure about is that get_mode()
+alone is the ideal way to report this.  It feels to me like we wold be
+better off exposing both physical and configured versions of all the
+existing status for the regulators (not just mode) plus some additional
+information for error conditions.  This caters for any configuration
+changes outside of software control and would let errors report without
+masking any other physical state.
