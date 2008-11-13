@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbYKMNQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYKMNTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029AbYKMNQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 08:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYKMNQh
+	id S1753823AbYKMNTg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 08:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbYKMNT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 08:16:37 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:59164 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752510AbYKMNQg (ORCPT
+	Thu, 13 Nov 2008 08:19:26 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:35789 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751658AbYKMNTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 08:16:36 -0500
-Date: Thu, 13 Nov 2008 08:16:34 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Pekka Paalanen <pq@iki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH v2 1/1] ftrace: do not update max buffer with no users
-In-Reply-To: <alpine.DEB.1.10.0811130752480.7458@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0811130815080.7458@gandalf.stny.rr.com>
-References: <20081113043449.751885305@goodmis.org> <20081113043751.796120007@goodmis.org> <20081113084040.GD25479@elte.hu> <alpine.DEB.1.10.0811130752480.7458@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 13 Nov 2008 08:19:25 -0500
+Date: Thu, 13 Nov 2008 21:19:18 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Julia Lawall <julia@diku.dk>
+Cc: davem@davemloft.net, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/8] crypto/md4.c: use ARRAY_SIZE
+Message-ID: <20081113131918.GB31608@gondor.apana.org.au>
+References: <Pine.LNX.4.64.0811091753500.32509@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0811091753500.32509@ask.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 13 Nov 2008, Steven Rostedt wrote:
-> > > Reported-by: Pekka Paalanen <pq@iki.fi>
-> > > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> > > ---
-> > >  kernel/trace/trace.c |  171 ++++++++++++++++++++++++++------------------------
-> > >  1 files changed, 88 insertions(+), 83 deletions(-)
-> > 
-> > This is _way_ too much churn for .28, we need a much simpler solution.
+On Sun, Nov 09, 2008 at 05:54:15PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> The line count is very misleading. The 83 insertions and deletions where 
-> moved code or indentation:
-> 
+> ARRAY_SIZE is more concise to use when the size of an array is divided by
+> the size of its type or the size of its first element.
 
-> 
-> As you can easily see, the change only added the test for max_tr.buffer
-> exists, and indented the rest.
-> 
-> The other parts you can easily see that they are not changed.
-> But, we could separate out the moved code and ifdef protection for 29, 
-> even though I feel nervous that some config might use them, and break at 
-> runtime. This change will break the compile if it happens. Without the 
-> change, we find out at runtime :-(
-
-Also, if you are worried about line count, I could just leave the code in 
-place, and add more ifdefs around them, and leave the consolidation of the 
-code for 29.
-
--- Steve
-
+Applied to cryptodev.  Thanks!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
