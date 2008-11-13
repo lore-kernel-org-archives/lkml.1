@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbYKMOxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbYKMOx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752158AbYKMOxm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 09:53:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYKMOxc
+	id S1753005AbYKMOx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 09:53:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbYKMOxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 09:53:32 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:9424 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751392AbYKMOxb (ORCPT
+	Thu, 13 Nov 2008 09:53:39 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:37157 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbYKMOxj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 09:53:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=jLiuKeXnDNCFocSQh6K6NZruFAJjNf29Pm7mNdtkRFCNX5oOihq3DBGVdRkxlr63PM
-         6Rvf4Y84GVdCbpW9ZTXJDv1WyRLgKhO7w8zhwr6Cc/Awo3rYpHaUAuO6ebjnIBjpeUhi
-         IS9nhm5l2f7NLXTjuZqOgA+Jdsrn/gUX8nwuo=
-Message-ID: <8bd0f97a0811130647qeb5aea4tdc115f283bc352d@mail.gmail.com>
-Date: Thu, 13 Nov 2008 09:47:00 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Atsushi Nemoto" <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] mtd: unify mtd partition/device registration
-Cc: vapier@gentoo.org, linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081113.224350.18312549.anemo@mba.ocn.ne.jp>
+	Thu, 13 Nov 2008 09:53:39 -0500
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function return tracer lockless
+From: Andi Kleen <andi@firstfloor.org>
+References: <491B4F0A.3080901@gmail.com>
+Date: Thu, 13 Nov 2008 15:53:35 +0100
+In-Reply-To: <491B4F0A.3080901@gmail.com> (Frederic Weisbecker's message of "Wed, 12 Nov 2008 22:47:54 +0100")
+Message-ID: <87od0jd6ds.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-	 <20081113.224350.18312549.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 08:43, Atsushi Nemoto wrote:
-> On Wed, 12 Nov 2008 18:38:53 -0500, Mike Frysinger wrote:
->> +int parse_mtd(struct mtd_info *mtd, const char **probe_types,
->> +              struct mtd_partition *parts, int nr_parts)
->> +{
->> +#ifdef CONFIG_MTD_PARTITIONS
->> +     const char *default_part_probe_types[] = {
->> +             "cmdlinepart",
->> +             "RedBoot",
->> +             NULL
->> +     };
->
-> But I'm not sure this default_part_probe_types is appropriate.
->
-> How about enclose each parser with #ifdefs?
->
->        const char *default_part_probe_types[] = {
-> #ifdef CONFIG_MTD_CMDLINE_PARTS
->                "cmdlinepart",
-> #endif
-> #ifdef CONFIG_MTD_REDBOOT_PARTS
->                "RedBoot",
-> #endif
->                NULL
->        };
->
-> This get rid of "RedBoot partition parsing not available" noise in
-> boot message when you use default_part_probe_types without
-> MTD_REDBOOT_PARTS.
+Frederic Weisbecker <fweisbec@gmail.com> writes:
+O
 
-yeah, that parsing thing is annoying, but i didnt think enough so to
-add ifdef's.  i'm fine with it either way.
--mike
+> _ The only race could happen between the current thread and an interrupt. If an
+>   interrupt is raised, it will increase the index of the return stack storage and
+>   then execute until the end of the tracing to finally free the index it used.
+>   We don't need to disable irqs.
+>
+> This is theorical. In practice, I've tested it with a two-core SMP and had no
+> problem at all. Perhaps -tip testing could confirm it.
+
+The problem I think is that you assume the ++ is atomic against
+interrupts, which is not guaranteed by the C compiler. e.g.
+it would be perfectly legal for the compiler to generate code like
+
+local register i
+i = index;
+write to index'ed array using i
+                            <--------- interrupt here would overwrite data
+...
+index = i + 1;
+
+You would need to convert the index access to a "local_add_return()" and 
+possibly also add memory barriers.
+
+-Andi
+
+-- 
+ak@linux.intel.com
