@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYKMQBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYKMQBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbYKMQBU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 11:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYKMQBH
+	id S1753823AbYKMQBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 11:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbYKMQBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 11:01:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57778 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751268AbYKMQBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 11:01:06 -0500
-Date: Thu, 13 Nov 2008 08:00:08 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nick Piggin <npiggin@suse.de>
-cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] x86: optimise page fault path a little
-In-Reply-To: <20081113072821.GB2946@wotan.suse.de>
-Message-ID: <alpine.LFD.2.00.0811130749440.3468@nehalem.linux-foundation.org>
-References: <20081113072821.GB2946@wotan.suse.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 13 Nov 2008 11:01:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53319 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751662AbYKMQBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 11:01:09 -0500
+Message-ID: <491C4F2C.6000709@kernel.org>
+Date: Fri, 14 Nov 2008 01:00:44 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: fuse-devel@lists.sourceforge.net, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] FUSE: extend FUSE to support more operations
+References: <1219945263-21074-1-git-send-email-tj@kernel.org> <48F4568B.7000609@kernel.org> <E1KpgL4-00072Q-0C@pomaz-ex.szeredi.hu> <491BC87F.4050108@kernel.org> <E1L0afo-0006gr-UM@pomaz-ex.szeredi.hu> <491C1588.2060907@kernel.org> <E1L0aqD-0006j0-1K@pomaz-ex.szeredi.hu> <E1L0bP7-0006nJ-7n@pomaz-ex.szeredi.hu> <491C2A63.1030804@kernel.org> <E1L0cSz-0006xF-0O@pomaz-ex.szeredi.hu> <491C39BD.8050108@kernel.org> <E1L0dUS-00074L-Uz@pomaz-ex.szeredi.hu> <491C436C.6060603@kernel.org> <E1L0eUz-0007D0-Tp@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1L0eUz-0007D0-Tp@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 16:00:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-
-On Thu, 13 Nov 2008, Nick Piggin wrote:
+Miklos Szeredi wrote:
+>> * Higher overhead when poll/select finishes.  Either all outstanding
+>>   requests need to be cancelled using INTERRUPT whenever poll/select
+>>   returns or kernel needs to keep persistent list of outstanding polls
+>>   so that later poll/select can reuse them.  The problem here is that
+>>   kernel doesn't know when or whether they'll be re-used.  We can put
+>>   in LRU-based heuristics but it's getting too complex.
 > 
-> It's only about 1.1% on the profile of the workload I'm looking at, so my
-> improvement is pretty close to in the noise, but I wonder if micro
-> optimisations like the following would be welcome?
+> Why not just link the outstanding poll requests into a list anchored
+> in 'fuse_file'?  Easy to reuse, don't care about cancellation.
 
-I think splitting it up is good, but I hate how your split-up ends up also 
-splitting the locking (ie now you do a "down_read()" and "up_read()" in 
-different functions).
+Ah, that's the right place.
 
-I also think that to some degree you made it less readable, particularly 
-this area:
+>> Overall, I think being lazy about cancellation and let userland notify
+>> asynchronously would be better performance and simplicity wise.  What
+>> do you think?
+> 
+> Lazy cancellation (no cancellation, esentially) sounds good.  But that
+> works fine with the simplified protocol.
+> 
+> Think of it this way, this is what a poll event would look like with
+> your scheme:
+> 
+> 1) -> POLL-notification
+> 2) <- POLL-req
+> 3) -> POLL-reply (revents)
+> 
+> Notice, how 1) and 2) don't carry _any_ information (the notification
+> can be spurious, the events in the POLL request is just repeated from
+> the original request).  All the info is in 3), so I really don't see
+> any reason why the above would be better than just omitting the first
+> two steps.
 
-	+       if (write) {
-	+               if (unlikely(!(vma->vm_flags & VM_WRITE))) {
-	+                       bad_area_accerr(regs, error_code, address);
-	+                       return;
-	+               }
-	+       } else if (unlikely(error_code & PF_PROT)) {
-	+               bad_area_accerr(regs, error_code, address);
-	+               return;
-	+       } else if (unlikely(!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))) {
-	+               bad_area_accerr(regs, error_code, address);
-	+               return;
+Alrighty then.  I'll convert it.
 
-makes me go "whaa?" and I wonder if it wouldn't be nicer to have one 
-complex conditional hidden in an inline function, and then just have
+Thanks.
 
-	if (unlikely(access_error(write, error_code, vma))) {
-		bad_area_access_error(regs, error_code, address);
-		return;
-	}
-
-where the point is that we don't want to duplicate the error case three 
-times, and that "accerr" is bad naming.
-
-IOW, I do think that the patch looks like a step in the right direction, 
-but cleanliness should be a primary concern.
-
-		Linus
+-- 
+tejun
