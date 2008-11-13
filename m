@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107AbYKMJiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbYKMJik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752107AbYKMJiB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 04:38:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbYKMJhw
+	id S1753024AbYKMJik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 04:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbYKMJi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 04:37:52 -0500
-Received: from styx.suse.cz ([82.119.242.94]:32947 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750728AbYKMJhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 04:37:51 -0500
-Date: Thu, 13 Nov 2008 10:37:49 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Alexey Klimov <klimov.linux@gmail.com>
-cc: Jiri Slaby <jirislaby@gmail.com>, Tobias Lorenz <tobias.lorenz@gmx.net>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>, linux-input@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: next: 6a13378a5 (Don't allow KWorld radio...) is broken
-In-Reply-To: <208cbae30811121824g2e2d4f3bvf2c982c9f54b30a2@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0811131037020.32143@jikos.suse.cz>
-References: <491B3E90.5020307@gmail.com> <208cbae30811121824g2e2d4f3bvf2c982c9f54b30a2@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 13 Nov 2008 04:38:29 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:23689 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750728AbYKMJi2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 04:38:28 -0500
+Message-ID: <491BF5A3.9070700@panasas.com>
+Date: Thu, 13 Nov 2008 11:38:43 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?UTF-8?B?SsO2cm4gRW5nZWw=?= <joern@logfs.org>,
+       open-osd development <osd-dev@open-osd.org>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       Sami.Iren@seagate.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 03/18 ver3] libosd: OSDv1 Headers
+References: <491073BB.4000900@panasas.com>	<1225817046-5946-1-git-send-email-bharrosh@panasas.com>	<4916F934.4090205@panasas.com>	<20081110092940.57b4c169.randy.dunlap@oracle.com>	<491AD697.9030305@panasas.com> <20081112105945.f4ec0089.randy.dunlap@oracle.com>
+In-Reply-To: <20081112105945.f4ec0089.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Nov 2008 09:37:05.0078 (UTC) FILETIME=[63911D60:01C94573]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008, Alexey Klimov wrote:
+Randy Dunlap wrote:
+> 
+> ugh
+> 
+>> +		} __packed attrs_cdb;
+>> +/*52*/		u8 get_set_attributes_parameters[80-52];
+> 
+> ugh
+> 
+> 
+> more of the same
+> 
+> 
+> ditto.  nice comment ;)
+> 
+> 
+> 
+> Thanks for the fixes.
+> 
 
-> > Alexey, did you actually test it?
-> > I'd prefer taking this through my tree, if it doesn't impose any problem
-> > on your side. Could you please fix it up and resend?
-> It good thing to do. May i make patch against current kernel tree 
-> (rc4-git3) ? I also going to make patch for radio-mr800 that has wrong 
-> hidquirks too. I can send now, because this two patches ready.
+Yes Yes that was version 3 where I was asking if I might convince you
+for its merits.
 
-Thanks, I have applied both patches to my tree (but please remember to 
-always send kernel patches so that they apply using "patch -p1", I had to 
-fix this by hand).
+As I said in that reply I will change it. Just did not have the chance
+to send out version 4 out yet.
 
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Thanks
+Boaz
