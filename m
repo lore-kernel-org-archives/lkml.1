@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbYKMI43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbYKMI7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbYKMI43 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 03:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbYKMI4S
+	id S1752740AbYKMI7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 03:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbYKMI73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 03:56:18 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:47858 "EHLO pasmtpA.tele.dk"
+	Thu, 13 Nov 2008 03:59:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39425 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbYKMI4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 03:56:17 -0500
-Date: Thu, 13 Nov 2008 09:54:39 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <wfg@linux.intel.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>, "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-Message-ID: <20081113085439.GZ26778@kernel.dk>
-References: <4917263D.2090904@telenet.dn.ua> <20081110104423.GA26778@kernel.dk> <x493ahzsn8p.fsf@segfault.boston.devel.redhat.com> <20081110135618.GI26778@kernel.dk> <x491vxgkd61.fsf@segfault.boston.devel.redhat.com> <20081112190227.GS26778@kernel.dk> <1226566313.199910.29888@de>
+	id S1751059AbYKMI72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 03:59:28 -0500
+Message-ID: <491BEC4E.9030505@kernel.org>
+Date: Thu, 13 Nov 2008 17:58:54 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1226566313.199910.29888@de>
+To: Greg KH <greg@kroah.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RESEND] char_dev: add cdev->release() and convert	cdev_alloc()
+ to use it
+References: <48B6D428.2020308@kernel.org> <20080828164741.GA17475@kroah.com> <48B6D8D0.6080506@kernel.org> <20080828173813.GC18097@kroah.com> <48B6E417.5030605@kernel.org> <20080828174807.GA18461@kroah.com> <48B6E69B.1090800@kernel.org> <20080828181720.GB23898@kroah.com>
+In-Reply-To: <20080828181720.GB23898@kroah.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 13 Nov 2008 08:58:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13 2008, Wu Fengguang wrote:
-> Hi all,
-> 
-> //Sorry for being late. 
-> 
-> On Wed, Nov 12, 2008 at 08:02:28PM +0100, Jens Axboe wrote:
-> [...]
-> > I already talked about this with Jeff on irc, but I guess should post it
-> > here as well.
-> > 
-> > nfsd aside (which does seem to have some different behaviour skewing the
-> > results), the original patch came about because dump(8) has a really
-> > stupid design that offloads IO to a number of processes. This basically
-> > makes fairly sequential IO more random with CFQ, since each process gets
-> > its own io context. My feeling is that we should fix dump instead of
-> > introducing a fair bit of complexity (and slowdown) in CFQ. I'm not
-> > aware of any other good programs out there that would do something
-> > similar, so I don't think there's a lot of merrit to spending cycles on
-> > detecting cooperating processes.
-> > 
-> > Jeff will take a look at fixing dump instead, and I may have promised
-> > him that santa will bring him something nice this year if he does (since
-> > I'm sure it'll be painful on the eyes).
-> 
-> This could also be fixed at the VFS readahead level.
-> 
-> In fact I've seen many kinds of interleaved accesses:
-> - concurrently reading 40 files that are in fact hard links of one single file
-> - a backup tool that splits a big file into 8k chunks, and serve the
->   {1, 3, 5, 7, ...} chunks in one process and the {0, 2, 4, 6, ...}
->   chunks in another one
-> - a pool of NFSDs randomly serving some originally sequential read requests 
-> - now dump(8) seems to have some similar problem.
-> 
-> In summary there have been all kinds of efforts on trying to
-> parallelize I/O tasks, but unfortunately they can easily screw up the
-> sequential pattern. It may not be easily fixable for many of them.
-> 
-> It is however possible to detect most of these patterns at the
-> readahead layer and restore sequential I/Os, before they propagate
-> into the block layer and hurt performance.
-> 
-> Vitaly, if that's what you need, I can try to prepare a patch for
-> testing out.
+Hello, Greg.
 
-It's not easy. To really fix it, you have to get that sequential RA
-pattern from just the single process. As soon as you spread the IO
-between processes (eg N-1 aren't just getting cache hits), then you may
-run into trouble on the IO scheduler side.
+I'm now trying to convert the cdev thing for CUSE and it just ain't
+feel right.
+
+Greg KH wrote:
+>> Ah.. right, but taking cdev refcount out of the picture requires adding
+>> 'severing' operation on cdev f_ops, which certainly is doable but isn't
+>> it just cleaner to make cdev follow the usual lifetime management rules?
+>>  An object which is referenced counted requires ->release if it's gonna
+>> be used in any non-simplistic way.
+> 
+> Yes, but as you "normally" tie the cdev to the module itself, that
+> handles the lifetime rules.
+
+That "normally" is from the days when only a single or fixed number of
+devices are associated with single module or driver.
+
+> Now I really dont' like the current cdev interface, it's a bit too
+> complex as it needed to support the old-style interfaces without any
+> build time changes, but I think your change isn't needed as somehow all
+> the current drivers that support dynamic devices don't need it.
+
+Yes, it requires all drivers to have global device table and check
+whether the device is still available at ->open.  For most, drivers
+usually have certain fixed number of devices which can directly be
+indexed with minor.  For CUSE, it gotta be a hash table or a b-tree.
+I don't really see any point in not adding ->release.  Time has
+changed and everybody is playing with reference counts and ->release
+methods.  Plus, cdev_alloc() interface is half-baked anyway (no free
+function for cases where cdev_add() fails, drivers call cdev_del() in
+those cases risking unregistering other driver's map).  It's perfectly
+okay to keep it around for compatibility but there just is no reason
+to cling to it.
+
+> Actually, the kobject in cdev shouldn't be an kobject, it's not used for
+> registering with sysfs at all, it should just be a kref.  I sweep the
+> tree for code that sets the name of the cdev every few months as people
+> don't seem to realize this :)
+
+Heh... CUSE did that too.  Removing it.
+
+Thanks.
 
 -- 
-Jens Axboe
-
+tejun
