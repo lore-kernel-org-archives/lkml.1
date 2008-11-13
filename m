@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbYKMQea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbYKMQgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753152AbYKMQea (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 11:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYKMQeW
+	id S1753227AbYKMQgm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 11:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbYKMQgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 11:34:22 -0500
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:42607 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYKMQeV (ORCPT
+	Thu, 13 Nov 2008 11:36:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50973 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751198AbYKMQgb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 11:34:21 -0500
-Date: Thu, 13 Nov 2008 16:33:32 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Paul E McKenney <paulmck@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH] slab: document SLAB_DESTROY_BY_RCU
-In-Reply-To: <1226586509.7685.4929.camel@twins>
-Message-ID: <Pine.LNX.4.64.0811131625130.16744@blonde.site>
-References: <1226586509.7685.4929.camel@twins>
+	Thu, 13 Nov 2008 11:36:31 -0500
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH] crypto: ansi_cprng: fix inverted DT increment routine
+Date: Thu, 13 Nov 2008 11:36:11 -0500
+User-Agent: KMail/1.10.1 (Linux/2.6.27.4-79.fc10.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: Neil Horman <nhorman@tuxdriver.com>, herbert@gondor.apana.org.au,
+       davem@davemloft.net, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200811131136.15875.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008, Peter Zijlstra wrote:
-> Subject: slab: document SLAB_DESTROY_BY_RCU
+The ANSI X9.31 PRNG docs aren't particularly clear on how to increment DT,
+but empirical testing shows we're incrementing from the wrong end. A 10,000
+iteration Monte Carlo RNG test currently winds up not getting the expected
+result.
 
-Yes, that's good, thanks Peter.  But I still think it's even
-better with at least a pointer to the original description in
-mm/slab.c: I've added one or two lines to the comment below.
+>From http://csrc.nist.gov/groups/STM/cavp/documents/rng/RNGVS.pdf :
 
+# CAVS 4.3
+# ANSI931 MCT
+[X9.31]
+[AES 128-Key]
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+COUNT = 0
+Key = 9f5b51200bf334b5d82be8c37255c848
+DT = 6376bbe52902ba3b67c925fa701f11ac
+V = 572c8e76872647977e74fbddc49501d1
+R = 48e9bd0d06ee18fbe45790d5c3fc9b73
 
-Explain this SLAB_DESTROY_BY_RCU thing...
+Currently, we get 0dd08496c4f7178bfa70a2161a79459a after 10000 loops.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Inverting the DT increment routine results in us obtaining the expected result
+of 48e9bd0d06ee18fbe45790d5c3fc9b73. Verified on both x86_64 and ppc64.
+
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+
 ---
- include/linux/slab.h |   28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
 
-Index: linux-2.6/include/linux/slab.h
-===================================================================
---- linux-2.6.orig/include/linux/slab.h
-+++ linux-2.6/include/linux/slab.h
-@@ -23,6 +23,34 @@
- #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
- #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
- #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
-+/*
-+ * SLAB_DESTROY_BY_RCU - **WARNING** READ THIS!
-+ *
-+ * This delays freeing the SLAB page by a grace period, it does _NOT_
-+ * delay object freeing. This means that if you do kmem_cache_free()
-+ * that memory location is free to be reused at any time. Thus it may
-+ * be possible to see another object there in the same RCU grace period.
-+ *
-+ * This feature only ensures the memory location backing the object
-+ * stays valid, the trick to using this is relying on an independent
-+ * object validation pass. Something like:
-+ *
-+ *  rcu_read_lock()
-+ * again:
-+ *  obj = lockless_lookup(key);
-+ *  if (obj) {
-+ *    if (!try_get_ref(obj)) // might fail for free objects
-+ *      goto again;
-+ *
-+ *    if (obj->key != key) { // not the object we expected
-+ *      put_ref(obj);
-+ *      goto again;
-+ *    }
-+ *  }
-+ *  rcu_read_unlock();
-+ *
-+ * See also the comment on struct slab_rcu in mm/slab.c.
-+ */
- #define SLAB_DESTROY_BY_RCU	0x00080000UL	/* Defer freeing slabs to RCU */
- #define SLAB_MEM_SPREAD		0x00100000UL	/* Spread some memory over cpuset */
- #define SLAB_TRACE		0x00200000UL	/* Trace allocations and frees */
+ crypto/ansi_cprng.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/crypto/ansi_cprng.c b/crypto/ansi_cprng.c
+index 486aa93..a7c703d 100644
+--- a/crypto/ansi_cprng.c
++++ b/crypto/ansi_cprng.c
+@@ -161,7 +161,7 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
+ 	/*
+ 	 * Now update our DT value
+ 	 */
+-	for (i = 0; i < DEFAULT_BLK_SZ; i++) {
++	for (i = DEFAULT_BLK_SZ - 1; i >= 0; i--) {
+ 		ctx->DT[i] += 1;
+ 		if (ctx->DT[i] != 0)
+ 			break;
+
+-- 
+Jarod Wilson
+jarod@redhat.com
+
