@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbYKMRza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbYKMR4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbYKMRza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 12:55:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbYKMRzR
+	id S1754792AbYKMR4T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 12:56:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYKMR4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 12:55:17 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:56850 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbYKMRzQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 12:55:16 -0500
-Date: Thu, 13 Nov 2008 09:55:01 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for November 13 (auditsc)
-Message-Id: <20081113095501.7d91cd91.randy.dunlap@oracle.com>
-In-Reply-To: <20081113183316.3601c13d.sfr@canb.auug.org.au>
-References: <20081113183316.3601c13d.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Nov 2008 12:56:05 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46481 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751618AbYKMR4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 12:56:04 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX18Ih9AMGr8Ij0XSB1TdY1yFhMCB24lq9NLtHfN5Nu
+	RbOqrwbmZGhIu6
+From: Helge Deller <deller@gmx.de>
+To: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       Kyle Mc Martin <kyle@hera.kernel.org>, linux-parisc@vger.kernel.org
+Subject: [PATCH] fix cpumask build breakage on parisc
+Date: Thu, 13 Nov 2008 18:55:54 +0100
+User-Agent: KMail/1.9.7
+X-Face: &[jmHH-Dw>Aj):"[/t-VasJu+(5eP`/LEckV7V"JV,!nBy[6(/?#8M>x`5xzg/7:FkM.l@=?utf-8?q?=0A=0913?=<&9'nfV3"OkD~P)@j{P2=(uB7J(){:CcrM2jZeA+IBq?FUTp3c8Y{t+k<95mZf~[v"=?utf-8?q?=27=3A=0A=09t?="f6wKtHUPFB&/]Z5^?9~IQs=16R;Pg"NS9JD=DK!ft&4b@=?utf-8?q?S=7E=26q/MfI3=3BqWqlg7Q1=3D=3DjS4=0A=099V5OJkm=24WQ=5Bdc=5E=5FY?=
+ =?utf-8?q?=27=5DDvibvMjizUZ=5D+=27Jd4UnM?=><yrT}Rw(
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.491C69F8.0104:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200811131855.55450.deller@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 18:33:16 +1100 Stephen Rothwell wrote:
+This commit:
+	2d3854a37e8b767a51aba38ed6d22817b0631e33
+	cpumask: introduce new API, without changing anything
+
+introduced a build breakage on parisc.
+
+This trivial patch fixes it.
 
 
-auditsc build fails when
-CONFIG_KEYS=y
-CONFIG_KEYS_DEBUG_PROC_KEYS=y
-CONFIG_SECURITY=y
-# CONFIG_SECURITYFS is not set
-# CONFIG_SECURITY_NETWORK is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
+Signed-off-by: Helge Deller <deller@gmx.de>
+CC:	Rusty Russell <rusty@rustcorp.com.au>
+CC:	akpm@linux-foundation.org
+CC:	torvalds@linux-foundation.org
+CC:	Kyle Mc Martin <kyle@hera.kernel.org>
+	
 
-error is:
-auditsc.c:(.text+0x2afaf): undefined reference to `get_vfs_caps_from_disk'
-
----
-~Randy-r5905
+--- a/arch/parisc/include/asm/smp.h
++++ b/arch/parisc/include/asm/smp.h
+@@ -44,8 +44,6 @@ extern void arch_send_call_function_ipi(cpumask_t mask);
+  
+ #define PROC_CHANGE_PENALTY	15		/* Schedule penalty */
+ 
+-extern unsigned long cpu_present_mask;
+-
+ #define raw_smp_processor_id()	(current_thread_info()->cpu)
+ 
+ #else /* CONFIG_SMP */
