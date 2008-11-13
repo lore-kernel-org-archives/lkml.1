@@ -1,252 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755990AbYKMWLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbYKMWLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755990AbYKMWLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 17:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYKMWLQ
+	id S1756140AbYKMWLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 17:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYKMWLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 17:11:16 -0500
-Received: from rv-out-0506.google.com ([209.85.198.231]:15558 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753904AbYKMWLM (ORCPT
+	Thu, 13 Nov 2008 17:11:18 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:52063 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754028AbYKMWLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 17:11:12 -0500
+	Thu, 13 Nov 2008 17:11:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=NKJSSfM0oUW6xKhFhciuFGrdoBlCmASyZbfft5KkEMU51u1gGdoB1RgO8MCKxa7Fbh
-         dUPPAAkxFDZGG4j4NCrK2O/z6HNDgRaPfU0V3/0DurRyG70PFVFrUZwuFfk5cUfRt2OX
-         bJ70G24ozVWKeERhvio/hVgLaPNj3eBPItHy4=
-Message-ID: <cfd18e0f0811131411o5b47175dl36b022bc762181e5@mail.gmail.com>
-Date: Thu, 13 Nov 2008 17:11:10 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] reintroduce accept4
-Cc: "Subrata Modak" <subrata@linux.vnet.ibm.com>, linux-arch@vger.kernel.org,
-       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-api@vger.kernel.org,
-       linux-man@vger.kernel.org, "Davide Libenzi" <davidel@xmailserver.org>,
-       netdev <netdev@vger.kernel.org>, "Roland McGrath" <roland@redhat.com>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Christoph Hellwig" <hch@lst.de>,
-       "David Miller" <davem@davemloft.net>, "Alan Cox" <alan@redhat.com>,
-       "Jakub Jelinek" <jakub@redhat.com>
-In-Reply-To: <cfd18e0f0811131402j7ec6a60cq462916cc9715b9aa@mail.gmail.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=lbC5jSvvlxrO80hTR+IfTT+vBpp9YOFcaWs3KDJ8+RUidzkFWxSxrY8lo19pFIbL4V
+         +oVTDCctcNV6GHmhM1mTS39T7owv4ZIahWiW23aWNzmVa4lIt+jrP7dh5y2fPMe7M2aK
+         8IQufbpDjY7OHbpVpeaMMe5qJh+6eQzWAGnSY=
+Message-ID: <491CA5FB.7060000@gmail.com>
+Date: Thu, 13 Nov 2008 23:11:07 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Andi Kleen <andi@firstfloor.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/1 v2] DRM: fix radeon suspend/resume oops
+References: <491CA495.7010007@gmail.com> <1226614196-17019-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1226614196-17019-1-git-send-email-jirislaby@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
-	 <517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
-	 <cfd18e0f0811131402j7ec6a60cq462916cc9715b9aa@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's my test program.  Works on x86-32.  Should work on x86-64, but
-I don't have a system to hand to test with.
+Sorry, wrong patch, wrong destination.
 
-It tests accept4() with each of the four possible combinations of
-SOCK_CLOEXEC and SOCK_NONBLOCK set/clear in 'flags', and verifies that
-the appropriate flags are set on the file descriptor/open file
-description returned by accept4().
+On 11/13/2008 11:09 PM, Jiri Slaby wrote:
+> me wrote:
+>> As the accesses to the mmio member are not protected by anything, they
+>> seem to be racy with the open/clsoe anyways, setting this down there
+>> too.
+> 
+> On the second though it should be protected. Updated patch below...
 
-I tested Ulrich's patch in this thread by applying against 2.6.28-rc2,
-and it passes according to my test program.
-
-/* test_accept4.c
-
-   Copyright (C) 2008, Linux Foundation, written by Michael Kerrisk
-        <mtk.manpages@gmail.com>
-
-   Licensed under the GNU GPLv2 or later.
-*/
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <stdlib.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-
-#define PORT_NUM 33333
-
-#define die(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
-
-/**********************************************************************/
-
-/* The following is what we need until glibc gets a wrapper for
-   accept4() */
-
-/* Flags for socket(), socketpair(), accept4() */
-#ifndef SOCK_CLOEXEC
-#define SOCK_CLOEXEC    O_CLOEXEC
-#endif
-#ifndef SOCK_NONBLOCK
-#define SOCK_NONBLOCK   O_NONBLOCK
-#endif
-
-#ifdef __x86_64__
-#define SYS_accept4 288
-#elif __i386__
-#define USE_SOCKETCALL 1
-#define SYS_ACCEPT4 18
-#else
-#error "Sorry -- don't know the syscall # on this architecture"
-#endif
-
-static int
-accept4(int fd, struct sockaddr *sockaddr, socklen_t *addrlen, int flags)
-{
-    printf("Calling accept4(): flags = %x", flags);
-    if (flags != 0) {
-        printf(" (");
-        if (flags & SOCK_CLOEXEC)
-            printf("SOCK_CLOEXEC");
-        if ((flags & SOCK_CLOEXEC) && (flags & SOCK_NONBLOCK))
-            printf(" ");
-        if (flags & SOCK_NONBLOCK)
-            printf("SOCK_NONBLOCK");
-        printf(")");
-    }
-    printf("\n");
-
-#if USE_SOCKETCALL
-    long args[6];
-
-    args[0] = fd;
-    args[1] = (long) sockaddr;
-    args[2] = (long) addrlen;
-    args[3] = flags;
-
-    printf("x86-32\n"); /* XXX */
-    return syscall(SYS_socketcall, SYS_ACCEPT4, args);
-#else
-    printf("x86-64\n"); /* XXX */
-    return syscall(SYS_accept4, fd, sockaddr, addrlen, flags);
-#endif
-}
-
-/**********************************************************************/
-
-
-static int
-do_test(int lfd, struct sockaddr_in *conn_addr,
-        int closeonexec_flag, int nonblock_flag)
-{
-    int connfd, acceptfd;
-    int fdf, flf, fdf_pass, flf_pass;
-    struct sockaddr_in claddr;
-    socklen_t addrlen;
-
-    printf("=======================================\n");
-
-    connfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (connfd == -1)
-        die("socket");
-    if (connect(connfd, (struct sockaddr *) conn_addr,
-                sizeof(struct sockaddr_in)) == -1)
-        die("connect");
-
-    addrlen = sizeof(struct sockaddr_in);
-    acceptfd = accept4(lfd, (struct sockaddr *) &claddr, &addrlen,
-                       closeonexec_flag | nonblock_flag);
-    if (acceptfd == -1) {
-        perror("accept4()");
-        close(connfd);
-        return 0;
-    }
-
-    fdf = fcntl(acceptfd, F_GETFD);
-    if (fdf == -1)
-        die("fcntl:F_GETFD");
-    fdf_pass = ((fdf & FD_CLOEXEC) != 0) ==
-               ((closeonexec_flag & SOCK_CLOEXEC) != 0);
-    printf("Close-on-exec flag is %sset (%s); ",
-            (fdf & FD_CLOEXEC) ? "" : "not ",
-            fdf_pass ? "OK" : "failed");
-
-    flf = fcntl(acceptfd, F_GETFL);
-    if (flf == -1)
-        die("fcntl:F_GETFD");
-    flf_pass = ((flf & O_NONBLOCK) != 0) ==
-               ((nonblock_flag & SOCK_NONBLOCK) !=0);
-    printf("nonblock flag is %sset (%s)\n",
-            (flf & O_NONBLOCK) ? "" : "not ",
-            flf_pass ? "OK" : "failed");
-
-    close(acceptfd);
-    close(connfd);
-
-    printf("Test result: %s\n", (fdf_pass && flf_pass) ? "PASS" : "FAIL");
-    return fdf_pass && flf_pass;
-}
-
-
-static int
-create_listening_socket(int port_num)
-{
-    struct sockaddr_in svaddr;
-    int lfd;
-    int optval;
-
-    memset(&svaddr, 0, sizeof(struct sockaddr_in));
-    svaddr.sin_family = AF_INET;
-    svaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    svaddr.sin_port = htons(port_num);
-
-    lfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (lfd == -1)
-        die("socket");
-
-    optval = 1;
-    if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &optval,
-                   sizeof(optval)) == -1)
-        die("setsockopt");
-
-    if (bind(lfd, (struct sockaddr *) &svaddr,
-             sizeof(struct sockaddr_in)) == -1)
-        die("bind");
-
-    if (listen(lfd, 5) == -1)
-        die("listen");
-
-    return lfd;
-}
-
-
-int
-main(int argc, char *argv[])
-{
-    struct sockaddr_in conn_addr;
-    int lfd;
-    int port_num;
-    int passed;
-
-    passed = 1;
-
-    port_num = (argc > 1) ? atoi(argv[1]) : PORT_NUM;
-
-    memset(&conn_addr, 0, sizeof(struct sockaddr_in));
-    conn_addr.sin_family = AF_INET;
-    conn_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    conn_addr.sin_port = htons(port_num);
-
-    lfd = create_listening_socket(port_num);
-
-    if (!do_test(lfd, &conn_addr, 0, 0))
-        passed = 0;
-    if (!do_test(lfd, &conn_addr, SOCK_CLOEXEC, 0))
-        passed = 0;
-    if (!do_test(lfd, &conn_addr, 0, SOCK_NONBLOCK))
-        passed = 0;
-    if (!do_test(lfd, &conn_addr, SOCK_CLOEXEC, SOCK_NONBLOCK))
-        passed = 0;
-
-    close(lfd);
-
-    exit(passed ? EXIT_SUCCESS : EXIT_FAILURE);
-}
