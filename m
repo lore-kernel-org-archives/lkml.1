@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbYKMTn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070AbYKMToW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbYKMTn5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYKMTea
+	id S1756070AbYKMToW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbYKMTeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:34:30 -0500
-Received: from gw.goop.org ([64.81.55.164]:34377 "EHLO mail.goop.org"
+	Thu, 13 Nov 2008 14:34:31 -0500
+Received: from gw.goop.org ([64.81.55.164]:34442 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752919AbYKMTeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:34:09 -0500
+	id S1753650AbYKMTeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:34:11 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 27 of 38] xen/dom0: use _PAGE_IOMAP in ioremap to do machine
-	mappings
-X-Mercurial-Node: 3bb42a3945f477187ce439062237ccd028c8dd49
-Message-Id: <3bb42a3945f477187ce4.1226603425@abulafia.goop.org>
+Subject: [PATCH 30 of 38] xen: implement io_apic_ops
+X-Mercurial-Node: d103c0da2fa147ac31af29a8e15b5ecf1c029c33
+Message-Id: <d103c0da2fa147ac31af.1226603428@abulafia.goop.org>
 In-Reply-To: <patchbomb.1226603398@abulafia.goop.org>
-Date: Thu, 13 Nov 2008 11:10:25 -0800
+Date: Thu, 13 Nov 2008 11:10:28 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
@@ -27,177 +26,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In a Xen domain, ioremap operates on machine addresses, not
-pseudo-physical addresses.  We use _PAGE_IOMAP to determine whether a
-mapping is intended for machine addresses.
+Writes to the IO APIC are paravirtualized via hypercalls, so implement
+the appropriate operations.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/xen/page.h |    8 +----
- arch/x86/xen/enlighten.c        |   14 +++++++--
- arch/x86/xen/mmu.c              |   60 ++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 73 insertions(+), 9 deletions(-)
+ arch/x86/xen/Makefile    |    3 +-
+ arch/x86/xen/apic.c      |   66 ++++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/xen/enlighten.c |    2 +
+ arch/x86/xen/xen-ops.h   |    2 +
+ 4 files changed, 72 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
---- a/arch/x86/include/asm/xen/page.h
-+++ b/arch/x86/include/asm/xen/page.h
-@@ -112,13 +112,9 @@
-  */
- static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
- {
--	extern unsigned long max_mapnr;
- 	unsigned long pfn = mfn_to_pfn(mfn);
--	if ((pfn < max_mapnr)
--	    && !xen_feature(XENFEAT_auto_translated_physmap)
--	    && (get_phys_to_machine(pfn) != mfn))
--		return max_mapnr; /* force !pfn_valid() */
--	/* XXX fixme; not true with sparsemem */
-+	if (get_phys_to_machine(pfn) != mfn)
-+		return -1; /* force !pfn_valid() */
- 	return pfn;
- }
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -9,4 +9,5 @@
+ 			time.o xen-asm_$(BITS).o grant-table.o suspend.o
  
+ obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+-obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+\ No newline at end of file
++obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
++obj-$(CONFIG_XEN_DOM0)		+= apic.o
+diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
+new file mode 100644
+--- /dev/null
++++ b/arch/x86/xen/apic.c
+@@ -0,0 +1,66 @@
++#include <linux/kernel.h>
++#include <linux/threads.h>
++#include <linux/bitmap.h>
++
++#include <asm/io_apic.h>
++#include <asm/acpi.h>
++
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++
++#include <xen/interface/xen.h>
++#include <xen/interface/physdev.h>
++
++static void __init xen_io_apic_init(void)
++{
++	printk("xen apic init\n");
++	dump_stack();
++}
++
++static unsigned int xen_io_apic_read(unsigned apic, unsigned reg)
++{
++	struct physdev_apic apic_op;
++	int ret;
++
++	apic_op.apic_physbase = mp_ioapics[apic].mp_apicaddr;
++	apic_op.reg = reg;
++	ret = HYPERVISOR_physdev_op(PHYSDEVOP_apic_read, &apic_op);
++	if (ret)
++		BUG();
++	return apic_op.value;
++}
++
++
++static void xen_io_apic_write(unsigned int apic, unsigned int reg, unsigned int value)
++{
++	struct physdev_apic apic_op;
++
++	apic_op.apic_physbase = mp_ioapics[apic].mp_apicaddr;
++	apic_op.reg = reg;
++	apic_op.value = value;
++	if (HYPERVISOR_physdev_op(PHYSDEVOP_apic_write, &apic_op))
++		BUG();
++}
++
++static struct io_apic_ops __initdata xen_ioapic_ops = {
++	.init = xen_io_apic_init,
++	.read = xen_io_apic_read,
++	.write = xen_io_apic_write,
++	.modify = xen_io_apic_write,
++};
++
++void xen_init_apic(void)
++{
++	if (!xen_initial_domain())
++		return;
++
++	set_io_apic_ops(&xen_ioapic_ops);
++
++#ifdef CONFIG_ACPI
++	/*
++	 * Pretend ACPI found our lapic even though we've disabled it,
++ 	 * to prevent MP tables from setting up lapics.
++ 	 */
++	acpi_lapic = 1;
++#endif
++}
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1162,11 +1162,19 @@
- #ifdef CONFIG_X86_LOCAL_APIC
- 	case FIX_APIC_BASE:	/* maps dummy local APIC */
- #endif
-+		/* All local page mappings */
- 		pte = pfn_pte(phys, prot);
- 		break;
- 
-+	case FIX_PARAVIRT_BOOTMAP:
-+		/* This is an MFN, but it isn't an IO mapping from the
-+		   IO domain */
-+		pte = mfn_pte(phys, prot);
-+		break;
+@@ -1750,6 +1750,8 @@
+ 		set_iopl.iopl = 1;
+ 		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
+ 			BUG();
 +
- 	default:
--		pte = mfn_pte(phys, prot);
-+		/* By default, set_fixmap is used for hardware mappings */
-+		pte = mfn_pte(phys, __pgprot(pgprot_val(prot) | _PAGE_IOMAP));
- 		break;
++		xen_init_apic();
  	}
  
-@@ -1695,7 +1703,9 @@
+ 	/* set the limit of our address space */
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -64,6 +64,8 @@
+ #endif
  
- 	/* Prevent unwanted bits from being set in PTEs. */
- 	__supported_pte_mask &= ~_PAGE_GLOBAL;
--	if (!xen_initial_domain())
-+	if (xen_initial_domain())
-+		__supported_pte_mask |= _PAGE_IOMAP;
-+	else
- 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
  
- 	/* Don't do the full vcpu_info placement stuff until we have a
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -302,6 +302,28 @@
- 	return PagePinned(page);
- }
- 
-+static bool xen_iomap_pte(pte_t pte)
-+{
-+	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
-+}
++void xen_init_apic(void);
 +
-+static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
-+{
-+	struct multicall_space mcs;
-+	struct mmu_update *u;
-+
-+	mcs = xen_mc_entry(sizeof(*u));
-+	u = mcs.args;
-+
-+	/* ptep might be kmapped when using 32-bit HIGHPTE */
-+	u->ptr = arbitrary_virt_to_machine(ptep).maddr;
-+	u->val = pte_val_ma(pteval);
-+
-+	MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_IO);
-+
-+	xen_mc_issue(PARAVIRT_LAZY_MMU);
-+}
-+
- static void xen_extend_mmu_update(const struct mmu_update *update)
- {
- 	struct multicall_space mcs;
-@@ -382,6 +404,11 @@
- 	if (mm == &init_mm)
- 		preempt_disable();
- 
-+	if (xen_iomap_pte(pteval)) {
-+		xen_set_iomap_pte(ptep, pteval);
-+		goto out;
-+	}
-+
- 	ADD_STATS(set_pte_at, 1);
- //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
- 	ADD_STATS(set_pte_at_current, mm == current->mm);
-@@ -454,8 +481,25 @@
- 	return val;
- }
- 
-+static pteval_t iomap_pte(pteval_t val)
-+{
-+	if (val & _PAGE_PRESENT) {
-+		unsigned long pfn = (val & PTE_PFN_MASK) >> PAGE_SHIFT;
-+		pteval_t flags = val & PTE_FLAGS_MASK;
-+
-+		/* We assume the pte frame number is a MFN, so
-+		   just use it as-is. */
-+		val = ((pteval_t)pfn << PAGE_SHIFT) | flags;
-+	}
-+
-+	return val;
-+}
-+
- pteval_t xen_pte_val(pte_t pte)
- {
-+	if (xen_initial_domain() && (pte.pte & _PAGE_IOMAP))
-+		return pte.pte;
-+
- 	return pte_mfn_to_pfn(pte.pte);
- }
- 
-@@ -466,7 +510,11 @@
- 
- pte_t xen_make_pte(pteval_t pte)
- {
--	pte = pte_pfn_to_mfn(pte);
-+	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
-+		pte = iomap_pte(pte);
-+	else
-+		pte = pte_pfn_to_mfn(pte);
-+
- 	return native_make_pte(pte);
- }
- 
-@@ -519,6 +567,11 @@
- 
- void xen_set_pte(pte_t *ptep, pte_t pte)
- {
-+	if (xen_iomap_pte(pte)) {
-+		xen_set_iomap_pte(ptep, pte);
-+		return;
-+	}
-+
- 	ADD_STATS(pte_update, 1);
- //	ADD_STATS(pte_update_pinned, xen_page_pinned(ptep));
- 	ADD_STATS(pte_update_batched, paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU);
-@@ -535,6 +588,11 @@
- #ifdef CONFIG_X86_PAE
- void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
- {
-+	if (xen_iomap_pte(pte)) {
-+		xen_set_iomap_pte(ptep, pte);
-+		return;
-+	}
-+
- 	set_64bit((u64 *)ptep, native_pte_val(pte));
- }
- 
+ /* Declare an asm function, along with symbols needed to make it
+    inlineable */
+ #define DECL_ASM(ret, name, ...)		\
 
 
