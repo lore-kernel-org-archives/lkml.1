@@ -1,121 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYKMFLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbYKMFRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753856AbYKMFLu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 00:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbYKMFLL
+	id S1752546AbYKMFRw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 00:17:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYKMFRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 00:11:11 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33529 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbYKMFLI (ORCPT
+	Thu, 13 Nov 2008 00:17:40 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:45900 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbYKMFRj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 00:11:08 -0500
-Message-Id: <20081113051105.827635641@goodmis.org>
-References: <20081113050933.625130887@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 13 Nov 2008 00:09:35 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/2] ftrace: show buffer size in kilobytes
-Content-Disposition: inline; filename=0002-ftrace-show-buffer-size-in-kilobytes.patch
+	Thu, 13 Nov 2008 00:17:39 -0500
+Date: Thu, 13 Nov 2008 00:17:36 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: [STABLE PATCH .26 .27] ACPI: avoid empty file name in sysfs
+X-X-Sender: lenb@localhost.localdomain
+To: stable@kernel.org
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.2.00.0811130015100.3128@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: change the units of buffer_size to kilobytes
+From: Peter Gruber <nokos@gmx.net>
 
-This patch changes the units of the buffer_size file to kilobytes.
-Reading and writing to the file uses kilobytes as units. To help
-users to know what units are used, the output of the file now
-looks like:
+upstream 4feba70a2c1a1a0c96909f657f48b2e11e682370
 
-  # cat /debug/tracing/buffer_size
-  1408 (units kilobytes)
+Since commit bc45b1d39a925b56796bebf8a397a0491489d85c acpi tables are
+allowed to have an empty signature and /sys/firmware/acpi/tables uses the
+signature as filename.  Applications using naive recursion through /sys
+loop forever.  A possible solution would be: (replacing the zero length
+filename with the string "NULL")
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=11539
+
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/ftrace.txt |   22 +++++-----------------
- kernel/trace/trace.c     |    5 ++++-
- 2 files changed, 9 insertions(+), 18 deletions(-)
+ drivers/acpi/system.c |   25 +++++++++++++++++--------
+ 1 files changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index 01ac404..6fe99b4 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -94,10 +94,10 @@ of ftrace. Here is a list of some of the key files:
- 		only be recorded if the latency is greater than
- 		the value in this file. (in microseconds)
- 
--  buffer_size: This sets or displays the number of bytes each CPU
-+  buffer_size: This sets or displays the number of kilobytes each CPU
- 		buffer can hold. The tracer buffers are the same size
- 		for each CPU. The displayed number is the size of the
--		 CPU buffer and not total size of all buffers. The
-+		CPU buffer and not total size of all buffers. The
- 		trace buffers are allocated in pages (blocks of memory
- 		that the kernel uses for allocation, usually 4 KB in size).
- 		If the last page allocated has room for more bytes
-@@ -1306,28 +1306,16 @@ the full size, multiply the number of possible CPUS with the
- number of entries.
- 
-  # cat /debug/tracing/buffer_size
--65620
-+1408 (units kilobytes)
- 
- Note, to modify this, you must have tracing completely disabled. To do that,
- echo "nop" into the current_tracer. If the current_tracer is not set
- to "nop", an EINVAL error will be returned.
- 
-  # echo nop > /debug/tracing/current_tracer
-- # echo 100000 > /debug/tracing/buffer_size
-+ # echo 10000 > /debug/tracing/buffer_size
-  # cat /debug/tracing/buffer_size
--100045
--
--
--Notice that we echoed in 100,000 but the size is 100,045. The entries
--are held in individual pages. It allocates the number of pages it takes
--to fulfill the request. If more entries may fit on the last page
--then they will be added.
--
-- # echo 1 > /debug/tracing/buffer_size
-- # cat /debug/tracing/buffer_size
--85
--
--This shows us that 85 entries can fit in a single page.
-+10000 (units kilobytes)
- 
- The number of pages which will be allocated is limited to a percentage
- of available memory. Allocating too much will produce an error.
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 20fe77d..10f7de2 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2922,7 +2922,7 @@ tracing_entries_read(struct file *filp, char __user *ubuf,
- 	char buf[64];
- 	int r;
- 
--	r = sprintf(buf, "%lu\n", tr->entries);
-+	r = snprintf(buf, 64, "%lu (units kilobytes)\n", tr->entries >> 10);
- 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
- }
- 
-@@ -2962,6 +2962,9 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
- 			atomic_inc(&max_tr.data[cpu]->disabled);
- 	}
- 
-+	/* value is in KB */
-+	val <<= 10;
+diff --git a/drivers/acpi/system.c b/drivers/acpi/system.c
+index 1d74171..62ec75e 100644
+--- a/drivers/acpi/system.c
++++ b/drivers/acpi/system.c
+@@ -78,9 +78,15 @@ static ssize_t acpi_table_show(struct kobject *kobj,
+ 	    container_of(bin_attr, struct acpi_table_attr, attr);
+ 	struct acpi_table_header *table_header = NULL;
+ 	acpi_status status;
++	char name[ACPI_NAME_SIZE];
 +
- 	if (val != global_trace.entries) {
- 		ret = ring_buffer_resize(global_trace.buffer, val);
- 		if (ret < 0) {
++	if (strncmp(table_attr->name, "NULL", 4))
++		memcpy(name, table_attr->name, ACPI_NAME_SIZE);
++	else
++		memcpy(name, "\0\0\0\0", 4);
+ 
+ 	status =
+-	    acpi_get_table(table_attr->name, table_attr->instance,
++	    acpi_get_table(name, table_attr->instance,
+ 			   &table_header);
+ 	if (ACPI_FAILURE(status))
+ 		return -ENODEV;
+@@ -95,21 +101,24 @@ static void acpi_table_attr_init(struct acpi_table_attr *table_attr,
+ 	struct acpi_table_header *header = NULL;
+ 	struct acpi_table_attr *attr = NULL;
+ 
+-	memcpy(table_attr->name, table_header->signature, ACPI_NAME_SIZE);
++	if (table_header->signature[0] != '\0')
++		memcpy(table_attr->name, table_header->signature,
++			ACPI_NAME_SIZE);
++	else
++		memcpy(table_attr->name, "NULL", 4);
+ 
+ 	list_for_each_entry(attr, &acpi_table_attr_list, node) {
+-		if (!memcmp(table_header->signature, attr->name,
+-			    ACPI_NAME_SIZE))
++		if (!memcmp(table_attr->name, attr->name, ACPI_NAME_SIZE))
+ 			if (table_attr->instance < attr->instance)
+ 				table_attr->instance = attr->instance;
+ 	}
+ 	table_attr->instance++;
+ 
+ 	if (table_attr->instance > 1 || (table_attr->instance == 1 &&
+-					 !acpi_get_table(table_header->
+-							 signature, 2,
+-							 &header)))
+-		sprintf(table_attr->name + 4, "%d", table_attr->instance);
++					!acpi_get_table
++					(table_header->signature, 2, &header)))
++		sprintf(table_attr->name + ACPI_NAME_SIZE, "%d",
++			table_attr->instance);
+ 
+ 	table_attr->attr.size = 0;
+ 	table_attr->attr.read = acpi_table_show;
 -- 
-1.5.6.5
+1.6.0.4.617.g2baf
 
--- 
