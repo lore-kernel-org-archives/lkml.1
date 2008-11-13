@@ -1,56 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbYKMG3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbYKMGbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752304AbYKMG3i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 01:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbYKMG33
+	id S1752763AbYKMGbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 01:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYKMGbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 01:29:29 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:42739 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbYKMG32 (ORCPT
+	Thu, 13 Nov 2008 01:31:01 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42676 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbYKMGbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 01:29:28 -0500
-From: Mark Nelson <markn@au1.ibm.com>
-Organization: IBM
-To: Ingo Molnar <mingo@elte.hu>
-Subject: commit "genirq: record trigger type" and powerpc
-Date: Thu, 13 Nov 2008 17:30:11 +1100
-User-Agent: KMail/1.9.9
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 13 Nov 2008 01:31:00 -0500
+Date: Thu, 13 Nov 2008 15:30:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@sourceware.org,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, fernando@oss.ntt.co.jp,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 0/8] I/O bandwidth controller and BIO tracking
+Message-Id: <20081113153019.cc50d42c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081113.121019.104237699577193919.ryov@valinux.co.jp>
+References: <20081113.121019.104237699577193919.ryov@valinux.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811131730.11506.markn@au1.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Thu, 13 Nov 2008 12:10:19 +0900 (JST)
+Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 
-I noticed that after commit 0c5d1eb77a8be917b638344a22afe1398236482b
-(genirq: record trigger type), several of our powerpc platforms now
-spew out warnings about "No set_type function for IRQ..." (in
-particular our Cell blades). This is because in our generic platform
-code we call set_irq_type() with information from the device tree
-when we establish the interrupt mappings; but we do this regardless
-of whether the PIC can actually set a type (it might irrelevant
-because the type is essentially hardcoded or as in the case for Cell
-the interrupts are just messages being past around that have no real
-concept of type, or we could even be dealing with a virtual PIC as
-on the PS3).
+> Hi everyone,
+> 
+> This is a new release of dm-ioband and bio-cgroup. With this release,
+> the overhead of bio-cgroup is significantly reduced and the accuracy
+> of block I/O tracking is much improved. These patches are for
+> 2.6.28-rc2-mm1.
+> 
 
-So, would it be possible to turn the:
+>From my point of view, a way to record bio_cgroup_id to page_cgroup is quite neat
+and nice.
 
-	pr_warning("No set_type function... 
+My concern is "bio_cgroup_id". It's provided only for bio_cgroup.
+In this summer, I tried to add swap_cgroup_id only for mem+swap controller but
+commenters said "please provide "id and lookup" in cgroup layer, it should be useful."
+And I agree them. (and postponed it ;)
 
-into a pr_debug() in kernel/irq/manage.c so when our users upgrade
-to newer kernels they don't get scared by a whole bunch of new
-warnings?
+Could you try "id" in cgroup layer ? How do you think, Paul and others ?
 
-Many thanks!
+That's my only concern and if I/O controller people decides to live with
+this bio tracking infrastracture,
+==
+   page -> page_cgroup -> bio_cgroup_id
+==
+I have no objections. And enqueue necessary changes to my queue.
 
-Mark
+Thanks,
+-Kame
+
+
+
+> Enjoy it!
+> 
+> dm-ioband
+> =========
+> 
+> Dm-ioband is an I/O bandwidth controller implemented as a
+> device-mapper driver, which gives specified bandwidth to each job
+> running on the same block device. A job is a group of processes
+> or a virtual machine such as KVM or Xen. 
+> I/O throughput on dm-ioband is excellent not only on SATA storage
+> but on SDD, which as good as the one without dm-ioband.
+> 
+> Changes from the previous release:
+>   - Fix a bug that create_workqueue() is called during spin lock
+>     when creating a new ioband group.
+>   - A new tunable parameter "carryover" is added, which specifies
+>     how many tokens an ioband group can keep for the future use
+>     when the group isn't so active.
+> 
+> TODO:
+>   - Other policies to schedule BIOs.
+>     - Policies which fits SSD.
+>      e.g.)
+>        - Guarantee response time.
+>        - Guarantee throughput.
+>     - Policies which fits Highend Storage or hardware raid storage.
+>        - Some LUNs may share the same bandwidth.
+>   - Support WRITE_BARRIER when the device-mapper layer supports it.
+>   - Implement the algorithm of dm-ioband in the block I/O layer
+>     experimentally.
+> 
+> bio-cgroup
+> ==========
+> 
+> Bio-cgroup is a BIO tracking mechanism, which is implemented on the
+> cgroup memory subsystem. With the mechanism, it is able to determine
+> which cgroup each of bio belongs to, even when the bio is one of
+> delayed-write requests issued from a kernel thread such as pdflush.
+> 
+> Changes from the previous release:
+>   - This release is a new implementation.
+>   - This is based on the new design of the cgroup memory controller
+>     framework, which pre-allocates all cgroup-page data structures to
+>     reduce the overhead.
+>   - The overhead to trace block I/O requests is much smaller than that
+>     of the previous one. This is done by making every page have the id
+>     of its corresponding bio-cgroup instead of the pointer to it and
+>     most of spin-locks and atomic operations are gone.
+>   - This implementation uses only 4 bytes per page for I/O tracking
+>     while the previous version uses 12 bytes on a 32 bit machine and 24
+>     bytes on a 64 bit machine.
+>   - The accuracy of I/O tracking is improved that it can trace I/O
+>     requests even when the processes which issued these requests get
+>     moved into another bio-cgroup.
+>   - Support bounce buffers tracking. They will have the same bio-cgroup
+>     owners as the original I/O requests.
+> 
+> TODO:
+>   - Support to track I/O requests that will be generated in Linux
+>     kernel, such as those of RAID0 and RAID5.
+> 
+> A list of patches
+> =================
+> 
+> The following is a list of patches:
+> 
+>   [PATCH 0/8] I/O bandwidth controller and BIO tracking
+>   [PATCH 1/8] dm-ioband: Introduction
+>   [PATCH 2/8] dm-ioband: Source code and patch
+>   [PATCH 3/8] dm-ioband: Document
+>   [PATCH 4/8] bio-cgroup: Introduction
+>   [PATCH 5/8] bio-cgroup: The new page_cgroup framework
+>   [PATCH 6/8] bio-cgroup: The body of bio-cgroup
+>   [PATCH 7/8] bio-cgroup: Page tracking hooks
+>   [PATCH 8/8] bio-cgroup: Add a cgroup support to dm-ioband
+> 
+> Please see the following site for more information:
+>   Linux Block I/O Bandwidth Control Project
+>   http://people.valinux.co.jp/~ryov/bwctl/
+> 
+> Thanks,
+> Ryo Tsuruta
+> 
+
