@@ -1,266 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbYKMEi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751AbYKMEuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbYKMEi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 23:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYKMEhz
+	id S1752751AbYKMEuE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 23:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbYKMEtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 23:37:55 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:38425 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbYKMEhy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 23:37:54 -0500
-Message-Id: <20081113043751.796120007@goodmis.org>
-References: <20081113043449.751885305@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 12 Nov 2008 23:34:50 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Pekka Paalanen <pq@iki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH v2 1/1] ftrace: do not update max buffer with no users
-Content-Disposition: inline; filename=0001-ftrace-do-not-update-max-buffer-with-no-users.patch
+	Wed, 12 Nov 2008 23:49:52 -0500
+Received: from ozlabs.org ([203.10.76.45]:58805 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064AbYKMEtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 23:49:52 -0500
+To: <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Greg Kroah-Hartman <greg@kroah.com>,
+       <viro@zeniv.linux.org.uk>
+Message-Id: <b0f1032863818f2834094e2ca9ce4b1c13122748.1226551772.git.michael@ellerman.id.au>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: [PATCH] Store the relevant miscdevice in file->private_data in misc_open()
+Date: Thu, 13 Nov 2008 15:49:50 +1100 (EST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: only use max latency buffer when a user is configured
+Currently it's not easy to share file_operations between multiple
+instances of a miscdevice. In order to do this, the device code needs to
+store a list of all it's miscdevice instances, and when fops->open() is
+called, search the list and find the right device based on the minor
+number.
 
-Pekka reported a bug with the resizing of the buffers when only the
-MMIO tracer was configured. The issue was, to save memory, the max
-latency trace buffer was only initialized if a tracer that uses it
-is configured in.
+However the generic miscdevice code already has a list of miscdevices,
+and uses this to find the right device in misc_open(). If misc_open()
+would store the miscdevice it found in file->private_data, then the
+device code wouldn't need to worry about storing it's own separate list
+and searching that as well.
 
-What happened was that the max latency buffer was never initialized
-when only the MMIO tracer was configurued. The MMIO tracer does not
-use the max tracer, which kept it from being initialized. But the
-resize code still tried to resize the max latency buffers, but because
-they were never allocated, the resize code was passed a NULL pointer.
+The rest of the miscdevice code does not use file->private_data, so the
+device code is still free to use file->private_data for something else
+if it wants to.
 
-This patch checks if the max tracer is NULL before resizing it.
-It also hides the modification functions of the max tracer behind
-the TRACER_MAX_TRACE config.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Reported-by: Pekka Paalanen <pq@iki.fi>
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/trace.c |  171 ++++++++++++++++++++++++++------------------------
- 1 files changed, 88 insertions(+), 83 deletions(-)
+I'm not all that across VFS or driver core stuff, but this looks safe to
+me, lots of other devices use file->private_data and this should be no
+different AFAICT.
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index abfa810..6e03ec1 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -95,20 +95,6 @@ static struct trace_array	global_trace;
- 
- static DEFINE_PER_CPU(struct trace_array_cpu, global_trace_cpu);
- 
--/*
-- * The max_tr is used to snapshot the global_trace when a maximum
-- * latency is reached. Some tracers will use this to store a maximum
-- * trace while it continues examining live traces.
-- *
-- * The buffers for the max_tr are set up the same as the global_trace.
-- * When a snapshot is taken, the link list of the max_tr is swapped
-- * with the link list of the global_trace and the buffers are reset for
-- * the global_trace so the tracing can continue.
-- */
--static struct trace_array	max_tr;
--
--static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
--
- /* tracer_enabled is used to toggle activation of a tracer */
- static int			tracer_enabled = 1;
- 
-@@ -229,6 +215,21 @@ static raw_spinlock_t ftrace_max_lock =
- 	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
- 
- /*
-+ * The max_tr is used to snapshot the global_trace when a maximum
-+ * latency is reached. Some tracers will use this to store a maximum
-+ * trace while it continues examining live traces.
-+ *
-+ * The buffers for the max_tr are set up the same as the global_trace.
-+ * When a snapshot is taken, the link list of the max_tr is swapped
-+ * with the link list of the global_trace and the buffers are reset for
-+ * the global_trace so the tracing can continue.
-+ */
-+static struct trace_array	max_tr;
-+
-+static DEFINE_PER_CPU(struct trace_array_cpu, max_data);
-+
-+#ifdef CONFIG_TRACER_MAX_TRACE
-+/*
-  * Copy the new maximum trace into the separate maximum-trace
-  * structure. (this way the maximum trace is permanently saved,
-  * for later retrieval via /debugfs/tracing/latency_trace)
-@@ -256,6 +257,65 @@ __update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
- }
- 
- /**
-+ * update_max_tr - snapshot all trace buffers from global_trace to max_tr
-+ * @tr: tracer
-+ * @tsk: the task with the latency
-+ * @cpu: The cpu that initiated the trace.
-+ *
-+ * Flip the buffers between the @tr and the max_tr and record information
-+ * about which task was the cause of this latency.
-+ */
-+void
-+update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
-+{
-+	struct ring_buffer *buf = tr->buffer;
-+
-+	WARN_ON_ONCE(!irqs_disabled());
-+	__raw_spin_lock(&ftrace_max_lock);
-+
-+	tr->buffer = max_tr.buffer;
-+	max_tr.buffer = buf;
-+
-+	ftrace_disable_cpu();
-+	ring_buffer_reset(tr->buffer);
-+	ftrace_enable_cpu();
-+
-+	__update_max_tr(tr, tsk, cpu);
-+	__raw_spin_unlock(&ftrace_max_lock);
-+}
-+
-+/**
-+ * update_max_tr_single - only copy one trace over, and reset the rest
-+ * @tr - tracer
-+ * @tsk - task with the latency
-+ * @cpu - the cpu of the buffer to copy.
-+ *
-+ * Flip the trace of a single CPU buffer between the @tr and the max_tr.
-+ */
-+void
-+update_max_tr_single(struct trace_array *tr, struct task_struct *tsk, int cpu)
-+{
-+	int ret;
-+
-+	WARN_ON_ONCE(!irqs_disabled());
-+	__raw_spin_lock(&ftrace_max_lock);
-+
-+	ftrace_disable_cpu();
-+
-+	ring_buffer_reset(max_tr.buffer);
-+	ret = ring_buffer_swap_cpu(max_tr.buffer, tr->buffer, cpu);
-+
-+	ftrace_enable_cpu();
-+
-+	WARN_ON_ONCE(ret);
-+
-+	__update_max_tr(tr, tsk, cpu);
-+	__raw_spin_unlock(&ftrace_max_lock);
-+}
-+
-+#endif /* CONFIG_TRACER_MAX_TRACE */
-+
-+/**
-  * trace_seq_printf - sequence printing of trace information
-  * @s: trace sequence descriptor
-  * @fmt: printf format string
-@@ -397,63 +457,6 @@ trace_print_seq(struct seq_file *m, struct trace_seq *s)
- }
- 
- /**
-- * update_max_tr - snapshot all trace buffers from global_trace to max_tr
-- * @tr: tracer
-- * @tsk: the task with the latency
-- * @cpu: The cpu that initiated the trace.
-- *
-- * Flip the buffers between the @tr and the max_tr and record information
-- * about which task was the cause of this latency.
-- */
--void
--update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu)
--{
--	struct ring_buffer *buf = tr->buffer;
--
--	WARN_ON_ONCE(!irqs_disabled());
--	__raw_spin_lock(&ftrace_max_lock);
--
--	tr->buffer = max_tr.buffer;
--	max_tr.buffer = buf;
--
--	ftrace_disable_cpu();
--	ring_buffer_reset(tr->buffer);
--	ftrace_enable_cpu();
--
--	__update_max_tr(tr, tsk, cpu);
--	__raw_spin_unlock(&ftrace_max_lock);
--}
--
--/**
-- * update_max_tr_single - only copy one trace over, and reset the rest
-- * @tr - tracer
-- * @tsk - task with the latency
-- * @cpu - the cpu of the buffer to copy.
-- *
-- * Flip the trace of a single CPU buffer between the @tr and the max_tr.
-- */
--void
--update_max_tr_single(struct trace_array *tr, struct task_struct *tsk, int cpu)
--{
--	int ret;
--
--	WARN_ON_ONCE(!irqs_disabled());
--	__raw_spin_lock(&ftrace_max_lock);
--
--	ftrace_disable_cpu();
--
--	ring_buffer_reset(max_tr.buffer);
--	ret = ring_buffer_swap_cpu(max_tr.buffer, tr->buffer, cpu);
--
--	ftrace_enable_cpu();
--
--	WARN_ON_ONCE(ret);
--
--	__update_max_tr(tr, tsk, cpu);
--	__raw_spin_unlock(&ftrace_max_lock);
--}
--
--/**
-  * register_tracer - register a tracer with the ftrace system.
-  * @type - the plugin for the tracer
-  *
-@@ -2719,19 +2722,21 @@ tracing_entries_write(struct file *filp, const char __user *ubuf,
- 			goto out;
- 		}
- 
--		ret = ring_buffer_resize(max_tr.buffer, val);
--		if (ret < 0) {
--			int r;
--			cnt = ret;
--			r = ring_buffer_resize(global_trace.buffer,
--					       global_trace.entries);
--			if (r < 0) {
--				/* AARGH! We are left with different
--				 * size max buffer!!!! */
--				WARN_ON(1);
--				tracing_disabled = 1;
-+		if (max_tr.buffer) {
-+			ret = ring_buffer_resize(max_tr.buffer, val);
-+			if (ret < 0) {
-+				int r;
-+				cnt = ret;
-+				r = ring_buffer_resize(global_trace.buffer,
-+						       global_trace.entries);
-+				if (r < 0) {
-+					/* AARGH! We are left with different
-+					 * size max buffer!!!! */
-+					WARN_ON(1);
-+					tracing_disabled = 1;
-+				}
-+				goto out;
- 			}
--			goto out;
- 		}
- 
- 		global_trace.entries = val;
--- 
-1.5.6.5
 
+ drivers/char/misc.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/char/misc.c b/drivers/char/misc.c
+index a5e0db9..bb91d68 100644
+--- a/drivers/char/misc.c
++++ b/drivers/char/misc.c
+@@ -147,11 +147,13 @@ static int misc_open(struct inode * inode, struct file * file)
+ 	err = 0;
+ 	old_fops = file->f_op;
+ 	file->f_op = new_fops;
++	file->private_data = c;
+ 	if (file->f_op->open) {
+ 		err=file->f_op->open(inode,file);
+ 		if (err) {
+ 			fops_put(file->f_op);
+ 			file->f_op = fops_get(old_fops);
++			file->private_data = NULL;
+ 		}
+ 	}
+ 	fops_put(old_fops);
 -- 
+1.5.5
+
