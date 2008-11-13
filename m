@@ -1,68 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753010AbYKMLMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYKMLOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753010AbYKMLMG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 06:12:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYKMLLy
+	id S1752766AbYKMLOf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 06:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYKMLO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 06:11:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35023 "EHLO mx2.mail.elte.hu"
+	Thu, 13 Nov 2008 06:14:26 -0500
+Received: from mail.atmel.fr ([81.80.104.162]:61623 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbYKMLLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 06:11:54 -0500
-Date: Thu, 13 Nov 2008 12:11:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Nelson <markn@au1.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [PATCH] genirq: __irq_set_trigger: change pr_warning to
-	pr_debug
-Message-ID: <20081113111136.GA27573@elte.hu>
-References: <200811131730.11506.markn@au1.ibm.com> <20081113074300.GC1723@elte.hu> <200811132137.41863.markn@au1.ibm.com>
+	id S1751658AbYKMLOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 06:14:25 -0500
+Message-ID: <491C0C05.6040301@atmel.com>
+Date: Thu, 13 Nov 2008 12:14:13 +0100
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811132137.41863.markn@au1.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Pierre Ossman <drzeus@drzeus.cx>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Needed to use the atmel-mci driver in a architecture
+independent manner.
 
-* Mark Nelson <markn@au1.ibm.com> wrote:
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ arch/avr32/boards/atngw100/setup.c       |    2 +-
+ arch/avr32/boards/atstk1000/atstk1002.c  |    2 +-
+ arch/avr32/boards/atstk1000/atstk1003.c  |    2 +-
+ arch/avr32/boards/atstk1000/atstk1004.c  |    2 +-
+ arch/avr32/include/asm/atmel-mci.h       |   39 ------
+ arch/avr32/mach-at32ap/at32ap700x.c      |    2 +-
+ drivers/mmc/host/atmel-mci.c             |    2 +-
+ include/linux/atmel-mci.h                |   39 ++++++
+ 8 files changed, 45 insertions(+), 45 deletions(-)
+ delete mode 100644 arch/avr32/include/asm/atmel-mci.h
+ create mode 100644 include/linux/atmel-mci.h
 
-> Commit 0c5d1eb77a8be917b638344a22afe1398236482b (genirq: record 
-> trigger type) caused powerpc platforms that had no set_type() 
-> function in their struct irq_chip to spew out warnings about "No 
-> set_type function for IRQ...". This warning isn't necessarily 
-> justified though because the generic powerpc platform code calls 
-> set_irq_type() (which in turn calls __irq_set_trigger) with 
-> information from the device tree to establish the interrupt 
-> mappings, regardless of whether the PIC can actually set a type.
-> 
-> A platform's irq_chip might not have a set_type function for a 
-> variety of reasons, for example: the platform may have the type 
-> essentially hard-coded, or as in the case for Cell interrupts are 
-> just messages past around that have no real concept of type, or the 
-> platform could even have a virtual PIC as on the PS3.
-> 
-> Signed-off-by: Mark Nelson <markn@au1.ibm.com>
-> ---
-> Thanks Ingo! Much appreciated
-> 
->  kernel/irq/manage.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/arch/avr32/boards/atngw100/setup.c b/arch/avr32/boards/atngw100/setup.c
+index 6c54580..ca6e1ff 100644
+--- a/arch/avr32/boards/atngw100/setup.c
++++ b/arch/avr32/boards/atngw100/setup.c
+@@ -19,8 +19,8 @@
+ #include <linux/types.h>
+ #include <linux/leds.h>
+ #include <linux/spi/spi.h>
++#include <linux/atmel-mci.h>
+ 
+-#include <asm/atmel-mci.h>
+ #include <asm/io.h>
+ #include <asm/setup.h>
+ 
+diff --git a/arch/avr32/boards/atstk1000/atstk1002.c b/arch/avr32/boards/atstk1000/atstk1002.c
+index 29e5b51..5a6380f 100644
+--- a/arch/avr32/boards/atstk1000/atstk1002.c
++++ b/arch/avr32/boards/atstk1000/atstk1002.c
+@@ -16,12 +16,12 @@
+ #include <linux/types.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/at73c213.h>
++#include <linux/atmel-mci.h>
+ 
+ #include <video/atmel_lcdc.h>
+ 
+ #include <asm/io.h>
+ #include <asm/setup.h>
+-#include <asm/atmel-mci.h>
+ 
+ #include <mach/at32ap700x.h>
+ #include <mach/board.h>
+diff --git a/arch/avr32/boards/atstk1000/atstk1003.c b/arch/avr32/boards/atstk1000/atstk1003.c
+index be089d7..7b9ceee 100644
+--- a/arch/avr32/boards/atstk1000/atstk1003.c
++++ b/arch/avr32/boards/atstk1000/atstk1003.c
+@@ -17,9 +17,9 @@
+ 
+ #include <linux/spi/at73c213.h>
+ #include <linux/spi/spi.h>
++#include <linux/atmel-mci.h>
+ 
+ #include <asm/setup.h>
+-#include <asm/atmel-mci.h>
+ 
+ #include <mach/at32ap700x.h>
+ #include <mach/board.h>
+diff --git a/arch/avr32/boards/atstk1000/atstk1004.c b/arch/avr32/boards/atstk1000/atstk1004.c
+index 248ef23..3ff0498 100644
+--- a/arch/avr32/boards/atstk1000/atstk1004.c
++++ b/arch/avr32/boards/atstk1000/atstk1004.c
+@@ -17,11 +17,11 @@
+ 
+ #include <linux/spi/at73c213.h>
+ #include <linux/spi/spi.h>
++#include <linux/atmel-mci.h>
+ 
+ #include <video/atmel_lcdc.h>
+ 
+ #include <asm/setup.h>
+-#include <asm/atmel-mci.h>
+ 
+ #include <mach/at32ap700x.h>
+ #include <mach/board.h>
+diff --git a/arch/avr32/include/asm/atmel-mci.h b/arch/avr32/include/asm/atmel-mci.h
+deleted file mode 100644
+index 59f3fad..0000000
+--- a/arch/avr32/include/asm/atmel-mci.h
++++ /dev/null
+@@ -1,39 +0,0 @@
+-#ifndef __ASM_AVR32_ATMEL_MCI_H
+-#define __ASM_AVR32_ATMEL_MCI_H
+-
+-#define ATMEL_MCI_MAX_NR_SLOTS	2
+-
+-struct dma_slave;
+-
+-/**
+- * struct mci_slot_pdata - board-specific per-slot configuration
+- * @bus_width: Number of data lines wired up the slot
+- * @detect_pin: GPIO pin wired to the card detect switch
+- * @wp_pin: GPIO pin wired to the write protect sensor
+- *
+- * If a given slot is not present on the board, @bus_width should be
+- * set to 0. The other fields are ignored in this case.
+- *
+- * Any pins that aren't available should be set to a negative value.
+- *
+- * Note that support for multiple slots is experimental -- some cards
+- * might get upset if we don't get the clock management exactly right.
+- * But in most cases, it should work just fine.
+- */
+-struct mci_slot_pdata {
+-	unsigned int		bus_width;
+-	int			detect_pin;
+-	int			wp_pin;
+-};
+-
+-/**
+- * struct mci_platform_data - board-specific MMC/SDcard configuration
+- * @dma_slave: DMA slave interface to use in data transfers, or NULL.
+- * @slot: Per-slot configuration data.
+- */
+-struct mci_platform_data {
+-	struct dma_slave	*dma_slave;
+-	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
+-};
+-
+-#endif /* __ASM_AVR32_ATMEL_MCI_H */
+diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+index 813b684..b0ad6da 100644
+--- a/arch/avr32/mach-at32ap/at32ap700x.c
++++ b/arch/avr32/mach-at32ap/at32ap700x.c
+@@ -15,8 +15,8 @@
+ #include <linux/gpio.h>
+ #include <linux/spi/spi.h>
+ #include <linux/usb/atmel_usba_udc.h>
++#include <linux/atmel-mci.h>
+ 
+-#include <asm/atmel-mci.h>
+ #include <asm/io.h>
+ #include <asm/irq.h>
+ 
+diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+index 7a3f243..1e97916 100644
+--- a/drivers/mmc/host/atmel-mci.c
++++ b/drivers/mmc/host/atmel-mci.c
+@@ -25,8 +25,8 @@
+ #include <linux/stat.h>
+ 
+ #include <linux/mmc/host.h>
++#include <linux/atmel-mci.h>
+ 
+-#include <asm/atmel-mci.h>
+ #include <asm/io.h>
+ #include <asm/unaligned.h>
+ 
+diff --git a/include/linux/atmel-mci.h b/include/linux/atmel-mci.h
+new file mode 100644
+index 0000000..2a2213e
+--- /dev/null
++++ b/include/linux/atmel-mci.h
+@@ -0,0 +1,39 @@
++#ifndef __LINUX_ATMEL_MCI_H
++#define __LINUX_ATMEL_MCI_H
++
++#define ATMEL_MCI_MAX_NR_SLOTS	2
++
++struct dma_slave;
++
++/**
++ * struct mci_slot_pdata - board-specific per-slot configuration
++ * @bus_width: Number of data lines wired up the slot
++ * @detect_pin: GPIO pin wired to the card detect switch
++ * @wp_pin: GPIO pin wired to the write protect sensor
++ *
++ * If a given slot is not present on the board, @bus_width should be
++ * set to 0. The other fields are ignored in this case.
++ *
++ * Any pins that aren't available should be set to a negative value.
++ *
++ * Note that support for multiple slots is experimental -- some cards
++ * might get upset if we don't get the clock management exactly right.
++ * But in most cases, it should work just fine.
++ */
++struct mci_slot_pdata {
++	unsigned int		bus_width;
++	int			detect_pin;
++	int			wp_pin;
++};
++
++/**
++ * struct mci_platform_data - board-specific MMC/SDcard configuration
++ * @dma_slave: DMA slave interface to use in data transfers, or NULL.
++ * @slot: Per-slot configuration data.
++ */
++struct mci_platform_data {
++	struct dma_slave	*dma_slave;
++	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
++};
++
++#endif /* __LINUX_ATMEL_MCI_H */
+-- 
+1.5.3.7
 
-applied to tip/irq/urgent, thanks Mark!
 
-	Ingo
+
+-- 
+Nicolas Ferre
+
+
