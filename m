@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYKMRUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbYKMRVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754152AbYKMRUY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 12:20:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYKMRTu
+	id S1754118AbYKMRVT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 12:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYKMRVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 12:19:50 -0500
-Received: from gw.goop.org ([64.81.55.164]:41660 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751793AbYKMRTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 12:19:49 -0500
-Message-ID: <491C61B5.7020004@goop.org>
-Date: Thu, 13 Nov 2008 09:19:49 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Thu, 13 Nov 2008 12:21:05 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37327 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751608AbYKMRVE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 12:21:04 -0500
+Date: Thu, 13 Nov 2008 12:21:00 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <andi@firstfloor.org>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function
+ return tracer lockless
+In-Reply-To: <20081113171220.GX3810@one.firstfloor.org>
+Message-ID: <alpine.DEB.1.10.0811131219250.23751@gandalf.stny.rr.com>
+References: <491B4F0A.3080901@gmail.com> <87od0jd6ds.fsf@basil.nowhere.org> <c62985530811130901t7ddf84beof39a964582fb94a0@mail.gmail.com> <20081113171220.GX3810@one.firstfloor.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: [PATCH 2/2] mm/apply_to_range: call pte function with lazy updates
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the pte-level function in apply_to_range be called in lazy mmu
-mode, so that any pagetable modifications can be batched.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- mm/memory.c |    4 ++++
- 1 file changed, 4 insertions(+)
+On Thu, 13 Nov 2008, Andi Kleen wrote:
 
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1545,6 +1545,8 @@
- 
- 	BUG_ON(pmd_huge(*pmd));
- 
-+	arch_enter_lazy_mmu_mode();
-+
- 	token = pmd_pgtable(*pmd);
- 
- 	do {
-@@ -1552,6 +1554,8 @@
- 		if (err)
- 			break;
- 	} while (pte++, addr += PAGE_SIZE, addr != end);
-+
-+	arch_leave_lazy_mmu_mode();
- 
- 	if (mm != &init_mm)
- 		pte_unmap_unlock(pte-1, ptl);
+> > > local register i
+> > > i = index;
+> > > write to index'ed array using i
+> > >                            <--------- interrupt here would overwrite data
+> > > ...
+> > > index = i + 1;
+> > 
+> > 
+> > Yes in the common case that would be a danger. But here, if an
+> > interrupt is raised, it will increment
+> > the counter and then decrement it at return time without dropping the
+> > cpu. So after the interrupt, the
+> > value will remain the same...
+> 
+> The buffer contents will not be necessarily
+> the same. See the scenario above. The interrupt would use the 
+> same i as the current function and would overwrite the
+> partially written entry.
+
+
+So the answer to this is:
+
+  i = index++;
+  barrier();
+  write to index i (not index);
+
+-- Steve
 
 
