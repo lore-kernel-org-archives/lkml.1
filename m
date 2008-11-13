@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYKMUu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbYKMUwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754919AbYKMUu2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 15:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYKMUuM
+	id S1754622AbYKMUwL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 15:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYKMUvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 15:50:12 -0500
-Received: from outbound-mail-33.bluehost.com ([69.89.18.153]:53160 "HELO
-	outbound-mail-33.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751645AbYKMUuL (ORCPT
+	Thu, 13 Nov 2008 15:51:55 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:36668 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751595AbYKMUvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 15:50:11 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=nMZq8H3b6PokTdnWUoI4Uzr914N6HbNOQMAs60WHKLuIgWelCW8N/6rAIfOKhr3nNrhn61fuUnvbczNpGcehGXJjAAOuXYFmpe5s2P+hsEOMPExGlm2DV7y7n1F7tbfs;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] PCI fixes
-Date: Thu, 13 Nov 2008 12:50:07 -0800
-User-Agent: KMail/1.10.1 (Linux/2.6.26.6-79.fc9.x86_64; KDE/4.1.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "linux-pci" <linux-pci@vger.kernel.org>
+	Thu, 13 Nov 2008 15:51:54 -0500
+Date: Thu, 13 Nov 2008 20:51:52 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] acpiphp: Identify more removable slots
+Message-ID: <20081113205152.GA11577@srcf.ucam.org>
+References: <20081113202739.GA11107@srcf.ucam.org> <20081113204859.GC1617@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811131250.07677.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20081113204859.GC1617@parisc-linux.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull my for-linus branch:
-git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
+On Thu, Nov 13, 2008 at 01:48:59PM -0700, Matthew Wilcox wrote:
 
-Just one more fix for 2.6.28 is queued up so far, but it does allow booting
-on certain platforms, so it's an important one.
+> Why not:
+> 
+>  	status = acpi_get_handle(handle, "_EJ0", &tmp);
+> 	if (ACPI_SUCCESS(status))
+> 		return 1;
+> 
+> 	status = acpi_get_handle(handle, "_RMV", &tmp);
+> 	if (ACPI_SUCCESS(status))
+> 		return 1;
+> 
+> 	return 0;
 
-Thanks,
-Jesse
+Oh, yes, that'd work.
 
-Kenji Kaneshige (1):
-      PCI: ignore bit0 of _OSC return code
+> > +	if (ACPI_SUCCESS(status) || is_dock_device(handle))
+> > +		valid = 1;
+> > +
+> > +	if (!valid)
+> >  		return AE_OK;
+> 
+> This looks like almost the same code as above.  New helper function?
 
- drivers/pci/pci-acpi.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+It's not quite the same, but yes, I'll see if it can be reduced.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
