@@ -1,85 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbYKMNrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbYKMNst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753920AbYKMNrc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 08:47:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYKMNrX
+	id S1754141AbYKMNst (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 08:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYKMNsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 08:47:23 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:36690 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752042AbYKMNrX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 08:47:23 -0500
-Date: Thu, 13 Nov 2008 14:49:49 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       Hirokazu Takahashi <taka@valinux.co.jp>,
-       Ryo Tsuruta <ryov@valinux.co.jp>, Andrea Righi <righi.andrea@gmail.com>,
-       Satoshi UCHIDA <s-uchida@ap.jp.nec.com>, fernando@oss.ntt.co.jp,
-       balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, ngupta@google.com, Rik van Riel <riel@redhat.com>,
-       Jeff Moyer <jmoyer@redhat.com>, "dpshah@google.com" <dpshah@google.com>,
-       Mike Waychison <mikew@google.com>, rohitseth@google.com,
-       paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081113134949.GH14817@gandalf.sssup.it>
-References: <20081106163957.GB7461@redhat.com> <1225990327.7803.4776.camel@twins> <20081106170830.GD7461@redhat.com> <e98e18940811061507t3e19183byf2b8b291458ba81b@mail.gmail.com> <20081107141943.GC21884@redhat.com> <e98e18940811071336n58a073d8w2cbaeddd5657d1e9@mail.gmail.com> <20081110141143.GC26956@redhat.com> <e98e18940811111155q4bd73480pebe088fa1adbe2e4@mail.gmail.com> <20081111223024.GA31527@redhat.com> <e98e18940811121320w5f321302n13b526887cbb4012@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 13 Nov 2008 08:48:41 -0500
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:40943 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751086AbYKMNsk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 08:48:40 -0500
+Date: Thu, 13 Nov 2008 13:48:18 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Pierre Ossman <drzeus@drzeus.cx>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>, kernel@avr32linux.org
+Subject: Re: [PATCH] mmc: atmel-mci: move atmel-mci.h file to include/linux
+Message-ID: <20081113134818.GA9161@fluff.org.uk>
+References: <491C0C05.6040301@atmel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <e98e18940811121320w5f321302n13b526887cbb4012@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+In-Reply-To: <491C0C05.6040301@atmel.com>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> From: Nauman Rafique <nauman@google.com>
-> Date: Wed, Nov 12, 2008 01:20:13PM -0800
+On Thu, Nov 13, 2008 at 12:14:13PM +0100, Nicolas Ferre wrote:
+> Needed to use the atmel-mci driver in a architecture
+> independent manner.
 >
-...
-> >> CFQ can be trivially
-> >> modified to do proportional division (i.e give time slices in
-> >> proportion to weight instead of priority).
-> >> And such a solution would
-> >> avoid idleness problem like the one you mentioned above.
-> >
-> > Can you just elaborate a little on how do you get around idleness problem?
-> > If you don't create idleness than if two tasks in two cgroups are doing
-> > sequential IO, they might simply get into lockstep and we will not achieve
-> > any differentiated service proportionate to their weight.
-> 
-> I was thinking of a more cfq-like solution for proportional division
-> at the elevator level (i.e. not a token based solution). There are two
-> options for proportional bandwidth division at elevator level: 1)
-> change the size of the time slice in proportion to the weights or 2)
-> allocate equal time slice each time but allocate more slices to cgroup
-> with more weight. For (2), we can actually keep track of time taken to
-> serve requests and allocate time slices in such a way that the actual
-> disk time is proportional to the weight. We can adopt a fair-queuing
-> (http://lkml.org/lkml/2008/4/1/234) like approach for this if we want
-> to go that way.
-> 
-> I am not sure if the solutions mentioned above will have the lockstep
-> problem you mentioned above or not. Since we are allocating time
-> slices, and would have anticipation built in (just like cfq), we would
-> have some level of idleness. But this idleness can be predicted based
-> on a thread behavior.
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> ---
+> arch/avr32/boards/atngw100/setup.c       |    2 +-
+> arch/avr32/boards/atstk1000/atstk1002.c  |    2 +-
+> arch/avr32/boards/atstk1000/atstk1003.c  |    2 +-
+> arch/avr32/boards/atstk1000/atstk1004.c  |    2 +-
+> arch/avr32/include/asm/atmel-mci.h       |   39 ------
+> arch/avr32/mach-at32ap/at32ap700x.c      |    2 +-
+> drivers/mmc/host/atmel-mci.c             |    2 +-
+> include/linux/atmel-mci.h                |   39 ++++++
 
-  if I understand that correctly, the problem may arise whenever you
-have to deal with *synchronous* I/O, where you may not see the streams
-of requests generated by tasks as continuously backlogged (and the
-algorithm used to distribute bandwidth does the implicit assumption
-that they are, as in the cfq case).
+Would people object to putting this in include/linux/mmc/atmel.h
+to avoid making include/linux abound with device/subsystem/machine
+specific header files?
 
-A cfq-like solution with idling enabled AFAIK should not suffer from
-this problem, as it creates backlog for the process being anticipated.
-But anticipation is not always used, and cfq currently disables it for
-SSDs and in other cases where it may hurt performance (e.g., NCQ drives
-in presence of seeky loads, etc).  So, in these cases, something still
-needs to be done if we want a proportional bandwidth distribution, and
-we don't want to pay the extra cost of idling when it's not strictly
-necessary.
+> 8 files changed, 45 insertions(+), 45 deletions(-)
+> delete mode 100644 arch/avr32/include/asm/atmel-mci.h
+> create mode 100644 include/linux/atmel-mci.h
+>
+> diff --git a/arch/avr32/boards/atngw100/setup.c b/arch/avr32/boards/atngw100/setup.c
+> index 6c54580..ca6e1ff 100644
+> --- a/arch/avr32/boards/atngw100/setup.c
+> +++ b/arch/avr32/boards/atngw100/setup.c
+> @@ -19,8 +19,8 @@
+> #include <linux/types.h>
+> #include <linux/leds.h>
+> #include <linux/spi/spi.h>
+> +#include <linux/atmel-mci.h>
+>
+> -#include <asm/atmel-mci.h>
+> #include <asm/io.h>
+> #include <asm/setup.h>
+>
+> diff --git a/arch/avr32/boards/atstk1000/atstk1002.c b/arch/avr32/boards/atstk1000/atstk1002.c
+> index 29e5b51..5a6380f 100644
+> --- a/arch/avr32/boards/atstk1000/atstk1002.c
+> +++ b/arch/avr32/boards/atstk1000/atstk1002.c
+> @@ -16,12 +16,12 @@
+> #include <linux/types.h>
+> #include <linux/spi/spi.h>
+> #include <linux/spi/at73c213.h>
+> +#include <linux/atmel-mci.h>
+>
+> #include <video/atmel_lcdc.h>
+>
+> #include <asm/io.h>
+> #include <asm/setup.h>
+> -#include <asm/atmel-mci.h>
+>
+> #include <mach/at32ap700x.h>
+> #include <mach/board.h>
+> diff --git a/arch/avr32/boards/atstk1000/atstk1003.c b/arch/avr32/boards/atstk1000/atstk1003.c
+> index be089d7..7b9ceee 100644
+> --- a/arch/avr32/boards/atstk1000/atstk1003.c
+> +++ b/arch/avr32/boards/atstk1000/atstk1003.c
+> @@ -17,9 +17,9 @@
+>
+> #include <linux/spi/at73c213.h>
+> #include <linux/spi/spi.h>
+> +#include <linux/atmel-mci.h>
+>
+> #include <asm/setup.h>
+> -#include <asm/atmel-mci.h>
+>
+> #include <mach/at32ap700x.h>
+> #include <mach/board.h>
+> diff --git a/arch/avr32/boards/atstk1000/atstk1004.c b/arch/avr32/boards/atstk1000/atstk1004.c
+> index 248ef23..3ff0498 100644
+> --- a/arch/avr32/boards/atstk1000/atstk1004.c
+> +++ b/arch/avr32/boards/atstk1000/atstk1004.c
+> @@ -17,11 +17,11 @@
+>
+> #include <linux/spi/at73c213.h>
+> #include <linux/spi/spi.h>
+> +#include <linux/atmel-mci.h>
+>
+> #include <video/atmel_lcdc.h>
+>
+> #include <asm/setup.h>
+> -#include <asm/atmel-mci.h>
+>
+> #include <mach/at32ap700x.h>
+> #include <mach/board.h>
+> diff --git a/arch/avr32/include/asm/atmel-mci.h b/arch/avr32/include/asm/atmel-mci.h
+> deleted file mode 100644
+> index 59f3fad..0000000
+> --- a/arch/avr32/include/asm/atmel-mci.h
+> +++ /dev/null
+> @@ -1,39 +0,0 @@
+> -#ifndef __ASM_AVR32_ATMEL_MCI_H
+> -#define __ASM_AVR32_ATMEL_MCI_H
+> -
+> -#define ATMEL_MCI_MAX_NR_SLOTS	2
+> -
+> -struct dma_slave;
+> -
+> -/**
+> - * struct mci_slot_pdata - board-specific per-slot configuration
+> - * @bus_width: Number of data lines wired up the slot
+> - * @detect_pin: GPIO pin wired to the card detect switch
+> - * @wp_pin: GPIO pin wired to the write protect sensor
+> - *
+> - * If a given slot is not present on the board, @bus_width should be
+> - * set to 0. The other fields are ignored in this case.
+> - *
+> - * Any pins that aren't available should be set to a negative value.
+> - *
+> - * Note that support for multiple slots is experimental -- some cards
+> - * might get upset if we don't get the clock management exactly right.
+> - * But in most cases, it should work just fine.
+> - */
+> -struct mci_slot_pdata {
+> -	unsigned int		bus_width;
+> -	int			detect_pin;
+> -	int			wp_pin;
+> -};
+> -
+> -/**
+> - * struct mci_platform_data - board-specific MMC/SDcard configuration
+> - * @dma_slave: DMA slave interface to use in data transfers, or NULL.
+> - * @slot: Per-slot configuration data.
+> - */
+> -struct mci_platform_data {
+> -	struct dma_slave	*dma_slave;
+> -	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
+> -};
+> -
+> -#endif /* __ASM_AVR32_ATMEL_MCI_H */
+> diff --git a/arch/avr32/mach-at32ap/at32ap700x.c b/arch/avr32/mach-at32ap/at32ap700x.c
+> index 813b684..b0ad6da 100644
+> --- a/arch/avr32/mach-at32ap/at32ap700x.c
+> +++ b/arch/avr32/mach-at32ap/at32ap700x.c
+> @@ -15,8 +15,8 @@
+> #include <linux/gpio.h>
+> #include <linux/spi/spi.h>
+> #include <linux/usb/atmel_usba_udc.h>
+> +#include <linux/atmel-mci.h>
+>
+> -#include <asm/atmel-mci.h>
+> #include <asm/io.h>
+> #include <asm/irq.h>
+>
+> diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+> index 7a3f243..1e97916 100644
+> --- a/drivers/mmc/host/atmel-mci.c
+> +++ b/drivers/mmc/host/atmel-mci.c
+> @@ -25,8 +25,8 @@
+> #include <linux/stat.h>
+>
+> #include <linux/mmc/host.h>
+> +#include <linux/atmel-mci.h>
+>
+> -#include <asm/atmel-mci.h>
+> #include <asm/io.h>
+> #include <asm/unaligned.h>
+>
+> diff --git a/include/linux/atmel-mci.h b/include/linux/atmel-mci.h
+> new file mode 100644
+> index 0000000..2a2213e
+> --- /dev/null
+> +++ b/include/linux/atmel-mci.h
+> @@ -0,0 +1,39 @@
+> +#ifndef __LINUX_ATMEL_MCI_H
+> +#define __LINUX_ATMEL_MCI_H
+> +
+> +#define ATMEL_MCI_MAX_NR_SLOTS	2
+> +
+> +struct dma_slave;
+> +
+> +/**
+> + * struct mci_slot_pdata - board-specific per-slot configuration
+> + * @bus_width: Number of data lines wired up the slot
+> + * @detect_pin: GPIO pin wired to the card detect switch
+> + * @wp_pin: GPIO pin wired to the write protect sensor
+> + *
+> + * If a given slot is not present on the board, @bus_width should be
+> + * set to 0. The other fields are ignored in this case.
+> + *
+> + * Any pins that aren't available should be set to a negative value.
+> + *
+> + * Note that support for multiple slots is experimental -- some cards
+> + * might get upset if we don't get the clock management exactly right.
+> + * But in most cases, it should work just fine.
+> + */
+> +struct mci_slot_pdata {
+> +	unsigned int		bus_width;
+> +	int			detect_pin;
+> +	int			wp_pin;
+> +};
+> +
+> +/**
+> + * struct mci_platform_data - board-specific MMC/SDcard configuration
+> + * @dma_slave: DMA slave interface to use in data transfers, or NULL.
+> + * @slot: Per-slot configuration data.
+> + */
+> +struct mci_platform_data {
+> +	struct dma_slave	*dma_slave;
+> +	struct mci_slot_pdata	slot[ATMEL_MCI_MAX_NR_SLOTS];
+> +};
+> +
+> +#endif /* __LINUX_ATMEL_MCI_H */
+> -- 
+> 1.5.3.7
+>
+>
+>
+> -- 
+> Nicolas Ferre
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
