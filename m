@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbYKMDom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbYKMDro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752940AbYKMDom (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 22:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbYKMDoc
+	id S1753358AbYKMDro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 22:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbYKMDrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 22:44:32 -0500
-Received: from ns1.suse.de ([195.135.220.2]:57749 "EHLO mx1.suse.de"
+	Wed, 12 Nov 2008 22:47:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44037 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751016AbYKMDob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 22:44:31 -0500
-Date: Thu, 13 Nov 2008 04:44:25 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       H Peter Anvin <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
-Message-ID: <20081113034425.GA23434@wotan.suse.de>
-References: <20081112212647.259698000@intel.com> <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de> <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
+	id S1751016AbYKMDrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 22:47:35 -0500
+Subject: Re: [PATCH] x86 - Make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
+From: Jeremy Katz <katzj@redhat.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andres Salomon <dilinger@queued.net>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
+       dsaxena@laptop.org
+In-Reply-To: <s5hbpwlj9w1.wl%tiwai@suse.de>
+References: <s5h3ahyqwmn.wl%tiwai@suse.de> <20081111125402.GB14989@elte.hu>
+	 <s5hzlk6pea6.wl%tiwai@suse.de> <20081111135306.GA32709@elte.hu>
+	 <s5hwsfapdoj.wl%tiwai@suse.de> <20081111140406.GA3244@elte.hu>
+	 <20081109201710.4c490f04@debxo> <1226498050.12791.45.camel@aglarond.local>
+	 <s5hbpwlj9w1.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 22:44:58 -0500
+Message-Id: <1226547898.13077.83.camel@aglarond.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 04:02:47PM -0800, Pallipadi, Venkatesh wrote:
->  
+On Wed, 2008-11-12 at 15:29 +0100, Takashi Iwai wrote:
+> At Wed, 12 Nov 2008 08:54:10 -0500, Jeremy Katz wrote:
+> > It's not about angering, it's about causing regressions in
+> > functionality.  Doing this will completely break the ability to run
+> > generic distros on the OLPC hardware without a special kernel.  Which
+> > has been something that a lot of work has gone on upstream to avoid for
+> > all sorts of cases (VMI, Xen, SMP, ...).  
 > 
-> >-----Original Message-----
-> >From: Nick Piggin [mailto:npiggin@suse.de] 
-> >Sent: Wednesday, November 12, 2008 3:23 PM
-> >To: Pallipadi, Venkatesh
-> >Cc: Ingo Molnar; Thomas Gleixner; H.Peter Anvin; Hugh Dickins; 
-> >Roland Dreier; Jesse Barnes; Jeremy Fitzhardinge; Arjan van de 
-> >Ven; linux-kernel@vger.kernel.org; Siddha, Suresh B
-> >Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
-> >
-> >You have to be careful of this, because it can be called with mmap_sem
-> >held for read only. Hmm, I guess vm_insert_page is doing the 
-> >same thing.
-> >Probably mostly works because all other modifiers of vm_flags 
-> >are holding
-> >mmap_sem.
-> 
-> Yes. I did the patch looking at vm_insert_page doing similar thing.
-> 
-> >
-> >However, in some cases, code can do vm_insert_pfn and vm_insert_page
-> >(actually hmm, no vm_insert_mixed actually should cover most of those
-> >cases).
-> >
-> >Still, I'd be much happier if we could make these into BUG_ON, and then
-> >teach callers to set it in their .mmap routines.
-> 
-> Actually, vm_insert_pfn() already has a BUG_ON() at the start for cases
-> where neither (or both) MIXEDMAP and PFNMAP is not set. So, that should
-> cover the case we are worried about it here and we can eliminate this
-> patch altogether. Only part I am not sure about is why we are looking
-> for MIXEDMAP here. Shouldn't they be using vm_insert_mixed instead?
+> But, it is broken.  The asm/olpc includes asm/geode.h and it refers
+> geode_gpio*() there.
 
-They should, but it will do an inesrt_pfn in some cases, won't it?
+The geode_gpio() users in asm/olpc.h are for some defines that really
+probably don't belong there and which aren't used elsewhere in the main
+tree afaict from a quick grep.  I'd be glad to send the patch to remove
+it :-)
+
+> > > but what we really need to
+> > > do is to make geode_gpio* defined even when we're not specifically
+> > > building with MGEODE_LX.  I'm not sure how best to do that, but the
+> > > answer probably includes using the generic x86 gpio api.
+> > 
+> > This probably needs to be done as a precondition for getting the alsa
+> > changes merged or the alsa changes need to have the bits which depend on
+> > geode_gpio ripped out until it can be done.
+> 
+> Then let's stop inclusion of asm/geode.h from asm/olpc.h at first.
+> Any driver codes including asm/geode.h can be broken potentially
+> without a proper dependency.
+
+Yes, but having a driver dependent on building for a specific x86
+variant is quite wrong.  What would people think about a driver which
+was dependent on CONFIG_M586?  Keep in mind that CONFIG_M686 wouldn't
+then apply...
+
+Jeremy
+
