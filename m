@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKMCrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKMCt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYKMCrf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 21:47:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbYKMCr1
+	id S1753536AbYKMCt7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 21:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbYKMCtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 21:47:27 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:44389 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYKMCr0 (ORCPT
+	Wed, 12 Nov 2008 21:49:51 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47818 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbYKMCtu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 21:47:26 -0500
-Date: Wed, 12 Nov 2008 21:47:25 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Wed, 12 Nov 2008 21:49:50 -0500
+Date: Thu, 13 Nov 2008 11:49:08 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Pekka Paalanen <pq@iki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/1] ftrace: do not update max buffer with no users
-In-Reply-To: <20081112183745.07af124d.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0811122145360.7458@gandalf.stny.rr.com>
-References: <20081113013041.086583690@goodmis.org> <20081113013247.974941878@goodmis.org> <20081112183745.07af124d.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       balbir@linux.vnet.ibm.com, nishimura@mxp.nes.nec.co.jp,
+       menage@google.com
+Subject: Re: [RFC][PATCH 1/6] memcg: free all at rmdir
+Message-Id: <20081113114908.42a6a8a7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081112160758.3dca0b22.akpm@linux-foundation.org>
+References: <20081112122606.76051530.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081112122656.c6e56248.kamezawa.hiroyu@jp.fujitsu.com>
+	<20081112160758.3dca0b22.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 12 Nov 2008, Andrew Morton wrote:
+On Wed, 12 Nov 2008 16:07:58 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> If we do this then we can make the above "keep" behaviour non-optional,
+> and the operator gets to choose whether or not to drop the caches
+> before doing the rmdir.
 > 
+> Plus, we get a new per-memcg drop_caches capability.  And it's a nicer
+> interface, and it doesn't have the obvious races which on_rmdir has,
+> etc.
 > 
-> This sort of thing:
+> hm?
 > 
-> +#ifdef CONFIG_TRACER_MAX_TRACE
->  	if (current_trace && current_trace->print_max)
->  		iter->tr = &max_tr;
->  	else
-> +#endif
->  		iter->tr = inode->i_private;
-> 
-> is particularly regrettable.
 
-Another answer is to not allocate it and check for NULL before using it. 
-But this would mean that I would have to find all the places that touch it 
-(the same as the ifdefs) and make sure they are safe.
+Balbir, how would you want to do ?
 
-The reason I picked the ifdefs was to guarantee that there were no users 
-if it was not being used.
+I planned to post shrink_uage patch later (it's easy to be implemented) regardless
+of acceptance of this patch.
 
--- Steve
+So, I think we should add shrink_usage now and drop this is a way to go.
+I think I can prepare patch soon. But I'd like to push handle-swap-cache patch
+before introducing shrink_usage. 
+
+Then, posting following 2 patch for this week is my current intention.
+ [1/2] handle swap cache
+ [2/2] shrink_usage patch (instead of this patch)
+
+Objection ?
+
+Thanks,
+-Kame
 
