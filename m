@@ -1,611 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbYKMH2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752726AbYKMHdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbYKMH2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 02:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYKMH23
+	id S1752726AbYKMHdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 02:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbYKMHda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 02:28:29 -0500
-Received: from mail.suse.de ([195.135.220.2]:36917 "EHLO mx1.suse.de"
+	Thu, 13 Nov 2008 02:33:30 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42822 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261AbYKMH20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 02:28:26 -0500
-Date: Thu, 13 Nov 2008 08:28:21 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [rfc] x86: optimise page fault path a little
-Message-ID: <20081113072821.GB2946@wotan.suse.de>
+	id S1751261AbYKMHd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 02:33:29 -0500
+Date: Thu, 13 Nov 2008 18:33:16 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for November 13
+Message-Id: <20081113183316.3601c13d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__13_Nov_2008_18_33_16_+1100_vDQa3kwFD1J/LwNt"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Thu__13_Nov_2008_18_33_16_+1100_vDQa3kwFD1J/LwNt
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I was just looking around the page fault code for any obvious performance
-improvements. I noticed do_page_fault is rather big, uses a lot of stack,
-and generates some branch mispredicts.
+Hi all,
 
-It's only about 1.1% on the profile of the workload I'm looking at, so my
-improvement is pretty close to in the noise, but I wonder if micro
-optimisations like the following would be welcome?
+Changes since 20081112:
 
-This patch adds branch hints and moves error condition code out of line.
-It shrinks do_page_fault from 2410 bytes to 603 bytes, and from 352 to 64
-bytes of stack. Total text size does grow by about 500 bytes due to the
-additional functions added.
+Undropped tree:
+	security-testing
 
----
+Dropped trees (temporarily):
+	sh (build problems)
+	creds (non-trivial conflict)
+	userns (it depends on creds)
+	semaphore-removal (due to unfixed conflicts against Linus' tree)
+	firmware (unfixed build failure)
 
-Index: linux-2.6/arch/x86/mm/fault.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/fault.c	2008-11-13 18:20:33.000000000 +1100
-+++ linux-2.6/arch/x86/mm/fault.c	2008-11-13 18:23:26.000000000 +1100
-@@ -91,8 +91,8 @@ static inline int notify_page_fault(stru
-  *
-  * Opcode checker based on code by Richard Brunner
-  */
--static int is_prefetch(struct pt_regs *regs, unsigned long addr,
--		       unsigned long error_code)
-+static int is_prefetch(struct pt_regs *regs, unsigned long error_code,
-+			unsigned long addr)
- {
- 	unsigned char *instr;
- 	int scan_more = 1;
-@@ -409,16 +409,16 @@ static void show_fault_oops(struct pt_re
- }
- 
- #ifdef CONFIG_X86_64
--static noinline void pgtable_bad(unsigned long address, struct pt_regs *regs,
--				 unsigned long error_code)
-+/* TODO: match order of arguments */
-+static noinline void pgtable_bad(struct pt_regs *regs,
-+			 unsigned long error_code, unsigned long address)
- {
- 	unsigned long flags = oops_begin();
--	struct task_struct *tsk;
-+	struct task_struct *tsk = current;
- 
- 	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
--	       current->comm, address);
-+	       tsk->comm, address);
- 	dump_pagetable(address);
--	tsk = current;
- 	tsk->thread.cr2 = address;
- 	tsk->thread.trap_no = 14;
- 	tsk->thread.error_code = error_code;
-@@ -428,6 +428,198 @@ static noinline void pgtable_bad(unsigne
- }
- #endif
- 
-+static noinline void no_context(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	struct task_struct *tsk = current;
-+#ifdef CONFIG_X86_64
-+	unsigned long flags;
-+#endif
-+
-+	/* Are we prepared to handle this kernel fault?  */
-+	if (fixup_exception(regs))
-+		return;
-+
-+	/*
-+	 * X86_32
-+	 * Valid to do another page fault here, because if this fault
-+	 * had been triggered by is_prefetch fixup_exception would have
-+	 * handled it.
-+	 *
-+	 * X86_64
-+	 * Hall of shame of CPU/BIOS bugs.
-+	 */
-+	if (is_prefetch(regs, error_code, address))
-+		return;
-+
-+	if (is_errata93(regs, address))
-+		return;
-+
-+	/*
-+	 * Oops. The kernel tried to access some bad page. We'll have to
-+	 * terminate things with extreme prejudice.
-+	 */
-+#ifdef CONFIG_X86_32
-+	bust_spinlocks(1);
-+#else
-+	flags = oops_begin();
-+#endif
-+
-+	show_fault_oops(regs, error_code, address);
-+
-+	tsk->thread.cr2 = address;
-+	tsk->thread.trap_no = 14;
-+	tsk->thread.error_code = error_code;
-+
-+#ifdef CONFIG_X86_32
-+	die("Oops", regs, error_code);
-+	bust_spinlocks(0);
-+	do_exit(SIGKILL);
-+#else
-+	if (__die("Oops", regs, error_code))
-+		regs = NULL;
-+	/* Executive summary in case the body of the oops scrolled away */
-+	printk(KERN_EMERG "CR2: %016lx\n", address);
-+	oops_end(flags, regs, SIGKILL);
-+#endif
-+}
-+
-+static void __bad_area_nosemaphore(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address,
-+			int si_code)
-+{
-+	struct task_struct *tsk = current;
-+
-+	/* User mode accesses just cause a SIGSEGV */
-+	if (error_code & PF_USER) {
-+		/*
-+		 * It's possible to have interrupts off here.
-+		 */
-+		local_irq_enable();
-+
-+		/*
-+		 * Valid to do another page fault here because this one came
-+		 * from user space.
-+		 */
-+		if (is_prefetch(regs, error_code, address))
-+			return;
-+
-+		if (is_errata100(regs, address))
-+			return;
-+
-+		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
-+		    printk_ratelimit()) {
-+			printk(
-+			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
-+			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
-+			tsk->comm, task_pid_nr(tsk), address,
-+			(void *) regs->ip, (void *) regs->sp, error_code);
-+			print_vma_addr(" in ", regs->ip);
-+			printk("\n");
-+		}
-+
-+		tsk->thread.cr2 = address;
-+		/* Kernel addresses are always protection faults */
-+		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
-+		tsk->thread.trap_no = 14;
-+		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
-+		return;
-+	}
-+
-+	if (is_f00f_bug(regs, address))
-+		return;
-+
-+	no_context(regs, error_code, address);
-+}
-+
-+static noinline void bad_area_nosemaphore(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	__bad_area_nosemaphore(regs, error_code, address, SEGV_MAPERR);
-+}
-+
-+static void __bad_area(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address,
-+			int si_code)
-+{
-+	struct mm_struct *mm = current->mm;
-+
-+	/*
-+	 * Something tried to access memory that isn't in our memory map..
-+	 * Fix it, but check if it's kernel or user first..
-+	 */
-+	up_read(&mm->mmap_sem);
-+
-+	__bad_area_nosemaphore(regs, error_code, address, si_code);
-+}
-+
-+static noinline void bad_area(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	__bad_area(regs, error_code, address, SEGV_MAPERR);
-+}
-+
-+static noinline void bad_area_accerr(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	__bad_area(regs, error_code, address, SEGV_ACCERR);
-+}
-+
-+/* TODO: fixup for oom handling */
-+static void out_of_memory(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	struct task_struct *tsk = current;
-+	struct mm_struct *mm = tsk->mm;
-+	/*
-+	 * We ran out of memory, or some other thing happened to us that made
-+	 * us unable to handle the page fault gracefully.
-+	 */
-+	up_read(&mm->mmap_sem);
-+	if (is_global_init(tsk)) {
-+		yield();
-+		return;
-+	}
-+
-+	printk("VM: killing process %s\n", tsk->comm);
-+	if (error_code & PF_USER)
-+		do_group_exit(SIGKILL);
-+	no_context(regs, error_code, address);
-+}
-+
-+static void do_sigbus(struct pt_regs *regs,
-+			unsigned long error_code, unsigned long address)
-+{
-+	struct task_struct *tsk = current;
-+	struct mm_struct *mm = tsk->mm;
-+
-+	up_read(&mm->mmap_sem);
-+
-+	/* Kernel mode? Handle exceptions or die */
-+	if (!(error_code & PF_USER))
-+		no_context(regs, error_code, address);
-+#ifdef CONFIG_X86_32
-+	/* User space => ok to do another page fault */
-+	if (is_prefetch(regs, error_code, address))
-+		return;
-+#endif
-+	tsk->thread.cr2 = address;
-+	tsk->thread.error_code = error_code;
-+	tsk->thread.trap_no = 14;
-+	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
-+}
-+
-+static noinline void mm_fault_error(struct pt_regs *regs,
-+		unsigned long error_code, unsigned long address, unsigned int fault)
-+{
-+	if (fault & VM_FAULT_OOM)
-+		out_of_memory(regs, error_code, address);
-+	else if (fault & VM_FAULT_SIGBUS)
-+		do_sigbus(regs, error_code, address);
-+	else
-+		BUG();
-+}
-+
- static int spurious_fault_check(unsigned long error_code, pte_t *pte)
- {
- 	if ((error_code & PF_WRITE) && !pte_write(*pte))
-@@ -447,8 +639,8 @@ static int spurious_fault_check(unsigned
-  * There are no security implications to leaving a stale TLB when
-  * increasing the permissions on a page.
-  */
--static int spurious_fault(unsigned long address,
--			  unsigned long error_code)
-+static noinline int spurious_fault(unsigned long error_code,
-+				unsigned long address)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
-@@ -493,7 +685,7 @@ static int spurious_fault(unsigned long 
-  *
-  * This assumes no large pages in there.
-  */
--static int vmalloc_fault(unsigned long address)
-+static noinline int vmalloc_fault(unsigned long address)
- {
- #ifdef CONFIG_X86_32
- 	unsigned long pgd_paddr;
-@@ -582,15 +774,12 @@ asmlinkage
- #endif
- void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- {
-+	unsigned long address;
- 	struct task_struct *tsk;
- 	struct mm_struct *mm;
- 	struct vm_area_struct *vma;
--	unsigned long address;
- 	int write, si_code;
- 	int fault;
--#ifdef CONFIG_X86_64
--	unsigned long flags;
--#endif
- 
- 	tsk = current;
- 	mm = tsk->mm;
-@@ -601,7 +790,7 @@ void __kprobes do_page_fault(struct pt_r
- 
- 	si_code = SEGV_MAPERR;
- 
--	if (notify_page_fault(regs))
-+	if (unlikely(notify_page_fault(regs)))
- 		return;
- 	if (unlikely(kmmio_fault(regs, address)))
- 		return;
-@@ -636,7 +825,8 @@ void __kprobes do_page_fault(struct pt_r
- 		 * Don't take the mm semaphore here. If we fixup a prefetch
- 		 * fault we could otherwise deadlock.
- 		 */
--		goto bad_area_nosemaphore;
-+		bad_area_nosemaphore(regs, error_code, address);
-+		return;
- 	}
- 
- 
-@@ -655,17 +845,18 @@ void __kprobes do_page_fault(struct pt_r
- 
- #ifdef CONFIG_X86_64
- 	if (unlikely(error_code & PF_RSVD))
--		pgtable_bad(address, regs, error_code);
-+		pgtable_bad(regs, error_code, address);
- #endif
- 
- 	/*
- 	 * If we're in an interrupt, have no user context or are running in an
- 	 * atomic region then we must not take the fault.
- 	 */
--	if (unlikely(in_atomic() || !mm))
--		goto bad_area_nosemaphore;
-+	if (unlikely(in_atomic() || !mm)) {
-+		bad_area_nosemaphore(regs, error_code, address);
-+		return;
-+	}
- 
--again:
- 	/*
- 	 * When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
-@@ -682,20 +873,26 @@ again:
- 	 * source.  If this is invalid we can skip the address space check,
- 	 * thus avoiding the deadlock.
- 	 */
--	if (!down_read_trylock(&mm->mmap_sem)) {
-+	if (unlikely(!down_read_trylock(&mm->mmap_sem))) {
- 		if ((error_code & PF_USER) == 0 &&
--		    !search_exception_tables(regs->ip))
--			goto bad_area_nosemaphore;
-+		    !search_exception_tables(regs->ip)) {
-+			bad_area_nosemaphore(regs, error_code, address);
-+			return;
-+		}
- 		down_read(&mm->mmap_sem);
- 	}
- 
- 	vma = find_vma(mm, address);
--	if (!vma)
--		goto bad_area;
--	if (vma->vm_start <= address)
-+	if (unlikely(!vma)) {
-+		bad_area(regs, error_code, address);
-+		return;
-+	}
-+	if (likely(vma->vm_start <= address))
- 		goto good_area;
--	if (!(vma->vm_flags & VM_GROWSDOWN))
--		goto bad_area;
-+	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
-+		bad_area(regs, error_code, address);
-+		return;
-+	}
- 	if (error_code & PF_USER) {
- 		/*
- 		 * Accessing the stack below %sp is always a bug.
-@@ -703,31 +900,34 @@ again:
- 		 * and pusha to work.  ("enter $65535,$31" pushes
- 		 * 32 pointers and then decrements %sp by 65535.)
- 		 */
--		if (address + 65536 + 32 * sizeof(unsigned long) < regs->sp)
--			goto bad_area;
-+		if (unlikely(address + 65536 + 32 * sizeof(unsigned long) < regs->sp)) {
-+			bad_area(regs, error_code, address);
-+			return;
-+		}
- 	}
--	if (expand_stack(vma, address))
--		goto bad_area;
--/*
-- * Ok, we have a good vm_area for this memory access, so
-- * we can handle it..
-- */
-+	if (unlikely(expand_stack(vma, address))) {
-+		bad_area(regs, error_code, address);
-+		return;
-+	}
-+
-+	/*
-+	 * Ok, we have a good vm_area for this memory access, so
-+	 * we can handle it..
-+	 */
- good_area:
- 	si_code = SEGV_ACCERR;
--	write = 0;
--	switch (error_code & (PF_PROT|PF_WRITE)) {
--	default:	/* 3: write, present */
--		/* fall through */
--	case PF_WRITE:		/* write, not present */
--		if (!(vma->vm_flags & VM_WRITE))
--			goto bad_area;
--		write++;
--		break;
--	case PF_PROT:		/* read, present */
--		goto bad_area;
--	case 0:			/* read, not present */
--		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
--			goto bad_area;
-+	write = error_code & PF_WRITE;
-+	if (write) {
-+		if (unlikely(!(vma->vm_flags & VM_WRITE))) {
-+			bad_area_accerr(regs, error_code, address);
-+			return;
-+		}
-+	} else if (unlikely(error_code & PF_PROT)) {
-+		bad_area_accerr(regs, error_code, address);
-+		return;
-+	} else if (unlikely(!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))) {
-+		bad_area_accerr(regs, error_code, address);
-+		return;
- 	}
- 
- 	/*
-@@ -737,11 +937,8 @@ good_area:
- 	 */
- 	fault = handle_mm_fault(mm, vma, address, write);
- 	if (unlikely(fault & VM_FAULT_ERROR)) {
--		if (fault & VM_FAULT_OOM)
--			goto out_of_memory;
--		else if (fault & VM_FAULT_SIGBUS)
--			goto do_sigbus;
--		BUG();
-+		mm_fault_error(regs, error_code, address, fault);
-+		return;
- 	}
- 	if (fault & VM_FAULT_MAJOR)
- 		tsk->maj_flt++;
-@@ -752,145 +949,13 @@ good_area:
- 	/*
- 	 * Did it hit the DOS screen memory VA from vm86 mode?
- 	 */
--	if (v8086_mode(regs)) {
-+	if (unlikely(v8086_mode(regs))) {
- 		unsigned long bit = (address - 0xA0000) >> PAGE_SHIFT;
- 		if (bit < 32)
- 			tsk->thread.screen_bitmap |= 1 << bit;
- 	}
- #endif
- 	up_read(&mm->mmap_sem);
--	return;
--
--/*
-- * Something tried to access memory that isn't in our memory map..
-- * Fix it, but check if it's kernel or user first..
-- */
--bad_area:
--	up_read(&mm->mmap_sem);
--
--bad_area_nosemaphore:
--	/* User mode accesses just cause a SIGSEGV */
--	if (error_code & PF_USER) {
--		/*
--		 * It's possible to have interrupts off here.
--		 */
--		local_irq_enable();
--
--		/*
--		 * Valid to do another page fault here because this one came
--		 * from user space.
--		 */
--		if (is_prefetch(regs, address, error_code))
--			return;
--
--		if (is_errata100(regs, address))
--			return;
--
--		if (show_unhandled_signals && unhandled_signal(tsk, SIGSEGV) &&
--		    printk_ratelimit()) {
--			printk(
--			"%s%s[%d]: segfault at %lx ip %p sp %p error %lx",
--			task_pid_nr(tsk) > 1 ? KERN_INFO : KERN_EMERG,
--			tsk->comm, task_pid_nr(tsk), address,
--			(void *) regs->ip, (void *) regs->sp, error_code);
--			print_vma_addr(" in ", regs->ip);
--			printk("\n");
--		}
--
--		tsk->thread.cr2 = address;
--		/* Kernel addresses are always protection faults */
--		tsk->thread.error_code = error_code | (address >= TASK_SIZE);
--		tsk->thread.trap_no = 14;
--		force_sig_info_fault(SIGSEGV, si_code, address, tsk);
--		return;
--	}
--
--	if (is_f00f_bug(regs, address))
--		return;
--
--no_context:
--	/* Are we prepared to handle this kernel fault?  */
--	if (fixup_exception(regs))
--		return;
--
--	/*
--	 * X86_32
--	 * Valid to do another page fault here, because if this fault
--	 * had been triggered by is_prefetch fixup_exception would have
--	 * handled it.
--	 *
--	 * X86_64
--	 * Hall of shame of CPU/BIOS bugs.
--	 */
--	if (is_prefetch(regs, address, error_code))
--		return;
--
--	if (is_errata93(regs, address))
--		return;
--
--/*
-- * Oops. The kernel tried to access some bad page. We'll have to
-- * terminate things with extreme prejudice.
-- */
--#ifdef CONFIG_X86_32
--	bust_spinlocks(1);
--#else
--	flags = oops_begin();
--#endif
--
--	show_fault_oops(regs, error_code, address);
--
--	tsk->thread.cr2 = address;
--	tsk->thread.trap_no = 14;
--	tsk->thread.error_code = error_code;
--
--#ifdef CONFIG_X86_32
--	die("Oops", regs, error_code);
--	bust_spinlocks(0);
--	do_exit(SIGKILL);
--#else
--	if (__die("Oops", regs, error_code))
--		regs = NULL;
--	/* Executive summary in case the body of the oops scrolled away */
--	printk(KERN_EMERG "CR2: %016lx\n", address);
--	oops_end(flags, regs, SIGKILL);
--#endif
--
--/*
-- * We ran out of memory, or some other thing happened to us that made
-- * us unable to handle the page fault gracefully.
-- */
--out_of_memory:
--	up_read(&mm->mmap_sem);
--	if (is_global_init(tsk)) {
--		yield();
--		/*
--		 * Re-lookup the vma - in theory the vma tree might
--		 * have changed:
--		 */
--		goto again;
--	}
--
--	printk("VM: killing process %s\n", tsk->comm);
--	if (error_code & PF_USER)
--		do_group_exit(SIGKILL);
--	goto no_context;
--
--do_sigbus:
--	up_read(&mm->mmap_sem);
--
--	/* Kernel mode? Handle exceptions or die */
--	if (!(error_code & PF_USER))
--		goto no_context;
--#ifdef CONFIG_X86_32
--	/* User space => ok to do another page fault */
--	if (is_prefetch(regs, address, error_code))
--		return;
--#endif
--	tsk->thread.cr2 = address;
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = 14;
--	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
- }
- 
- DEFINE_SPINLOCK(pgd_lock);
+The usb tree lost its conflict.
+
+The net tree lost its 3 conflicts.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 125 trees (counting Linus' and 14 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-2.6.26
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-realview/clock.c
+CONFLICT (content): Merge conflict in arch/arm/mach-versatile/clock.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging quilt/m68k
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+$ git reset --hard HEAD^
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+CONFLICT (content): Merge conflict in arch/x86/kvm/vmx.c
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging semaphore/semaphore
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+CONFLICT (delete/modify): Documentation/DocBook/wanbook.tmpl deleted in hdl=
+c/hdlc-next and modified in HEAD. Version HEAD of Documentation/DocBook/wan=
+book.tmpl left in tree.
+CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
+xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
+tree.
+$ git rm -f drivers/net/wan/syncppp.c Documentation/DocBook/wanbook.tmpl
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cpu_alloc/cpu_alloc
+CONFLICT (content): Merge conflict in kernel/lockdep.c
+CONFLICT (content): Merge conflict in kernel/module.c
+Merging cputime/cputime
+Applying cpu_alloc: merge_fix_1
+Merging perfmon3/master
+Merging osd/linux-next
+Merging fatfs/master
+Merging scsi-post-merge/master
+
+--Signature=_Thu__13_Nov_2008_18_33_16_+1100_vDQa3kwFD1J/LwNt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkb2DwACgkQjjKRsyhoI8wi0QCfe3ZH7MeF7W0lefm0r/dhSSBt
+ex4An03KIgZMlRW3fUt6k981oWpcsbXs
+=wVUA
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Nov_2008_18_33_16_+1100_vDQa3kwFD1J/LwNt--
