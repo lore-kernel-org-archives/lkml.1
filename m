@@ -1,163 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYKMS5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbYKMTC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbYKMS5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 13:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKMS5b
+	id S1752918AbYKMTC3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbYKMTCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 13:57:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53344 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbYKMS5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 13:57:30 -0500
-Date: Thu, 13 Nov 2008 19:57:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 1/2] tracing/function-return-tracer: Make the function
-	return tracer lockless
-Message-ID: <20081113185723.GC17851@elte.hu>
-References: <20081112221552.GA6125@elte.hu> <c62985530811130050q58be3f58rcef08a61b5a584a3@mail.gmail.com> <20081113085551.GF25479@elte.hu> <c62985530811130116v60d46c85j7f74230e1545eaaf@mail.gmail.com> <20081113092340.GJ25479@elte.hu> <c62985530811130127u307c359fj4c4a9a778676ba4e@mail.gmail.com> <20081113094027.GK25479@elte.hu> <c62985530811130436s160e3983nd7debbb96cc971ae@mail.gmail.com> <20081113125419.GA32574@elte.hu> <c62985530811130926y656f8f4ancd592f26cdbbee6b@mail.gmail.com>
+	Thu, 13 Nov 2008 14:02:21 -0500
+Received: from kroah.org ([198.145.64.141]:51707 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751279AbYKMTCU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:02:20 -0500
+Date: Thu, 13 Nov 2008 10:53:50 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.27.6
+Message-ID: <20081113185350.GA3765@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530811130926y656f8f4ancd592f26cdbbee6b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We (the -stable team) are announcing the release of the 2.6.27.6
+kernel.
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
+series are strongly encouraged to upgrade.
 
-> 2008/11/13 Ingo Molnar <mingo@elte.hu>:
-> > "prev_global_time" also acts as a global serializer: it ensures that
-> > events are timestamped in a monotonic and ordered way.
-> >
-> > i.e. something like this (pseudocode, without the cmpxchg):
-> >
-> >  u64 prev_global_time;
-> >
-> >  DEFINE_PER_CPU(prev_local_time);
-> >
-> >  u64 global_time()
-> >  {
-> >        u64 now, delta, now_global;
-> >
-> >        prev_global = prev_global_time;
-> >        now = sched_clock();
-> >        delta = now - per_cpu(prev_local_time, this_cpu);
-> >        per_cpu(prev_local_time, this_cpu) = now;
-> >
-> >        now_global = prev_global + delta;
-> >        prev_global = now_global;
-> >
-> >        return now_global;
-> >  }
-> >
-> > note how we build "global time" out of "local time".
-> >
-> > The cmpxchg would be used to put the above one into a loop, and
-> > instead of updating the global time in a racy way:
-> >
-> >        prev_global = now_global;
-> >
-> > We'd update it via the cmpxchg:
-> >
-> >        atomic64_t prev_global_time;
-> >
-> >        ...
-> >
-> >        while (atomic64_cmpxchg(&prev_global_time,
-> >                                 prev_global, now_global) != prev_global) {
-> >                [...]
-> >        }
-> >
-> > To make sure the global time goes monotonic. (this way we also avoid a
-> > spinlock - locks are fragile for instrumentation)
-> 
-> Ok, I understand better.
-> But consider the following:
-> 
->  u64 global_time()
->  {
->        u64 now, delta, now_global;
->        prev_global = prev_global_time;
-> 
->        while (atomic64_cmpxchg(&prev_global_time,
->                                  prev_global, now_global) != prev_global) {
-> 
->            now = sched_clock();
->            delta = now - per_cpu(prev_local_time, this_cpu);
->            per_cpu(prev_local_time, this_cpu) = now;
->            now_global = prev_global + delta;
->            prev_global = now_global;
->        }
->        return now_global;
->  }
-> 
-> Sarting with prev_global_time = 0 If we have two cpu and the above 
-> function is executed 5 times on the first cpu. We couldl have 
-> per_cpu(prev_local_time) = 50 for example. And so prev_global_time 
-> will be equal to 50.
-> 
-> Just after that, almost at the same time, cpu2 calls global_time()
-> 
-> delta will be equal to 50 (sched_clock() - per_cpu(prev_local_time) 
-> which is 0) and prev_global_time will be 50 + 50 = 100. This is not 
-> consistent. I don't know where but I'm pretty sure I missed 
-> something....
+I'll also be replying to this message with a copy of the patch between
+2.6.27.5 and 2.6.27.6
 
-you are right - it needs a bit more logic.
+The updated 2.6.27.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
 
-I think the simplest would be something like this:
+thanks,
 
- atomic64_t global_clock = INIT_ATOMIC64(0);
+greg k-h
 
- u64 global_time()
- {
-	u64 now, delta, now_global, prev_global;
+------------
 
-	do {
-		prev_global = atomic64_read(&global_clock);
-		now = cpu_clock(raw_smp_processor_id());
+ Documentation/cciss.txt                     |    2 
+ Makefile                                    |    2 
+ arch/arm/mach-pxa/include/mach/reset.h      |    9 +
+ arch/arm/mach-pxa/reset.c                   |    9 +
+ arch/arm/mach-pxa/spitz.c                   |    2 
+ arch/arm/mach-pxa/tosa.c                    |    2 
+ arch/arm/mm/cache-xsc3l2.c                  |    4 
+ arch/x86/Kconfig                            |   20 ++++
+ arch/x86/kernel/setup.c                     |   41 ++++++++
+ arch/x86/kernel/tsc.c                       |    8 -
+ drivers/acpi/dock.c                         |    5 -
+ drivers/ata/libata-eh.c                     |   21 ++--
+ drivers/block/cciss.c                       |   28 +++++
+ drivers/block/cpqarray.c                    |    7 +
+ drivers/dca/dca-core.c                      |    2 
+ drivers/dma/ioat_dma.c                      |   11 +-
+ drivers/dma/iovlock.c                       |   17 +--
+ drivers/hid/hidraw.c                        |    2 
+ drivers/md/linear.c                         |    2 
+ drivers/md/raid10.c                         |    2 
+ drivers/mmc/core/core.c                     |    6 +
+ drivers/mtd/chips/cfi_cmdset_0002.c         |   13 --
+ drivers/mtd/chips/jedec_probe.c             |   10 --
+ drivers/net/r8169.c                         |  134 ++++++++++++++--------------
+ drivers/net/wireless/iwlwifi/iwl-5000-hw.h  |    7 +
+ drivers/net/wireless/iwlwifi/iwl-5000.c     |   63 +------------
+ drivers/net/wireless/iwlwifi/iwl-agn.c      |   57 ++++++++---
+ drivers/net/wireless/iwlwifi/iwl-calib.c    |   60 ++++++++++++
+ drivers/net/wireless/iwlwifi/iwl-core.c     |   27 +----
+ drivers/net/wireless/iwlwifi/iwl-core.h     |    8 +
+ drivers/net/wireless/iwlwifi/iwl-dev.h      |   15 +--
+ drivers/net/wireless/iwlwifi/iwl-power.c    |   39 +++++++-
+ drivers/net/wireless/iwlwifi/iwl-power.h    |    4 
+ drivers/net/wireless/iwlwifi/iwl-scan.c     |    8 -
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |    7 +
+ drivers/net/wireless/zd1211rw/zd_usb.c      |    2 
+ fs/ext3/super.c                             |   11 +-
+ fs/hfs/catalog.c                            |    4 
+ fs/jffs2/background.c                       |   10 +-
+ fs/jffs2/compr_lzo.c                        |   15 +--
+ include/asm-generic/memory_model.h          |    2 
+ include/linux/mtd/cfi.h                     |   22 +++-
+ include/net/af_unix.h                       |    1 
+ kernel/cgroup.c                             |    1 
+ mm/hugetlb.c                                |   49 +++++++++-
+ mm/internal.h                               |   29 ++++++
+ mm/page_alloc.c                             |   28 ++++-
+ net/unix/af_unix.c                          |   31 +++++-
+ net/unix/garbage.c                          |   49 +++++++---
+ security/keys/internal.h                    |    1 
+ security/keys/process_keys.c                |    2 
+ security/keys/request_key.c                 |    4 
+ sound/pci/hda/patch_sigmatel.c              |   15 +--
+ 53 files changed, 630 insertions(+), 300 deletions(-)
 
-		if ((s64)(now - prev_global) < 0) {
-			now = prev_global;
-			break;
-		}
-	} while (atomic64_cmpxchg(&global_clock,
-				   prev_global, now) != prev_global);
- 
-	return now;
- }
+Alok Kataria (1):
+      x86: don't use tsc_khz to calculate lpj if notsc is passed
 
-This is the simplest way of implementing monotonic time: we only allow 
-global_clock to go forwards. If all cpu_clock()s are perfectly in 
-sync, we've got no problem: then "now - prev_global" will never be 
-negative and we can return the local clock as the latest global time.
+Andre Noll (1):
+      md: linear: Fix a division by zero bug for very small arrays.
 
-But if one of the CPU clocks is "behind", the function returns the 
-latest global time up until the local clock catches up. Time wont be 
-allowed to jump around by going back. If the clock is behind for a 
-long time, then we get a lot of timestamps with the same value - that 
-will be very visible in the trace and we'll then work in improving the 
-cpu_clock() implementation.
+Andrey Borzenkov (1):
+      cpqarry: fix return value of cpqarray_init()
 
-So i think we could start with this simplest approach, and see how 
-often we get the same timestamp for a long time (indication of the 
-clocks being not perfectly in sync).
+Andy Whitcroft (2):
+      hugetlb: pull gigantic page initialisation out of the default path
+      hugetlbfs: handle pages higher order than MAX_ORDER
 
-	Ingo
+Arthur Jones (1):
+      ext3: wait on all pending commits in ext3_sync_fs
+
+Dan Williams (2):
+      ARM: xsc3: fix xsc3_l2_inv_range
+      dca: fixup initialization dependency
+
+Daniel Drake (1):
+      zd1211rw: Add 2 device IDs
+
+David Howells (1):
+      KEYS: Make request key instantiate the per-user keyrings
+
+David Woodhouse (1):
+      JFFS2: Fix lack of locking in thread_should_wake()
+
+Dmitry Baryshkov (1):
+      ARM: 5300/1: fixup spitz reset during boot
+
+Emmanuel Grumbach (2):
+      iwlwifi: allow association on radar channel in power save
+      iwlwifi: remove HT flags from RXON when not in HT anymore
+
+Eric Sesterhenn (1):
+      hfs: fix namelength memory corruption (CVE-2008-5025)
+
+Eric W. Biederman (1):
+      MTD: [NOR] Fix cfi_send_gen_cmd handling of x16 devices in x8 mode (v4)
+
+Francois Romieu (3):
+      r8169: get ethtool settings through the generic mii helper
+      r8169: fix RxMissed register access
+      r8169: wake up the PHY of the 8168
+
+Geert Uytterhoeven (1):
+      JFFS2: fix race condition in jffs2_lzo_compress()
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.27.6
+
+Ingo Molnar (3):
+      x86: add DMI quirk for AMI BIOS which corrupts address 0xc000 during resume
+      x86: reserve low 64K on AMI and Phoenix BIOS boxen
+      x86: add X86_RESERVE_LOW_64K
+
+Jiri Kosina (1):
+      HID: fix incorrent length condition in hidraw_write()
+
+Li Zefan (1):
+      cgroups: fix invalid cgrp->dentry before cgroup has been completely removed
+
+Maciej Sosnowski (3):
+      I/OAT: fix channel resources free for not allocated channels
+      I/OAT: fix dma_pin_iovec_pages() error handling
+      I/OAT: fix async_tx.callback checking
+
+Matthew Ranostay (1):
+      ALSA: hda: make a STAC_DELL_EQ option
+
+Mike Miller (3):
+      cciss: fix regression firmware not displayed in procfs
+      cciss: fix sysfs broken symlink regression
+      cciss: new hardware support
+
+Miklos Szeredi (1):
+      net: unix: fix inflight counting bug in garbage collector
+
+Neil Brown (1):
+      md: fix bug in raid10 recovery.
+
+Pierre Ossman (1):
+      mmc: increase SD write timeout for crappy cards
+
+Rafael J. Wysocki (1):
+      Fix __pfn_to_page(pfn) for CONFIG_DISCONTIGMEM=y
+
+Reinette Chatre (1):
+      iwl3945: do not send scan command if channel count zero
+
+Ron Rindjunsky (1):
+      iwlwifi: allow consecutive scans in unassociated state
+
+Shaohua Li (1):
+      ACPI: dock: avoid check _STA method
+
+Tejun Heo (1):
+      libata: fix last_reset timestamp handling
+
+Tomas Winkler (4):
+      iwlwifi: don't fail if scan is issued too early
+      iwlwifi: use correct DMA_MASK
+      iwlwifi: fix suspend to RAM in iwlwifi
+      iwlwifi: generic init calibrations framework
+
+Yinghai Lu (2):
+      x86: fix CONFIG_X86_RESERVE_LOW_64K=y
+      x86: fix macro with bad_bios_dmi_table
+
+Zhu Yi (1):
+      iwl3945: fix deadlock on suspend
+
