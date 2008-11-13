@@ -1,57 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYKMQVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbYKMQWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbYKMQVW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 11:21:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYKMQVL
+	id S1752916AbYKMQWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 11:22:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbYKMQWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 11:21:11 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:53297 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYKMQVK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 11:21:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=FT3Pex8RVlnX/2SaPkSybtEJSHik+EmBE43ajlbSceaGdcJHprbjkWDNIOx9lOA/Rw
-         NiuL1xb2DZ24EEN7qXRAKiIRS9GmCI0MhrtOftu9eTnj5KgHr8XQrk9ndMP9Rc4PxqXa
-         7oHd6OFoLLmKb7XB6mvTKGjvd4nkVfIgCvyRE=
-From: walimis <walimisdev@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] ftrace: remove unnecessary if condition of __unregister_ftrace_function
-Date: Fri, 14 Nov 2008 00:21:02 +0800
-Message-Id: <1226593262-3517-1-git-send-email-walimisdev@gmail.com>
-X-Mailer: git-send-email 1.6.0.3
+	Thu, 13 Nov 2008 11:22:30 -0500
+Received: from mail.queued.net ([207.210.101.209]:1522 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751315AbYKMQW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 11:22:29 -0500
+Date: Thu, 13 Nov 2008 11:14:28 -0500
+From: Andres Salomon <dilinger@queued.net>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Pavel Machek <pavel@suse.cz>, Jeremy Katz <katzj@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
+       dsaxena@laptop.org
+Subject: [PATCH] ALSA: cs5535audio: only build OLPC support if MGEODE_LX is
+ defined
+Message-ID: <20081113111428.59aa36cb@ephemeral>
+In-Reply-To: <s5h3ahvhb9w.wl%tiwai@suse.de>
+References: <20081111125402.GB14989@elte.hu>
+	<s5hzlk6pea6.wl%tiwai@suse.de>
+	<20081111135306.GA32709@elte.hu>
+	<s5hwsfapdoj.wl%tiwai@suse.de>
+	<20081111140406.GA3244@elte.hu>
+	<20081109201710.4c490f04@debxo>
+	<1226498050.12791.45.camel@aglarond.local>
+	<s5hbpwlj9w1.wl%tiwai@suse.de>
+	<1226547898.13077.83.camel@aglarond.local>
+	<s5h63msru7z.wl%tiwai@suse.de>
+	<20081113153714.GA1520@ucw.cz>
+	<s5h3ahvhb9w.wl%tiwai@suse.de>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-against ftrace git tree tip/devel branch:
-81388fbbc4b00c3bf37db5e193c80106ce5a2abf
+On Thu, 13 Nov 2008 16:54:19 +0100
+Takashi Iwai <tiwai@suse.de> wrote:
 
-Because it has goto out before ftrace_list == &ftrace_list_end,
-that's to say, we never meet this condition.
+> At Thu, 13 Nov 2008 16:37:14 +0100,
+> Pavel Machek wrote:
+[...]
+> > 
+> > > IMO, the basic problem is rather that the platform and the CPU
+> > > selection is mixed up.  The geode GPIO stuff shouldn't belong to
+> > > CPU selection.
+> > 
+> > ACK... and suggested patch makes it worse.
+> > 
+> > There should be option 'support OLPC' somewhere, and that should
+> > enable the gpio bits. Alsa driver should depend on that one.
+> 
+> Any better fix patch is welcome, of course :)
+> This would make save a lot time than writing mails...
+> 
+> 
+> thanks,
+> 
+> Takashi
 
-Signed-off-by: walimis <walimisdev@gmail.com>
+
+Okay, how about something like the following?
+
+
+
+
+
+
+
+This is a temporary work-around until the geode_gpio* calls are moved out
+into a separate config option.  We don't want to force generic kernel
+maintainers to have to build a specific OLPC kernel.
+
+Signed-off-by: Andres Salomon <dilinger@debian.org>
 ---
- kernel/trace/ftrace.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ sound/pci/cs5535audio/Makefile |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index beb21a5..54cb9a7 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -179,8 +179,7 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
+diff --git a/sound/pci/cs5535audio/Makefile b/sound/pci/cs5535audio/Makefile
+index ccc6422..fda7a94 100644
+--- a/sound/pci/cs5535audio/Makefile
++++ b/sound/pci/cs5535audio/Makefile
+@@ -4,7 +4,9 @@
  
- 	if (ftrace_enabled) {
- 		/* If we only have one func left, then call that directly */
--		if (ftrace_list == &ftrace_list_end ||
--		    ftrace_list->next == &ftrace_list_end)
-+		if (ftrace_list->next == &ftrace_list_end)
- 			ftrace_trace_function = ftrace_list->func;
- 	}
+ snd-cs5535audio-y := cs5535audio.o cs5535audio_pcm.o
+ snd-cs5535audio-$(CONFIG_PM) += cs5535audio_pm.o
++ifdef CONFIG_MGEODE_LX
+ snd-cs5535audio-$(CONFIG_OLPC) += cs5535audio_olpc.o
++endif
  
+ # Toplevel Module Dependency
+ obj-$(CONFIG_SND_CS5535AUDIO) += snd-cs5535audio.o
 -- 
-1.6.0.3
-
+1.5.6.5
