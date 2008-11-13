@@ -1,101 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbYKMHrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbYKMHuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbYKMHrV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 02:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYKMHrK
+	id S1752011AbYKMHuf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 02:50:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbYKMHu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 02:47:10 -0500
-Received: from mga02.intel.com ([134.134.136.20]:56118 "EHLO mga02.intel.com"
+	Thu, 13 Nov 2008 02:50:27 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55998 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751463AbYKMHrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 02:47:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,596,1220252400"; 
-   d="scan'208";a="462523984"
-Date: Thu, 13 Nov 2008 14:50:24 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-Message-ID: <20081113065024.GA3038@yzhao12-linux.sh.intel.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084515.GO3773@yzhao12-linux.sh.intel.com> <20081106043318.GB30292@kroah.com> <20081106044613.GA30397@kroah.com> <4913AF89.2050504@intel.com> <20081107031837.GB30003@kroah.com>
-MIME-Version: 1.0
+	id S1750824AbYKMHu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 02:50:26 -0500
+Date: Thu, 13 Nov 2008 08:50:22 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [rfc] x86: optimise page fault path a little
+Message-ID: <20081113075022.GC2946@wotan.suse.de>
+References: <20081113072821.GB2946@wotan.suse.de> <20081113074109.GB1723@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081107031837.GB30003@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081113074109.GB1723@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 07, 2008 at 11:18:37AM +0800, Greg KH wrote:
-> On Fri, Nov 07, 2008 at 11:01:29AM +0800, Zhao, Yu wrote:
-> > Greg KH wrote:
-> >> On Wed, Nov 05, 2008 at 08:33:18PM -0800, Greg KH wrote:
-> >>> On Wed, Oct 22, 2008 at 04:45:15PM +0800, Yu Zhao wrote:
-> >>>>  Documentation/ABI/testing/sysfs-bus-pci |   33 
-> >>>> +++++++++++++++++++++++++++++++
-> >>>>  1 files changed, 33 insertions(+), 0 deletions(-)
-> >>>>
-> >>>> diff --git a/Documentation/ABI/testing/sysfs-bus-pci 
-> >>>> b/Documentation/ABI/testing/sysfs-bus-pci
-> >>>> index ceddcff..41cce8f 100644
-> >>>> --- a/Documentation/ABI/testing/sysfs-bus-pci
-> >>>> +++ b/Documentation/ABI/testing/sysfs-bus-pci
-> >>>> @@ -9,3 +9,36 @@ Description:
-> >>>>  		that some devices may have malformatted data.  If the
-> >>>>  		underlying VPD has a writable section then the
-> >>>>  		corresponding section of this file will be writable.
-> >>>> +
-> >>>> +What:		/sys/bus/pci/devices/.../iov/enable
-> >>> Are you sure this is still the correct location with your change to
-> >>> struct device?
-> >> Nevermind, this is correct.
-> >> But the bigger problem is that userspace doesn't know when these
-> >> attributes show up.  So tools like udev and HAL and others can't look
-> >> for them as they never get notified, and they don't even know if they
-> >> should be looking for them or not.
-> >> Is there any way to tie these attributes to the "main" pci device so
-> >> that they get created before the device is announced to the world?
-> >> Doing that would solve this issue.
-> >> thanks,
-> >> greg k-h
-> >
-> > Currently PCI subsystem has /sys/.../{vendor,device,...} bundled to the 
-> > main PCI device (I suppose this means the entries are created by 
-> > 'device_add')
-> >
-> > And after the PCI device is announced, 
-> > /sys/.../{config,resourceX,rom,vpd,iov,...} get created depending on if 
-> > these features are supported.
+On Thu, Nov 13, 2008 at 08:41:09AM +0100, Ingo Molnar wrote:
 > 
-> And that's a bug.  Let's not continue to make the same bug here as well.
+> * Nick Piggin <npiggin@suse.de> wrote:
 > 
-> > Making dynamic entries tie to the main PCI device would require PCI 
-> > subsystem to allocate different 'bus_type' for the devices, right?
+> > Hi,
+> > 
+> > I was just looking around the page fault code for any obvious 
+> > performance improvements. I noticed do_page_fault is rather big, 
+> > uses a lot of stack, and generates some branch mispredicts.
+> > 
+> > It's only about 1.1% on the profile of the workload I'm looking at, 
+> > so my improvement is pretty close to in the noise, but I wonder if 
+> > micro optimisations like the following would be welcome?
 > 
-> No, it would just mean they need to be all added before the device is
-> fully registered with the driver core.
+> it's definitely welcome!
+> 
+> > This patch adds branch hints and moves error condition code out of 
+> > line. It shrinks do_page_fault from 2410 bytes to 603 bytes, and 
+> > from 352 to 64 bytes of stack. Total text size does grow by about 
+> > 500 bytes due to the additional functions added.
+> 
+> Some small cleanliness nits:
+> 
+> > +/* TODO: match order of arguments */
+> 
+> please fix TODO ;)
 
-I looked into the PCI and driver core code again, but didn't figured out how
-to do it.
+OK, I actually already fixed it but forgot to remove that. Basically just
+checking whether keeping regs,error_code,address always passed in the
+same order reduces code size (there were one or two places already that
+did different order for no good reason). Not surprisingly, it saved a
+few bytes.
 
-A 'pci_dev' is added by pci_bus_add_device() via device_add(), which creates
-sysfs entries according to 'dev_attrs' in the 'pci_bus_type'. If we want those
-dynamic entries to appear before the uevent is triggered, we have to bundle
-them into the 'dev_attrs'. Is this right way for the dynamic entries? Or I
-missed something?
+ 
+> > +static noinline void no_context(struct pt_regs *regs,
+> > +			unsigned long error_code, unsigned long address)
+> > +{
+> > +	struct task_struct *tsk = current;
+> > +#ifdef CONFIG_X86_64
+> > +	unsigned long flags;
+> > +#endif
+> 
+> we should just do this unconditionally on 32-bit too.
+> 
+> > +	/*
+> > +	 * Oops. The kernel tried to access some bad page. We'll have to
+> > +	 * terminate things with extreme prejudice.
+> > +	 */
+> > +#ifdef CONFIG_X86_32
+> > +	bust_spinlocks(1);
+> > +#else
+> > +	flags = oops_begin();
+> > +#endif
+> 
+> 32-bit should use oops_begin() too. Solves the previous comment as 
+> well.
+> 
+> > +#ifdef CONFIG_X86_32
+> > +	die("Oops", regs, error_code);
+> > +	bust_spinlocks(0);
+> > +	do_exit(SIGKILL);
+> > +#else
+> > +	if (__die("Oops", regs, error_code))
+> > +		regs = NULL;
+> > +	/* Executive summary in case the body of the oops scrolled away */
+> > +	printk(KERN_EMERG "CR2: %016lx\n", address);
+> > +	oops_end(flags, regs, SIGKILL);
+> > +#endif
+> 
+> this difference seems unnecessary too - 32-bit should use oops_end() 
+> too.
 
-Thanks,
-Yu
+Probably all 3 good comments, but I didn't want to be tempted into changing
+behaviour (modulo adding bugs). Easy to merge them up in a subsequent patch,
+however...
+
+ 
+> > +/* TODO: fixup for oom handling */
+> 
+> please fix todo ;-)
+
+Oh... actually it's OK (we don't loop back again, but that's OK, the init
+task will just retry the fault). The comment was actually just in relation
+to my oom-killer page fault patches that are in -mm. I'm not proposing
+this for merge just yet, but will wait for Andrew.
+
+ 
+> this flow could be cleaned up further:
+> 
+> [...]
+> > +		bad_area(regs, error_code, address);
+> > +		return;
+> [...]
+> > +		bad_area(regs, error_code, address);
+> > +		return;
+> [...]
+> > +			bad_area(regs, error_code, address);
+> > +			return;
+> [...]
+> > +		bad_area(regs, error_code, address);
+> > +		return;
+> 
+> Any reason why that pattern shouldnt be changed to an appropriate goto 
+> bad_area? (probably the same goes for the nosemaphore error paths too)
+
+No... not really any reason. gcc effectively turns the code into a goto
+anyway. Some days I can't make up my mind which one is better :)
+
