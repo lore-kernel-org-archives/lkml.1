@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbYKMRqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbYKMRql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbYKMRqZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 12:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbYKMRpS
+	id S1753708AbYKMRql (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 12:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbYKMRpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 12:45:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37275 "EHLO mx2.redhat.com"
+	Thu, 13 Nov 2008 12:45:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37282 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbYKMRpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 12:45:15 -0500
+	id S1752434AbYKMRpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 12:45:16 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -18,108 +18,84 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Zachary Amsden <zach@vmware.com>,
        kexec@lists.infradead.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 07/11] kvm: svm: move has_svm() code to asm/virtext.h
-Date: Thu, 13 Nov 2008 15:43:47 -0200
-Message-Id: <1226598231-18311-8-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 01/11] kvm: vmx: move cpu_has_kvm_support() to an inline on asm/virtext.h
+Date: Thu, 13 Nov 2008 15:43:41 -0200
+Message-Id: <1226598231-18311-2-git-send-email-ehabkost@redhat.com>
 In-Reply-To: <1226598231-18311-1-git-send-email-ehabkost@redhat.com>
 References: <1226598231-18311-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use a trick to keep the printk()s on has_svm() working as before. gcc
-will take care of not generating code for the 'msg' stuff when the
-function is called with a NULL msg argument.
+It will be used by core code on kdump and reboot, to disable
+vmx if needed.
 
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 ---
- arch/x86/include/asm/virtext.h |   33 +++++++++++++++++++++++++++++++++
- arch/x86/kvm/svm.c             |   19 +++++--------------
- 2 files changed, 38 insertions(+), 14 deletions(-)
+ arch/x86/include/asm/virtext.h |   31 +++++++++++++++++++++++++++++++
+ arch/x86/kvm/vmx.c             |    4 ++--
+ 2 files changed, 33 insertions(+), 2 deletions(-)
+ create mode 100644 arch/x86/include/asm/virtext.h
 
 diff --git a/arch/x86/include/asm/virtext.h b/arch/x86/include/asm/virtext.h
-index f6adf9d..e900015 100644
---- a/arch/x86/include/asm/virtext.h
+new file mode 100644
+index 0000000..298b6a0
+--- /dev/null
 +++ b/arch/x86/include/asm/virtext.h
-@@ -95,4 +95,37 @@ static inline void cpu_emergency_vmxoff(void)
- 
- #define SVM_VM_CR_SVM_DISABLE 4
- 
-+/** Check if the CPU has SVM support
+@@ -0,0 +1,31 @@
++/* CPU virtualization extensions handling
 + *
-+ * You can use the 'msg' arg to get a message describing the problem,
-+ * if the function returns zero. Simply pass NULL if you are not interested
-+ * on the messages; gcc should take care of not generating code for
-+ * the messages on this case.
++ * This should carry the code for handling CPU virtualization extensions
++ * that needs to live in the kernel core.
++ *
++ * Author: Eduardo Habkost <ehabkost@redhat.com>
++ *
++ * Copyright (C) 2008, Red Hat Inc.
++ *
++ * Contains code from KVM, Copyright (C) 2006 Qumranet, Inc.
++ *
++ * This work is licensed under the terms of the GNU GPL, version 2.  See
++ * the COPYING file in the top-level directory.
 + */
-+static inline int cpu_has_svm(const char **msg)
++#ifndef _ASM_X86_VIRTEX_H
++#define _ASM_X86_VIRTEX_H
++
++#include <asm/processor.h>
++#include <asm/system.h>
++
++/*
++ * VMX functions:
++ */
++
++static inline int cpu_has_vmx(void)
 +{
-+	uint32_t eax, ebx, ecx, edx;
-+
-+	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD) {
-+		if (msg)
-+			*msg = "not amd";
-+		return 0;
-+	}
-+
-+	cpuid(0x80000000, &eax, &ebx, &ecx, &edx);
-+	if (eax < SVM_CPUID_FUNC) {
-+		if (msg)
-+			*msg = "can't execute cpuid_8000000a";
-+		return 0;
-+	}
-+
-+	cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
-+	if (!(ecx & (1 << SVM_CPUID_FEATURE_SHIFT))) {
-+		if (msg)
-+			*msg = "svm not available";
-+		return 0;
-+	}
-+	return 1;
++	unsigned long ecx = cpuid_ecx(1);
++	return test_bit(5, &ecx); /* CPUID.1:ECX.VMX[bit 5] -> VT */
 +}
 +
- #endif /* _ASM_X86_VIRTEX_H */
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 9c4ce65..64241f5 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -28,6 +28,8 @@
++#endif /* _ASM_X86_VIRTEX_H */
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index d06b4dc..5cde1e3 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -31,6 +31,7 @@
  
+ #include <asm/io.h>
  #include <asm/desc.h>
- 
 +#include <asm/virtext.h>
-+
+ 
  #define __ex(x) __kvm_handle_fault_on_reboot(x)
  
- MODULE_AUTHOR("Qumranet");
-@@ -245,24 +247,13 @@ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+@@ -1032,8 +1033,7 @@ static int vmx_get_irq(struct kvm_vcpu *vcpu)
  
- static int has_svm(void)
+ static __init int cpu_has_kvm_support(void)
  {
--	uint32_t eax, ebx, ecx, edx;
--
--	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD) {
--		printk(KERN_INFO "has_svm: not amd\n");
--		return 0;
--	}
-+	const char *msg;
- 
--	cpuid(0x80000000, &eax, &ebx, &ecx, &edx);
--	if (eax < SVM_CPUID_FUNC) {
--		printk(KERN_INFO "has_svm: can't execute cpuid_8000000a\n");
-+	if (!cpu_has_svm(&msg)) {
-+		printk(KERN_INFO "has_svn: %s\n", msg);
- 		return 0;
- 	}
- 
--	cpuid(0x80000001, &eax, &ebx, &ecx, &edx);
--	if (!(ecx & (1 << SVM_CPUID_FEATURE_SHIFT))) {
--		printk(KERN_DEBUG "has_svm: svm not available\n");
--		return 0;
--	}
- 	return 1;
+-	unsigned long ecx = cpuid_ecx(1);
+-	return test_bit(5, &ecx); /* CPUID.1:ECX.VMX[bit 5] -> VT */
++	return cpu_has_vmx();
  }
  
+ static __init int vmx_disabled_by_bios(void)
 -- 
 1.5.5.GIT
 
