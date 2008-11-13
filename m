@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbYKMWCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbYKMWFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbYKMWCp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 17:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbYKMWCb
+	id S1754785AbYKMWFb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 17:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbYKMWFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 17:02:31 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:6747 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbYKMWC3 (ORCPT
+	Thu, 13 Nov 2008 17:05:20 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:55223 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbYKMWFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 17:02:29 -0500
+	Thu, 13 Nov 2008 17:05:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=IRfxOYpeEBemdDN5vvYsl2d6E3dgk3B0ChXZGXumPuUUMvCzgdXnxKdastuaPHd144
-         Wp5/dqCmYGl7UiK2YlHrunUwzy0qGlEjNP1/usMMU+1ZRz3uGnl8T7Fju2fALxVKybD0
-         KKaU5Py7EeUHujWxWehFNXB9pPbbGDV6BV5yU=
-Message-ID: <cfd18e0f0811131402j7ec6a60cq462916cc9715b9aa@mail.gmail.com>
-Date: Thu, 13 Nov 2008 17:02:28 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] reintroduce accept4
-Cc: "Subrata Modak" <subrata@linux.vnet.ibm.com>, linux-arch@vger.kernel.org,
-       "Ulrich Drepper" <drepper@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-api@vger.kernel.org,
-       linux-man@vger.kernel.org, "Davide Libenzi" <davidel@xmailserver.org>,
-       netdev <netdev@vger.kernel.org>, "Roland McGrath" <roland@redhat.com>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, "Christoph Hellwig" <hch@lst.de>,
-       "David Miller" <davem@davemloft.net>, "Alan Cox" <alan@redhat.com>,
-       "Jakub Jelinek" <jakub@redhat.com>
-In-Reply-To: <517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=GX0cMvkX2/VmZU9gWGq+HdOLE2gEo132auHHh20FQOnIwAvn+7rLMmtBOeh67OpSCy
+         6qnMkqO5w5+uG2AS4K620SggCG1dra88i/aYOUvgBNeHIYd5lk/aw0VBQc9Td0GAWOIS
+         1Q7ElMpUgmJ+1JCRl/JtUZhyBzuKxz4EoV9Gg=
+Message-ID: <491CA495.7010007@gmail.com>
+Date: Thu, 13 Nov 2008 23:05:09 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Andi Kleen <andi@firstfloor.org>, Jiri Kosina <jkosina@suse.cz>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HID: don't grab devices with no input
+References: <Pine.LNX.4.44L0.0811131632150.3036-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0811131632150.3036-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
-	 <517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hit the send button a little early on my last mail.  Just to complete one piece:
+On 11/13/2008 10:37 PM, Alan Stern wrote:
+>> +	for (n = 0; n < interface->desc.bNumEndpoints; n++)
+>> +		if (usb_endpoint_dir_in(&interface->endpoint[n].desc))
+>> +			has_in++;
+>> +	if (!has_in) {
+>> +		dev_err(&intf->dev, "couldn't find an input interrupt "
+>> +				"endpoint");
+>> +		return -ENODEV;
+>> +	}
+>> +
+> 
+> Do you want to use usb_endpoint_is_int_in() instead?  It matches the 
+> error message more closely.
 
-> My only argument is with the name of the new sysytem call.
+Yes, good catch, thanks.
 
-... Each of these new system calls (accept4(), dup3(), evenfd2(),
-signalfd4(), inotify_init1(), epoll_create1(), pipe2()) has a name
-that's based on the number of arguments it has.  This follows a
-convention that was used in a few traditional Unix system calls, e.g.,
-wait3(), wait4(), dup2().  However, it's probably a mistake since:
-
-a) The glibc interfaces can have different numbers of arguments from
-the system call
-
-b) In the future, we might use the new bits in the flags argument to
-signal the presence of additional arguments for the call, in which
-case the number in the name no longer matches the number of arguments
-in the call signature.
-
-In the end, names like acceptx(), dupx(), ... or acceptfl(), duplf(),
-... or somesuch would probably have been better.  But given that we
-already added the other system calls, it doesn't seem worth bothering
-to change things for accept4().
-
-Cheers,
-
-Michael
