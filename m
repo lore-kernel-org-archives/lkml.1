@@ -1,145 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbYKMXEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbYKMXEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540AbYKMXEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 18:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbYKMXDs
+	id S1755838AbYKMXEt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 18:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYKMXEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 18:03:48 -0500
-Received: from kroah.org ([198.145.64.141]:51838 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752510AbYKMXDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 18:03:44 -0500
-Date: Thu, 13 Nov 2008 15:02:59 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB patches for 2.6-git
-Message-ID: <20081113230259.GA3681@kroah.com>
+	Thu, 13 Nov 2008 18:04:35 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:57025 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752054AbYKMXEe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 18:04:34 -0500
+Message-ID: <491CB27C.3090606@nortel.com>
+Date: Thu, 13 Nov 2008 17:04:28 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Olaf van der Spek <olafvdspek@gmail.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
+References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com> <20081113112409.GK13263@ghostprotocols.net> <b2cc26e40811131106g7a1c46d0y89d24b11cb0570fb@mail.gmail.com>
+In-Reply-To: <b2cc26e40811131106g7a1c46d0y89d24b11cb0570fb@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Nov 2008 23:04:30.0410 (UTC) FILETIME=[2F3C22A0:01C945E4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few USB patches for your 2.6-git tree.
+Olaf van der Spek wrote:
+> On Thu, Nov 13, 2008 at 12:24 PM, Arnaldo Carvalho de Melo
+> <acme@redhat.com> wrote:
+>> Em Thu, Nov 13, 2008 at 12:20:44AM +0100, Olaf van der Spek escreveu:
+>>> Hi,
+>>>
+>>> Quite often in discussions, I see people claiming Unix sockets are
+>>> faster then TCP sockets on a connection that stays inside localhost.
+>>> Let's say from app A to app B.
+>>> Is this indeed the case and if so, how much and why?
+>>> My assumption is that the kernel can optimize the 'connection' and let
+>>> any performance differences disappear.
+>> How much? Please measure.
 
-These patches are:
-	- lots of new device ids for different drivers
-	- usb storage quirks
-	- documentation fixes
-	- ehci fixes
-	- ps3 shutdown fix
-	- musb driver fixes (this is the majority of these patches)
-	- misc fixes
+Lmbench shows local tcp as noticeably slower than unix sockets on a Mac 
+G5 running 2.6.27.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-All of these have been in the -next and -mm releases for a while.
+*Local* Communication latencies in microseconds - smaller is better
+---------------------------------------------------------------
+Host           OS 2p/0K  Pipe AF     UDP  RPC/   TCP  RPC/ TCP
+                   ctxsw       UNIX         UDP         TCP conn
+--------- ------- ----- ----- ---- ----- ----- ----- ----- ----
+localhost 2.6.27  2.270  10.5 12.6  19.9  31.5  22.7  35.5  68.
 
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
 
-thanks,
 
-greg k-h
 
-------------
+*Local* Communication bandwidths in MB/s - bigger is better
+-----------------------------------------------------------------------
+Host          OS  Pipe AF    TCP  File   Mmap  Bcopy  Bcopy  Mem   Mem
+                        UNIX      reread reread (libc) (hand) read write
+--------- ------- ---- ---- ---- ------ ------ ------ ------ ---- -----
+localhost 2.6.27  1368 1564 334. 1111.8 2068.8  930.3  947.0 2072 1269.
 
- drivers/block/ub.c                  |   20 ++++-
- drivers/net/usb/asix.c              |    4 +
- drivers/usb/class/cdc-acm.c         |    9 +-
- drivers/usb/core/message.c          |    1 +
- drivers/usb/core/sysfs.c            |    2 +-
- drivers/usb/core/urb.c              |    4 +-
- drivers/usb/gadget/f_acm.c          |    4 +
- drivers/usb/host/Kconfig            |   23 ++----
- drivers/usb/host/ehci-hcd.c         |   25 +++---
- drivers/usb/host/ehci-ps3.c         |    1 +
- drivers/usb/host/ehci-sched.c       |    4 +-
- drivers/usb/host/isp1760-if.c       |   22 +++---
- drivers/usb/host/ohci-ps3.c         |    3 +-
- drivers/usb/host/r8a66597-hcd.c     |    5 +-
- drivers/usb/misc/sisusbvga/sisusb.c |    1 +
- drivers/usb/misc/vstusb.c           |    2 +-
- drivers/usb/musb/musb_core.c        |    6 +-
- drivers/usb/musb/musb_debug.h       |    4 +-
- drivers/usb/musb/musb_host.c        |  159 ++++++++++++++++++++++-------------
- drivers/usb/musb/musb_host.h        |    1 +
- drivers/usb/musb/omap2430.c         |    2 +
- drivers/usb/musb/tusb6010.c         |    2 +-
- drivers/usb/serial/cp2101.c         |    2 +
- drivers/usb/serial/option.c         |    6 ++
- drivers/usb/storage/Kconfig         |    4 +-
- drivers/usb/storage/unusual_devs.h  |   22 +++++
- include/linux/usb.h                 |    2 +
- 27 files changed, 218 insertions(+), 122 deletions(-)
 
----------------
 
-Ajay Kumar Gupta (3):
-      usb: musb: Fix for isochronous IN transfer
-      usb: musb: Removes compilation warning in gadget mode
-      usb: musb: fix BULK request on different available endpoints
 
-Alan Stern (4):
-      USB: don't register endpoints for interfaces that are going away
-      USB: unusual_devs entry for Argosy USB mass-storage interface
-      USB: EHCI: fix handling of dead controllers
-      USB: EHCI: fix divide-by-zero bug
-
-Albert Comerma (1):
-      USB: SISUSB2VGA driver: add 0x0711, 0x0903
-
-Brandon Philips (1):
-      USB: cdc-acm.c: fix recursive lock in acm_start_wb error path
-
-Craig Shelley (1):
-      USB: CP2101 Add device ID for AMB2560
-
-Damir N Abdullin (1):
-      + usb-serial-cp2101-add-enfora-gsm2228.patch added to -mm tree
-
-David Brownell (1):
-      USB: gadget: cdc-acm deadlock fix
-
-Felipe Balbi (2):
-      usb: musb: tusb6010: kill compile warning
-      usb: musb: fix debug global variable name
-
-Geoff Levand (1):
-      USB: Fix PS3 USB shutdown problems
-
-Greg Kroah-Hartman (1):
-      USB: vstusb: fix compiler warning on x86-64
-
-Jason Cooper (1):
-      USB: net: asix: add support for Cables-to-Go USB Ethernet adapter
-
-Leslie Watter (1):
-      USB: Add YISO u893 usb modem vendor and product IDs to option driver
-
-Paul Bolle (1):
-      USB: storage: adjust comment in Kconfig
-
-Paul Ready (1):
-      USB: add Nikon D300 camera to unusual_devs
-
-Pete Zaitcev (1):
-      ub: stub pre_reset and post_reset to fix oops
-
-Rabin Vincent (1):
-      USB: mention URB_FREE_BUFFER in usb_free_urb documentation
-
-Ricky Wong (1):
-      usb: unusual devs patch for Nokia 7610 Supernova
-
-Sebastian Andrzej Siewior (1):
-      USB: remove optional bus bindings in isp1760, fixing runtime warning
-
-Yoshihiro Shimoda (1):
-      usb: r8a66597-hcd: fix wrong data access in SuperH on-chip USB
-
+Chris
