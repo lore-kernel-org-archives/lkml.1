@@ -1,173 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbYKMTLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYKMTLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754769AbYKMTLc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbYKMTLQ
+	id S1754891AbYKMTLt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:11:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYKMTLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:11:16 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36841 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754231AbYKMTLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:11:14 -0500
-Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
-	relationship with symlinks in sysfs
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-In-Reply-To: <20081113165402.GA7084@us.ibm.com>
-References: <20081103234808.GA13716@us.ibm.com>
-	 <1226528175.4835.18.camel@badari-desktop>
-	 <20081113165402.GA7084@us.ibm.com>
-Content-Type: text/plain
-Date: Thu, 13 Nov 2008 11:12:27 -0800
-Message-Id: <1226603547.29381.10.camel@badari-desktop>
+	Thu, 13 Nov 2008 14:11:39 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47171 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbYKMTLi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:11:38 -0500
+Date: Thu, 13 Nov 2008 21:11:35 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, hugh@veritas.com, jens.axboe@oracle.com,
+       paulmck@linux.vnet.ibm.com, a.p.zijlstra@chello.nl, simon@fire.lp0.eu
+Subject: [GIT PULL] SLAB updates for 2.6.28-rc4
+Message-ID: <Pine.LNX.4.64.0811132106500.3487@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-13 at 08:54 -0800, Gary Hade wrote:
-> On Wed, Nov 12, 2008 at 02:16:15PM -0800, Badari Pulavarty wrote:
-> > On Mon, 2008-11-03 at 15:48 -0800, Gary Hade wrote:
-> > > Show node to memory section relationship with symlinks in sysfs
-> > > 
-> > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
-> > > the memory sections located on nodeX.  For example:
-> > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
-> > > indicates that memory section 135 resides on node1.
-> > > 
-> > > Also revises documentation to cover this change as well as updating
-> > > Documentation/ABI/testing/sysfs-devices-memory to include descriptions
-> > > of memory hotremove files 'phys_device', 'phys_index', and 'state'
-> > > that were previously not described there.
-> > > 
-> > > In addition to it always being a good policy to provide users with
-> > > the maximum possible amount of physical location information for
-> > > resources that can be hot-added and/or hot-removed, the following
-> > > are some (but likely not all) of the user benefits provided by
-> > > this change.
-> > > Immediate:
-> > >   - Provides information needed to determine the specific node
-> > >     on which a defective DIMM is located.  This will reduce system
-> > >     downtime when the node or defective DIMM is swapped out.
-> > >   - Prevents unintended onlining of a memory section that was 
-> > >     previously offlined due to a defective DIMM.  This could happen
-> > >     during node hot-add when the user or node hot-add assist script
-> > >     onlines _all_ offlined sections due to user or script inability
-> > >     to identify the specific memory sections located on the hot-added
-> > >     node.  The consequences of reintroducing the defective memory
-> > >     could be ugly.
-> > >   - Provides information needed to vary the amount and distribution
-> > >     of memory on specific nodes for testing or debugging purposes.
-> > > Future:
-> > >   - Will provide information needed to identify the memory
-> > >     sections that need to be offlined prior to physical removal
-> > >     of a specific node.
-> > > 
-> > > Symlink creation during boot was tested on 2-node x86_64, 2-node
-> > > ppc64, and 2-node ia64 systems.  Symlink creation during physical
-> > > memory hot-add tested on a 2-node x86_64 system.
-> > > 
-> > > Supersedes the "mm: show memory section to node relationship in sysfs"
-> > > patch posted on 05 Sept 2008 which created node ID containing 'node'
-> > > files in /sys/devices/system/memory/memoryX instead of symlinks.
-> > > Changed from files to symlinks due to feedback that symlinks were
-> > > more consistent with the sysfs way.
-> > > 
-> > > Supersedes the "mm: show node to memory section relationship with
-> > > symlinks in sysfs" patch posted on 29 Sept 2008 to address a Yasunori
-> > > Goto reported problem where an incorrect symlink was created due to
-> > > a range of uninitialized pages at the beginning of a section.  This
-> > > problem which produced a symlink in /sys/devices/system/node/node0
-> > > that incorrectly referenced a mem section located on node1 is corrected
-> > > in this version.  This version also covers the case were a mem section
-> > > could span multiple nodes.
-> > > 
-> > > Supersedes the "mm: show node to memory section relationship with
-> > > symlinks in sysfs" patch posted on 09 Oct 2008 to add the Andrew
-> > > Morton requested usefulness information and update to apply cleanly
-> > > to 2.6.28-rc3 and 2.6-git.  Code is unchanged.
-> > > 
-> > > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-> > > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > > 
-> > 
-> > Hi Gary,
-> > 
-> > While testing latest mmtom (which has this patch) ran into an issue
-> > with sysfs files. What I noticed was, with this patch "memoryXX"
-> > directories in /sys/devices/system/memory/ are not getting cleaned up.
-> > Backing out the patch seems to fix the problem. 
-> > 
-> > When I tried to remove 64 blocks of memory, empty  directories are
-> > stayed around. (look at memory151 - memory215). This is causing OOPS
-> > while trying to add memory block again. I think this could be because 
-> > of the symlink added from node directory.  Can you look ?
-> 
-> Badari, The call to unregister_mem_sect_under_nodes() in
-> remove_memory_block() preceding the removal of the files in
-> the memory section directory _should have_ removed all the
-> symlinks referencing the memory section directory.  Did you
-> happen to check to see if the symlinks to memory151-memory215
-> were still present?
+Hi Linus,
 
-Gary,
+Please pull the latest SLAB git tree from:
 
-You are right. The links from "node" directory are getting removed.
-I guess some how we still have an extra reference on the directory.
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
 
-Look at 214-217 (I removed only 4 memory blocks this time).
+The branch contains a small Kconfig help text update from Simon Arlott and a
+documentation update for SLAB_DESTROY_BY_RCU from Peter Zijlstra.
 
-Thanks,
-Badari
+                Pekka
 
-/sys/devices/system/node/node0 # ls -ltr memory21*
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory21 -> ../../memory/memory21
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory219 -> ../../memory/memory219
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory218 -> ../../memory/memory218
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory213 -> ../../memory/memory213
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory212 -> ../../memory/memory212
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory211 -> ../../memory/memory211
-lrwxrwxrwx 1 root root 0 2008-11-13 10:39 memory210 -> ../../memory/memory210
+Peter Zijlstra (1):
+      slab: document SLAB_DESTROY_BY_RCU
 
- # find /sys/devices/system/memory/memory21?
-/sys/devices/system/memory/memory210
-/sys/devices/system/memory/memory210/phys_index
-/sys/devices/system/memory/memory210/state
-/sys/devices/system/memory/memory210/phys_device
-/sys/devices/system/memory/memory210/removable
-/sys/devices/system/memory/memory211
-/sys/devices/system/memory/memory211/phys_index
-/sys/devices/system/memory/memory211/state
-/sys/devices/system/memory/memory211/phys_device
-/sys/devices/system/memory/memory211/removable
-/sys/devices/system/memory/memory212
-/sys/devices/system/memory/memory212/phys_index
-/sys/devices/system/memory/memory212/state
-/sys/devices/system/memory/memory212/phys_device
-/sys/devices/system/memory/memory212/removable
-/sys/devices/system/memory/memory213
-/sys/devices/system/memory/memory213/phys_index
-/sys/devices/system/memory/memory213/state
-/sys/devices/system/memory/memory213/phys_device
-/sys/devices/system/memory/memory213/removable
-/sys/devices/system/memory/memory214
-/sys/devices/system/memory/memory215
-/sys/devices/system/memory/memory216
-/sys/devices/system/memory/memory217
-/sys/devices/system/memory/memory218
-/sys/devices/system/memory/memory218/phys_index
-/sys/devices/system/memory/memory218/state
-/sys/devices/system/memory/memory218/phys_device
-/sys/devices/system/memory/memory218/removable
-/sys/devices/system/memory/memory219
+Simon Arlott (1):
+      Kconfig: SLUB is the default slab allocator
 
+ include/linux/slab.h |   28 ++++++++++++++++++++++++++++
+ init/Kconfig         |    6 +++---
+ 2 files changed, 31 insertions(+), 3 deletions(-)
 
-
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index ba965c8..000da12 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -23,6 +23,34 @@
+ #define SLAB_CACHE_DMA		0x00004000UL	/* Use GFP_DMA memory */
+ #define SLAB_STORE_USER		0x00010000UL	/* DEBUG: Store the last owner for bug hunting */
+ #define SLAB_PANIC		0x00040000UL	/* Panic if kmem_cache_create() fails */
++/*
++ * SLAB_DESTROY_BY_RCU - **WARNING** READ THIS!
++ *
++ * This delays freeing the SLAB page by a grace period, it does _NOT_
++ * delay object freeing. This means that if you do kmem_cache_free()
++ * that memory location is free to be reused at any time. Thus it may
++ * be possible to see another object there in the same RCU grace period.
++ *
++ * This feature only ensures the memory location backing the object
++ * stays valid, the trick to using this is relying on an independent
++ * object validation pass. Something like:
++ *
++ *  rcu_read_lock()
++ * again:
++ *  obj = lockless_lookup(key);
++ *  if (obj) {
++ *    if (!try_get_ref(obj)) // might fail for free objects
++ *      goto again;
++ *
++ *    if (obj->key != key) { // not the object we expected
++ *      put_ref(obj);
++ *      goto again;
++ *    }
++ *  }
++ *  rcu_read_unlock();
++ *
++ * See also the comment on struct slab_rcu in mm/slab.c.
++ */
+ #define SLAB_DESTROY_BY_RCU	0x00080000UL	/* Defer freeing slabs to RCU */
+ #define SLAB_MEM_SPREAD		0x00100000UL	/* Spread some memory over cpuset */
+ #define SLAB_TRACE		0x00200000UL	/* Trace allocations and frees */
+diff --git a/init/Kconfig b/init/Kconfig
+index 86b00c5..226da27 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -771,8 +771,7 @@ config SLAB
+ 	help
+ 	  The regular slab allocator that is established and known to work
+ 	  well in all environments. It organizes cache hot objects in
+-	  per cpu and per node queues. SLAB is the default choice for
+-	  a slab allocator.
++	  per cpu and per node queues.
+ 
+ config SLUB
+ 	bool "SLUB (Unqueued Allocator)"
+@@ -781,7 +780,8 @@ config SLUB
+ 	   instead of managing queues of cached objects (SLAB approach).
+ 	   Per cpu caching is realized using slabs of objects instead
+ 	   of queues of objects. SLUB can use memory efficiently
+-	   and has enhanced diagnostics.
++	   and has enhanced diagnostics. SLUB is the default choice for
++	   a slab allocator.
+ 
+ config SLOB
+ 	depends on EMBEDDED
