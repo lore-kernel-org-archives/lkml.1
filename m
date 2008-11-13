@@ -1,52 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYKMWMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbYKMWNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbYKMWMu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 17:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751697AbYKMWMl
+	id S1756196AbYKMWNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 17:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbYKMWNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 17:12:41 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:46226 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYKMWMk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 17:12:40 -0500
-Date: Thu, 13 Nov 2008 23:22:00 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Andi Kleen <andi@firstfloor.org>,
-       Jiri Kosina <jkosina@suse.cz>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HID: don't grab devices with no input
-Message-ID: <20081113222200.GD3810@one.firstfloor.org>
-References: <Pine.LNX.4.44L0.0811131632150.3036-100000@iolanthe.rowland.org> <491CA495.7010007@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 13 Nov 2008 17:13:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35711 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754034AbYKMWNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 17:13:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: [stable] Suspend regression in stable kernel 2.6.27.4 on Mac mini Core Duo
+Date: Thu, 13 Nov 2008 23:18:12 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, "Bob Copeland" <me@bobcopeland.com>
+References: <20081109202830.GA7206@x61> <200811122241.09943.rjw@sisk.pl> <20081113192656.GA5735@dose.home.local>
+In-Reply-To: <20081113192656.GA5735@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <491CA495.7010007@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200811132318.13821.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 11:05:09PM +0100, Jiri Slaby wrote:
-> On 11/13/2008 10:37 PM, Alan Stern wrote:
-> >> +	for (n = 0; n < interface->desc.bNumEndpoints; n++)
-> >> +		if (usb_endpoint_dir_in(&interface->endpoint[n].desc))
-> >> +			has_in++;
-> >> +	if (!has_in) {
-> >> +		dev_err(&intf->dev, "couldn't find an input interrupt "
-> >> +				"endpoint");
-> >> +		return -ENODEV;
-> >> +	}
-> >> +
+On Thursday, 13 of November 2008, Tino Keitel wrote:
+> On Wed, Nov 12, 2008 at 22:41:08 +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, 12 of November 2008, Tino Keitel wrote:
+> > > On Wed, Nov 12, 2008 at 01:03:54 +0100, Rafael J. Wysocki wrote:
+> > > 
+> > > [...]
+> > > 
+> > > > Also, can you check this patch on top of 2.6.27.4 and see what happens?
+> > > 
+> > > With that patch, resume works (although I used 2.6.27.5 and not
+> > > 2.6.27.5, if that matters).
 > > 
-> > Do you want to use usb_endpoint_is_int_in() instead?  It matches the 
-> > error message more closely.
+> > It shouldn't really matter.
+> > 
+> > Thanks for testing and please send me the output of dmidecode.
+> > It seems that blacklisting may be the only way to handle your box. :-(
 > 
-> Yes, good catch, thanks.
-Should I test it with that change or the original version?
+> Attached.
 
--Andi
+Please try the appended patch on top of the Linus' tree.
 
--- 
-ak@linux.intel.com
+Thanks,
+Rafael
+
+---
+ drivers/acpi/sleep/main.c |   40 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/drivers/acpi/sleep/main.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/sleep/main.c
++++ linux-2.6/drivers/acpi/sleep/main.c
+@@ -104,6 +104,18 @@ void __init acpi_s4_no_nvs(void)
+ 	s4_no_nvs = true;
+ }
+ 
++/*
++ * According to the ACPI specification the BIOS should make sure that ACPI is
++ * enabled and SCI_EN bit is set on wake-up from S1 - S3 sleep states.  Still,
++ * some BIOSes don't do that and therefore we use acpi_enable() to enable ACPI
++ * on such systems during resume.  Unfortunately that doesn't help in
++ * particularly pathological cases in which SCI_EN has to be set directly on
++ * resume, although the specification states very clearly that this flag is
++ * owned by the hardware.  The set_sci_en_on_resume variable will be set in such
++ * cases.
++ */
++static bool set_sci_en_on_resume;
++
+ /**
+  *	acpi_pm_disable_gpes - Disable the GPEs.
+  */
+@@ -249,7 +261,11 @@ static int acpi_suspend_enter(suspend_st
+ 	}
+ 
+ 	/* If ACPI is not enabled by the BIOS, we need to enable it here. */
+-	acpi_enable();
++	if (set_sci_en_on_resume)
++		acpi_set_register(ACPI_BITREG_SCI_ENABLE, 1);
++	else
++		acpi_enable();
++
+ 	/* Reprogram control registers and execute _BFS */
+ 	acpi_leave_sleep_state_prep(acpi_state);
+ 
+@@ -337,6 +353,12 @@ static int __init init_old_suspend_order
+ 	return 0;
+ }
+ 
++static int __init init_set_sci_en_on_resume(const struct dmi_system_id *d)
++{
++	set_sci_en_on_resume = true;
++	return 0;
++}
++
+ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 	{
+ 	.callback = init_old_suspend_ordering,
+@@ -354,6 +376,22 @@ static struct dmi_system_id __initdata a
+ 		DMI_MATCH(DMI_PRODUCT_NAME, "HP xw4600 Workstation"),
+ 		},
+ 	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Apple MacBook 1,1",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
++		DMI_MATCH(DMI_PRODUCT_NAME, "MacBook1,1"),
++		},
++	},
++	{
++	.callback = init_set_sci_en_on_resume,
++	.ident = "Apple MacMini 1,1",
++	.matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Apple Computer, Inc."),
++		DMI_MATCH(DMI_PRODUCT_NAME, "Macmini1,1"),
++		},
++	},
+ 	{},
+ };
+ #endif /* CONFIG_SUSPEND */
