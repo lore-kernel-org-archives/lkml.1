@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbYKMRrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbYKMRro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594AbYKMRrY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 12:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbYKMRpZ
+	id S1755254AbYKMRro (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 12:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbYKMRp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 12:45:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37300 "EHLO mx2.redhat.com"
+	Thu, 13 Nov 2008 12:45:27 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37299 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752916AbYKMRpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752848AbYKMRpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 13 Nov 2008 12:45:19 -0500
 From: Eduardo Habkost <ehabkost@redhat.com>
 To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
@@ -18,52 +18,46 @@ Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Zachary Amsden <zach@vmware.com>,
        kexec@lists.infradead.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Eduardo Habkost <ehabkost@redhat.com>
-Subject: [PATCH 04/11] kvm: vmx: extract kvm_cpu_vmxoff() from hardware_disable()
-Date: Thu, 13 Nov 2008 15:43:44 -0200
-Message-Id: <1226598231-18311-5-git-send-email-ehabkost@redhat.com>
+Subject: [PATCH 03/11] x86: asm/virtext.h: add cpu_vmxoff() inline function
+Date: Thu, 13 Nov 2008 15:43:43 -0200
+Message-Id: <1226598231-18311-4-git-send-email-ehabkost@redhat.com>
 In-Reply-To: <1226598231-18311-1-git-send-email-ehabkost@redhat.com>
 References: <1226598231-18311-1-git-send-email-ehabkost@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Along with some comments on why it is different from the core cpu_vmxoff()
-function.
+Unfortunately we can't use exactly the same code from vmx
+hardware_disable(), because the KVM function uses the
+__kvm_handle_fault_on_reboot() tricks.
 
 Signed-off-by: Eduardo Habkost <ehabkost@redhat.com>
 ---
- arch/x86/kvm/vmx.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/virtext.h |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 5cde1e3..5b15373 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -1079,13 +1079,22 @@ static void vmclear_local_vcpus(void)
- 		__vcpu_clear(vmx);
+diff --git a/arch/x86/include/asm/virtext.h b/arch/x86/include/asm/virtext.h
+index 351fa23..475fb17 100644
+--- a/arch/x86/include/asm/virtext.h
++++ b/arch/x86/include/asm/virtext.h
+@@ -45,4 +45,17 @@ static inline int cpu_has_vmx(void)
+ 	return test_bit(5, &ecx); /* CPUID.1:ECX.VMX[bit 5] -> VT */
  }
  
--static void hardware_disable(void *garbage)
 +
-+/* Just like cpu_vmxoff(), but with the __kvm_handle_fault_on_reboot()
-+ * tricks.
++/** Disable VMX on the current CPU
++ *
++ * vmxoff causes a undefined-opcode exception if vmxon was not run
++ * on the CPU previously. Only call this function if you know VMX
++ * is enabled.
 + */
-+static void kvm_cpu_vmxoff(void)
- {
--	vmclear_local_vcpus();
- 	asm volatile (__ex(ASM_VMX_VMXOFF) : : : "cc");
- 	write_cr4(read_cr4() & ~X86_CR4_VMXE);
- }
- 
-+static void hardware_disable(void *garbage)
++static inline void cpu_vmxoff(void)
 +{
-+	vmclear_local_vcpus();
-+	kvm_cpu_vmxoff();
++	asm volatile (ASM_VMX_VMXOFF : : : "cc");
++	write_cr4(read_cr4() & ~X86_CR4_VMXE);
 +}
 +
- static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
- 				      u32 msr, u32 *result)
- {
+ #endif /* _ASM_X86_VIRTEX_H */
 -- 
 1.5.5.GIT
 
