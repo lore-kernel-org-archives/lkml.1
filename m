@@ -1,137 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467AbYKMGMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbYKMGOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752467AbYKMGMX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 01:12:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbYKMGMO
+	id S1752687AbYKMGOB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 01:14:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbYKMGNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 01:12:14 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42001 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750920AbYKMGMM (ORCPT
+	Thu, 13 Nov 2008 01:13:51 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:62680 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750953AbYKMGNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 01:12:12 -0500
-Date: Thu, 13 Nov 2008 15:11:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Izik Eidus <izik@qumranet.com>
-Cc: Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
-       izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
- one page into another
-Message-Id: <20081113151129.35c17962.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <491AB9D0.7060802@qumranet.com>
+	Thu, 13 Nov 2008 01:13:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=RQwdnNhThu34E8fN+YKv0JBMmpSm85I8NuNqUu2Twnih+rv9hjWhvlzf3NW2gPJcuI
+         g1aA2TUZSAPaqovwcZNICmqZLqj/lZiku/i5O5CU8vxVcVtgxNnjav3QAL3mo0sYNqLU
+         /TteENiGiLjuC2o9YwkyhCmuccXEzODfg2hsk=
+Subject: Re: [PATCH 3/4] add ksm kernel shared memory driver
+From: Eric Rannaud <eric.rannaud@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: Jonathan Corbet <corbet@lwn.net>, Izik Eidus <ieidus@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com
+In-Reply-To: <23027.1226443216@turing-police.cc.vt.edu>
 References: <1226409701-14831-1-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-2-git-send-email-ieidus@redhat.com>
-	<1226409701-14831-3-git-send-email-ieidus@redhat.com>
-	<20081111114555.eb808843.akpm@linux-foundation.org>
-	<4919F1C0.2050009@redhat.com>
-	<Pine.LNX.4.64.0811111520590.27767@quilx.com>
-	<4919F7EE.3070501@redhat.com>
-	<Pine.LNX.4.64.0811111527500.27767@quilx.com>
-	<20081111222421.GL10818@random.random>
-	<20081112111931.0e40c27d.kamezawa.hiroyu@jp.fujitsu.com>
-	<491AAA84.5040801@redhat.com>
-	<491AB9D0.7060802@qumranet.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	 <1226409701-14831-2-git-send-email-ieidus@redhat.com>
+	 <1226409701-14831-3-git-send-email-ieidus@redhat.com>
+	 <1226409701-14831-4-git-send-email-ieidus@redhat.com>
+	 <20081111150345.7fff8ff2@bike.lwn.net>
+	 <23027.1226443216@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Wed, 12 Nov 2008 22:13:47 -0800
+Message-Id: <1226556827.13670.54.camel@nc050>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for answers.
+On Tue, 2008-11-11 at 17:40 -0500, Valdis.Kletnieks@vt.edu wrote: 
+> On Tue, 11 Nov 2008 15:03:45 MST, Jonathan Corbet said:
+> Seems reasonably sane to me - only doing the first 128 bytes rather than
+> a full 4K page is some 32 times faster.  Yes, you'll have the *occasional*
+> case where two pages were identical for 128 bytes but then differed, which is
+> why there's buckets.  But the vast majority of the time, at least one bit
+> will be different in the first part.
 
-On Wed, 12 Nov 2008 13:11:12 +0200
-Izik Eidus <izik@qumranet.com> wrote:
+In the same spirit, computing a CRC32 instead of a SHA1 would probably
+be faster as well (faster to compute, and faster to compare the
+digests). The increased rate of collision should be negligible.
 
-> Avi Kivity wrote:
-> > KAMEZAWA Hiroyuki wrote:
-> >> Can I make a question ? (I'm working for memory cgroup.)
-> >>
-> >> Now, we do charge to anonymous page when
-> >>   - charge(+1) when it's mapped firstly (mapcount 0->1)
-> >>   - uncharge(-1) it's fully unmapped (mapcount 1->0) vir 
-> >> page_remove_rmap().
-> >>
-> >> My quesion is
-> >>  - PageKSM pages are not necessary to be tracked by memory cgroup ?
-> When we reaplacing page using page_replace() we have:
-> oldpage - > anonymous page that is going to be replaced by newpage
-> newpage -> kernel allocated page (KsmPage)
-> so about oldpage we are calling page_remove_rmap() that will notify cgroup
-> and about newpage it wont be count inside cgroup beacuse it is file rmap 
-> page
-> (we are calling to page_add_file_rmap), so right now PageKSM wont ever 
-> be tracked by cgroup.
-> 
-If not in radix-tree, it's not tracked.
-(But we don't want to track non-LRU pages which are not freeable.)
-
-
-> >>  - Can we know that "the page is just replaced and we don't necessary 
-> >> to do
-> >>    charge/uncharge".
-> 
-> The caller of page_replace does know it, the only problem is that 
-> page_remove_rmap()
-> automaticly change the cgroup for anonymous pages,
-> if we want it not to change the cgroup, we can:
-> increase the cgroup count before page_remove (but in that case what 
-> happen if we reach to the limit???)
-> give parameter to page_remove_rmap() that we dont want the cgroup to be 
-> changed.
-
-Hmm, current mem cgroup works via page_cgroup struct to track pages.
-
-   page <-> page_cgroup has one-to-one relation ship.
-
-So, "exchanging page" itself causes trouble. But I may be able to provide
-necessary hooks to you as I did in page migraiton.
-
-> 
-> >>  - annonymous page from KSM is worth to be tracked by memory cgroup ?
-> >>    (IOW, it's on LRU and can be swapped-out ?)
-> 
-> KSM have no anonymous pages (it share anonymous pages into KsmPAGE -> 
-> kernel allocated page without mapping)
-> so it isnt in LRU and it cannt be swapped, only when KsmPAGEs will be 
-> break by do_wp_page() the duplication will be able to swap.
-> 
-Ok, thank you for confirmation.
-
-> >>   
-> >
-> > My feeling is that shared pages should be accounted as if they were 
-> > not shared; that is, a share page should be accounted for each process 
-> > that shares it.  Perhaps sharing within a cgroup should be counted as 
-> > 1 page for all the ptes pointing to it.
-> >
-> >
-
-If KSM pages are on radix-tree, it will be accounted automatically.
-Now, we have "Unevictable" LRU and mlocked() pages are smartly isolated into its
-own LRU. So, just doing
-
- - inode's radix-tree
- - make all pages mlocked.
- - provide special page fault handler for your purpose
-
-is simple one. But ok, whatever implementation you'll do, I have to check it
-and consider whether it should be tracked or not. Then, add codes to memcg to
-track it or ignore it or comments on your patches ;)
-
-It's helpful to add me to CC: when you post this set again.
-
-Thanks,
--Kame
-
-
-
-
-
+Also, the upcoming SSE4.2 (Core i7) has a CRC32 instruction. (Support is
+already in the kernel: arch/x86/crypto/crc32c-intel.c)
 
