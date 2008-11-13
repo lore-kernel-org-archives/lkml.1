@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757073AbYKMTts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbYKMTub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757073AbYKMTts (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbYKMTnG
+	id S1754352AbYKMTub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756547AbYKMTqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:43:06 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35416 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756000AbYKMTnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:43:05 -0500
-Date: Thu, 13 Nov 2008 13:42:30 -0600
-From: David Teigland <teigland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] dlm fix for 2.6.28-rc4
-Message-ID: <20081113194229.GB13163@redhat.com>
-Mime-Version: 1.0
+	Thu, 13 Nov 2008 14:46:14 -0500
+Received: from 75-125-101-9.opticaljungle.com ([75.125.101.9]:44269 "EHLO
+	mailbox-us-s-12.mailhostingserver.com" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754743AbYKMTqM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 14:46:12 -0500
+Date: Thu, 13 Nov 2008 20:46:04 +0100
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Recommended books for new kernel programmers
+Message-ID: <20081113194604.GF32469@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+	Kristoffer Ericson <kristoffer.ericson@gmail.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20081113211947.a39079bf.kristoffer.ericson@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20081113211947.a39079bf.kristoffer.ericson@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+El Thu, Nov 13, 2008 at 09:19:47PM +0100 Kristoffer Ericson ha dit:
 
-Please pull a dlm regression fix (included below) for 2.6.28-rc4 from:
+> Ive gotten this question alot lately and thought
+> people could name their favourite books.
+> 
+> I usually recommend "Linux Device Drivers" by
+> Jonathan Corbet, Alessandro Rubini and
+> Greg Kroah-Hartman.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
+Robert Loves' "Linux Kernel Development" is my favorite for
+getting an overview of kernel and its mechanisms
 
-Thanks,
-Dave
+"Essential Linux Device Drivers" from Sreekrishnan Venkateswaran is a
+good book for learning about driver development, though i'd recommend
+to read "Linux Kernel Development" or LDD3 first
 
->From 278afcbf4fe964230eba67f8fb8235e8b7e63ffb Mon Sep 17 00:00:00 2001
-From: David Teigland <teigland@redhat.com>
-Date: Thu, 13 Nov 2008 13:22:34 -0600
-Subject: [PATCH] dlm: fix shutdown cleanup
+finally there is "Understanding the Linux Kernel" by Daniel P. Bovet
+and Marco Cesati, an in-depth view of the kernel core code
 
-Fixes a regression from commit 0f8e0d9a317406612700426fad3efab0b7bbc467,
-"dlm: allow multiple lockspace creates".
-
-An extraneous 'else' slipped into a code fragment being moved from
-release_lockspace() to dlm_release_lockspace().  The result of the
-unwanted 'else' is that dlm threads and structures are not stopped
-and cleaned up when the final dlm lockspace is removed.  Trying to
-create a new lockspace again afterward will fail with
-"kmem_cache_create: duplicate cache dlm_conn" because the cache
-was not previously destroyed.
-
-Signed-off-by: David Teigland <teigland@redhat.com>
----
- fs/dlm/lockspace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
-index d910501..8d86b79 100644
---- a/fs/dlm/lockspace.c
-+++ b/fs/dlm/lockspace.c
-@@ -812,7 +812,7 @@ int dlm_release_lockspace(void *lockspace, int force)
- 	error = release_lockspace(ls, force);
- 	if (!error)
- 		ls_count--;
--	else if (!ls_count)
-+	if (!ls_count)
- 		threads_stop();
- 	mutex_unlock(&ls_lock);
- 
 -- 
-1.5.5.1
+Matthias Kaehlcke
+Embedded Linux Engineer
+Barcelona
 
+         An ounce of practice is worth more than tons of preaching
+                            (Mahatma Gandhi)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
