@@ -1,71 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbYKMCbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYKMCis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbYKMCbz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 12 Nov 2008 21:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbYKMCbo
+	id S1753298AbYKMCis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 12 Nov 2008 21:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbYKMCij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 12 Nov 2008 21:31:44 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35315 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752283AbYKMCbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 12 Nov 2008 21:31:43 -0500
-Date: Thu, 13 Nov 2008 03:31:35 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, kvm@vger.kernel.org, chrisw@redhat.com,
-       avi@redhat.com, izike@qumranet.com
-Subject: Re: [PATCH 2/4] Add replace_page(), change the mapping of pte from
-	one page into another
-Message-ID: <20081113023135.GD10818@random.random>
-References: <20081111221753.GK10818@random.random> <Pine.LNX.4.64.0811111626520.29222@quilx.com> <20081111231722.GR10818@random.random> <Pine.LNX.4.64.0811111823030.31625@quilx.com> <20081112022701.GT10818@random.random> <Pine.LNX.4.64.0811112109390.10501@quilx.com> <20081112173258.GX10818@random.random> <Pine.LNX.4.64.0811121412130.31606@quilx.com> <1226527744.7560.93.camel@lts-notebook> <20081113020059.GC10818@random.random>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113020059.GC10818@random.random>
+	Wed, 12 Nov 2008 21:38:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58419 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750924AbYKMCij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 12 Nov 2008 21:38:39 -0500
+Date: Wed, 12 Nov 2008 18:37:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Pekka Paalanen <pq@iki.fi>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/1] ftrace: do not update max buffer with no users
+Message-Id: <20081112183745.07af124d.akpm@linux-foundation.org>
+In-Reply-To: <20081113013247.974941878@goodmis.org>
+References: <20081113013041.086583690@goodmis.org>
+	<20081113013247.974941878@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 03:00:59AM +0100, Andrea Arcangeli wrote:
-> CPU0 migrate.c			CPU1 filemap.c
-> -------				----------
-> 				find_get_page
-> 				radix_tree_lookup_slot returns the oldpage
-> page_count still = expected_count
-> freeze_ref (oldpage->count = 0)
-> radix_tree_replace (too late, other side already got the oldpage)
-> unfreeze_ref (oldpage->count = 2)
-> 				page_cache_get_speculative(old_page)
-> 				set count to 3 and succeeds
+On Wed, 12 Nov 2008 20:30:42 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
 
-After reading more of this lockless radix tree code, I realized this
-below check is the one that was intended to restart find_get_page and
-prevent it to return the oldpage:
+> Impact: only use max latency buffer when a user is configured
+> 
+> Pekka reported a bug with the resizing of the buffers when only the
+> MMIO tracer was configured. The issue was, to save memory, the max
+> latency trace buffer was only initialized if a tracer that uses it
+> is configured in.
+> 
+> What happened was that the max latency buffer was never initialized
+> when only the MMIO tracer was configurued. The MMIO tracer does not
+> use the max tracer, which kept it from being initialized. But the
+> resize code still tried to resize the max latency buffers, but because
+> they were never allocated, the resize code was passed a NULL pointer.
+> 
+> This patch puts all of the max_tr (max tracer buffer) inside the
+> TRACER_MAX_TRACE config, to prevent any more errors in its use when
+> not configured.
+> 
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif /* CONFIG_TRACER_MAX_TRACE */
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif
+> +#ifdef CONFIG_TRACER_MAX_TRACE
+> +#endif
 
-				    if (unlikely(page != *pagep)) {
+hey.
 
-But there's no barrier there, atomic_add_unless would need to provide
-an atomic smp_mb() _after_ atomic_add_unless executed. In the old days
-the atomic_* routines had no implied memory barriers, you had to use
-smp_mb__after_atomic_add_unless if you wanted to avoid the race. I
-don't see much in the ppc implementation of atomic_add_unless that
-would provide an implicit smb_mb after the page_cache_get_speculative
-returns, so I can't see why the pagep can't be by find_get_page read
-before the other cpu executes radix_tree_replace in the above
-timeline.
 
-I guess you intended to put an smp_mb() in between the
-page_cache_get_speculative and the *pagep to make the code safe on ppc
-too, but there isn't, and I think it must be fixed, either that or I
-don't understand ppc assembly right. The other side has a smp_wmb
-implicit inside radix_tree_replace_slot so it should be ok already to
-ensure we see the refcount going to 0 before we see the pagep changed
-(the fact the other side has a memory barrier, further confirms this
-side needs it too).
+This sort of thing:
 
-BTW, the radix_tree_deref_slot might miss a rcu_barrier_depends()
-after radix_tree_deref_slot returns but I'm not entirely sure and only
-alpha would be affected in the worst case.
++#ifdef CONFIG_TRACER_MAX_TRACE
+ 	if (current_trace && current_trace->print_max)
+ 		iter->tr = &max_tr;
+ 	else
++#endif
+ 		iter->tr = inode->i_private;
+
+is particularly regrettable.
