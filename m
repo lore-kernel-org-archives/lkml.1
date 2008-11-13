@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbYKMVMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbYKMVN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbYKMVMT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 16:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYKMVMD
+	id S1755308AbYKMVN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 16:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYKMVNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 16:12:03 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:54330 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751968AbYKMVMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 16:12:00 -0500
-Subject: Re: [madwifi-project] [RFC] Closing the project
-From: Pavel Roskin <proski@gnu.org>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Michael Renzmann <mrenzmann@madwifi-project.org>,
-       madwifi-project@venema.h4ckr.net,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <43e72e890811131254q35ff4f48xf58c7c26d5c9a5a4@mail.gmail.com>
-References: <2576.194.45.26.221.1226491274.squirrel@webmail.madwifi.org>
-	 <1226511194.9952.38.camel@dv>
-	 <43e72e890811121224w4fc53e1s29080a42111186e9@mail.gmail.com>
-	 <1226547092.11785.49.camel@dv>
-	 <43e72e890811131142p3f72c964t802d424b0ddb3456@mail.gmail.com>
-	 <1226609316.2904.18.camel@dv>
-	 <43e72e890811131254q35ff4f48xf58c7c26d5c9a5a4@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 13 Nov 2008 16:11:58 -0500
-Message-Id: <1226610718.2904.23.camel@dv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Thu, 13 Nov 2008 16:13:18 -0500
+Received: from gv-out-0910.google.com ([216.239.58.191]:41005 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbYKMVNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 16:13:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=XY/4Th06VkzSZpxXLtMF+F9GPgx+xC04elAiy05jQjlN2DWT3JnUYb+fz4criG/sVq
+         z4cuoCCzp8F9m59Y181jSbTKB/SXGmOYWGWSfh4Ed8yy8p9w/XX38HRfTD+fF1pEqWQ2
+         oniOmyZa5EDGeIw80gTAS9qW9KJSy4CIr7XsQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: Missing CONFIG_IDE_LEGACY definition (Re: linux-next: Tree for November 13)
+Date: Thu, 13 Nov 2008 22:08:42 +0100
+User-Agent: KMail/1.9.10
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20081113183316.3601c13d.sfr@canb.auug.org.au> <s5hiqqsq9pv.wl%tiwai@suse.de>
+In-Reply-To: <s5hiqqsq9pv.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811132208.43694.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-13 at 12:54 -0800, Luis R. Rodriguez wrote:
-> On Thu, Nov 13, 2008 at 12:48 PM, Pavel Roskin <proski@gnu.org> wrote:
-> > It would be great to have a detailed analysis why MadWifi failed.
+On Thursday 13 November 2008, Takashi Iwai wrote:
+> At Thu, 13 Nov 2008 18:33:16 +1100,
+> Stephen Rothwell wrote:
+> > 
+> > Hi all,
+> > 
+> > Changes since 20081112:
+> > 
+> > Undropped tree:
+> > 	security-testing
+> > 
+> > Dropped trees (temporarily):
+> > 	sh (build problems)
+> > 	creds (non-trivial conflict)
+> > 	userns (it depends on creds)
+> > 	semaphore-removal (due to unfixed conflicts against Linus' tree)
+> > 	firmware (unfixed build failure)
+> > 
+> > The usb tree lost its conflict.
+> > 
+> > The net tree lost its 3 conflicts.
 > 
-> It didn't fail, it was just not the best approach to support Linux
-> from the start, that's why *today* its just silly to go on with it,
-> specially since the vendor involved is *contributing* and helping to
-> implement support the right way.
+> The IDE tree update seems broken for some old devices.
+> CONFIG_IDE_LEGACY is selected by them but it's nowhere defined in
+> Kconfig.
 
-OK, I mean MadWifi failed to deliver what it could have delivered.  It
-failed to improve the code significantly.  It failed to deal with the
-bugs that could have been fixed.  It failed to release the code that was
-written by the team members.  It failed to stabilize.
+Thanks for noticing and fixing this.
 
-> >> Just my advice: let MadWifi die already, stop wasting your time.
-> >
-> > I understand what you mean, but I have to deal with MadWifi anyway.  As
-> > I said before, I'd rather share my fixes that keep them to myself.
-> 
-> Understood -- but perhaps you can identify what is lacking that you
-> need to better help push what is required and missing.
+I've integrated your fix into the guilty patch ("ide: move legacy
+ISA/VLB ports handling to ide-legacy.c") to preserve bisectability.
 
-Specifically for me - just three letters.  DFS.
-
--- 
-Regards,
-Pavel Roskin
+Bart
