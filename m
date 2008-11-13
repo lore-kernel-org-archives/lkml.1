@@ -1,108 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYKMUt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754919AbYKMUu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYKMUt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 15:49:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbYKMUtS
+	id S1754919AbYKMUu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 15:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbYKMUuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 15:49:18 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:32952 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbYKMUtQ (ORCPT
+	Thu, 13 Nov 2008 15:50:12 -0500
+Received: from outbound-mail-33.bluehost.com ([69.89.18.153]:53160 "HELO
+	outbound-mail-33.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751645AbYKMUuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 15:49:16 -0500
-Date: Thu, 13 Nov 2008 13:48:59 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] acpiphp: Identify more removable slots
-Message-ID: <20081113204859.GC1617@parisc-linux.org>
-References: <20081113202739.GA11107@srcf.ucam.org>
+	Thu, 13 Nov 2008 15:50:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=nMZq8H3b6PokTdnWUoI4Uzr914N6HbNOQMAs60WHKLuIgWelCW8N/6rAIfOKhr3nNrhn61fuUnvbczNpGcehGXJjAAOuXYFmpe5s2P+hsEOMPExGlm2DV7y7n1F7tbfs;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [git pull] PCI fixes
+Date: Thu, 13 Nov 2008 12:50:07 -0800
+User-Agent: KMail/1.10.1 (Linux/2.6.26.6-79.fc9.x86_64; KDE/4.1.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, "linux-pci" <linux-pci@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081113202739.GA11107@srcf.ucam.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200811131250.07677.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 08:27:39PM +0000, Matthew Garrett wrote:
-> @@ -94,11 +95,14 @@ static int is_ejectable(acpi_handle handle)
->  	}
->  
->  	status = acpi_get_handle(handle, "_EJ0", &tmp);
-> -	if (ACPI_FAILURE(status)) {
-> -		return 0;
-> -	}
-> +	if (ACPI_SUCCESS(status))
-> +		ret = 1;
-> +
-> +	status = acpi_get_handle(handle, "_RMV", &tmp);
-> +	if (ACPI_SUCCESS(status))
-> +		ret = 1;
->  
-> -	return 1;
-> +	return ret;
->  }
+Please pull my for-linus branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-Why not:
+Just one more fix for 2.6.28 is queued up so far, but it does allow booting
+on certain platforms, so it's an important one.
 
- 	status = acpi_get_handle(handle, "_EJ0", &tmp);
-	if (ACPI_SUCCESS(status))
-		return 1;
+Thanks,
+Jesse
 
-	status = acpi_get_handle(handle, "_RMV", &tmp);
-	if (ACPI_SUCCESS(status))
-		return 1;
+Kenji Kaneshige (1):
+      PCI: ignore bit0 of _OSC return code
 
-	return 0;
+ drivers/pci/pci-acpi.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
->  
->  
-> @@ -182,17 +186,26 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
->  	struct acpiphp_func *newfunc;
->  	acpi_handle tmp;
->  	acpi_status status = AE_OK;
-> -	unsigned long long adr, sun;
-> -	int device, function, retval;
-> +	unsigned long long adr, sun, removable;
-> +	int device, function, retval, valid = 0;
->  
->  	status = acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
->  
->  	if (ACPI_FAILURE(status))
->  		return AE_OK;
->  
-> -	status = acpi_get_handle(handle, "_EJ0", &tmp);
-> +	status = acpi_get_handle(handle, "_RMV", &tmp);
-> +	if (ACPI_SUCCESS(status)) {
-> +		acpi_evaluate_integer(handle, "_RMV", NULL, &removable);
-> +		if (removable)
-> +			valid = 1;
-> +	}
->  
-> -	if (ACPI_FAILURE(status) && !(is_dock_device(handle)))
-> +	status = acpi_get_handle(handle, "_EJ0", &tmp);
-> +	if (ACPI_SUCCESS(status) || is_dock_device(handle))
-> +		valid = 1;
-> +
-> +	if (!valid)
->  		return AE_OK;
-
-This looks like almost the same code as above.  New helper function?
-
->  	device = (adr >> 16) & 0xffff;
-> 
-> -- 
-> Matthew Garrett | mjg59@srcf.ucam.org
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
