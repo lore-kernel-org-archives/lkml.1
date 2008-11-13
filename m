@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYKMT6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYKMT7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbYKMT6Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 14:58:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbYKMT55
+	id S1755392AbYKMT7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 14:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYKMT67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 14:57:57 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58544 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751982AbYKMT5z (ORCPT
+	Thu, 13 Nov 2008 14:58:59 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:58202 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751968AbYKMT66 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 14:57:55 -0500
-To: Saikiran Madugula <hummerbliss@gmail.com>
-Cc: Petr Tesarik <ptesarik@suse.cz>, netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] remove an unnecessary field in struct tcp_skb_cb
-From: Andi Kleen <andi@firstfloor.org>
-References: <1226571707.18006.23.camel@nathan.suse.cz>
-	<491C6DA6.8030200@gmail.com>
-Date: Thu, 13 Nov 2008 20:57:53 +0100
-In-Reply-To: <491C6DA6.8030200@gmail.com> (Saikiran Madugula's message of "Thu, 13 Nov 2008 18:10:46 +0000")
-Message-ID: <87fxlvcsam.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 13 Nov 2008 14:58:58 -0500
+X-Greylist: delayed 1670 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Nov 2008 14:58:58 EST
+Subject: Re: [PATCH] depmod: sort output according to modules.order, take #2
+From: Jon Masters <jonathan@jonmasters.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, notting@redhat.com,
+       kay.sievers@vrfy.org, Greg KH <greg@kroah.com>
+In-Reply-To: <491C1158.8090901@gmail.com>
+References: <475936CE.70703@gmail.com> <475BB5AE.40503@gmail.com>
+	 <477B71F0.8020706@gmail.com>  <200801031012.22776.rusty@rustcorp.com.au>
+	 <1199318319.2044.22.camel@perihelion>  <491C1158.8090901@gmail.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Thu, 13 Nov 2008 14:30:30 -0500
+Message-Id: <1226604630.8114.45.camel@perihelion.int.jonmasters.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Saikiran Madugula <hummerbliss@gmail.com> writes:
+On Thu, 2008-11-13 at 20:36 +0900, Tejun Heo wrote:
+> Jon Masters wrote:
+> > On Thu, 2008-01-03 at 10:12 +1100, Rusty Russell wrote:
+> > 
+> >> Oh, sorry.  Jon is now module-init-tools maintainer, and I've cc'd him and 
+> >> forwarded your original patch.
+> > 
+> > Ta. I was semi-offline last week due to holidays, but already saw the
+> > original mail and have another fix for debug sections - will sort it.
+> 
+> Jon, this patch hasn't made into module-init-tools after 10 months.  Ping?
 
-> Petr Tesarik wrote:
->> The urg_ptr field is not used anywhere and is merely confusing.
->> 
-> grep -r "urg_ptr" on my linux tree says otherwise.
+Oops. I missed that one. Also reminds me I should post a patch to clean
+up some of these Modules files on a kernel make clean, I think the
+markers file was still kicking around last time I built out of tree
+modules...should check that.
 
-I think you're confusing it with tcphdr's field of the same name.
-Petr's patch is correct as far as I can see.
+Jon.
 
--Andi
--- 
-ak@linux.intel.com
+
