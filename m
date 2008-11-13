@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbYKMOWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbYKMO23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbYKMOWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 09:22:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYKMOWO
+	id S1753809AbYKMO23 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 09:28:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYKMO2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 09:22:14 -0500
-Received: from smtp.movial.fi ([62.236.91.34]:36625 "EHLO smtp.movial.fi"
+	Thu, 13 Nov 2008 09:28:19 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:57463 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750948AbYKMOWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 09:22:14 -0500
-Message-ID: <491C3813.1070305@movial.fi>
-Date: Thu, 13 Nov 2008 16:22:11 +0200
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
-Organization: Movial Creative Technologies
-User-Agent: Icedove 1.5.0.14eol (X11/20080724)
-MIME-Version: 1.0
-To: Fabio Comolli <fabio.comolli@gmail.com>
-CC: Bernhard Walle <bwalle@suse.de>, James.Bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow SCSI_WAIT_SCAN to be deselected
-References: <1226585472-12559-1-git-send-email-bwalle@suse.de> <b637ec0b0811130618o2f76e34bh17055f2f165d89a5@mail.gmail.com>
-In-Reply-To: <b637ec0b0811130618o2f76e34bh17055f2f165d89a5@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	id S1752202AbYKMO2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 09:28:18 -0500
+Date: Thu, 13 Nov 2008 23:28:23 +0900 (JST)
+Message-Id: <20081113.232823.125897716.anemo@mba.ocn.ne.jp>
+To: vapier@gentoo.org
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mtd: unify mtd partition/device registration
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20081113.224350.18312549.anemo@mba.ocn.ne.jp>
+References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
+	<20081113.224350.18312549.anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fabio Comolli wrote:
-> So I'm not the only one :-)
-> Please see this thread:
+On Thu, 13 Nov 2008 22:43:50 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> On Wed, 12 Nov 2008 18:38:53 -0500, Mike Frysinger <vapier@gentoo.org> wrote:
+> > Rather than having every map/mtd driver doing the same sequence of
+> > registering partitions and/or devices, implement common parse_mtd().
+> > 
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > ---
+> >  drivers/mtd/mtdcore.c   |   37 +++++++++++++++++++++++++++++++++++++
+> >  include/linux/mtd/mtd.h |    3 +++
+> >  2 files changed, 40 insertions(+), 0 deletions(-)
 > 
-> http://lkml.org/lkml/2008/10/22/355
+> I like this idea.
 
-See also:
+Some drivers call both add_mtd_device() and add_mtd_partitions().  The
+mtd_device is used to access whole flash area (like /dev/hda).  How do
+you think of these usage patterns?
 
-http://marc.info/?l=linux-scsi&m=122538386519971&w=2
-http://marc.info/?l=linux-scsi&m=122539443509753&w=2
+maps/edb7312.c
+maps/mbx860.c
+maps/plat-ram.c
+nand/cafe_nand.c
+nand/diskonchip.c
+nand/ndfc.c
 
-BR,
-Dmitri
+Automatic fallback to mtd_device in parse_mtd() is convenient but
+somewhat unflexible...
+
+---
+Atsushi Nemoto
