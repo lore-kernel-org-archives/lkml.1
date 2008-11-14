@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbYKNVir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbYKNVj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbYKNVir (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbYKNVfQ
+	id S1756420AbYKNVj0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbYKNVfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:35:16 -0500
+	Fri, 14 Nov 2008 16:35:24 -0500
 Received: from mga11.intel.com ([192.55.52.93]:30395 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755149AbYKNVfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:35:14 -0500
+	id S1755895AbYKNVfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:35:20 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,605,1220252400"; 
-   d="scan'208";a="403733873"
+   d="scan'208";a="639301358"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 10/13] dmaengine: replace dma_async_client_register with
-	dmaengine_get
+Subject: [PATCH 12/13] dmaengine: remove 'bigref' infrastructure
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Cc: maciej.sosnowski@intel.com, hskinnemoen@atmel.com, g.liakhovetski@gmx.de,
        nicolas.ferre@atmel.com
-Date: Fri, 14 Nov 2008 14:35:08 -0700
-Message-ID: <20081114213508.32354.68557.stgit@dwillia2-linux.ch.intel.com>
+Date: Fri, 14 Nov 2008 14:35:19 -0700
+Message-ID: <20081114213518.32354.20458.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
 References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.14.2
@@ -30,240 +29,226 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that clients no longer need to be notified of channel arrival
-dma_async_client_register can simply increment the dmaengine_ref_count.
+Reference counting is done at the module level so clients need not worry
+that a channel will leave while they are actively using dmaengine.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
 
- crypto/async_tx/async_tx.c |  115 +-------------------------------------------
- drivers/dma/dmaengine.c    |   23 ++-------
- include/linux/dmaengine.h  |    4 +-
- net/core/dev.c             |    3 -
- 4 files changed, 11 insertions(+), 134 deletions(-)
+ drivers/dma/dmaengine.c   |   86 +++++----------------------------------------
+ drivers/dma/iop-adma.c    |    1 -
+ drivers/dma/mv_xor.c      |    1 -
+ include/linux/dmaengine.h |    7 ----
+ 4 files changed, 9 insertions(+), 86 deletions(-)
 
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index 2cdf7a0..f21147f 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -28,120 +28,9 @@
- #include <linux/async_tx.h>
- 
- #ifdef CONFIG_DMA_ENGINE
--static enum dma_state_client
--dma_channel_add_remove(struct dma_client *client,
--	struct dma_chan *chan, enum dma_state state);
--
--static struct dma_client async_tx_dma = {
--	.event_callback = dma_channel_add_remove,
--	/* .cap_mask == 0 defaults to all channels */
--};
--
--/**
-- * async_tx_lock - protect modification of async_tx_master_list and serialize
-- *	rebalance operations
-- */
--static DEFINE_SPINLOCK(async_tx_lock);
--
--static LIST_HEAD(async_tx_master_list);
--
--static void
--free_dma_chan_ref(struct rcu_head *rcu)
--{
--	struct dma_chan_ref *ref;
--	ref = container_of(rcu, struct dma_chan_ref, rcu);
--	kfree(ref);
--}
--
--static void
--init_dma_chan_ref(struct dma_chan_ref *ref, struct dma_chan *chan)
--{
--	INIT_LIST_HEAD(&ref->node);
--	INIT_RCU_HEAD(&ref->rcu);
--	ref->chan = chan;
--	atomic_set(&ref->count, 0);
--}
--
--static enum dma_state_client
--dma_channel_add_remove(struct dma_client *client,
--	struct dma_chan *chan, enum dma_state state)
--{
--	unsigned long found, flags;
--	struct dma_chan_ref *master_ref, *ref;
--	enum dma_state_client ack = DMA_DUP; /* default: take no action */
--
--	switch (state) {
--	case DMA_RESOURCE_AVAILABLE:
--		found = 0;
--		rcu_read_lock();
--		list_for_each_entry_rcu(ref, &async_tx_master_list, node)
--			if (ref->chan == chan) {
--				found = 1;
--				break;
--			}
--		rcu_read_unlock();
--
--		pr_debug("async_tx: dma resource available [%s]\n",
--			found ? "old" : "new");
--
--		if (!found)
--			ack = DMA_ACK;
--		else
--			break;
--
--		/* add the channel to the generic management list */
--		master_ref = kmalloc(sizeof(*master_ref), GFP_KERNEL);
--		if (master_ref) {
--			init_dma_chan_ref(master_ref, chan);
--			spin_lock_irqsave(&async_tx_lock, flags);
--			list_add_tail_rcu(&master_ref->node,
--				&async_tx_master_list);
--			spin_unlock_irqrestore(&async_tx_lock,
--				flags);
--		} else {
--			printk(KERN_WARNING "async_tx: unable to create"
--				" new master entry in response to"
--				" a DMA_RESOURCE_ADDED event"
--				" (-ENOMEM)\n");
--			return 0;
--		}
--		break;
--	case DMA_RESOURCE_REMOVED:
--		found = 0;
--		spin_lock_irqsave(&async_tx_lock, flags);
--		list_for_each_entry(ref, &async_tx_master_list, node)
--			if (ref->chan == chan) {
--				list_del_rcu(&ref->node);
--				call_rcu(&ref->rcu, free_dma_chan_ref);
--				found = 1;
--				break;
--			}
--		spin_unlock_irqrestore(&async_tx_lock, flags);
--
--		pr_debug("async_tx: dma resource removed [%s]\n",
--			found ? "ours" : "not ours");
--
--		if (found)
--			ack = DMA_ACK;
--		else
--			break;
--		break;
--	case DMA_RESOURCE_SUSPEND:
--	case DMA_RESOURCE_RESUME:
--		printk(KERN_WARNING "async_tx: does not support dma channel"
--			" suspend/resume\n");
--		break;
--	default:
--		BUG();
--	}
--
--	return ack;
--}
--
- static int __init async_tx_init(void)
- {
--	dma_async_client_register(&async_tx_dma);
--	dma_async_client_chan_request(&async_tx_dma);
-+	dmaengine_get();
- 
- 	printk(KERN_INFO "async_tx: api initialized (async)\n");
- 
-@@ -150,7 +39,7 @@ static int __init async_tx_init(void)
- 
- static void __exit async_tx_exit(void)
- {
--	dma_async_client_unregister(&async_tx_dma);
-+	dmaengine_put();
- }
- 
- /**
 diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 1b694b8..78456f5 100644
+index 26f862c..a6c0d72 100644
 --- a/drivers/dma/dmaengine.c
 +++ b/drivers/dma/dmaengine.c
-@@ -588,10 +588,9 @@ static void dma_clients_notify_available(void)
- }
- 
- /**
-- * dma_async_client_register - register a &dma_client
-- * @client: ptr to a client structure with valid 'event_callback' and 'cap_mask'
-+ * dmaengine_get - register interest in dma_channels
-  */
--void dma_async_client_register(struct dma_client *client)
-+void dmaengine_get(void)
- {
- 	struct dma_device *device, *_d;
- 	struct dma_chan *chan;
-@@ -615,26 +614,18 @@ void dma_async_client_register(struct dma_client *client)
- 				       dev_name(&chan->dev), err);
- 		}
- 	}
--
--	list_add_tail(&client->global_node, &dma_client_list);
- 	mutex_unlock(&dma_list_mutex);
- }
--EXPORT_SYMBOL(dma_async_client_register);
-+EXPORT_SYMBOL(dmaengine_get);
- 
- /**
-- * dma_async_client_unregister - unregister a client and free the &dma_client
-- * @client: &dma_client to free
+@@ -34,26 +34,15 @@
+  * The subsystem keeps a global list of dma_device structs it is protected by a
+  * mutex, dma_list_mutex.
+  *
++ * A subsystem can get access to a channel by calling dmaengine_get() followed
++ * by dma_find_channel(), or if it has need for an exclusive channel it can call
++ * dma_request_channel().  Once a channel is allocated a reference is taken
++ * against its corresponding driver to disable removal.
++ *
+  * Each device has a channels list, which runs unlocked but is never modified
+  * once the device is registered, it's just setup by the driver.
+  *
+- * Each device has a kref, which is initialized to 1 when the device is
+- * registered. A kref_get is done for each device registered.  When the
+- * device is released, the corresponding kref_put is done in the release
+- * method. Every time one of the device's channels is allocated to a client,
+- * a kref_get occurs.  When the channel is freed, the corresponding kref_put
+- * happens. The device's release function does a completion, so
+- * unregister_device does a remove event, device_unregister, a kref_put
+- * for the first reference, then waits on the completion for all other
+- * references to finish.
 - *
-- * Force frees any allocated DMA channels, frees the &dma_client memory
-+ * dmaengine_put - let dma drivers be removed when ref_count == 0
+- * Each channel has an open-coded implementation of Rusty Russell's "bigref,"
+- * with a kref and a per_cpu local_t.  A dma_chan_get is called when a client
+- * signals that it wants to use a channel, and dma_chan_put is called when
+- * a channel is removed or a client using it is unregistered.  A client can
+- * take extra references per outstanding transaction, as is the case with
+- * the NET DMA client.  The release function does a kref_put on the device.
+- *	-ChrisL, DanW
++ * See Documentation/dmaengine.txt for more details
   */
--void dma_async_client_unregister(struct dma_client *client)
-+void dmaengine_put(void)
- {
- 	struct dma_device *device;
- 	struct dma_chan *chan;
  
--	if (!client)
--		return;
+ #include <linux/init.h>
+@@ -114,18 +103,9 @@ static struct device_attribute dma_attrs[] = {
+ 	__ATTR_NULL
+ };
+ 
+-static void dma_async_device_cleanup(struct kref *kref);
 -
- 	mutex_lock(&dma_list_mutex);
- 	dmaengine_ref_count--;
- 	BUG_ON(dmaengine_ref_count < 0);
-@@ -645,11 +636,9 @@ void dma_async_client_unregister(struct dma_client *client)
- 		list_for_each_entry(chan, &device->channels, device_node)
- 			dma_chan_put(chan);
- 	}
+-static void dma_dev_release(struct device *dev)
+-{
+-	struct dma_chan *chan = to_dma_chan(dev);
+-	kref_put(&chan->device->refcount, dma_async_device_cleanup);
+-}
 -
--	list_del(&client->global_node);
- 	mutex_unlock(&dma_list_mutex);
- }
--EXPORT_SYMBOL(dma_async_client_unregister);
-+EXPORT_SYMBOL(dmaengine_put);
+ static struct class dma_devclass = {
+ 	.name		= "dma",
+ 	.dev_attrs	= dma_attrs,
+-	.dev_release	= dma_dev_release,
+ };
+ 
+ /* --- client and device registration --- */
+@@ -222,29 +202,6 @@ enum dma_status dma_sync_wait(struct dma_chan *chan, dma_cookie_t cookie)
+ EXPORT_SYMBOL(dma_sync_wait);
  
  /**
-  * dma_async_client_chan_request - send all available channels to the
+- * dma_chan_cleanup - release a DMA channel's resources
+- * @kref: kernel reference structure that contains the DMA channel device
+- */
+-void dma_chan_cleanup(struct kref *kref)
+-{
+-	struct dma_chan *chan = container_of(kref, struct dma_chan, refcount);
+-	kref_put(&chan->device->refcount, dma_async_device_cleanup);
+-}
+-EXPORT_SYMBOL(dma_chan_cleanup);
+-
+-static void dma_chan_free_rcu(struct rcu_head *rcu)
+-{
+-	struct dma_chan *chan = container_of(rcu, struct dma_chan, rcu);
+-
+-	kref_put(&chan->refcount, dma_chan_cleanup);
+-}
+-
+-static void dma_chan_release(struct dma_chan *chan)
+-{
+-	call_rcu(&chan->rcu, dma_chan_free_rcu);
+-}
+-
+-/**
+  * dma_cap_mask_all - enable iteration over all operation types
+  */
+ static dma_cap_mask_t dma_cap_mask_all;
+@@ -622,8 +579,6 @@ int dma_async_device_register(struct dma_device *device)
+ 	BUG_ON(!device->device_issue_pending);
+ 	BUG_ON(!device->dev);
+ 
+-	init_completion(&device->done);
+-	kref_init(&device->refcount);
+ 	device->dev_id = id++;
+ 
+ 	/* represent channels in sysfs. Probably want devs too */
+@@ -640,19 +595,11 @@ int dma_async_device_register(struct dma_device *device)
+ 
+ 		rc = device_register(&chan->dev);
+ 		if (rc) {
+-			chancnt--;
+ 			free_percpu(chan->local);
+ 			chan->local = NULL;
+ 			goto err_out;
+ 		}
+-
+-		/* One for the channel, one of the class device */
+-		kref_get(&device->refcount);
+-		kref_get(&device->refcount);
+-		kref_init(&chan->refcount);
+ 		chan->client_count = 0;
+-		chan->slow_ref = 0;
+-		INIT_RCU_HEAD(&chan->rcu);
+ 	}
+ 	device->chancnt = chancnt;
+ 
+@@ -683,9 +630,7 @@ err_out:
+ 	list_for_each_entry(chan, &device->channels, device_node) {
+ 		if (chan->local == NULL)
+ 			continue;
+-		kref_put(&device->refcount, dma_async_device_cleanup);
+ 		device_unregister(&chan->dev);
+-		chancnt--;
+ 		free_percpu(chan->local);
+ 	}
+ 	return rc;
+@@ -693,20 +638,11 @@ err_out:
+ EXPORT_SYMBOL(dma_async_device_register);
+ 
+ /**
+- * dma_async_device_cleanup - function called when all references are released
+- * @kref: kernel reference object
+- */
+-static void dma_async_device_cleanup(struct kref *kref)
+-{
+-	struct dma_device *device;
+-
+-	device = container_of(kref, struct dma_device, refcount);
+-	complete(&device->done);
+-}
+-
+-/**
+  * dma_async_device_unregister - unregisters DMA devices
+  * @device: &dma_device
++ *
++ * This routine is called by dma driver exit routines, dmaengine holds module
++ * references to prevent it being called while channels are in use.
+  */
+ void dma_async_device_unregister(struct dma_device *device)
+ {
+@@ -722,11 +658,7 @@ void dma_async_device_unregister(struct dma_device *device)
+ 			  "%s called while %d clients hold a reference\n",
+ 			  __func__, chan->client_count);
+ 		device_unregister(&chan->dev);
+-		dma_chan_release(chan);
+ 	}
+-
+-	kref_put(&device->refcount, dma_async_device_cleanup);
+-	wait_for_completion(&device->done);
+ }
+ EXPORT_SYMBOL(dma_async_device_unregister);
+ 
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index 44c483e..6963400 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -1243,7 +1243,6 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
+ 	spin_lock_init(&iop_chan->lock);
+ 	INIT_LIST_HEAD(&iop_chan->chain);
+ 	INIT_LIST_HEAD(&iop_chan->all_slots);
+-	INIT_RCU_HEAD(&iop_chan->common.rcu);
+ 	iop_chan->common.device = dma_dev;
+ 	list_add_tail(&iop_chan->common.device_node, &dma_dev->channels);
+ 
+diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
+index dabdc36..acb271d 100644
+--- a/drivers/dma/mv_xor.c
++++ b/drivers/dma/mv_xor.c
+@@ -1210,7 +1210,6 @@ static int __devinit mv_xor_probe(struct platform_device *pdev)
+ 	INIT_LIST_HEAD(&mv_chan->chain);
+ 	INIT_LIST_HEAD(&mv_chan->completed_slots);
+ 	INIT_LIST_HEAD(&mv_chan->all_slots);
+-	INIT_RCU_HEAD(&mv_chan->common.rcu);
+ 	mv_chan->common.device = dma_dev;
+ 
+ 	list_add_tail(&mv_chan->common.device_node, &dma_dev->channels);
 diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index d63544c..37d95db 100644
+index ad9fd55..32edaf4 100644
 --- a/include/linux/dmaengine.h
 +++ b/include/linux/dmaengine.h
-@@ -318,8 +318,8 @@ struct dma_device {
+@@ -156,10 +156,6 @@ struct dma_chan {
+ 	int chan_id;
+ 	struct device dev;
  
- /* --- public DMA engine API --- */
+-	struct kref refcount;
+-	int slow_ref;
+-	struct rcu_head rcu;
+-
+ 	struct list_head device_node;
+ 	struct dma_chan_percpu *local;
+ 	int client_count;
+@@ -247,9 +243,6 @@ struct dma_device {
+ 	dma_cap_mask_t  cap_mask;
+ 	int max_xor;
  
--void dma_async_client_register(struct dma_client *client);
--void dma_async_client_unregister(struct dma_client *client);
-+void dmaengine_get(void);
-+void dmaengine_put(void);
- void dma_async_client_chan_request(struct dma_client *client);
- dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
- 	void *dest, void *src, size_t len);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 56e6965..4b3b7d3 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -4657,8 +4657,7 @@ static int __init netdev_dma_register(void)
- 	}
- 	spin_lock_init(&net_dma.lock);
- 	dma_cap_set(DMA_MEMCPY, net_dma.client.cap_mask);
--	dma_async_client_register(&net_dma.client);
--	dma_async_client_chan_request(&net_dma.client);
-+	dmaengine_get();
- 	return 0;
- }
+-	struct kref refcount;
+-	struct completion done;
+-
+ 	int dev_id;
+ 	struct device *dev;
  
 
