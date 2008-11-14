@@ -1,182 +1,1038 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYKNKUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbYKNKVA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbYKNKUo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 05:20:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYKNKUT
+	id S1753586AbYKNKVA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 05:21:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbYKNKUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 05:20:19 -0500
-Received: from exchtp08.via.com.tw ([61.66.243.7]:17192 "EHLO
-	exchtp08.via.com.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754408AbYKNKUR (ORCPT
+	Fri, 14 Nov 2008 05:20:37 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49726 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbYKNKUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 05:20:17 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: [PATCH] Fix crash in viafb due to 4k stack overflow
-Date: Fri, 14 Nov 2008 18:20:12 +0800
-Message-ID: <C80EF34A3D2E494DBAF9AC29C7AE4EB808226B80@exchtp03.taipei.via.com.tw>
-In-Reply-To: <20081114100156.4557760c@pluto.restena.lu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Fix crash in viafb due to 4k stack overflow
-Thread-Index: AclGOTCFw5tnciJzSCS7Y6ayTm4x1QAB6NrQ
-From: <JosephChan@via.com.tw>
-To: <bonbons@linux-vserver.org>
-Cc: <akpm@linux-foundation.org>, <arjan@infradead.org>,
-       <linux-fbdev-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, <ScottFang@viatech.com.cn>
-X-OriginalArrivalTime: 14 Nov 2008 10:20:14.0813 (UTC) FILETIME=[959510D0:01C94642]
+	Fri, 14 Nov 2008 05:20:33 -0500
+Date: Fri, 14 Nov 2008 19:19:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       pbadari@us.ibm.com, jblunck@suse.de, taka@valinux.co.jp,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 7/9] memcg : mem+swap controlelr core
+Message-Id: <20081114191949.926bf99d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081114191246.4f69ff31.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20081114191246.4f69ff31.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id mAEAKsdq014370
 
+Mem+Swap controller core.
+
+This patch implements per cgroup limit for usage of memory+swap.
+However there are SwapCache, double counting of swap-cache and
+swap-entry is avoided.
+
+Mem+Swap controller works as following.
+  - memory usage is limited by memory.limit_in_bytes.
+  - memory + swap usage is limited by memory.memsw_limit_in_bytes.
+
+
+This has following benefits.
+  - A user can limit total resource usage of mem+swap.
+
+    Without this, because memory resource controller doesn't take care of
+    usage of swap, a process can exhaust all the swap (by memory leak.)
+    We can avoid this case.
+
+    And Swap is shared resource but it cannot be reclaimed (goes back to memory)
+    until it's used. This characteristic can be trouble when the memory
+    is divided into some parts by cpuset or memcg.
+    Assume group A and group B.
+    After some application executes, the system can be..
+    
+    Group A -- very large free memory space but occupy 99% of swap.
+    Group B -- under memory shortage but cannot use swap...it's nearly full.
+
+    Ability to set appropriate swap limit for each group is required.
+      
+Maybe someone wonder "why not swap but mem+swap ?"
+
+  - The global LRU(kswapd) can swap out arbitrary pages. Swap-out means
+    to move account from memory to swap...there is no change in usage of
+    mem+swap.
+
+    In other words, when we want to limit the usage of swap without affecting
+    global LRU, mem+swap limit is better than just limiting swap.
+
+
+Accounting target information is stored in swap_cgroup which is
+per swap entry record.
+
+Charge is done as following.
+  map
+    - charge  page and memsw.
+
+  unmap
+    - uncharge page/memsw if not SwapCache.
+
+  swap-out (__delete_from_swap_cache)
+    - uncharge page
+    - record mem_cgroup information to swap_cgroup.
+
+  swap-in (do_swap_page)
+    - charged as page and memsw.
+      record in swap_cgroup is cleared.
+      memsw accounting is decremented.
+
+  swap-free (swap_free())
+    - if swap entry is freed, memsw is uncharged by PAGE_SIZE.
+
+
+There are people work under never-swap environments and consider swap as
+something bad. For such people, this mem+swap controller extension is just an
+overhead.  This overhead is avoided by config or boot option.
+(see Kconfig. detail is not in this patch.)
+
+TODO:
+ - maybe more optimization can be don in swap-in path. (but not very safe.)
+   But we just do simple accounting at this stage.
+
+Changelog: v2 -> v3
+ - create memsw.* file only when do_swap_account==1.
+ - fixed cancel_charge_swapin().
+ - swap_on_disk in stat file is dropped.
+ - swapref is renamed to be refcnt. (so, this can be used for general use.)
+ - fixed resize_limit() to check that new limit don't exceed memsw.limit
+
+Changelog: v1 -> v2
+ - fixed typos
+ - fixed migration of anon pages.
+ - fixed uncharge to check USED bit always.
+ - code for swapcache is moved to another patch.
+ - added "noswap" argument to try_to_free_mem_cgroup_pages
+ - fixed lock_page around mem_cgroup_charge_cache_swap()
+ - fixed failcnt file.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+
+ Documentation/controllers/memory.txt |   29 ++
+ include/linux/memcontrol.h           |   11 -
+ include/linux/swap.h                 |   14 +
+ mm/memcontrol.c                      |  370 +++++++++++++++++++++++++++++++----
+ mm/memory.c                          |    3 
+ mm/swap_state.c                      |    5 
+ mm/swapfile.c                        |   11 -
+ mm/vmscan.c                          |    6 
+ 8 files changed, 402 insertions(+), 47 deletions(-)
+
+Index: mmotm-2.6.28-Nov13/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/mm/memcontrol.c
++++ mmotm-2.6.28-Nov13/mm/memcontrol.c
+@@ -132,12 +132,18 @@ struct mem_cgroup {
+ 	 */
+ 	struct res_counter res;
+ 	/*
++	 * the counter to account for mem+swap usage.
++	 */
++	struct res_counter memsw;
++	/*
+ 	 * Per cgroup active and inactive list, similar to the
+ 	 * per zone LRU lists.
+ 	 */
+ 	struct mem_cgroup_lru_info info;
  
-8K stacks, I don't enable the CONFIG_4KSTACKS.
-In addition, I also tried to enable CONFIG_4KSTACKS, the system still returns me lots "panic" during system bootup. :(
+ 	int	prev_priority;	/* for recording reclaim priority */
++	int		obsolete;
++	atomic_t	refcnt;
+ 	/*
+ 	 * statistics. This must be placed at the end of memcg.
+ 	 */
+@@ -167,6 +173,17 @@ pcg_default_flags[NR_CHARGE_TYPE] = {
+ 	0, /* FORCE */
+ };
+ 
++
++/* for encoding cft->private value on file */
++#define _MEM			(0)
++#define _MEMSWAP		(1)
++#define MEMFILE_PRIVATE(x, val)	(((x) << 16) | (val))
++#define MEMFILE_TYPE(val)	(((val) >> 16) & 0xffff)
++#define MEMFILE_ATTR(val)	((val) & 0xffff)
++
++static void mem_cgroup_get(struct mem_cgroup *mem);
++static void mem_cgroup_put(struct mem_cgroup *mem);
++
+ /*
+  * Always modified under lru lock. Then, not necessary to preempt_disable()
+  */
+@@ -485,7 +502,8 @@ unsigned long mem_cgroup_isolate_pages(u
+  * oom-killer can be invoked.
+  */
+ static int __mem_cgroup_try_charge(struct mm_struct *mm,
+-			gfp_t gfp_mask, struct mem_cgroup **memcg, bool oom)
++			gfp_t gfp_mask, struct mem_cgroup **memcg,
++			bool oom)
+ {
+ 	struct mem_cgroup *mem;
+ 	int nr_retries = MEM_CGROUP_RECLAIM_RETRIES;
+@@ -513,12 +531,25 @@ static int __mem_cgroup_try_charge(struc
+ 		css_get(&mem->css);
+ 	}
+ 
++	while (1) {
++		int ret;
++		bool noswap = false;
+ 
+-	while (unlikely(res_counter_charge(&mem->res, PAGE_SIZE))) {
++		ret = res_counter_charge(&mem->res, PAGE_SIZE);
++		if (likely(!ret)) {
++			if (!do_swap_account)
++				break;
++			ret = res_counter_charge(&mem->memsw, PAGE_SIZE);
++			if (likely(!ret))
++				break;
++			/* mem+swap counter fails */
++			res_counter_uncharge(&mem->res, PAGE_SIZE);
++			noswap = true;
++		}
+ 		if (!(gfp_mask & __GFP_WAIT))
+ 			goto nomem;
+ 
+-		if (try_to_free_mem_cgroup_pages(mem, gfp_mask))
++		if (try_to_free_mem_cgroup_pages(mem, gfp_mask, noswap))
+ 			continue;
+ 
+ 		/*
+@@ -527,8 +558,13 @@ static int __mem_cgroup_try_charge(struc
+ 		 * moved to swap cache or just unmapped from the cgroup.
+ 		 * Check the limit again to see if the reclaim reduced the
+ 		 * current usage of the cgroup before giving up
++		 *
+ 		 */
+-		if (res_counter_check_under_limit(&mem->res))
++		if (!do_swap_account &&
++			res_counter_check_under_limit(&mem->res))
++			continue;
++		if (do_swap_account &&
++			res_counter_check_under_limit(&mem->memsw))
+ 			continue;
+ 
+ 		if (!nr_retries--) {
+@@ -582,6 +618,8 @@ static void __mem_cgroup_commit_charge(s
+ 	if (unlikely(PageCgroupUsed(pc))) {
+ 		unlock_page_cgroup(pc);
+ 		res_counter_uncharge(&mem->res, PAGE_SIZE);
++		if (do_swap_account)
++			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+ 		css_put(&mem->css);
+ 		return;
+ 	}
+@@ -646,6 +684,8 @@ static int mem_cgroup_move_account(struc
+ 		__mem_cgroup_remove_list(from_mz, pc);
+ 		css_put(&from->css);
+ 		res_counter_uncharge(&from->res, PAGE_SIZE);
++		if (do_swap_account)
++			res_counter_uncharge(&from->memsw, PAGE_SIZE);
+ 		pc->mem_cgroup = to;
+ 		css_get(&to->css);
+ 		__mem_cgroup_add_list(to_mz, pc, false);
+@@ -692,8 +732,11 @@ static int mem_cgroup_move_parent(struct
+ 	/* drop extra refcnt */
+ 	css_put(&parent->css);
+ 	/* uncharge if move fails */
+-	if (ret)
++	if (ret) {
+ 		res_counter_uncharge(&parent->res, PAGE_SIZE);
++		if (do_swap_account)
++			res_counter_uncharge(&parent->memsw, PAGE_SIZE);
++	}
+ 
+ 	return ret;
+ }
+@@ -791,7 +834,34 @@ int mem_cgroup_cache_charge(struct page 
+ 				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
+ }
+ 
++int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
++				 struct page *page,
++				 gfp_t mask, struct mem_cgroup **ptr)
++{
++	struct mem_cgroup *mem;
++	swp_entry_t     ent;
++
++	if (mem_cgroup_subsys.disabled)
++		return 0;
++
++	if (!do_swap_account)
++		goto charge_cur_mm;
++
++	ent.val = page_private(page);
++
++	mem = lookup_swap_cgroup(ent);
++	if (!mem || mem->obsolete)
++		goto charge_cur_mm;
++	*ptr = mem;
++	return __mem_cgroup_try_charge(NULL, mask, ptr, true);
++charge_cur_mm:
++	if (unlikely(!mm))
++		mm = &init_mm;
++	return __mem_cgroup_try_charge(mm, mask, ptr, true);
++}
++
+ #ifdef CONFIG_SWAP
++
+ int mem_cgroup_cache_charge_swapin(struct page *page,
+ 			struct mm_struct *mm, gfp_t mask, bool locked)
+ {
+@@ -808,8 +878,28 @@ int mem_cgroup_cache_charge_swapin(struc
+ 	 * we reach here.
+ 	 */
+ 	if (PageSwapCache(page)) {
++		struct mem_cgroup *mem = NULL;
++		swp_entry_t ent;
++
++		ent.val = page_private(page);
++		if (do_swap_account) {
++			mem = lookup_swap_cgroup(ent);
++			if (mem && mem->obsolete)
++				mem = NULL;
++			if (mem)
++				mm = NULL;
++		}
+ 		ret = mem_cgroup_charge_common(page, mm, mask,
+-				MEM_CGROUP_CHARGE_TYPE_SHMEM, NULL);
++				MEM_CGROUP_CHARGE_TYPE_SHMEM, mem);
++
++		if (!ret && do_swap_account) {
++			/* avoid double counting */
++			mem = swap_cgroup_record(ent, NULL);
++			if (mem) {
++				res_counter_uncharge(&mem->memsw, PAGE_SIZE);
++				mem_cgroup_put(mem);
++			}
++		}
+ 	}
+ 	if (!locked)
+ 		unlock_page(page);
+@@ -828,6 +918,23 @@ void mem_cgroup_commit_charge_swapin(str
+ 		return;
+ 	pc = lookup_page_cgroup(page);
+ 	__mem_cgroup_commit_charge(ptr, pc, MEM_CGROUP_CHARGE_TYPE_MAPPED);
++	/*
++	 * Now swap is on-memory. This means this page may be
++	 * counted both as mem and swap....double count.
++	 * Fix it by uncharging from memsw. This SwapCache is stable
++	 * because we're still under lock_page().
++	 */
++	if (do_swap_account) {
++		swp_entry_t ent = {.val = page_private(page)};
++		struct mem_cgroup *memcg;
++		memcg = swap_cgroup_record(ent, NULL);
++		if (memcg) {
++			/* If memcg is obsolete, memcg can be != ptr */
++			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
++			mem_cgroup_put(memcg);
++		}
++
++	}
+ }
+ 
+ void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *mem)
+@@ -837,6 +944,8 @@ void mem_cgroup_cancel_charge_swapin(str
+ 	if (!mem)
+ 		return;
+ 	res_counter_uncharge(&mem->res, PAGE_SIZE);
++	if (do_swap_account)
++		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+ 	css_put(&mem->css);
+ }
+ 
+@@ -844,29 +953,31 @@ void mem_cgroup_cancel_charge_swapin(str
+ /*
+  * uncharge if !page_mapped(page)
+  */
+-static void
++static struct mem_cgroup *
+ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ {
+ 	struct page_cgroup *pc;
+-	struct mem_cgroup *mem;
++	struct mem_cgroup *mem = NULL;
+ 	struct mem_cgroup_per_zone *mz;
+ 	unsigned long flags;
+ 
+ 	if (mem_cgroup_subsys.disabled)
+-		return;
++		return NULL;
+ 
+ 	if (PageSwapCache(page))
+-		return;
++		return NULL;
+ 
+ 	/*
+ 	 * Check if our page_cgroup is valid
+ 	 */
+ 	pc = lookup_page_cgroup(page);
+ 	if (unlikely(!pc || !PageCgroupUsed(pc)))
+-		return;
++		return NULL;
+ 
+ 	lock_page_cgroup(pc);
+ 
++	mem = pc->mem_cgroup;
++
+ 	if (!PageCgroupUsed(pc))
+ 		goto unlock_out;
+ 
+@@ -886,8 +997,11 @@ __mem_cgroup_uncharge_common(struct page
+ 		break;
+ 	}
+ 
++	res_counter_uncharge(&mem->res, PAGE_SIZE);
++	if (do_swap_account && (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
++		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
++
+ 	ClearPageCgroupUsed(pc);
+-	mem = pc->mem_cgroup;
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	spin_lock_irqsave(&mz->lru_lock, flags);
+@@ -895,14 +1009,13 @@ __mem_cgroup_uncharge_common(struct page
+ 	spin_unlock_irqrestore(&mz->lru_lock, flags);
+ 	unlock_page_cgroup(pc);
+ 
+-	res_counter_uncharge(&mem->res, PAGE_SIZE);
+ 	css_put(&mem->css);
+ 
+-	return;
++	return mem;
+ 
+ unlock_out:
+ 	unlock_page_cgroup(pc);
+-	return;
++	return NULL;
+ }
+ 
+ void mem_cgroup_uncharge_page(struct page *page)
+@@ -922,10 +1035,42 @@ void mem_cgroup_uncharge_cache_page(stru
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
+ 
+-void mem_cgroup_uncharge_swapcache(struct page *page)
++/*
++ * called from __delete_from_swap_cache() and drop "page" account.
++ * memcg information is recorded to swap_cgroup of "ent"
++ */
++void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ {
+-	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
++	struct mem_cgroup *memcg;
++
++	memcg = __mem_cgroup_uncharge_common(page,
++					MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
++	/* record memcg information */
++	if (do_swap_account && memcg) {
++		swap_cgroup_record(ent, memcg);
++		mem_cgroup_get(memcg);
++	}
++}
++
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
++/*
++ * called from swap_entry_free(). remove record in swap_cgroup and
++ * uncharge "memsw" account.
++ */
++void mem_cgroup_uncharge_swap(swp_entry_t ent)
++{
++	struct mem_cgroup *memcg;
++
++	if (!do_swap_account)
++		return;
++
++	memcg = swap_cgroup_record(ent, NULL);
++	if (memcg) {
++		res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
++		mem_cgroup_put(memcg);
++	}
+ }
++#endif
+ 
+ /*
+  * Before starting migration, account PAGE_SIZE to mem_cgroup that the old
+@@ -1034,7 +1179,7 @@ int mem_cgroup_shrink_usage(struct mm_st
+ 	rcu_read_unlock();
+ 
+ 	do {
+-		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask);
++		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask, true);
+ 		progress += res_counter_check_under_limit(&mem->res);
+ 	} while (!progress && --retry);
+ 
+@@ -1051,6 +1196,11 @@ int mem_cgroup_resize_limit(struct mem_c
+ 	int progress;
+ 	int ret = 0;
+ 
++	if (do_swap_account) {
++		if (val > memcg->memsw.limit)
++			return -EINVAL;
++	}
++
+ 	while (res_counter_set_limit(&memcg->res, val)) {
+ 		if (signal_pending(current)) {
+ 			ret = -EINTR;
+@@ -1061,13 +1211,55 @@ int mem_cgroup_resize_limit(struct mem_c
+ 			break;
+ 		}
+ 		progress = try_to_free_mem_cgroup_pages(memcg,
+-				GFP_HIGHUSER_MOVABLE);
++				GFP_HIGHUSER_MOVABLE, false);
+ 		if (!progress)
+ 			retry_count--;
+ 	}
+ 	return ret;
+ }
+ 
++int mem_cgroup_resize_memsw_limit(struct mem_cgroup *memcg,
++				unsigned long long val)
++{
++	int retry_count = MEM_CGROUP_RECLAIM_RETRIES;
++	unsigned long flags;
++	u64 memlimit, oldusage, curusage;
++	int ret;
++
++	if (!do_swap_account)
++		return -EINVAL;
++
++	while (retry_count) {
++		if (signal_pending(current)) {
++			ret = -EINTR;
++			break;
++		}
++		/*
++		 * Rather than hide all in some function, I do this in
++		 * open coded manner. You see what this really does.
++		 * We have to guarantee mem->res.limit < mem->memsw.limit.
++		 */
++		spin_lock_irqsave(&memcg->res.lock, flags);
++		memlimit = memcg->res.limit;
++		if (memlimit > val) {
++			spin_unlock_irqrestore(&memcg->res.lock, flags);
++			ret = -EINVAL;
++			break;
++		}
++		ret = res_counter_set_limit(&memcg->memsw, val);
++		oldusage = memcg->memsw.usage;
++		spin_unlock_irqrestore(&memcg->res.lock, flags);
++
++		if (!ret)
++			break;
++		try_to_free_mem_cgroup_pages(memcg, GFP_HIGHUSER_MOVABLE, true);
++		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
++		if (curusage >= oldusage)
++			retry_count--;
++	}
++	return ret;
++}
++
+ 
+ /*
+  * This routine traverse page_cgroup in given list and drop them all.
+@@ -1191,7 +1383,7 @@ try_to_free:
+ 			goto out;
+ 		}
+ 		progress = try_to_free_mem_cgroup_pages(mem,
+-						  GFP_HIGHUSER_MOVABLE);
++						  GFP_HIGHUSER_MOVABLE, false);
+ 		if (!progress) {
+ 			nr_retries--;
+ 			/* maybe some writeback is necessary */
+@@ -1214,8 +1406,25 @@ int mem_cgroup_force_empty_write(struct 
+ 
+ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
+ {
+-	return res_counter_read_u64(&mem_cgroup_from_cont(cont)->res,
+-				    cft->private);
++	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
++	u64 val = 0;
++	int type, name;
++
++	type = MEMFILE_TYPE(cft->private);
++	name = MEMFILE_ATTR(cft->private);
++	switch (type) {
++	case _MEM:
++		val = res_counter_read_u64(&mem->res, name);
++		break;
++	case _MEMSWAP:
++		if (do_swap_account)
++			val = res_counter_read_u64(&mem->memsw, name);
++		break;
++	default:
++		BUG();
++		break;
++	}
++	return val;
+ }
+ /*
+  * The user of this function is...
+@@ -1225,15 +1434,22 @@ static int mem_cgroup_write(struct cgrou
+ 			    const char *buffer)
+ {
+ 	struct mem_cgroup *memcg = mem_cgroup_from_cont(cont);
++	int type, name;
+ 	unsigned long long val;
+ 	int ret;
+ 
+-	switch (cft->private) {
++	type = MEMFILE_TYPE(cft->private);
++	name = MEMFILE_ATTR(cft->private);
++	switch (name) {
+ 	case RES_LIMIT:
+ 		/* This function does all necessary parse...reuse it */
+ 		ret = res_counter_memparse_write_strategy(buffer, &val);
+-		if (!ret)
++		if (ret)
++			break;
++		if (type == _MEM)
+ 			ret = mem_cgroup_resize_limit(memcg, val);
++		else
++			ret = mem_cgroup_resize_memsw_limit(memcg, val);
+ 		break;
+ 	default:
+ 		ret = -EINVAL; /* should be BUG() ? */
+@@ -1245,14 +1461,23 @@ static int mem_cgroup_write(struct cgrou
+ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+ {
+ 	struct mem_cgroup *mem;
++	int type, name;
+ 
+ 	mem = mem_cgroup_from_cont(cont);
+-	switch (event) {
++	type = MEMFILE_TYPE(event);
++	name = MEMFILE_ATTR(event);
++	switch (name) {
+ 	case RES_MAX_USAGE:
+-		res_counter_reset_max(&mem->res);
++		if (type == _MEM)
++			res_counter_reset_max(&mem->res);
++		else
++			res_counter_reset_max(&mem->memsw);
+ 		break;
+ 	case RES_FAILCNT:
+-		res_counter_reset_failcnt(&mem->res);
++		if (type == _MEM)
++			res_counter_reset_failcnt(&mem->res);
++		else
++			res_counter_reset_failcnt(&mem->memsw);
+ 		break;
+ 	}
+ 	return 0;
+@@ -1313,24 +1538,24 @@ static int mem_control_stat_show(struct 
+ static struct cftype mem_cgroup_files[] = {
+ 	{
+ 		.name = "usage_in_bytes",
+-		.private = RES_USAGE,
++		.private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
+ 		.name = "max_usage_in_bytes",
+-		.private = RES_MAX_USAGE,
++		.private = MEMFILE_PRIVATE(_MEM, RES_MAX_USAGE),
+ 		.trigger = mem_cgroup_reset,
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
+ 		.name = "limit_in_bytes",
+-		.private = RES_LIMIT,
++		.private = MEMFILE_PRIVATE(_MEM, RES_LIMIT),
+ 		.write_string = mem_cgroup_write,
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
+ 		.name = "failcnt",
+-		.private = RES_FAILCNT,
++		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
+ 		.trigger = mem_cgroup_reset,
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+@@ -1344,6 +1569,47 @@ static struct cftype mem_cgroup_files[] 
+ 	},
+ };
+ 
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
++static struct cftype memsw_cgroup_files[] = {
++	{
++		.name = "memsw.usage_in_bytes",
++		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_USAGE),
++		.read_u64 = mem_cgroup_read,
++	},
++	{
++		.name = "memsw.max_usage_in_bytes",
++		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_MAX_USAGE),
++		.trigger = mem_cgroup_reset,
++		.read_u64 = mem_cgroup_read,
++	},
++	{
++		.name = "memsw.limit_in_bytes",
++		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_LIMIT),
++		.write_string = mem_cgroup_write,
++		.read_u64 = mem_cgroup_read,
++	},
++	{
++		.name = "memsw.failcnt",
++		.private = MEMFILE_PRIVATE(_MEMSWAP, RES_FAILCNT),
++		.trigger = mem_cgroup_reset,
++		.read_u64 = mem_cgroup_read,
++	},
++};
++
++static int register_memsw_files(struct cgroup *cont, struct cgroup_subsys *ss)
++{
++	if (!do_swap_account)
++		return 0;
++	return cgroup_add_files(cont, ss, memsw_cgroup_files,
++				ARRAY_SIZE(memsw_cgroup_files));
++};
++#else
++static int register_memsw_files(struct cgroup *cont, struct cgroup_subsys *ss)
++{
++	return 0;
++}
++#endif
++
+ static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+ {
+ 	struct mem_cgroup_per_node *pn;
+@@ -1402,14 +1668,44 @@ static struct mem_cgroup *mem_cgroup_all
+ 	return mem;
+ }
+ 
++/*
++ * At destroying mem_cgroup, references from swap_cgroup can remain.
++ * (scanning all at force_empty is too costly...)
++ *
++ * Instead of clearing all references at force_empty, we remember
++ * the number of reference from swap_cgroup and free mem_cgroup when
++ * it goes down to 0.
++ *
++ * When mem_cgroup is destroyed, mem->obsolete will be set to 0 and
++ * entry which points to this memcg will be ignore at swapin.
++ *
++ * Removal of cgroup itself succeeds regardless of refs from swap.
++ */
++
+ static void mem_cgroup_free(struct mem_cgroup *mem)
+ {
++	if (atomic_read(&mem->refcnt) > 0)
++		return;
+ 	if (mem_cgroup_size() < PAGE_SIZE)
+ 		kfree(mem);
+ 	else
+ 		vfree(mem);
+ }
+ 
++static void mem_cgroup_get(struct mem_cgroup *mem)
++{
++	atomic_inc(&mem->refcnt);
++}
++
++static void mem_cgroup_put(struct mem_cgroup *mem)
++{
++	if (atomic_dec_and_test(&mem->refcnt)) {
++		if (!mem->obsolete)
++			return;
++		mem_cgroup_free(mem);
++	}
++}
++
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ static void __init enable_swap_cgroup(void)
+@@ -1434,6 +1730,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		return ERR_PTR(-ENOMEM);
+ 
+ 	res_counter_init(&mem->res);
++	res_counter_init(&mem->memsw);
+ 
+ 	for_each_node_state(node, N_POSSIBLE)
+ 		if (alloc_mem_cgroup_per_zone_info(mem, node))
+@@ -1454,6 +1751,7 @@ static void mem_cgroup_pre_destroy(struc
+ 					struct cgroup *cont)
+ {
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
++	mem->obsolete = 1;
+ 	mem_cgroup_force_empty(mem, false);
+ }
+ 
+@@ -1472,8 +1770,14 @@ static void mem_cgroup_destroy(struct cg
+ static int mem_cgroup_populate(struct cgroup_subsys *ss,
+ 				struct cgroup *cont)
+ {
+-	return cgroup_add_files(cont, ss, mem_cgroup_files,
+-					ARRAY_SIZE(mem_cgroup_files));
++	int ret;
++
++	ret = cgroup_add_files(cont, ss, mem_cgroup_files,
++				ARRAY_SIZE(mem_cgroup_files));
++
++	if (!ret)
++		ret = register_memsw_files(cont, ss);
++	return ret;
+ }
+ 
+ static void mem_cgroup_move_task(struct cgroup_subsys *ss,
+Index: mmotm-2.6.28-Nov13/mm/swapfile.c
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/mm/swapfile.c
++++ mmotm-2.6.28-Nov13/mm/swapfile.c
+@@ -271,8 +271,9 @@ out:
+ 	return NULL;
+ }	
+ 
+-static int swap_entry_free(struct swap_info_struct *p, unsigned long offset)
++static int swap_entry_free(struct swap_info_struct *p, swp_entry_t ent)
+ {
++	unsigned long offset = swp_offset(ent);
+ 	int count = p->swap_map[offset];
+ 
+ 	if (count < SWAP_MAP_MAX) {
+@@ -287,6 +288,7 @@ static int swap_entry_free(struct swap_i
+ 				swap_list.next = p - swap_info;
+ 			nr_swap_pages++;
+ 			p->inuse_pages--;
++			mem_cgroup_uncharge_swap(ent);
+ 		}
+ 	}
+ 	return count;
+@@ -302,7 +304,7 @@ void swap_free(swp_entry_t entry)
+ 
+ 	p = swap_info_get(entry);
+ 	if (p) {
+-		swap_entry_free(p, swp_offset(entry));
++		swap_entry_free(p, entry);
+ 		spin_unlock(&swap_lock);
+ 	}
+ }
+@@ -421,7 +423,7 @@ void free_swap_and_cache(swp_entry_t ent
+ 
+ 	p = swap_info_get(entry);
+ 	if (p) {
+-		if (swap_entry_free(p, swp_offset(entry)) == 1) {
++		if (swap_entry_free(p, entry) == 1) {
+ 			page = find_get_page(&swapper_space, entry.val);
+ 			if (page && !trylock_page(page)) {
+ 				page_cache_release(page);
+@@ -536,7 +538,8 @@ static int unuse_pte(struct vm_area_stru
+ 	pte_t *pte;
+ 	int ret = 1;
+ 
+-	if (mem_cgroup_try_charge(vma->vm_mm, GFP_HIGHUSER_MOVABLE, &ptr))
++	if (mem_cgroup_try_charge_swapin(vma->vm_mm, page,
++					GFP_HIGHUSER_MOVABLE, &ptr))
+ 		ret = -ENOMEM;
+ 
+ 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
+Index: mmotm-2.6.28-Nov13/mm/swap_state.c
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/mm/swap_state.c
++++ mmotm-2.6.28-Nov13/mm/swap_state.c
+@@ -17,6 +17,7 @@
+ #include <linux/backing-dev.h>
+ #include <linux/pagevec.h>
+ #include <linux/migrate.h>
++#include <linux/page_cgroup.h>
+ 
+ #include <asm/pgtable.h>
+ 
+@@ -108,6 +109,8 @@ int add_to_swap_cache(struct page *page,
+  */
+ void __delete_from_swap_cache(struct page *page)
+ {
++	swp_entry_t ent = {.val = page_private(page)};
++
+ 	BUG_ON(!PageLocked(page));
+ 	BUG_ON(!PageSwapCache(page));
+ 	BUG_ON(PageWriteback(page));
+@@ -119,7 +122,7 @@ void __delete_from_swap_cache(struct pag
+ 	total_swapcache_pages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	INC_CACHE_INFO(del_total);
+-	mem_cgroup_uncharge_swapcache(page);
++	mem_cgroup_uncharge_swapcache(page, ent);
+ }
+ 
+ /**
+Index: mmotm-2.6.28-Nov13/include/linux/swap.h
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/include/linux/swap.h
++++ mmotm-2.6.28-Nov13/include/linux/swap.h
+@@ -213,7 +213,7 @@ static inline void lru_cache_add_active_
+ extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+ 					gfp_t gfp_mask);
+ extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
+-							gfp_t gfp_mask);
++						gfp_t gfp_mask, bool noswap);
+ extern int __isolate_lru_page(struct page *page, int mode, int file);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+@@ -338,7 +338,7 @@ static inline void disable_swap_token(vo
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ extern int mem_cgroup_cache_charge_swapin(struct page *page,
+ 				struct mm_struct *mm, gfp_t mask, bool locked);
+-extern void mem_cgroup_uncharge_swapcache(struct page *page);
++extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
+ #else
+ static inline
+ int mem_cgroup_cache_charge_swapin(struct page *page,
+@@ -346,7 +346,15 @@ int mem_cgroup_cache_charge_swapin(struc
+ {
+ 	return 0;
+ }
+-static inline void mem_cgroup_uncharge_swapcache(struct page *page)
++static inline void
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
++{
++}
++#endif
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
++extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
++#else
++static inline void mem_cgroup_uncharge_swap(swp_entry_t ent)
+ {
+ }
+ #endif
+Index: mmotm-2.6.28-Nov13/include/linux/memcontrol.h
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/include/linux/memcontrol.h
++++ mmotm-2.6.28-Nov13/include/linux/memcontrol.h
+@@ -32,6 +32,8 @@ extern int mem_cgroup_newpage_charge(str
+ /* for swap handling */
+ extern int mem_cgroup_try_charge(struct mm_struct *mm,
+ 		gfp_t gfp_mask, struct mem_cgroup **ptr);
++extern int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
++		struct page *page, gfp_t mask, struct mem_cgroup **ptr);
+ extern void mem_cgroup_commit_charge_swapin(struct page *page,
+ 					struct mem_cgroup *ptr);
+ extern void mem_cgroup_cancel_charge_swapin(struct mem_cgroup *ptr);
+@@ -80,7 +82,6 @@ extern long mem_cgroup_calc_reclaim(stru
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ extern int do_swap_account;
+ #endif
+-
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
+ 
+@@ -97,7 +98,13 @@ static inline int mem_cgroup_cache_charg
+ }
+ 
+ static inline int mem_cgroup_try_charge(struct mm_struct *mm,
+-				gfp_t gfp_mask, struct mem_cgroup **ptr)
++			gfp_t gfp_mask, struct mem_cgroup **ptr)
++{
++	return 0;
++}
++
++static inline int mem_cgroup_try_charge_swapin(struct mm_struct *mm,
++		struct page *page, gfp_t gfp_mask, struct mem_cgroup **ptr)
+ {
+ 	return 0;
+ }
+Index: mmotm-2.6.28-Nov13/mm/memory.c
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/mm/memory.c
++++ mmotm-2.6.28-Nov13/mm/memory.c
+@@ -2325,7 +2325,8 @@ static int do_swap_page(struct mm_struct
+ 	lock_page(page);
+ 	delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
+ 
+-	if (mem_cgroup_try_charge(mm, GFP_HIGHUSER_MOVABLE, &ptr) == -ENOMEM) {
++	if (mem_cgroup_try_charge_swapin(mm, page,
++				GFP_HIGHUSER_MOVABLE, &ptr) == -ENOMEM) {
+ 		ret = VM_FAULT_OOM;
+ 		unlock_page(page);
+ 		goto out;
+Index: mmotm-2.6.28-Nov13/mm/vmscan.c
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/mm/vmscan.c
++++ mmotm-2.6.28-Nov13/mm/vmscan.c
+@@ -1718,7 +1718,8 @@ unsigned long try_to_free_pages(struct z
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ 
+ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+-						gfp_t gfp_mask)
++						gfp_t gfp_mask,
++					   bool noswap)
+ {
+ 	struct scan_control sc = {
+ 		.may_writepage = !laptop_mode,
+@@ -1731,6 +1732,9 @@ unsigned long try_to_free_mem_cgroup_pag
+ 	};
+ 	struct zonelist *zonelist;
+ 
++	if (noswap)
++		sc.may_swap = 0;
++
+ 	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
+ 			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
+ 	zonelist = NODE_DATA(numa_node_id())->node_zonelists;
+Index: mmotm-2.6.28-Nov13/Documentation/controllers/memory.txt
+===================================================================
+--- mmotm-2.6.28-Nov13.orig/Documentation/controllers/memory.txt
++++ mmotm-2.6.28-Nov13/Documentation/controllers/memory.txt
+@@ -137,12 +137,32 @@ behind this approach is that a cgroup th
+ page will eventually get charged for it (once it is uncharged from
+ the cgroup that brought it in -- this will happen on memory pressure).
+ 
+-Exception: When you do swapoff and make swapped-out pages of shmem(tmpfs) to
++Exception: If CONFIG_CGROUP_CGROUP_MEM_RES_CTLR_SWAP is not used..
++When you do swapoff and make swapped-out pages of shmem(tmpfs) to
+ be backed into memory in force, charges for pages are accounted against the
+ caller of swapoff rather than the users of shmem.
+ 
+ 
+-2.4 Reclaim
++2.4 Swap Extension (CONFIG_CGROUP_MEM_RES_CTLR_SWAP)
++Swap Extension allows you to record charge for swap. A swapped-in page is
++charged back to original page allocator if possible.
++
++When swap is accounted, following files are added.
++ - memory.memsw.usage_in_bytes.
++ - memory.memsw.limit_in_bytes.
++
++usage of mem+swap is limited by memsw.limit_in_bytes.
++
++Note: why 'mem+swap' rather than swap.
++The global LRU(kswapd) can swap out arbitrary pages. Swap-out means
++to move account from memory to swap...there is no change in usage of
++mem+swap.
++
++In other words, when we want to limit the usage of swap without affecting
++global LRU, mem+swap limit is better than just limiting swap from OS point
++of view.
++
++2.5 Reclaim
+ 
+ Each cgroup maintains a per cgroup LRU that consists of an active
+ and inactive list. When a cgroup goes over its limit, we first try
+@@ -246,6 +266,11 @@ Such charges are freed(at default) or mo
+ both of RSS and CACHES are moved to parent.
+ If both of them are busy, rmdir() returns -EBUSY. See 5.1 Also.
+ 
++Charges recorded in swap information is not updated at removal of cgroup.
++Recorded information is discarded and a cgroup which uses swap (swapcache)
++will be charged as a new owner of it.
++
++
+ 5. Misc. interfaces.
+ 
+ 5.1 force_empty
 
-BRs,
-Joseph Chan 
-
------Original Message-----
-From: Bruno Pr√©mont [mailto:bonbons@linux-vserver.org] 
-Sent: Friday, November 14, 2008 5:02 PM
-To: Joseph Chan
-Cc: akpm@linux-foundation.org; arjan@infradead.org; linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org; Scott Fang
-Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
-
-Joseph,
-
-Are you testing with 4k stacks or with 8k stacks (CONFIG_4KSTACKS)?
-
-Note that your failure looks pretty much like the ones I mentionned in
-  http://lkml.org/lkml/2008/11/9/204
-It looks like some kernel text/data got corrupted though I have no idea what caused it. For me this kind of NULL pointer dereference did happen a few times then stopped showing up (just a reboot, not kernel
-change/recompile)
-
-Bruno
-
-
-On Fri, 14 Nov 2008 <JosephChan@via.com.tw> wrote:
-> After testing the patch with 2.6.28-rc4 kernel, I found something 
-> strange in both viafb built-in and module modes. See the result on my 
-> EPIA-EX (CX700) below. Based on the result, it looks like something 
-> wrong with the new patch.
-> 
-> Kernel 2.6.28-rc4 + viafb-fix-crash-due-to-4k-stack-overflow.patch
-> 
-> 1. w/o patching the viafb-fix-crash-due-to-4k-stack-overflow.patch
-> => System works properly without "kernel panic" issue.
-> 
-> 2. w/ patching the viafb-fix-crash-due-to-4k-stack-overflow.patch
-> => System hangs with "kernel panic" randomly after loading the viafb 
-> module. Such as:
-> BUG: unable to handle kernel NULL pointer dereference at 000000c7
-> IP: [<c03dc6ec>] rt_worker_func+0xc7/0x15d Last sysfs file: 
-> /sys/class/graphics/fb0/dev Modules linked in: viafb i2c_algo_bit 
-> via_rhine sg pata_via sd_mod ehci_hcd
-> 
-> Pid: 6, comm: events/0 Not tainted (2.6.28-rc4b #1) pn test
-> EIP: 0060:[<c03dc6ec>] EFLAGS: 00010286 CPU:0 EIP is at 
-> rt_worker_func+0xc7/0x15d ......
-> ....
-> .....
-> 
-> 
-> BRs,
-> Joseph
-> 
-> -----Original Message-----
-> From: Joseph Chan
-> Sent: Thursday, November 13, 2008 8:58 AM
-> To: 'Andrew Morton'; Bruno Pr√©mont
-> Cc: arjan@infradead.org; linux-fbdev-devel@lists.sourceforge.net;
-> linux-kernel@vger.kernel.org Subject: RE: [PATCH] Fix crash in viafb 
-> due to 4k stack overflow
-> 
-> I will try this new patch later. :)
-> 
-> BRs,
-> Joseph Chan
-> 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> Sent: Thursday, November 13, 2008 7:01 AM
-> To: Bruno Pr√©mont
-> Cc: arjan@infradead.org; Joseph Chan;
-> linux-fbdev-devel@lists.sourceforge.net; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] Fix crash in viafb due to 4k stack overflow
-> 
-> On Mon, 10 Nov 2008 22:00:46 +0100
-> Bruno Pr__mont <bonbons@linux-vserver.org> wrote:
-> 
-> > During conversion of viafb_ioctl() I noticed the following:
-> > 
-> > Those two cases just copy_from_user and do nothing with copied data, 
-> > incomplete implementation?:
-> >         case VIAFB_SET_PANEL_POSITION:
-> >                 if (copy_from_user(&u.panel_pos_size_para, argp,
-> >                                    sizeof(u.panel_pos_size_para)))
-> >                         return -EFAULT;
-> >                 break;
-> >         case VIAFB_SET_PANEL_SIZE:
-> >                 if (copy_from_user(&u.panel_pos_size_para, argp,
-> >                                    sizeof(u.panel_pos_size_para)))
-> >                         return -EFAULT;
-> >                 break;
-> > 
-> > Handling of GET/SET GAMMA looks buggy:
-> > In each case 256*4 bytes are allocated but only 4 bytes (size of
-> > pointer) are copied to/from userspace though
-> > viafb_(get|set)_gamma_table() operates on the full 256 elements...
-> >         case VIAFB_SET_GAMMA_LUT:
-> >                 viafb_gamma_table = kmalloc(256 * sizeof(u32), 
-> > GFP_KERNEL); if (!viafb_gamma_table)
-> >                         return -ENOMEM;
-> >                 if (copy_from_user(viafb_gamma_table, argp,
-> >                                 sizeof(viafb_gamma_table))) {
-> >                         kfree(viafb_gamma_table);
-> >                         return -EFAULT;
-> >                 }
-> >                 viafb_set_gamma_table(viafb_bpp, viafb_gamma_table);
-> >                 kfree(viafb_gamma_table);
-> >                 break;
-> > 
-> >         case VIAFB_GET_GAMMA_LUT:
-> >                 viafb_gamma_table = kmalloc(256 * sizeof(u32), 
-> > GFP_KERNEL); if (!viafb_gamma_table)
-> >                         return -ENOMEM;
-> >                 viafb_get_gamma_table(viafb_gamma_table);
-> >                 if (copy_to_user(argp, viafb_gamma_table,
-> >                         sizeof(viafb_gamma_table))) {
-> >                         kfree(viafb_gamma_table);
-> >                         return -EFAULT;
-> >                 }
-> >                 kfree(viafb_gamma_table);
-> >                 break;
-> > 
-> > I don't know if there is a userspace app that uses these VIA 
-> > IOCTLs... so the ioctl part is just compile-tested.
-> > After checking, fbset just uses some generic framebuffer IOCTLs 
-> > outside of viafb's scope, thus not passing through viafb_ioctl().
-> > 
-> > 
-> > 
-> > ---
-> > --- linux-2.6.28-rc3/drivers/video/via/viafbdev.c.orig
-> > 2008-11-09 19:36:47.000000000 +0100 +++
-> > linux-2.6.28-rc3/drivers/video/via/viafbdev.c	2008-11-10
-> > 20:50:32.000000000 +0100
-> 
-> hm, OK, I dropped the old patch and merged this one.
-> 
-> It'd be nice to have it runtime tested and reviewed by Joseph, but we 
-> haven't heard from him yet.  viafb might be 8k-stacks-only in 2.6.27, 
-> which would be bad.
-> 
-
-ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
