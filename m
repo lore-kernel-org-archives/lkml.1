@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbYKNCGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYKNCIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755278AbYKNCGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 21:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbYKNCGI
+	id S1754454AbYKNCIQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 21:08:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYKNCIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 21:06:08 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:59874 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754082AbYKNCGG (ORCPT
+	Thu, 13 Nov 2008 21:08:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57443 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751488AbYKNCH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 21:06:06 -0500
-Message-ID: <491CDD0C.60405@ct.jp.nec.com>
-Date: Thu, 13 Nov 2008 18:06:04 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 13 Nov 2008 21:07:59 -0500
+Date: Thu, 13 Nov 2008 18:07:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] x86: optimise page fault path a little
+In-Reply-To: <20081114015817.GC5063@wotan.suse.de>
+Message-ID: <alpine.LFD.2.00.0811131803300.3468@nehalem.linux-foundation.org>
+References: <20081113072821.GB2946@wotan.suse.de> <alpine.LFD.2.00.0811130749440.3468@nehalem.linux-foundation.org> <20081114015817.GC5063@wotan.suse.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: uaccess_64: fix return value in __copy_from_user()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-__copy_from_user() will return invalid value 16 when it fails to
-access user space and the size is 10.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/include/asm/uaccess_64.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Fri, 14 Nov 2008, Nick Piggin wrote:
+> 
+> True, but is it any better to jam them all into a 300 line function
+> with gotos?
 
-diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
-index 543ba88..84210c4 100644
---- a/arch/x86/include/asm/uaccess_64.h
-+++ b/arch/x86/include/asm/uaccess_64.h
-@@ -48,7 +48,7 @@ int __copy_from_user(void *dst, const void __user *src, unsigned size)
- 		return ret;
- 	case 10:
- 		__get_user_asm(*(u64 *)dst, (u64 __user *)src,
--			       ret, "q", "", "=r", 16);
-+			       ret, "q", "", "=r", 10);
- 		if (unlikely(ret))
- 			return ret;
- 		__get_user_asm(*(u16 *)(8 + (char *)dst),
--- 
-1.5.6
+That wasn't what I was saying.
 
+Theere are two "good" cases:
+
+ - don't mess with things.
+
+   This is good. Stability is good.
+
+ - Clearly improve things. 
+
+   This is great.
+
+And I'll happily do either of the above.
+
+Your patch had some improvement, but it had some clear not-so-improved 
+parts. That makes it INFERIOR to just leaving things well alone.
+
+The thing is, I'm not very much interested in just a micro-optimization 
+that seems to be all about just gcc code generation. Long-term, that's 
+just bad.
+
+But if it's a clear and undeniable _cleanup_, then long-term, it's 
+actually a win. If it also happens to fix some gcc stack allocation issues 
+etc, then that is just gravy.
+
+See my point? Cleanup is good. But it had better _be_ a cleanup. Random 
+micro-optimization is not so good, especially not if it them makes the 
+code do things that good code simply shouldn't be doing.
+
+As it is, I don't think your patch is appropriate to be merged. 
+
+			Linus
