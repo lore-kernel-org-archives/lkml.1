@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYKNH6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbYKNIAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbYKNH6U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 02:58:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYKNH6M
+	id S1755453AbYKNIAe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 03:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKNIAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 02:58:12 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49882 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751192AbYKNH6L (ORCPT
+	Fri, 14 Nov 2008 03:00:23 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:26361 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYKNIAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 02:58:11 -0500
-Message-ID: <491D2F67.1070302@linux.vnet.ibm.com>
-Date: Fri, 14 Nov 2008 13:27:27 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
+	Fri, 14 Nov 2008 03:00:22 -0500
+Message-ID: <491D2F09.3070104@yandex.ru>
+Date: Fri, 14 Nov 2008 09:55:53 +0200
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Blunck <jblunck@suse.de>, containers@lists.osdl.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] memcg: reduce size of per-cpu-stat to be appropriate
- size.
-References: <20081113164201.GV29067@bolzano.suse.de> <20081113191837.18ed2ade.akpm@linux-foundation.org> <491CF609.3050203@cn.fujitsu.com> <20081114132840.98d38f12.kamezawa.hiroyu@jp.fujitsu.com> <20081114144926.d91f36fd.kamezawa.hiroyu@jp.fujitsu.com> <491D2C21.5000600@linux.vnet.ibm.com> <20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Eric Paris <eparis@redhat.com>
+CC: linux-kernel@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, tytso@mit.edu, linux-ext4@vger.kernel.org,
+       dedekind@infradead.org, ext-adrian.hunter@nokia.com,
+       linux-mtd@lists.infradead.org, dushistov@mail.ru, jmorris@namei.org
+Subject: Re: [PATCH] filesystems: use has_capability_noaudit interface for
+ reserved blocks checks
+References: <1226430769.3353.5.camel@localhost.localdomain>
+In-Reply-To: <1226430769.3353.5.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 14 Nov 2008 07:57:35.0146 (UTC) FILETIME=[A79F88A0:01C9462E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Fri, 14 Nov 2008 13:13:29 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>> +static int mem_cgroup_size(void)
->> inline this function?
->>
-> necessary ? 
+Eric Paris wrote:
+> ext[2,3,4], ufs, and ubifs all check for  CAP_SYS_RESOURCE to determine
+> if they should allow reserved blocks to be used.  A process not having
+> this capability is not failing some security decision and should not be
+> audited.  Thus move to using has_capability_noaudit.
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> ---
 
-Not really, but might be good for older compilers.
+UBIFS part looks OK, as long as the whole idea of the patch is right, which
+I have not checked, but assume it is.
+
+The only question is are you sure exporting 'cap_capable()' is relevant
+to this patch? You do not seem to call it directly.
 
 -- 
-	Balbir
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
