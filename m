@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbYKNMX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753190AbYKNMXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751598AbYKNMX3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 07:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYKNMWx
+	id S1753190AbYKNMXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 07:23:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYKNMXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 07:22:53 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:52815 "EHLO smtp.gentoo.org"
+	Fri, 14 Nov 2008 07:23:34 -0500
+Received: from proxima.lp0.eu ([85.158.45.36]:58354 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752766AbYKNMWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 07:22:51 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: [PATCH v2] mtd/bfin-async-flash: use parse_mtd()
-Date: Fri, 14 Nov 2008 07:22:49 -0500
-Message-Id: <1226665369-20248-2-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.0.3
-In-Reply-To: <1226665351-20226-1-git-send-email-vapier@gentoo.org>
-References: <1226665351-20226-1-git-send-email-vapier@gentoo.org>
+	id S1753094AbYKNMXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 07:23:33 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
+	b=TO+IxrzB+5jypAaM7ChO9soNVk5n5g0QjyRVZjYoVsWH8Exqt82pnO4FbJV+3Pu9PhSRxzbCg+eGvxgCPK5ijF7BupPes8a2UwdA3HYKzf9ECOGMyvl89rsdLOEwZ27o;
+Message-ID: <0cff1148a04c9f90c98e26eff6e0bfc968e4574c@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+In-Reply-To: <491C3813.1070305@movial.fi>
+References: <1226585472-12559-1-git-send-email-bwalle@suse.de>
+    <b637ec0b0811130618o2f76e34bh17055f2f165d89a5@mail.gmail.com>
+    <491C3813.1070305@movial.fi>
+Date: Fri, 14 Nov 2008 12:23:22 -0000
+Subject: Re: [PATCH] Allow SCSI_WAIT_SCAN to be deselected
+From: "Simon Arlott" <simon@fire.lp0.eu>
+To: "Dmitri Vorobiev" <dmitri.vorobiev@movial.fi>
+Cc: "Fabio Comolli" <fabio.comolli@gmail.com>,
+       "Bernhard Walle" <bwalle@suse.de>, james.bottomley@steeleye.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call parse_mtd() to handle partition/device registration rather than doing
-it all ourself.
+On Thu, November 13, 2008 14:22, Dmitri Vorobiev wrote:
+> Fabio Comolli wrote:
+>> So I'm not the only one :-)
+>> Please see this thread:
+>>
+>> http://lkml.org/lkml/2008/10/22/355
+>
+> See also:
+>
+> http://marc.info/?l=linux-scsi&m=122538386519971&w=2
+> http://marc.info/?l=linux-scsi&m=122539443509753&w=2
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v2:
-	- call unparse_mtd()
+I suggest reading http://lkml.org/lkml/2007/5/13/75.
 
- drivers/mtd/maps/bfin-async-flash.c |   32 ++++----------------------------
- 1 files changed, 4 insertions(+), 28 deletions(-)
+Basically, if you want to get rid of it you need to provide
+a viable alternative. (Loading a module is not the right
+way to call a kernel function...) Then it could be default
+'n' and marked as deprecated.
 
-diff --git a/drivers/mtd/maps/bfin-async-flash.c b/drivers/mtd/maps/bfin-async-flash.c
-index 6fec86a..e432f94 100644
---- a/drivers/mtd/maps/bfin-async-flash.c
-+++ b/drivers/mtd/maps/bfin-async-flash.c
-@@ -120,13 +120,8 @@ static void bfin_copy_to(struct map_info *map, unsigned long to, const void *fro
- 	switch_back(state);
- }
- 
--#ifdef CONFIG_MTD_PARTITIONS
--static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
--#endif
--
- static int __devinit bfin_flash_probe(struct platform_device *pdev)
- {
--	int ret;
- 	struct physmap_flash_data *pdata = pdev->dev.platform_data;
- 	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	struct resource *flash_ambctl = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-@@ -150,6 +145,8 @@ static int __devinit bfin_flash_probe(struct platform_device *pdev)
- 	state->flash_ambctl0  = flash_ambctl->start;
- 	state->flash_ambctl1  = flash_ambctl->end;
- 
-+	platform_set_drvdata(pdev, state);
-+
- 	if (gpio_request(state->enet_flash_pin, DRIVER_NAME)) {
- 		pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->enet_flash_pin);
- 		return -EBUSY;
-@@ -161,35 +158,14 @@ static int __devinit bfin_flash_probe(struct platform_device *pdev)
- 	if (!state->mtd)
- 		return -ENXIO;
- 
--#ifdef CONFIG_MTD_PARTITIONS
--	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
--	if (ret > 0) {
--		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
--		add_mtd_partitions(state->mtd, pdata->parts, ret);
--
--	} else if (pdata->nr_parts) {
--		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
--		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
--
--	} else
--#endif
--	{
--		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
--		add_mtd_device(state->mtd);
--	}
--
--	platform_set_drvdata(pdev, state);
--
--	return 0;
-+	return parse_mtd(state->mtd, NULL, pdata->parts, pdata->nr_parts, false);
- }
- 
- static int __devexit bfin_flash_remove(struct platform_device *pdev)
- {
- 	struct async_state *state = platform_get_drvdata(pdev);
- 	gpio_free(state->enet_flash_pin);
--#ifdef CONFIG_MTD_PARTITIONS
--	del_mtd_partitions(state->mtd);
--#endif
-+	unparse_mtd(state->mtd);
- 	map_destroy(state->mtd);
- 	kfree(state);
- 	return 0;
 -- 
-1.6.0.3
-
+Simon Arlott
