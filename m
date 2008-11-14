@@ -1,166 +1,357 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbYKNVh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbYKNViF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbYKNVh1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbYKNVey
+	id S1756770AbYKNViF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:38:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbYKNVfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 14 Nov 2008 16:35:00 -0500
+Received: from mga02.intel.com ([134.134.136.20]:45718 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753452AbYKNVey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Nov 2008 16:34:54 -0500
-Received: from science.horizon.com ([192.35.100.1]:14872 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755804AbYKNVev (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:34:51 -0500
-Message-ID: <20081114213449.14960.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-Date: Fri, 14 Nov 2008 16:34:49 -0500
-To: linux-kernel@vger.kernel.org
-Cc: linux@horizon.com
-Subject: [RFC 2/2] serial/8250.c: Use self-adjusting list for port poll
- order.
-References: <20081113150308.3590.qmail@science.horizon.com>
- <20081114053042.11532.qmail@science.horizon.com>
- <20081114053314.12093.qmail@science.horizon.com>
-In-Reply-To: <20081114053314.12093.qmail@science.horizon.com>
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,605,1220252400"; 
+   d="scan'208";a="463247492"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH 07/13] dmaengine: introduce dma_request_channel and private
+	channels
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc: maciej.sosnowski@intel.com, hskinnemoen@atmel.com, g.liakhovetski@gmx.de,
+       nicolas.ferre@atmel.com
+Date: Fri, 14 Nov 2008 14:34:53 -0700
+Message-ID: <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I posted this to linux-serial yesterday, but it has attracted no comment
-yet, so I'm submitting it to a wider audience.  It boots and runs on
-amd64 with a standard (non-shared) serial port, but I haven't subjected
-it to detailed testing.  Comments about the code style and general idea
-are requested.
+This interface is primarily for device-to-memory clients which need to
+search for dma channels with platform-specific characteristics.  The
+prototype is:
 
-This is the interesting patch.  It changes the uart_8250_port list to
-a self-adjusting one.  Busy ports move to the front, and idle ones
-migrate to the end.  This reduces overall polling effort when there is
-a mix of busy and idle ports.
+struct dma_chan *dma_request_channel(dma_cap_mask_t mask,
+                                     dma_filter_fn filter_fn,
+                                     void *filter_param);
 
-Any time you're dealing with an edge-sensitive interrupt, it is essential
-that the interrupt is turned off before returning from the handler.
-With a level-sensitive one, you'll just loop back into the handler,
-but an edge-sensitive one will never respond again.
+When the optional 'filter_fn' parameter is set to NULL
+dma_request_channel simply returns the first channel that satisfies the
+capability mask.  Otherwise, when the mask parameter is insufficient for
+specifying the necessary channel, the filter_fn routine can be used to
+disposition the available channels in the system. The filter_fn routine
+is called once for each free channel in the system.  Upon seeing a
+suitable channel filter_fn returns DMA_ACK which flags that channel to
+be the return value from dma_request_channel.  A channel allocated via
+this interface is exclusive to the caller, until dma_release_channel()
+is called.
 
-When there are multiple independent sources, that means that you have to
-poll them all repeatedly until everyone reports idle.  Since interrupts don't
-go away by themselves, that means that there was an instant, just before
-the final pass started, when there were no active interrupt sources.
+To ensure that all channels are not consumed by the general-purpose
+allocator the DMA_PRIVATE capability is provided to exclude a dma_device
+from general-purpose (memory-to-memory) consideration.
 
-Now on modern computers even PCI bus reads are painfully slow, and
-super-I/O chips connected via the "LPC bus" low-pin count emulated ISA
-bus (basically a 4-bit/33 MHz bus which acts like a 16-bit/8.33 MHz
-ISA bus) are truly agonizing.
-
-We can't get around the need to poll every port sharing the same IRQ line,
-but if we can predict which ports will be busy and poll them first,
-we can start the final verification pass as early as possible.
-
-This code does that by using the previous poll cycles as a hint.
-If a port is idle, it will migrate to the end of the list and
-only have to be checked once.
-
-Part 1 changed the list to singly-linked to make the list shuffling easier.
-
-Comments?  Please?
-
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/serial/8250.c |   49 ++++++++++++++++++++++++++++++++++---------------
- 1 files changed, 34 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 7f66335..96e784f 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1469,18 +1469,27 @@ serial8250_handle_port(struct uart_8250_port *up)
-  * "end" points to the beginning of the most recent run of idle ports.
-  * It is NULL if the current port is not idle.  The loop ends when we
-  * are about to check end again.
-+ *
-+ * Optimization: this will finish sooner if we can check all busy
-+ * ports first, starting the final verify-idle pass as soon as possible.
-+ * To achieve this, busy ports are moved to the front of the list.
-+ * *tailp marks the boundary between the front and the back of the list;
-+ * when a port is found to be busy, it is removed from between *upp
-+ * and upp->next, and reinserted at *tailp.
-  */
- static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- {
- 	struct irq_info *i = dev_id;
--	struct uart_8250_port *up, *end = NULL;
-+	struct uart_8250_port *up, **upp, *end = NULL, **tailp;
- 	int pass_counter = 0, handled = 0;
+ drivers/dma/dmaengine.c   |  161 ++++++++++++++++++++++++++++++++++++++++-----
+ include/linux/dmaengine.h |   16 ++++
+ 2 files changed, 159 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index ec483cc..46fd5fa 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -190,7 +190,7 @@ static int dma_chan_get(struct dma_chan *chan)
+ 			chan->client_count = 0;
+ 			module_put(owner);
+ 			err = -ENOMEM;
+-		} else
++		} else if (!dma_has_cap(DMA_PRIVATE, chan->device->cap_mask))
+ 			balance_ref_count(chan);
+ 	}
  
- 	DEBUG_INTR("serial8250_interrupt(%d)...", irq);
+@@ -221,6 +221,8 @@ static void dma_client_chan_alloc(struct dma_client *client)
  
-+	tailp = upp = &i->head;
-+
- 	spin_lock(&i->lock);
+ 	/* Find a channel */
+ 	list_for_each_entry(device, &dma_device_list, global_node) {
++		if (dma_has_cap(DMA_PRIVATE, device->cap_mask))
++			continue;
+ 		/* Does the client require a specific DMA controller? */
+ 		if (client->slave && client->slave->dma_dev
+ 				&& client->slave->dma_dev != device->dev)
+@@ -313,6 +315,7 @@ static int __init dma_channel_table_init(void)
+ 	 * channel_table
+ 	 */
+ 	clear_bit(DMA_INTERRUPT, dma_cap_mask_all.bits);
++	clear_bit(DMA_PRIVATE, dma_cap_mask_all.bits);
+ 	clear_bit(DMA_SLAVE, dma_cap_mask_all.bits);
  
--	up = i->head;
-+	up = *upp;
- 	do {
- 		unsigned int iir;
+ 	for_each_dma_cap_mask(cap, dma_cap_mask_all) {
+@@ -366,10 +369,13 @@ void dma_issue_pending_all(void)
+ 		  "client called %s without a reference", __func__);
  
-@@ -1491,7 +1500,7 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 					"irq%d\n", irq);
- 				break;
- 			}
--			up = i->head;
-+			tailp = upp = &i->head;
+ 	rcu_read_lock();
+-	list_for_each_entry_rcu(device, &dma_device_list, global_node)
++	list_for_each_entry_rcu(device, &dma_device_list, global_node) {
++		if (dma_has_cap(DMA_PRIVATE, device->cap_mask))
++			continue;
+ 		list_for_each_entry(chan, &device->channels, device_node)
+ 			if (chan->client_count)
+ 				device->device_issue_pending(chan);
++	}
+ 	rcu_read_unlock();
+ }
+ EXPORT_SYMBOL(dma_issue_pending_all);
+@@ -390,7 +396,8 @@ static struct dma_chan *nth_chan(enum dma_transaction_type cap, int n)
+ 	struct dma_chan *min = NULL;
+ 
+ 	list_for_each_entry(device, &dma_device_list, global_node) {
+-		if (!dma_has_cap(cap, device->cap_mask))
++		if (!dma_has_cap(cap, device->cap_mask) ||
++		    dma_has_cap(DMA_PRIVATE, device->cap_mask))
  			continue;
+ 		list_for_each_entry(chan, &device->channels, device_node) {
+ 			if (!chan->client_count)
+@@ -439,9 +446,12 @@ static void dma_channel_rebalance(void)
+ 		for_each_possible_cpu(cpu)
+ 			per_cpu_ptr(channel_table[cap], cpu)->chan = NULL;
+ 
+-	list_for_each_entry(device, &dma_device_list, global_node)
++	list_for_each_entry(device, &dma_device_list, global_node) {
++		if (dma_has_cap(DMA_PRIVATE, device->cap_mask))
++			continue;
+ 		list_for_each_entry(chan, &device->channels, device_node)
+ 			chan->table_count = 0;
++	}
+ 
+ 	/* don't populate the channel_table if no clients are available */
+ 	if (!dmaengine_ref_count)
+@@ -460,6 +470,112 @@ static void dma_channel_rebalance(void)
  		}
+ }
  
-@@ -1499,11 +1508,8 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 		if (!(iir & UART_IIR_NO_INT)) {
- 			serial8250_handle_port(up);
- 
--			handled = 1;
--
--			end = NULL;
--		} else if (up->port.iotype == UPIO_DWAPB &&
--			  (iir & UART_IIR_BUSY) == UART_IIR_BUSY) {
-+		} else if ((iir & UART_IIR_BUSY) == UART_IIR_BUSY &&
-+			   up->port.iotype == UPIO_DWAPB) {
- 			/* The DesignWare APB UART has an Busy Detect (0x07)
- 			 * interrupt meaning an LCR write attempt occured
- 			 * while the UART was busy. The interrupt must
-@@ -1513,14 +1519,27 @@ static irqreturn_t serial8250_interrupt(int irq, void *dev_id)
- 			status = *(volatile u32 *)up->port.private_data;
- 			serial_out(up, UART_LCR, up->lcr);
- 
--			handled = 1;
--
--			end = NULL;
--		} else if (end == NULL)
--			end = up;
-+		} else {
-+			/* Port does not have interrupt asserted. */
-+			if (end == NULL)
-+				end = up;	/* Start of run of idle ports */
-+			upp = &up->next;	/* Do not move anything */
++static struct dma_chan *private_candidate(dma_cap_mask_t *mask, struct dma_device *dev)
++{
++	struct dma_chan *chan;
++	struct dma_chan *ret = NULL;
++
++	/* devices with multiple channels need special handling as we need to
++	 * ensure that all channels are either private or public.
++	 */
++	if (dev->chancnt > 1 && !dma_has_cap(DMA_PRIVATE, dev->cap_mask))
++		list_for_each_entry(chan, &dev->channels, device_node) {
++			/* some channels are already publicly allocated */
++			if (chan->client_count)
++				return NULL;
++		}
++
++	list_for_each_entry(chan, &dev->channels, device_node) {
++		if (!__dma_chan_satisfies_mask(chan, mask)) {
++			pr_debug("%s: %s wrong capabilities\n",
++				 __func__, dev_name(&chan->dev));
 +			continue;
 +		}
- 
--		up = up->next;
--	} while (up != end);
-+		/* up had activity */
-+		handled = 1;
-+		end = NULL;
-+		/* Move to front of list; append after *tailp */
-+		if (tailp != upp) {
-+			*upp = up->next;
-+			up->next = *tailp;
-+			*tailp = up;
-+			tailp = &up->next;
-+		} else {
-+			tailp = upp = &up->next;
++		if (chan->client_count) {
++			pr_debug("%s: %s busy\n",
++				 __func__, dev_name(&chan->dev));
++			continue;
 +		}
-+	} while ((up = *upp) != end);
++		ret = chan;
++		break;
++	}
++
++	return ret;
++}
++
++/**
++ * dma_request_channel - try to allocate an exclusive channel
++ * @mask: capabilities that the channel must satisfy
++ * @fn: optional callback to disposition available channels
++ * @fn_param: opaque parameter to pass to dma_filter_fn
++ */
++struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, void *fn_param)
++{
++	struct dma_device *device, *_d;
++	struct dma_chan *chan = NULL;
++	enum dma_state_client ack;
++	int err;
++
++	/* Find a channel */
++	mutex_lock(&dma_list_mutex);
++	list_for_each_entry_safe(device, _d, &dma_device_list, global_node) {
++		chan = private_candidate(mask, device);
++		if (!chan)
++			continue;
++
++		if (fn)
++			ack = fn(chan, fn_param);
++		else
++			ack = DMA_ACK;
++
++		if (ack == DMA_ACK) {
++			/* Found a suitable channel, try to grab, prep, and
++			 * return it.  We first set DMA_PRIVATE to disable
++			 * balance_ref_count as this channel will not be
++			 * published in the general-purpose allocator
++			 */
++			dma_cap_set(DMA_PRIVATE, device->cap_mask);
++			err = dma_chan_get(chan);
++
++			if (err == -ENODEV) {
++				pr_debug("%s: %s module removed\n", __func__,
++					 dev_name(&chan->dev));
++				list_del_rcu(&device->global_node);
++			} else if (err)
++				pr_err("dmaengine: failed to get %s: (%d)",
++				       dev_name(&chan->dev), err);
++			else
++				break;
++		} else if (ack == DMA_DUP) {
++			pr_debug("%s: %s filter said DMA_DUP\n",
++				 __func__, dev_name(&chan->dev));
++		} else if (ack == DMA_NAK) {
++			pr_debug("%s: %s filter said DMA_NAK\n",
++				 __func__, dev_name(&chan->dev));
++			break;
++		} else
++			WARN_ONCE(1, "filter_fn: unknown response?\n");
++		chan = NULL;
++	}
++	mutex_unlock(&dma_list_mutex);
++
++	pr_debug("%s: %s (%s)\n", __func__, chan ? "success" : "fail",
++		 chan ? dev_name(&chan->dev) : NULL);
++
++	return chan;
++}
++EXPORT_SYMBOL_GPL(__dma_request_channel);
++
++void dma_release_channel(struct dma_chan *chan)
++{
++	mutex_lock(&dma_list_mutex);
++	WARN_ONCE(chan->client_count != 1,
++		  "chan reference count %d != 1\n", chan->client_count);
++	dma_chan_put(chan);
++	mutex_unlock(&dma_list_mutex);
++}
++EXPORT_SYMBOL_GPL(dma_release_channel);
++
+ /**
+  * dma_chans_notify_available - broadcast available channels to the clients
+  */
+@@ -493,7 +609,9 @@ void dma_async_client_register(struct dma_client *client)
+ 	dmaengine_ref_count++;
  
- 	spin_unlock(&i->lock);
+ 	/* try to grab channels */
+-	list_for_each_entry_safe(device, _d, &dma_device_list, global_node)
++	list_for_each_entry_safe(device, _d, &dma_device_list, global_node) {
++		if (dma_has_cap(DMA_PRIVATE, device->cap_mask))
++			continue;
+ 		list_for_each_entry(chan, &device->channels, device_node) {
+ 			err = dma_chan_get(chan);
+ 			if (err == -ENODEV) {
+@@ -504,7 +622,7 @@ void dma_async_client_register(struct dma_client *client)
+ 				pr_err("dmaengine: failed to get %s: (%d)",
+ 				       dev_name(&chan->dev), err);
+ 		}
+-
++	}
  
--- 
-1.5.6.5
+ 	list_add_tail(&client->global_node, &dma_client_list);
+ 	mutex_unlock(&dma_list_mutex);
+@@ -529,9 +647,12 @@ void dma_async_client_unregister(struct dma_client *client)
+ 	dmaengine_ref_count--;
+ 	BUG_ON(dmaengine_ref_count < 0);
+ 	/* drop channel references */
+-	list_for_each_entry(device, &dma_device_list, global_node)
++	list_for_each_entry(device, &dma_device_list, global_node) {
++		if (dma_has_cap(DMA_PRIVATE, device->cap_mask))
++			continue;
+ 		list_for_each_entry(chan, &device->channels, device_node)
+ 			dma_chan_put(chan);
++	}
+ 
+ 	list_del(&client->global_node);
+ 	mutex_unlock(&dma_list_mutex);
+@@ -618,21 +739,25 @@ int dma_async_device_register(struct dma_device *device)
+ 		chan->slow_ref = 0;
+ 		INIT_RCU_HEAD(&chan->rcu);
+ 	}
++	device->chancnt = chancnt;
+ 
+ 	mutex_lock(&dma_list_mutex);
+-	list_for_each_entry(chan, &device->channels, device_node) {
+-		/* if clients are already waiting for channels we need to
+-		 * take references on their behalf
+-		 */
+-		if (dmaengine_ref_count && dma_chan_get(chan) == -ENODEV) {
+-			/* note we can only get here for the first
+-			 * channel as the remaining channels are
+-			 * guaranteed to get a reference
++	/* take references on public channels */
++	if (!dma_has_cap(DMA_PRIVATE, device->cap_mask))
++		list_for_each_entry(chan, &device->channels, device_node) {
++			/* if clients are already waiting for channels we need
++			 * to take references on their behalf
+ 			 */
+-			rc = -ENODEV;
+-			goto err_out;
++			if (dmaengine_ref_count &&
++			    dma_chan_get(chan) == -ENODEV) {
++				/* note we can only get here for the first
++				 * channel as the remaining channels are
++				 * guaranteed to get a reference
++				 */
++				rc = -ENODEV;
++				goto err_out;
++			}
+ 		}
+-	}
+ 	list_add_tail_rcu(&device->global_node, &dma_device_list);
+ 	dma_channel_rebalance();
+ 	mutex_unlock(&dma_list_mutex);
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 57a43ad..fe40bc0 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -89,6 +89,7 @@ enum dma_transaction_type {
+ 	DMA_MEMSET,
+ 	DMA_MEMCPY_CRC32C,
+ 	DMA_INTERRUPT,
++	DMA_PRIVATE,
+ 	DMA_SLAVE,
+ };
+ 
+@@ -224,6 +225,18 @@ typedef enum dma_state_client (*dma_event_callback) (struct dma_client *client,
+ 		struct dma_chan *chan, enum dma_state state);
+ 
+ /**
++ * typedef dma_filter_fn - callback filter for dma_request_channel
++ * @chan: channel to be reviewed
++ * @filter_param: opaque parameter passed through dma_request_channel
++ *
++ * When this optional parameter is specified in a call to dma_request_channel a
++ * suitable channel is passed to this routine for further dispositioning before
++ * being returned.  Where 'suitable' indicates a non-busy channel that
++ * satisfies the given capability mask.
++ */
++typedef enum dma_state_client (*dma_filter_fn)(struct dma_chan *chan, void *filter_param);
++
++/**
+  * struct dma_client - info on the entity making use of DMA services
+  * @event_callback: func ptr to call when something happens
+  * @cap_mask: only return channels that satisfy the requested capabilities
+@@ -472,6 +485,9 @@ void dma_async_device_unregister(struct dma_device *device);
+ void dma_run_dependencies(struct dma_async_tx_descriptor *tx);
+ struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type);
+ void dma_issue_pending_all(void);
++#define dma_request_channel(mask, x, y) __dma_request_channel(&(mask), x, y)
++struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, void *fn_param);
++void dma_release_channel(struct dma_chan *chan);
+ 
+ /* --- Helper iov-locking functions --- */
+ 
+
