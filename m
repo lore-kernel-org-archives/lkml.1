@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbYKNDbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbYKNDlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbYKNDbb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 22:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbYKNDbU
+	id S1754081AbYKNDlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 22:41:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNDlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 22:31:20 -0500
-Received: from kroah.org ([198.145.64.141]:38968 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751618AbYKNDbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 22:31:19 -0500
-Date: Thu, 13 Nov 2008 19:27:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Andiry Xu <andiry.xu@amd.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       volker.armin.hemmann@tu-clausthal.de, shane.huang@amd.com,
-       libin.yang@amd.com
-Subject: Re: [PATCH] usb: fix SB700 usb subsystem hang bug
-Message-ID: <20081114032759.GD15204@kroah.com>
-References: <1226632708.5796.28.camel@crane-desktop>
+	Thu, 13 Nov 2008 22:41:35 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:60480 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbYKNDle (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 22:41:34 -0500
+Date: Thu, 13 Nov 2008 21:41:30 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@cs.columbia.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC v9][PATCH 12/13] Checkpoint multiple processes
+Message-ID: <20081114034130.GA14171@us.ibm.com>
+References: <1226335060-7061-1-git-send-email-orenl@cs.columbia.edu> <1226335060-7061-13-git-send-email-orenl@cs.columbia.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1226632708.5796.28.camel@crane-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1226335060-7061-13-git-send-email-orenl@cs.columbia.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 11:18:28AM +0800, Andiry Xu wrote:
-> This patch is required for AMD SB700 south bridge revision A12 and A13 to avoid
-> USB subsystem hang symptom. The USB subsystem hang symptom is observed when the
-> system has multiple USB devices connected to it. In some cases a USB hub may be
-> required to observe this symptom.
+Quoting Oren Laadan (orenl@cs.columbia.edu):
+> Checkpointing of multiple processes works by recording the tasks tree
+> structure below a given task (usually this task is the container init).
 > 
-> This patch works around the problem by correcting the internal register setting
-> that will help by changing the behavior of the internal logic to avoid the
-> USB subsystem hang issue. The change in the behavior of the logic does not
-> impact the normal operation of the USB subsystem.
+> For a given task, do a DFS scan of the tasks tree and collect them
+> into an array (keeping a reference to each task). Using DFS simplifies
+> the recreation of tasks either in user space or kernel space. For each
+> task collected, test if it can be checkpointed, and save its pid, tgid,
+> and ppid.
 > 
-> Signed-off-by: Andiry Xu <andiry.xu@amd.com>
-> Signed-off-by: Libin Yang <libin.yang@amd.com>
+> The actual work is divided into two passes: a first scan counts the
+> tasks, then memory is allocated and a second scan fills the array.
+> 
+> The logic is suitable for creation of processes during restart either
+> in userspace or by the kernel.
+> 
+> Currently we ignore threads and zombies, as well as session ids.
+> 
+> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 
-Care to add the "Reported-by:" and "Tested-by:" lines for the people who
-helped bring this to your attention and resend it?
+Looks good.
+
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
 thanks,
-
-greg k-h
+-serge
