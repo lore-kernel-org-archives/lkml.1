@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYKNVky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbYKNVl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbYKNVky (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756688AbYKNVkA
+	id S1755328AbYKNVl3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYKNVlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:40:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48960 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756206AbYKNVj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:39:59 -0500
-Date: Fri, 14 Nov 2008 13:39:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd: unify mtd partition/device registration
-Message-Id: <20081114133953.bb65b2ad.akpm@linux-foundation.org>
-In-Reply-To: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 14 Nov 2008 16:41:18 -0500
+Received: from server.drzeus.cx ([85.8.24.28]:36104 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751416AbYKNVlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:41:18 -0500
+Date: Fri, 14 Nov 2008 22:41:14 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: linux-kernel@vger.kernel.org, sdhci-devel@list.drzeus.cx,
+       Ben Dooks <ben-linux@fluff.org>
+Subject: Re: [patch 4/7] SDHCI: Add quirk for controller with no end-of-busy
+ IRQ
+Message-ID: <20081114224114.5b5932a0@mjolnir.drzeus.cx>
+In-Reply-To: <20081103201010.464075837@fluff.org.uk>
+References: <20081103200944.099353331@fluff.org.uk>
+	<20081103201010.464075837@fluff.org.uk>
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,63 +28,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 18:38:53 -0500
-Mike Frysinger <vapier@gentoo.org> wrote:
+On Mon, 03 Nov 2008 20:09:48 +0000
+Ben Dooks <ben-linux@fluff.org> wrote:
 
-> +int parse_mtd(struct mtd_info *mtd, const char **probe_types,
-> +              struct mtd_partition *parts, int nr_parts)
-> +{
-> +#ifdef CONFIG_MTD_PARTITIONS
-> +	const char *default_part_probe_types[] = {
-> +		"cmdlinepart",
-> +		"RedBoot",
-> +		NULL
-> +	};
-> +	int ret;
+> The Samsung SDHCI controller block seems to fail to generate an
+> INT_DATA_END after the transfer has completed and the bus busy
+> state finished. 
+> 
+> Changes in e809517f6fa5803a5a1cd56026f0e2190fc13d5c to use the
+> new busy method are the cause of the behaviour change.
+> 
+> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+> 
+> Index: linux.git/drivers/mmc/host/sdhci.c
+> ===================================================================
+> --- linux.git.orig/drivers/mmc/host/sdhci.c	2008-11-03 10:01:03.000000000 +0000
+> +++ linux.git/drivers/mmc/host/sdhci.c	2008-11-03 12:20:40.000000000 +0000
+> @@ -1291,11 +1291,24 @@ static void sdhci_cmd_irq(struct sdhci_h
+>  	 *       controllers.
+>  	 */
+>  	if (host->cmd->flags & MMC_RSP_BUSY) {
+> +		u32 present;
 > +
-> +	if (!probe_types)
-> +		probe_types = default_part_probe_types;
+>  		if (host->cmd->data)
+>  			DBG("Cannot wait for busy signal when also "
+>  				"doing a data transfer");
+> -		else
+> +		else if (!(host->quirks & SDHCI_QUIRK_NO_TCIRQ_ON_NOT_BUSY))
+>  			return;
+
+Not the clearest naming I've ever seen. :)
+How about NO_BUSY_IRQ?
+
 > +
-> +	ret = parse_mtd_partitions(mtd, probe_types, &parts, 0);
-> +	if (ret > 0) {
-> +		ret = add_mtd_partitions(mtd, parts, ret);
-> +		kfree(parts);
-> +		return ret;
-> +	} else if (nr_parts)
-> +		return add_mtd_partitions(mtd, parts, nr_parts);
-> +#endif
+> +		/* The Samsung SDHCI does not seem to provide an INT_DATA_END
+> +		 * when the system goes non-busy, so check the state of the
+> +		 * transfer by reading SDHCI_PRESENT_STATE to see if the
+> +		 * controller is ready
+> +		 */
+
+There is already a note about this being a problem earlier up, so I
+don't think we need another.
+
 > +
-> +	return add_mtd_device(mtd);
-> +}
+> +		present = readl(host->ioaddr + SDHCI_PRESENT_STATE);
+> +		DBG("busy? present %08x, intstat %08x\n", present, intmask);
+> +
 
-look:
+And what does this add really? Controllers not being able to wait for
+the busy state to end is so common that we can just ignore the problem
+here.
 
-From: Andrew Morton <akpm@linux-foundation.org>
+> +#define  SDHCI_DATA_BIT(x)	(1 << ((x) + 20))
 
-          text    data     bss     dec     hex filename
-before:   2488      88     132    2708     a94 drivers/mtd/mtdcore.o
-after:    2456     100     132    2688     a80 drivers/mtd/mtdcore.o
+This was not supposed to be included I suppose :)
 
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+Rgds
+-- 
+     -- Pierre Ossman
 
- drivers/mtd/mtdcore.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-diff -puN drivers/mtd/mtdcore.c~mtd-unify-mtd-partition-device-registration-fix drivers/mtd/mtdcore.c
---- a/drivers/mtd/mtdcore.c~mtd-unify-mtd-partition-device-registration-fix
-+++ a/drivers/mtd/mtdcore.c
-@@ -306,7 +306,7 @@ int parse_mtd(struct mtd_info *mtd, cons
-               struct mtd_partition *parts, int nr_parts)
- {
- #ifdef CONFIG_MTD_PARTITIONS
--	const char *default_part_probe_types[] = {
-+	static const char *default_part_probe_types[] = {
- 		"cmdlinepart",
- 		"RedBoot",
- 		NULL
-_
-
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
