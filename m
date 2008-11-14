@@ -1,95 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbYKNOv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbYKNPCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991AbYKNOv5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 09:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYKNOvt
+	id S1752304AbYKNPCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 10:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYKNPCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 09:51:49 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:64646 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750727AbYKNOvs (ORCPT
+	Fri, 14 Nov 2008 10:02:11 -0500
+Received: from mtiwmhc11.worldnet.att.net ([204.127.131.115]:49070 "EHLO
+	mtiwmhc11.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751190AbYKNPCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 09:51:48 -0500
-Date: Fri, 14 Nov 2008 15:51:45 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Keith Packard <keithp@keithp.com>
-Subject: Re: [Bug #11988] Eliminate recursive mutex in compat fb ioctl path
-In-Reply-To: <wnN9HICUAgP.A.Z-E.Q4zFJB@chimera>
-Message-ID: <Pine.LNX.4.64.0811141549140.5955@vixen.sonytel.be>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.Z-E.Q4zFJB@chimera>
+	Fri, 14 Nov 2008 10:02:10 -0500
+Message-ID: <491D92EB.2030200@lwfinger.net>
+Date: Fri, 14 Nov 2008 09:02:03 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+CC: LKML <linux-kernel@vger.kernel.org>, linux-pcmcia@lists.infradead.org
+Subject: Strange behavior since commit 5fef0e5c
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 9 Nov 2008, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11988
-> Subject		: Eliminate recursive mutex in compat fb ioctl path
-> Submitter	: Keith Packard <keithp@keithp.com>
-> Date		: 2008-11-03 7:06 (7 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122569604828448&w=4
-> Handled-By	: Keith Packard <keithp@keithp.com>
-> 		  Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Patch		: http://marc.info/?l=linux-kernel&m=122569604828448&w=4
-> 		  http://lkml.org/lkml/2008/10/31/162
+In testing kernel version 2.6.28-rc4 on my server that was running kernel
+2.6.27, an external IDE disk system connected via a PCCard interface failed to
+start because module ide_disk would not load. The console output is as follows:
 
-Fixed in mainline.
+finger@sonylap:~> sudo modprobe -v ide-disk
+WARNING: module 'ide_gd_mod' is unsupported
+FATAL: Module ide_disk not found.
 
-commit a684e7d33096892093456dd56a582cfc3bfad648
-Author: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Date:   Thu Nov 6 12:53:37 2008 -0800
+I did not bisect this problem, but I believe that the following commit
+introduced this change:
 
-    fbdev: fix fb_compat_ioctl() deadlocks
+commit 5fef0e5c0283949f95a7891c9424a9f84448116b
+Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Date:   Fri Oct 17 18:09:12 2008 +0200
 
-    commit 3e680aae4e53ab54cdbb0c29257dae0cbb158e1c ("fb: convert
-    lock/unlock_kernel() into local fb mutex") introduced several deadlocks
-    in the fb_compat_ioctl() path, as mutex_lock() doesn't allow recursion,
-    unlike lock_kernel().  This broke frame buffer applications on 64-bit
-    systems with a 32-bit userland.
-    
-    commit 120a37470c2831fea49fdebaceb5a7039f700ce6 ("framebuffer compat_ioctl
-    deadlock") fixed one of the deadlocks.
-    
-    This patch fixes the remaining deadlocks:
-      - Revert commit 120a37470c2831fea49fdebaceb5a7039f700ce6,
-      - Extract the core logic of fb_ioctl() into a new function do_fb_ioctl(),
-      - Change all callsites of fb_ioctl() where info->lock is already held to
-        call do_fb_ioctl() instead,
-      - Add sparse annotations to all routines that take info->lock.
-    
-    Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-    Cc: Mikulas Patocka <mpatocka@redhat.com>
-    Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-    Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+My work-around has been to change 'modprobe ide-disk' to 'modprobe ide-gd_mod'
+in my startup. Please note that one of the underscores is changed to a hyphen.
 
-With kind regards,
+Thanks,
 
-Geert Uytterhoeven
-Software Architect
+Larry
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
