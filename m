@@ -1,87 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753536AbYKNVls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbYKNVmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753536AbYKNVls (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:41:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbYKNVlV
+	id S1757308AbYKNVmW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbYKNVmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:41:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50348 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755746AbYKNVlU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:41:20 -0500
-Date: Fri, 14 Nov 2008 13:41:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd/physmap: use parse_mtd()
-Message-Id: <20081114134116.972fce2f.akpm@linux-foundation.org>
-In-Reply-To: <1226533189-8492-1-git-send-email-vapier@gentoo.org>
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-	<1226533189-8492-1-git-send-email-vapier@gentoo.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 16:42:07 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40358 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753823AbYKNVmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:42:06 -0500
+Date: Fri, 14 Nov 2008 16:41:45 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: Active waiting with yield()
+In-Reply-To: <1226696221.7685.8148.camel@twins>
+Message-ID: <Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
+  <20081114190616.30dd273e@lxorguk.ukuu.org.uk> 
+ <Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
+ <1226696221.7685.8148.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 18:39:48 -0500
-Mike Frysinger <vapier@gentoo.org> wrote:
+On Fri, 14 Nov 2008, Peter Zijlstra wrote:
 
-> Call parse_mtd() to handle partition/device registration rather than doing
-> it all ourself.
+> On Fri, 2008-11-14 at 14:34 -0500, Mikulas Patocka wrote:
+> > 
+> > On Fri, 14 Nov 2008, Alan Cox wrote:
+> > 
+> > > > * driver unload --- check the count of outstanding requests and call 
+> > > > yield() repeatedly until it goes to zero, then unload.
+> > > 
+> > > Use a wakeup when the request count hits zero
+> > > 
+> > > > * reduced size of data structures (and reduced cache footprint for the hot 
+> > > > path that actually processes requests)
+> > > 
+> > > The CPU will predict the non-wakeup path if that is normal. You can even
+> > > make the wakeup use something like
+> > > 
+> > > 	if (exiting & count == 0)
+> > > 
+> > > to get the prediction righ
+> > > 
+> > > > The downside of yield is slower unloading of the driver by few tens of 
+> > > > miliseconds, but the user doesn't really care about fractions of a second 
+> > > > when unloading drivers.
+> > > 
+> > > And more power usage, plus extremely rude behaviour when virtualising.
+> > 
+> > How these unlikely cases can be rude?
+> > 
+> > If I have a race condition that gets triggered just for one user in the 
+> > world when repeatedly loading & unloading a driver for an hour, and I use 
+> > yield() to solve it, what's wrong with it? A wait queue increases cache 
+> > footprint for every user. (even if I use preallocated hashed wait queue, 
+> > it still eats a cacheline to access it and find out that it's empty)
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> ---
->  drivers/mtd/maps/physmap.c |   21 +--------------------
->  1 files changed, 1 insertions(+), 20 deletions(-)
+> Depending on the situation, yield() might be a NOP and therefore not
+> wait at all and possibly lock up the machine.
 > 
-> diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
-> index 42d844f..9b87fd8 100644
-> --- a/drivers/mtd/maps/physmap.c
-> +++ b/drivers/mtd/maps/physmap.c
-> @@ -84,9 +84,6 @@ static int physmap_flash_remove(struct platform_device *dev)
->  }
->  
->  static const char *rom_probe_types[] = { "cfi_probe", "jedec_probe", "map_rom", NULL };
-> -#ifdef CONFIG_MTD_PARTITIONS
-> -static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
-> -#endif
->  
->  static int physmap_flash_probe(struct platform_device *dev)
->  {
-> @@ -170,23 +167,7 @@ static int physmap_flash_probe(struct platform_device *dev)
->  	if (err)
->  		goto err_out;
->  
-> -#ifdef CONFIG_MTD_PARTITIONS
-> -	err = parse_mtd_partitions(info->cmtd, part_probe_types, &info->parts, 0);
-> -	if (err > 0) {
-> -		add_mtd_partitions(info->cmtd, info->parts, err);
-> -		return 0;
-> -	}
-> -
-> -	if (physmap_data->nr_parts) {
-> -		printk(KERN_NOTICE "Using physmap partition information\n");
-> -		add_mtd_partitions(info->cmtd, physmap_data->parts,
-> -				   physmap_data->nr_parts);
-> -		return 0;
-> -	}
-> -#endif
-> -
-> -	add_mtd_device(info->cmtd);
-> -	return 0;
-> +	return parse_mtd(info->cmtd, NULL, physmap_data->parts, physmap_data->nr_parts);
->  
->  err_out:
->  	physmap_flash_remove(dev);
+> Consider the task in question to be the highest priority RT task on the
+> system, you doing: while (!condition) yield(); will lock up the system,
+> because whatever is to make condition true will never get a chance to
+> run (not considering SMP).
+> 
+> Clearly you don't understand it, please refrain from using it. Use
+> regular condition variables (waitqueues).
 
-This didn't apply due to
-physmap-fix-leak-of-memory-returned-by-parse_mtd_partitions.patch.  I
-just smashed it in anyway.  Should I drop
-physmap-fix-leak-of-memory-returned-by-parse_mtd_partitions.patch
-instead?  Your changelog mentioned nothing about leak-fixing?
+So, use msleep(1) instead of yield() ?
 
+Mikulas
+
+> The rules about yield are:
+> 
+>  - You're likely wrong, don't use it.
+>  - Seriously, you don't need it.
+>  - If you still think you do, goto 1.
+> 
+> In all of the kernel there is 1 valid use (and it might only be in the
+> -rt kernel - didn't check mainline recently).
+> 
+> The _ONLY_ valid use case of yield(), is if you have two equal priority
+> FIFO threads that co-depend. And that situation is almost always
+> avoidable.
+> 
