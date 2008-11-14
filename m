@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbYKNPYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbYKNP0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751726AbYKNPYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 10:24:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753609AbYKNPY1
+	id S1753944AbYKNP0n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 10:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751497AbYKNP0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 10:24:27 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:33488 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753236AbYKNPYY (ORCPT
+	Fri, 14 Nov 2008 10:26:35 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:41273 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751469AbYKNP0e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 10:24:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=oHJnIufBjrSTB+G21aOCr6vI57iQX/op5rhK9GKPqKXlHI/4B9r/mfeWXa183IYaIG
-         pPtvhrHmZeKznZg/5lXcDqLeP4/oTXPp48p19nCe6Ev5woqiXc71pL09ES7L74mzDJTF
-         P1xjYnqjWlg+x4QxunUpGzFunuN1jE6L0ijkw=
-Message-ID: <517f3f820811140724l49dd0f31xffda837afd1986a8@mail.gmail.com>
-Date: Fri, 14 Nov 2008 10:24:22 -0500
-From: "Michael Kerrisk" <mtk.manpages@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] reintroduce accept4
-Cc: "Paul Mackerras" <paulus@samba.org>, subrata@linux.vnet.ibm.com,
-       linux-arch@vger.kernel.org, drepper@redhat.com,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       linux-api@vger.kernel.org, linux-man@vger.kernel.org,
-       davidel@xmailserver.org, netdev@vger.kernel.org, roland@redhat.com,
-       oleg@tv-sign.ru, hch@lst.de, davem@davemloft.net, alan@redhat.com,
-       jakub@redhat.com
-In-Reply-To: <20081113145737.96898aaf.akpm@linux-foundation.org>
+	Fri, 14 Nov 2008 10:26:34 -0500
+Message-ID: <491D987F.1000301@cosmosbay.com>
+Date: Fri, 14 Nov 2008 16:25:51 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andi Kleen <andi@firstfloor.org>, Robert Richter <robert.richter@amd.com>,
+       oprofile-list@lists.sf.net
+CC: Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
+       Jiri Benc <jbenc@suse.cz>, Vilem Marsik <vmarsik@suse.cz>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Oprofile : need to adjust PC by 16 bytes
+References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz> <20081113213744.GA8429@elte.hu> <491CA0DC.8070405@cosmosbay.com>
+In-Reply-To: <491CA0DC.8070405@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
-	 <517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
-	 <20081113140541.23754cad.akpm@linux-foundation.org>
-	 <18716.43376.534965.688695@cargo.ozlabs.ibm.com>
-	 <18716.43543.256621.825529@cargo.ozlabs.ibm.com>
-	 <20081113145737.96898aaf.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 4153705ea8a4e8fa
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 14 Nov 2008 16:25:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Very strange results on my Intel E5450 CPU
 
-> From: Ulrich Drepper <drepper@redhat.com>
->
-> Introduce a new accept4() system call.  The addition of this system call
-> matches analogous changes in 2.6.27 (dup3(), evenfd2(), signalfd4(),
-> inotify_init1(), epoll_create1(), pipe2()) which added new system calls
-> that differed from analogous traditional system calls in adding a flags
-> argument that can be used to access additional functionality.
->
-> The accept4() system call is exactly the same as accept(), except that it
-> adds a flags bit-mask argument.  Two flags are initially implemented.
-> (Most of the new system calls in 2.6.27 also had both of these flags.)
+I found that I have to bias regs->ip by 16 bytes in order to have
+correct profiling.
 
-Add a para break here.
+Does it rings a bell to anyone ?
 
-> SOCK_CLOEXEC causes the close-on-exec (FD_CLOEXEC) flag to be enabled for
-> the new file descriptor returned by accept4().  This is a useful security
-> feature to avoid leaking information in a multithreaded program where one
-> thread is doing an accept() at the same time as another thread is doing a
-> fork() plus exec().
->
+opcontrol --version
+opcontrol: oprofile 0.9.4 compiled on Nov  3 2008 06:45:57
 
-This para break is in the wrong place.
+Thank you
 
-> More details here: http://udrepper.livejournal.com/20407.html "Secure File
-> Descriptor Handling", Ulrich Drepper) The other flag is SOCK_NONBLOCK,
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index 3f1b81a..051fb16 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -131,7 +131,9 @@ static int ppro_check_ctrs(struct pt_regs * const regs,
+                        continue;
+                rdmsrl(msrs->counters[i].addr, val);
+                if (CTR_OVERFLOWED(val)) {
++                       regs->ip -= 0x10;
+                        oprofile_add_sample(regs, i);
++                       regs->ip += 0x10;
+                        wrmsrl(msrs->counters[i].addr, -reset_value[i]);
+                }
+        }
 
-The para break should actually be at the sentence break in the previous line.
-
-Cheers,
-
-Michael
