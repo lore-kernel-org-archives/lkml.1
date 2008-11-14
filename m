@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbYKNKBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbYKNKEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbYKNKBe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 05:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYKNKBY
+	id S1752105AbYKNKEs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 05:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYKNKEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 05:01:24 -0500
-Received: from mail4.iitk.ac.in ([203.197.196.4]:49097 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750877AbYKNKBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 05:01:23 -0500
-Date: Fri, 14 Nov 2008 16:08:06 +0000
-From: Rahul Pydimukkala <prahul@cse.iitk.ac.in>
-To: Andy Lutomirski <luto@myrealbox.com>
-Cc: kyle <kylewong@southa.com>, linux-kernel@vger.kernel.org
-Subject: Re: apache threads not balanced over all CPU cores, schedular problem or apache?
-Message-ID: <20081114160758.GA4074@csews22.cse.iitk.ac.in>
-References: <009401c9454c$6e3a8610$b902a8c0@kyle> <491CF509.7010101@myrealbox.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491CF509.7010101@myrealbox.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 14 Nov 2008 05:04:39 -0500
+Received: from h155.mvista.com ([63.81.120.155]:54509 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750984AbYKNKEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 05:04:39 -0500
+Message-ID: <491D4D2F.4010802@ru.mvista.com>
+Date: Fri, 14 Nov 2008 13:04:31 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Daney <ddaney@caviumnetworks.com>, linux-kernel@vger.kernel.org,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: [PATCH] New IDE/block driver for OCTEON SOC Compact Flash interface.
+References: <491C7F28.2070507@caviumnetworks.com>	<491CC0B6.8020400@ru.mvista.com> <20081114011851.1fa01a33@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081114011851.1fa01a33@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22:48 Thu 13 Nov     , Andy Lutomirski wrote:
-> kyle wrote:
+Hello.
 
-> >top - 12:44:42 up 8 days, 15:45,  7 users,  load average: 2.07, 1.86, 2.02
-> >Tasks: 251 total,   1 running, 249 sleeping,   0 stopped,   1 zombie
-> >Cpu0  :  0.5%us,  0.5%sy,  0.0%ni, 99.0%id,  0.0%wa,  0.0%hi,  0.0%si,
-> >0.0%st
-> >Cpu1  : 14.6%us,  4.4%sy,  0.0%ni, 62.6%id, 17.0%wa,  0.0%hi,  1.5%si,
-> >0.0%st
-> >Cpu2  :  4.3%us,  1.4%sy,  0.0%ni, 93.8%id,  0.0%wa,  0.5%hi,  0.0%si,
-> >0.0%st
-> >Cpu3  :  0.0%us,  0.0%sy,  0.0%ni, 98.0%id,  2.0%wa,  0.0%hi,  0.0%si,
-> >0.0%st
-> >Mem:   8117172k total,  8060936k used,    56236k free,   357488k buffers
-> >Swap:   208824k total,     8436k used,   200388k free,  5765168k cached
-> 
-> Looks like you're mostly idle or waiting for I/O.  From this 
-> information, it looks like the kernel is probably doing the right thing: 
-> keeping a lot of processes that share the same memory and run for very 
-> short periods of time on the same cores to minimize cacheline bouncing.
-> 
-> >
-> >All httpd are running on cpu1 and cpu2 only for several hours, after that,
-> >all httpd may run on cpu1 and cpu3, or cpu2 and cpu3, etc. again for 
-> >several
-> >hours.
-> >
-> >Since the apache is in prefork mode, every httpd instance should be quite
-> >independant, I suppose the CPU schedular should balance the processes over
-> >the avaiable cores. However never seen httpd processes evenly distributed 
-> >to
-> >3 cores, or 4 cores.
-> 
-> Is there any reason to expect it to run faster if it were balanced evenly?
+Alan Cox wrote:
 
-Totally convincing. Thanks Andy for making this clear. I/O-bound processes 
-reap no advantage from processor-level parallelism. 
+>> OTOH, CF support via self-contained driver is certainly a waste of code 
+>> since IDE core and (libata) are here to drive the CF devices as well. 
+>> What we need is a "normal" IDE or libata (at your option) driver.
+>>     
+>
+> A libata driver would be nice and probably easiest to do as you don't
+> have to pretend to be close to old style taskfile IDE for a PC.
+>   
 
--
-Rahul
+   AFAIU you don't need to pretend that with IDE as well now.
 
+> I am not convinced there is no case for a 'dumb' small CF driver, but if
+> so the chipset code and the core code need to be separated as the other
+> requests I see for this are different embedded boxes wanting to keep
+> codesize down.
+>   
+
+  Yeah, that might be worth considering...
+
+> Alan
+>   
+
+WBR, Sergei
 
 
