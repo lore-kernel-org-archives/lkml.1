@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbYKNXHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbYKNXP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbYKNXHa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 18:07:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYKNXHW
+	id S1754806AbYKNXP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 18:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYKNXPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 18:07:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37237 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751399AbYKNXHU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 18:07:20 -0500
-Date: Fri, 14 Nov 2008 15:07:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make /proc/sys/vm/drop_caches write only
-Message-Id: <20081114150705.c98e5004.akpm@linux-foundation.org>
-In-Reply-To: <200811131754.11863.knikanth@suse.de>
-References: <200811131754.11863.knikanth@suse.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 18:15:11 -0500
+Received: from kroah.org ([198.145.64.141]:54523 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751664AbYKNXPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 18:15:10 -0500
+Date: Fri, 14 Nov 2008 15:06:37 -0800
+From: Greg KH <greg@kroah.com>
+To: "J.R. Mauro" <jrm8005@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Can you add the staging tree to -next?
+Message-ID: <20081114230637.GA1415@kroah.com>
+References: <20081112235600.GA27554@kroah.com> <Pine.LNX.4.64.0811140825410.11953@anakin> <20081114173258.GC22980@kroah.com> <3aaafc130811141428ta97f929va8c62cbcdbc731f7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3aaafc130811141428ta97f929va8c62cbcdbc731f7@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 17:54:11 +0530
-Nikanth Karthikesan <knikanth@suse.de> wrote:
+On Fri, Nov 14, 2008 at 05:28:17PM -0500, J.R. Mauro wrote:
+> There also seem to be a lot of build errors that no one hacking on
+> staging has seen before being threshed out by all the randconfig tests
+> done on -next, which will help a lot if we want the staging drivers to
+> actually go anywhere.
 
->  /proc/sys/vm/drop_caches is used only to trigger dropping caches. It does not 
-> disable the cache. The ability to read the value written to this file long 
-> back gives wrong impression.
-> 
-> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> 
-> ---
-> 
-> diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> index 3e5637f..9892e1b 100644
-> --- a/fs/drop_caches.c
-> +++ b/fs/drop_caches.c
-> @@ -66,11 +66,9 @@ int drop_caches_sysctl_handler(ctl_table *table, int write,
->  	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
->  {
->  	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-> -	if (write) {
-> -		if (sysctl_drop_caches & 1)
-> -			drop_pagecache();
-> -		if (sysctl_drop_caches & 2)
-> -			drop_slab();
-> -	}
-> +	if (sysctl_drop_caches & 1)
-> +		drop_pagecache();
-> +	if (sysctl_drop_caches & 2)
-> +		drop_slab();
->  	return 0;
->  }
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index 9d048fa..dff3c13 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -1015,7 +1015,7 @@ static struct ctl_table vm_table[] = {
->  		.procname	= "drop_caches",
->  		.data		= &sysctl_drop_caches,
->  		.maxlen		= sizeof(int),
-> -		.mode		= 0644,
-> +		.mode		= 0200,
->  		.proc_handler	= drop_caches_sysctl_handler,
->  		.strategy	= &sysctl_intvec,
->  	},
+In looking at these in some detail, the majority of them are due to api
+changes in other trees, so these changes will have to be done during the
+-rc1 merge window, which shouldn't be that big of an issue.
 
-True.  But it's a backward-incompatible change, and there's a (small)
-chance that someone's tools will break if we do this.
+But yes, there are some kconfig dependancies as well, Randy is really
+good at finding them :)  If you want to send me patches to fix these,
+I'd appreciate it.
 
-We have to get these things right first time :(
+thanks,
+
+greg k-h
