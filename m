@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYKNSxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYKNS53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbYKNSxt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 13:53:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYKNSxk
+	id S1755380AbYKNS53 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 13:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYKNS5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 13:53:40 -0500
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:59220 "EHLO
-	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbYKNSxk (ORCPT
+	Fri, 14 Nov 2008 13:57:21 -0500
+Received: from smtp1.Stanford.EDU ([171.67.219.81]:33163 "EHLO
+	smtp1.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634AbYKNS5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 13:53:40 -0500
-Date: Fri, 14 Nov 2008 12:53:13 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+	Fri, 14 Nov 2008 13:57:20 -0500
+Subject: Re: [alsa-devel] 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang
+	(tasklet_hi_schedule?)
+From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       alsa-devel@alsa-project.org, Steven Rostedt <rostedt@goodmis.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_OPTIMIZE_INLINING fun
-In-Reply-To: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
-Message-ID: <Pine.LNX.4.64.0811141244060.29394@quilx.com>
-References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+In-Reply-To: <491D33B9.5030308@ladisch.de>
+References: <1226019485.3135.31.camel@localhost.localdomain>
+	 <49140683.9040008@ladisch.de>
+	 <1226610075.23485.20.camel@localhost.localdomain>
+	 <1226616962.23485.28.camel@localhost.localdomain>
+	 <1226621569.23485.44.camel@localhost.localdomain>
+	 <491D33B9.5030308@ladisch.de>
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 10:57:10 -0800
+Message-Id: <1226689030.17495.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Hugh Dickins wrote:
+On Fri, 2008-11-14 at 09:15 +0100, Clemens Ladisch wrote:
+> Fernando Lopez-Lezcano wrote:
+> > I've been trying to follow the printk crumbs without much success.
+> > AFAICT it all points to tasklet_hi_schedule ...
+> 
+> I don't have -rt, but if the error is similar to the old one you might
+> try replacing tasklet_hi_schedule with tasklet_schedule.
 
-> --- 2.6.28-rc4/arch/x86/Kconfig.debug	2008-10-24 09:27:47.000000000 +0100
-> +++ linux/arch/x86/Kconfig.debug	2008-11-14 16:26:15.000000000 +0000
-> @@ -302,6 +302,7 @@ config CPA_DEBUG
->
->  config OPTIMIZE_INLINING
->  	bool "Allow gcc to uninline functions marked 'inline'"
-> +	depends on !CC_OPTIMIZE_FOR_SIZE
->  	help
->  	  This option determines if the kernel forces gcc to inline the functions
->  	  developers have marked 'inline'. Doing so takes away freedom from gcc to
->
+YES YES!! __Thanks__ for the suggestion, it WORKED!!
 
-Maybe add some text explaining that this is some experimental gcc feature?
+Maybe the kernel rt gurus should look around and see _why_ the problem
+was happening in the first place. There are not that many uses of
+tasklet_hi_schedule in the kernel tree I'm working with:
 
-> You'll be amused to see the asm for this example from mm/swap_state.c
-> (I was intending to downgrade these BUG_ONs to VM_BUG_ONs anyway, but
-> this example makes that seem highly desirable):
->
-> void __delete_from_swap_cache(struct page *page)
-> {
-> 	BUG_ON(!PageLocked(page));
-> 	BUG_ON(!PageSwapCache(page));
-> 	BUG_ON(PageWriteback(page));
-> 	BUG_ON(PagePrivate(page));
+./drivers/char/drm/drm_irq.c
+./drivers/infiniband/hw/ehca/ehca_irq.c
+./drivers/infiniband/hw/ipath/ipath_cq.c
+./drivers/infiniband/hw/ipath/ipath_driver.c
+./drivers/infiniband/hw/ipath/ipath_intr.c
+./drivers/infiniband/hw/ipath/ipath_sdma.c
+./drivers/media/video/vino.c
+./drivers/mmc/host/omap.c
+./drivers/mmc/host/wbsd.c
+./drivers/net/chelsio/sge.c
+./drivers/net/ehea/ehea_main.c
+./drivers/net/smc91x.c
+./drivers/s390/block/dasd.c
+./drivers/s390/cio/qdio.c
+./drivers/s390/net/ctcm_fsms.c
+./drivers/s390/net/ctcm_mpc.c
+./drivers/usb/c67x00/c67x00-sched.c
+./drivers/usb/gadget/gmidi.c
+./kernel/softirq.c
+./sound/core/rtctimer.c
+./sound/core/timer.c
+./sound/drivers/vx/vx_core.c
+./sound/drivers/vx/vx_pcm.c
+./sound/pci/es1968.c
+./sound/pci/maestro3.c
+./sound/pci/mixart/mixart_core.c
+./sound/pci/pcxhr/pcxhr.c
+./sound/pci/pcxhr/pcxhr_core.c
+./sound/pci/riptide/riptide.c
+./sound/pci/rme9652/hdsp.c
+./sound/pci/rme9652/hdspm.c
+./sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
+./sound/usb/usbmidi.c
 
-Maybe checking all the conditionals in one BUG_ON is not such a bad idea
-after all? 4 useless branches in a hotpath?
+Maybe other drivers are affected as well by the rt patch. 
+What is the difference between tasklet_hi_schedule and tasklet_schedule?
 
-> Here's the nice asm 4.2.1 gives with just CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-> (different machine, this one a laptop with CONFIG_VMSPLIT_2G_OPT=y):
+Thanks again...
+-- Fernando
 
-Optimize for size is what I also have usually on. Inline "optimization"
-never worked as far as I can tell so I usually have that off.
 
-> I do wonder whether there's some tweak we could make to page-flags.h
-> which would stop this nonsense.  Change the inline functions back to
-> macros?  I suspect that by itself wouldn't work, and my quick attempt
-> to try it failed abysmally to compile, I've not the cpp foo needed.
-
-I think we want to get away from macros as much as possible.
-
-> A part of the problem may be that test_bit() etc. are designed for
-> arrays of unsigned longs, but page->flags is only the one unsigned long:
-> maybe gcc loses track of the optimizations available for that case when
-> CONFIG_OPTIMIZE_INLINING=y.
->
-> Hah, I've just noticed the defaults in arch/x86/configs -
-> you might want to change those...
-
-Argh.. Yes.... CONFIG_OPTIMIZE_INLINING must only be enabled if the
-compiler can actually create a benefit from optimizing the
-inlining. That could be in gcc 4.5 or so I guess.
