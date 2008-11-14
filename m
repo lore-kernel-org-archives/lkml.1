@@ -1,96 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752849AbYKNMi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYKNNFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752849AbYKNMi6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 07:38:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYKNMit
+	id S1752665AbYKNNFw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 08:05:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYKNNFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 07:38:49 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:54620 "EHLO mail.ukfsn.org"
+	Fri, 14 Nov 2008 08:05:40 -0500
+Received: from lucidpixels.com ([75.144.35.66]:44390 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750918AbYKNMis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 07:38:48 -0500
-Date: Fri, 14 Nov 2008 12:38:40 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: i8046:  unbind/bind issue with laptop system password set
-Message-ID: <20081114123840.35c40865@palantir.linicks.net>
-In-Reply-To: <20081114123058.4e7db857@palantir.linicks.net>
-References: <20081114123058.4e7db857@palantir.linicks.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751447AbYKNNFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 08:05:39 -0500
+Date: Fri, 14 Nov 2008 08:05:38 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: Andre Noll <maan@systemlinux.org>
+cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: typo in raid[456] kernel code/no change based on type?
+In-Reply-To: <20081114121942.GN17966@skl-net.de>
+Message-ID: <alpine.DEB.1.10.0811140743050.20662@p34.internal.lan>
+References: <alpine.DEB.1.10.0811121855470.10512@p34.internal.lan> <alpine.DEB.1.10.0811121858300.10512@p34.internal.lan> <20081114121942.GN17966@skl-net.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008 12:30:58 +0000
-Nick Warne <nick@ukfsn.org> wrote:
-
-> Hi all,
-> 
-> This is a strange one.  My laptop, a Dell Inspiron 6400 (UK model
-> MM061) has a BIOS option to set system password that is required on
-> boot/reboot/and on waking up from suspend to RAM (sleep).
-> 
-> This works fine, but after I enter my password during resume, I find
-> my keyboard has gone AWOL (no keys mapped, all keys auto repeat etc.)
-> and shortly mouse buttons die too... so all I can do now is hit the
-> power off button!
-> 
-> log/messages spews out lots of this stuff:
-> Nov 14 11:36:36 palantir kernel: [10330.783152] atkbd.c: Unknown key
-> pressed (raw set 2, code 0x28 on isa0060/serio0). Nov 14 11:36:36
-> palantir kernel: [10330.783164] atkbd.c: Use 'setkeycodes 28
-> <keycode>' to make it known. Nov 14 11:36:37 palantir kernel:
-> [10330.855664] atkbd.c: Unknown key pressed (raw set 2, code 0x128 on
-> isa0060/serio0). Nov 14 11:36:37 palantir kernel: [10330.855676]
-> atkbd.c: Use 'setkeycodes 28 <keycode>' to make it known
-> 
-> I have invested this, and one difference I notice in log/messages
-> during resume activity is this:
-> 
-> WITHOUT system password required:
-> input: AT Translated Set 2 keyboard
-> as /devices/platform/i8042/serio0/input/input1
-> 
-> WITH system password required:
-> input: AT Raw Set 2 keyboard
-> as /devices/platform/i8042/serio16/input/input45
-> 
-> Now, investigating further, I have found that I can replicate this
-> whole issue with this script:
-> 
-> #!/bin/sh
-> echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind
-> sleep 5;
-> echo -n "i8042" > /sys/bus/platform/drivers/i8042/bind
-> 
-> if I hit a key during the sleep stage, the keyboard et al all goes
-> AWOL again.
-> 
-> So, I am presuming here that when my laptop gets woken up, the BIOS
-> system password screen comes, and the /etc/acpi/resume.d/ scripts are
-> being held in stasis until I enter the password.  BUT, I have then
-> used the keyboard before i8042 is echoed to 'bind', and this causes
-> the issue.  Without the system password set, the scipts perhaps run
-> fast enough before I can hit the keyboard in this keyboard state.
-> 
-> One reference I found with similar problem:
-> 
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/5/13/1805874
-
-Forgot!
-
-I am running Ubuntu 8.10 base, with hand built 2.6.27.5 kernel.
-
-BTW, this issue also happens in plain console with no X running.
-
-> Thanks,
-> 
-> Nick
-> 
 
 
--- 
-Free Software Foundation Associate Member 5508
+On Fri, 14 Nov 2008, Andre Noll wrote:
+
+> On 18:58, Justin Piszcz wrote:
+>
+> Please try the patch below which fixes this inconsistency.
+>
+> Andre
+>
+> commit 6c2f32376c59f08a893cd4736d92f000618dd88f
+> Author: Andre Noll <maan@systemlinux.org>
+> Date:   Fri Nov 14 13:31:56 2008 +0100
+>
+>    Improve raid printout for raid levels 4 and 6.
+>
+>    As noted by Justin Piszcz we currently log a "RAID5 conf printout:" message
+>    also for raid4 and raid6 arrays. This trivial patch prints the correct raid
+>    level, adds KERN_INFO to all printk's in print_raid5_conf() and fixes a minor
+>    coding style issue.
+>
+>    Signed-off-by: Andre Noll <maan@systemlinux.org>
+
+[ patch ]
+
+# patch -p1 < /home/jpiszcz/patch 
+patching file drivers/md/raid5.c
+Hunk #1 succeeded at 4302 (offset -41 lines).
+
+Ok, fixed some of them but not all:
+
+before (vanilla 2.6.27.5/6):
+
+[   21.404744] raid5: allocated 10568kB for md3
+[   21.406935] raid5: raid level 6 set md3 active with 8 out of 10 devices, algo
+rithm 2
+[   21.409239] RAID5 conf printout:
+                ^^^^^
+[   21.411544]  --- rd:10 wd:8
+[   21.413812]  disk 0, o:1, dev:sdd1
+[   21.416068]  disk 1, o:1, dev:sdk1
+[   21.418345]  disk 2, o:1, dev:sde1
+[   21.420621]  disk 3, o:1, dev:sdf1
+[   21.422836]  disk 6, o:1, dev:sdg1
+[   21.424941]  disk 7, o:1, dev:sdh1
+[   21.426926]  disk 8, o:1, dev:sdl1
+[   21.428824]  disk 9, o:1, dev:sdi1
+
+after: (with your patch):
+
+[   21.430884] raid5: allocated 10568kB for md3
+[   21.433023] raid5: raid level 6 set md3 active with 10 out of 10 devices, algorithm 2
+[   21.435236] RAID6 printout:
+                ^^^^^ patch fixed this one, but it still says raid5 in other
+                      parts of the code
+[   21.437316]  --- rd:10 wd:10
+[   21.439291]  disk 0, o:1, dev:sdd1
+[   21.441204]  disk 1, o:1, dev:sdk1
+[   21.443013]  disk 2, o:1, dev:sde1
+[   21.444749]  disk 3, o:1, dev:sdf1
+[   21.446383]  disk 4, o:1, dev:sdc1
+[   21.447937]  disk 5, o:1, dev:sdj1
+[   21.449444]  disk 6, o:1, dev:sdg1
+[   21.450873]  disk 7, o:1, dev:sdh1
+[   21.452276]  disk 8, o:1, dev:sdl1
+[   21.453618]  disk 9, o:1, dev:sdi1
+
+Here is the current output that still contains 'raid5':
+
+$ dmesg | grep -i raid5
+[   19.881548] md: raid5 personality registered for level 5
+[   21.408354] raid5: device sdl1 operational as raid disk 8
+[   21.410583] raid5: device sdk1 operational as raid disk 1
+[   21.412789] raid5: device sdj1 operational as raid disk 5
+[   21.414994] raid5: device sdi1 operational as raid disk 9
+[   21.417217] raid5: device sdh1 operational as raid disk 7
+[   21.419420] raid5: device sdg1 operational as raid disk 6
+[   21.421622] raid5: device sdf1 operational as raid disk 3
+[   21.423810] raid5: device sde1 operational as raid disk 2
+[   21.425970] raid5: device sdd1 operational as raid disk 0
+[   21.428090] raid5: device sdc1 operational as raid disk 4
+[   21.430884] raid5: allocated 10568kB for md3
+[   21.433023] raid5: raid level 6 set md3 active with 10 out of 10 devices, algorithm 2
+
+
+Justin.
