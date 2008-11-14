@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYKNXn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbYKNXrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbYKNXn1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 18:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYKNXnT
+	id S1754809AbYKNXrd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 18:47:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYKNXrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 18:43:19 -0500
-Received: from rv-out-0708.google.com ([209.85.198.240]:15955 "EHLO
-	rv-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751822AbYKNXnT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 18:43:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=Girb+DZ3BCaTEmUDHbew6haGc9hGT4AyJ2TUEiBjYB8IiV0MxrYv+6OblK5QfLibud
-         HkWO7J4BHvf78142+25rt5oNeE37ko5zgkKAkBnEbb1XmDLrfswoEmgyoY1qZ8k81D6X
-         uzLmXt+8VZaUzbDotottdLEWfzQ9m6uUvpN4k=
-Message-ID: <3aaafc130811141543g8d1a3e6y1b8ebc473ac34bf5@mail.gmail.com>
-Date: Fri, 14 Nov 2008 18:43:16 -0500
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: Can you add the staging tree to -next?
-Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081114230637.GA1415@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 14 Nov 2008 18:47:25 -0500
+Received: from smtp2.ono.com ([62.42.230.20]:55043 "EHLO resmaa03.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751505AbYKNXrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 18:47:25 -0500
+Date: Sat, 15 Nov 2008 00:47:22 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-IDE <linux-ide@vger.kernel.org>,
+       Mdv Cooker <cooker@mandrivalinux.org>
+Subject: sata-nv and 790i
+Message-ID: <20081115004722.5158e125@werewolf.home>
+X-Mailer: Claws Mail 3.6.1cvs25 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20081112235600.GA27554@kroah.com>
-	 <Pine.LNX.4.64.0811140825410.11953@anakin>
-	 <20081114173258.GC22980@kroah.com>
-	 <3aaafc130811141428ta97f929va8c62cbcdbc731f7@mail.gmail.com>
-	 <20081114230637.GA1415@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 6:06 PM, Greg KH <greg@kroah.com> wrote:
-> On Fri, Nov 14, 2008 at 05:28:17PM -0500, J.R. Mauro wrote:
->> There also seem to be a lot of build errors that no one hacking on
->> staging has seen before being threshed out by all the randconfig tests
->> done on -next, which will help a lot if we want the staging drivers to
->> actually go anywhere.
->
-> In looking at these in some detail, the majority of them are due to api
-> changes in other trees, so these changes will have to be done during the
-> -rc1 merge window, which shouldn't be that big of an issue.
+Hi all...
 
-That's what I'm noticing, but the sooner we know about the issues on
-the horizon, the better.
+I recently put my hands on a system with an ASUS P5N64 WS Pro mobo:
 
->
-> But yes, there are some kconfig dependancies as well, Randy is really
-> good at finding them :)  If you want to send me patches to fix these,
-> I'd appreciate it.
+http://www.asus.com/products.aspx?l1=3&l2=11&l3=653&l4=0&model=2182&modelmenu=1
 
-Yep, I'm working on it :)
+It has a nForce 790i Ultra SLI chipset, the part for the SATA controller
+is MCP55.
 
->
-> thanks,
->
-> greg k-h
->
+The problem is that linux seems to fail to read the hard drive on boot.
+I will explain.
+
+I have tried to install both CentOS 5.2 and Mandriva 2009.0.
+For CentOS (has a 2.6.18 kernel), the install seems ok, but when I reboot
+into the just intalled system the kernel hangs just after printing
+the name of the initrd. Mandriva (2.6.27-rc8) just hungs half the install process.
+Live versions of both hang on boot saying they can not find the root
+device.
+
+I have found some messages in the net about the MCP55 in that board not
+being completeley suppported as AHCI in sata_nv, and that some other
+boards work puttin the SATA controller in 'compatible' mode (with
+loss of performance).
+But I can't find any setting in the P5N64 to put SATA in Compat mode.
+
+Can I do this via some kernel parameters ?
+Somabody has this board working ? Do current kernels have better support
+for this chipset ?
+
+TIA
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.27.5-desktop-1mnb (gcc 4.3.2 (GCC) #1 Sun Nov
