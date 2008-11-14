@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYKNNZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYKNNkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946AbYKNNZU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 08:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYKNNZF
+	id S1753237AbYKNNkg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 08:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbYKNNkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 08:25:05 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:64024 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbYKNNZD convert rfc822-to-8bit (ORCPT
+	Fri, 14 Nov 2008 08:40:24 -0500
+Received: from mx3.schottelius.org ([77.109.138.221]:56390 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbYKNNkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 08:25:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=sL7KNlvVxuHN9ky8nxO7hMdAzgFN9pOJX5wRoHR1/PKC7YOw40Y46moZD6osK023pX
-         9oe3Ky2pJ/JAGFBylBTJOiB+idsRouwq4fhjRpbQLO1sEwOqrNjrba1ZmsBakOjxpgWb
-         COsmKnwFXjA1TUQXKLJxv5jeZ48rSuZ1b8rZw=
-Message-ID: <c62985530811140525y6b73fe6cyc12b6405543cb4a9@mail.gmail.com>
-Date: Fri, 14 Nov 2008 14:25:01 +0100
-From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] ftrace: Add debug_dump trace to dump binary data from kernel to userspace
-Cc: rostedt@goodmis.org, mingo@elte.hu, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <c62985530811140519o112bd5e2s69b682e48e50e67d@mail.gmail.com>
+	Fri, 14 Nov 2008 08:40:23 -0500
+Date: Fri, 14 Nov 2008 12:54:51 +0100
+From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+To: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.28-rc4 suspend issues on Lenovo X200
+Message-ID: <20081114115451.GB4877@denkbrett.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+	linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="i0/AhcQY5QxfSsSZ"
 Content-Disposition: inline
-References: <1226659566-28168-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-	 <1226659566-28168-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-	 <1226659566-28168-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-	 <c62985530811140519o112bd5e2s69b682e48e50e67d@mail.gmail.com>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.28-rc4-denkbrett x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/11/14 Frédéric Weisbecker <fweisbec@gmail.com>:
-> 2008/11/14 Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>:
->> +static int
->> +trace_seq_putmem(struct trace_seq *s, void *mem, size_t len)
->> +{
->> +       if (len > ((PAGE_SIZE - 1) - s->len))
->> +               return 0;
->> +
->> +       memcpy(s->buffer + s->len, mem, len);
->> +       s->len += len;
->> +
->> +       return len;
->> +}
->
->
->
-> I forgot to say that I like the idea of this tracer. That would be
-> useful to dump some random datas from memory.
-> But I would find it much more useful if I could choose whether the
-> output is raw bytes or an hexadecimal drawing of the dump,
-> pretty much like hexdump does. That's better to know where we are in
-> the dump, and to have a directly human readable dump.
->
-> Currently this is not yet possible to choose whether we want a kind of
-> output or one other. Or perhaps by listen to the iter flags.
-> I will probably send a patch to make a tracer able to support custom
-> flags through the old-named iter_ctrl file.
+
+--i0/AhcQY5QxfSsSZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hello!
+
+Using 2.6.28-rc4 and *NO* acpi_sleep=3Ds3_bios:
+
+   - suspend and wakeup on console works (!)
+      -> this is new, before screen was black after wakeup
+   - suspend on x11 works
+     wakeup on x11 freezes, causes automatic reboot
+   - switch away from x11 to console,
+     suspend on console:
+         wakeup -> works
+         switch to x11 -> freeze & reboot
+
+It would be nice, if someone could CC me to
+
+   'nico-linux-lenovox200-suspend at schottelius.org'
+
+if there is some progress made. Currently it's just getting
+me tired always having to fsck the filesystem after a suspend
+try.
+
+Sincerly,
+
+Nico
 
 
-Actually yes, what you could do is verifying whether the current
-trace_flags is TRACE_ITER_HEX or
-TRACE_ITER_BIN and format your output depending on which one is set....
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--i0/AhcQY5QxfSsSZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkkdZwsACgkQuL75KpiFGIwQQQCg4YfiAsOSBaOhOWMZd30kLpOw
+Xu8AoOzKqR3Bfg4YaUipWoe6mUa9EwVQ
+=Sxya
+-----END PGP SIGNATURE-----
+
+--i0/AhcQY5QxfSsSZ--
