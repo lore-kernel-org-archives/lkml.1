@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbYKNIme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbYKNIoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbYKNIme (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 03:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYKNImZ
+	id S1752645AbYKNIoo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 03:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYKNIof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 03:42:25 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33044 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbYKNImZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 03:42:25 -0500
-Date: Fri, 14 Nov 2008 09:40:45 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, jeremy@xensource.com
-Subject: Re: [PATCH] Release old elevator on change elevator
-Message-ID: <20081114084045.GO26778@kernel.dk>
-References: <491D387D.1000501@cn.fujitsu.com>
+	Fri, 14 Nov 2008 03:44:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:26234 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750851AbYKNIof (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 03:44:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=Sb9Pbn3YmHIrH/nTGe/JV/+edkQ3ormQqLbE3EMW3zWNbsFOo6bsHxyonO4CDGSO/a
+         9igHcmsVRNFRFtBzckQkMLlxVyomDGttfMqTtY9aFSp4jkFP1Tl6hFEBHHdOIgeU6kLk
+         7PDz5GY+2gQv855Do2zs4fHNofWy9vqcdbP3M=
+Message-ID: <4104961b0811140044i7e57fedcw568ea1cd82f09167@mail.gmail.com>
+Date: Fri, 14 Nov 2008 16:44:33 +0800
+From: "jidong xiao" <jidong.xiao@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Where is acpi_copy_wakeup_routine in lastest kernel?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <491D387D.1000501@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14 2008, Zhaolei wrote:
-> We should release old elevator when change to use a new one.
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  drivers/block/xen-blkfront.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-> index b220c68..2d19f0c 100644
-> --- a/drivers/block/xen-blkfront.c
-> +++ b/drivers/block/xen-blkfront.c
-> @@ -338,12 +338,18 @@ wait:
->  static int xlvbd_init_blk_queue(struct gendisk *gd, u16 sector_size)
->  {
->  	struct request_queue *rq;
-> +	elevator_t *old_e;
->  
->  	rq = blk_init_queue(do_blkif_request, &blkif_io_lock);
->  	if (rq == NULL)
->  		return -1;
->  
-> -	elevator_init(rq, "noop");
-> +	old_e = rq->elevator;
-> +	if (IS_ERR_VALUE(elevator_init(rq, "noop")))
-> +		printk(KERN_WARNING
-> +			"blkfront: Switch elevator failed, use default\n");
-> +	else
-> +		elevator_exit(old_e);
->  
->  	/* Hard sector size and max sectors impersonate the equiv. hardware. */
->  	blk_queue_hardsect_size(rq, sector_size);
-> -- 
-> 1.5.5.3
+Hi,
 
-I thought we'd already switched that to the nonrot flag, but that is
-merged up for 2.6.29. So this looks appropriate for 2.6.28, I'll queue
-it up.
+In kernels before 2.6.25 there is a function called
+acpi_copy_wakeup_routine, but this routine is disappear ever since
+2.6.26.
 
--- 
-Jens Axboe
+lfs:/usr/src/linux-2.6.25 # grep -r acpi_copy_wakeup_routine *
+arch/x86/kernel/acpi/sleep.c:extern unsigned long
+acpi_copy_wakeup_routine(unsigned long);
+arch/x86/kernel/acpi/sleep.c:   acpi_copy_wakeup_routine(acpi_wakeup_address);
+arch/x86/kernel/acpi/wakeup_32.S:# acpi_copy_wakeup_routine
+arch/x86/kernel/acpi/wakeup_32.S:ENTRY(acpi_copy_wakeup_routine)
+arch/x86/kernel/acpi/wakeup_64.S:# acpi_copy_wakeup_routine
+arch/x86/kernel/acpi/wakeup_64.S:ENTRY(acpi_copy_wakeup_routine)
 
+lfs:/usr/src/linux-2.6.26 # grep -r copy_wakeup_routine *
+arch/x86/kernel/acpi/sleep.h:extern unsigned long
+acpi_copy_wakeup_routine(unsigned long);
+
+It's so strange that the definition is no longer there while there is
+still a declaration. What's the story behind this?Thanks.
+
+Regards
+Jason
