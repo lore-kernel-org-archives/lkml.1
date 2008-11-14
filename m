@@ -1,144 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYKNQlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbYKNQlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753214AbYKNQlR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 11:41:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYKNQlD
+	id S1754341AbYKNQlx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 11:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbYKNQlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 11:41:03 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:55321 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbYKNQlB (ORCPT
+	Fri, 14 Nov 2008 11:41:45 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:42109 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbYKNQlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 11:41:01 -0500
-Date: Fri, 14 Nov 2008 10:40:53 -0600
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: stable@kernel.org, linux-kernel@vger.kernel.org
-Cc: pjssilva@ime.usp.br, akpm@linux-foundation.org, dustin.kirkland@gmail.com,
-       sandeen@redhat.com
-Subject: [PATCH] eCryptfs: Allocate up to two scatterlists for crypto ops
-	on keys
-Message-ID: <20081114164053.GC6624@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+	Fri, 14 Nov 2008 11:41:44 -0500
+Date: Fri, 14 Nov 2008 08:41:25 -0800
+From: Gary Hade <garyhade@us.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
+	relationship with symlinks in sysfs
+Message-ID: <20081114164125.GA7108@us.ibm.com>
+References: <20081103234808.GA13716@us.ibm.com> <1226528175.4835.18.camel@badari-desktop> <20081113165402.GA7084@us.ibm.com> <1226678717.16616.2.camel@badari-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1226678717.16616.2.camel@badari-desktop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have received some reports of out-of-memory errors on some older AMD
-architectures. These errors are what I would expect to see if
-crypt_stat->key were split between two separate pages. eCryptfs should
-not assume that any of the memory sent through virt_to_scatterlist()
-is all contained in a single page, and so this patch allocates two
-scatterlist structs instead of one when processing keys. I have
-received confirmation from one person affected by this bug that this
-patch resolves the issue for him, and so I am submitting it for
-inclusion in a future stable release.
+On Fri, Nov 14, 2008 at 08:05:17AM -0800, Badari Pulavarty wrote:
+> On Thu, 2008-11-13 at 08:54 -0800, Gary Hade wrote:
+> > On Wed, Nov 12, 2008 at 02:16:15PM -0800, Badari Pulavarty wrote:
+> > > On Mon, 2008-11-03 at 15:48 -0800, Gary Hade wrote:
+> > > > Show node to memory section relationship with symlinks in sysfs
+> > > > 
+> > > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> > > > the memory sections located on nodeX.  For example:
+> > > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > > > indicates that memory section 135 resides on node1.
+> > > > 
+> > > > Also revises documentation to cover this change as well as updating
+> > > > Documentation/ABI/testing/sysfs-devices-memory to include descriptions
+> > > > of memory hotremove files 'phys_device', 'phys_index', and 'state'
+> > > > that were previously not described there.
+> > > > 
+> > > > In addition to it always being a good policy to provide users with
+> > > > the maximum possible amount of physical location information for
+> > > > resources that can be hot-added and/or hot-removed, the following
+> > > > are some (but likely not all) of the user benefits provided by
+> > > > this change.
+> > > > Immediate:
+> > > >   - Provides information needed to determine the specific node
+> > > >     on which a defective DIMM is located.  This will reduce system
+> > > >     downtime when the node or defective DIMM is swapped out.
+> > > >   - Prevents unintended onlining of a memory section that was 
+> > > >     previously offlined due to a defective DIMM.  This could happen
+> > > >     during node hot-add when the user or node hot-add assist script
+> > > >     onlines _all_ offlined sections due to user or script inability
+> > > >     to identify the specific memory sections located on the hot-added
+> > > >     node.  The consequences of reintroducing the defective memory
+> > > >     could be ugly.
+> > > >   - Provides information needed to vary the amount and distribution
+> > > >     of memory on specific nodes for testing or debugging purposes.
+> > > > Future:
+> > > >   - Will provide information needed to identify the memory
+> > > >     sections that need to be offlined prior to physical removal
+> > > >     of a specific node.
+> > > > 
+> > > > Symlink creation during boot was tested on 2-node x86_64, 2-node
+> > > > ppc64, and 2-node ia64 systems.  Symlink creation during physical
+> > > > memory hot-add tested on a 2-node x86_64 system.
+> > > > 
+> > > > Supersedes the "mm: show memory section to node relationship in sysfs"
+> > > > patch posted on 05 Sept 2008 which created node ID containing 'node'
+> > > > files in /sys/devices/system/memory/memoryX instead of symlinks.
+> > > > Changed from files to symlinks due to feedback that symlinks were
+> > > > more consistent with the sysfs way.
+> > > > 
+> > > > Supersedes the "mm: show node to memory section relationship with
+> > > > symlinks in sysfs" patch posted on 29 Sept 2008 to address a Yasunori
+> > > > Goto reported problem where an incorrect symlink was created due to
+> > > > a range of uninitialized pages at the beginning of a section.  This
+> > > > problem which produced a symlink in /sys/devices/system/node/node0
+> > > > that incorrectly referenced a mem section located on node1 is corrected
+> > > > in this version.  This version also covers the case were a mem section
+> > > > could span multiple nodes.
+> > > > 
+> > > > Supersedes the "mm: show node to memory section relationship with
+> > > > symlinks in sysfs" patch posted on 09 Oct 2008 to add the Andrew
+> > > > Morton requested usefulness information and update to apply cleanly
+> > > > to 2.6.28-rc3 and 2.6-git.  Code is unchanged.
+> > > > 
+> > > > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> > > > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > > > 
+> > > 
+> > > Hi Gary,
+> > > 
+> > > While testing latest mmtom (which has this patch) ran into an issue
+> > > with sysfs files. What I noticed was, with this patch "memoryXX"
+> > > directories in /sys/devices/system/memory/ are not getting cleaned up.
+> > > Backing out the patch seems to fix the problem. 
+> > > 
+> > > When I tried to remove 64 blocks of memory, empty  directories are
+> > > stayed around. (look at memory151 - memory215). This is causing OOPS
+> > > while trying to add memory block again. I think this could be because 
+> > > of the symlink added from node directory.  Can you look ?
+> > 
+> > Badari, The call to unregister_mem_sect_under_nodes() in
+> > remove_memory_block() preceding the removal of the files in
+> > the memory section directory _should have_ removed all the
+> > symlinks referencing the memory section directory.  Did you
+> > happen to check to see if the symlinks to memory151-memory215
+> > were still present?
+> > 
+> > Gary
+> > 
+> 
+> Hi Gary,
+> 
+> As discussed earlier, patch is leaving an extra reference on the
+> memoryX directory. Needs a kobject_put() to match the reference
+> you get in find_memory_block().
 
-Note that virt_to_scatterlist() runs sg_init_table() on the
-scatterlist structs passed to it, so the calls to sg_init_table() in
-decrypt_passphrase_encrypted_session_key() are redundant.
+Badari, Thanks again for finding that!
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
-Reported-by: Paulo J. S. Silva <pjssilva@ime.usp.br>
+> 
+> Could you update the patch and resend it ?
 
----
-diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
-index e22bc39..0d713b6 100644
---- a/fs/ecryptfs/keystore.c
-+++ b/fs/ecryptfs/keystore.c
-@@ -1037,17 +1037,14 @@ static int
- decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
- 					 struct ecryptfs_crypt_stat *crypt_stat)
- {
--	struct scatterlist dst_sg;
--	struct scatterlist src_sg;
-+	struct scatterlist dst_sg[2];
-+	struct scatterlist src_sg[2];
- 	struct mutex *tfm_mutex;
- 	struct blkcipher_desc desc = {
- 		.flags = CRYPTO_TFM_REQ_MAY_SLEEP
- 	};
- 	int rc = 0;
- 
--	sg_init_table(&dst_sg, 1);
--	sg_init_table(&src_sg, 1);
--
- 	if (unlikely(ecryptfs_verbosity > 0)) {
- 		ecryptfs_printk(
- 			KERN_DEBUG, "Session key encryption key (size [%d]):\n",
-@@ -1066,8 +1063,8 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
- 	}
- 	rc = virt_to_scatterlist(auth_tok->session_key.encrypted_key,
- 				 auth_tok->session_key.encrypted_key_size,
--				 &src_sg, 1);
--	if (rc != 1) {
-+				 src_sg, 2);
-+	if (rc < 1 || rc > 2) {
- 		printk(KERN_ERR "Internal error whilst attempting to convert "
- 			"auth_tok->session_key.encrypted_key to scatterlist; "
- 			"expected rc = 1; got rc = [%d]. "
-@@ -1079,8 +1076,8 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
- 		auth_tok->session_key.encrypted_key_size;
- 	rc = virt_to_scatterlist(auth_tok->session_key.decrypted_key,
- 				 auth_tok->session_key.decrypted_key_size,
--				 &dst_sg, 1);
--	if (rc != 1) {
-+				 dst_sg, 2);
-+	if (rc < 1 || rc > 2) {
- 		printk(KERN_ERR "Internal error whilst attempting to convert "
- 			"auth_tok->session_key.decrypted_key to scatterlist; "
- 			"expected rc = 1; got rc = [%d]\n", rc);
-@@ -1096,7 +1093,7 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
- 		rc = -EINVAL;
- 		goto out;
- 	}
--	rc = crypto_blkcipher_decrypt(&desc, &dst_sg, &src_sg,
-+	rc = crypto_blkcipher_decrypt(&desc, dst_sg, src_sg,
- 				      auth_tok->session_key.encrypted_key_size);
- 	mutex_unlock(tfm_mutex);
- 	if (unlikely(rc)) {
-@@ -1539,8 +1536,8 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
- 	size_t i;
- 	size_t encrypted_session_key_valid = 0;
- 	char session_key_encryption_key[ECRYPTFS_MAX_KEY_BYTES];
--	struct scatterlist dst_sg;
--	struct scatterlist src_sg;
-+	struct scatterlist dst_sg[2];
-+	struct scatterlist src_sg[2];
- 	struct mutex *tfm_mutex = NULL;
- 	u8 cipher_code;
- 	size_t packet_size_length;
-@@ -1619,8 +1616,8 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
- 		ecryptfs_dump_hex(session_key_encryption_key, 16);
- 	}
- 	rc = virt_to_scatterlist(crypt_stat->key, key_rec->enc_key_size,
--				 &src_sg, 1);
--	if (rc != 1) {
-+				 src_sg, 2);
-+	if (rc < 1 || rc > 2) {
- 		ecryptfs_printk(KERN_ERR, "Error generating scatterlist "
- 				"for crypt_stat session key; expected rc = 1; "
- 				"got rc = [%d]. key_rec->enc_key_size = [%d]\n",
-@@ -1629,8 +1626,8 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
- 		goto out;
- 	}
- 	rc = virt_to_scatterlist(key_rec->enc_key, key_rec->enc_key_size,
--				 &dst_sg, 1);
--	if (rc != 1) {
-+				 dst_sg, 2);
-+	if (rc < 1 || rc > 2) {
- 		ecryptfs_printk(KERN_ERR, "Error generating scatterlist "
- 				"for crypt_stat encrypted session key; "
- 				"expected rc = 1; got rc = [%d]. "
-@@ -1651,7 +1648,7 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
- 	rc = 0;
- 	ecryptfs_printk(KERN_DEBUG, "Encrypting [%d] bytes of the key\n",
- 			crypt_stat->key_size);
--	rc = crypto_blkcipher_encrypt(&desc, &dst_sg, &src_sg,
-+	rc = crypto_blkcipher_encrypt(&desc, dst_sg, src_sg,
- 				      (*key_rec).enc_key_size);
- 	mutex_unlock(tfm_mutex);
- 	if (rc) {
+Will do.
+
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
+
