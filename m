@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbYKNWAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYKNWHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbYKNWAk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 17:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYKNWAa
+	id S1754657AbYKNWHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 17:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYKNWHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 17:00:30 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:56192 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751670AbYKNWAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 17:00:30 -0500
-Date: Fri, 14 Nov 2008 23:00:26 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org, sdhci-devel@list.drzeus.cx,
-       Ben Dooks <ben-linux@fluff.org>
-Subject: Re: [patch 6/7] SDHCI: Check DMA for overruns at end of transfer
-Message-ID: <20081114230026.18513b8a@mjolnir.drzeus.cx>
-In-Reply-To: <20081103201010.820070757@fluff.org.uk>
-References: <20081103200944.099353331@fluff.org.uk>
-	<20081103201010.820070757@fluff.org.uk>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Nov 2008 17:07:40 -0500
+Received: from rv-out-0506.google.com ([209.85.198.233]:3301 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751536AbYKNWHj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 17:07:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=S6UqzCcW2RUGSaWhi6xeVfmxEkel7YIRxV3gxGSVFIZNgeSUr2yFcpIKVlwRyBtMa5
+         2wWrpfAvLScrQ3wJ08HM0MrQhcVnPKRmw+iZXyUEn2lIjLVh8Y1rfpMyYsgQqeG+lzE9
+         aLd1DTd+ahVkMEVy89+RYHoDoTI0t2Zd+74cc=
+Message-ID: <8bd0f97a0811141407nde33c5tb90536c4983b53b4@mail.gmail.com>
+Date: Fri, 14 Nov 2008 17:07:38 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mtd/physmap: use parse_mtd()
+Cc: "Mike Frysinger" <vapier@gentoo.org>, linux-mtd@lists.infradead.org,
+       dwmw2@infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081114134116.972fce2f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
+	 <1226533189-8492-1-git-send-email-vapier@gentoo.org>
+	 <20081114134116.972fce2f.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 03 Nov 2008 20:09:50 +0000
-Ben Dooks <ben-linux@fluff.org> wrote:
+On Fri, Nov 14, 2008 at 16:41, Andrew Morton wrote:
+> On Wed, 12 Nov 2008 18:39:48 -0500
+> Mike Frysinger <vapier@gentoo.org> wrote:
+>> Call parse_mtd() to handle partition/device registration rather than doing
+>> it all ourself.
+>>
+>> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+>> ---
+>>  drivers/mtd/maps/physmap.c |   21 +--------------------
+>>  1 files changed, 1 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
+>> index 42d844f..9b87fd8 100644
+>> --- a/drivers/mtd/maps/physmap.c
+>> +++ b/drivers/mtd/maps/physmap.c
+>> @@ -84,9 +84,6 @@ static int physmap_flash_remove(struct platform_device *dev)
+>>  }
+>>
+>>  static const char *rom_probe_types[] = { "cfi_probe", "jedec_probe", "map_rom", NULL };
+>> -#ifdef CONFIG_MTD_PARTITIONS
+>> -static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
+>> -#endif
+>>
+>>  static int physmap_flash_probe(struct platform_device *dev)
+>>  {
+>> @@ -170,23 +167,7 @@ static int physmap_flash_probe(struct platform_device *dev)
+>>       if (err)
+>>               goto err_out;
+>>
+>> -#ifdef CONFIG_MTD_PARTITIONS
+>> -     err = parse_mtd_partitions(info->cmtd, part_probe_types, &info->parts, 0);
+>> -     if (err > 0) {
+>> -             add_mtd_partitions(info->cmtd, info->parts, err);
+>> -             return 0;
+>> -     }
+>> -
+>> -     if (physmap_data->nr_parts) {
+>> -             printk(KERN_NOTICE "Using physmap partition information\n");
+>> -             add_mtd_partitions(info->cmtd, physmap_data->parts,
+>> -                                physmap_data->nr_parts);
+>> -             return 0;
+>> -     }
+>> -#endif
+>> -
+>> -     add_mtd_device(info->cmtd);
+>> -     return 0;
+>> +     return parse_mtd(info->cmtd, NULL, physmap_data->parts, physmap_data->nr_parts);
+>>
+>>  err_out:
+>>       physmap_flash_remove(dev);
+>
+> This didn't apply due to
+> physmap-fix-leak-of-memory-returned-by-parse_mtd_partitions.patch.  I
+> just smashed it in anyway.  Should I drop
+> physmap-fix-leak-of-memory-returned-by-parse_mtd_partitions.patch
+> instead?  Your changelog mentioned nothing about leak-fixing?
 
-> At the end of a transfer, check that the DMA engine in the
-> SDHCI controller actually did what it was meant to and didn't
-> overrun the end of the buffer.
-> 
-> This seems to be triggered by a timeout during an CMD25 (multiple block         
-> write) to a card. The mmc_block module then issues a command to find out        
-> how much data was moved and this seems to end up triggering this DMA            
-> check. The result is the card's queue generates an OOPS as the stack has        
-> been trampled on due to the extra data transfered.
-> 
-> Signed-off-by: Ben Dooks <ben-linux@fluff.org>
+i'd like feedback from the main mtd guy(s) first, but if you're going
+to queue things, it should be with v2 that i posted rather than this
+set.
 
-I'm sorry, but I don't see how this is anywhere near acceptable. This
-should be a panic at the very least, and until this can be sorted out
-and avoided the driver should avoid using DMA on these chips.
-
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+while mine doesnt explicitly mention leak fixing, it does fix it in
+the process of moving code about.  so if you do add v2, you can safely
+drop the leak fix.
+-mike
