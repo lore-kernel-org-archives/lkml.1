@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbYKNQV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYKNQ0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753068AbYKNQV3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 11:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYKNQVV
+	id S1753214AbYKNQ0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 11:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYKNQ0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 11:21:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38085 "EHLO mx2.redhat.com"
+	Fri, 14 Nov 2008 11:26:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54288 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYKNQVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 11:21:20 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Fix an uninitialised variable warning in the 8250 driver
-To: linux-serial@vger.kernel.org, akpm@linux-foundation.org
-Cc: alan@lxorguk.ukuu.org.uk, dhowells@redhat.com,
+	id S1751278AbYKNQ0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 11:26:30 -0500
+Date: Fri, 14 Nov 2008 18:26:33 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, daniel@hozac.com,
+       Nadia Derbey <Nadia.Derbey@bull.net>, serue@us.ibm.com, clg@fr.ibm.com,
+       Containers <containers@lists.osdl.org>, sukadev@us.ibm.com,
        linux-kernel@vger.kernel.org
-Date: Fri, 14 Nov 2008 16:20:38 +0000
-Message-ID: <20081114162038.23016.20581.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+Subject: Re: Signals to cinit
+Message-ID: <20081114172633.GA10508@redhat.com>
+References: <20081101180505.GA24268@us.ibm.com> <20081110173839.GA11121@redhat.com> <20081110193228.GA15519@redhat.com> <20081111022405.GB20891@us.ibm.com> <20081112150555.GB13269@redhat.com> <20081112190421.GE3230@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081112190421.GE3230@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix an uninitialised variable warning in the 8250 driver:
+On 11/12, Sukadev Bhattiprolu wrote:
+>
+> Oleg Nesterov [oleg@redhat.com] wrote:
+>
+> | On 11/10, sukadev@linux.vnet.ibm.com wrote:
+> | >
+> | > Also, what happens if a fatal signal is first received from a descendant
+> | > and while that is still pending, the same signal is received from ancestor
+> | > ns ?  Won't the second one be ignored by legacy_queue() for the non-rt case ?
+>
+> On second thoughts, cinit is a normal process in its ancestor ns so it
+> might very well ignore the second instance of the signal (as long as it
+> does not ignore SIGKILL/SIGSTOP)
+>
+> |
+> | Please see my another email:
+> |
+> | 	We must also change sig_ignored() to drop SIGKILL/SIGSTOP early when
+> | 	it comes from the same ns. Otherwise, it can mask the next SIGKILL
+> | 	from the parent ns.
+>
+> Ok.
+>
+> |
+> | 	But this perhaps makes sense anyway, even without containers.
+> | 	Currently, when the global init has the pending SIGKILL, we can't
+> | 	trust __wait_event_killable/etc, and this is actually wrong.
+> |
+> | We can drop other SIG_DFL signals from the same namespace early as well.
+>
+> I think Eric's patchset did this and iirc, we ran into the problem of
+> blocked SIG_DFL signals ?
 
-  CC      drivers/serial/8250.o
-drivers/serial/8250.c: In function 'serial8250_shutdown':
-drivers/serial/8250.c:1612: warning: 'i' may be used uninitialized in this function
+Yes sure, I meant unblocked SIG_DFL signals. But SIGKILL can't be
+blocked fortunately.
 
-This has the added advantage of removing a conditional test from the main path
-as the BUG_ON() that indicated the loop dropped off the end is now bypassed in
-the event of a successful search.  Indeed that BUG_ON() can now be a BUG() as
-the only way to reach it automatically makes its condition true.
+Again, the parent ns can't rely on, say, SIGTERM. It can be missed
+if cinit has a handler, we can do nothing in this case. And if it
+is blocked, most probably cinit already has a handler, or it will
+set it later, say, after exec. Or it can be just ignored.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+> | Or, we can just ignore this (imho) minor problem.
+>
+> I think so too.
 
- drivers/serial/8250.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Great, so perhaps we can ignore the problem for now, and fix it
+later if the need arises.
 
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 303272a..62cf7e5 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1620,10 +1620,11 @@ static void serial_unlink_irq_chain(struct uart_8250_port *up)
- 	hlist_for_each(n, h) {
- 		i = hlist_entry(n, struct irq_info, node);
- 		if (i->irq == up->port.irq)
--			break;
-+			goto found;
- 	}
-+	BUG();
- 
--	BUG_ON(n == NULL);
-+found:
- 	BUG_ON(i->head == NULL);
- 
- 	if (list_empty(i->head))
+Oleg.
 
