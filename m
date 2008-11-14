@@ -1,85 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbYKNEww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYKNExV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbYKNEww (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 23:52:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYKNEwl
+	id S1754864AbYKNExV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 23:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYKNExK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 23:52:41 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:48803 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750957AbYKNEwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 23:52:40 -0500
-Date: Fri, 14 Nov 2008 10:21:35 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, jkenisto@us.ibm.com,
-       davem@davemloft.net, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com
-Subject: Re: [PATCH 4/7] kprobes: Support probing module __exit function
-Message-ID: <20081114045135.GA3141@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <4919F19A.9050904@redhat.com> <20081113162739.5e871fab.akpm@linux-foundation.org>
+	Thu, 13 Nov 2008 23:53:10 -0500
+Received: from rv-out-0506.google.com ([209.85.198.237]:39560 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYKNExI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 23:53:08 -0500
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: [PATCH] powerpc/virtex: fix various format/casting printk mismatches
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, jwboyer@gmail.com
+Date: Thu, 13 Nov 2008 21:53:04 -0700
+Message-ID: <20081114045304.15077.72430.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113162739.5e871fab.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 04:27:39PM -0800, Andrew Morton wrote:
-> On Tue, 11 Nov 2008 15:56:58 -0500
-> Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
-> > @@ -69,9 +69,6 @@ struct kprobe {
-> >  	/* list of kprobes for multi-handler support */
-> >  	struct list_head list;
-> > 
-> > -	/* Indicates that the corresponding module has been ref counted */
-> > -	unsigned int mod_refcounted;
-> > -
-> >  	/*count the number of times this probe was temporarily disarmed */
-> >  	unsigned long nmissed;
-> > 
-> > @@ -103,8 +100,19 @@ struct kprobe {
-> > 
-> >  	/* copy of the original instruction */
-> >  	struct arch_specific_insn ainsn;
-> > +
-> > +	/* Indicates various status flags */
-> > +	u32 flags;
-> >  };
-> > 
-> > +/* Kprobe status flags */
-> > +#define KPROBE_FLAG_GONE	1 /* breakpoint has already gone */
-> > +
-> > +static inline int kprobe_gone(struct kprobe *p)
-> > +{
-> > +	return p->flags & KPROBE_FLAG_GONE;
-> > +}
-> 
-> If we're not going to use atomic bitops on kprobe.flags then
-> modifications to that member will require that the caller hold a lock. 
-> The comment above that member should describe its locking protocol.  It
-> seems that it is kprobe_mutex, so...
-> 
-> --- a/include/linux/kprobes.h~kprobes-support-probing-module-__exit-function-fix
-> +++ a/include/linux/kprobes.h
-> @@ -101,7 +101,7 @@ struct kprobe {
->  	/* copy of the original instruction */
->  	struct arch_specific_insn ainsn;
-> 
-> -	/* Indicates various status flags */
-> +	/* Indicates various status flags.  Protected by kprobe_mutex. */
->  	u32 flags;
->  };
-> 
-> _
-> 
-> 
-> yes?
+From: Grant Likely <grant.likely@secretlab.ca>
 
-Right, setting and resetting is done under the kprobe_mutex.
+Various printk format string in code used by the Xilinx Virtex platform
+are not 32-bit/64-bit safe.  Add correct casting to fix the bugs.
 
-Ananth
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+
+ arch/powerpc/sysdev/xilinx_intc.c          |    4 ++--
+ drivers/char/xilinx_hwicap/xilinx_hwicap.c |    9 +++++----
+ drivers/serial/uartlite.c                  |    4 ++--
+ drivers/video/xilinxfb.c                   |    5 +++--
+ 4 files changed, 12 insertions(+), 10 deletions(-)
+
+
+diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
+index b7aefd0..a22e1a2 100644
+--- a/arch/powerpc/sysdev/xilinx_intc.c
++++ b/arch/powerpc/sysdev/xilinx_intc.c
+@@ -107,8 +107,8 @@ xilinx_intc_init(struct device_node *np)
+ 	}
+ 	regs = ioremap(res.start, 32);
+ 
+-	printk(KERN_INFO "Xilinx intc at 0x%08LX mapped to 0x%p\n",
+-		res.start, regs);
++	printk(KERN_INFO "Xilinx intc at 0x%08llx mapped to 0x%p\n",
++		(unsigned long long) res.start, regs);
+ 
+ 	/* Setup interrupt controller */
+ 	out_be32(regs + XINTC_IER, 0); /* disable all irqs */
+diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+index ed132fe..d161319 100644
+--- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
++++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+@@ -626,7 +626,7 @@ static int __devinit hwicap_setup(struct device *dev, int id,
+ 	if (!request_mem_region(drvdata->mem_start,
+ 					drvdata->mem_size, DRIVER_NAME)) {
+ 		dev_err(dev, "Couldn't lock memory region at %Lx\n",
+-			regs_res->start);
++			(unsigned long long) regs_res->start);
+ 		retval = -EBUSY;
+ 		goto failed1;
+ 	}
+@@ -645,9 +645,10 @@ static int __devinit hwicap_setup(struct device *dev, int id,
+ 	mutex_init(&drvdata->sem);
+ 	drvdata->is_open = 0;
+ 
+-	dev_info(dev, "ioremap %lx to %p with size %Lx\n",
+-		 (unsigned long int)drvdata->mem_start,
+-			drvdata->base_address, drvdata->mem_size);
++	dev_info(dev, "ioremap %llx to %p with size %llx\n",
++		 (unsigned long long) drvdata->mem_start,
++		 drvdata->base_address,
++		 (unsigned long long) drvdata->mem_size);
+ 
+ 	cdev_init(&drvdata->cdev, &hwicap_fops);
+ 	drvdata->cdev.owner = THIS_MODULE;
+diff --git a/drivers/serial/uartlite.c b/drivers/serial/uartlite.c
+index 6a3f8fb..3317148 100644
+--- a/drivers/serial/uartlite.c
++++ b/drivers/serial/uartlite.c
+@@ -286,8 +286,8 @@ static void ulite_release_port(struct uart_port *port)
+ 
+ static int ulite_request_port(struct uart_port *port)
+ {
+-	pr_debug("ulite console: port=%p; port->mapbase=%x\n",
+-		 port, port->mapbase);
++	pr_debug("ulite console: port=%p; port->mapbase=%llx\n",
++		 port, (unsigned long long) port->mapbase);
+ 
+ 	if (!request_mem_region(port->mapbase, ULITE_REGION, "uartlite")) {
+ 		dev_err(port->dev, "Memory region busy\n");
+diff --git a/drivers/video/xilinxfb.c b/drivers/video/xilinxfb.c
+index 5da3d24..40a3a2a 100644
+--- a/drivers/video/xilinxfb.c
++++ b/drivers/video/xilinxfb.c
+@@ -298,8 +298,9 @@ static int xilinxfb_assign(struct device *dev, unsigned long physaddr,
+ 
+ 	/* Put a banner in the log (for DEBUG) */
+ 	dev_dbg(dev, "regs: phys=%lx, virt=%p\n", physaddr, drvdata->regs);
+-	dev_dbg(dev, "fb: phys=%p, virt=%p, size=%x\n",
+-		(void*)drvdata->fb_phys, drvdata->fb_virt, fbsize);
++	dev_dbg(dev, "fb: phys=%llx, virt=%p, size=%x\n",
++		(unsigned long long) drvdata->fb_phys, drvdata->fb_virt,
++		fbsize);
+ 
+ 	return 0;	/* success */
+ 
+
