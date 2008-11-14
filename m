@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbYKNWHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYKNWNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbYKNWHs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 17:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbYKNWHk
+	id S1754621AbYKNWNT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 17:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYKNWNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 17:07:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:3301 "EHLO
+	Fri, 14 Nov 2008 17:13:10 -0500
+Received: from rv-out-0506.google.com ([209.85.198.225]:4844 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbYKNWHj (ORCPT
+	with ESMTP id S1750936AbYKNWNJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 17:07:39 -0500
+	Fri, 14 Nov 2008 17:13:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=S6UqzCcW2RUGSaWhi6xeVfmxEkel7YIRxV3gxGSVFIZNgeSUr2yFcpIKVlwRyBtMa5
-         2wWrpfAvLScrQ3wJ08HM0MrQhcVnPKRmw+iZXyUEn2lIjLVh8Y1rfpMyYsgQqeG+lzE9
-         aLd1DTd+ahVkMEVy89+RYHoDoTI0t2Zd+74cc=
-Message-ID: <8bd0f97a0811141407nde33c5tb90536c4983b53b4@mail.gmail.com>
-Date: Fri, 14 Nov 2008 17:07:38 -0500
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mtd/physmap: use parse_mtd()
-Cc: "Mike Frysinger" <vapier@gentoo.org>, linux-mtd@lists.infradead.org,
-       dwmw2@infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20081114134116.972fce2f.akpm@linux-foundation.org>
+        b=K9R8/pYUWgKaP5GEwK5rFtgIWXUAGfI/mYZSzFo/KpFM8KStTDv3UvrJVNCtrNcv0T
+         MqpZCns/wP0TNmV9ytbzEGgeYBCVyQL1YIx6ZphBpoRSsgonDveHrbevnbnbmqhvVPzJ
+         S4SKgbMs3X/pdjJ2GkH2x6Pc6+933kyQCfsu8=
+Message-ID: <3aaafc130811141413u7d1ee054g9690f1837d96ae6d@mail.gmail.com>
+Date: Fri, 14 Nov 2008 17:13:07 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for November 14 (staging#2)
+Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081114101111.f138c2ba.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-	 <1226533189-8492-1-git-send-email-vapier@gentoo.org>
-	 <20081114134116.972fce2f.akpm@linux-foundation.org>
+References: <20081114184021.ed198f4b.sfr@canb.auug.org.au>
+	 <20081114101111.f138c2ba.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 16:41, Andrew Morton wrote:
-> On Wed, 12 Nov 2008 18:39:48 -0500
-> Mike Frysinger <vapier@gentoo.org> wrote:
->> Call parse_mtd() to handle partition/device registration rather than doing
->> it all ourself.
->>
->> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->> ---
->>  drivers/mtd/maps/physmap.c |   21 +--------------------
->>  1 files changed, 1 insertions(+), 20 deletions(-)
->>
->> diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
->> index 42d844f..9b87fd8 100644
->> --- a/drivers/mtd/maps/physmap.c
->> +++ b/drivers/mtd/maps/physmap.c
->> @@ -84,9 +84,6 @@ static int physmap_flash_remove(struct platform_device *dev)
->>  }
->>
->>  static const char *rom_probe_types[] = { "cfi_probe", "jedec_probe", "map_rom", NULL };
->> -#ifdef CONFIG_MTD_PARTITIONS
->> -static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
->> -#endif
->>
->>  static int physmap_flash_probe(struct platform_device *dev)
->>  {
->> @@ -170,23 +167,7 @@ static int physmap_flash_probe(struct platform_device *dev)
->>       if (err)
->>               goto err_out;
->>
->> -#ifdef CONFIG_MTD_PARTITIONS
->> -     err = parse_mtd_partitions(info->cmtd, part_probe_types, &info->parts, 0);
->> -     if (err > 0) {
->> -             add_mtd_partitions(info->cmtd, info->parts, err);
->> -             return 0;
->> -     }
->> -
->> -     if (physmap_data->nr_parts) {
->> -             printk(KERN_NOTICE "Using physmap partition information\n");
->> -             add_mtd_partitions(info->cmtd, physmap_data->parts,
->> -                                physmap_data->nr_parts);
->> -             return 0;
->> -     }
->> -#endif
->> -
->> -     add_mtd_device(info->cmtd);
->> -     return 0;
->> +     return parse_mtd(info->cmtd, NULL, physmap_data->parts, physmap_data->nr_parts);
->>
->>  err_out:
->>       physmap_flash_remove(dev);
+On Fri, Nov 14, 2008 at 1:11 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Fri, 14 Nov 2008 18:40:21 +1100 Stephen Rothwell wrote:
 >
-> This didn't apply due to
-> physmap-fix-leak-of-memory-returned-by-parse_mtd_partitions.patch.  I
-> just smashed it in anyway.  Should I drop
-> physmap-fix-leak-of-memory-returned-by-parse_mtd_partitions.patch
-> instead?  Your changelog mentioned nothing about leak-fixing?
+>> Hi all,
+>>
+>> Changes since 20081113:
+>>
+>> New tree:
+>>       staging
+>
+> ERROR: "usb_deregister" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+> ERROR: "usb_get_dev" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+> ERROR: "usb_bulk_msg" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+> ERROR: "usb_put_dev" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+> ERROR: "usb_register_driver" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+>
+> (CONFIG_USB=n)
 
-i'd like feedback from the main mtd guy(s) first, but if you're going
-to queue things, it should be with v2 that i posted rather than this
-set.
+Randy,
 
-while mine doesnt explicitly mention leak fixing, it does fix it in
-the process of moving code about.  so if you do add v2, you can safely
-drop the leak fix.
--mike
+Can you send the whole .config? I turned off USB and asus_oled still
+built, but it's hard to narrow down due to all the other staging build
+failures.
+
+Thanks
+~J.R.
+
+>
+> ---
+> ~Randy
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
