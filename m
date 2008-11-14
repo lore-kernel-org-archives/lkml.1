@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYKNToj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYKNTqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbYKNToj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYKNTob
+	id S1755236AbYKNTqq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYKNTqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:44:31 -0500
-Received: from mail-gx0-f11.google.com ([209.85.217.11]:43541 "EHLO
-	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbYKNToa (ORCPT
+	Fri, 14 Nov 2008 14:46:38 -0500
+Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:33742 "EHLO
+	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751953AbYKNTqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:44:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=KxvW38rAoXdN7PifVk9mRdkZfg5qYj3ghtUzJx76Hlq5356bkOEgFMyfoH1tXGJ2ox
-         PQXmx1r8TfwP4TyC1tAD9Ar5l/l2yWfv6JnDEU55nrbnMaQyqc23v78CMj8s+q/K3iTs
-         nCpr5TbSQBS5r/nEReUuKI+Nh6SpQOYpFhif4=
-Subject: Re: [v4l-dvb-maintainer] [PATCH] dvb: usb vendor_ids/product_ids
- are __le16
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Devin Heitmueller <devin.heitmueller@gmail.com>
-Cc: Michael Krufky <mkrufky@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <412bdbff0811141125x34de747dm85b47f61b604219a@mail.gmail.com>
-References: <1226686796.5483.33.camel@brick> <491DCBDD.4000703@linuxtv.org>
-	 <1226689669.5483.36.camel@brick>
-	 <37219a840811141115g539ef85fo81136ebd479f016f@mail.gmail.com>
-	 <1226690438.5483.39.camel@brick>
-	 <412bdbff0811141125x34de747dm85b47f61b604219a@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 14 Nov 2008 11:44:25 -0800
-Message-Id: <1226691865.5483.47.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 14:46:38 -0500
+Date: Fri, 14 Nov 2008 13:46:16 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_OPTIMIZE_INLINING fun
+In-Reply-To: <Pine.LNX.4.64.0811141923030.10125@blonde.site>
+Message-ID: <Pine.LNX.4.64.0811141343510.30981@quilx.com>
+References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
+ <Pine.LNX.4.64.0811141244060.29394@quilx.com> <Pine.LNX.4.64.0811141923030.10125@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 14:25 -0500, Devin Heitmueller wrote:
-> > The alternative is to define the vendor ids as little-endian in the headers
-> > then you don't need the endian swap in the switch or the case, but that would
-> > require looking at the other uses first....or gently encourage more people to run sparse ;-)
-> >
-> > Harvey
-> 
-> Harvey,
-> 
-> If I may offer my opinion, this is not remotely performance-critical
-> code.  That said, I would favor on the side of
-> maintainability/reliability in this case, and mkrufky's approach seems
-> to be better on both accounts.
+On Fri, 14 Nov 2008, Hugh Dickins wrote:
 
-Well, I can see your point, and I don't even know what the chances are of
-even finding this hardware on a big-endian machine are.  But I'd suggest
-that if you want to improve the maintainability of this code that someone
-in v4l-land start running sparse regularly and work on getting some of these
-_trivial_ parts annotated, then any new ones that get introduced will stick
-out like sore thumbs.
+> What I was intending anyway, quite independently of the INLINING
+> issue, was changing those and some others to VM_BUG_ONs, which are
+> intended really for VM testers rather than for distros to turn on.
+> (Though perhaps Nick has shifted his position on that.)
 
-But, not my driver, not my decision.  Someone else can implement Michael's
-suggestion if they want.
+Some distros have a bad habit of turning these on for production releases.
 
-Harvey
+> That is indeed the orthodoxy.  I've never been so sold on it as most
+> (there are cases when inlines give superior typechecking, but often
+> the use of the macro will catch wrong types anyway).  But I suspect
+> it's irrelevant, that changing those functions to macros would not
+> actually have any effect on the problem - that's what we've often
+> been assured, anyway, that the compiler nowadays does inlines as
+> efficiently as the preprocessor does macros.  I do wonder though.
 
+Maybe try to compare it with a old kernel that still has the page flags
+macros? That way we would have a testcase useful for bringing to the
+attention of the gcc people.
 
