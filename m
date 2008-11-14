@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYKNBa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbYKNBb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbYKNBa7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYKNBZe
+	id S1757972AbYKNBb0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbYKNB0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:25:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:55011 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756795AbYKNBZc (ORCPT
+	Thu, 13 Nov 2008 20:26:31 -0500
+Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:45748 "EHLO
+	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756686AbYKNB03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:25:32 -0500
-Message-ID: <491CD248.8030209@zytor.com>
-Date: Thu, 13 Nov 2008 17:20:08 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com> <20081104210643.GH29626@one.firstfloor.org> <20081105102643.GA11383@elte.hu> <200811141211.23496.nickpiggin@yahoo.com.au>
-In-Reply-To: <200811141211.23496.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 20:26:29 -0500
+Date: Fri, 14 Nov 2008 01:26:19 +0000
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Greg KH <greg@kroah.com>
+Cc: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>,
+       Francois Romieu <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, netdev@vger.kernel.org
+Subject: Re: [stable] build error with 2.6.27.6+reiser4+ehci-hub patch. ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
+Message-ID: <20081114012617.GG7331@solarflare.com>
+References: <200811140045.20166.volker.armin.hemmann@tu-clausthal.de> <20081114000725.GC19644@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081114000725.GC19644@kroah.com>
+User-Agent: Mutt/1.4.1i
+X-Originating-Smarthost03-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+Greg KH wrote:
+> On Fri, Nov 14, 2008 at 12:45:19AM +0100, Volker Armin Hemmann wrote:
+> > Hi,
+> > with my old config from 2.6.27.5 (which has the same patches) I get this 
+> > error:
+> > make all modules_install install
+> > <snip>
+> >   OBJCOPY arch/x86/boot/setup.bin
+> >   OBJCOPY arch/x86/boot/vmlinux.bin
+> >   HOSTCC  arch/x86/boot/tools/build
+> >   BUILD   arch/x86/boot/bzImage
+> > Root device is (9, 1)
+> > Setup is 11436 bytes (padded to 11776 bytes).
+> > System is 2180 kB
+> > CRC 54816509
+> > Kernel: arch/x86/boot/bzImage is ready  (#1)
+> >   Building modules, stage 2.
+> >   MODPOST 136 modules
+> > ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
+> > make[1]: *** [__modpost] Fehler 1
+> > make: *** [modules] Fehler 2
 > 
-> I heard from an Intel hardware engineer that Nehalem has some
-> really fancy logic in it to make locked instructions "free", that
-> was nacked from earlier CPUs because it was too costly. So obviously
-> it is taking a fair whack of transistors or power for them to do it.
-> And even then it is far from free, but still seems to be one or two
-> orders of magnitude more expensive than a regular instruction.
+> Francois, this is due to your commit
+> 38d501ca6eb1f05d238bef785e51ca71dbfe0115, in the release, which was a
+> backport of ccdffb9a88b2907b159538d7bfd6256621db4f84.
 > 
+> Care to look into this?
 
-Last I heard it was still a dozen-ish cycles even on Nehalem.
+R8169 needs to select MII.  You could cherry-pick
+b73724921d906d1642f9f6d054079c6b095903fe.
 
-> 
-> IMO, we shouldn't stop bothering about LOCK prefix in the forseeable
-> future.
-> 
+Ben.
 
-Even if a CPU came out *today* that had zero-cost locks we'd have to
-worry about it for at least another 5-10 years.  The good news is that
-we're doing pretty good with it for now, but I don't believe in general
-we can avoid the fact that improving LOCK performance helps everything
-when you're dealing with large numbers of cores/threads.
-
-	-hpa
-
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
