@@ -1,163 +1,446 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbYKNJSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYKNJSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbYKNJSO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 04:18:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYKNJR7
+	id S1753523AbYKNJSw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 04:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYKNJSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 04:17:59 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35104 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbYKNJR4 (ORCPT
+	Fri, 14 Nov 2008 04:18:35 -0500
+Received: from mailrelay012.isp.belgacom.be ([195.238.6.179]:37092 "EHLO
+	mailrelay012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751256AbYKNJSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 04:17:56 -0500
-Date: Fri, 14 Nov 2008 11:17:54 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       cl@linux-foundation.org, mpm@selenic.com, eduard.munteanu@linux360.ro
-Subject: [PATCH] ext2/ext3: allocate ->s_blockgroup_lock separately to avoid
- wasting space
-Message-ID: <Pine.LNX.4.64.0811141115100.29826@melkki.cs.Helsinki.FI>
+	Fri, 14 Nov 2008 04:18:31 -0500
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAFLRHElR92C2/2dsb2JhbACBbc5Zgng
+Date: Fri, 14 Nov 2008 10:18:27 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [WATCHDOG] v2.6.28-rc5 - add wm8350 watchdog device driver
+Message-ID: <20081114091827.GL2690@infomag.infomag.iguana.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi Linus,
 
-As spotted by kmemtrace, struct ext2_sb_info is 17024 bytes and ext3_sb_info is
-17152 bytes on 64-bit which makes them a very bad fit for SLAB allocators. In
-fact, both allocations are round up to the next available page size of 
-order 3 which is 32 KB.
+In v2.6.28-rc1 WM8350 regulator support was added.
+(See commit da09155ac8d3f04c299b3d82a6ab0df8d03da632).
+In the code for the WM8350 device the hooks for it's watchdog were allready foreseen.
 
-The culprit if the wasted memory is the ->s_blockgroup_lock which can be as big
-as 16 KB when CONFIG_NR_CPUS is set to 32. As struct blockgroup_lock is a
-perfect fit for order 2 page in the worst case, allocate ->s_blockgroup_lock
-separately to avoid wasting space.
+The watchdog code was still under review at that time, but it is ok now.
+Could you therefor consider adding the watchdog part of this device at this stage still?
 
-The change shrinks struct ext2_sb_info to 592 bytes and struct ext3_sb_info to
-640 bytes which fits into a 1024 byte slab cache so now we allocate 16 KB + 1
-KB instead of 32 KB saving 15 KB of memory!
+Thanks in advance,
+Wim.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- fs/ext2/super.c                 |   10 +++++++++-
- fs/ext3/super.c                 |   10 +++++++++-
- include/linux/blockgroup_lock.h |    2 +-
- include/linux/ext2_fs_sb.h      |    2 +-
- include/linux/ext3_fs_sb.h      |    2 +-
- 5 files changed, 21 insertions(+), 5 deletions(-)
+If yes, Please pull from 'master' branch of
+	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+or if master.kernel.org hasn't synced up yet:
+	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
 
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index 647cd88..da8bdea 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -132,6 +132,7 @@ static void ext2_put_super (struct super_block * sb)
- 	percpu_counter_destroy(&sbi->s_dirs_counter);
- 	brelse (sbi->s_sbh);
- 	sb->s_fs_info = NULL;
-+	kfree(sbi->s_blockgroup_lock);
- 	kfree(sbi);
+This will update the following files:
+
+ drivers/watchdog/Kconfig      |    7 
+ drivers/watchdog/Makefile     |    1 
+ drivers/watchdog/wm8350_wdt.c |  329 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 337 insertions(+)
+
+with these Changes:
+
+Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date:   Thu Nov 6 10:56:21 2008 +0000
+
+    [WATCHDOG] Add support for the WM8350 watchdog
+    
+    This driver implements support for the watchdog functionality provided
+    by the Wolfson Microelectronics WM8350, a multi-function audio and
+    power management subsystem intended for use in embedded systems. It is
+    based on a driver originally written by Graeme Gregory, though it has
+    been extensively modified since then.
+    
+    Use of a GPIO to kick the watchdog is not yet supported.
+    
+    Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+The Changes can also be looked at on:
+	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+
+For completeness, I added the overal diff below.
+
+Greetings,
+Wim.
+
+================================================================================
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index 4fd3fa5..d5bc085 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -55,6 +55,13 @@ config SOFT_WATCHDOG
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called softdog.
  
- 	return;
-@@ -756,6 +757,13 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
- 		return -ENOMEM;
++config WM8350_WATCHDOG
++	tristate "WM8350 watchdog"
++	depends on MFD_WM8350
++	help
++	  Support for the watchdog in the WM8350 AudioPlus PMIC.  When
++	  the watchdog triggers the system will be reset.
 +
-+	sbi->s_blockgroup_lock =
-+		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
-+	if (!sbi->s_blockgroup_lock) {
-+		kfree(sbi);
-+		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 	sbi->s_sb_block = sb_block;
+ # ALPHA Architecture
  
-@@ -983,7 +991,7 @@ static int ext2_fill_super(struct super_block *sb, void *data, int silent)
- 		printk ("EXT2-fs: not enough memory\n");
- 		goto failed_mount;
- 	}
--	bgl_lock_init(&sbi->s_blockgroup_lock);
-+	bgl_lock_init(sbi->s_blockgroup_lock);
- 	sbi->s_debts = kcalloc(sbi->s_groups_count, sizeof(*sbi->s_debts), GFP_KERNEL);
- 	if (!sbi->s_debts) {
- 		printk ("EXT2-fs: not enough memory\n");
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index f6c94f2..f41df22 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -439,6 +439,7 @@ static void ext3_put_super (struct super_block * sb)
- 		ext3_blkdev_remove(sbi);
- 	}
- 	sb->s_fs_info = NULL;
-+	kfree(sbi->s_blockgroup_lock);
- 	kfree(sbi);
- 	return;
- }
-@@ -1548,6 +1549,13 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
- 		return -ENOMEM;
+ # ARM Architecture
+diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+index e352bbb..02f8993 100644
+--- a/drivers/watchdog/Makefile
++++ b/drivers/watchdog/Makefile
+@@ -133,4 +133,5 @@ obj-$(CONFIG_WATCHDOG_CP1XXX)		+= cpwd.o
+ # XTENSA Architecture
+ 
+ # Architecture Independant
++obj-$(CONFIG_WM8350_WATCHDOG) += wm8350_wdt.o
+ obj-$(CONFIG_SOFT_WATCHDOG) += softdog.o
+diff --git a/drivers/watchdog/wm8350_wdt.c b/drivers/watchdog/wm8350_wdt.c
+new file mode 100644
+index 0000000..2bc0d4d
+--- /dev/null
++++ b/drivers/watchdog/wm8350_wdt.c
+@@ -0,0 +1,329 @@
++/*
++ * Watchdog driver for the wm8350
++ *
++ * Copyright (C) 2007, 2008 Wolfson Microelectronics <linux@wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation
++ */
 +
-+	sbi->s_blockgroup_lock =
-+		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
-+	if (!sbi->s_blockgroup_lock) {
-+		kfree(sbi);
-+		return -ENOMEM;
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/miscdevice.h>
++#include <linux/platform_device.h>
++#include <linux/watchdog.h>
++#include <linux/uaccess.h>
++#include <linux/mfd/wm8350/core.h>
++
++static int nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout,
++		 "Watchdog cannot be stopped once started (default="
++		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++
++static unsigned long wm8350_wdt_users;
++static struct miscdevice wm8350_wdt_miscdev;
++static int wm8350_wdt_expect_close;
++static DEFINE_MUTEX(wdt_mutex);
++
++static struct {
++	int time;  /* Seconds */
++	u16 val;   /* To be set in WM8350_SYSTEM_CONTROL_2 */
++} wm8350_wdt_cfgs[] = {
++	{ 1, 0x02 },
++	{ 2, 0x04 },
++	{ 4, 0x05 },
++};
++
++static struct wm8350 *get_wm8350(void)
++{
++	return dev_get_drvdata(wm8350_wdt_miscdev.parent);
++}
++
++static int wm8350_wdt_set_timeout(struct wm8350 *wm8350, u16 value)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++	wm8350_reg_unlock(wm8350);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	reg &= ~WM8350_WDOG_TO_MASK;
++	reg |= value;
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	wm8350_reg_lock(wm8350);
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_start(struct wm8350 *wm8350)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++	wm8350_reg_unlock(wm8350);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	reg &= ~WM8350_WDOG_MODE_MASK;
++	reg |= 0x20;
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	wm8350_reg_lock(wm8350);
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_stop(struct wm8350 *wm8350)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++	wm8350_reg_unlock(wm8350);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	reg &= ~WM8350_WDOG_MODE_MASK;
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	wm8350_reg_lock(wm8350);
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_kick(struct wm8350 *wm8350)
++{
++	int ret;
++	u16 reg;
++
++	mutex_lock(&wdt_mutex);
++
++	reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++	ret = wm8350_reg_write(wm8350, WM8350_SYSTEM_CONTROL_2, reg);
++
++	mutex_unlock(&wdt_mutex);
++
++	return ret;
++}
++
++static int wm8350_wdt_open(struct inode *inode, struct file *file)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++	int ret;
++
++	if (!wm8350)
++		return -ENODEV;
++
++	if (test_and_set_bit(0, &wm8350_wdt_users))
++		return -EBUSY;
++
++	ret = wm8350_wdt_start(wm8350);
++	if (ret != 0)
++		return ret;
++
++	return nonseekable_open(inode, file);
++}
++
++static int wm8350_wdt_release(struct inode *inode, struct file *file)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++
++	if (wm8350_wdt_expect_close)
++		wm8350_wdt_stop(wm8350);
++	else {
++		dev_warn(wm8350->dev, "Watchdog device closed uncleanly\n");
++		wm8350_wdt_kick(wm8350);
 +	}
- 	sb->s_fs_info = sbi;
- 	sbi->s_mount_opt = 0;
- 	sbi->s_resuid = EXT3_DEF_RESUID;
-@@ -1788,7 +1796,7 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 		goto failed_mount;
- 	}
- 
--	bgl_lock_init(&sbi->s_blockgroup_lock);
-+	bgl_lock_init(sbi->s_blockgroup_lock);
- 
- 	for (i = 0; i < db_count; i++) {
- 		block = descriptor_loc(sb, logic_sb_block, i);
-diff --git a/include/linux/blockgroup_lock.h b/include/linux/blockgroup_lock.h
-index 8607312..d6d4787 100644
---- a/include/linux/blockgroup_lock.h
-+++ b/include/linux/blockgroup_lock.h
-@@ -54,6 +54,6 @@ static inline void bgl_lock_init(struct blockgroup_lock *bgl)
-  * superblock types
-  */
- #define sb_bgl_lock(sb, block_group) \
--	(&(sb)->s_blockgroup_lock.locks[(block_group) & (NR_BG_LOCKS-1)].lock)
-+	(&(sb)->s_blockgroup_lock->locks[(block_group) & (NR_BG_LOCKS-1)].lock)
- 
- #endif
-diff --git a/include/linux/ext2_fs_sb.h b/include/linux/ext2_fs_sb.h
-index f273415..7e61de9 100644
---- a/include/linux/ext2_fs_sb.h
-+++ b/include/linux/ext2_fs_sb.h
-@@ -101,7 +101,7 @@ struct ext2_sb_info {
- 	struct percpu_counter s_freeblocks_counter;
- 	struct percpu_counter s_freeinodes_counter;
- 	struct percpu_counter s_dirs_counter;
--	struct blockgroup_lock s_blockgroup_lock;
-+	struct blockgroup_lock *s_blockgroup_lock;
- 	/* root of the per fs reservation window tree */
- 	spinlock_t s_rsv_window_lock;
- 	struct rb_root s_rsv_window_root;
-diff --git a/include/linux/ext3_fs_sb.h b/include/linux/ext3_fs_sb.h
-index b65f028..ec10d96 100644
---- a/include/linux/ext3_fs_sb.h
-+++ b/include/linux/ext3_fs_sb.h
-@@ -60,7 +60,7 @@ struct ext3_sb_info {
- 	struct percpu_counter s_freeblocks_counter;
- 	struct percpu_counter s_freeinodes_counter;
- 	struct percpu_counter s_dirs_counter;
--	struct blockgroup_lock s_blockgroup_lock;
-+	struct blockgroup_lock *s_blockgroup_lock;
- 
- 	/* root of the per fs reservation window tree */
- 	spinlock_t s_rsv_window_lock;
--- 
-1.5.4.3
-
++
++	clear_bit(0, &wm8350_wdt_users);
++
++	return 0;
++}
++
++static ssize_t wm8350_wdt_write(struct file *file,
++				const char __user *data, size_t count,
++				loff_t *ppos)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++	size_t i;
++
++	if (count) {
++		wm8350_wdt_kick(wm8350);
++
++		if (!nowayout) {
++			/* In case it was set long ago */
++			wm8350_wdt_expect_close = 0;
++
++			/* scan to see whether or not we got the magic
++			   character */
++			for (i = 0; i != count; i++) {
++				char c;
++				if (get_user(c, data + i))
++					return -EFAULT;
++				if (c == 'V')
++					wm8350_wdt_expect_close = 42;
++			}
++		}
++	}
++	return count;
++}
++
++static struct watchdog_info ident = {
++	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
++	.identity = "WM8350 Watchdog",
++};
++
++static long wm8350_wdt_ioctl(struct file *file, unsigned int cmd,
++			     unsigned long arg)
++{
++	struct wm8350 *wm8350 = get_wm8350();
++	int ret = -ENOTTY, time, i;
++	void __user *argp = (void __user *)arg;
++	int __user *p = argp;
++	u16 reg;
++
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		ret = copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
++		break;
++
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		ret = put_user(0, p);
++		break;
++
++	case WDIOC_SETOPTIONS:
++	{
++		int options;
++
++		if (get_user(options, p))
++			return -EFAULT;
++
++		ret = -EINVAL;
++
++		/* Setting both simultaneously means at least one must fail */
++		if (options == WDIOS_DISABLECARD)
++			ret = wm8350_wdt_start(wm8350);
++
++		if (options == WDIOS_ENABLECARD)
++			ret = wm8350_wdt_stop(wm8350);
++		break;
++	}
++
++	case WDIOC_KEEPALIVE:
++		ret = wm8350_wdt_kick(wm8350);
++		break;
++
++	case WDIOC_SETTIMEOUT:
++		ret = get_user(time, p);
++		if (ret)
++			break;
++
++		if (time == 0) {
++			if (nowayout)
++				ret = -EINVAL;
++			else
++				wm8350_wdt_stop(wm8350);
++			break;
++		}
++
++		for (i = 0; i < ARRAY_SIZE(wm8350_wdt_cfgs); i++)
++			if (wm8350_wdt_cfgs[i].time == time)
++				break;
++		if (i == ARRAY_SIZE(wm8350_wdt_cfgs))
++			ret = -EINVAL;
++		else
++			ret = wm8350_wdt_set_timeout(wm8350,
++						     wm8350_wdt_cfgs[i].val);
++		break;
++
++	case WDIOC_GETTIMEOUT:
++		reg = wm8350_reg_read(wm8350, WM8350_SYSTEM_CONTROL_2);
++		reg &= WM8350_WDOG_TO_MASK;
++		for (i = 0; i < ARRAY_SIZE(wm8350_wdt_cfgs); i++)
++			if (wm8350_wdt_cfgs[i].val == reg)
++				break;
++		if (i == ARRAY_SIZE(wm8350_wdt_cfgs)) {
++			dev_warn(wm8350->dev,
++				 "Unknown watchdog configuration: %x\n", reg);
++			ret = -EINVAL;
++		} else
++			ret = put_user(wm8350_wdt_cfgs[i].time, p);
++
++	}
++
++	return ret;
++}
++
++static const struct file_operations wm8350_wdt_fops = {
++	.owner = THIS_MODULE,
++	.llseek = no_llseek,
++	.write = wm8350_wdt_write,
++	.unlocked_ioctl = wm8350_wdt_ioctl,
++	.open = wm8350_wdt_open,
++	.release = wm8350_wdt_release,
++};
++
++static struct miscdevice wm8350_wdt_miscdev = {
++	.minor = WATCHDOG_MINOR,
++	.name = "watchdog",
++	.fops = &wm8350_wdt_fops,
++};
++
++static int wm8350_wdt_probe(struct platform_device *pdev)
++{
++	struct wm8350 *wm8350 = platform_get_drvdata(pdev);
++
++	if (!wm8350) {
++		dev_err(wm8350->dev, "No driver data supplied\n");
++		return -ENODEV;
++	}
++
++	/* Default to 4s timeout */
++	wm8350_wdt_set_timeout(wm8350, 0x05);
++
++	wm8350_wdt_miscdev.parent = &pdev->dev;
++
++	return misc_register(&wm8350_wdt_miscdev);
++}
++
++static int __exit wm8350_wdt_remove(struct platform_device *pdev)
++{
++	misc_deregister(&wm8350_wdt_miscdev);
++
++	return 0;
++}
++
++static struct platform_driver wm8350_wdt_driver = {
++	.probe = wm8350_wdt_probe,
++	.remove = wm8350_wdt_remove,
++	.driver = {
++		.name = "wm8350-wdt",
++	},
++};
++
++static int __init wm8350_wdt_init(void)
++{
++	return platform_driver_register(&wm8350_wdt_driver);
++}
++module_init(wm8350_wdt_init);
++
++static void __exit wm8350_wdt_exit(void)
++{
++	platform_driver_unregister(&wm8350_wdt_driver);
++}
++module_exit(wm8350_wdt_exit);
++
++MODULE_AUTHOR("Mark Brown");
++MODULE_DESCRIPTION("WM8350 Watchdog");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:wm8350-wdt");
