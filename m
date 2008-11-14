@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYKNXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYKNXn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbYKNXiS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 18:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYKNXiE
+	id S1754691AbYKNXn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 18:43:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYKNXnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 18:38:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:16778 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYKNXiB (ORCPT
+	Fri, 14 Nov 2008 18:43:19 -0500
+Received: from rv-out-0708.google.com ([209.85.198.240]:15955 "EHLO
+	rv-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbYKNXnT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 18:38:01 -0500
+	Fri, 14 Nov 2008 18:43:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=b0efbHHXAYdMCS94hhPRmc65/6UaUWAGJrGBSRcJlWpGWJV7k335hA7JUBvAtQ+Fvv
-         dTz10U/QzdkvL2ggPRz1JwBxBx6yaNpCm/c6nB4synQ4W+FLOeJdWW6Ws6TJuXwvEPxL
-         Y9krt+l2cRK3pC3pw3cWNOsFnebAm52QlmJKA=
-Date: Sat, 15 Nov 2008 02:41:31 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: dwmw2@infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size
-	of '__mod_dmi_device_table' isn't known
-Message-ID: <20081114234131.GA28559@x200.localdomain>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Girb+DZ3BCaTEmUDHbew6haGc9hGT4AyJ2TUEiBjYB8IiV0MxrYv+6OblK5QfLibud
+         HkWO7J4BHvf78142+25rt5oNeE37ko5zgkKAkBnEbb1XmDLrfswoEmgyoY1qZ8k81D6X
+         uzLmXt+8VZaUzbDotottdLEWfzQ9m6uUvpN4k=
+Message-ID: <3aaafc130811141543g8d1a3e6y1b8ebc473ac34bf5@mail.gmail.com>
+Date: Fri, 14 Nov 2008 18:43:16 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: Can you add the staging tree to -next?
+Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081114230637.GA1415@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081112235600.GA27554@kroah.com>
+	 <Pine.LNX.4.64.0811140825410.11953@anakin>
+	 <20081114173258.GC22980@kroah.com>
+	 <3aaafc130811141428ta97f929va8c62cbcdbc731f7@mail.gmail.com>
+	 <20081114230637.GA1415@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-How can this work, given that MODULE_DEVICE_TABLE line expands into
+On Fri, Nov 14, 2008 at 6:06 PM, Greg KH <greg@kroah.com> wrote:
+> On Fri, Nov 14, 2008 at 05:28:17PM -0500, J.R. Mauro wrote:
+>> There also seem to be a lot of build errors that no one hacking on
+>> staging has seen before being threshed out by all the randconfig tests
+>> done on -next, which will help a lot if we want the staging drivers to
+>> actually go anywhere.
+>
+> In looking at these in some detail, the majority of them are due to api
+> changes in other trees, so these changes will have to be done during the
+> -rc1 merge window, which shouldn't be that big of an issue.
 
-	extern const struct dmi_device_id __mod_dmi_device_table __attribute__ ((unused, alias("mbp_device_table")));
-				^^^^^^
-but there is no struct dmi_device_id, there is struct dmi_system_id?
+That's what I'm noticing, but the sooner we know about the issues on
+the horizon, the better.
 
-commit 239cfbde1f5843c4a24199f117d5f67f637d72d5
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Tue Sep 16 16:25:24 2008 -0700
+>
+> But yes, there are some kconfig dependancies as well, Randy is really
+> good at finding them :)  If you want to send me patches to fix these,
+> I'd appreciate it.
 
-    Fix autoloading of MacBook Pro backlight driver.
-    
-    Use new MODULE_DEVICE_TABLE(dmi, ...) facility. There's no need for
-    every driver to screw it up for themselves, when the alias can be
-    generated automatically.
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+Yep, I'm working on it :)
 
-diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
-index 385cba4..06964af 100644
---- a/drivers/video/backlight/mbp_nvidia_bl.c
-+++ b/drivers/video/backlight/mbp_nvidia_bl.c
-@@ -111,6 +111,4 @@ module_exit(mbp_exit);
- MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
- MODULE_DESCRIPTION("Nvidia-based Macbook Pro Backlight Driver");
- MODULE_LICENSE("GPL");
--MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,1");
--MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,2");
--MODULE_ALIAS("svnAppleInc.:pnMacBookPro4,1");
-+MODULE_DEVICE_TABLE(dmi, mbp_device_table);
+>
+> thanks,
+>
+> greg k-h
+>
