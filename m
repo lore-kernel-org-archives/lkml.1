@@ -1,948 +1,1274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbYKNB1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbYKNB1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756456AbYKNB1E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:27:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144AbYKNBVf
+	id S1755583AbYKNB1a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:27:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbYKNBWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:21:35 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:38149 "EHLO
+	Thu, 13 Nov 2008 20:22:55 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:38159 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755661AbYKNBVb (ORCPT
+	with ESMTP id S1756147AbYKNBVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:21:31 -0500
-X-Greylist: delayed 1499 seconds by postgrey-1.27 at vger.kernel.org; Thu, 13 Nov 2008 20:21:30 EST
+	Thu, 13 Nov 2008 20:21:37 -0500
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Sage Weil <sage@newdream.net>
-Subject: [PATCH 06/19] ceph: directory operations
-Date: Thu, 13 Nov 2008 16:56:05 -0800
-Message-Id: <1226624178-3761-7-git-send-email-sage@newdream.net>
+Subject: [PATCH 02/19] ceph: on-wire types
+Date: Thu, 13 Nov 2008 16:56:01 -0800
+Message-Id: <1226624178-3761-3-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1226624178-3761-6-git-send-email-sage@newdream.net>
+In-Reply-To: <1226624178-3761-2-git-send-email-sage@newdream.net>
 References: <1226624178-3761-1-git-send-email-sage@newdream.net>
  <1226624178-3761-2-git-send-email-sage@newdream.net>
- <1226624178-3761-3-git-send-email-sage@newdream.net>
- <1226624178-3761-4-git-send-email-sage@newdream.net>
- <1226624178-3761-5-git-send-email-sage@newdream.net>
- <1226624178-3761-6-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Directory operations, including lookup, are defined here.  We take
-advantage of lookup intents when possible.  For the most part, we just
-need to build the proper requests for the metadata server(s) and
-pass things off to the mds_client.
+This header describes the types used to exchange messages between the
+Ceph client and various servers.  All types are little-endian and
+packed.
 
-The results of most operations are normally incorporated into the
-client's cache when the reply is parsed by ceph_fill_trace().
-However, if the MDS replies without a trace (e.g., when retrying an
-update after an MDS failure recovery), some operation-specific cleanup
-may be needed.
+Additionally, we define a few magic values to identify the current
+version of the protocol(s) in use, so that discrepancies to be
+detected on mount.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/dir.c |  891 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 891 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/dir.c
+ fs/ceph/ceph_fs.h | 1225 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1225 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/ceph_fs.h
 
-diff --git a/fs/ceph/dir.c b/fs/ceph/dir.c
+diff --git a/fs/ceph/ceph_fs.h b/fs/ceph/ceph_fs.h
 new file mode 100644
-index 0000000..04c1064
+index 0000000..16b9d50
 --- /dev/null
-+++ b/fs/ceph/dir.c
-@@ -0,0 +1,891 @@
-+#include <linux/namei.h>
-+#include <linux/sched.h>
-+
-+#include "ceph_debug.h"
-+
-+int ceph_debug_dir = -1;
-+#define DOUT_MASK DOUT_MASK_DIR
-+#define DOUT_VAR ceph_debug_dir
-+#define DOUT_PREFIX "dir: "
-+#include "super.h"
-+
++++ b/fs/ceph/ceph_fs.h
+@@ -0,0 +1,1225 @@
 +/*
-+ * Ceph MDS operations are specified in terms of a base ino and
-+ * relative path.  Thus, the client can specify an operation on a
-+ * specific inode (e.g., a getattr due to fstat(2)), or as a path
-+ * relative to, say, the root directory.
++ * ceph_fs.h - Ceph constants and data types to share between kernel and
++ * user space.
 + *
-+ * Because the MDS does not statefully track which inodes the client
-+ * has in its cache, the client has to take care to only specify
-+ * operations relative to inodes it knows the MDS has cached.  (The
-+ * MDS cannot do a lookup by ino.)
-+ *
-+ * So, in general, we try to specify operations in terms of generate
-+ * path names relative to the root.
++ * LGPL2
 + */
 +
-+const struct inode_operations ceph_dir_iops;
-+const struct file_operations ceph_dir_fops;
-+struct dentry_operations ceph_dentry_ops;
++#ifndef _FS_CEPH_CEPH_FS_H
++#define _FS_CEPH_CEPH_FS_H
 +
-+static int ceph_dentry_revalidate(struct dentry *dentry, struct nameidata *nd);
++
++#define CEPH_MON_PORT 12345
 +
 +/*
-+ * build a dentry's path.  allocate on heap; caller must kfree.  based
-+ * on build_path_from_dentry in fs/cifs/dir.c.
-+ *
-+ * encode hidden .snap dirs as a double /, i.e.
-+ *   foo/.snap/bar -> foo//bar
++ * Max file size is a policy choice; in reality we are limited
++ * by 2^64.
 + */
-+char *ceph_build_path(struct dentry *dentry, int *plen, u64 *base, int min)
++#define CEPH_FILE_MAX_SIZE (1ULL << 40)   /* 1 TB */
++
++/*
++ * tcp connection banner.  include a protocol version. and adjust
++ * whenever the wire protocol changes.  try to keep this string length
++ * constant.
++ */
++#define CEPH_BANNER "ceph 007\n"
++#define CEPH_BANNER_MAX_LEN 30
++
++/*
++ * subprotocol versions.  when specific messages types or high-level
++ * protocols change, bump the affected components.
++ */
++#define CEPH_OSD_PROTOCOL    3
++#define CEPH_MDS_PROTOCOL    2
++#define CEPH_MON_PROTOCOL    2
++#define CEPH_CLIENT_PROTOCOL 1
++#define CEPH_ONDISK_FORMAT   1
++
++/*
++ * types in this file are defined as little-endian, and are
++ * primarily intended to describe data structures that pass
++ * over the wire or that are stored on disk.
++ */
++
++/*
++ * some basics
++ */
++typedef __le64 ceph_version_t;
++typedef __le64 ceph_tid_t;      /* transaction id */
++typedef __le32 ceph_epoch_t;
++
++
++/*
++ * fs id
++ */
++struct ceph_fsid {
++	__le64 major;
++	__le64 minor;
++} __attribute__ ((packed));
++
++static inline int ceph_fsid_equal(const struct ceph_fsid *a,
++				  const struct ceph_fsid *b)
 +{
-+	struct dentry *temp;
-+	char *path;
-+	int len, pos;
-+
-+	if (dentry == NULL)
-+		return ERR_PTR(-EINVAL);
-+
-+retry:
-+	len = 0;
-+	for (temp = dentry; !IS_ROOT(temp);) {
-+		struct inode *inode = temp->d_inode;
-+		if (inode && ceph_snap(inode) == CEPH_SNAPDIR)
-+			len++;  /* slash only */
-+		else
-+			len += 1 + temp->d_name.len;
-+		temp = temp->d_parent;
-+		if (temp == NULL) {
-+			derr(1, "corrupt dentry %p\n", dentry);
-+			return ERR_PTR(-EINVAL);
-+		}
-+	}
-+	if (len)
-+		len--;  /* no leading '/' */
-+
-+	path = kmalloc(len+1, GFP_NOFS);
-+	if (path == NULL)
-+		return ERR_PTR(-ENOMEM);
-+	pos = len;
-+	path[pos] = 0;	/* trailing null */
-+	for (temp = dentry; !IS_ROOT(temp) && pos != 0; ) {
-+		if (temp->d_inode &&
-+		    ceph_snap(temp->d_inode) == CEPH_SNAPDIR) {
-+			dout(50, "build_path_dentry path+%d: %p SNAPDIR\n",
-+			     pos, temp);
-+		} else {
-+			pos -= temp->d_name.len;
-+			if (pos < 0)
-+				break;
-+			strncpy(path + pos, temp->d_name.name,
-+				temp->d_name.len);
-+			dout(50, "build_path_dentry path+%d: %p '%.*s'\n",
-+			     pos, temp, temp->d_name.len, path + pos);
-+		}
-+		if (pos)
-+			path[--pos] = '/';
-+		temp = temp->d_parent;
-+		if (temp == NULL) {
-+			derr(1, "corrupt dentry\n");
-+			kfree(path);
-+			return ERR_PTR(-EINVAL);
-+		}
-+	}
-+	if (pos != 0) {
-+		derr(1, "did not end path lookup where expected, "
-+		     "namelen is %d, pos is %d\n", len, pos);
-+		/* presumably this is only possible if racing with a
-+		   rename of one of the parent directories (we can not
-+		   lock the dentries above us to prevent this, but
-+		   retrying should be harmless) */
-+		kfree(path);
-+		goto retry;
-+	}
-+
-+	*base = ceph_ino(temp->d_inode);
-+	*plen = len;
-+	dout(10, "build_path_dentry on %p %d built %llx '%.*s'\n",
-+	     dentry, atomic_read(&dentry->d_count), *base, len, path);
-+	return path;
++	return a->major == b->major && a->minor == b->minor;
 +}
 +
 +
 +/*
-+ * for readdir, encoding the directory frag and offset within that frag
-+ * into f_pos.
++ * ino, object, etc.
 + */
-+static loff_t make_fpos(unsigned frag, unsigned off)
++#define CEPH_INO_ROOT 1
++
++typedef __le64 ceph_snapid_t;
++#define CEPH_MAXSNAP ((__u64)(-3))
++#define CEPH_SNAPDIR ((__u64)(-1))
++#define CEPH_NOSNAP  ((__u64)(-2))
++
++struct ceph_object {
++	union {
++		__u8 raw[20];        /* fits a sha1 hash */
++		struct {
++			__le64 ino;  /* inode "file" identifier */
++			__le32 bno;  /* "block" (object) in that "file" */
++			__le64 snap; /* snapshot id.  usually NOSNAP. */
++		} __attribute__ ((packed));
++	};
++} __attribute__ ((packed));
++
++struct ceph_timespec {
++	__le32 tv_sec;
++	__le32 tv_nsec;
++} __attribute__ ((packed));
++
++
++/*
++ * "Frags" are a way to describe a subset of a 32-bit number space,
++ * using a mask and a value to match against that mask.  Any given frag
++ * (subset of the number space) can be partitioned into 2^n sub-frags.
++ *
++ * Frags are encoded into a 32-bit word:
++ *   8 upper bits = "bits"
++ *  24 lower bits = "value"
++ * (We could go to 5+27 bits, but who cares.)
++ *
++ * We use the _most_ significant bits of the 24 bit value.  This makes
++ * values logically sort.
++ *
++ * Unfortunately, because the "bits" field is still in the high bits, we
++ * can't sort encoded frags numerically.  However, it does allow you
++ * to feed encoded frags as values into frag_contains_value.
++ */
++static inline __u32 frag_make(__u32 b, __u32 v)
 +{
-+	return ((loff_t)frag << 32) | (loff_t)off;
++	return (b << 24) |
++		(v & (0xffffffu << (24-b)) & 0xffffffu);
 +}
-+static unsigned fpos_frag(loff_t p)
++static inline __u32 frag_bits(__u32 f)
 +{
-+	return p >> 32;
++	return f >> 24;
 +}
-+static unsigned fpos_off(loff_t p)
++static inline __u32 frag_value(__u32 f)
 +{
-+	return p & 0xffffffff;
++	return f & 0xffffffu;
++}
++static inline __u32 frag_mask(__u32 f)
++{
++	return (0xffffffu << (24-frag_bits(f))) & 0xffffffu;
++}
++static inline __u32 frag_mask_shift(__u32 f)
++{
++	return 24 - frag_bits(f);
 +}
 +
-+static int ceph_readdir(struct file *filp, void *dirent, filldir_t filldir)
++static inline int frag_contains_value(__u32 f, __u32 v)
 +{
-+	struct ceph_file_info *fi = filp->private_data;
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct ceph_mds_client *mdsc = &ceph_inode_to_client(inode)->mdsc;
-+	unsigned frag = fpos_frag(filp->f_pos);
-+	unsigned off = fpos_off(filp->f_pos);
-+	unsigned skew;
-+	int err;
-+	u32 ftype;
-+	struct ceph_mds_reply_info_parsed *rinfo;
++	return (v & frag_mask(f)) == frag_value(f);
++}
++static inline int frag_contains_frag(__u32 f, __u32 sub)
++{
++	/* is sub as specific as us, and contained by us? */
++	return frag_bits(sub) >= frag_bits(f) &&
++		(frag_value(sub) & frag_mask(f)) == frag_value(f);
++}
 +
-+nextfrag:
-+	dout(5, "readdir filp %p at frag %u off %u\n", filp, frag, off);
++static inline __u32 frag_parent(__u32 f)
++{
++	return frag_make(frag_bits(f) - 1,
++			 frag_value(f) & (frag_mask(f) << 1));
++}
++static inline int frag_is_left_child(__u32 f)
++{
++	return frag_bits(f) > 0 &&
++		(frag_value(f) & (0x1000000 >> frag_bits(f))) == 0;
++}
++static inline int frag_is_right_child(__u32 f)
++{
++	return frag_bits(f) > 0 &&
++		(frag_value(f) & (0x1000000 >> frag_bits(f))) == 1;
++}
++static inline __u32 frag_sibling(__u32 f)
++{
++	return frag_make(frag_bits(f),
++			 frag_value(f) ^ (0x1000000 >> frag_bits(f)));
++}
++static inline __u32 frag_left_child(__u32 f)
++{
++	return frag_make(frag_bits(f)+1, frag_value(f));
++}
++static inline __u32 frag_right_child(__u32 f)
++{
++	return frag_make(frag_bits(f)+1,
++			 frag_value(f) | (0x1000000 >> (1+frag_bits(f))));
++}
++static inline __u32 frag_make_child(__u32 f, int by, int i)
++{
++	int newbits = frag_bits(f) + by;
++	return frag_make(newbits,
++			 frag_value(f) | (i << (24 - newbits)));
++}
++static inline int frag_is_leftmost(__u32 f)
++{
++	return frag_value(f) == 0;
++}
++static inline int frag_is_rightmost(__u32 f)
++{
++	return frag_value(f) == frag_mask(f);
++}
++static inline __u32 frag_next(__u32 f)
++{
++	return frag_make(frag_bits(f),
++			 frag_value(f) + (0x1000000 >> frag_bits(f)));
++}
 +
-+	/* do we have the correct frag content buffered? */
-+	if (fi->frag != frag || fi->last_readdir == NULL) {
-+		struct ceph_mds_request *req;
-+		struct ceph_mds_request_head *rhead;
-+		char *path;
-+		int pathlen;
-+		u64 pathbase;
-+		int op = ceph_snap(inode) == CEPH_SNAPDIR ?
-+			CEPH_MDS_OP_LSSNAP : CEPH_MDS_OP_READDIR;
-+
-+		/* discard old result, if any */
-+		if (fi->last_readdir)
-+			ceph_mdsc_put_request(fi->last_readdir);
-+
-+		/* requery frag tree, as the frag topology may have changed */
-+		frag = ceph_choose_frag(ceph_inode(inode), frag, NULL, NULL);
-+
-+		dout(10, "readdir querying mds for ino %llx.%llx frag %x\n",
-+		     ceph_vinop(inode), frag);
-+		path = ceph_build_path(filp->f_dentry, &pathlen, &pathbase, 1);
-+		req = ceph_mdsc_create_request(mdsc, op,
-+					       pathbase, path, 0, NULL,
-+					       filp->f_dentry, USE_AUTH_MDS);
-+		kfree(path);
-+		if (IS_ERR(req))
-+			return PTR_ERR(req);
-+		/* hints to request -> mds selection code */
-+		req->r_direct_mode = USE_AUTH_MDS;
-+		req->r_direct_hash = frag_value(frag);
-+		req->r_direct_is_hash = true;
-+		rhead = req->r_request->front.iov_base;
-+		rhead->args.readdir.frag = cpu_to_le32(frag);
-+		err = ceph_mdsc_do_request(mdsc, req);
-+		if (err < 0) {
-+			ceph_mdsc_put_request(req);
-+			return err;
-+		}
-+		dout(10, "readdir got and parsed readdir result=%d"
-+		     " on frag %x\n", err, frag);
-+		fi->last_readdir = req;
-+	}
-+
-+	/* include . and .. with first fragment */
-+	if (frag_is_leftmost(frag)) {
-+		switch (off) {
-+		case 0:
-+			dout(10, "readdir off 0 -> '.'\n");
-+			if (filldir(dirent, ".", 1, make_fpos(0, 0),
-+				    inode->i_ino, inode->i_mode >> 12) < 0)
-+				return 0;
-+			off++;
-+			filp->f_pos++;
-+		case 1:
-+			dout(10, "readdir off 1 -> '..'\n");
-+			if (filp->f_dentry->d_parent != NULL &&
-+			    filldir(dirent, "..", 2, make_fpos(0, 1),
-+				    filp->f_dentry->d_parent->d_inode->i_ino,
-+				    inode->i_mode >> 12) < 0)
-+				return 0;
-+			off++;
-+			filp->f_pos++;
-+		}
-+		skew = -2;  /* compensate for . and .. */
-+	} else {
-+		skew = 0;
-+	}
-+
-+	rinfo = &fi->last_readdir->r_reply_info;
-+	dout(10, "readdir frag %x num %d off %d skew %d\n", frag,
-+	     rinfo->dir_nr, off, skew);
-+	while (off+skew < rinfo->dir_nr) {
-+		dout(10, "readdir off %d -> %d / %d name '%.*s'\n",
-+		     off, off+skew,
-+		     rinfo->dir_nr, rinfo->dir_dname_len[off+skew],
-+		     rinfo->dir_dname[off+skew]);
-+		ftype = le32_to_cpu(rinfo->dir_in[off+skew].in->mode) >> 12;
-+		if (filldir(dirent,
-+			    rinfo->dir_dname[off+skew],
-+			    rinfo->dir_dname_len[off+skew],
-+			    make_fpos(frag, off),
-+			    le64_to_cpu(rinfo->dir_in[off+skew].in->ino),
-+			    ftype) < 0) {
-+			dout(20, "filldir stopping us...\n");
-+			return 0;
-+		}
-+		off++;
-+		filp->f_pos++;
-+	}
-+
-+	/* more frags? */
-+	if (!frag_is_rightmost(frag)) {
-+		frag = frag_next(frag);
-+		off = 0;
-+		filp->f_pos = make_fpos(frag, off);
-+		dout(10, "readdir next frag is %x\n", frag);
-+		goto nextfrag;
-+	}
-+
-+	dout(20, "readdir done.\n");
++/*
++ * comparator to sort frags logically, as when traversing the
++ * number space in ascending order...
++ */
++static inline int frag_compare(__u32 a, __u32 b)
++{
++	unsigned va = frag_value(a);
++	unsigned vb = frag_value(b);
++	if (va < vb)
++		return -1;
++	if (va > vb)
++		return 1;
++	va = frag_bits(a);
++	vb = frag_bits(b);
++	if (va < vb)
++		return -1;
++	if (va > vb)
++		return 1;
 +	return 0;
 +}
 +
-+static loff_t ceph_dir_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	struct ceph_file_info *fi = file->private_data;
-+	struct inode *inode = file->f_mapping->host;
-+	loff_t retval;
-+
-+	mutex_lock(&inode->i_mutex);
-+	switch (origin) {
-+	case SEEK_END:
-+		offset += inode->i_size;
-+		break;
-+	case SEEK_CUR:
-+		offset += file->f_pos;
-+	}
-+	retval = -EINVAL;
-+	if (offset >= 0 && offset <= inode->i_sb->s_maxbytes) {
-+		if (offset != file->f_pos) {
-+			file->f_pos = offset;
-+			file->f_version = 0;
-+		}
-+		retval = offset;
-+		/*
-+		 * discard buffered readdir content on seekdir(0)
-+		 */
-+		if (offset == 0 && fi->last_readdir) {
-+			dout(10, "dir_llseek dropping %p content\n", file);
-+			ceph_mdsc_put_request(fi->last_readdir);
-+			fi->last_readdir = NULL;
-+		}
-+	}
-+	mutex_unlock(&inode->i_mutex);
-+	return retval;
-+}
-+
++/*
++ * object layout - how objects are mapped into PGs
++ */
++#define CEPH_OBJECT_LAYOUT_HASH     1
++#define CEPH_OBJECT_LAYOUT_LINEAR   2
++#define CEPH_OBJECT_LAYOUT_HASHINO  3
 +
 +/*
-+ * Process result of a lookup/open request.
-+ *
-+ * Mainly, make sure that return r_last_dentry (the dentry
-+ * the MDS trace ended on) in place of the original VFS-provided
-+ * dentry, if they differ.
-+ *
-+ * Gracefully handle the case where the MDS replies with -ENOENT and
-+ * no trace (which it may do, at its discretion, e.g., if it doesn't
-+ * care to issue a lease on the negative dentry).
++ * pg layout -- how PGs are mapped onto (sets of) OSDs
 + */
-+struct dentry *ceph_finish_lookup(struct ceph_mds_request *req,
-+				  struct dentry *dentry, int err)
++#define CEPH_PG_LAYOUT_CRUSH  0
++#define CEPH_PG_LAYOUT_HASH   1
++#define CEPH_PG_LAYOUT_LINEAR 2
++#define CEPH_PG_LAYOUT_HYBRID 3
++
++/*
++ * ceph_file_layout - describe data layout for a file/inode
++ */
++struct ceph_file_layout {
++	/* file -> object mapping */
++	__le32 fl_stripe_unit;     /* stripe unit, in bytes.  must be multiple
++				      of page size. */
++	__le32 fl_stripe_count;    /* over this many objects */
++	__le32 fl_object_size;     /* until objects are this big, then move to
++				      new objects */
++	__le32 fl_cas_hash;        /* 0 = none; 1 = sha256 */
++
++	/* pg -> disk layout */
++	__le32 fl_object_stripe_unit;  /* for per-object parity, if any */
++
++	/* object -> pg layout */
++	__le32 fl_pg_preferred; /* preferred primary for pg (-1 for none) */
++	__u8  fl_pg_type;       /* pg type; see PG_TYPE_* */
++	__u8  fl_pg_size;       /* pg size (num replicas, etc.) */
++	__u8  fl_pg_pool;       /* implies crush ruleset AND object namespace */
++} __attribute__ ((packed));
++
++#define ceph_file_layout_su(l) ((__s32)le32_to_cpu((l).fl_stripe_unit))
++#define ceph_file_layout_stripe_count(l) \
++	((__s32)le32_to_cpu((l).fl_stripe_count))
++#define ceph_file_layout_object_size(l) ((__s32)le32_to_cpu((l).fl_object_size))
++#define ceph_file_layout_cas_hash(l) ((__s32)le32_to_cpu((l).fl_cas_hash))
++#define ceph_file_layout_object_su(l) \
++	((__s32)le32_to_cpu((l).fl_object_stripe_unit))
++#define ceph_file_layout_pg_preferred(l) \
++	((__s32)le32_to_cpu((l).fl_pg_preferred))
++
++#define ceph_file_layout_stripe_width(l) (le32_to_cpu((l).fl_stripe_unit) * \
++					  le32_to_cpu((l).fl_stripe_count))
++
++/* "period" == bytes before i start on a new set of objects */
++#define ceph_file_layout_period(l) (le32_to_cpu((l).fl_object_size) *	\
++				    le32_to_cpu((l).fl_stripe_count))
++
++/*
++ * placement group.
++ * we encode this into one __le64.
++ */
++#define CEPH_PG_TYPE_REP     1
++#define CEPH_PG_TYPE_RAID4   2
++union ceph_pg {
++	__u64 pg64;
++	struct {
++		__s16 preferred; /* preferred primary osd */
++		__u16 ps;        /* placement seed */
++		__u8 __pad;
++		__u8 size;
++		__u8 pool;       /* implies crush ruleset */
++		__u8 type;
++	} pg;
++} __attribute__ ((packed));
++
++#define ceph_pg_is_rep(pg)   ((pg).pg.type == CEPH_PG_TYPE_REP)
++#define ceph_pg_is_raid4(pg) ((pg).pg.type == CEPH_PG_TYPE_RAID4)
++
++/*
++ * stable_mod func is used to control number of placement groups.
++ * similar to straight-up modulo, but produces a stable mapping as b
++ * increases over time.  b is the number of bins, and bmask is the
++ * containing power of 2 minus 1.
++ *
++ * b <= bmask and bmask=(2**n)-1
++ * e.g., b=12 -> bmask=15, b=123 -> bmask=127
++ */
++static inline int ceph_stable_mod(int x, int b, int bmask)
 +{
-+	struct ceph_client *client = ceph_client(dentry->d_sb);
-+	struct inode *parent = dentry->d_parent->d_inode;
-+
-+	/* snap dir? */
-+	if (err == -ENOENT &&
-+	    ceph_vino(parent).ino != 1 &&  /* no .snap in root dir */
-+	    strcmp(dentry->d_name.name, client->mount_args.snapdir_name) == 0) {
-+		struct inode *inode = ceph_get_snapdir(parent);
-+		dout(10, "ENOENT on snapdir %p '%.*s', linking to snapdir %p\n",
-+		     dentry, dentry->d_name.len, dentry->d_name.name, inode);
-+		d_add(dentry, inode);
-+		err = 0;
-+	}
-+
-+	if (err == -ENOENT) {
-+		/* no trace? */
-+		if (req->r_reply_info.trace_numd == 0) {
-+			dout(20, "ENOENT and no trace, dentry %p inode %p\n",
-+			     dentry, dentry->d_inode);
-+			ceph_init_dentry(dentry);
-+			if (dentry->d_inode) {
-+				d_drop(dentry);
-+				req->r_last_dentry = d_alloc(dentry->d_parent,
-+							     &dentry->d_name);
-+				d_rehash(req->r_last_dentry);
-+			} else {
-+				d_add(dentry, NULL);
-+			}
-+		}
-+		err = 0;
-+	}
-+	if (err)
-+		dentry = ERR_PTR(err);
-+	else if (dentry != req->r_last_dentry)
-+		dentry = dget(req->r_last_dentry);   /* we got spliced */
++	if ((x & bmask) < b)
++		return x & bmask;
 +	else
-+		dentry = NULL;
-+	return dentry;
++		return x & (bmask >> 1);
 +}
 +
 +/*
-+ * Do a lookup / lstat (same thing, modulo the metadata @mask).
-+ * @on_inode indicates that we should stat the ino directly, and not a
-+ * path built from @dentry.
++ * object layout - how a given object should be stored.
 + */
-+struct dentry *ceph_do_lookup(struct super_block *sb, struct dentry *dentry,
-+			      int mask, int on_inode, int locked_dir)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	char *path;
-+	int pathlen;
-+	struct ceph_mds_request *req;
-+	struct ceph_mds_request_head *rhead;
-+	int err;
-+
-+	if (dentry->d_name.len > NAME_MAX)
-+		return ERR_PTR(-ENAMETOOLONG);
-+
-+	dout(10, "do_lookup %p mask %d\n", dentry, mask);
-+	if (on_inode) {
-+		/* stat ino directly */
-+		WARN_ON(ceph_snap(dentry->d_inode) != CEPH_NOSNAP);
-+		req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LSTAT,
-+					       ceph_ino(dentry->d_inode), NULL,
-+					       0, NULL,
-+					       dentry, USE_CAP_MDS);
-+	} else {
-+		/* build path */
-+		u64 pathbase;
-+		path = ceph_build_path(dentry, &pathlen, &pathbase, 1);
-+		if (IS_ERR(path))
-+			return ERR_PTR(PTR_ERR(path));
-+		req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LSTAT,
-+					       pathbase, path, 0, NULL,
-+					       dentry, USE_ANY_MDS);
-+		kfree(path);
-+	}
-+	if (IS_ERR(req))
-+		return ERR_PTR(PTR_ERR(req));
-+	rhead = req->r_request->front.iov_base;
-+	rhead->args.stat.mask = cpu_to_le32(mask);
-+	req->r_last_dentry = dget(dentry); /* try to use this in fill_trace */
-+	req->r_locked_dir = dentry->d_parent->d_inode;  /* by the VFS */
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	dentry = ceph_finish_lookup(req, dentry, err);
-+	ceph_mdsc_put_request(req);  /* will dput(dentry) */
-+	dout(20, "do_lookup result=%p\n", dentry);
-+	return dentry;
-+}
++struct ceph_object_layout {
++	__le64 ol_pgid;           /* raw pg, with _full_ ps precision. */
++	__le32 ol_stripe_unit;
++} __attribute__ ((packed));
 +
 +/*
-+ * Try to do a lookup+open, if possible.
++ * compound epoch+version, used by storage layer to serialize mutations
 + */
-+static struct dentry *ceph_lookup(struct inode *dir, struct dentry *dentry,
-+				  struct nameidata *nd)
-+{
-+	dout(5, "lookup in dir %p dentry %p '%.*s'\n",
-+	     dir, dentry, dentry->d_name.len, dentry->d_name.name);
-+
-+	/* open (but not create!) intent? */
-+	if (nd &&
-+	    (nd->flags & LOOKUP_OPEN) &&
-+	    (nd->flags & LOOKUP_CONTINUE) == 0 && /* only open last component */
-+	    !(nd->intent.open.flags & O_CREAT)) {
-+		int mode = nd->intent.open.create_mode & ~current->fs->umask;
-+		return ceph_lookup_open(dir, dentry, nd, mode, 1);
-+	}
-+
-+	return ceph_do_lookup(dir->i_sb, dentry, CEPH_STAT_MASK_INODE_ALL,
-+			      0, 1);
-+}
-+
-+static int ceph_mknod(struct inode *dir, struct dentry *dentry,
-+			  int mode, dev_t rdev)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	struct ceph_mds_request_head *rhead;
-+	char *path;
-+	int pathlen;
-+	u64 pathbase;
-+	int err;
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "mknod in dir %p dentry %p mode 0%o rdev %d\n",
-+	     dir, dentry, mode, rdev);
-+	path = ceph_build_path(dentry, &pathlen, &pathbase, 1);
-+	if (IS_ERR(path))
-+		return PTR_ERR(path);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_MKNOD,
-+				       pathbase, path, 0, NULL,
-+				       dentry, USE_AUTH_MDS);
-+	kfree(path);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
-+	}
-+	req->r_locked_dir = dir;
-+	rhead = req->r_request->front.iov_base;
-+	rhead->args.mknod.mode = cpu_to_le32(mode);
-+	rhead->args.mknod.rdev = cpu_to_le32(rdev);
-+	ceph_mdsc_lease_release(mdsc, dir, NULL, CEPH_LOCK_ICONTENT);
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	if (!err && req->r_reply_info.trace_numd == 0) {
-+		/*
-+		 * no trace.  do lookup, in case we are called from create
-+		 * and the VFS needs a valid dentry.
-+		 */
-+		struct dentry *d;
-+		d = ceph_do_lookup(dir->i_sb, dentry, CEPH_STAT_MASK_INODE_ALL,
-+				   0, 0);
-+		if (d) {
-+			/* ick.  this is untested, and inherently racey... i
-+			   suppose we _did_ create the file, but it has since
-+			   been deleted?  hrm. */
-+			dput(d);
-+			err = -ESTALE;
-+			dentry = NULL;
-+		}
-+	}
-+	ceph_mdsc_put_request(req);
-+	if (err)
-+		d_drop(dentry);
-+	return err;
-+}
-+
-+static int ceph_create(struct inode *dir, struct dentry *dentry, int mode,
-+			   struct nameidata *nd)
-+{
-+	dout(5, "create in dir %p dentry %p name '%.*s'\n",
-+	     dir, dentry, dentry->d_name.len, dentry->d_name.name);
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	if (nd) {
-+		BUG_ON((nd->flags & LOOKUP_OPEN) == 0);
-+		dentry = ceph_lookup_open(dir, dentry, nd, mode, 0);
-+		/* hrm, what should i do here if we get aliased? */
-+		if (IS_ERR(dentry))
-+			return PTR_ERR(dentry);
-+		return 0;
-+	}
-+
-+	/* fall back to mknod */
-+	return ceph_mknod(dir, dentry, (mode & ~S_IFMT) | S_IFREG, 0);
-+}
-+
-+static int ceph_symlink(struct inode *dir, struct dentry *dentry,
-+			    const char *dest)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	char *path;
-+	int pathlen;
-+	u64 pathbase;
-+	int err;
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "symlink in dir %p dentry %p to '%s'\n", dir, dentry, dest);
-+	path = ceph_build_path(dentry, &pathlen, &pathbase, 1);
-+	if (IS_ERR(path))
-+		return PTR_ERR(path);
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SYMLINK,
-+				       pathbase, path, 0, dest,
-+				       dentry, USE_AUTH_MDS);
-+	kfree(path);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
-+	}
-+	req->r_locked_dir = dir;
-+	ceph_mdsc_lease_release(mdsc, dir, NULL, CEPH_LOCK_ICONTENT);
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	ceph_mdsc_put_request(req);
-+	if (err)
-+		d_drop(dentry);
-+	return err;
-+}
-+
-+static int ceph_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	struct ceph_mds_request_head *rhead;
-+	char *path;
-+	int pathlen;
-+	u64 pathbase;
-+	int err;
-+	char *snap = NULL;
-+	int snaplen;
-+	struct dentry *pathdentry = dentry;
-+	int op = CEPH_MDS_OP_MKDIR;
-+
-+	if (ceph_snap(dir) == CEPH_SNAPDIR) {
-+		/* mkdir .snap/foo is a MKSNAP */
-+		op = CEPH_MDS_OP_MKSNAP;
-+		snaplen = dentry->d_name.len;
-+		snap = kmalloc(snaplen + 1, GFP_NOFS);
-+		memcpy(snap, dentry->d_name.name, snaplen);
-+		snap[snaplen] = 0;
-+		pathdentry = d_find_alias(dir);
-+		dout(5, "mksnap dir %p snap '%s' dn %p\n", dir, snap, dentry);
-+	} else if (ceph_snap(dir) != CEPH_NOSNAP) {
-+		return -EROFS;
-+	} else {
-+		dout(5, "mkdir dir %p dn %p mode 0%o\n", dir, dentry, mode);
-+	}
-+	path = ceph_build_path(pathdentry, &pathlen, &pathbase, 1);
-+	if (pathdentry != dentry)
-+		dput(pathdentry);
-+	if (IS_ERR(path))
-+		return PTR_ERR(path);
-+	req = ceph_mdsc_create_request(mdsc, op,
-+				       pathbase, path, 0, snap,
-+				       dentry, USE_AUTH_MDS);
-+	kfree(path);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
-+	}
-+
-+	req->r_last_dentry = dget(dentry); /* use this dentry in fill_trace */
-+	req->r_locked_dir = dir;
-+	rhead = req->r_request->front.iov_base;
-+	rhead->args.mkdir.mode = cpu_to_le32(mode);
-+
-+	ceph_mdsc_lease_release(mdsc, dir, NULL, CEPH_LOCK_ICONTENT);
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	ceph_mdsc_put_request(req);
-+	if (err < 0)
-+		d_drop(dentry);
-+	return err;
-+}
-+
-+static int ceph_link(struct dentry *old_dentry, struct inode *dir,
-+			 struct dentry *dentry)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	char *oldpath, *path;
-+	int oldpathlen, pathlen;
-+	u64 oldpathbase, pathbase;
-+	int err;
-+
-+	if (ceph_snap(dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "link in dir %p old_dentry %p dentry %p\n", dir,
-+	     old_dentry, dentry);
-+	oldpath = ceph_build_path(old_dentry, &oldpathlen, &oldpathbase, 1);
-+	if (IS_ERR(oldpath))
-+		return PTR_ERR(oldpath);
-+	path = ceph_build_path(dentry, &pathlen, &pathbase, 1);
-+	if (IS_ERR(path)) {
-+		kfree(oldpath);
-+		return PTR_ERR(path);
-+	}
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_LINK,
-+				       pathbase, path,
-+				       oldpathbase, oldpath,
-+				       dentry, USE_AUTH_MDS);
-+	kfree(oldpath);
-+	kfree(path);
-+	if (IS_ERR(req)) {
-+		d_drop(dentry);
-+		return PTR_ERR(req);
-+	}
-+
-+	req->r_last_dentry = dget(dentry); /* use this dentry in fill_trace */
-+	req->r_locked_dir = old_dentry->d_inode;
-+
-+	ceph_mdsc_lease_release(mdsc, dir, NULL, CEPH_LOCK_ICONTENT);
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	if (err) {
-+		d_drop(dentry);
-+	} else if (req->r_reply_info.trace_numd == 0) {
-+		/* no trace */
-+		struct inode *inode = old_dentry->d_inode;
-+		inc_nlink(inode);
-+		atomic_inc(&inode->i_count);
-+		dget(dentry);
-+		d_instantiate(dentry, inode);
-+	}
-+	ceph_mdsc_put_request(req);
-+	return err;
-+}
++struct ceph_eversion {
++	ceph_epoch_t epoch;
++	__le64       version;
++} __attribute__ ((packed));
 +
 +/*
-+ * rmdir and unlink are differ only by the metadata op code
++ * osd map bits
 + */
-+static int ceph_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct inode *inode = dentry->d_inode;
-+	struct ceph_mds_request *req;
-+	char *path;
-+	int pathlen;
-+	u64 pathbase;
-+	char *snap = NULL;
-+	int snaplen;
-+	int err;
-+	int op = ((dentry->d_inode->i_mode & S_IFMT) == S_IFDIR) ?
-+		CEPH_MDS_OP_RMDIR : CEPH_MDS_OP_UNLINK;
-+	struct dentry *pathdentry = dentry;
 +
-+	if (ceph_snap(dir) == CEPH_SNAPDIR) {
-+		/* rmdir .snap/foo is RMSNAP */
-+		op = CEPH_MDS_OP_RMSNAP;
-+		snaplen = dentry->d_name.len;
-+		snap = kmalloc(snaplen + 1, GFP_NOFS);
-+		memcpy(snap, dentry->d_name.name, snaplen);
-+		snap[snaplen] = 0;
-+		pathdentry = d_find_alias(dir);
-+		dout(5, "rmsnap dir %p '%s' dn %p\n", dir, snap, dentry);
-+	} else if (ceph_snap(dir) != CEPH_NOSNAP) {
-+		return -EROFS;
-+	} else {
-+		dout(5, "unlink/rmdir dir %p dn %p inode %p\n",
-+		     dir, dentry, inode);
-+	}
-+	path = ceph_build_path(pathdentry, &pathlen, &pathbase, 1);
-+	if (pathdentry != dentry)
-+		dput(pathdentry);
-+	if (IS_ERR(path))
-+		return PTR_ERR(path);
-+	req = ceph_mdsc_create_request(mdsc, op,
-+				       pathbase, path, 0, snap,
-+				       dentry, USE_AUTH_MDS);
-+	kfree(path);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
++/* status bits */
++#define CEPH_OSD_EXISTS 1
++#define CEPH_OSD_UP     2
++#define CEPH_OSD_CLEAN  4  /* as in, clean shutdown */
 +
-+	req->r_locked_dir = dir;  /* by VFS */
-+
-+	ceph_mdsc_lease_release(mdsc, dir, dentry,
-+				CEPH_LOCK_DN|CEPH_LOCK_ICONTENT);
-+	ceph_mdsc_lease_release(mdsc, inode, NULL, CEPH_LOCK_ILINK);
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	ceph_mdsc_put_request(req);
-+
-+	return err;
-+}
-+
-+static int ceph_rename(struct inode *old_dir, struct dentry *old_dentry,
-+			   struct inode *new_dir, struct dentry *new_dentry)
-+{
-+	struct ceph_client *client = ceph_sb_to_client(old_dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct ceph_mds_request *req;
-+	char *oldpath, *newpath;
-+	int oldpathlen, newpathlen;
-+	u64 oldpathbase, newpathbase;
-+	int err;
-+
-+	if (ceph_snap(old_dir) != ceph_snap(new_dir))
-+		return -EXDEV;
-+	if (ceph_snap(old_dir) != CEPH_NOSNAP ||
-+	    ceph_snap(new_dir) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(5, "dir_rename in dir %p dentry %p to dir %p dentry %p\n",
-+	     old_dir, old_dentry, new_dir, new_dentry);
-+	oldpath = ceph_build_path(old_dentry, &oldpathlen, &oldpathbase, 1);
-+	if (IS_ERR(oldpath))
-+		return PTR_ERR(oldpath);
-+	newpath = ceph_build_path(new_dentry, &newpathlen, &newpathbase, 1);
-+	if (IS_ERR(newpath)) {
-+		kfree(oldpath);
-+		return PTR_ERR(newpath);
-+	}
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_RENAME,
-+				       oldpathbase, oldpath,
-+				       newpathbase, newpath,
-+				       new_dentry, USE_AUTH_MDS);
-+	kfree(oldpath);
-+	kfree(newpath);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+	req->r_old_dentry = dget(old_dentry);
-+	req->r_last_dentry = dget(new_dentry);
-+	req->r_locked_dir = new_dir;
-+	ceph_mdsc_lease_release(mdsc, old_dir, old_dentry,
-+				CEPH_LOCK_DN|CEPH_LOCK_ICONTENT);
-+	if (new_dentry->d_inode)
-+		ceph_mdsc_lease_release(mdsc, new_dentry->d_inode, NULL,
-+					CEPH_LOCK_ILINK);
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	if (!err && req->r_reply_info.trace_numd == 0) {
-+		/*
-+		 * no trace
-+		 *
-+		 * Normally d_move() is done by fill_trace (called by
-+		 * do_request, above).  If there is no trace, we need
-+		 * to do it here.
-+		 */
-+		if (new_dentry->d_inode)
-+			dput(new_dentry);
-+		d_move(old_dentry, new_dentry);
-+	}
-+	ceph_mdsc_put_request(req);
-+	return err;
-+}
-+
++/* osd weights.  fixed point value: 0x10000 == 1.0 ("in"), 0 == "out" */
++#define CEPH_OSD_IN  0x10000
++#define CEPH_OSD_OUT 0
 +
 +
 +/*
-+ * check if dentry lease, or parent directory inode lease/cap says
-+ * this dentry is still valid
++ * string hash.
++ *
++ * taken from Linux, tho we should probably take care to use this one
++ * in case the upstream hash changes.
 + */
-+static int ceph_dentry_revalidate(struct dentry *dentry, struct nameidata *nd)
++
++/* Name hashing routines. Initial hash value */
++/* Hash courtesy of the R5 hash in reiserfs modulo sign bits */
++#define ceph_init_name_hash()		0
++
++/* partial hash update function. Assume roughly 4 bits per character */
++static inline unsigned long
++ceph_partial_name_hash(unsigned long c, unsigned long prevhash)
 +{
-+	struct inode *dir = dentry->d_parent->d_inode;
++	return (prevhash + (c << 4) + (c >> 4)) * 11;
++}
 +
-+	/* always trust cached snapped metadata... for now */
-+	if (ceph_snap(dir) != CEPH_NOSNAP) {
-+		dout(10, "d_revalidate %p '%.*s' inode %p is SNAPPED\n", dentry,
-+		     dentry->d_name.len, dentry->d_name.name, dentry->d_inode);
-+		return 1;
++/*
++ * Finally: cut down the number of bits to a int value (and try to avoid
++ * losing bits)
++ */
++static inline unsigned long ceph_end_name_hash(unsigned long hash)
++{
++	return (unsigned int) hash;
++}
++
++/* Compute the hash for a name string. */
++static inline unsigned int
++ceph_full_name_hash(const char *name, unsigned int len)
++{
++	unsigned long hash = ceph_init_name_hash();
++	while (len--)
++		hash = ceph_partial_name_hash(*name++, hash);
++	return ceph_end_name_hash(hash);
++}
++
++
++
++/*********************************************
++ * message layer
++ */
++
++/*
++ * entity_name
++ */
++struct ceph_entity_name {
++	__le32 type;
++	__le32 num;
++} __attribute__ ((packed));
++
++#define CEPH_ENTITY_TYPE_MON    1
++#define CEPH_ENTITY_TYPE_MDS    2
++#define CEPH_ENTITY_TYPE_OSD    3
++#define CEPH_ENTITY_TYPE_CLIENT 4
++#define CEPH_ENTITY_TYPE_ADMIN  5
++
++/* used by message exchange protocol */
++#define CEPH_MSGR_TAG_READY         1  /* server->client: ready for messages */
++#define CEPH_MSGR_TAG_RESETSESSION  2  /* server->client: reset, try again */
++#define CEPH_MSGR_TAG_WAIT          3  /* server->client: wait for racing
++					  incoming connection */
++#define CEPH_MSGR_TAG_RETRY_SESSION 4  /* server->client + cseq: try again
++					  with higher cseq */
++#define CEPH_MSGR_TAG_RETRY_GLOBAL  5  /* server->client + gseq: try again
++					  with higher gseq */
++#define CEPH_MSGR_TAG_CLOSE         6  /* closing pipe */
++#define CEPH_MSGR_TAG_MSG          10  /* message */
++#define CEPH_MSGR_TAG_ACK          11  /* message ack */
++
++
++/*
++ * entity_addr -- network address
++ */
++struct ceph_entity_addr {
++	__le32 erank;  /* entity's rank in process */
++	__le32 nonce;  /* unique id for process (e.g. pid) */
++	struct sockaddr_in ipaddr;
++} __attribute__ ((packed));
++
++static inline bool ceph_entity_addr_is_local(const struct ceph_entity_addr *a,
++					     const struct ceph_entity_addr *b)
++{
++	return le32_to_cpu(a->nonce) == le32_to_cpu(b->nonce) &&
++		a->ipaddr.sin_addr.s_addr == b->ipaddr.sin_addr.s_addr;
++}
++
++static inline bool ceph_entity_addr_equal(const struct ceph_entity_addr *a,
++					  const struct ceph_entity_addr *b)
++{
++	return memcmp(a, b, sizeof(*a)) == 0;
++}
++
++struct ceph_entity_inst {
++	struct ceph_entity_name name;
++	struct ceph_entity_addr addr;
++} __attribute__ ((packed));
++
++
++/*
++ * connection negotiation
++ */
++struct ceph_msg_connect {
++	__le32 host_type;  /* CEPH_ENTITY_TYPE_* */
++	__le32 global_seq;
++	__le32 connect_seq;
++	__u8  flags;
++} __attribute__ ((packed));
++
++struct ceph_msg_connect_reply {
++	__u8 tag;
++	__le32 global_seq;
++	__le32 connect_seq;
++	__u8 flags;
++} __attribute__ ((packed));
++
++#define CEPH_MSG_CONNECT_LOSSY  1  /* messages i send may be safely dropped */
++
++
++/*
++ * message header
++ */
++struct ceph_msg_header {
++	__le64 seq;       /* message seq# for this session */
++	__le16 type;      /* message type */
++	__le16 priority;  /* priority.  higher value == higher priority */
++	__le16 mon_protocol, osd_protocol, mds_protocol,
++		client_protocol; /* protocol versions */
++	__le32 front_len; /* bytes in main payload */
++	__le32 data_off;  /* sender: include full offset;
++			     receiver: mask against ~PAGE_MASK */
++	__le32 data_len;  /* bytes of data payload */
++	struct ceph_entity_inst src, orig_src, dst;
++	__le32 crc;       /* header crc32c */
++} __attribute__ ((packed));
++
++#define CEPH_MSG_PRIO_LOW     64
++#define CEPH_MSG_PRIO_DEFAULT 127
++#define CEPH_MSG_PRIO_HIGH    196
++#define CEPH_MSG_PRIO_HIGHEST 255
++
++/*
++ * follows data payload
++ */
++struct ceph_msg_footer {
++	__le32 flags;
++	__le32 front_crc;
++	__le32 data_crc;
++} __attribute__ ((packed));
++
++#define CEPH_MSG_FOOTER_ABORTED   (1<<0)   /* drop this message */
++#define CEPH_MSG_FOOTER_NOCRC     (1<<1)   /* no data crc */
++
++
++/*
++ * message types
++ */
++
++/* misc */
++#define CEPH_MSG_SHUTDOWN               1
++#define CEPH_MSG_PING                   2
++
++/* client <-> monitor */
++#define CEPH_MSG_MON_MAP                4
++#define CEPH_MSG_MON_GET_MAP            5
++#define CEPH_MSG_CLIENT_MOUNT           10
++#define CEPH_MSG_CLIENT_UNMOUNT         11
++#define CEPH_MSG_STATFS                 12
++#define CEPH_MSG_STATFS_REPLY           13
++
++/* client <-> mds */
++#define CEPH_MSG_MDS_GETMAP             20
++#define CEPH_MSG_MDS_MAP                21
++
++#define CEPH_MSG_CLIENT_SESSION         22
++#define CEPH_MSG_CLIENT_RECONNECT       23
++
++#define CEPH_MSG_CLIENT_REQUEST         24
++#define CEPH_MSG_CLIENT_REQUEST_FORWARD 25
++#define CEPH_MSG_CLIENT_REPLY           26
++#define CEPH_MSG_CLIENT_CAPS            0x310
++#define CEPH_MSG_CLIENT_LEASE           0x311
++#define CEPH_MSG_CLIENT_SNAP            0x312
++
++/* osd */
++#define CEPH_MSG_OSD_GETMAP       40
++#define CEPH_MSG_OSD_MAP          41
++#define CEPH_MSG_OSD_OP           42
++#define CEPH_MSG_OSD_OPREPLY      43
++
++
++struct ceph_mon_statfs {
++	struct ceph_fsid fsid;
++	__le64 tid;
++};
++
++struct ceph_statfs {
++	__le64 f_total;
++	__le64 f_free;  /* used = total - free (KB) */
++	__le64 f_avail; /* usable */
++	__le64 f_objects;
++};
++
++struct ceph_mon_statfs_reply {
++	struct ceph_fsid fsid;
++	__le64 tid;
++	struct ceph_statfs st;
++};
++
++struct ceph_osd_getmap {
++	struct ceph_fsid fsid;
++	__le32 start;
++} __attribute__ ((packed));
++
++struct ceph_mds_getmap {
++	struct ceph_fsid fsid;
++	__le32 want;
++} __attribute__ ((packed));
++
++
++/*
++ * mds states
++ *   > 0 -> in
++ *  <= 0 -> out
++ */
++#define CEPH_MDS_STATE_DNE         0  /* down, does not exist. */
++#define CEPH_MDS_STATE_STOPPED    -1  /* down, once existed, but no subtrees.
++					 empty log. */
++#define CEPH_MDS_STATE_DESTROYING -2  /* down, existing, semi-destroyed. */
++#define CEPH_MDS_STATE_FAILED      3  /* down, needs to be recovered. */
++
++#define CEPH_MDS_STATE_BOOT       -4  /* up, boot announcement. */
++#define CEPH_MDS_STATE_STANDBY    -5  /* up, idle.  waiting for assignment. */
++#define CEPH_MDS_STATE_CREATING   -6  /* up, creating MDS instance. */
++#define CEPH_MDS_STATE_STARTING   -7  /* up, starting previously stopped mds. */
++
++#define CEPH_MDS_STATE_REPLAY      8  /* up, replaying journal. */
++#define CEPH_MDS_STATE_RESOLVE     9  /* up, disambiguating distributed
++					 operations (import, rename, etc.) */
++#define CEPH_MDS_STATE_RECONNECT   10 /* up, reconnect to clients */
++#define CEPH_MDS_STATE_REJOIN      11 /* up, rejoining distributed cache */
++#define CEPH_MDS_STATE_ACTIVE      12 /* up, active */
++#define CEPH_MDS_STATE_STOPPING    13 /* up, but exporting metadata */
++
++
++/*
++ * metadata lock types.
++ *  - these are bitmasks.. we can compose them
++ *  - they also define the lock ordering by the MDS
++ *  - a few of these are internal to the mds
++ */
++#define CEPH_LOCK_DN          1
++#define CEPH_LOCK_ISNAP       2
++#define CEPH_LOCK_IVERSION    4     /* mds internal */
++#define CEPH_LOCK_IFILE       8     /* mds internal */
++#define CEPH_LOCK_IDIR        16    /* mds internal */
++#define CEPH_LOCK_IAUTH       32
++#define CEPH_LOCK_ILINK       64
++#define CEPH_LOCK_IDFT        128   /* dir frag tree */
++#define CEPH_LOCK_INEST       256   /* mds internal */
++#define CEPH_LOCK_IXATTR      512
++#define CEPH_LOCK_INO         2048  /* immutable inode bits; not a lock */
++
++/* alias for either filelock or dirlock */
++#define CEPH_LOCK_ICONTENT    (CEPH_LOCK_IFILE|CEPH_LOCK_IDIR)
++
++/*
++ * stat masks are defined in terms of the locks that cover inode fields.
++ */
++#define CEPH_STAT_MASK_INODE    CEPH_LOCK_INO
++#define CEPH_STAT_MASK_TYPE     CEPH_LOCK_INO  /* mode >> 12 */
++#define CEPH_STAT_MASK_SYMLINK  CEPH_LOCK_INO
++#define CEPH_STAT_MASK_UID      CEPH_LOCK_IAUTH
++#define CEPH_STAT_MASK_GID      CEPH_LOCK_IAUTH
++#define CEPH_STAT_MASK_MODE     CEPH_LOCK_IAUTH
++#define CEPH_STAT_MASK_NLINK    CEPH_LOCK_ILINK
++#define CEPH_STAT_MASK_LAYOUT   CEPH_LOCK_ICONTENT
++#define CEPH_STAT_MASK_MTIME    CEPH_LOCK_ICONTENT
++#define CEPH_STAT_MASK_SIZE     CEPH_LOCK_ICONTENT
++#define CEPH_STAT_MASK_ATIME    CEPH_LOCK_ICONTENT  /* fixme */
++#define CEPH_STAT_MASK_XATTR    CEPH_LOCK_IXATTR
++#define CEPH_STAT_MASK_INODE_ALL (CEPH_LOCK_ICONTENT | CEPH_LOCK_IAUTH | \
++				  CEPH_LOCK_ILINK | CEPH_LOCK_INO)
++
++/* client_session ops */
++enum {
++	CEPH_SESSION_REQUEST_OPEN,
++	CEPH_SESSION_OPEN,
++	CEPH_SESSION_REQUEST_CLOSE,
++	CEPH_SESSION_CLOSE,
++	CEPH_SESSION_REQUEST_RENEWCAPS,
++	CEPH_SESSION_RENEWCAPS,
++	CEPH_SESSION_STALE,
++};
++
++static inline const char *ceph_session_op_name(int op)
++{
++	switch (op) {
++	case CEPH_SESSION_REQUEST_OPEN: return "request_open";
++	case CEPH_SESSION_OPEN: return "open";
++	case CEPH_SESSION_REQUEST_CLOSE: return "request_close";
++	case CEPH_SESSION_CLOSE: return "close";
++	case CEPH_SESSION_REQUEST_RENEWCAPS: return "request_renewcaps";
++	case CEPH_SESSION_RENEWCAPS: return "renewcaps";
++	case CEPH_SESSION_STALE: return "stale";
++	default: return "???";
 +	}
++}
 +
-+	dout(10, "d_revalidate %p '%.*s' inode %p\n", dentry,
-+	     dentry->d_name.len, dentry->d_name.name, dentry->d_inode);
++struct ceph_mds_session_head {
++	__le32 op;
++	__le64 seq;
++	struct ceph_timespec stamp;
++} __attribute__ ((packed));
 +
-+	if (ceph_ino(dir) != 1 &&  /* ICONTENT is meaningless on root inode */
-+	    ceph_inode(dir)->i_version == dentry->d_time &&
-+	    ceph_inode_lease_valid(dir, CEPH_LOCK_ICONTENT)) {
-+		dout(20, "dentry_revalidate %p %lu ICONTENT on dir %p %llu\n",
-+		     dentry, dentry->d_time, dir, ceph_inode(dir)->i_version);
-+		return 1;
++/* client_request */
++/*
++ * metadata ops.
++ *  & 0x001000 -> write op
++ *  & 0x010000 -> follow symlink (e.g. stat(), not lstat()).
++ &  & 0x100000 -> use weird ino/path trace
++ */
++#define CEPH_MDS_OP_WRITE        0x001000
++#define CEPH_MDS_OP_FOLLOW_LINK  0x010000
++#define CEPH_MDS_OP_INO_PATH     0x100000
++enum {
++	CEPH_MDS_OP_FINDINODE  = 0x100100,
++
++	CEPH_MDS_OP_LSTAT      = 0x00100,
++	CEPH_MDS_OP_LUTIME     = 0x01101,
++	CEPH_MDS_OP_LCHMOD     = 0x01102,
++	CEPH_MDS_OP_LCHOWN     = 0x01103,
++	CEPH_MDS_OP_LSETXATTR  = 0x01104,
++	CEPH_MDS_OP_LRMXATTR   = 0x01105,
++	CEPH_MDS_OP_LSETLAYOUT = 0x01106,
++
++	CEPH_MDS_OP_STAT       = 0x10100,
++	CEPH_MDS_OP_UTIME      = 0x11101,
++	CEPH_MDS_OP_CHMOD      = 0x11102,
++	CEPH_MDS_OP_CHOWN      = 0x11103,
++	CEPH_MDS_OP_SETXATTR   = 0x11104,
++	CEPH_MDS_OP_RMXATTR    = 0x11105,
++
++	CEPH_MDS_OP_MKNOD      = 0x01201,
++	CEPH_MDS_OP_LINK       = 0x01202,
++	CEPH_MDS_OP_UNLINK     = 0x01203,
++	CEPH_MDS_OP_RENAME     = 0x01204,
++	CEPH_MDS_OP_MKDIR      = 0x01220,
++	CEPH_MDS_OP_RMDIR      = 0x01221,
++	CEPH_MDS_OP_SYMLINK    = 0x01222,
++
++	CEPH_MDS_OP_OPEN       = 0x10302,
++	CEPH_MDS_OP_TRUNCATE   = 0x11303,
++	CEPH_MDS_OP_LTRUNCATE  = 0x01303,
++	CEPH_MDS_OP_FSYNC      = 0x00304,
++	CEPH_MDS_OP_READDIR    = 0x00305,
++
++	CEPH_MDS_OP_MKSNAP     = 0x01400,
++	CEPH_MDS_OP_RMSNAP     = 0x01401,
++	CEPH_MDS_OP_LSSNAP     = 0x00402,
++};
++
++static inline const char *ceph_mds_op_name(int op)
++{
++	switch (op) {
++	case CEPH_MDS_OP_FINDINODE: return "findinode";
++	case CEPH_MDS_OP_STAT:  return "stat";
++	case CEPH_MDS_OP_LSTAT:  return "lstat";
++	case CEPH_MDS_OP_UTIME: return "utime";
++	case CEPH_MDS_OP_LUTIME: return "lutime";
++	case CEPH_MDS_OP_CHMOD: return "chmod";
++	case CEPH_MDS_OP_LCHMOD: return "lchmod";
++	case CEPH_MDS_OP_CHOWN: return "chown";
++	case CEPH_MDS_OP_LCHOWN: return "lchown";
++	case CEPH_MDS_OP_LSETLAYOUT: return "lsetlayout";
++	case CEPH_MDS_OP_SETXATTR: return "setxattr";
++	case CEPH_MDS_OP_LSETXATTR: return "lsetxattr";
++	case CEPH_MDS_OP_RMXATTR: return "rmxattr";
++	case CEPH_MDS_OP_LRMXATTR: return "lrmxattr";
++	case CEPH_MDS_OP_READDIR: return "readdir";
++	case CEPH_MDS_OP_MKNOD: return "mknod";
++	case CEPH_MDS_OP_LINK: return "link";
++	case CEPH_MDS_OP_UNLINK: return "unlink";
++	case CEPH_MDS_OP_RENAME: return "rename";
++	case CEPH_MDS_OP_MKDIR: return "mkdir";
++	case CEPH_MDS_OP_RMDIR: return "rmdir";
++	case CEPH_MDS_OP_SYMLINK: return "symlink";
++	case CEPH_MDS_OP_OPEN: return "open";
++	case CEPH_MDS_OP_TRUNCATE: return "truncate";
++	case CEPH_MDS_OP_LTRUNCATE: return "ltruncate";
++	case CEPH_MDS_OP_FSYNC: return "fsync";
++	case CEPH_MDS_OP_LSSNAP: return "lssnap";
++	case CEPH_MDS_OP_MKSNAP: return "mksnap";
++	case CEPH_MDS_OP_RMSNAP: return "rmsnap";
++	default: return "???";
 +	}
-+	if (ceph_dentry_lease_valid(dentry)) {
-+		dout(20, "dentry_revalidate %p lease valid\n", dentry);
-+		return 1;
-+	}
++}
 +
-+	dout(20, "dentry_revalidate %p no lease\n", dentry);
-+	d_drop(dentry);
++struct ceph_mds_request_head {
++	ceph_tid_t tid, oldest_client_tid;
++	ceph_epoch_t mdsmap_epoch; /* on client */
++	__le32 num_fwd;
++	__le32 retry_attempt;
++	__le64 mds_wants_replica_in_dirino;
++	__le32 op;
++	__le32 caller_uid, caller_gid;
++
++	union {
++		struct {
++			__le32 mask;
++		} __attribute__ ((packed)) stat;
++		struct {
++			__le32 mask;
++		} __attribute__ ((packed)) fstat;
++		struct {
++			__le32 frag;
++		} __attribute__ ((packed)) readdir;
++		struct {
++			struct ceph_timespec mtime;
++			struct ceph_timespec atime;
++			struct ceph_timespec ctime;
++			__le32 mask;
++		} __attribute__ ((packed)) utime;
++		struct {
++			__le32 mode;
++		} __attribute__ ((packed)) chmod;
++		struct {
++			__le32 uid;
++			__le32 gid;
++			__le32 mask;
++		} __attribute__ ((packed)) chown;
++		struct {
++			__le32 mode;
++			__le32 rdev;
++		} __attribute__ ((packed)) mknod;
++		struct {
++			__le32 mode;
++		} __attribute__ ((packed)) mkdir;
++		struct {
++			__le32 flags;
++			__le32 mode;
++		} __attribute__ ((packed)) open;
++		struct {
++			__le64 length;
++		} __attribute__ ((packed)) truncate;
++		struct {
++			__le32 flags;
++		} __attribute__ ((packed)) setxattr;
++		struct {
++			struct ceph_file_layout layout;
++		} __attribute__ ((packed)) setlayout;
++	} __attribute__ ((packed)) args;
++} __attribute__ ((packed));
++
++/* masks for utimes() */
++#define CEPH_UTIME_ATIME		1
++#define CEPH_UTIME_MTIME		2
++#define CEPH_UTIME_CTIME		4
++
++/* masks for chown */
++#define CEPH_CHOWN_UID   1
++#define CEPH_CHOWN_GID   2
++
++struct ceph_inopath_item {
++	__le64 ino;
++	__le32 dname_hash;
++} __attribute__ ((packed));
++
++/* client reply */
++struct ceph_mds_reply_head {
++	ceph_tid_t tid;
++	__le32 op;
++	__le32 result;
++	__le32 file_caps;
++	__le32 file_caps_seq;
++	__le32 file_caps_mseq;
++	__le32 mdsmap_epoch;
++} __attribute__ ((packed));
++
++/* one for each node split */
++struct ceph_frag_tree_split {
++	__le32 frag;      /* this frag splits... */
++	__le32 by;        /* ...by this many bits */
++} __attribute__ ((packed));
++
++struct ceph_frag_tree_head {
++	__le32 nsplits;
++	struct ceph_frag_tree_split splits[];
++} __attribute__ ((packed));
++
++struct ceph_mds_reply_inode {
++	__le64 ino;
++	__le64 snapid;
++	__le64 version;
++	struct ceph_file_layout layout;
++	struct ceph_timespec ctime, mtime, atime;
++	__le64 time_warp_seq;
++	__le32 rdev;
++	__le32 mode, uid, gid;
++	__le32 nlink;
++	__le64 size, max_size, truncate_seq;
++	__le64 files, subdirs, rbytes, rfiles, rsubdirs;  /* dir stats */
++	struct ceph_timespec rctime;
++	struct ceph_frag_tree_head fragtree;
++} __attribute__ ((packed));
++/* followed by frag array, then symlink string, then xattr blob */
++
++/* reply_lease follows dname, and reply_inode */
++struct ceph_mds_reply_lease {
++	__le16 mask;
++	__le32 duration_ms;
++} __attribute__ ((packed));
++
++struct ceph_mds_reply_dirfrag {
++	__le32 frag;   /* fragment */
++	__le32 auth;   /* auth mds, if this is a delegation point */
++	__le32 ndist;  /* number of mds' this is replicated on */
++	__le32 dist[];
++} __attribute__ ((packed));
++
++/* file access modes */
++#define CEPH_FILE_MODE_PIN        0
++#define CEPH_FILE_MODE_RD         1
++#define CEPH_FILE_MODE_WR         2
++#define CEPH_FILE_MODE_RDWR       3  /* RD | WR */
++#define CEPH_FILE_MODE_LAZY       4  /* lazy io */
++#define CEPH_FILE_MODE_NUM        8  /* bc these are bit fields.. mostly */
++
++static inline int ceph_flags_to_mode(int flags)
++{
++#ifdef O_DIRECTORY  /* fixme */
++	if ((flags & O_DIRECTORY) == O_DIRECTORY)
++		return CEPH_FILE_MODE_PIN;
++#endif
++#ifdef O_LAZY
++	if (flags & O_LAZY)
++		return CEPH_FILE_MODE_LAZY;
++#endif
++	if ((flags & O_APPEND) == O_APPEND)
++		flags |= O_WRONLY;
++
++	flags &= O_ACCMODE;
++	if ((flags & O_RDWR) == O_RDWR)
++		return CEPH_FILE_MODE_RDWR;
++	if ((flags & O_WRONLY) == O_WRONLY)
++		return CEPH_FILE_MODE_WR;
++	return CEPH_FILE_MODE_RD;
++}
++
++/* client file caps */
++#define CEPH_CAP_PIN       1  /* no specific capabilities beyond the pin */
++#define CEPH_CAP_RDCACHE   2  /* client can cache reads */
++#define CEPH_CAP_RD        4  /* client can read */
++#define CEPH_CAP_WR        8  /* client can write */
++#define CEPH_CAP_WRBUFFER 16  /* client can buffer writes */
++#define CEPH_CAP_WREXTEND 32  /* client can extend EOF */
++#define CEPH_CAP_LAZYIO   64  /* client can perform lazy io */
++#define CEPH_CAP_EXCL    128  /* exclusive/loner access */
++
++static inline int ceph_caps_for_mode(int mode)
++{
++	switch (mode) {
++	case CEPH_FILE_MODE_PIN:
++		return CEPH_CAP_PIN;
++	case CEPH_FILE_MODE_RD:
++		return CEPH_CAP_PIN |
++			CEPH_CAP_RD | CEPH_CAP_RDCACHE;
++	case CEPH_FILE_MODE_RDWR:
++		return CEPH_CAP_PIN |
++			CEPH_CAP_RD | CEPH_CAP_RDCACHE |
++			CEPH_CAP_WR | CEPH_CAP_WRBUFFER |
++			CEPH_CAP_EXCL;
++	case CEPH_FILE_MODE_WR:
++		return CEPH_CAP_PIN |
++			CEPH_CAP_WR | CEPH_CAP_WRBUFFER |
++			CEPH_CAP_EXCL;
++	}
 +	return 0;
 +}
 +
-+static void ceph_dentry_release(struct dentry *dentry)
++enum {
++	CEPH_CAP_OP_GRANT,     /* mds->client grant */
++	CEPH_CAP_OP_TRUNC,     /* mds->client trunc notify */
++	CEPH_CAP_OP_EXPORT,    /* mds has exported the cap */
++	CEPH_CAP_OP_IMPORT,    /* mds has imported the cap from specified mds */
++	CEPH_CAP_OP_RELEASED,    /* mds->client close out cap */
++	CEPH_CAP_OP_FLUSHEDSNAP, /* mds->client flushed snap */
++	CEPH_CAP_OP_ACK,       /* client->mds ack (if prior grant was recall) */
++	CEPH_CAP_OP_REQUEST,   /* client->mds request (update wanted bits) */
++	CEPH_CAP_OP_FLUSHSNAP, /* client->mds flush snapped metadata */
++	CEPH_CAP_OP_RELEASE,   /* client->mds request release cap */
++};
++
++static inline const char *ceph_cap_op_name(int op)
 +{
-+	BUG_ON(dentry->d_fsdata);
++	switch (op) {
++	case CEPH_CAP_OP_GRANT: return "grant";
++	case CEPH_CAP_OP_TRUNC: return "trunc";
++	case CEPH_CAP_OP_EXPORT: return "export";
++	case CEPH_CAP_OP_IMPORT: return "import";
++	case CEPH_CAP_OP_RELEASED: return "released";
++	case CEPH_CAP_OP_FLUSHEDSNAP: return "flushedsnap";
++	case CEPH_CAP_OP_ACK: return "ack";
++	case CEPH_CAP_OP_REQUEST: return "request";
++	case CEPH_CAP_OP_FLUSHSNAP: return "flushsnap";
++	case CEPH_CAP_OP_RELEASE: return "release";
++	default: return "???";
++	}
 +}
 +
-+static int ceph_snapdir_dentry_revalidate(struct dentry *dentry,
-+					  struct nameidata *nd)
++/*
++ * caps message, used for capability callbacks, acks, requests, etc.
++ */
++struct ceph_mds_caps {
++	__le32 op;
++	__le64 ino;
++	__le32 seq;
++	__le32 caps, wanted;
++	__le64 size, max_size;
++	__le64 truncate_seq;
++	__le32 migrate_seq;
++	struct ceph_timespec mtime, atime, ctime;
++	struct ceph_file_layout layout;
++	__le64 time_warp_seq;
++	__le64 snap_follows;
++	__le32 snap_trace_len;
++} __attribute__ ((packed));
++
++
++#define CEPH_MDS_LEASE_REVOKE  1  /*    mds  -> client */
++#define CEPH_MDS_LEASE_RELEASE 2  /* client  -> mds    */
++#define CEPH_MDS_LEASE_RENEW   3  /* client <-> mds    */
++
++struct ceph_mds_lease {
++	__u8 action;
++	__le16 mask;
++	__le64 ino;
++	__le64 first, last;
++} __attribute__ ((packed));
++/* followed by a __le32+string for dname */
++
++
++/* client reconnect */
++struct ceph_mds_cap_reconnect {
++	__le32 wanted;
++	__le32 issued;
++	__le64 size;
++	struct ceph_timespec mtime, atime;
++	__le64 snaprealm;
++} __attribute__ ((packed));
++/* followed by encoded string */
++
++struct ceph_mds_snaprealm_reconnect {
++	__le64 ino;
++	__le64 seq;
++	__le64 parent;  /* parent realm */
++} __attribute__ ((packed));
++
++/*
++ * snaps
++ */
++enum {
++	CEPH_SNAP_OP_UPDATE,  /* CREATE or DESTROY */
++	CEPH_SNAP_OP_CREATE,
++	CEPH_SNAP_OP_DESTROY,
++	CEPH_SNAP_OP_SPLIT,
++};
++
++static inline const char *ceph_snap_op_name(int o)
 +{
-+	/*
-+	 * Eventually, we'll want to revalidate snapped metadata
-+	 * too... probably.
-+	 */
-+	return 1;
++	switch (o) {
++	case CEPH_SNAP_OP_UPDATE: return "update";
++	case CEPH_SNAP_OP_CREATE: return "create";
++	case CEPH_SNAP_OP_DESTROY: return "destroy";
++	case CEPH_SNAP_OP_SPLIT: return "split";
++	default: return "???";
++	}
 +}
 +
++struct ceph_mds_snap_head {
++	__le32 op;
++	__le64 split;
++	__le32 num_split_inos;
++	__le32 num_split_realms;
++	__le32 trace_len;
++} __attribute__ ((packed));
++/* followed by split ino list, then split realms, then the trace blob */
++
++/*
++ * encode info about a snaprealm, as viewed by a client
++ */
++struct ceph_mds_snap_realm {
++	__le64 ino;           /* ino */
++	__le64 created;       /* snap: when created */
++	__le64 parent;        /* ino: parent realm */
++	__le64 parent_since;  /* snap: same parent since */
++	__le64 seq;           /* snap: version */
++	__le32 num_snaps;
++	__le32 num_prior_parent_snaps;
++} __attribute__ ((packed));
++/* followed by my snap list, then prior parent snap list */
++
++/*
++ * osd map flag bits
++ */
++#define CEPH_OSDMAP_NEARFULL (1<<0)  /* sync writes (near ENOSPC) */
++#define CEPH_OSDMAP_FULL     (1<<1)  /* no data writes (ENOSPC) */
++
++/*
++ * osd ops
++ */
++#define CEPH_OSD_OP_MODE       0xf000
++#define CEPH_OSD_OP_MODE_RD    0x1000
++#define CEPH_OSD_OP_MODE_WR    0x2000
++#define CEPH_OSD_OP_MODE_SUB   0x4000
++
++#define CEPH_OSD_OP_TYPE       0x0f00
++#define CEPH_OSD_OP_TYPE_LOCK  0x0100
++#define CEPH_OSD_OP_TYPE_DATA  0x0200
++#define CEPH_OSD_OP_TYPE_ATTR  0x0300
++
++enum {
++	/* read */
++	CEPH_OSD_OP_READ       = CEPH_OSD_OP_MODE_RD | CEPH_OSD_OP_TYPE_DATA | 1,
++	CEPH_OSD_OP_STAT       = CEPH_OSD_OP_MODE_RD | CEPH_OSD_OP_TYPE_DATA | 2,
++
++	CEPH_OSD_OP_GETXATTR   = CEPH_OSD_OP_MODE_RD | CEPH_OSD_OP_TYPE_ATTR | 1,
++	CEPH_OSD_OP_GETXATTRS  = CEPH_OSD_OP_MODE_RD | CEPH_OSD_OP_TYPE_ATTR | 2,
++
++	/* subop */
++	CEPH_OSD_OP_PULL           = CEPH_OSD_OP_MODE_SUB | 1,
++	CEPH_OSD_OP_PUSH           = CEPH_OSD_OP_MODE_SUB | 2,
++	CEPH_OSD_OP_BALANCEREADS   = CEPH_OSD_OP_MODE_SUB | 3,
++	CEPH_OSD_OP_UNBALANCEREADS = CEPH_OSD_OP_MODE_SUB | 4,
++
++	/* object data */
++	CEPH_OSD_OP_WRITE      = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_DATA | 1,
++	CEPH_OSD_OP_WRITEFULL  = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_DATA | 2,
++	CEPH_OSD_OP_TRUNCATE   = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_DATA | 3,
++	CEPH_OSD_OP_ZERO       = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_DATA | 4,
++	CEPH_OSD_OP_DELETE     = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_DATA | 5,
++
++	/* object attrs */
++	CEPH_OSD_OP_SETXATTR   = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_ATTR | 1,
++	CEPH_OSD_OP_SETXATTRS  = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_ATTR | 2,
++	CEPH_OSD_OP_RESETXATTRS= CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_ATTR | 3,
++	CEPH_OSD_OP_RMXATTR    = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_ATTR | 4,
++
++	/* lock */
++	CEPH_OSD_OP_WRLOCK     = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_LOCK | 1,
++	CEPH_OSD_OP_WRUNLOCK   = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_LOCK | 2,
++	CEPH_OSD_OP_RDLOCK     = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_LOCK | 3,
++	CEPH_OSD_OP_RDUNLOCK   = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_LOCK | 4,
++	CEPH_OSD_OP_UPLOCK     = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_LOCK | 5,
++	CEPH_OSD_OP_DNLOCK     = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_LOCK | 6,
++
++	/* fancy read */
++	CEPH_OSD_OP_GREP       = CEPH_OSD_OP_MODE_RD | CEPH_OSD_OP_TYPE_DATA | 3,
++
++	/* fancy write */
++	CEPH_OSD_OP_APPEND     = CEPH_OSD_OP_MODE_WR | CEPH_OSD_OP_TYPE_DATA | 6,
++};
++
++static inline int ceph_osd_op_type_lock(int op)
++{
++	return (op & CEPH_OSD_OP_TYPE) == CEPH_OSD_OP_TYPE_LOCK;
++}
++static inline int ceph_osd_op_type_data(int op)
++{
++	return (op & CEPH_OSD_OP_TYPE) == CEPH_OSD_OP_TYPE_DATA;
++}
++static inline int ceph_osd_op_type_attr(int op)
++{
++	return (op & CEPH_OSD_OP_TYPE) == CEPH_OSD_OP_TYPE_ATTR;
++}
++
++static inline int ceph_osd_op_mode_subop(int op)
++{
++	return (op & CEPH_OSD_OP_MODE) == CEPH_OSD_OP_MODE_SUB;
++}
++static inline int ceph_osd_op_mode_read(int op)
++{
++	return (op & CEPH_OSD_OP_MODE) == CEPH_OSD_OP_MODE_RD;
++}
++static inline int ceph_osd_op_mode_modify(int op)
++{
++	return (op & CEPH_OSD_OP_MODE) == CEPH_OSD_OP_MODE_WR;
++}
++
++static inline const char *ceph_osd_op_name(int op)
++{
++	switch (op) {
++	case CEPH_OSD_OP_READ: return "read";
++	case CEPH_OSD_OP_STAT: return "stat";
++
++	case CEPH_OSD_OP_WRITE: return "write";
++	case CEPH_OSD_OP_DELETE: return "delete";
++	case CEPH_OSD_OP_TRUNCATE: return "truncate";
++	case CEPH_OSD_OP_ZERO: return "zero";
++	case CEPH_OSD_OP_WRITEFULL: return "writefull";
++
++	case CEPH_OSD_OP_SETXATTR: return "setxattr";
++	case CEPH_OSD_OP_SETXATTRS: return "setxattrs";
++	case CEPH_OSD_OP_RESETXATTRS: return "resetxattrs";
++	case CEPH_OSD_OP_RMXATTR: return "rmxattr";
++
++	case CEPH_OSD_OP_WRLOCK: return "wrlock";
++	case CEPH_OSD_OP_WRUNLOCK: return "wrunlock";
++	case CEPH_OSD_OP_RDLOCK: return "rdlock";
++	case CEPH_OSD_OP_RDUNLOCK: return "rdunlock";
++	case CEPH_OSD_OP_UPLOCK: return "uplock";
++	case CEPH_OSD_OP_DNLOCK: return "dnlock";
++
++	case CEPH_OSD_OP_PULL: return "pull";
++	case CEPH_OSD_OP_PUSH: return "push";
++	case CEPH_OSD_OP_BALANCEREADS: return "balance-reads";
++	case CEPH_OSD_OP_UNBALANCEREADS: return "unbalance-reads";
++
++	default: return "???";
++	}
++}
 +
 +
 +/*
-+ * read() on a dir.  This weird interface hack only works if mounted
-+ * with '-o dirstat'.
++ * osd op flags
 + */
-+static ssize_t ceph_read_dir(struct file *file, char __user *buf, size_t size,
-+			     loff_t *ppos)
-+{
-+	struct ceph_file_info *cf = file->private_data;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	int left;
-+
-+	if (!(ceph_client(inode->i_sb)->mount_args.flags & CEPH_MOUNT_DIRSTAT))
-+		return -EISDIR;
-+
-+	if (!cf->dir_info) {
-+		cf->dir_info = kmalloc(1024, GFP_NOFS);
-+		if (!cf->dir_info)
-+			return -ENOMEM;
-+		cf->dir_info_len =
-+			sprintf(cf->dir_info,
-+				"entries:   %20lld\n"
-+				" files:    %20lld\n"
-+				" subdirs:  %20lld\n"
-+				"rentries:  %20lld\n"
-+				" rfiles:   %20lld\n"
-+				" rsubdirs: %20lld\n"
-+				"rbytes:    %20lld\n"
-+				"rctime:    %10ld.%09ld\n",
-+				ci->i_files + ci->i_subdirs,
-+				ci->i_files,
-+				ci->i_subdirs,
-+				ci->i_rfiles + ci->i_rsubdirs,
-+				ci->i_rfiles,
-+				ci->i_rsubdirs,
-+				ci->i_rbytes,
-+				(long)ci->i_rctime.tv_sec,
-+				(long)ci->i_rctime.tv_nsec);
-+	}
-+
-+	if (*ppos >= cf->dir_info_len)
-+		return 0;
-+	size = min_t(unsigned, size, cf->dir_info_len-*ppos);
-+	left = copy_to_user(buf, cf->dir_info + *ppos, size);
-+	if (left == size)
-+		return -EFAULT;
-+	*ppos += (size - left);
-+	return size - left;
-+}
-+
-+const struct file_operations ceph_dir_fops = {
-+	.read = ceph_read_dir,
-+	.readdir = ceph_readdir,
-+	.llseek = ceph_dir_llseek,
-+	.open = ceph_open,
-+	.release = ceph_release,
-+	.unlocked_ioctl = ceph_ioctl,
++enum {
++	CEPH_OSD_OP_ACK = 1,          /* want (or is) "ack" ack */
++	CEPH_OSD_OP_SAFE = 2,         /* want (or is) "safe" ack */
++	CEPH_OSD_OP_RETRY = 4,        /* resend attempt */
++	CEPH_OSD_OP_INCLOCK_FAIL = 8, /* fail on inclock collision */
++	CEPH_OSD_OP_MODIFY = 16,      /* op is/was a mutation */
++	CEPH_OSD_OP_ACKNVRAM = 32,    /* ACK when stable in NVRAM, not RAM */
++	CEPH_OSD_OP_ORDERSNAP = 64,   /* EOLDSNAP if snapc is out of order */
++	CEPH_OSD_OP_PEERSTAT = 128,   /* msg includes osd_peer_stat */
++	CEPH_OSD_OP_BALANCE_READS = 256,
 +};
 +
-+const struct inode_operations ceph_dir_iops = {
-+	.lookup = ceph_lookup,
-+	.getattr = ceph_getattr,
-+	.setattr = ceph_setattr,
-+	.setxattr = ceph_setxattr,
-+	.getxattr = ceph_getxattr,
-+	.listxattr = ceph_listxattr,
-+	.removexattr = ceph_removexattr,
-+	.mknod = ceph_mknod,
-+	.symlink = ceph_symlink,
-+	.mkdir = ceph_mkdir,
-+	.link = ceph_link,
-+	.unlink = ceph_unlink,
-+	.rmdir = ceph_unlink,
-+	.rename = ceph_rename,
-+	.create = ceph_create,
-+};
++#define EOLDSNAPC 44 /* ORDERSNAP flag set and writer has old snap context*/
 +
-+struct dentry_operations ceph_dentry_ops = {
-+	.d_revalidate = ceph_dentry_revalidate,
-+	.d_release = ceph_dentry_release,
-+};
++struct ceph_osd_op {
++	__le16 op;
++	union {
++		struct {
++			__le64 offset, length;
++		};
++		struct {
++			__le32 name_len;
++			__le32 value_len;
++		};
++	};
++} __attribute__ ((packed));
 +
-+struct dentry_operations ceph_snapdir_dentry_ops = {
-+	.d_revalidate = ceph_snapdir_dentry_revalidate,
-+};
++struct ceph_osd_request_head {
++	ceph_tid_t                tid;
++	__le32                    client_inc;
++	struct ceph_object        oid;
++	struct ceph_object_layout layout;
++	ceph_epoch_t              osdmap_epoch;
 +
-+struct dentry_operations ceph_snap_dentry_ops = {
-+};
++	__le32                    flags;
++	__le32                    inc_lock;
++
++	struct ceph_eversion      reassert_version;
++
++	/* writer's snap context */
++	__le64 snap_seq;
++	__le32 num_snaps;
++
++	/* read or mutation */
++	__le16 num_ops;
++	__u16 object_type;
++	struct ceph_osd_op ops[];  /* followed by snaps */
++} __attribute__ ((packed));
++
++struct ceph_osd_reply_head {
++	ceph_tid_t           tid;
++	__le32               flags;
++	struct ceph_object   oid;
++	struct ceph_object_layout layout;
++	ceph_epoch_t         osdmap_epoch;
++	struct ceph_eversion reassert_version;
++
++	__le32 result;
++
++	__le32 num_ops;
++	struct ceph_osd_op ops[0];
++} __attribute__ ((packed));
++
++#endif
 -- 
 1.5.6.5
 
