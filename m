@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYKNVfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYKNVg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbYKNVfc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbYKNVeg
+	id S1755554AbYKNVg0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:36:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbYKNVep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:34:36 -0500
-Received: from mga09.intel.com ([134.134.136.24]:35033 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752504AbYKNVec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:34:32 -0500
+	Fri, 14 Nov 2008 16:34:45 -0500
+Received: from mga02.intel.com ([134.134.136.20]:45705 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754322AbYKNVel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:34:41 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,605,1220252400"; 
-   d="scan'208";a="360278564"
+   d="scan'208";a="360278604"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 01/13] async_tx,
-	dmaengine: document channel allocation and api rework
+Subject: [PATCH 04/13] dmaengine: centralize channel allocation,
+	introduce dma_find_channel
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Cc: maciej.sosnowski@intel.com, hskinnemoen@atmel.com, g.liakhovetski@gmx.de,
        nicolas.ferre@atmel.com
-Date: Fri, 14 Nov 2008 14:34:21 -0700
-Message-ID: <20081114213421.32354.55126.stgit@dwillia2-linux.ch.intel.com>
+Date: Fri, 14 Nov 2008 14:34:37 -0700
+Message-ID: <20081114213437.32354.66972.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
 References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.14.2
@@ -30,231 +30,446 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Wouldn't it be better if the dmaengine layer made sure it didn't pass
-the same channel several times to a client?
+Allowing multiple clients to each define their own channel allocation
+scheme quickly leads to a pathological situation.  For memory-to-memory
+offload all clients can share a central allocator.
 
-I mean, you seem concerned that the memcpy() API should be transparent
-and easy to use, but the whole registration interface is just
-ridiculously complicated..."
-	- Haavard
+This simply moves the existing async_tx allocator to dmaengine with
+minimal fixups:
+* async_tx.c:get_chan_ref_by_cap --> dmaengine.c:nth_chan
+* async_tx.c:async_tx_rebalance --> dmaengine.c:dma_channel_rebalance
+* split out common code from async_tx.c:__async_tx_find_channel -->
+  dma_find_channel
 
-The dmaengine and async_tx registration/allocation interface is indeed
-needlessly complicated.  This redesign has the following goals:
-
-1/ Simplify reference counting: dma channels are not something one would
-   expect to be hotplugged, it should be an exceptional event handled by
-   drivers not something clients should be mandated to handle in a
-   callback.  The common case channel removal event is 'rmmod <dma driver>',
-   which for simplicity should be disallowed if the channel is in use.
-2/ Add an interface for requesting exclusive access to a channel
-   suitable to device-to-memory users.
-3/ Convert all memory-to-memory users over to a common allocator, the goal
-   here is to not have competing channel allocation schemes.  The only
-   competition should be between device-to-memory exclusive allocations and
-   the memory-to-memory usage case where channels are shared between
-   multiple "clients".
-
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Neil Brown <neilb@suse.de>
-Cc: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
 
- Documentation/crypto/async-tx-api.txt |  135 ++++++++++++++++-----------------
- Documentation/dmaengine.txt           |    1 
- 2 files changed, 68 insertions(+), 68 deletions(-)
- create mode 100644 Documentation/dmaengine.txt
+ crypto/async_tx/async_tx.c |  146 +---------------------------------------
+ drivers/dma/dmaengine.c    |  159 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/dmaengine.h  |    3 +
+ 3 files changed, 166 insertions(+), 142 deletions(-)
 
-diff --git a/Documentation/crypto/async-tx-api.txt b/Documentation/crypto/async-tx-api.txt
-index c1e9545..48e7b35 100644
---- a/Documentation/crypto/async-tx-api.txt
-+++ b/Documentation/crypto/async-tx-api.txt
-@@ -13,9 +13,9 @@
- 3.6 Constraints
- 3.7 Example
+diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
+index 43fe4cb..b88bb1f 100644
+--- a/crypto/async_tx/async_tx.c
++++ b/crypto/async_tx/async_tx.c
+@@ -38,25 +38,10 @@ static struct dma_client async_tx_dma = {
+ };
  
--4 DRIVER DEVELOPER NOTES
-+4 DMAENGINE DRIVER DEVELOPER NOTES
- 4.1 Conformance points
--4.2 "My application needs finer control of hardware channels"
-+4.2 "My application needs exclusive control of hardware channels"
+ /**
+- * dma_cap_mask_all - enable iteration over all operation types
+- */
+-static dma_cap_mask_t dma_cap_mask_all;
+-
+-/**
+- * chan_ref_percpu - tracks channel allocations per core/opertion
+- */
+-struct chan_ref_percpu {
+-	struct dma_chan_ref *ref;
+-};
+-
+-static int channel_table_initialized;
+-static struct chan_ref_percpu *channel_table[DMA_TX_TYPE_END];
+-
+-/**
+  * async_tx_lock - protect modification of async_tx_master_list and serialize
+  *	rebalance operations
+  */
+-static spinlock_t async_tx_lock;
++static DEFINE_SPINLOCK(async_tx_lock);
  
- 5 SOURCE
+ static LIST_HEAD(async_tx_master_list);
  
-@@ -80,9 +80,7 @@ acknowledged by the application before the offload engine driver is allowed to
- recycle (or free) the descriptor.  A descriptor can be acked by one of the
- following methods:
- 1/ setting the ASYNC_TX_ACK flag if no child operations are to be submitted
--2/ setting the ASYNC_TX_DEP_ACK flag to acknowledge the parent
--   descriptor of a new operation.
--3/ calling async_tx_ack() on the descriptor.
-+2/ calling async_tx_ack() on the descriptor.
- 
- 3.4 When does the operation execute?
- Operations do not immediately issue after return from the
-@@ -101,12 +99,15 @@ of an operation.
-    it polls for the completion of the operation.  It handles dependency
-    chains and issuing pending operations.
- 2/ Specify a completion callback.  The callback routine runs in tasklet
--   context if the offload engine driver supports interrupts, or it is
--   called in application context if the operation is carried out
--   synchronously in software.  The callback can be set in the call to
--   async_<operation>, or when the application needs to submit a chain of
--   unknown length it can use the async_trigger_callback() routine to set a
--   completion interrupt/callback at the end of the chain.
-+   context if an offload engine performs the operation, or it is called
-+   in process context if the operation is carried out synchronously in
-+   software.  The callback can by specified by using the
-+   async_trigger_callback() interface.
-+   Note: if the application knows ahead of time that it wants a
-+   completion callback on a particular operation it should specify
-+   ASYNC_TX_DELAY_SUBMIT to the flags.  Otherwise, async_trigger_callback
-+   will be required to allocate and queue a separate 'interrupt'
-+   descriptor.
- 
- 3.6 Constraints:
- 1/ Calls to async_<operation> are not permitted in IRQ context.  Other
-@@ -133,14 +134,20 @@ int run_xor_copy_xor(struct page **xor_srcs,
- 		     size_t copy_len)
- {
- 	struct dma_async_tx_descriptor *tx;
-+	/* async_xor overwrites input parameters to save stack space */
-+	struct page *srcs[xor_src_cnt];
- 
--	tx = async_xor(xor_dest, xor_srcs, 0, xor_src_cnt, xor_len,
--		       ASYNC_TX_XOR_DROP_DST, NULL, NULL, NULL);
--	tx = async_memcpy(copy_dest, copy_src, 0, 0, copy_len,
--			  ASYNC_TX_DEP_ACK, tx, NULL, NULL);
--	tx = async_xor(xor_dest, xor_srcs, 0, xor_src_cnt, xor_len,
--		       ASYNC_TX_XOR_DROP_DST | ASYNC_TX_DEP_ACK | ASYNC_TX_ACK,
--		       tx, complete_xor_copy_xor, NULL);
-+	memcpy(srcs, xor_srcs, sizeof(struct page *) * xor_src_cnt));
-+	tx = async_xor(xor_dest, srcs, 0, xor_src_cnt, xor_len,
-+		       ASYNC_TX_XOR_DROP_DST, NULL);
-+
-+	tx = async_memcpy(copy_dest, copy_src, 0, 0, copy_len, 0, tx);
-+
-+	memcpy(srcs, xor_srcs, sizeof(struct page *) * xor_src_cnt));
-+	tx = async_xor(xor_dest, srcs, 0, xor_src_cnt, xor_len,
-+		       ASYNC_TX_XOR_DROP_DST | ASYNC_TX_DELAY_SUBMIT, tx);
-+
-+	tx = async_trigger_callback(tx, complete_xor_copy_xor, NULL);
- 
- 	async_tx_issue_pending_all();
+@@ -89,85 +74,6 @@ init_dma_chan_ref(struct dma_chan_ref *ref, struct dma_chan *chan)
+ 	atomic_set(&ref->count, 0);
  }
-@@ -150,6 +157,7 @@ ops_run_* and ops_complete_* routines in drivers/md/raid5.c for more
- implementation examples.
  
- 4 DRIVER DEVELOPMENT NOTES
-+
- 4.1 Conformance points:
- There are a few conformance points required in dmaengine drivers to
- accommodate assumptions made by applications using the async_tx API:
-@@ -158,58 +166,49 @@ accommodate assumptions made by applications using the async_tx API:
- 3/ Use async_tx_run_dependencies() in the descriptor clean up path to
-    handle submission of dependent operations
- 
--4.2 "My application needs finer control of hardware channels"
--This requirement seems to arise from cases where a DMA engine driver is
--trying to support device-to-memory DMA.  The dmaengine and async_tx
--implementations were designed for offloading memory-to-memory
--operations; however, there are some capabilities of the dmaengine layer
--that can be used for platform-specific channel management.
--Platform-specific constraints can be handled by registering the
--application as a 'dma_client' and implementing a 'dma_event_callback' to
--apply a filter to the available channels in the system.  Before showing
--how to implement a custom dma_event callback some background of
--dmaengine's client support is required.
--
--The following routines in dmaengine support multiple clients requesting
--use of a channel:
--- dma_async_client_register(struct dma_client *client)
--- dma_async_client_chan_request(struct dma_client *client)
--
--dma_async_client_register takes a pointer to an initialized dma_client
--structure.  It expects that the 'event_callback' and 'cap_mask' fields
--are already initialized.
--
--dma_async_client_chan_request triggers dmaengine to notify the client of
--all channels that satisfy the capability mask.  It is up to the client's
--event_callback routine to track how many channels the client needs and
--how many it is currently using.  The dma_event_callback routine returns a
--dma_state_client code to let dmaengine know the status of the
--allocation.
--
--Below is the example of how to extend this functionality for
--platform-specific filtering of the available channels beyond the
--standard capability mask:
--
--static enum dma_state_client
--my_dma_client_callback(struct dma_client *client,
--			struct dma_chan *chan, enum dma_state state)
+-/**
+- * get_chan_ref_by_cap - returns the nth channel of the given capability
+- * 	defaults to returning the channel with the desired capability and the
+- * 	lowest reference count if the index can not be satisfied
+- * @cap: capability to match
+- * @index: nth channel desired, passing -1 has the effect of forcing the
+- *  default return value
+- */
+-static struct dma_chan_ref *
+-get_chan_ref_by_cap(enum dma_transaction_type cap, int index)
 -{
--	struct dma_device *dma_dev;
--	struct my_platform_specific_dma *plat_dma_dev;
--	
--	dma_dev = chan->device;
--	plat_dma_dev = container_of(dma_dev,
--				    struct my_platform_specific_dma,
--				    dma_dev);
+-	struct dma_chan_ref *ret_ref = NULL, *min_ref = NULL, *ref;
 -
--	if (!plat_dma_dev->platform_specific_capability)
--		return DMA_DUP;
+-	rcu_read_lock();
+-	list_for_each_entry_rcu(ref, &async_tx_master_list, node)
+-		if (dma_has_cap(cap, ref->chan->device->cap_mask)) {
+-			if (!min_ref)
+-				min_ref = ref;
+-			else if (atomic_read(&ref->count) <
+-				atomic_read(&min_ref->count))
+-				min_ref = ref;
 -
--	. . .
+-			if (index-- == 0) {
+-				ret_ref = ref;
+-				break;
+-			}
+-		}
+-	rcu_read_unlock();
+-
+-	if (!ret_ref)
+-		ret_ref = min_ref;
+-
+-	if (ret_ref)
+-		atomic_inc(&ret_ref->count);
+-
+-	return ret_ref;
 -}
-+4.2 "My application needs exclusive control of hardware channels"
-+Primarily this requirement arises from cases where a DMA engine driver
-+is being used to support device-to-memory operations.  A channel that is
-+performing these operations cannot, for many platform specific reasons,
-+be shared.  For these cases the dma_request_channel() interface is
-+provided.
-+
-+The interface is:
-+struct dma_chan *dma_request_channel(dma_cap_mask_t mask,
-+				     dma_filter_fn filter_fn,
-+				     void *filter_param);
-+
-+Where dma_filter_fn is defined as:
-+typedef bool (*dma_filter_fn)(struct dma_chan *chan, void *filter_param);
-+
-+When the optional 'filter_fn' parameter is set to NULL
-+dma_request_channel simply returns the first channel that satisfies the
-+capability mask.  Otherwise, when the mask parameter is insufficient for
-+specifying the necessary channel, the filter_fn routine can be used to
-+disposition the available channels in the system. The filter_fn routine
-+is called once for each free channel in the system.  Upon seeing a
-+suitable channel filter_fn returns DMA_ACK which flags that channel to
-+be the return value from dma_request_channel.  A channel allocated via
-+this interface is exclusive to the caller, until dma_release_channel()
-+is called.
-+
-+The DMA_PRIVATE capability flag is used to tag dma devices that should
-+not be used by the general-purpose allocator.  It can be set at
-+initialization time if it is known that a channel will always be
-+private.  Alternatively, it is set when dma_request_channel() finds an
-+unused "public" channel.
-+
-+A couple caveats to note when implementing a driver and consumer:
-+1/ Once a channel has been privately allocated it will no longer be
-+   considered by the general-purpose allocator even after a call to
-+   dma_release_channel().
-+2/ Since capabilities are specified at the device level a dma_device
-+   with multiple channels will either have all channels public, or all
-+   channels private.
+-
+-/**
+- * async_tx_rebalance - redistribute the available channels, optimize
+- * for cpu isolation in the SMP case, and opertaion isolation in the
+- * uniprocessor case
+- */
+-static void async_tx_rebalance(void)
+-{
+-	int cpu, cap, cpu_idx = 0;
+-	unsigned long flags;
+-
+-	if (!channel_table_initialized)
+-		return;
+-
+-	spin_lock_irqsave(&async_tx_lock, flags);
+-
+-	/* undo the last distribution */
+-	for_each_dma_cap_mask(cap, dma_cap_mask_all)
+-		for_each_possible_cpu(cpu) {
+-			struct dma_chan_ref *ref =
+-				per_cpu_ptr(channel_table[cap], cpu)->ref;
+-			if (ref) {
+-				atomic_set(&ref->count, 0);
+-				per_cpu_ptr(channel_table[cap], cpu)->ref =
+-									NULL;
+-			}
+-		}
+-
+-	for_each_dma_cap_mask(cap, dma_cap_mask_all)
+-		for_each_online_cpu(cpu) {
+-			struct dma_chan_ref *new;
+-			if (NR_CPUS > 1)
+-				new = get_chan_ref_by_cap(cap, cpu_idx++);
+-			else
+-				new = get_chan_ref_by_cap(cap, -1);
+-
+-			per_cpu_ptr(channel_table[cap], cpu)->ref = new;
+-		}
+-
+-	spin_unlock_irqrestore(&async_tx_lock, flags);
+-}
+-
+ static enum dma_state_client
+ dma_channel_add_remove(struct dma_client *client,
+ 	struct dma_chan *chan, enum dma_state state)
+@@ -211,8 +117,6 @@ dma_channel_add_remove(struct dma_client *client,
+ 				" (-ENOMEM)\n");
+ 			return 0;
+ 		}
+-
+-		async_tx_rebalance();
+ 		break;
+ 	case DMA_RESOURCE_REMOVED:
+ 		found = 0;
+@@ -233,8 +137,6 @@ dma_channel_add_remove(struct dma_client *client,
+ 			ack = DMA_ACK;
+ 		else
+ 			break;
+-
+-		async_tx_rebalance();
+ 		break;
+ 	case DMA_RESOURCE_SUSPEND:
+ 	case DMA_RESOURCE_RESUME:
+@@ -248,51 +150,18 @@ dma_channel_add_remove(struct dma_client *client,
+ 	return ack;
+ }
  
- 5 SOURCE
--include/linux/dmaengine.h: core header file for DMA drivers and clients
+-static int __init
+-async_tx_init(void)
++static int __init async_tx_init(void)
+ {
+-	enum dma_transaction_type cap;
+-
+-	spin_lock_init(&async_tx_lock);
+-	bitmap_fill(dma_cap_mask_all.bits, DMA_TX_TYPE_END);
+-
+-	/* an interrupt will never be an explicit operation type.
+-	 * clearing this bit prevents allocation to a slot in 'channel_table'
+-	 */
+-	clear_bit(DMA_INTERRUPT, dma_cap_mask_all.bits);
+-
+-	for_each_dma_cap_mask(cap, dma_cap_mask_all) {
+-		channel_table[cap] = alloc_percpu(struct chan_ref_percpu);
+-		if (!channel_table[cap])
+-			goto err;
+-	}
+-
+-	channel_table_initialized = 1;
+ 	dma_async_client_register(&async_tx_dma);
+ 	dma_async_client_chan_request(&async_tx_dma);
+ 
+ 	printk(KERN_INFO "async_tx: api initialized (async)\n");
+ 
+ 	return 0;
+-err:
+-	printk(KERN_ERR "async_tx: initialization failure\n");
+-
+-	while (--cap >= 0)
+-		free_percpu(channel_table[cap]);
+-
+-	return 1;
+ }
+ 
+ static void __exit async_tx_exit(void)
+ {
+-	enum dma_transaction_type cap;
+-
+-	channel_table_initialized = 0;
+-
+-	for_each_dma_cap_mask(cap, dma_cap_mask_all)
+-		if (channel_table[cap])
+-			free_percpu(channel_table[cap]);
+-
+ 	dma_async_client_unregister(&async_tx_dma);
+ }
+ 
+@@ -308,16 +177,9 @@ __async_tx_find_channel(struct dma_async_tx_descriptor *depend_tx,
+ {
+ 	/* see if we can keep the chain on one channel */
+ 	if (depend_tx &&
+-		dma_has_cap(tx_type, depend_tx->chan->device->cap_mask))
++	    dma_has_cap(tx_type, depend_tx->chan->device->cap_mask))
+ 		return depend_tx->chan;
+-	else if (likely(channel_table_initialized)) {
+-		struct dma_chan_ref *ref;
+-		int cpu = get_cpu();
+-		ref = per_cpu_ptr(channel_table[tx_type], cpu)->ref;
+-		put_cpu();
+-		return ref ? ref->chan : NULL;
+-	} else
+-		return NULL;
++	return dma_find_channel(tx_type);
+ }
+ EXPORT_SYMBOL_GPL(__async_tx_find_channel);
+ #else
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index df37073..c3e6fbb 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -284,6 +284,162 @@ static void dma_chan_release(struct dma_chan *chan)
+ }
+ 
+ /**
++ * dma_cap_mask_all - enable iteration over all operation types
++ */
++static dma_cap_mask_t dma_cap_mask_all;
 +
-+include/linux/dmaengine.h: core header file for DMA drivers and api users
- drivers/dma/dmaengine.c: offload engine channel management routines
- drivers/dma/: location for offload engine drivers
- include/linux/async_tx.h: core header file for the async_tx api
-diff --git a/Documentation/dmaengine.txt b/Documentation/dmaengine.txt
-new file mode 100644
-index 0000000..0c1c2f6
---- /dev/null
-+++ b/Documentation/dmaengine.txt
-@@ -0,0 +1 @@
-+See Documentation/crypto/async-tx-api.txt
++/**
++ * dma_chan_tbl_ent - tracks channel allocations per core/opertion
++ */
++struct dma_chan_tbl_ent {
++	struct dma_chan *chan;
++};
++
++/**
++ * channel_table - percpu lookup table for memory-to-memory offload providers
++ */
++static struct dma_chan_tbl_ent *channel_table[DMA_TX_TYPE_END];
++
++static int __init dma_channel_table_init(void)
++{
++	enum dma_transaction_type cap;
++	int err = 0;
++
++	bitmap_fill(dma_cap_mask_all.bits, DMA_TX_TYPE_END);
++
++	/* 'interrupt' and 'slave' are channel capabilities, but are not
++	 * associated with an operation so they do not need an entry in the
++	 * channel_table
++	 */
++	clear_bit(DMA_INTERRUPT, dma_cap_mask_all.bits);
++	clear_bit(DMA_SLAVE, dma_cap_mask_all.bits);
++
++	for_each_dma_cap_mask(cap, dma_cap_mask_all) {
++		channel_table[cap] = alloc_percpu(struct dma_chan_tbl_ent);
++		if (!channel_table[cap]) {
++			err = 1;
++			break;
++		}
++	}
++
++	if (err) {
++		pr_err("dmaengine: initialization failure\n");
++		for_each_dma_cap_mask(cap, dma_cap_mask_all)
++			if (channel_table[cap])
++				free_percpu(channel_table[cap]);
++	}
++
++	return err;
++}
++subsys_initcall(dma_channel_table_init);
++
++/**
++ * dma_find_channel - find a channel to carry out the operation
++ * @tx_type: transaction type
++ */
++struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
++{
++	struct dma_chan *chan;
++	int cpu;
++
++	WARN_ONCE(dmaengine_ref_count == 0,
++		  "client called %s without a reference", __func__);
++
++	cpu = get_cpu();
++	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
++	put_cpu();
++
++	return chan;
++}
++EXPORT_SYMBOL(dma_find_channel);
++
++/**
++ * nth_chan - returns the nth channel of the given capability
++ * @cap: capability to match
++ * @n: nth channel desired
++ *
++ * Defaults to returning the channel with the desired capability and the
++ * lowest reference count when 'n' cannot be satisfied
++ */
++static struct dma_chan *nth_chan(enum dma_transaction_type cap, int n)
++{
++	struct dma_device *device;
++	struct dma_chan *chan;
++	struct dma_chan *ret = NULL;
++	struct dma_chan *min = NULL;
++
++	list_for_each_entry(device, &dma_device_list, global_node) {
++		if (!dma_has_cap(cap, device->cap_mask))
++			continue;
++		list_for_each_entry(chan, &device->channels, device_node) {
++			if (!chan->client_count)
++				continue;
++			if (!min)
++				min = chan;
++			else if (chan->table_count < min->table_count)
++				min = chan;
++
++			if (n-- == 0) {
++				ret = chan;
++				break; /* done */
++			}
++		}
++		if (ret)
++			break; /* done */
++	}
++
++	if (!ret)
++		ret = min;
++
++	if (ret)
++		ret->table_count++;
++
++	return ret;
++}
++
++/**
++ * dma_channel_rebalance - redistribute the available channels
++ *
++ * Optimize for cpu isolation (each cpu gets a dedicated channel for an
++ * operation type) in the SMP case,  and opertaion isolation (avoid
++ * multi-tasking channels) in the uniprocessor case.  Must be called
++ * under dma_list_mutex.
++ */
++static void dma_channel_rebalance(void)
++{
++	struct dma_chan *chan;
++	struct dma_device *device;
++	int cpu;
++	int cap;
++	int n;
++
++	/* undo the last distribution */
++	for_each_dma_cap_mask(cap, dma_cap_mask_all)
++		for_each_possible_cpu(cpu)
++			per_cpu_ptr(channel_table[cap], cpu)->chan = NULL;
++
++	list_for_each_entry(device, &dma_device_list, global_node)
++		list_for_each_entry(chan, &device->channels, device_node)
++			chan->table_count = 0;
++
++	/* don't populate the channel_table if no clients are available */
++	if (!dmaengine_ref_count)
++		return;
++
++	/* redistribute available channels */
++	n = 0;
++	for_each_dma_cap_mask(cap, dma_cap_mask_all)
++		for_each_online_cpu(cpu) {
++			if (num_possible_cpus() > 1)
++				chan = nth_chan(cap, n++);
++			else
++				chan = nth_chan(cap, -1);
++
++			per_cpu_ptr(channel_table[cap], cpu)->chan = chan;
++		}
++}
++
++/**
+  * dma_chans_notify_available - broadcast available channels to the clients
+  */
+ static void dma_clients_notify_available(void)
+@@ -457,6 +613,7 @@ int dma_async_device_register(struct dma_device *device)
+ 		}
+ 	}
+ 	list_add_tail(&device->global_node, &dma_device_list);
++	dma_channel_rebalance();
+ 	mutex_unlock(&dma_list_mutex);
+ 
+ 	dma_clients_notify_available();
+@@ -498,6 +655,7 @@ void dma_async_device_unregister(struct dma_device *device)
+ 
+ 	mutex_lock(&dma_list_mutex);
+ 	list_del(&device->global_node);
++	dma_channel_rebalance();
+ 	mutex_unlock(&dma_list_mutex);
+ 
+ 	list_for_each_entry(chan, &device->channels, device_node) {
+@@ -743,3 +901,4 @@ static int __init dma_bus_init(void)
+ }
+ subsys_initcall(dma_bus_init);
+ 
++
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index d18d37d..b466f02 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -182,6 +182,7 @@ struct dma_chan_percpu {
+  * @device_node: used to add this to the device chan list
+  * @local: per-cpu pointer to a struct dma_chan_percpu
+  * @client-count: how many clients are using this channel
++ * @table_count: number of appearances in the mem-to-mem allocation table
+  */
+ struct dma_chan {
+ 	struct dma_device *device;
+@@ -198,6 +199,7 @@ struct dma_chan {
+ 	struct list_head device_node;
+ 	struct dma_chan_percpu *local;
+ 	int client_count;
++	int table_count;
+ };
+ 
+ #define to_dma_chan(p) container_of(p, struct dma_chan, dev)
+@@ -468,6 +470,7 @@ static inline enum dma_status dma_wait_for_async_tx(struct dma_async_tx_descript
+ int dma_async_device_register(struct dma_device *device);
+ void dma_async_device_unregister(struct dma_device *device);
+ void dma_run_dependencies(struct dma_async_tx_descriptor *tx);
++struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type);
+ 
+ /* --- Helper iov-locking functions --- */
+ 
 
