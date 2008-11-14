@@ -1,79 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbYKNQDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946AbYKNQEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752717AbYKNQDj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 11:03:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYKNQDa
+	id S1753946AbYKNQEs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 11:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399AbYKNQEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 11:03:30 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:43755 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbYKNQD3 convert rfc822-to-8bit (ORCPT
+	Fri, 14 Nov 2008 11:04:39 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:43831 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbYKNQEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 11:03:29 -0500
-Message-ID: <491DA131.1060209@cosmosbay.com>
-Date: Fri, 14 Nov 2008 17:02:57 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Robert Richter <robert.richter@amd.com>, oprofile-list@lists.sf.net,
-       Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
-       Jiri Benc <jbenc@suse.cz>, Vilem Marsik <vmarsik@suse.cz>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: Oprofile : need to adjust PC by 16 bytes
-References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz> <20081113213744.GA8429@elte.hu> <491CA0DC.8070405@cosmosbay.com> <491D987F.1000301@cosmosbay.com> <20081114155904.GJ3810@one.firstfloor.org>
-In-Reply-To: <20081114155904.GJ3810@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 14 Nov 2008 17:03:03 +0100 (CET)
+	Fri, 14 Nov 2008 11:04:38 -0500
+Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
+	relationship with symlinks in sysfs
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
+       Chris McDermott <lcm@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Greg KH <greg@kroah.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>
+In-Reply-To: <20081113165402.GA7084@us.ibm.com>
+References: <20081103234808.GA13716@us.ibm.com>
+	 <1226528175.4835.18.camel@badari-desktop>
+	 <20081113165402.GA7084@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 08:05:17 -0800
+Message-Id: <1226678717.16616.2.camel@badari-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
-> On Fri, Nov 14, 2008 at 04:25:51PM +0100, Eric Dumazet wrote:
->> Very strange results on my Intel E5450 CPU
->>
->> I found that I have to bias regs->ip by 16 bytes in order to have
->> correct profiling.
+On Thu, 2008-11-13 at 08:54 -0800, Gary Hade wrote:
+> On Wed, Nov 12, 2008 at 02:16:15PM -0800, Badari Pulavarty wrote:
+> > On Mon, 2008-11-03 at 15:48 -0800, Gary Hade wrote:
+> > > Show node to memory section relationship with symlinks in sysfs
+> > > 
+> > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
+> > > the memory sections located on nodeX.  For example:
+> > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
+> > > indicates that memory section 135 resides on node1.
+> > > 
+> > > Also revises documentation to cover this change as well as updating
+> > > Documentation/ABI/testing/sysfs-devices-memory to include descriptions
+> > > of memory hotremove files 'phys_device', 'phys_index', and 'state'
+> > > that were previously not described there.
+> > > 
+> > > In addition to it always being a good policy to provide users with
+> > > the maximum possible amount of physical location information for
+> > > resources that can be hot-added and/or hot-removed, the following
+> > > are some (but likely not all) of the user benefits provided by
+> > > this change.
+> > > Immediate:
+> > >   - Provides information needed to determine the specific node
+> > >     on which a defective DIMM is located.  This will reduce system
+> > >     downtime when the node or defective DIMM is swapped out.
+> > >   - Prevents unintended onlining of a memory section that was 
+> > >     previously offlined due to a defective DIMM.  This could happen
+> > >     during node hot-add when the user or node hot-add assist script
+> > >     onlines _all_ offlined sections due to user or script inability
+> > >     to identify the specific memory sections located on the hot-added
+> > >     node.  The consequences of reintroducing the defective memory
+> > >     could be ugly.
+> > >   - Provides information needed to vary the amount and distribution
+> > >     of memory on specific nodes for testing or debugging purposes.
+> > > Future:
+> > >   - Will provide information needed to identify the memory
+> > >     sections that need to be offlined prior to physical removal
+> > >     of a specific node.
+> > > 
+> > > Symlink creation during boot was tested on 2-node x86_64, 2-node
+> > > ppc64, and 2-node ia64 systems.  Symlink creation during physical
+> > > memory hot-add tested on a 2-node x86_64 system.
+> > > 
+> > > Supersedes the "mm: show memory section to node relationship in sysfs"
+> > > patch posted on 05 Sept 2008 which created node ID containing 'node'
+> > > files in /sys/devices/system/memory/memoryX instead of symlinks.
+> > > Changed from files to symlinks due to feedback that symlinks were
+> > > more consistent with the sysfs way.
+> > > 
+> > > Supersedes the "mm: show node to memory section relationship with
+> > > symlinks in sysfs" patch posted on 29 Sept 2008 to address a Yasunori
+> > > Goto reported problem where an incorrect symlink was created due to
+> > > a range of uninitialized pages at the beginning of a section.  This
+> > > problem which produced a symlink in /sys/devices/system/node/node0
+> > > that incorrectly referenced a mem section located on node1 is corrected
+> > > in this version.  This version also covers the case were a mem section
+> > > could span multiple nodes.
+> > > 
+> > > Supersedes the "mm: show node to memory section relationship with
+> > > symlinks in sysfs" patch posted on 09 Oct 2008 to add the Andrew
+> > > Morton requested usefulness information and update to apply cleanly
+> > > to 2.6.28-rc3 and 2.6-git.  Code is unchanged.
+> > > 
+> > > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> > > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+> > > 
+> > 
+> > Hi Gary,
+> > 
+> > While testing latest mmtom (which has this patch) ran into an issue
+> > with sysfs files. What I noticed was, with this patch "memoryXX"
+> > directories in /sys/devices/system/memory/ are not getting cleaned up.
+> > Backing out the patch seems to fix the problem. 
+> > 
+> > When I tried to remove 64 blocks of memory, empty  directories are
+> > stayed around. (look at memory151 - memory215). This is causing OOPS
+> > while trying to add memory block again. I think this could be because 
+> > of the symlink added from node directory.  Can you look ?
 > 
-> Can you expand a bit how you determined if the profile is right or wrong?
+> Badari, The call to unregister_mem_sect_under_nodes() in
+> remove_memory_block() preceding the removal of the files in
+> the memory section directory _should have_ removed all the
+> symlinks referencing the memory section directory.  Did you
+> happen to check to see if the symlinks to memory151-memory215
+> were still present?
 > 
-> -Andi
+> Gary
 > 
-> 
 
-opannotate -a vmlinux > FILE
+Hi Gary,
 
-And check results.
+As discussed earlier, patch is leaving an extra reference on the
+memoryX directory. Needs a kobject_put() to match the reference
+you get in find_memory_block().
 
-With the patch I get :
+Could you update the patch and resend it ?
 
-c041d270 <dst_release>: /* dst_release total:  16523  1.2978 */
-   252  0.0198 :c041d270:       push   %ebp
-   654  0.0514 :c041d271:       test   %eax,%eax
-               :c041d273:       mov    %esp,%ebp
-    47  0.0037 :c041d275:       mov    %eax,%edx
-    42  0.0033 :c041d277:       je     c041d289 <dst_release+0x19>
-               :c041d279:       mov    $0xffffffff,%eax
-     3 2.4e-04 :c041d27e:       lock xadd %eax,0x80(%edx)
- 14766  1.1598 :c041d286:       dec    %eax
-     1 7.9e-05 :c041d287:       js     c041d28b <dst_release+0x1b>
-    53  0.0042 :c041d289:       pop    %ebp
-   705  0.0554 :c041d28a:       ret
-               :c041d28b:       mov    $0x10e,%edx
-               :c041d290:       mov    $0xc0561ed5,%eax
-               :c041d295:       call   c022d1a0 <warn_on_slowpath>
-               :c041d29a:       pop    %ebp
-               :c041d29b:       ret
-               :c041d29c:       lea    0x0(%esi),%esi
-
-This results please me : The cost is right after the "lock xadd" as expected.
-
-Without patch, all addresses were off by 16 bytes.
-
-On dst_release() it was on the call on warn_on_slowpath(),
-and I am pretty sure it is not possible at all this WARN_ON is hit
-
-
+Thanks,
+Badari
 
