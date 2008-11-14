@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbYKNGzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbYKNGzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbYKNGzO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 01:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYKNGy6
+	id S1755213AbYKNGzx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 01:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbYKNGzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 01:54:58 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:45011 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750813AbYKNGy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 01:54:57 -0500
-Date: Fri, 14 Nov 2008 07:54:50 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, a.zummo@towertech.it
-Subject: Re: mmotm 2008-11-13-17-22 uploaded (RTC build error)
-Message-ID: <20081114075450.3f3ecdcc@i1501.lan.towertech.it>
-In-Reply-To: <491D0991.4080408@oracle.com>
-References: <200811140122.mAE1MeAG015836@imap1.linux-foundation.org>
-	<491D0991.4080408@oracle.com>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
+	Fri, 14 Nov 2008 01:55:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60448
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751126AbYKNGzl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 01:55:41 -0500
+Date: Thu, 13 Nov 2008 22:55:40 -0800 (PST)
+Message-Id: <20081113.225540.34583336.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: hummerbliss@gmail.com, ptesarik@suse.cz, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove an unnecessary field in struct tcp_skb_cb
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <87fxlvcsam.fsf@basil.nowhere.org>
+References: <1226571707.18006.23.camel@nathan.suse.cz>
+	<491C6DA6.8030200@gmail.com>
+	<87fxlvcsam.fsf@basil.nowhere.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 21:16:01 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+From: Andi Kleen <andi@firstfloor.org>
+Date: Thu, 13 Nov 2008 20:57:53 +0100
 
->   CC [M]  drivers/rtc/rtc-dev.o
-> mmotm-2008-1113-1722/drivers/rtc/rtc-dev.c: In function 'rtc_dev_prepare':
-> mmotm-2008-1113-1722/drivers/rtc/rtc-dev.c:505: error: assignment of read-only location
+> Saikiran Madugula <hummerbliss@gmail.com> writes:
+> 
+> > Petr Tesarik wrote:
+> >> The urg_ptr field is not used anywhere and is merely confusing.
+> >> 
+> > grep -r "urg_ptr" on my linux tree says otherwise.
+> 
+> I think you're confusing it with tcphdr's field of the same name.
+> Petr's patch is correct as far as I can see.
 
- thanks, I already sent an updated version to Andrew.
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+Right, patch applied, thanks everyone.
