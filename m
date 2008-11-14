@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492AbYKNP5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752717AbYKNQDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751492AbYKNP5j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 10:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNP5b
+	id S1752717AbYKNQDj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 11:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYKNQDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 10:57:31 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50826 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbYKNP5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 10:57:30 -0500
-Date: Fri, 14 Nov 2008 17:58:09 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Daniel Hokka Zakrisson <daniel@hozac.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 3/3] Set si_pid to 0 for signals from ancestor
-	namespace
-Message-ID: <20081114165809.GB7738@redhat.com>
-References: <20081112064139.GA27806@us.ibm.com> <20081112064819.GC27806@us.ibm.com> <20081112163339.GD13269@redhat.com> <m1d4h0payv.fsf@frodo.ebiederm.org>
+	Fri, 14 Nov 2008 11:03:30 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:43755 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751176AbYKNQD3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 11:03:29 -0500
+Message-ID: <491DA131.1060209@cosmosbay.com>
+Date: Fri, 14 Nov 2008 17:02:57 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1d4h0payv.fsf@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Robert Richter <robert.richter@amd.com>, oprofile-list@lists.sf.net,
+       Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
+       Jiri Benc <jbenc@suse.cz>, Vilem Marsik <vmarsik@suse.cz>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: Oprofile : need to adjust PC by 16 bytes
+References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz> <20081113213744.GA8429@elte.hu> <491CA0DC.8070405@cosmosbay.com> <491D987F.1000301@cosmosbay.com> <20081114155904.GJ3810@one.firstfloor.org>
+In-Reply-To: <20081114155904.GJ3810@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 14 Nov 2008 17:03:03 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/12, Eric W. Biederman wrote:
->
-> Oleg Nesterov <oleg@redhat.com> writes:
->
-> > On 11/11, Sukadev Bhattiprolu wrote:
-> >>
-> >> +static void set_sigqueue_pid(struct sigqueue *q, struct task_struct *t,
-> >> +                           struct pid *sender)
-> >> +{
-> >> +	struct pid_namespace *ns;
-> >> +
-> >> +	/* Set si_pid to the pid number of sender in the pid namespace of
-> >> +	 * our destination task for all siginfo types that support it.
-> >> +	 */
-> >> +	switch(q->info.si_code & __SI_MASK) {
-> >> +		/* siginfo without si_pid */
-> >> +		case __SI_TIMER:
-> >> +		case __SI_POLL:
-> >> +		case __SI_FAULT:
-> >> +			break;
-> >> +			/* siginfo with si_pid */
-> >> +		case __SI_KILL:
-> >> +		case __SI_CHLD:
-> >> +		case __SI_RT:
-> >> +		case __SI_MESGQ:
-> >> +		default:
-> >> +			/* si_pid for SI_KERNEL is always 0 */
-> >> +			if (q->info.si_code == SI_KERNEL || in_interrupt())
-> >> +				break;
-> >> +			/* Is current not the sending task? */
-> >> +			if (!sender)
-> >> +				sender = task_tgid(current);
-> >> +			ns = task_active_pid_ns(t);
-> >> +			q->info.si_pid = pid_nr_ns(sender, ns);
-> >> +			break;
-> >> +	}
-> >> +}
-> >
-> > Why, why? Just: if from parent ns - clear .si_pid. No?
->
-> We need the switch to know if we are a member of a union that supports
-> si_pid.
+Andi Kleen a écrit :
+> On Fri, Nov 14, 2008 at 04:25:51PM +0100, Eric Dumazet wrote:
+>> Very strange results on my Intel E5450 CPU
+>>
+>> I found that I have to bias regs->ip by 16 bytes in order to have
+>> correct profiling.
+> 
+> Can you expand a bit how you determined if the profile is right or wrong?
+> 
+> -Andi
+> 
+> 
 
-Please look at http://marc.info/?l=linux-kernel&m=122634217518183
+opannotate -a vmlinux > FILE
 
-If SIG_FROM_USER is set, we know that .si_pid is "valid".
+And check results.
 
-Yes, yes, yes. sys_rt_sigqueueinfo() is a problem, but in that
-case we can't trust .si_code anyway.
+With the patch I get :
 
-> The in_interrupt thing is there simply because current is not
-> useable from an interrrupt context, and there are some
-> signals that get sent from an interrupt context.
+c041d270 <dst_release>: /* dst_release total:  16523  1.2978 */
+   252  0.0198 :c041d270:       push   %ebp
+   654  0.0514 :c041d271:       test   %eax,%eax
+               :c041d273:       mov    %esp,%ebp
+    47  0.0037 :c041d275:       mov    %eax,%edx
+    42  0.0033 :c041d277:       je     c041d289 <dst_release+0x19>
+               :c041d279:       mov    $0xffffffff,%eax
+     3 2.4e-04 :c041d27e:       lock xadd %eax,0x80(%edx)
+ 14766  1.1598 :c041d286:       dec    %eax
+     1 7.9e-05 :c041d287:       js     c041d28b <dst_release+0x1b>
+    53  0.0042 :c041d289:       pop    %ebp
+   705  0.0554 :c041d28a:       ret
+               :c041d28b:       mov    $0x10e,%edx
+               :c041d290:       mov    $0xc0561ed5,%eax
+               :c041d295:       call   c022d1a0 <warn_on_slowpath>
+               :c041d29a:       pop    %ebp
+               :c041d29b:       ret
+               :c041d29c:       lea    0x0(%esi),%esi
 
-Yes sure. But I don't think this check is enough, see other
-emails. And this check is not needed once we have SIG_FROM_USER.
+This results please me : The cost is right after the "lock xadd" as expected.
 
-> Oh.  As for the chunk that is:
-> ns = task_active_pid_ns(t)
-> q->info.si_pid = pid_nr_ns(sender, ns);
->
-> If we are sending from a child to a parent namespace.
+Without patch, all addresses were off by 16 bytes.
 
-The notify_parent() case is fine, afaics (again I assume the "patch"
-above which sets SIG_FROM_USER).
+On dst_release() it was on the call on warn_on_slowpath(),
+and I am pretty sure it is not possible at all this WARN_ON is hit
 
-> The name of the
-> child changes.  There is some place F_SETSIG? sigfd?  where we have
-> something that resembles the full general case of processes being able
-> to send a signal to any other process.
 
-Yes, this needs attention too.
-
-Oleg.
 
