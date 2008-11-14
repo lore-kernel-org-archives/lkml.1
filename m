@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbYKNMXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751598AbYKNMX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751618AbYKNMXH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 07:23:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKNMWv
+	id S1751598AbYKNMX3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 07:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbYKNMWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 07:22:51 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:52810 "EHLO smtp.gentoo.org"
+	Fri, 14 Nov 2008 07:22:53 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:52815 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751295AbYKNMWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 07:22:50 -0500
+	id S1752766AbYKNMWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 07:22:51 -0500
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-kernel@vger.kernel.org, Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: [PATCH v2] mtd/physmap: use parse_mtd()
-Date: Fri, 14 Nov 2008 07:22:48 -0500
-Message-Id: <1226665369-20248-1-git-send-email-vapier@gentoo.org>
+Subject: [PATCH v2] mtd/bfin-async-flash: use parse_mtd()
+Date: Fri, 14 Nov 2008 07:22:49 -0500
+Message-Id: <1226665369-20248-2-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.0.3
 In-Reply-To: <1226665351-20226-1-git-send-email-vapier@gentoo.org>
 References: <1226665351-20226-1-git-send-email-vapier@gentoo.org>
@@ -29,82 +29,75 @@ Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
 v2:
 	- call unparse_mtd()
-	- delete local nr_parts/parts in physmap_flash_info
 
- drivers/mtd/maps/physmap.c |   39 +++------------------------------------
- 1 files changed, 3 insertions(+), 36 deletions(-)
+ drivers/mtd/maps/bfin-async-flash.c |   32 ++++----------------------------
+ 1 files changed, 4 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
-index 42d844f..d0e11b5 100644
---- a/drivers/mtd/maps/physmap.c
-+++ b/drivers/mtd/maps/physmap.c
-@@ -28,10 +28,6 @@ struct physmap_flash_info {
- 	struct mtd_info		*cmtd;
- 	struct map_info		map[MAX_RESOURCES];
- 	struct resource		*res;
--#ifdef CONFIG_MTD_PARTITIONS
--	int			nr_parts;
--	struct mtd_partition	*parts;
--#endif
- };
- 
- static int physmap_flash_remove(struct platform_device *dev)
-@@ -56,18 +52,7 @@ static int physmap_flash_remove(struct platform_device *dev)
- 
- 	for (i = 0; i < MAX_RESOURCES; i++) {
- 		if (info->mtd[i] != NULL) {
--#ifdef CONFIG_MTD_PARTITIONS
--			if (info->nr_parts) {
--				del_mtd_partitions(info->mtd[i]);
--				kfree(info->parts);
--			} else if (physmap_data->nr_parts) {
--				del_mtd_partitions(info->mtd[i]);
--			} else {
--				del_mtd_device(info->mtd[i]);
--			}
--#else
--			del_mtd_device(info->mtd[i]);
--#endif
-+			unparse_mtd(info->mtd[i]);
- 			map_destroy(info->mtd[i]);
- 		}
- 
-@@ -84,9 +69,6 @@ static int physmap_flash_remove(struct platform_device *dev)
+diff --git a/drivers/mtd/maps/bfin-async-flash.c b/drivers/mtd/maps/bfin-async-flash.c
+index 6fec86a..e432f94 100644
+--- a/drivers/mtd/maps/bfin-async-flash.c
++++ b/drivers/mtd/maps/bfin-async-flash.c
+@@ -120,13 +120,8 @@ static void bfin_copy_to(struct map_info *map, unsigned long to, const void *fro
+ 	switch_back(state);
  }
  
- static const char *rom_probe_types[] = { "cfi_probe", "jedec_probe", "map_rom", NULL };
 -#ifdef CONFIG_MTD_PARTITIONS
 -static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
 -#endif
- 
- static int physmap_flash_probe(struct platform_device *dev)
+-
+ static int __devinit bfin_flash_probe(struct platform_device *pdev)
  {
-@@ -170,23 +152,8 @@ static int physmap_flash_probe(struct platform_device *dev)
- 	if (err)
- 		goto err_out;
+-	int ret;
+ 	struct physmap_flash_data *pdata = pdev->dev.platform_data;
+ 	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	struct resource *flash_ambctl = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+@@ -150,6 +145,8 @@ static int __devinit bfin_flash_probe(struct platform_device *pdev)
+ 	state->flash_ambctl0  = flash_ambctl->start;
+ 	state->flash_ambctl1  = flash_ambctl->end;
+ 
++	platform_set_drvdata(pdev, state);
++
+ 	if (gpio_request(state->enet_flash_pin, DRIVER_NAME)) {
+ 		pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->enet_flash_pin);
+ 		return -EBUSY;
+@@ -161,35 +158,14 @@ static int __devinit bfin_flash_probe(struct platform_device *pdev)
+ 	if (!state->mtd)
+ 		return -ENXIO;
  
 -#ifdef CONFIG_MTD_PARTITIONS
--	err = parse_mtd_partitions(info->cmtd, part_probe_types, &info->parts, 0);
--	if (err > 0) {
--		add_mtd_partitions(info->cmtd, info->parts, err);
--		return 0;
--	}
+-	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
+-	if (ret > 0) {
+-		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
+-		add_mtd_partitions(state->mtd, pdata->parts, ret);
 -
--	if (physmap_data->nr_parts) {
--		printk(KERN_NOTICE "Using physmap partition information\n");
--		add_mtd_partitions(info->cmtd, physmap_data->parts,
--				   physmap_data->nr_parts);
--		return 0;
--	}
+-	} else if (pdata->nr_parts) {
+-		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
+-		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
+-
+-	} else
 -#endif
+-	{
+-		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
+-		add_mtd_device(state->mtd);
+-	}
 -
--	add_mtd_device(info->cmtd);
+-	platform_set_drvdata(pdev, state);
+-
 -	return 0;
-+	return parse_mtd(info->cmtd, NULL, physmap_data->parts,
-+	                 physmap_data->nr_parts, false);
++	return parse_mtd(state->mtd, NULL, pdata->parts, pdata->nr_parts, false);
+ }
  
- err_out:
- 	physmap_flash_remove(dev);
+ static int __devexit bfin_flash_remove(struct platform_device *pdev)
+ {
+ 	struct async_state *state = platform_get_drvdata(pdev);
+ 	gpio_free(state->enet_flash_pin);
+-#ifdef CONFIG_MTD_PARTITIONS
+-	del_mtd_partitions(state->mtd);
+-#endif
++	unparse_mtd(state->mtd);
+ 	map_destroy(state->mtd);
+ 	kfree(state);
+ 	return 0;
 -- 
 1.6.0.3
 
