@@ -1,89 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYKNRSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbYKNRSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbYKNRSQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 12:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNRSA
+	id S1754704AbYKNRSz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 12:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYKNRSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 12:18:00 -0500
-Received: from stag.seas.upenn.edu ([158.130.70.79]:56907 "EHLO
-	stag.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbYKNRR7 (ORCPT
+	Fri, 14 Nov 2008 12:18:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58852 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750918AbYKNRSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 12:17:59 -0500
-X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Nov 2008 12:17:59 EST
-Date: Fri, 14 Nov 2008 12:08:18 -0500 (EST)
-From: Raphael Yoram Rubin <rafi@seas.upenn.edu>
-To: Jiri Kosina <jkosina@suse.cz>
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] n-trig digitizer quirks
-Message-ID: <Pine.LNX.4.61.0811141207210.12963@minus.seas.upenn.edu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Fri, 14 Nov 2008 12:18:45 -0500
+Date: Fri, 14 Nov 2008 09:18:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after
+ swap_cluster_max pages
+Message-Id: <20081114091828.48fc4b67.akpm@linux-foundation.org>
+In-Reply-To: <491D8CEC.5050106@redhat.com>
+References: <20081113171208.6985638e@bree.surriel.com>
+	<20081113192729.7d8eb133.akpm@linux-foundation.org>
+	<491D8CEC.5050106@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added quirks for the N-Trig digitizer.
-Signed-off-by: Rafi Rubin <rafi@seas.upenn.edu>
+On Fri, 14 Nov 2008 09:36:28 -0500 Rik van Riel <riel@redhat.com> wrote:
 
----
-diff -uprN linux-2.6.27.6-vanilla/drivers/hid/hid-input-quirks.c linux-2.6.27.6/drivers/hid/hid-input-quirks.c
---- linux-2.6.27.6-vanilla/drivers/hid/hid-input-quirks.c	2008-11-13 12:56:21.000000000 -0500
-+++ linux-2.6.27.6/drivers/hid/hid-input-quirks.c	2008-11-14 07:17:54.721758855 -0500
-@@ -314,6 +314,17 @@ static int quirk_sunplus_wdesktop(struct
-  	return 1;
-  }
+> Andrew Morton wrote:
+> > On Thu, 13 Nov 2008 17:12:08 -0500 Rik van Riel <riel@redhat.com> wrote:
+> > 
+> >> Sometimes the VM spends the first few priority rounds rotating back
+> >> referenced pages and submitting IO.  Once we get to a lower priority,
+> >> sometimes the VM ends up freeing way too many pages.
+> >>
+> >> The fix is relatively simple: in shrink_zone() we can check how many
+> >> pages we have already freed and break out of the loop.
+> >>
+> >> However, in order to do this we do need to know how many pages we already
+> >> freed, so move nr_reclaimed into scan_control.
+> > 
+> > There was a reason for not doing this, but I forget what it was.  It might require
+> > some changelog archeology.  iirc it was to do with balancing scanning rates
+> > between the various things which we scan.
+> 
+> I've seen worse symptoms without this code, though. Pretty
+> much all 2.6 kernels show bad behaviour occasionally.
+> 
+> Sometimes the VM gets in such a state where multiple processes
+> cannot find anything readily evictable, and they all end up
+> at a lower priority level.
+> 
+> This can cause them to evict more than half of everything from
+> memory, before breaking out of the pageout loop and swapping
+> things back in.  On my 2GB desktop, I've seen as much as 1200MB
+> memory free due to such a swapout storm.  It is possible more is
+> free at the top of the cycle, but X and gnome-terminal and top
+> and everything else is stuck, so that's not actually visible :)
+> 
+> I am not convinced that a scanning imbalance is more serious.
 
-+static int quirk_ntrig_touch_screen(struct hid_usage *usage, struct input_dev *input,
-+			      unsigned long **bit, int *max)
-+{
-+	if ( (usage->hid & HID_USAGE_PAGE) == HID_UP_DIGITIZER &&
-+	    (usage->hid & 0xff) == 0x47) {
-+      map_key_clear(BTN_TOOL_DOUBLETAP);
-+		return 1;
-+	}
-+   return 0;
-+}
-+
-  #define VENDOR_ID_BELKIN			0x1020
-  #define DEVICE_ID_BELKIN_WIRELESS_KEYBOARD	0x0006
+I'm not as sure as you are that it was done this way to avoid scanning
+imbalance.  I don't remember the reasons :(
 
-@@ -335,6 +346,9 @@ static int quirk_sunplus_wdesktop(struct
-  #define DEVICE_ID_S510_RECEIVER_2		0xc517
-  #define DEVICE_ID_MX3000_RECEIVER		0xc513
+It isn't necessarily true that this change and <whatever that was> are
+mutually exclusive things.
 
-+#define VENDOR_ID_NTRIG                0x1b96
-+#define DEVICE_ID_NTRIG_TOUCH_SCREEN	0x0001
-+
-  #define VENDOR_ID_MICROSOFT			0x045e
-  #define DEVICE_ID_MS4K				0x00db
-  #define DEVICE_ID_MS6K				0x00f9
-@@ -380,6 +394,7 @@ static const struct hid_input_blacklist
-  	{ VENDOR_ID_PETALYNX, DEVICE_ID_PETALYNX_MAXTER_REMOTE, quirk_petalynx_remote },
+> Of course, one thing we could do is exempt kswapd from this check.
+> During light reclaim, kswapd does most of the eviction so scanning
+> should remain balanced.  Having one process fall down to a lower
+> priority level is also not a big problem.
+> 
+> As long as the direct reclaim processes do not also fall into the
+> same trap, the situation should be manageable.
+> 
+> Does that sound reasonable to you?
 
-  	{ VENDOR_ID_SUNPLUS, DEVICE_ID_SUNPLUS_WDESKTOP, quirk_sunplus_wdesktop },
-+	{ VENDOR_ID_NTRIG, DEVICE_ID_NTRIG_TOUCH_SCREEN, quirk_ntrig_touch_screen },
-
-  	{ 0, 0, NULL }
-  };
-diff -uprN linux-2.6.27.6-vanilla/drivers/hid/usbhid/hid-quirks.c linux-2.6.27.6/drivers/hid/usbhid/hid-quirks.c
---- linux-2.6.27.6-vanilla/drivers/hid/usbhid/hid-quirks.c	2008-11-13 12:56:21.000000000 -0500
-+++ linux-2.6.27.6/drivers/hid/usbhid/hid-quirks.c	2008-11-14 07:17:54.722758633 -0500
-@@ -359,6 +359,9 @@
-  #define USB_VENDOR_ID_NEC		0x073e
-  #define USB_DEVICE_ID_NEC_USB_GAME_PAD	0x0301
-
-+#define USB_VENDOR_ID_NTRIG		0x1b96
-+#define USB_DEVICE_ID_NTRIG_TOUCH_SCREEN	0x0001
-+
-  #define USB_VENDOR_ID_ONTRAK		0x0a07
-  #define USB_DEVICE_ID_ONTRAK_ADU100	0x0064
-
-@@ -448,6 +451,7 @@ static const struct hid_blacklist {
-  	{ USB_VENDOR_ID_HAPP, USB_DEVICE_ID_UGCI_FIGHTING, HID_QUIRK_BADPAD | HID_QUIRK_MULTI_INPUT },
-  	{ USB_VENDOR_ID_NATSU, USB_DEVICE_ID_NATSU_GAMEPAD, HID_QUIRK_BADPAD },
-  	{ USB_VENDOR_ID_NEC, USB_DEVICE_ID_NEC_USB_GAME_PAD, HID_QUIRK_BADPAD },
-+	{ USB_VENDOR_ID_NTRIG, USB_DEVICE_ID_NTRIG_TOUCH_SCREEN, HID_QUIRK_DUPLICATE_USAGES },
-  	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
-  	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
-
+I'll need to find some time to go dig through the changelogs.  
