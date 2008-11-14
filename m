@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbYKNKHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYKNKKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752420AbYKNKHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 05:07:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYKNKG5
+	id S1752672AbYKNKKj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 05:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYKNKKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 05:06:57 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46892 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbYKNKG4 (ORCPT
+	Fri, 14 Nov 2008 05:10:30 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:11882 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232AbYKNKK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 05:06:56 -0500
-From: "Satoshi UCHIDA" <s-uchida@ap.jp.nec.com>
-To: "'Peter Zijlstra'" <peterz@infradead.org>
-Cc: "'Vivek Goyal'" <vgoyal@redhat.com>,
-       "'Nauman Rafique'" <nauman@google.com>, <linux-kernel@vger.kernel.org>,
-       <containers@lists.linux-foundation.org>,
-       <virtualization@lists.linux-foundation.org>, <jens.axboe@oracle.com>,
-       "'Hirokazu Takahashi'" <taka@valinux.co.jp>,
-       "'Ryo Tsuruta'" <ryov@valinux.co.jp>,
-       "'Andrea Righi'" <righi.andrea@gmail.com>, <fernando@oss.ntt.co.jp>,
-       <balbir@linux.vnet.ibm.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>, <menage@google.com>,
-       <ngupta@google.com>, "'Rik van Riel'" <riel@redhat.com>,
-       "'Jeff Moyer'" <jmoyer@redhat.com>, <dpshah@google.com>,
-       "'Mike Waychison'" <mikew@google.com>, <rohitseth@google.com>,
-       "'Fabio Checconi'" <fchecconi@gmail.com>, <paolo.valente@unimore.it>
-References: <20081106163957.GB7461@redhat.com>	 <1225990327.7803.4776.camel@twins> <20081106170830.GD7461@redhat.com>	 <e98e18940811061507t3e19183byf2b8b291458ba81b@mail.gmail.com>	 <20081107141943.GC21884@redhat.com>	 <e98e18940811071336n58a073d8w2cbaeddd5657d1e9@mail.gmail.com>	 <20081110141143.GC26956@redhat.com>	 <e98e18940811111155q4bd73480pebe088fa1adbe2e4@mail.gmail.com>	 <20081111223024.GA31527@redhat.com>	 <e98e18940811121320w5f321302n13b526887cbb4012@mail.gmail.com>	 <20081113180821.GF7542@redhat.com>	 <002c01c94615$99061520$cb123f60$@jp.nec.com> <1226649735.7685.6917.camel@twins>
-In-Reply-To: <1226649735.7685.6917.camel@twins>
-Subject: RE: [patch 0/4] [RFC] Another proportional weight IO controller
-Date: Fri, 14 Nov 2008 19:06:31 +0900
-Message-ID: <000001c94640$aafedb10$00fc9130$@jp.nec.com>
+	Fri, 14 Nov 2008 05:10:29 -0500
+X-BigFish: VPS-64(z21eW971Jz1432R62a3L98dR936eQ4015M1805M936fOzzzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KABIX1-02-1UI-01
+Date: Fri, 14 Nov 2008 11:09:38 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       oprofile-list@lists.sf.net, Jiri Benc <jbenc@suse.cz>,
+       Vilem Marsik <vmarsik@suse.cz>, Eric Dumazet <dada1@cosmosbay.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: Oprofile [still] doesn't work on 2.6.28-rc4 on certain CPU
+Message-ID: <20081114100938.GA1664@erda.amd.com>
+References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AclGL18elsU1GGXyTRao9KM6C2tEZwACqOQQ
-Content-Language: ja
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 14 Nov 2008 10:10:06.0771 (UTC) FILETIME=[2B293830:01C94641]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Vivek.
-
-> > I think that a controller should be divided share among "/(root)" and
-> two groups.
-> > This reason is follows:
-> >
-> >   * If these tasks are handled at same level, it is enough by using a
-> traditional
-> >     CFQ scheduler.
-> >     If you want to make all tasks in the same group the same
-> priority(parameter),
-> >     It is not I/O control but is parameter control.
-> >
-> >   * I think that the group means the environment which makes some sense
-> and
-> >     user want to control I/O per groups.
-> >     Next, the group is the environment.  So, tasks within the group will
-> have
-> >     priorities for themselves respectively as traditional environment.
-> >     Of course, group may not be need to control I/O.
-> >     In such time, a ioprio of tasks should be set the same priority.
-> >
-> > Therefore, our scheduler controls among group and then among tasks
+On 13.11.08 22:27:52, Jiri Kosina wrote:
+> On Thu, 13 Nov 2008, Ingo Molnar wrote:
 > 
-> I would suggest abandoning this scheme as its different from how the CPU
-> scheduler does it. The CPU scheduler is fully hierarchical and tasks in
-> "/" are on the same level as groups in "/".
+> > > I haven't yet found a time to start bisecting this.
+> > Would be nice to identify a commit to revert - in case we run out of 
+> > time fixing it.
 > 
-> That is, we do:
+> Yup, I first wanted to make this known to the public in hope that it will 
+> ring a bell somewhere.
 > 
->       root
->       / | \
->      1  2  A
->           / \
->          B   3
->         / \
->        4   5
-> 
-> Where digits are tasks, and letters are groups.
-> 
-> Having the two bandwidth (CPU, I/O) doing different things wrt grouping
-> can only be confusing at best.
-> 
+> If noone sees an obvous reason for this, I will do my best to bisect this 
+> tomorrow.
 
+Could you at least test with v2.6.27? I could not reproduce it on the
+hardware I am using.
 
-I understand what you mean is as follows.
-CPU power for 4 is calculated by 100% * a ratio of A (among 1, 2 and A) *
-a ratio of B (among 3 and B) * ratio of 4 (among 4 and 5).
-However, I/O power for 4 is calculated by 100% * a ratio of B (among root, A and B) *
-a ratio of 4 (among 4 and 5).
-Therefore, its power expression is a different and then user will confuse.
+Thanks,
 
-So, in other cgroups controllers, children(tasks and groups) of a group are flat, 
-but in CFQ cgroups controllers, all groups are flat.
+-Robert
 
-
-I agree this opinion.
-
-I think that CFQ should support multiple layers, and 
-its improvement would be easy (by nesting cfq_data tree) probably.
-
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
