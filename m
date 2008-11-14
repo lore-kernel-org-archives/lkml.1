@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYKNHuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754769AbYKNHw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbYKNHuh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 02:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYKNHu2
+	id S1754769AbYKNHw6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 02:52:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYKNHwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 02:50:28 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40217 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbYKNHu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 02:50:27 -0500
-Date: Fri, 14 Nov 2008 18:50:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Greg KH <greg@kroah.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Can you add the staging tree to -next?
-Message-Id: <20081114185016.0097d4eb.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0811140825410.11953@anakin>
-References: <20081112235600.GA27554@kroah.com>
-	<Pine.LNX.4.64.0811140825410.11953@anakin>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__14_Nov_2008_18_50_16_+1100_eqiIfzh4W8nWKlSQ"
+	Fri, 14 Nov 2008 02:52:50 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45520 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbYKNHwt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 02:52:49 -0500
+Date: Fri, 14 Nov 2008 08:52:48 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Katz <katzj@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
+       dsaxena@laptop.org
+Subject: Re: [PATCH] ALSA: cs5535audio: only build OLPC support if	MGEODE_LX is defined
+Message-ID: <20081114075248.GB8397@atrey.karlin.mff.cuni.cz>
+References: <1226547898.13077.83.camel@aglarond.local> <s5h63msru7z.wl%tiwai@suse.de> <20081113153714.GA1520@ucw.cz> <s5h3ahvhb9w.wl%tiwai@suse.de> <20081113111428.59aa36cb@ephemeral> <20081113163802.GA1734@ucw.cz> <20081113120147.2ecde3c8@ephemeral> <20081113190339.GE17851@elte.hu> <s5hzlk3kxuf.wl%tiwai@suse.de> <20081113213852.16561ed2@ephemeral>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081113213852.16561ed2@ephemeral>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__14_Nov_2008_18_50_16_+1100_eqiIfzh4W8nWKlSQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+HI!
 
-Hi Geert,
+> > > i've zapped this patch meanwhile:
+> > > 
+> > >  1355c96: x86/olpc: make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
+> > > 
+> > > because it cripples the ability to run distribution kernels on the 
+> > > OLPC.
+> > 
+> > OK, I reverted also all relevant changes for cs5535audio driver now.
+> > The patches are saved in topic/cs5535audio branch, though.
+> > 
+> > Let's fix OLPC-geode coupling first.
+> 
+> Hm, I'd really rather prefer this to be upstream.  The patch I sent adds
+> no regressions, allows the driver to happily coexist with existing
+> stuff, and *does* add support if you configure OLPC with MGEODE_LX
+> (generic kernels don't get the additional benefits, but those configured
+> specifically for OLPC do).
 
-On Fri, 14 Nov 2008 08:42:48 +0100 (CET) Geert Uytterhoeven <geert@linux-m6=
-8k.org> wrote:
->
-> Apart from the patches you receive against -next, is there any other
-> advantage, giving staging is disabled?
-
-Others compile linux-next with all sorts of configs, so we hopefully will
-see any build failures.  In fact, Greg might even built it with staging
-enabled :-)
-
-We will also see any merge conflicts (though there probably won't be
-many).
-
-I may also see if I can arrange for a build in each architecture with
-staging enabled in my infrastructure here, but it may take a little while.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__14_Nov_2008_18_50_16_+1100_eqiIfzh4W8nWKlSQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkdLbgACgkQjjKRsyhoI8woAQCglBkmHLYg5q+XAbcwuov3aX0p
-S0sAn1BTUT8nuYR4HbhvR3R3dhPuLlIX
-=yUED
------END PGP SIGNATURE-----
-
---Signature=_Fri__14_Nov_2008_18_50_16_+1100_eqiIfzh4W8nWKlSQ--
+Yes, but the patch is also not a good way of going forward, so it
+should not be in mainline.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
