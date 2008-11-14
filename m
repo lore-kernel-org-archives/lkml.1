@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbYKNAWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbYKNAXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756464AbYKNAWz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbYKNAWh
+	id S1755911AbYKNAXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 19:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYKNAXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:22:37 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57918
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756533AbYKNAWg (ORCPT
+	Thu, 13 Nov 2008 19:23:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55350 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754619AbYKNAXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:22:36 -0500
-Date: Thu, 13 Nov 2008 16:22:33 -0800 (PST)
-Message-Id: <20081113.162233.39564490.davem@davemloft.net>
-To: jrm8005@gmail.com
-Cc: olafvdspek@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <3aaafc130811131619w3ba48a86u6c6e2af35f149bf1@mail.gmail.com>
-References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com>
-	<3aaafc130811131619w3ba48a86u6c6e2af35f149bf1@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 13 Nov 2008 19:23:04 -0500
+Date: Thu, 13 Nov 2008 16:21:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: ananth@in.ibm.com, jkenisto@us.ibm.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, systemtap@sources.redhat.com,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH 2/7] kprobes: Add kprobe_insn_mutex and cleanup
+ arch_remove_kprobe()
+Message-Id: <20081113162128.28e508ca.akpm@linux-foundation.org>
+In-Reply-To: <4919F175.2050009@redhat.com>
+References: <4919F175.2050009@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "J.R. Mauro" <jrm8005@gmail.com>
-Date: Thu, 13 Nov 2008 19:19:36 -0500
+On Tue, 11 Nov 2008 15:56:21 -0500
+Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-> On Wed, Nov 12, 2008 at 6:20 PM, Olaf van der Spek <olafvdspek@gmail.com> wrote:
-> > Hi,
-> >
-> > Quite often in discussions, I see people claiming Unix sockets are
-> > faster then TCP sockets on a connection that stays inside localhost.
+> Add kprobe_insn_mutex for protecting kprobe_insn_pages hlist, and remove
+> kprobe_mutex from architecture dependent code.
 > 
-> Unix domain sockets should be faster because they're not subject to
-> windowing, ACKs, flow control, encapsulation, etc. etc.
+> This allows us to call arch_remove_kprobe() (and free_insn_slot) while holding
+> kprobe_mutex.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> ---
+>  arch/arm/kernel/kprobes.c     |    2 --
+>  arch/ia64/kernel/kprobes.c    |    8 +++++---
+>  arch/powerpc/kernel/kprobes.c |    7 ++++---
+>  arch/s390/kernel/kprobes.c    |    7 ++++---
+>  arch/x86/kernel/kprobes.c     |    7 ++++---
+>  include/linux/kprobes.h       |    1 -
+>  kernel/kprobes.c              |   25 +++++++++++++++++++++----
 
-And the wakeup rate is higher for TCP, and our process scheduler has
-been getting gradually slower and slower over time since 2.6.22
+For some reasons sparc64 never had this mutex.  You've checked that
+sparc64 will be OK after this change?
+
