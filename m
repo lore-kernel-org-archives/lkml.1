@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYKNOrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbYKNOv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbYKNOrS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 09:47:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYKNOrI
+	id S1752991AbYKNOv5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 09:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751222AbYKNOvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 09:47:08 -0500
-Received: from ns.suse.de ([195.135.220.2]:58121 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbYKNOrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 09:47:06 -0500
-From: Bernhard Walle <bwalle@suse.de>
-To: thomas.mingarelli@hp.com
-Cc: linux-kernel@vger.kernel.org, wim@iguana.be,
-       Bernhard Walle <bwalle@suse.de>
-Subject: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space as executable
-Date: Fri, 14 Nov 2008 15:47:03 +0100
-Message-Id: <1226674023-5374-1-git-send-email-bwalle@suse.de>
-X-Mailer: git-send-email 1.6.0.2
+	Fri, 14 Nov 2008 09:51:49 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:64646 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750727AbYKNOvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 09:51:48 -0500
+Date: Fri, 14 Nov 2008 15:51:45 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Keith Packard <keithp@keithp.com>
+Subject: Re: [Bug #11988] Eliminate recursive mutex in compat fb ioctl path
+In-Reply-To: <wnN9HICUAgP.A.Z-E.Q4zFJB@chimera>
+Message-ID: <Pine.LNX.4.64.0811141549140.5955@vixen.sonytel.be>
+References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <wnN9HICUAgP.A.Z-E.Q4zFJB@chimera>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The address provided by the SMBIOS/DMI CRU information is mapped via
-ioremap() in the virtual address space. However, since the address
-is executed (i.e. call'd), we need to set that pages as executable.
+On Sun, 9 Nov 2008, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11988
+> Subject		: Eliminate recursive mutex in compat fb ioctl path
+> Submitter	: Keith Packard <keithp@keithp.com>
+> Date		: 2008-11-03 7:06 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122569604828448&w=4
+> Handled-By	: Keith Packard <keithp@keithp.com>
+> 		  Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=122569604828448&w=4
+> 		  http://lkml.org/lkml/2008/10/31/162
 
-Without that, I get following oops on a HP ProLiant DL385 G2
-machine with BIOS from 05/29/2008 when I trigger crashdump:
+Fixed in mainline.
 
-    BUG: unable to handle kernel paging request at ffffc20011090c00
-    IP: [<ffffc20011090c00>] 0xffffc20011090c00
-    PGD 12f813067 PUD 7fe6a067 PMD 7effe067 PTE 80000000fffd3173
-    Oops: 0011 [1] SMP
-    last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
-    CPU 1
-    Modules linked in: autofs4 ipv6 af_packet cpufreq_conservative cpufreq_userspace
-     cpufreq_powersave powernow_k8 fuse loop dm_mod rtc_cmos ipmi_si sg rtc_core i2c
-    _piix4 ipmi_msghandler bnx2 sr_mod container button i2c_core hpilo joydev pcspkr
-     rtc_lib shpchp hpwdt cdrom pci_hotplug usbhid hid ff_memless ohci_hcd ehci_hcd
-    uhci_hcd usbcore edd ext3 mbcache jbd fan ide_pci_generic serverworks ide_core p
-    ata_serverworks pata_acpi cciss ata_generic libata scsi_mod dock thermal process
-    or thermal_sys hwmon
-    Supported: Yes
-    Pid: 0, comm: swapper Not tainted 2.6.27.5-HEAD_20081111100657-default #1
-    RIP: 0010:[<ffffc20011090c00>]  [<ffffc20011090c00>] 0xffffc20011090c00
-    RSP: 0018:ffff88012f6f9e68  EFLAGS: 00010046
-    RAX: 0000000000000d02 RBX: 0000000000000000 RCX: 0000000000000000
-    RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
-    RBP: ffff88012f6f9e98 R08: 666666666666660a R09: ffffffffa1006fc0
-    R10: 0000000000000000 R11: ffff88012f6f3ea8 R12: ffffc20011090c00
-    R13: ffff88012f6f9ee8 R14: 000000000000000e R15: 0000000000000000
-    FS:  00007ff70b29a6f0(0000) GS:ffff88012f6512c0(0000) knlGS:0000000000000000
-    CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-    CR2: ffffc20011090c00 CR3: 0000000000201000 CR4: 00000000000006e0
-    DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-    DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-    Process swapper (pid: 0, threadinfo ffff88012f6f2000, task ffff88007fa8a1c0)
-    Stack:  ffffffffa0f8502b 0000000000000002 ffffffff80738d50 0000000000000000
-     0000000000000046 0000000000000046 00000000fffffffe ffffffffa0f852ec
-     0000000000000000 ffffffff804ad9a6 0000000000000000 0000000000000000
-    Call Trace:
-    Inexact backtrace:
+commit a684e7d33096892093456dd56a582cfc3bfad648
+Author: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date:   Thu Nov 6 12:53:37 2008 -0800
 
-     <NMI>  [<ffffffffa0f8502b>] ? asminline_call+0x2b/0x55 [hpwdt]
-     [<ffffffffa0f852ec>] hpwdt_pretimeout+0x3c/0xa0 [hpwdt]
-     [<ffffffff804ad9a6>] ? notifier_call_chain+0x29/0x4c
-     [<ffffffff802587e4>] ? notify_die+0x2d/0x32
-     [<ffffffff804abbdc>] ? default_do_nmi+0x53/0x1d9
-     [<ffffffff804abd90>] ? do_nmi+0x2e/0x43
-     [<ffffffff804ab552>] ? nmi+0xa2/0xd0
-     [<ffffffff80221ef9>] ? native_safe_halt+0x2/0x3
-     <<EOE>>  [<ffffffff8021345d>] ? default_idle+0x38/0x54
-     [<ffffffff8021359a>] ? c1e_idle+0x118/0x11c
-     [<ffffffff8020b3b5>] ? cpu_idle+0xa9/0xf1
+    fbdev: fix fb_compat_ioctl() deadlocks
 
+    commit 3e680aae4e53ab54cdbb0c29257dae0cbb158e1c ("fb: convert
+    lock/unlock_kernel() into local fb mutex") introduced several deadlocks
+    in the fb_compat_ioctl() path, as mutex_lock() doesn't allow recursion,
+    unlike lock_kernel().  This broke frame buffer applications on 64-bit
+    systems with a 32-bit userland.
+    
+    commit 120a37470c2831fea49fdebaceb5a7039f700ce6 ("framebuffer compat_ioctl
+    deadlock") fixed one of the deadlocks.
+    
+    This patch fixes the remaining deadlocks:
+      - Revert commit 120a37470c2831fea49fdebaceb5a7039f700ce6,
+      - Extract the core logic of fb_ioctl() into a new function do_fb_ioctl(),
+      - Change all callsites of fb_ioctl() where info->lock is already held to
+        call do_fb_ioctl() instead,
+      - Add sparse annotations to all routines that take info->lock.
+    
+    Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+    Cc: Mikulas Patocka <mpatocka@redhat.com>
+    Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+    Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-    Code: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff <55> 50 e8 00 00 00 00 58 48 2d 07 10 40 00 48 8b e8 58 e9 68 02
-    RIP  [<ffffc20011090c00>] 0xffffc20011090c00
-     RSP <ffff88012f6f9e68>
-    CR2: ffffc20011090c00
-    Kernel panic - not syncing: Fatal exception
+With kind regards,
 
+Geert Uytterhoeven
+Software Architect
 
-Signed-off-by: Bernhard Walle <bwalle@suse.de>
----
- drivers/watchdog/hpwdt.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
-index 9890dff..e83e1ac 100644
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -40,6 +40,7 @@
- #include <linux/bootmem.h>
- #include <linux/slab.h>
- #include <asm/desc.h>
-+#include <asm/cacheflush.h>
- 
- #define PCI_BIOS32_SD_VALUE		0x5F32335F	/* "_32_" */
- #define CRU_BIOS_SIGNATURE_VALUE	0x55524324
-@@ -394,6 +395,8 @@ static void __devinit dmi_find_cru(const struct dmi_header *dm)
- 				smbios_cru64_ptr->double_offset;
- 			cru_rom_addr = ioremap(cru_physical_address,
- 				smbios_cru64_ptr->double_length);
-+			set_memory_x((unsigned long)cru_rom_addr & PAGE_MASK,
-+				smbios_cru64_ptr->double_length >> PAGE_SHIFT);
- 		}
- 	}
- }
--- 
-1.6.0.2
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
