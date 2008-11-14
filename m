@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYKNDFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYKNDG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbYKNDFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 22:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbYKNDEt
+	id S1754131AbYKNDG2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 22:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNDGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 22:04:49 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49606
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752042AbYKNDEs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 22:04:48 -0500
-Date: Thu, 13 Nov 2008 19:04:47 -0800 (PST)
-Message-Id: <20081113.190447.252605555.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       akpm@linux-foundation.org, cloos@jhcloos.com, paul@burly.ondioline.org,
-       torvalds@linux-foundation.org
-Subject: Re: [Bug #11875] radeonfb lockup in .28-rc (bisected)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081113.185059.154690040.davem@davemloft.net>
-References: <20081113.151116.139760511.davem@davemloft.net>
-	<1226624060.7178.100.camel@pasglop>
-	<20081113.185059.154690040.davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 13 Nov 2008 22:06:19 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:39523 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751143AbYKNDGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 22:06:18 -0500
+Message-ID: <491CEB23.80403@sgi.com>
+Date: Thu, 13 Nov 2008 19:06:11 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: paulus@samba.org, akpm@linux-foundation.org, yinghai@kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491CC310.3050807@sgi.com>	<20081113.162144.155677034.davem@davemloft.net>	<491CC8D7.7030306@sgi.com> <20081113.183747.184760657.davem@davemloft.net>
+In-Reply-To: <20081113.183747.184760657.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Thu, 13 Nov 2008 18:50:59 -0800 (PST)
+David Miller wrote:
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Fri, 14 Nov 2008 11:54:20 +1100
+> Practicality is what really matters.
 > 
-> > How does it compare with not having the acceleration ?
-> 
-> I'll find out for you.
+> We can even make the constant number a config option, so that if
+> someone has a system that actually triggers past this limit even dist
+> vendors can simply bump the config option value.
 
-It makes a huge difference, with the acceleration patch:
+Unfortunately the reality is that distros spend months certifying the base
+kernel for both application and security conformance.  And many (most?) of
+the large system customers will only run this kernel.  Even changing root
+startup options is considered invalidating the conformance testing.  That
+means the kernel has to adapt to the resource needs of the system being
+serviced.
 
-commit b1ee26bab14886350ba12a5c10cbc0696ac679bf
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Wed Oct 15 22:03:46 2008 -0700
-
-    radeonfb: accelerate imageblit and other improvements
-
-reverted, the test case takes 25 seconds or more instead of
-the 7 or 8 seconds we're seeing now.
+Ideally, linux shouldn't have any fixed resources.  A system built to run
+on a massively parallel system should also boot and run on a smart phone
+(not well perhaps... ;-)
