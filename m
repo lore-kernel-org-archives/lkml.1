@@ -1,498 +1,1211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbYKNB0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbYKNB0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbYKNB0Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:26:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbYKNBV5
+	id S1757208AbYKNB0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbYKNBWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:21:57 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:38154 "EHLO
+	Thu, 13 Nov 2008 20:22:49 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:38160 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756204AbYKNBVi (ORCPT
+	with ESMTP id S1756158AbYKNBVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:21:38 -0500
+	Thu, 13 Nov 2008 20:21:37 -0500
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Sage Weil <sage@newdream.net>
-Subject: [PATCH 07/19] ceph: file operations
-Date: Thu, 13 Nov 2008 16:56:06 -0800
-Message-Id: <1226624178-3761-8-git-send-email-sage@newdream.net>
+Subject: [PATCH 04/19] ceph: super.c
+Date: Thu, 13 Nov 2008 16:56:03 -0800
+Message-Id: <1226624178-3761-5-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1226624178-3761-7-git-send-email-sage@newdream.net>
+In-Reply-To: <1226624178-3761-4-git-send-email-sage@newdream.net>
 References: <1226624178-3761-1-git-send-email-sage@newdream.net>
  <1226624178-3761-2-git-send-email-sage@newdream.net>
  <1226624178-3761-3-git-send-email-sage@newdream.net>
  <1226624178-3761-4-git-send-email-sage@newdream.net>
- <1226624178-3761-5-git-send-email-sage@newdream.net>
- <1226624178-3761-6-git-send-email-sage@newdream.net>
- <1226624178-3761-7-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-File open and close operations, and read and write methods that ensure
-we have obtained the proper capabilities from the MDS cluster before
-performing IO on a file.  We take references on held capabilities for
-the duration of the read/write to avoid prematurely releasing them
-back to the MDS.
+Mount option parsing, client setup and teardown, and a few odds and
+ends (e.g., statfs).
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/file.c |  446 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 446 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/file.c
+ fs/ceph/super.c | 1165 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1165 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/super.c
 
-diff --git a/fs/ceph/file.c b/fs/ceph/file.c
+diff --git a/fs/ceph/super.c b/fs/ceph/super.c
 new file mode 100644
-index 0000000..19e93f2
+index 0000000..235c091
 --- /dev/null
-+++ b/fs/ceph/file.c
-@@ -0,0 +1,446 @@
-+
++++ b/fs/ceph/super.c
+@@ -0,0 +1,1165 @@
++#include <linux/module.h>
++#include <linux/parser.h>
++#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/rwsem.h>
++#include <linux/seq_file.h>
 +#include <linux/sched.h>
-+#include <linux/file.h>
++#include <linux/string.h>
++#include <linux/version.h>
++#include <linux/backing-dev.h>
++#include <linux/statfs.h>
++
++/* debug levels; defined in super.h */
 +
 +#include "ceph_debug.h"
 +
-+int ceph_debug_file = -1;
-+#define DOUT_MASK DOUT_MASK_FILE
-+#define DOUT_VAR ceph_debug_file
-+#define DOUT_PREFIX "file: "
++/*
++ * global debug value.
++ *  0 = quiet.
++ *
++ * if the per-file debug level >= 0, then that overrides this  global
++ * debug level.
++ */
++int ceph_debug = 1;
++int ceph_debug_mask = 0xffffffff;
++/* if true, send output to KERN_INFO (console) instead of KERN_DEBUG. */
++int ceph_debug_console;
++int ceph_debug_super = -1;   /* for this file */
++
++#define DOUT_MASK DOUT_MASK_SUPER
++#define DOUT_VAR ceph_debug_super
++#define DOUT_PREFIX "super: "
 +#include "super.h"
 +
-+#include "mds_client.h"
++#include "mon_client.h"
 +
-+#include <linux/namei.h>
++void ceph_dispatch(void *p, struct ceph_msg *msg);
++void ceph_peer_reset(void *p, struct ceph_entity_addr *peer_addr,
++		     struct ceph_entity_name *peer_name);
 +
 +
 +/*
-+ * Prepare an open request.  Preallocate ceph_cap to avoid an
-+ * inopportune ENOMEM later.
++ * super ops
 + */
-+static struct ceph_mds_request *
-+prepare_open_request(struct super_block *sb, struct dentry *dentry,
-+		     int flags, int create_mode)
++static int ceph_write_inode(struct inode *inode, int unused)
 +{
-+	struct ceph_client *client = ceph_sb_to_client(sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	u64 pathbase;
-+	char *path;
-+	int pathlen;
-+	struct ceph_mds_request *req;
-+	struct ceph_mds_request_head *rhead;
-+	int want_auth = USE_ANY_MDS;
++	struct ceph_inode_info *ci = ceph_inode(inode);
 +
-+	if (flags & (O_WRONLY|O_RDWR|O_CREAT|O_TRUNC))
-+		want_auth = USE_AUTH_MDS;
-+
-+	dout(5, "prepare_open_request dentry %p name '%s' flags %d\n", dentry,
-+	     dentry->d_name.name, flags);
-+	path = ceph_build_path(dentry, &pathlen, &pathbase, 0);
-+	if (IS_ERR(path))
-+		return ERR_PTR(PTR_ERR(path));
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_OPEN, pathbase, path,
-+				       0, NULL,
-+				       dentry, want_auth);
-+	kfree(path);
-+	if (IS_ERR(req))
-+		goto out;
-+	req->r_expected_cap = kmalloc(sizeof(struct ceph_cap), GFP_NOFS);
-+	if (!req->r_expected_cap) {
-+		ceph_mdsc_put_request(req);
-+		return ERR_PTR(-ENOMEM);
++	if (memcmp(&ci->i_old_atime, &inode->i_atime, sizeof(struct timeval))) {
++		dout(30, "ceph_write_inode %llx.%llx .. atime updated\n",
++		     ceph_vinop(inode));
++		/* maybe someday we will push this async to mds? */
 +	}
-+	req->r_fmode = ceph_flags_to_mode(flags);
++	return 0;
++}
 +
-+	rhead = req->r_request->front.iov_base;
-+	rhead->args.open.flags = cpu_to_le32(flags);
-+	rhead->args.open.mode = cpu_to_le32(create_mode);
-+out:
-+	return req;
++static void ceph_put_super(struct super_block *s)
++{
++	struct ceph_client *cl = ceph_client(s);
++	int rc;
++	int seconds = 15;
++
++	dout(30, "put_super\n");
++	ceph_mdsc_close_sessions(&cl->mdsc);
++	ceph_monc_request_umount(&cl->monc);
++
++	if (cl->mount_state != CEPH_MOUNT_SHUTDOWN) {
++		rc = wait_event_timeout(cl->mount_wq,
++				(cl->mount_state == CEPH_MOUNT_UNMOUNTED),
++				seconds*HZ);
++		if (rc == 0)
++			derr(0, "umount timed out after %d seconds\n", seconds);
++	}
++
++	return;
++}
++
++static int ceph_statfs(struct dentry *dentry, struct kstatfs *buf)
++{
++	struct ceph_client *client = ceph_inode_to_client(dentry->d_inode);
++	struct ceph_monmap *monmap = client->monc.monmap;
++	struct ceph_statfs st;
++	__le64 fsid;
++	int err;
++
++	dout(30, "statfs\n");
++	err = ceph_monc_do_statfs(&client->monc, &st);
++	if (err < 0)
++		return err;
++
++	/* fill in kstatfs */
++	buf->f_type = CEPH_SUPER_MAGIC;  /* ?? */
++
++	/*
++	 * express utilization in terms of large blocks to avoid
++	 * overflow on 32-bit machines.
++	 */
++	buf->f_bsize = 1 << CEPH_BLOCK_SHIFT;     /* 1 MB */
++	buf->f_blocks = le64_to_cpu(st.f_total) >> (CEPH_BLOCK_SHIFT-10);
++	buf->f_bfree = le64_to_cpu(st.f_free) >> (CEPH_BLOCK_SHIFT-10);
++	buf->f_bavail = le64_to_cpu(st.f_avail) >> (CEPH_BLOCK_SHIFT-10);
++
++	buf->f_files = le64_to_cpu(st.f_objects);
++	buf->f_ffree = -1;
++	buf->f_namelen = PATH_MAX;
++	buf->f_frsize = PAGE_CACHE_SIZE;
++
++	/* leave in little-endian, regardless of host endianness */
++	fsid = monmap->fsid.major ^ monmap->fsid.minor;
++	buf->f_fsid.val[0] = le64_to_cpu(fsid) & 0xffffffff;
++	buf->f_fsid.val[1] = le64_to_cpu(fsid) >> 32;
++
++	return 0;
++}
++
++
++static int ceph_syncfs(struct super_block *sb, int wait)
++{
++	dout(10, "sync_fs %d\n", wait);
++	return 0;
++}
++
++
++/**
++ * ceph_show_options - Show mount options in /proc/mounts
++ * @m: seq_file to write to
++ * @mnt: mount descriptor
++ */
++static int ceph_show_options(struct seq_file *m, struct vfsmount *mnt)
++{
++	struct ceph_client *client = ceph_sb_to_client(mnt->mnt_sb);
++	struct ceph_mount_args *args = &client->mount_args;
++
++	if (ceph_debug != 0)
++		seq_printf(m, ",debug=%d", ceph_debug);
++	if (args->flags & CEPH_MOUNT_FSID)
++		seq_printf(m, ",fsidmajor=%llu,fsidminor%llu",
++			   args->fsid.major, args->fsid.minor);
++	if (args->flags & CEPH_MOUNT_NOSHARE)
++		seq_puts(m, ",noshare");
++	if (args->flags & CEPH_MOUNT_UNSAFE_WRITEBACK)
++		seq_puts(m, ",unsafewriteback");
++	if (args->flags & CEPH_MOUNT_DIRSTAT)
++		seq_puts(m, ",dirstat");
++	else
++		seq_puts(m, ",nodirstat");
++	if (args->flags & CEPH_MOUNT_RBYTES)
++		seq_puts(m, ",rbytes");
++	else
++		seq_puts(m, ",norbytes");
++	if (args->flags & CEPH_MOUNT_NOCRC)
++		seq_puts(m, ",nocrc");
++	return 0;
++}
++
++
++/*
++ * inode cache
++ */
++struct kmem_cache *ceph_inode_cachep;
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27)
++static void init_once(void *foo)
++#else
++static void init_once(struct kmem_cache *cachep, void *foo)
++#endif
++{
++	struct ceph_inode_info *ci = foo;
++	inode_init_once(&ci->vfs_inode);
++}
++
++static int init_inodecache(void)
++{
++	ceph_inode_cachep = kmem_cache_create("ceph_inode_cache",
++					      sizeof(struct ceph_inode_info),
++					      0, (SLAB_RECLAIM_ACCOUNT|
++						  SLAB_MEM_SPREAD),
++					      init_once);
++	if (ceph_inode_cachep == NULL)
++		return -ENOMEM;
++	return 0;
++}
++
++static void destroy_inodecache(void)
++{
++	kmem_cache_destroy(ceph_inode_cachep);
++}
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
++static void ceph_umount_begin(struct vfsmount *vfsmnt, int flags)
++#else
++static void ceph_umount_begin(struct super_block *sb)
++#endif
++{
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
++	struct ceph_client *client = ceph_sb_to_client(vfsmnt->mnt_sb);
++#else
++	struct ceph_client *client = ceph_sb_to_client(sb);
++#endif
++
++	dout(30, "ceph_umount_begin\n");
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 26)
++	if (!(flags & MNT_FORCE))
++		return;
++#endif
++
++	if (!client)
++		return;
++
++	client->mount_state = CEPH_MOUNT_SHUTDOWN;
++	return;
++}
++
++
++static const struct super_operations ceph_super_ops = {
++	.alloc_inode	= ceph_alloc_inode,
++	.destroy_inode	= ceph_destroy_inode,
++	.write_inode    = ceph_write_inode,
++	.sync_fs        = ceph_syncfs,
++	.put_super	= ceph_put_super,
++	.show_options   = ceph_show_options,
++	.statfs		= ceph_statfs,
++	.umount_begin   = ceph_umount_begin,
++};
++
++
++
++/*
++ * the monitor responds with monmap to indicate mount success.
++ * (or, someday, to indicate a change in the monitor cluster)
++ */
++static void handle_monmap(struct ceph_client *client, struct ceph_msg *msg)
++{
++	int err;
++	int first = (client->monc.monmap->epoch == 0);
++	struct ceph_monmap *new, *old = client->monc.monmap;
++
++	dout(2, "handle_monmap had epoch %d\n", client->monc.monmap->epoch);
++	new = ceph_monmap_decode(msg->front.iov_base,
++				 msg->front.iov_base + msg->front.iov_len);
++	if (IS_ERR(new)) {
++		err = PTR_ERR(new);
++		derr(0, "problem decoding monmap, %d\n", err);
++		return;
++	}
++	client->monc.monmap = new;
++	kfree(old);
++
++	if (first) {
++		char name[10];
++		client->whoami = le32_to_cpu(msg->hdr.dst.name.num);
++		client->msgr->inst.name = msg->hdr.dst.name;
++		sprintf(name, "client%d", client->whoami);
++		dout(1, "i am %s, fsid is %llx.%llx\n", name,
++		     le64_to_cpu(client->monc.monmap->fsid.major),
++		     le64_to_cpu(client->monc.monmap->fsid.minor));
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
++		client->client_kobj = kobject_create_and_add(name, ceph_kobj);
++		/*
++		  client->fsid_kobj = kobject_create_and_add("fsid",
++		  client->client_kobj);
++		*/
++#endif
++	}
++}
++
++const char *ceph_msg_type_name(int type)
++{
++	switch (type) {
++	case CEPH_MSG_SHUTDOWN: return "shutdown";
++	case CEPH_MSG_PING: return "ping";
++	case CEPH_MSG_MON_MAP: return "mon_map";
++	case CEPH_MSG_MON_GET_MAP: return "mon_get_map";
++	case CEPH_MSG_CLIENT_MOUNT: return "client_mount";
++	case CEPH_MSG_CLIENT_UNMOUNT: return "client_unmount";
++	case CEPH_MSG_STATFS: return "statfs";
++	case CEPH_MSG_STATFS_REPLY: return "statfs_reply";
++	case CEPH_MSG_MDS_GETMAP: return "mds_getmap";
++	case CEPH_MSG_MDS_MAP: return "mds_map";
++	case CEPH_MSG_CLIENT_SESSION: return "client_session";
++	case CEPH_MSG_CLIENT_RECONNECT: return "client_reconnect";
++	case CEPH_MSG_CLIENT_REQUEST: return "client_request";
++	case CEPH_MSG_CLIENT_REQUEST_FORWARD: return "client_request_forward";
++	case CEPH_MSG_CLIENT_REPLY: return "client_reply";
++	case CEPH_MSG_CLIENT_CAPS: return "client_caps";
++	case CEPH_MSG_CLIENT_SNAP: return "client_snap";
++	case CEPH_MSG_CLIENT_LEASE: return "client_lease";
++	case CEPH_MSG_OSD_GETMAP: return "osd_getmap";
++	case CEPH_MSG_OSD_MAP: return "osd_map";
++	case CEPH_MSG_OSD_OP: return "osd_op";
++	case CEPH_MSG_OSD_OPREPLY: return "osd_opreply";
++	default: return "unknown";
++	}
 +}
 +
 +/*
-+ * initialize private struct file data.
-+ * if we fail, clean up by dropping fmode reference on the ceph_inode
++ * Called when a message socket is explicitly reset by a peer.
 + */
-+static int ceph_init_file(struct inode *inode, struct file *file, int fmode)
++void ceph_peer_reset(void *p, struct ceph_entity_addr *peer_addr,
++		     struct ceph_entity_name *peer_name)
 +{
-+	struct ceph_file_info *cf;
++	struct ceph_client *client = p;
 +
-+	cf = kzalloc(sizeof(*cf), GFP_NOFS);
-+	if (cf == NULL) {
-+		ceph_put_fmode(ceph_inode(inode), fmode); /* clean up */
-+		return -ENOMEM;
++	dout(30, "ceph_peer_reset %s%d\n", ENTITY_NAME(*peer_name));
++	switch (le32_to_cpu(peer_name->type)) {
++	case CEPH_ENTITY_TYPE_MDS:
++		ceph_mdsc_handle_reset(&client->mdsc,
++					      le32_to_cpu(peer_name->num));
++		break;
++	case CEPH_ENTITY_TYPE_OSD:
++		ceph_osdc_handle_reset(&client->osdc, peer_addr);
++		break;
 +	}
-+	cf->mode = fmode;
-+	file->private_data = cf;
++}
++
++
++/*
++ * mount options
++ */
++enum {
++	Opt_fsidmajor,
++	Opt_fsidminor,
++	Opt_debug,
++	Opt_debug_console,
++	Opt_debug_msgr,
++	Opt_debug_mdsc,
++	Opt_debug_osdc,
++	Opt_debug_addr,
++	Opt_debug_inode,
++	Opt_debug_snap,
++	Opt_debug_ioctl,
++	Opt_debug_caps,
++	Opt_monport,
++	Opt_port,
++	Opt_wsize,
++	Opt_rsize,
++	Opt_osdtimeout,
++	Opt_mount_timeout,
++	/* int args above */
++	Opt_ip,
++	Opt_noshare,
++	Opt_unsafewriteback,
++	Opt_safewriteback,
++	Opt_dirstat,
++	Opt_nodirstat,
++	Opt_rbytes,
++	Opt_norbytes,
++	Opt_nocrc,
++};
++
++static match_table_t arg_tokens = {
++	{Opt_fsidmajor, "fsidmajor=%ld"},
++	{Opt_fsidminor, "fsidminor=%ld"},
++	{Opt_debug, "debug=%d"},
++	{Opt_debug_msgr, "debug_msgr=%d"},
++	{Opt_debug_mdsc, "debug_mdsc=%d"},
++	{Opt_debug_osdc, "debug_osdc=%d"},
++	{Opt_debug_addr, "debug_addr=%d"},
++	{Opt_debug_inode, "debug_inode=%d"},
++	{Opt_debug_snap, "debug_snap=%d"},
++	{Opt_debug_ioctl, "debug_ioctl=%d"},
++	{Opt_debug_caps, "debug_caps=%d"},
++	{Opt_monport, "monport=%d"},
++	{Opt_port, "port=%d"},
++	{Opt_wsize, "wsize=%d"},
++	{Opt_rsize, "rsize=%d"},
++	{Opt_osdtimeout, "osdtimeout=%d"},
++	{Opt_mount_timeout, "mount_timeout=%d"},
++	/* int args above */
++	{Opt_ip, "ip=%s"},
++	{Opt_debug_console, "debug_console"},
++	{Opt_noshare, "noshare"},
++	{Opt_unsafewriteback, "unsafewriteback"},
++	{Opt_safewriteback, "safewriteback"},
++	{Opt_dirstat, "dirstat"},
++	{Opt_nodirstat, "nodirstat"},
++	{Opt_rbytes, "rbytes"},
++	{Opt_norbytes, "norbytes"},
++	{Opt_nocrc, "nocrc"},
++	{-1, NULL}
++};
++
++#define ADDR_DELIM(c) ((!c) || (c == ':') || (c == ','))
++
++/*
++ * FIXME: add error checking to ip parsing
++ */
++static int parse_ip(const char *c, int len, struct ceph_entity_addr *addr,
++		    int max_count, int *count)
++{
++	int i;
++	int v;
++	int mon_count;
++	unsigned ip = 0;
++	const char *p = c, *numstart;
++
++	dout(15, "parse_ip on '%s' len %d\n", c, len);
++	for (mon_count = 0; mon_count < max_count; mon_count++) {
++		for (i = 0; !ADDR_DELIM(*p) && i < 4; i++) {
++			v = 0;
++			numstart = p;
++			while (!ADDR_DELIM(*p) && *p != '.' && p < c+len) {
++				if (*p < '0' || *p > '9')
++					goto bad;
++				v = (v * 10) + (*p - '0');
++				p++;
++			}
++			if (v > 255 || numstart == p)
++				goto bad;
++			ip = (ip << 8) + v;
++
++			if (*p == '.')
++				p++;
++		}
++		if (i != 4)
++			goto bad;
++		*(__be32 *)&addr[mon_count].ipaddr.sin_addr.s_addr = htonl(ip);
++
++		/* port? */
++		if (*p == ':') {
++			p++;
++			numstart = p;
++			v = 0;
++			while (!ADDR_DELIM(*p) && *p != '.' && p < c+len) {
++				if (*p < '0' || *p > '9')
++					goto bad;
++				v = (v * 10) + (*p - '0');
++				p++;
++			}
++			if (v > 65535 || numstart == p)
++				goto bad;
++			addr[mon_count].ipaddr.sin_port = htons(v);
++		} else
++			addr[mon_count].ipaddr.sin_port = htons(CEPH_MON_PORT);
++
++		dout(15, "parse_ip got %u.%u.%u.%u:%u\n",
++		     IPQUADPORT(addr[mon_count].ipaddr));
++
++		if (*p != ',')
++			break;
++		p++;
++	}
++
++	if (p < c+len)
++		goto bad;
++
++	if (count)
++		*count = mon_count + 1;
++
++	return 0;
++
++bad:
++	derr(1, "parse_ip bad ip '%s'\n", c);
++	return -EINVAL;
++}
++
++static int parse_mount_args(int flags, char *options, const char *dev_name,
++			    struct ceph_mount_args *args, const char **path)
++{
++	char *c;
++	int len, err;
++	substring_t argstr[MAX_OPT_ARGS];
++	int i;
++
++	dout(15, "parse_mount_args dev_name '%s'\n", dev_name);
++	memset(args, 0, sizeof(*args));
++
++	/* defaults */
++	args->sb_flags = flags;
++	args->flags = CEPH_MOUNT_DEFAULT;
++	args->osd_timeout = 5;    /* seconds */
++	args->mount_timeout = 30; /* seconds */
++	args->snapdir_name = ".snap";
++
++	/* ip1[:port1][,ip2[:port2]...]:/subdir/in/fs */
++	c = strstr(dev_name, ":/");
++	if (c == NULL)
++		return -EINVAL;
++	*c = 0;
++
++	/* get mon ip(s) */
++	len = c - dev_name;
++	err = parse_ip(dev_name, len, args->mon_addr, MAX_MON_MOUNT_ADDR,
++		       &args->num_mon);
++	if (err < 0)
++		return err;
++
++	for (i = 0; i < args->num_mon; i++) {
++		args->mon_addr[i].ipaddr.sin_family = AF_INET;
++		args->mon_addr[i].erank = 0;
++		args->mon_addr[i].nonce = 0;
++	}
++	args->my_addr.ipaddr.sin_family = AF_INET;
++	args->my_addr.ipaddr.sin_addr.s_addr = htonl(0);
++	args->my_addr.ipaddr.sin_port = htons(0);
++
++	/* path on server */
++	c++;
++	while (*c == '/')
++		c++;  /* remove leading '/'(s) */
++	*path = c;
++	dout(15, "server path '%s'\n", *path);
++
++	/* parse mount options */
++	while ((c = strsep(&options, ",")) != NULL) {
++		int token, intval, ret;
++		if (!*c)
++			continue;
++		token = match_token(c, arg_tokens, argstr);
++		if (token < 0) {
++			derr(0, "bad mount option at '%s'\n", c);
++			return -EINVAL;
++
++		}
++		if (token < Opt_ip) {
++			ret = match_int(&argstr[0], &intval);
++			if (ret < 0) {
++				dout(0, "bad mount arg, not int\n");
++				continue;
++			}
++			dout(30, "got token %d intval %d\n", token, intval);
++		}
++		switch (token) {
++		case Opt_fsidmajor:
++			args->fsid.major = cpu_to_le64(intval);
++			break;
++		case Opt_fsidminor:
++			args->fsid.minor = cpu_to_le64(intval);
++			break;
++		case Opt_port:
++			args->my_addr.ipaddr.sin_port = htons(intval);
++			break;
++		case Opt_ip:
++			err = parse_ip(argstr[0].from,
++					argstr[0].to-argstr[0].from,
++					&args->my_addr,
++					1, NULL);
++			if (err < 0)
++				return err;
++			args->flags |= CEPH_MOUNT_MYIP;
++			break;
++
++			/* debug levels */
++		case Opt_debug:
++			ceph_debug = intval;
++			break;
++		case Opt_debug_msgr:
++			ceph_debug_msgr = intval;
++			break;
++		case Opt_debug_mdsc:
++			ceph_debug_mdsc = intval;
++			break;
++		case Opt_debug_osdc:
++			ceph_debug_osdc = intval;
++			break;
++		case Opt_debug_addr:
++			ceph_debug_addr = intval;
++			break;
++		case Opt_debug_inode:
++			ceph_debug_inode = intval;
++			break;
++		case Opt_debug_snap:
++			ceph_debug_snap = intval;
++			break;
++		case Opt_debug_ioctl:
++			ceph_debug_ioctl = intval;
++			break;
++		case Opt_debug_caps:
++			ceph_debug_caps = intval;
++			break;
++		case Opt_debug_console:
++			ceph_debug_console = 1;
++			break;
++
++			/* misc */
++		case Opt_wsize:
++			args->wsize = intval;
++			break;
++		case Opt_rsize:
++			args->rsize = intval;
++			break;
++		case Opt_osdtimeout:
++			args->osd_timeout = intval;
++			break;
++		case Opt_mount_timeout:
++			args->mount_timeout = intval;
++			break;
++
++		case Opt_noshare:
++			args->flags |= CEPH_MOUNT_NOSHARE;
++			break;
++		case Opt_unsafewriteback:
++			args->flags |= CEPH_MOUNT_UNSAFE_WRITEBACK;
++			break;
++		case Opt_safewriteback:
++			args->flags &= ~CEPH_MOUNT_UNSAFE_WRITEBACK;
++			break;
++
++		case Opt_dirstat:
++			args->flags |= CEPH_MOUNT_DIRSTAT;
++			break;
++		case Opt_nodirstat:
++			args->flags &= ~CEPH_MOUNT_DIRSTAT;
++			break;
++		case Opt_rbytes:
++			args->flags |= CEPH_MOUNT_RBYTES;
++			break;
++		case Opt_norbytes:
++			args->flags &= ~CEPH_MOUNT_RBYTES;
++			break;
++		case Opt_nocrc:
++			args->flags |= CEPH_MOUNT_NOCRC;
++			break;
++
++		default:
++			BUG_ON(token);
++		}
++	}
++
 +	return 0;
 +}
 +
 +/*
-+ * If the filp already has private_data, that means the file was
-+ * already opened by intent during lookup, and we do nothing.
-+ *
-+ * If we already have the requisite capabilities, we can satisfy
-+ * the open request locally (no need to request new caps from the
-+ * MDS).
++ * create a fresh client instance
 + */
-+int ceph_open(struct inode *inode, struct file *file)
++static struct ceph_client *ceph_create_client(void)
 +{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_client *client = ceph_sb_to_client(inode->i_sb);
++	struct ceph_client *client;
++	int err = -ENOMEM;
++
++	client = kzalloc(sizeof(*client), GFP_KERNEL);
++	if (client == NULL)
++		return ERR_PTR(-ENOMEM);
++
++	mutex_init(&client->mount_mutex);
++
++	init_waitqueue_head(&client->mount_wq);
++
++	client->sb = NULL;
++	client->mount_state = CEPH_MOUNT_MOUNTING;
++	client->whoami = -1;
++
++	client->msgr = NULL;
++
++	client->wb_wq = create_workqueue("ceph-writeback");
++	if (client->wb_wq == NULL)
++		goto fail;
++	client->pg_inv_wq = create_workqueue("ceph-pg-invalid");
++	if (client->pg_inv_wq == NULL)
++		goto fail;
++	client->trunc_wq = create_workqueue("ceph-trunc");
++	if (client->trunc_wq == NULL)
++		goto fail;
++
++	/* subsystems */
++	err = ceph_monc_init(&client->monc, client);
++	if (err < 0)
++		return ERR_PTR(err);
++	ceph_mdsc_init(&client->mdsc, client);
++	ceph_osdc_init(&client->osdc, client);
++
++	return client;
++
++fail:
++	return ERR_PTR(-ENOMEM);
++}
++
++static void ceph_destroy_client(struct ceph_client *client)
++{
++	dout(10, "destroy_client %p\n", client);
++
++	/* unmount */
++	ceph_mdsc_stop(&client->mdsc);
++	ceph_monc_stop(&client->monc);
++	ceph_osdc_stop(&client->osdc);
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
++	if (client->client_kobj)
++		kobject_put(client->client_kobj);
++#endif
++	if (client->wb_wq)
++		destroy_workqueue(client->wb_wq);
++	if (client->pg_inv_wq)
++		destroy_workqueue(client->pg_inv_wq);
++	if (client->trunc_wq)
++		destroy_workqueue(client->trunc_wq);
++	if (client->msgr)
++		ceph_messenger_destroy(client->msgr);
++	kfree(client);
++	dout(10, "destroy_client %p done\n", client);
++}
++
++/*
++ * true if we have the mon, osd, and mds maps, and are thus
++ * fully "mounted".
++ */
++static int have_all_maps(struct ceph_client *client)
++{
++	return client->osdc.osdmap && client->osdc.osdmap->epoch &&
++		client->monc.monmap && client->monc.monmap->epoch &&
++		client->mdsc.mdsmap && client->mdsc.mdsmap->m_epoch;
++}
++
++/*
++ * Bootstrap mount by opening the root directory.  Note the mount
++ * @started time from caller, and time out if this takes too long.
++ */
++static struct dentry *open_root_dentry(struct ceph_client *client,
++				       const char *path,
++				       unsigned long started)
++{
 +	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct dentry *dentry;
-+	struct ceph_mds_request *req;
-+	struct ceph_file_info *cf = file->private_data;
++	struct ceph_mds_request *req = NULL;
++	struct ceph_mds_request_head *reqhead;
 +	int err;
-+	int flags, fmode, wantcaps;
++	struct dentry *root;
 +
-+	if (ceph_snap(inode) != CEPH_NOSNAP && (file->f_mode & FMODE_WRITE))
-+		return -EROFS;
-+
-+	if (cf) {
-+		dout(5, "open file %p is already opened\n", file);
-+		return 0;
-+	}
-+
-+	/* filter out O_CREAT|O_EXCL; vfs did that already.  yuck. */
-+	flags = file->f_flags & ~(O_CREAT|O_EXCL);
-+	if (S_ISDIR(inode->i_mode))
-+		flags = O_DIRECTORY;  /* mds likes to know */
-+
-+	dout(5, "open inode %p ino %llx.%llx file %p flags %d (%d)\n", inode,
-+	     ceph_vinop(inode), file, flags, file->f_flags);
-+	fmode = ceph_flags_to_mode(flags);
-+	wantcaps = ceph_caps_for_mode(fmode);
-+
-+	/* can we re-use existing caps? */
-+	spin_lock(&inode->i_lock);
-+	if ((__ceph_caps_issued(ci, NULL) & wantcaps) == wantcaps) {
-+		dout(10, "open fmode %d caps %d using existing on %p\n",
-+		     fmode, wantcaps, inode);
-+		__ceph_get_fmode(ci, fmode);
-+		spin_unlock(&inode->i_lock);
-+		return ceph_init_file(inode, file, fmode);
-+	}
-+	spin_unlock(&inode->i_lock);
-+	dout(10, "open fmode %d, don't have caps %d\n", fmode, wantcaps);
-+
-+	dentry = d_find_alias(inode);
-+	if (!dentry)
-+		return -ESTALE;  /* yuck */
-+	ceph_mdsc_lease_release(mdsc, inode, NULL, CEPH_LOCK_ICONTENT);
-+	req = prepare_open_request(inode->i_sb, dentry, flags, 0);
-+	if (IS_ERR(req)) {
-+		err = PTR_ERR(req);
++	/* open dir */
++	dout(30, "open_root_inode opening '%s'\n", path);
++	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_OPEN,
++				       1, path, 0, NULL,
++				       NULL, USE_ANY_MDS);
++	if (IS_ERR(req))
++		return ERR_PTR(PTR_ERR(req));
++	req->r_started = started;
++	req->r_timeout = client->mount_args.mount_timeout * HZ;
++	req->r_expected_cap = kmalloc(sizeof(struct ceph_cap), GFP_NOFS);
++	if (!req->r_expected_cap) {
++		root = ERR_PTR(-ENOMEM);
 +		goto out;
 +	}
++	reqhead = req->r_request->front.iov_base;
++	reqhead->args.open.flags = cpu_to_le32(O_DIRECTORY);
++	reqhead->args.open.mode = 0;
 +	err = ceph_mdsc_do_request(mdsc, req);
-+	if (!err)
-+		err = ceph_init_file(inode, file, req->r_fmode);
-+	ceph_mdsc_put_request(req);
-+	dout(5, "open result=%d on %llx.%llx\n", err, ceph_vinop(inode));
++	if (err == 0) {
++		root = req->r_last_dentry;
++		dget(root);
++		dout(30, "open_root_inode success, root dentry is %p\n", root);
++	} else
++		root = ERR_PTR(err);
 +out:
-+	dput(dentry);
++	ceph_mdsc_put_request(req);
++	return root;
++}
++
++/*
++ * mount: join the ceph cluster.
++ */
++static int ceph_mount(struct ceph_client *client, struct vfsmount *mnt,
++		      const char *path)
++{
++	struct ceph_entity_addr *myaddr = NULL;
++	struct ceph_msg *mount_msg;
++	struct dentry *root;
++	int err;
++	int request_interval = 5 * HZ;
++	unsigned long timeout = client->mount_args.mount_timeout * HZ;
++	unsigned long started = jiffies;  /* note the start time */
++	int which;
++	unsigned char r;
++
++	dout(10, "mount start\n");
++	mutex_lock(&client->mount_mutex);
++
++	/* initialize the messenger */
++	if (client->msgr == NULL) {
++		if (client->mount_args.flags & CEPH_MOUNT_MYIP)
++			myaddr = &client->mount_args.my_addr;
++		client->msgr = ceph_messenger_create(myaddr);
++		if (IS_ERR(client->msgr)) {
++			err = PTR_ERR(client->msgr);
++			client->msgr = NULL;
++			goto out;
++		}
++		client->msgr->parent = client;
++		client->msgr->dispatch = ceph_dispatch;
++		client->msgr->prepare_pages = ceph_osdc_prepare_pages;
++		client->msgr->peer_reset = ceph_peer_reset;
++	}
++
++	/* send mount request, and wait for mon, mds, and osd maps */
++	while (!have_all_maps(client)) {
++		err = -EIO;
++		if (timeout && time_after_eq(jiffies, started + timeout))
++			goto out;
++		dout(10, "mount sending mount request\n");
++		get_random_bytes(&r, 1);
++		which = r % client->mount_args.num_mon;
++		mount_msg = ceph_msg_new(CEPH_MSG_CLIENT_MOUNT, 0, 0, 0, NULL);
++		if (IS_ERR(mount_msg)) {
++			err = PTR_ERR(mount_msg);
++			goto out;
++		}
++		mount_msg->hdr.dst.name.type =
++			cpu_to_le32(CEPH_ENTITY_TYPE_MON);
++		mount_msg->hdr.dst.name.num = cpu_to_le32(which);
++		mount_msg->hdr.dst.addr = client->mount_args.mon_addr[which];
++
++		ceph_msg_send(client->msgr, mount_msg, 0);
++
++		/* wait */
++		dout(10, "mount sent to mon%d, waiting for maps\n", which);
++		err = wait_event_interruptible_timeout(client->mount_wq,
++						       have_all_maps(client),
++						       request_interval);
++		if (err == -EINTR)
++			goto out;
++	}
++
++	dout(30, "mount opening base mountpoint\n");
++	root = open_root_dentry(client, path, started);
++	if (IS_ERR(root)) {
++		err = PTR_ERR(root);
++		goto out;
++	}
++
++	/*
++	 * Drop the reference we just got, since the VFS doesn't give
++	 * us a reliable way to drop it later when a particular
++	 * vfsmount goes away.  If the directory we just mounted on is
++	 * renamed on the server, we are screwed.
++	 */
++	ceph_put_fmode(ceph_inode(root->d_inode), CEPH_FILE_MODE_PIN);
++
++	mnt->mnt_root = root;
++	mnt->mnt_sb = client->sb;
++	client->mount_state = CEPH_MOUNT_MOUNTED;
++	dout(10, "mount success\n");
++	err = 0;
++
++out:
++	mutex_unlock(&client->mount_mutex);
 +	return err;
 +}
 +
 +
 +/*
-+ * Do a lookup + open with a single request.
++ * Process an incoming message.
 + *
-+ * If this succeeds, but some subsequent check in the vfs
-+ * may_open() fails, the struct *file gets cleaned up (i.e.
-+ * ceph_release gets called).  So fear not!
++ * This should be relatively fast and must not do any work that waits
++ * on other messages to be received.
 + */
-+/*
-+ * flags
-+ *  path_lookup_open   -> LOOKUP_OPEN
-+ *  path_lookup_create -> LOOKUP_OPEN|LOOKUP_CREATE
-+ */
-+struct dentry *ceph_lookup_open(struct inode *dir, struct dentry *dentry,
-+				struct nameidata *nd, int mode,
-+				int locked_dir)
++void ceph_dispatch(void *p, struct ceph_msg *msg)
 +{
-+	struct ceph_client *client = ceph_sb_to_client(dir->i_sb);
-+	struct ceph_mds_client *mdsc = &client->mdsc;
-+	struct file *file = nd->intent.open.file;
-+	struct ceph_mds_request *req;
++	struct ceph_client *client = p;
++	int had;
++	int type = le16_to_cpu(msg->hdr.type);
++
++	switch (type) {
++	case CEPH_MSG_MON_MAP:
++		had = client->monc.monmap->epoch ? 1 : 0;
++		handle_monmap(client, msg);
++		if (!had && client->monc.monmap->epoch && have_all_maps(client))
++			wake_up(&client->mount_wq);
++		break;
++
++		/* mon client */
++	case CEPH_MSG_STATFS_REPLY:
++		ceph_monc_handle_statfs_reply(&client->monc, msg);
++		break;
++	case CEPH_MSG_CLIENT_UNMOUNT:
++		ceph_monc_handle_umount(&client->monc, msg);
++		break;
++
++		/* mds client */
++	case CEPH_MSG_MDS_MAP:
++		had = client->mdsc.mdsmap ? 1 : 0;
++		ceph_mdsc_handle_map(&client->mdsc, msg);
++		if (!had && client->mdsc.mdsmap && have_all_maps(client))
++			wake_up(&client->mount_wq);
++		break;
++	case CEPH_MSG_CLIENT_SESSION:
++		ceph_mdsc_handle_session(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_REPLY:
++		ceph_mdsc_handle_reply(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_REQUEST_FORWARD:
++		ceph_mdsc_handle_forward(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_CAPS:
++		ceph_handle_caps(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_SNAP:
++		ceph_handle_snap(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_LEASE:
++		ceph_mdsc_handle_lease(&client->mdsc, msg);
++		break;
++
++		/* osd client */
++	case CEPH_MSG_OSD_MAP:
++		had = client->osdc.osdmap ? 1 : 0;
++		ceph_osdc_handle_map(&client->osdc, msg);
++		if (!had && client->osdc.osdmap && have_all_maps(client))
++			wake_up(&client->mount_wq);
++		break;
++	case CEPH_MSG_OSD_OPREPLY:
++		ceph_osdc_handle_reply(&client->osdc, msg);
++		break;
++
++	default:
++		derr(0, "received unknown message type %d %s\n", type,
++		     ceph_msg_type_name(type));
++	}
++
++	ceph_msg_put(msg);
++}
++
++
++static int ceph_set_super(struct super_block *s, void *data)
++{
++	struct ceph_client *client = data;
++	int ret;
++
++	dout(10, "set_super %p data %p\n", s, data);
++
++	s->s_flags = client->mount_args.sb_flags;
++	s->s_maxbytes = min((u64)MAX_LFS_FILESIZE, CEPH_FILE_MAX_SIZE);
++
++	s->s_fs_info = client;
++	client->sb = s;
++
++	s->s_op = &ceph_super_ops;
++	s->s_export_op = &ceph_export_ops;
++
++	s->s_time_gran = 1000;  /* 1000 ns == 1 us */
++
++	ret = set_anon_super(s, NULL);  /* what is that second arg for? */
++	if (ret != 0)
++		goto fail;
++
++	return ret;
++
++fail:
++	s->s_fs_info = NULL;
++	client->sb = NULL;
++	return ret;
++}
++
++/*
++ * share superblock if same fs AND options
++ */
++static int ceph_compare_super(struct super_block *sb, void *data)
++{
++	struct ceph_client *new = data;
++	struct ceph_mount_args *args = &new->mount_args;
++	struct ceph_client *other = ceph_sb_to_client(sb);
++	int i;
++	dout(10, "ceph_compare_super %p\n", sb);
++
++	/* either compare fsid, or specified mon_hostname */
++	if (args->flags & CEPH_MOUNT_FSID) {
++		if (!ceph_fsid_equal(&args->fsid, &other->fsid)) {
++			dout(30, "fsid doesn't match\n");
++			return 0;
++		}
++	} else {
++		/* do we share (a) monitor? */
++		for (i = 0; i < args->num_mon; i++)
++			if (ceph_monmap_contains(other->monc.monmap,
++						 &args->mon_addr[i]))
++				break;
++		if (i == args->num_mon) {
++			dout(30, "mon ip not part of monmap\n");
++			return 0;
++		}
++		dout(10, "mon ip matches existing sb %p\n", sb);
++	}
++	if (args->sb_flags != other->mount_args.sb_flags) {
++		dout(30, "flags differ\n");
++		return 0;
++	}
++	return 1;
++}
++
++/*
++ * construct our own bdi so we can control readahead
++ */
++static int ceph_init_bdi(struct super_block *sb, struct ceph_client *client)
++{
 +	int err;
-+	int flags = nd->intent.open.flags - 1;  /* silly vfs! */
 +
-+	dout(5, "ceph_lookup_open dentry %p '%.*s' flags %d mode 0%o\n",
-+	     dentry, dentry->d_name.len, dentry->d_name.name, flags, mode);
++	if (client->mount_args.rsize)
++		client->backing_dev_info.ra_pages =
++			(client->mount_args.rsize + PAGE_CACHE_SIZE - 1)
++			>> PAGE_SHIFT;
 +
-+	/* do the open */
-+	req = prepare_open_request(dir->i_sb, dentry, flags, mode);
-+	if (IS_ERR(req))
-+		return ERR_PTR(PTR_ERR(req));
-+	if (flags & O_CREAT)
-+		ceph_mdsc_lease_release(mdsc, dir, NULL, CEPH_LOCK_ICONTENT);
-+	req->r_last_dentry = dget(dentry); /* use this dentry in fill_trace */
-+	req->r_locked_dir = dir;           /* caller holds dir->i_mutex */
-+	err = ceph_mdsc_do_request(mdsc, req);
-+	dentry = ceph_finish_lookup(req, dentry, err);
-+	if (!err)
-+		err = ceph_init_file(req->r_last_inode, file, req->r_fmode);
-+	ceph_mdsc_put_request(req);
-+	dout(5, "ceph_lookup_open result=%p\n", dentry);
-+	return dentry;
++	if (client->backing_dev_info.ra_pages < (PAGE_CACHE_SIZE >> PAGE_SHIFT))
++		client->backing_dev_info.ra_pages =
++			CEPH_DEFAULT_READ_SIZE >> PAGE_SHIFT;
++
++	err = bdi_init(&client->backing_dev_info);
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 26)
++	if (err < 0)
++		return err;
++
++	err = bdi_register_dev(&client->backing_dev_info, sb->s_dev);
++#endif
++
++	return err;
 +}
 +
-+int ceph_release(struct inode *inode, struct file *file)
++static int ceph_get_sb(struct file_system_type *fs_type,
++		       int flags, const char *dev_name, void *data,
++		       struct vfsmount *mnt)
 +{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_file_info *cf = file->private_data;
++	struct super_block *sb;
++	struct ceph_client *client;
++	int err;
++	int (*compare_super)(struct super_block *, void *) = ceph_compare_super;
++	const char *path;
 +
-+	dout(5, "release inode %p file %p\n", inode, file);
++	dout(25, "ceph_get_sb\n");
 +
-+	/*
-+	 * MYSTERY: why is file->f_flags now different than
-+	 * file->f_flags (actually, nd->intent.open.flags) on
-+	 * open?  e.g., on ceph_lookup_open,
-+	 *   ceph_file: opened 000000006fa3ebd0 flags 0101102 mode 2 nr now 1.\
-+	 *  wanted 0 -> 30
-+	 * and on release,
-+	 *   ceph_file: released 000000006fa3ebd0 flags 0100001 mode 3 nr now \
-+	 * -1.  wanted 30 was 30
-+	 *
-+	 * Huh.  Well, for now, store the open mode in ceph_file_info.
-+	 */
++	/* create client (which we may/may not use) */
++	client = ceph_create_client();
++	if (IS_ERR(client))
++		return PTR_ERR(client);
 +
-+	ceph_put_fmode(ci, cf->mode);
-+	if (cf->last_readdir)
-+		ceph_mdsc_put_request(cf->last_readdir);
-+	kfree(cf->dir_info);
-+	kfree(cf);
-+	return 0;
-+}
-+
-+/*
-+ * Completely synchronous read and write methods.  Direct from __user
-+ * buffer to osd.
-+ */
-+static ssize_t ceph_sync_read(struct file *file, char __user *data,
-+			       size_t count, loff_t *offset)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_client *client = ceph_inode_to_client(inode);
-+	int ret = 0;
-+	off_t pos = *offset;
-+
-+	dout(10, "sync_read on file %p %lld~%u\n", file, *offset,
-+	     (unsigned)count);
-+
-+	ret = ceph_osdc_sync_read(&client->osdc, ceph_vino(inode),
-+				  &ci->i_layout,
-+				  pos, count, data);
-+	if (ret > 0)
-+		*offset = pos + ret;
-+	return ret;
-+}
-+
-+static ssize_t ceph_sync_write(struct file *file, const char __user *data,
-+			       size_t count, loff_t *offset)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_client *client = ceph_inode_to_client(inode);
-+	int ret = 0;
-+	off_t pos = *offset;
-+
-+	if (ceph_snap(file->f_dentry->d_inode) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+	dout(10, "sync_write on file %p %lld~%u\n", file, *offset,
-+	     (unsigned)count);
-+
-+	if (file->f_flags & O_APPEND)
-+		pos = i_size_read(inode);
-+
-+	ret = ceph_osdc_sync_write(&client->osdc, ceph_vino(inode),
-+				   &ci->i_layout,
-+				   ci->i_snap_realm->cached_context,
-+				   pos, count, data);
-+	if (ret > 0) {
-+		pos += ret;
-+		*offset = pos;
-+		if (pos > i_size_read(inode))
-+			ceph_inode_set_size(inode, pos);
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ * Wrap generic_file_aio_read with checks for cap bits on the inode.
-+ * Atomically grab references, so that those bits are not released
-+ * back to the MDS mid-read.
-+ *
-+ * Hmm, the sync reach case isn't actually async... should it be?
-+ */
-+static ssize_t ceph_aio_read(struct kiocb *iocb, const struct iovec *iov,
-+		      unsigned long nr_segs, loff_t pos)
-+{
-+	struct file *filp = iocb->ki_filp;
-+	loff_t *ppos = &iocb->ki_pos;
-+	size_t len = iov->iov_len;
-+	struct inode *inode = filp->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	ssize_t ret;
-+	int got = 0;
-+
-+	__ceph_do_pending_vmtruncate(inode);
-+
-+	dout(10, "aio_read %llx.%llx %llu~%u trying to get caps on %p\n",
-+	     ceph_vinop(inode), pos, (unsigned)len, inode);
-+	ret = wait_event_interruptible(ci->i_cap_wq,
-+				       ceph_get_cap_refs(ci, CEPH_CAP_RD,
-+							 CEPH_CAP_RDCACHE,
-+							 &got, -1));
-+	if (ret < 0)
-+		goto out;
-+	dout(10, "aio_read %llx.%llx %llu~%u got cap refs %d\n",
-+	     ceph_vinop(inode), pos, (unsigned)len, got);
-+
-+	if ((got & CEPH_CAP_RDCACHE) == 0 ||
-+	    (inode->i_sb->s_flags & MS_SYNCHRONOUS))
-+		/* hmm, this isn't really async... */
-+		ret = ceph_sync_read(filp, iov->iov_base, len, ppos);
-+	else
-+		ret = generic_file_aio_read(iocb, iov, nr_segs, pos);
-+
-+out:
-+	dout(10, "aio_read %llx.%llx dropping cap refs on %d\n",
-+	     ceph_vinop(inode), got);
-+	ceph_put_cap_refs(ci, got);
-+	return ret;
-+}
-+
-+/*
-+ * Check the offset we are writing up to against our current
-+ * max_size.  If necessary, tell the MDS we want to write to
-+ * a larger offset.
-+ */
-+static void check_max_size(struct inode *inode, loff_t endoff)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	int check = 0;
-+
-+	/* do we need to explicitly request a larger max_size? */
-+	spin_lock(&inode->i_lock);
-+	if ((endoff >= ci->i_max_size ||
-+	     endoff > (inode->i_size << 1)) &&
-+	    endoff > ci->i_wanted_max_size) {
-+		dout(10, "write %p at large endoff %llu, req max_size\n",
-+		     inode, endoff);
-+		ci->i_wanted_max_size = endoff;
-+		check = 1;
-+	}
-+	spin_unlock(&inode->i_lock);
-+	if (check)
-+		ceph_check_caps(ci, 0);
-+}
-+
-+/*
-+ * Take cap references to avoid releasing caps to MDS mid-write.
-+ *
-+ * If we are synchronous, and write with an old snap context, the OSD
-+ * may return EOLDSNAPC.  In that case, retry the write.. _after_
-+ * dropping our cap refs and allowing the pending snap to logically
-+ * complete _before_ this write occurs.
-+ *
-+ * If we are near ENOSPC, write synchronously.
-+ */
-+static ssize_t ceph_aio_write(struct kiocb *iocb, const struct iovec *iov,
-+		       unsigned long nr_segs, loff_t pos)
-+{
-+	struct file *file = iocb->ki_filp;
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	struct ceph_osd_client *osdc = &ceph_client(inode->i_sb)->osdc;
-+	loff_t endoff = pos + iov->iov_len;
-+	int got = 0;
-+	int ret;
-+
-+	if (ceph_snap(inode) != CEPH_NOSNAP)
-+		return -EROFS;
-+
-+retry_snap:
-+	if (ceph_osdmap_flag(osdc->osdmap, CEPH_OSDMAP_FULL))
-+		return -ENOSPC;
-+	__ceph_do_pending_vmtruncate(inode);
-+	check_max_size(inode, endoff);
-+	dout(10, "aio_write %p %llu~%u getting caps. i_size %llu\n",
-+	     inode, pos, (unsigned)iov->iov_len, inode->i_size);
-+	ret = wait_event_interruptible(ci->i_cap_wq,
-+				       ceph_get_cap_refs(ci, CEPH_CAP_WR,
-+							 CEPH_CAP_WRBUFFER,
-+							 &got, endoff));
-+	if (ret < 0)
++	err = parse_mount_args(flags, data, dev_name,
++			       &client->mount_args, &path);
++	if (err < 0)
 +		goto out;
 +
-+	dout(10, "aio_write %p %llu~%u  got cap refs on %d\n",
-+	     inode, pos, (unsigned)iov->iov_len, got);
++	if (client->mount_args.flags & CEPH_MOUNT_NOSHARE)
++		compare_super = NULL;
 +
-+	if ((got & CEPH_CAP_WRBUFFER) == 0 ||
-+	    ceph_osdmap_flag(osdc->osdmap, CEPH_OSDMAP_NEARFULL) ||
-+	    (inode->i_sb->s_flags & MS_SYNCHRONOUS))
-+		/* fixme, this isn't actually async! */
-+		ret = ceph_sync_write(file, iov->iov_base, iov->iov_len,
-+				      &iocb->ki_pos);
-+	else
-+		ret = generic_file_aio_write(iocb, iov, nr_segs, pos);
-+
-+out:
-+	dout(10, "aio_write %p %llu~%u  dropping cap refs on %d\n",
-+	     inode, pos, (unsigned)iov->iov_len, got);
-+	ceph_put_cap_refs(ci, got);
-+
-+	if (ret == -EOLDSNAPC) {
-+		dout(10, "aio_write %p %llu~%u got EOLDSNAPC, retrying\n",
-+		     inode, pos, (unsigned)iov->iov_len);
-+		goto retry_snap;
++	sb = sget(fs_type, compare_super, ceph_set_super, client);
++	if (IS_ERR(sb)) {
++		err = PTR_ERR(sb);
++		goto out;
 +	}
 +
-+	return ret;
-+}
++	if (ceph_client(sb) != client) {
++		ceph_destroy_client(client);
++		client = ceph_client(sb);
++		dout(20, "get_sb got existing client %p\n", client);
++	} else {
++		dout(20, "get_sb using new client %p\n", client);
 +
-+static int ceph_fsync(struct file *file, struct dentry *dentry, int datasync)
-+{
-+	struct inode *inode = dentry->d_inode;
-+	int ret;
++		err = ceph_init_bdi(sb, client);
++		if (err < 0)
++			goto out_splat;
++	}
 +
-+	dout(10, "fsync on inode %p\n", inode);
-+	ret = write_inode_now(inode, 1);
-+	if (ret < 0)
-+		return ret;
-+
-+	/*
-+	 * HMM: should we also ensure that caps are flushed to mds?
-+	 * It's not strictly necessary, since with the data on the
-+	 * osds the mds can/will always reconstruct the file size.
-+	 * Not mtime, though.
-+	 */
-+
++	err = ceph_mount(client, mnt, path);
++	if (err < 0)
++		goto out_splat;
++	dout(22, "root ino %llx.%llx\n", ceph_vinop(mnt->mnt_root->d_inode));
 +	return 0;
++
++out_splat:
++	up_write(&sb->s_umount);
++	deactivate_super(sb);
++	goto out_final;
++out:
++	ceph_destroy_client(client);
++out_final:
++	dout(25, "ceph_get_sb fail %d\n", err);
++	return err;
 +}
 +
-+const struct file_operations ceph_file_fops = {
-+	.open = ceph_open,
-+	.release = ceph_release,
-+	.llseek = generic_file_llseek,
-+	.read = do_sync_read,
-+	.write = do_sync_write,
-+	.aio_read = ceph_aio_read,
-+	.aio_write = ceph_aio_write,
-+	.mmap = ceph_mmap,
-+	.fsync = ceph_fsync,
-+	.splice_read = generic_file_splice_read,
-+	.splice_write = generic_file_splice_write,
-+	.unlocked_ioctl = ceph_ioctl,
++static void ceph_kill_sb(struct super_block *s)
++{
++	struct ceph_client *client = ceph_sb_to_client(s);
++	dout(1, "kill_sb %p\n", s);
++	ceph_mdsc_pre_umount(&client->mdsc);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 26)
++	bdi_unregister(&client->backing_dev_info);
++#endif
++	kill_anon_super(s);    /* will call put_super after sb is r/o */
++	bdi_destroy(&client->backing_dev_info);
++	ceph_destroy_client(client);
++}
++
++
++/************************************/
++
++static struct file_system_type ceph_fs_type = {
++	.owner		= THIS_MODULE,
++	.name		= "ceph",
++	.get_sb		= ceph_get_sb,
++	.kill_sb	= ceph_kill_sb,
++	.fs_flags	= FS_RENAME_DOES_D_MOVE,
 +};
 +
++struct kobject *ceph_kobj;
 +
++static int __init init_ceph(void)
++{
++	int ret = 0;
++
++	dout(1, "init_ceph\n");
++
++#ifdef CONFIG_CEPH_BOOKKEEPER
++	ceph_bookkeeper_init();
++#endif
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
++	ret = -ENOMEM;
++	ceph_kobj = kobject_create_and_add("ceph", fs_kobj);
++	if (!ceph_kobj)
++		goto out;
++#endif
++
++	ret = ceph_proc_init();
++	if (ret < 0)
++		goto out_kobj;
++
++	ret = ceph_msgr_init();
++	if (ret < 0)
++		goto out_proc;
++
++	ret = init_inodecache();
++	if (ret)
++		goto out_msgr;
++
++	ret = register_filesystem(&ceph_fs_type);
++	if (ret)
++		goto out_icache;
++	return 0;
++
++out_icache:
++	destroy_inodecache();
++out_msgr:
++	ceph_msgr_exit();
++out_proc:
++	ceph_proc_cleanup();
++out_kobj:
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
++	kobject_put(ceph_kobj);
++	ceph_kobj = NULL;
++out:
++#endif
++	return ret;
++}
++
++static void __exit exit_ceph(void)
++{
++	dout(1, "exit_ceph\n");
++	unregister_filesystem(&ceph_fs_type);
++	destroy_inodecache();
++	ceph_msgr_exit();
++	ceph_proc_cleanup();
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 25)
++	kobject_put(ceph_kobj);
++	ceph_kobj = NULL;
++#endif
++#ifdef CONFIG_CEPH_BOOKKEEPER
++	ceph_bookkeeper_finalize();
++#endif
++}
++
++module_init(init_ceph);
++module_exit(exit_ceph);
++
++MODULE_AUTHOR("Patience Warnick <patience@newdream.net>");
++MODULE_AUTHOR("Sage Weil <sage@newdream.net>");
++MODULE_DESCRIPTION("Ceph filesystem for Linux");
++MODULE_LICENSE("GPL");
 -- 
 1.5.6.5
 
