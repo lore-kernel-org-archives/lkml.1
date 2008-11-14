@@ -1,51 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751781AbYKNI3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096AbYKNIa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751781AbYKNI3Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 03:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYKNI27
+	id S1752096AbYKNIa3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 03:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYKNIaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 03:28:59 -0500
-Received: from waste.org ([66.93.16.53]:55955 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744AbYKNI26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 03:28:58 -0500
-Subject: Re: 2.6.28-rc4: inconsistent lock state durin s2ram
-From: Matt Mackall <mpm@selenic.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1226650389.7685.6941.camel@twins>
-References: <1226616324.3343.58.camel@calx> <200811140045.48068.rjw@sisk.pl>
-	 <1226650389.7685.6941.camel@twins>
+	Fri, 14 Nov 2008 03:30:20 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:37351 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbYKNIaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 03:30:19 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: mmotm 2008-11-13-17-22 uploaded (pc-speaker)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <s5hr65ek9fs.wl%tiwai@suse.de>
+References: <200811140122.mAE1MeAG015836@imap1.linux-foundation.org>
+	 <491D0A32.1020401@oracle.com> <s5hhc6alsop.wl%tiwai@suse.de>
+	 <s5hej1els6i.wl%tiwai@suse.de> <1226649794.7685.6920.camel@twins>
+	 <s5hr65ek9fs.wl%tiwai@suse.de>
 Content-Type: text/plain
-Date: Fri, 14 Nov 2008 02:28:05 -0600
-Message-Id: <1226651285.3343.88.camel@calx>
+Date: Fri, 14 Nov 2008 09:30:01 +0100
+Message-Id: <1226651401.7685.6977.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 09:13 +0100, Peter Zijlstra wrote:
-> On Fri, 2008-11-14 at 00:45 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, 13 of November 2008, Matt Mackall wrote:
-> > > Just noticed this while looking to see if my iwlagn regression was still
-> > > around (doesn't seem to be):
+On Fri, 2008-11-14 at 09:17 +0100, Takashi Iwai wrote:
+> At Fri, 14 Nov 2008 09:03:14 +0100,
+> Peter Zijlstra wrote:
 > > 
-> > Is this reproducible?
+> > On Fri, 2008-11-14 at 07:47 +0100, Takashi Iwai wrote:
+> > > At Fri, 14 Nov 2008 07:36:54 +0100,
+> > > I wrote:
+> > > > 
+> > > > At Thu, 13 Nov 2008 21:18:42 -0800,
+> > > > Randy Dunlap wrote:
+> > > > > 
+> > > > > 
+> > > > > mmotm-2008-1113-1722/sound/drivers/pcsp/pcsp.c: In function 'snd_card_pcsp_probe':
+> > > > > mmotm-2008-1113-1722/sound/drivers/pcsp/pcsp.c:99: error: 'HRTIMER_CB_IRQSAFE' undeclared (first use in this function)
+> > > > > 
+> > > > > # CONFIG_SND_HRTIMER is not set
+> > > > 
+> > > > snd-pcsp and CONFIG_SND_HRTIMER are independent.
+> > > > The snd-pcsp driver code isn't changed over weeks, thus it must be the
+> > > > change in hrtimer side.
+> > > 
+> > > It's turned out to be the recent commint in the upstream:
+> > > 
+> > >   commit 621a0d5207c18012cb39932f2d9830a11a6cb03d
+> > >   Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > >   Date:   Wed Nov 12 09:36:35 2008 +0100
+> > > 
+> > >     hrtimer: clean up unused callback modes
+> > > 
+> > >     Impact: cleanup
+> > > 
+> > >     git grep HRTIMER_CB_IRQSAFE revealed half the callback modes are actually
+> > >     unused.
+> > > 
+> > >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > 
+> > > This hits on snd-pcsp driver on linux-next, since it was switched to
+> > > use this dropped flag.  Now we get a build error.
+> > > 
+> > > Can this commit be reverted?
+> > 
+> > I think we determined the silly pc speaker driver should be using the
+> > SOFTIRQ timer, why was this changed back again?
 > 
-> fixed in linus master by:
+> It uses a tasklet inside now.
+> The background story is:   pcsp driver does register bit flips at each
+> hrtimer callback.  This should be done as accurate as possible for the
+> sound quality (heh, who matters?).  The register flip itself doesn't
+> take time and no lock problem.  Thus, IRQSAFE is more appropriate just
+> for this task.
 > 
-> commit 5d5254f0d3b9bebc47d97e357374c0ad0c291a7d
-> Author: Gautham R Shenoy <ego@in.ibm.com>
-> Date:   Sat Oct 25 10:22:38 2008 +0530
+> The reason we used the softirq mode is the call of the ALSA core
+> update part.  This is eventually called after the given samples have
+> been processed.  And, this could cause a spin deadlock if called
+> directly from hrtimer callback.
 > 
->     timers: handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from softirq context
+> In the latest code, the call of ALSA PCM core is off-loaded via
+> tasklet for avoiding both spin deadlock and too long hrtimer
+> handling.
 
-Thanks, Peter.
+Aside from the fact that I think tasklets should die a horrible death
+too, could you, for now, try to use HRTIMER_CB_IRQSAFE_UNLOCKED ?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
 
