@@ -1,63 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYKNG4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754454AbYKNG7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYKNG4U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 01:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYKNG4A
+	id S1754454AbYKNG7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 01:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbYKNG7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 01:56:00 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:55174 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbYKNGz7 (ORCPT
+	Fri, 14 Nov 2008 01:59:00 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:58383 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYKNG67 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 01:55:59 -0500
-Date: Fri, 14 Nov 2008 00:55:51 -0600 (CST)
-From: Steve Conklin <sconklin@canonical.com>
-X-X-Sender: sconklin@T41
-To: linux-kernel@vger.kernel.org
-cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Subject: [PATCH] Quirk for reboot stalls on a Dell Optiplex 330
-Message-ID: <alpine.DEB.2.00.0811140051000.13353@T41>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 14 Nov 2008 01:58:59 -0500
+Message-ID: <491D2251.7010702@oss.ntt.co.jp>
+Date: Fri, 14 Nov 2008 16:01:37 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+CC: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, xemul@openvz.org, agk@sourceware.org
+Subject: Re: [PATCH 6/8] bio-cgroup: The body of bio-cgroup
+References: <20081113.121254.625859878544534829.ryov@valinux.co.jp>	<20081113.121322.653026525707351102.ryov@valinux.co.jp>	<20081113.121357.75173118738921642.ryov@valinux.co.jp> <20081113.121433.632868945383117577.ryov@valinux.co.jp>
+In-Reply-To: <20081113.121433.632868945383117577.ryov@valinux.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6269c416487b41576107ef6f535639d3177daa43 Mon Sep 17 00:00:00 2001
-From: Leann Ogasawara <leann.ogasawara@canonical.com>
-Date: Wed, 12 Nov 2008 17:01:54 -0600
-Subject: [PATCH] Quirk for reboot stalls on a Dell Optiplex 330
+Hi,
 
-Dell Optiplex 330 appears to hang on reboot. This is resolved by adding
-a quirk to set bios reboot.
+Ryo Tsuruta wrote:
+>  
+> +void init_io_context(struct io_context *ioc)
+> +{
+> +	atomic_set(&ioc->refcount, 1);
+> +	atomic_set(&ioc->nr_tasks, 1);
+> +	spin_lock_init(&ioc->lock);
+> +	ioc->ioprio_changed = 0;
+> +	ioc->ioprio = 0;
+> +	ioc->last_waited = jiffies; /* doesn't matter... */
+> +	ioc->nr_batch_requests = 0; /* because this is 0 */
+> +	ioc->aic = NULL;
+> +	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);
+> +	INIT_HLIST_HEAD(&ioc->cic_list);
+> +	ioc->ioc_data = NULL;
+> +}
+> +
+>  struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+>  {
+>  	struct io_context *ret;
+>  
+>  	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+> -	if (ret) {
+> -		atomic_set(&ret->refcount, 1);
+> -		atomic_set(&ret->nr_tasks, 1);
+> -		spin_lock_init(&ret->lock);
+> -		ret->ioprio_changed = 0;
+> -		ret->ioprio = 0;
+> -		ret->last_waited = jiffies; /* doesn't matter... */
+> -		ret->nr_batch_requests = 0; /* because this is 0 */
+> -		ret->aic = NULL;
+> -		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
+> -		INIT_HLIST_HEAD(&ret->cic_list);
+> -		ret->ioc_data = NULL;
+> -	}
+> +	if (ret)
+> +		init_io_context(ret);
+>  
+>  	return ret;
+>  }
 
-Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
-Signed-off-by: Steve Conklin <steve.conklin@canonical.com>
----
- arch/x86/kernel/reboot.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 904a8ea..0d897f8 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -169,6 +169,15 @@ static struct dmi_system_id __initdata reboot_dmi_table[] = {
- 			DMI_MATCH(DMI_BOARD_NAME, "0KW626"),
- 		},
- 	},
-+	{   /* Handle problems with rebooting on Dell Optiplex 330 with 0KP561 */
-+		.callback = set_bios_reboot,
-+		.ident = "Dell OptiPlex 330",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 330"),
-+			DMI_MATCH(DMI_BOARD_NAME, "0KP561"),
-+		},
-+	},
- 	{	/* Handle problems with rebooting on Dell 2400's */
- 		.callback = set_bios_reboot,
- 		.ident = "Dell PowerEdge 2400",
--- 
-1.5.6.3
+> +
+> +/* Create a new bio-cgroup. */
+> +static struct cgroup_subsys_state *
+> +bio_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+> +{
+> +	struct bio_cgroup *biog;
+> +	struct io_context *ioc;
+> +	int ret;
+> +
+> +	if (!cgrp->parent) {
+> +		biog = &default_bio_cgroup;
+> +		init_io_context(biog->io_context);
+> +		/* Increment the referrence count not to be released ever. */
+> +		atomic_inc(&biog->io_context->refcount);
+> +		idr_init(&bio_cgroup_id);
+> +		return &biog->css;
+> +	}
+> +
+> +	biog = kzalloc(sizeof(*biog), GFP_KERNEL);
+> +	ioc = alloc_io_context(GFP_KERNEL, -1);
+> +	if (!ioc || !biog) {
+> +		ret = -ENOMEM;
+> +		goto out_err;
+> +	}
+> +	biog->io_context = ioc;
 
+If I understand correctly io_contexts allocated by alloc_io_context() should
+be owned by some tasks. In this case, the newly created io_context has no
+owner though biog->io_context->nr_tasks == 1. With the cfq scheduler this may
+cause some problems especially when cic_free_func() is called because
+cfq_exit_io_context() would never be called. Am I wrong?
+
+> +retry:
+> +	if (!idr_pre_get(&bio_cgroup_id, GFP_KERNEL)) {
+> +		ret = -EAGAIN;
+> +		goto out_err;
+> +	}
+> +	spin_lock_irq(&bio_cgroup_idr_lock);
+> +	ret = idr_get_new_above(&bio_cgroup_id, (void *)biog, 1, &biog->id);
+> +	spin_unlock_irq(&bio_cgroup_idr_lock);
+> +	if (ret == -EAGAIN)
+> +		goto retry;
+> +	else if (ret)
+> +		goto out_err;
+> +
+> +	return &biog->css;
+> +out_err:
+> +	if (biog)
+> +		kfree(biog);
+> +	if (ioc)
+> +		put_io_context(ioc);
+> +	return ERR_PTR(ret);
+> +}
+> +
+> +/* Delete the bio-cgroup. */
+> +static void bio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
+> +{
+> +	struct bio_cgroup *biog = cgroup_bio(cgrp);
+> +
+> +	put_io_context(biog->io_context);
+
+Here, I suspects what will happen under the following condition:
+biog->io_context->refcount: 1 --> 0
+biog->io_context->nr_tasks: 1 --> 1
+==> cfq_dtor() will be called but cfq_exit() has not be called yet.
+
+> +
+> +	spin_lock_irq(&bio_cgroup_idr_lock);
+> +	idr_remove(&bio_cgroup_id, biog->id);
+> +	spin_unlock_irq(&bio_cgroup_idr_lock);
+> +
+> +	kfree(biog);
+> +}
+> +
+
+> +
+> +/* Determine the iocontext of the bio-cgroup that issued a given bio. */
+> +struct io_context *get_bio_cgroup_iocontext(struct bio *bio)
+> +{
+> +	struct bio_cgroup *biog = NULL;
+> +	struct io_context *ioc;
+> +	int	id = 0;
+> +
+> +	id = get_bio_cgroup_id(bio);
+> +	if (id)
+> +		biog = find_bio_cgroup(id);
+> +	if (!biog)
+> +		biog = &default_bio_cgroup;
+> +	ioc = biog->io_context;	/* default io_context for this cgroup */
+> +	atomic_inc(&ioc->refcount);
+> +	return ioc;
+> +}
+> +EXPORT_SYMBOL(get_bio_cgroup_iocontext);
+
+
+Thanks,
+Takuya Yoshikawa
