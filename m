@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbYKNV0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbYKNV0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbYKNV0g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYKNV01
+	id S1753823AbYKNV0t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYKNV0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:26:27 -0500
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:37544 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751349AbYKNV00 (ORCPT
+	Fri, 14 Nov 2008 16:26:30 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:61813 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbYKNV02 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:26:26 -0500
-Message-ID: <491DECF9.6020707@lwfinger.net>
-Date: Fri, 14 Nov 2008 15:26:17 -0600
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Dominik Brodowski <linux@dominikbrodowski.net>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pcmcia@lists.infradead.org
-Subject: Re: Strange behavior since commit 5fef0e5c
-References: <491D92EB.2030200@lwfinger.net> <200811142053.05880.bzolnier@gmail.com>
-In-Reply-To: <200811142053.05880.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 16:26:28 -0500
+Date: Fri, 14 Nov 2008 14:26:06 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH] ext2/ext3: allocate ->s_blockgroup_lock separately to
+	avoid wasting space
+In-reply-to: <Pine.LNX.4.64.0811141115100.29826@melkki.cs.Helsinki.FI>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, cl@linux-foundation.org, mpm@selenic.com,
+       eduard.munteanu@linux360.ro
+Message-id: <20081114212606.GA16005@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <Pine.LNX.4.64.0811141115100.29826@melkki.cs.Helsinki.FI>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> On Friday 14 November 2008, Larry Finger wrote:
->> In testing kernel version 2.6.28-rc4 on my server that was running kernel
->> 2.6.27, an external IDE disk system connected via a PCCard interface failed to
->> start because module ide_disk would not load. The console output is as follows:
->>
->> finger@sonylap:~> sudo modprobe -v ide-disk
->> WARNING: module 'ide_gd_mod' is unsupported
->> FATAL: Module ide_disk not found.
+On Nov 14, 2008  11:17 +0200, Pekka J Enberg wrote:
+> As spotted by kmemtrace, struct ext2_sb_info is 17024 bytes and ext3_sb_info is
+> 17152 bytes on 64-bit which makes them a very bad fit for SLAB allocators. In
+> fact, both allocations are round up to the next available page size of 
+> order 3 which is 32 KB.
 > 
-> Please verify that your system uses a recent module-init-tools version
-> and then repeat 'make modules' + 'make modules_install' (it could be that
-> something went wrong previously during installing modules) as it works
-> just fine for me with 2.6.28-rc3 and module-init-tools 3.4.
+> The culprit if the wasted memory is the ->s_blockgroup_lock which can be as
+> big as 16 KB when CONFIG_NR_CPUS is set to 32. As struct blockgroup_lock is a
+> perfect fit for order 2 page in the worst case, allocate ->s_blockgroup_lock
+> separately to avoid wasting space.
+> 
+> The change shrinks struct ext2_sb_info to 592 bytes and struct ext3_sb_info to
+> 640 bytes which fits into a 1024 byte slab cache so now we allocate 16 KB + 1
+> KB instead of 32 KB saving 15 KB of memory!
+> 
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
-That was the problem. I had 3.3 pre11, which was installed by openSUSE 10.3.
-Updating to version 3.4 fixed the problem. Thanks.
+This looks very reasonable, with some minor comments below.
+Could you please also include a patch for ext4.  Also, Andrew prefers that
+the patches for ext2/ext3/ext4 are in separate emails.
 
-Should the requirement in Documentation/Changes be modified, or is that info no
-longer used?
+> --- a/include/linux/blockgroup_lock.h
+> +++ b/include/linux/blockgroup_lock.h
+>  #define sb_bgl_lock(sb, block_group) \
+> -	(&(sb)->s_blockgroup_lock.locks[(block_group) & (NR_BG_LOCKS-1)].lock)
+> +	(&(sb)->s_blockgroup_lock->locks[(block_group) & (NR_BG_LOCKS-1)].lock)
 
-Larry
+How the struct is allocated seems like an implementation detail that doesn't
+belong in blockgroup_lock.h at all, because "sb" is not "struct superblock"
+but rather "struct ext[23]_sb_info".  In fact, changing this without also
+patching ext4 would cause ext4 to break.
+
+I would suggest to change this to take the s_blockgroup_lock as a parameter,
+
+#define bgl_lock_ptr(bgl, block_group)
+	(bgl->locks[(block_group) & (NR_BG_LOCKS - 1)].lock)
+
+and then in ext[234]_fs_sb.h add a new helper in the same (first) patch:
+
+#define sb_bgl_lock(sbi, block_group)
+	bgl_lock_ptr(&sbi->s_blockgroup_lock, block_group)
+
+and remove sb_bgl_lock() from blockgroup_lock.h entirely.  As part of the
+later patches to change the s_blockgroup_lock allocations for each of
+ext[234] this changes in ext[234]_fs_sb.h to:
+
+#define sb_bgl_lock(sbi, block_group)
+	bgl_lock_ptr(sbi->s_blockgroup_lock, block_group)
+
+
+This allows each of the later patches to be landed separately without
+breaking the build.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
