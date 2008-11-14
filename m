@@ -1,180 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYKNELz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYKNEMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbYKNELz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 23:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbYKNELq
+	id S1755436AbYKNEMY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 23:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbYKNEMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 23:11:46 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33519 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751132AbYKNELp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 23:11:45 -0500
-Date: Fri, 14 Nov 2008 13:10:58 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.28-rc4 mem_cgroup_charge_common panic
-Message-Id: <20081114131058.8d538481.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1226602404.29381.6.camel@badari-desktop>
-References: <1226353408.8805.12.camel@badari-desktop>
-	<20081111101440.f531021d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081111110934.d41fa8db.kamezawa.hiroyu@jp.fujitsu.com>
-	<1226527376.4835.8.camel@badari-desktop>
-	<20081113111702.9a5b6ce7.kamezawa.hiroyu@jp.fujitsu.com>
-	<1226602404.29381.6.camel@badari-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 23:12:06 -0500
+Received: from kroah.org ([198.145.64.141]:49361 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751160AbYKNEMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 23:12:03 -0500
+Date: Thu, 13 Nov 2008 20:07:32 -0800
+From: Greg KH <greg@kroah.com>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>,
+       Francois Romieu <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, netdev@vger.kernel.org
+Subject: Re: [stable] build error with 2.6.27.6+reiser4+ehci-hub patch.
+	ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
+Message-ID: <20081114040732.GB17810@kroah.com>
+References: <200811140045.20166.volker.armin.hemmann@tu-clausthal.de> <20081114000725.GC19644@kroah.com> <20081114012617.GG7331@solarflare.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081114012617.GG7331@solarflare.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 10:53:24 -0800
-Badari Pulavarty <pbadari@us.ibm.com> wrote:
-> I tried mmtom + startpfn fix + this fix + notifier fix. Didn't help.
-> I am not using SLUB (using SLAB). Yes. I am testing "real" memory
-> remove (not just offline/online), since it executes more code of
-> freeing memmap etc.
+On Fri, Nov 14, 2008 at 01:26:19AM +0000, Ben Hutchings wrote:
+> Greg KH wrote:
+> > On Fri, Nov 14, 2008 at 12:45:19AM +0100, Volker Armin Hemmann wrote:
+> > > Hi,
+> > > with my old config from 2.6.27.5 (which has the same patches) I get this 
+> > > error:
+> > > make all modules_install install
+> > > <snip>
+> > >   OBJCOPY arch/x86/boot/setup.bin
+> > >   OBJCOPY arch/x86/boot/vmlinux.bin
+> > >   HOSTCC  arch/x86/boot/tools/build
+> > >   BUILD   arch/x86/boot/bzImage
+> > > Root device is (9, 1)
+> > > Setup is 11436 bytes (padded to 11776 bytes).
+> > > System is 2180 kB
+> > > CRC 54816509
+> > > Kernel: arch/x86/boot/bzImage is ready  (#1)
+> > >   Building modules, stage 2.
+> > >   MODPOST 136 modules
+> > > ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
+> > > make[1]: *** [__modpost] Fehler 1
+> > > make: *** [modules] Fehler 2
+> > 
+> > Francois, this is due to your commit
+> > 38d501ca6eb1f05d238bef785e51ca71dbfe0115, in the release, which was a
+> > backport of ccdffb9a88b2907b159538d7bfd6256621db4f84.
+> > 
+> > Care to look into this?
 > 
-> Code that is panicing is list_add() in mem_cgroup_add_list().
-> I will debug it further.
-> 
+> R8169 needs to select MII.  You could cherry-pick
+> b73724921d906d1642f9f6d054079c6b095903fe.
 
-Considering difference between "real" memory hotplug and logical ones,
-I found this. I hope this fixes the bug.
-But I myself can't do test this..
+Yes, that looks correct, I'll do that.
 
-Thanks,
--Kame
+Volker, does this patch solve your problem?
 
-==
-Fixes for memcg/memory hotplug.
+thanks,
 
-
-While memory hotplug allocate/free memmap, page_cgroup doesn't free
-page_cgroup at OFFLINE when page_cgroup is allocated via bootomem.
-(Because freeing bootmem requires special care.)
-
-Then, if page_cgroup is allocated by bootmem and memmap is freed/allocated
-by memory hotplug, page_cgroup->page == page is no longer true and
-we have to update that.
-
-But current MEM_ONLINE handler doesn't check it and update page_cgroup->page
-if it's not necessary to allocate page_cgroup.
-
-And I noticed that MEM_ONLINE can be called against "part of section".
-So, freeing page_cgroup at CANCEL_ONLINE will cause trouble.
-(freeing used page_cgroup)
-Don't rollback at CANCEL. 
-
-One more, current memory hotplug notifier is stopped by slub
-because it sets NOTIFY_STOP_MASK to return vaule. So, page_cgroup's callback
-never be called. (low priority than slub now.)
-
-I think this slub's behavior is not intentional(BUG). and fixes it.
-
-
-Another way to be considered about page_cgroup allocation:
-  - free page_cgroup at OFFLINE even if it's from bootmem
-    and remove specieal handler. But it requires more changes.
-
-
-Signed-off-by: KAMEZAWA Hiruyoki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- mm/page_cgroup.c |   39 +++++++++++++++++++++++++++------------
- mm/slub.c        |    6 ++++--
- 2 files changed, 31 insertions(+), 14 deletions(-)
-
-Index: mmotm-2.6.28-Nov10/mm/page_cgroup.c
-===================================================================
---- mmotm-2.6.28-Nov10.orig/mm/page_cgroup.c
-+++ mmotm-2.6.28-Nov10/mm/page_cgroup.c
-@@ -104,18 +104,30 @@ int __meminit init_section_page_cgroup(u
- 	unsigned long table_size;
- 	int nid, index;
- 
--	if (section->page_cgroup)
--		return 0;
-+	if (!section->page_cgroup) {
- 
--	nid = page_to_nid(pfn_to_page(pfn));
--	table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
--	if (slab_is_available()) {
--		base = kmalloc_node(table_size, GFP_KERNEL, nid);
--		if (!base)
--			base = vmalloc_node(table_size, nid);
--	} else {
--		base = __alloc_bootmem_node_nopanic(NODE_DATA(nid), table_size,
-+		nid = page_to_nid(pfn_to_page(pfn));
-+		table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
-+		if (slab_is_available()) {
-+			base = kmalloc_node(table_size, GFP_KERNEL, nid);
-+			if (!base)
-+				base = vmalloc_node(table_size, nid);
-+		} else {
-+			base = __alloc_bootmem_node_nopanic(NODE_DATA(nid),
-+				table_size,
- 				PAGE_SIZE, __pa(MAX_DMA_ADDRESS));
-+		}
-+	} else {
-+		/*
-+ 		 * We don't have to allocate page_cgroup again, but
-+		 * address of memmap may be changed. So, we have to initialize
-+		 * again.
-+		 */
-+		base = section->page_cgroup + pfn;
-+		table_size = 0;
-+		/* check address of memmap is changed or not. */
-+		if (base->page == pfn_to_page(pfn))
-+			return 0;
- 	}
- 
- 	if (!base) {
-@@ -204,19 +216,22 @@ static int page_cgroup_callback(struct n
- 		ret = online_page_cgroup(mn->start_pfn,
- 				   mn->nr_pages, mn->status_change_nid);
- 		break;
--	case MEM_CANCEL_ONLINE:
- 	case MEM_OFFLINE:
- 		offline_page_cgroup(mn->start_pfn,
- 				mn->nr_pages, mn->status_change_nid);
- 		break;
- 	case MEM_GOING_OFFLINE:
-+	case MEM_CANCEL_ONLINE:
- 		break;
- 	case MEM_ONLINE:
- 	case MEM_CANCEL_OFFLINE:
- 		break;
- 	}
- 
--	ret = notifier_from_errno(ret);
-+	if (ret)
-+		ret = notifier_from_errno(ret);
-+	else
-+		ret = NOTIFY_OK;
- 
- 	return ret;
- }
-Index: mmotm-2.6.28-Nov10/mm/slub.c
-===================================================================
---- mmotm-2.6.28-Nov10.orig/mm/slub.c
-+++ mmotm-2.6.28-Nov10/mm/slub.c
-@@ -3220,8 +3220,10 @@ static int slab_memory_callback(struct n
- 	case MEM_CANCEL_OFFLINE:
- 		break;
- 	}
--
--	ret = notifier_from_errno(ret);
-+	if (ret)
-+		ret = notifier_from_errno(ret);
-+	else
-+		ret = NOTIFY_OK;
- 	return ret;
- }
- 
-
+greg k-h
