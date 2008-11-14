@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbYKNHmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751807AbYKNHnC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbYKNHmT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 02:42:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYKNHmI
+	id S1751807AbYKNHnC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 02:43:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYKNHmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 02:42:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58304 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750734AbYKNHmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 02:42:06 -0500
-Message-ID: <491D2B16.8060000@cn.fujitsu.com>
-Date: Fri, 14 Nov 2008 15:39:02 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 14 Nov 2008 02:42:52 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:41681 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbYKNHmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 02:42:51 -0500
+Date: Fri, 14 Nov 2008 08:42:48 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg KH <greg@kroah.com>
+cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Can you add the staging tree to -next?
+In-Reply-To: <20081112235600.GA27554@kroah.com>
+Message-ID: <Pine.LNX.4.64.0811140825410.11953@anakin>
+References: <20081112235600.GA27554@kroah.com>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       corbet@lwn.net
-Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
- V2
-References: <49129310.5000903@cn.fujitsu.com> <20081109005159.GM6917@linux.vnet.ibm.com> <4917A8E7.8060801@cn.fujitsu.com> <20081110184520.GC6685@linux.vnet.ibm.com> <4918D7E4.9030107@cn.fujitsu.com> <20081111010331.GF6685@linux.vnet.ibm.com> <491B9581.2080201@cn.fujitsu.com> <20081113173114.GA6788@linux.vnet.ibm.com> <491CCE58.1040701@cn.fujitsu.com> <20081114021152.GF6788@linux.vnet.ibm.com>
-In-Reply-To: <20081114021152.GF6788@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Reviewed-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-
-Paul E. McKenney wrote:
-[...]
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
+On Wed, 12 Nov 2008, Greg KH wrote:
+> I'm starting to get people sending me patches against -next for the
+> drivers/staging/ tree that don't apply as -next does not include my
+> quilt tree of staging patches.
 > 
-> diff -urpNa -X dontdiff linux-2.6.27/Documentation/RCU/00-INDEX linux-2.6.27-rcu_barrierdoc/Documentation/RCU/00-INDEX
-> --- linux-2.6.27/Documentation/RCU/00-INDEX	2008-10-09 15:13:53.000000000 -0700
-> +++ linux-2.6.27-rcu_barrierdoc/Documentation/RCU/00-INDEX	2008-11-13 08:46:17.000000000 -0800
-> @@ -12,6 +12,8 @@ rcuref.txt
->  	- Reference-count design for elements of lists/arrays protected by RCU
->  rcu.txt
->  	- RCU Concepts
-> +rcubarrier.txt
-> +	- Unloading modules that use RCU callbacks
->  RTFP.txt
->  	- List of RCU papers (bibliography) going back to 1980.
->  torture.txt
-> diff -urpNa -X dontdiff linux-2.6.27/Documentation/RCU/rcubarrier.txt linux-2.6.27-rcu_barrierdoc/Documentation/RCU/rcubarrier.txt
-> --- linux-2.6.27/Documentation/RCU/rcubarrier.txt	1969-12-31 16:00:00.000000000 -0800
-> +++ linux-2.6.27-rcu_barrierdoc/Documentation/RCU/rcubarrier.txt	2008-11-13 18:08:35.000000000 -0800
-[...]
+> Can you please pick it up?  You can put it at the end of your series,
+> and the 'make allmodconfig' option disables building anything in the
+> drivers/staging/ subdirectory, so it should not have any build or merge
+> conflicts with anything.
 
+Apart from the patches you receive against -next, is there any other
+advantage, giving staging is disabled?
+
+> It can be found at:
+> 	http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-05-staging/
+> and is a quilt tree.
+> 
+> It will follow all the same rules as other trees, with patches only for
+> the next merge window (2.6.29 right now) in it.
+
+Except that there's much less compile-coverage, as allmodconfig doesn't enable
+staging.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
