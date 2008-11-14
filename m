@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYKNRNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbYKNRSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbYKNRNG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 12:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbYKNRMz
+	id S1754004AbYKNRSQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 12:18:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNRSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 12:12:55 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:48777 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbYKNRMy (ORCPT
+	Fri, 14 Nov 2008 12:18:00 -0500
+Received: from stag.seas.upenn.edu ([158.130.70.79]:56907 "EHLO
+	stag.seas.upenn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbYKNRR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 12:12:54 -0500
-Date: Fri, 14 Nov 2008 17:12:52 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: Add option to passively listen for PCIE hotplug events
-Message-ID: <20081114171252.GA29056@srcf.ucam.org>
-References: <49105BA6.9090403@tuffmail.co.uk> <20081104143332.GA21689@srcf.ucam.org> <491063B3.4080808@tuffmail.co.uk> <20081104151128.GA22544@srcf.ucam.org> <49106DD7.9010307@tuffmail.co.uk> <20081104155722.GA23314@srcf.ucam.org> <491076BD.1030704@tuffmail.co.uk> <49170B16.4010909@tuffmail.co.uk> <20081114161631.GA28234@srcf.ucam.org> <491DB048.3090308@tuffmail.co.uk>
+	Fri, 14 Nov 2008 12:17:59 -0500
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Nov 2008 12:17:59 EST
+Date: Fri, 14 Nov 2008 12:08:18 -0500 (EST)
+From: Raphael Yoram Rubin <rafi@seas.upenn.edu>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] n-trig digitizer quirks
+Message-ID: <Pine.LNX.4.61.0811141207210.12963@minus.seas.upenn.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491DB048.3090308@tuffmail.co.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 05:07:20PM +0000, Alan Jenkins wrote:
+Added quirks for the N-Trig digitizer.
+Signed-off-by: Rafi Rubin <rafi@seas.upenn.edu>
 
-> Note that Xandros say the newest model EeePC (S101) 'is now using a
-> "normal" kill of the antenna, which is easier to work with'.
+---
+diff -uprN linux-2.6.27.6-vanilla/drivers/hid/hid-input-quirks.c linux-2.6.27.6/drivers/hid/hid-input-quirks.c
+--- linux-2.6.27.6-vanilla/drivers/hid/hid-input-quirks.c	2008-11-13 12:56:21.000000000 -0500
++++ linux-2.6.27.6/drivers/hid/hid-input-quirks.c	2008-11-14 07:17:54.721758855 -0500
+@@ -314,6 +314,17 @@ static int quirk_sunplus_wdesktop(struct
+  	return 1;
+  }
 
-Well, it would have been nice of them to try to solve the problem 
-properly rather than jumping through hoops.
++static int quirk_ntrig_touch_screen(struct hid_usage *usage, struct input_dev *input,
++			      unsigned long **bit, int *max)
++{
++	if ( (usage->hid & HID_USAGE_PAGE) == HID_UP_DIGITIZER &&
++	    (usage->hid & 0xff) == 0x47) {
++      map_key_clear(BTN_TOOL_DOUBLETAP);
++		return 1;
++	}
++   return 0;
++}
++
+  #define VENDOR_ID_BELKIN			0x1020
+  #define DEVICE_ID_BELKIN_WIRELESS_KEYBOARD	0x0006
 
-> So if you're unlucky, the current eeepc-laptop worked perfectly on the
-> S101, and now it will simply refuse to load :).  But it's probably safer
-> that way.  At least the 701 runs quite adequately without eeepc-laptop. 
-> I guess it can be fixed when someone interested gets their hands on an S101.
+@@ -335,6 +346,9 @@ static int quirk_sunplus_wdesktop(struct
+  #define DEVICE_ID_S510_RECEIVER_2		0xc517
+  #define DEVICE_ID_MX3000_RECEIVER		0xc513
 
-Failing to register the notify handler isn't a fatal error, so shouldn't 
-be an issue. It would be nice to see how it behaves in that case, 
-though. If anyone's got an S101 I'd be interested in an ACPI dump.
++#define VENDOR_ID_NTRIG                0x1b96
++#define DEVICE_ID_NTRIG_TOUCH_SCREEN	0x0001
++
+  #define VENDOR_ID_MICROSOFT			0x045e
+  #define DEVICE_ID_MS4K				0x00db
+  #define DEVICE_ID_MS6K				0x00f9
+@@ -380,6 +394,7 @@ static const struct hid_input_blacklist
+  	{ VENDOR_ID_PETALYNX, DEVICE_ID_PETALYNX_MAXTER_REMOTE, quirk_petalynx_remote },
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+  	{ VENDOR_ID_SUNPLUS, DEVICE_ID_SUNPLUS_WDESKTOP, quirk_sunplus_wdesktop },
++	{ VENDOR_ID_NTRIG, DEVICE_ID_NTRIG_TOUCH_SCREEN, quirk_ntrig_touch_screen },
+
+  	{ 0, 0, NULL }
+  };
+diff -uprN linux-2.6.27.6-vanilla/drivers/hid/usbhid/hid-quirks.c linux-2.6.27.6/drivers/hid/usbhid/hid-quirks.c
+--- linux-2.6.27.6-vanilla/drivers/hid/usbhid/hid-quirks.c	2008-11-13 12:56:21.000000000 -0500
++++ linux-2.6.27.6/drivers/hid/usbhid/hid-quirks.c	2008-11-14 07:17:54.722758633 -0500
+@@ -359,6 +359,9 @@
+  #define USB_VENDOR_ID_NEC		0x073e
+  #define USB_DEVICE_ID_NEC_USB_GAME_PAD	0x0301
+
++#define USB_VENDOR_ID_NTRIG		0x1b96
++#define USB_DEVICE_ID_NTRIG_TOUCH_SCREEN	0x0001
++
+  #define USB_VENDOR_ID_ONTRAK		0x0a07
+  #define USB_DEVICE_ID_ONTRAK_ADU100	0x0064
+
+@@ -448,6 +451,7 @@ static const struct hid_blacklist {
+  	{ USB_VENDOR_ID_HAPP, USB_DEVICE_ID_UGCI_FIGHTING, HID_QUIRK_BADPAD | HID_QUIRK_MULTI_INPUT },
+  	{ USB_VENDOR_ID_NATSU, USB_DEVICE_ID_NATSU_GAMEPAD, HID_QUIRK_BADPAD },
+  	{ USB_VENDOR_ID_NEC, USB_DEVICE_ID_NEC_USB_GAME_PAD, HID_QUIRK_BADPAD },
++	{ USB_VENDOR_ID_NTRIG, USB_DEVICE_ID_NTRIG_TOUCH_SCREEN, HID_QUIRK_DUPLICATE_USAGES },
+  	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
+  	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
+
