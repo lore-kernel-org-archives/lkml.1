@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbYKNKKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbYKNKNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbYKNKKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 05:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbYKNKKa
+	id S1752926AbYKNKNi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 05:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYKNKNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 05:10:30 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:11882 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYKNKK3 (ORCPT
+	Fri, 14 Nov 2008 05:13:30 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49455 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbYKNKN3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 05:10:29 -0500
-X-BigFish: VPS-64(z21eW971Jz1432R62a3L98dR936eQ4015M1805M936fOzzzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KABIX1-02-1UI-01
-Date: Fri, 14 Nov 2008 11:09:38 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       oprofile-list@lists.sf.net, Jiri Benc <jbenc@suse.cz>,
-       Vilem Marsik <vmarsik@suse.cz>, Eric Dumazet <dada1@cosmosbay.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: Oprofile [still] doesn't work on 2.6.28-rc4 on certain CPU
-Message-ID: <20081114100938.GA1664@erda.amd.com>
-References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 14 Nov 2008 10:10:06.0771 (UTC) FILETIME=[2B293830:01C94641]
+	Fri, 14 Nov 2008 05:13:29 -0500
+Date: Fri, 14 Nov 2008 19:12:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       pbadari@us.ibm.com, jblunck@suse.de, taka@valinux.co.jp,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/9] memcg updates (14/Nov/2008)
+Message-Id: <20081114191246.4f69ff31.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13.11.08 22:27:52, Jiri Kosina wrote:
-> On Thu, 13 Nov 2008, Ingo Molnar wrote:
-> 
-> > > I haven't yet found a time to start bisecting this.
-> > Would be nice to identify a commit to revert - in case we run out of 
-> > time fixing it.
-> 
-> Yup, I first wanted to make this known to the public in hope that it will 
-> ring a bell somewhere.
-> 
-> If noone sees an obvous reason for this, I will do my best to bisect this 
-> tomorrow.
+Several patches are posted after last update (12/Nov),
+it's better to catch all up as series.
 
-Could you at least test with v2.6.27? I could not reproduce it on the
-hardware I am using.
+All patchs are mm-of-the-moment snapshot 2008-11-13-17-22
+  http://userweb.kernel.org/~akpm/mmotm/
+(You may need to patch fs/dquota.c and fix kernel/auditsc.c CONFIG error)
+
+New ones are 1,2,3 and 9. 
+
+IMHO, patch 1-4 are ready to go. (but I want Ack from Balbir to 3/9)
+
+Contents:
+
+[1/9] .... fix memory online/offline with memcg.
+  This patch is for "real" memory hotplug. So, people who can test this
+  is limited, I think. I asked Badari to try this.
+  This fix itself is logically correct I think, but there may be other bugs..
+
+[2/9] .... reduce size of per-cpu allocation.
+  This is from Jan Blunck <jblunck@suse.de> and I picked it up and rewrote.
+  please test. This tries to reduce memory usage of mem_cgroup struct.
+
+[3/9] .... add force_empty again with proper implementation.
+  I removed "force_empty" by account_move patch in mmotm. But I asked not to
+  do that brutal removal of interface. I'm sorry.
+  This adds "force_empty", but implemntaion itself is much saner. After this,
+  force_empty is no longer "debug only" interface.
+
+[4/9] .... account swap-cache.
+  Before accounting swap, we have to handle swap-cache.
+  This patch have been test for a month and seems to works well. Still here
+  and waiting for bug fixes moved into..
+
+[5/9] .... mem+swap controller kconfig
+  Kconfig changes and macro for mem+swap controller.
+
+[6/9] .... swap cgroup.
+  For accounting swap, we have to prepare a strage for remembering swap.
+
+[7/9] .... mem+swap controller.
+  mem+swap controller core logic. I and Nishimura have been testing this
+  for a month. It's getting nicer.
+
+[8/9] .... synchronized LRU patch
+  remove mz->lru_lock and make use of zone->lru_lock. By this, we do not have to
+  duplicate vmscan's global LRU behavior in memcg.
+  I think I'm an only tester of this ;) but works well.
+
+[9/9] .... mem_cgroup_disabled() patch
+  Replacing if (mem_cgroup_subsys.disabled) to be if (mem_cgroup_disabled()).
+  Takahashi (dm-ioband team) posted their bio-cgroup interface working with
+  page_cgroup. This is cut out from his one.
+  Takahashi, If you ack me, send me Signed-off-by or Acked-by. I'll queue this.
 
 Thanks,
+-Kame
 
--Robert
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
 
