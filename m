@@ -1,164 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbYKNVki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYKNVkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbYKNVki (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:40:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYKNVfb
+	id S1755472AbYKNVkK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:40:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbYKNVf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:35:31 -0500
+	Fri, 14 Nov 2008 16:35:29 -0500
 Received: from mga11.intel.com ([192.55.52.93]:9079 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755169AbYKNVf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:35:27 -0500
+	id S1755722AbYKNVfZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:35:25 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,605,1220252400"; 
-   d="scan'208";a="639301377"
-From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 13/13] dmaengine: kill enum dma_state_client
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc: maciej.sosnowski@intel.com, hskinnemoen@atmel.com, g.liakhovetski@gmx.de,
-       nicolas.ferre@atmel.com
-Date: Fri, 14 Nov 2008 14:35:24 -0700
-Message-ID: <20081114213524.32354.18358.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGIT/0.14.2
+   d="scan'208";a="639301370"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       H Peter Anvin <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Date: Fri, 14 Nov 2008 13:35:38 -0800
+Subject: RE: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+Thread-Topic: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+Thread-Index: AclF/Ynx95pejh+XTCKOsjJxt8651QAoj8Bg
+Message-ID: <7E82351C108FA840AB1866AC776AEC46427EC16C@orsmsx505.amr.corp.intel.com>
+References: <20081112212647.259698000@intel.com>
+ <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de>
+ <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com>
+ <20081113034425.GA23434@wotan.suse.de>
+ <7E82351C108FA840AB1866AC776AEC4642775AF2@orsmsx505.amr.corp.intel.com>
+ <20081114020547.GA24414@wotan.suse.de>
+In-Reply-To: <20081114020547.GA24414@wotan.suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DMA_NAK is now useless.  We can just use a bool instead.
 
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
 
- drivers/dma/dmaengine.c      |   16 +++++-----------
- drivers/dma/dmatest.c        |    6 +++---
- drivers/mmc/host/atmel-mci.c |    6 +++---
- include/linux/dmaengine.h    |   17 +++--------------
- 4 files changed, 14 insertions(+), 31 deletions(-)
+>-----Original Message-----
+>From: Nick Piggin [mailto:npiggin@suse.de]
+>Sent: Thursday, November 13, 2008 6:06 PM
+>To: Pallipadi, Venkatesh
+>Cc: Ingo Molnar; Thomas Gleixner; H Peter Anvin; Hugh Dickins;
+>Roland Dreier; Jesse Barnes; Jeremy Fitzhardinge; Arjan van de
+>Ven; linux-kernel@vger.kernel.org; Siddha, Suresh B
+>Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+>
+>On Thu, Nov 13, 2008 at 10:47:23AM -0800, Pallipadi, Venkatesh wrote:
+>>
+>> Yes. It does. But, it calls a lower level insert_pfn()
+>function. The lower
+>> level insert_pfn() does not have any bug checks. But the higher level
+>> vm_insert_pfn() checks for PFNMAP or MIXEDMAP.
+>
+>Yes, but is there anything extra you need to check for cache aliases in
+>MIXEDMAP mappings?
+>
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index a6c0d72..dae88f2 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -428,7 +428,7 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- {
- 	struct dma_device *device, *_d;
- 	struct dma_chan *chan = NULL;
--	enum dma_state_client ack;
-+	bool ack;
- 	int err;
- 
- 	/* Find a channel */
-@@ -441,9 +441,9 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- 		if (fn)
- 			ack = fn(chan, fn_param);
- 		else
--			ack = DMA_ACK;
-+			ack = true;
- 
--		if (ack == DMA_ACK) {
-+		if (ack) {
- 			/* Found a suitable channel, try to grab, prep, and
- 			 * return it.  We first set DMA_PRIVATE to disable
- 			 * balance_ref_count as this channel will not be
-@@ -461,15 +461,9 @@ struct dma_chan *__dma_request_channel(dma_cap_mask_t *mask, dma_filter_fn fn, v
- 				       dev_name(&chan->dev), err);
- 			else
- 				break;
--		} else if (ack == DMA_DUP) {
--			pr_debug("%s: %s filter said DMA_DUP\n",
--				 __func__, dev_name(&chan->dev));
--		} else if (ack == DMA_NAK) {
--			pr_debug("%s: %s filter said DMA_NAK\n",
--				 __func__, dev_name(&chan->dev));
--			break;
- 		} else
--			WARN_ONCE(1, "filter_fn: unknown response?\n");
-+			pr_debug("%s: %s filter said false\n",
-+				 __func__, dev_name(&chan->dev));
- 		chan = NULL;
- 	}
- 	mutex_unlock(&dma_list_mutex);
-diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
-index 2a7724d..e0f9139 100644
---- a/drivers/dma/dmatest.c
-+++ b/drivers/dma/dmatest.c
-@@ -363,12 +363,12 @@ static int dmatest_add_channel(struct dma_chan *chan)
- 	return 0;
- }
- 
--static enum dma_state_client filter(struct dma_chan *chan, void *param)
-+static bool filter(struct dma_chan *chan, void *param)
- {
- 	if (!dmatest_match_channel(chan) || !dmatest_match_device(chan->device))
--		return DMA_DUP;
-+		return false;
- 	else
--		return DMA_ACK;
-+		return true;
- }
- 
- static int __init dmatest_init(void)
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 4b567a0..b0042d0 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -1544,14 +1544,14 @@ static void __exit atmci_cleanup_slot(struct atmel_mci_slot *slot,
- }
- 
- #ifdef CONFIG_MMC_ATMELMCI_DMA
--static enum dma_state_client filter(struct dma_chan *chan, void *slave)
-+static bool filter(struct dma_chan *chan, void *slave)
- {
- 	struct dw_dma_slave *dws = slave;
- 
- 	if (dws->dma_dev == chan->device->dev)
--		return DMA_ACK;
-+		return true;
- 	else
--		return DMA_DUP;
-+		return false;
- }
- #endif
- 
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 32edaf4..48112cb 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -43,18 +43,6 @@ enum dma_state {
- };
- 
- /**
-- * enum dma_state_client - state of the channel in the client
-- * @DMA_ACK: client would like to use, or was using this channel
-- * @DMA_DUP: client has already seen this channel, or is not using this channel
-- * @DMA_NAK: client does not want to see any more channels
-- */
--enum dma_state_client {
--	DMA_ACK,
--	DMA_DUP,
--	DMA_NAK,
--};
--
--/**
-  * typedef dma_cookie_t - an opaque DMA cookie
-  *
-  * if dma_cookie_t is >0 it's a DMA request cookie, <0 it's an error code
-@@ -174,9 +162,10 @@ void dma_chan_cleanup(struct kref *kref);
-  * When this optional parameter is specified in a call to dma_request_channel a
-  * suitable channel is passed to this routine for further dispositioning before
-  * being returned.  Where 'suitable' indicates a non-busy channel that
-- * satisfies the given capability mask.
-+ * satisfies the given capability mask.  It returns 'true' to indicate that the
-+ * channel is suitable.
-  */
--typedef enum dma_state_client (*dma_filter_fn)(struct dma_chan *chan, void *filter_param);
-+typedef bool (*dma_filter_fn)(struct dma_chan *chan, void *filter_param);
- 
- typedef void (*dma_async_tx_callback)(void *dma_async_param);
- /**
+Yes. We need additional things to track MIXEDMAP and we are looking at that.
+But, that is slightly more trickier than the general PFNMAP case. And
+only in-tree user of MIXEDMAP is xip and that too it only uses it for
+regular WB mapping. So, we thought we should fix the more common case
+first here.
 
+With MIXEDMAP there is no way whether to distinguish whether insert_pfn
+Or insert_page was used while looking at VMA. We can probably use PFNMAP
+in addition to MIXEDMAP to indicate that, which will make things easier.
+But, we are still looking at that and trying to understand the change
+implication.
+
+Thanks,
+Venki
