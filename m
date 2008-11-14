@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbYKNXEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbYKNXFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbYKNXEo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 18:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbYKNXAw
+	id S1756444AbYKNXFg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 18:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYKNXA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 18:00:52 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:57254 "EHLO smtp.polymtl.ca"
+	Fri, 14 Nov 2008 18:00:57 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:57272 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756072AbYKNXAv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 18:00:51 -0500
-Message-Id: <20081114224948.787822158@polymtl.ca>
+	id S1753616AbYKNXA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 18:00:56 -0500
+Message-Id: <20081114224949.592960129@polymtl.ca>
 References: <20081114224733.364965865@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Nov 2008 17:47:43 -0500
+Date: Fri, 14 Nov 2008 17:47:48 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
        "Frank Ch. Eigler" <fche@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [patch 10/16] Tracepoints use rcu_*_sched_notrace
-Content-Disposition: inline; filename=tracepoints-use-rcu-sched-notrace.patch
+Subject: [patch 15/16] Tracepoints : documentation fix teardown
+Content-Disposition: inline; filename=tracepoints-documentation-fix-teardown.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 14 Nov 2008 23:00:02 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure tracepoints can be called within ftrace callbacks.
+Need a tracepoint_synchronize_unregister() before the end of exit() to make sure
+every probe callers have exited the non preemptible section and thus are not
+executing the probe code anymore.
+
+Impact: documentation update.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Masami Hiramatsu <mhiramat@redhat.com>
-CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>
 CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: 'Ingo Molnar' <mingo@elte.hu>
+CC: Ingo Molnar <mingo@elte.hu>
 CC: Lai Jiangshan <laijs@cn.fujitsu.com>
-CC: 'Hideo AOKI' <haoki@redhat.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: 'Steven Rostedt' <rostedt@goodmis.org>
+CC: Peter Zijlstra <peterz@infradead.org>
+CC: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/tracepoint.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/tracepoints.txt |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-lttng/include/linux/tracepoint.h
+Index: linux-2.6-lttng/Documentation/tracepoints.txt
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/tracepoint.h	2008-10-08 10:45:30.000000000 -0400
-+++ linux-2.6-lttng/include/linux/tracepoint.h	2008-10-08 10:45:34.000000000 -0400
-@@ -40,14 +40,14 @@ struct tracepoint {
- 	do {								\
- 		void **it_func;						\
- 									\
--		rcu_read_lock_sched();					\
-+		rcu_read_lock_sched_notrace();				\
- 		it_func = rcu_dereference((tp)->funcs);			\
- 		if (it_func) {						\
- 			do {						\
- 				((void(*)(proto))(*it_func))(args);	\
- 			} while (*(++it_func));				\
- 		}							\
--		rcu_read_unlock_sched();				\
-+		rcu_read_unlock_sched_notrace();			\
- 	} while (0)
+--- linux-2.6-lttng.orig/Documentation/tracepoints.txt	2008-11-14 17:18:59.000000000 -0500
++++ linux-2.6-lttng/Documentation/tracepoints.txt	2008-11-14 17:19:05.000000000 -0500
+@@ -70,10 +70,12 @@ Where :
+ Connecting a function (probe) to a tracepoint is done by providing a probe
+ (function to call) for the specific tracepoint through
+ register_trace_subsys_eventname().  Removing a probe is done through
+-unregister_trace_subsys_eventname(); it will remove the probe sure there is no
+-caller left using the probe when it returns. Probe removal is preempt-safe
+-because preemption is disabled around the probe call. See the "Probe example"
+-section below for a sample probe module.
++unregister_trace_subsys_eventname(); it will remove the probe.
++marker_synchronize_unregister() must be called before the end of the module exit
++function to make sure there is no caller left using the probe. This, and the
++fact that preemption is disabled around the probe call, make sure that probe
++removal and module unload are safe. See the "Probe example" section below for a
++sample probe module.
  
- /*
+ The tracepoint mechanism supports inserting multiple instances of the same
+ tracepoint, but a single definition must be made of a given tracepoint name over
 
 -- 
 Mathieu Desnoyers
