@@ -1,77 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbYKNRBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbYKNRB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbYKNRBo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 12:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYKNRBg
+	id S1754844AbYKNRB6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 12:01:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbYKNRBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 12:01:36 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:34399 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbYKNRBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 12:01:35 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 14 Nov 2008 12:01:44 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40023 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753616AbYKNRBm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 12:01:42 -0500
+Date: Fri, 14 Nov 2008 15:01:25 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       security@vger.kernel.org, Eugene Teo <eteo@redhat.com>
+Subject: CVE-2008-5033 - Was: Re: [PATCH] security: avoid calling a NULL
+ function pointer in drivers/video/tvaudio.c
+Message-ID: <20081114150125.7c54c29a@pedra.chehab.org>
+In-Reply-To: <20081010211836.0e7a56cf@infradead.org>
+References: <20081010211836.0e7a56cf@infradead.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18717.44751.459961.277998@harpo.it.uu.se>
-Date: Fri, 14 Nov 2008 18:01:03 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Robert Richter <robert.richter@amd.com>,
-       oprofile-list@lists.sf.net, Ingo Molnar <mingo@elte.hu>,
-       Jiri Kosina <jkosina@suse.cz>, Jiri Benc <jbenc@suse.cz>,
-       Vilem Marsik <vmarsik@suse.cz>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Oprofile : need to adjust PC by 16 bytes
-In-Reply-To: <491D987F.1000301@cosmosbay.com>
-References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz>
-	<20081113212446.GA5694@elte.hu>
-	<alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz>
-	<20081113213744.GA8429@elte.hu>
-	<491CA0DC.8070405@cosmosbay.com>
-	<491D987F.1000301@cosmosbay.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet writes:
- > Very strange results on my Intel E5450 CPU
- > 
- > I found that I have to bias regs->ip by 16 bytes in order to have
- > correct profiling.
- > 
- > Does it rings a bell to anyone ?
+Hi Arjan,
 
-The term is "skid". All OO processors are susceptible to it,
-as was known already to the Alpha "continous profiling"
-performance counter folks.
+On Fri, 10 Oct 2008 21:18:36 -0700
+Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Fri, 10 Oct 2008 21:16:12 -0700
+> Subject: [PATCH] security: avoid calling a NULL function pointer in drivers/video/tvaudio.c
+> 
+> NULL function pointers are very bad security wise. This one got caught by
+> kerneloops.org quite a few times, so it's happening in the field....
+> 
+> Fix is simple, check the function pointer for NULL, like 6 other places
+> in the same function are already doing.
+> 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> ---
+>  drivers/media/video/tvaudio.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/media/video/tvaudio.c b/drivers/media/video/tvaudio.c
+> index 463680b..b59e472 100644
+> --- a/drivers/media/video/tvaudio.c
+> +++ b/drivers/media/video/tvaudio.c
+> @@ -1792,7 +1792,7 @@ static int chip_command(struct i2c_client *client,
+>  		break;
+>  	case VIDIOC_S_FREQUENCY:
+>  		chip->mode = 0; /* automatic */
+> -		if (desc->checkmode) {
+> +		if (desc->checkmode && desc->setmode) {
+>  			desc->setmode(chip,V4L2_TUNER_MODE_MONO);
+>  			if (chip->prevmode != V4L2_TUNER_MODE_MONO)
+>  				chip->prevmode = -1; /* reset previous mode */
 
-And no, blindly subtracting 16 from IP is not a fix.
+Unfortunately, your patch doesn't solve the bug, since desc->checkmode is
+defined on all boards that defines desc->setmode callback.
 
- > 
- > opcontrol --version
- > opcontrol: oprofile 0.9.4 compiled on Nov  3 2008 06:45:57
- > 
- > Thank you
- > 
- > diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
- > index 3f1b81a..051fb16 100644
- > --- a/arch/x86/oprofile/op_model_ppro.c
- > +++ b/arch/x86/oprofile/op_model_ppro.c
- > @@ -131,7 +131,9 @@ static int ppro_check_ctrs(struct pt_regs * const regs,
- >                         continue;
- >                 rdmsrl(msrs->counters[i].addr, val);
- >                 if (CTR_OVERFLOWED(val)) {
- > +                       regs->ip -= 0x10;
- >                         oprofile_add_sample(regs, i);
- > +                       regs->ip += 0x10;
- >                         wrmsrl(msrs->counters[i].addr, -reset_value[i]);
- >                 }
- >         }
- > 
- > --
- > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
- > the body of a message to majordomo@vger.kernel.org
- > More majordomo info at  http://vger.kernel.org/majordomo-info.html
- > Please read the FAQ at  http://www.tux.org/lkml/
- > 
+Also, your patch touched on the handling for VIDIOC_S_FREQUENCY but the problem
+is on another ioctl (only noticed when debug is on).
+
+The issue is, in fact, elsewhere, as explained bellow, and seemed to be present
+since the beginning.
+
+I've successfully produced the bug with my oldest bt848 board (newer boards
+generally don't use tvaudio): a STB device with tda9850 tvaudio chip.
+
+This is the resulting OOPS:
+
+tvaudio' 1-005b: VIDIOC_S_CTRL
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+IP: [<00000000>]
+*pde = 22fda067 *pte = 00000000
+Oops: 0000 [#1] SMP
+Modules linked in: snd_hda_intel snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device
+snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd_hwdep snd soundcore tuner_simple tuner_types tea5767 tuner
+tvaudio bttv bridgebnep rfcomm l2cap bluetooth it87 hwmon_vid hwmon fuse sunrpc ipt_REJECT
+nf_conntrack_ipv4 iptable_filter ip_tables ip6t_REJECT xt_tcpudp nf_conntrack_ipv6 xt_state nf_conntrack
+ip6table_filter ip6_tables x_tables ipv6 dm_mirrordm_multipath dm_mod configfs videodev v4l1_compat
+ir_common 8139cp compat_ioctl32 v4l2_common 8139too videobuf_dma_sg videobuf_core mii btcx_risc tveeprom
+i915 button snd_page_alloc serio_raw drm pcspkr i2c_algo_bit i2c_i801 i2c_core iTCO_wdt
+iTCO_vendor_support sr_mod cdrom sg ata_generic pata_acpi ata_piix libata sd_mod scsi_mod ext3 jbdmbcache
+uhci_hcd ohci_hcd ehci_hcd [last unloaded: soundcore]
+
+Pid: 15413, comm: qv4l2 Not tainted (2.6.25.14-108.fc9.i686 #1)
+EIP: 0060:[<00000000>] EFLAGS: 00210246 CPU: 0
+EIP is at 0x0
+EAX: 00008000 EBX: ebd21600 ECX: e2fd9ec4 EDX: 00200046
+ESI: f8c0f0c4 EDI: f8c0f0c4 EBP: e2fd9d50 ESP: e2fd9d2c
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+Process qv4l2 (pid: 15413, ti=e2fd9000 task=ebe44000 task.ti=e2fd9000)
+Stack: f8c0c6ae e2ff2a00 00000d00 e2fd9ec4 ebc4e000 e2fd9d5c f8c0c448 00000000
+       f899c12a e2fd9d5c f899c154 e2fd9d68 e2fd9d80 c0560185 e2fd9d88 f8f3e1d8
+       f8f3e1dc ebc4e034 f8f3e18c e2fd9ec4 00000000 e2fd9d90 f899c286 c008561c
+Call Trace:
+ [<f8c0c6ae>] ? chip_command+0x266/0x4b6 [tvaudio]
+ [<f8c0c448>] ? chip_command+0x0/0x4b6 [tvaudio]
+ [<f899c12a>] ? i2c_cmd+0x0/0x2f [i2c_core]
+ [<f899c154>] ? i2c_cmd+0x2a/0x2f [i2c_core]
+ [<c0560185>] ? device_for_each_child+0x21/0x49
+ [<f899c286>] ? i2c_clients_command+0x1c/0x1e [i2c_core]
+ [<f8f283d8>] ? bttv_call_i2c_clients+0x14/0x16 [bttv]
+ [<f8f23601>] ? bttv_s_ctrl+0x1bc/0x313 [bttv]
+ [<f8f23445>] ? bttv_s_ctrl+0x0/0x313 [bttv]
+ [<f8b6096d>] ? __video_do_ioctl+0x1f84/0x3726 [videodev]
+ [<c05abb4e>] ? sock_aio_write+0x100/0x10d
+ [<c041b23e>] ? kmap_atomic_prot+0x1dd/0x1df
+ [<c043a0c9>] ? enqueue_hrtimer+0xc2/0xcd
+ [<c04f4fa4>] ? copy_from_user+0x39/0x121
+ [<f8b622b9>] ? __video_ioctl2+0x1aa/0x24a [videodev]
+ [<c04054fd>] ? do_notify_resume+0x768/0x795
+ [<c043c0f7>] ? getnstimeofday+0x34/0xd1
+ [<c0437b77>] ? autoremove_wake_function+0x0/0x33
+ [<f8b62368>] ? video_ioctl2+0xf/0x13 [videodev]
+ [<c048c6f0>] ? vfs_ioctl+0x50/0x69
+ [<c048c942>] ? do_vfs_ioctl+0x239/0x24c
+ [<c048c995>] ? sys_ioctl+0x40/0x5b
+ [<c0405bf2>] ? syscall_call+0x7/0xb
+ [<c0620000>] ? cpuid4_cache_sysfs_exit+0x3d/0x69
+ =======================
+Code:  Bad EIP value.
+EIP: [<00000000>] 0x0 SS:ESP 0068:e2fd9d2c
+
+You should notice that, just before the bug, that the driver received a
+VIDIOC_S_CTRL internal ioctl.
+
+After digging at this error, I noticed the cause: The logic that checks for the
+existence of bassfunc() and treblefunc() callback.
+
+Instead of doing a direct check, the driver checks it by looking at
+desc->flags. if desc->flags & HAS_BASSTREBLE, then tvaudio tries to call the
+callbacks for bass and treble.
+
+However, the logic were inverted on some places.
+
+The following patch properly fixes this trouble. I've made it available at my
+-git tree[1], together with other tvaudio patches meant to reduce potential issues
+at tvaudio.
+
+In order to avoid some risks like defining the flag without providing the
+callbacks, I've added other patches at the series to check if the callbacks
+exist at the init code.
+
+I'm sending a separate email with the pull requests for the entire series of
+tvaudio patches.
+
+[1] http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-2.6.git;a=commitdiff;h=01a1a3cc1e3fbe718bd06a2a5d4d1a2d0fb4d7d9
+
+Cheers,
+Mauro
+
+---
+
+This is the patch that actually solved the above bug. The problematic code that
+generated the OOPS is at the second hunk, when the driver calls
+desc->bassfunc(chip->bass).
+
+diff --git a/drivers/media/video/tvaudio.c b/drivers/media/video/tvaudio.c
+index fb46ce4..3720f0e 100644
+--- a/drivers/media/video/tvaudio.c
++++ b/drivers/media/video/tvaudio.c
+@@ -1639,13 +1639,13 @@ static int tvaudio_get_ctrl(struct CHIPSTATE *chip,
+ 		return 0;
+ 	}
+ 	case V4L2_CID_AUDIO_BASS:
+-		if (desc->flags & CHIP_HAS_BASSTREBLE)
++		if (!(desc->flags & CHIP_HAS_BASSTREBLE))
+ 			break;
+ 		ctrl->value = chip->bass;
+ 		return 0;
+ 	case V4L2_CID_AUDIO_TREBLE:
+-		if (desc->flags & CHIP_HAS_BASSTREBLE)
+-			return -EINVAL;
++		if (!(desc->flags & CHIP_HAS_BASSTREBLE))
++			break;
+ 		ctrl->value = chip->treble;
+ 		return 0;
+ 	}
+@@ -1705,16 +1705,15 @@ static int tvaudio_set_ctrl(struct CHIPSTATE *chip,
+ 		return 0;
+ 	}
+ 	case V4L2_CID_AUDIO_BASS:
+-		if (desc->flags & CHIP_HAS_BASSTREBLE)
++		if (!(desc->flags & CHIP_HAS_BASSTREBLE))
+ 			break;
+ 		chip->bass = ctrl->value;
+ 		chip_write(chip,desc->bassreg,desc->bassfunc(chip->bass));
+ 
+ 		return 0;
+ 	case V4L2_CID_AUDIO_TREBLE:
+-		if (desc->flags & CHIP_HAS_BASSTREBLE)
+-			return -EINVAL;
+-
++		if (!(desc->flags & CHIP_HAS_BASSTREBLE))
++			break;
+ 		chip->treble = ctrl->value;
+ 		chip_write(chip,desc->treblereg,desc->treblefunc(chip->treble));
+ 
+@@ -1761,7 +1760,7 @@ static int chip_command(struct i2c_client *client,
+ 				break;
+ 			case V4L2_CID_AUDIO_BASS:
+ 			case V4L2_CID_AUDIO_TREBLE:
+-				if (desc->flags & CHIP_HAS_BASSTREBLE)
++				if (!(desc->flags & CHIP_HAS_BASSTREBLE))
+ 					return -EINVAL;
+ 				break;
+ 			default:
+
+Cheers,
+Mauro
