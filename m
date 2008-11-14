@@ -1,90 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbYKNSI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbYKNSLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755823AbYKNSI3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 13:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYKNSIU
+	id S1755405AbYKNSLb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 13:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYKNSLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 13:08:20 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:36201 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032AbYKNSIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 13:08:19 -0500
-Date: Fri, 14 Nov 2008 19:08:18 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: perex@perex.cz, tiwai@suse.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/3, repost] sound/pci/pcxhr/pcxhr.c: introduce missing kfree
- and pci_disable_device
-Message-ID: <Pine.LNX.4.64.0811141907200.10023@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Nov 2008 13:11:23 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:35176 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbYKNSLX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 13:11:23 -0500
+Date: Fri, 14 Nov 2008 10:11:11 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for November 14 (staging#2)
+Message-Id: <20081114101111.f138c2ba.randy.dunlap@oracle.com>
+In-Reply-To: <20081114184021.ed198f4b.sfr@canb.auug.org.au>
+References: <20081114184021.ed198f4b.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.491DBF43.0075:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Fri, 14 Nov 2008 18:40:21 +1100 Stephen Rothwell wrote:
 
-Error handling code following a kzalloc should free the allocated data.
-The error handling code is adjusted to call pci_disable_device(pci); as
-well, as done later in the function
+> Hi all,
+> 
+> Changes since 20081113:
+> 
+> New tree:
+> 	staging
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+ERROR: "usb_deregister" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+ERROR: "usb_get_dev" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+ERROR: "usb_bulk_msg" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+ERROR: "usb_put_dev" [drivers/staging/asus_oled/asus_oled.ko] undefined!
+ERROR: "usb_register_driver" [drivers/staging/asus_oled/asus_oled.ko] undefined!
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,l;
-position p1,p2;
-expression *ptr != NULL;
-@@
+(CONFIG_USB=n)
 
-(
-if ((x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...)) == NULL) S
-|
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-)
-<... when != x
-     when != if (...) { <+...x...+> }
-x->f = E
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
-
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
-
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- sound/pci/pcxhr/pcxhr.c       |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
-
-diff --git a/sound/pci/pcxhr/pcxhr.c b/sound/pci/pcxhr/pcxhr.c
-index 0e06c6c..73de6e9 100644
---- a/sound/pci/pcxhr/pcxhr.c
-+++ b/sound/pci/pcxhr/pcxhr.c
-@@ -1229,8 +1229,11 @@ static int __devinit pcxhr_probe(struct pci_dev *pci, const struct pci_device_id
- 		return -ENOMEM;
- 	}
- 
--	if (snd_BUG_ON(pci_id->driver_data >= PCI_ID_LAST))
-+	if (snd_BUG_ON(pci_id->driver_data >= PCI_ID_LAST)) {
-+		kfree(mgr);
-+		pci_disable_device(pci);
- 		return -ENODEV;
-+	}
- 	card_name = pcxhr_board_params[pci_id->driver_data].board_name;
- 	mgr->playback_chips = pcxhr_board_params[pci_id->driver_data].playback_chips;
- 	mgr->capture_chips  = pcxhr_board_params[pci_id->driver_data].capture_chips;
+~Randy
