@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbYKNATT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbYKNATs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbYKNATT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYKNATE
+	id S1756008AbYKNATs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 19:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbYKNATi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:19:04 -0500
-Received: from kroah.org ([198.145.64.141]:58866 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752768AbYKNATC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:19:02 -0500
-Date: Thu, 13 Nov 2008 16:18:18 -0800
-From: Greg KH <greg@kroah.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH] Store the relevant miscdevice in file->private_data in
-	misc_open()
-Message-ID: <20081114001818.GB20023@kroah.com>
-References: <b0f1032863818f2834094e2ca9ce4b1c13122748.1226551772.git.michael@ellerman.id.au> <20081113173127.GB30811@kroah.com> <1226620481.8066.18.camel@localhost>
+	Thu, 13 Nov 2008 19:19:38 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:26340 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753552AbYKNATh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 19:19:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=v11TqnUnvswPkFENvKIbgO0Ki5GIyu3MzPzCRRvHQGDZbHbnPDbBeThIV/MKWbIWAb
+         sCC0bpZeJEnh1Sy1k6Dzv2EkARW0ITb7wYbzLKbAfQ7LmjfcTTTsgVaF54yYrhP18DRR
+         P/Kde9gcV2ABsBPJjj10+8f91YraKzXvLRwxw=
+Message-ID: <3aaafc130811131619w3ba48a86u6c6e2af35f149bf1@mail.gmail.com>
+Date: Thu, 13 Nov 2008 19:19:36 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Olaf van der Spek" <olafvdspek@gmail.com>
+Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1226620481.8066.18.camel@localhost>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 10:54:41AM +1100, Michael Ellerman wrote:
-> On Thu, 2008-11-13 at 09:31 -0800, Greg KH wrote: 
-> > On Thu, Nov 13, 2008 at 03:49:50PM +1100, Michael Ellerman wrote:
-> > > Currently it's not easy to share file_operations between multiple
-> > > instances of a miscdevice. In order to do this, the device code needs to
-> > > store a list of all it's miscdevice instances, and when fops->open() is
-> > > called, search the list and find the right device based on the minor
-> > > number.
-> > > 
-> > > However the generic miscdevice code already has a list of miscdevices,
-> > > and uses this to find the right device in misc_open(). If misc_open()
-> > > would store the miscdevice it found in file->private_data, then the
-> > > device code wouldn't need to worry about storing it's own separate list
-> > > and searching that as well.
-> > > 
-> > > The rest of the miscdevice code does not use file->private_data, so the
-> > > device code is still free to use file->private_data for something else
-> > > if it wants to.
-> > > 
-> > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > 
-> > Do you have a follow-on patch for some misc device using code that would
-> > take advantage of this change?
-> 
-> Ah, good point. I do, but not for upstream :/
+On Wed, Nov 12, 2008 at 6:20 PM, Olaf van der Spek <olafvdspek@gmail.com> wrote:
+> Hi,
+>
+> Quite often in discussions, I see people claiming Unix sockets are
+> faster then TCP sockets on a connection that stays inside localhost.
 
-Hm, then I have to ask why should we take this change?
+Unix domain sockets should be faster because they're not subject to
+windowing, ACKs, flow control, encapsulation, etc. etc.
 
-And why would the driver not be availble for upstream to take?
-
-thanks,
-
-greg k-h
+> Let's say from app A to app B.
+> Is this indeed the case and if so, how much and why?
+> My assumption is that the kernel can optimize the 'connection' and let
+> any performance differences disappear.
+>
+> Greetings,
+>
+> Olaf
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
