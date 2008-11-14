@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbYKNXA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbYKNXB3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbYKNXA6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 18:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYKNXAU
+	id S1756178AbYKNXB3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 18:01:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbYKNXAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 18:00:20 -0500
-Received: from smtp.polymtl.ca ([132.207.4.11]:52170 "EHLO smtp.polymtl.ca"
+	Fri, 14 Nov 2008 18:00:21 -0500
+Received: from smtp.polymtl.ca ([132.207.4.11]:52182 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751608AbYKNXAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751454AbYKNXAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 14 Nov 2008 18:00:17 -0500
-Message-Id: <20081114224949.113799966@polymtl.ca>
+Message-Id: <20081114224948.952135969@polymtl.ca>
 References: <20081114224733.364965865@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Fri, 14 Nov 2008 17:47:45 -0500
+Date: Fri, 14 Nov 2008 17:47:44 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: [patch 12/16] Tracepoint do not put arguments in name
-Content-Disposition: inline; filename=tracepoint-do-not-put-argument-list-in-name.patch
+Subject: [patch 11/16] Tracepoint Use Unregister Return Value
+Content-Disposition: inline; filename=tracepoint-use-unregister-return-value.patch
 X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Fri, 14 Nov 2008 23:00:02 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That's overkill, takes space. We have a global tracepoint registery in header
-files anyway.
+Unregistering a tracepoint can fail. Return the error value.
 
-Impact: cleanup.
+Impact: bugfix.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: 'Ingo Molnar' <mingo@elte.hu>
 CC: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
- include/linux/tracepoint.h |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ include/linux/tracepoint.h |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-Index: linux.trees.git/include/linux/tracepoint.h
+Index: linux-2.6-lttng/include/linux/tracepoint.h
 ===================================================================
---- linux.trees.git.orig/include/linux/tracepoint.h	2008-11-14 17:26:11.000000000 -0500
-+++ linux.trees.git/include/linux/tracepoint.h	2008-11-14 17:26:11.000000000 -0500
-@@ -60,7 +60,7 @@ struct tracepoint {
- 	{								\
- 		static const char __tpstrtab_##name[]			\
- 		__attribute__((section("__tracepoints_strings")))	\
--		= #name ":" #proto;					\
-+		= #name;						\
- 		static struct tracepoint __tracepoint_##name		\
- 		__attribute__((section("__tracepoints"), aligned(8))) =	\
- 		{ __tpstrtab_##name, 0, NULL };				\
-@@ -70,13 +70,11 @@ struct tracepoint {
+--- linux-2.6-lttng.orig/include/linux/tracepoint.h	2008-09-19 22:40:43.000000000 -0400
++++ linux-2.6-lttng/include/linux/tracepoint.h	2008-09-19 23:03:20.000000000 -0400
+@@ -73,9 +73,9 @@ struct tracepoint {
+ 		return tracepoint_probe_register(#name ":" #proto,	\
+ 			(void *)probe);					\
  	}								\
- 	static inline int register_trace_##name(void (*probe)(proto))	\
+-	static inline void unregister_trace_##name(void (*probe)(proto))\
++	static inline int unregister_trace_##name(void (*probe)(proto))	\
  	{								\
--		return tracepoint_probe_register(#name ":" #proto,	\
--			(void *)probe);					\
-+		return tracepoint_probe_register(#name, (void *)probe);	\
- 	}								\
- 	static inline int unregister_trace_##name(void (*probe)(proto))	\
- 	{								\
--		return tracepoint_probe_unregister(#name ":" #proto,	\
--			(void *)probe);					\
-+		return tracepoint_probe_unregister(#name, (void *)probe);\
+-		tracepoint_probe_unregister(#name ":" #proto,		\
++		return tracepoint_probe_unregister(#name ":" #proto,	\
+ 			(void *)probe);					\
  	}
  
- extern void tracepoint_update_probe_range(struct tracepoint *begin,
+@@ -92,8 +92,10 @@ extern void tracepoint_update_probe_rang
+ 	{								\
+ 		return -ENOSYS;						\
+ 	}								\
+-	static inline void unregister_trace_##name(void (*probe)(proto))\
+-	{ }
++	static inline int unregister_trace_##name(void (*probe)(proto))	\
++	{								\
++		return -ENOSYS;						\
++	}
+ 
+ static inline void tracepoint_update_probe_range(struct tracepoint *begin,
+ 	struct tracepoint *end)
 
 -- 
 Mathieu Desnoyers
