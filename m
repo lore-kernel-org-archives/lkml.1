@@ -1,59 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756181AbYKNAIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbYKNAIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756181AbYKNAIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYKNAHs
+	id S1756347AbYKNAIg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 19:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYKNAHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:07:48 -0500
-Received: from kroah.org ([198.145.64.141]:57768 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754534AbYKNAHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:07:44 -0500
-Date: Thu, 13 Nov 2008 16:07:25 -0800
-From: Greg KH <greg@kroah.com>
-To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, netdev@vger.kernel.org
-Subject: Re: [stable] build error with 2.6.27.6+reiser4+ehci-hub patch.
-	ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
-Message-ID: <20081114000725.GC19644@kroah.com>
-References: <200811140045.20166.volker.armin.hemmann@tu-clausthal.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200811140045.20166.volker.armin.hemmann@tu-clausthal.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 13 Nov 2008 19:07:46 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53038
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754209AbYKNAHm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 19:07:42 -0500
+Date: Thu, 13 Nov 2008 16:07:38 -0800 (PST)
+Message-Id: <20081113.160738.193690346.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: paulus@samba.org, mtk.manpages@gmail.com, subrata@linux.vnet.ibm.com,
+       linux-arch@vger.kernel.org, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-api@vger.kernel.org, linux-man@vger.kernel.org,
+       davidel@xmailserver.org, netdev@vger.kernel.org, roland@redhat.com,
+       oleg@tv-sign.ru, hch@lst.de, alan@redhat.com, jakub@redhat.com
+Subject: Re: [PATCH] reintroduce accept4
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081113145737.96898aaf.akpm@linux-foundation.org>
+References: <18716.43376.534965.688695@cargo.ozlabs.ibm.com>
+	<18716.43543.256621.825529@cargo.ozlabs.ibm.com>
+	<20081113145737.96898aaf.akpm@linux-foundation.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 12:45:19AM +0100, Volker Armin Hemmann wrote:
-> Hi,
-> with my old config from 2.6.27.5 (which has the same patches) I get this 
-> error:
-> make all modules_install install
-> <snip>
->   OBJCOPY arch/x86/boot/setup.bin
->   OBJCOPY arch/x86/boot/vmlinux.bin
->   HOSTCC  arch/x86/boot/tools/build
->   BUILD   arch/x86/boot/bzImage
-> Root device is (9, 1)
-> Setup is 11436 bytes (padded to 11776 bytes).
-> System is 2180 kB
-> CRC 54816509
-> Kernel: arch/x86/boot/bzImage is ready  (#1)
->   Building modules, stage 2.
->   MODPOST 136 modules
-> ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
-> make[1]: *** [__modpost] Fehler 1
-> make: *** [modules] Fehler 2
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 13 Nov 2008 14:57:37 -0800
 
-Francois, this is due to your commit
-38d501ca6eb1f05d238bef785e51ca71dbfe0115, in the release, which was a
-backport of ccdffb9a88b2907b159538d7bfd6256621db4f84.
+> Here's the latest version, for review-n-test enjoyment:
 
-Care to look into this?
+This adds the sparc syscall hookups.
 
-thanks,
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-greg k-h
+diff --git a/arch/sparc/include/asm/unistd_32.h b/arch/sparc/include/asm/unistd_32.h
+index 648643a..0d13d2a 100644
+--- a/arch/sparc/include/asm/unistd_32.h
++++ b/arch/sparc/include/asm/unistd_32.h
+@@ -338,8 +338,9 @@
+ #define __NR_dup3		320
+ #define __NR_pipe2		321
+ #define __NR_inotify_init1	322
++#define __NR_accept4		323
+ 
+-#define NR_SYSCALLS		323
++#define NR_SYSCALLS		324
+ 
+ /* Sparc 32-bit only has the "setresuid32", "getresuid32" variants,
+  * it never had the plain ones and there is no value to adding those
+diff --git a/arch/sparc/include/asm/unistd_64.h b/arch/sparc/include/asm/unistd_64.h
+index c5cc0e0..fa5d3c0 100644
+--- a/arch/sparc/include/asm/unistd_64.h
++++ b/arch/sparc/include/asm/unistd_64.h
+@@ -340,8 +340,9 @@
+ #define __NR_dup3		320
+ #define __NR_pipe2		321
+ #define __NR_inotify_init1	322
++#define __NR_accept4		323
+ 
+-#define NR_SYSCALLS		323
++#define NR_SYSCALLS		324
+ 
+ #ifdef __KERNEL__
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+diff --git a/arch/sparc/kernel/systbls.S b/arch/sparc/kernel/systbls.S
+index e1b9233..7d08075 100644
+--- a/arch/sparc/kernel/systbls.S
++++ b/arch/sparc/kernel/systbls.S
+@@ -81,4 +81,4 @@ sys_call_table:
+ /*305*/	.long sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
+ /*310*/	.long sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
+ /*315*/	.long sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
+-/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1
++/*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1, sys_accept4
+diff --git a/arch/sparc64/kernel/sys32.S b/arch/sparc64/kernel/sys32.S
+index ade18ba..f061c4d 100644
+--- a/arch/sparc64/kernel/sys32.S
++++ b/arch/sparc64/kernel/sys32.S
+@@ -150,7 +150,7 @@ sys32_mmap2:
+ sys32_socketcall:	/* %o0=call, %o1=args */
+ 	cmp		%o0, 1
+ 	bl,pn		%xcc, do_einval
+-	 cmp		%o0, 17
++	 cmp		%o0, 18
+ 	bg,pn		%xcc, do_einval
+ 	 sub		%o0, 1, %o0
+ 	sllx		%o0, 5, %o0
+@@ -319,6 +319,15 @@ do_sys_recvmsg: /* compat_sys_recvmsg(int, struct compat_msghdr *, unsigned int)
+ 	nop
+ 	nop
+ 	nop
++do_sys_accept4: /* sys_accept4(int, struct sockaddr *, int *, int) */
++63:	ldswa		[%o1 + 0x0] %asi, %o0
++	sethi		%hi(sys_accept4), %g1
++64:	lduwa		[%o1 + 0x8] %asi, %o2
++65:	ldswa		[%o1 + 0xc] %asi, %o3
++	jmpl		%g1 + %lo(sys_accept4), %g0
++66:	 lduwa		[%o1 + 0x4] %asi, %o1
++	nop
++	nop
+ 
+ 	.section	__ex_table,"a"
+ 	.align		4
+@@ -353,4 +362,6 @@ do_sys_recvmsg: /* compat_sys_recvmsg(int, struct compat_msghdr *, unsigned int)
+ 	.word		57b, __retl_efault, 58b, __retl_efault
+ 	.word		59b, __retl_efault, 60b, __retl_efault
+ 	.word		61b, __retl_efault, 62b, __retl_efault
++	.word		63b, __retl_efault, 64b, __retl_efault
++	.word		65b, __retl_efault, 66b, __retl_efault
+ 	.previous
+diff --git a/arch/sparc64/kernel/systbls.S b/arch/sparc64/kernel/systbls.S
+index b2fa4c1..9fc78cf 100644
+--- a/arch/sparc64/kernel/systbls.S
++++ b/arch/sparc64/kernel/systbls.S
+@@ -82,7 +82,7 @@ sys_call_table32:
+ 	.word compat_sys_set_mempolicy, compat_sys_kexec_load, compat_sys_move_pages, sys_getcpu, compat_sys_epoll_pwait
+ /*310*/	.word compat_sys_utimensat, compat_sys_signalfd, sys_timerfd_create, sys_eventfd, compat_sys_fallocate
+ 	.word compat_sys_timerfd_settime, compat_sys_timerfd_gettime, compat_sys_signalfd4, sys_eventfd2, sys_epoll_create1
+-/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
++/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_accept4
+ 
+ #endif /* CONFIG_COMPAT */
+ 
+@@ -156,4 +156,4 @@ sys_call_table:
+ 	.word sys_set_mempolicy, sys_kexec_load, sys_move_pages, sys_getcpu, sys_epoll_pwait
+ /*310*/	.word sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
+ 	.word sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
+-/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1
++/*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_accept4
