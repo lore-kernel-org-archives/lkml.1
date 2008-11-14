@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYKNTUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbYKNTUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380AbYKNTUl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:20:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYKNTUc
+	id S1756040AbYKNTUy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYKNTUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:20:32 -0500
-Received: from kroah.org ([198.145.64.141]:33770 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753165AbYKNTUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:20:31 -0500
-Date: Fri, 14 Nov 2008 11:15:45 -0800
-From: Greg KH <greg@kroah.com>
-To: "Gupta, Ajay Kumar" <ajay.gupta@ti.com>
-Cc: Greg KH <gregkh@suse.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-Message-ID: <20081114191545.GA24115@kroah.com>
-References: <20081113230259.GA3681@kroah.com> <19F8576C6E063C45BE387C64729E739403E5F2B47B@dbde02.ent.ti.com>
+	Fri, 14 Nov 2008 14:20:44 -0500
+Received: from mail.hauppauge.com ([167.206.143.4]:3619 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755496AbYKNTUn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 14:20:43 -0500
+X-Greylist: delayed 925 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Nov 2008 14:20:43 EST
+Message-ID: <491DCBDD.4000703@linuxtv.org>
+Date: Fri, 14 Nov 2008 14:05:01 -0500
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <19F8576C6E063C45BE387C64729E739403E5F2B47B@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH] dvb: usb vendor_ids/product_ids
+ are	__le16
+References: <1226686796.5483.33.camel@brick>
+In-Reply-To: <1226686796.5483.33.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 09:36:03AM +0530, Gupta, Ajay Kumar wrote:
-> Hi Greg,
-> 
-> There is a difference in the musb patch I submitted and the one which actually has been
-> forwarded to you by Felipe. This difference has introduced a bug.
-> 
-> The patch in you series is,
-> usb: musb: fix BULK request on different available endpoints
-> 
-> 
-> It was submitted by me at,
-> http://marc.info/?l=linux-usb&m=122337227617797&w=2
-> 
-> 
-> And the one which is forwarded to you by Felipe is at,
-> http://marc.info/?l=linux-usb&m=122528597316728&w=2
-> 
-> 
-> There is a difference in between above two as below.
-> Original: +	if (best_end < 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
-> Sent to you: +	if (best_end > 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
-> 
-> It should be [best_end < 0].
-> 
-> If it is possible then please correct this mismatch in your series.
+Harvey, et al:
 
-I'll wait to get a patch from Felipe for this.
+Harvey Harrison wrote:
+> Noticed by sparse:
+> drivers/media/dvb/dvb-usb/af9015.c:756:25: warning: restricted __le16 degrades to integer
+> drivers/media/dvb/dvb-usb/af9015.c:744:28: warning: restricted __le16 degrades to integer
+>
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  drivers/media/dvb/dvb-usb/af9015.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/media/dvb/dvb-usb/af9015.c b/drivers/media/dvb/dvb-usb/af9015.c
+> index 4b2af32..eb4495a 100644
+> --- a/drivers/media/dvb/dvb-usb/af9015.c
+> +++ b/drivers/media/dvb/dvb-usb/af9015.c
+> @@ -742,7 +742,7 @@ static int af9015_read_config(struct usb_device *udev)
+>  			}
+>  		} else {
+>  			switch (udev->descriptor.idVendor) {
+> -			case USB_VID_LEADTEK:
+> +			case cpu_to_le16(USB_VID_LEADTEK):
+>  				af9015_properties[i].rc_key_map =
+>  				  af9015_rc_keys_leadtek;
+>  				af9015_properties[i].rc_key_map_size =
+>   
 
-thanks,
 
-greg k-h
+Wouldn't it be nicer to just switch on 
+cpu_to_le16(udev->descriptor.idVendor) ?  This would be a 1-line change, 
+compile to a smaller footprint, and be easier to read.
+
+Personally, I prefer to try to avoid duplicating code in places where a 
+single operation may occur centrally.
+
+Regards,
+
+Mike
