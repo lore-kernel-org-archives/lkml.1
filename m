@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYKNTk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbYKNToj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbYKNTk7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYKNTkv
+	id S1754781AbYKNToj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYKNTob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:40:51 -0500
-Received: from h155.mvista.com ([63.81.120.155]:4162 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751259AbYKNTku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:40:50 -0500
-Message-ID: <491DD440.9000402@ru.mvista.com>
-Date: Fri, 14 Nov 2008 22:40:48 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-Cc: "Gupta, Ajay Kumar" <ajay.gupta@ti.com>, Greg KH <gregkh@suse.de>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-References: <20081113230259.GA3681@kroah.com> <19F8576C6E063C45BE387C64729E739403E5F2B47B@dbde02.ent.ti.com> <20081114191545.GA24115@kroah.com>
-In-Reply-To: <20081114191545.GA24115@kroah.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 14 Nov 2008 14:44:31 -0500
+Received: from mail-gx0-f11.google.com ([209.85.217.11]:43541 "EHLO
+	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbYKNToa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 14:44:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=KxvW38rAoXdN7PifVk9mRdkZfg5qYj3ghtUzJx76Hlq5356bkOEgFMyfoH1tXGJ2ox
+         PQXmx1r8TfwP4TyC1tAD9Ar5l/l2yWfv6JnDEU55nrbnMaQyqc23v78CMj8s+q/K3iTs
+         nCpr5TbSQBS5r/nEReUuKI+Nh6SpQOYpFhif4=
+Subject: Re: [v4l-dvb-maintainer] [PATCH] dvb: usb vendor_ids/product_ids
+ are __le16
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Devin Heitmueller <devin.heitmueller@gmail.com>
+Cc: Michael Krufky <mkrufky@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <412bdbff0811141125x34de747dm85b47f61b604219a@mail.gmail.com>
+References: <1226686796.5483.33.camel@brick> <491DCBDD.4000703@linuxtv.org>
+	 <1226689669.5483.36.camel@brick>
+	 <37219a840811141115g539ef85fo81136ebd479f016f@mail.gmail.com>
+	 <1226690438.5483.39.camel@brick>
+	 <412bdbff0811141125x34de747dm85b47f61b604219a@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 11:44:25 -0800
+Message-Id: <1226691865.5483.47.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, 2008-11-14 at 14:25 -0500, Devin Heitmueller wrote:
+> > The alternative is to define the vendor ids as little-endian in the headers
+> > then you don't need the endian swap in the switch or the case, but that would
+> > require looking at the other uses first....or gently encourage more people to run sparse ;-)
+> >
+> > Harvey
+> 
+> Harvey,
+> 
+> If I may offer my opinion, this is not remotely performance-critical
+> code.  That said, I would favor on the side of
+> maintainability/reliability in this case, and mkrufky's approach seems
+> to be better on both accounts.
 
-Greg KH wrote:
+Well, I can see your point, and I don't even know what the chances are of
+even finding this hardware on a big-endian machine are.  But I'd suggest
+that if you want to improve the maintainability of this code that someone
+in v4l-land start running sparse regularly and work on getting some of these
+_trivial_ parts annotated, then any new ones that get introduced will stick
+out like sore thumbs.
 
->>Hi Greg,
+But, not my driver, not my decision.  Someone else can implement Michael's
+suggestion if they want.
 
->>There is a difference in the musb patch I submitted and the one which actually has been
->>forwarded to you by Felipe. This difference has introduced a bug.
+Harvey
 
->>The patch in you series is,
->>usb: musb: fix BULK request on different available endpoints
 
->>It was submitted by me at,
->>http://marc.info/?l=linux-usb&m=122337227617797&w=2
-
->>And the one which is forwarded to you by Felipe is at,
->>http://marc.info/?l=linux-usb&m=122528597316728&w=2
-
->>There is a difference in between above two as below.
->>Original: +	if (best_end < 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
->>Sent to you: +	if (best_end > 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
-
->>It should be [best_end < 0].
-
->>If it is possible then please correct this mismatch in your series.
-
-> I'll wait to get a patch from Felipe for this.
-
-    I'm seeing it being to you sent at least a week ago -- look for "usb: 
-musb: fix bug in musb_schedule".
-
-> thanks,
-> greg k-h
-
-WBR, Sergei
