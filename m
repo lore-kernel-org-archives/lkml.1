@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbYKNLCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbYKNLMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbYKNLCj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 06:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYKNLC3
+	id S1752342AbYKNLMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 06:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYKNLME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 06:02:29 -0500
-Received: from styx.suse.cz ([82.119.242.94]:46435 "EHLO mail.suse.cz"
+	Fri, 14 Nov 2008 06:12:04 -0500
+Received: from styx.suse.cz ([82.119.242.94]:46719 "EHLO mail.suse.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751492AbYKNLC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 06:02:28 -0500
-Date: Fri, 14 Nov 2008 12:02:27 +0100 (CET)
+	id S1750942AbYKNLMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 06:12:03 -0500
+Date: Fri, 14 Nov 2008 12:12:01 +0100 (CET)
 From: Jiri Kosina <jkosina@suse.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Alan Stern <stern@rowland.harvard.edu>, Andi Kleen <andi@firstfloor.org>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1 v2] HID: don't grab devices with no input
-In-Reply-To: <1226614221-17118-1-git-send-email-jirislaby@gmail.com>
-Message-ID: <alpine.LNX.1.10.0811141201450.19853@jikos.suse.cz>
-References: <491CA495.7010007@gmail.com> <1226614221-17118-1-git-send-email-jirislaby@gmail.com>
+To: Robert Richter <robert.richter@amd.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       oprofile-list@lists.sf.net, Jiri Benc <jbenc@suse.cz>,
+       Vilem Marsik <vmarsik@suse.cz>, Eric Dumazet <dada1@cosmosbay.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: Oprofile [still] doesn't work on 2.6.28-rc4 on certain CPU
+In-Reply-To: <20081114100938.GA1664@erda.amd.com>
+Message-ID: <alpine.LNX.1.10.0811141208460.19853@jikos.suse.cz>
+References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz> <20081114100938.GA1664@erda.amd.com>
 User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,18 +27,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008, Jiri Slaby wrote:
+On Fri, 14 Nov 2008, Robert Richter wrote:
 
-> Some devices have no input interrupt endpoint. These won't be handled
-> by usbhid, but currently they are not refused and reside on hid bus.
-> Perform this checking earlier so that we refuse to control such
-> a device early enough (and not pass it to the hid bus at all).
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Could you at least test with v2.6.27? 
 
-As the patch is obviously correct(tm) :) I have queued it in my tree, but 
-Andi, please still report back whether it fixes the issue you are seeing.
+Oprofile in 2.6.27 doesn't work on this system, as far as I know.
 
-Thanks.
+> I could not reproduce it on the hardware I am using.
+
+Yes, it seems to be very system-specific. As I have said in my original 
+mail, the machine we are seeing this problem on is
+
+        vendor_id       : AuthenticAMD
+        cpu family      : 15
+        model           : 47
+        model name      : AMD Athlon(tm) 64 Processor 3000+
+        stepping        : 0
+
+but on the other hand on the following CPU, the oprofile works with 2.6.27 
+and 2.6.28-rc4 without any problems, NMIs are coming flawlessly
+
+        vendor_id       : AuthenticAMD
+        cpu family      : 15
+        model           : 4
+        model name      : AMD Athlon(tm) 64 Processor 3000+
+        stepping        : 8
+
 
 -- 
 Jiri Kosina
