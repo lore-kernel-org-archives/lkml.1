@@ -1,112 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752665AbYKNNFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbYKNNGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752665AbYKNNFw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 08:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbYKNNFk
+	id S1753456AbYKNNGz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 08:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYKNNGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 08:05:40 -0500
-Received: from lucidpixels.com ([75.144.35.66]:44390 "EHLO lucidpixels.com"
+	Fri, 14 Nov 2008 08:06:46 -0500
+Received: from systemlinux.org ([83.151.29.59]:40931 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbYKNNFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 08:05:39 -0500
-Date: Fri, 14 Nov 2008 08:05:38 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Andre Noll <maan@systemlinux.org>
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+	id S1750918AbYKNNGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 08:06:46 -0500
+X-Greylist: delayed 1984 seconds by postgrey-1.27 at vger.kernel.org; Fri, 14 Nov 2008 08:06:45 EST
+Date: Fri, 14 Nov 2008 13:19:42 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
 Subject: Re: typo in raid[456] kernel code/no change based on type?
-In-Reply-To: <20081114121942.GN17966@skl-net.de>
-Message-ID: <alpine.DEB.1.10.0811140743050.20662@p34.internal.lan>
-References: <alpine.DEB.1.10.0811121855470.10512@p34.internal.lan> <alpine.DEB.1.10.0811121858300.10512@p34.internal.lan> <20081114121942.GN17966@skl-net.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Message-ID: <20081114121942.GN17966@skl-net.de>
+References: <alpine.DEB.1.10.0811121855470.10512@p34.internal.lan> <alpine.DEB.1.10.0811121858300.10512@p34.internal.lan>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="kK1uqZGE6pgsGNyR"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811121858300.10512@p34.internal.lan>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--kK1uqZGE6pgsGNyR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 14 Nov 2008, Andre Noll wrote:
+On 18:58, Justin Piszcz wrote:
 
-> On 18:58, Justin Piszcz wrote:
->
-> Please try the patch below which fixes this inconsistency.
->
-> Andre
->
-> commit 6c2f32376c59f08a893cd4736d92f000618dd88f
-> Author: Andre Noll <maan@systemlinux.org>
-> Date:   Fri Nov 14 13:31:56 2008 +0100
->
->    Improve raid printout for raid levels 4 and 6.
->
->    As noted by Justin Piszcz we currently log a "RAID5 conf printout:" message
->    also for raid4 and raid6 arrays. This trivial patch prints the correct raid
->    level, adds KERN_INFO to all printk's in print_raid5_conf() and fixes a minor
->    coding style issue.
->
->    Signed-off-by: Andre Noll <maan@systemlinux.org>
+> >md3 : active raid6 sdj1[10] sdc1[4] sdl1[8] sdk1[1] sdi1[9] sdh1[7]=20
 
-[ patch ]
+[snip]
 
-# patch -p1 < /home/jpiszcz/patch 
-patching file drivers/md/raid5.c
-Hunk #1 succeeded at 4302 (offset -41 lines).
+> >[ 6982.273208] RAID5 conf printout:
+> >              ^^^^^
 
-Ok, fixed some of them but not all:
+Please try the patch below which fixes this inconsistency.
 
-before (vanilla 2.6.27.5/6):
+Andre
 
-[   21.404744] raid5: allocated 10568kB for md3
-[   21.406935] raid5: raid level 6 set md3 active with 8 out of 10 devices, algo
-rithm 2
-[   21.409239] RAID5 conf printout:
-                ^^^^^
-[   21.411544]  --- rd:10 wd:8
-[   21.413812]  disk 0, o:1, dev:sdd1
-[   21.416068]  disk 1, o:1, dev:sdk1
-[   21.418345]  disk 2, o:1, dev:sde1
-[   21.420621]  disk 3, o:1, dev:sdf1
-[   21.422836]  disk 6, o:1, dev:sdg1
-[   21.424941]  disk 7, o:1, dev:sdh1
-[   21.426926]  disk 8, o:1, dev:sdl1
-[   21.428824]  disk 9, o:1, dev:sdi1
+commit 6c2f32376c59f08a893cd4736d92f000618dd88f
+Author: Andre Noll <maan@systemlinux.org>
+Date:   Fri Nov 14 13:31:56 2008 +0100
 
-after: (with your patch):
+    Improve raid printout for raid levels 4 and 6.
+   =20
+    As noted by Justin Piszcz we currently log a "RAID5 conf printout:" mes=
+sage
+    also for raid4 and raid6 arrays. This trivial patch prints the correct =
+raid
+    level, adds KERN_INFO to all printk's in print_raid5_conf() and fixes a=
+ minor
+    coding style issue.
+   =20
+    Signed-off-by: Andre Noll <maan@systemlinux.org>
 
-[   21.430884] raid5: allocated 10568kB for md3
-[   21.433023] raid5: raid level 6 set md3 active with 10 out of 10 devices, algorithm 2
-[   21.435236] RAID6 printout:
-                ^^^^^ patch fixed this one, but it still says raid5 in other
-                      parts of the code
-[   21.437316]  --- rd:10 wd:10
-[   21.439291]  disk 0, o:1, dev:sdd1
-[   21.441204]  disk 1, o:1, dev:sdk1
-[   21.443013]  disk 2, o:1, dev:sde1
-[   21.444749]  disk 3, o:1, dev:sdf1
-[   21.446383]  disk 4, o:1, dev:sdc1
-[   21.447937]  disk 5, o:1, dev:sdj1
-[   21.449444]  disk 6, o:1, dev:sdg1
-[   21.450873]  disk 7, o:1, dev:sdh1
-[   21.452276]  disk 8, o:1, dev:sdl1
-[   21.453618]  disk 9, o:1, dev:sdi1
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index a36a743..7920b26 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -4343,24 +4343,24 @@ static void status(struct seq_file *seq, mddev_t *m=
+ddev)
+ #endif
+ }
+=20
+-static void print_raid5_conf (raid5_conf_t *conf)
++static void print_raid5_conf(raid5_conf_t *conf)
+ {
+ 	int i;
+ 	struct disk_info *tmp;
+=20
+-	printk("RAID5 conf printout:\n");
+ 	if (!conf) {
+-		printk("(conf=3D=3DNULL)\n");
++		printk(KERN_INFO "RAID 4/5/6: (conf=3D=3DNULL)\n");
+ 		return;
+ 	}
+-	printk(" --- rd:%d wd:%d\n", conf->raid_disks,
+-		 conf->raid_disks - conf->mddev->degraded);
++	printk(KERN_INFO "RAID%d printout:\n", conf->level);
++	printk(KERN_INFO " --- rd:%d wd:%d\n", conf->raid_disks,
++		conf->raid_disks - conf->mddev->degraded);
+=20
+ 	for (i =3D 0; i < conf->raid_disks; i++) {
+ 		char b[BDEVNAME_SIZE];
+ 		tmp =3D conf->disks + i;
+ 		if (tmp->rdev)
+-		printk(" disk %d, o:%d, dev:%s\n",
++		printk(KERN_INFO " disk %d, o:%d, dev:%s\n",
+ 			i, !test_bit(Faulty, &tmp->rdev->flags),
+ 			bdevname(tmp->rdev->bdev,b));
+ 	}
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
-Here is the current output that still contains 'raid5':
+--kK1uqZGE6pgsGNyR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-$ dmesg | grep -i raid5
-[   19.881548] md: raid5 personality registered for level 5
-[   21.408354] raid5: device sdl1 operational as raid disk 8
-[   21.410583] raid5: device sdk1 operational as raid disk 1
-[   21.412789] raid5: device sdj1 operational as raid disk 5
-[   21.414994] raid5: device sdi1 operational as raid disk 9
-[   21.417217] raid5: device sdh1 operational as raid disk 7
-[   21.419420] raid5: device sdg1 operational as raid disk 6
-[   21.421622] raid5: device sdf1 operational as raid disk 3
-[   21.423810] raid5: device sde1 operational as raid disk 2
-[   21.425970] raid5: device sdd1 operational as raid disk 0
-[   21.428090] raid5: device sdc1 operational as raid disk 4
-[   21.430884] raid5: allocated 10568kB for md3
-[   21.433023] raid5: raid level 6 set md3 active with 10 out of 10 devices, algorithm 2
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
 
+iD8DBQFJHWzdWto1QDEAkw8RAg1XAJ9Hzh4T0Wj8Uko482nXJib0Dx6AqQCfXveI
+yZrKbZqc2td6tYVYpCAuGBc=
+=B/SQ
+-----END PGP SIGNATURE-----
 
-Justin.
+--kK1uqZGE6pgsGNyR--
