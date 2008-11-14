@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbYKNAPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYKNARd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbYKNAPs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYKNAPb
+	id S1755347AbYKNARd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 19:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYKNARZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:15:31 -0500
-Received: from h155.mvista.com ([63.81.120.155]:37065 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754647AbYKNAPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:15:30 -0500
-Message-ID: <491CC31C.7090606@ru.mvista.com>
-Date: Fri, 14 Nov 2008 03:15:24 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 13 Nov 2008 19:17:25 -0500
+Received: from tundra.namei.org ([65.99.196.166]:53498 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753605AbYKNARY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 19:17:24 -0500
+Date: Fri, 14 Nov 2008 11:16:30 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Eric Paris <eparis@redhat.com>
+cc: linux-kernel@vger.kernel.org, serue@us.ibm.com, morgan@kernel.org
+Subject: Re: [PATCH] capabilities: define get_vfs_caps_from_disk when file
+ caps are not enabled
+In-Reply-To: <1226619445.3353.71.camel@localhost.localdomain>
+Message-ID: <alpine.LRH.1.10.0811141115350.25835@tundra.namei.org>
+References: <1226619445.3353.71.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>
-Subject: Re: [PATCH] New IDE/block driver for OCTEON SOC Compact Flash interface.
-References: <491C7F28.2070507@caviumnetworks.com> <491CC0B6.8020400@ru.mvista.com>
-In-Reply-To: <491CC0B6.8020400@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+On Thu, 13 Nov 2008, Eric Paris wrote:
 
->> As part of our efforts to get the Cavium OCTEON processor support
->> merged (see: http://marc.info/?l=linux-mips&m=122600487218824), we
->> have this CF driver for your consideration.
->>
->> Most OCTEON variants have *no* DMA or interrupt support on the CF
->> interface so a simple bit-banging approach is taken.  Although if DMA is
->> available, we do take advantage of it.
->>
->> The register definitions are part of the chip support patch set
->> mentioned above, and are not included here.
->>
->> At this point I would like to get feedback as to whether this is a
->> good approach for the CF driver, or perhaps generate ideas about other
->> possible approaches.
->
->   It's totally unacceptable for drivers/ide/ as this is 
-> self-containeed driver no using IDE core for anything, so this can 
-> only fit well to drivers/block/.
+> When CONFIG_SECURITY_FILE_CAPABILITIES is not set the audit system may
+> try to call into the capabilities function vfs_cap_from_file.  This
+> patch defines that function so kernels can build and work.
+> 
+> Signed-off-by: Eric Paris <eparis@redhat.com>
+> 
+> ---
+> 
+>  security/commoncap.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index 0b88160..574a70b 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -337,6 +337,12 @@ int cap_inode_killpriv(struct dentry *dentry)
+>  	return 0;
+>  }
+>  
+> +int get_vfs_caps_from_disk(const struct dentry *dentry, struct cpu_vfs_cap_data *cpu_caps)
+> +{
+> +	memset(cpu_caps, 0, sizeof(struct cpu_vfs_cap_data));
+> +	return -ENODATA;
+> +}
+> +
 
-   I probably need to clarify that it will hardly be accepted into 
-drivers/block/ as well, being a mere CF driver.
-
-MBR, Sergei
+As the function is returning an error, the caller should not depend on the 
+state of any modifiable arguments, so I suggest removing the memset.
 
 
+>  static inline int get_file_caps(struct linux_binprm *bprm)
+>  {
+>  	bprm_clear_caps(bprm);
+> 
+> 
+
+-- 
+James Morris
+<jmorris@namei.org>
