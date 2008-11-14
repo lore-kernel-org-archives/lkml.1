@@ -1,98 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbYKNQH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753236AbYKNQQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbYKNQH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 11:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYKNQHT
+	id S1753236AbYKNQQo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 11:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYKNQQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 11:07:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38680 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbYKNQHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 11:07:18 -0500
-Date: Fri, 14 Nov 2008 11:05:25 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Divyesh Shah <dpshah@google.com>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it,
-       Nauman Rafique <nauman@google.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081114160525.GE24624@redhat.com>
-References: <20081106153022.215696930@redhat.com> <20081113.180558.519459540419535699.ryov@valinux.co.jp> <20081113155834.GE7542@redhat.com> <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com> <20081113214642.GG7542@redhat.com> <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>
+	Fri, 14 Nov 2008 11:16:35 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:38355 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbYKNQQe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 11:16:34 -0500
+Date: Fri, 14 Nov 2008 16:16:31 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: Add option to passively listen for PCIE hotplug events
+Message-ID: <20081114161631.GA28234@srcf.ucam.org>
+References: <20081104124706.GB19401@srcf.ucam.org> <20081104133214.GA20427@srcf.ucam.org> <49105BA6.9090403@tuffmail.co.uk> <20081104143332.GA21689@srcf.ucam.org> <491063B3.4080808@tuffmail.co.uk> <20081104151128.GA22544@srcf.ucam.org> <49106DD7.9010307@tuffmail.co.uk> <20081104155722.GA23314@srcf.ucam.org> <491076BD.1030704@tuffmail.co.uk> <49170B16.4010909@tuffmail.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49170B16.4010909@tuffmail.co.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 02:57:29PM -0800, Divyesh Shah wrote:
+On Sun, Nov 09, 2008 at 04:08:54PM +0000, Alan Jenkins wrote:
 
-[..]
-> > > > Ryo, do you still want to stick to two level scheduling? Given the problem
-> > > > of it breaking down underlying scheduler's assumptions, probably it makes
-> > > > more sense to the IO control at each individual IO scheduler.
-> > >
-> > > Vivek,
-> > >      I agree with you that 2 layer scheduler *might* invalidate some
-> > > IO scheduler assumptions (though some testing might help here to
-> > > confirm that). However, one big concern I have with proportional
-> > > division at the IO scheduler level is that there is no means of doing
-> > > admission control at the request queue for the device. What we need is
-> > > request queue partitioning per cgroup.
-> > >     Consider that I want to divide my disk's bandwidth among 3
-> > > cgroups(A, B and C) equally. But say some tasks in the cgroup A flood
-> > > the disk with IO requests and completely use up all of the requests in
-> > > the rq resulting in the following IOs to be blocked on a slot getting
-> > > empty in the rq thus affecting their overall latency. One might argue
-> > > that over the long term though we'll get equal bandwidth division
-> > > between these cgroups. But now consider that cgroup A has tasks that
-> > > always storm the disk with large number of IOs which can be a problem
-> > > for other cgroups.
-> > >     This actually becomes an even larger problem when we want to
-> > > support high priority requests as they may get blocked behind other
-> > > lower priority requests which have used up all the available requests
-> > > in the rq. With request queue division we can achieve this easily by
-> > > having tasks requiring high priority IO belong to a different cgroup.
-> > > dm-ioband and any other 2-level scheduler can do this easily.
-> > >
-> >
-> > Hi Divyesh,
-> >
-> > I understand that request descriptors can be a bottleneck here. But that
-> > should be an issue even today with CFQ where a low priority process
-> > consume lots of request descriptors and prevent higher priority process
-> > from submitting the request.
-> 
-> Yes that is true and that is one of the main reasons why I would lean
-> towards 2-level scheduler coz you get request queue division as well.
-> 
->  I think you already said it and I just
-> > reiterated it.
-> >
-> > I think in that case we need to do something about request descriptor
-> > allocation instead of relying on 2nd level of IO scheduler.
-> > At this point I am not sure what to do. May be we can take feedback from the
-> > respective queue (like cfqq) of submitting application and if it is already
-> > backlogged beyond a certain limit, then we can put that application to sleep
-> > and stop it from consuming excessive amount of request descriptors
-> > (despite the fact that we have free request descriptors).
-> 
-> This should be done per-cgroup rather than per-process.
-> 
+> Bump.  In case you're still slightly confused, I've found out why.  It 
+> skips the slot power check because POWER_CTRL(ctrl) == 0.  (See "Power 
+> Controller" in the debug output below).
 
-Yep, per cgroup limit will make more sense. get_request() already calls
-elv_may_queue() to get a feedback from IO scheduler. May be here IO
-scheduler can make a decision how many request descriptors are already
-allocated to this cgroup. And if the queue is congested, then IO scheduler
-can deny the fresh request allocation.
+Ok. I'm beginning to think that this approach is misguided. The Aspire 
+One should be handled by the acpiphp changes I've posted. The Eee makes 
+significantly less sense to me. It runs XP, so it can't depend on native 
+PCIe hotplugging. It sends ACPI notifications when the kill state 
+changes but there's no topological relationship between the device that 
+receives them and the device that needs to be hotplugged.
 
-Thanks
-Vivek
+What I'm actually beginning to suspect is that this should be handled by 
+eee-laptop. Can you give the following patch a go, without any pciehp 
+code loaded?
+
+diff --git a/drivers/misc/eeepc-laptop.c b/drivers/misc/eeepc-laptop.c
+index 9ef98b2..6317ee6 100644
+--- a/drivers/misc/eeepc-laptop.c
++++ b/drivers/misc/eeepc-laptop.c
+@@ -30,6 +30,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/input.h>
+ #include <linux/rfkill.h>
++#include <linux/pci.h>
+ 
+ #define EEEPC_LAPTOP_VERSION	"0.1"
+ 
+@@ -123,6 +124,7 @@ static const char *cm_setv[] = {
+ struct eeepc_hotk {
+ 	struct acpi_device *device;	/* the device we are in */
+ 	acpi_handle handle;		/* the handle of the hotk device */
++	acpi_handle rfkill_handle;	/* the handle of the rfkill notifier */
+ 	u32 cm_supported;		/* the control methods supported
+ 					   by this BIOS */
+ 	uint init_flag;			/* Init flags */
+@@ -513,6 +515,35 @@ static void notify_brn(void)
+ 	bd->props.brightness = read_brightness(bd);
+ }
+ 
++static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
++{
++	struct pci_dev *dev;
++	struct pci_bus *bus = pci_find_bus(0, 1);
++
++	if (!bus) {
++		printk(KERN_WARNING "Unable to find wifi bus!\n");
++		return;
++	}
++
++	if (get_acpi(CM_ASL_WLAN) == 1) {
++		printk("Adding wifi\n");
++	
++		dev = pci_scan_single_device(bus, 0);
++		if (dev) {
++			printk("Found new wifi\n");
++			if (pci_bus_add_device(dev))
++				printk(KERN_WARNING "Unable to add wifi\n");
++		}
++	} else {
++		printk("Removing wifi\n");
++		dev = pci_get_slot(bus, 0);
++		if (dev) {
++			pci_remove_bus_device(dev);
++			pci_dev_put(dev);
++		}
++	}
++}
++
+ static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+ {
+ 	static struct key_entry *key;
+@@ -604,6 +635,18 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 		rfkill_register(ehotk->eeepc_bluetooth_rfkill);
+ 	}
+ 
++	status = acpi_get_handle(NULL, "\\_SB.PCI0.P0P7", ehotk->rfkill_handle);
++
++	if (ACPI_FAILURE(status)) {
++		printk(KERN_WARNING "Unable to find rfkill port handle\n");
++		goto end;
++	}
++
++	status = acpi_install_notify_handler(ehotk->rfkill_handle,
++					     ACPI_SYSTEM_NOTIFY,
++					     eeepc_rfkill_notify, NULL);
++	if (ACPI_FAILURE(status))
++		printk(KERN_WARNING "Unable to register rfkill notifier\n");
+  end:
+ 	if (result) {
+ 		kfree(ehotk);
+@@ -622,6 +665,10 @@ static int eeepc_hotk_remove(struct acpi_device *device, int type)
+ 					    eeepc_hotk_notify);
+ 	if (ACPI_FAILURE(status))
+ 		printk(EEEPC_ERR "Error removing notify handler\n");
++	status = acpi_remove_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
++					    eeepc_rfkill_notify);
++	if (ACPI_FAILURE(status))
++		printk(EEEPC_ERR "Error removing rfkill notify handler\n");
+ 	kfree(ehotk);
+ 	return 0;
+ }
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
