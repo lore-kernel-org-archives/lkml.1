@@ -1,47 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbYKNPw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492AbYKNP5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbYKNPw2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 10:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYKNPwV
+	id S1751492AbYKNP5j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 10:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNP5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 10:52:21 -0500
-Received: from swm.pp.se ([212.247.200.143]:51922 "EHLO uplift.swm.pp.se"
+	Fri, 14 Nov 2008 10:57:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50826 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbYKNPwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 10:52:20 -0500
-Date: Fri, 14 Nov 2008 16:52:19 +0100 (CET)
-From: Mikael Abrahamsson <swmike@swm.pp.se>
-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andres Freund <andres@anarazel.de>
-Subject: Re: Current suspend issues on Lenovo X200
-In-Reply-To: <20081114151522.GD4877@denkbrett.schottelius.org>
-Message-ID: <alpine.DEB.1.10.0811141642120.10993@uplift.swm.pp.se>
-References: <20081023204326.GB4175@denkbrett.schottelius.org> <200810241123.17883.jbarnes@virtuousgeek.org> <20081025145329.GB4273@denkbrett.schottelius.org> <200811121024.44502.jbarnes@virtuousgeek.org> <20081114151522.GD4877@denkbrett.schottelius.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-Organization: People's Front Against WWW
+	id S1751176AbYKNP5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 10:57:30 -0500
+Date: Fri, 14 Nov 2008 17:58:09 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Daniel Hokka Zakrisson <daniel@hozac.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 3/3] Set si_pid to 0 for signals from ancestor
+	namespace
+Message-ID: <20081114165809.GB7738@redhat.com>
+References: <20081112064139.GA27806@us.ibm.com> <20081112064819.GC27806@us.ibm.com> <20081112163339.GD13269@redhat.com> <m1d4h0payv.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d4h0payv.fsf@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Nico -telmich- Schottelius wrote:
+On 11/12, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> writes:
+>
+> > On 11/11, Sukadev Bhattiprolu wrote:
+> >>
+> >> +static void set_sigqueue_pid(struct sigqueue *q, struct task_struct *t,
+> >> +                           struct pid *sender)
+> >> +{
+> >> +	struct pid_namespace *ns;
+> >> +
+> >> +	/* Set si_pid to the pid number of sender in the pid namespace of
+> >> +	 * our destination task for all siginfo types that support it.
+> >> +	 */
+> >> +	switch(q->info.si_code & __SI_MASK) {
+> >> +		/* siginfo without si_pid */
+> >> +		case __SI_TIMER:
+> >> +		case __SI_POLL:
+> >> +		case __SI_FAULT:
+> >> +			break;
+> >> +			/* siginfo with si_pid */
+> >> +		case __SI_KILL:
+> >> +		case __SI_CHLD:
+> >> +		case __SI_RT:
+> >> +		case __SI_MESGQ:
+> >> +		default:
+> >> +			/* si_pid for SI_KERNEL is always 0 */
+> >> +			if (q->info.si_code == SI_KERNEL || in_interrupt())
+> >> +				break;
+> >> +			/* Is current not the sending task? */
+> >> +			if (!sender)
+> >> +				sender = task_tgid(current);
+> >> +			ns = task_active_pid_ns(t);
+> >> +			q->info.si_pid = pid_nr_ns(sender, ns);
+> >> +			break;
+> >> +	}
+> >> +}
+> >
+> > Why, why? Just: if from parent ns - clear .si_pid. No?
+>
+> We need the switch to know if we are a member of a union that supports
+> si_pid.
 
-> Yep, sorry, opened a new thread. Issue got better (console works without 
-> s3_bios), but xorg still reboots the system. I'll try the referenced 
-> workaround at 
-> http://ubuntuforums.org/showpost.php?p=6105510&postcount=12
+Please look at http://marc.info/?l=linux-kernel&m=122634217518183
 
-This workaround has worked 99% for me since I started using it over a 
-week ago (once has it happened that I just got the "black X11 and pointer" 
-which required me to power cycle to fix).
+If SIG_FROM_USER is set, we know that .si_pid is "valid".
 
-Only issue has been that approximately 1 out of 20 wakeups, my wifi won't 
-come on after wakeup (LED doesn't even come on). If I sleep it and then 
-wake it up again, it's worked properly.
+Yes, yes, yes. sys_rt_sigqueueinfo() is a problem, but in that
+case we can't trust .si_code anyway.
 
-I'm using the Ubuntu 8.10 latest kernel 2.7.27-7-generic.
+> The in_interrupt thing is there simply because current is not
+> useable from an interrrupt context, and there are some
+> signals that get sent from an interrupt context.
 
--- 
-Mikael Abrahamsson    email: swmike@swm.pp.se
+Yes sure. But I don't think this check is enough, see other
+emails. And this check is not needed once we have SIG_FROM_USER.
+
+> Oh.  As for the chunk that is:
+> ns = task_active_pid_ns(t)
+> q->info.si_pid = pid_nr_ns(sender, ns);
+>
+> If we are sending from a child to a parent namespace.
+
+The notify_parent() case is fine, afaics (again I assume the "patch"
+above which sets SIG_FROM_USER).
+
+> The name of the
+> child changes.  There is some place F_SETSIG? sigfd?  where we have
+> something that resembles the full general case of processes being able
+> to send a signal to any other process.
+
+Yes, this needs attention too.
+
+Oleg.
+
