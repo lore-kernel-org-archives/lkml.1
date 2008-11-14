@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbYKNTio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbYKNTk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391AbYKNTio (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:38:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbYKNTig
+	id S1754884AbYKNTk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYKNTkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:38:36 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57499 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbYKNTif (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:38:35 -0500
-Date: Fri, 14 Nov 2008 19:38:35 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_OPTIMIZE_INLINING fun
-In-Reply-To: <Pine.LNX.4.64.0811141244060.29394@quilx.com>
-Message-ID: <Pine.LNX.4.64.0811141923030.10125@blonde.site>
-References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
- <Pine.LNX.4.64.0811141244060.29394@quilx.com>
+	Fri, 14 Nov 2008 14:40:51 -0500
+Received: from h155.mvista.com ([63.81.120.155]:4162 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751259AbYKNTku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 14:40:50 -0500
+Message-ID: <491DD440.9000402@ru.mvista.com>
+Date: Fri, 14 Nov 2008 22:40:48 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>
+Cc: "Gupta, Ajay Kumar" <ajay.gupta@ti.com>, Greg KH <gregkh@suse.de>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: [GIT PATCH] USB patches for 2.6-git
+References: <20081113230259.GA3681@kroah.com> <19F8576C6E063C45BE387C64729E739403E5F2B47B@dbde02.ent.ti.com> <20081114191545.GA24115@kroah.com>
+In-Reply-To: <20081114191545.GA24115@kroah.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Christoph Lameter wrote:
-> On Fri, 14 Nov 2008, Hugh Dickins wrote:
-> > (I was intending to downgrade these BUG_ONs to VM_BUG_ONs anyway, but
-> > this example makes that seem highly desirable):
-> >
-> > void __delete_from_swap_cache(struct page *page)
-> > {
-> > 	BUG_ON(!PageLocked(page));
-> > 	BUG_ON(!PageSwapCache(page));
-> > 	BUG_ON(PageWriteback(page));
-> > 	BUG_ON(PagePrivate(page));
-> 
-> Maybe checking all the conditionals in one BUG_ON is not such a bad idea
-> after all? 4 useless branches in a hotpath?
+Hello.
 
-That is usually frowned on, since on those rare occasions you hit
-the BUG_ON, you're left wondering which of the four cases it hit.
-(I suppose it might show up in the stack trace or registers.)
+Greg KH wrote:
 
-What I was intending anyway, quite independently of the INLINING
-issue, was changing those and some others to VM_BUG_ONs, which are
-intended really for VM testers rather than for distros to turn on.
-(Though perhaps Nick has shifted his position on that.)
+>>Hi Greg,
 
-And the last of them, the PagePrivate one, I was just going to
-remove along with quite a few other BUG_ON(PagePrivate)s: they were
-interesting at the time we started storing swpentry in page->private,
-without setting PagePrivate, when before page->private had always(?)
-contained a buffer pointer with PagePrivate set; but of no interest
-nowadays, I'd say.
+>>There is a difference in the musb patch I submitted and the one which actually has been
+>>forwarded to you by Felipe. This difference has introduced a bug.
 
-> > I do wonder whether there's some tweak we could make to page-flags.h
-> > which would stop this nonsense.  Change the inline functions back to
-> > macros?  I suspect that by itself wouldn't work, and my quick attempt
-> > to try it failed abysmally to compile, I've not the cpp foo needed.
-> 
-> I think we want to get away from macros as much as possible.
+>>The patch in you series is,
+>>usb: musb: fix BULK request on different available endpoints
 
-That is indeed the orthodoxy.  I've never been so sold on it as most
-(there are cases when inlines give superior typechecking, but often
-the use of the macro will catch wrong types anyway).  But I suspect
-it's irrelevant, that changing those functions to macros would not
-actually have any effect on the problem - that's what we've often
-been assured, anyway, that the compiler nowadays does inlines as
-efficiently as the preprocessor does macros.  I do wonder though.
+>>It was submitted by me at,
+>>http://marc.info/?l=linux-usb&m=122337227617797&w=2
 
-Hugh
+>>And the one which is forwarded to you by Felipe is at,
+>>http://marc.info/?l=linux-usb&m=122528597316728&w=2
+
+>>There is a difference in between above two as below.
+>>Original: +	if (best_end < 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
+>>Sent to you: +	if (best_end > 0 && qh->type == USB_ENDPOINT_XFER_BULK) {
+
+>>It should be [best_end < 0].
+
+>>If it is possible then please correct this mismatch in your series.
+
+> I'll wait to get a patch from Felipe for this.
+
+    I'm seeing it being to you sent at least a week ago -- look for "usb: 
+musb: fix bug in musb_schedule".
+
+> thanks,
+> greg k-h
+
+WBR, Sergei
