@@ -1,186 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYKNVHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbYKNVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYKNVHU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYKNVHH
+	id S1754749AbYKNVIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbYKNVIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:07:07 -0500
-Received: from server.drzeus.cx ([85.8.24.28]:47420 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751416AbYKNVHF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:07:05 -0500
-Date: Fri, 14 Nov 2008 22:06:58 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-Cc: linux-kernel@vger.kernel.org, Alex Dubov <oakad@yahoo.com>
-Subject: Re: RFC: Driver for CB710/720 memory card reader (MMC part) - v3
-Message-ID: <20081114220658.38f0645c@mjolnir.drzeus.cx>
-In-Reply-To: <20081029141146.GA17741@rere.qmqm.pl>
-References: <20080907215228.GA19193@rere.qmqm.pl>
-	<20080909091800.37eccc0f@mjolnir.drzeus.cx>
-	<20080909090613.GA22158@rere.qmqm.pl>
-	<20080911201307.GA31730@rere.qmqm.pl>
-	<20080912234302.GA19230@rere.qmqm.pl>
-	<20080920130006.69d50cbb@mjolnir.drzeus.cx>
-	<20080925062924.GA32105@rere.qmqm.pl>
-	<20081004215122.0626cd7b@mjolnir.drzeus.cx>
-	<20081029141146.GA17741@rere.qmqm.pl>
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
+	Fri, 14 Nov 2008 16:08:10 -0500
+Received: from 1wt.eu ([62.212.114.60]:1199 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751333AbYKNVIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:08:09 -0500
+Date: Fri, 14 Nov 2008 22:07:59 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Olaf van der Spek <olafvdspek@gmail.com>
+Cc: David Miller <davem@davemloft.net>, jrm8005@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
+Message-ID: <20081114210759.GX24654@1wt.eu>
+References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com> <3aaafc130811131619w3ba48a86u6c6e2af35f149bf1@mail.gmail.com> <b2cc26e40811140051n4e821fddsc5504eedcccc9cdc@mail.gmail.com> <20081114.005635.131100777.davem@davemloft.net> <b2cc26e40811140109jfc6b0f3tf33a92afbff33e46@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b2cc26e40811140109jfc6b0f3tf33a92afbff33e46@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Oct 2008 15:11:47 +0100
-Michał Mirosław <mirq-linux@rere.qmqm.pl> wrote:
-
-> Here is the driver for CB710 SD/MMC reader updated to recently released
-> kernel version 2.6.27. The code is divided into PCI device driver
-> (wrapped that registers three platform devices) and MMC reader driver.
-> This idea was taken from TIFM driver.
+On Fri, Nov 14, 2008 at 10:09:25AM +0100, Olaf van der Spek wrote:
+> On Fri, Nov 14, 2008 at 9:56 AM, David Miller <davem@davemloft.net> wrote:
+> >> Why would you use windowing, ACKs, flow control and encapsulation on localhost?
+> >
+> > So that you could firewall, shape, redirect, and make other
+> > modifications to the traffic, as well as see it in tcpdumps.  That's
+> > the power of Linux, and yes people do this stuff and yes people do
+> > want these features to work over loopback.
+> >
+> >> I expected the kernel to copy data directly from user-space of the
+> >> sending process to a kernel buffer of the receiving process, much like
+> >> UNIX sockets.
+> >
+> > Then all of the above features and debugging facilities go away.
 > 
-> Changes from v2:
->  - return EINVAL for unsupported data transfer sizes
->  - use sg_mapping_iter for PIO from/to scatterlist
->  - add slot release function and prevent kobject leak on device registration's
->    error path
+> So instead the recommendation is for all apps to support both TCP and
+> Unix sockets?
+> If you then use Unix sockets, you still lose all of those facilities
+> and as a bonus, your apps are more complex.
 > 
-> If this code looks reasonably good, then I'll post patches against the
-> real kernel tree. The file distribution plan is:
-> 
+> I'd prefer a switch that could be enabled to use such a shortcut for TCP.
+> Firewalls should still work mostly (on connect), redirect would still work.
 
-It looks more or less good to go. I have some small notes, and you
-probably need to poke some scatterlist folks to okay those changes
-(should probably be a separate patch).
+I'm already wondering what problems you encounter with TCP performance
+on the loopback. I'm used to stress-test network proxies on the loopback
+for quick tests when I don't want to boot 3 machines, and seeing that it's
+easy to connect/accept 100k sessions/s and forward about 20-30 Gbps between
+two processes on consumer-grade machines, I'm really doubting that your
+applications needs that much out of your database.
 
-> +/* slot port accessors - in case it turns out inX() is all that is needed */
-> +#define CB710_PORT_ACCESSORS(t) \
-> +static inline void cb710_write_port_##t(struct cb710_slot *slot,	\
-> +	unsigned port, u##t value)					\
-> +{									\
-> +	iowrite##t(value, slot->iobase + port);				\
-> +}									\
-> +									\
-> +static inline u##t cb710_read_port_##t(struct cb710_slot *slot,		\
-> +	unsigned port)							\
-> +{									\
-> +	return ioread##t(slot->iobase + port);				\
-> +}									\
-> +									\
-> +static inline void cb710_modify_port_##t(struct cb710_slot *slot,	\
-> +	unsigned port, u##t set, u##t clear)				\
-> +{									\
-> +	iowrite##t(							\
-> +		(ioread##t(slot->iobase + port) & ~clear)|set,		\
-> +		slot->iobase + port);					\
-> +}
-> +
-> +CB710_PORT_ACCESSORS(8)
-> +CB710_PORT_ACCESSORS(16)
-> +CB710_PORT_ACCESSORS(32)
+If you're really so sensible to local traffic tunning, you can already
+set a very large MTU on your loopback, you can have very large windows
+between your applications so that very few ACKs are sent, etc... And
+BTW checksums are already not even computed. Loopback *is* fast, there's
+no need to crapify the whole stack with your "switch" to gain 5% more out
+of it.
 
-This is clearer than what you had before, but I still think you should
-consider using the kernel functions directly.
+Anyway, if you can come up with patches which proves all of us wrong
+without weakening the code, I'm sure they could be accepted.
 
-> +/* helper functions */
-> +
-> +static inline void cb710_set_irq_handler(struct cb710_slot *slot,
-> +	cb710_irq_handler_t handler)
-> +{
-> +	rcu_assign_pointer(slot->irq_handler, handler);
-> +	synchronize_rcu();	/* sync to IRQ handler */
-> +}
-> +
+Willy
 
-Why RCU:s? This smells of premature optimisation.
-
-> +/* per-MMC-reader structure */
-> +struct cb710_mmc_reader {
-> +	struct tasklet_struct finish_req_tasklet;
-> +	struct mmc_request *mrq;
-> +	spinlock_t irq_lock;
-> +	unsigned char last_power_mode;
-> +#ifdef VERBOSE_DEBUG
-> +	spinlock_t serialization_lock;
-> +	unsigned char active_req, active_ios;
-> +#endif
-> +};
-
-I couldn't find VERBOSE_DEBUG defined somewhere. For ease of use with
-future testers, you should connect it to some Kconfig option.
-
-> +static int cb710_suspend(struct pci_dev *pdev, pm_message_t state)
-> +{
-> +	pci_save_state(pdev);
-> +	pci_disable_device(pdev);
-> +	if (state.event & PM_EVENT_SLEEP)
-> +		pci_set_power_state(pdev, PCI_D3cold);
-> +	return 0;
-> +}
-> +
-> +static int cb710_resume(struct pci_dev *pdev)
-> +{
-> +	pci_set_power_state(pdev, PCI_D0);
-> +	pci_restore_state(pdev);
-> +	return pcim_enable_device(pdev);
-> +}
-
-Free/restore interrupt?
-
-> +/* TODO: move to pci_ids.h before merging upstream */
-> +#define PCI_DEVICE_ID_ENE_710_FLASH	0x0510
-
-It's a matter of taste really. Many drivers have their defines in the
-driver. Personally I think it is nice to have everything in pci_ids.h,
-but it's up to you really.
-
-> +#if 0
-> +	/* original driver set bit 14 for MMC/SD application
-> +	 * commands. There's no difference 'on the wire' and
-> +	 * it apparently works without it anyway.
-> +	 */
-> +	if (flags & MMC_CMD_IS_APPCMD)
-> +		cb_flags |= 0x4000;
-> +#endif
-
-As this code is just useless, please clean it out before you submit the
-driver.
-
-> +	mmc->ops = &cb710_mmc_host;
-> +	mmc->f_max = val;
-> +	mmc->f_min = val >> cb710_clock_divider_log2[CB710_MAX_DIVIDER_IDX];
-> +	mmc->ocr_avail = MMC_VDD_32_33|MMC_VDD_33_34|MMC_VDD_34_35;
-
-Since you can't change the voltage, this seems wrong. My guess is that
-the MMC_VDD_34_35 define should go.
-
-> +static int __devexit cb710_mmc_exit(struct platform_device *pdev)
-> +{
-> +	struct cb710_slot *slot = cb710_pdev_to_slot(pdev);
-> +	struct mmc_host *mmc = cb710_slot_to_mmc(slot);
-> +	struct cb710_mmc_reader *reader = mmc_priv(mmc);
-> +
-> +	mmc_remove_host(mmc);
-> +
-> +	/* XXX what if IRQ arrives now? */
-
-Most drivers handle this by sticking their head in the sand, but the
-proper way is probably to disable the card insertions interrupt before
-mmc_remove_host().
-
-(and there should be no other unsolicited interrupts)
-
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
