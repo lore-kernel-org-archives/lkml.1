@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYKNBC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbYKNBGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbYKNBC5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:02:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYKNBCt
+	id S1755298AbYKNBGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYKNBG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:02:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43274 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751869AbYKNBCs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:02:48 -0500
-Date: Thu, 13 Nov 2008 17:02:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jarkko Nikula <jarkko.nikula@nokia.com>
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net, jarkko.nikula@nokia.com,
-       stable@kernel.org
-Subject: Re: [patch 2.6.28-rc4] gpiolib: extend gpio label column width in
- debugfs file
-Message-Id: <20081113170211.23bf0343.akpm@linux-foundation.org>
-In-Reply-To: <1226472973-16271-1-git-send-email-jarkko.nikula@nokia.com>
-References: <1226472973-16271-1-git-send-email-jarkko.nikula@nokia.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 13 Nov 2008 20:06:26 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51790 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751706AbYKNBGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 20:06:25 -0500
+Message-ID: <491CCE58.1040701@cn.fujitsu.com>
+Date: Fri, 14 Nov 2008 09:03:20 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       corbet@lwn.net
+Subject: Re: [PATCH] rcupdate: move synchronize_sched() back to rcupdate.c
+ V2
+References: <49129310.5000903@cn.fujitsu.com> <20081109005159.GM6917@linux.vnet.ibm.com> <4917A8E7.8060801@cn.fujitsu.com> <20081110184520.GC6685@linux.vnet.ibm.com> <4918D7E4.9030107@cn.fujitsu.com> <20081111010331.GF6685@linux.vnet.ibm.com> <491B9581.2080201@cn.fujitsu.com> <20081113173114.GA6788@linux.vnet.ibm.com>
+In-Reply-To: <20081113173114.GA6788@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 08:56:13 +0200
-Jarkko Nikula <jarkko.nikula@nokia.com> wrote:
-
-> There are already various drivers having bigger label than 12 bytes. Most
-> of them fit well under 20 bytes but make column width exact so that
-> oversized labels don't mess up output alignment.
-
-Please provide before-and-after example output for this sort of change
-so that we can better understand its effect.
-
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@nokia.com>
-> ---
->  drivers/gpio/gpiolib.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+Paul E. McKenney wrote:
+> On Thu, Nov 13, 2008 at 10:48:33AM +0800, Lai Jiangshan wrote:
+>> Hi, Paul,
+>>
+>> Could you add a RCU document about unloadable modules for kernel?
 > 
-> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-> index faa1cc6..82020ab 100644
-> --- a/drivers/gpio/gpiolib.c
-> +++ b/drivers/gpio/gpiolib.c
-> @@ -1134,7 +1134,7 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
->  			continue;
->  
->  		is_out = test_bit(FLAG_IS_OUT, &gdesc->flags);
-> -		seq_printf(s, " gpio-%-3d (%-12s) %s %s",
-> +		seq_printf(s, " gpio-%-3d (%-20.20s) %s %s",
->  			gpio, gdesc->label,
->  			is_out ? "out" : "in ",
->  			chip->get
+> You thinking in terms of an ASCII version of
+> http://lwn.net/Articles/217484/?
+> 
+> If so, please see attached patch and let me know what you think.
+> Being too lazy to convert the cartoon to ASCII graphics, I simply
+> left a URL to the .jpg on the LWN website.  Thus we need an ack/nack
+> from Jon Corbet (CCed).
 
-This is a non-backward-compatible change to a userspace interface.  It
-looks like a pretty safe one, but this is always a fairly big deal.
+Hi, Paul
 
-If we're going to make this change then we should backport it to
-2.6.27.x, 2.6.26.x and to 2.6.25.x to minimise the chance that someone
-will write a parser which works on one kernel version and fails on
-another.
+Thank you. it's a very good document.
 
-David?  Thoughts?
+I found several modules which need rcu_barrier(). So I'm going to
+do some cleanup for them. A document for rcu_barrier() will help
+these cleanup patches be accepted easily by maintainers.
+
+Lai.
+
+> 
+> Of course, an alternative is to simply include the URL of the original
+> LWN article in 00-INDEX.  Thoughts?
+> 
+> 							Thanx, Paul
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+
+> +The code for rcu_barrier() is as follows:
+> +
+> + 1 void rcu_barrier(void)
+> + 2 {
+> + 3   BUG_ON(in_interrupt());
+> + 4   /* Take cpucontrol mutex to protect against CPU hotplug */
+> + 5   mutex_lock(&rcu_barrier_mutex);
+> + 6   init_completion(&rcu_barrier_completion);
+> + 7   atomic_set(&rcu_barrier_cpu_count, 0);
+> + 8   on_each_cpu(rcu_barrier_func, NULL, 0, 1);
+> + 9   wait_for_completion(&rcu_barrier_completion);
+> +10   mutex_unlock(&rcu_barrier_mutex);
+> +11 }
+> +
+
+this is a little old.
+
+> +
+> +Quick Quiz #2: Why is there no rcu_barrier_bh()?
+> +
+> +Answer: Because no one has needed it yet. As soon as someone needs to
+> +	use call_rcu_bh() from within an unloadable module, they will
+> +	need an rcu_barrier_bh().
+> +
+
+add here.
+
