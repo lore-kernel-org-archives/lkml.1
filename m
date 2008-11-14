@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384AbYKNDYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbYKND0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753384AbYKNDYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 22:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNDYQ
+	id S1754069AbYKND0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 22:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYKND0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 22:24:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48215 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751232AbYKNDYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 22:24:16 -0500
-Message-ID: <491CEEF0.4030001@zytor.com>
-Date: Thu, 13 Nov 2008 19:22:24 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 13 Nov 2008 22:26:32 -0500
+Received: from kroah.org ([198.145.64.141]:50581 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751278AbYKND0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 22:26:31 -0500
+Date: Thu, 13 Nov 2008 19:23:13 -0800
+From: Greg KH <greg@kroah.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] Store the relevant miscdevice in file->private_data in
+	misc_open()
+Message-ID: <20081114032313.GB15204@kroah.com>
+References: <b0f1032863818f2834094e2ca9ce4b1c13122748.1226551772.git.michael@ellerman.id.au> <20081113173127.GB30811@kroah.com> <1226620481.8066.18.camel@localhost> <20081114001818.GB20023@kroah.com> <1226631052.8066.25.camel@localhost>
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Alexander van Heukelum <heukelum@fastmail.fm>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, lguest@ozlabs.org,
-       jeremy@xensource.com, Steven Rostedt <srostedt@redhat.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH RFC/RFB] x86_64, i386: interrupt dispatch changes
-References: <20081104122839.GA22864@mailshack.com>	 <20081104150729.GC21470@localhost>	 <20081104170501.GE29626@one.firstfloor.org>	 <1225822006.21441.1282961299@webmail.messagingengine.com>	 <20081104204400.GC10825@elte.hu>	 <1226243805.27361.1283784629@webmail.messagingengine.com>	 <20081110085846.GG22392@elte.hu>	 <1226321061.23701.1283927805@webmail.messagingengine.com>	 <20081110130709.GA32613@elte.hu>	 <1226352907.25721.1284024167@webmail.messagingengine.com>	 <49191185.2000102@zytor.com> <1226615039.3343.53.camel@calx>	 <491CD1DD.3020201@zytor.com> <1226629776.3343.84.camel@calx>
-In-Reply-To: <1226629776.3343.84.camel@calx>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1226631052.8066.25.camel@localhost>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
->>>
->> No, they reflect individual runs.  They start at 1 at the top left and
->> drop to 0 at the far right in each case.  What matters is the horizontal
->> position of large vertical drops.
+On Fri, Nov 14, 2008 at 01:50:52PM +1100, Michael Ellerman wrote:
+> On Thu, 2008-11-13 at 16:18 -0800, Greg KH wrote:
+> > On Fri, Nov 14, 2008 at 10:54:41AM +1100, Michael Ellerman wrote:
+> > > On Thu, 2008-11-13 at 09:31 -0800, Greg KH wrote: 
+> > > > On Thu, Nov 13, 2008 at 03:49:50PM +1100, Michael Ellerman wrote:
+> > > > > Currently it's not easy to share file_operations between multiple
+> > > > > instances of a miscdevice. In order to do this, the device code needs to
+> > > > > store a list of all it's miscdevice instances, and when fops->open() is
+> > > > > called, search the list and find the right device based on the minor
+> > > > > number.
+> > > > > 
+> > > > > However the generic miscdevice code already has a list of miscdevices,
+> > > > > and uses this to find the right device in misc_open(). If misc_open()
+> > > > > would store the miscdevice it found in file->private_data, then the
+> > > > > device code wouldn't need to worry about storing it's own separate list
+> > > > > and searching that as well.
+> > > > > 
+> > > > > The rest of the miscdevice code does not use file->private_data, so the
+> > > > > device code is still free to use file->private_data for something else
+> > > > > if it wants to.
+> > > > > 
+> > > > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > > > 
+> > > > Do you have a follow-on patch for some misc device using code that would
+> > > > take advantage of this change?
+> > > 
+> > > Ah, good point. I do, but not for upstream :/
+> > 
+> > Hm, then I have to ask why should we take this change?
 > 
-> Still confused. If, say, the top blue line on the left represents the
-> same number of interrupts as the bottom red one, then at some point it
-> must cross under the red one as it goes to the right, which it does not
-> appear to do. Thus, it does not appear the scale on the left is actually
-> in units of constant probability, no?
+> Because it's seems like a good idea.
+
+You know we don't make changes to core code for drivers that aren't in
+the main tree, this is not a new thing...
+
+> > And why would the driver not be availble for upstream to take?
 > 
-> Though I'll agree that even if they're not scaled so that the area under
-> the curve sums to a probability of 1, the centerpoint of the vertical
-> drop is what matters. But that's rather hard to read off this chart, as
-> the blue line I mentioned has a center point point well above the red
-> one, so while it looks like a shift of 80 cycles, it's more like 30.
-> 
-> Is there any theoretical reason you can't just sum the histograms for
-> runs of the same code and then divide by event count? Is there some sort
-> of alignment/cache-coloring issue across boots?
-> 
+> Because it's a hacky pile of crud, and it's for unreleased and
+> non-existent hardware.
 
-The reason for the multiple curves is to show the range of uncertainty.
+That's what the drivers/staging/ tree is for, send it on over to me and
+I'll add it to that location.
 
-There are three sets of graphs in there: black (current mainline,
-16-byte stubs), red (4-byte stubs with a double jump), and blue (8-byte
-stubs.)
+thanks,
 
-The fact that the system is idle is pretty much a case which should
-favor "blue" over "red"; realistically I think the graphs show that they
-are identical within the limits of measurement, and both are
-significantly better than "black".
-
-Since this is pretty much the optimal case for "blue" and it doesn't
-show any performance win over "red", I implemented the "red" option and
-pushed it into tip:x86/irq.
-
-> That's what I'd expect on an idle system, certainly.
-> 
-> Anyway, I'm actually surprised your red graph is visibly better than
-> your blue one. FWIW, I was leaning towards your simpler variant (and
-> away from the magical segment register proposal). I'd be happy to see
-> either of your versions submitted.
-
-Same here, which is why I wanted to check them both out.
-
-	-hpa
+greg k-h
