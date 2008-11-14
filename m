@@ -1,85 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYKNVxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbYKNVzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYKNVxT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 16:53:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbYKNVxG
+	id S1754917AbYKNVzy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 16:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYKNVzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 16:53:06 -0500
-Received: from ns1.suse.de ([195.135.220.2]:47654 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751469AbYKNVxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 16:53:03 -0500
-Date: Fri, 14 Nov 2008 13:07:49 -0800
-From: Greg KH <gregkh@suse.de>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Greg KH <greg@kroah.com>, "Gupta, Ajay Kumar" <ajay.gupta@ti.com>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [GIT PATCH] USB patches for 2.6-git
-Message-ID: <20081114210749.GA1022@suse.de>
-References: <20081113230259.GA3681@kroah.com> <19F8576C6E063C45BE387C64729E739403E5F2B47B@dbde02.ent.ti.com> <20081114191545.GA24115@kroah.com> <491DD440.9000402@ru.mvista.com> <20081114195948.GA25682@kroah.com> <491DDB38.9000109@ru.mvista.com> <20081114205511.GA833@suse.de> <491DE771.2070009@ru.mvista.com>
+	Fri, 14 Nov 2008 16:55:46 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:41595 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751437AbYKNVzq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 16:55:46 -0500
+Date: Fri, 14 Nov 2008 13:46:42 -0800 (PST)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Trent Piepho <tpiepho@freescale.com>, djwong@us.ibm.com,
+       khali@linux-fr.org, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH 1/2] Create a DIV_ROUND_CLOSEST macro to do
+ division with rounding
+In-Reply-To: <20081111160854.3027c50d.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0811141334150.11673@t2.domain.actdsltmp>
+References: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
+ <Pine.LNX.4.64.0811111459300.24267@t2.domain.actdsltmp>
+ <20081111152007.ff508e26.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0811111539480.24267@t2.domain.actdsltmp>
+ <20081111160854.3027c50d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491DE771.2070009@ru.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 15, 2008 at 12:02:41AM +0300, Sergei Shtylyov wrote:
-> Greg KH wrote:
+On Tue, 11 Nov 2008, Andrew Morton wrote:
+>>>>> +#define DIV_ROUND_CLOSEST(x, divisor)(			\
+>>>>> +{							\
+>>>>> +	typeof(divisor) __divisor = divisor;		\
+>>>>> +	(((x) + ((__divisor) / 2)) / (__divisor));	\
+>>>>> +}							\
+>>>>> +)
+>>>>
+>>>> Maybe you can do away with the statement-expression extension?  I've seen
+>>>> cases where it cases gcc to generate worse code.  It seems like it
+>>>> shouldn't, but it does.  I know DIV_ROUND_CLOSEST (maybe DIV_ROUND_NEAR?)
+>>>> uses divisor twice, but all the also divide macros do that too, so why does
+>>>> this one need to be different?
+>>>
+>>> The others need fixing too.
+>>
+>> Is it worth generating worse code for these simple macros?
 >
->>>>>>> It should be [best_end < 0].
+> Well that's an interesting question.
 >
->>>>>>> If it is possible then please correct this mismatch in your series.
+> The risks with the current code are
 >
->>>>>> I'll wait to get a patch from Felipe for this.
+> a) It will introduce straightforward bugs, where pointers are
+>   incremented twice, etc.
 >
->>>>>  I'm seeing it being to you sent at least a week ago -- look for "usb: 
->>>>> musb: fix bug in musb_schedule".
+>   Hopefully these things will be apparent during testing and we'll
+>   fix them up in the usual fashion.
 >
->>>> As Felipe is the maintainer of the musb code, and has been batching up
->>>> patches and sending them on to me when needed, I have only been taking
->>>> them from him.
+> b) It will introduce subtle slowdowns due to needlessly executing
+>   code more than once, as in the hugepage case which I identified.
+>   These problems will hang around for long periods.
 >
->>>> So that message is long deleted from my mail, sorry.
->
->>>   Even though it was a message from him CCing you? :-)
->>>   Here it is: http://marc.info/?l=linux-usb&m=122605639520312.
->
->> Nope, I'm not on the CC: for that message, sorry, check your headers...
->
->    Sigh, here's an excerpt from its header (note that marc.info doesn't 
-> show CCs at all):
->
-> From: Felipe Balbi <felipe.balbi@nokia.com>
-> To: linux-usb@vger.kernel.org
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>,
-> 	Felipe Balbi <felipe.balbi@nokia.com>
+> So they're good reasons to fix the macros.  If these fixes cause the
+> compiler to generate worse code then we should quantify and understand
+> that.  Perhaps it is only certain compiler versions.  Perhaps we can
+> find a test case (should be easy?) and send it over to the gcc guys to
+> fix.  Perhaps we can find some C-level construct which prevents the
+> compiler from going into stupid mode without reintroducing the existing
+> problems.
 
-Odd, digging through my linux-usb archive I see:
+My question was more along the lines of is it worth it to even have macros for
+something as simple rounding up when dividing?
 
-	Date: Wed, 12 Nov 2008 17:35:18 +0200
-	From: Felipe Balbi <felipe.balbi@nokia.com>
-	To: linux-usb@vger.kernel.org
-	Cc: Felipe Balbi <felipe.balbi@nokia.com>
-	Subject: [patch-2.6.28-rc3+ 8/9] usb: musb: fix bug in musb_schedule
-	Message-Id: <1226504119-22995-9-git-send-email-felipe.balbi@nokia.com>
+For an example of statement expression problems, I noticed something with
+swab16(), addressed in commit 8e2c20023f34b652605a5fb7c68bb843d2b100a8
 
+#define ___swab16(x) \
+({ \
+        __u16 __x = (x); \
+        ((__u16)( \
+                (((__u16)(__x) & (__u16)0x00ffU) << 8) | \
+                (((__u16)(__x) & (__u16)0xff00U) >> 8) )); \
+})
 
-Anyway, I didn't realize I should have added it at the time.
+Produces this code:
 
-I'll wait for Felipe to resend his queue as he said he was going to do.
+             movzwl  %ax, %eax
+             movl    %eax, %edx
+             shrl    $8, %eax
+             sall    $8, %edx
+             orl     %eax, %edx
 
-Ah, if you go back further, now I see it:
-	Message-Id: <1226056335-25598-1-git-send-email-felipe.balbi@nokia.com>
+While this:
 
-Oh well, that got purged after I saw his updated patch queue.
+static __inline__ __attribute_const__ __u16 ___swab16(__u16 x)
+{
+        return x<<8 | x>>8;
+}
 
-what a mess...
+Produces this code:
 
-thanks,
+             rolw    $8, %ax
 
-greg k-h
