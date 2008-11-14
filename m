@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYKNDG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbYKNDRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbYKNDG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 22:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYKNDGT
+	id S1752544AbYKNDRy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 22:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYKNDRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 22:06:19 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:39523 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751143AbYKNDGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 22:06:18 -0500
-Message-ID: <491CEB23.80403@sgi.com>
-Date: Thu, 13 Nov 2008 19:06:11 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 13 Nov 2008 22:17:44 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:30007 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751232AbYKNDRn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 22:17:43 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=EsHsHYHbyGfiRHy5377rUID5wUFcuQ+sUEl7nEXNx/ksLi8PB+T5T9C0lVKO6scdYPiT8CDS9iPe7lungYAWTFUCFr66eZn9LQXlqib7rcK2ZVscRBIcmQ050aWwXVLnx6zxthZLYW9cIXRnFJCAwFh47LVFHGVPQwTvU+cYHsw=  ;
+X-YMail-OSG: u75crJ4VM1mB3RKq712BtGS4ddJgALOHR7H9go7KcSuAnZGkMsXj5CvDSW28tdYm5bybq6CEaEMZj4flM83f_F5Y3RYYJVWWgwitN04H9sICCmO6MSXOnVlyGLEL0hJROqZ6
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/2] mm: implement remap_pfn_range with apply_to_page_range
+Date: Fri, 14 Nov 2008 14:17:35 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+References: <491C61B1.10005@goop.org> <200811141319.56713.nickpiggin@yahoo.com.au> <491CE8C6.4060000@goop.org>
+In-Reply-To: <491CE8C6.4060000@goop.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: paulus@samba.org, akpm@linux-foundation.org, yinghai@kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-References: <491CC310.3050807@sgi.com>	<20081113.162144.155677034.davem@davemloft.net>	<491CC8D7.7030306@sgi.com> <20081113.183747.184760657.davem@davemloft.net>
-In-Reply-To: <20081113.183747.184760657.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Message-Id: <200811141417.35724.nickpiggin@yahoo.com.au>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+On Friday 14 November 2008 13:56, Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> > This isn't performance critical to anyone?
+>
+> The only difference should be between having the specialized code and an
+> indirect function call, no?
 
-> Practicality is what really matters.
-> 
-> We can even make the constant number a config option, so that if
-> someone has a system that actually triggers past this limit even dist
-> vendors can simply bump the config option value.
+Indirect function call per pte. It's going to be slower surely.
 
-Unfortunately the reality is that distros spend months certifying the base
-kernel for both application and security conformance.  And many (most?) of
-the large system customers will only run this kernel.  Even changing root
-startup options is considered invalidating the conformance testing.  That
-means the kernel has to adapt to the resource needs of the system being
-serviced.
 
-Ideally, linux shouldn't have any fixed resources.  A system built to run
-on a massively parallel system should also boot and run on a smart phone
-(not well perhaps... ;-)
+> > I see DRM, IB, GRU, other media and video drivers use it.
+> >
+> > It IS exactly what apply_to_page_range does, I grant you. But so does
+> > our traditional set of nested loops. So is there any particular reason
+> > to change it? You're not planning to change fork/exit next, are you? :)
+>
+> No ;)  But I need to have a more Xen-specific version of
+> remap_pfn_range, and I wanted to 1) have the two versions look as
+> similar as possible, and 2) not have a pile of duplicate code.
+
+It is accepted practice to (carefully) duplicate the page table walking
+functions in memory management code. I don't think that's a problem,
+there is already so many instances of them (just be sure to stick to
+exactly the same form and variable names, and any update or bugfix to
+any of them is trivially applicable to all).
