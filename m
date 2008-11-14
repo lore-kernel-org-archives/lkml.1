@@ -1,39 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbYKNHxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYKNHy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbYKNHxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 02:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYKNHxl
+	id S1755345AbYKNHy5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 02:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYKNHyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 02:53:41 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60337 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751126AbYKNHxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 02:53:41 -0500
-Message-ID: <491D2E6C.1000009@cn.fujitsu.com>
-Date: Fri, 14 Nov 2008 15:53:16 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 14 Nov 2008 02:54:49 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:35360 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYKNHys (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 02:54:48 -0500
+Date: Fri, 14 Nov 2008 08:54:46 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rodolfo Giometti <giometti@linux.it>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] misc: C2port needs <linux/sched.h>
+Message-ID: <Pine.LNX.4.64.0811140853320.11953@anakin>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: balbir@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Blunck <jblunck@suse.de>, containers@lists.osdl.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] memcg: reduce size of per-cpu-stat to be appropriate
- size.
-References: <20081113164201.GV29067@bolzano.suse.de>	<20081113191837.18ed2ade.akpm@linux-foundation.org>	<491CF609.3050203@cn.fujitsu.com>	<20081114132840.98d38f12.kamezawa.hiroyu@jp.fujitsu.com>	<20081114144926.d91f36fd.kamezawa.hiroyu@jp.fujitsu.com>	<491D2C21.5000600@linux.vnet.ibm.com> <20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> +static int mem_cgroup_size(void)
->> inline this function?
->>
-> necessary ? 
-> 
+m68k allmodconfig:
 
-Not so necessary IMO. It's called when a cgroup is created and removed, that
-is mkdir and rmdir, where performance is not critical.
+| drivers/misc/c2port/core.c: In function 'c2port_reset':
+| drivers/misc/c2port/core.c:73: error: dereferencing pointer to incomplete type
+| drivers/misc/c2port/core.c: In function 'c2port_strobe_ck':
+| drivers/misc/c2port/core.c:91: error: dereferencing pointer to incomplete type
 
+Include <linux/sched.h> to fix it, as m68k's local_irq_enable() needs to know
+about struct task_struct.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Apparently never been in linux-next.
+
+Janitors: anyone who has time to extract struct task_struct into its own
+header file?
+
+ drivers/misc/c2port/core.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/drivers/misc/c2port/core.c
++++ b/drivers/misc/c2port/core.c
+@@ -18,6 +18,7 @@
+ #include <linux/ctype.h>
+ #include <linux/delay.h>
+ #include <linux/idr.h>
++#include <linux/sched.h>
+ 
+ #include <linux/c2port.h>
+ 
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
