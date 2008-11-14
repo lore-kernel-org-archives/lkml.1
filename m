@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbYKNAf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbYKNAkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755083AbYKNAf7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYKNAfu
+	id S1754908AbYKNAkI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 19:40:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbYKNAj4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:35:50 -0500
-Received: from gw.goop.org ([64.81.55.164]:42095 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751420AbYKNAft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:35:49 -0500
-Message-ID: <491CC7E1.6000302@goop.org>
-Date: Thu, 13 Nov 2008 16:35:45 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Thu, 13 Nov 2008 19:39:56 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:36827 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752621AbYKNAjz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 19:39:55 -0500
+Message-ID: <491CC8D7.7030306@sgi.com>
+Date: Thu, 13 Nov 2008 16:39:51 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>
-Subject: Re: [PATCH 25 of 38] xen mtrr: Add mtrr_ops support for Xen mtrr
-References: <61b4b844fb80206fbda1.1226603423@abulafia.goop.org> <1226608128.19068.10.camel@blaa>
-In-Reply-To: <1226608128.19068.10.camel@blaa>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: David Miller <davem@davemloft.net>
+CC: paulus@samba.org, akpm@linux-foundation.org, yinghai@kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491CB421.2020701@sgi.com>	<20081113.151435.146617325.davem@davemloft.net>	<491CC310.3050807@sgi.com> <20081113.162144.155677034.davem@davemloft.net>
+In-Reply-To: <20081113.162144.155677034.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
-> On Thu, 2008-11-13 at 11:10 -0800, Jeremy Fitzhardinge wrote:
->
->   
->> diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
->> new file mode 100644
->> --- /dev/null
->> +++ b/arch/x86/kernel/cpu/mtrr/xen.c
->> @@ -0,0 +1,59 @@
->>     
-> ...
->   
->> +
->> +/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
->> + * working userland mtrr support. */
->> +static struct mtrr_ops xen_mtrr_ops = {
->> +	.vendor            = X86_VENDOR_UNKNOWN,
->> +//	.set               = xen_set_mtrr,
->> +//	.get               = xen_get_mtrr,
->> +	.get_free_region   = generic_get_free_region,
->> +//	.validate_add_page = xen_validate_add_page,
->> +	.have_wrcomb       = positive_have_wrcomb,
->> +	.use_intel_if	   = 0,
->> +	.num_var_ranges	   = xen_num_var_ranges,
->> +};
->>     
->
-> ...
->
-> I'm vague on the details now, but looking back at the dom0 patch set
-> here:
->
-> http://git.et.redhat.com/?p=linux-2.6-dom0-pvops.git;a=shortlog;h=55abc194080b5cf31cd66f5e35e8e5c5af2aa927
->
-> I see we did have a bunch more mtrr work e.g. fixing the TODO above:
->
-> http://git.et.redhat.com/?p=linux-2.6-dom0-pvops.git;a=commitdiff;h=93f779bf3d79f28d0933bfbc53f7b8c5b6496081
->   
+David Miller wrote:
+> From: Mike Travis <travis@sgi.com>
+> Date: Thu, 13 Nov 2008 16:15:12 -0800
+> 
+>> David Miller wrote:
+>>> From: Mike Travis <travis@sgi.com>
+>>> Date: Thu, 13 Nov 2008 15:11:29 -0800
+>>>
+>>> We use a value of 256 and I've been booting linux on 128 cpu sparc64
+>>> systems with lots of PCI-E host controllers (and others have booted it
+>>> on even larger ones).  All of which have several NUMA domains.
+>>>
+>>> It's not an issue.
+>> Are you saying that having a fixed count of IRQ's is not an issue?  With
+>> NR_CPUS=4096 what would you fix it to?  (Currently it's NR_CPUS * 32
+>> but that might not be sufficient.)  Would NR_CPUS=16384 make it an issue?
+> 
+> Nope, and nope.  I frequently run kernels with NR_CPUS set to huge
+> values.
+> 
+> It seems that the issue of x86 is that it has it's IRQ count tied to
+> the number of cpus, that's not very intelligent.  Perhaps that part
+> should be rearranged somehow?
 
-Yes, the mtrr changes are incomplete.  I started on them as much as 
-necessary to get things booting, and then left the rest to revisit.  
-It's not a particularly pretty part of the kernel, and so I was hoping 
-some magic beautification fairy would visit it before I needed to touch 
-it more...
+Yes, you're probably right but it is what it is.  Most of the irq vectors
+have more to do with cpus than with i/o devices (the system vectors, ipi,
+kdb and gru [a uv thing] interrupt vectors come first to mind.)  These do
+by necessity need to grow with NR_CPUS, if you're fixing the total IRQ count.
 
-    J
+There's been a couple of different proposals to attempt to disassociate
+i/o and system vectors though even attempting to guess at the number of
+i/o devices is tricky.  Every one of the 512 nodes on a UV system *may*
+have a number of i/o devices attached to them though practically this
+will be rare. 
