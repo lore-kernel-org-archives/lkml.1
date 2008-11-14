@@ -1,91 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbYKNS53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbYKNS5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380AbYKNS53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 13:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYKNS5V
+	id S1755746AbYKNS5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 13:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbYKNS5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 13:57:21 -0500
-Received: from smtp1.Stanford.EDU ([171.67.219.81]:33163 "EHLO
-	smtp1.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbYKNS5U (ORCPT
+	Fri, 14 Nov 2008 13:57:41 -0500
+Received: from ik-out-1112.google.com ([66.249.90.176]:39900 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755504AbYKNS5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 13:57:20 -0500
-Subject: Re: [alsa-devel] 2.6.26.[6|7]-rt11, alsa rawmidi, seq hang
-	(tasklet_hi_schedule?)
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       alsa-devel@alsa-project.org, Steven Rostedt <rostedt@goodmis.org>,
+	Fri, 14 Nov 2008 13:57:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ELLYRjQhBtd2BVSt9G30ZbhFkKVgeNpsqj2qGR9bbbNxM8ftHW5trcLid5S3/p6KKX
+         f2G12pt6zq3A75XNaDMWFtWgc++yGnbxb0rXJERyVu/WUWbfKJDpUVgAqUVuQ/6fwrfx
+         NETAejzG9nGGS2209Nlpkvbcf/gdAx61SZX4g=
+Message-ID: <491DCA12.3000304@gmail.com>
+Date: Fri, 14 Nov 2008 20:57:22 +0200
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Bob Copeland <me@bobcopeland.com>
+CC: Nick Kossifidis <mickflemm@gmail.com>, ath5k-devel@venema.h4ckr.net,
        linux-kernel@vger.kernel.org
-In-Reply-To: <491D33B9.5030308@ladisch.de>
-References: <1226019485.3135.31.camel@localhost.localdomain>
-	 <49140683.9040008@ladisch.de>
-	 <1226610075.23485.20.camel@localhost.localdomain>
-	 <1226616962.23485.28.camel@localhost.localdomain>
-	 <1226621569.23485.44.camel@localhost.localdomain>
-	 <491D33B9.5030308@ladisch.de>
-Content-Type: text/plain
-Date: Fri, 14 Nov 2008 10:57:10 -0800
-Message-Id: <1226689030.17495.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Subject: Re: [ath5k-devel] Bugs on aspire one A150
+References: <491506DB.1070000@gmail.com> <b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com> <4918A8C5.3050607@gmail.com> <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com> <491B17B3.204@gmail.com> <20081114034730.GA9482@hash.localnet>
+In-Reply-To: <20081114034730.GA9482@hash.localnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 09:15 +0100, Clemens Ladisch wrote:
-> Fernando Lopez-Lezcano wrote:
-> > I've been trying to follow the printk crumbs without much success.
-> > AFAICT it all points to tasklet_hi_schedule ...
+Bob Copeland wrote:
+> On Wed, Nov 12, 2008 at 07:51:47PM +0200, Maxim Levitsky wrote:
+>>>> Why it doesn't accept new mac?, can this be fixed?
+>> Any update on mac changer status?
 > 
-> I don't have -rt, but if the error is similar to the old one you might
-> try replacing tasklet_hi_schedule with tasklet_schedule.
+> As a first stab, can you try this patch?  This sets the address on
+> add_interface and clears it on remove_interface, instead of only doing
+> it at probe time.  I only compile-tested it.
+> 
+> diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+> index 5ef8cc4..6c56893 100644
+> --- a/drivers/net/wireless/ath5k/base.c
+> +++ b/drivers/net/wireless/ath5k/base.c
+> @@ -2765,6 +2765,7 @@ static int ath5k_add_interface(struct ieee80211_hw *hw,
+>  	/* Set to a reasonable value. Note that this will
+>  	 * be set to mac80211's value at ath5k_config(). */
+>  	sc->bintval = 1000;
+> +	ath5k_hw_set_lladdr(sc->ah, conf->mac_addr);
+>  
+>  	ret = 0;
+>  end:
+> @@ -2777,11 +2778,13 @@ ath5k_remove_interface(struct ieee80211_hw *hw,
+>  			struct ieee80211_if_init_conf *conf)
+>  {
+>  	struct ath5k_softc *sc = hw->priv;
+> +	u8 mac[ETH_ALEN] = {};
+>  
+>  	mutex_lock(&sc->lock);
+>  	if (sc->vif != conf->vif)
+>  		goto end;
+>  
+> +	ath5k_hw_set_lladdr(sc->ah, mac);
+>  	sc->vif = NULL;
+>  end:
+>  	mutex_unlock(&sc->lock);
+> 
 
-YES YES!! __Thanks__ for the suggestion, it WORKED!!
+Works almost perfectly,
 
-Maybe the kernel rt gurus should look around and see _why_ the problem
-was happening in the first place. There are not that many uses of
-tasklet_hi_schedule in the kernel tree I'm working with:
 
-./drivers/char/drm/drm_irq.c
-./drivers/infiniband/hw/ehca/ehca_irq.c
-./drivers/infiniband/hw/ipath/ipath_cq.c
-./drivers/infiniband/hw/ipath/ipath_driver.c
-./drivers/infiniband/hw/ipath/ipath_intr.c
-./drivers/infiniband/hw/ipath/ipath_sdma.c
-./drivers/media/video/vino.c
-./drivers/mmc/host/omap.c
-./drivers/mmc/host/wbsd.c
-./drivers/net/chelsio/sge.c
-./drivers/net/ehea/ehea_main.c
-./drivers/net/smc91x.c
-./drivers/s390/block/dasd.c
-./drivers/s390/cio/qdio.c
-./drivers/s390/net/ctcm_fsms.c
-./drivers/s390/net/ctcm_mpc.c
-./drivers/usb/c67x00/c67x00-sched.c
-./drivers/usb/gadget/gmidi.c
-./kernel/softirq.c
-./sound/core/rtctimer.c
-./sound/core/timer.c
-./sound/drivers/vx/vx_core.c
-./sound/drivers/vx/vx_pcm.c
-./sound/pci/es1968.c
-./sound/pci/maestro3.c
-./sound/pci/mixart/mixart_core.c
-./sound/pci/pcxhr/pcxhr.c
-./sound/pci/pcxhr/pcxhr_core.c
-./sound/pci/riptide/riptide.c
-./sound/pci/rme9652/hdsp.c
-./sound/pci/rme9652/hdspm.c
-./sound/pcmcia/pdaudiocf/pdaudiocf_irq.c
-./sound/usb/usbmidi.c
+when I load the module, then run macchanger, and then ifconfig wlan0 up
+then it works, if I do an ifconfig up once, then ifdowning the interface, it doesn't.
 
-Maybe other drivers are affected as well by the rt patch. 
-What is the difference between tasklet_hi_schedule and tasklet_schedule?
+my iwl3945 allows me to
 
-Thanks again...
--- Fernando
+ifconfig wlan0 down
+macchanger ....
+ifconfig wlan0 up
+
+
+The noise floor calibration issue bites me again and gain.
+When it shows up, usually card continues to work, but at next assotiation stops working.
+Maybe this is unrelated, don't know.
+Reboot doesn't help, only a cold reboot/suspend to ram helps.
+(Module reload doesn't help too).
+
+
+
+Transfer speeds are unusually low:
+Currently I compile kernel on main laptop, and copy files over nfs to aspire one.
+Copying takes ages, and transfer speeds are at 200 Kbytes/s.
+(AP isn't involved in direct transfers between stations, right?)
+
+Both notebooks are in same room.
+
+
+Also noticed, that continued transfer of large volumes (like the above) triggers
+noise calibration time-outs, and when it does transfer speeds drop to 50Kbytes/s
+Next assotiation usually fails, and only on/off cycle fixes this.
+
+Best regards, and big thanks for help,
+	Maxim Levitsky
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
