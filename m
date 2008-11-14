@@ -1,118 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYKNSsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbYKNSxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYKNSsn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 13:48:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYKNSsf
+	id S1755382AbYKNSxt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 13:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbYKNSxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 13:48:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60648 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbYKNSse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 13:48:34 -0500
-Subject: Re: [PATCH] ALSA: cs5535audio: only build OLPC support if
-	MGEODE_LX is defined
-From: Jeremy Katz <katzj@redhat.com>
-To: jordan@cosmicpenguin.net
-Cc: Pavel Machek <pavel@suse.cz>, Andres Salomon <dilinger@queued.net>,
-       Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jordan Crouse <jordan.crouse@amd.com>, linux-kernel@vger.kernel.org,
-       dsaxena@laptop.org
-In-Reply-To: <491DB6B9.7030209@cosmicpenguin.net>
-References: <1226547898.13077.83.camel@aglarond.local>
-	 <s5h63msru7z.wl%tiwai@suse.de> <20081113153714.GA1520@ucw.cz>
-	 <s5h3ahvhb9w.wl%tiwai@suse.de> <20081113111428.59aa36cb@ephemeral>
-	 <20081113163802.GA1734@ucw.cz> <20081113120147.2ecde3c8@ephemeral>
-	 <20081113190339.GE17851@elte.hu> <s5hzlk3kxuf.wl%tiwai@suse.de>
-	 <20081113213852.16561ed2@ephemeral>
-	 <20081114075248.GB8397@atrey.karlin.mff.cuni.cz>
-	 <491DB6B9.7030209@cosmicpenguin.net>
-Content-Type: text/plain
-Date: Fri, 14 Nov 2008 13:45:50 -0500
-Message-Id: <1226688350.13086.61.camel@aglarond.local>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 13:53:40 -0500
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:59220 "EHLO
+	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752042AbYKNSxk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 13:53:40 -0500
+Date: Fri, 14 Nov 2008 12:53:13 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@quilx.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_OPTIMIZE_INLINING fun
+In-Reply-To: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
+Message-ID: <Pine.LNX.4.64.0811141244060.29394@quilx.com>
+References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: -2.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 10:34 -0700, Jordan Crouse wrote:
-> Pavel Machek wrote:
-> >>>> i've zapped this patch meanwhile:
-> >>>>
-> >>>>  1355c96: x86/olpc: make CONFIG_OLPC dependent on CONFIG_MGEODE_LX
-> >>>>
-> >>>> because it cripples the ability to run distribution kernels on the 
-> >>>> OLPC.
-> >>> OK, I reverted also all relevant changes for cs5535audio driver now.
-> >>> The patches are saved in topic/cs5535audio branch, though.
-> >>>
-> >>> Let's fix OLPC-geode coupling first.
-> >> Hm, I'd really rather prefer this to be upstream.  The patch I sent adds
-> >> no regressions, allows the driver to happily coexist with existing
-> >> stuff, and *does* add support if you configure OLPC with MGEODE_LX
-> >> (generic kernels don't get the additional benefits, but those configured
-> >> specifically for OLPC do).
-> > 
-> > Yes, but the patch is also not a good way of going forward, so it
-> > should not be in mainline.
-> 
-> For the moment, this is a reasonable intermediate solution.  I think the 
-> way forward will involve a great deal more work.
+On Fri, 14 Nov 2008, Hugh Dickins wrote:
 
-It's the work that should have been done from the beginning.  And once
-code is upstream, the motivation to make things "correct" drops
+> --- 2.6.28-rc4/arch/x86/Kconfig.debug	2008-10-24 09:27:47.000000000 +0100
+> +++ linux/arch/x86/Kconfig.debug	2008-11-14 16:26:15.000000000 +0000
+> @@ -302,6 +302,7 @@ config CPA_DEBUG
+>
+>  config OPTIMIZE_INLINING
+>  	bool "Allow gcc to uninline functions marked 'inline'"
+> +	depends on !CC_OPTIMIZE_FOR_SIZE
+>  	help
+>  	  This option determines if the kernel forces gcc to inline the functions
+>  	  developers have marked 'inline'. Doing so takes away freedom from gcc to
+>
 
-> The driver does need to be able to twiddle the GPIO pins, and the GPIO 
-> pins are unique to the CS5536.  In the past, the CS5536 has been only 
-> associated with the Geode, and 99.99% of the kernel users in the world 
-> don't need Geode, so it make sense to omit specific code of this nature.
-> As you might expect, I'm not in the "you should be able to run an 
-> arbitrary kernel on the XO" crowd.
+Maybe add some text explaining that this is some experimental gcc feature?
 
-That's nice.  But if the XO is to be more than just an embedded platform
-working in its own world, then being able to run kernels other than from
-your git tree is extremely important.
+> You'll be amused to see the asm for this example from mm/swap_state.c
+> (I was intending to downgrade these BUG_ONs to VM_BUG_ONs anyway, but
+> this example makes that seem highly desirable):
+>
+> void __delete_from_swap_cache(struct page *page)
+> {
+> 	BUG_ON(!PageLocked(page));
+> 	BUG_ON(!PageSwapCache(page));
+> 	BUG_ON(PageWriteback(page));
+> 	BUG_ON(PagePrivate(page));
 
-> That said, its clear that people are interested in doing so - so a 
-> change needs to be made.  The immediate option is to turn on Geode 
-> support for all x86 kernels, but thats a few extra K in the kernel 
-> binary that nobody needs.  So we'll have to go modular.
+Maybe checking all the conditionals in one BUG_ON is not such a bad idea
+after all? 4 useless branches in a hotpath?
 
-Modular is nice, but I'm not 100% sure it's required (see below)...
+> Here's the nice asm 4.2.1 gives with just CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+> (different machine, this one a laptop with CONFIG_VMSPLIT_2G_OPT=y):
 
-> I talked to Andres about this yesterday.  The immediately obvious 
-> solution would be to port the Geode GPIO support into the existing GPIO 
-> subsystem.  
+Optimize for size is what I also have usually on. Inline "optimization"
+never worked as far as I can tell so I usually have that off.
 
-This would be a great first step!
+> I do wonder whether there's some tweak we could make to page-flags.h
+> which would stop this nonsense.  Change the inline functions back to
+> macros?  I suspect that by itself wouldn't work, and my quick attempt
+> to try it failed abysmally to compile, I've not the cpp foo needed.
 
-> That is attractive, but it omits some of the other Geode 
-> goodness that might be of interest to a "standard kernel" not configured 
-> for MGEODE_LX (such as the Geode watchdog timer).  So, I think we should 
-> move most of the Geode code into a support module and remove MGEODE_LX 
-> checks in most places.  The distributions can build the module and put 
-> it in the file system, and serious Geode users such as OLPC can build it 
-> in to the kernel binary.
+I think we want to get away from macros as much as possible.
 
-This also sounds like good steps.  One thing to think about is if
-there's any sort of dmi matching that can be done to autoload if things
-are built modular since distros are trying to get udev loading things
-automatically without any need for magic scripts  And most of the clock
-sources are already not able to be built modular
+> A part of the problem may be that test_bit() etc. are designed for
+> arrays of unsigned longs, but page->flags is only the one unsigned long:
+> maybe gcc loses track of the optimizations available for that case when
+> CONFIG_OPTIMIZE_INLINING=y.
+>
+> Hah, I've just noticed the defaults in arch/x86/configs -
+> you might want to change those...
 
-> Also, while we are at it, we should be more specific and rename the 
-> hooks from geode_ to cs5536_, since there will soon be a system in the 
-> wild with a MIPS processor and a CS5536.
-> 
-> But needless to say, this will be a goodly amount of work and churn that 
-> will need some heavy testing in the OLPC kernel.  In the meantime, 
-> Andres' fix will make the upstream kernel happier.
-
-It is work, but I'm not sure it's huge amounts.  And by doing it
-*upstream first*, you benefit from the feedback and testing of the wider
-community.  Development of things in a silo is what tends to lead to
-these sorts of threads :/
-
-Jeremy
-
+Argh.. Yes.... CONFIG_OPTIMIZE_INLINING must only be enabled if the
+compiler can actually create a benefit from optimizing the
+inlining. That could be in gcc 4.5 or so I guess.
