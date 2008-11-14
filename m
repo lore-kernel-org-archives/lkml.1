@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbYKNTAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755613AbYKNTDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbYKNTAS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbYKNTAF
+	id S1755613AbYKNTDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbYKNTDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:00:05 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60192 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752042AbYKNTAD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:00:03 -0500
-Date: Fri, 14 Nov 2008 13:59:55 -0500 (EST)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: linux-kernel@vger.kernel.org
-cc: mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
-       Milan Broz <mbroz@redhat.com>
-Subject: Active waiting with yield()
-Message-ID: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 14 Nov 2008 14:03:07 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53914 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752042AbYKNTDG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 14:03:06 -0500
+Date: Fri, 14 Nov 2008 19:01:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Howells <dhowells@redhat.com>
+Cc: dhowells@redhat.com, linux-serial@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix an uninitialised variable warning in the 8250
+ driver
+Message-ID: <20081114190149.7f5c20f2@lxorguk.ukuu.org.uk>
+In-Reply-To: <26417.1226681468@redhat.com>
+References: <20081114163428.7b676742@lxorguk.ukuu.org.uk>
+	<20081114162038.23016.20581.stgit@warthog.procyon.org.uk>
+	<26417.1226681468@redhat.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Fri, 14 Nov 2008 16:51:08 +0000
+David Howells <dhowells@redhat.com> wrote:
 
-Every time I write yield() somewhere into my code, there comes a comment 
-"real-time people don't like yield()". Without any explanation why yield() 
-is not suitable at that specific point, just that "people don't like it".
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > Current versions of gcc that I've tested get this all correct just fine
+> > for x86 at least.
+> 
+> gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
-We all know that waiting with yield() is bad for general code that 
-processes requests, because repeated scheduling wastes extra CPU time and 
-the process waiting for some event with yield() is woken up late. In these 
-normal cases, wait queues should be used.
+Newer gcc (4.3 and above) gets it right.
 
-However, there is code where in my opinion using yield() for waiting is 
-appropriate, for example:
+> x86_64 - which doesn't do that.  It uses asm volatile and an infinite for-loop.
 
-* driver unload --- check the count of outstanding requests and call 
-yield() repeatedly until it goes to zero, then unload.
-* some rare race contition --- a workaround for a race that triggers once 
-per hour for one user in several years doesn't really have to be fast.
+Which it seems 4.3 knows about
 
-A typical example where yield() can be used is a driver that counts a 
-number of outstanding requests --- when the user tries to unload the 
-driver, the driver will make sure that new requests won't come, repeatedly 
-yield()s until the count of requests reaches zero and then destroys its 
-data structures.
+> Surely having BUG() retreat through a noreturn function may lose important
+> state, such as the function that issued the bug as the compiler is under no
+> requirement to save the return value, and the file/line info may not be
+> available.
 
-Here, yield() has some advantages over wait queues, because:
+Its arch specific code so arch specific things can be done.
 
-* reduced size of data structures (and reduced cache footprint for the hot 
-path that actually processes requests)
-* slightly reduced code size even on the hot path (no need to wake up an 
-empty queue)
-* less possibility for bugs coming from the fact that someone forgets to 
-wake the queue up
-
-The downside of yield is slower unloading of the driver by few tens of 
-miliseconds, but the user doesn't really care about fractions of a second 
-when unloading drivers.
-
---- but people complain even if I use yield() in these cases. None of 
-those complains contains any valid technical argument --- just that 
-"someone said that yield() is bad". Is there a real reason why yield() in 
-these cases is bad? (for example that with some real-time patches, 
-yield()ing high-priority thread would be spinning forever, killing the 
-system?) Or should I use msleep(1) instead? Or should wait queues really 
-be used even in those performance-insensitive cases?
-
-Mikulas
+Alan
