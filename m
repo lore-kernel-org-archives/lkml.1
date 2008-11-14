@@ -1,44 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbYKNRfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbYKNRgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbYKNRfM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 12:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYKNRe7
+	id S1754907AbYKNRgB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 12:36:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYKNRfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 12:34:59 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47317 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbYKNRe6 (ORCPT
+	Fri, 14 Nov 2008 12:35:53 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:43879 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbYKNRfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 12:34:58 -0500
-Date: Fri, 14 Nov 2008 12:34:22 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       Christoph Hellwig <hch@infradead.org>, Peter Cordes <peter@cordes.ca>,
-       Bodo Eggert <7eggert@gmx.de>, David Newall <davidn@davidnewall.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 2.6.28?] don't unlink an active swapfile
-Message-ID: <20081114173422.GA22868@infradead.org>
-References: <bnJFK-3bu-7@gated-at.bofh.it> <bnR0A-4kq-1@gated-at.bofh.it> <E1KqkZK-0001HO-WF@be1.7eggert.dyndns.org> <Pine.LNX.4.64.0810171250410.22374@blonde.site> <20081018003117.GC26067@cordes.ca> <20081018051800.GO24654@1wt.eu> <Pine.LNX.4.64.0810182058120.7154@blonde.site> <20081018204948.GA22140@infradead.org> <20081018205647.GA29946@1wt.eu> <Pine.LNX.4.64.0811140234300.5027@blonde.site>
+	Fri, 14 Nov 2008 12:35:53 -0500
+Date: Fri, 14 Nov 2008 17:35:51 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: Add option to passively listen for PCIE hotplug events
+Message-ID: <20081114173551.GA29381@srcf.ucam.org>
+References: <491063B3.4080808@tuffmail.co.uk> <20081104151128.GA22544@srcf.ucam.org> <49106DD7.9010307@tuffmail.co.uk> <20081104155722.GA23314@srcf.ucam.org> <491076BD.1030704@tuffmail.co.uk> <49170B16.4010909@tuffmail.co.uk> <20081114161631.GA28234@srcf.ucam.org> <491DB048.3090308@tuffmail.co.uk> <20081114171252.GA29056@srcf.ucam.org> <61b223ba0811140927s4c7f644ds81183626ac04bc09@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811140234300.5027@blonde.site>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <61b223ba0811140927s4c7f644ds81183626ac04bc09@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 02:37:22AM +0000, Hugh Dickins wrote:
-> Peter Cordes is sorry that he rm'ed his swapfiles while they were in use,
-> he then had no pathname to swapoff.  It's a curious little oversight, but
-> not one worth a lot of hackery.  Kudos to Willy Tarreau for turning this
-> around from a discussion of synthetic pathnames to how to prevent unlink.
-> Mimic immutable: prohibit unlinking an active swapfile in may_delete()
-> (and don't worry my little head over the tiny race window).
+Ha. Right. Can you change the references to P0P7 to P0P6 instead and see 
+if that's any happier?
 
-Looks good (but I think I already said this before)
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
