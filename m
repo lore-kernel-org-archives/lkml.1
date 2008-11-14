@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYKNAFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYKNAHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbYKNAFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbYKNAFV
+	id S1755950AbYKNAHy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 19:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYKNAHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:05:21 -0500
-Received: from h155.mvista.com ([63.81.120.155]:36897 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753823AbYKNAFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:05:18 -0500
-Message-ID: <491CC0B6.8020400@ru.mvista.com>
-Date: Fri, 14 Nov 2008 03:05:10 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Thu, 13 Nov 2008 19:07:39 -0500
+Received: from kroah.org ([198.145.64.141]:57761 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752625AbYKNAHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 19:07:38 -0500
+Date: Thu, 13 Nov 2008 16:01:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Can you add the staging tree to -next?
+Message-ID: <20081114000133.GA19644@kroah.com>
+References: <20081112235600.GA27554@kroah.com> <20081114104421.772feee3.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>
-Subject: Re: [PATCH] New IDE/block driver for OCTEON SOC Compact Flash interface.
-References: <491C7F28.2070507@caviumnetworks.com>
-In-Reply-To: <491C7F28.2070507@caviumnetworks.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081114104421.772feee3.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, Nov 14, 2008 at 10:44:21AM +1100, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> On Wed, 12 Nov 2008 15:56:00 -0800 Greg KH <greg@kroah.com> wrote:
+> >
+> > I'm starting to get people sending me patches against -next for the
+> > drivers/staging/ tree that don't apply as -next does not include my
+> > quilt tree of staging patches.
+> > 
+> > Can you please pick it up?  You can put it at the end of your series,
+> > and the 'make allmodconfig' option disables building anything in the
+> > drivers/staging/ subdirectory, so it should not have any build or merge
+> > conflicts with anything.
+> > 
+> > It can be found at:
+> > 	http://kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-05-staging/
+> > and is a quilt tree.
+> > 
+> > It will follow all the same rules as other trees, with patches only for
+> > the next merge window (2.6.29 right now) in it.
+> 
+> OK, I have added it starting today.
 
-David Daney wrote:
+Thank you very much, I appreciate it.
 
-> As part of our efforts to get the Cavium OCTEON processor support
-> merged (see: http://marc.info/?l=linux-mips&m=122600487218824), we
-> have this CF driver for your consideration.
->
-> Most OCTEON variants have *no* DMA or interrupt support on the CF
-> interface so a simple bit-banging approach is taken.  Although if DMA is
-> available, we do take advantage of it.
->
-> The register definitions are part of the chip support patch set
-> mentioned above, and are not included here.
->
-> At this point I would like to get feedback as to whether this is a
-> good approach for the CF driver, or perhaps generate ideas about other
-> possible approaches.
-
-   It's totally unacceptable for drivers/ide/ as this is self-containeed 
-driver no using IDE core for anything, so this can only fit well to 
-drivers/block/.
-OTOH, CF support via self-contained driver is certainly a waste of code 
-since IDE core and (libata) are here to drive the CF devices as well. 
-What we need is a "normal" IDE or libata (at your option) driver.
-
-WBR, Sergei
-
-
+greg k-h
