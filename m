@@ -1,133 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbYKNRkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbYKNRlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbYKNRkd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 12:40:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751511AbYKNRkW
+	id S1754231AbYKNRlT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 12:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbYKNRk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 12:40:22 -0500
-Received: from ti-out-0910.google.com ([209.85.142.184]:1890 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbYKNRkV (ORCPT
+	Fri, 14 Nov 2008 12:40:59 -0500
+Received: from qb-out-0506.google.com ([72.14.204.227]:38295 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbYKNRk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 12:40:21 -0500
+	Fri, 14 Nov 2008 12:40:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=jZUTciYNrzbQx+tqwQ7gwAz388gKI/6BTyV0GPxbqWLqVhhKrwX6PCDERLCmq7YAjK
-         94r3or+laDEosO+tUmE09ra6AtPmJT29shxzdyOAmtMowtKR0JbppSzxd4UOsmRwft/g
-         yB6KlrSaNXfMBRHBLSKKQxl7QW4XRG+66erfw=
-From: walimis <walimisdev@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/1] ftrace: fix wrong pos computing when read buffer has been fulfilled.
-Date: Sat, 15 Nov 2008 01:40:11 +0800
-Message-Id: <1226684411-14281-1-git-send-email-walimisdev@gmail.com>
-X-Mailer: git-send-email 1.6.0.3
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=HiefyDZqMectTmmUFezFhTOcYUcFZMTqR7nIYmKMv4j0uFKHbgG+kwn8fmIIJr7eUF
+         o/c/3QPZVoBNNHjgkDaBc4wKoXc4M8Ag8tomMyzINIAYAdirQYsbH/mBrT/OC/DRxvPL
+         TDvENIvcodkzqcxhYWsqHw9mYEcF6FqSSzvgk=
+Message-ID: <cfd18e0f0811140940n3efb1963qd5b1aab42dae1c1b@mail.gmail.com>
+Date: Fri, 14 Nov 2008 12:40:53 -0500
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] reintroduce accept4
+Cc: "Paul Mackerras" <paulus@samba.org>, subrata@linux.vnet.ibm.com,
+       linux-arch@vger.kernel.org, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-api@vger.kernel.org, linux-man@vger.kernel.org,
+       davidel@xmailserver.org, netdev@vger.kernel.org, roland@redhat.com,
+       oleg@tv-sign.ru, hch@lst.de, davem@davemloft.net, alan@redhat.com,
+       jakub@redhat.com
+In-Reply-To: <20081113145737.96898aaf.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200810261641.m9QGfotr024285@hs20-bc2-1.build.redhat.com>
+	 <517f3f820811131351l1305b2d2u43ab4e0601d97f93@mail.gmail.com>
+	 <20081113140541.23754cad.akpm@linux-foundation.org>
+	 <18716.43376.534965.688695@cargo.ozlabs.ibm.com>
+	 <18716.43543.256621.825529@cargo.ozlabs.ibm.com>
+	 <20081113145737.96898aaf.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-phenomenon:
+> Here's the latest version, for review-n-test enjoyment:
 
-The first value of dyn_ftrace_total_info is not equal with
-`cat available_filter_functions | wc -l`, but they should be equal.
+Andrew,
 
-root cause:
+I made a few small tweaks to the changelog: wording fixes, and para
+break fixes; other than that, changed the text to say that I rewrote
+(rather than updated) the test program.  Please substitute it with the
+following.
 
-When printing functions with seq_printf in t_show, if the read buffer
-is just overflowed by current function record, then this function
-won't be printed to user space through read buffer, it will
-just be dropped. So we can't see this function printing.
-So, every time the last function to fill the read buffer, if overflowed,
-will be dropped.
-This also applies to set_ftrace_filter if set_ftrace_filter has
-more bytes than read buffer.
+Cheers,
 
-fix:
+Michael
 
-Through checking return value of seq_printf, if less than 0, we know
-this function doesn't be printed. Then we decrease position to force
-this function to be printed next time, in next read buffer.
+===
+From: Ulrich Drepper <drepper@redhat.com>
 
-another little fix is to show correct allocating pages count.
+Introduce a new accept4() system call.  The addition of this system call
+matches analogous changes in 2.6.27 (dup3(), evenfd2(), signalfd4(),
+inotify_init1(), epoll_create1(), pipe2()) which added new system calls
+that differed from analogous traditional system calls in adding a flags
+argument that can be used to access additional functionality.
 
-Signed-off-by: walimis <walimisdev@gmail.com>
----
- kernel/trace/ftrace.c |   24 ++++++++++++++----------
- 1 files changed, 14 insertions(+), 10 deletions(-)
+The accept4() system call is exactly the same as accept(), except that
+it adds a flags bit-mask argument.  Two flags are initially implemented.
+(Most of the new system calls in 2.6.27 also had both of these flags.)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index beb21a5..b47718b 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -700,7 +700,7 @@ static int __init ftrace_dyn_table_alloc(unsigned long num_to_init)
- 
- 	cnt = num_to_init / ENTRIES_PER_PAGE;
- 	pr_info("ftrace: allocating %ld entries in %d pages\n",
--		num_to_init, cnt);
-+		num_to_init, cnt + 1);
- 
- 	for (i = 0; i < cnt; i++) {
- 		pg->next = (void *)get_zeroed_page(GFP_KERNEL);
-@@ -783,13 +783,11 @@ static void *t_start(struct seq_file *m, loff_t *pos)
- 	void *p = NULL;
- 	loff_t l = -1;
- 
--	if (*pos != iter->pos) {
--		for (p = t_next(m, p, &l); p && l < *pos; p = t_next(m, p, &l))
--			;
--	} else {
--		l = *pos;
--		p = t_next(m, p, &l);
-+	if (*pos > iter->pos) {
-+		*pos=iter->pos;
- 	}
-+	l = *pos;
-+	p = t_next(m, p, &l);
- 
- 	return p;
- }
-@@ -800,15 +798,21 @@ static void t_stop(struct seq_file *m, void *p)
- 
- static int t_show(struct seq_file *m, void *v)
- {
-+	struct ftrace_iterator *iter = m->private;
- 	struct dyn_ftrace *rec = v;
- 	char str[KSYM_SYMBOL_LEN];
-+	int ret = 0;
- 
- 	if (!rec)
- 		return 0;
- 
- 	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
- 
--	seq_printf(m, "%s\n", str);
-+	ret = seq_printf(m, "%s\n", str);
-+	if (ret < 0) {
-+		iter->pos--;
-+		iter->idx--;
-+	}
- 
- 	return 0;
- }
-@@ -834,7 +838,7 @@ ftrace_avail_open(struct inode *inode, struct file *file)
- 		return -ENOMEM;
- 
- 	iter->pg = ftrace_pages_start;
--	iter->pos = -1;
-+	iter->pos = 0;
- 
- 	ret = seq_open(file, &show_ftrace_seq_ops);
- 	if (!ret) {
-@@ -921,7 +925,7 @@ ftrace_regex_open(struct inode *inode, struct file *file, int enable)
- 
- 	if (file->f_mode & FMODE_READ) {
- 		iter->pg = ftrace_pages_start;
--		iter->pos = -1;
-+		iter->pos = 0;
- 		iter->flags = enable ? FTRACE_ITER_FILTER :
- 			FTRACE_ITER_NOTRACE;
- 
--- 
-1.6.0.3
+SOCK_CLOEXEC causes the close-on-exec (FD_CLOEXEC) flag to be enabled
+for the new file descriptor returned by accept4().  This is a useful
+security feature to avoid leaking information in a multithreaded
+program where one thread is doing an accept() at the same time as
+another thread is doing a fork() plus exec().  More details here:
+http://udrepper.livejournal.com/20407.html "Secure File Descriptor Handling",
+Ulrich Drepper).
 
+The other flag is SOCK_NONBLOCK, which causes the O_NONBLOCK flag
+to be enabled on the new open file description created by accept4().
+(This flag is merely a convenience, saving the use of additional calls
+fcntl(F_GETFL) and fcntl (F_SETFL) to achieve the same result.
+
+Here's a test program.  Works on x86-32.  Should work on x86-64, but
+I (mtk) don't have a system to hand to test with.
+
+It tests accept4() with each of the four possible combinations of
+SOCK_CLOEXEC and SOCK_NONBLOCK set/clear in 'flags', and verifies
+that the appropriate flags are set on the file descriptor/open file
+description returned by accept4().
+
+I tested Ulrich's patch in this thread by applying against 2.6.28-rc2,
+and it passes according to my test program.
+
+/* test_accept4.c
+
+  Copyright (C) 2008, Linux Foundation, written by Michael Kerrisk
+       <mtk.manpages@gmail.com>
+
+  Licensed under the GNU GPLv2 or later.
+*/
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+
+#define PORT_NUM 33333
+
+#define die(msg) do { perror(msg); exit(EXIT_FAILURE); } while (0)
+
+/**********************************************************************/
+
+/* The following is what we need until glibc gets a wrapper for
+  accept4() */
+
+/* Flags for socket(), socketpair(), accept4() */
+#ifndef SOCK_CLOEXEC
+#define SOCK_CLOEXEC    O_CLOEXEC
+#endif
+#ifndef SOCK_NONBLOCK
+#define SOCK_NONBLOCK   O_NONBLOCK
+#endif
+
+#ifdef __x86_64__
+#define SYS_accept4 288
+#elif __i386__
+#define USE_SOCKETCALL 1
+#define SYS_ACCEPT4 18
+#else
+#error "Sorry -- don't know the syscall # on this architecture"
+#endif
+
+static int
+accept4(int fd, struct sockaddr *sockaddr, socklen_t *addrlen, int flags)
+{
+   printf("Calling accept4(): flags = %x", flags);
+   if (flags != 0) {
+       printf(" (");
+       if (flags & SOCK_CLOEXEC)
+           printf("SOCK_CLOEXEC");
+       if ((flags & SOCK_CLOEXEC) && (flags & SOCK_NONBLOCK))
+           printf(" ");
+       if (flags & SOCK_NONBLOCK)
+           printf("SOCK_NONBLOCK");
+       printf(")");
+   }
+   printf("\n");
+
+#if USE_SOCKETCALL
+   long args[6];
+
+   args[0] = fd;
+   args[1] = (long) sockaddr;
+   args[2] = (long) addrlen;
+   args[3] = flags;
+
+   return syscall(SYS_socketcall, SYS_ACCEPT4, args);
+#else
+   return syscall(SYS_accept4, fd, sockaddr, addrlen, flags);
+#endif
+}
+
+/**********************************************************************/
+
+
+static int
+do_test(int lfd, struct sockaddr_in *conn_addr,
+       int closeonexec_flag, int nonblock_flag)
+{
+   int connfd, acceptfd;
+   int fdf, flf, fdf_pass, flf_pass;
+   struct sockaddr_in claddr;
+   socklen_t addrlen;
+
+   printf("=======================================\n");
+
+   connfd = socket(AF_INET, SOCK_STREAM, 0);
+   if (connfd == -1)
+       die("socket");
+   if (connect(connfd, (struct sockaddr *) conn_addr,
+               sizeof(struct sockaddr_in)) == -1)
+       die("connect");
+
+   addrlen = sizeof(struct sockaddr_in);
+   acceptfd = accept4(lfd, (struct sockaddr *) &claddr, &addrlen,
+                      closeonexec_flag | nonblock_flag);
+   if (acceptfd == -1) {
+       perror("accept4()");
+       close(connfd);
+       return 0;
+   }
+
+   fdf = fcntl(acceptfd, F_GETFD);
+   if (fdf == -1)
+       die("fcntl:F_GETFD");
+   fdf_pass = ((fdf & FD_CLOEXEC) != 0) ==
+              ((closeonexec_flag & SOCK_CLOEXEC) != 0);
+   printf("Close-on-exec flag is %sset (%s); ",
+           (fdf & FD_CLOEXEC) ? "" : "not ",
+           fdf_pass ? "OK" : "failed");
+
+   flf = fcntl(acceptfd, F_GETFL);
+   if (flf == -1)
+       die("fcntl:F_GETFD");
+   flf_pass = ((flf & O_NONBLOCK) != 0) ==
+              ((nonblock_flag & SOCK_NONBLOCK) !=0);
+   printf("nonblock flag is %sset (%s)\n",
+           (flf & O_NONBLOCK) ? "" : "not ",
+           flf_pass ? "OK" : "failed");
+
+   close(acceptfd);
+   close(connfd);
+
+   printf("Test result: %s\n", (fdf_pass && flf_pass) ? "PASS" : "FAIL");
+   return fdf_pass && flf_pass;
+}
+
+
+static int
+create_listening_socket(int port_num)
+{
+   struct sockaddr_in svaddr;
+   int lfd;
+   int optval;
+
+   memset(&svaddr, 0, sizeof(struct sockaddr_in));
+   svaddr.sin_family = AF_INET;
+   svaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+   svaddr.sin_port = htons(port_num);
+
+   lfd = socket(AF_INET, SOCK_STREAM, 0);
+   if (lfd == -1)
+       die("socket");
+
+   optval = 1;
+   if (setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &optval,
+                  sizeof(optval)) == -1)
+       die("setsockopt");
+
+   if (bind(lfd, (struct sockaddr *) &svaddr,
+            sizeof(struct sockaddr_in)) == -1)
+       die("bind");
+
+   if (listen(lfd, 5) == -1)
+       die("listen");
+
+   return lfd;
+}
+
+
+int
+main(int argc, char *argv[])
+{
+   struct sockaddr_in conn_addr;
+   int lfd;
+   int port_num;
+   int passed;
+
+   passed = 1;
+
+   port_num = (argc > 1) ? atoi(argv[1]) : PORT_NUM;
+
+   memset(&conn_addr, 0, sizeof(struct sockaddr_in));
+   conn_addr.sin_family = AF_INET;
+   conn_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   conn_addr.sin_port = htons(port_num);
+
+   lfd = create_listening_socket(port_num);
+
+   if (!do_test(lfd, &conn_addr, 0, 0))
+       passed = 0;
+   if (!do_test(lfd, &conn_addr, SOCK_CLOEXEC, 0))
+       passed = 0;
+   if (!do_test(lfd, &conn_addr, 0, SOCK_NONBLOCK))
+       passed = 0;
+   if (!do_test(lfd, &conn_addr, SOCK_CLOEXEC, SOCK_NONBLOCK))
+       passed = 0;
+
+   close(lfd);
+
+   exit(passed ? EXIT_SUCCESS : EXIT_FAILURE);
+}
+
+[mtk.manpages@gmail.com: rewrote changelog and test program]
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Tested-by: Michael Kerrisk <mtk.manpages@gmail.com>
+Acked-by: Michael Kerrisk <mtk.manpages@gmail.com>
+Cc: <linux-api@vger.kernel.org>
+Cc: <linux-arch@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
