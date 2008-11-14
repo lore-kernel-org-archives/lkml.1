@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYKNT1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYKNTd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbYKNT1d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:27:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYKNT1X
+	id S1755337AbYKNTd2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:33:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYKNTdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:27:23 -0500
-Received: from yw-out-2324.google.com ([74.125.46.31]:37440 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751959AbYKNT1W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:27:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=X1E1tne5Xs+1IE1/6o5lq/EyBHFLv91oQGCWiM9IvA+emwf/YljrNbGNLtBUUBQaon
-         KnaM59xwMMktf8CX8ruBRkEyl5WFUUJomW38P8zAQskNt1XGhQ0Q+CJk4Tt4dVFkpj7s
-         +2mccvue0iXMLgiG7IT45z5lddHL31MXRJNRI=
-Subject: [PATCH] v4l: s2255drv fix firmware test on big-endian
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 14 Nov 2008 11:27:14 -0800
-Message-Id: <1226690834.5483.40.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 14 Nov 2008 14:33:18 -0500
+Received: from gw.goop.org ([64.81.55.164]:44031 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbYKNTdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 14:33:18 -0500
+Message-ID: <491DD27A.30707@goop.org>
+Date: Fri, 14 Nov 2008 11:33:14 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: Jan Beulich <jbeulich@novell.com>
+CC: Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] [PATCH 03 of 38] swiotlb: allow architectures	tooverride
+ swiotlb pool allocation
+References: <patchbomb.1226603398@abulafia.goop.org>	<e9f25b3bb6625ee88f9f.1226603401@abulafia.goop.org> <491D4C89.76E4.0078.0@novell.com>
+In-Reply-To: <491D4C89.76E4.0078.0@novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noticed by sparse:
-drivers/media/video/s2255drv.c:2531:6: warning: restricted __le32 degrades to integer
+Jan Beulich wrote:
+> Not directly related to this patch alone, but to the combined set of changes
+> to swiotlb: I don't see any handling of CONFIG_HIGHMEM here (or at least
+> a note that this a known limitation needing work). I mention this because
+> this was the largest part of the changes I had posted long ago to make
+> lib/swiotlb.c Xen-ready, and which got rejected due to their ugliness.
+>   
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/media/video/s2255drv.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Was that Andi's objection on the grounds that he didn't think that Xen 
+should need swiotlb at all?
 
-diff --git a/drivers/media/video/s2255drv.c b/drivers/media/video/s2255drv.c
-index 5272926..3c3f8cf 100644
---- a/drivers/media/video/s2255drv.c
-+++ b/drivers/media/video/s2255drv.c
-@@ -192,7 +192,7 @@ struct s2255_dmaqueue {
- #define S2255_FW_FAILED		3
- #define S2255_FW_DISCONNECTING  4
- 
--#define S2255_FW_MARKER         0x22552f2f
-+#define S2255_FW_MARKER		cpu_to_le32(0x22552f2f)
- /* 2255 read states */
- #define S2255_READ_IDLE         0
- #define S2255_READ_FRAME        1
--- 
-1.6.0.4.879.g9d19a
+I have to admit I didn't follow that thread very closely (or threads, as 
+I seem to remember).  Do you have a pointer to the pertinent bits?
 
+> While perhaps less intrusive to take care of, I also didn't see an equivalent
+> of the range_straddles_page_boundary() logic, without which I can't see
+> how this would work in the common case.
+>   
+Could you be more specific?  The swiotlb allocation should be machine 
+contiguous and so there's no stradding required, but I think I'm missing 
+your point.
 
-
+    J
