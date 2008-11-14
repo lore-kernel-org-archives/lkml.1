@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbYKNC4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817AbYKNDEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753608AbYKNC4T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 21:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbYKNC4K
+	id S1752817AbYKNDEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 22:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYKNDEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 21:56:10 -0500
-Received: from gw.goop.org ([64.81.55.164]:49435 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbYKNC4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 21:56:09 -0500
-Message-ID: <491CE8C6.4060000@goop.org>
-Date: Thu, 13 Nov 2008 18:56:06 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Thu, 13 Nov 2008 22:04:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39919 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbYKNDEm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 22:04:42 -0500
+Date: Thu, 13 Nov 2008 22:04:39 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Needed fix for set_ftrace_filter
+Message-ID: <alpine.DEB.1.10.0811132158480.17523@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH 1/2] mm: implement remap_pfn_range with apply_to_page_range
-References: <491C61B1.10005@goop.org> <200811141319.56713.nickpiggin@yahoo.com.au>
-In-Reply-To: <200811141319.56713.nickpiggin@yahoo.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
->
-> This isn't performance critical to anyone?
->   
 
-The only difference should be between having the specialized code and an 
-indirect function call, no?
+Ingo,
 
-> I see DRM, IB, GRU, other media and video drivers use it.
->
-> It IS exactly what apply_to_page_range does, I grant you. But so does
-> our traditional set of nested loops. So is there any particular reason
-> to change it? You're not planning to change fork/exit next, are you? :)
->   
+I noticed that the set_ftrace_filter in mainline is badly broken. It 
+displays all files (incorrectly) and lets you only filter once. After 
+that, it does not filter anymore.
 
-No ;)  But I need to have a more Xen-specific version of 
-remap_pfn_range, and I wanted to 1) have the two versions look as 
-similar as possible, and 2) not have a pile of duplicate code.
+Here's the posted fix:
 
-    J
+  http://marc.info/?l=linux-kernel&m=122611613419814&w=2
+
+and it is in tip:
+
+   commit 0183fb1c94b74862b073590fc52c56b7364b7bad
+
+   ftrace: fix set_ftrace_filter
+
+
+Could you get that pushed up to Linus. I cherry picked it into my local 
+mainline git repo, and it worked fine.
+
+Thanks,
+
+-- Steve
+
+
