@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbYKNB26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbYKNB3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbYKNB26 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:28:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbYKNBXR
+	id S1757644AbYKNB3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756453AbYKNBXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:23:17 -0500
-Received: from cobra.newdream.net ([66.33.216.30]:38156 "EHLO
+	Thu, 13 Nov 2008 20:23:23 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:38154 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755948AbYKNBVe (ORCPT
+	with ESMTP id S1755889AbYKNBVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:21:34 -0500
+	Thu, 13 Nov 2008 20:21:33 -0500
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Sage Weil <sage@newdream.net>
-Subject: [PATCH 14/19] ceph: snapshot management
-Date: Thu, 13 Nov 2008 16:56:13 -0800
-Message-Id: <1226624178-3761-15-git-send-email-sage@newdream.net>
+Subject: [PATCH 11/19] ceph: CRUSH mapping algorithm
+Date: Thu, 13 Nov 2008 16:56:10 -0800
+Message-Id: <1226624178-3761-12-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1226624178-3761-14-git-send-email-sage@newdream.net>
+In-Reply-To: <1226624178-3761-11-git-send-email-sage@newdream.net>
 References: <1226624178-3761-1-git-send-email-sage@newdream.net>
  <1226624178-3761-2-git-send-email-sage@newdream.net>
  <1226624178-3761-3-git-send-email-sage@newdream.net>
@@ -29,785 +29,987 @@ References: <1226624178-3761-1-git-send-email-sage@newdream.net>
  <1226624178-3761-9-git-send-email-sage@newdream.net>
  <1226624178-3761-10-git-send-email-sage@newdream.net>
  <1226624178-3761-11-git-send-email-sage@newdream.net>
- <1226624178-3761-12-git-send-email-sage@newdream.net>
- <1226624178-3761-13-git-send-email-sage@newdream.net>
- <1226624178-3761-14-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ceph snapshots rely on client cooperation in determining which
-operations apply to which snapshots, and appropriately flushing
-snapshotted data and metadata back to the OSD and MDS clusters.
-Because snapshots apply to subtrees of the file hierarchy and can be
-created at any time, there is a fair bit of bookkeeping required to
-make this work.
+CRUSH is a fancy hash function designed to map inputs onto a dynamic
+hierarchy of devices while minimizing the extent to which inputs are
+remapped when the devices are added or removed.  It includes some
+features that are specifically useful for storage, most notably the
+ability to map each input onto a set of N devices that are separated
+across administrator-defined failure domains.  CRUSH is used to
+distribute data across the cluster of Ceph storage nodes.
+
+More information about CRUSH can be found in this paper:
+
+    http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/snap.c |  753 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 753 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/snap.c
+ fs/ceph/crush/crush.c  |  139 +++++++++++++
+ fs/ceph/crush/crush.h  |  176 +++++++++++++++++
+ fs/ceph/crush/hash.h   |   80 ++++++++
+ fs/ceph/crush/mapper.c |  507 ++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/crush/mapper.h |   19 ++
+ 5 files changed, 921 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/crush/crush.c
+ create mode 100644 fs/ceph/crush/crush.h
+ create mode 100644 fs/ceph/crush/hash.h
+ create mode 100644 fs/ceph/crush/mapper.c
+ create mode 100644 fs/ceph/crush/mapper.h
 
-diff --git a/fs/ceph/snap.c b/fs/ceph/snap.c
+diff --git a/fs/ceph/crush/crush.c b/fs/ceph/crush/crush.c
 new file mode 100644
-index 0000000..21fdba2
+index 0000000..e039960
 --- /dev/null
-+++ b/fs/ceph/snap.c
-@@ -0,0 +1,753 @@
++++ b/fs/ceph/crush/crush.c
+@@ -0,0 +1,139 @@
 +
-+#include <linux/radix-tree.h>
-+#include <linux/sort.h>
++#ifdef __KERNEL__
++# include <linux/slab.h>
++#include "../ceph_tools.h"
++#else
++# include <stdlib.h>
++# include <assert.h>
++# define kfree(x) do { if (x) free(x); } while (0)
++# define BUG_ON(x) assert(!(x))
++#endif
 +
-+#include "ceph_debug.h"
++#include "crush.h"
 +
-+int ceph_debug_snap = -1;
-+#define DOUT_MASK DOUT_MASK_SNAP
-+#define DOUT_VAR ceph_debug_snap
-+#define DOUT_PREFIX "snap: "
-+
-+#include "super.h"
-+#include "decode.h"
-+
-+/*
-+ * Snapshots in ceph are driven in large part by cooperation from the
-+ * client.  In contrast to local file systems or file servers that
-+ * implement snapshots at a single point in the system, ceph's
-+ * distributed access to storage requires clients to help decide
-+ * whether a write logically occurs before or after a recently created
-+ * snapshot.
-+ *
-+ * This provides a perfect instantanous client-wide snapshot.  Between
-+ * clients, however, snapshots may appear to be applied at slightly
-+ * different points in time, depending on delays in delivering the
-+ * snapshot notification.
-+ *
-+ * Snapshots are _not_ file system-wide.  Instead, each snapshot
-+ * applies to the subdirectory nested beneath some directory.  This
-+ * effectively divides the hierarchy into multiple "realms," where all
-+ * of the files contained by each realm share the same set of
-+ * snapshots.  An individual realm's snap set contains snapshots
-+ * explicitly created on that realm, as well as any snaps in its
-+ * parent's snap set _after_ the point at which the parent became it's
-+ * parent (due to, say, a rename).  Similarly, snaps from prior parents
-+ * during the time intervals during which they were the parent are included.
-+ *
-+ * The client is spared most of this detail, fortunately... it must only
-+ * maintains a hierarchy of realms reflecting the current parent/child
-+ * realm relationship, and for each realm has an explicit list of snaps
-+ * inherited from prior parents.
-+ *
-+ * A snap_realm struct is maintained for realms containing every inode
-+ * with an open cap in the system.  (The needed snap realm information is
-+ * provided by the MDS whenever a cap is issued, i.e., on open.)  A 'seq'
-+ * version number is used to ensure that as realm parameters change (new
-+ * snapshot, new parent, etc.) the client's realm hierarchy is updated.
-+ *
-+ * The realm hierarchy drives the generation of a 'snap context' for each
-+ * realm, which simply lists the resulting set of snaps for the realm.  This
-+ * is attached to any writes sent to OSDs.
++/**
++ * crush_get_bucket_item_weight - Get weight of an item in given bucket
++ * @b: bucket pointer
++ * @p: item index in bucket
 + */
-+
-+/*
-+ * Unfortunately error handling is a bit mixed here.  If we get a snap
-+ * update, but don't have enough memory to update our realm hierarchy,
-+ * it's not clear what we can do about it (besides complaining to the
-+ * console).
-+ */
-+
-+/*
-+ * find/create the realm rooted at @ino and bump its ref count.
-+ *
-+ * caller must hold snap_rwsem for write.
-+ */
-+static
-+struct ceph_snap_realm *ceph_get_snap_realm(struct ceph_mds_client *mdsc,
-+					    u64 ino)
++int crush_get_bucket_item_weight(struct crush_bucket *b, int p)
 +{
-+	struct ceph_snap_realm *realm;
-+
-+	realm = radix_tree_lookup(&mdsc->snap_realms, ino);
-+	if (!realm) {
-+		realm = kzalloc(sizeof(*realm), GFP_NOFS);
-+		if (!realm)
-+			return ERR_PTR(-ENOMEM);
-+		radix_tree_insert(&mdsc->snap_realms, ino, realm);
-+		realm->nref = 0;    /* tree does not take a ref */
-+		realm->ino = ino;
-+		INIT_LIST_HEAD(&realm->children);
-+		INIT_LIST_HEAD(&realm->child_item);
-+		INIT_LIST_HEAD(&realm->inodes_with_caps);
-+		dout(20, "get_snap_realm created %llx %p\n", realm->ino, realm);
-+	}
-+	dout(20, "get_snap_realm %llx %p %d -> %d\n", realm->ino, realm,
-+	     realm->nref, realm->nref+1);
-+	realm->nref++;
-+	return realm;
-+}
-+
-+/*
-+ * caller must hold snap_rwsem for write
-+ */
-+void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
-+			 struct ceph_snap_realm *realm)
-+{
-+	dout(20, "put_snap_realm %llx %p %d -> %d\n", realm->ino, realm,
-+	     realm->nref, realm->nref-1);
-+	realm->nref--;
-+	if (realm->nref == 0) {
-+		if (realm->parent) {
-+			list_del_init(&realm->child_item);
-+			ceph_put_snap_realm(mdsc, realm->parent);
-+		}
-+		radix_tree_delete(&mdsc->snap_realms, realm->ino);
-+		kfree(realm->prior_parent_snaps);
-+		kfree(realm->snaps);
-+		ceph_put_snap_context(realm->cached_context);
-+		kfree(realm);
-+	}
-+}
-+
-+/*
-+ * adjust the parent realm of a given @realm.  adjust child list, and parent
-+ * pointers, and ref counts appropriately.
-+ *
-+ * return true if parent was changed, 0 if unchanged, <0 on error.
-+ *
-+ * caller must hold snap_rwsem for write.
-+ */
-+static int adjust_snap_realm_parent(struct ceph_mds_client *mdsc,
-+				    struct ceph_snap_realm *realm,
-+				    u64 parentino)
-+{
-+	struct ceph_snap_realm *parent;
-+
-+	if (realm->parent_ino == parentino)
++	if (p >= b->size)
 +		return 0;
 +
-+	parent = ceph_get_snap_realm(mdsc, parentino);
-+	if (IS_ERR(parent))
-+		return PTR_ERR(parent);
-+	dout(20, "adjust_snap_realm_parent %llx %p: %llx %p -> %llx %p\n",
-+	     realm->ino, realm, realm->parent_ino, realm->parent,
-+	     parentino, parent);
-+	if (realm->parent) {
-+		list_del_init(&realm->child_item);
-+		ceph_put_snap_realm(mdsc, realm->parent);
++ 	switch (b->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		return ((struct crush_bucket_uniform*)b)->item_weight;
++	case CRUSH_BUCKET_LIST:
++		return ((struct crush_bucket_list*)b)->item_weights[p];
++	case CRUSH_BUCKET_TREE:
++		if (p & 1)
++			return ((struct crush_bucket_tree*)b)->node_weights[p];
++		return 0;
++	case CRUSH_BUCKET_STRAW:
++		return ((struct crush_bucket_straw*)b)->item_weights[p];
 +	}
-+	realm->parent_ino = parentino;
-+	realm->parent = parent;
-+	list_add(&realm->child_item, &parent->children);
++	return 0;
++}
++
++/**
++ * crush_calc_parents - Calculate parent vectors for the given crush map.
++ * @map: crush_map pointer
++ */
++void crush_calc_parents(struct crush_map *map)
++{
++	int i, b, c;
++
++	for (b = 0; b < map->max_buckets; b++) {
++		if (map->buckets[b] == NULL)
++			continue;
++		for (i = 0; i < map->buckets[b]->size; i++) {
++			c = map->buckets[b]->items[i];
++			BUG_ON(c >= map->max_devices ||
++			       c < -map->max_buckets);
++			if (c >= 0)
++				map->device_parents[c] = map->buckets[b]->id;
++			else
++				map->bucket_parents[-1-c] = map->buckets[b]->id;
++		}
++	}
++}
++
++void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b)
++{
++	kfree(b->primes);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket_list(struct crush_bucket_list *b)
++{
++	kfree(b->item_weights);
++	kfree(b->sum_weights);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket_tree(struct crush_bucket_tree *b)
++{
++	kfree(b->node_weights);
++	kfree(b);
++}
++
++void crush_destroy_bucket_straw(struct crush_bucket_straw *b)
++{
++	kfree(b->straws);
++	kfree(b->item_weights);
++	kfree(b->h.items);
++	kfree(b);
++}
++
++void crush_destroy_bucket(struct crush_bucket *b)
++{
++	switch (b->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		crush_destroy_bucket_uniform((struct crush_bucket_uniform *)b);
++		break;
++	case CRUSH_BUCKET_LIST:
++		crush_destroy_bucket_list((struct crush_bucket_list *)b);
++		break;
++	case CRUSH_BUCKET_TREE:
++		crush_destroy_bucket_tree((struct crush_bucket_tree *)b);
++		break;
++	case CRUSH_BUCKET_STRAW:
++		crush_destroy_bucket_straw((struct crush_bucket_straw *)b);
++		break;
++	}
++}
++
++/**
++ * crush_destroy - Destroy a crush_map
++ * @map: crush_map pointer
++ */
++void crush_destroy(struct crush_map *map)
++{
++	int b;
++
++	/* buckets */
++	if (map->buckets) {
++		for (b = 0; b < map->max_buckets; b++) {
++			if (map->buckets[b] == NULL)
++				continue;
++			crush_destroy_bucket(map->buckets[b]);
++		}
++		kfree(map->buckets);
++	}
++
++	/* rules */
++	if (map->rules) {
++		for (b = 0; b < map->max_rules; b++)
++			kfree(map->rules[b]);
++		kfree(map->rules);
++	}
++
++	kfree(map->bucket_parents);
++	kfree(map->device_parents);
++	kfree(map);
++}
++
++
+diff --git a/fs/ceph/crush/crush.h b/fs/ceph/crush/crush.h
+new file mode 100644
+index 0000000..f7aab5e
+--- /dev/null
++++ b/fs/ceph/crush/crush.h
+@@ -0,0 +1,176 @@
++#ifndef _CRUSH_CRUSH_H
++#define _CRUSH_CRUSH_H
++
++#include <linux/types.h>
++
++/*
++ * CRUSH is a pseudo-random data distribution algorithm that
++ * efficiently distributes input values (typically, data objects)
++ * across a heterogeneous, structured storage cluster.
++ *
++ * The algorithm was originally described in detail in this paper
++ * (although the algorithm has evolved somewhat since then):
++ *
++ *     http://www.ssrc.ucsc.edu/Papers/weil-sc06.pdf
++ *
++ * LGPL2
++ */
++
++
++#define CRUSH_MAX_DEPTH 10
++#define CRUSH_MAX_SET   10
++
++
++/*
++ * CRUSH uses user-defined "rules" to describe how inputs should be
++ * mapped to devices.  A rule consists of sequence of steps to perform
++ * to generate the set of output devices.
++ */
++struct crush_rule_step {
++	__u32 op;
++	__s32 arg1;
++	__s32 arg2;
++};
++
++/* step op codes */
++enum {
++	CRUSH_RULE_NOOP = 0,
++	CRUSH_RULE_TAKE = 1,          /* arg1 = value to start with */
++	CRUSH_RULE_CHOOSE_FIRSTN = 2, /* arg1 = num items to pick */
++	                              /* arg2 = type */
++	CRUSH_RULE_CHOOSE_INDEP = 3,  /* same */
++	CRUSH_RULE_EMIT = 4,          /* no args */
++	CRUSH_RULE_CHOOSE_LEAF_FIRSTN = 6,
++	CRUSH_RULE_CHOOSE_LEAF_INDEP = 7,
++};
++
++/*
++ * for specifying choose num (arg1) relative to the max parameter
++ * passed to do_rule
++ */
++#define CRUSH_CHOOSE_N            0
++#define CRUSH_CHOOSE_N_MINUS(x)   (-(x))
++
++/*
++ * The rule mask is used to describe what the rule is intended for.
++ * Given a storage pool and size of output set, we search through the
++ * rule list for a matching rule_mask.
++ */
++struct crush_rule_mask {
++	__u8 pool;
++	__u8 type;
++	__u8 min_size;
++	__u8 max_size;
++};
++
++struct crush_rule {
++	__u32 len;
++	struct crush_rule_mask mask;
++	struct crush_rule_step steps[0];
++};
++
++#define crush_rule_size(len) (sizeof(struct crush_rule) + \
++			      (len)*sizeof(struct crush_rule_step))
++
++
++
++/*
++ * A bucket is a named container of other items (either devices or
++ * other buckets).  Items within a bucket are chosen using one of a
++ * few different algorithms.  The table summarizes how the speed of
++ * each option measures up against mapping stability when items are
++ * added or removed.
++ *
++ *  Bucket Alg     Speed       Additions    Removals
++ *  ------------------------------------------------
++ *  uniform         O(1)       poor         poor
++ *  list            O(n)       optimal      poor
++ *  tree            O(log n)   good         good
++ *  straw           O(n)       optimal      optimal
++ */
++enum {
++	CRUSH_BUCKET_UNIFORM = 1,
++	CRUSH_BUCKET_LIST = 2,
++	CRUSH_BUCKET_TREE = 3,
++	CRUSH_BUCKET_STRAW = 4
++};
++static inline const char *crush_bucket_alg_name(int alg) {
++	switch (alg) {
++	case CRUSH_BUCKET_UNIFORM: return "uniform";
++	case CRUSH_BUCKET_LIST: return "list";
++	case CRUSH_BUCKET_TREE: return "tree";
++	case CRUSH_BUCKET_STRAW: return "straw";
++	default: return "unknown";
++	}
++}
++
++struct crush_bucket {
++	__s32 id;        /* this'll be negative */
++	__u16 type;      /* non-zero; type=0 is reserved for devices */
++	__u16 alg;       /* one of CRUSH_BUCKET_* */
++	__u32 weight;    /* 16-bit fixed point */
++	__u32 size;      /* num items */
++	__s32 *items;
++};
++
++struct crush_bucket_uniform {
++	struct crush_bucket h;
++	__u32 *primes;
++	__u32 item_weight;  /* 16-bit fixed point; all items equally weighted */
++};
++
++struct crush_bucket_list {
++	struct crush_bucket h;
++	__u32 *item_weights;  /* 16-bit fixed point */
++	__u32 *sum_weights;   /* 16-bit fixed point.  element i is sum
++				 of weights 0..i, inclusive */
++};
++
++struct crush_bucket_tree {
++	struct crush_bucket h;  /* note: h.size is _tree_ size, not number of
++				   actual items */
++	__u32 *node_weights;
++};
++
++struct crush_bucket_straw {
++	struct crush_bucket h;
++	__u32 *item_weights;   /* 16-bit fixed point */
++	__u32 *straws;         /* 16-bit fixed point */
++};
++
++
++
++/*
++ * CRUSH map includes all buckets, rules, etc.
++ */
++struct crush_map {
++	struct crush_bucket **buckets;
++	struct crush_rule **rules;
++
++	/*
++	 * Parent pointers to identify the parent bucket a device or
++	 * bucket in the hierarchy.  If an item appears more than
++	 * once, this is the _last_ time it appeared (where buckets
++	 * are processed in bucket id order, from -1 on down to
++	 * -max_buckets.
++	 */
++	__u32 *bucket_parents;
++	__u32 *device_parents;
++
++	__s32 max_buckets;
++	__u32 max_rules;
++	__s32 max_devices;
++};
++
++
++/* crush.c */
++extern int crush_get_bucket_item_weight(struct crush_bucket *b, int pos);
++extern void crush_calc_parents(struct crush_map *map);
++extern void crush_destroy_bucket_uniform(struct crush_bucket_uniform *b);
++extern void crush_destroy_bucket_list(struct crush_bucket_list *b);
++extern void crush_destroy_bucket_tree(struct crush_bucket_tree *b);
++extern void crush_destroy_bucket_straw(struct crush_bucket_straw *b);
++extern void crush_destroy_bucket(struct crush_bucket *b);
++extern void crush_destroy(struct crush_map *map);
++
++#endif
+diff --git a/fs/ceph/crush/hash.h b/fs/ceph/crush/hash.h
+new file mode 100644
+index 0000000..5baf444
+--- /dev/null
++++ b/fs/ceph/crush/hash.h
+@@ -0,0 +1,80 @@
++#ifndef _CRUSH_HASH_H
++#define _CRUSH_HASH_H
++
++// Robert Jenkins' function for mixing 32-bit values
++// http://burtleburtle.net/bob/hash/evahash.html
++// a, b = random bits, c = input and output
++#define hashmix(a,b,c) \
++	a=a-b;  a=a-c;  a=a^(c>>13); \
++	b=b-c;  b=b-a;  b=b^(a<<8);  \
++	c=c-a;  c=c-b;  c=c^(b>>13); \
++	a=a-b;  a=a-c;  a=a^(c>>12); \
++	b=b-c;  b=b-a;  b=b^(a<<16); \
++	c=c-a;  c=c-b;  c=c^(b>>5);  \
++	a=a-b;  a=a-c;  a=a^(c>>3); \
++	b=b-c;  b=b-a;  b=b^(a<<10); \
++	c=c-a;  c=c-b;  c=c^(b>>15);
++
++#define crush_hash_seed 1315423911
++
++static inline unsigned crush_hash32(unsigned a) {
++	unsigned hash = crush_hash_seed ^ a;
++	unsigned b = a;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(b, x, hash);
++	hashmix(y, a, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_2(unsigned a, unsigned b) {
++	unsigned hash = crush_hash_seed ^ a ^ b;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(x, a, hash);
++	hashmix(b, y, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_3(unsigned a, unsigned b, unsigned c) {
++	unsigned int hash = crush_hash_seed ^ a ^ b ^ c;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(c, x, hash);
++	hashmix(y, a, hash);
++	hashmix(b, x, hash);
++	hashmix(y, c, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_4(unsigned a, unsigned b, unsigned c, unsigned d) {
++	unsigned int hash = crush_hash_seed ^a ^ b ^ c ^ d;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(c, d, hash);
++	hashmix(a, x, hash);
++	hashmix(y, b, hash);
++	hashmix(c, x, hash);
++	hashmix(y, d, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++static inline unsigned crush_hash32_5(unsigned a, unsigned b, unsigned c, unsigned d, unsigned e) {
++	unsigned int hash = crush_hash_seed ^ a ^ b ^ c ^ d ^ e;
++	unsigned x = 231232;
++	unsigned y = 1232;
++	hashmix(a, b, hash);
++	hashmix(c, d, hash);
++	hashmix(e, x, hash);
++	hashmix(y, a, hash);
++	hashmix(b, x, hash);
++	hashmix(y, c, hash);
++	hashmix(d, x, hash);
++	hashmix(y, e, hash);
++	return (hash & 0xFFFFFFFF);
++}
++
++#endif
+diff --git a/fs/ceph/crush/mapper.c b/fs/ceph/crush/mapper.c
+new file mode 100644
+index 0000000..da9c3b6
+--- /dev/null
++++ b/fs/ceph/crush/mapper.c
+@@ -0,0 +1,507 @@
++
++#ifdef __KERNEL__
++# include <linux/string.h>
++# include <linux/slab.h>
++# include <asm/bug.h>
++# include <linux/kernel.h>
++# ifndef dprintk
++#  define dprintk(args...)
++# endif
++#else
++# include <string.h>
++# include <stdio.h>
++# include <assert.h>
++# define BUG_ON(x) assert(!(x))
++# define dprintk(args...) /* printf(args) */
++#endif
++
++#include "crush.h"
++#include "hash.h"
++
++
++/**
++ * crush_find_rule - find a crush_rule id for a given pool, type, and size.
++ * @map: the crush_map
++ * @pool: the storage pool id (user defined)
++ * @type: storage pool type (user defined)
++ * @size: output set size
++ */
++int crush_find_rule(struct crush_map *map, int pool, int type, int size)
++{
++	int i;
++
++	for (i = 0; i < map->max_rules; i++) {
++		if (map->rules[i] &&
++		    map->rules[i]->mask.pool == pool &&
++		    map->rules[i]->mask.type == type &&
++		    map->rules[i]->mask.min_size <= size &&
++		    map->rules[i]->mask.max_size >= size)
++			return i;
++	}
++	return -1;
++}
++
++
++/*
++ * bucket choose methods
++ *
++ * For each bucket algorithm, we have a "choose" method that, given a
++ * crush input @x and replica position (usually, position in output set) @r,
++ * will produce an item in the bucket.
++ */
++
++/* uniform */
++static int bucket_uniform_choose(struct crush_bucket_uniform *bucket,
++				 int x, int r, int shift)
++{
++	unsigned o = crush_hash32_2(x, bucket->h.id) & 0xffff;
++	unsigned p = bucket->primes[crush_hash32_2(bucket->h.id, x) %
++				    bucket->h.size];
++	unsigned s = (x + o + (r+1)*p) % bucket->h.size;
++	/*dprintk("%d %d %d %d\n", x, o, r, p);*/
++	if (shift)
++		s = (s + shift) % bucket->h.size;
++	return bucket->h.items[s];
++}
++
++/* list */
++static int bucket_list_choose(struct crush_bucket_list *bucket,
++			      int x, int r, int shift)
++{
++	int i;
++
++	for (i = bucket->h.size-1; i >= 0; i--) {
++		__u64 w = crush_hash32_4(x, bucket->h.items[i], r,
++					 bucket->h.id);
++		w &= 0xffff;
++		/*dprintk("list_choose i=%d x=%d r=%d item %d weight %x sum_weight %x rand %llx",
++		  i, x, r, bucket->h.items[i], bucket->item_weights[i], bucket->sum_weights[i], w);*/
++		w *= bucket->sum_weights[i];
++		w = w >> 16;
++		/*dprintk(" scaled %llx\n", w);*/
++		if (w < bucket->item_weights[i]) {
++			if (shift)
++				i = (i + shift) % bucket->h.size;
++			return bucket->h.items[i];
++		}
++	}
++
++	BUG_ON(1);
++	return 0;
++}
++
++
++/* tree */
++static int height(int n) {
++	int h = 0;
++	while ((n & 1) == 0) {
++		h++;
++		n = n >> 1;
++	}
++	return h;
++}
++
++static int left(int x) {
++	int h = height(x);
++	return x - (1 << (h-1));
++}
++
++static int right(int x) {
++	int h = height(x);
++	return x + (1 << (h-1));
++}
++
++static int terminal(int x) {
++	return x & 1;
++}
++
++static int bucket_tree_choose(struct crush_bucket_tree *bucket,
++			      int x, int r, int shift)
++{
++	int n, l;
++	__u32 w;
++	__u64 t;
++
++	/* start at root */
++	n = bucket->h.size >> 1;
++
++	while (!terminal(n)) {
++		/* pick point in [0, w) */
++		w = bucket->node_weights[n];
++		t = (__u64)crush_hash32_4(x, n, r, bucket->h.id) * (__u64)w;
++		t = t >> 32;
++
++		/* descend to the left or right? */
++		l = left(n);
++		if (t < bucket->node_weights[l])
++			n = l;
++		else
++			n = right(n);
++	}
++
++	while (shift > 0) {
++		n = (n + 2) % bucket->h.size;
++		if (bucket->node_weights[n])
++			shift--;
++	}
++
++	return bucket->h.items[n];
++}
++
++
++/* straw */
++
++static int bucket_straw_choose(struct crush_bucket_straw *bucket,
++			       int x, int r, int shift)
++{
++	int i;
++	int high = 0;
++	__u64 high_draw = 0;
++	__u64 draw;
++
++	for (i = 0; i < bucket->h.size; i++) {
++		draw = crush_hash32_3(x, bucket->h.items[i], r);
++		draw &= 0xffff;
++		draw *= bucket->straws[i];
++		if (i == 0 || draw > high_draw) {
++			high = i;
++			high_draw = draw;
++		}
++	}
++	if (shift)
++		high = (high + shift) % bucket->h.size;
++	return bucket->h.items[high];
++}
++
++static int crush_bucket_choose(struct crush_bucket *in, int x, int r, int shift)
++{
++	switch (in->alg) {
++	case CRUSH_BUCKET_UNIFORM:
++		return bucket_uniform_choose((struct crush_bucket_uniform *)in,
++					     x, r, shift);
++	case CRUSH_BUCKET_LIST:
++		return bucket_list_choose((struct crush_bucket_list *)in,
++					   x, r, shift);
++	case CRUSH_BUCKET_TREE:
++		return bucket_tree_choose((struct crush_bucket_tree *)in,
++					  x, r, shift);
++	case CRUSH_BUCKET_STRAW:
++		return bucket_straw_choose((struct crush_bucket_straw *)in,
++					   x, r, shift);
++	default:
++		BUG_ON(1);
++		return in->items[0];
++	}
++}
++
++
++/*
++ * true if device is marked "out" (failed, fully offloaded)
++ * of the cluster
++ */
++static int is_out(struct crush_map *map, __u32 *weight, int item, int x)
++{
++	if (weight[item] >= 0x1000)
++		return 0;
++	if (weight[item] == 0)
++		return 1;
++	if ((crush_hash32_2(x, item) & 0xffff) < weight[item])
++		return 0;
 +	return 1;
 +}
 +
-+
-+static int cmpu64_rev(const void *a, const void *b)
-+{
-+	if (*(u64 *)a < *(u64 *)b)
-+		return 1;
-+	if (*(u64 *)a > *(u64 *)b)
-+		return -1;
-+	return 0;
-+}
-+
-+/*
-+ * build the snap context for a given realm.
++/**
++ * crush_choose - choose numrep distinct items of given type
++ * @map: the crush_map
++ * @bucket: the bucket we are choose an item from
++ * @x: crush input value
++ * @numrep: the number of items to choose
++ * @type: the type of item to choose
++ * @out: pointer to output vector
++ * @outpos: our position in that vector
++ * @firstn: true if choosing "first n" items, false if choosing "indep"
++ * @recurse_to_leaf: true if we want one device under each item of given type
++ * @out2: second output vector for leaf items (if @recurse_to_leaf)
 + */
-+static int build_snap_context(struct ceph_snap_realm *realm)
++static int crush_choose(struct crush_map *map,
++			struct crush_bucket *bucket,
++			__u32 *weight,
++			int x, int numrep, int type,
++			int *out, int outpos,
++			int firstn, int recurse_to_leaf,
++			int *out2)
 +{
-+	struct ceph_snap_realm *parent = realm->parent;
-+	struct ceph_snap_context *snapc;
-+	int err = 0;
++	int rep;
++	int ftotal, flocal, shift;
++	int retry_descent, retry_bucket, skip_rep;
++	struct crush_bucket *in = bucket;
++	int r;
 +	int i;
-+	int num = realm->num_prior_parent_snaps + realm->num_snaps;
++	int item;
++	int itemtype;
++	int collide, reject;
++	dprintk("choose bucket %d x %d outpos %d\n", bucket->id, x, outpos);
 +
-+	/*
-+	 * build parent context, if it hasn't been built.
-+	 * conservatively estimate that all parent snaps might be
-+	 * included by us.
-+	 */
-+	if (parent) {
-+		if (!parent->cached_context) {
-+			err = build_snap_context(parent);
-+			if (err)
-+				goto fail;
-+		}
-+		num += parent->cached_context->num_snaps;
-+	}
++	for (rep = outpos; rep < numrep; rep++) {
++		/* keep trying until we get a non-out, non-colliding item */
++		ftotal = 0;
++		shift = 0;
++		skip_rep = 0;
++		do {
++			retry_descent = 0;
++			in = bucket;               /* initial bucket */
 +
-+	/* do i actually need to update?  not if my context seq
-+	   matches realm seq, and my parents' does to.  (this works
-+	   because we rebuild_snap_realms() works _downward_ in
-+	   hierarchy after each update.) */
-+	if (realm->cached_context &&
-+	    realm->cached_context->seq <= realm->seq &&
-+	    (!parent ||
-+	     realm->cached_context->seq <= parent->cached_context->seq)) {
-+		dout(10, "build_snap_context %llx %p: %p seq %lld (%d snaps)"
-+		     " (unchanged)\n",
-+		     realm->ino, realm, realm->cached_context,
-+		     realm->cached_context->seq,
-+		     realm->cached_context->num_snaps);
-+		return 0;
-+	}
++			/* choose through intervening buckets */
++			flocal = 0;
++			do {
++				retry_bucket = 0;
++				r = rep;
++				if (in->alg == CRUSH_BUCKET_UNIFORM) {
++					/* be careful */
++					if (firstn || numrep >= in->size)
++						/* r' = r + f_total */
++						r += ftotal - shift;
++					else if (in->size % numrep == 0)
++						/* r'=r+(n+1)*f_local */
++						r += (numrep+1) * (flocal+ftotal- shift);
++					else
++						/* r' = r + n*f_local */
++						r += numrep * (flocal+ftotal-shift);
++				} else {
++					if (firstn)
++						/* r' = r + f_total */
++						r += ftotal - shift;
++					else
++						/* r' = r + n*f_local */
++						r += numrep * (flocal+ftotal-shift);
++				}
 +
-+	/* alloc new snap context */
-+	err = -ENOMEM;
-+	snapc = kzalloc(sizeof(*snapc) + num*sizeof(u64), GFP_NOFS);
-+	if (!snapc)
-+		goto fail;
-+	atomic_set(&snapc->nref, 1);
++				/* bucket choose */
++				item = crush_bucket_choose(in, x, r, shift);
++				BUG_ON(item >= map->max_devices);
 +
-+	/* build (reverse sorted) snap vector */
-+	num = 0;
-+	snapc->seq = realm->seq;
-+	if (parent) {
-+		/* include any of parent's snaps occuring _after_ my
-+		   parent became my parent */
-+		for (i = 0; i < parent->cached_context->num_snaps; i++)
-+			if (parent->cached_context->snaps[i] >=
-+			    realm->parent_since)
-+				snapc->snaps[num++] =
-+					parent->cached_context->snaps[i];
-+		if (parent->cached_context->seq > snapc->seq)
-+			snapc->seq = parent->cached_context->seq;
-+	}
-+	memcpy(snapc->snaps + num, realm->snaps,
-+	       sizeof(u64)*realm->num_snaps);
-+	num += realm->num_snaps;
-+	memcpy(snapc->snaps + num, realm->prior_parent_snaps,
-+	       sizeof(u64)*realm->num_prior_parent_snaps);
-+	num += realm->num_prior_parent_snaps;
++				/* desired type? */
++				if (item < 0)
++					itemtype = map->buckets[-1-item]->type;
++				else
++					itemtype = 0;
++				dprintk("  item %d type %d\n", item, itemtype);
 +
-+	sort(snapc->snaps, num, sizeof(u64), cmpu64_rev, NULL);
-+	snapc->num_snaps = num;
-+	dout(10, "build_snap_context %llx %p: %p seq %lld (%d snaps)\n",
-+	     realm->ino, realm, snapc, snapc->seq, snapc->num_snaps);
++				/* keep going? */
++				if (itemtype != type) {
++					BUG_ON(item >= 0 ||
++					       (-1-item) >= map->max_buckets);
++					in = map->buckets[-1-item];
++					continue;
++				}
 +
-+	if (realm->cached_context)
-+		ceph_put_snap_context(realm->cached_context);
-+	realm->cached_context = snapc;
-+	return 0;
++				/* collision? */
++				collide = 0;
++				for (i = 0; i < outpos; i++) {
++					if (out[i] == item) {
++						collide = 1;
++						break;
++					}
++				}
 +
-+fail:
-+	/*
-+	 * if we fail, clear old (incorrect) cached_context... hopefully
-+	 * we'll have better luck building it later
-+	 */
-+	if (realm->cached_context) {
-+		ceph_put_snap_context(realm->cached_context);
-+		realm->cached_context = NULL;
-+	}
-+	derr(0, "build_snap_context %llx %p fail %d\n", realm->ino,
-+	     realm, err);
-+	return err;
-+}
++				if (recurse_to_leaf &&
++				    crush_choose(map, map->buckets[-1-item], weight,
++						 x, outpos+1, 0,
++						 out2, outpos,
++						 firstn, 0, NULL) <= outpos) {
++					reject = 1;
++				} else {
++					/* out? */
++					if (itemtype == 0)
++						reject = is_out(map, weight, item, x);
++					else
++						reject = 0;
++				}
 +
-+/*
-+ * rebuild snap context for the given realm and all of its children.
-+ */
-+static void rebuild_snap_realms(struct ceph_snap_realm *realm)
-+{
-+	struct list_head *p;
-+	struct ceph_snap_realm *child;
++				if (reject || collide) {
++					ftotal++;
++					flocal++;
 +
-+	dout(10, "rebuild_snap_realms %llx %p\n", realm->ino, realm);
-+	build_snap_context(realm);
++					if (ftotal > 4)
++						shift++;
 +
-+	list_for_each(p, &realm->children) {
-+		child = list_entry(p, struct ceph_snap_realm, child_item);
-+		rebuild_snap_realms(child);
-+	}
-+}
++					if (collide && flocal < 3)
++						/* retry locally a few times */
++						retry_bucket = 1;
++					else if (ftotal < 10) {
++						/* then retry descent */
++						retry_descent = 1;
++					} else
++						/* else give up */
++						skip_rep = 1;
++					dprintk("  reject %d  collide %d  ftotal %d  flocal %d shift %d\n", reject, collide, ftotal, flocal, shift);
++				}
++			} while (retry_bucket);
++		} while (retry_descent);
 +
-+
-+/*
-+ * helper to allocate and decode an array of snapids.  free prior
-+ * instance, if any.
-+ */
-+static int dup_array(u64 **dst, __le64 *src, int num)
-+{
-+	int i;
-+
-+	kfree(*dst);
-+	if (num) {
-+		*dst = kmalloc(sizeof(u64) * num, GFP_NOFS);
-+		if (!*dst)
-+			return -ENOMEM;
-+		for (i = 0; i < num; i++)
-+			(*dst)[i] = le64_to_cpu(src[i]);
-+	} else {
-+		*dst = NULL;
-+	}
-+	return 0;
-+}
-+
-+
-+/*
-+ * When a snapshot is applied, the size/mtime inode metadata is queued
-+ * in a ceph_cap_snap (one for each snapshot) until writeback
-+ * completes and the metadata can be flushed back to the MDS.
-+ *
-+ * However, if a (sync) write is currently in-progress when we apply
-+ * the snapshot, we have to wait until the write succeeds or fails
-+ * (and a final size/mtime is known).  In this case the
-+ * cap_snap->writing = 1, and is said to be "pending."  When the write
-+ * finishes, we __ceph_finish_cap_snap().
-+ *
-+ * Caller must hold snap_rwsem for read (i.e., the realm topology won't
-+ * change).
-+ */
-+void ceph_queue_cap_snap(struct ceph_inode_info *ci,
-+			 struct ceph_snap_context *snapc)
-+{
-+	struct inode *inode = &ci->vfs_inode;
-+	struct ceph_cap_snap *capsnap;
-+	int used;
-+
-+	capsnap = kzalloc(sizeof(*capsnap), GFP_NOFS);
-+	if (!capsnap) {
-+		derr(10, "ENOMEM allocating ceph_cap_snap on %p\n", inode);
-+		return;
-+	}
-+
-+	spin_lock(&inode->i_lock);
-+	used = __ceph_caps_used(ci);
-+	if (__ceph_have_pending_cap_snap(ci)) {
-+		/* there is no point in queuing multiple "pending" cap_snaps,
-+		   as no new writes are allowed to start when pending, so any
-+		   writes in progress now were started before the previous
-+		   cap_snap.  lucky us. */
-+		dout(10, "queue_cap_snap %p snapc %p seq %llu used %d"
-+		     " already pending\n", inode, snapc, snapc->seq, used);
-+		kfree(capsnap);
-+	} else {
-+		igrab(inode);
-+		capsnap->follows = snapc->seq - 1;
-+		capsnap->context = ceph_get_snap_context(snapc);
-+		capsnap->issued = __ceph_caps_issued(ci, NULL);
-+		/* dirty page count moved from _head to this cap_snap;
-+		   all subsequent writes page dirties occur _after_ this
-+		   snapshot. */
-+		capsnap->dirty = ci->i_wrbuffer_ref_head;
-+		ci->i_wrbuffer_ref_head = 0;
-+		ceph_put_snap_context(ci->i_head_snapc);
-+		ci->i_head_snapc = NULL;
-+		list_add_tail(&capsnap->ci_item, &ci->i_cap_snaps);
-+
-+		if (used & CEPH_CAP_WR) {
-+			dout(10, "queue_cap_snap %p cap_snap %p snapc %p"
-+			     " seq %llu used WR, now pending\n", inode,
-+			     capsnap, snapc, snapc->seq);
-+			capsnap->writing = 1;
-+		} else {
-+			/* note mtime, size NOW. */
-+			__ceph_finish_cap_snap(ci, capsnap);
-+		}
-+	}
-+
-+	spin_unlock(&inode->i_lock);
-+}
-+
-+/*
-+ * Finalize the size, mtime for a cap_snap.. that is, settle on final values
-+ * to be used for the snapshot, to be flushed back to the mds.
-+ *
-+ * If capsnap can now be flushed, add to snap_flush list, and return 1.
-+ *
-+ * Caller must hold i_lock.
-+ */
-+int __ceph_finish_cap_snap(struct ceph_inode_info *ci,
-+			    struct ceph_cap_snap *capsnap)
-+{
-+	struct inode *inode = &ci->vfs_inode;
-+	struct ceph_mds_client *mdsc = &ceph_client(inode->i_sb)->mdsc;
-+
-+	BUG_ON(capsnap->writing);
-+	capsnap->size = inode->i_size;
-+	capsnap->mtime = inode->i_mtime;
-+	capsnap->atime = inode->i_atime;
-+	capsnap->ctime = inode->i_ctime;
-+	capsnap->time_warp_seq = ci->i_time_warp_seq;
-+	if (capsnap->dirty) {
-+		dout(10, "finish_cap_snap %p cap_snap %p snapc %p %llu s=%llu "
-+		     "still has %d dirty pages\n", inode, capsnap,
-+		     capsnap->context, capsnap->context->seq,
-+		     capsnap->size, capsnap->dirty);
-+		return 0;
-+	}
-+	dout(10, "finish_cap_snap %p cap_snap %p snapc %p %llu s=%llu clean\n",
-+	     inode, capsnap, capsnap->context,
-+	     capsnap->context->seq, capsnap->size);
-+
-+	spin_lock(&mdsc->snap_flush_lock);
-+	list_add_tail(&ci->i_snap_flush_item, &mdsc->snap_flush_list);
-+	spin_unlock(&mdsc->snap_flush_lock);
-+	return 1;  /* caller may want to ceph_flush_snaps */
-+}
-+
-+
-+/*
-+ * Parse and apply a snapblob "snap trace" from the MDS.  This specifies
-+ * the snap realm parameters from a given realm and all of its ancestors,
-+ * up to the root.
-+ *
-+ * Caller must hold snap_rwsem for write.
-+ */
-+struct ceph_snap_realm *ceph_update_snap_trace(struct ceph_mds_client *mdsc,
-+					       void *p, void *e, bool deletion)
-+{
-+	struct ceph_mds_snap_realm *ri;    /* encoded */
-+	__le64 *snaps;                     /* encoded */
-+	__le64 *prior_parent_snaps;        /* encoded */
-+	struct ceph_snap_realm *realm, *first = NULL;
-+	int invalidate = 0;
-+	int err = -ENOMEM;
-+
-+	dout(10, "update_snap_trace deletion=%d\n", deletion);
-+more:
-+	ceph_decode_need(&p, e, sizeof(*ri), bad);
-+	ri = p;
-+	p += sizeof(*ri);
-+	ceph_decode_need(&p, e, sizeof(u64)*(le32_to_cpu(ri->num_snaps) +
-+			    le32_to_cpu(ri->num_prior_parent_snaps)), bad);
-+	snaps = p;
-+	p += sizeof(u64) * le32_to_cpu(ri->num_snaps);
-+	prior_parent_snaps = p;
-+	p += sizeof(u64) * le32_to_cpu(ri->num_prior_parent_snaps);
-+
-+	realm = ceph_get_snap_realm(mdsc, le64_to_cpu(ri->ino));
-+	if (IS_ERR(realm)) {
-+		err = PTR_ERR(realm);
-+		goto fail;
-+	}
-+	if (!first) {
-+		/* take note if this is the first realm in the trace
-+		 * (the most deeply nested)... we will return if (with
-+		 * nref bumped) to the caller. */
-+		first = realm;
-+		realm->nref++;
-+	}
-+
-+	if (le64_to_cpu(ri->seq) > realm->seq) {
-+		dout(10, "update_snap_trace updating %llx %p %lld -> %lld\n",
-+		     realm->ino, realm, realm->seq, le64_to_cpu(ri->seq));
-+		/*
-+		 * if the realm seq has changed, queue a cap_snap for every
-+		 * inode with open caps.  we do this _before_ we update
-+		 * the realm info so that we prepare for writeback under the
-+		 * _previous_ snap context.
-+		 *
-+		 * ...unless it's a snap deletion!
-+		 */
-+		if (!deletion) {
-+			struct list_head *pi;
-+
-+			list_for_each(pi, &realm->inodes_with_caps) {
-+				struct ceph_inode_info *ci =
-+					list_entry(pi, struct ceph_inode_info,
-+						   i_snap_realm_item);
-+				ceph_queue_cap_snap(ci, realm->cached_context);
-+			}
-+			dout(20, "update_snap_trace cap_snaps queued\n");
-+		}
-+
-+	} else {
-+		dout(10, "update_snap_trace %llx %p seq %lld unchanged\n",
-+		     realm->ino, realm, realm->seq);
-+	}
-+
-+	/* ensure the parent is correct */
-+	err = adjust_snap_realm_parent(mdsc, realm, le64_to_cpu(ri->parent));
-+	if (err < 0)
-+		goto fail;
-+	invalidate += err;
-+
-+	if (le64_to_cpu(ri->seq) > realm->seq) {
-+		/* update realm parameters, snap lists */
-+		realm->seq = le64_to_cpu(ri->seq);
-+		realm->created = le64_to_cpu(ri->created);
-+		realm->parent_since = le64_to_cpu(ri->parent_since);
-+
-+		realm->num_snaps = le32_to_cpu(ri->num_snaps);
-+		err = dup_array(&realm->snaps, snaps, realm->num_snaps);
-+		if (err < 0)
-+			goto fail;
-+
-+		realm->num_prior_parent_snaps =
-+			le32_to_cpu(ri->num_prior_parent_snaps);
-+		err = dup_array(&realm->prior_parent_snaps, prior_parent_snaps,
-+				realm->num_prior_parent_snaps);
-+		if (err < 0)
-+			goto fail;
-+
-+		invalidate = 1;
-+	} else if (!realm->cached_context) {
-+		invalidate = 1;
-+	}
-+
-+	dout(10, "done with %llx %p, invalidated=%d, %p %p\n", realm->ino,
-+	     realm, invalidate, p, e);
-+
-+	/* invalidate when we reach the _end_ (root) of the trace */
-+	if (p == e && invalidate)
-+		rebuild_snap_realms(realm);
-+
-+	ceph_put_snap_realm(mdsc, realm);
-+	if (p < e)
-+		goto more;
-+
-+	return first;
-+
-+bad:
-+	err = -EINVAL;
-+fail:
-+	derr(10, "update_snap_trace error %d\n", err);
-+	return ERR_PTR(err);
-+}
-+
-+
-+/*
-+ * Send any cap_snaps that are queued for flush.  Try to carry
-+ * s_mutex across multiple snap flushes to avoid locking overhead.
-+ *
-+ * Caller holds no locks.
-+ */
-+static void flush_snaps(struct ceph_mds_client *mdsc)
-+{
-+	struct ceph_inode_info *ci;
-+	struct inode *inode;
-+	struct ceph_mds_session *session = NULL;
-+
-+	dout(10, "flush_snaps\n");
-+	spin_lock(&mdsc->snap_flush_lock);
-+	while (!list_empty(&mdsc->snap_flush_list)) {
-+		ci = list_entry(mdsc->snap_flush_list.next,
-+				struct ceph_inode_info, i_snap_flush_item);
-+		inode = &ci->vfs_inode;
-+		igrab(inode);
-+		spin_unlock(&mdsc->snap_flush_lock);
-+		spin_lock(&inode->i_lock);
-+		__ceph_flush_snaps(ci, &session);
-+		spin_unlock(&inode->i_lock);
-+		iput(inode);
-+		spin_lock(&mdsc->snap_flush_lock);
-+	}
-+	spin_unlock(&mdsc->snap_flush_lock);
-+
-+	if (session) {
-+		mutex_unlock(&session->s_mutex);
-+		ceph_put_mds_session(session);
-+	}
-+	dout(10, "flush_snaps done\n");
-+}
-+
-+
-+/*
-+ * Handle a snap notification from the MDS.
-+ *
-+ * This can take two basic forms: the simplest is just a snap creation
-+ * or deletion notification on an existing realm.  This should update the
-+ * realm and its children.
-+ *
-+ * The more difficult case is realm creation, due to snap creation at a
-+ * new point in the file hierarchy, or due to a rename that moves a file or
-+ * directory into another realm.
-+ */
-+void ceph_handle_snap(struct ceph_mds_client *mdsc,
-+		      struct ceph_msg *msg)
-+{
-+	struct super_block *sb = mdsc->client->sb;
-+	struct ceph_mds_session *session;
-+	int mds;
-+	u64 split;
-+	int op;
-+	int trace_len;
-+	struct ceph_snap_realm *realm = NULL;
-+	void *p = msg->front.iov_base;
-+	void *e = p + msg->front.iov_len;
-+	struct ceph_mds_snap_head *h;
-+	int num_split_inos, num_split_realms;
-+	__le64 *split_inos = NULL, *split_realms = NULL;
-+	int i;
-+	int locked_rwsem = 0;
-+
-+	if (le32_to_cpu(msg->hdr.src.name.type) != CEPH_ENTITY_TYPE_MDS)
-+		return;
-+	mds = le32_to_cpu(msg->hdr.src.name.num);
-+
-+	/* decode */
-+	if (msg->front.iov_len < sizeof(*h))
-+		goto bad;
-+	h = p;
-+	op = le32_to_cpu(h->op);
-+	split = le64_to_cpu(h->split);   /* non-zero if we are splitting an
-+					  * existing realm */
-+	num_split_inos = le32_to_cpu(h->num_split_inos);
-+	num_split_realms = le32_to_cpu(h->num_split_realms);
-+	trace_len = le32_to_cpu(h->trace_len);
-+	p += sizeof(*h);
-+
-+	dout(10, "handle_snap from mds%d op %s split %llx tracelen %d\n", mds,
-+	     ceph_snap_op_name(op), split, trace_len);
-+
-+	/* find session */
-+	mutex_lock(&mdsc->mutex);
-+	session = __ceph_get_mds_session(mdsc, mds);
-+	if (session)
-+		down_write(&mdsc->snap_rwsem);
-+	mutex_unlock(&mdsc->mutex);
-+	if (!session) {
-+		dout(10, "WTF, got snap but no session for mds%d\n", mds);
-+		return;
-+	}
-+	locked_rwsem = 1;
-+
-+	mutex_lock(&session->s_mutex);
-+	session->s_seq++;
-+	mutex_unlock(&session->s_mutex);
-+
-+	if (op == CEPH_SNAP_OP_SPLIT) {
-+		struct ceph_mds_snap_realm *ri;
-+
-+		/*
-+		 * A "split" breaks part of an existing realm off into
-+		 * a new realm.  The MDS provides a list of inodes
-+		 * (with caps) and child realms that belong to the new
-+		 * child.
-+		 */
-+		split_inos = p;
-+		p += sizeof(u64) * num_split_inos;
-+		split_realms = p;
-+		p += sizeof(u64) * num_split_realms;
-+		ceph_decode_need(&p, e, sizeof(*ri), bad);
-+		/* we will peek at realm info here, but will _not_
-+		 * advance p, as the realm update will occur below in
-+		 * ceph_update_snap_trace. */
-+		ri = p;
-+
-+		realm = ceph_get_snap_realm(mdsc, split);
-+		if (IS_ERR(realm))
-+			goto out;
-+
-+		dout(10, "splitting snap_realm %llx %p\n", realm->ino, realm);
-+		for (i = 0; i < num_split_inos; i++) {
-+			struct ceph_vino vino = {
-+				.ino = le64_to_cpu(split_inos[i]),
-+				.snap = CEPH_NOSNAP,
-+			};
-+			struct inode *inode = ceph_find_inode(sb, vino);
-+			struct ceph_inode_info *ci;
-+
-+			if (!inode)
-+				continue;
-+			ci = ceph_inode(inode);
-+
-+			spin_lock(&inode->i_lock);
-+			if (!ci->i_snap_realm)
-+				goto skip_inode;
-+			/*
-+			 * If this inode belongs to a realm that was
-+			 * created after our new realm, we experienced
-+			 * a race (due to another split notifications
-+			 * arriving from a different MDS).  So skip
-+			 * this inode.
-+			 */
-+			if (ci->i_snap_realm->created >
-+			    le64_to_cpu(ri->created)) {
-+				dout(15, " leaving %p in newer realm %llx %p\n",
-+				     inode, ci->i_snap_realm->ino,
-+				     ci->i_snap_realm);
-+				goto skip_inode;
-+			}
-+			dout(15, " will move %p to split realm %llx %p\n",
-+			     inode, realm->ino, realm);
-+			/*
-+			 * Remove the inode from the realm's inode
-+			 * list, but don't add it to the new realm
-+			 * yet.  We don't want the cap_snap to be
-+			 * queued (again) by ceph_update_snap_trace()
-+			 * below.  Queue it _now_, under the old context.
-+			 */
-+			list_del_init(&ci->i_snap_realm_item);
-+			spin_unlock(&inode->i_lock);
-+
-+			ceph_queue_cap_snap(ci,
-+					    ci->i_snap_realm->cached_context);
-+
-+			iput(inode);
++		if (skip_rep) {
++			dprintk("skip rep\n");
 +			continue;
-+
-+		skip_inode:
-+			spin_unlock(&inode->i_lock);
-+			iput(inode);
 +		}
 +
-+		/* we may have taken some of the old realm's children. */
-+		for (i = 0; i < num_split_realms; i++) {
-+			struct ceph_snap_realm *child =
-+				ceph_get_snap_realm(mdsc,
-+					   le64_to_cpu(split_realms[i]));
-+			if (IS_ERR(child))
-+				continue;
-+			adjust_snap_realm_parent(mdsc, child, realm->ino);
-+			ceph_put_snap_realm(mdsc, child);
-+		}
++		dprintk("choose got %d\n", item);
++		out[outpos] = item;
++		outpos++;
 +	}
 +
-+	/*
-+	 * update using the provided snap trace. if we are deleting a
-+	 * snap, we can avoid queueing cap_snaps.
-+	 */
-+	realm = ceph_update_snap_trace(mdsc, p, e,
-+				       op == CEPH_SNAP_OP_DESTROY);
-+	if (IS_ERR(realm))
-+		goto bad;
-+
-+	if (op == CEPH_SNAP_OP_SPLIT) {
-+		/*
-+		 * ok, _now_ add the inodes into the new realm.
-+		 */
-+		for (i = 0; i < num_split_inos; i++) {
-+			struct ceph_vino vino = {
-+				.ino = le64_to_cpu(split_inos[i]),
-+				.snap = CEPH_NOSNAP,
-+			};
-+			struct inode *inode = ceph_find_inode(sb, vino);
-+			struct ceph_inode_info *ci;
-+
-+			if (!inode)
-+				continue;
-+			ci = ceph_inode(inode);
-+			spin_lock(&inode->i_lock);
-+			ceph_put_snap_realm(mdsc, ci->i_snap_realm);
-+			list_add(&ci->i_snap_realm_item,
-+				 &realm->inodes_with_caps);
-+			ci->i_snap_realm = realm;
-+			realm->nref++;
-+			spin_unlock(&inode->i_lock);
-+			iput(inode);
-+		}
-+
-+		/* we took a reference when we created the realm, above */
-+		ceph_put_snap_realm(mdsc, realm);
-+	}
-+
-+	ceph_put_snap_realm(mdsc, realm);
-+	up_write(&mdsc->snap_rwsem);
-+
-+	flush_snaps(mdsc);
-+	return;
-+
-+bad:
-+	derr(10, "corrupt snap message from mds%d\n", mds);
-+out:
-+	if (locked_rwsem)
-+		up_write(&mdsc->snap_rwsem);
-+	return;
++	dprintk("choose returns %d\n", outpos);
++	return outpos;
 +}
 +
 +
++/**
++ * crush_do_rule - calculate a mapping with the given input and rule
++ * @map: the crush_map
++ * @ruleno: the rule id
++ * @x: hash input
++ * @result: pointer to result vector
++ * @result_max: maximum result size
++ * @force: force initial replica choice; -1 for none
++ */
++int crush_do_rule(struct crush_map *map,
++		  int ruleno, int x, int *result, int result_max,
++		  int force, __u32 *weight)
++{
++	int result_len;
++	int force_context[CRUSH_MAX_DEPTH];
++	int force_pos = -1;
++	int a[CRUSH_MAX_SET];
++	int b[CRUSH_MAX_SET];
++	int c[CRUSH_MAX_SET];
++	int recurse_to_leaf;
++	int *w;
++	int wsize = 0;
++	int *o;
++	int osize;
++	int *tmp;
++	struct crush_rule *rule;
++	int step;
++	int i,j;
++	int numrep;
++	int firstn;
 +
++	BUG_ON(ruleno >= map->max_rules);
++	rule = map->rules[ruleno];
++	result_len = 0;
++	w = a;
++	o = b;
++
++	/*
++	 * determine hierarchical context of force, if any.  note
++	 * that this may or may not correspond to the specific types
++	 * referenced by the crush rule.
++	 */
++	if (force >= 0) {
++		if (force >= map->max_devices ||
++		    map->device_parents[force] == 0) {
++			/*dprintk("CRUSH: forcefed device dne\n");*/
++			return -1;  /* force fed device dne */
++		}
++		if (!is_out(map, weight, force, x)) {
++			while (1) {
++				force_context[++force_pos] = force;
++				/*dprintk("force_context[%d] = %d\n", force_pos, force);*/
++				if (force >= 0)
++					force = map->device_parents[force];
++				else
++					force = map->bucket_parents[-1-force];
++				if (force == 0)
++					break;
++			}
++		}
++	}
++
++	for (step = 0; step < rule->len; step++) {
++		firstn = 0;
++		switch (rule->steps[step].op) {
++		case CRUSH_RULE_TAKE:
++			w[0] = rule->steps[step].arg1;
++			if (force_pos >= 0) {
++				BUG_ON(force_context[force_pos] != w[0]);
++				force_pos--;
++			}
++			wsize = 1;
++			break;
++
++		case CRUSH_RULE_CHOOSE_LEAF_FIRSTN:
++		case CRUSH_RULE_CHOOSE_FIRSTN:
++			firstn = 1;
++		case CRUSH_RULE_CHOOSE_LEAF_INDEP:
++		case CRUSH_RULE_CHOOSE_INDEP:
++			BUG_ON(wsize == 0);
++
++			/* reset output */
++			osize = 0;
++
++			recurse_to_leaf = rule->steps[step].op >=
++				CRUSH_RULE_CHOOSE_LEAF_FIRSTN;
++			for (i = 0; i < wsize; i++) {
++				/*
++				 * see CRUSH_N, CRUSH_N_MINUS macros.
++				 * basically, numrep <= 0 means relative to
++				 * the provided result_max
++				 */
++				numrep = rule->steps[step].arg1;
++				if (numrep <= 0) {
++					numrep += result_max;
++					if (numrep <= 0)
++						continue;
++				}
++				j = 0;
++				if (osize == 0 && force_pos >= 0) {
++					/* skip any intermediate types */
++					while (force_pos &&
++					       force_context[force_pos] < 0 &&
++					       rule->steps[step].arg2 !=
++					       map->buckets[-1-force_context[force_pos]]->type)
++						force_pos--;
++					o[osize] = force_context[force_pos];
++					if (recurse_to_leaf)
++						c[osize] = force_context[0];
++					j++;
++					force_pos--;
++				}
++				osize += crush_choose(map,
++						      map->buckets[-1-w[i]],
++						      weight,
++						      x, numrep,
++						      rule->steps[step].arg2,
++						      o+osize, j,
++						      firstn,
++						      recurse_to_leaf, c+osize);
++			}
++
++			if (recurse_to_leaf)
++				/* copy final _leaf_ values to output set */
++				memcpy(o, c, osize*sizeof(*o));
++
++			/* swap t and w arrays */
++			tmp = o;
++			o = w;
++			w = tmp;
++			wsize = osize;
++			break;
++
++
++		case CRUSH_RULE_EMIT:
++			for (i=0; i<wsize && result_len < result_max; i++) {
++				result[result_len] = w[i];
++				result_len++;
++			}
++			wsize = 0;
++			break;
++
++		default:
++			BUG_ON(1);
++		}
++	}
++
++	return result_len;
++}
++
++
+diff --git a/fs/ceph/crush/mapper.h b/fs/ceph/crush/mapper.h
+new file mode 100644
+index 0000000..9ca9cd5
+--- /dev/null
++++ b/fs/ceph/crush/mapper.h
+@@ -0,0 +1,19 @@
++#ifndef _CRUSH_MAPPER_H
++#define _CRUSH_MAPPER_H
++
++#include "crush.h"
++
++/*
++ * CRUSH functions for find rules and then mapping an input to an
++ * output set.
++ *
++ * LGPL2
++ */
++extern int crush_find_rule(struct crush_map *map, int pool, int type, int size);
++extern int crush_do_rule(struct crush_map *map,
++			 int ruleno,
++			 int x, int *result, int result_max,
++			 int forcefeed,
++			 __u32 *weights); /* -1 for none */
++
++#endif
 -- 
 1.5.6.5
 
