@@ -1,127 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYKNBAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbYKNBC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755323AbYKNBAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYKNBAZ
+	id S1755472AbYKNBC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbYKNBCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:00:25 -0500
-Received: from mail.tpi.com ([198.107.51.143]:1454 "EHLO mail.tpi.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753190AbYKNBAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:00:23 -0500
-Message-ID: <491CCD86.7050904@canonical.com>
-Date: Thu, 13 Nov 2008 17:59:50 -0700
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Mario Limonciello <mario_limonciello@dell.com>
-Subject: Re: Dell Wireless 365 requires reset quirk
-References: <20081104162448.A338EF8A65@sepang.rtg.net> <20081111145706.9bfb4627.akpm@linux-foundation.org>
-In-Reply-To: <20081111145706.9bfb4627.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/mixed;
- boundary="------------060909030701010208060209"
+	Thu, 13 Nov 2008 20:02:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43274 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751869AbYKNBCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 20:02:48 -0500
+Date: Thu, 13 Nov 2008 17:02:11 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jarkko Nikula <jarkko.nikula@nokia.com>
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net, jarkko.nikula@nokia.com,
+       stable@kernel.org
+Subject: Re: [patch 2.6.28-rc4] gpiolib: extend gpio label column width in
+ debugfs file
+Message-Id: <20081113170211.23bf0343.akpm@linux-foundation.org>
+In-Reply-To: <1226472973-16271-1-git-send-email-jarkko.nikula@nokia.com>
+References: <1226472973-16271-1-git-send-email-jarkko.nikula@nokia.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060909030701010208060209
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wed, 12 Nov 2008 08:56:13 +0200
+Jarkko Nikula <jarkko.nikula@nokia.com> wrote:
 
-Andrew Morton wrote:
-> On Tue,  4 Nov 2008 09:24:48 -0700 (MST)
-> timg@tpi.com (Tim Gardner) wrote:
+> There are already various drivers having bigger label than 12 bytes. Most
+> of them fit well under 20 bytes but make column width exact so that
+> oversized labels don't mess up output alignment.
+
+Please provide before-and-after example output for this sort of change
+so that we can better understand its effect.
+
+> Signed-off-by: Jarkko Nikula <jarkko.nikula@nokia.com>
+> ---
+>  drivers/gpio/gpiolib.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
->> >From 931ccb629d739aa563347a4e866bc26107e6b545 Mon Sep 17 00:00:00 2001
->> From: Tim Gardner <tim.gardner@canonical.com>
->> Date: Tue, 4 Nov 2008 09:18:06 -0700
->> Subject: [PATCH] Dell Wireless 365 needs BTUSB_RESET quirk.
->>  OriginalAuthor: Mario Limonciello <mario_limonciello@dell.com>
->>
->> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
->> Cc: stable@kernel.org
->> ---
->>  drivers/bluetooth/btusb.c |    3 +++
->>  1 files changed, 3 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
->> index af472e0..051b758 100644
->> --- a/drivers/bluetooth/btusb.c
->> +++ b/drivers/bluetooth/btusb.c
->> @@ -125,6 +125,9 @@ static struct usb_device_id blacklist_table[] = {
->>  	/* Dell laptop with Broadcom chip */
->>  	{ USB_DEVICE(0x413c, 0x8126), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
->>  
->> +	/* Dell Wireless 365 */
->> +	{ USB_DEVICE(0x413c, 0x8160), .driver_info = BTUSB_RESET },
->> +
->>  	/* Dell Wireless 370 */
->>  	{ USB_DEVICE(0x413c, 0x8156), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
->>  
-> 
-> I shall assume that this patch was authored by Mario.  This should have
-> been communicated by adding his From: line right at the top of the
-> changelog.  Mario's signed-off-by: is absent, but that is tolerable
-> because we have yours.
-> 
-> The (absent) changelog fails to explain what effect this patch has. 
-> _why_ does this driver need this quirk?
-> 
-> As it stands, there is insufficient information here for making
-> 2.6.28-vs-2.6.29 decisions, let alone 2.6.27.x, 2.6.26.x, etc.
-> 
+> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> index faa1cc6..82020ab 100644
+> --- a/drivers/gpio/gpiolib.c
+> +++ b/drivers/gpio/gpiolib.c
+> @@ -1134,7 +1134,7 @@ static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
+>  			continue;
+>  
+>  		is_out = test_bit(FLAG_IS_OUT, &gdesc->flags);
+> -		seq_printf(s, " gpio-%-3d (%-12s) %s %s",
+> +		seq_printf(s, " gpio-%-3d (%-20.20s) %s %s",
+>  			gpio, gdesc->label,
+>  			is_out ? "out" : "in ",
+>  			chip->get
 
-Is this better (aside from being an attachment) ?
+This is a non-backward-compatible change to a userspace interface.  It
+looks like a pretty safe one, but this is always a fairly big deal.
 
-rtg
--- 
-Tim Gardner tim.gardner@canonical.com
+If we're going to make this change then we should backport it to
+2.6.27.x, 2.6.26.x and to 2.6.25.x to minimise the chance that someone
+will write a parser which works on one kernel version and fails on
+another.
 
---------------060909030701010208060209
-Content-Type: text/x-patch;
- name="0001--bluetooth-Dell-Wireless-365-needs-BTUSB_RESET-qui.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="0001--bluetooth-Dell-Wireless-365-needs-BTUSB_RESET-qui.patc";
- filename*1="h"
-
->From 8da2a85810aa0fb5abbc93d15482846af5d60669 Mon Sep 17 00:00:00 2001
-From: Mario Limonciello <mario_limonciello@dell.com>
-Date: Tue, 4 Nov 2008 09:18:06 -0700
-Subject: [PATCH] bluetooth: Dell Wireless 365 needs BTUSB_RESET quirk.
-
-This patch causes the BT365 to be reset when the driver is loaded.
-Without it, you won't be able to connect to other devices or scan for
-devices.
-
-Signed-off-by: Mario Limonciello <mario_limonciello@dell.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Cc: stable@kernel.org
----
- drivers/bluetooth/btusb.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index af472e0..051b758 100644
---- a/drivers/bluetooth/btusb.c
-+++ b/drivers/bluetooth/btusb.c
-@@ -125,6 +125,9 @@ static struct usb_device_id blacklist_table[] = {
- 	/* Dell laptop with Broadcom chip */
- 	{ USB_DEVICE(0x413c, 0x8126), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
- 
-+	/* Dell Wireless 365 */
-+	{ USB_DEVICE(0x413c, 0x8160), .driver_info = BTUSB_RESET },
-+
- 	/* Dell Wireless 370 */
- 	{ USB_DEVICE(0x413c, 0x8156), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
- 
--- 
-1.5.6.3
-
-
---------------060909030701010208060209--
+David?  Thoughts?
