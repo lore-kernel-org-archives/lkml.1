@@ -1,108 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYKNA4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbYKNBAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbYKNA4Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 19:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYKNA4C
+	id S1755323AbYKNBAe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbYKNBAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 19:56:02 -0500
-Received: from kroah.org ([198.145.64.141]:43121 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754638AbYKNA4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 19:56:00 -0500
-Date: Thu, 13 Nov 2008 16:55:38 -0800
-From: Greg KH <greg@kroah.com>
-To: Yu Zhao <yu.zhao@intel.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-Message-ID: <20081114005538.GA21161@kroah.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084515.GO3773@yzhao12-linux.sh.intel.com> <20081106043318.GB30292@kroah.com> <20081106044613.GA30397@kroah.com> <4913AF89.2050504@intel.com> <20081107031837.GB30003@kroah.com> <20081113065024.GA3038@yzhao12-linux.sh.intel.com>
+	Thu, 13 Nov 2008 20:00:25 -0500
+Received: from mail.tpi.com ([198.107.51.143]:1454 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753190AbYKNBAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 13 Nov 2008 20:00:23 -0500
+Message-ID: <491CCD86.7050904@canonical.com>
+Date: Thu, 13 Nov 2008 17:59:50 -0700
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113065024.GA3038@yzhao12-linux.sh.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Mario Limonciello <mario_limonciello@dell.com>
+Subject: Re: Dell Wireless 365 requires reset quirk
+References: <20081104162448.A338EF8A65@sepang.rtg.net> <20081111145706.9bfb4627.akpm@linux-foundation.org>
+In-Reply-To: <20081111145706.9bfb4627.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/mixed;
+ boundary="------------060909030701010208060209"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 02:50:24PM +0800, Yu Zhao wrote:
-> On Fri, Nov 07, 2008 at 11:18:37AM +0800, Greg KH wrote:
-> > On Fri, Nov 07, 2008 at 11:01:29AM +0800, Zhao, Yu wrote:
-> > > Greg KH wrote:
-> > >> On Wed, Nov 05, 2008 at 08:33:18PM -0800, Greg KH wrote:
-> > >>> On Wed, Oct 22, 2008 at 04:45:15PM +0800, Yu Zhao wrote:
-> > >>>>  Documentation/ABI/testing/sysfs-bus-pci |   33 
-> > >>>> +++++++++++++++++++++++++++++++
-> > >>>>  1 files changed, 33 insertions(+), 0 deletions(-)
-> > >>>>
-> > >>>> diff --git a/Documentation/ABI/testing/sysfs-bus-pci 
-> > >>>> b/Documentation/ABI/testing/sysfs-bus-pci
-> > >>>> index ceddcff..41cce8f 100644
-> > >>>> --- a/Documentation/ABI/testing/sysfs-bus-pci
-> > >>>> +++ b/Documentation/ABI/testing/sysfs-bus-pci
-> > >>>> @@ -9,3 +9,36 @@ Description:
-> > >>>>  		that some devices may have malformatted data.  If the
-> > >>>>  		underlying VPD has a writable section then the
-> > >>>>  		corresponding section of this file will be writable.
-> > >>>> +
-> > >>>> +What:		/sys/bus/pci/devices/.../iov/enable
-> > >>> Are you sure this is still the correct location with your change to
-> > >>> struct device?
-> > >> Nevermind, this is correct.
-> > >> But the bigger problem is that userspace doesn't know when these
-> > >> attributes show up.  So tools like udev and HAL and others can't look
-> > >> for them as they never get notified, and they don't even know if they
-> > >> should be looking for them or not.
-> > >> Is there any way to tie these attributes to the "main" pci device so
-> > >> that they get created before the device is announced to the world?
-> > >> Doing that would solve this issue.
-> > >> thanks,
-> > >> greg k-h
-> > >
-> > > Currently PCI subsystem has /sys/.../{vendor,device,...} bundled to the 
-> > > main PCI device (I suppose this means the entries are created by 
-> > > 'device_add')
-> > >
-> > > And after the PCI device is announced, 
-> > > /sys/.../{config,resourceX,rom,vpd,iov,...} get created depending on if 
-> > > these features are supported.
-> > 
-> > And that's a bug.  Let's not continue to make the same bug here as well.
-> > 
-> > > Making dynamic entries tie to the main PCI device would require PCI 
-> > > subsystem to allocate different 'bus_type' for the devices, right?
-> > 
-> > No, it would just mean they need to be all added before the device is
-> > fully registered with the driver core.
+This is a multi-part message in MIME format.
+--------------060909030701010208060209
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Andrew Morton wrote:
+> On Tue,  4 Nov 2008 09:24:48 -0700 (MST)
+> timg@tpi.com (Tim Gardner) wrote:
 > 
-> I looked into the PCI and driver core code again, but didn't figured out how
-> to do it.
+>> >From 931ccb629d739aa563347a4e866bc26107e6b545 Mon Sep 17 00:00:00 2001
+>> From: Tim Gardner <tim.gardner@canonical.com>
+>> Date: Tue, 4 Nov 2008 09:18:06 -0700
+>> Subject: [PATCH] Dell Wireless 365 needs BTUSB_RESET quirk.
+>>  OriginalAuthor: Mario Limonciello <mario_limonciello@dell.com>
+>>
+>> Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+>> Cc: stable@kernel.org
+>> ---
+>>  drivers/bluetooth/btusb.c |    3 +++
+>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+>> index af472e0..051b758 100644
+>> --- a/drivers/bluetooth/btusb.c
+>> +++ b/drivers/bluetooth/btusb.c
+>> @@ -125,6 +125,9 @@ static struct usb_device_id blacklist_table[] = {
+>>  	/* Dell laptop with Broadcom chip */
+>>  	{ USB_DEVICE(0x413c, 0x8126), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
+>>  
+>> +	/* Dell Wireless 365 */
+>> +	{ USB_DEVICE(0x413c, 0x8160), .driver_info = BTUSB_RESET },
+>> +
+>>  	/* Dell Wireless 370 */
+>>  	{ USB_DEVICE(0x413c, 0x8156), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
+>>  
 > 
-> A 'pci_dev' is added by pci_bus_add_device() via device_add(), which creates
-> sysfs entries according to 'dev_attrs' in the 'pci_bus_type'. If we want those
-> dynamic entries to appear before the uevent is triggered, we have to bundle
-> them into the 'dev_attrs'. Is this right way for the dynamic entries? Or I
-> missed something?
+> I shall assume that this patch was authored by Mario.  This should have
+> been communicated by adding his From: line right at the top of the
+> changelog.  Mario's signed-off-by: is absent, but that is tolerable
+> because we have yours.
+> 
+> The (absent) changelog fails to explain what effect this patch has. 
+> _why_ does this driver need this quirk?
+> 
+> As it stands, there is insufficient information here for making
+> 2.6.28-vs-2.6.29 decisions, let alone 2.6.27.x, 2.6.26.x, etc.
+> 
 
-Yes, that is correct.
+Is this better (aside from being an attachment) ?
 
-Or you can add attributes before device_add() is called to the device,
-which is probably much easier to do, right?
+rtg
+-- 
+Tim Gardner tim.gardner@canonical.com
 
-There are also "conditional" attributes, which get only displayed if
-some kind of condition is met, I think you want to use those.
+--------------060909030701010208060209
+Content-Type: text/x-patch;
+ name="0001--bluetooth-Dell-Wireless-365-needs-BTUSB_RESET-qui.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001--bluetooth-Dell-Wireless-365-needs-BTUSB_RESET-qui.patc";
+ filename*1="h"
 
-thanks,
+>From 8da2a85810aa0fb5abbc93d15482846af5d60669 Mon Sep 17 00:00:00 2001
+From: Mario Limonciello <mario_limonciello@dell.com>
+Date: Tue, 4 Nov 2008 09:18:06 -0700
+Subject: [PATCH] bluetooth: Dell Wireless 365 needs BTUSB_RESET quirk.
 
-greg k-h
+This patch causes the BT365 to be reset when the driver is loaded.
+Without it, you won't be able to connect to other devices or scan for
+devices.
+
+Signed-off-by: Mario Limonciello <mario_limonciello@dell.com>
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Cc: stable@kernel.org
+---
+ drivers/bluetooth/btusb.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+index af472e0..051b758 100644
+--- a/drivers/bluetooth/btusb.c
++++ b/drivers/bluetooth/btusb.c
+@@ -125,6 +125,9 @@ static struct usb_device_id blacklist_table[] = {
+ 	/* Dell laptop with Broadcom chip */
+ 	{ USB_DEVICE(0x413c, 0x8126), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
+ 
++	/* Dell Wireless 365 */
++	{ USB_DEVICE(0x413c, 0x8160), .driver_info = BTUSB_RESET },
++
+ 	/* Dell Wireless 370 */
+ 	{ USB_DEVICE(0x413c, 0x8156), .driver_info = BTUSB_RESET | BTUSB_WRONG_SCO_MTU },
+ 
+-- 
+1.5.6.3
+
+
+--------------060909030701010208060209--
