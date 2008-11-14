@@ -1,104 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbYKNPDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbYKNPIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbYKNPDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 10:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbYKNPD3
+	id S1752856AbYKNPIl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 10:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYKNPId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 10:03:29 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:51463 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbYKNPD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 10:03:28 -0500
-Date: Fri, 14 Nov 2008 15:03:15 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: i8046:  unbind/bind issue with laptop system password set
-Message-ID: <20081114150315.209f8468@palantir.linicks.net>
-In-Reply-To: <20081114123840.35c40865@palantir.linicks.net>
-References: <20081114123058.4e7db857@palantir.linicks.net>
-	<20081114123840.35c40865@palantir.linicks.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 10:08:33 -0500
+Received: from qw-out-2122.google.com ([74.125.92.25]:19067 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbYKNPIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 10:08:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=BfF8J+mTvmQdhp8twi6mF8oAsw3zYBL8kfeqZdBne79HvrMoKocQxiRK/HEDS7mJCy
+         FdD+lM5RDLoO9RwdhNrevh4Y3Q7Od3TNeCJ48ijQrIX5QlA94ecT5AQ6YebULDqrH7xF
+         XPRYW4qwlZPr5hqSqd3pwCYR9zu4qQqrhpz18=
+Date: Fri, 14 Nov 2008 10:08:20 -0500
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/virtex: fix various format/casting printk
+	mismatches
+Message-ID: <20081114150820.GA20645@yoda.jdub.homelinux.org>
+References: <20081114045304.15077.72430.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081114045304.15077.72430.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008 12:38:40 +0000
-Nick Warne <nick@ukfsn.org> wrote:
+On Thu, Nov 13, 2008 at 09:53:04PM -0700, Grant Likely wrote:
+>From: Grant Likely <grant.likely@secretlab.ca>
+>
+>Various printk format string in code used by the Xilinx Virtex platform
+>are not 32-bit/64-bit safe.  Add correct casting to fix the bugs.
+>
+>Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-> On Fri, 14 Nov 2008 12:30:58 +0000
-> Nick Warne <nick@ukfsn.org> wrote:
-> 
-> > Hi all,
-> > 
-> > This is a strange one.  My laptop, a Dell Inspiron 6400 (UK model
-> > MM061) has a BIOS option to set system password that is required on
-> > boot/reboot/and on waking up from suspend to RAM (sleep).
-> > 
-> > This works fine, but after I enter my password during resume, I find
-> > my keyboard has gone AWOL (no keys mapped, all keys auto repeat
-> > etc.) and shortly mouse buttons die too... so all I can do now is
-> > hit the power off button!
-> > 
-> > log/messages spews out lots of this stuff:
-> > Nov 14 11:36:36 palantir kernel: [10330.783152] atkbd.c: Unknown key
-> > pressed (raw set 2, code 0x28 on isa0060/serio0). Nov 14 11:36:36
-> > palantir kernel: [10330.783164] atkbd.c: Use 'setkeycodes 28
-> > <keycode>' to make it known. Nov 14 11:36:37 palantir kernel:
-> > [10330.855664] atkbd.c: Unknown key pressed (raw set 2, code 0x128
-> > on isa0060/serio0). Nov 14 11:36:37 palantir kernel: [10330.855676]
-> > atkbd.c: Use 'setkeycodes 28 <keycode>' to make it known
-> > 
-> > I have invested this, and one difference I notice in log/messages
-> > during resume activity is this:
-> > 
-> > WITHOUT system password required:
-> > input: AT Translated Set 2 keyboard
-> > as /devices/platform/i8042/serio0/input/input1
-> > 
-> > WITH system password required:
-> > input: AT Raw Set 2 keyboard
-> > as /devices/platform/i8042/serio16/input/input45
-> > 
-> > Now, investigating further, I have found that I can replicate this
-> > whole issue with this script:
-> > 
-> > #!/bin/sh
-> > echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind
-> > sleep 5;
-> > echo -n "i8042" > /sys/bus/platform/drivers/i8042/bind
-> > 
-> > if I hit a key during the sleep stage, the keyboard et al all goes
-> > AWOL again.
-> > 
-> > So, I am presuming here that when my laptop gets woken up, the BIOS
-> > system password screen comes, and the /etc/acpi/resume.d/ scripts
-> > are being held in stasis until I enter the password.  BUT, I have
-> > then used the keyboard before i8042 is echoed to 'bind', and this
-> > causes the issue.  Without the system password set, the scipts
-> > perhaps run fast enough before I can hit the keyboard in this
-> > keyboard state.
-> > 
-> > One reference I found with similar problem:
-> > 
-> > http://kerneltrap.org/mailarchive/linux-kernel/2008/5/13/1805874
-> 
-> Forgot!
-> 
-> I am running Ubuntu 8.10 base, with hand built 2.6.27.5 kernel.
-> 
-> BTW, this issue also happens in plain console with no X running.
-> 
+This fixes the warnings I have been seeing on the ppc40x_defconfig, so:
 
-OK, also found this all works great if I remove the
-/etc/acpi/suspend.s/20-i8042-input.sh
-/etc/acpi/resume.d/40-i8042-input.sh
+Acked-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
-scripts (i.e. no 'echoes of i8042 to unbind/bind).  Keyboard seems to
-still be dead when asleep also :-)
-
-Nick
--- 
-Free Software Foundation Associate Member 5508
+josh
