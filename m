@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751843AbYKNFLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751879AbYKNFQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751843AbYKNFLT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 00:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbYKNFLE
+	id S1751879AbYKNFQY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 00:16:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbYKNFQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 00:11:04 -0500
-Received: from nessie.weebeastie.net ([220.233.7.36]:47693 "EHLO
-	bunyip.billabong.weebeastie.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750781AbYKNFLD (ORCPT
+	Fri, 14 Nov 2008 00:16:15 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:26139 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbYKNFQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 00:11:03 -0500
-Date: Fri, 14 Nov 2008 16:14:47 +1100
-From: CaT <cat@zip.com.au>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.27.6
-Message-ID: <20081114051447.GC3413@zip.com.au>
-References: <20081113185350.GA3765@kroah.com>
+	Fri, 14 Nov 2008 00:16:15 -0500
+Message-ID: <491D0996.4080600@oracle.com>
+Date: Thu, 13 Nov 2008 21:16:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081113185350.GA3765@kroah.com>
-Organisation: Furball Inc.
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+CC: jack@suse.cz
+Subject: Re: mmotm 2008-11-13-17-22 uploaded (dquot build errors)
+References: <200811140122.mAE1MeAG015836@imap1.linux-foundation.org>
+In-Reply-To: <200811140122.mAE1MeAG015836@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.491D0999.0007:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Nov 13, 2008 at 10:53:50AM -0800, Greg KH wrote:
-> Francois Romieu (3):
->       r8169: get ethtool settings through the generic mii helper
-
-This appears to make the gigeth driver dependant on the mii sutff in the
-100mbit driver submenu. Should it and if so doesn't this mean that the
-mii option best be moved out of the 100mbit menu (as this would make
-things a bit more logical - I don't expect to use stuff out of the
-100mbit menu if I've only got gigeth cards)?
+mmotm-2008-1113-1722/fs/dquot.c:1391: error: redefinition of '__kstrtab_dquot_reserve_space'
+mmotm-2008-1113-1722/fs/dquot.c:1352: error: previous definition of '__kstrtab_dquot_reserve_space' was here
+mmotm-2008-1113-1722/fs/dquot.c:1391: error: redefinition of '__ksymtab_dquot_reserve_space'
+mmotm-2008-1113-1722/fs/dquot.c:1352: error: previous definition of '__ksymtab_dquot_reserve_space' was here
+mmotm-2008-1113-1722/fs/dquot.c:2101: error: redefinition of '__kstrtab_vfs_dq_quota_on_remount'
+mmotm-2008-1113-1722/fs/dquot.c:1974: error: previous definition of '__kstrtab_vfs_dq_quota_on_remount' was here
+mmotm-2008-1113-1722/fs/dquot.c:2101: error: redefinition of '__ksymtab_vfs_dq_quota_on_remount'
+mmotm-2008-1113-1722/fs/dquot.c:1974: error: previous definition of '__ksymtab_vfs_dq_quota_on_remount' was here
 
 -- 
-  "Police noticed some rustling sounds from Linn's bottom area
-  and on closer inspection a roll of cash was found protruding
-  from Linn's anus, the full amount of cash taken in the robbery."
-    - http://www.smh.com.au/news/world/robber-hides-loot-up-his-booty/2008/05/09/1210131248617.html
+~Randy
