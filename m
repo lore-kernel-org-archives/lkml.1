@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbYKNTqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbYKNTzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbYKNTqq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:46:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYKNTqi
+	id S1754861AbYKNTzh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:55:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYKNTz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:46:38 -0500
-Received: from nlpi025.sbcis.sbc.com ([207.115.36.54]:33742 "EHLO
-	nlpi025.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbYKNTqi (ORCPT
+	Fri, 14 Nov 2008 14:55:29 -0500
+Received: from ik-out-1112.google.com ([66.249.90.179]:48639 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbYKNTz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:46:38 -0500
-Date: Fri, 14 Nov 2008 13:46:16 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@quilx.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_OPTIMIZE_INLINING fun
-In-Reply-To: <Pine.LNX.4.64.0811141923030.10125@blonde.site>
-Message-ID: <Pine.LNX.4.64.0811141343510.30981@quilx.com>
-References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
- <Pine.LNX.4.64.0811141244060.29394@quilx.com> <Pine.LNX.4.64.0811141923030.10125@blonde.site>
+	Fri, 14 Nov 2008 14:55:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=ib2VZaDstnswVfOFXUUvLMaPMon56i6zplQmLZtqLaRbHJHyiY7LtXj8euWOHsS0Rk
+         Kj+P959TI0Z0eM5hBKraaTsKQGkDZapKvYYoUjCZpYqlHkdaJoapTPqX/CjZ2snvDAP4
+         TbRoyWjBW/TAbz8+TYIVBogwsE2qvu7/wpIWw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: Strange behavior since commit 5fef0e5c
+Date: Fri, 14 Nov 2008 20:53:05 +0100
+User-Agent: KMail/1.9.10
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
+       LKML <linux-kernel@vger.kernel.org>, linux-pcmcia@lists.infradead.org
+References: <491D92EB.2030200@lwfinger.net>
+In-Reply-To: <491D92EB.2030200@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -2.6
+Content-Disposition: inline
+Message-Id: <200811142053.05880.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Hugh Dickins wrote:
+On Friday 14 November 2008, Larry Finger wrote:
+> In testing kernel version 2.6.28-rc4 on my server that was running kernel
+> 2.6.27, an external IDE disk system connected via a PCCard interface failed to
+> start because module ide_disk would not load. The console output is as follows:
+> 
+> finger@sonylap:~> sudo modprobe -v ide-disk
+> WARNING: module 'ide_gd_mod' is unsupported
+> FATAL: Module ide_disk not found.
 
-> What I was intending anyway, quite independently of the INLINING
-> issue, was changing those and some others to VM_BUG_ONs, which are
-> intended really for VM testers rather than for distros to turn on.
-> (Though perhaps Nick has shifted his position on that.)
+Please verify that your system uses a recent module-init-tools version
+and then repeat 'make modules' + 'make modules_install' (it could be that
+something went wrong previously during installing modules) as it works
+just fine for me with 2.6.28-rc3 and module-init-tools 3.4.
 
-Some distros have a bad habit of turning these on for production releases.
-
-> That is indeed the orthodoxy.  I've never been so sold on it as most
-> (there are cases when inlines give superior typechecking, but often
-> the use of the macro will catch wrong types anyway).  But I suspect
-> it's irrelevant, that changing those functions to macros would not
-> actually have any effect on the problem - that's what we've often
-> been assured, anyway, that the compiler nowadays does inlines as
-> efficiently as the preprocessor does macros.  I do wonder though.
-
-Maybe try to compare it with a old kernel that still has the page flags
-macros? That way we would have a testcase useful for bringing to the
-attention of the gcc people.
-
+Thanks,
+Bart
