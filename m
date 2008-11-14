@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbYKNHZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbYKNHfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbYKNHZW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 02:25:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYKNHZI
+	id S1752145AbYKNHfh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 02:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbYKNHf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 02:25:08 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41940 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbYKNHZG (ORCPT
+	Fri, 14 Nov 2008 02:35:27 -0500
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:38858 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750727AbYKNHf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 02:25:06 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: [PATCH for 2.6.28] mm: remove unevictable's show_page_path
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081114155113.0D23.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Fri, 14 Nov 2008 02:35:27 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=uiZVvcnbAY0d3JT7/IGjXRaMSfafbix7K/ifYsBOoLhutP3y5B430O5pFtAcqhASHaMcNtPdm6etf4S8mw1RfHWtiFEdHq7J4sitGaGORVShVAFQWd4HkryzReYQDtQwMM38rWQskkqi/4/4uj/1htehTYpn79Hp38E0aYg9Rek=  ;
+X-YMail-OSG: kHdp6mUVM1m9M2o_XQUEIXRVa1.fZumk.VhndULdxMZjFy01P9nziznPdvsdrJ0xTUA1.NzMWd9FLJGooGpsc3aT_WxMs8AY9LCSyD0zeGAglJD2q1Fm42pFRzt1vsD.DNStA78vcrXchUWeebhvvOGHJE7jpo9nrkNxcP7tP8e8VjStUK_Z6H7Qk0ji
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 1/2] mm: implement remap_pfn_range with apply_to_page_range
+Date: Fri, 14 Nov 2008 18:35:16 +1100
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+References: <491C61B1.10005@goop.org> <200811141417.35724.nickpiggin@yahoo.com.au> <491D0B2F.7050900@goop.org>
+In-Reply-To: <491D0B2F.7050900@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Fri, 14 Nov 2008 16:25:01 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200811141835.17073.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 14 November 2008 16:22, Jeremy Fitzhardinge wrote:
+> Nick Piggin wrote:
+> > On Friday 14 November 2008 13:56, Jeremy Fitzhardinge wrote:
+> >> Nick Piggin wrote:
+> >>> This isn't performance critical to anyone?
+> >>
+> >> The only difference should be between having the specialized code and an
+> >> indirect function call, no?
+> >
+> > Indirect function call per pte. It's going to be slower surely.
+>
+> Yes, though changing the calling convention to handle (up to) a whole
+> page worth of ptes in one call would be fairly simple I think.
 
-Andrew, very sorry for the patch posting at late -rc stage.
-However, I think this patch is needed 2.6.28 and I've tested it on stress workload.
-
-Could you please pick it up?
-
-
---------------------------------------------------
-Hugh Dickins reported show_page_path() is buggy and unsafe. 
-because
-
- - lack dput() against d_find_alias()
- - don't concern vma->vm_mm->owner == NULL
- - lack lock_page()
-
-it was only for debugging, so rather than trying to fix it, just remove it now.
-
+Yep. And leaving it alone is even simpler and still faster :)
 
 
-Reported-by: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: Rik van Riel <riel@redhat.com>
----
-Needed for 2.6.28
+> > It is accepted practice to (carefully) duplicate the page table walking
+> > functions in memory management code. I don't think that's a problem,
+> > there is already so many instances of them (just be sure to stick to
+> > exactly the same form and variable names, and any update or bugfix to
+> > any of them is trivially applicable to all).
+>
+> I think that's pretty awful practice, frankly, and I'd much prefer there
+> to be a single iterator function which everyone uses.
 
- mm/vmscan.c |   35 -----------------------------------
- 1 file changed, 35 deletions(-)
-
---- 2.6.28-rc4/mm/vmscan.c	2008-10-24 09:28:26.000000000 +0100
-+++ linux/mm/vmscan.c	2008-11-12 11:52:44.000000000 +0000
-@@ -2368,39 +2368,6 @@ int page_evictable(struct page *page, st
- 	return 1;
- }
- 
--static void show_page_path(struct page *page)
--{
--	char buf[256];
--	if (page_is_file_cache(page)) {
--		struct address_space *mapping = page->mapping;
--		struct dentry *dentry;
--		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
--
--		spin_lock(&mapping->i_mmap_lock);
--		dentry = d_find_alias(mapping->host);
--		printk(KERN_INFO "rescued: %s %lu\n",
--		       dentry_path(dentry, buf, 256), pgoff);
--		spin_unlock(&mapping->i_mmap_lock);
--	} else {
--#if defined(CONFIG_MM_OWNER) && defined(CONFIG_MMU)
--		struct anon_vma *anon_vma;
--		struct vm_area_struct *vma;
--
--		anon_vma = page_lock_anon_vma(page);
--		if (!anon_vma)
--			return;
--
--		list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
--			printk(KERN_INFO "rescued: anon %s\n",
--			       vma->vm_mm->owner->comm);
--			break;
--		}
--		page_unlock_anon_vma(anon_vma);
--#endif
--	}
--}
--
--
- /**
-  * check_move_unevictable_page - check page for evictability and move to appropriate zone lru list
-  * @page: page to check evictability and move to appropriate lru list
-@@ -2421,8 +2388,6 @@ retry:
- 	if (page_evictable(page, NULL)) {
- 		enum lru_list l = LRU_INACTIVE_ANON + page_is_file_cache(page);
- 
--		show_page_path(page);
--
- 		__dec_zone_state(zone, NR_UNEVICTABLE);
- 		list_move(&page->lru, &zone->lru[l].list);
- 		__inc_zone_state(zone, NR_INACTIVE_ANON + l);
+I think its pretty nice. It means you can make the loops fairly
+optimal even if they might have slightly different requirements
+(different arguments, latency breaks, copy_page_range etc).
 
 
+> The open-coded 
+> iterators everywhere just makes it completely impractical to even think
+> about other kinds of pagetable structures.  (Of course we have at least
+> two "general purpose" pagetable walkers now...)
+
+I think that's being way over dramatic. When switching to a
+different page table structure, I assure you that copying and
+pasting your new walking algorithm a few times will be the least
+of your worries :)
+
+It's not meant to be pluggable. Actually this came up last I think
+when the UNSW wanted to add page table accessors to abstract this.
+They came up with a good set of things, but in the end you can't
+justify slowing things down in these paths unless you actually have
+a replacement page table structure that gets you a *net win*. So
+far, I haven't heard from them again.
+
+No, adding a cycle here or an indirect function call there IMO is
+not acceptable in core mm/ code without a good reason.
