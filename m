@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbYKNSDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbYKNSEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbYKNSDz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 13:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbYKNSDr
+	id S1755488AbYKNSEZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 13:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYKNSER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 13:03:47 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:48277 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040AbYKNSDq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 13:03:46 -0500
-Date: Fri, 14 Nov 2008 18:02:26 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Christoph Hellwig <hch@infradead.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Willy Tarreau <w@1wt.eu>,
-       Peter Cordes <peter@cordes.ca>, Bodo Eggert <7eggert@gmx.de>,
-       David Newall <davidn@davidnewall.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 2.6.28?] don't unlink an active swapfile
-In-Reply-To: <20081114173422.GA22868@infradead.org>
-Message-ID: <Pine.LNX.4.64.0811141758260.29362@blonde.site>
-References: <bnJFK-3bu-7@gated-at.bofh.it> <bnR0A-4kq-1@gated-at.bofh.it>
- <E1KqkZK-0001HO-WF@be1.7eggert.dyndns.org> <Pine.LNX.4.64.0810171250410.22374@blonde.site>
- <20081018003117.GC26067@cordes.ca> <20081018051800.GO24654@1wt.eu>
- <Pine.LNX.4.64.0810182058120.7154@blonde.site> <20081018204948.GA22140@infradead.org>
- <20081018205647.GA29946@1wt.eu> <Pine.LNX.4.64.0811140234300.5027@blonde.site>
- <20081114173422.GA22868@infradead.org>
+	Fri, 14 Nov 2008 13:04:17 -0500
+Received: from gw.goop.org ([64.81.55.164]:59863 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbYKNSER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 13:04:17 -0500
+Message-ID: <491DBD9E.6030703@goop.org>
+Date: Fri, 14 Nov 2008 10:04:14 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH 1/2] mm: implement remap_pfn_range with apply_to_page_range
+References: <491C61B1.10005@goop.org> <200811141417.35724.nickpiggin@yahoo.com.au> <491D0B2F.7050900@goop.org> <200811141835.17073.nickpiggin@yahoo.com.au>
+In-Reply-To: <200811141835.17073.nickpiggin@yahoo.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Christoph Hellwig wrote:
-> On Fri, Nov 14, 2008 at 02:37:22AM +0000, Hugh Dickins wrote:
-> > Peter Cordes is sorry that he rm'ed his swapfiles while they were in use,
-> > he then had no pathname to swapoff.  It's a curious little oversight, but
-> > not one worth a lot of hackery.  Kudos to Willy Tarreau for turning this
-> > around from a discussion of synthetic pathnames to how to prevent unlink.
-> > Mimic immutable: prohibit unlinking an active swapfile in may_delete()
-> > (and don't worry my little head over the tiny race window).
-> 
-> Looks good (but I think I already said this before)
+Nick Piggin wrote:
+> No, adding a cycle here or an indirect function call there IMO is
+> not acceptable in core mm/ code without a good reason.
+>   
 
-Thanks.  Indeed you did.  I wondered whether to add an Acked-by in
-your name, but I think different people have understandably different
-positions on the etiquette of translating "Looks good" into "Acked-by";
-so not knowing your position, I just Cc'ed you again.
+<shrug> OK.
 
-Hugh
+    J
