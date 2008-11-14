@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbYKNWl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbYKNWnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbYKNWl3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 17:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYKNWlV
+	id S1755166AbYKNWnI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 17:43:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYKNWm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 17:41:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42214 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbYKNWlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 17:41:21 -0500
-Subject: [PATCH -v2] capabilities: define get_vfs_caps_from_disk when file
- caps are not enabled
-From: Eric Paris <eparis@redhat.com>
-To: jmorris@namei.org
-Cc: linux-kernel@vger.kernel.org, serue@us.ibm.com, morgan@kernel.org
-Content-Type: text/plain
-Date: Fri, 14 Nov 2008 17:40:34 -0500
-Message-Id: <1226702434.3353.83.camel@localhost.localdomain>
+	Fri, 14 Nov 2008 17:42:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57571 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751416AbYKNWmz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 17:42:55 -0500
+Date: Fri, 14 Nov 2008 14:42:53 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dougthompson@xmission.com
+Cc: dougthompson@xmission.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac: fix mpc85xx and add mpc8536 mpc8560
+Message-Id: <20081114144253.a6f184a5.akpm@linux-foundation.org>
+In-Reply-To: <491b8e5b.uSc1E4+nIKbPbwoT%dougthompson@xmission.com>
+References: <491b8e5b.uSc1E4+nIKbPbwoT%dougthompson@xmission.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When CONFIG_SECURITY_FILE_CAPABILITIES is not set the audit system may
-try to call into the capabilities function vfs_cap_from_file.  This
-patch defines that function so kernels can build and work.
+On Wed, 12 Nov 2008 19:18:03 -0700
+dougthompson@xmission.com wrote:
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
+> From: Kumar Gala <galak@kernel.crashing.org>
+> 
+> All other compatibles that are uniquely identifying the processor use
+> a prefix of the form fsl,mpc85...'.  We add support for it so we
+> can deprecate the older 'fsl,85...' that was improperly used here.
+> 
+> Additionally added mpc8536 & mpc8560 to the compatible lists.
+> 
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+> Acked-by: Dave Jiang <djiang@mvista.com>
 
----
+I don't understand how this patch changes kernel behaviour (this is due
+to my ignorance and your crappy changelog).  So I randomly queued it
+for 2.6.29.  If that was wrong, please let me know.
 
-james morris didn't like the fact I was clearing the cpu_caps struct.
-So this patch makes the error handling better so I don't need to.
-(actually I didn't need to fix the error handling since this audit
-function is only called when fcaps are enabled and we already got the
-xattr data once, but still, this is the right fix)
+> 
+> This patch is based on Nate's 8572 patch.
 
- kernel/auditsc.c     |   11 +++++++----
- security/commoncap.c |    5 +++++
- 2 files changed, 12 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index cef3423..90b0544 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -2556,6 +2556,13 @@ void __audit_log_bprm_fcaps(struct linux_binprm *bprm, kernel_cap_t *pP, kernel_
- 	struct audit_context *context = current->audit_context;
- 	struct cpu_vfs_cap_data vcaps;
- 	struct dentry *dentry;
-+	int ret;
-+
-+	dentry = dget(bprm->file->f_dentry);
-+	ret = get_vfs_caps_from_disk(dentry, &vcaps);
-+	dput(dentry);
-+	if (ret)
-+		return;
- 
- 	ax = kmalloc(sizeof(*ax), GFP_KERNEL);
- 	if (!ax)
-@@ -2565,10 +2572,6 @@ void __audit_log_bprm_fcaps(struct linux_binprm *bprm, kernel_cap_t *pP, kernel_
- 	ax->d.next = context->aux;
- 	context->aux = (void *)ax;
- 
--	dentry = dget(bprm->file->f_dentry);
--	get_vfs_caps_from_disk(dentry, &vcaps);
--	dput(dentry);
--
- 	ax->fcap.permitted = vcaps.permitted;
- 	ax->fcap.inheritable = vcaps.inheritable;
- 	ax->fcap.fE = !!(vcaps.magic_etc & VFS_CAP_FLAGS_EFFECTIVE);
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 0b88160..22b9270 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -337,6 +337,11 @@ int cap_inode_killpriv(struct dentry *dentry)
- 	return 0;
- }
- 
-+int get_vfs_caps_from_disk(const struct dentry *dentry, struct cpu_vfs_cap_data *cpu_caps)
-+{
-+	return -ENODATA;
-+}
-+
- static inline int get_file_caps(struct linux_binprm *bprm)
- {
- 	bprm_clear_caps(bprm);
-
+Who's Nate?  He should at least get a cc.  Perhaps a signed-off-by: too?
 
