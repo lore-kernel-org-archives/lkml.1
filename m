@@ -1,166 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYKNBjb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751726AbYKNBll@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbYKNBjb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:39:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYKNBjW
+	id S1751726AbYKNBll (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:41:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbYKNBlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:39:22 -0500
-Received: from qmta07.westchester.pa.mail.comcast.net ([76.96.62.64]:38701
-	"EHLO QMTA07.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751497AbYKNBjU (ORCPT
+	Thu, 13 Nov 2008 20:41:32 -0500
+Received: from cpsmtpo-eml05.KPNXCHANGE.COM ([213.75.38.154]:50145 "EHLO
+	cpsmtpo-eml05.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751129AbYKNBla (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:39:20 -0500
-X-Authority-Analysis: v=1.0 c=1 a=CYKONpC1OwUA:10 a=zn7U-nhvGoYA:10
- a=2iNgh9swn-kA:10 a=kLFhdQYcMTmZJdCFnOcA:9 a=uljgSVZdmygOEJYYVTgA:7
- a=hrHDtWFVZ2iXxlQI2gLL0QmmPY0A:4 a=d4CUUju0HPYA:10 a=LY0hPdMaydYA:10
-Subject: Re: [PATCH] input: Add a detailed multi-touch finger data report
-From: Jim Gettys <jg@laptop.org>
-Reply-To: jg@laptop.org
-To: Henrik Rydberg <rydberg@euromail.se>
-Cc: Peter Hutterer <peter.hutterer@who-t.net>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <491CCC8A.5090109@euromail.se>
-References: <1226585461.6651.52.camel@jg-vaio>
-	 <491CCC8A.5090109@euromail.se>
-Content-Type: text/plain
-Organization: One Laptop Per Child
-Date: Thu, 13 Nov 2008 20:39:18 -0500
-Message-Id: <1226626758.6651.107.camel@jg-vaio>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 13 Nov 2008 20:41:30 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: sdhci: Loads of scary messages during suspend/resume with SD card inserted
+Date: Fri, 14 Nov 2008 02:41:25 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx,
+       linux-pm@lists.linux-foundation.org
+References: <200809282146.57960.elendil@planet.nl> <20080929113857.GA17379@srcf.ucam.org> <20080929121142.GA18486@srcf.ucam.org>
+In-Reply-To: <20080929121142.GA18486@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811140241.27028.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Nov 2008 01:41:27.0570 (UTC) FILETIME=[1C4CB720:01C945FA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 01:55 +0100, Henrik Rydberg wrote:
-> > Some systems (e.g. Merl's Diamond Touch), give you an ID associated
-> > with the user (in that case, it works by knowing where you are
-> > sitting by capacitive coupling). In this case, it is actually where
-> > the person is sitting, rather than a particular person.
-> 
-> This is similar to what I have experienced with the bcm5974. The chip
-> outputs some identification based on position, but in the end, the
-> information needed is of the kind 'which finger is being lifted', not
-> 'where is it lifted'.  Obtaining such tracking information requires
-> the additional assumption of continuous movement, which makes the
-> usefulness of position-based identifiers somewhat limited. I left out
-> some finger details from the spec for that reason.
-> 
-> > Another case that will be common soon is to be able to sense and
-> > identify markers on the surface (which can be distinguished from
-> > each other).  I know of at least three hardware systems able to do
-> > this. One of these will be in commodity hardware soon enough to
-> > worry about immediately.
-> 
-> Like putting pins on a map and being able to tell where each pin is?
+Hi Matthew,
 
-Yes.  And what color each pin is (at least logically, if not literally).
-You can distinguish that they are different on some hardware I'm aware
-of.
+What's the status of this patch? If you like I can submit it (with the 
+minor fixes that were needed). Or are there issues with it?
 
-> 
-> > So having and ID reported with a touch is clearly needed, whether
-> > thumb, index finger, or some marker.
-> 
-> If a chip can actually classify fingers as index or thumb, it would
-> definitely qualify as detailed finger information. Cool.
+My tests showed that it did not fix all suspend/resume problems, but it 
+was a structural improvement.
 
-Certainly there are research systems that do this today (Microsoft's
-surface system, to give a concrete example).  They can classify the
-fingers on a hand, and tell you the which finger on which hand from the
-image the camera sees.
+Cheers,
+FJP
 
-That table can give you proximity as well; so you know the fingers are
-roughly how close, even before they touch. (They do this by looking at
-how sharp the edges of the fingers are).
-
-Whether there will be commodity hardware able to do this soon is less
-clear; but arguably, all it is is a webcam pointing up at the bottom of
-the tabletop.
-
-> 
-> > Whether such markers would have any user identity directly
-> > associated with them is less than clear, though we'll certainly
-> > start giving them such identity either by convention or fiat
-> > somewhere in the system as the events get processed.  We may also
-> > face co-located sensors, where two sensors are geometrically on top
-> > of each other (but might even report different coordinates of
-> > differing resolutions), but co-aligned.  I'm thinking of the Dell
-> > Latitude XT in this case, though I don't yet know enough about it to
-> > know if in fact its pen uses a different sensor than the capacitive
-> > multi-touch screen.
-> 
-> This sounds similar to the finger classification, although here
-> distinguishing a pen from a finger.
-
-As I said, I don't know if the Latitude hardware is really logically a
-single sensor or two, yet, though I hope to know soon.  It can certainly
-distinguish your fingers from its stylus.  The stylus clearly also has
-proximity information, from playing with it.
-
-The Latitude XT's stylus has a pressure sensor, like a Wacom; I presume
-it will be able to have multiple different flavor styluses like Wacom's
-do too (e.g. erasers, calligraphic pens, etc...).  Certainly our
-software should be able to use many different styluses and distinguish
-them, as happens with Wacom tablets today.
-
-The Latitude XT is interesting as it has the first multitouch laptop
-screen available, at any price (still not cheap, but some of us can
-actually buy them and play with them, which I can't do in the case of a
-table display).
-
-> 
-> Looking at these three cases, it seems adding something like
-> ABS_MT_TOOL_TYPE to the protocol right away makes sense. The wording
-> here is chosen with the distinction between (pin1, pin2, index, thumb,
-> pen) and (pointing-finger, clicking-finger) in mind.
-> 
-
-Yeah, something like this. 
-
-> > Another question is whether an ellipse models a touch adequately at
-> > the moment; other sensors may report more complex geometric
-> > information.  There is a slippery slope here, of course.  In the
-> > extreme case noted above, research systems give you a full image,
-> > which seems like overkill.  I also note the current input system
-> > does not provide any mechanism or hint to associate an input device
-> > with a particular frame buffer or with each other.  Maybe it should,
-> > maybe it shouldn't... Opinions?  Hope this helps.  The problem here
-> > is to draw a line *before* we win our complexity merit badge, while
-> > leaving things open to be extended as more instances of real
-> > hardware appears and we have more experience.
-> 
-> Right. :-) I believe the ellipse model is adequate, because it is the
-> simplest model that allows for utilization of the orientation of a
-> single finger, for instance to turn a knob. At this point, it seems
-> like tough enough a challenge.
-> 
-
-Maybe; but modeling this as a parallelogram or trapezoid may be easier
-to deal with computationally when you stroke a path from the data, to
-which you may have fit a spline....
-
-We learned the hard way about "lumpy lines" in the old X core graphics
-about why you don't want circular (or ellipsoidal) pens; you end up with
-painfully complex mathematics when stroking a path of such things.  And
-the lines were so ugly it made wide lines completely useless.  Cairo
-will avoid the lumpy line problem due to anti-aliasing, but the math is
-still painful.
-
-The attempt to do Postscript "Red book" described circular pens wastes
-like a few hundred K bytes of code in the X server. In short, trying to
-solve to the edge of a circle or ellipse is a high order equation. If
-you approximate this with a polygon, Hobby showed the resulting lines
-are not only much more pleasing when stroked, but are mathematically
-much easier to deal with.  And Adobe cheated anyway, it turned out....
-We should have fixed the X spec, but never did.  Thankfully, Cairo
-finally exists.
-
-So I think something other than an ellipse is probably better....
-                           - Jim
-
--- 
-Jim Gettys <jg@laptop.org>
-One Laptop Per Child
+On Monday 29 September 2008, Matthew Garrett wrote:
+> More to the point, how about this one? It should also handle the resume
+> case, but I haven't tested it yet.
+>
+> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
+> index ea8d7a3..806bcd8 100644
+> --- a/drivers/mmc/host/Kconfig
+> +++ b/drivers/mmc/host/Kconfig
+> @@ -48,23 +48,6 @@ config MMC_SDHCI_PCI
+>
+>  	  If unsure, say N.
+>
+> -config MMC_RICOH_MMC
+> -	tristate "Ricoh MMC Controller Disabler  (EXPERIMENTAL)"
+> -	depends on MMC_SDHCI_PCI
+> -	help
+> -	  This selects the disabler for the Ricoh MMC Controller. This
+> -	  proprietary controller is unnecessary because the SDHCI driver
+> -	  supports MMC cards on the SD controller, but if it is not
+> -	  disabled, it will steal the MMC cards away - rendering them
+> -	  useless. It is safe to select this driver even if you don't
+> -	  have a Ricoh based card reader.
+> -
+> -
+> -	  To compile this driver as a module, choose M here:
+> -	  the module will be called ricoh_mmc.
+> -
+> -	  If unsure, say Y.
+> -
+>  config MMC_OMAP
+>  	tristate "TI OMAP Multimedia Card Interface support"
+>  	depends on ARCH_OMAP
+> diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
+> index c794cc5..0676890 100644
+> --- a/drivers/mmc/host/Makefile
+> +++ b/drivers/mmc/host/Makefile
+> @@ -11,7 +11,6 @@ obj-$(CONFIG_MMC_PXA)		+= pxamci.o
+>  obj-$(CONFIG_MMC_IMX)		+= imxmmc.o
+>  obj-$(CONFIG_MMC_SDHCI)		+= sdhci.o
+>  obj-$(CONFIG_MMC_SDHCI_PCI)	+= sdhci-pci.o
+> -obj-$(CONFIG_MMC_RICOH_MMC)	+= ricoh_mmc.o
+>  obj-$(CONFIG_MMC_WBSD)		+= wbsd.o
+>  obj-$(CONFIG_MMC_AU1X)		+= au1xmmc.o
+>  obj-$(CONFIG_MMC_OMAP)		+= omap.o
+> diff --git a/drivers/mmc/host/ricoh_mmc.c
+> b/drivers/mmc/host/ricoh_mmc.c deleted file mode 100644
+> index a16d760..0000000
+> --- a/drivers/mmc/host/ricoh_mmc.c
+> +++ /dev/null
+> @@ -1,257 +0,0 @@
+> -/*
+> - *  ricoh_mmc.c - Dummy driver to disable the Rioch MMC controller.
+> - *
+> - *  Copyright (C) 2007 Philip Langdale, All Rights Reserved.
+> - *
+> - * This program is free software; you can redistribute it and/or
+> modify - * it under the terms of the GNU General Public License as
+> published by - * the Free Software Foundation; either version 2 of the
+> License, or (at - * your option) any later version.
+> - */
+> -
+> -/*
+> - * This is a conceptually ridiculous driver, but it is required by the
+> way - * the Ricoh multi-function R5C832 works. This chip implements
+> firewire - * and four different memory card controllers. Two of those
+> controllers are - * an SDHCI controller and a proprietary MMC
+> controller. The linux SDHCI - * driver supports MMC cards but the chip
+> detects MMC cards in hardware - * and directs them to the MMC
+> controller - so the SDHCI driver never sees - * them. To get around
+> this, we must disable the useless MMC controller. - * At that point,
+> the SDHCI controller will start seeing them. As a bonus, - * a
+> detection event occurs immediately, even if the MMC card is already - *
+> in the reader.
+> - *
+> - * The relevant registers live on the firewire function, so this is
+> unavoidably - * ugly. Such is life.
+> - */
+> -
+> -#include <linux/pci.h>
+> -
+> -#define DRIVER_NAME "ricoh-mmc"
+> -
+> -static const struct pci_device_id pci_ids[] __devinitdata = {
+> -	{
+> -		.vendor		= PCI_VENDOR_ID_RICOH,
+> -		.device		= PCI_DEVICE_ID_RICOH_R5C843,
+> -		.subvendor	= PCI_ANY_ID,
+> -		.subdevice	= PCI_ANY_ID,
+> -	},
+> -	{ /* end: all zeroes */ },
+> -};
+> -
+> -MODULE_DEVICE_TABLE(pci, pci_ids);
+> -
+> -static int ricoh_mmc_disable(struct pci_dev *fw_dev)
+> -{
+> -	u8 write_enable;
+> -	u8 write_target;
+> -	u8 disable;
+> -
+> -	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+> -		/* via RL5C476 */
+> -
+> -		pci_read_config_byte(fw_dev, 0xB7, &disable);
+> -		if (disable & 0x02) {
+> -			printk(KERN_INFO DRIVER_NAME
+> -				": Controller already disabled. " \
+> -				"Nothing to do.\n");
+> -			return -ENODEV;
+> -		}
+> -
+> -		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
+> -		pci_read_config_byte(fw_dev, 0x8D, &write_target);
+> -		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
+> -		pci_write_config_byte(fw_dev, 0xB7, disable | 0x02);
+> -		pci_write_config_byte(fw_dev, 0x8E, write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8D, write_target);
+> -	} else {
+> -		/* via R5C832 */
+> -
+> -		pci_read_config_byte(fw_dev, 0xCB, &disable);
+> -		if (disable & 0x02) {
+> -			printk(KERN_INFO DRIVER_NAME
+> -			       ": Controller already disabled. " \
+> -				"Nothing to do.\n");
+> -			return -ENODEV;
+> -		}
+> -
+> -		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> -		pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> -		pci_write_config_byte(fw_dev, 0xCB, disable | 0x02);
+> -		pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> -	}
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -	       ": Controller is now disabled.\n");
+> -
+> -	return 0;
+> -}
+> -
+> -static int ricoh_mmc_enable(struct pci_dev *fw_dev)
+> -{
+> -	u8 write_enable;
+> -	u8 write_target;
+> -	u8 disable;
+> -
+> -	if (fw_dev->device == PCI_DEVICE_ID_RICOH_RL5C476) {
+> -		/* via RL5C476 */
+> -
+> -		pci_read_config_byte(fw_dev, 0x8E, &write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8E, 0xAA);
+> -		pci_read_config_byte(fw_dev, 0x8D, &write_target);
+> -		pci_write_config_byte(fw_dev, 0x8D, 0xB7);
+> -		pci_read_config_byte(fw_dev, 0xB7, &disable);
+> -		pci_write_config_byte(fw_dev, 0xB7, disable & ~0x02);
+> -		pci_write_config_byte(fw_dev, 0x8E, write_enable);
+> -		pci_write_config_byte(fw_dev, 0x8D, write_target);
+> -	} else {
+> -		/* via R5C832 */
+> -
+> -		pci_read_config_byte(fw_dev, 0xCA, &write_enable);
+> -		pci_read_config_byte(fw_dev, 0xCB, &disable);
+> -		pci_write_config_byte(fw_dev, 0xCA, 0x57);
+> -		pci_write_config_byte(fw_dev, 0xCB, disable & ~0x02);
+> -		pci_write_config_byte(fw_dev, 0xCA, write_enable);
+> -	}
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -	       ": Controller is now re-enabled.\n");
+> -
+> -	return 0;
+> -}
+> -
+> -static int __devinit ricoh_mmc_probe(struct pci_dev *pdev,
+> -				     const struct pci_device_id *ent)
+> -{
+> -	u8 rev;
+> -	u8 ctrlfound = 0;
+> -
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	BUG_ON(pdev == NULL);
+> -	BUG_ON(ent == NULL);
+> -
+> -	pci_read_config_byte(pdev, PCI_CLASS_REVISION, &rev);
+> -
+> -	printk(KERN_INFO DRIVER_NAME
+> -		": Ricoh MMC controller found at %s [%04x:%04x] (rev %x)\n",
+> -		pci_name(pdev), (int)pdev->vendor, (int)pdev->device,
+> -		(int)rev);
+> -
+> -	while ((fw_dev =
+> -		pci_get_device(PCI_VENDOR_ID_RICOH,
+> -			PCI_DEVICE_ID_RICOH_RL5C476, fw_dev))) {
+> -		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
+> -		    pdev->bus == fw_dev->bus) {
+> -			if (ricoh_mmc_disable(fw_dev) != 0)
+> -				return -ENODEV;
+> -
+> -			pci_set_drvdata(pdev, fw_dev);
+> -
+> -			++ctrlfound;
+> -			break;
+> -		}
+> -	}
+> -
+> -	fw_dev = NULL;
+> -
+> -	while (!ctrlfound &&
+> -	    (fw_dev = pci_get_device(PCI_VENDOR_ID_RICOH,
+> -					PCI_DEVICE_ID_RICOH_R5C832, fw_dev))) {
+> -		if (PCI_SLOT(pdev->devfn) == PCI_SLOT(fw_dev->devfn) &&
+> -		    pdev->bus == fw_dev->bus) {
+> -			if (ricoh_mmc_disable(fw_dev) != 0)
+> -				return -ENODEV;
+> -
+> -			pci_set_drvdata(pdev, fw_dev);
+> -
+> -			++ctrlfound;
+> -		}
+> -	}
+> -
+> -	if (!ctrlfound) {
+> -		printk(KERN_WARNING DRIVER_NAME
+> -		       ": Main firewire function not found. Cannot disable
+> controller.\n"); -		return -ENODEV;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static void __devexit ricoh_mmc_remove(struct pci_dev *pdev)
+> -{
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	fw_dev = pci_get_drvdata(pdev);
+> -	BUG_ON(fw_dev == NULL);
+> -
+> -	ricoh_mmc_enable(fw_dev);
+> -
+> -	pci_set_drvdata(pdev, NULL);
+> -}
+> -
+> -static int ricoh_mmc_suspend(struct pci_dev *pdev, pm_message_t state)
+> -{
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	fw_dev = pci_get_drvdata(pdev);
+> -	BUG_ON(fw_dev == NULL);
+> -
+> -	printk(KERN_INFO DRIVER_NAME ": Suspending.\n");
+> -
+> -	ricoh_mmc_enable(fw_dev);
+> -
+> -	return 0;
+> -}
+> -
+> -static int ricoh_mmc_resume(struct pci_dev *pdev)
+> -{
+> -	struct pci_dev *fw_dev = NULL;
+> -
+> -	fw_dev = pci_get_drvdata(pdev);
+> -	BUG_ON(fw_dev == NULL);
+> -
+> -	printk(KERN_INFO DRIVER_NAME ": Resuming.\n");
+> -
+> -	ricoh_mmc_disable(fw_dev);
+> -
+> -	return 0;
+> -}
+> -
+> -static struct pci_driver ricoh_mmc_driver = {
+> -	.name = 	DRIVER_NAME,
+> -	.id_table =	pci_ids,
+> -	.probe = 	ricoh_mmc_probe,
+> -	.remove =	__devexit_p(ricoh_mmc_remove),
+> -	.suspend =	ricoh_mmc_suspend,
+> -	.resume =	ricoh_mmc_resume,
+> -};
+> -
+> -/*********************************************************************
+>********\ - *                                                           
+>                * - * Driver init/exit                                  
+>                        * - *                                           
+>                                *
+> -\*********************************************************************
+>********/ -
+> -static int __init ricoh_mmc_drv_init(void)
+> -{
+> -	printk(KERN_INFO DRIVER_NAME
+> -		": Ricoh MMC Controller disabling driver\n");
+> -	printk(KERN_INFO DRIVER_NAME ": Copyright(c) Philip Langdale\n");
+> -
+> -	return pci_register_driver(&ricoh_mmc_driver);
+> -}
+> -
+> -static void __exit ricoh_mmc_drv_exit(void)
+> -{
+> -	pci_unregister_driver(&ricoh_mmc_driver);
+> -}
+> -
+> -module_init(ricoh_mmc_drv_init);
+> -module_exit(ricoh_mmc_drv_exit);
+> -
+> -MODULE_AUTHOR("Philip Langdale <philipl@alumni.utexas.net>");
+> -MODULE_DESCRIPTION("Ricoh MMC Controller disabling driver");
+> -MODULE_LICENSE("GPL");
+> -
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 9236e7f..4557fa3 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -1790,6 +1790,74 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_BROADCOM,
+>  			 PCI_DEVICE_ID_NX2_5709S,
+>  			 quirk_brcm_570x_limit_vpd);
+>
+> +/*
+> + * This is a conceptually ridiculous quirk, but it is required by the
+> + * way the Ricoh multi-function R5C832 works. This chip implements
+> + * firewire and four different memory card controllers. Two of those
+> + * controllers are an SDHCI controller and a proprietary MMC
+> + * controller. The linux SDHCI driver supports MMC cards but the chip
+> + * detects MMC cards in hardware and directs them to the MMC
+> + * controller - so the SDHCI driver never sees them. To get around
+> + * this, we must disable the useless MMC controller.  At that point,
+> + * the SDHCI controller will start seeing them. As a bonus, a
+> + * detection event occurs immediately, even if the MMC card is already
+> + * in the reader.
+> + *
+> + * The relevant registers live on the firewire function, so this is
+> + * unavoidably ugly. Such is life.
+> + */
+> +
+> +static void quirk_ricoh_rl5c476_mmc_disable(struct pci_dev *dev)
+> +{
+> +	u8 write_enable;
+> +	u8 write_target;
+> +	u8 disable;
+> +
+> +	pci_read_config_byte(dev, 0xB7, &disable);
+> +
+> +	if (disable & 0x02)
+> +		/* Already disabled */
+> +		return;
+> +
+> +	pci_read_config_byte(dev, 0x8E, &write_enable);
+> +	pci_write_config_byte(dev, 0x8E, 0xAA);
+> +	pci_read_config_byte(dev, 0x8D, &write_target);
+> +	pci_write_config_byte(dev, 0x8D, 0xB7);
+> +	pci_write_config_byte(dev, 0xB7, disable | 0x02);
+> +	pci_write_config_byte(dev, 0x8E, write_enable);
+> +	pci_write_config_byte(dev, 0x8D, write_target);
+> +}
+> +
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_RICOH,
+> +			 PCI_DEVICE_ID_RICOH_RL5C476,
+> +			 quirk_ricoh_rl5c476_mmc_disable);
+> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
+> +			       PCI_DEVICE_ID_RICOH_RL5C476,
+> +			       quirk_ricoh_rl5c476_mmc_disable);
+> +
+> +static void quirk_ricoh_rl5c832_mmc_disable(struct pci_dev *dev)
+> +{
+> +	u8 disable;
+> +	u8 write_enable;
+> +
+> +	pci_read_config_byte(dev, 0xCB, &disable);
+> +
+> +	if (disable & 0x02)
+> +		return;
+> +
+> +	pci_read_config_byte(dev, 0xCA, &write_enable);
+> +	pci_write_config_byte(dev, 0xCA, 0x57);
+> +	pci_write_config_byte(dev, 0xCB, disable | 0x02);
+> +	pci_write_config_byte(dev, 0xCA, write_enable);
+> +}
+> +
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_RICOH,
+> +			 PCI_DEVICE_ID_RICOH_RL5C476,
+> +			 quirk_ricoh_rl5c832_mmc_disable);
+> +DECLARE_PCI_FIXUP_RESUME_EARLY(PCI_VENDOR_ID_RICOH,
+> +			       PCI_DEVICE_ID_RICOH_RL5C476,
+> +			       quirk_ricoh_rl5c832_mmc_disable);
+> +
+>  #ifdef CONFIG_PCI_MSI
+>  /* Some chipsets do not support MSI. We cannot easily rely on setting
+>   * PCI_BUS_FLAGS_NO_MSI in its bus flags because there are actually
 
