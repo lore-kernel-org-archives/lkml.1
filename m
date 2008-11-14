@@ -1,100 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbYKNWhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbYKNWkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbYKNWhY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 17:37:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYKNWhH
+	id S1755022AbYKNWkV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 17:40:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbYKNWkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 17:37:07 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52238 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751505AbYKNWhE (ORCPT
+	Fri, 14 Nov 2008 17:40:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:39010 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbYKNWkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 17:37:04 -0500
-Date: Fri, 14 Nov 2008 14:36:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kevin Hao <kexin.hao@windriver.com>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de, alan@redhat.com,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH 2/2] add device function for usb serial console
-Message-Id: <20081114143643.c79cfc0c.akpm@linux-foundation.org>
-In-Reply-To: <2fdffab7c5a36049b81ec63f2ee1fbdd4dd25a8a.1226366228.git.kexin.hao@windriver.com>
-References: <1226541217-32673-1-git-send-email-kexin.hao@windriver.com>
-	<23d0e3c26b7580b20c76900e16a53e42950ffaab.1226366228.git.kexin.hao@windriver.com>
-	<2fdffab7c5a36049b81ec63f2ee1fbdd4dd25a8a.1226366228.git.kexin.hao@windriver.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 14 Nov 2008 17:40:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IC7E+t21wV+mJzsbFBnKCkRvCoFlbts1AMPkqR3FfBSkz0TbHU0JQQvMtBjTrqqBim
+         cac/xkpAtqnwwHwW9H15PthUWufOn3rtPc/vNjoUew9DPVRW3SdAV+6Nzkt2c90r2efY
+         1449R81CJaw/2mdl0qd3g7x/WIwOISaJGs5sc=
+Message-ID: <b2cc26e40811141440m5f3616ecla243ad0df97b9d6f@mail.gmail.com>
+Date: Fri, 14 Nov 2008 23:40:05 +0100
+From: "Olaf van der Spek" <olafvdspek@gmail.com>
+To: "Willy Tarreau" <w@1wt.eu>
+Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
+Cc: "David Miller" <davem@davemloft.net>, jrm8005@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081114210759.GX24654@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com>
+	 <3aaafc130811131619w3ba48a86u6c6e2af35f149bf1@mail.gmail.com>
+	 <b2cc26e40811140051n4e821fddsc5504eedcccc9cdc@mail.gmail.com>
+	 <20081114.005635.131100777.davem@davemloft.net>
+	 <b2cc26e40811140109jfc6b0f3tf33a92afbff33e46@mail.gmail.com>
+	 <20081114210759.GX24654@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Nov 2008 09:53:37 +0800
-Kevin Hao <kexin.hao@windriver.com> wrote:
+On Fri, Nov 14, 2008 at 10:07 PM, Willy Tarreau <w@1wt.eu> wrote:
+> I'm already wondering what problems you encounter with TCP performance
+> on the loopback. I'm used to stress-test network proxies on the loopback
 
-> Add device funtion for usb serial console, so we can open /dev/console
-> when we use a usb serial device as console.
-> 
-> Signed-off-by: Kevin Hao <kexin.hao@windriver.com>
-> ---
->  drivers/usb/serial/console.c |   13 +++++++++++++
->  1 files changed, 13 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/usb/serial/console.c b/drivers/usb/serial/console.c
-> index 5b95009..1dbb203 100644
-> --- a/drivers/usb/serial/console.c
-> +++ b/drivers/usb/serial/console.c
-> @@ -241,12 +241,25 @@ static void usb_console_write(struct console *co,
->  	}
->  }
->  
-> +static struct tty_driver *usb_console_device(struct console *co, int *index)
-> +{
-> +	struct tty_driver **p = (struct tty_driver **)co->data;
+None. It's just a theoretical question.
 
-co->data is already void*, hence this cast is unneeded.  It is also
-undesirable because it defeats typechecking.
+> for quick tests when I don't want to boot 3 machines, and seeing that it's
+> easy to connect/accept 100k sessions/s and forward about 20-30 Gbps between
+> two processes on consumer-grade machines, I'm really doubting that your
+> applications needs that much out of your database.
 
-> +
-> +	if (!*p)
-> +		return NULL;
-> +
-> +	*index = co->index;
-> +	return (struct tty_driver *)(*p);
+Hmm, those numbers look a lot better than the ones Chris Friesen
+posted. He posted 334 mbyte/s for TCP and 1564 for Unix. That's a 4.7x
+difference.
 
-And *p already has type `struct tty_driver *'.
+> If you're really so sensible to local traffic tunning, you can already
+> set a very large MTU on your loopback, you can have very large windows
+> between your applications so that very few ACKs are sent, etc... And
+> BTW checksums are already not even computed. Loopback *is* fast, there's
 
-> +}
-> +
->  static struct console usbcons = {
->  	.name =		"ttyUSB",
->  	.write =	usb_console_write,
-> +	.device =	usb_console_device,
->  	.setup =	usb_console_setup,
->  	.flags =	CON_PRINTBUFFER,
->  	.index =	-1,
-> +	.data = 	&usb_serial_tty_driver,
->  };
->  
+That was my initial question. If the performance difference is
+insignificant, that's fine with me.
 
+> no need to crapify the whole stack with your "switch" to gain 5% more out
+> of it.
+>
+> Anyway, if you can come up with patches which proves all of us wrong
+> without weakening the code, I'm sure they could be accepted.
 
---- a/drivers/usb/serial/console.c~usb-serial-console-add-device-function-fix
-+++ a/drivers/usb/serial/console.c
-@@ -243,13 +243,13 @@ static void usb_console_write(struct con
- 
- static struct tty_driver *usb_console_device(struct console *co, int *index)
- {
--	struct tty_driver **p = (struct tty_driver **)co->data;
-+	struct tty_driver **p = co->data;
- 
- 	if (!*p)
- 		return NULL;
- 
- 	*index = co->index;
--	return (struct tty_driver *)(*p);
-+	return *p;
- }
- 
- static struct console usbcons = {
-_
-
+I'm sure too, but I won't.
