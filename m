@@ -1,242 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYKNQfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753214AbYKNQlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbYKNQfi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 11:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYKNQfS
+	id S1753214AbYKNQlR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 11:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYKNQlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 11:35:18 -0500
-Received: from mail.atmel.fr ([81.80.104.162]:56800 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751957AbYKNQfP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 11:35:15 -0500
-Message-ID: <491DA8AC.5010703@atmel.com>
-Date: Fri, 14 Nov 2008 17:34:52 +0100
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Fri, 14 Nov 2008 11:41:03 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55321 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040AbYKNQlB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 11:41:01 -0500
+Date: Fri, 14 Nov 2008 10:40:53 -0600
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: stable@kernel.org, linux-kernel@vger.kernel.org
+Cc: pjssilva@ime.usp.br, akpm@linux-foundation.org, dustin.kirkland@gmail.com,
+       sandeen@redhat.com
+Subject: [PATCH] eCryptfs: Allocate up to two scatterlists for crypto ops
+	on keys
+Message-ID: <20081114164053.GC6624@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Victor <linux@maxim.org.za>
-Subject: Re: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA
- Controller
-References: <48F8B291.1060500@atmel.com> <1224530326.27425.25.camel@dwillia2-linux.ch.intel.com>
-In-Reply-To: <1224530326.27425.25.camel@dwillia2-linux.ch.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dan,
+I have received some reports of out-of-memory errors on some older AMD
+architectures. These errors are what I would expect to see if
+crypt_stat->key were split between two separate pages. eCryptfs should
+not assume that any of the memory sent through virt_to_scatterlist()
+is all contained in a single page, and so this patch allocates two
+scatterlist structs instead of one when processing keys. I have
+received confirmation from one person affected by this bug that this
+patch resolves the issue for him, and so I am submitting it for
+inclusion in a future stable release.
 
-Thanks a lot for your feedback.
+Note that virt_to_scatterlist() runs sg_init_table() on the
+scatterlist structs passed to it, so the calls to sg_init_table() in
+decrypt_passphrase_encrypted_session_key() are redundant.
 
-Dan Williams :
-> On Fri, 2008-10-17 at 08:43 -0700, Nicolas Ferre wrote:
->> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
->> at91sam9rl chip. It will be used on other products in the future.
->>
->> This first release covers only the memory-to-memory tranfer type. This is the
->> only tranfer type supported by this chip.
->> On other products, it will be used also for peripheral DMA transfer (slave API
->> support to come).
->>
->> I used dmatest client without problem in different configurations to test
->> it.
->>
->> Full documentation for this controller can be found in the SAM9RL datasheet :
->> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
->>
->> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->> ---
-> 
-> Hi Nicolas,
-> 
-> A few comments below.
-> 
-> Also, checkpatch reported:
-> 
-> total: 4 errors, 45 warnings, 1475 lines checked
-> 
-> ...mostly 80 column warnings (some you may want to take a look at).
+Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
+Reported-by: Paulo J. S. Silva <pjssilva@ime.usp.br>
 
-I reviewed this and manage to reduce most of 80 column warnings. An 
-error remains but it is a space in "if" statement and it is for 
-alignment purpose.
-
-
-> Regards,
-> Dan
-> 
->>  arch/arm/mach-at91/at91sam9rl_devices.c |   47 ++
->>  drivers/dma/Kconfig                     |    8 +
->>  drivers/dma/Makefile                    |    1 +
->>  drivers/dma/at_hdmac.c                  |  989 +++++++++++++++++++++++++++++++
->>  drivers/dma/at_hdmac_regs.h             |  377 ++++++++++++
->>  include/linux/at_hdmac.h                |   26 +
-> 
-> ...this header should be moved somewhere under arch/arm/include.
-
-This is where dw_dmac.h resides. Moreover, if one day this IP is 
-implemented on a different architecture, it will be good not to reach it 
-through arch/arm path.
-
-[..]
-
->> +/**
->> + * atc_alloc_descriptor - allocate and return an initilized descriptor
->> + * @chan: the channel to allocate descriptors for
->> + * @gfp_flags: GFP allocation flags
->> + */
->> +static struct at_desc *atc_alloc_descriptor(struct dma_chan *chan,
->> +                                           gfp_t gfp_flags)
->> +{
->> +       struct at_desc  *desc = NULL;
->> +       struct at_dma   *atdma = to_at_dma(chan->device);
->> +       dma_addr_t phys;
->> +
->> +       desc = dma_pool_alloc(atdma->dma_desc_pool, gfp_flags, &phys);
->> +       if (desc) {
->> +               BUG_ON(phys & 0x3UL); /* descriptors have to be word aligned */
-> 
-> hmm, yes this is a bug but can't we trust that dma_pool_alloc does its
-> job correctly?
-
-Indeed, it was mainly for debugging purpose, I remove it.
-
-
->> +               memset(desc, 0, sizeof(struct at_desc));
->> +               dma_async_tx_descriptor_init(&desc->txd, chan);
->> +               async_tx_ack(&desc->txd);
-> 
-> the DMA_CTRL_ACK bit is under control of the client.  It should be
-> read-only to the driver (except for extra descriptors that the driver
-> creates on behalf of the client).
-
-This is precisely where the descriptors are been created so, I thought 
-it should be ok to initialize this bit. Am I right ?
-
-[..]
-
->> +static irqreturn_t at_dma_interrupt(int irq, void *dev_id)
->> +{
->> +       struct at_dma           *atdma = (struct at_dma *)dev_id;
->> +       struct at_dma_chan      *atchan;
->> +       int                     i;
->> +       u32                     status, pending, imr;
->> +       int                     ret = IRQ_NONE;
->> +
->> +       do {
->> +               imr = dma_readl(atdma, EBCIMR);
->> +               status = dma_readl(atdma, EBCISR);
->> +               pending = status & imr;
->> +
->> +               if (!pending)
->> +                       break;
->> +
->> +               dev_vdbg(atdma->dma_common.dev,
->> +                       "interrupt: status = 0x%08x, 0x%08x, 0x%08x\n",
->> +                        status, imr, pending);
->> +
->> +               for (i = 0; i < atdma->dma_common.chancnt; i++) {
->> +                       atchan = &atdma->chan[i];
->> +                       if (pending & (AT_DMA_CBTC(i) | AT_DMA_ERR(i))) {
->> +                               if (pending & AT_DMA_ERR(i)) {
->> +                                       /*
->> +                                       spin_lock(atchan->lock);
->> +                                       atchan->error_status = 1;
->> +                                       spin_unlock(atchan->lock);
-> 
-> writing to an unsigned long should already be atomic, no?
-
-On ARM yes, on other architectures, I do not know...
-Anyway, I removed those commented lines.
-
-[..]
-
->> +/**
->> + * atc_alloc_chan_resources - allocate resources for DMA channel
->> + * @chan: allocate descriptor resources for this channel
->> + * @client: current client requesting the channel be ready for requests
->> + *
->> + * return - the number of allocated descriptors
->> + */
->> +static int atc_alloc_chan_resources(struct dma_chan *chan,
->> +                                   struct dma_client *client)
->> +{
->> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
->> +       struct at_dma           *atdma = to_at_dma(chan->device);
->> +       struct at_desc          *desc;
->> +       int                     i;
->> +       LIST_HEAD(tmp_list);
->> +
->> +       dev_vdbg(&chan->dev, "alloc_chan_resources\n");
->> +
-
-[TAG]
-
->> +       /* ASSERT:  channel is idle */
->> +       if (atc_chan_is_enabled(atchan)) {
->> +               dev_dbg(&chan->dev, "DMA channel not idle ?\n");
->> +               return -EIO;
->> +       }
-
-[/TAG]
-
->> +
->> +       /* have we already been set up? */
->> +       if (!list_empty(&atchan->free_list))
->> +               return atchan->descs_allocated;
->> +
->> +       /* Allocate initial pool of descriptors */
->> +       for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
->> +               desc = atc_alloc_descriptor(chan, GFP_KERNEL);
->> +               if (!desc) {
->> +                       dev_err(atdma->dma_common.dev,
->> +                               "Only %d initial descriptors\n", i);
->> +                       break;
->> +               }
->> +               list_add_tail(&desc->desc_node, &tmp_list);
->> +       }
->> +
->> +       spin_lock_bh(&atchan->lock);
->> +       atchan->descs_allocated = i;
->> +       list_splice(&tmp_list, &atchan->free_list);
->> +       atchan->completed_cookie = chan->cookie = 1;
->> +       spin_unlock_bh(&atchan->lock);
->> +
->> +       /* channel parameters */
->> +       channel_writel(atchan, CFG, ATC_DEFAULT_CFG);
->> +
->> +       tasklet_init(&atchan->tasklet, atc_tasklet, (unsigned long)atchan);
-> 
-> This routine may be called while the channel is already active,
-> potentially causing tasklet_init() to be called while a tasklet is
-> pending.  Can this move to at_dma_probe()?
-
-Oh, really ? In [TAG] above, I protect the call of this function when 
-channel is enabled. Is the code at [TAG] ok ?
-
-Ok, so I move all this.
-
->> +       /* clear any pending interrupt */
->> +       while (dma_readl(atdma, EBCISR))
->> +               cpu_relax();
->> +       atc_enable_irq(atchan);
-> 
-> ditto.
-
-Ok.
-
-
-I will regenerate a new patch as soon as you acknowledge my comments.
-
-Thanks for your help, kind regards,
--- 
-Nicolas Ferre
-
+---
+diff --git a/fs/ecryptfs/keystore.c b/fs/ecryptfs/keystore.c
+index e22bc39..0d713b6 100644
+--- a/fs/ecryptfs/keystore.c
++++ b/fs/ecryptfs/keystore.c
+@@ -1037,17 +1037,14 @@ static int
+ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
+ 					 struct ecryptfs_crypt_stat *crypt_stat)
+ {
+-	struct scatterlist dst_sg;
+-	struct scatterlist src_sg;
++	struct scatterlist dst_sg[2];
++	struct scatterlist src_sg[2];
+ 	struct mutex *tfm_mutex;
+ 	struct blkcipher_desc desc = {
+ 		.flags = CRYPTO_TFM_REQ_MAY_SLEEP
+ 	};
+ 	int rc = 0;
+ 
+-	sg_init_table(&dst_sg, 1);
+-	sg_init_table(&src_sg, 1);
+-
+ 	if (unlikely(ecryptfs_verbosity > 0)) {
+ 		ecryptfs_printk(
+ 			KERN_DEBUG, "Session key encryption key (size [%d]):\n",
+@@ -1066,8 +1063,8 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
+ 	}
+ 	rc = virt_to_scatterlist(auth_tok->session_key.encrypted_key,
+ 				 auth_tok->session_key.encrypted_key_size,
+-				 &src_sg, 1);
+-	if (rc != 1) {
++				 src_sg, 2);
++	if (rc < 1 || rc > 2) {
+ 		printk(KERN_ERR "Internal error whilst attempting to convert "
+ 			"auth_tok->session_key.encrypted_key to scatterlist; "
+ 			"expected rc = 1; got rc = [%d]. "
+@@ -1079,8 +1076,8 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
+ 		auth_tok->session_key.encrypted_key_size;
+ 	rc = virt_to_scatterlist(auth_tok->session_key.decrypted_key,
+ 				 auth_tok->session_key.decrypted_key_size,
+-				 &dst_sg, 1);
+-	if (rc != 1) {
++				 dst_sg, 2);
++	if (rc < 1 || rc > 2) {
+ 		printk(KERN_ERR "Internal error whilst attempting to convert "
+ 			"auth_tok->session_key.decrypted_key to scatterlist; "
+ 			"expected rc = 1; got rc = [%d]\n", rc);
+@@ -1096,7 +1093,7 @@ decrypt_passphrase_encrypted_session_key(struct ecryptfs_auth_tok *auth_tok,
+ 		rc = -EINVAL;
+ 		goto out;
+ 	}
+-	rc = crypto_blkcipher_decrypt(&desc, &dst_sg, &src_sg,
++	rc = crypto_blkcipher_decrypt(&desc, dst_sg, src_sg,
+ 				      auth_tok->session_key.encrypted_key_size);
+ 	mutex_unlock(tfm_mutex);
+ 	if (unlikely(rc)) {
+@@ -1539,8 +1536,8 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
+ 	size_t i;
+ 	size_t encrypted_session_key_valid = 0;
+ 	char session_key_encryption_key[ECRYPTFS_MAX_KEY_BYTES];
+-	struct scatterlist dst_sg;
+-	struct scatterlist src_sg;
++	struct scatterlist dst_sg[2];
++	struct scatterlist src_sg[2];
+ 	struct mutex *tfm_mutex = NULL;
+ 	u8 cipher_code;
+ 	size_t packet_size_length;
+@@ -1619,8 +1616,8 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
+ 		ecryptfs_dump_hex(session_key_encryption_key, 16);
+ 	}
+ 	rc = virt_to_scatterlist(crypt_stat->key, key_rec->enc_key_size,
+-				 &src_sg, 1);
+-	if (rc != 1) {
++				 src_sg, 2);
++	if (rc < 1 || rc > 2) {
+ 		ecryptfs_printk(KERN_ERR, "Error generating scatterlist "
+ 				"for crypt_stat session key; expected rc = 1; "
+ 				"got rc = [%d]. key_rec->enc_key_size = [%d]\n",
+@@ -1629,8 +1626,8 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
+ 		goto out;
+ 	}
+ 	rc = virt_to_scatterlist(key_rec->enc_key, key_rec->enc_key_size,
+-				 &dst_sg, 1);
+-	if (rc != 1) {
++				 dst_sg, 2);
++	if (rc < 1 || rc > 2) {
+ 		ecryptfs_printk(KERN_ERR, "Error generating scatterlist "
+ 				"for crypt_stat encrypted session key; "
+ 				"expected rc = 1; got rc = [%d]. "
+@@ -1651,7 +1648,7 @@ write_tag_3_packet(char *dest, size_t *remaining_bytes,
+ 	rc = 0;
+ 	ecryptfs_printk(KERN_DEBUG, "Encrypting [%d] bytes of the key\n",
+ 			crypt_stat->key_size);
+-	rc = crypto_blkcipher_encrypt(&desc, &dst_sg, &src_sg,
++	rc = crypto_blkcipher_encrypt(&desc, dst_sg, src_sg,
+ 				      (*key_rec).enc_key_size);
+ 	mutex_unlock(tfm_mutex);
+ 	if (rc) {
