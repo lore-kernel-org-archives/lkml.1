@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbYKNOdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYKNOhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbYKNOdV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 09:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751295AbYKNOdJ
+	id S1752627AbYKNOhX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 09:37:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYKNOhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 09:33:09 -0500
-Received: from yw-out-2122.google.com ([74.125.46.25]:43555 "EHLO
-	yw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbYKNOdF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 09:33:05 -0500
+	Fri, 14 Nov 2008 09:37:09 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55200 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751256AbYKNOhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 09:37:08 -0500
+Message-ID: <491D8CEC.5050106@redhat.com>
+Date: Fri, 14 Nov 2008 09:36:28 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Date: Fri, 14 Nov 2008 06:21:14 -0800 (PST)
-In-Reply-To: <0311a600-49da-455a-b9a8-8102f49d4a9d@r15g2000prh.googlegroups.com>
-X-IP: 131.220.98.28
-References: <fa.hrjidQWwenpjwA7kZ7QRvpW96sA@ifi.uio.no> <fa.mliWgRv8sNLFopazZE711AU1pDU@ifi.uio.no> 
-	<fa.9NVuHB+o1qjENxCitXgbGMAyH3o@ifi.uio.no> <fa.Xqznm+gGizSvfohUyup0OM2bT3o@ifi.uio.no> 
-	<0311a600-49da-455a-b9a8-8102f49d4a9d@r15g2000prh.googlegroups.com>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.0.3) 
-	Gecko/2008101315 Ubuntu/8.10 (intrepid) Firefox/3.0.3,gzip(gfe),gzip(gfe)
-Message-ID: <015b62a8-8b51-45e4-9286-96879162b705@r15g2000prh.googlegroups.com>
-Subject: Re: build error with 2.6.27.6+reiser4+ehci-hub patch. ERROR: 
-	"mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
-From: mmetz <manuel.metz@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after swap_cluster_max
+ pages
+References: <20081113171208.6985638e@bree.surriel.com> <20081113192729.7d8eb133.akpm@linux-foundation.org>
+In-Reply-To: <20081113192729.7d8eb133.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I think I have figured out what happened here. I updated sources from
-2.6.27.4 to 2.6.27.6 (skipping 2.6.27.5). Then I ran
+Andrew Morton wrote:
+> On Thu, 13 Nov 2008 17:12:08 -0500 Rik van Riel <riel@redhat.com> wrote:
+> 
+>> Sometimes the VM spends the first few priority rounds rotating back
+>> referenced pages and submitting IO.  Once we get to a lower priority,
+>> sometimes the VM ends up freeing way too many pages.
+>>
+>> The fix is relatively simple: in shrink_zone() we can check how many
+>> pages we have already freed and break out of the loop.
+>>
+>> However, in order to do this we do need to know how many pages we already
+>> freed, so move nr_reclaimed into scan_control.
+> 
+> There was a reason for not doing this, but I forget what it was.  It might require
+> some changelog archeology.  iirc it was to do with balancing scanning rates
+> between the various things which we scan.
 
-make oldconfig; make
+I've seen worse symptoms without this code, though. Pretty
+much all 2.6 kernels show bad behaviour occasionally.
 
-and got the error message
+Sometimes the VM gets in such a state where multiple processes
+cannot find anything readily evictable, and they all end up
+at a lower priority level.
 
-[snip]
-  BUILD   arch/x86/boot/bzImage
-Root device is (8, 5)
-Setup is 12524 bytes (padded to 12800 bytes).
-System is 1902 kB
-CRC 94b83bc6
-Kernel: arch/x86/boot/bzImage is ready  (#2)
-  Building modules, stage 2.
-  MODPOST 507 modules
-ERROR: "mii_ethtool_gset" [drivers/net/r8169.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+This can cause them to evict more than half of everything from
+memory, before breaking out of the pageout loop and swapping
+things back in.  On my 2GB desktop, I've seen as much as 1200MB
+memory free due to such a swapout storm.  It is possible more is
+free at the top of the cycle, but X and gnome-terminal and top
+and everything else is stuck, so that's not actually visible :)
 
-The next step I made was to include the driver for the network device
-(SiS190/SiS191 gigabit ethernet support). Then if I look at the output
-of make, this forced mii.c to be compiled
+I am not convinced that a scanning imbalance is more serious.
 
-scripts/kconfig/conf -s arch/x86/Kconfig
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/linux/compile.h
-  VDSOSYM arch/x86/vdso/vdso-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-int80-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-syscall-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-sysenter-syms.lds
-  VDSOSYM arch/x86/vdso/vdso32-syms.lds
-  LD      arch/x86/vdso/built-in.o
-  CC [M]  drivers/net/sis190.o
-  CC [M]  drivers/net/mii.o
-  LD      vmlinux.o
-  MODPOST vmlinux.o
-[snip]
+Of course, one thing we could do is exempt kswapd from this check.
+During light reclaim, kswapd does most of the eviction so scanning
+should remain balanced.  Having one process fall down to a lower
+priority level is also not a big problem.
 
-Now the kernel builds fine. So in conclusion, it seems that there is a
-dependency byr8169on mii.o which is not set correctly during the
-build process if no other module depends on it.
+As long as the direct reclaim processes do not also fall into the
+same trap, the situation should be manageable.
 
-Manuel
+Does that sound reasonable to you?
+
+-- 
+All rights reversed.
