@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbYKNIHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbYKNINY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbYKNIHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 03:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbYKNIHX
+	id S1752184AbYKNINY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 03:13:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYKNINQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 03:07:23 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57838 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbYKNIHW (ORCPT
+	Fri, 14 Nov 2008 03:13:16 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:54441 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734AbYKNINP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 03:07:22 -0500
-Date: Fri, 14 Nov 2008 17:06:37 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Blunck <jblunck@suse.de>, containers@lists.osdl.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] memcg: reduce size of per-cpu-stat to be appropriate
- size.
-Message-Id: <20081114170637.7cc50951.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <491D30E5.7080608@linux.vnet.ibm.com>
-References: <20081113164201.GV29067@bolzano.suse.de>
-	<20081113191837.18ed2ade.akpm@linux-foundation.org>
-	<491CF609.3050203@cn.fujitsu.com>
-	<20081114132840.98d38f12.kamezawa.hiroyu@jp.fujitsu.com>
-	<20081114144926.d91f36fd.kamezawa.hiroyu@jp.fujitsu.com>
-	<491D2C21.5000600@linux.vnet.ibm.com>
-	<20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
-	<491D2E6C.1000009@cn.fujitsu.com>
-	<491D30E5.7080608@linux.vnet.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 14 Nov 2008 03:13:15 -0500
+X-SourceIP: 213.46.9.244
+Subject: Re: 2.6.28-rc4: inconsistent lock state durin s2ram
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matt Mackall <mpm@selenic.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200811140045.48068.rjw@sisk.pl>
+References: <1226616324.3343.58.camel@calx> <200811140045.48068.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 09:13:09 +0100
+Message-Id: <1226650389.7685.6941.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008 13:33:49 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> Li Zefan wrote:
-> >>>> +static int mem_cgroup_size(void)
-> >>> inline this function?
-> >>>
-> >> necessary ? 
-> >>
-> > 
-> > Not so necessary IMO. It's called when a cgroup is created and removed, that
-> > is mkdir and rmdir, where performance is not critical.
-> > 
+On Fri, 2008-11-14 at 00:45 +0100, Rafael J. Wysocki wrote:
+> On Thursday, 13 of November 2008, Matt Mackall wrote:
+> > Just noticed this while looking to see if my iwlagn regression was still
+> > around (doesn't seem to be):
 > 
-> I think most new compilers can automatically inline such functions, but a hint
-> for the older ones is always a good practice.
-> 
+> Is this reproducible?
 
-Adding "inline" is easy. But, IMHO, adding "inline" to not-performance-critical part
-is just confusing people.
-I want to see "inline" where inline is obviously good/necessary for performance.
+fixed in linus master by:
 
-Thanks,
--Kame
+commit 5d5254f0d3b9bebc47d97e357374c0ad0c291a7d
+Author: Gautham R Shenoy <ego@in.ibm.com>
+Date:   Sat Oct 25 10:22:38 2008 +0530
+
+    timers: handle HRTIMER_CB_IRQSAFE_UNLOCKED correctly from softirq context
+
+
 
