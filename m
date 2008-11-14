@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752455AbYKNJHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYKNJJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752455AbYKNJHS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 04:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYKNJHB
+	id S1752725AbYKNJJq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 04:09:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYKNJJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 04:07:01 -0500
-Received: from mu-out-0910.google.com ([209.85.134.186]:26460 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbYKNJG7 (ORCPT
+	Fri, 14 Nov 2008 04:09:29 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:33234 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727AbYKNJJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 04:06:59 -0500
+	Fri, 14 Nov 2008 04:09:28 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=uANai2Firm5XM1/JYxA9jSNdsNMVczonv4mCtbup396mH8FnsuvcuU6pp3N3geiPqO
-         9McBBiHw2XiXFLUbDI5kvfx8DAHC0yqCvTXV6XDzxEGxhAlu10wr6gP3tMwfXsvkoj/V
-         ReucXYjR0XOfUs51xZo9YLh3WA13PckKOQO2s=
-Message-ID: <b2cc26e40811140106n6d43669bn9525754abd1da877@mail.gmail.com>
-Date: Fri, 14 Nov 2008 10:06:57 +0100
+        b=Dv/WlKHBrsHqtnSFlfEmaZd5r1WPmIZeN0K6byljn1jwCI9XswbP8VUQl7BJ+MPxSk
+         tqSbgoW2lvj1b8VM5/JnD0itg1ixRPOqNWV6EOYidL9NM37TGXnwv5UBRMo8B9D7XxU4
+         //eH/mG6qAEWLvb7FOlDaw6s9+mzF0pCZChJU=
+Message-ID: <b2cc26e40811140109jfc6b0f3tf33a92afbff33e46@mail.gmail.com>
+Date: Fri, 14 Nov 2008 10:09:25 +0100
 From: "Olaf van der Spek" <olafvdspek@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
+To: "David Miller" <davem@davemloft.net>
 Subject: Re: Unix sockets via TCP on localhost: is TCP slower?
-Cc: "J.R. Mauro" <jrm8005@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <491D3CD5.5020105@cosmosbay.com>
+Cc: jrm8005@gmail.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20081114.005635.131100777.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -33,34 +32,29 @@ Content-Disposition: inline
 References: <b2cc26e40811121520k711fa702u85e53bbc18b021a0@mail.gmail.com>
 	 <3aaafc130811131619w3ba48a86u6c6e2af35f149bf1@mail.gmail.com>
 	 <b2cc26e40811140051n4e821fddsc5504eedcccc9cdc@mail.gmail.com>
-	 <491D3CD5.5020105@cosmosbay.com>
+	 <20081114.005635.131100777.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 9:54 AM, Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Fri, Nov 14, 2008 at 9:56 AM, David Miller <davem@davemloft.net> wrote:
+>> Why would you use windowing, ACKs, flow control and encapsulation on localhost?
+>
+> So that you could firewall, shape, redirect, and make other
+> modifications to the traffic, as well as see it in tcpdumps.  That's
+> the power of Linux, and yes people do this stuff and yes people do
+> want these features to work over loopback.
+>
 >> I expected the kernel to copy data directly from user-space of the
 >> sending process to a kernel buffer of the receiving process, much like
 >> UNIX sockets.
->>
 >
-> localhost uses a standard network device, and whole network stack
-> is used, no 'special kludges'. You can add iptables rules, you
-> can do trafic shaping, trafic sniffing (tcpdump), limiting
-> memory used by all sockets (controlling memory pressure on the
-> machine)
->
-> Doing what you suggest would slow down AF_INET stack.
+> Then all of the above features and debugging facilities go away.
 
-Why?
+So instead the recommendation is for all apps to support both TCP and
+Unix sockets?
+If you then use Unix sockets, you still lose all of those facilities
+and as a bonus, your apps are more complex.
 
-> You probably can expect AF_UNIX to be faster, since this one is really
-> special and use shortcuts.
->
-> Then, you probably can use shared memory instead of AF_UNIX, or
-> pipes (and splice()), or ...
->
-> Then you probably can use threads and do zero-copy ;)
-
-Hmm, I'd like to avoid running my web server inside of my database
-server process. ;)
+I'd prefer a switch that could be enabled to use such a shortcut for TCP.
+Firewalls should still work mostly (on connect), redirect would still work.
