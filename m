@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbYKNPcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbYKNPha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438AbYKNPcr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 10:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYKNPcg
+	id S1753521AbYKNPha (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 10:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYKNPhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 10:32:36 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:46637 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbYKNPce (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 10:32:34 -0500
-Message-ID: <491D99AE.90504@s5r6.in-berlin.de>
-Date: Fri, 14 Nov 2008 16:30:54 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.17) Gecko/20080829 SeaMonkey/1.1.12
-MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27
-References: <alpine.LFD.2.00.0810091651220.3210@nehalem.linux-foundation.org> <491CAE47.1000609@tmr.com>
-In-Reply-To: <491CAE47.1000609@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-15
+	Fri, 14 Nov 2008 10:37:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:38747 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751345AbYKNPhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 10:37:18 -0500
+Subject: Re: [PATCH] filesystems: use has_capability_noaudit interface for
+ reserved blocks checks
+From: Eric Paris <eparis@redhat.com>
+To: Artem Bityutskiy <dedekind@yandex.ru>
+Cc: linux-kernel@vger.kernel.org, sct@redhat.com, akpm@linux-foundation.org,
+       adilger@sun.com, tytso@mit.edu, linux-ext4@vger.kernel.org,
+       dedekind@infradead.org, ext-adrian.hunter@nokia.com,
+       linux-mtd@lists.infradead.org, dushistov@mail.ru, jmorris@namei.org
+In-Reply-To: <491D2F09.3070104@yandex.ru>
+References: <1226430769.3353.5.camel@localhost.localdomain>
+	 <491D2F09.3070104@yandex.ru>
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 10:36:01 -0500
+Message-Id: <1226676961.3353.78.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
->> 	http://kernelnewbies.org/LinuxChanges
->> 
-> It seems redundant to have the table of contents include links which point back
-> to the line containing the link. Ex: Clicking on the "3 network" link in "8
-> drivers" takes you back to the link with that link, not to the description which
-> you find by scrolling down to the entry you want.
+On Fri, 2008-11-14 at 09:55 +0200, Artem Bityutskiy wrote:
+> Eric Paris wrote:
+> > ext[2,3,4], ufs, and ubifs all check for  CAP_SYS_RESOURCE to determine
+> > if they should allow reserved blocks to be used.  A process not having
+> > this capability is not failing some security decision and should not be
+> > audited.  Thus move to using has_capability_noaudit.
+> > 
+> > Signed-off-by: Eric Paris <eparis@redhat.com>
+> > ---
+> 
+> UBIFS part looks OK, as long as the whole idea of the patch is right, which
+> I have not checked, but assume it is.
+> 
+> The only question is are you sure exporting 'cap_capable()' is relevant
+> to this patch? You do not seem to call it directly.
 
-The anchors at the LinuxChanges page are wrong.
-Try http://kernelnewbies.org/Linux_2_6_27 .
--- 
-Stefan Richter
--=====-==--- =-== -===-
-http://arcgraph.de/sr/
+After this change, modules call has_capability_noaudit() which is a
+#define which turns this into modules calling
+security_capable_noaudit().  You noticed this and decided it was correct
+to make that export.  But when CONFIG_SECURITY is not set
+security_capable_notaudit() is a static inline which calls
+cap_capable().  See include/linux/security.h line 2832 in the linux-next
+tree.  Now modules are calling cap_capable directly, thus the export.
+
+-Eric
+
