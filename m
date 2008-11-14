@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbYKNBTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbYKNBVJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbYKNBTN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 13 Nov 2008 20:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbYKNBSz
+	id S1755886AbYKNBVJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 13 Nov 2008 20:21:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYKNBU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 13 Nov 2008 20:18:55 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42489 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753855AbYKNBSy (ORCPT
+	Thu, 13 Nov 2008 20:20:56 -0500
+Received: from mu-out-0910.google.com ([209.85.134.189]:54745 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751497AbYKNBUz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 13 Nov 2008 20:18:54 -0500
-Date: Fri, 14 Nov 2008 01:18:51 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-kernel@vger.kernel.org,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: Re: [PATCH] New IDE/block driver for OCTEON SOC Compact Flash
- interface.
-Message-ID: <20081114011851.1fa01a33@lxorguk.ukuu.org.uk>
-In-Reply-To: <491CC0B6.8020400@ru.mvista.com>
-References: <491C7F28.2070507@caviumnetworks.com>
-	<491CC0B6.8020400@ru.mvista.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 13 Nov 2008 20:20:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AKtn8DqAh6O/EJfqtEGFCiYVCDVbydqjFMkBnTKVUdDqVphtXpczcPqMKjJ8APw0im
+         xEOEY16V2XzI0hUW7k7VlKT+upyWRLUPVMUnZIoisFZAg23zYA62L/WI9CCPqhS7sFKp
+         pCHSVbS6wgBK5xoK0pR7XEGzMuksGTweNMxyw=
+Date: Fri, 14 Nov 2008 04:20:50 +0300
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: Mark Brown <broonie@sirena.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power_supply: Add support for WM8350 PMU
+Message-ID: <20081114012050.GA21272@zarina>
+Reply-To: cbouatmailru@gmail.com
+References: <1226416083-12875-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112164722.GB3882@sortiz.org> <20081112164900.GJ8767@sirena.org.uk> <20081112165705.GC3882@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20081112165705.GC3882@sortiz.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OTOH, CF support via self-contained driver is certainly a waste of code 
-> since IDE core and (libata) are here to drive the CF devices as well. 
-> What we need is a "normal" IDE or libata (at your option) driver.
+On Wed, Nov 12, 2008 at 05:57:06PM +0100, Samuel Ortiz wrote:
+> On Wed, Nov 12, 2008 at 04:49:01PM +0000, Mark Brown wrote:
+> > On Wed, Nov 12, 2008 at 05:47:23PM +0100, Samuel Ortiz wrote:
+> > 
+> > > The MFD part looks good to me: 
+> > > > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> > > Acked-by: Samuel Ortiz <sameo@openedhand.com>
+> > 
+> > I forgot to mention it on the repost (I did on the original) 
+> Ah, sorry..
+> 
+> 
+> > that since
+> > this depends on the AUXADC support queued in the MFD tree it probably
+> > makes sense to merge it via there.  Would you be OK with that if Anton
+> > OKs the driver?
+> I'll queue it once I get Anton's ACK, no problem.
 
-A libata driver would be nice and probably easiest to do as you don't
-have to pretend to be close to old style taskfile IDE for a PC.
+The patch looks OK.
 
-I am not convinced there is no case for a 'dumb' small CF driver, but if
-so the chipset code and the core code need to be separated as the other
-requests I see for this are different embedded boxes wanting to keep
-codesize down.
+Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-Alan
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
