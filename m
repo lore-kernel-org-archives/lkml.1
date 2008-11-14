@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYKNHy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbYKNH6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbYKNHy5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 02:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYKNHyt
+	id S1755345AbYKNH6U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 02:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYKNH6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 02:54:49 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:35360 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbYKNHys (ORCPT
+	Fri, 14 Nov 2008 02:58:12 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49882 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751192AbYKNH6L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 02:54:48 -0500
-Date: Fri, 14 Nov 2008 08:54:46 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rodolfo Giometti <giometti@linux.it>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] misc: C2port needs <linux/sched.h>
-Message-ID: <Pine.LNX.4.64.0811140853320.11953@anakin>
+	Fri, 14 Nov 2008 02:58:11 -0500
+Message-ID: <491D2F67.1070302@linux.vnet.ibm.com>
+Date: Fri, 14 Nov 2008 13:27:27 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.16 (X11/20080715)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Jan Blunck <jblunck@suse.de>, containers@lists.osdl.org,
+       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] memcg: reduce size of per-cpu-stat to be appropriate
+ size.
+References: <20081113164201.GV29067@bolzano.suse.de> <20081113191837.18ed2ade.akpm@linux-foundation.org> <491CF609.3050203@cn.fujitsu.com> <20081114132840.98d38f12.kamezawa.hiroyu@jp.fujitsu.com> <20081114144926.d91f36fd.kamezawa.hiroyu@jp.fujitsu.com> <491D2C21.5000600@linux.vnet.ibm.com> <20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081114164812.a0d70ef5.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-m68k allmodconfig:
+KAMEZAWA Hiroyuki wrote:
+> On Fri, 14 Nov 2008 13:13:29 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>> +static int mem_cgroup_size(void)
+>> inline this function?
+>>
+> necessary ? 
 
-| drivers/misc/c2port/core.c: In function 'c2port_reset':
-| drivers/misc/c2port/core.c:73: error: dereferencing pointer to incomplete type
-| drivers/misc/c2port/core.c: In function 'c2port_strobe_ck':
-| drivers/misc/c2port/core.c:91: error: dereferencing pointer to incomplete type
+Not really, but might be good for older compilers.
 
-Include <linux/sched.h> to fix it, as m68k's local_irq_enable() needs to know
-about struct task_struct.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Apparently never been in linux-next.
-
-Janitors: anyone who has time to extract struct task_struct into its own
-header file?
-
- drivers/misc/c2port/core.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/drivers/misc/c2port/core.c
-+++ b/drivers/misc/c2port/core.c
-@@ -18,6 +18,7 @@
- #include <linux/ctype.h>
- #include <linux/delay.h>
- #include <linux/idr.h>
-+#include <linux/sched.h>
- 
- #include <linux/c2port.h>
- 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+	Balbir
