@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYKNX0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbYKNXiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYKNX0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 18:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbYKNX0E
+	id S1754662AbYKNXiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 18:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYKNXiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 18:26:04 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:42269 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755592AbYKNX0D (ORCPT
+	Fri, 14 Nov 2008 18:38:04 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:16778 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbYKNXiB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 18:26:03 -0500
-Date: Fri, 14 Nov 2008 18:25:58 -0500 (EST)
-From: Tim Abbott <tabbott@MIT.EDU>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Compare symbol values when marking symbols as exported in
- /proc/kallsyms.
-Message-ID: <alpine.DEB.2.00.0811141508350.15564@vinegar-pot.mit.edu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 14 Nov 2008 18:38:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=b0efbHHXAYdMCS94hhPRmc65/6UaUWAGJrGBSRcJlWpGWJV7k335hA7JUBvAtQ+Fvv
+         dTz10U/QzdkvL2ggPRz1JwBxBx6yaNpCm/c6nB4synQ4W+FLOeJdWW6Ws6TJuXwvEPxL
+         Y9krt+l2cRK3pC3pw3cWNOsFnebAm52QlmJKA=
+Date: Sat, 15 Nov 2008 02:41:31 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: dwmw2@infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: drivers/video/backlight/mbp_nvidia_bl.c:114: error: storage size
+	of '__mod_dmi_device_table' isn't known
+Message-ID: <20081114234131.GA28559@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When there are two symbols in a module with the same name, one of
-which is exported, both will be marked as exported in /proc/kallsyms.
-There aren't any instances of this in the current kernel, but it is
-easy to construct a simple module with two compilation units that
-exhibits the problem.
+How can this work, given that MODULE_DEVICE_TABLE line expands into
 
-$ objdump -j .text -t testmod.ko | grep foo
-00000000 l     F .text	00000032 foo
-00000080 g     F .text	00000001 foo
-$ sudo insmod testmod.ko
-$ grep "T foo" /proc/kallsyms
-c28e8000 T foo	[testmod]
-c28e8080 T foo	[testmod]
+	extern const struct dmi_device_id __mod_dmi_device_table __attribute__ ((unused, alias("mbp_device_table")));
+				^^^^^^
+but there is no struct dmi_device_id, there is struct dmi_system_id?
 
-Fix this by comparing the symbol values once we've found the exported
-symbol table entry matching the symbol name.  Tested using Ksplice:
+commit 239cfbde1f5843c4a24199f117d5f67f637d72d5
+Author: David Woodhouse <dwmw2@infradead.org>
+Date:   Tue Sep 16 16:25:24 2008 -0700
 
-$ ksplice-create --patch=this_commit.patch --id=bar .
-$ sudo ksplice-apply ksplice-bar.tar.gz
-Done!
-$ grep "T foo" /proc/kallsyms
-c28e8080 T foo	[testmod]
+    Fix autoloading of MacBook Pro backlight driver.
+    
+    Use new MODULE_DEVICE_TABLE(dmi, ...) facility. There's no need for
+    every driver to screw it up for themselves, when the alias can be
+    generated automatically.
+    
+    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-Signed-off-by: Tim Abbott <tabbott@mit.edu>
----
- kernel/module.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/kernel/module.c b/kernel/module.c
-index 1f4cc00..689222b 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1725,15 +1725,15 @@ static const struct kernel_symbol *lookup_symbol(const char *name,
- 	return NULL;
- }
-
--static int is_exported(const char *name, const struct module *mod)
-+static int is_exported(const char *name, unsigned long value,
-+		       const struct module *mod)
- {
--	if (!mod && lookup_symbol(name, __start___ksymtab, __stop___ksymtab))
--		return 1;
-+	const struct kernel_symbol *ks;
-+	if (!mod)
-+		ks = lookup_symbol(name, __start___ksymtab, __stop___ksymtab);
- 	else
--		if (mod && lookup_symbol(name, mod->syms, mod->syms + mod->num_syms))
--			return 1;
--		else
--			return 0;
-+		ks = lookup_symbol(name, mod->syms, mod->syms + mod->num_syms);
-+	return ks != NULL && ks->value == value;
- }
-
- /* As per nm */
-@@ -2513,7 +2513,7 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
- 			strlcpy(name, mod->strtab + mod->symtab[symnum].st_name,
- 				KSYM_NAME_LEN);
- 			strlcpy(module_name, mod->name, MODULE_NAME_LEN);
--			*exported = is_exported(name, mod);
-+			*exported = is_exported(name, *value, mod);
- 			preempt_enable();
- 			return 0;
- 		}
--- 
-1.5.6.5
+diff --git a/drivers/video/backlight/mbp_nvidia_bl.c b/drivers/video/backlight/mbp_nvidia_bl.c
+index 385cba4..06964af 100644
+--- a/drivers/video/backlight/mbp_nvidia_bl.c
++++ b/drivers/video/backlight/mbp_nvidia_bl.c
+@@ -111,6 +111,4 @@ module_exit(mbp_exit);
+ MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
+ MODULE_DESCRIPTION("Nvidia-based Macbook Pro Backlight Driver");
+ MODULE_LICENSE("GPL");
+-MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,1");
+-MODULE_ALIAS("svnAppleInc.:pnMacBookPro3,2");
+-MODULE_ALIAS("svnAppleInc.:pnMacBookPro4,1");
++MODULE_DEVICE_TABLE(dmi, mbp_device_table);
