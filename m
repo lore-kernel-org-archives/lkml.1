@@ -1,93 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150AbYKNG1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbYKNGaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752150AbYKNG1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 01:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYKNG06
+	id S1752264AbYKNGaZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 01:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYKNGaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 01:26:58 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:50063 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbYKNG06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 01:26:58 -0500
-Message-ID: <491D1A17.2060404@cn.fujitsu.com>
-Date: Fri, 14 Nov 2008 14:26:31 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Jan Blunck <jblunck@suse.de>,
-       containers@lists.osdl.org,
-       Linux-Kernel Mailinglist <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] memcg: reduce size of per-cpu-stat to be appropriate
- size.
-References: <20081113164201.GV29067@bolzano.suse.de>	<20081113191837.18ed2ade.akpm@linux-foundation.org>	<491CF609.3050203@cn.fujitsu.com>	<20081114132840.98d38f12.kamezawa.hiroyu@jp.fujitsu.com> <20081114144926.d91f36fd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081114144926.d91f36fd.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 14 Nov 2008 01:30:12 -0500
+Received: from mga10.intel.com ([192.55.52.92]:37841 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750777AbYKNGaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 01:30:11 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,601,1220252400"; 
+   d="scan'208";a="639075339"
+Subject: Re: system fails to boot
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, tj@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, albcamus@gmail.com,
+       pjones@redhat.com, alex.shi@intel.com
+In-Reply-To: <20081114061847.GB2227@x200.localdomain>
+References: <1226639781.2866.77.camel@ymzhang>
+	 <20081114061847.GB2227@x200.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 14 Nov 2008 14:29:56 +0800
+Message-Id: <1226644196.2866.83.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> How about this one ?
-> tested on x86-64 + mmotm-Nov10, works well. 
-> (test on other arch is welcome.)
-> 
-> -Kame
-> ==
-> As  Jan Blunck <jblunck@suse.de> pointed out, allocating
-> per-cpu stat for memcg to the size of NR_CPUS is not good.
-> 
-> This patch changes mem_cgroup's cpustat allocation not based
-> on NR_CPUS but based on nr_cpu_ids.
-> 
-> From: Jan Blunck <jblunck@suse.de>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
 
-Looks good :) . It's ok to use nr_cpu_ids when cgroup_init() is called 
-at boot.
+On Fri, 2008-11-14 at 09:18 +0300, Alexey Dobriyan wrote:
+> On Fri, Nov 14, 2008 at 01:16:21PM +0800, Zhang, Yanmin wrote:
+> > Jens,
+> > 
+> > We run into system boot failure with kernel 2.6.28-rc. We found it on a couple of
+> > machines, including T61 notebook, nehalem machine, and another HPC NX6325 notebook.
+> > All the machines use FedoraCore 8 or FedoraCore 9. With kernel prior to 2.6.28-rc,
+> > system boot doesn't fail.
+> > 
+> > I debug it and locate the root cause. Pls. see
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11899
+> > https://bugzilla.redhat.com/show_bug.cgi?id=471517
+> > 
+> > As a matter of fact, there are 2 bugs.
+> > 
+> > ﻿1)root=/dev/sda1, system boot randomly fails. Mostly, boot for 5
+> > times and fails once. nash has a bug. Some of its functions misuse return value 0.
+> > Sometimes, 0 means timeout and no uevent available. Sometimes, 0 means nash gets
+> > an uevent, but the uevent isn't block-related (for exmaple, usb). If by coincidence,
+> > kernel tells nash that uevents are available, but kernel also set timeout, nash
+> > might stops collecting other uevents in queue if current uevent isn't block-related.
+> > I work out a patch for nash to fix it. 
+> > http://bugzilla.kernel.org/attachment.cgi?id=18858
+> > 
+> > 2) root=LABEL=/, system always can't boot. initrd init reports
+> > switchroot fails. Here is an executation branch of nash when booting:
+> >     (1) nash read /sys/block/sda/dev; Assume major is 8 (on my desktop)
+> >     (2) nash query /proc/devices with the major number; It found line  "8 sd";
+> >     (3) nash use 'sd' to search its own probe table to find device (DISK) type for the device
+> >        and add it to its own list;
+> >     (4) Later on, it probes all devices in its list to get filesystem labels;
+> >        scsi register "8 sd" always.
+> > When major is 259, nash fails to find the device(DISK) type. I enables CONFIG_DEBUG_BLOCK_EXT_DEVT=y
+> > when compiling kernel, so 259 is picked up for device /dev/sda1, which causes nash to fail
+> > to find device (DISK) type.
+> > To fixing issue 2), I create a patch for nash and another patch for kernel.
+> > http://bugzilla.kernel.org/attachment.cgi?id=18859
+> > http://bugzilla.kernel.org/attachment.cgi?id=18837
+> > 
+> > Below is the patch for kernel 2.6.28-rc4. It registers blkext, a new block device in proc/devices.
+> > 
+> It's procfs-specific init, what's up?
+nash (FC9 uses nash to explain the init script in initrd) reads /proc/devices to check the type of
+root device. When ﻿CONFIG_DEBUG_BLOCK_EXT_DEVT=y, the root device MAJOR is 259. Current kernel doesn't
+register block device for 259 in /proc/devices.
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+It's hard to explain in a short statement. Would you like to read it from
+﻿http://bugzilla.kernel.org/show_bug.cgi?id=11899?
 
-except..see comments for mem_cgroup_create()
-
-> +static int mem_cgroup_size(void)
-> +{
-> +	int cpustat_size = nr_cpu_ids * sizeof(struct mem_cgroup_stat_cpu);
-> +	return sizeof(struct mem_cgroup) + cpustat_size;
-> +}
-> +
-> +
-
-minor comment: one empty line is suffice.
-
-...
-
->  static struct cgroup_subsys_state *
->  mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
->  {
->  	struct mem_cgroup *mem;
->  	int node;
->  
-> -	if (unlikely((cont->parent) == NULL)) {
-> -		mem = &init_mem_cgroup;
-> -	} else {
-> -		mem = mem_cgroup_alloc();
-> -		if (!mem)
-> -			return ERR_PTR(-ENOMEM);
-> -	}
-> +	mem = mem_cgroup_alloc();
-> +	if (!mem)
-> +		return ERR_PTR(-ENOMEM);
->  
->  	res_counter_init(&mem->res);
->  
-
-free_out:
-	for_each_node_state(node, N_POSSIBLE)
-		free_mem_cgroup_per_zone_info(mem, node);
-	if (cont->parent != NULL)       <---- this check should be removed
-		mem_cgroup_free(mem);
 
