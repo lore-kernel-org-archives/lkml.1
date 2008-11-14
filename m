@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbYKNT0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbYKNT1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbYKNT0V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 14:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbYKNT0L
+	id S1755873AbYKNT1d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 14:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYKNT1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 14:26:11 -0500
-Received: from ik-out-1112.google.com ([66.249.90.179]:45544 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbYKNT0K (ORCPT
+	Fri, 14 Nov 2008 14:27:23 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:37440 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751959AbYKNT1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 14:26:10 -0500
+	Fri, 14 Nov 2008 14:27:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=CXMAMWSGd8NpVDZKS4jM3Vm/Rk3C1KnEznMZC4r6sqEMKha2++Nw4RS9Jfqfo5PVtI
-         zuM6lLtb/cybVrcwaMkgBtM2iMzw5T1CYpWJivaeW6SpbDHraWPZ8ph1KRiRRWUOTGsa
-         aWAxlTsaCp3juDO5SR4H6R1UI/DiPZC8mkMcw=
-Message-ID: <412bdbff0811141125x34de747dm85b47f61b604219a@mail.gmail.com>
-Date: Fri, 14 Nov 2008 14:25:57 -0500
-From: "Devin Heitmueller" <devin.heitmueller@gmail.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [v4l-dvb-maintainer] [PATCH] dvb: usb vendor_ids/product_ids are __le16
-Cc: "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
-       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=X1E1tne5Xs+1IE1/6o5lq/EyBHFLv91oQGCWiM9IvA+emwf/YljrNbGNLtBUUBQaon
+         KnaM59xwMMktf8CX8ruBRkEyl5WFUUJomW38P8zAQskNt1XGhQ0Q+CJk4Tt4dVFkpj7s
+         +2mccvue0iXMLgiG7IT45z5lddHL31MXRJNRI=
+Subject: [PATCH] v4l: s2255drv fix firmware test on big-endian
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1226690438.5483.39.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
+Date: Fri, 14 Nov 2008 11:27:14 -0800
+Message-Id: <1226690834.5483.40.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1226686796.5483.33.camel@brick> <491DCBDD.4000703@linuxtv.org>
-	 <1226689669.5483.36.camel@brick>
-	 <37219a840811141115g539ef85fo81136ebd479f016f@mail.gmail.com>
-	 <1226690438.5483.39.camel@brick>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 2:20 PM, Harvey Harrison
-<harvey.harrison@gmail.com> wrote:
-> On Fri, 2008-11-14 at 14:15 -0500, Michael Krufky wrote:
->> On Fri, Nov 14, 2008 at 2:07 PM, Harvey Harrison
->> <harvey.harrison@gmail.com> wrote:
->> > On Fri, 2008-11-14 at 14:05 -0500, Michael Krufky wrote:
->> >> Wouldn't it be nicer to just switch on
->> >> cpu_to_le16(udev->descriptor.idVendor) ?  This would be a 1-line change,
->> >> compile to a smaller footprint, and be easier to read.
->> >>
->> >> Personally, I prefer to try to avoid duplicating code in places where a
->> >> single operation may occur centrally.
->> >
->> > On a little-endian arch it makes no difference obviously, but on a
->> > big-endian arch it's the difference between compile-time and runtime
->> > byteswapping.
->> >
->>
->> Its not my driver, but I think that doing the operation on the switch
->> is prettier than doing it on each case statement.  Also, it would
->> avoid future bugs, if somebody decides to add new cases to the switch
->> block.
->
-> The alternative is to define the vendor ids as little-endian in the headers
-> then you don't need the endian swap in the switch or the case, but that would
-> require looking at the other uses first....or gently encourage more people to run sparse ;-)
->
-> Harvey
+Noticed by sparse:
+drivers/media/video/s2255drv.c:2531:6: warning: restricted __le32 degrades to integer
 
-Harvey,
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/media/video/s2255drv.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-If I may offer my opinion, this is not remotely performance-critical
-code.  That said, I would favor on the side of
-maintainability/reliability in this case, and mkrufky's approach seems
-to be better on both accounts.
-
-Regards,
-
-Devin
-
+diff --git a/drivers/media/video/s2255drv.c b/drivers/media/video/s2255drv.c
+index 5272926..3c3f8cf 100644
+--- a/drivers/media/video/s2255drv.c
++++ b/drivers/media/video/s2255drv.c
+@@ -192,7 +192,7 @@ struct s2255_dmaqueue {
+ #define S2255_FW_FAILED		3
+ #define S2255_FW_DISCONNECTING  4
+ 
+-#define S2255_FW_MARKER         0x22552f2f
++#define S2255_FW_MARKER		cpu_to_le32(0x22552f2f)
+ /* 2255 read states */
+ #define S2255_READ_IDLE         0
+ #define S2255_READ_FRAME        1
 -- 
-Devin J. Heitmueller
-http://www.devinheitmueller.com
-AIM: devinheitmueller
+1.6.0.4.879.g9d19a
+
+
+
