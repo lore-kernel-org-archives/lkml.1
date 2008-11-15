@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYKOF0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbYKOF1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756110AbYKOF0r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:26:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYKOFYy
+	id S1756495AbYKOF1r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752683AbYKOFY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:24:54 -0500
-Received: from kroah.org ([198.145.64.141]:50486 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:24:58 -0500
+Received: from kroah.org ([198.145.64.141]:50523 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752187AbYKOFYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:24:53 -0500
-Date: Fri, 14 Nov 2008 21:22:58 -0800
+	id S1752605AbYKOFY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:24:57 -0500
+Date: Fri, 14 Nov 2008 21:23:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eilon Greenstein <eilong@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>, Alex Chiang <achiang@hp.com>
-Subject: [patch 05/22] bnx2x: Removing the PMF indication when unloading
-Message-ID: <20081115052258.GF3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Nicolas Pitre <nico@marvell.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [patch 08/22] ARM: 5329/1: Feroceon: fix feroceon_l2_inv_range
+Message-ID: <20081115052309.GI3710@kroah.com>
 References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bnx2x-removing-the-pmf-indication-when-unloading.patch"
+Content-Disposition: inline; filename="arm-5329-1-feroceon-fix-feroceon_l2_inv_range.patch"
 In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eilon Greenstein <eilong@broadcom.com>
+From: Nicolas Pitre <nico@cam.org>
 
-commit 9a0354405feb0f8bd460349a93db05e4cca8d166 upstream.
+commit 72bc2b1ad62f4d2f0a51b35829093d41f55accce upstream
 
-When the PMF flag is set, the driver can access the HW freely. When the
-driver is unloaded, it should not access the HW. The problem caused fatal
-errors when "ethtool -i" was called after the calling instance was unloaded
-and another instance was already loaded
+Same fix as commit c7cf72dcadb: when 'start' and 'end' are less than a
+cacheline apart and 'start' is unaligned we are done after cleaning and
+invalidating the first cacheline.
 
-Signed-off-by: Eilon Greenstein <eilong@broadcom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Alex Chiang <achiang@hp.com>
+Signed-off-by: Nicolas Pitre <nico@marvell.com>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bnx2x_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/mm/cache-feroceon-l2.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/bnx2x_main.c
-+++ b/drivers/net/bnx2x_main.c
-@@ -6480,6 +6480,7 @@ load_int_disable:
- 	bnx2x_free_irq(bp);
- load_error:
- 	bnx2x_free_mem(bp);
-+	bp->port.pmf = 0;
- 
- 	/* TBD we really need to reset the chip
- 	   if we want to recover from this */
-@@ -6790,6 +6791,7 @@ unload_error:
- 	/* Report UNLOAD_DONE to MCP */
- 	if (!BP_NOMCP(bp))
- 		bnx2x_fw_command(bp, DRV_MSG_CODE_UNLOAD_DONE);
-+	bp->port.pmf = 0;
- 
- 	/* Free SKBs, SGEs, TPA pool and driver internals */
- 	bnx2x_free_skbs(bp);
+--- a/arch/arm/mm/cache-feroceon-l2.c
++++ b/arch/arm/mm/cache-feroceon-l2.c
+@@ -148,7 +148,7 @@ static void feroceon_l2_inv_range(unsign
+ 	/*
+ 	 * Clean and invalidate partial last cache line.
+ 	 */
+-	if (end & (CACHE_LINE_SIZE - 1)) {
++	if (start < end && end & (CACHE_LINE_SIZE - 1)) {
+ 		l2_clean_inv_pa(end & ~(CACHE_LINE_SIZE - 1));
+ 		end &= ~(CACHE_LINE_SIZE - 1);
+ 	}
+@@ -156,7 +156,7 @@ static void feroceon_l2_inv_range(unsign
+ 	/*
+ 	 * Invalidate all full cache lines between 'start' and 'end'.
+ 	 */
+-	while (start != end) {
++	while (start < end) {
+ 		unsigned long range_end = calc_range_end(start, end);
+ 		l2_inv_pa_range(start, range_end - CACHE_LINE_SIZE);
+ 		start = range_end;
 
 -- 
