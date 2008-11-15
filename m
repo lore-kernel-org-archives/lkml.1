@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYKOAKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYKOAM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbYKOAKa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 19:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYKOAKW
+	id S1755677AbYKOAM5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 19:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYKOAMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 19:10:22 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:57341 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751664AbYKOAKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 19:10:22 -0500
-Date: Fri, 14 Nov 2008 19:10:13 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: George Spelvin <linux@horizon.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 2/2] serial/8250.c: Use self-adjusting list for port poll
-	order.
-Message-ID: <20081115001013.GM25117@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	George Spelvin <linux@horizon.com>, linux-kernel@vger.kernel.org
-References: <20081113150308.3590.qmail@science.horizon.com> <20081114053042.11532.qmail@science.horizon.com> <20081114053314.12093.qmail@science.horizon.com> <20081114213449.14960.qmail@science.horizon.com> <20081114214711.3c1d1473@lxorguk.ukuu.org.uk>
+	Fri, 14 Nov 2008 19:12:47 -0500
+Received: from lucidpixels.com ([75.144.35.66]:48188 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751712AbYKOAMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 19:12:46 -0500
+Date: Fri, 14 Nov 2008 19:12:45 -0500 (EST)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+cc: linux-ide@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: Re: 2.6.27.6 question: ata_sff_hsm_move: ata15 (why always ata15)?
+In-Reply-To: <alpine.DEB.1.10.0811141850590.6217@p34.internal.lan>
+Message-ID: <alpine.DEB.1.10.0811141912190.6297@p34.internal.lan>
+References: <alpine.DEB.1.10.0811141850590.6217@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081114214711.3c1d1473@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 09:47:11PM +0000, Alan Cox wrote:
-> > This code does that by using the previous poll cycles as a hint.
-> > If a port is idle, it will migrate to the end of the list and
-> > only have to be checked once.
-> > 
-> > Part 1 changed the list to singly-linked to make the list shuffling easier.
-> > 
-> > Comments?  Please?
-> 
-> Is it really worth the complexity
-> 
-> - PCI ports are shared IRQ always
-> - Legacy ports are almost never shared IRQ on the LPC bus (and are
-> increasingly going away)
 
-It's worth the complexity only *if* you have enough ports shared on a
-single IRQ and simultaneously such that there a risk that if you don't
-poll them quickly enough, characters will actually get dropped from
-the UART's FIFO.  The question is whether that is likely to happen on
-modern CPU's.  I worred about such things when I tried to make 16
-115kbps serial ports work at full-speed using relatively primitive
-16550A UART's with 16 character FIFO's on a 40 MHz 386.  But (a)
-UART's generally have deeper FIFO's these days, and (b) CPU's have
-gotten a wee bit faster since 1992.
+On Fri, 14 Nov 2008, Justin Piszcz wrote:
 
-So color me dubious that this is actually necessary....
+> I am trying to find out what the root cause of this error/problem is:
+> https://bugzilla.redhat.com/show_bug.cgi?id=462425
+>
+> It seems like every week or other week someone else reports this on the 
+> linux-raid mailing list.
+>
+> I have enabled debugging in the libata.h file and I find that ata15 is 
+> constantly being accessed for some reason, why is this?
+>
+> The first two disks are md/RAID1, the other volume is not being written to or 
+> read:
+>
 
-							- Ted
+In messages:
+
+Nov 14 19:12:01 p34 kernel: [ 2485.558898] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:01 p34 kernel: [ 2485.559318] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:03 p34 kernel: [ 2487.554449] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:03 p34 kernel: [ 2487.554725] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:03 p34 kernel: [ 2487.555399] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:03 p34 kernel: [ 2487.555746] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:03 p34 kernel: [ 2487.556194] ata15: ata_dev_select: ENTER, device 0, wait 1
+Nov 14 19:12:03 p34 kernel: [ 2487.556449] ata15: ata_dev_select: ENTER, device 0, wait 1
+
