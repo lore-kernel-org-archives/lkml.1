@@ -1,85 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbYKOHke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbYKOHp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbYKOHke (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 02:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbYKOHkZ
+	id S1755866AbYKOHp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 02:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYKOHpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 02:40:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:52306 "EHLO gate.crashing.org"
+	Sat, 15 Nov 2008 02:45:45 -0500
+Received: from 1wt.eu ([62.212.114.60]:1215 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752722AbYKOHkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 02:40:25 -0500
-Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H.Peter Anvin" <hpa@zytor.com>, Hugh Dickins <hugh@veritas.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Arjan van de Ven <arjan@infradead.com>, linux-kernel@vger.kernel.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-In-Reply-To: <20081112232312.GB29363@wotan.suse.de>
-References: <20081112212647.259698000@intel.com>
-	 <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de>
-Content-Type: text/plain
-Date: Sat, 15 Nov 2008 18:38:27 +1100
-Message-Id: <1226734707.7178.163.camel@pasglop>
+	id S1753196AbYKOHpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 02:45:44 -0500
+Date: Sat, 15 Nov 2008 08:45:40 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Karl Pickett <karl.pickett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: tcp_tw_recycle broken?
+Message-ID: <20081115074540.GA22374@1wt.eu>
+References: <f9be06770811142037v794cf4f8w7a82ab45c0f3820c@mail.gmail.com> <20081115055748.GY24654@1wt.eu> <f9be06770811142325j79ca0831j7d5820716199811@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f9be06770811142325j79ca0831j7d5820716199811@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-11-13 at 00:23 +0100, Nick Piggin wrote:
-> You have to be careful of this, because it can be called with mmap_sem
-> held for read only. Hmm, I guess vm_insert_page is doing the same thing.
-> Probably mostly works because all other modifiers of vm_flags are holding
-> mmap_sem.
+On Sat, Nov 15, 2008 at 02:25:52AM -0500, Karl Pickett wrote:
+> On Sat, Nov 15, 2008 at 12:57 AM, Willy Tarreau <w@1wt.eu> wrote:
 > 
-> However, in some cases, code can do vm_insert_pfn and vm_insert_page
-> (actually hmm, no vm_insert_mixed actually should cover most of those
-> cases).
+> > On Fri, Nov 14, 2008 at 11:37:06PM -0500, Karl Pickett wrote:
+> > > Hey.  Developing a http proxy on fedora 9 (2.6.25) and running into a
+> > > strange issue.
+> > >
+> > > Having the proxy set up and tear down 6000 tcp connections a second to
+> > > the same test server ip and port,
+> > > it quickly blows up (5 seconds) due to all 30000 ephemeral ports going
+> > > to TIME_WAIT.
+> > > setting tw_recycle=1 fixed the problem, and there are never more than
+> > > a couple hundred ports in TIME_WAIT.
+> > >
+> > > BUT...
+> > >
+> > > Changing the load test to alternate between two test server ips, it
+> > > blows up.  Connect: can't assign requested address. (note I am not
+> > > binding before hand, I tried
+> > > and binding first to port 0 made no difference - it just blows up then
+> > > during the bind).
+> > >
+> > > And there are ~28K ports in TIME_WAIT.  For example:
+> > >
+> > > proxy_ip:30000 load_test_1:8080 TIME_WAIT
+> > > proxy_ip:30000 load_test_2:8080 TIME_WAIT
+> > > ...
+> > > but most are not duplicates of the same local port.
+> > >
+> > >
+> > > What. The.  Heck.
+> > >
+> > > So short of rebuilding the kernel with time_wait as 1 second, is there
+> > > any other way not to brick my proxy?
+> >
+> > two things :
+> >  - set tcp_tw_reuse to 1 too.
+> >  - do a setsockopt(SO_REUSEADDR) before connect()
+> >
+> > Using this, my proxy has no problem at 35K sess/s on 2.6.25. I'm not sure
+> > if disabling either option above still works.
+> >
+> > Hoping this helps,
+> > Willy
+> >
+> >
+> Well, it looks like tw_reuse is what I wanted... not tw_recycle.  Based on a
+> python test program over loopback, tw_reuse alone solves the problem...
+> so_reuseaddr doesn't do anything.  And apparently the tcp code is too much
+> for me...looking at the source I thought tw_reuse only can happen when
+> timestamps are enabled.  But even after disabling timestamps tw_reuse still
+> works over loopback.
 > 
-> Still, I'd be much happier if we could make these into BUG_ON, and then
-> teach callers to set it in their .mmap routines.
+> I'll have to wait until Monday to try it again in the lab.
+> 
+> May I just confirm.. is tcp_tw_reuse NOT dependent on receiving timestamps?
 
-Agreed. I don't think vm_insert_* is the right place to muck
-with that ..
+I never observed any dependency between both, though the code tends to
+make me think there is. However, enabling timestamps is often needed when
+you're reusing TW sockets, not because of your local system, but because
+of possible intermediate systems between the client and the server, such
+as firewalls which randomize sequence numbers. Not having tw_reuse prevents
+ports from being reused too early. But having tw_reuse alone often makes
+the client chose a source port for which a session still exists on a
+middle host, with different sequence numbers, which causes trouble.
+Enabling timestamps solves the problem when the other end supports PAWS.
 
-Ben.
+So in general, I would add as a rule of thumb that if you need tw_reuse,
+you should also enable timestamps "just in case".
 
->  
-> On Wed, Nov 12, 2008 at 01:26:49PM -0800, Venkatesh Pallipadi wrote:
-> > vm_insert_pfn() is not setting the VM_PFNMAP flag in vma. Fix that.
-> > 
-> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> > 
-> > ---
-> >  mm/memory.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: tip/mm/memory.c
-> > ===================================================================
-> > --- tip.orig/mm/memory.c	2008-11-06 09:44:56.000000000 -0800
-> > +++ tip/mm/memory.c	2008-11-10 09:44:47.000000000 -0800
-> > @@ -1444,6 +1444,8 @@ int vm_insert_pfn(struct vm_area_struct 
-> >  
-> >  	if (addr < vma->vm_start || addr >= vma->vm_end)
-> >  		return -EFAULT;
-> > +
-> > +	vma->vm_flags |= VM_PFNMAP;
-> >  	return insert_pfn(vma, addr, pfn, vma->vm_page_prot);
-> >  }
-> >  EXPORT_SYMBOL(vm_insert_pfn);
-> > 
-> > -- 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Willy
 
