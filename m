@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755861AbYKOT1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954AbYKOTlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755861AbYKOT1S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 14:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbYKOT1E
+	id S1755954AbYKOTlh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 14:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbYKOTl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 14:27:04 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56372 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbYKOT1D convert rfc822-to-8bit (ORCPT
+	Sat, 15 Nov 2008 14:41:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50583 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751959AbYKOTl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 14:27:03 -0500
-Date: Sat, 15 Nov 2008 11:27:51 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: htejun@gmail.com, akpm@linux-foundation.org, jens.axboe@oracle.com
-Subject: [PATCH] Fix kunmap() argument in sg_miter_stop
-Message-ID: <20081115112751.1d38c072@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 15 Nov 2008 14:41:27 -0500
+Date: Sat, 15 Nov 2008 11:40:54 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] bug fixes for 9p linux-2.6.28-rc4
+In-Reply-To: <a4e6962a0811141425n119d624bk8a1a0e3b9c3a9eab@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0811151139190.3468@nehalem.linux-foundation.org>
+References: <a4e6962a0811141425n119d624bk8a1a0e3b9c3a9eab@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From fd5530ac75a919a20bf7951e90a2b12323e9c0a0 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 15 Nov 2008 11:23:58 -0800
-Subject: [PATCH] Fix kunmap() argument in sg_miter_stop
 
-kunmap() takes as argument the struct page that orginally got kmap()'d,
-however the sg_miter_stop() function passed it the kernel virtual address
-instead, resulting in "kernel BUG at arch/x86/mm/highmem_32.c:115!"
+On Fri, 14 Nov 2008, Eric Van Hensbergen wrote:
+>
+> The following changes since commit 4ff429e658c00bcf5101eabbebd4f711572a64cb:
+>   Randy Dunlap (1):
+>         9p: restrict RDMA usage
+> 
+> are available in the git repository at:
+> 
+>   ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
 
-This is moderately popular on kerneloops.org, mostly in interaction with the MMC layer.
+Diffstat?
 
-Reported-by: kerneloops.org
-CC: htejun@gmail.com
-CC: stable@kernel.org
+Yeah, I see that it is
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- lib/scatterlist.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ net/9p/Kconfig |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/lib/scatterlist.c b/lib/scatterlist.c
-index 8d2688f..b7b449d 100644
---- a/lib/scatterlist.c
-+++ b/lib/scatterlist.c
-@@ -395,7 +395,7 @@ void sg_miter_stop(struct sg_mapping_iter *miter)
- 			WARN_ON(!irqs_disabled());
- 			kunmap_atomic(miter->addr, KM_BIO_SRC_IRQ);
- 		} else
--			kunmap(miter->addr);
-+			kunmap(miter->page);
- 
- 		miter->page = NULL;
- 		miter->addr = NULL;
--- 
-1.6.0.3
+but I want to know things like that _before_ pulling, just to know what to 
+expect, and so that I know that what I pull is what you meant me to pull.
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+		Linus
