@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbYKOQ7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbYKORHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbYKOQ7T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 11:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYKOQ7L
+	id S1753592AbYKORHE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 12:07:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbYKORGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 11:59:11 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50551 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751476AbYKOQ7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 11:59:10 -0500
-Date: Sat, 15 Nov 2008 17:58:51 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: stern@rowland.harvard.edu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       ncunningham@crca.org.au, linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Freezer: Don't count threads waiting for frozen
-	filesystems.
-Message-ID: <20081115165851.GA1523@ucw.cz>
-References: <Pine.LNX.4.44L0.0810300943001.2401-100000@iolanthe.rowland.org> <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
+	Sat, 15 Nov 2008 12:06:53 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:47177 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbYKORGw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 12:06:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=IjjtcVR/q7PTO2xVxnqiHAFcUdxaX+QjUkLtPUt9RmQVpIgqCV7nIJB1ab9rAqf335
+         6AetN3ygpVnv7WiyrrvZs6Vt+MtLaicw+EQ7y0PH0FZRZ8jQvWgMK2yKmc6dz1YWdzL9
+         FrqngKq8CdJGweKHoRVVB/stLeg1QyMKdmXq0=
+Message-ID: <2375c9f90811150906r6b2437e9w7c363c40897a862a@mail.gmail.com>
+Date: Sat, 15 Nov 2008 17:06:50 +0000
+From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
+To: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATCH 1/5] x86: ia32_signal: cleanup macro COPY
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <491E4101.7010405@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1KvYgR-0002Cx-AZ@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <491E4101.7010405@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Nov 15, 2008 at 3:24 AM, Hiroshi Shimamoto
+<h-shimamoto@ct.jp.nec.com> wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>
+> Impact: cleanup
+>
+> No need to use temporary variable in this case.
+>
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  arch/x86/ia32/ia32_signal.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+> index e886907..a28790a 100644
+> --- a/arch/x86/ia32/ia32_signal.c
+> +++ b/arch/x86/ia32/ia32_signal.c
+> @@ -197,10 +197,8 @@ struct rt_sigframe
+>        /* fp state follows here */
+>  };
+>
+> -#define COPY(x)                {               \
+> -       unsigned int reg;               \
+> -       err |= __get_user(reg, &sc->x); \
+> -       regs->x = reg;                  \
+> +#define COPY(x)                        {               \
+> +       err |= __get_user(regs->x, &sc->x);     \
+>  }
 
-> > > > I don't know.  There are other interfaces too, like sysfs attributes, 
-> > > > that would have to be handled specially.  On the whole, the freezer 
-> > > > seems much, much simpler.
-> > > 
-> > > OK, then non-device files on "regular" filesystems.
-> > 
-> > Would you like to write a first-pass patch?  I don't think it will 
-> > work.
-> 
-> If somebody doesn't beat me to it, I'll do that (first implemented
-> with a global rw-sem).
+Then you can also kill the braces now. :)
 
-Cool!
-l
-> > Doing that seems like a lot of work, just as modifying every driver 
-> > does.  Changing a few kernel entry points is simpler, but I'm pretty
-> > sure it won't work.  For instance, tasks can block arbitrarily long on 
-> > read calls (waiting for data to arrive); you can't allow such things to 
-> > prevent the system from suspending.
-> 
-> But we already do: either
-> 
->  a) it's in interruptible sleep (I/O on sockets, pipes, etc), and
->     freezing simply interrupts it, or
-> 
->  b) it's in uninterruptible sleep and suspend will wait it out (or
->     time out).
-> 
-> In the new scheme we could retain that part of the freezer: interrupt
-> all tasks which are inside the critical region and wait for them to
-> exit the critical region.
-> 
-> To put it in another way: it's still the freezer, it does all the same
-> things as the old freezer, except that the condition for freezing is
-> not that the task is out of the kernel, rather that it's out of the
-> disable_supend - enable_suspend region.  As such it's not a big change
-> to the whole suspend system, and so there shouldn't be anything big
-> going wrong there.
-
-Disadvantage is it will add overhead to regular syscalls, at least
-initialy. That's why I implemented freezer initialy...
-
-Of course, suspend is more important than it was back then, and
-disadvantages of freezer are now well known, so maybe a little
-overhead in exchange of cleaner design is worth it...?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+What's more, if I saw it correctly, the belowing two __get_user() calls can
+also be replaced by COPY().
