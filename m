@@ -1,105 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYKOQKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbYKOQNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbYKOQKU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 11:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYKOQKF
+	id S1754244AbYKOQNR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 11:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751674AbYKOQNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 11:10:05 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:14908 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751469AbYKOQKB (ORCPT
+	Sat, 15 Nov 2008 11:13:04 -0500
+Received: from nebensachen.de ([195.34.83.29]:60006 "EHLO mail.nebensachen.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751620AbYKOQND convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 11:10:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ohAlYS02RqaMbJ+PMXJYg864aHOYFCRycavmIv3IrrYrIgw2zYATv2uRLeNAv2CGcC
-         sBWfa3qOrlKVzyOTTnBLTFoGm/reJwfPVU9Zsl/RdiafyAgDKXzTYi8hUDHWZDgtbHQr
-         P3LjdlzXrkngDxx95jRK+Ctj2EyOCUl/lr4AA=
-Message-ID: <3aaafc130811150810s49c09a46o7de0da3d07fe9bb2@mail.gmail.com>
-Date: Sat, 15 Nov 2008 11:10:01 -0500
-From: "J.R. Mauro" <jrm8005@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: In-kernel IR remote control support
-Cc: "Christoph Bartelmus" <lirc@bartelmus.de>, linux-kernel@vger.kernel.org,
-       jonsmirl@gmail.com
-In-Reply-To: <20081115115859.GA1572@ucw.cz>
+	Sat, 15 Nov 2008 11:13:03 -0500
+X-Hashcash: 1:20:081115:loic.grenie@gmail.com::o9oO2pIFOHdMkvvD:00000000000000000000000000000000000000001e0Y
+X-Hashcash: 1:20:081115:mingo@elte.hu::YnHyhGK2qJh+ld2T:00009bRd
+X-Hashcash: 1:20:081115:gregkh@suse.de::QS/as5GLwIkSCcup:0004V8s
+X-Hashcash: 1:20:081115:linux-kernel@vger.kernel.org::CELnUQZM5mJw9IC8:0000000000000000000000000000000005Ik4
+X-Hashcash: 1:20:081115:stable@kernel.org::HL+/PpZb7uvfdPCv:000000000000000000000000000000000000000000001UUV
+From: Elias Oltmanns <eo@nebensachen.de>
+To: =?iso-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: Linux 2.6.27.6
+References: <20081113185350.GA3765@kroah.com>
+	<9b06e8d20811150238ye81f6dck7e81e275ba11da9d@mail.gmail.com>
+	<877i75p4ra.fsf@denkblock.local>
+	<9b06e8d20811150701q6e38148k18df241343262713@mail.gmail.com>
+Date: Sat, 15 Nov 2008 17:12:52 +0100
+In-Reply-To: <9b06e8d20811150701q6e38148k18df241343262713@mail.gmail.com>
+	(=?iso-8859-1?Q?=22Lo=EFc_Greni=E9=22's?= message of "Sat, 15 Nov 2008
+ 16:01:32 +0100")
+Message-ID: <873ahtotmj.fsf@denkblock.local>
+User-Agent: Gnus/5.110011 (No Gnus v0.11)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7f0c6fc9-556c-41a1-9750-ffb3455589ab@35g2000pry.googlegroups.com>
-	 <ApnRmVyojFB@christoph> <20081115115859.GA1572@ucw.cz>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 15, 2008 at 6:58 AM, Pavel Machek <pavel@suse.cz> wrote:
-> On Thu 2008-11-13 00:09:00, Christoph Bartelmus wrote:
->> Hi,
->>
->> on 12 Nov 08 at 14:39, J.R. Mauro wrote:
->> [...]
->> > On Wed, Nov 5, 2008 at 3:07 PM, Jon Smirl <jonsm...@gmail.com> wrote:
->> >> On Wed, Nov 5, 2008 at 2:59 PM, J.R. Mauro <jrm8...@gmail.com> wrote:
->> >>> On Wed, Nov 5, 2008 at 2:47 PM, Jon Smirl <jonsm...@gmail.com> wrote:
->> >>>> New release of in-kernel IR support implementing evdev support. The goal
->> >>>> of in-kernel IR is to integrate IR events into the evdev input event
->> >>>> queue and maintain ordering of events from all input devices. Still
->> >>>> looking for help with this project.
->>
->> >>> (Forgive me if this has already been asked or dealt with)
->>
->> >>> Have you contacted the LIRC developers? Is there any overlap between
->> >>> your projects?
->>
->> >> The LIRC people know about this. Pieces of the code are coming from
->> >> the LIRC source base and being reworked for kernel inclusion.
->>
->> > Great, it's nice to see there's cooperation.
->>
->> LOL. There's just a small omission from Jon's side...
->> Yes, LIRC people know about this. And Jon has a no-go from me.
->>
->> Decoding IR protocols in-kernel is the wrong way IMHO and this will not be
->> supported by LIRC as long as I maintain LIRC.
+"Loïc Grenié" <loic.grenie@gmail.com> wrote:
+> 2008/11/15 Elias Oltmanns <eo@nebensachen.de>:
+>> "Loïc Grenié" <loic.grenie@gmail.com> wrote:
 >
-> Time to fork lirc...?
+>>>     No big deal, but commit 093327cb references
+>>>   X86_CHECK_BIOS_CORRUPTION that is not available anywhere.
+>>
+>> You are talking about commit 71556e92, I suppose. Since the change log
+>> entry has been written for the original commit 5649b7c3 in Linus' tree,
+>> it refers to a feature that is available there
+>> (X86_CHECK_BIOS_CORRUPTION) but has only been merged into mainline after
+>> the release of 2.6.27.
 >
-> Can you elaborate?  I don't see why IR remotes deserve special
-> handling. I'd expect to just plug in the receiver and have it work as
-> /dev/input/*.
->
->> It's simply not possible to decode all existing IR protocols and LIRC just
->> stores the timing data for these protocols as-is without trying to decode
->> them. With the in-kernel decoding approach these remotes cannot be
->> supported. I'm not willing to sacrifice the support for these even though
->> they only consist of a very small fraction of remotes in use.
->
-> So you make it suck for everyone just because few obscure IR
-> remotes. Perfect enemy of good, I'd say :-(.
->
-> Can we merge the common ones into the kernel, while still keeping the
-> obscure ones in userspace using uinput or something?
->
-> I don't see why Jon's work bothers you. He's trying to do the right
-> support for the common remotes. That seems like a net plus to me, and
-> you can still keep the obscure ones in userland.
+>     No, I really mean 093327cb because it modifies arch/x86/Kconfig and in the
+>   help for X86_RESERVE_LOW_64K it references
+>   X86_CHECK_BIOS_CORRUPTION that, as you say, exists only in 2.6.28-rc?
 
-We manage to have both kernelspace and userspace USB drivers. I think
-that would be the right approach here, especially since whole classes
-of some remotes change model to model. Apple remotes are an example of
-this: you have to figure out what different signal each new model
-sends and it is really nice for the user to be able to do this and put
-it in a config file and not have to wait for the next kernel version.
+Right, I see. Perhaps Ingo wants to do something about it?
 
-Finding the middle ground here is probably the sanest course.
+Regards,
 
->
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
->
+Elias
