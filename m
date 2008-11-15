@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbYKOD2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbYKOD3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118AbYKOD2S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 22:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYKOD2H
+	id S1755283AbYKOD3D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 22:29:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYKOD2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 22:28:07 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:64265 "EHLO
+	Fri, 14 Nov 2008 22:28:53 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:64356 "EHLO
 	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbYKOD2E (ORCPT
+	with ESMTP id S1751476AbYKOD2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 22:28:04 -0500
-Message-ID: <491E41C3.9010500@ct.jp.nec.com>
-Date: Fri, 14 Nov 2008 19:28:03 -0800
+	Fri, 14 Nov 2008 22:28:53 -0500
+Message-ID: <491E41F2.4030403@ct.jp.nec.com>
+Date: Fri, 14 Nov 2008 19:28:50 -0800
 From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] x86: ia32_signal: remove using temporary variable
+Subject: [PATCH 5/5] x86: ia32_signal: change order of storing in setup_sigcontext()
 References: <491E4101.7010405@ct.jp.nec.com>
 In-Reply-To: <491E4101.7010405@ct.jp.nec.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -31,37 +31,32 @@ From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
 Impact: cleanup
 
-No need to use temporary variable.
-Also rename the variable same as kernel/signal_32.c.
+Change order of storing to match the sigcontext_ia32.
 
 Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
- arch/x86/ia32/ia32_signal.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ arch/x86/ia32/ia32_signal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 0b7fcf6..2883f41 100644
+index 2883f41..909181a 100644
 --- a/arch/x86/ia32/ia32_signal.c
 +++ b/arch/x86/ia32/ia32_signal.c
-@@ -218,7 +218,7 @@ struct rt_sigframe
+@@ -360,13 +360,13 @@ static int ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc,
+ 	err |= __put_user(regs->dx, &sc->dx);
+ 	err |= __put_user(regs->cx, &sc->cx);
+ 	err |= __put_user(regs->ax, &sc->ax);
+-	err |= __put_user(regs->cs, &sc->cs);
+-	err |= __put_user(regs->ss, &sc->ss);
+ 	err |= __put_user(current->thread.trap_no, &sc->trapno);
+ 	err |= __put_user(current->thread.error_code, &sc->err);
+ 	err |= __put_user(regs->ip, &sc->ip);
++	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
+ 	err |= __put_user(regs->flags, &sc->flags);
+ 	err |= __put_user(regs->sp, &sc->sp_at_signal);
++	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
  
- static int ia32_restore_sigcontext(struct pt_regs *regs,
- 				   struct sigcontext_ia32 __user *sc,
--				   unsigned int *peax)
-+				   unsigned int *pax)
- {
- 	unsigned int tmpflags, gs, oldgs, err = 0;
- 	void __user *buf;
-@@ -265,9 +265,7 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
- 	buf = compat_ptr(tmp);
- 	err |= restore_i387_xstate_ia32(buf);
- 
--	err |= __get_user(tmp, &sc->ax);
--	*peax = tmp;
--
-+	err |= __get_user(*pax, &sc->ax);
- 	return err;
- }
+ 	err |= __put_user(ptr_to_compat(fpstate), &sc->fpstate);
  
 -- 
 1.5.6
