@@ -1,133 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbYKOJjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbYKOJwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbYKOJjk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 04:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYKOJja
+	id S1755181AbYKOJwZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 04:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbYKOJwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 04:39:30 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39798 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753452AbYKOJj3 (ORCPT
+	Sat, 15 Nov 2008 04:52:16 -0500
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:1795 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbYKOJwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 04:39:29 -0500
-Date: Sat, 15 Nov 2008 18:38:59 +0900 (JST)
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: [PATCH] mm: evict streaming IO cache first
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Sat, 15 Nov 2008 04:52:14 -0500
+X-Greylist: delayed 601 seconds by postgrey-1.27 at vger.kernel.org; Sat, 15 Nov 2008 04:52:14 EST
+Message-ID: <491E9972.9000909@xs4all.nl>
+Date: Sat, 15 Nov 2008 10:42:10 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: BUG after installing Phenom
+X-Enigmail-Version: 0.95.2
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Hello,
 
-I think we need this patch at 2.6.28.
-Can this thinking get acception?
+I just replaced my Athlon X2 2350-BE with a Phenom 9550.
+This is on a Gigabyte m56s-s3 board with the latest F4G bios.
+During the boot I noticed the BUg below.
+What could be the cause, how can I provide the right info?
 
+Kind regards,
+Udo
 
---------------------------------------------------
-From: Rik van Riel <riel@redhat.com>
-
-Gene Heskett reported 2.6.28-rc3 often make unnecessary swap-out
-on his system(4GB mem, 2GB swap).
-and He has had to do a "swapoff -a; swapon -a" daily to clear the swap.
-
-
-Actually, When there is a lot of streaming IO (or lite memory pressure workload)
-going on, we do not want to scan or evict pages from the working set.  
-The old VM used to skip any mapped page, but still evict indirect blocks and
-other data that is useful to cache.
-
-This patch adds logic to skip scanning the anon lists and
-the active file list if most of the file pages are on the
-inactive file list (where streaming IO pages live), while
-at the lowest scanning priority.
-
-If the system is not doing a lot of streaming IO, eg. the
-system is running a database workload, then more often used
-file pages will be on the active file list and this logic
-is automatically disabled.
-
-
-IOW, Large server apparently doesn't need this patch. but
-desktop or small server need it.
-
-
-Signed-off-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Ackted-by: Gene Heskett <gene.heskett@gmail.com>
-Tested-by: Gene Heskett <gene.heskett@gmail.com>
----
- include/linux/mmzone.h |    1 +
- mm/vmscan.c            |   18 ++++++++++++++++--
- 2 files changed, 17 insertions(+), 2 deletions(-)
-
-Index: b/include/linux/mmzone.h
-===================================================================
---- a/include/linux/mmzone.h	2008-11-10 16:10:34.000000000 +0900
-+++ b/include/linux/mmzone.h	2008-11-10 16:12:20.000000000 +0900
-@@ -453,6 +453,7 @@ static inline int zone_is_oom_locked(con
-  * queues ("queue_length >> 12") during an aging round.
-  */
- #define DEF_PRIORITY 12
-+#define PRIO_CACHE_ONLY (DEF_PRIORITY+1)
- 
- /* Maximum number of zones on a zonelist */
- #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c	2008-11-10 16:10:34.000000000 +0900
-+++ b/mm/vmscan.c	2008-11-10 16:11:30.000000000 +0900
-@@ -1443,6 +1443,20 @@ static unsigned long shrink_zone(int pri
- 		}
- 	}
- 
-+	/*
-+	 * If there is a lot of sequential IO going on, most of the
-+	 * file pages will be on the inactive file list.  We start
-+	 * out by reclaiming those pages, without putting pressure on
-+	 * the working set.  We only do this if the bulk of the file pages
-+	 * are not in the working set (on the active file list).
-+	 */
-+	if (priority == PRIO_CACHE_ONLY &&
-+			(nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]))
-+		for_each_evictable_lru(l)
-+			/* Scan only the inactive_file list. */
-+			if (l != LRU_INACTIVE_FILE)
-+				nr[l] = 0;
-+
- 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
- 					nr[LRU_INACTIVE_FILE]) {
- 		for_each_evictable_lru(l) {
-@@ -1573,7 +1587,7 @@ static unsigned long do_try_to_free_page
- 		}
- 	}
- 
--	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
-+	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
- 		sc->nr_scanned = 0;
- 		if (!priority)
- 			disable_swap_token();
-@@ -1735,7 +1749,7 @@ loop_again:
- 	for (i = 0; i < pgdat->nr_zones; i++)
- 		temp_priority[i] = DEF_PRIORITY;
- 
--	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
-+	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
- 		int end_zone = 0;	/* Inclusive.  0 = ZONE_DMA */
- 		unsigned long lru_pages = 0;
- 
+(...)
+RAID5 conf printout:
+ --- rd:4 wd:4
+ disk 0, o:1, dev:sda2
+ disk 1, o:1, dev:sdb2
+ disk 2, o:1, dev:sdc2
+ disk 3, o:1, dev:sdd2
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+input: Power Button (FF) as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input3
+i2c-adapter i2c-0: nForce2 SMBus adapter at 0x1c00
+i2c-adapter i2c-1: nForce2 SMBus adapter at 0x1c40
+ACPI: Power Button (FF) [PWRF]
+input: Power Button (CM) as
+/devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input4
+ACPI: Power Button (CM) [PWRB]
+sd 0:0:0:0: Attached scsi generic sg0 type 0
+sd 1:0:0:0: Attached scsi generic sg1 type 0
+sd 2:0:0:0: Attached scsi generic sg2 type 0
+sd 3:0:0:0: Attached scsi generic sg3 type 0
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000013
+IP: [<ffffffff802a4bc6>] sys_close+0x56/0x120
+PGD 0
+Oops: 0000 [1] PREEMPT SMP
+CPU 2
+Modules linked in: snd parport sg snd_page_alloc i2c_nforce2 button
+ohci_hcd ehci_hcd
+Pid: 1035, comm: udevd Not tainted 2.6.27.6 #8
+RIP: 0010:[<ffffffff802a4bc6>]  [<ffffffff802a4bc6>] sys_close+0x56/0x120
+RSP: 0018:ffff88011e901f58  EFLAGS: 00010286
+RAX: 0000000000000004 RBX: ffff88011e8183c0 RCX: ffff88011e8183d0
+RDX: ffff88011e818478 RSI: 0000000000000001 RDI: 0000000000000001
+RBP: 0000000000000004 R08: 0000000000000004 R09: 00007fa15b347a00
+R10: 00007fa15b99d810 R11: 0000000000000246 R12: ffff88011e818440
+R13: ffff88011f8e2e00 R14: 00007fff639d2db0 R15: 00007fff639d2bb0
+FS:  00007fa15b99d780(0000) GS:ffff88011f86d6c0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000013 CR3: 000000011e4d0000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process udevd (pid: 1035, threadinfo ffff88011e900000, task
+ffff88011f2be690)
+Stack:  0000000000000000 00007fa15b99d698 0000000000000000 00007fff639d0fa0
+ 0000000000000004 ffffffff8020b9db 0000000000000246 00007fa15b99d810
+ 00007fa15b347a00 0000000000000004 0000000000000003 00007fa15b0b6520
+Call Trace:
+ [<ffffffff8020b9db>] ? system_call_fastpath+0x16/0x1b
 
 
+Code: 8d a3 80 00 00 00 4c 89 e7 e8 37 14 28 00 48 8b 4b 08 39 29 0f 86
+ab 00 00 00 89 e8 48 8d 14 c5 00 00 00 00 48 03 51 08 4c 8b 2a <4d> 85
+ed 0f 84 91 00 00 00 48 c7 02 00 00 00 00 48 8b 71 10 48
+RIP  [<ffffffff802a4bc6>] sys_close+0x56/0x120
+ RSP <ffff88011e901f58>
+CR2: 0000000000000013
+---[ end trace de5577b47323c3eb ]---
+note: udevd[1035] exited with preempt_count 1
+BUG: scheduling while atomic: udevd/1035/0x10000002
+Modules linked in: snd parport sg snd_page_alloc i2c_nforce2 button
+ohci_hcd ehci_hcd
+Pid: 1035, comm: udevd Tainted: G      D   2.6.27.6 #8
 
+Call Trace:
+ [<ffffffff80524340>] thread_return+0x11f/0x63f
+ [<ffffffff802587bf>] __atomic_notifier_call_chain+0x4f/0x70
+ [<ffffffff805264f0>] _spin_unlock+0x10/0x30
+ [<ffffffff803b1c4c>] vt_console_print+0x28c/0x390
+ [<ffffffff80371b60>] vgacon_cursor+0x0/0x270
+ [<ffffffff80239d27>] __cond_resched+0x17/0x40
+ [<ffffffff80524965>] _cond_resched+0x35/0x50
+ [<ffffffff8028e093>] unmap_vmas+0x803/0x9a0
+ [<ffffffff80292b0d>] exit_mmap+0x9d/0x150
+ [<ffffffff8023aa25>] mmput+0x25/0xc0
+ [<ffffffff8023ec2e>] exit_mm+0xfe/0x140
+ [<ffffffff805263f1>] _spin_unlock_irq+0x11/0x40
+ [<ffffffff80240876>] do_exit+0x186/0x930
+ [<ffffffff8020d0cc>] oops_end+0x8c/0x90
+ [<ffffffff802260bc>] do_page_fault+0x24c/0x9e0
+ [<ffffffff8028ecc8>] handle_mm_fault+0x1d8/0x830
+ [<ffffffff802a9dff>] chrdev_open+0x13f/0x240
+ [<ffffffff805261cf>] _spin_lock_irqsave+0x1f/0x50
+ [<ffffffff8035af31>] __up_read+0x21/0xb0
+ [<ffffffff80526432>] _spin_unlock_irqrestore+0x12/0x40
+ [<ffffffff802261b4>] do_page_fault+0x344/0x9e0
+ [<ffffffff802b3e2b>] do_filp_open+0x21b/0x9a0
+ [<ffffffff80526889>] error_exit+0x0/0x51
+ [<ffffffff802a4bc6>] sys_close+0x56/0x120
+ [<ffffffff802a4ba9>] sys_close+0x39/0x120
+ [<ffffffff8020b9db>] system_call_fastpath+0x16/0x1b
 
-
+IT8716 SuperIO detected.
+parport_pc 00:0a: reported by Plug and Play ACPI
+parport0: PC-style at 0x378, irq 7 [PCSPP,TRISTATE]
+Floppy drive(s): fd0 is 1.44M
+FDC 0 is a post-1991 82077
+(cut)
