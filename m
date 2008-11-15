@@ -1,71 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbYKOPmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbYKOPrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbYKOPmp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 10:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYKOPmg
+	id S1753910AbYKOPrY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 10:47:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYKOPrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 10:42:36 -0500
-Received: from mail.gmx.net ([213.165.64.20]:52989 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751447AbYKOPmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 10:42:35 -0500
-X-Authenticated: #34473864
-X-Provags-ID: V01U2FsdGVkX1/g5oUB57zgOqxmBsT3l/yxaNbpt5DJ5wnQCqbzIl
-	DQ+zcfAXPfkkmV
-Message-ID: <491EEDE8.5080508@gmx.de>
-Date: Sat, 15 Nov 2008 16:42:32 +0100
-From: Philipp Kohlbecher <xt28@gmx.de>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sat, 15 Nov 2008 10:47:15 -0500
+Received: from wf-out-1314.google.com ([209.85.200.175]:14269 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbYKOPrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 10:47:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=RHra36+cZn3mAjGe9rsdx2BVjhTzIT0ojwUl99L/h7Guo5pj6Gswn7GM/1uAmpqB1J
+         wX+y+IS2Ag3Dd/ji0Kyg4HgdheQtouuIwdB8t837X5+waO9Rynq3pF7Prm2ftgqBQVvt
+         VY3T6xLRocOxDOL/Q5zZx++omHGx1h1YJvJu0=
+Message-ID: <f9be06770811150747l574badc1l8d509baae4f81ac5@mail.gmail.com>
+Date: Sat, 15 Nov 2008 10:47:10 -0500
+From: "Karl Pickett" <karl.pickett@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: tcp_tw_recycle broken?
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <874p2916hb.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@redhat.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: alternative identifier for Phoenix BIOS
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Content-Disposition: inline
+References: <f9be06770811142037v794cf4f8w7a82ab45c0f3820c@mail.gmail.com>
+	 <20081115055748.GY24654@1wt.eu>
+	 <f9be06770811142329x7d6dcb89vd573962970d503b3@mail.gmail.com>
+	 <874p2916hb.fsf@basil.nowhere.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My laptop (a Samsung X20) contains a Phoenix BIOS and would benefit from 
-patch 1e22436eba84edfec9c25e5a25d09062c4f91ca9 (x86: reserve low 64K on 
-AMI and Phoenix BIOS boxen).
+On Sat, Nov 15, 2008 at 8:09 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> "Karl Pickett" <karl.pickett@gmail.com> writes:
+>>
+>> May I just confirm.. is tcp_tw_reuse NOT dependent on receiving timestamps?
+>
+> The big problem is that both are incompatible with NAT. So if you
+> ever talk to any NATed clients don't use it.
+>
+> -Andi
+>
+> --
+> ak@linux.intel.com
+>
 
-However, according to /sys/class/dmi/id/bios_vendor, the BIOS identifies
-its vendor as "Phoenix Technologies LTD" (sans the comma).
 
-This patch adds the approptiate identifier to the bad_bios_dmi_table in
-arch/x86/kernel/setup.c.
+Hmph.  Running the test again - after getting a little sleep -
+timestamps do indeed determine if tw_reuse/recyle work.  I must not
+have let all the tw buckets expire before changing my timestamp
+settings last night.
 
-The patch compiles cleanly and has been tested successfully on my machine.
+Since
+A. I don't want to rely on arbitrary web servers having timestamps
+B. People say it breaks NAT for clients, and the settings are global only,
 
-Signed-off-by: Philipp Kohlbecher <xt28@gmx.de>
+I will just set TCP_TIMEWAIT_LEN to 10 seconds and call it a day.
+Sure would be nice if it was a tunable, so only the most heavily
+loaded customers could set it...
 
----
-
-Please CC me, I am not on the list.
-
-  arch/x86/kernel/setup.c |    7 +++++++
-  1 files changed, 7 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0fa6790..b88fdbe 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -767,6 +767,13 @@ static struct dmi_system_id __initdata
-bad_bios_dmi_table[] = {
-              DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies, LTD"),
-          },
-      },
-+    {
-+        .callback = dmi_low_memory_corruption,
-+        .ident = "Phoenix BIOS",
-+        .matches = {
-+            DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies LTD"),
-+        },
-+    },
-  #endif
-      {}
-  };
-
+-- 
+Karl Pickett
