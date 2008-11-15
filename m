@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbYKOFZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbYKOFZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbYKOFZA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbYKOFYr
+	id S1755013AbYKOFZd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbYKOFYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:24:47 -0500
-Received: from kroah.org ([198.145.64.141]:50391 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:24:51 -0500
+Received: from kroah.org ([198.145.64.141]:50419 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750839AbYKOFYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:24:46 -0500
-Date: Fri, 14 Nov 2008 21:22:20 -0800
+	id S1751426AbYKOFYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:24:47 -0500
+Date: Fri, 14 Nov 2008 21:22:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,67 +22,57 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/22] 2.6.27.7-stable review
-Message-ID: <20081115052220.GA3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Kay Sievers <kay.sievers@vrfy.org>,
+       Neil Brown <neilb@suse.de>, Dan Williams <dan.j.williams@intel.com>
+Subject: [patch 01/22] touch_mnt_namespace when the mount flags change
+Message-ID: <20081115052241.GB3710@kroah.com>
+References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="touch_mnt_namespace-when-the-mount-flags-change.patch"
+In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.27.7 release.
-There are 22 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by Monday, Nov 17, 2008, 06:00:00 UTC.
-Anything received after that time might be too late.
+From: Dan Williams <dan.j.williams@intel.com>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.7-rc1.gz
-and the diffstat can be found below.
+commit 0e55a7cca4b66f625d67b292f80b6a976e77c51b upstream
 
+Daemons that need to be launched while the rootfs is read-only can now
+poll /proc/mounts to be notified when their O_RDWR requests may no
+longer end in EROFS.
 
-thanks,
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Neil Brown <neilb@suse.de>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-greg k-h
+---
+ fs/namespace.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
- Makefile                                  |    2 +-
- arch/arm/mm/cache-feroceon-l2.c           |    4 +-
- arch/powerpc/include/asm/mpic.h           |    2 +
- arch/powerpc/platforms/85xx/mpc85xx_ds.c  |    3 +-
- arch/powerpc/platforms/86xx/pic.c         |    3 +-
- arch/powerpc/sysdev/mpic.c                |   59 +++++++++++++++++++++++--
- block/blk-merge.c                         |   19 +++++++-
- drivers/acpi/ec.c                         |   13 ++++-
- drivers/acpi/system.c                     |   25 +++++++---
- drivers/char/ipmi/ipmi_msghandler.c       |   20 +++++----
- drivers/char/ipmi/ipmi_si_intf.c          |   16 ++++---
- drivers/hwmon/ibmaem.c                    |   18 ++++---
- drivers/input/mouse/alps.c                |    1 +
- drivers/misc/sony-laptop.c                |    6 ++-
- drivers/net/Kconfig                       |    1 +
- drivers/net/bnx2x_init.h                  |    9 ++--
- drivers/net/bnx2x_main.c                  |    6 ++-
- drivers/net/wireless/ath5k/base.c         |   67 +++++++++++++++--------------
- drivers/net/wireless/ath5k/base.h         |    3 +-
- drivers/net/wireless/ath5k/hw.c           |   22 +++------
- drivers/net/wireless/ath5k/initvals.c     |    2 +
- drivers/net/wireless/hostap/hostap_wlan.h |    5 ++-
- drivers/net/wireless/iwlwifi/iwl-agn.c    |    6 ++-
- drivers/net/wireless/rtl8187_dev.c        |    3 +
- fs/namespace.c                            |    7 +++-
- include/linux/bio.h                       |    7 +++
- mm/hugetlb.c                              |    5 +-
- mm/page_isolation.c                       |    5 +-
- scripts/package/builddeb                  |   24 +++++++++-
- 29 files changed, 251 insertions(+), 112 deletions(-)
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1553,8 +1553,13 @@ static noinline int do_remount(struct na
+ 	if (!err)
+ 		nd->path.mnt->mnt_flags = mnt_flags;
+ 	up_write(&sb->s_umount);
+-	if (!err)
++	if (!err) {
+ 		security_sb_post_remount(nd->path.mnt, flags, data);
++
++		spin_lock(&vfsmount_lock);
++		touch_mnt_namespace(nd->path.mnt->mnt_ns);
++		spin_unlock(&vfsmount_lock);
++	}
+ 	return err;
+ }
+ 
+
+-- 
