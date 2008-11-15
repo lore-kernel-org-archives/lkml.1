@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYKOFav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYKOFbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbYKOFav (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYKOFZX
+	id S1756383AbYKOFbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbYKOFZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:25:23 -0500
-Received: from kroah.org ([198.145.64.141]:50652 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:25:25 -0500
+Received: from kroah.org ([198.145.64.141]:50672 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752874AbYKOFZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:25:09 -0500
-Date: Fri, 14 Nov 2008 21:23:42 -0800
+	id S1753936AbYKOFZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:25:11 -0500
+Date: Fri, 14 Nov 2008 21:23:45 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: [patch 17/22] block: fix nr_phys_segments miscalculation bug
-Message-ID: <20081115052342.GR3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Kumar Gala <galak@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [patch 18/22] powerpc/mpic: Fix regression caused by change of
+	default IRQ affinity
+Message-ID: <20081115052345.GS3710@kroah.com>
 References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="block-fix-nr_phys_segments-miscalculation-bug.patch"
+Content-Disposition: inline; filename="powerpc-mpic-fix-regression-caused-by-change-of-default-irq-affinity.patch"
 In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,118 +41,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+From: Kumar Gala <galak@kernel.crashing.org>
 
-commit 8677142710516d986d932d6f1fba7be8382c1fec upstream
-backported by Nikanth Karthikesan <knikanth@suse.de> to the 2.6.27.y tree.
+commit 3c10c9c45e290022ca7d2aa1ad33a0b6ed767520 upstream.
 
-block: fix nr_phys_segments miscalculation bug
+The Freescale implementation of MPIC only allows a single CPU destination
+for non-IPI interrupts.  We add a flag to the mpic_init to distinquish
+these variants of MPIC.  We pull in the irq_choose_cpu from sparc64 to
+select a single CPU as the destination of the interrupt.
 
-This fixes the bug reported by Nikanth Karthikesan <knikanth@suse.de>:
+This is to deal with the fact that the default smp affinity was
+changed by commit 18404756765c713a0be4eb1082920c04822ce588 ("genirq
+Expose default irq affinity mask (take 3)") to be all CPUs.
 
-http://lkml.org/lkml/2008/10/2/203
-
-The root cause of the bug is that blk_phys_contig_segment
-miscalculates q->max_segment_size.
-
-blk_phys_contig_segment checks:
-
-req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size
-
-But blk_recalc_rq_segments might expect that req->biotail and the
-previous bio in the req are supposed be merged into one
-segment. blk_recalc_rq_segments might also expect that next_req->bio
-and the next bio in the next_req are supposed be merged into one
-segment. In such case, we merge two requests that can't be merged
-here. Later, blk_rq_map_sg gives more segments than it should.
-
-We need to keep track of segment size in blk_recalc_rq_segments and
-use it to see if two requests can be merged. This patch implements it
-in the similar way that we used to do for hw merging (virtual
-merging).
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Cc: Nikanth Karthikesan <knikanth@suse.de>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- block/blk-merge.c   |   19 +++++++++++++++++--
- include/linux/bio.h |    7 +++++++
- 2 files changed, 24 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/mpic.h          |    2 +
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |    3 +
+ arch/powerpc/platforms/86xx/pic.c        |    3 +
+ arch/powerpc/sysdev/mpic.c               |   59 ++++++++++++++++++++++++++++---
+ 4 files changed, 61 insertions(+), 6 deletions(-)
 
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -95,6 +95,9 @@ new_hw_segment:
- 			nr_hw_segs++;
- 		}
+--- a/arch/powerpc/include/asm/mpic.h
++++ b/arch/powerpc/include/asm/mpic.h
+@@ -355,6 +355,8 @@ struct mpic
+ #define MPIC_NO_BIAS			0x00000400
+ /* Ignore NIRQS as reported by FRR */
+ #define MPIC_BROKEN_FRR_NIRQS		0x00000800
++/* Destination only supports a single CPU at a time */
++#define MPIC_SINGLE_DEST_CPU		0x00001000
  
-+		if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
-+			rq->bio->bi_seg_front_size = seg_size;
+ /* MPIC HW modification ID */
+ #define MPIC_REGSET_MASK		0xf0000000
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -78,7 +78,8 @@ void __init mpc85xx_ds_pic_init(void)
+ 
+ 	mpic = mpic_alloc(np, r.start,
+ 			  MPIC_PRIMARY | MPIC_WANTS_RESET |
+-			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
++			  MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
++			  MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " OpenPIC  ");
+ 	BUG_ON(mpic == NULL);
+ 	of_node_put(np);
+--- a/arch/powerpc/platforms/86xx/pic.c
++++ b/arch/powerpc/platforms/86xx/pic.c
+@@ -44,7 +44,8 @@ void __init mpc86xx_init_irq(void)
+ 
+ 	mpic = mpic_alloc(np, res.start,
+ 			MPIC_PRIMARY | MPIC_WANTS_RESET |
+-			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS,
++			MPIC_BIG_ENDIAN | MPIC_BROKEN_FRR_NIRQS |
++			MPIC_SINGLE_DEST_CPU,
+ 			0, 256, " MPIC     ");
+ 	of_node_put(np);
+ 	BUG_ON(mpic == NULL);
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -563,6 +563,51 @@ static void __init mpic_scan_ht_pics(str
+ 
+ #endif /* CONFIG_MPIC_U3_HT_IRQS */
+ 
++#ifdef CONFIG_SMP
++static int irq_choose_cpu(unsigned int virt_irq)
++{
++	cpumask_t mask = irq_desc[virt_irq].affinity;
++	int cpuid;
 +
- 		nr_phys_segs++;
- 		bvprv = bv;
- 		seg_size = bv->bv_len;
-@@ -106,6 +109,10 @@ new_hw_segment:
- 		rq->bio->bi_hw_front_size = hw_seg_size;
- 	if (hw_seg_size > rq->biotail->bi_hw_back_size)
- 		rq->biotail->bi_hw_back_size = hw_seg_size;
-+	if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
-+		rq->bio->bi_seg_front_size = seg_size;
-+	if (seg_size > rq->biotail->bi_seg_back_size)
-+		rq->biotail->bi_seg_back_size = seg_size;
- 	rq->nr_phys_segments = nr_phys_segs;
- 	rq->nr_hw_segments = nr_hw_segs;
- }
-@@ -133,7 +140,8 @@ static int blk_phys_contig_segment(struc
- 
- 	if (!BIOVEC_PHYS_MERGEABLE(__BVEC_END(bio), __BVEC_START(nxt)))
- 		return 0;
--	if (bio->bi_size + nxt->bi_size > q->max_segment_size)
-+	if (bio->bi_seg_back_size + nxt->bi_seg_front_size >
-+	    q->max_segment_size)
- 		return 0;
- 
- 	/*
-@@ -377,6 +385,8 @@ static int ll_merge_requests_fn(struct r
- {
- 	int total_phys_segments;
- 	int total_hw_segments;
-+	unsigned int seg_size =
-+		req->biotail->bi_seg_back_size + next->bio->bi_seg_front_size;
- 
- 	/*
- 	 * First check if the either of the requests are re-queued
-@@ -392,8 +402,13 @@ static int ll_merge_requests_fn(struct r
- 		return 0;
- 
- 	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
--	if (blk_phys_contig_segment(q, req->biotail, next->bio))
-+	if (blk_phys_contig_segment(q, req->biotail, next->bio)) {
-+		if (req->nr_phys_segments == 1)
-+			req->bio->bi_seg_front_size = seg_size;
-+		if (next->nr_phys_segments == 1)
-+			next->biotail->bi_seg_back_size = seg_size;
- 		total_phys_segments--;
++	if (cpus_equal(mask, CPU_MASK_ALL)) {
++		static int irq_rover;
++		static DEFINE_SPINLOCK(irq_rover_lock);
++		unsigned long flags;
++
++		/* Round-robin distribution... */
++	do_round_robin
++		spin_lock_irqsave(&irq_rover_lock, flags);
++
++		while (!cpu_online(irq_rover)) {
++			if (++irq_rover >= NR_CPUS)
++				irq_rover = 0;
++		}
++		cpuid = irq_rover;
++		do {
++			if (++irq_rover >= NR_CPUS)
++				irq_rover = 0;
++		} while (!cpu_online(irq_rover));
++
++		spin_unlock_irqrestore(&irq_rover_lock, flags);
++	} else {
++		cpumask_t tmp;
++
++		cpus_and(tmp, cpu_online_map, mask);
++
++		if (cpus_empty(tmp))
++			goto do_round_robin;
++
++		cpuid = first_cpu(tmp);
 +	}
- 
- 	if (total_phys_segments > q->max_phys_segments)
- 		return 0;
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -98,6 +98,13 @@ struct bio {
- 	unsigned int		bi_size;	/* residual I/O count */
- 
- 	/*
-+	 * To keep track of the max segment size, we account for the
-+	 * sizes of the first and last mergeable segments in this bio.
-+	 */
-+	unsigned int            bi_seg_front_size;
-+	unsigned int            bi_seg_back_size;
 +
-+	/*
- 	 * To keep track of the max hw size, we account for the
- 	 * sizes of the first and last virtually mergeable segments
- 	 * in this bio
++	return cpuid;
++}
++#else
++static int irq_choose_cpu(unsigned int virt_irq)
++{
++	return hard_smp_processor_id();
++}
++#endif
+ 
+ #define mpic_irq_to_hw(virq)	((unsigned int)irq_map[virq].hwirq)
+ 
+@@ -777,12 +822,18 @@ void mpic_set_affinity(unsigned int irq,
+ 	struct mpic *mpic = mpic_from_irq(irq);
+ 	unsigned int src = mpic_irq_to_hw(irq);
+ 
+-	cpumask_t tmp;
++	if (mpic->flags & MPIC_SINGLE_DEST_CPU) {
++		int cpuid = irq_choose_cpu(irq);
++
++		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION), 1 << cpuid);
++	} else {
++		cpumask_t tmp;
+ 
+-	cpus_and(tmp, cpumask, cpu_online_map);
++		cpus_and(tmp, cpumask, cpu_online_map);
+ 
+-	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
+-		       mpic_physmask(cpus_addr(tmp)[0]));	
++		mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
++			       mpic_physmask(cpus_addr(tmp)[0]));
++	}
+ }
+ 
+ static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int type)
 
 -- 
