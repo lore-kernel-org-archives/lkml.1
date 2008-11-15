@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbYKOFcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbYKOF4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbYKOFcj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:32:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYKOFZa
+	id S1754061AbYKOF4i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYKOF43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:25:30 -0500
-Received: from kroah.org ([198.145.64.141]:48147 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751622AbYKOFZQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:25:16 -0500
-Date: Fri, 14 Nov 2008 21:24:00 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Jackson <ajax@redhat.com>,
-       Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>,
-       Steve Conklin <sconklin@canonical.com>
-Subject: [patch 22/22] sony-laptop: ignore missing _DIS method on pic device
-Message-ID: <20081115052400.GW3710@kroah.com>
-References: <20081115051732.506914008@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sony-laptop-ignore-missing-_dis-method-on-pic-device.patch"
-In-Reply-To: <20081115052220.GA3710@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 15 Nov 2008 00:56:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39964 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751648AbYKOF43 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:56:29 -0500
+Date: Fri, 14 Nov 2008 21:56:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David <david@unsolicited.net>
+Cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com
+Subject: Re: Regression: USB/DVB 2.6.26.8 --> 2.6.27.6
+Message-Id: <20081114215607.dc10a235.akpm@linux-foundation.org>
+In-Reply-To: <491DDD98.7090306@unsolicited.net>
+References: <491DDD98.7090306@unsolicited.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+(cc video4linux-list@redhat.com)
 
-------------------
+On Fri, 14 Nov 2008 20:20:40 +0000 David <david@unsolicited.net> wrote:
 
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+> I've just tried to upgrade my media server to the latest stable kernel
+> and have found problems with my USB DVB  devices. With the new kernel
+> I'm seeing
+> 
+> DVB: registering new adapter (Technotrend TT-connect S-2400)
+> DVB: registering frontend 3 (Philips TDA10086 DVB-S)...
+> dvb-usb: recv bulk message failed: -110
+> ttusb2: there might have been an error during control message transfer.
+> (rlen = 0, was 0)
+> dvb-usb: Technotrend TT-connect S-2400 successfully initialized and
+> connected.
+> 
+> All of the registered DVB devices are now inoperable. dmesgs from both
+> kernels attached. There are subtle differences in the device numbering
+> as the devices were in warm state on the second kernel boot (however the
+> problem is still present whether the devices are warm or cold).
+> 
+> Any help will be appreciated
+> 
 
-commit 6158d3a2323835546c7cf83a170316fa77b726e0 upstream.
-
-At least the Vaio VGN-Z540N doesn't have this method, so let's not fail
-to suspend just because it doesn't exist.
-
-Signed-off-by: Adam Jackson <ajax@redhat.com>
-Acked-by: Mattia Dongili <malattia@linux.it>
-Cc: Len Brown <lenb@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steve Conklin <sconklin@canonical.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-
----
- drivers/misc/sony-laptop.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
---- a/drivers/misc/sony-laptop.c
-+++ b/drivers/misc/sony-laptop.c
-@@ -2315,8 +2315,10 @@ end:
-  */
- static int sony_pic_disable(struct acpi_device *device)
- {
--	if (ACPI_FAILURE(acpi_evaluate_object(device->handle,
--			"_DIS", NULL, NULL)))
-+	acpi_status ret = acpi_evaluate_object(device->handle, "_DIS", NULL,
-+					       NULL);
-+
-+	if (ACPI_FAILURE(ret) && ret != AE_NOT_FOUND)
- 		return -ENXIO;
- 
- 	dprintk("Device disabled\n");
-
--- 
