@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYKOAM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbYKOAUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbYKOAM5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 19:12:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYKOAMr
+	id S1755129AbYKOAUa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 19:20:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYKOAUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 19:12:47 -0500
-Received: from lucidpixels.com ([75.144.35.66]:48188 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbYKOAMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 19:12:46 -0500
-Date: Fri, 14 Nov 2008 19:12:45 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
-cc: linux-ide@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: Re: 2.6.27.6 question: ata_sff_hsm_move: ata15 (why always ata15)?
-In-Reply-To: <alpine.DEB.1.10.0811141850590.6217@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0811141912190.6297@p34.internal.lan>
-References: <alpine.DEB.1.10.0811141850590.6217@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 14 Nov 2008 19:20:21 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52617 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbYKOAUU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 19:20:20 -0500
+Date: Sat, 15 Nov 2008 00:19:50 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_OPTIMIZE_INLINING fun
+In-Reply-To: <Pine.LNX.4.64.0811141343510.30981@quilx.com>
+Message-ID: <Pine.LNX.4.64.0811150001430.2087@blonde.site>
+References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
+ <Pine.LNX.4.64.0811141244060.29394@quilx.com> <Pine.LNX.4.64.0811141923030.10125@blonde.site>
+ <Pine.LNX.4.64.0811141343510.30981@quilx.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 14 Nov 2008, Christoph Lameter wrote:
+> On Fri, 14 Nov 2008, Hugh Dickins wrote:
+> 
+> > What I was intending anyway, quite independently of the INLINING
+> > issue, was changing those and some others to VM_BUG_ONs, which are
+> > intended really for VM testers rather than for distros to turn on.
+> > (Though perhaps Nick has shifted his position on that.)
+> 
+> Some distros have a bad habit of turning these on for production releases.
 
-On Fri, 14 Nov 2008, Justin Piszcz wrote:
+Okay, then they'll get what they've asked for.  DEBUG_VM has
+an outstandingly appropriate help text, Nick deserves a medal:
 
-> I am trying to find out what the root cause of this error/problem is:
-> https://bugzilla.redhat.com/show_bug.cgi?id=462425
->
-> It seems like every week or other week someone else reports this on the 
-> linux-raid mailing list.
->
-> I have enabled debugging in the libata.h file and I find that ata15 is 
-> constantly being accessed for some reason, why is this?
->
-> The first two disks are md/RAID1, the other volume is not being written to or 
-> read:
->
+  Enable this to turn on extended checks in the virtual-memory system
+  that may impact performance.
 
-In messages:
+  If unsure, say N.
 
-Nov 14 19:12:01 p34 kernel: [ 2485.558898] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:01 p34 kernel: [ 2485.559318] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:03 p34 kernel: [ 2487.554449] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:03 p34 kernel: [ 2487.554725] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:03 p34 kernel: [ 2487.555399] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:03 p34 kernel: [ 2487.555746] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:03 p34 kernel: [ 2487.556194] ata15: ata_dev_select: ENTER, device 0, wait 1
-Nov 14 19:12:03 p34 kernel: [ 2487.556449] ata15: ata_dev_select: ENTER, device 0, wait 1
+> > But I suspect
+> > it's irrelevant, that changing those functions to macros would not
+> > actually have any effect on the problem - that's what we've often
+> > been assured, anyway, that the compiler nowadays does inlines as
+> > efficiently as the preprocessor does macros.  I do wonder though.
+> 
+> Maybe try to compare it with a old kernel that still has the page flags
+> macros? That way we would have a testcase useful for bringing to the
+> attention of the gcc people.
 
+I've now put a 2.6.25 #define-style page-flags.h into my 2.6.28-rc4
+build tree, added in enough of the missing stuff to build my config,
+and rebuilt with gccs 4.2.1 and 4.3.2.
+
+You'll be relieved to hear that using the macros makes no difference:
+well, of course it eliminates all those " Page" functions with 4.2.1,
+hard for it not to; but leaves just as many constant_test_bit()s.
+
+Hugh
