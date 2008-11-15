@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbYKOF22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbYKOF1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbYKOF22 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYKOFZK
+	id S1756030AbYKOF1c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYKOFY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:25:10 -0500
-Received: from kroah.org ([198.145.64.141]:50559 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:24:56 -0500
+Received: from kroah.org ([198.145.64.141]:50516 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753289AbYKOFZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:25:00 -0500
-Date: Fri, 14 Nov 2008 21:23:16 -0800
+	id S1752515AbYKOFYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:24:55 -0500
+Date: Fri, 14 Nov 2008 21:23:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 10/22] hostap: pad the skb->cb usage in lieu of a proper fix
-Message-ID: <20081115052316.GK3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Eilon Greenstein <eilong@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>, Alex Chiang <achiang@hp.com>
+Subject: [patch 07/22] bnx2x: Calling netif_carrier_off at the end of the
+	probe
+Message-ID: <20081115052305.GH3710@kroah.com>
 References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hostap-pad-the-skb-cb-usage-in-lieu-of-a-proper-fix.patch"
+Content-Disposition: inline; filename="bnx2x-calling-netif_carrier_off-at-the-end-of-the-probe.patch"
 In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,46 +41,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Eilon Greenstein <eilong@broadcom.com>
 
-commit f7cd168645dda3e9067f24fabbfa787f9a237488 upstream.
+commit 12b56ea89e70d4b04f2f5199750310e82894ebbd upstream.
 
-Like mac80211 did, this driver makes 'clever' use of skb->cb to pass
-information along with an skb as it is requeued from the virtual device
-to the physical wireless device.  Unfortunately, that trick no longer
-works...
+netif_carrier_off was called too early at the probe. In case of failure
+or simply bad timing, this can cause a fatal error since linkwatch_event
+might run too soon.
 
-Unlike mac80211, code complexity and driver apathy makes this hack
-the best option we have in the short run.  Hopefully someone will
-eventually be motivated to code a proper fix before all the effected
-hardware dies.
-
-(Above text by me.  Johannes officially disavows all knowledge of this
-hack. -- JWL)
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Eilon Greenstein <eilong@broadcom.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Alex Chiang <achiang@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/hostap/hostap_wlan.h |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/net/bnx2x_main.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/hostap/hostap_wlan.h
-+++ b/drivers/net/wireless/hostap/hostap_wlan.h
-@@ -918,9 +918,12 @@ struct hostap_interface {
+--- a/drivers/net/bnx2x_main.c
++++ b/drivers/net/bnx2x_main.c
+@@ -10205,8 +10205,6 @@ static int __devinit bnx2x_init_one(stru
+ 		return -ENOMEM;
+ 	}
  
- /*
-  * TX meta data - stored in skb->cb buffer, so this must not be increased over
-- * the 40-byte limit
-+ * the 48-byte limit.
-+ * THE PADDING THIS STARTS WITH IS A HORRIBLE HACK THAT SHOULD NOT LIVE
-+ * TO SEE THE DAY.
-  */
- struct hostap_skb_tx_data {
-+	unsigned int __padding_for_default_qdiscs;
- 	u32 magic; /* HOSTAP_SKB_TX_DATA_MAGIC */
- 	u8 rate; /* transmit rate */
- #define HOSTAP_TX_FLAGS_WDS BIT(0)
+-	netif_carrier_off(dev);
+-
+ 	bp = netdev_priv(dev);
+ 	bp->msglevel = debug;
+ 
+@@ -10230,6 +10228,8 @@ static int __devinit bnx2x_init_one(stru
+ 		goto init_one_exit;
+ 	}
+ 
++	netif_carrier_off(dev);
++
+ 	bp->common.name = board_info[ent->driver_data].name;
+ 	printk(KERN_INFO "%s: %s (%c%d) PCI-E x%d %s found at mem %lx,"
+ 	       " IRQ %d, ", dev->name, bp->common.name,
 
 -- 
