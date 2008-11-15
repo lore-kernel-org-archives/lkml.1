@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYKOF3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYKOFad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbYKOF3p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:29:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYKOFZS
+	id S1756613AbYKOFad (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYKOFZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:25:18 -0500
-Received: from kroah.org ([198.145.64.141]:50621 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:25:21 -0500
+Received: from kroah.org ([198.145.64.141]:50632 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753810AbYKOFZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:25:06 -0500
-Date: Fri, 14 Nov 2008 21:23:35 -0800
+	id S1753823AbYKOFZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:25:08 -0500
+Date: Fri, 14 Nov 2008 21:23:38 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 15/22] rtl8187 : support for Sitecom WL-168 0001 v4
-Message-ID: <20081115052335.GP3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
+       Frans Pop <elendil@planet.nl>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [patch 16/22] kbuild: Fixup deb-pkg target to generate separate
+	firmware deb
+Message-ID: <20081115052338.GQ3710@kroah.com>
 References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtl8187-support-for-sitecom-wl-168-0001-v4.patch"
+Content-Disposition: inline; filename="kbuild-fixup-deb-pkg-target-to-generate-separate-firmware-deb.patch"
 In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,29 +41,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bob Jolliffe <bobjolliffe@gmail.com>
+From: Jonathan McDowell <noodles@earth.li>
 
-commit f3c769185a28b7947d97b3552a977102c1fac3f2 upstream.
+commit bf1b36445dc868cbbde194aa1dd87e38fe24cf16 upstream.
 
-the Sitecom 0001 v4 with product id 0x0df6:0028, uses Realtek's
-RTL8187B and work fine with new 2.6.27 driver.
+The below is a simplistic fix for "make deb-pkg"; it splits the
+firmware out to a linux-firmware-image package and adds an
+(unversioned) Suggests to the linux package for this firmware.
 
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-Off-By: Jonathan McDowell <noodles@earth.li>
+Acked-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_dev.c |    1 +
- 1 file changed, 1 insertion(+)
+ scripts/package/builddeb |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -45,6 +45,7 @@ static struct usb_device_id rtl8187_tabl
- 	{USB_DEVICE(0x03f0, 0xca02), .driver_info = DEVICE_RTL8187},
- 	/* Sitecom */
- 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
-+	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
- 	/* Abocom */
- 	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
- 	{}
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -15,15 +15,18 @@ set -e
+ version=$KERNELRELEASE
+ revision=`cat .version`
+ tmpdir="$objtree/debian/tmp"
++fwdir="$objtree/debian/fwtmp"
+ packagename=linux-$version
++fwpackagename=linux-firmware-image
+ 
+ if [ "$ARCH" == "um" ] ; then
+ 	packagename=user-mode-linux-$version
+ fi
+ 
+ # Setup the directory structure
+-rm -rf "$tmpdir"
++rm -rf "$tmpdir" "$fwdir"
+ mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
++mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
+ if [ "$ARCH" == "um" ] ; then
+ 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
+ fi
+@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
+ 
+ Package: $packagename
+ Provides: kernel-image-$version, linux-image-$version
++Suggests: $fwpackagename
+ Architecture: any
+ Description: Linux kernel, version $version
+  This package contains the Linux kernel, modules and corresponding other
+@@ -118,8 +122,24 @@ fi
+ chown -R root:root "$tmpdir"
+ chmod -R go-w "$tmpdir"
+ 
++# Do we have firmware? Move it out of the way and build it into a package.
++if [ -e "$tmpdir/lib/firmware" ]; then
++	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
++
++	cat <<EOF >> debian/control
++
++Package: $fwpackagename
++Architecture: all
++Description: Linux kernel firmware, version $version
++ This package contains firmware from the Linux kernel, version $version
++EOF
++
++	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
++	dpkg --build "$fwdir" ..
++fi
++
+ # Perform the final magic
+-dpkg-gencontrol -isp
++dpkg-gencontrol -isp -p$packagename
+ dpkg --build "$tmpdir" ..
+ 
+ exit 0
 
 -- 
