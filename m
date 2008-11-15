@@ -1,42 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbYKOMz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbYKONJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbYKOMz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 07:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYKOMzU
+	id S1756064AbYKONJW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 08:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbYKONJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 07:55:20 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:48487 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbYKOMzT (ORCPT
+	Sat, 15 Nov 2008 08:09:03 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:51517 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755033AbYKONJC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 07:55:19 -0500
-Date: Sat, 15 Nov 2008 12:55:10 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: Bugs on aspire one A150
-Message-ID: <20081115125510.GA7331@srcf.ucam.org>
-References: <491506DB.1070000@gmail.com> <49157E97.60503@tuffmail.co.uk> <491DCC21.6060705@gmail.com> <61b223ba0811141159k179558d0i60cebf373baa9fb8@mail.gmail.com> <491EC614.4060302@gmail.com>
+	Sat, 15 Nov 2008 08:09:02 -0500
+To: "Karl Pickett" <karl.pickett@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: tcp_tw_recycle broken?
+From: Andi Kleen <andi@firstfloor.org>
+References: <f9be06770811142037v794cf4f8w7a82ab45c0f3820c@mail.gmail.com>
+	<20081115055748.GY24654@1wt.eu>
+	<f9be06770811142329x7d6dcb89vd573962970d503b3@mail.gmail.com>
+Date: Sat, 15 Nov 2008 14:09:04 +0100
+In-Reply-To: <f9be06770811142329x7d6dcb89vd573962970d503b3@mail.gmail.com> (Karl Pickett's message of "Sat, 15 Nov 2008 02:29:27 -0500")
+Message-ID: <874p2916hb.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491EC614.4060302@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Nov 15, 2008 at 02:52:36PM +0200, Maxim Levitsky wrote:
+"Karl Pickett" <karl.pickett@gmail.com> writes:
+>
+> May I just confirm.. is tcp_tw_reuse NOT dependent on receiving timestamps?
 
-> I applied his first patch, and now acpiphp works great 
-> (loads fast, and detects both readers)
+The big problem is that both are incompatible with NAT. So if you
+ever talk to any NATed clients don't use it.
 
-Excellent, good to know.
+-Andi
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ak@linux.intel.com
