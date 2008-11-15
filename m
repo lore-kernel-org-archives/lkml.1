@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755129AbYKOAUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYKOAVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755129AbYKOAUa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 19:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYKOAUV
+	id S1755889AbYKOAVm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 19:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYKOAVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 19:20:21 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52617 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751522AbYKOAUU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 19:20:20 -0500
-Date: Sat, 15 Nov 2008 00:19:50 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_OPTIMIZE_INLINING fun
-In-Reply-To: <Pine.LNX.4.64.0811141343510.30981@quilx.com>
-Message-ID: <Pine.LNX.4.64.0811150001430.2087@blonde.site>
-References: <Pine.LNX.4.64.0811141804030.29883@blonde.site>
- <Pine.LNX.4.64.0811141244060.29394@quilx.com> <Pine.LNX.4.64.0811141923030.10125@blonde.site>
- <Pine.LNX.4.64.0811141343510.30981@quilx.com>
+	Fri, 14 Nov 2008 19:21:34 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39272 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbYKOAVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 19:21:33 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Suspend to disk broken in latest 2.6.28-rc3
+Date: Sat, 15 Nov 2008 01:26:14 +0100
+User-Agent: KMail/1.9.9
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "Mathieu Chouquet-Stringer" <mchouque@free.fr>,
+       Pavel Machek <pavel@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Alex Deucher <alexdeucher@gmail.com>, Dave Airlie <airlied@redhat.com>
+References: <20081109195033.GA1335@mobydick> <200811121357.02233.jbarnes@virtuousgeek.org> <20081113073341.GV26778@kernel.dk>
+In-Reply-To: <20081113073341.GV26778@kernel.dk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811150126.14991.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Christoph Lameter wrote:
-> On Fri, 14 Nov 2008, Hugh Dickins wrote:
+On Thursday, 13 of November 2008, Jens Axboe wrote:
+> On Wed, Nov 12 2008, Jesse Barnes wrote:
+> > On Wednesday, November 12, 2008 1:37 pm Rafael J. Wysocki wrote:
+> > > On Wednesday, 12 of November 2008, Jens Axboe wrote:
+> > > > On Wed, Nov 12 2008, Jesse Barnes wrote:
+> > > > > On Tuesday, November 11, 2008 7:27 am Mathieu Chouquet-Stringer wrote:
+> > > > > > On Tue, Nov 11, 2008 at 12:15:24AM +0100, Mathieu Chouquet-Stringer 
+> > wrote:
+> > > > > > > This one I guess:
+> > > > > > > http://bugzilla.kernel.org/attachment.cgi?id=18644&action=view
+> > > > > > >
+> > > > > > > Let me give it a shot, I'll keep you posted.
+> > > > > >
+> > > > > > So I compiled the module, rebooted just to have a clean starting
+> > > > > > point, started X then tried to suspend: no go...
+> > > > >
+> > > > > Dave pushed a fix for this (more complete than the one in the patch you
+> > > > > reference), have you tried the kernel from today to see if things work
+> > > > > now?
+> > > >
+> > > > A drm enabled kernel also hangs hard on resume (just see the mouse
+> > > > pointer) here on the x60. Removing drm makes it work just fine. 2.6.27
+> > > > works fine as well.
+> > >
+> > > Is there Intel graphics in there?
+> > 
+> > Yeah I think so... I wonder if this is another case where a POST
+> > conflicted with the kernel's restore and caused X to hang...
 > 
-> > What I was intending anyway, quite independently of the INLINING
-> > issue, was changing those and some others to VM_BUG_ONs, which are
-> > intended really for VM testers rather than for distros to turn on.
-> > (Though perhaps Nick has shifted his position on that.)
-> 
-> Some distros have a bad habit of turning these on for production releases.
+> Yep, it's intel graphics, sorry I should have mentioned that!
 
-Okay, then they'll get what they've asked for.  DEBUG_VM has
-an outstandingly appropriate help text, Nick deserves a medal:
+OK, so I think I should track that as a separate regression.
 
-  Enable this to turn on extended checks in the virtual-memory system
-  that may impact performance.
+I created http://bugzilla.kernel.org/show_bug.cgi?id=12031 for this purpose.
 
-  If unsure, say N.
-
-> > But I suspect
-> > it's irrelevant, that changing those functions to macros would not
-> > actually have any effect on the problem - that's what we've often
-> > been assured, anyway, that the compiler nowadays does inlines as
-> > efficiently as the preprocessor does macros.  I do wonder though.
-> 
-> Maybe try to compare it with a old kernel that still has the page flags
-> macros? That way we would have a testcase useful for bringing to the
-> attention of the gcc people.
-
-I've now put a 2.6.25 #define-style page-flags.h into my 2.6.28-rc4
-build tree, added in enough of the missing stuff to build my config,
-and rebuilt with gccs 4.2.1 and 4.3.2.
-
-You'll be relieved to hear that using the macros makes no difference:
-well, of course it eliminates all those " Page" functions with 4.2.1,
-hard for it not to; but leaves just as many constant_test_bit()s.
-
-Hugh
+Thanks,
+Rafael
