@@ -1,158 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbYKOAJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYKOAKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755192AbYKOAJM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 14 Nov 2008 19:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbYKOAI6
+	id S1755799AbYKOAKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 14 Nov 2008 19:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYKOAKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 14 Nov 2008 19:08:58 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:56344 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbYKOAI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 14 Nov 2008 19:08:57 -0500
-Date: Fri, 14 Nov 2008 16:08:44 -0800
-From: Gary Hade <garyhade@us.ibm.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>, Mel Gorman <mel@csn.ul.ie>,
-       Chris McDermott <lcm@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <greg@kroah.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>
-Subject: Re: [PATCH] [REPOST #2] mm: show node to memory section
-	relationship with symlinks in sysfs
-Message-ID: <20081115000844.GE7108@us.ibm.com>
-References: <20081103234808.GA13716@us.ibm.com> <1226528175.4835.18.camel@badari-desktop> <20081113165402.GA7084@us.ibm.com> <1226678717.16616.2.camel@badari-desktop> <20081114164125.GA7108@us.ibm.com>
+	Fri, 14 Nov 2008 19:10:22 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:57341 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751664AbYKOAKW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 14 Nov 2008 19:10:22 -0500
+Date: Fri, 14 Nov 2008 19:10:13 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: George Spelvin <linux@horizon.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 2/2] serial/8250.c: Use self-adjusting list for port poll
+	order.
+Message-ID: <20081115001013.GM25117@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	George Spelvin <linux@horizon.com>, linux-kernel@vger.kernel.org
+References: <20081113150308.3590.qmail@science.horizon.com> <20081114053042.11532.qmail@science.horizon.com> <20081114053314.12093.qmail@science.horizon.com> <20081114213449.14960.qmail@science.horizon.com> <20081114214711.3c1d1473@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081114164125.GA7108@us.ibm.com>
+In-Reply-To: <20081114214711.3c1d1473@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 08:41:25AM -0800, Gary Hade wrote:
-> On Fri, Nov 14, 2008 at 08:05:17AM -0800, Badari Pulavarty wrote:
-> > On Thu, 2008-11-13 at 08:54 -0800, Gary Hade wrote:
-> > > On Wed, Nov 12, 2008 at 02:16:15PM -0800, Badari Pulavarty wrote:
-> > > > On Mon, 2008-11-03 at 15:48 -0800, Gary Hade wrote:
-> > > > > Show node to memory section relationship with symlinks in sysfs
-> > > > > 
-> > > > > Add /sys/devices/system/node/nodeX/memoryY symlinks for all
-> > > > > the memory sections located on nodeX.  For example:
-> > > > > /sys/devices/system/node/node1/memory135 -> ../../memory/memory135
-> > > > > indicates that memory section 135 resides on node1.
-> > > > > 
-> > > > > Also revises documentation to cover this change as well as updating
-> > > > > Documentation/ABI/testing/sysfs-devices-memory to include descriptions
-> > > > > of memory hotremove files 'phys_device', 'phys_index', and 'state'
-> > > > > that were previously not described there.
-> > > > > 
-> > > > > In addition to it always being a good policy to provide users with
-> > > > > the maximum possible amount of physical location information for
-> > > > > resources that can be hot-added and/or hot-removed, the following
-> > > > > are some (but likely not all) of the user benefits provided by
-> > > > > this change.
-> > > > > Immediate:
-> > > > >   - Provides information needed to determine the specific node
-> > > > >     on which a defective DIMM is located.  This will reduce system
-> > > > >     downtime when the node or defective DIMM is swapped out.
-> > > > >   - Prevents unintended onlining of a memory section that was 
-> > > > >     previously offlined due to a defective DIMM.  This could happen
-> > > > >     during node hot-add when the user or node hot-add assist script
-> > > > >     onlines _all_ offlined sections due to user or script inability
-> > > > >     to identify the specific memory sections located on the hot-added
-> > > > >     node.  The consequences of reintroducing the defective memory
-> > > > >     could be ugly.
-> > > > >   - Provides information needed to vary the amount and distribution
-> > > > >     of memory on specific nodes for testing or debugging purposes.
-> > > > > Future:
-> > > > >   - Will provide information needed to identify the memory
-> > > > >     sections that need to be offlined prior to physical removal
-> > > > >     of a specific node.
-> > > > > 
-> > > > > Symlink creation during boot was tested on 2-node x86_64, 2-node
-> > > > > ppc64, and 2-node ia64 systems.  Symlink creation during physical
-> > > > > memory hot-add tested on a 2-node x86_64 system.
-> > > > > 
-> > > > > Supersedes the "mm: show memory section to node relationship in sysfs"
-> > > > > patch posted on 05 Sept 2008 which created node ID containing 'node'
-> > > > > files in /sys/devices/system/memory/memoryX instead of symlinks.
-> > > > > Changed from files to symlinks due to feedback that symlinks were
-> > > > > more consistent with the sysfs way.
-> > > > > 
-> > > > > Supersedes the "mm: show node to memory section relationship with
-> > > > > symlinks in sysfs" patch posted on 29 Sept 2008 to address a Yasunori
-> > > > > Goto reported problem where an incorrect symlink was created due to
-> > > > > a range of uninitialized pages at the beginning of a section.  This
-> > > > > problem which produced a symlink in /sys/devices/system/node/node0
-> > > > > that incorrectly referenced a mem section located on node1 is corrected
-> > > > > in this version.  This version also covers the case were a mem section
-> > > > > could span multiple nodes.
-> > > > > 
-> > > > > Supersedes the "mm: show node to memory section relationship with
-> > > > > symlinks in sysfs" patch posted on 09 Oct 2008 to add the Andrew
-> > > > > Morton requested usefulness information and update to apply cleanly
-> > > > > to 2.6.28-rc3 and 2.6-git.  Code is unchanged.
-> > > > > 
-> > > > > Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-> > > > > Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
-> > > > > 
-> > > > 
-> > > > Hi Gary,
-> > > > 
-> > > > While testing latest mmtom (which has this patch) ran into an issue
-> > > > with sysfs files. What I noticed was, with this patch "memoryXX"
-> > > > directories in /sys/devices/system/memory/ are not getting cleaned up.
-> > > > Backing out the patch seems to fix the problem. 
-> > > > 
-> > > > When I tried to remove 64 blocks of memory, empty  directories are
-> > > > stayed around. (look at memory151 - memory215). This is causing OOPS
-> > > > while trying to add memory block again. I think this could be because 
-> > > > of the symlink added from node directory.  Can you look ?
-> > > 
-> > > Badari, The call to unregister_mem_sect_under_nodes() in
-> > > remove_memory_block() preceding the removal of the files in
-> > > the memory section directory _should have_ removed all the
-> > > symlinks referencing the memory section directory.  Did you
-> > > happen to check to see if the symlinks to memory151-memory215
-> > > were still present?
-> > > 
-> > > Gary
-> > > 
+On Fri, Nov 14, 2008 at 09:47:11PM +0000, Alan Cox wrote:
+> > This code does that by using the previous poll cycles as a hint.
+> > If a port is idle, it will migrate to the end of the list and
+> > only have to be checked once.
 > > 
-> > Hi Gary,
+> > Part 1 changed the list to singly-linked to make the list shuffling easier.
 > > 
-> > As discussed earlier, patch is leaving an extra reference on the
-> > memoryX directory. Needs a kobject_put() to match the reference
-> > you get in find_memory_block().
+> > Comments?  Please?
 > 
-> Badari, Thanks again for finding that!
+> Is it really worth the complexity
 > 
-> > 
-> > Could you update the patch and resend it ?
-> 
-> Will do.
+> - PCI ports are shared IRQ always
+> - Legacy ports are almost never shared IRQ on the LPC bus (and are
+> increasingly going away)
 
-I just posted a replacement patch with subject line
-  [PATCH] [REPOST #3] mm: show node to memory section relationship
-                      with symlinks in sysfs
-In addition to addressing the memory section directory removal problem
-it also contains a change to correct a 'for' loop early termination
-problem that I noticed while debugging the directory removal problem.
+It's worth the complexity only *if* you have enough ports shared on a
+single IRQ and simultaneously such that there a risk that if you don't
+poll them quickly enough, characters will actually get dropped from
+the UART's FIFO.  The question is whether that is likely to happen on
+modern CPU's.  I worred about such things when I tried to make 16
+115kbps serial ports work at full-speed using relatively primitive
+16550A UART's with 16 character FIFO's on a 40 MHz 386.  But (a)
+UART's generally have deeper FIFO's these days, and (b) CPU's have
+gotten a wee bit faster since 1992.
 
-Andrew, If it would be better from a -mm standpoint for me to give
-you a small patch that would apply on top of instead of replacing
-the bad one, just let me know.
+So color me dubious that this is actually necessary....
 
-Thanks,
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
-
+							- Ted
