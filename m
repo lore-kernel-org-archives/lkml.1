@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbYKOF1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbYKOF2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755826AbYKOF1D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:27:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYKOFY4
+	id S1756363AbYKOF2r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYKOFZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:24:56 -0500
-Received: from kroah.org ([198.145.64.141]:50499 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:25:12 -0500
+Received: from kroah.org ([198.145.64.141]:50594 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752347AbYKOFYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:24:54 -0500
-Date: Fri, 14 Nov 2008 21:23:02 -0800
+	id S1753518AbYKOFZE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:25:04 -0500
+Date: Fri, 14 Nov 2008 21:23:27 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eilon Greenstein <eilong@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>, Alex Chiang <achiang@hp.com>
-Subject: [patch 06/22] bnx2x: PCI configuration bug on big-endian
-Message-ID: <20081115052302.GG3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Adam Litke <agl@us.ibm.com>,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: [patch 13/22] hugetlb: make unmap_ref_private multi-size-aware
+Message-ID: <20081115052327.GN3710@kroah.com>
 References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bnx2x-pci-configuration-bug-on-big-endian.patch"
+Content-Disposition: inline; filename="hugetlb-make-unmap_ref_private-multi-size-aware.patch"
 In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,45 +40,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eilon Greenstein <eilong@broadcom.com>
+From: Adam Litke <agl@us.ibm.com>
 
-commit 7d96567ac0527703cf1b80043fc0ebd7f21a10ad upstream.
+commit 7526674de0c921e7f1e9b6f71a1f9d832557b554 upstream.
 
-The current code read nothing but zeros on big-endian (wrong part of the
-32bits). This caused poor performance on big-endian machines. Though this
-issue did not cause the system to crash, the performance is significantly
-better with the fix so I view it as critical bug fix.
+Oops.  Part of the hugetlb private reservation code was not fully
+converted to use hstates.
 
-Signed-off-by: Eilon Greenstein <eilong@broadcom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Alex Chiang <achiang@hp.com>
+When a huge page must be unmapped from VMAs due to a failed COW,
+HPAGE_SIZE is used in the call to unmap_hugepage_range() regardless of
+the page size being used.  This works if the VMA is using the default
+huge page size.  Otherwise we might unmap too much, too little, or
+trigger a BUG_ON.  Rare but serious -- fix it.
+
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bnx2x_init.h |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ mm/hugetlb.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/net/bnx2x_init.h
-+++ b/drivers/net/bnx2x_init.h
-@@ -564,14 +564,15 @@ static const struct arb_line write_arb_a
- 
- static void bnx2x_init_pxp(struct bnx2x *bp)
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1797,6 +1797,7 @@ int unmap_ref_private(struct mm_struct *
+ 					struct page *page,
+ 					unsigned long address)
  {
-+	u16 devctl;
- 	int r_order, w_order;
- 	u32 val, i;
++	struct hstate *h = hstate_vma(vma);
+ 	struct vm_area_struct *iter_vma;
+ 	struct address_space *mapping;
+ 	struct prio_tree_iter iter;
+@@ -1806,7 +1807,7 @@ int unmap_ref_private(struct mm_struct *
+ 	 * vm_pgoff is in PAGE_SIZE units, hence the different calculation
+ 	 * from page cache lookup which is in HPAGE_SIZE units.
+ 	 */
+-	address = address & huge_page_mask(hstate_vma(vma));
++	address = address & huge_page_mask(h);
+ 	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT)
+ 		+ (vma->vm_pgoff >> PAGE_SHIFT);
+ 	mapping = (struct address_space *)page_private(page);
+@@ -1825,7 +1826,7 @@ int unmap_ref_private(struct mm_struct *
+ 		 */
+ 		if (!is_vma_resv_set(iter_vma, HPAGE_RESV_OWNER))
+ 			unmap_hugepage_range(iter_vma,
+-				address, address + HPAGE_SIZE,
++				address, address + huge_page_size(h),
+ 				page);
+ 	}
  
- 	pci_read_config_word(bp->pdev,
--			     bp->pcie_cap + PCI_EXP_DEVCTL, (u16 *)&val);
--	DP(NETIF_MSG_HW, "read 0x%x from devctl\n", (u16)val);
--	w_order = ((val & PCI_EXP_DEVCTL_PAYLOAD) >> 5);
--	r_order = ((val & PCI_EXP_DEVCTL_READRQ) >> 12);
-+			     bp->pcie_cap + PCI_EXP_DEVCTL, &devctl);
-+	DP(NETIF_MSG_HW, "read 0x%x from devctl\n", devctl);
-+	w_order = ((devctl & PCI_EXP_DEVCTL_PAYLOAD) >> 5);
-+	r_order = ((devctl & PCI_EXP_DEVCTL_READRQ) >> 12);
- 
- 	if (r_order > MAX_RD_ORD) {
- 		DP(NETIF_MSG_HW, "read order of %d  order adjusted to %d\n",
 
 -- 
