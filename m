@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbYKOHZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbYKOH3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbYKOHZj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 02:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbYKOHZb
+	id S1755731AbYKOH3k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 02:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbYKOH33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 02:25:31 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:55692 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515AbYKOHZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 02:25:30 -0500
-Subject: Re: [v4l-dvb-maintainer] [PATCH] dvb: usb vendor_ids/product_ids
-	are __le16
-From: Jean-Francois Moine <moinejf@free.fr>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Devin Heitmueller <devin.heitmueller@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       v4l-maintainer <v4l-dvb-maintainer@linuxtv.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-In-Reply-To: <1226691865.5483.47.camel@brick>
-References: <1226686796.5483.33.camel@brick> <491DCBDD.4000703@linuxtv.org>
-	 <1226689669.5483.36.camel@brick>
-	 <37219a840811141115g539ef85fo81136ebd479f016f@mail.gmail.com>
-	 <1226690438.5483.39.camel@brick>
-	 <412bdbff0811141125x34de747dm85b47f61b604219a@mail.gmail.com>
-	 <1226691865.5483.47.camel@brick>
+	Sat, 15 Nov 2008 02:29:29 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:8924 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbYKOH32 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 02:29:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=dobA/WLxtw/xJ/U1yQe/9ccXlvW0kGl4N0Xzh1ploPPBM7lS2/JjbnfXqvJZ4r2hbE
+         5Q5c6wXrYGr41kpF6HFoYJRSqvc3bTAjdwFUbfdvfI8ePmrdZWGF9lyybTt877uNjcYE
+         uCRH4IbqrzQRoRhySuZNNP+6B+MZ737MGU7hc=
+Message-ID: <f9be06770811142329x7d6dcb89vd573962970d503b3@mail.gmail.com>
+Date: Sat, 15 Nov 2008 02:29:27 -0500
+From: "Karl Pickett" <karl.pickett@gmail.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: tcp_tw_recycle broken?
+In-Reply-To: <20081115055748.GY24654@1wt.eu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Sat, 15 Nov 2008 08:21:06 +0100
-Message-Id: <1226733666.1730.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f9be06770811142037v794cf4f8w7a82ab45c0f3820c@mail.gmail.com>
+	 <20081115055748.GY24654@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 11:44 -0800, Harvey Harrison wrote:
-> But, not my driver, not my decision.  Someone else can implement Michael's
-> suggestion if they want.
+On Sat, Nov 15, 2008 at 12:57 AM, Willy Tarreau <w@1wt.eu> wrote:
+> On Fri, Nov 14, 2008 at 11:37:06PM -0500, Karl Pickett wrote:
+>> Hey.  Developing a http proxy on fedora 9 (2.6.25) and running into a
+>> strange issue.
+>>
+>> Having the proxy set up and tear down 6000 tcp connections a second to
+>> the same test server ip and port,
+>> it quickly blows up (5 seconds) due to all 30000 ephemeral ports going
+>> to TIME_WAIT.
+>> setting tw_recycle=1 fixed the problem, and there are never more than
+>> a couple hundred ports in TIME_WAIT.
+>>
+>> BUT...
+>>
+>> Changing the load test to alternate between two test server ips, it
+>> blows up.  Connect: can't assign requested address. (note I am not
+>> binding before hand, I tried
+>> and binding first to port 0 made no difference - it just blows up then
+>> during the bind).
+>>
+>> And there are ~28K ports in TIME_WAIT.  For example:
+>>
+>> proxy_ip:30000 load_test_1:8080 TIME_WAIT
+>> proxy_ip:30000 load_test_2:8080 TIME_WAIT
+>> ...
+>> but most are not duplicates of the same local port.
+>>
+>>
+>> What. The.  Heck.
+>>
+>> So short of rebuilding the kernel with time_wait as 1 second, is there
+>> any other way not to brick my proxy?
+>
+> two things :
+>  - set tcp_tw_reuse to 1 too.
+>  - do a setsockopt(SO_REUSEADDR) before connect()
+>
+> Using this, my proxy has no problem at 35K sess/s on 2.6.25. I'm not sure
+> if disabling either option above still works.
+>
+> Hoping this helps,
+> Willy
+>
+>
 
-A simpler solution could be to pass the struct usb_device_id *id to the
-function af9015_read_config. There, the idVendor and idProduct are host
-native...
+Thanks for the help.  Well, it looks like tw_reuse is what I wanted...
+not tw_recycle.  Based on a python test program over loopback,
+tw_reuse alone solves the problem... so_reuseaddr doesn't do anything.
+ And apparently the tcp code is too much for me...looking at the
+source I thought tw_reuse only can happen when timestamps are enabled.
+ But even after disabling timestamps tw_reuse still works over
+loopback.
+
+I'll have to wait until Monday to try it again in the lab.  I was
+trying combinations of tw_reuse and recycle, too many to remember
+apparently.
+
+May I just confirm.. is tcp_tw_reuse NOT dependent on receiving timestamps?
+
 
 -- 
-Ken ar c'hentañ |             ** Breizh ha Linux atav! **
-Jef             |               http://moinejf.free.fr/
-
-
+Karl Pickett
