@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbYKOFad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbYKOFav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbYKOFad (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 00:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbYKOFZV
+	id S1757121AbYKOFav (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 00:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbYKOFZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 00:25:21 -0500
-Received: from kroah.org ([198.145.64.141]:50632 "EHLO coco.kroah.org"
+	Sat, 15 Nov 2008 00:25:23 -0500
+Received: from kroah.org ([198.145.64.141]:50652 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753823AbYKOFZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 00:25:08 -0500
-Date: Fri, 14 Nov 2008 21:23:38 -0800
+	id S1752874AbYKOFZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 00:25:09 -0500
+Date: Fri, 14 Nov 2008 21:23:42 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
-       Frans Pop <elendil@planet.nl>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [patch 16/22] kbuild: Fixup deb-pkg target to generate separate
-	firmware deb
-Message-ID: <20081115052338.GQ3710@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: [patch 17/22] block: fix nr_phys_segments miscalculation bug
+Message-ID: <20081115052342.GR3710@kroah.com>
 References: <20081115051732.506914008@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kbuild-fixup-deb-pkg-target-to-generate-separate-firmware-deb.patch"
+Content-Disposition: inline; filename="block-fix-nr_phys_segments-miscalculation-bug.patch"
 In-Reply-To: <20081115052220.GA3710@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,78 +42,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jonathan McDowell <noodles@earth.li>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-commit bf1b36445dc868cbbde194aa1dd87e38fe24cf16 upstream.
+commit 8677142710516d986d932d6f1fba7be8382c1fec upstream
+backported by Nikanth Karthikesan <knikanth@suse.de> to the 2.6.27.y tree.
 
-The below is a simplistic fix for "make deb-pkg"; it splits the
-firmware out to a linux-firmware-image package and adds an
-(unversioned) Suggests to the linux package for this firmware.
+block: fix nr_phys_segments miscalculation bug
 
-Signed-Off-By: Jonathan McDowell <noodles@earth.li>
-Acked-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+This fixes the bug reported by Nikanth Karthikesan <knikanth@suse.de>:
+
+http://lkml.org/lkml/2008/10/2/203
+
+The root cause of the bug is that blk_phys_contig_segment
+miscalculates q->max_segment_size.
+
+blk_phys_contig_segment checks:
+
+req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size
+
+But blk_recalc_rq_segments might expect that req->biotail and the
+previous bio in the req are supposed be merged into one
+segment. blk_recalc_rq_segments might also expect that next_req->bio
+and the next bio in the next_req are supposed be merged into one
+segment. In such case, we merge two requests that can't be merged
+here. Later, blk_rq_map_sg gives more segments than it should.
+
+We need to keep track of segment size in blk_recalc_rq_segments and
+use it to see if two requests can be merged. This patch implements it
+in the similar way that we used to do for hw merging (virtual
+merging).
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: Nikanth Karthikesan <knikanth@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- scripts/package/builddeb |   24 ++++++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
+ block/blk-merge.c   |   19 +++++++++++++++++--
+ include/linux/bio.h |    7 +++++++
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -15,15 +15,18 @@ set -e
- version=$KERNELRELEASE
- revision=`cat .version`
- tmpdir="$objtree/debian/tmp"
-+fwdir="$objtree/debian/fwtmp"
- packagename=linux-$version
-+fwpackagename=linux-firmware-image
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -95,6 +95,9 @@ new_hw_segment:
+ 			nr_hw_segs++;
+ 		}
  
- if [ "$ARCH" == "um" ] ; then
- 	packagename=user-mode-linux-$version
- fi
- 
- # Setup the directory structure
--rm -rf "$tmpdir"
-+rm -rf "$tmpdir" "$fwdir"
- mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
-+mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
- if [ "$ARCH" == "um" ] ; then
- 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
- fi
-@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
- 
- Package: $packagename
- Provides: kernel-image-$version, linux-image-$version
-+Suggests: $fwpackagename
- Architecture: any
- Description: Linux kernel, version $version
-  This package contains the Linux kernel, modules and corresponding other
-@@ -118,8 +122,24 @@ fi
- chown -R root:root "$tmpdir"
- chmod -R go-w "$tmpdir"
- 
-+# Do we have firmware? Move it out of the way and build it into a package.
-+if [ -e "$tmpdir/lib/firmware" ]; then
-+	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
++		if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
++			rq->bio->bi_seg_front_size = seg_size;
 +
-+	cat <<EOF >> debian/control
-+
-+Package: $fwpackagename
-+Architecture: all
-+Description: Linux kernel firmware, version $version
-+ This package contains firmware from the Linux kernel, version $version
-+EOF
-+
-+	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
-+	dpkg --build "$fwdir" ..
-+fi
-+
- # Perform the final magic
--dpkg-gencontrol -isp
-+dpkg-gencontrol -isp -p$packagename
- dpkg --build "$tmpdir" ..
+ 		nr_phys_segs++;
+ 		bvprv = bv;
+ 		seg_size = bv->bv_len;
+@@ -106,6 +109,10 @@ new_hw_segment:
+ 		rq->bio->bi_hw_front_size = hw_seg_size;
+ 	if (hw_seg_size > rq->biotail->bi_hw_back_size)
+ 		rq->biotail->bi_hw_back_size = hw_seg_size;
++	if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
++		rq->bio->bi_seg_front_size = seg_size;
++	if (seg_size > rq->biotail->bi_seg_back_size)
++		rq->biotail->bi_seg_back_size = seg_size;
+ 	rq->nr_phys_segments = nr_phys_segs;
+ 	rq->nr_hw_segments = nr_hw_segs;
+ }
+@@ -133,7 +140,8 @@ static int blk_phys_contig_segment(struc
  
- exit 0
+ 	if (!BIOVEC_PHYS_MERGEABLE(__BVEC_END(bio), __BVEC_START(nxt)))
+ 		return 0;
+-	if (bio->bi_size + nxt->bi_size > q->max_segment_size)
++	if (bio->bi_seg_back_size + nxt->bi_seg_front_size >
++	    q->max_segment_size)
+ 		return 0;
+ 
+ 	/*
+@@ -377,6 +385,8 @@ static int ll_merge_requests_fn(struct r
+ {
+ 	int total_phys_segments;
+ 	int total_hw_segments;
++	unsigned int seg_size =
++		req->biotail->bi_seg_back_size + next->bio->bi_seg_front_size;
+ 
+ 	/*
+ 	 * First check if the either of the requests are re-queued
+@@ -392,8 +402,13 @@ static int ll_merge_requests_fn(struct r
+ 		return 0;
+ 
+ 	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
+-	if (blk_phys_contig_segment(q, req->biotail, next->bio))
++	if (blk_phys_contig_segment(q, req->biotail, next->bio)) {
++		if (req->nr_phys_segments == 1)
++			req->bio->bi_seg_front_size = seg_size;
++		if (next->nr_phys_segments == 1)
++			next->biotail->bi_seg_back_size = seg_size;
+ 		total_phys_segments--;
++	}
+ 
+ 	if (total_phys_segments > q->max_phys_segments)
+ 		return 0;
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -98,6 +98,13 @@ struct bio {
+ 	unsigned int		bi_size;	/* residual I/O count */
+ 
+ 	/*
++	 * To keep track of the max segment size, we account for the
++	 * sizes of the first and last mergeable segments in this bio.
++	 */
++	unsigned int            bi_seg_front_size;
++	unsigned int            bi_seg_back_size;
++
++	/*
+ 	 * To keep track of the max hw size, we account for the
+ 	 * sizes of the first and last virtually mergeable segments
+ 	 * in this bio
 
 -- 
