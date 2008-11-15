@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYKONd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYKONiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbYKONd0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 08:33:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYKONdQ
+	id S1756126AbYKONiS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 08:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbYKONiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 08:33:16 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40436 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755368AbYKONdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 08:33:15 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Bug #11989] Suspend failure on NForce4-based boards due to chanes in stop_machine
-Date: Sat, 15 Nov 2008 14:37:45 +0100
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <YrUCLn0F-xH.A.fhE.E4zFJB@chimera> <20081111105214.GA15645@elte.hu> <200811112256.58467.rusty@rustcorp.com.au>
-In-Reply-To: <200811112256.58467.rusty@rustcorp.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811151437.46270.rjw@sisk.pl>
+	Sat, 15 Nov 2008 08:38:05 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58877 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081AbYKONiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 08:38:03 -0500
+From: Andi Kleen <andi@firstfloor.org>
+References: <20081115237.317953894@firstfloor.org>
+In-Reply-To: <20081115237.317953894@firstfloor.org>
+To: mingo@elte.hu, peterz@infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH REPOST] [1/3] SCHED: cache task_hot result
+Message-Id: <20081115133800.550253E6619@basil.firstfloor.org>
+Date: Sat, 15 Nov 2008 14:38:00 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 12 of November 2008, Rusty Russell wrote:
-> On Tuesday 11 November 2008 21:22:14 Ingo Molnar wrote:
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > So, it evidently fails while re-enabling the non-boot CPU and not
-> > > during disabling it as I thought before.
-> 
-> (Resend, due to HTML version previously)
-> 
-> But what is calling stop_machine in that path?
-> 
-> There *is* a race, but I don't think it could cause this (we should make a
-> copy of active.fnret inside the lock before returning it).
 
-Still, that seems to be the case.
+Minor scheduler optimization: cache the result of task_hot() in 
+can migrate task instead of computing it three times.
 
-> Two patches: one fixes that race, the next adds debugging spew.
-> 
-> stop_machine: fix race with return value
-
-With this patch applied (reproduced below for clarity) the problem is not
-reproducible any more.
-
-Care to push it upstream ASAP?
-
-Thanks,
-Rafael
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
-stop_machine: fix race with return value
+ kernel/sched.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-We should not access active.fnret outside the lock; in theory the next
-stop_machine could overwrite it.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/stop_machine.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff -r d7c9a15da615 kernel/stop_machine.c
---- a/kernel/stop_machine.c	Mon Nov 10 09:47:45 2008 +1100
-+++ b/kernel/stop_machine.c	Tue Nov 11 23:19:47 2008 +1030
-@@ -112,7 +112,7 @@
- int __stop_machine(int (*fn)(void *), void *data, const cpumask_t *cpus)
+Index: linux-2.6.28-rc4-test/kernel/sched.c
+===================================================================
+--- linux-2.6.28-rc4-test.orig/kernel/sched.c	2008-11-10 08:50:24.000000000 +0100
++++ linux-2.6.28-rc4-test/kernel/sched.c	2008-11-12 12:32:52.000000000 +0100
+@@ -2907,6 +2907,8 @@
+ 		     struct sched_domain *sd, enum cpu_idle_type idle,
+ 		     int *all_pinned)
  {
- 	struct work_struct *sm_work;
--	int i;
-+	int i, ret;
++	int hot;
++
+ 	/*
+ 	 * We do not migrate tasks that are:
+ 	 * 1) running (obviously), or
+@@ -2930,10 +2932,11 @@
+ 	 * 2) too many balance attempts have failed.
+ 	 */
  
- 	/* Set up initial state. */
- 	mutex_lock(&lock);
-@@ -137,8 +137,9 @@
- 	/* This will release the thread on our CPU. */
- 	put_cpu();
- 	flush_workqueue(stop_machine_wq);
-+	ret = active.fnret;
- 	mutex_unlock(&lock);
--	return active.fnret;
-+	return ret;
- }
+-	if (!task_hot(p, rq->clock, sd) ||
+-			sd->nr_balance_failed > sd->cache_nice_tries) {
++	hot = task_hot(p, rq->clock, sd);
++
++	if (!hot || sd->nr_balance_failed > sd->cache_nice_tries) {
+ #ifdef CONFIG_SCHEDSTATS
+-		if (task_hot(p, rq->clock, sd)) {
++		if (hot) {
+ 			schedstat_inc(sd, lb_hot_gained[idle]);
+ 			schedstat_inc(p, se.nr_forced_migrations);
+ 		}
+@@ -2941,7 +2944,7 @@
+ 		return 1;
+ 	}
  
- int stop_machine(int (*fn)(void *), void *data, const cpumask_t *cpus)
-
+-	if (task_hot(p, rq->clock, sd)) {
++	if (hot) {
+ 		schedstat_inc(p, se.nr_failed_migrations_hot);
+ 		return 0;
+ 	}
