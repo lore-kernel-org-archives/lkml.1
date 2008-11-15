@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYKOMO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYKOMcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbYKOMO3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 07:14:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484AbYKOMOR
+	id S1756126AbYKOMcb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 07:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYKOMcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 07:14:17 -0500
-Received: from nebensachen.de ([195.34.83.29]:50645 "EHLO mail.nebensachen.de"
+	Sat, 15 Nov 2008 07:32:22 -0500
+Received: from mail.ukfsn.org ([77.75.108.10]:54311 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755285AbYKOMOR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 07:14:17 -0500
-X-Hashcash: 1:20:081115:loic.grenie@gmail.com::KqmE5CfHqQvWwLSS:00000000000000000000000000000000000000002zBR
-X-Hashcash: 1:20:081115:gregkh@suse.de::ZRlq0qyzskRUmf4F:0008Cin
-X-Hashcash: 1:20:081115:linux-kernel@vger.kernel.org::Lb/5v+2q2qlfESv7:0000000000000000000000000000000003hNy
-X-Hashcash: 1:20:081115:stable@kernel.org::k9bUj236QnCnWSvB:000000000000000000000000000000000000000000000Gdm
-From: Elias Oltmanns <eo@nebensachen.de>
-To: =?iso-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: Linux 2.6.27.6
-References: <20081113185350.GA3765@kroah.com>
-	<9b06e8d20811150238ye81f6dck7e81e275ba11da9d@mail.gmail.com>
-Date: Sat, 15 Nov 2008 13:12:25 +0100
-In-Reply-To: <9b06e8d20811150238ye81f6dck7e81e275ba11da9d@mail.gmail.com>
-	(=?iso-8859-1?Q?=22Lo=EFc_Greni=E9=22's?= message of "Sat, 15 Nov 2008
- 11:38:47 +0100")
-Message-ID: <877i75p4ra.fsf@denkblock.local>
-User-Agent: Gnus/5.110011 (No Gnus v0.11)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	id S1751498AbYKOMcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 07:32:21 -0500
+Date: Sat, 15 Nov 2008 12:32:10 +0000
+From: Nick Warne <nick@ukfsn.org>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range
+ of hardware
+Message-ID: <20081115123210.60500f29@palantir.linicks.net>
+In-Reply-To: <20081112165650.GA15594@srcf.ucam.org>
+References: <20081111074702.75e71055@sauron.linicks.net>
+	<20081112131427.1bbc2a7c@palantir.linicks.net>
+	<20081112165650.GA15594@srcf.ucam.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Loïc Grenié" <loic.grenie@gmail.com> wrote:
->     No big deal, but commit 093327cb references
->   X86_CHECK_BIOS_CORRUPTION that is not available anywhere.
+On Wed, 12 Nov 2008 16:56:50 +0000
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-You are talking about commit 71556e92, I suppose. Since the change log
-entry has been written for the original commit 5649b7c3 in Linus' tree,
-it refers to a feature that is available there
-(X86_CHECK_BIOS_CORRUPTION) but has only been merged into mainline after
-the release of 2.6.27.
+> Does this work?
+> 
+> diff --git a/drivers/input/keyboard/atkbd.c
+> b/drivers/input/keyboard/atkbd.c index 22016ca..15479ef 100644
+> --- a/drivers/input/keyboard/atkbd.c
+> +++ b/drivers/input/keyboard/atkbd.c
+> @@ -1460,6 +1460,15 @@ static struct dmi_system_id
+> atkbd_dmi_quirk_table[] __initdata = { .driver_data =
+> atkbd_dell_laptop_keymap_fixup, },
+>  	{
+> +		.ident = "Dell Laptop",
+> +		.matches = {
+> +			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer
+> Corporation"),
+> +			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /*
+> Portable */
+> +		},
+> +		.callback = atkbd_setup_fixup,
+> +		.driver_data = atkbd_dell_laptop_keymap_fixup,
+> +	},
+> +	{
+>  		.ident = "HP 2133",
+>  		.matches = {
+>  			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> 
 
-Regards,
+OK, as discussed, I cannot test this, but my research leads to this to
+be correct:
 
-Elias
+http://ubuntuforums.org/showthread.php?t=978973
+
+Dell use vendor ID s either 'Dell Inc.' or 'Dell Computer Corporation'
+exclusively.
+
+So I think this can be officially submitted.
+
+Nick
+
+-- 
+Free Software Foundation Associate Member 5508
