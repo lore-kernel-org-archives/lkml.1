@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYKORSC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbYKORWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbYKORSC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 12:18:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYKORRx
+	id S1754891AbYKORWx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 12:22:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbYKORWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 12:17:53 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35339 "EHLO UNKNOWN"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751613AbYKORRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 12:17:52 -0500
-Date: Sat, 15 Nov 2008 18:17:25 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: stable@kernel.org, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [STABLE PATCH .26 .27] ACPI: avoid empty file name in sysfs
-Message-ID: <20081115171725.GB1523@ucw.cz>
-References: <alpine.LFD.2.00.0811130015100.3128@localhost.localdomain>
+	Sat, 15 Nov 2008 12:22:45 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:53236 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbYKORWo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 12:22:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=rCSq+q48aHr5+Y9n3D5ayNj+bfYbCLvWC62cKpKs8BwGVQFxL//NT0N0dK/RNYBeIT
+         OfH2oMQVxVePippa7xKfcC7rtjheVthX4kmlFqa6QsuQq23jZStJd4VE/dXwy35VL1Bc
+         toejx8waKBuKRfDgpUi4FbKKMZp8l0e62aTR8=
+Message-ID: <2375c9f90811150922x21e41faevcd7f1e9af45426e3@mail.gmail.com>
+Date: Sat, 15 Nov 2008 17:22:42 +0000
+From: "=?UTF-8?Q?Am=C3=A9rico_Wang?=" <xiyou.wangcong@gmail.com>
+To: "Hiroshi Shimamoto" <h-shimamoto@ct.jp.nec.com>
+Subject: Re: [PATCH 4/5] x86: ia32_signal: remove using temporary variable
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <491E41C3.9010500@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0811130015100.3128@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <491E4101.7010405@ct.jp.nec.com> <491E41C3.9010500@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sat, Nov 15, 2008 at 3:28 AM, Hiroshi Shimamoto
+<h-shimamoto@ct.jp.nec.com> wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>
+> Impact: cleanup
+>
+> No need to use temporary variable.
+> Also rename the variable same as kernel/signal_32.c.
 
-> upstream 4feba70a2c1a1a0c96909f657f48b2e11e682370
-> 
-> Since commit bc45b1d39a925b56796bebf8a397a0491489d85c acpi tables are
-> allowed to have an empty signature and /sys/firmware/acpi/tables uses the
-> signature as filename.  Applications using naive recursion through /sys
-> loop forever.  A possible solution would be: (replacing the zero length
-> filename with the string "NULL")
 
-What about using some string that is not a valid table name? Shorter
-than 4 characters? AFAICT,
-'NULL' table could be added to acpi in future...?
+I think you mean arch/x86/kernel/signal_32.c, of course. :-)
 
-What if *two* tales have empty signature?
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+
+Reviewed-by: WANG Cong <wangcong@zeuux.org>
