@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYKOXbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbYKOXep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbYKOXbT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 18:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751346AbYKOXbL
+	id S1755918AbYKOXep (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 18:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYKOXeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 18:31:11 -0500
-Received: from relay2.ptmail.sapo.pt ([212.55.154.22]:35265 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751343AbYKOXbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 18:31:09 -0500
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Sat, 15 Nov 2008 23:30:51 +0000
-From: Luis Henriques <henrix@sapo.pt>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [BUG] using smp_processor_id() in preemptible
-Message-ID: <20081115233050.GA13439@hades>
+	Sat, 15 Nov 2008 18:34:37 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:32772 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751420AbYKOXeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 18:34:36 -0500
+Date: Sun, 16 Nov 2008 00:34:29 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pcmcia@lists.infradead.org
+Subject: [git pull] PCMCIA updates and fixes for 2.6.28-rc5
+Message-ID: <20081115233429.GA818@isilmar.linta.de>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-pcmcia@lists.infradead.org
+References: <alpine.LFD.2.00.0811151444090.3468@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0811151444090.3468@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Linus,
 
-while running latencytop, got the following:
+unforutnately, lkml seems to have eaten my PCMCIA pull query for -rc4 -- at
+least no lkml archive seems to have picked it up, while the linux-pcmcia one
+did:
+http://lists.infradead.org/pipermail/linux-pcmcia/2008-November/006008.html
 
-...
-[  775.663239] BUG: using smp_processor_id() in preemptible [00000000] code: latencytop/6585
-[  775.663303] caller is native_sched_clock+0x3a/0x80
-[  775.663314] Pid: 6585, comm: latencytop Tainted: G        W 2.6.28-rc4-00355-g9c7c354 #1
-[  775.663322] Call Trace:
-[  775.663343]  [<ffffffff803a94e4>] debug_smp_processor_id+0xe4/0xf0
-[  775.663356]  [<ffffffff80213f7a>] native_sched_clock+0x3a/0x80
-[  775.663368]  [<ffffffff80213e19>] sched_clock+0x9/0x10
-[  775.663381]  [<ffffffff8024550d>] proc_sched_show_task+0x8bd/0x10e0
-[  775.663395]  [<ffffffff8034466e>] sched_show+0x3e/0x80
-[  775.663408]  [<ffffffff8031039b>] seq_read+0xdb/0x350
-[  775.663421]  [<ffffffff80368776>] ? security_file_permission+0x16/0x20
-[  775.663435]  [<ffffffff802f4198>] vfs_read+0xc8/0x170
-[  775.663447]  [<ffffffff802f4335>] sys_read+0x55/0x90
-[  775.663460]  [<ffffffff8020c67a>] system_call_fastpath+0x16/0x1b
-...
+Anyways, a few PCMCIA bugfixes are available at
 
-I am running 2.6.28-rc4-00355-g9c7c354 and, after taking a look at the code, it
-looks like the problem is in commit 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5,
-where native_sched_clock is modified to use __cycles_2_ns instead of
-cycles_2_ns.
+  git://git.kernel.org/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git master
 
--- 
-Luis Henriques
+The diffstat and list of changes follows, the individual diffs were sent (at
+least) to the linux-pcmcia list.
+
+Thanks,
+        Dominik
+
+----
+
+Dominik Brodowski (2):
+      pcmcia: add braces in error path
+      pcmcia: ensure correct logging in do_io_probe
+
+Ilpo Järvinen (1):
+      pcmcia: fix indentation & braces disagreement - add braces
+
+Kay Sievers (1):
+      pcmcia: struct device - replace bus_id with dev_name(), dev_set_name()
+
+Komuro (1):
+      pcmcia: setup resource information for pseudo multifunction devices.
+
+Marc Pignat (1):
+      pcmcia: add another pata/ide ID
+
+ drivers/ata/pata_pcmcia.c        |    1 +
+ drivers/ide/ide-cs.c             |    1 +
+ drivers/pcmcia/cistpl.c          |    3 ++-
+ drivers/pcmcia/cs.c              |   14 +++++++-------
+ drivers/pcmcia/ds.c              |   11 ++++++-----
+ drivers/pcmcia/pcmcia_resource.c |    3 ++-
+ drivers/pcmcia/rsrc_nonstatic.c  |    6 +++---
+ 7 files changed, 22 insertions(+), 17 deletions(-)
