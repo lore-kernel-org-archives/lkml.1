@@ -1,54 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbYKOJaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbYKOJjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbYKOJaQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 04:30:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYKOJaA
+	id S1755833AbYKOJjk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 04:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYKOJja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 04:30:00 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:42185 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753518AbYKOJ36 (ORCPT
+	Sat, 15 Nov 2008 04:39:30 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39798 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753452AbYKOJj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 04:29:58 -0500
-Date: Sat, 15 Nov 2008 09:28:37 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH 1/2] mm: implement remap_pfn_range with apply_to_page_range
-In-Reply-To: <491DBD9E.6030703@goop.org>
-Message-ID: <Pine.LNX.4.64.0811150914080.16789@blonde.site>
-References: <491C61B1.10005@goop.org> <200811141417.35724.nickpiggin@yahoo.com.au>
- <491D0B2F.7050900@goop.org> <200811141835.17073.nickpiggin@yahoo.com.au>
- <491DBD9E.6030703@goop.org>
+	Sat, 15 Nov 2008 04:39:29 -0500
+Date: Sat, 15 Nov 2008 18:38:59 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: [PATCH] mm: evict streaming IO cache first
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008, Jeremy Fitzhardinge wrote:
-> Nick Piggin wrote:
-> > No, adding a cycle here or an indirect function call there IMO is
-> > not acceptable in core mm/ code without a good reason.
-> 
-> <shrug> OK.
+Hi Andrew,
 
-I'm with Nick on this: admittedly remap_pfn_range() is a borderline
-case (since it has no latency breaks at present), but it is a core
-mm function, and I'd prefer we leave it as is unless good reason.
+I think we need this patch at 2.6.28.
+Can this thinking get acception?
 
-So, no hurry, but I'd prefer 
 
-mm-implement-remap_pfn_range-with-apply_to_page_range.patch
-mm-remap_pfn_range-restore-missing-flush.patch
+--------------------------------------------------
+From: Rik van Riel <riel@redhat.com>
 
-to be removed from mmotm - and don't I deserve that,
-just for actually reading the mm-commits boilerplate ;-?
+Gene Heskett reported 2.6.28-rc3 often make unnecessary swap-out
+on his system(4GB mem, 2GB swap).
+and He has had to do a "swapoff -a; swapon -a" daily to clear the swap.
 
-Hugh
+
+Actually, When there is a lot of streaming IO (or lite memory pressure workload)
+going on, we do not want to scan or evict pages from the working set.  
+The old VM used to skip any mapped page, but still evict indirect blocks and
+other data that is useful to cache.
+
+This patch adds logic to skip scanning the anon lists and
+the active file list if most of the file pages are on the
+inactive file list (where streaming IO pages live), while
+at the lowest scanning priority.
+
+If the system is not doing a lot of streaming IO, eg. the
+system is running a database workload, then more often used
+file pages will be on the active file list and this logic
+is automatically disabled.
+
+
+IOW, Large server apparently doesn't need this patch. but
+desktop or small server need it.
+
+
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Ackted-by: Gene Heskett <gene.heskett@gmail.com>
+Tested-by: Gene Heskett <gene.heskett@gmail.com>
+---
+ include/linux/mmzone.h |    1 +
+ mm/vmscan.c            |   18 ++++++++++++++++--
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+Index: b/include/linux/mmzone.h
+===================================================================
+--- a/include/linux/mmzone.h	2008-11-10 16:10:34.000000000 +0900
++++ b/include/linux/mmzone.h	2008-11-10 16:12:20.000000000 +0900
+@@ -453,6 +453,7 @@ static inline int zone_is_oom_locked(con
+  * queues ("queue_length >> 12") during an aging round.
+  */
+ #define DEF_PRIORITY 12
++#define PRIO_CACHE_ONLY (DEF_PRIORITY+1)
+ 
+ /* Maximum number of zones on a zonelist */
+ #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c	2008-11-10 16:10:34.000000000 +0900
++++ b/mm/vmscan.c	2008-11-10 16:11:30.000000000 +0900
+@@ -1443,6 +1443,20 @@ static unsigned long shrink_zone(int pri
+ 		}
+ 	}
+ 
++	/*
++	 * If there is a lot of sequential IO going on, most of the
++	 * file pages will be on the inactive file list.  We start
++	 * out by reclaiming those pages, without putting pressure on
++	 * the working set.  We only do this if the bulk of the file pages
++	 * are not in the working set (on the active file list).
++	 */
++	if (priority == PRIO_CACHE_ONLY &&
++			(nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]))
++		for_each_evictable_lru(l)
++			/* Scan only the inactive_file list. */
++			if (l != LRU_INACTIVE_FILE)
++				nr[l] = 0;
++
+ 	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+ 					nr[LRU_INACTIVE_FILE]) {
+ 		for_each_evictable_lru(l) {
+@@ -1573,7 +1587,7 @@ static unsigned long do_try_to_free_page
+ 		}
+ 	}
+ 
+-	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
++	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
+ 		sc->nr_scanned = 0;
+ 		if (!priority)
+ 			disable_swap_token();
+@@ -1735,7 +1749,7 @@ loop_again:
+ 	for (i = 0; i < pgdat->nr_zones; i++)
+ 		temp_priority[i] = DEF_PRIORITY;
+ 
+-	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
++	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
+ 		int end_zone = 0;	/* Inclusive.  0 = ZONE_DMA */
+ 		unsigned long lru_pages = 0;
+ 
+
+
+
+
+
