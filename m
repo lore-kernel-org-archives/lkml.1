@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbYKOQbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbYKOQxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbYKOQbr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 11:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbYKOQbi
+	id S1753362AbYKOQxt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 11:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbYKOQxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 11:31:38 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:47986 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbYKOQbh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 11:31:37 -0500
-Message-ID: <491EF942.1090709@cosmosbay.com>
-Date: Sat, 15 Nov 2008 17:30:58 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sat, 15 Nov 2008 11:53:38 -0500
+Received: from fallback.mail.ru ([194.67.57.14]:18702 "EHLO mx4.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751424AbYKOQxh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 11:53:37 -0500
+Date: Sat, 15 Nov 2008 19:47:12 +0300
+From: Evgeniy Dushistov <dushistov@mail.ru>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] ufs: sector_t cannot be negative
+Message-ID: <20081115164712.GA25570@rain>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Roel Kluin <roel.kluin@gmail.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Mikael Pettersson <mikpe@it.uu.se>,
-       Robert Richter <robert.richter@amd.com>, oprofile-list@lists.sf.net,
-       Ingo Molnar <mingo@elte.hu>, Jiri Kosina <jkosina@suse.cz>,
-       Jiri Benc <jbenc@suse.cz>, Vilem Marsik <vmarsik@suse.cz>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: Oprofile : need to adjust PC by 16 bytes
-References: <alpine.LNX.1.10.0811132147030.19853@jikos.suse.cz> <20081113212446.GA5694@elte.hu> <alpine.LNX.1.10.0811132226140.19853@jikos.suse.cz> <20081113213744.GA8429@elte.hu> <491CA0DC.8070405@cosmosbay.com> <491D987F.1000301@cosmosbay.com> <18717.44751.459961.277998@harpo.it.uu.se> <491DB391.2040701@cosmosbay.com> <20081114175056.GK3810@one.firstfloor.org>
-In-Reply-To: <20081114175056.GK3810@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 15 Nov 2008 17:31:08 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Spam: Not detected
+X-Mras: OK
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen a écrit :
->>> And no, blindly subtracting 16 from IP is not a fix.
->> Who mentioned a fix ? I am only giving more fuel to Intel guys so they
->> hopefully can give us a working oprofile.
-> 
-> You would need to implement PEBS support to avoid that problem. But it's a big
-> task. perfmon2 implements it already.
-> 
+From: Roel Kluin <roel.kluin@gmail.com>
 
-Thanks for the information.
+unsigned i_block,fragment cannot be negative
 
-Hum, so I grabbed perfmon2 git tree, installed various tools...
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Evgeniy Dushistov <dushistov@mail.ru>
 
-I am quite new to pfmon and tried :
+---
 
-# pfmon --system-wide
-sizeof=64 44
-<press ENTER to stop session>
+diff --git a/fs/ufs/inode.c b/fs/ufs/inode.c
+index 39f8778..168e551 100644
+--- a/fs/ufs/inode.c
++++ b/fs/ufs/inode.c
+@@ -56,9 +56,7 @@ static int ufs_block_to_path(struct inode *inode, sector_t i_block, sector_t off
+ 
+ 
+ 	UFSD("ptrs=uspi->s_apb = %d,double_blocks=%ld \n",ptrs,double_blocks);
+-	if (i_block < 0) {
+-		ufs_warning(inode->i_sb, "ufs_block_to_path", "block < 0");
+-	} else if (i_block < direct_blocks) {
++	if (i_block < direct_blocks) {
+ 		offsets[n++] = i_block;
+ 	} else if ((i_block -= direct_blocks) < indirect_blocks) {
+ 		offsets[n++] = UFS_IND_BLOCK;
+@@ -440,8 +438,6 @@ int ufs_getfrag_block(struct inode *inode, sector_t fragment, struct buffer_head
+ 	lock_kernel();
+ 
+ 	UFSD("ENTER, ino %lu, fragment %llu\n", inode->i_ino, (unsigned long long)fragment);
+-	if (fragment < 0)
+-		goto abort_negative;
+ 	if (fragment >
+ 	    ((UFS_NDADDR + uspi->s_apb + uspi->s_2apb + uspi->s_3apb)
+ 	     << uspi->s_fpbshift))
+@@ -504,10 +500,6 @@ abort:
+ 	unlock_kernel();
+ 	return err;
+ 
+-abort_negative:
+-	ufs_warning(sb, "ufs_get_block", "block < 0");
+-	goto abort;
+-
+ abort_too_big:
+ 	ufs_warning(sb, "ufs_get_block", "block > big");
+ 	goto abort;
 
-Then started "tbench 8", and got a kernel panic after 6 seconds.
-
-
-I was using oprofile like this
-
-opcontrol --vmlinux=/path/vmlinux --start
-// doing some benchmarking...
-opreport -l vmlinux | head -n 40
-
-
-What would be a working equivalent for perfmon2 based tools ?
-
-Thanks
-
+-- 
+/Evgeniy
 
