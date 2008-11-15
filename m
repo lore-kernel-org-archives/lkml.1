@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756126AbYKOMcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbYKOMhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756126AbYKOMcb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 07:32:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYKOMcW
+	id S1755839AbYKOMhD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 07:37:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYKOMgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 07:32:22 -0500
-Received: from mail.ukfsn.org ([77.75.108.10]:54311 "EHLO mail.ukfsn.org"
+	Sat, 15 Nov 2008 07:36:54 -0500
+Received: from hobbit.corpit.ru ([81.13.33.150]:20567 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbYKOMcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 07:32:21 -0500
-Date: Sat, 15 Nov 2008 12:32:10 +0000
-From: Nick Warne <nick@ukfsn.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make Dell keyboard repeat quirk apply to a wider range
- of hardware
-Message-ID: <20081115123210.60500f29@palantir.linicks.net>
-In-Reply-To: <20081112165650.GA15594@srcf.ucam.org>
-References: <20081111074702.75e71055@sauron.linicks.net>
-	<20081112131427.1bbc2a7c@palantir.linicks.net>
-	<20081112165650.GA15594@srcf.ucam.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751208AbYKOMgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 07:36:53 -0500
+Message-ID: <491EC263.9020707@msgid.tls.msk.ru>
+Date: Sat, 15 Nov 2008 15:36:51 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
+MIME-Version: 1.0
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: k10temp driver in kernel?
+References: <491EAA25.9050606@xs4all.nl>
+In-Reply-To: <491EAA25.9050606@xs4all.nl>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 Nov 2008 16:56:50 +0000
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> Does this work?
+Udo van den Heuvel wrote:
+> Hello,
 > 
-> diff --git a/drivers/input/keyboard/atkbd.c
-> b/drivers/input/keyboard/atkbd.c index 22016ca..15479ef 100644
-> --- a/drivers/input/keyboard/atkbd.c
-> +++ b/drivers/input/keyboard/atkbd.c
-> @@ -1460,6 +1460,15 @@ static struct dmi_system_id
-> atkbd_dmi_quirk_table[] __initdata = { .driver_data =
-> atkbd_dell_laptop_keymap_fixup, },
->  	{
-> +		.ident = "Dell Laptop",
-> +		.matches = {
-> +			DMI_MATCH(DMI_SYS_VENDOR, "Dell Computer
-> Corporation"),
-> +			DMI_MATCH(DMI_CHASSIS_TYPE, "8"), /*
-> Portable */
-> +		},
-> +		.callback = atkbd_setup_fixup,
-> +		.driver_data = atkbd_dell_laptop_keymap_fixup,
-> +	},
-> +	{
->  		.ident = "HP 2133",
->  		.matches = {
->  			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-> 
+> What is the status of the k10temp driver?
+> When will it be in the kernel?
 
-OK, as discussed, I cannot test this, but my research leads to this to
-be correct:
+The driver missed 2.6.28 merge window for a bit.
+So it might be in 2.6.29.  In any way, it's quite
+easy to compile it out of tree.
 
-http://ubuntuforums.org/showthread.php?t=978973
-
-Dell use vendor ID s either 'Dell Inc.' or 'Dell Computer Corporation'
-exclusively.
-
-So I think this can be officially submitted.
-
-Nick
-
--- 
-Free Software Foundation Associate Member 5508
+/mjt
