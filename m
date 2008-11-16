@@ -1,185 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYKPKjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYKPKkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbYKPKjw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 05:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYKPKjk
+	id S1753252AbYKPKkQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 05:40:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYKPKjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 05:39:40 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:36633 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752503AbYKPKjj (ORCPT
+	Sun, 16 Nov 2008 05:39:48 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:40118 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753317AbYKPKjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 05:39:39 -0500
+	Sun, 16 Nov 2008 05:39:46 -0500
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: rostedt@goodmis.org, mingo@elte.hu, akpm@linux-foundation.org,
        fweisbec@gmail.com
 Cc: linux-kernel@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH] ftrace: Add debug_print trace to print data from kernel to userspace
-Date: Sun, 16 Nov 2008 16:08:02 +0530
-Message-Id: <1226831883-26362-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] ftrace: Add dump iteator
+Date: Sun, 16 Nov 2008 16:08:03 +0530
+Message-Id: <1226831883-26362-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.6.0.4.735.gea4f
-In-Reply-To: <1226831883-26362-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1226831883-26362-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1226831883-26362-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
  <1226831883-26362-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
  <1226831883-26362-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
  <1226831883-26362-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1226831883-26362-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The trace add a new interface dp_printk() which can be used
-to dump data from kernel to user space using ftrace framework.
+This iteator doesn't print headers and tracer information in
+the ouput trace file. This can be obtained to get a dmesg style
+trace output file. Also can be used to dump binary data to via
+trace
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
 ---
- include/linux/debug_print.h     |   12 +++++
- kernel/trace/Kconfig            |    7 +++
- kernel/trace/Makefile           |    1 +
- kernel/trace/trace_debugprint.c |   90 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 110 insertions(+), 0 deletions(-)
+ kernel/trace/trace.c |   92 ++++++++++++++++++++++++++++++++++++++++++--------
+ kernel/trace/trace.h |    1 +
+ 2 files changed, 79 insertions(+), 14 deletions(-)
 
-diff --git a/include/linux/debug_print.h b/include/linux/debug_print.h
-new file mode 100644
-index 0000000..db4397b
---- /dev/null
-+++ b/include/linux/debug_print.h
-@@ -0,0 +1,12 @@
-+#ifndef _LINUX_DEBUGPRINT_H
-+#define _LINUX_DEBUGPRINT_H
-+#include <linux/marker.h>
-+
-+#ifdef CONFIG_DEBUG_PRINT
-+extern int do_dp_printk(const char *fmt, ...);
-+#define dp_printk(fmt, arg...) \
-+	do_dp_printk(fmt, ##arg)
-+#else
-+#define dp_printk(fmt, arg...)
-+#endif
-+#endif /*  _LINUX_DEBUGPRINT_H */
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 9c89526..30eccc8 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -254,4 +254,11 @@ config FTRACE_STARTUP_TEST
- 	  functioning properly. It will do tests on all the configured
- 	  tracers of ftrace.
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index f6e21d8..c0d1170 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -263,6 +263,7 @@ static const char *trace_options[] = {
+ 	"branch",
+ #endif
+ 	"annotate",
++	"dump",
+ 	NULL
+ };
  
-+config DEBUG_PRINT
-+	bool "Trace based printk support"
-+	depends on DEBUG_KERNEL
-+	select TRACING
-+	help
-+	  This tracer can be used for printk style debugging.
-+
- endmenu
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 1a8c925..86e5869 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -31,5 +31,6 @@ obj-$(CONFIG_MMIOTRACE) += trace_mmiotrace.o
- obj-$(CONFIG_BOOT_TRACER) += trace_boot.o
- obj-$(CONFIG_FUNCTION_RET_TRACER) += trace_functions_return.o
- obj-$(CONFIG_TRACE_BRANCH_PROFILING) += trace_branch.o
-+obj-$(CONFIG_DEBUG_PRINT) += trace_debugprint.o
+@@ -2038,6 +2039,77 @@ static enum print_line_t print_bin_fmt(struct trace_iterator *iter)
+ 	return 1;
+ }
  
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/trace_debugprint.c b/kernel/trace/trace_debugprint.c
-new file mode 100644
-index 0000000..2c3ac3d
---- /dev/null
-+++ b/kernel/trace/trace_debugprint.c
-@@ -0,0 +1,90 @@
-+/*
-+ * Copyright IBM Corporation, 2008
-+ * Author Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of version 2.1 of the GNU Lesser General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it would be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/debugfs.h>
-+#include <linux/ftrace.h>
-+
-+#include "trace.h"
-+
-+static int __read_mostly dp_tracer_enabled;
-+
-+int do_dp_printk(const char *fmt, ...)
++static enum print_line_t print_dump_fmt(struct trace_iterator *iter)
 +{
-+	int ret;
-+	va_list args;
++	struct trace_seq *s = &iter->seq;
++	struct trace_entry *entry;
 +
-+	if (!dp_tracer_enabled)
-+		return 0;
++	entry = iter->ent;
 +
-+	va_start(args, fmt);
-+	ret = trace_vprintk(0, fmt, args);
-+	va_end(args);
-+	return ret;
-+}
-+EXPORT_SYMBOL(do_dp_printk);
++	if (entry->type == TRACE_CONT)
++		return TRACE_TYPE_HANDLED;
 +
-+static void dp_reset(struct trace_array *tr)
-+{
-+	int cpu;
 +
-+	tr->time_start = ftrace_now(tr->cpu);
++	switch (entry->type) {
++	case TRACE_FN: {
++		struct ftrace_entry *field;
 +
-+	for_each_online_cpu(cpu)
-+		tracing_reset(tr, cpu);
-+}
++		trace_assign_type(field, entry);
 +
-+static void dp_trace_start(struct trace_array *tr)
-+{
-+	dp_reset(tr);
-+	dp_tracer_enabled = 1;
-+}
++		SEQ_PUT_FIELD_RET(s, entry->pid);
++		SEQ_PUT_FIELD_RET(s, iter->cpu);
++		SEQ_PUT_FIELD_RET(s, iter->ts);
 +
-+static void dp_trace_stop(struct trace_array *tr)
-+{
-+	dp_tracer_enabled = 0;
-+	/* Nothing to do! */
-+}
++		SEQ_PUT_FIELD_RET(s, field->ip);
++		SEQ_PUT_FIELD_RET(s, field->parent_ip);
++		break;
++	}
++	case TRACE_CTX: {
++		struct ctx_switch_entry *field;
 +
-+static void dp_trace_init(struct trace_array *tr)
-+{
-+	/*
-+	 * enable the trace during init if
-+	 * we have enabled flag already set
-+	 */
-+	if (tracing_is_enabled())
-+		dp_trace_start(tr);
++		trace_assign_type(field, entry);
++
++		SEQ_PUT_FIELD_RET(s, entry->pid);
++		SEQ_PUT_FIELD_RET(s, iter->cpu);
++		SEQ_PUT_FIELD_RET(s, iter->ts);
++
++		SEQ_PUT_FIELD_RET(s, field->prev_pid);
++		SEQ_PUT_FIELD_RET(s, field->prev_prio);
++		SEQ_PUT_FIELD_RET(s, field->prev_state);
++		SEQ_PUT_FIELD_RET(s, field->next_pid);
++		SEQ_PUT_FIELD_RET(s, field->next_prio);
++		SEQ_PUT_FIELD_RET(s, field->next_state);
++		break;
++	}
++	case TRACE_SPECIAL:
++	case TRACE_STACK: {
++		struct special_entry *field;
++
++		trace_assign_type(field, entry);
++
++		SEQ_PUT_FIELD_RET(s, entry->pid);
++		SEQ_PUT_FIELD_RET(s, iter->cpu);
++		SEQ_PUT_FIELD_RET(s, iter->ts);
++
++		SEQ_PUT_FIELD_RET(s, field->arg1);
++		SEQ_PUT_FIELD_RET(s, field->arg2);
++		SEQ_PUT_FIELD_RET(s, field->arg3);
++		break;
++	}
++	case TRACE_PRINT: {
++		struct print_entry *field;
++
++		trace_assign_type(field, entry);
++
++		trace_seq_printf(s, "%s", field->buf);
++		if (entry->flags & TRACE_FLAG_CONT)
++			trace_seq_print_cont(s, iter);
++		break;
++	}
++	}
++	return TRACE_TYPE_HANDLED;
 +}
 +
-+static void dp_trace_reset(struct trace_array *tr)
-+{
-+	if (dp_tracer_enabled)
-+		dp_trace_stop(tr);
-+}
+ static int trace_empty(struct trace_iterator *iter)
+ {
+ 	int cpu;
+@@ -2074,6 +2146,9 @@ static enum print_line_t print_trace_line(struct trace_iterator *iter)
+ 	if (trace_flags & TRACE_ITER_RAW)
+ 		return print_raw_fmt(iter);
+ 
++	if (trace_flags & TRACE_ITER_DUMP)
++		return print_dump_fmt(iter);
 +
-+struct tracer dp_trace __read_mostly =
-+{
-+	.name		= "debug_print",
-+	.init		= dp_trace_init,
-+	.reset		= dp_trace_reset,
-+	.start		= dp_trace_start,
-+	.stop		= dp_trace_stop,
-+};
-+
-+__init static int init_dp_trace(void)
-+{
-+	return register_tracer(&dp_trace);
-+}
-+device_initcall(init_dp_trace);
+ 	if (iter->iter_flags & TRACE_FILE_LAT_FMT)
+ 		return print_lat_fmt(iter, iter->idx, iter->cpu);
+ 
+@@ -2083,24 +2158,12 @@ static enum print_line_t print_trace_line(struct trace_iterator *iter)
+ static int s_bin_show(struct seq_file *m, void *v)
+ {
+ 	int len;
+-	enum print_line_t ret;
+ 	struct trace_iterator *iter = v;
+ 
+ 	if (iter->ent == NULL)
+ 		return 0;
+ 
+-	if (iter->trace && iter->trace->print_line) {
+-		ret = iter->trace->print_line(iter);
+-		if (ret != TRACE_TYPE_UNHANDLED)
+-			goto trace_handled;
+-	}
+-	/*
+-	 * If  trace type is unhandled or if we don't have
+-	 * a print_line call the standard bin_fmt callback
+-	 */
+-	print_bin_fmt(iter);
+-
+-trace_handled:
++	print_trace_line(iter);
+ 	/* copy the trace buffer to seq file buffer */
+ 	if (iter->seq.len >= PAGE_SIZE)
+ 		len = PAGE_SIZE - 1;
+@@ -2122,7 +2185,8 @@ static int s_show(struct seq_file *m, void *v)
+ {
+ 	struct trace_iterator *iter = v;
+ 
+-	if (trace_flags & TRACE_ITER_BIN)
++	if ((trace_flags & TRACE_ITER_BIN) ||
++			(trace_flags & TRACE_ITER_DUMP))
+ 		return s_bin_show(m, v);
+ 
+ 	if (iter->ent == NULL) {
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 790ea8c..358d2a6 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -474,6 +474,7 @@ enum trace_iterator_flags {
+ 	TRACE_ITER_BRANCH		= 0x1000,
+ #endif
+ 	TRACE_ITER_ANNOTATE		= 0x2000,
++	TRACE_ITER_DUMP			= 0x4000,
+ };
+ 
+ /*
 -- 
-tg: (bfb3409..) an/ftrace-dp-printk.patch (depends on: an/ftrace-dump-iterator.patch)
+tg: (47b0062..) an/ftrace-dump-iterator.patch (depends on: an/ftrace-bin-iterator.patch)
