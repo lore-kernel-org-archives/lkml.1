@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYKPTnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbYKPToA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbYKPTnn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 14:43:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbYKPTkV
+	id S1756653AbYKPToA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 14:44:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbYKPTkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 14:40:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43426 "EHLO ogre.sisk.pl"
+	Sun, 16 Nov 2008 14:40:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43430 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753484AbYKPTkP convert rfc822-to-8bit (ORCPT
+	id S1755176AbYKPTkP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 16 Nov 2008 14:40:15 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Luciano Rocha" <luciano@eurotux.com>, "Tim Wright" <timw@splhi.com>
+       "Dave Chinner" <dgc@sgi.com>,
+       "Tiago Maluta" <maluta_tiago@yahoo.com.br>
 References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera>
 In-Reply-To: <1ScKicKnTUE.A.VxH.DIHIJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <NjF0-fuClJC.A.ut.ZIHIJB@chimera>
-Subject: [Bug #11843] usb hdd problems with 2.6.27.2
+Message-ID: <NjF0-fuClJC.A.h4.kIHIJB@chimera>
+Subject: [Bug #11805] mounting XFS produces a segfault
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 16 Nov 2008 18:40:59 +0100 (CET)
+Date: Sun, 16 Nov 2008 18:40:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,12 +36,11 @@ introduced between 2.6.26 and 2.6.27.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11843
-Subject		: usb hdd problems with 2.6.27.2
-Submitter	: Luciano Rocha <luciano@eurotux.com>
-Date		: 2008-10-22 16:22 (26 days old)
-References	: http://marc.info/?l=linux-kernel&m=122469318102679&w=4
-Handled-By	: Luciano Rocha <luciano@eurotux.com>
-Patch		: http://bugzilla.kernel.org/show_bug.cgi?id=11843#c26
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11805
+Subject		: mounting XFS produces a segfault
+Submitter	: Tiago Maluta <maluta_tiago@yahoo.com.br>
+Date		: 2008-10-21 18:00 (27 days old)
+Handled-By	: Dave Chinner <dgc@sgi.com>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=18397&action=view
 
 
