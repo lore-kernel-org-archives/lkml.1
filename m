@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYKPGJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbYKPGLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbYKPGJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 01:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbYKPGJt
+	id S1754798AbYKPGLX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 01:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbYKPGLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 01:09:49 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:57271 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbYKPGJt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 01:09:49 -0500
-Message-ID: <491FB8E5.50806@cosmosbay.com>
-Date: Sun, 16 Nov 2008 07:08:37 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sun, 16 Nov 2008 01:11:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:43350 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751071AbYKPGLO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 01:11:14 -0500
+Message-ID: <491FB988.50601@kernel.org>
+Date: Sun, 16 Nov 2008 15:11:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Menage <menage@google.com>, kamezawa.hiroyu@jp.fujitsu.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>, Jan Kara <jack@suse.cz>,
-       Jes Sorensen <jes@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
-References: <491FA28B.2070003@cn.fujitsu.com>	<20081115205229.765f7ee3@infradead.org>	<20081115210334.3870cdf6.akpm@linux-foundation.org>	<491FB107.6050703@cn.fujitsu.com> <20081115215309.7f29c33c@infradead.org>
-In-Reply-To: <20081115215309.7f29c33c@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 16 Nov 2008 07:08:45 +0100 (CET)
+To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-IDE <linux-ide@vger.kernel.org>,
+       Mdv Cooker <cooker@mandrivalinux.org>
+Subject: Re: sata-nv and 790i
+References: <20081115004722.5158e125@werewolf.home>
+In-Reply-To: <20081115004722.5158e125@werewolf.home>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Nov 2008 06:11:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven a écrit :
-> On Sun, 16 Nov 2008 13:35:03 +0800
-> Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+J.A. Magallón wrote:
+> Hi all...
 > 
->> vmalloc() is not good for performance and increasing fragment.
->> but vmalloc() is need for some subsystems' alternative malloc,
->> like cgroup's tasks file and other subsystems(about 20 subsystems).
+> I recently put my hands on a system with an ASUS P5N64 WS Pro mobo:
 > 
-> actually what you are pointing out is that these areas need improvement
-> to not need such huge blocks of memory... but only a series of smaller
-> blocks instead.
+> http://www.asus.com/products.aspx?l1=3&l2=11&l3=653&l4=0&model=2182&modelmenu=1
 > 
+> It has a nForce 790i Ultra SLI chipset, the part for the SATA controller
+> is MCP55.
+> 
+> The problem is that linux seems to fail to read the hard drive on boot.
+> I will explain.
+> 
+> I have tried to install both CentOS 5.2 and Mandriva 2009.0.
+> For CentOS (has a 2.6.18 kernel), the install seems ok, but when I reboot
+> into the just intalled system the kernel hangs just after printing
+> the name of the initrd. Mandriva (2.6.27-rc8) just hungs half the install process.
+> Live versions of both hang on boot saying they can not find the root
+> device.
+> 
+> I have found some messages in the net about the MCP55 in that board not
+> being completeley suppported as AHCI in sata_nv, and that some other
+> boards work puttin the SATA controller in 'compatible' mode (with
+> loss of performance).
+> But I can't find any setting in the P5N64 to put SATA in Compat mode.
+> 
+> Can I do this via some kernel parameters ?
+> Somabody has this board working ? Do current kernels have better support
+> for this chipset ?
 
+All three flavors of sata_nv's - generic (yours), nf2/3 and ck804 - had
+various detection problems from 2.6.27-rc1.  The problem was that their
+hardresets all worked differently.  2.6.27-rc1 started to favor
+hardresets over softresets and exposed this problem.  While trying to
+fix the problem, because all three flavors unexpectedly showed different
+hardreset behaviors, there were some mistakes.  A proper fix is included
+in upstream and is queued for -stable.  Sorry about the mess.
 
-Just zap vmalloc()/vfree() then ?
+Thanks.
 
-More seriously, vmalloc()/vfree() were designed partly to make people life easier,
-not to be *the* premium interface to manage kernel memory
-
-Some parts of the kernel cannot afford the cost of vmalloc()/vfree(), so people
-must think and design complex algos.
-
-I personnaly like this cleanup too. For example bnx2 driver actually uses vmalloc() while
-a kmalloc() should be OK for bnx2_alloc_rx_mem()
-
-# grep bnx2 /proc/vmallocinfo
-0xf8260000-0xf8274000   81920 bnx2_init_board+0x104/0xae0 phys=f6000000 ioremap
-0xf8280000-0xf8294000   81920 bnx2_init_board+0x104/0xae0 phys=fa000000 ioremap
-0xf82c1000-0xf82c3000    8192 bnx2_alloc_rx_mem+0x33/0x310 pages=1 vmalloc
-0xf82d9000-0xf82db000    8192 bnx2_alloc_rx_mem+0x33/0x310 pages=1 vmalloc
-
-I have two comments :
-
-1) Names should be not "simple" : That is misleading. "convenient" maybe, or "slow"...
-
-2) Since vmalloc()/vfree() is potentially a very expensive operation, we should make
-   slow_malloc()/slow_free() or whatever name is chosen, uninlined. No need to try to save
-   3 or 4 cpu cycles. This will save icache at least.
-
-
+-- 
+tejun
