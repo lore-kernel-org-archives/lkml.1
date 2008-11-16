@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbYKPSXb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419AbYKPSay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbYKPSXb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 13:23:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbYKPSWz
+	id S1753419AbYKPSay (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 13:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYKPSak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 13:22:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42837 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753830AbYKPSWv convert rfc822-to-8bit (ORCPT
+	Sun, 16 Nov 2008 13:30:40 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51344 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751338AbYKPSai (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 13:22:51 -0500
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Len Brown" <len.brown@intel.com>,
-       "Robert Moore" <Robert.Moore@intel.com>
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
+	Sun, 16 Nov 2008 13:30:38 -0500
+Date: Sun, 16 Nov 2008 18:29:53 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
+Message-ID: <20081116182953.6231ae8c@lxorguk.ukuu.org.uk>
 In-Reply-To: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <Q7OAnAv0V3D.A.cqH.oCGIJB@chimera>
-Subject: [Bug #11822] ACPI Warning (nspredef-0858): _SB_.PCI0.LPC_.EC__.BAT0._BIF: Return Package type mismatch at index 9 - found Buffer, expected String [20080926]
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 16 Nov 2008 17:24:18 +0100 (CET)
+References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+>      the majority of these patches have not been merged for over two weeks
+>      (for almost three weeks in many cases and for over a _month_ in one case).
+>      IMO, this is insane.]
 
-The following bug entry is on the current list of known regressions
-from 2.6.27.  Please verify if it still should be listed and let me know
-(either way).
+Some of them are quite serious too - some stuff is basically unusable in
+2.6.28rc due to the vmalloc bug.
 
+Is there any reason why someone (Rafael ?) shouldn't simply submit all of
+those patches that look sensible, are reported to fix regressions and
+whose maintainer has not provided a reason to NOT apply them into the
+tree ?
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11822
-Subject		: ACPI Warning (nspredef-0858): _SB_.PCI0.LPC_.EC__.BAT0._BIF: Return Package type mismatch at index 9 - found Buffer, expected String [20080926]
-Submitter	: Len Brown <len.brown@intel.com>
-Date		: 2008-10-25 01:26 (23 days old)
-Handled-By	: Robert Moore <Robert.Moore@intel.com>
-
+Alan
 
