@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbYKPXzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYKQADS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbYKPXzj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 18:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbYKPXza
+	id S1755115AbYKQADS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 19:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYKQADD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 18:55:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43862 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751674AbYKPXz3 (ORCPT
+	Sun, 16 Nov 2008 19:03:03 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35137 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751303AbYKQADB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 18:55:29 -0500
-Date: Sun, 16 Nov 2008 15:55:10 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Helge Deller <deller@gmx.de>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Kyle Mc Martin <kyle@hera.kernel.org>, linux-parisc@vger.kernel.org,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH, 2.6.28-rc5] unitialized return value in mm/mlock.c:
- __mlock_vma_pages_range()
-In-Reply-To: <200811170030.58246.deller@gmx.de>
-Message-ID: <alpine.LFD.2.00.0811161551540.3468@nehalem.linux-foundation.org>
-References: <200811170030.58246.deller@gmx.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 16 Nov 2008 19:03:01 -0500
+Message-ID: <4920B3E3.4050707@zytor.com>
+Date: Sun, 16 Nov 2008 15:59:31 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org>
+In-Reply-To: <4920B2A4.4040900@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Yinghai Lu wrote:
+> H. Peter Anvin wrote:
+>> Yinghai Lu wrote:
+>>> 2. make irq number is bus/devfn/idx, and every dev func will use 12bit range, irq number is relatively fixed not like current MSI irq creating is some kind of floating from NR_IRQS too. 
+>> 2 is *STILL WRONG*, dammit!
+>>
+>> You keep bringing this one up, but our PCI addressing is
+>> *DOMAIN*/bus/devfn -- it falls flat on its face when you have more than
+>> 16 PCI domains.  CAN WE PLEASE STOP WITH THIS FOOLISHNESS NOW!
+> 
+> you want to u64 instead of unsigned int for irq?
+> 
 
+No, I think the whole notion of a static *numeric* identifier for an IRQ
+when it's something like MSI-X is simply pointless.  I think we should
+assign IRQ numbers beyond the legacy range dynamically.
 
-On Mon, 17 Nov 2008, Helge Deller wrote:
->
-> Fix an unitialized return value when compiling on parisc (with CONFIG_UNEVICTABLE_LRU=y):
-> 	mm/mlock.c: In function `__mlock_vma_pages_range':
-> 	mm/mlock.c:165: warning: `ret' might be used uninitialized in this function
+I really don't think anyone gives a hoot about the IRQ number for any
+IRQ above the 0-15 legacy range, even including the "APIC" numbers 16+.
 
-Looks valid.
-
-Of course, nobody should ever call this with a range that could possibly 
-be empty, so an equally valid approach would be to change the "while" loop 
-to a "do while()", and that would generate better code. But I guess the 
-simple unnecessary initialization is more defensive programming, in that 
-if some other buggy caller does set things up with an empty range, it gets 
-the right result.
-
-Btw, exactly _because_ gcc warnings about uninitialized functions are 
-sometimes bogus (ie due to gcc simply not being able to follow things like 
-conditional initializations where the values are only used if they were 
-initialized), I would ask that people comment on these kinds of issues 
-when they send in patches. 
-
-		Linus
+	-hpa
