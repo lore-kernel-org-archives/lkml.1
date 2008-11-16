@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448AbYKPQNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKPQUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448AbYKPQNy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 11:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYKPQNq
+	id S1754201AbYKPQUJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 11:20:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYKPQTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 11:13:46 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:49655 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753109AbYKPQNp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 11:13:45 -0500
-Message-ID: <ac3eb2510811160813j5965a92cj1f4ad6979ecd7090@mail.gmail.com>
-Date: Sun, 16 Nov 2008 17:13:42 +0100
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] depmod: sort output according to modules.order, take #2
-Cc: "Jon Masters" <jonathan@jonmasters.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>,
-       "Sam Ravnborg" <sam@ravnborg.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>, notting@redhat.com,
-       "Greg KH" <greg@kroah.com>
-In-Reply-To: <491FAEB8.5010501@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 16 Nov 2008 11:19:55 -0500
+Received: from mail.suse.de ([195.135.220.2]:48430 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750988AbYKPQTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 11:19:54 -0500
+Date: Sun, 16 Nov 2008 17:19:52 +0100
+From: Bernhard Walle <bwalle@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       crash-utility@redhat.com
+Subject: Re: Turn CONFIG_STRICT_DEVMEM in sysctl dev.mem.restricted
+Message-ID: <20081116171952.632947a7@kopernikus.site>
+In-Reply-To: <20081116080342.3d6c6976@infradead.org>
+References: <1226846868-9595-1-git-send-email-bwalle@suse.de>
+	<20081116150756.3cece2de@lxorguk.ukuu.org.uk>
+	<20081116162003.04267538@kopernikus.site>
+	<20081116154541.1f196f1e@lxorguk.ukuu.org.uk>
+	<20081116080342.3d6c6976@infradead.org>
+Organization: SUSE Linux Products GmbH
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <475936CE.70703@gmail.com> <475BB5AE.40503@gmail.com>
-	 <477B71F0.8020706@gmail.com>
-	 <200801031012.22776.rusty@rustcorp.com.au>
-	 <1199318319.2044.22.camel@perihelion> <491C1158.8090901@gmail.com>
-	 <1226776813.4894.1.camel@jcmlaptop> <491FAEB8.5010501@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 16, 2008 at 06:25, Tejun Heo <htejun@gmail.com> wrote:
-> Jon Masters wrote:
->> On Thu, 2008-11-13 at 20:36 +0900, Tejun Heo wrote:
->>
->>> Jon, this patch hasn't made into module-init-tools
->>
->> I'm redoing it to cope with the binary sorted output files we have now -
->> i.e. we can't just rely upon the order of modules.dep any more, what
->> you're actually trying to do with modules.order is ensure that e.g.
->> modules providing conflicting aliases get handled in "order".
->
-> Yes, that's right.  Ah... so, now modules.dep is sorted to speed up
-> module look up?
+* Arjan van de Ven [2008-11-16 08:03]:
 
-It's a match tree, stored in a binary file format, not a specific ordering.
+> 
+> the point of the /dev/mem restrictions is to not allow things you know
+> you don't need, while still allowing X to function where it can access
+> the crap it does. Now in Bernhard's case he DOES need them, so he
+> shouldn't use the restrictions.
 
-> Is this code already in module-init-tools?
+Right. But shipping two kernel images is a bit too much to turn a
+restriction on or off. Get away from that "recompile your kernel".
 
-http://git.kernel.org/?p=utils/kernel/module-init-tools/module-init-tools.git;a=summary
+But I get more and more convinced that we really want to just turn that
+configuration option off. I'm no expert in security, and at some point,
+I just have to believe what people write.
 
-Kay
+
+Regards,
+Bernhard
