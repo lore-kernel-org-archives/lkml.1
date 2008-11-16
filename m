@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbYKPWfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbYKPWiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754918AbYKPWfu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:35:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYKPWfk
+	id S1755257AbYKPWiF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:38:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbYKPWhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:35:40 -0500
-Received: from qb-out-0506.google.com ([72.14.204.231]:54857 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438AbYKPWfj (ORCPT
+	Sun, 16 Nov 2008 17:37:54 -0500
+Received: from anguilla.debian.or.at ([86.59.21.37]:58919 "EHLO
+	anguilla.debian.or.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835AbYKPWhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:35:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=hUK58TU7snQD40vynjRR3g76MLlKF/GHBBELD9FSu0y+SnVvAjF8UcZbvk98fkfqGW
-         0OdcicNVa04FpUN+QTsFr9DwvCy8lsosdsCLruuUFLQNClz50uDGEhBmWioGYX56W72K
-         DSI+nZ2CB7oPUomz0r1Z6f/2gml938b9vl+ws=
-Date: Mon, 17 Nov 2008 00:35:31 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: "Steven Rostedt" <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #11996] Tracing framework regression in 2.6.28-rc3
-Message-ID: <20081117003531.4c8b5679@daedalus.pq.iki.fi>
-In-Reply-To: <Q7OAnAv0V3D.A.GwE.gAGIJB@chimera>
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-	<Q7OAnAv0V3D.A.GwE.gAGIJB@chimera>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Nov 2008 17:37:54 -0500
+Date: Sun, 16 Nov 2008 23:37:53 +0100
+From: Peter Palfrader <peter@palfrader.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: broken ownership of /proc/sys/ files on 2.6.27
+Message-ID: <20081116223753.GK28958@anguilla.noreply.org>
+Mail-Followup-To: Peter Palfrader <peter@palfrader.org>,
+	Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+	Linus Torvalds <torvalds@linux-foundation.org>
+References: <20081116205922.GI28958@anguilla.noreply.org> <20081116221910.GQ28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20081116221910.GQ28946@ZenIV.linux.org.uk>
+X-PGP: 1024D/94C09C7F 5B00 C96D 5D54 AEE1 206B  AF84 DE7A AF6E 94C0 9C7F
+X-Request-PGP: http://www.palfrader.org/keys/94C09C7F.asc
+X-Accept-Language: de, en
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 17:35:18 +0100 (CET)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Sun, 16 Nov 2008, Al Viro wrote:
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+> On Sun, Nov 16, 2008 at 09:59:22PM +0100, Peter Palfrader wrote:
+> > Hi,
+> > 
+> > on several (probably all) of my systems running a 2.6.27 kernel on at
+> > least i386, amd64, ia64, sparc proc/sys does have files not owned by
+> > root:
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.27.  Please verify if it still should be listed and let me know
-> (either way).
+> D'oh...
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11996
-> Subject		: Tracing framework regression in 2.6.28-rc3
-> Submitter	: Pekka Paalanen <pq@iki.fi>
-> Date		: 2008-11-09 10:13 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122624392229317&w=4
-> Handled-By	: Steven Rostedt <rostedt@goodmis.org>
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
+> index 94fcfff..06ed10b 100644
+> --- a/fs/proc/proc_sysctl.c
+> +++ b/fs/proc/proc_sysctl.c
+> @@ -31,6 +31,7 @@ static struct inode *proc_sys_make_inode(struct super_block *sb,
+>  	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
+>  	inode->i_flags |= S_PRIVATE; /* tell selinux to ignore this inode */
+>  	inode->i_mode = table->mode;
+> +	inode->i_uid = inode->i_gid = 0;
+>  	if (!table->child) {
+>  		inode->i_mode |= S_IFREG;
+>  		inode->i_op = &proc_sys_inode_operations;
 
-Steve, Ingo, did you get into an agreement on the patch?
-What should I test?
+Works on the one host that I tested.
 
-I see -rc5 is out, but I didn't spot the fix in the changelog.
-
-(The ring buffer NULL dereference on resize / unallocated max tracer.)
-
+Thanks.
 -- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+                           |  .''`.  ** Debian GNU/Linux **
+      Peter Palfrader      | : :' :      The  universal
+ http://www.palfrader.org/ | `. `'      Operating System
+                           |   `-    http://www.debian.org/
