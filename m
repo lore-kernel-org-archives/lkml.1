@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbYKPJtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbYKPKCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbYKPJtt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 04:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYKPJtk
+	id S1752542AbYKPKCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 05:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYKPKCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 04:49:40 -0500
-Received: from ug-out-1314.google.com ([66.249.92.170]:36549 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbYKPJtj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 04:49:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=aBxsem65+bcq8Dx6NhDNkHB0zsgAa31lhaJM4//Xvsy2Nr1nDXPk8zSjpP91FouRjt
-         iFkyI88djpPjjC4fX4T35RCnKwLuefAs/vq617KCFgPPXNcgQISYKmhpKUEFEmbI/0gF
-         pnZjW/Ttl836MswIj3BohkJxx50OHLDqTWHt8=
-Message-ID: <491FECAE.6050005@gmail.com>
-Date: Sun, 16 Nov 2008 12:49:34 +0300
-From: Alexey Starikovskiy <aystarik@gmail.com>
+	Sun, 16 Nov 2008 05:02:11 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:54362 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751703AbYKPKCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 05:02:10 -0500
+X-Greylist: delayed 1228 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Nov 2008 05:02:10 EST
+Message-ID: <491FEAD5.4090205@krogh.cc>
+Date: Sun, 16 Nov 2008 10:41:41 +0100
+From: Jesper Krogh <jesper@krogh.cc>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
-Subject: Re: ACPI: EC: GPE storm detected, transactions will use polling mode
-References: <1226722577.3104.4.camel@LiNuX> <491EBB2D.70106@tuffmail.co.uk>	 <dd18b0c30811151039i4a5e295euc4aaa52382d47bb1@mail.gmail.com>	 <200811152019.31744.rjw@sisk.pl> <1226817681.3133.7.camel@LiNuX>
-In-Reply-To: <1226817681.3133.7.camel@LiNuX>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Regression in bonding between 2.6.26.8 and 2.6.27.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin P. Mattock wrote:
-> Well; reverting:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=06cf7d3c7af902939cd1754abcafb2464060cba8
-> is keeping the system from having a gpe storm
-> (for at least four hours now);
-> haven't had a chance to drain the battery and see
-> the affects from that scenario.
->
->   
-Justin, by decreasing threshold, we just change how often _detection_ of 
-the storm fires, not the storm itself.
+Hi.
 
-Regards,
-Alex.
+I have something that looks like a regression in bonding between 
+2.6.26.8 and 2.6.27.6 (I'll try the mid-steps later).
+
+Setup: LACP bond(mode=4,mmimon=100) with 3 NIC's and dhcp on top (static 
+ip didn't work either).
+
+Problem: The bond doesn't get up after bootup. Subsequence ifdown/ifup 
+brings it up.
+
+I suspect it it timing related. The interface being configured before 
+it's ready:
+root@quad01:~# dmesg | egrep '(dhc|bond)'
+[   12.421963] bonding: MII link monitoring set to 100 ms
+[   12.483370] bonding: bond0: enslaving eth0 as a backup interface with 
+an up link.
+[   12.523372] bonding: bond0: enslaving eth1 as a backup interface with 
+an up link.
+[   12.611731] bonding: bond0: enslaving eth2 as a backup interface with 
+a down link.
+[   12.780816] warning: `dhclient3' uses 32-bit capabilities (legacy 
+support in use)
+[   15.720491] bonding: bond0: link status definitely up for interface eth2.
+[   87.800324] bond0: no IPv6 routers present
+
+
+The setup is a 3 NIC bond on a Sun X2200 dual-cpu Quad-core server.
+I have similar bond on a X4600 where they works with 2.6.27.6 so I 
+suspect that the difference is that the X4600 has all NIC's from the
+same vendor where as the X2200 has 2 Broadcom NIC's and 2 NVidia nics.
+
+root@quad01:~# lspci | grep -i ethernet
+00:08.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a3)
+00:09.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a3)
+06:04.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5715 
+Gigabit Ethernet (rev a3)
+06:04.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5715 
+Gigabit Ethernet (rev a3)
+
+
+
+
+-- 
+Jesper
