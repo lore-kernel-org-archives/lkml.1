@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbYKPW2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbYKPWfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755501AbYKPW2s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbYKPW2j
+	id S1754918AbYKPWfu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYKPWfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:28:39 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:58320 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752232AbYKPW2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:28:38 -0500
-Date: Sun, 16 Nov 2008 23:31:19 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: Mark Brown <broonie@sirena.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power_supply: Add support for WM8350 PMU
-Message-ID: <20081116223118.GC2977@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1226416083-12875-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112164722.GB3882@sortiz.org> <20081112164900.GJ8767@sirena.org.uk> <20081112165705.GC3882@sortiz.org> <20081114012050.GA21272@zarina>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081114012050.GA21272@zarina>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 16 Nov 2008 17:35:40 -0500
+Received: from qb-out-0506.google.com ([72.14.204.231]:54857 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbYKPWfj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 17:35:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding:sender;
+        b=hUK58TU7snQD40vynjRR3g76MLlKF/GHBBELD9FSu0y+SnVvAjF8UcZbvk98fkfqGW
+         0OdcicNVa04FpUN+QTsFr9DwvCy8lsosdsCLruuUFLQNClz50uDGEhBmWioGYX56W72K
+         DSI+nZ2CB7oPUomz0r1Z6f/2gml938b9vl+ws=
+Date: Mon, 17 Nov 2008 00:35:31 +0200
+From: Pekka Paalanen <pq@iki.fi>
+To: "Steven Rostedt" <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #11996] Tracing framework regression in 2.6.28-rc3
+Message-ID: <20081117003531.4c8b5679@daedalus.pq.iki.fi>
+In-Reply-To: <Q7OAnAv0V3D.A.GwE.gAGIJB@chimera>
+References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
+	<Q7OAnAv0V3D.A.GwE.gAGIJB@chimera>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 04:20:50AM +0300, Anton Vorontsov wrote:
-> On Wed, Nov 12, 2008 at 05:57:06PM +0100, Samuel Ortiz wrote:
-> > On Wed, Nov 12, 2008 at 04:49:01PM +0000, Mark Brown wrote:
-> > > On Wed, Nov 12, 2008 at 05:47:23PM +0100, Samuel Ortiz wrote:
-> > > 
-> > > > The MFD part looks good to me: 
-> > > > > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> > > > Acked-by: Samuel Ortiz <sameo@openedhand.com>
-> > > 
-> > > I forgot to mention it on the repost (I did on the original) 
-> > Ah, sorry..
-> > 
-> > 
-> > > that since
-> > > this depends on the AUXADC support queued in the MFD tree it probably
-> > > makes sense to merge it via there.  Would you be OK with that if Anton
-> > > OKs the driver?
-> > I'll queue it once I get Anton's ACK, no problem.
-> 
-> The patch looks OK.
-> 
-> Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
-Thanks Mark, Anton. Patch applied to my for-next branch.
+On Sun, 16 Nov 2008 17:35:18 +0100 (CET)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Cheers,
-Samuel.
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.27.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11996
+> Subject		: Tracing framework regression in 2.6.28-rc3
+> Submitter	: Pekka Paalanen <pq@iki.fi>
+> Date		: 2008-11-09 10:13 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122624392229317&w=4
+> Handled-By	: Steven Rostedt <rostedt@goodmis.org>
 
- 
-> 
-> Thanks,
-> 
-> -- 
-> Anton Vorontsov
-> email: cbouatmailru@gmail.com
-> irc://irc.freenode.net/bd2
+Steve, Ingo, did you get into an agreement on the patch?
+What should I test?
+
+I see -rc5 is out, but I didn't spot the fix in the changelog.
+
+(The ring buffer NULL dereference on resize / unallocated max tracer.)
 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Pekka Paalanen
+http://www.iki.fi/pq/
