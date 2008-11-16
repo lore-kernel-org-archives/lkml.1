@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYKPPbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKPPdB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754055AbYKPPbz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 10:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYKPPbp
+	id S1754201AbYKPPdB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 10:33:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYKPPct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 10:31:45 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:27635 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbYKPPbo (ORCPT
+	Sun, 16 Nov 2008 10:32:49 -0500
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:45762 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752114AbYKPPcs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 10:31:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=AKkb0PL0ZUXgoSAnhhYwsM5d3W+xA1WB17b5fn8Z9FXcqS72uMFI1m4eQCPUXzRxut
-         1MoKkGUUfJE22hzDmrKUqsftMRFYfOxAo3b8DxPQ4u2Eu5Oi4y+0Lj8RenL7bSES23Eu
-         +um+AgC95FO543mvkCAGhRYdx77GPmU8wb9b8=
-References: <1226722577.3104.4.camel@LiNuX> <1226817681.3133.7.camel@LiNuX> <491FECAE.6050005@gmail.com> <200811161344.07872.rjw@sisk.pl>
-Message-Id: <B407D583-A440-402B-AB35-D69BA464F5AD@gmail.com>
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200811161344.07872.rjw@sisk.pl>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	Sun, 16 Nov 2008 10:32:48 -0500
+Subject: Re: [PATCH] niu: bitwise or does not imply ordering
+From: Jesper Dangaard Brouer <jdb@comx.dk>
+Reply-To: jdb@comx.dk
+To: Milton Miller <miltonm@bga.com>
+Cc: davem@davemloft.net, segher@kernel.crashing.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Ben Hutchings <bhutchings@solarflare.com>
+In-Reply-To: <312268717986b8b45674.846930886.miltonm@bga.com>
+References: <312268717986b8b45674.846930886.miltonm@bga.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (5F136)
-Mime-Version: 1.0 (iPhone Mail 5F136)
-Subject: Re: ACPI: EC: GPE storm detected, transactions will use polling mode
-Date: Sun, 16 Nov 2008 07:31:35 -0800
-Cc: Alexey Starikovskiy <aystarik@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ACPI <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Organization: ComX Networks A/S
+Date: Sun, 16 Nov 2008 16:32:05 +0100
+Message-Id: <1226849525.8189.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cool,
-Then I'll just leave it as is
-And move on to other tasks that I have. Thanks for the info and help
 
-Regards;
+I have tested it on the actual hardware, it works...
 
-justin P. Mattock
+I actually agree that we should make it explicit, eventhough DaveM seems
+to disagree on the netdev list.
+
+Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+Tested-by: Jesper Dangaard Brouer <hawk@comx.dk>
 
 
-
-On Nov 16, 2008, at 4:44 AM, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-
-> On Sunday, 16 of November 2008, Alexey Starikovskiy wrote:
->> Justin P. Mattock wrote:
->>> Well; reverting:
->>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=06cf7d3c7af902939cd1754abcafb2464060cba8
->>> is keeping the system from having a gpe storm
->>> (for at least four hours now);
->>> haven't had a chance to drain the battery and see
->>> the affects from that scenario.
->>>
->>>
->> Justin, by decreasing threshold, we just change how often  
->> _detection_ of
->> the storm fires, not the storm itself.
->
-> Yes, I think what happens is that we just detect the interrupt storm  
-> with the
-> lower threshold, so the storm occured anyway previously, but it went  
-> unnoticed
-> (not necessarily a good thing).
->
-> There is nothing to worry about as long as the box works as expected.
->
-> Thanks,
-> Rafael
+On Sun, 2008-11-16 at 15:43 -0600, Milton Miller wrote:
+> commit e23a59e1ca6d177a57a7791b3629db93ff1d9813 (niu: Fix readq
+> implementation when architecture does not provide one.) reordered the
+> arguments to a bitwise or to change the emitted code.   However, C does
+> not guarantee the evaluation order.
+> 
+> Split the line into two statements.  While there, reduce some parens
+> by using two variables.
+> 
+> Signed-off-By: Milton Miller <miltonm@bga.com>
+> Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
+> ---
+> complie tested on ppc6xx_defconfig, I have no hardware.
+> making the vars u64 saves the later cast with no signficiant codegen difference
+> 
+> Index: work.git/drivers/net/niu.c
+> ===================================================================
+> --- work.git.orig/drivers/net/niu.c	2008-11-16 01:34:44.000000000 -0600
+> +++ work.git/drivers/net/niu.c	2008-11-16 02:59:06.000000000 -0600
+> @@ -51,7 +51,18 @@ MODULE_VERSION(DRV_MODULE_VERSION);
+>  #ifndef readq
+>  static u64 readq(void __iomem *reg)
+>  {
+> -	return ((u64) readl(reg)) | (((u64) readl(reg + 4UL)) << 32);
+> +	u64 l, u;
+> +	/*
+> +	 * The TX_CS register has counters in the upper 32-bits and state
+> +	 * bits in the lower 32-bits.  A read clears the state bits.
+> +	 *
+> +	 * Therefore this driver must read the lower word then the upper one
+> +	 * when the architecture doesn't have an atomic readq.
+> +	 */
+> +	l = readl(reg);
+> +	u = readl(reg + 4UL);
+> +
+> +	return l | (u << 32);
+>  }
+>  
+>  static void writeq(u64 val, void __iomem *reg)
+> 
+-- 
+Med venlig hilsen / Best regards
+  Jesper Brouer
+  ComX Networks A/S
+  Linux Network developer
+  Cand. Scient Datalog / MSc.
+  Author of http://adsl-optimizer.dk
+  LinkedIn: http://www.linkedin.com/in/brouer
