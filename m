@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045AbYKPFQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754231AbYKPFZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754045AbYKPFQs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 00:16:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYKPFQj
+	id S1754231AbYKPFZM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 00:25:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYKPFY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 00:16:39 -0500
-Received: from ti-out-0910.google.com ([209.85.142.186]:33642 "EHLO
+	Sun, 16 Nov 2008 00:24:58 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:32513 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbYKPFQi (ORCPT
+	with ESMTP id S1751202AbYKPFY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 00:16:38 -0500
+	Sun, 16 Nov 2008 00:24:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:x-enigmail-version:content-type
          :content-transfer-encoding;
-        b=kq80f/KzHLlxRjrM38lvVhLNzoQtiCAI/BUdKOZp13CKEBZ/+7XlSGEJECgFqNm1oD
-         sLvI8K4nJMAiAWkGyKmjPZSHk5322qZ5XvkidnWNSvNwQCExlV/dGKsp93jMdFEo9xZk
-         v6VfLlbZ2p7FxCNEJpg2sLETf6/5eKK5tv1Ng=
-Message-ID: <491FACC3.1050202@gmail.com>
-Date: Sun, 16 Nov 2008 14:16:51 +0900
+        b=Ez4Pj3zh9U2eB2juE4RHxK8r40RyHK1V5cRUB94w5qxcBSMr8j9a+wZVn2vpJvoHZ9
+         UJ0CNEXM687CPS6HSADGdxM2zPLLF4OGUisEQqNjXm7n6RjA4MUpTd6TMn6/QrDG4ego
+         mNe37cL+a7yPvdSd/Wt6Hl+zCmhPP4+zg68tw=
+Message-ID: <491FAEB8.5010501@gmail.com>
+Date: Sun, 16 Nov 2008 14:25:12 +0900
 From: Tejun Heo <htejun@gmail.com>
 User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jens.axboe@oracle.com
-Subject: Re: [PATCH] Fix kunmap() argument in sg_miter_stop
-References: <20081115112751.1d38c072@infradead.org>	<Pine.LNX.4.64.0811152003360.1618@blonde.site> <20081115123916.0d83a89e@infradead.org>
-In-Reply-To: <20081115123916.0d83a89e@infradead.org>
+To: Jon Masters <jonathan@jonmasters.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, notting@redhat.com,
+       kay.sievers@vrfy.org, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] depmod: sort output according to modules.order, take
+ #2
+References: <475936CE.70703@gmail.com> <475BB5AE.40503@gmail.com>	 <477B71F0.8020706@gmail.com>  <200801031012.22776.rusty@rustcorp.com.au>	 <1199318319.2044.22.camel@perihelion>  <491C1158.8090901@gmail.com> <1226776813.4894.1.camel@jcmlaptop>
+In-Reply-To: <1226776813.4894.1.camel@jcmlaptop>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> From 979d181d6199f639ba78c5eadf85857f6a9f3f89 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Sat, 15 Nov 2008 11:23:58 -0800
-> Subject: [PATCH] Fix kunmap() argument in sg_miter_stop
+Jon Masters wrote:
+> On Thu, 2008-11-13 at 20:36 +0900, Tejun Heo wrote:
 > 
-> kunmap() takes as argument the struct page that orginally got kmap()'d,
-> however the sg_miter_stop() function passed it the kernel virtual address
-> instead, resulting in weird stuff.
+>> Jon, this patch hasn't made into module-init-tools
 > 
-> Somehow I ended up fixing this bug by accident while looking for a bug
-> in the same area.
-> 
-> Reported-by: kerneloops.org
-> CC: htejun@gmail.com
-> 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> I'm redoing it to cope with the binary sorted output files we have now -
+> i.e. we can't just rely upon the order of modules.dep any more, what
+> you're actually trying to do with modules.order is ensure that e.g.
+> modules providing conflicting aliases get handled in "order".
 
-Argh... talk about confusing interfaces.  Thanks a lot.
+Yes, that's right.  Ah... so, now modules.dep is sorted to speed up
+module look up?  Is this code already in module-init-tools?
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Thanks.
 
 -- 
 tejun
