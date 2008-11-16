@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYKPIxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752426AbYKPJGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbYKPIxU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 03:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYKPIxM
+	id S1752426AbYKPJGS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 04:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYKPJFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 03:53:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52606 "EHLO mx2.mail.elte.hu"
+	Sun, 16 Nov 2008 04:05:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33915 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYKPIxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 03:53:11 -0500
-Date: Sun, 16 Nov 2008 09:52:54 +0100
+	id S1751703AbYKPJFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 04:05:53 -0500
+Date: Sun, 16 Nov 2008 10:05:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: [PATCH] markers/tracpoints: fix non-modular build
-Message-ID: <20081116085254.GA25657@elte.hu>
-References: <20081114224733.364965865@polymtl.ca> <20081114224947.972705093@polymtl.ca>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] x86: fix es7000 compiling
+Message-ID: <20081116090532.GC26595@elte.hu>
+References: <86802c440810141017q1e99e98sc824441bafc0cd7a@mail.gmail.com> <20081014175318.GA6521@elte.hu> <48F7890F.9040703@kernel.org> <20081016193345.GA15043@elte.hu> <48F7A838.4040908@kernel.org> <491FDE9B.106@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20081114224947.972705093@polymtl.ca>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <491FDE9B.106@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,72 +40,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-> Use module notifiers instead of adding a hook in module.c.
+> Impact: fix es7000 compiling
 > 
-> Impact: cleanup.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: 'Ingo Molnar' <mingo@elte.hu>
-> CC: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
->  kernel/marker.c |   29 +++++++++++++++++++++++++++++
->  kernel/module.c |    4 ----
->  2 files changed, 29 insertions(+), 4 deletions(-)
+>   CC      arch/x86/kernel/es7000_32.o
+> arch/x86/kernel/es7000_32.c: In function ‘find_unisys_acpi_oem_table’:
+> arch/x86/kernel/es7000_32.c:255: error: implicit declaration of function ‘acpi_get_table_with_size’
+> arch/x86/kernel/es7000_32.c:261: error: implicit declaration of function ‘early_acpi_os_unmap_memory’
+> arch/x86/kernel/es7000_32.c: In function ‘unmap_unisys_acpi_oem_table’:
+> arch/x86/kernel/es7000_32.c:277: error: implicit declaration of function ‘__acpi_unmap_table’
+> make[1]: *** [arch/x86/kernel/es7000_32.o] Error 1
 
->From 227a837567e339c74d9d4243d03a29bd943a018c Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun, 16 Nov 2008 09:50:34 +0100
-Subject: [PATCH] markers/tracpoints: fix non-modular build
+applied to tip/x86/urgent, thanks Yinghai!
 
-fix:
-
- kernel/marker.c: In function 'marker_module_notify':
- kernel/marker.c:905: error: 'MODULE_STATE_COMING' undeclared (first use in this function)
- [...]
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/marker.c     |    4 ++++
- kernel/tracepoint.c |    4 ++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/marker.c b/kernel/marker.c
-index c14ec26..ea54f26 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -896,6 +896,8 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
- }
- EXPORT_SYMBOL_GPL(marker_get_private_data);
- 
-+#ifdef CONFIG_MODULES
-+
- int marker_module_notify(struct notifier_block *self,
- 			 unsigned long val, void *data)
- {
-@@ -924,3 +926,5 @@ static int init_markers(void)
- 	return register_module_notifier(&marker_module_nb);
- }
- __initcall(init_markers);
-+
-+#endif /* CONFIG_MODULES */
-diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
-index 94ac4e3..7960274 100644
---- a/kernel/tracepoint.c
-+++ b/kernel/tracepoint.c
-@@ -542,6 +542,8 @@ void tracepoint_iter_reset(struct tracepoint_iter *iter)
- }
- EXPORT_SYMBOL_GPL(tracepoint_iter_reset);
- 
-+#ifdef CONFIG_MODULES
-+
- int tracepoint_module_notify(struct notifier_block *self,
- 			     unsigned long val, void *data)
- {
-@@ -570,3 +572,5 @@ static int init_tracepoints(void)
- 	return register_module_notifier(&tracepoint_module_nb);
- }
- __initcall(init_tracepoints);
-+
-+#endif /* CONFIG_MODULES */
+	Ingo
