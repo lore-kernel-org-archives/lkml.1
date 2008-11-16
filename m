@@ -1,52 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbYKPRz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbYKPSCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbYKPRz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 12:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYKPRzU
+	id S1754197AbYKPSCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 13:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbYKPSCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 12:55:20 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:40743 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751903AbYKPRzT convert rfc822-to-8bit (ORCPT
+	Sun, 16 Nov 2008 13:02:13 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:9534 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbYKPSCM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 12:55:19 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>
-Subject: Re: [PATCH] mtd: unify mtd partition/device registration
-Date: Sun, 16 Nov 2008 12:55:17 -0500
-User-Agent: KMail/1.10.3 (Linux/2.6.27.4; KDE/4.1.3; x86_64; ; )
-Cc: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org> <20081116173453.GA703@logfs.org>
-In-Reply-To: <20081116173453.GA703@logfs.org>
+	Sun, 16 Nov 2008 13:02:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=i9k1asJD4KEl7q78z7aScgMRGeTcE1SqlRx75JtewU2jZUrPrFDX7nBPv9OsIjssWx
+         B1uxs6XPLrDQOe1ChPghagJD3xpVwfWj4N3a0BMBlTuXAjJaUPKpbbtgT7FG6l1QCzQ6
+         aGV6EOyuUbI2r7feeDU5Si6+6HoAwmeiCkZAo=
+Date: Sun, 16 Nov 2008 19:01:44 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] udf: reduce stack usage of udf_load_pvoldesc
+Message-ID: <20081116180140.GA6282@joi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811161255.18513.vapier@gentoo.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 16 November 2008 12:34:54 Jörn Engel wrote:
-> On Wed, 12 November 2008 18:38:53 -0500, Mike Frysinger wrote:
-> > Rather than having every map/mtd driver doing the same sequence of
-> > registering partitions and/or devices, implement common parse_mtd().
->
-> I just added partitioning support to block2mtd.  Looks like I might
-> rethink the patch. :)
->
-> > @@ -292,6 +292,43 @@ void put_mtd_device(struct mtd_info *mtd)
-> >  	module_put(mtd->owner);
-> >  }
-> >
-> > +#include <linux/mtd/partitions.h>
->
-> #include in the middle of the code?
+Allocate strings with kmalloc.
 
-maybe i'll stick a comment above it ... the reason was to be proactive in 
-preventing mtd partitioning code bleeding into the core.  maybe i'm just 
-paranoid.
--mike
+Checkstack output:
+Before: udf_process_sequence:      712
+After:  udf_process_sequence:      200
+
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Jan Kara <jack@suse.cz>
+---
+ fs/udf/super.c |   36 +++++++++++++++++++++++++-----------
+ 1 files changed, 25 insertions(+), 11 deletions(-)
+
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index e25e701..dfe0277 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -902,14 +902,23 @@ static int udf_find_fileset(struct super_block *sb,
+ static int udf_load_pvoldesc(struct super_block *sb, sector_t block)
+ {
+ 	struct primaryVolDesc *pvoldesc;
+-	struct ustr instr;
+-	struct ustr outstr;
++	struct ustr *instr, *outstr;
+ 	struct buffer_head *bh;
+ 	uint16_t ident;
++	int ret = 1;
++
++	instr = kmalloc(sizeof(struct ustr), GFP_NOFS);
++	if (!instr)
++		return 1;
++
++	outstr = kmalloc(sizeof(struct ustr), GFP_NOFS);
++	if (!outstr)
++		goto out1;
+ 
+ 	bh = udf_read_tagged(sb, block, block, &ident);
+ 	if (!bh)
+-		return 1;
++		goto out2;
++
+ 	BUG_ON(ident != TAG_IDENT_PVD);
+ 
+ 	pvoldesc = (struct primaryVolDesc *)bh->b_data;
+@@ -925,20 +934,25 @@ static int udf_load_pvoldesc(struct super_block *sb, sector_t block)
+ #endif
+ 	}
+ 
+-	if (!udf_build_ustr(&instr, pvoldesc->volIdent, 32))
+-		if (udf_CS0toUTF8(&outstr, &instr)) {
+-			strncpy(UDF_SB(sb)->s_volume_ident, outstr.u_name,
+-				outstr.u_len > 31 ? 31 : outstr.u_len);
++	if (!udf_build_ustr(instr, pvoldesc->volIdent, 32))
++		if (udf_CS0toUTF8(outstr, instr)) {
++			strncpy(UDF_SB(sb)->s_volume_ident, outstr->u_name,
++				outstr->u_len > 31 ? 31 : outstr->u_len);
+ 			udf_debug("volIdent[] = '%s'\n",
+ 					UDF_SB(sb)->s_volume_ident);
+ 		}
+ 
+-	if (!udf_build_ustr(&instr, pvoldesc->volSetIdent, 128))
+-		if (udf_CS0toUTF8(&outstr, &instr))
+-			udf_debug("volSetIdent[] = '%s'\n", outstr.u_name);
++	if (!udf_build_ustr(instr, pvoldesc->volSetIdent, 128))
++		if (udf_CS0toUTF8(outstr, instr))
++			udf_debug("volSetIdent[] = '%s'\n", outstr->u_name);
+ 
+ 	brelse(bh);
+-	return 0;
++	ret = 0;
++out2:
++	kfree(outstr);
++out1:
++	kfree(instr);
++	return ret;
+ }
+ 
+ static int udf_load_metadata_files(struct super_block *sb, int partition)
+-- 
+1.5.6.4
+
