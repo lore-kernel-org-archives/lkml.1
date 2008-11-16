@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbYKPHsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbYKPHtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752291AbYKPHsi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 02:48:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYKPHs3
+	id S1752685AbYKPHtX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 02:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbYKPHtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 02:48:29 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:34636 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbYKPHs2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 02:48:28 -0500
-Date: Sun, 16 Nov 2008 08:49:48 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: viro@ZenIV.linux.org.uk, zippel@linux-m68k.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Immortal CONFIG_DEBUG_INFO=y
-Message-ID: <20081116074948.GA32670@uranus.ravnborg.org>
-References: <20081116074201.GA27921@x200.localdomain>
-Mime-Version: 1.0
+	Sun, 16 Nov 2008 02:49:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55943 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbYKPHtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 02:49:14 -0500
+Date: Sun, 16 Nov 2008 08:48:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [patch 16/16]
+	marker_synchronize_unregister->tracepoint_synchronize_unregister
+Message-ID: <20081116074851.GA530@elte.hu>
+References: <20081114224733.364965865@polymtl.ca> <20081114224949.751661181@polymtl.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081116074201.GA27921@x200.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20081114224949.751661181@polymtl.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 16, 2008 at 10:42:01AM +0300, Alexey Dobriyan wrote:
-> As known to everybody doing fat builds, banning DEBUG_INFO=y is mandatory,
-> otherwise build is slower and takes much more disk space. And to not
-> accidently enable it, banning it in kconfig:
-> 
-> 	@@ -475,7 +475,7 @@ config DEBUG_BUGVERBOSE
-> 	 
-> 	 config DEBUG_INFO
-> 	 	bool "Compile the kernel with debug info"
-> 	-	depends on DEBUG_KERNEL
-> 	+	depends on DEBUG_KERNEL && DISABLED
-> 	 	help
-> 	           If you say Y here the resulting kernel image will include
-> 	 	  debugging info resulting in a larger kernel image.
-> 
-> This works pretty well -- allmodconfig generates config without DEBUG_INFO and
-> so on, defconfigs also regenerated without it, even if original one in arch/
-> has DEBUG_INFO enabled and so on. Trick also works for other options, like,
-> KALLSYMS_EXTRA_PASS.
-> 
-> Except one case:
-> 
-> 	make ARCH=sh magicpanelr2_defconfig
-> 
-> DEBUG_INFO survives to .config and resulting build runs with -g.
 
-Because that defconfig does:
-CONFIG_SH_KGDB=y
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-and SH_KGDB does:
-	select DEBUG_INFO
+> Impact: documentation update.
+> 
+> Signed-off-by: Zhaolei <zhaolei@cn.fujitsu.com>
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Ingo Molnar <mingo@elte.hu>
+> CC: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Instead of editing the Kconfig file you should use the KCONFIG_ALLCONFIG trick.
-See README for usage.
+This should have been:
 
-	Sam
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+
+correct?
+
+I updated the patch accordingly.
+
+	Ingo
