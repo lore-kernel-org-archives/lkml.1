@@ -1,386 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbYKPV1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756334AbYKPV17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbYKPV1p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 16:27:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYKPVZZ
+	id S1756334AbYKPV17 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 16:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbYKPV0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 16:25:25 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60552 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbYKPVZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 16:25:18 -0500
-Message-Id: <20081116212516.391730787@goodmis.org>
-References: <20081116212428.938752312@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Sun, 16 Nov 2008 16:24:35 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Paul Mackerras <paulus@samba.org>, Paul Mundt <lethal@linux-sh.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 7/7] ftrace,ppc32: dynamic ftrace to handle modules
-Content-Disposition: inline; filename=0007-ftrace-ppc32-dynamic-ftrace-to-handle-modules.patch
+	Sun, 16 Nov 2008 16:26:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43672 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755099AbYKPV0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 16:26:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Peter Palfrader <peter@palfrader.org>
+Subject: Re: broken ownership of /proc/sys/ files on 2.6.27
+Date: Sun, 16 Nov 2008 22:31:00 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20081116205922.GI28958@anguilla.noreply.org>
+In-Reply-To: <20081116205922.GI28958@anguilla.noreply.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811162231.01358.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: enable modules for dynamic ftrace on PPC32
+On Sunday, 16 of November 2008, Peter Palfrader wrote:
+> Hi,
+> 
+> on several (probably all) of my systems running a 2.6.27 kernel on at
+> least i386, amd64, ia64, sparc proc/sys does have files not owned by
+> root:
 
-This patch performs the necessary trampoline calls to handle
-modules with dynamic ftrace.
+Well, my system running 2.6.27.6 doesn't have this problem.
+ 
+> weasel@villa:~$ find /proc/sys ! -uid 0 -ls
+> 2273612    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:55 /proc/sys/kernel/sched_rt_runtime_us
+> 2273615    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:55 /proc/sys/kernel/core_uses_pid
+> 2273616    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:55 /proc/sys/kernel/core_pattern
+> 2273621    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/hotplug
+> 2273622    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/acct
+> 2273623    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/sysrq
+> 2273624    0 -rw-------   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/cad_pid
+> 2273625    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/threads-max
+> 2217102    0 -r--r--r--   1 joy      Debian          0 Nov 16 19:57 /proc/sys/kernel/random/entropy_avail
+> 2273626    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/overflowuid
+> 2273627    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/overflowgid
+> 2273628    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/panic_on_oops
+> 2273635    0 -r--r--r--   1 nobody   nogroup         0 Nov 16 20:55 /proc/sys/kernel/bootloader_type
+> 2273636    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:55 /proc/sys/kernel/kstack_depth_to_print
+> 2273638    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:55 /proc/sys/kernel/randomize_va_space
+> 2273598    0 dr-xr-xr-x   0 weasel   Debian          0 Nov 16 20:55 /proc/sys/vm
+> 2209118    0 -r--r--r--   1 joy      Debian          0 Nov 16 19:50 /proc/sys/fs/file-nr
+> weasel@villa:~$ uname -a
+> Linux villa 2.6.27.6-dsa-dl380-oldxeon #2 SMP Fri Nov 14 01:40:49 CET 2008 i686 GNU/Linux
+> 
+> 
+> weasel@ravel:~$ find /proc/sys ! -uid 0 -ls
+> 3917380    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_latency_ns
+> 3917381    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_wakeup_granularity_ns
+> 3917382    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_shares_ratelimit
+> 3917383    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_child_runs_first
+> 3917384    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_features
+> 3917387    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_rt_period_us
+> 3917388    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_rt_runtime_us
+> 3917389    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_compat_yield
+> 3847910    0 -rw-r--r--   1 joeyh    Debian          0 Nov 16 20:11 /proc/sys/kernel/pid_max
+> 3917373    0 dr-xr-xr-x   0 weasel   Debian          0 Nov 16 20:57 /proc/sys/fs
+> 3917376    0 dr-xr-xr-x   0 nagios   nagios          0 Nov 16 20:57 /proc/sys/net
+> weasel@ravel:~$ uname -a
+> Linux ravel 2.6.27.6-dsa-amd64-opteron #2 SMP Fri Nov 14 01:32:43 CET 2008 x86_64 GNU/Linux
+> 
+> weasel@caballero:~$ find /proc/sys ! -uid 0 -ls
+>   6950    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:48 /proc/sys/kernel/sched_min_granularity_ns
+>   6951    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:48 /proc/sys/kernel/sched_latency_ns
+>   6955    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/sched_features
+>   6959    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/sched_rt_runtime_us
+>   2173    0 -r--r--r--   1 nobody   munin           0 Nov 16 20:35 /proc/sys/kernel/random/entropy_avail
+>   6971    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/overflowuid
+>   6972    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/overflowgid
+>   6973    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/panic_on_oops
+>   6974    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/printk_ratelimit
+>   6975    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/printk_ratelimit_burst
+>   6978    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/softlockup_panic
+>   6979    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/softlockup_thresh
+>   6980    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/hung_task_check_count
+>   1618    0 -r--r--r--   1 nobody   munin           0 Nov 16 20:35 /proc/sys/fs/file-nr
+> weasel@caballero:~$ uname -a
+> Linux caballero 2.6.27.2-dsa-mckinley #1 SMP Sun Oct 19 12:14:46 UTC 2008 ia64 GNU/Linux
+> 
+> weasel@spontini:~$ find /proc/sys ! -uid 0 -ls
+>  41263    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/panic
+>  41264    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/core_uses_pid
+>  41267    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/real-root-dev
+>  41271    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/scons-poweroff
+>  41272    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/ctrl-alt-del
+>  41273    0 -r--r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/sg-big-buff
+>  41280    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/printk
+>  41291    0 -r--r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/version
+>  41292    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/hostname
+>  41293    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/domainname
+>  41294    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/shmmax
+>   5299    0 -r--r--r--   1 nobody   munin           0 Nov 16 19:22 /proc/sys/fs/file-nr
+>  41259    0 dr-xr-xr-x   0 weasel   Debian          0 Nov 16 20:58 /proc/sys/debug
+> weasel@spontini:~$ uname -a
+> Linux spontini 2.6.27.2-dsa-usii #2 SMP Sun Oct 19 16:34:26 CEST 2008 sparc64 GNU/Linux
+> 
+> 
+> That's probably not how it should be, right?
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- arch/powerpc/include/asm/ftrace.h |    1 -
- arch/powerpc/include/asm/module.h |    5 +-
- arch/powerpc/kernel/ftrace.c      |  219 +++++++++++++++++++++++++++++++-----
- arch/powerpc/kernel/module_32.c   |   10 ++
- 4 files changed, 202 insertions(+), 33 deletions(-)
+No, it's not.
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index d57f5bc..e5f2ae8 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -17,7 +17,6 @@ static inline unsigned long ftrace_call_adjust(unsigned long addr)
- 
- struct dyn_arch_ftrace {
- 	struct module *mod;
--	unsigned long tramp;
- };
- #endif /*  CONFIG_DYNAMIC_FTRACE */
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 340bc69..0845488 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -39,11 +39,14 @@ struct mod_arch_specific {
- 	unsigned long tramp;
- #endif
- 
--#else
-+#else /* powerpc64 */
- 	/* Indices of PLT sections within module. */
- 	unsigned int core_plt_section;
- 	unsigned int init_plt_section;
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+	unsigned long tramp;
- #endif
-+#endif /* powerpc64 */
- 
- 	/* List of BUG addresses, source line numbers and filenames */
- 	struct list_head bug_list;
-diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-index acbec66..57fdda8 100644
---- a/arch/powerpc/kernel/ftrace.c
-+++ b/arch/powerpc/kernel/ftrace.c
-@@ -119,36 +119,20 @@ static int test_24bit_addr(unsigned long ip, unsigned long addr)
- 	return !(diff & ((unsigned long)-1 << 24));
- }
- 
--int ftrace_make_nop(struct module *mod,
--		    struct dyn_ftrace *rec, unsigned long addr)
-+#ifdef CONFIG_PPC64
-+static int
-+__ftrace_make_nop(struct module *mod,
-+		  struct dyn_ftrace *rec, unsigned long addr)
- {
- 	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
- 	unsigned int *op = (unsigned *)&replaced;
- 	unsigned char jmp[8];
- 	unsigned long *ptr = (unsigned long *)&jmp;
--	unsigned char *old, *new;
- 	unsigned long ip = rec->ip;
- 	unsigned long tramp;
- 	int offset;
- 
- 	/*
--	 * If the calling address is more that 24 bits away,
--	 * then we had to use a trampoline to make the call.
--	 * Otherwise just update the call site.
--	 */
--	if (test_24bit_addr(ip, addr)) {
--		/* within range */
--		old = ftrace_call_replace(ip, addr);
--		new = ftrace_nop_replace();
--		return ftrace_modify_code(ip, old, new);
--	}
--
--#ifndef CONFIG_PPC64
--	/* only supported for PPC64 for now */
--	return 0;
--#else
--
--	/*
- 	 * Out of range jumps are called from modules.
- 	 * We should either already have a pointer to the module
- 	 * or it has been passed in.
-@@ -258,16 +242,105 @@ int ftrace_make_nop(struct module *mod,
- 		return -EPERM;
- 
- 	return 0;
--#endif /* CONFIG_PPC64 */
- }
- 
--int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+#else /* !PPC64 */
-+static int
-+__ftrace_make_nop(struct module *mod,
-+		  struct dyn_ftrace *rec, unsigned long addr)
- {
--	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
-+	unsigned char replaced[MCOUNT_INSN_SIZE];
- 	unsigned int *op = (unsigned *)&replaced;
-+	unsigned char jmp[8];
-+	unsigned int *ptr = (unsigned int *)&jmp;
-+	unsigned long ip = rec->ip;
-+	unsigned long tramp;
-+	int offset;
-+
-+	/*
-+	 * Out of range jumps are called from modules.
-+	 * We should either already have a pointer to the module
-+	 * or it has been passed in.
-+	 */
-+	if (!rec->arch.mod) {
-+		if (!mod) {
-+			printk(KERN_ERR "No module loaded addr=%lx\n",
-+			       addr);
-+			return -EFAULT;
-+		}
-+		rec->arch.mod = mod;
-+	} else if (mod) {
-+		printk(KERN_ERR
-+		       "Record mod %p not equal to passed in mod %p\n",
-+		       rec->arch.mod, mod);
-+		return -EINVAL;
-+	} else
-+		mod = rec->arch.mod;
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	/* Make sure that that this is still a 24bit jump */
-+	if ((*op & 0xff000000) != 0x48000000) {
-+		printk(KERN_ERR "Not expected bl: opcode is %x\n", *op);
-+		return -EINVAL;
-+	}
-+
-+	/* lets find where the pointer goes */
-+	offset = (*op & 0x03fffffc);
-+	/* make it signed */
-+	if (offset & 0x02000000)
-+		offset |= 0xfe000000;
-+
-+	tramp = ip + (long)offset;
-+
-+	/*
-+	 * On PPC32 the trampoline looks like:
-+	 * lis r11,sym@ha
-+	 * addi r11,r11,sym@l
-+	 * mtctr r11
-+	 * bctr
-+	 */
-+
-+	DEBUGP("ip:%lx jumps to %lx", ip, tramp);
-+
-+	/* Find where the trampoline jumps to */
-+	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
-+		printk(KERN_ERR "Failed to read %lx\n", tramp);
-+		return -EFAULT;
-+	}
-+
-+	DEBUGP(" %08x %08x ", ptr[0], ptr[1]);
-+
-+	tramp = (ptr[1] & 0xffff) |
-+		((ptr[0] & 0xffff) << 16);
-+	if (tramp & 0x8000)
-+		tramp -= 0x10000;
-+
-+	DEBUGP(" %x ", tramp);
-+
-+	if (tramp != addr) {
-+		printk(KERN_ERR
-+		       "Trampoline location %08lx does not match addr\n",
-+		       tramp);
-+		return -EINVAL;
-+	}
-+
-+	op[0] = PPC_NOP_INSTR;
-+
-+	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-+		return -EPERM;
-+
-+	return 0;
-+}
-+#endif /* PPC64 */
-+
-+int ftrace_make_nop(struct module *mod,
-+		    struct dyn_ftrace *rec, unsigned long addr)
-+{
- 	unsigned char *old, *new;
- 	unsigned long ip = rec->ip;
--	unsigned long offset;
- 
- 	/*
- 	 * If the calling address is more that 24 bits away,
-@@ -276,15 +349,23 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 	 */
- 	if (test_24bit_addr(ip, addr)) {
- 		/* within range */
--		old = ftrace_nop_replace();
--		new = ftrace_call_replace(ip, addr);
-+		old = ftrace_call_replace(ip, addr);
-+		new = ftrace_nop_replace();
- 		return ftrace_modify_code(ip, old, new);
- 	}
- 
--#ifndef CONFIG_PPC64
--	/* only supported for PPC64 for now */
--	return 0;
--#else
-+	return __ftrace_make_nop(mod, rec, addr);
-+
-+}
-+
-+#ifdef CONFIG_PPC64
-+static int
-+__ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned char replaced[MCOUNT_INSN_SIZE * 2];
-+	unsigned int *op = (unsigned *)&replaced;
-+	unsigned long ip = rec->ip;
-+	unsigned long offset;
- 
- 	/*
- 	 * Out of range jumps are called from modules.
-@@ -334,7 +415,83 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
- 		return -EPERM;
- 
- 	return 0;
--#endif /* CONFIG_PPC64 */
-+}
-+#else
-+static int
-+__ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned char replaced[MCOUNT_INSN_SIZE];
-+	unsigned int *op = (unsigned *)&replaced;
-+	unsigned long ip = rec->ip;
-+	unsigned long offset;
-+
-+	/*
-+	 * Out of range jumps are called from modules.
-+	 * Being that we are converting from nop, it had better
-+	 * already have a module defined.
-+	 */
-+	if (!rec->arch.mod) {
-+		printk(KERN_ERR "No module loaded\n");
-+		return -EINVAL;
-+	}
-+
-+	/* read where this goes */
-+	if (probe_kernel_read(replaced, (void *)ip, MCOUNT_INSN_SIZE))
-+		return -EFAULT;
-+
-+	/* It should be pointing to a nop */
-+	if (op[0] != PPC_NOP_INSTR) {
-+		printk(KERN_ERR "Expected NOP but have %x\n", op[0]);
-+		return -EINVAL;
-+	}
-+
-+	/* If we never set up a trampoline to ftrace_caller, then bail */
-+	if (!rec->arch.mod->arch.tramp) {
-+		printk(KERN_ERR "No ftrace trampoline\n");
-+		return -EINVAL;
-+	}
-+
-+	/* now calculate a jump to the ftrace caller trampoline */
-+	offset = rec->arch.mod->arch.tramp - ip;
-+
-+	if (offset + 0x2000000 > 0x3ffffff || (offset & 3) != 0) {
-+		printk(KERN_ERR "REL24 %li out of range!\n",
-+		       (long int)offset);
-+		return -EINVAL;
-+	}
-+
-+
-+	/* Set to "bl addr" */
-+	op[0] = 0x48000001 | (offset & 0x03fffffc);
-+
-+	DEBUGP("write to %lx\n", rec->ip);
-+
-+	if (probe_kernel_write((void *)ip, replaced, MCOUNT_INSN_SIZE))
-+		return -EPERM;
-+
-+	return 0;
-+}
-+#endif
-+
-+int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
-+{
-+	unsigned char *old, *new;
-+	unsigned long ip = rec->ip;
-+
-+	/*
-+	 * If the calling address is more that 24 bits away,
-+	 * then we had to use a trampoline to make the call.
-+	 * Otherwise just update the call site.
-+	 */
-+	if (test_24bit_addr(ip, addr)) {
-+		/* within range */
-+		old = ftrace_nop_replace();
-+		new = ftrace_call_replace(ip, addr);
-+		return ftrace_modify_code(ip, old, new);
-+	}
-+
-+	return __ftrace_make_call(rec, addr);
-+
- }
- 
- int ftrace_update_ftrace_func(ftrace_func_t func)
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index 2df91a0..f832773 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -22,6 +22,7 @@
- #include <linux/fs.h>
- #include <linux/string.h>
- #include <linux/kernel.h>
-+#include <linux/ftrace.h>
- #include <linux/cache.h>
- #include <linux/bug.h>
- #include <linux/sort.h>
-@@ -53,6 +54,9 @@ static unsigned int count_relocs(const Elf32_Rela *rela, unsigned int num)
- 			r_addend = rela[i].r_addend;
- 		}
- 
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+	_count_relocs++;	/* add one for ftrace_caller */
-+#endif
- 	return _count_relocs;
- }
- 
-@@ -306,5 +310,11 @@ int apply_relocate_add(Elf32_Shdr *sechdrs,
- 			return -ENOEXEC;
- 		}
- 	}
-+#ifdef CONFIG_DYNAMIC_FTRACE
-+	module->arch.tramp =
-+		do_plt_call(module->module_core,
-+			    (unsigned long)ftrace_caller,
-+			    sechdrs, module);
-+#endif
- 	return 0;
- }
--- 
-1.5.6.5
-
--- 
+Thanks,
+Rafael
