@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYKPWol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbYKPWoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755902AbYKPWol (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYKPWoV
+	id S1754654AbYKPWoz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:44:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYKPWon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:44:21 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:20538 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754171AbYKPWoT (ORCPT
+	Sun, 16 Nov 2008 17:44:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63577 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754354AbYKPWom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:44:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=KR5r+2wbhuIqO9vYIDd9dUo+PzIP6uq0ttieWD24+qf4imcLg3eqCdQeYmZss4GpO0
-         S1a3EuNGdmkSuu7VpjuMfaXEY35jRsXK/4UpilVvmyd5SoGsr0QYHK7kZuhm7vaXa8UG
-         BUwtC9PZbgZn9MZTMVhPI0BOcT6I1e5sJAoKs=
-Subject: RTC problem in PS3
-From: Fabiano Manoel de Andrade <fabianoma@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 16 Nov 2008 20:44:50 -0200
-Message-Id: <1226875490.6597.11.camel@lottar>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Nov 2008 17:44:42 -0500
+Date: Sun, 16 Nov 2008 17:44:39 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Pekka Paalanen <pq@iki.fi>
+cc: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #11996] Tracing framework regression in 2.6.28-rc3
+In-Reply-To: <20081117003531.4c8b5679@daedalus.pq.iki.fi>
+Message-ID: <alpine.DEB.1.10.0811161741050.2919@gandalf.stny.rr.com>
+References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera> <Q7OAnAv0V3D.A.GwE.gAGIJB@chimera> <20081117003531.4c8b5679@daedalus.pq.iki.fi>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi I've compiled the latest version of linux kernel (2.6.27.6) in my
-PS3 running debian and get a warning message listed here
 
-	Setting the system clock.
-  	Cannot access the Hardware Clock via any known method.
-  	Use the --debug option to see the details of our search for an access method.
-  	* Unable to set System Clock to: Sun Nov 16 20:33:06 UTC 2008
+On Mon, 17 Nov 2008, Pekka Paalanen wrote:
 
+> On Sun, 16 Nov 2008 17:35:18 +0100 (CET)
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.27.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11996
+> > Subject		: Tracing framework regression in 2.6.28-rc3
+> > Submitter	: Pekka Paalanen <pq@iki.fi>
+> > Date		: 2008-11-09 10:13 (8 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=122624392229317&w=4
+> > Handled-By	: Steven Rostedt <rostedt@goodmis.org>
+> 
+> Steve, Ingo, did you get into an agreement on the patch?
+> What should I test?
+> 
+> I see -rc5 is out, but I didn't spot the fix in the changelog.
+> 
+> (The ring buffer NULL dereference on resize / unallocated max tracer.)
 
-	The problem can be reproduced with the commands
+Ingo's solution was to have the ring_buffer_resize return success on NULL 
+buffer being passed in. Although I agree that it should not crash when 
+passed a NULL pointer, I feel that a NULL pointer should return a -1 
+(failure). The caller of the code (one place in kernel/trace/trace.c) 
+could simply check if the buffer was allocated, and if not, simply ignore 
+it.
 
-	# hwclock --debug
- 	hwclock from util-linux-ng 2.13.1.1
-  	hwclock: Open of /dev/rtc failed, errno=2: No such file or directory.
-  	No usable clock interface found.
-  	Cannot access the Hardware Clock via any known method.
-  	# ls -l /dev/rtc*
-  	ls: cannot access /dev/rtc*: No such file or directory
+I agree with Ingo that my original solution was too much churn. But the 
+simple if statement and "indent" change is what I feel to be the solution, 
+not letting the ring buffer return success on NULL pointer.
 
-	Loading the rtc-ppc module solve the problem, but after restart
-the system I still have the problem. Looking at kernel config I change the
-rtc-ppc to be build into kernel and this solve totally the problem. So the
-ps3_defconfig must set the rtc-ppc to be build into kernel.
-
-	Thanks in advance.
-	Fabiano.
-
-
-
+-- Steve
 
