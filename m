@@ -1,68 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753406AbYKPMhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbYKPMhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753406AbYKPMhF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 07:37:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKPMgz
+	id S1753797AbYKPMhh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 07:37:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYKPMh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 07:36:55 -0500
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:3324 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbYKPMgy (ORCPT
+	Sun, 16 Nov 2008 07:37:28 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:49072 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbYKPMh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 07:36:54 -0500
-Date: Sun, 16 Nov 2008 13:36:49 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.26] OOPS in elv_next_request
-Message-ID: <20081116123642.GD4370@vanheusden.com>
-References: <20081027090426.GN8318@vanheusden.com> <a8e1da0810272211s4b145bboef26801c3af0d652@mail.gmail.com> <20081030142550.GB11214@vanheusden.com> <a8e1da0810301822k3402e753m482d98f4530419a0@mail.gmail.com> <20081101161201.GQ11214@vanheusden.com> <a8e1da0811111830p2fe24b36q6c2d32205f3f1fe3@mail.gmail.com>
+	Sun, 16 Nov 2008 07:37:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:sender;
+        b=LXytBSlB94T3yxK7XzHZe/Q0R8iJ/Lk/hAJXYitjFhPSVifbyuv7kHtGIjED6ME0+F
+         3JowcNASttQ2743/abkGjXtVulx2OLAEjbX8nSWPLfKOYRWPxqJ0cM+2mNF+/NQpavKf
+         Qqh8QjZzxDJZ6pp+Gml92kYFNORIeCsyouV7Q=
+Message-ID: <49201401.1060600@tuffmail.co.uk>
+Date: Sun, 16 Nov 2008 12:37:21 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0811111830p2fe24b36q6c2d32205f3f1fe3@mail.gmail.com>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Sat Nov 15 16:05:58 CET 2008
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: csnook@redhat.com, atl1-devel@lists.sourceforge.net
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: atl2: don't mess up irq on suspend/resume (probably msi only)
+Content-Type: multipart/mixed;
+ boundary="------------090909090803030204020501"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > [ 7041.760087]  =======================
-> > [ 7041.760087] Code: 04 24 89 e2 89 f0 e8 35 33 00 00 85 c0 74 0d 8b 1c 24 85 db 0f 85 a0 fe ff ff eb 18 8b 06 39 f0 75 dd 8b 46 0c 31 d2 8b 08 89 f0 <ff> 51 10 85 c0 75 ea 31 db 5a 89 d8 5b 5e 5f 5d c3 55 89 cd 57
-> > [ 7041.760087] EIP: [<c01d352c>] elv_next_request+0x17f/0x190 SS:ESP 0068:c943ff34
-> > [ 7041.760087] ---[ end trace d4b702ab996006dc ]---
-> >> BTW, for 2.6.27, did you set vga=normal or other things?
-> > None.
-> > I also explicitly tried to set it but that didn't help
-> 
-> Could you try move the flush_scheduled_work to the beginning of
-> floppy_module_exit function and report the test result?
-> If it still does not works, please file a bug in bugzilla.kernel.org
+This is a multi-part message in MIME format.
+--------------090909090803030204020501
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Hi,
+According to Documentation/power/pci.txt, the correct suspend sequence is:
 
-Bit of an issue: 2.6.26 did funky things with the display and 2.6.28 with
-that patch applied throws an oops during boot (which i cannot capture
-due also the screenres. issue and netconsole not working at that moment).
-Will start a 2.6.27 compile with the patch.
+    A reference implementation
+    -------------------------
+    .suspend()
+    {
+        /* driver specific operations */
+
+        /* Disable IRQ */
+        free_irq();
+        /* If using MSI */
+        pci_disable_msi();
+
+        pci_save_state();
+        pci_enable_wake();
+        /* Disable IO/bus master/irq router */
+        pci_disable_device();
+        pci_set_power_state(pci_choose_state());
+    }
 
 
-Folkert van Heusden
+Whereas atl2 calls pci_save_state() *before* free_irq() and
+pci_disable_msi().  Hilarity ensues on resume as pci_restore_state()
+restores a state with MSI enabled; the atl2 resume handler then enables
+msi for the second time.  Looking at /proc/interrupts, it seems to leak
+an irq each time this happens.  (I had 6 entries for "eth0" by the time
+I noticed this).  It also triggers a warning.
 
--- 
-Multi tail barnamaj mowahib li mora9abat attasjilat wa nataij awamir
-al 7asoub. damj, talwin, mora9abat attarchi7 wa ila akhirih.
-http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+I was able to avoid the warning + leak by re-ordering the resume
+method.  Patch attached - it's just a few lines, I hope that's all
+that's necessary.
+
+------------[ cut here ]------------
+WARNING: at drivers/pci/msi.c:570 pci_enable_msi+0x3a/0x1cd()
+Modules linked in: cpufreq_stats freq_table nls_iso8859_1 nls_cp437 vfat fat rfkill_input ae
+Pid: 2620, comm: NetworkManager Tainted: G        W  2.6.28-rc4eeepc #136
+Call Trace:
+ [<c011b89a>] warn_on_slowpath+0x40/0x59
+ [<c023df15>] raw_pci_read+0x4d/0x55
+ [<c023dff3>] pci_read+0x1c/0x21
+ [<c01bcd81>] __pci_find_next_cap_ttl+0x44/0x70
+ [<c01bce86>] __pci_find_next_cap+0x1a/0x1f
+ [<c01bcef9>] pci_find_capability+0x28/0x2c
+ [<c01c4144>] pci_msi_check_device+0x53/0x62
+ [<c01c49c2>] pci_enable_msi+0x3a/0x1cd
+ [<e019f17b>] atl2_write_phy_reg+0x40/0x5f [atl2]
+ [<c01061b1>] dma_generic_alloc_coherent+0x0/0xd7
+ [<e019f107>] atl2_request_irq+0x15/0x49 [atl2]
+ [<e01a1481>] atl2_open+0x20b/0x297 [atl2]
+ [<c024a35c>] dev_open+0x62/0x91
+ [<c0248b9a>] dev_change_flags+0x93/0x141
+ [<c024f308>] do_setlink+0x238/0x2d5
+ [<c02501b2>] rtnl_setlink+0xa9/0xbf
+ [<c0297f0c>] mutex_lock+0xb/0x19
+ [<c024ffa7>] rtnl_dump_ifinfo+0x0/0x69
+ [<c0250109>] rtnl_setlink+0x0/0xbf
+ [<c024fe42>] rtnetlink_rcv_msg+0x185/0x19f
+ [<c0240fd1>] sock_rmalloc+0x23/0x57
+ [<c024fcbd>] rtnetlink_rcv_msg+0x0/0x19f
+ [<c0259457>] netlink_rcv_skb+0x2d/0x71
+ [<c024fcb7>] rtnetlink_rcv+0x14/0x1a
+ [<c025929e>] netlink_unicast+0x184/0x1e4
+ [<c025992a>] netlink_sendmsg+0x233/0x240
+ [<c023f405>] sock_sendmsg+0xb7/0xd0
+ [<c0129131>] autoremove_wake_function+0x0/0x2b
+ [<c0129131>] autoremove_wake_function+0x0/0x2b
+ [<c0147796>] mempool_alloc+0x2d/0x9e
+ [<c020c923>] scsi_pool_alloc_command+0x35/0x4f
+ [<c0297f0c>] mutex_lock+0xb/0x19
+ [<c028e867>] unix_stream_recvmsg+0x357/0x3e2
+ [<c01b81c9>] copy_from_user+0x23/0x4f
+ [<c02452ea>] verify_iovec+0x3e/0x6c
+ [<c023f5ab>] sys_sendmsg+0x18d/0x1f0
+ [<c023ffa8>] sys_recvmsg+0x146/0x1c8
+ [<c0240016>] sys_recvmsg+0x1b4/0x1c8
+ [<c0118f48>] __wake_up+0xf/0x15
+ [<c02586cd>] netlink_table_ungrab+0x17/0x19
+ [<c01b83ba>] copy_to_user+0x25/0x3b
+ [<c023fe4a>] move_addr_to_user+0x50/0x68
+ [<c0240266>] sys_getsockname+0x6f/0x9a
+ [<c0240280>] sys_getsockname+0x89/0x9a
+ [<c015046a>] do_wp_page+0x3ae/0x41a
+ [<c0151525>] handle_mm_fault+0x4c5/0x540
+ [<c02405d0>] sys_socketcall+0x176/0x1b0
+ [<c010376d>] sysenter_do_call+0x12/0x21
+---[ end trace ad80134e35e20aad ]---
+
+
+
+
+
+--------------090909090803030204020501
+Content-Type: text/plain;
+ name="msi"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="msi"
+
+diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+index f5bdc92..bfc334a 100644
+--- a/drivers/net/atlx/atl2.c
++++ b/drivers/net/atlx/atl2.c
+@@ -1553,6 +1553,7 @@ static int atl2_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	if (netif_running(netdev)) {
+ 		WARN_ON(test_bit(__ATL2_RESETTING, &adapter->flags));
+ 		atl2_down(adapter);
++		atl2_free_irq(adapter);
+ 	}
+ 
+ #ifdef CONFIG_PM
+@@ -1654,9 +1655,6 @@ wol_dis:
+ 	pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
+ 
+ suspend_exit:
+-	if (netif_running(netdev))
+-		atl2_free_irq(adapter);
+-
+ 	pci_disable_device(pdev);
+ 
+ 	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+
+--------------090909090803030204020501--
