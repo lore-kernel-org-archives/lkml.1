@@ -1,103 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbYKPIuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbYKPIxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbYKPIuS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 03:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYKPIuE
+	id S1752588AbYKPIxU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 03:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYKPIxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 03:50:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51163 "EHLO hera.kernel.org"
+	Sun, 16 Nov 2008 03:53:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52606 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbYKPIuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 03:50:03 -0500
-Message-ID: <491FDE9B.106@kernel.org>
-Date: Sun, 16 Nov 2008 00:49:31 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	id S1751274AbYKPIxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 03:53:11 -0500
+Date: Sun, 16 Nov 2008 09:52:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: [PATCH] markers/tracpoints: fix non-modular build
+Message-ID: <20081116085254.GA25657@elte.hu>
+References: <20081114224733.364965865@polymtl.ca> <20081114224947.972705093@polymtl.ca>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH] x86: fix es7000 compiling
-References: <86802c440810141017q1e99e98sc824441bafc0cd7a@mail.gmail.com> <20081014175318.GA6521@elte.hu> <48F7890F.9040703@kernel.org> <20081016193345.GA15043@elte.hu> <48F7A838.4040908@kernel.org>
-In-Reply-To: <48F7A838.4040908@kernel.org>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081114224947.972705093@polymtl.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-resend
 
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+
+> Use module notifiers instead of adding a hook in module.c.
+> 
+> Impact: cleanup.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: 'Ingo Molnar' <mingo@elte.hu>
+> CC: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+>  kernel/marker.c |   29 +++++++++++++++++++++++++++++
+>  kernel/module.c |    4 ----
+>  2 files changed, 29 insertions(+), 4 deletions(-)
+
+>From 227a837567e339c74d9d4243d03a29bd943a018c Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 16 Nov 2008 09:50:34 +0100
+Subject: [PATCH] markers/tracpoints: fix non-modular build
+
+fix:
+
+ kernel/marker.c: In function 'marker_module_notify':
+ kernel/marker.c:905: error: 'MODULE_STATE_COMING' undeclared (first use in this function)
+ [...]
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ kernel/marker.c     |    4 ++++
+ kernel/tracepoint.c |    4 ++++
+ 2 files changed, 8 insertions(+), 0 deletions(-)
 
-Impact: fix es7000 compiling
-
-  CC      arch/x86/kernel/es7000_32.o
-arch/x86/kernel/es7000_32.c: In function ‘find_unisys_acpi_oem_table’:
-arch/x86/kernel/es7000_32.c:255: error: implicit declaration of function ‘acpi_get_table_with_size’
-arch/x86/kernel/es7000_32.c:261: error: implicit declaration of function ‘early_acpi_os_unmap_memory’
-arch/x86/kernel/es7000_32.c: In function ‘unmap_unisys_acpi_oem_table’:
-arch/x86/kernel/es7000_32.c:277: error: implicit declaration of function ‘__acpi_unmap_table’
-make[1]: *** [arch/x86/kernel/es7000_32.o] Error 1
-
-we applied one patch out of order...
-| commit a73aaedd95703bd49f4c3f9df06fb7b7373ba905
-| Author: Yinghai Lu <yhlu.kernel@gmail.com>
-| Date:   Sun Sep 14 02:33:14 2008 -0700
-|
-|    x86: check dsdt before find oem table for es7000, v2
-|
-|    v2: use __acpi_unmap_table()
-
-that patch need 
-	x86: use early_ioremap in __acpi_map_table
-	x86: always explicitly map acpi memory
-	acpi: remove final __acpi_map_table mapping before setting acpi_gbl_permanent_mmap
-	acpi/x86: introduce __apci_map_table, v4
-
-workaround it here
-
-after those patches applied, need to revert this one
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
-diff --git a/arch/x86/kernel/es7000_32.c b/arch/x86/kernel/es7000_32.c
-index f454c78..0aa2c44 100644
---- a/arch/x86/kernel/es7000_32.c
-+++ b/arch/x86/kernel/es7000_32.c
-@@ -250,31 +250,24 @@ int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
- {
- 	struct acpi_table_header *header = NULL;
- 	int i = 0;
--	acpi_size tbl_size;
- 
--	while (ACPI_SUCCESS(acpi_get_table_with_size("OEM1", i++, &header, &tbl_size))) {
-+	while (ACPI_SUCCESS(acpi_get_table("OEM1", i++, &header))) {
- 		if (!memcmp((char *) &header->oem_id, "UNISYS", 6)) {
- 			struct oem_table *t = (struct oem_table *)header;
- 
- 			oem_addrX = t->OEMTableAddr;
- 			oem_size = t->OEMTableSize;
--			early_acpi_os_unmap_memory(header, tbl_size);
- 
- 			*oem_addr = (unsigned long)__acpi_map_table(oem_addrX,
- 								    oem_size);
- 			return 0;
- 		}
--		early_acpi_os_unmap_memory(header, tbl_size);
- 	}
- 	return -1;
+diff --git a/kernel/marker.c b/kernel/marker.c
+index c14ec26..ea54f26 100644
+--- a/kernel/marker.c
++++ b/kernel/marker.c
+@@ -896,6 +896,8 @@ void *marker_get_private_data(const char *name, marker_probe_func *probe,
  }
+ EXPORT_SYMBOL_GPL(marker_get_private_data);
  
- void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
++#ifdef CONFIG_MODULES
++
+ int marker_module_notify(struct notifier_block *self,
+ 			 unsigned long val, void *data)
  {
--	if (!oem_addr)
--		return;
--
--	__acpi_unmap_table((char *)oem_addr, oem_size);
+@@ -924,3 +926,5 @@ static int init_markers(void)
+ 	return register_module_notifier(&marker_module_nb);
  }
- #endif
+ __initcall(init_markers);
++
++#endif /* CONFIG_MODULES */
+diff --git a/kernel/tracepoint.c b/kernel/tracepoint.c
+index 94ac4e3..7960274 100644
+--- a/kernel/tracepoint.c
++++ b/kernel/tracepoint.c
+@@ -542,6 +542,8 @@ void tracepoint_iter_reset(struct tracepoint_iter *iter)
+ }
+ EXPORT_SYMBOL_GPL(tracepoint_iter_reset);
  
-
++#ifdef CONFIG_MODULES
++
+ int tracepoint_module_notify(struct notifier_block *self,
+ 			     unsigned long val, void *data)
+ {
+@@ -570,3 +572,5 @@ static int init_tracepoints(void)
+ 	return register_module_notifier(&tracepoint_module_nb);
+ }
+ __initcall(init_tracepoints);
++
++#endif /* CONFIG_MODULES */
