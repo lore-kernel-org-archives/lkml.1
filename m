@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbYKPDsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYKPEAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbYKPDsg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 22:48:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbYKPDs1
+	id S1755895AbYKPEAi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 23:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYKPEA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 22:48:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:35805 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbYKPDs0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 22:48:26 -0500
-Date: Sat, 15 Nov 2008 19:49:14 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: [PATCH 2/2] Add dev.mem.restricted sysctl
-Message-ID: <20081115194914.6791b96c@infradead.org>
-In-Reply-To: <1226793823-32360-3-git-send-email-bwalle@suse.de>
-References: <1226793823-32360-1-git-send-email-bwalle@suse.de>
-	<1226793823-32360-3-git-send-email-bwalle@suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 15 Nov 2008 23:00:28 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60622 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751652AbYKPEA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 23:00:27 -0500
+Date: Sat, 15 Nov 2008 20:00:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 01/16] RCU read sched notrace
+Message-ID: <20081116040026.GE7108@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20081114224733.364965865@polymtl.ca> <20081114224947.336246671@polymtl.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081114224947.336246671@polymtl.ca>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 01:03:43 +0100
-Bernhard Walle <bwalle@suse.de> wrote:
-
-> When CONFIG_STRICT_DEVMEM is set, live debugging is not possible with
-> the crash utility (see http://people.redhat.com/~anderson). For
-> distributors who ship a generic kernel it's difficult: Disabling
-> CONFIG_STRICT_DEVMEM is possible, but in general the protection
-> provided by CONFIG_STRICT_DEVMEM is useful. However, live debugging
-> should be still neceessary.
+On Fri, Nov 14, 2008 at 05:47:34PM -0500, Mathieu Desnoyers wrote:
+> Add _notrace version to rcu_read_*_sched().
 > 
-> This patch now adds a dev.mem.restricted sysctl that defaults to 0
-> (off). When set to 1 (on), /dev/mem access is unrestricted and crash
-> can be used.
+> Impact: new API, useful for tracepoints and markers.
+
+Looks good to me.  Just don't try it with rcu_read_lock(), given
+preemptable RCU.  ;-)
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> CC: Paul E McKenney <paulmck@linux.vnet.ibm.com>
+> CC: 'Ingo Molnar' <mingo@elte.hu>
+> CC: akpm@linux-foundation.org
+> ---
+>  include/linux/rcupdate.h |    2 ++
+>  1 file changed, 2 insertions(+)
 > 
-
-
-sounds like a really bad idea to me.
-If you want to use /dev/mem like this, don't enable the config option
-to restrict it. Really.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> Index: linux-2.6-lttng/include/linux/rcupdate.h
+> ===================================================================
+> --- linux-2.6-lttng.orig/include/linux/rcupdate.h	2008-10-08 10:27:57.000000000 -0400
+> +++ linux-2.6-lttng/include/linux/rcupdate.h	2008-10-08 10:40:48.000000000 -0400
+> @@ -142,6 +142,7 @@ struct rcu_head {
+>   * on the write-side to insure proper synchronization.
+>   */
+>  #define rcu_read_lock_sched() preempt_disable()
+> +#define rcu_read_lock_sched_notrace() preempt_disable_notrace()
+> 
+>  /*
+>   * rcu_read_unlock_sched - marks the end of a RCU-classic critical section
+> @@ -149,6 +150,7 @@ struct rcu_head {
+>   * See rcu_read_lock_sched for more information.
+>   */
+>  #define rcu_read_unlock_sched() preempt_enable()
+> +#define rcu_read_unlock_sched_notrace() preempt_enable_notrace()
+> 
+> 
+> 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
