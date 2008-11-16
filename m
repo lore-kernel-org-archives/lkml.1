@@ -1,137 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbYKPWk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYKPWm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246AbYKPWk4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYKPWks
+	id S1755417AbYKPWm5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYKPWmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:40:48 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:5139 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbYKPWkr (ORCPT
+	Sun, 16 Nov 2008 17:42:49 -0500
+Received: from mail-gx0-f11.google.com ([209.85.217.11]:50713 "EHLO
+	mail-gx0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbYKPWms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:40:47 -0500
+	Sun, 16 Nov 2008 17:42:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding:sender;
-        b=hNjxogArfP15dPawBalnedLt7Vk9Nl1M2ZA2obzYGwjC4Y6xtr3DUes5jvpKU3CQjm
-         WK1g2EGdH4TRp9PUqu+U7orlHo5NOH5Gm8gexz8/EnbWuEcsShZMnJDH9UaRU5XepTKc
-         wAIJZ6oclKt1zPQq4DlK9IUs1aIuO2DIqtaPM=
-Date: Mon, 17 Nov 2008 00:40:41 +0200
-From: Pekka Paalanen <pq@iki.fi>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Steven Noonan <steven@uplinklabs.net>
-Subject: Re: [PATCH 2/4] tracing/ftrace: Change the type of the init()
- callback
-Message-ID: <20081117004041.0ac7a5e9@daedalus.pq.iki.fi>
-In-Reply-To: <491FA836.4020101@gmail.com>
-References: <491FA836.4020101@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=gcoh86H+OWDMbfvn/bflaH6VDBmnSK8d6z6CiT+TKhLLG85RpQTahwcstL41eLhOp9
+         UAR1MiHTzLnXyH0JowXjerYE5I7nXUHMlt1reu7pgMQ/lIB396yIpeqzvW2sjqB9amHR
+         faMktZPnBdU1M1pPaGPdjKkM/UHLeWbHfuVh0=
+Message-ID: <21d7e9970811161442h7354734cvd711e48b468b8196@mail.gmail.com>
+Date: Mon, 17 Nov 2008 08:42:45 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
+Cc: "David Miller" <davem@davemloft.net>, laijs@cn.fujitsu.com,
+       akpm@linux-foundation.org, menage@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
+       jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20081116135130.5e8b4e13@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <491FA28B.2070003@cn.fujitsu.com>
+	 <20081115205229.765f7ee3@infradead.org>
+	 <20081116.001926.150424480.davem@davemloft.net>
+	 <20081116105725.12458b13@infradead.org>
+	 <21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
+	 <20081116135130.5e8b4e13@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 05:57:26 +0100
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
+On Mon, Nov 17, 2008 at 7:51 AM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Mon, 17 Nov 2008 07:39:55 +1000
+> "Dave Airlie" <airlied@gmail.com> wrote:
+>
+>> On Mon, Nov 17, 2008 at 4:57 AM, Arjan van de Ven
+>> <arjan@infradead.org> wrote:
+>> > On Sun, 16 Nov 2008 00:19:26 -0800 (PST)
+>> > David Miller <davem@davemloft.net> wrote:
+>> >
+>> >> From: Arjan van de Ven <arjan@infradead.org>
+>> >> Date: Sat, 15 Nov 2008 20:52:29 -0800
+>> >>
+>> >> > On Sun, 16 Nov 2008 12:33:15 +0800
+>> >> > Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+>> >> >
+>> >> > >
+>> >> > > some subsystem needs vmalloc() when required memory is large.
+>> >> > > but current kernel has not APIs for this requirement.
+>> >> > > this patch introduces simple_malloc() and simple_free().
+>> >> >
+>> >> > I kinda really don't like this approach. vmalloc() (and
+>> >> > especially, vfree()) is a really expensive operation, and
+>> >> > vmalloc()'d memory is also slower (due to tlb pressure).
+>> >> > Realistically, people should try hard to use small datastructure
+>> >> > instead....
+>> >>
+>> >> This is happening in many places, already, for good reason.
+>> >>
+>> >> There are lots of places where we can't (core hash tables, etc.)
+>> >> and we want NUMA spreading and reliable allocation, and thus
+>> >> vmalloc it is.
+>> >
+>> > vmalloc() isn't 100% evil; for truely long term stuff it's
+>> > sometimes a quite reasonable solution.
+>> >
+>> > There are some issues with it still: the vmalloc() space is shared
+>> > with ioremap, modules and others and it's not all that big on 32
+>> > bit; on x86 you could well end up with only 64Mb total (after
+>> > taking out the various ioremap's etc).
+>> >
+>> > Yes there's places where it's then totally fine to dip into this
+>> > space at boot/init time. You mention a few very good users.
+>> > (There's still the tlb miss cost on use but on modern cpus a tlb
+>> > miss is actually quite cheap)
+>> >
+>> > But this doesn't make vmalloc() the magic bullet that solves the "oh
+>> > Linux can't allocate large chunks of memory" problem. Specifically
+>> > in driver space for things that get ported from other OSes.
+>>
+>> So we keep the duplicated code? or we just audit new callers.... I
+>> think this patch
+>> makes it easier to spot new callers doing something stupid. As davem
+>> said we duplicate
+>> this code all over the place, so for that reason along a simple
+>> wrapper makes things a lot
+>> easier, and also possibly a lot easier to change in the future to a
+>> new non-sucky API.
+>>
+>> So I'm all for it maybe with a non simple name.
+>>
+>
+> I would go further than this.
+>
+> Make the code just use vmalloc(). Period.
+>
+> But then make vmalloc() smart and try do a direct mapping allocation
+> first, before falling back to a virtual mapping. (and based on size it
+> wouldn't even try it for just big things
 
-> Impact: Handle errors during initialization of a tracer
-> 
-> This bring a way to know if the initialization of a tracer successed.
-> A tracer must return 0 on success and a traditional error (ie: -ENOMEM)
-> if it fails.
-> If a tracer fails to init, it is free to print a detailed warn. The tracing
-> api will not and switch to a new tracer will just return the error from the init
-> callback.
-> 
-> Note: this will be used for the return tracer.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Pekka Paalanen <pq@iki.fi>
-> Cc: Steven Noonan <steven@uplinklabs.net>
-> ---
->  kernel/trace/trace.c                  |    7 ++-
->  kernel/trace/trace.h                  |    3 +-
->  kernel/trace/trace_boot.c             |    3 +-
->  kernel/trace/trace_branch.c           |    3 +-
->  kernel/trace/trace_functions.c        |    3 +-
->  kernel/trace/trace_functions_return.c |    3 +-
->  kernel/trace/trace_irqsoff.c          |    9 +++-
->  kernel/trace/trace_mmiotrace.c        |    3 +-
->  kernel/trace/trace_nop.c              |    3 +-
->  kernel/trace/trace_sched_switch.c     |    3 +-
->  kernel/trace/trace_sched_wakeup.c     |    3 +-
->  kernel/trace/trace_selftest.c         |   66 ++++++++++++++++++++++++++++----
->  kernel/trace/trace_sysprof.c          |    3 +-
->  13 files changed, 88 insertions(+), 24 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 2d5672d..938ee31 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -2638,8 +2638,11 @@ static int tracing_set_tracer(char *buf)
->  		current_trace->reset(tr);
->  
->  	current_trace = t;
-> -	if (t->init)
-> -		t->init(tr);
-> +	if (t->init) {
-> +		ret = t->init(tr);
-> +		if (ret)
-> +			goto out;
-> +	}
->  
->  	trace_branch_enable(tr);
->   out:
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 790ea8c..cdbd5cc 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -264,7 +264,8 @@ enum print_line_t {
->   */
->  struct tracer {
->  	const char		*name;
-> -	void			(*init)(struct trace_array *tr);
-> +	/* Your tracer should raise a warning if init fails */
-> +	int			(*init)(struct trace_array *tr);
->  	void			(*reset)(struct trace_array *tr);
->  	void			(*start)(struct trace_array *tr);
->  	void			(*stop)(struct trace_array *tr);
+I seem to remember Christoph Lameter having something along these
+lines before, did
+vcompound do some of this type of thing...
 
-...
-
-> diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-> index 51bcf37..433d650 100644
-> --- a/kernel/trace/trace_mmiotrace.c
-> +++ b/kernel/trace/trace_mmiotrace.c
-> @@ -30,13 +30,14 @@ static void mmio_reset_data(struct trace_array *tr)
->  		tracing_reset(tr, cpu);
->  }
->  
-> -static void mmio_trace_init(struct trace_array *tr)
-> +static int mmio_trace_init(struct trace_array *tr)
->  {
->  	pr_debug("in %s\n", __func__);
->  	mmio_trace_array = tr;
->  
->  	mmio_reset_data(tr);
->  	enable_mmiotrace();
-> +	return 0;
->  }
->  
->  static void mmio_trace_reset(struct trace_array *tr)
-
-On a quick glance, I didn't see anything wrong in these parts.
-I leave it for later to check if enable_mmiotrace() could fail
-and if it should be propagated.
-
-Thanks.
-
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+Dave.
