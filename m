@@ -1,90 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbYKPVA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbYKPVKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753866AbYKPVA3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 16:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbYKPVAT
+	id S1754097AbYKPVKs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 16:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbYKPVKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 16:00:19 -0500
-Received: from gate.crashing.org ([63.228.1.57]:48263 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751966AbYKPVAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 16:00:18 -0500
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, travis@sgi.com
-In-Reply-To: <20081113131850.d94fb229.akpm@linux-foundation.org>
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>
-	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>
-	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>
-	 <20081110094033.GL22392@elte.hu>
-	 <20081110015511.453a801e.akpm@linux-foundation.org>
-	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>
-	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>
-	 <491C8B38.9060901@kernel.org>
-	 <20081113131850.d94fb229.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 17 Nov 2008 07:58:57 +1100
-Message-Id: <1226869137.7178.175.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Nov 2008 16:10:38 -0500
+Received: from anguilla.debian.or.at ([86.59.21.37]:46846 "EHLO
+	anguilla.debian.or.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbYKPVKh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 16:10:37 -0500
+X-Greylist: delayed 674 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Nov 2008 16:10:37 EST
+Date: Sun, 16 Nov 2008 21:59:22 +0100
+From: Peter Palfrader <peter@palfrader.org>
+To: linux-kernel@vger.kernel.org
+Subject: broken ownership of /proc/sys/ files on 2.6.27
+Message-ID: <20081116205922.GI28958@anguilla.noreply.org>
+Mail-Followup-To: Peter Palfrader <peter@palfrader.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+X-PGP: 1024D/94C09C7F 5B00 C96D 5D54 AEE1 206B  AF84 DE7A AF6E 94C0 9C7F
+X-Request-PGP: http://www.palfrader.org/keys/94C09C7F.asc
+X-Accept-Language: de, en
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-> Other architectures want (or have) sparse interrupts.  Are those guys
-> paying attention here?
-> 
-> I don't have a clue what all this does.  I hope those who will work on
-> this code are sufficiently familiar with it all to be able to maintain
-> it when there are close to zero comments in some of our most tricky and
-> problem-prone code.
+on several (probably all) of my systems running a 2.6.27 kernel on at
+least i386, amd64, ia64, sparc proc/sys does have files not owned by
+root:
 
-Indeed, I'm a bit scared by the patch as it is ...
+weasel@villa:~$ find /proc/sys ! -uid 0 -ls
+2273612    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:55 /proc/sys/kernel/sched_rt_runtime_us
+2273615    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:55 /proc/sys/kernel/core_uses_pid
+2273616    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:55 /proc/sys/kernel/core_pattern
+2273621    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/hotplug
+2273622    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/acct
+2273623    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/sysrq
+2273624    0 -rw-------   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/cad_pid
+2273625    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/threads-max
+2217102    0 -r--r--r--   1 joy      Debian          0 Nov 16 19:57 /proc/sys/kernel/random/entropy_avail
+2273626    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/overflowuid
+2273627    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/overflowgid
+2273628    0 -rw-r--r--   1 nobody   munin           0 Nov 16 20:55 /proc/sys/kernel/panic_on_oops
+2273635    0 -r--r--r--   1 nobody   nogroup         0 Nov 16 20:55 /proc/sys/kernel/bootloader_type
+2273636    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:55 /proc/sys/kernel/kstack_depth_to_print
+2273638    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:55 /proc/sys/kernel/randomize_va_space
+2273598    0 dr-xr-xr-x   0 weasel   Debian          0 Nov 16 20:55 /proc/sys/vm
+2209118    0 -r--r--r--   1 joy      Debian          0 Nov 16 19:50 /proc/sys/fs/file-nr
+weasel@villa:~$ uname -a
+Linux villa 2.6.27.6-dsa-dl380-oldxeon #2 SMP Fri Nov 14 01:40:49 CET 2008 i686 GNU/Linux
 
-On powerpc, we have a nice an simple virtual irq layer that also
-probably better fits the need of architecture that can have multiple
-PICs with different number space cascaded in various ways in a single
-machine too.
 
-We provide a basic construct that defines an HW IRQ domain (we call it
-irq_host, it can have a 1:1 relationship to a HW irq_chip but not
-always), and when HW IRQs are discovered and made available to linux,
-they are "mapped" to virtual irq numbers by mapping them to a tuple
-(irq_hose, hw_number).
+weasel@ravel:~$ find /proc/sys ! -uid 0 -ls
+3917380    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_latency_ns
+3917381    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_wakeup_granularity_ns
+3917382    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_shares_ratelimit
+3917383    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_child_runs_first
+3917384    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_features
+3917387    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_rt_period_us
+3917388    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_rt_runtime_us
+3917389    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:57 /proc/sys/kernel/sched_compat_yield
+3847910    0 -rw-r--r--   1 joeyh    Debian          0 Nov 16 20:11 /proc/sys/kernel/pid_max
+3917373    0 dr-xr-xr-x   0 weasel   Debian          0 Nov 16 20:57 /proc/sys/fs
+3917376    0 dr-xr-xr-x   0 nagios   nagios          0 Nov 16 20:57 /proc/sys/net
+weasel@ravel:~$ uname -a
+Linux ravel 2.6.27.6-dsa-amd64-opteron #2 SMP Fri Nov 14 01:32:43 CET 2008 x86_64 GNU/Linux
 
-The HW numbering can be arbitrarily anything for that controller
-unrelated to the "linux" virtual number, so all the problems of making
-IRQ 0 invalid and reserving 1...15 for legacy 8259 etc... are taken care
-of.
+weasel@caballero:~$ find /proc/sys ! -uid 0 -ls
+  6950    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:48 /proc/sys/kernel/sched_min_granularity_ns
+  6951    0 -rw-r--r--   1 weasel   Debian          0 Nov 16 20:48 /proc/sys/kernel/sched_latency_ns
+  6955    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/sched_features
+  6959    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/sched_rt_runtime_us
+  2173    0 -r--r--r--   1 nobody   munin           0 Nov 16 20:35 /proc/sys/kernel/random/entropy_avail
+  6971    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/overflowuid
+  6972    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/overflowgid
+  6973    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/panic_on_oops
+  6974    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/printk_ratelimit
+  6975    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/printk_ratelimit_burst
+  6978    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/softlockup_panic
+  6979    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/softlockup_thresh
+  6980    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:48 /proc/sys/kernel/hung_task_check_count
+  1618    0 -r--r--r--   1 nobody   munin           0 Nov 16 20:35 /proc/sys/fs/file-nr
+weasel@caballero:~$ uname -a
+Linux caballero 2.6.27.2-dsa-mckinley #1 SMP Sun Oct 19 12:14:46 UTC 2008 ia64 GNU/Linux
 
-For fast mapping of HW->Linux numbers, we provide various schemes that a
-given IRQ host implementation can choose (from no translation, some HW
-PICs or hypervisor can be directly given the linux number and pass it
-back to us) to linear mapping to a lockless radix tree for large sparse
-irq domains.
+weasel@spontini:~$ find /proc/sys ! -uid 0 -ls
+ 41263    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/panic
+ 41264    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/core_uses_pid
+ 41267    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/real-root-dev
+ 41271    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/scons-poweroff
+ 41272    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/ctrl-alt-del
+ 41273    0 -r--r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/sg-big-buff
+ 41280    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/printk
+ 41291    0 -r--r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/version
+ 41292    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/hostname
+ 41293    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/domainname
+ 41294    0 -rw-r--r--   1 nagios   nagios          0 Nov 16 20:58 /proc/sys/kernel/shmmax
+  5299    0 -r--r--r--   1 nobody   munin           0 Nov 16 19:22 /proc/sys/fs/file-nr
+ 41259    0 dr-xr-xr-x   0 weasel   Debian          0 Nov 16 20:58 /proc/sys/debug
+weasel@spontini:~$ uname -a
+Linux spontini 2.6.27.2-dsa-usii #2 SMP Sun Oct 19 16:34:26 CEST 2008 sparc64 GNU/Linux
 
-At this stage, I don't feel like changing to this sparse_irq which I
-haven't fully understood, is complicated, and doesn't seem to provide
-the features I need anyway.
 
-The only thing that I see possibly of interest is getting rid of the
-irq_desc array itself, toward something more dynamically resizeable, in
-which case our powerpc remapping scheme could probably also benefit by
-also getting rid in a similar way of our equivalent array used for
-mapping the virq's to host,hw_number tuples.
+That's probably not how it should be, right?
 
-The irq_desc per-cpu also seem to be an interesting idea.
-
-In any case, the patch is too big and unless I missed something, totally
-under-documented in what it does, why it does it, how it does it, etc...
-with a bit more of that, I might take more time to look closely and find
-out that indeed it's something I can make use of, maybe with a few
-tweaks.
-
-Cheers,
-Ben.
-
+Peter
+-- 
+                           |  .''`.  ** Debian GNU/Linux **
+      Peter Palfrader      | : :' :      The  universal
+ http://www.palfrader.org/ | `. `'      Operating System
+                           |   `-    http://www.debian.org/
