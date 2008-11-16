@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbYKPJfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbYKPJoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbYKPJfr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 04:35:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYKPJfi
+	id S1752749AbYKPJoU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 04:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751868AbYKPJoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 04:35:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36040 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbYKPJfh (ORCPT
+	Sun, 16 Nov 2008 04:44:00 -0500
+Received: from ag-out-0708.google.com ([72.14.246.242]:46937 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbYKPJn7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 04:35:37 -0500
-Date: Sun, 16 Nov 2008 01:36:20 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 2/2] Add dev.mem.restricted sysctl
-Message-ID: <20081116013620.5564de1e@infradead.org>
-In-Reply-To: <20081116103005.72a28833@kopernikus.site>
-References: <1226793823-32360-1-git-send-email-bwalle@suse.de>
-	<1226793823-32360-3-git-send-email-bwalle@suse.de>
-	<20081115194914.6791b96c@infradead.org>
-	<20081116103005.72a28833@kopernikus.site>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 16 Nov 2008 04:43:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:bcc:subject:date:user-agent:message-id;
+        b=mYK301Z4tQ00WHK/MaVyrBeZY2ttFaq3Fl4mjNWRAMwpqoUTVEl5+vxk2z0C87lvWB
+         S2gB7znyUZ3/BEsSYbJNSA6ZASvnwzCPqfUwSDb+Vml2F8I0Eyex9nwWPHk4PN32D/37
+         6WFnT+29w+axQD++hggNKeIfyl3TmEAeiI0pU=
+From: Qinghuang Feng <qhfeng.kernel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: qhfeng.kernel@gmail.com, Randy Dunlap <rdunlap@xenotime.net>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: [PATCH 1/7] drivers/ata/pata_radisys.c: cleanup kernel-doc 
+Date: Sun, 16 Nov 2008 17:43:46 +0800
+User-Agent: sniper-patch-carrier/1.04
+Message-ID: <491feb5b.08486e0a.075a.4c48@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 10:30:05 +0100
-Bernhard Walle <bwalle@suse.de> wrote:
+No argument named @isich in radisys_set_dmamode,
+remove it.
 
-> * Arjan van de Ven [2008-11-15 19:49]:
-> >
-> > On Sun, 16 Nov 2008 01:03:43 +0100
-> > Bernhard Walle <bwalle@suse.de> wrote:
-> > 
-> > > When CONFIG_STRICT_DEVMEM is set, live debugging is not possible
-> > > with the crash utility (see http://people.redhat.com/~anderson).
-> > > For distributors who ship a generic kernel it's difficult:
-> > > Disabling CONFIG_STRICT_DEVMEM is possible, but in general the
-> > > protection provided by CONFIG_STRICT_DEVMEM is useful. However,
-> > > live debugging should be still neceessary.
-> > > 
-> > > This patch now adds a dev.mem.restricted sysctl that defaults to 0
-> > > (off). When set to 1 (on), /dev/mem access is unrestricted and
-> > > crash can be used.
-> > 
-> > sounds like a really bad idea to me.
-> > If you want to use /dev/mem like this, don't enable the config
-> > option to restrict it. Really.
-> 
-> So, what's that restriction really for? 
+Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
+---
+diff --git a/drivers/ata/pata_radisys.c b/drivers/ata/pata_radisys.c
+index 0b0aa45..695d44a 100644
+--- a/drivers/ata/pata_radisys.c
++++ b/drivers/ata/pata_radisys.c
+@@ -81,7 +81,6 @@ static void radisys_set_piomode (struct ata_port *ap, struct ata_device *adev)
+  *	radisys_set_dmamode - Initialize host controller PATA DMA timings
+  *	@ap: Port whose timings we are configuring
+  *	@adev: Device to program
+- *	@isich: True if the device is an ICH and has IOCFG registers
+  *
+  *	Set MWDMA mode for device, in host controller PCI config space.
+  *
 
-It's for not allowing something that you don't need, if you 
-know you don't need it. Least privilege and all that.
-(so that selinux can give X access to devices but not to all of memory.
-I know Alan mentioned DMA but that's also a choice, a lot of the systems
-on the market for the last year or two have an IOMMU that you can use
-etc)
- 
-But if you do need it, then you do need it, simple as that.
-
-(that leave the entire fun question of cache attributes but thats' a
-whole different animal)
-
- 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
