@@ -1,82 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbYKPS5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbYKPTYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbYKPS5Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 13:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbYKPS5P
+	id S1753961AbYKPTYO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 14:24:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbYKPTX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 13:57:15 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38582 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbYKPS5O (ORCPT
+	Sun, 16 Nov 2008 14:23:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43313 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751338AbYKPTX5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 13:57:14 -0500
-Date: Sun, 16 Nov 2008 10:57:25 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: laijs@cn.fujitsu.com, akpm@linux-foundation.org, menage@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
-Message-ID: <20081116105725.12458b13@infradead.org>
-In-Reply-To: <20081116.001926.150424480.davem@davemloft.net>
-References: <491FA28B.2070003@cn.fujitsu.com>
-	<20081115205229.765f7ee3@infradead.org>
-	<20081116.001926.150424480.davem@davemloft.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 16 Nov 2008 14:23:57 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
+Date: Sun, 16 Nov 2008 20:28:33 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>
+References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera> <alpine.LFD.2.00.0811161030070.3468@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811161030070.3468@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200811162028.34099.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 00:19:26 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
-
-> From: Arjan van de Ven <arjan@infradead.org>
-> Date: Sat, 15 Nov 2008 20:52:29 -0800
+On Sunday, 16 of November 2008, Linus Torvalds wrote:
 > 
-> > On Sun, 16 Nov 2008 12:33:15 +0800
-> > Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> On Sun, 16 Nov 2008, Rafael J. Wysocki wrote:
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12049
+> > Subject		: Oops in acpi_system_wakeup_device_seq_show
+> > Submitter	: Bruno Prémont <bonbons@linux-vserver.org>
+> > Date		: 2008-11-16 13:04 (1 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0794469da3f7b2093575cbdfc1108308dd3641ce
+> > References	: http://marc.info/?l=linux-kernel&m=122684070215520&w=4
+> 
+> This already got fixed: commit 77fb61a04a0483ad274ce5c51b02c46c12db3693.
+> 
+> > Regressions with patches
+> > ------------------------
 > > 
-> > > 
-> > > some subsystem needs vmalloc() when required memory is large.
-> > > but current kernel has not APIs for this requirement.
-> > > this patch introduces simple_malloc() and simple_free().
-> > 
-> > I kinda really don't like this approach. vmalloc() (and especially,
-> > vfree()) is a really expensive operation, and vmalloc()'d memory is
-> > also slower (due to tlb pressure). Realistically, people should try
-> > hard to use small datastructure instead....
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12042
+> > Subject		: USB hid blocks USB port in 2.6.28rc3
+> > Submitter	: Andi Kleen <andi@firstfloor.org>
+> > Date		: 2008-11-11 0:31 (6 days old)
+> > References	: http://marc.info/?l=linux-usb&m=122636246522848&w=4
+> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> > 		  Jiri Slaby <jirislaby@gmail.com>
+> > Patch		: http://marc.info/?l=linux-kernel&m=122661425620251&w=2
 > 
-> This is happening in many places, already, for good reason.
+> commit 131d3a7a009d56a96cc7117b4e9d0c90c2e2a1dc
 > 
-> There are lots of places where we can't (core hash tables, etc.)  and
-> we want NUMA spreading and reliable allocation, and thus vmalloc it
-> is.
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11954
+> > Subject		: sysprof tracer ABI regression in 2.6.28rc1
+> > Submitter	: Eric Anholt <eric@anholt.net>
+> > Date		: 2008-11-04 22:14 (13 days old)
+> > Handled-By	: Eric Anholt <eric@anholt.net>
+> > Patch		: http://bugzilla.kernel.org/attachment.cgi?id=18683&action=view
+> 
+> commit 072ba49838b42c873c496d72c91bb237914cf3b6
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11911
+> > Subject		: new PCMCIA device instance after resume - orinoco can't download firmware
+> > Submitter	: Andrey Borzenkov <arvidjaar@mail.ru>
+> > Date		: 2008-10-28 19:19 (20 days old)
+> > References	: http://marc.info/?l=linux-wireless&m=122522165719760&w=4
+> > Handled-By	: Dave <kilroyd@googlemail.com>
+> > Patch		: http://marc.info/?l=linux-wireless&m=122539058601588&w=4
+> 
+> commit e689597fe890cf22e23195037aa668c39b25ae4b
 
-vmalloc() isn't 100% evil; for truely long term stuff it's sometimes a
-quite reasonable solution.
+Thanks a lot, closed all of them.
 
-There are some issues with it still: the vmalloc() space is shared
-with ioremap, modules and others and it's not all that big on 32 bit; on
-x86 you could well end up with only 64Mb total (after taking out the
-various ioremap's etc). 
-
-Yes there's places where it's then totally fine to dip into this space
-at boot/init time. You mention a few very good users.
-(There's still the tlb miss cost on use but on modern cpus a tlb miss
-is actually quite cheap)
-
-But this doesn't make vmalloc() the magic bullet that solves the "oh
-Linux can't allocate large chunks of memory" problem. Specifically in
-driver space for things that get ported from other OSes.
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Best,
+Rafael
