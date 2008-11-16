@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYKPW1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYKPW2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYKPW1r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYKPW1e
+	id S1754263AbYKPW2I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:28:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755089AbYKPW1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:27:34 -0500
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:58286 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753438AbYKPW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:27:34 -0500
-Date: Sun, 16 Nov 2008 23:30:14 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.28] mfd: Correct WM8350 I2C return code usage
-Message-ID: <20081116223013.GB2977@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1226324477-21022-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112184956.GA17382@sortiz.org> <20081112200007.GA31451@sirena.org.uk> <20081112230636.GB17382@sortiz.org> <20081112234331.GB8272@sirena.org.uk>
+	Sun, 16 Nov 2008 17:27:54 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:38538 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbYKPW1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 17:27:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type
+         :content-transfer-encoding:content-disposition;
+        b=pZbtZ/waEBP41s5JraB8RNeMTrZtow476YzAS+ZUjRpQ6dbUIevVZ758RaLj4VRz/O
+         Z2V22C6ozaDDgZiyqJSoQxATY7y35B7eSBSlbtmZYsaA/uY4W20cEmlZ312CedFrutit
+         +GTbkZLFqJ+X3JAvPhZPihwWhHkN14y9QQ8bQ=
+Message-ID: <a278970e0811161427r2f941e10jafbc8ab1d425d64e@mail.gmail.com>
+Date: Sun, 16 Nov 2008 23:27:51 +0100
+From: "Luca Tiburzio" <luca.tiburzio@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: PHYLIB dependency in kernel 2.6.27.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081112234331.GB8272@sirena.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Nov 12, 2008 at 11:43:31PM +0000, Mark Brown wrote:
-> > With this patch you're breaking that expectation because the read|write_dev()
-> > I'd prefer to fix the callers code, so that we keep the expected semantics
-> 
-> Just to clarify, when you say "expectation" and "fix" are you talking
-> about your preference that the hardware access functions return the
-> number of bytes read or written or is there something else going on
-> here? 
-No, definitely just my preference. I personnaly expect this kind of IO
-routines to return the number of bytes read/written.
+Hi to all,
+in make process of linux 2.6.27.6 the PHYLIB depends on
 
-> To be honest I'm really not sure it's worth changing this - I'm having a
-> hard time thinking of a user that would be able to do anything useful
-> with a short access.  
-I agree with that, yes.
+NETDEVICES && !S390 && NET_ETHERNET
 
-> It also seems like it'd be a rather invasive
-> change for an -rc.
-Fair enough, I applied your patch, and sent Linus a pull request.
+but if I enable only
 
-Cheers,
-Samuel.
+Ethernet (1000 Mbit) (NETDEV_1000)
+i loose visibility of PHYLIB
 
+it should be better that  PHYLIB depends on:
+NETDEVICES && !S390 && (NET_ETHERNET || NETDEV_1000)
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Have a nice day.
+Luca
