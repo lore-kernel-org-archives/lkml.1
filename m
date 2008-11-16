@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbYKPWo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902AbYKPWol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbYKPWo0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYKPWoS
+	id S1755902AbYKPWol (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbYKPWoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:44:18 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:6012 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753531AbYKPWoR (ORCPT
+	Sun, 16 Nov 2008 17:44:21 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:20538 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754171AbYKPWoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:44:17 -0500
+	Sun, 16 Nov 2008 17:44:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
          :content-transfer-encoding;
-        b=AvgQgZNx/q14Ar2Dj4ZqHVZF+WTvENg8ftLQ6tEvdi2vdBp4kvSmK7blu58JLtgbAw
-         xeMYO9ERLEKgqav/p+SGtdp+ERgsK2f1irUvfEstSvfPskQqezVck1OF8IEl3LXYGokf
-         0ioNFPiuHe2XNxCCYfRdc/eglK+2qEST2vUjs=
-Message-ID: <4920A23B.2060100@gmail.com>
-Date: Sun, 16 Nov 2008 23:44:11 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
-MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-CC: Peter Palfrader <peter@palfrader.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: broken ownership of /proc/sys/ files on 2.6.27
-References: <20081116205922.GI28958@anguilla.noreply.org> <20081116221910.GQ28946@ZenIV.linux.org.uk>
-In-Reply-To: <20081116221910.GQ28946@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
+        b=KR5r+2wbhuIqO9vYIDd9dUo+PzIP6uq0ttieWD24+qf4imcLg3eqCdQeYmZss4GpO0
+         S1a3EuNGdmkSuu7VpjuMfaXEY35jRsXK/4UpilVvmyd5SoGsr0QYHK7kZuhm7vaXa8UG
+         BUwtC9PZbgZn9MZTMVhPI0BOcT6I1e5sJAoKs=
+Subject: RTC problem in PS3
+From: Fabiano Manoel de Andrade <fabianoma@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 16 Nov 2008 20:44:50 -0200
+Message-Id: <1226875490.6597.11.camel@lottar>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/16/2008 11:19 PM, Al Viro wrote:
-> --- a/fs/proc/proc_sysctl.c
-> +++ b/fs/proc/proc_sysctl.c
-> @@ -31,6 +31,7 @@ static struct inode *proc_sys_make_inode(struct super_block *sb,
->  	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
->  	inode->i_flags |= S_PRIVATE; /* tell selinux to ignore this inode */
+	Hi I've compiled the latest version of linux kernel (2.6.27.6) in my
+PS3 running debian and get a warning message listed here
 
-And what about this    ^, is it OK?
+	Setting the system clock.
+  	Cannot access the Hardware Clock via any known method.
+  	Use the --debug option to see the details of our search for an access method.
+  	* Unable to set System Clock to: Sun Nov 16 20:33:06 UTC 2008
+
+
+	The problem can be reproduced with the commands
+
+	# hwclock --debug
+ 	hwclock from util-linux-ng 2.13.1.1
+  	hwclock: Open of /dev/rtc failed, errno=2: No such file or directory.
+  	No usable clock interface found.
+  	Cannot access the Hardware Clock via any known method.
+  	# ls -l /dev/rtc*
+  	ls: cannot access /dev/rtc*: No such file or directory
+
+	Loading the rtc-ppc module solve the problem, but after restart
+the system I still have the problem. Looking at kernel config I change the
+rtc-ppc to be build into kernel and this solve totally the problem. So the
+ps3_defconfig must set the rtc-ppc to be build into kernel.
+
+	Thanks in advance.
+	Fabiano.
+
+
+
+
