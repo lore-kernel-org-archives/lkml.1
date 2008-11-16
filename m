@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbYKPQjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbYKPQuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbYKPQjj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 11:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYKPQja
+	id S1754181AbYKPQuV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 11:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbYKPQuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 11:39:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42559 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbYKPQj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 11:39:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-Subject: Re: [patch] ACPI toshiba: only register rfkill if bt is enabled
-Date: Sun, 16 Nov 2008 17:44:31 +0100
-User-Agent: KMail/1.9.9
-Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       philipl@overt.org
-References: <20081029081934.GB26314@gambetta> <200811161340.36798.rjw@sisk.pl> <200811161550.49957.arvidjaar@mail.ru>
-In-Reply-To: <200811161550.49957.arvidjaar@mail.ru>
+	Sun, 16 Nov 2008 11:50:08 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:53683 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751910AbYKPQuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 11:50:06 -0500
+Date: Sun, 16 Nov 2008 11:49:54 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: George Spelvin <linux@horizon.com>
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 2/2] serial/8250.c: Use self-adjusting list for port poll
+	order.
+Message-ID: <20081116164954.GE6958@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	George Spelvin <linux@horizon.com>, alan@lxorguk.ukuu.org.uk,
+	linux-kernel@vger.kernel.org
+References: <20081113150308.3590.qmail@science.horizon.com> <20081114053042.11532.qmail@science.horizon.com> <20081114053314.12093.qmail@science.horizon.com> <20081114213449.14960.qmail@science.horizon.com> <20081114214711.3c1d1473@lxorguk.ukuu.org.uk> <20081115001013.GM25117@mit.edu> <20081116152352.20261.qmail@science.horizon.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811161744.31777.rjw@sisk.pl>
+In-Reply-To: <20081116152352.20261.qmail@science.horizon.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 16 of November 2008, Andrey Borzenkov wrote:
-> On Sunday 16 November 2008, Rafael J. Wysocki wrote:
-> > On Sunday, 16 of November 2008, Andrey Borzenkov wrote:
-> > > On Wednesday 29 October 2008, Frederik Deweerdt wrote:
-> > > > [resending as it didn't make it to the list, removing netdev from cc
-> > > > also]
-> > > > Hello  Andrey,
-> > > > 
-> > > > It looks like a part of the rfkill initialization was done whenever
-> > > > BT was on or not. The following patch checks for BT presence before
-> > > > registering the rfkill to the input layer. Does it solve the problem for
-> > > > you?
-> > > > 
-> > > 
-> > > This patch fixes regression in 2.6.28. Patch has been tested and
-> > > acnowledged. Rafael, could you add it to list of open regressions?
-> > > Thank you!
-> > 
-> > I will, if you provide me with a link to the patch and (optionally) to the
-> > original bug report.
-> > 
-> 
-> Original bug report:
-> http://marc.info/?l=linux-kernel&m=122522113619025&w=2
-> 
-> Patch:
-> http://marc.info/?l=linux-kernel&m=122526843117478&w=2
+On Sun, Nov 16, 2008 at 10:23:52AM -0500, George Spelvin wrote:
+> The goal is not fewer dropped characters (although there could be a small
+> benefit in that direction), and it doesn't improve worst-case timing;
+> the goal is to reduce the time spent in the interrupt handler _on average_
+> and thereby make more CPU available for other work.
 
-Thanks, added to the list as http://bugzilla.kernel.org/show_bug.cgi?id=12047
+Have you actually measured how much CPU is currently being burned by
+the interrupt handler?  And does it actually make a difference with
+your optimization?  I did a lot of measurements of this back in the
+day of the 40 MHz 386 and 16 serial ports running at 115kbps.  CPU's
+have gotten *so* much faster, and as you have pointed the out, the PCI
+bus accesses are also faster (and on the ISA bus, given edge-triggered
+interrupts, you have to scan all of the ports any way) --- so it's not
+obvious to me that it's actually worth it.
 
-Best,
-Rafael
+There were programs to measure CPU overhead; they normally worked by
+doing a certain amount of work (i.e., seeing how many interations of
+some mathematical calculation) in a given amount of clock time both
+with and without the serial ports being busy.  It might be worthwhile
+to see whether for your workload how measurrable the CPU reduction
+really is, given modern hardware.  I'm not convinced given the number
+of Moore's law doublings since 1992, that it's really going to be
+worth it for a rational number of serial ports being serviced by a
+modern Linux machine.
+
+						- Ted
