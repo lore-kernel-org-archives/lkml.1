@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbYKPJNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbYKPJOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbYKPJNg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 04:13:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYKPJNS
+	id S1753136AbYKPJOm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 04:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbYKPJOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 04:13:18 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:34509 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751618AbYKPJNR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 04:13:17 -0500
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: davem@davemloft.net (David Miller)
-Subject: Re: time for TCP ECN defaulting to on?
-Cc: linux-kernel@blueteddy.net, daniel.blueman@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-net@vger.kernel.org
-Organization: Core
-In-Reply-To: <20081104.145242.112948002.davem@davemloft.net>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.net,apana.lists.os.linux.netdev
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1L1dgo-0007pG-SL@gondolin.me.apana.org.au>
-Date: Sun, 16 Nov 2008 17:13:06 +0800
+	Sun, 16 Nov 2008 04:14:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52531 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751661AbYKPJOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 04:14:23 -0500
+Message-ID: <491FE470.80803@kernel.org>
+Date: Sun, 16 Nov 2008 18:14:24 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-raid@vger.kernel.org
+Subject: Re: 2.6.27.6 question: ata_sff_hsm_move: ata15 (why always ata15)?
+References: <alpine.DEB.1.10.0811141850590.6217@p34.internal.lan> <491E4092.5030804@shaw.ca> <20081115103424.34f01370@lxorguk.ukuu.org.uk> <491FBA29.3000803@kernel.org> <alpine.DEB.1.10.0811160410510.27319@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0811160410510.27319@p34.internal.lan>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Nov 2008 09:14:08 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
->
-> This is because TSO, which is on by default, doesn't support ECN
-> in many implementations.
+Justin Piszcz wrote:
+> 
+> 
+> On Sun, 16 Nov 2008, Tejun Heo wrote:
+> 
+>> Alan Cox wrote:
+>>> On Fri, 14 Nov 2008 21:22:58 -0600
+>>> Robert Hancock <hancockr@shaw.ca> wrote:
+>>>
+>>>> Justin Piszcz wrote:
+>>>>> I am trying to find out what the root cause of this error/problem is:
+>>>>> https://bugzilla.redhat.com/show_bug.cgi?id=462425
+>>>> The problem is that people assume that timeouts with DRDY like that bug
+>>>> refers to must be the same problem when it is often not
+>>>
+>>> The first stopping point is to apply the DRQ drain patch I sent to the
+>>> list some time ago and is hopefully lined up for 2.6.29. After that
+>>> point
+>>> you can begin to look at the remaining cases, until then its hardly
+>>> worth
+>>> it.
+>>
+>> Is it really?  For many SATA controllers, DRQ draining isn't really
+>> necessary.  PATA might be a completely different story tho.
+> 
+> I have been running with the patch for almost 24 hours and running
+> extensive disk tests, so far nothing but sometimes it takes a few days
+> or more to repeat, I am continuing to test to see if the problem recurs..
 
-Dave, we fixed that ages ago.
+The patch only kicks in only when EH kicks in so you wouldn't know
+whether it's effective or not till exception occurs.
 
-Cheers,
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+tejun
