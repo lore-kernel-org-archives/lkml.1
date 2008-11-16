@@ -1,88 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYKPEvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbYKPEwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbYKPEvc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 23:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYKPEvY
+	id S1756555AbYKPEwO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 23:52:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbYKPEv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 23:51:24 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:60932 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751985AbYKPEvY (ORCPT
+	Sat, 15 Nov 2008 23:51:59 -0500
+Received: from mu-out-0910.google.com ([209.85.134.189]:57308 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbYKPEv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 23:51:24 -0500
+	Sat, 15 Nov 2008 23:51:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=qWbqqePioexD86A/VLZ4NfDsOf4sCLEsuklLigGGTs+5ZRNGd4mlQSptjGrU9ocoHg
-         6RorE5ZCJ4uERGB3aVCOAAEmNK+CaOJXleMoiB91E+FaXBlvC//YZRC42a+UCMdiIgL+
-         OIOJywxqXIuWtOFXOhK3XvfHSO6TpshaEDc1Y=
-Date: Sun, 16 Nov 2008 07:54:57 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/7] net: use simple_free()
-Message-ID: <20081116045457.GD24624@x200.localdomain>
-References: <491FA2BC.1030600@cn.fujitsu.com>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=Iz/WiwLfU5NDNjYalpgdSC7Xz5oKfWdjAQiEJFrqKDCYaFVscjvj57zC9bzTVZYt+v
+         12aydFQ3GT0ZwbhMFnbyK6HZmvny1Hbnrt7P4YdQ7joBreYuhVvrWfOGKint5vxs84Hb
+         qOAUyh5dQ/TYmS1yXZF3oxKSfm2a6ntpXGGp8=
+Message-ID: <491FA6E8.2010506@gmail.com>
+Date: Sun, 16 Nov 2008 05:51:52 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <491FA2BC.1030600@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/4] Various fixes and enhancements for tracing
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 16, 2008 at 12:34:04PM +0800, Lai Jiangshan wrote:
-> simple_free() free the memory by kfree(), or vfree() if it is vmalloc addr.
-> simple_free() is simpler than current codes.
+This patchset applies on latest -tip (and normally against latest Steven's tracing tree).
 
-Where is corresponding alloc chunk?
+_ tracing/ftrace: Fixes unexpected -EINVAL when longest tracer name is set
+_ tracing/ftrace: Change the type of the init() callback
+_ tracing/branch-tracer: Fix a trace recursion on branch tracer
+_ tracing/function-return-tracer: Support for dynamic ftrace on function return tracer
 
-> --- a/net/core/request_sock.c
-> +++ b/net/core/request_sock.c
-> @@ -71,22 +72,11 @@ int reqsk_queue_alloc(struct request_sock_queue *queue,
->  
->  void __reqsk_queue_destroy(struct request_sock_queue *queue)
->  {
-> -	struct listen_sock *lopt;
-> -	size_t lopt_size;
-> -
->  	/*
->  	 * this is an error recovery path only
->  	 * no locking needed and the lopt is not NULL
->  	 */
-> -
-> -	lopt = queue->listen_opt;
-> -	lopt_size = sizeof(struct listen_sock) +
-> -		lopt->nr_table_entries * sizeof(struct request_sock *);
-> -
-> -	if (lopt_size > PAGE_SIZE)
-> -		vfree(lopt);
-> -	else
-> -		kfree(lopt);
-> +	simple_free(queue->listen_opt);
->  }
->  
->  static inline struct listen_sock *reqsk_queue_yank_listen_sk(
-> @@ -106,8 +96,6 @@ void reqsk_queue_destroy(struct request_sock_queue *queue)
->  {
->  	/* make all the listen_opt local to us */
->  	struct listen_sock *lopt = reqsk_queue_yank_listen_sk(queue);
-> -	size_t lopt_size = sizeof(struct listen_sock) +
-> -		lopt->nr_table_entries * sizeof(struct request_sock *);
->  
->  	if (lopt->qlen != 0) {
->  		unsigned int i;
-> @@ -124,9 +112,6 @@ void reqsk_queue_destroy(struct request_sock_queue *queue)
->  	}
->  
->  	WARN_ON(lopt->qlen != 0);
-> -	if (lopt_size > PAGE_SIZE)
-> -		vfree(lopt);
-> -	else
-> -		kfree(lopt);
-> +	simple_free(lopt);
->  }
+The first and the third are bug fixes and the others are submitted for purposes on improvement for
+tracing and the function return tracer.
+Note that I kept the "return" name for the names used in the last patch because we haven't yet
+decided what could be the better name. But once we find it, I will change the name of data structures
+and functions used by this tracer.
