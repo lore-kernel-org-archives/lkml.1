@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYKPWTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYKPW1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802AbYKPWTU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 17:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYKPWTM
+	id S1754801AbYKPW1r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 17:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYKPW1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 17:19:12 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53219 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753364AbYKPWTM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 17:19:12 -0500
-Date: Sun, 16 Nov 2008 22:19:10 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Peter Palfrader <peter@palfrader.org>, linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: broken ownership of /proc/sys/ files on 2.6.27
-Message-ID: <20081116221910.GQ28946@ZenIV.linux.org.uk>
-References: <20081116205922.GI28958@anguilla.noreply.org>
+	Sun, 16 Nov 2008 17:27:34 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:58286 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753438AbYKPW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 17:27:34 -0500
+Date: Sun, 16 Nov 2008 23:30:14 +0100
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Mark Brown <broonie@sirena.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.28] mfd: Correct WM8350 I2C return code usage
+Message-ID: <20081116223013.GB2977@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1226324477-21022-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20081112184956.GA17382@sortiz.org> <20081112200007.GA31451@sirena.org.uk> <20081112230636.GB17382@sortiz.org> <20081112234331.GB8272@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081116205922.GI28958@anguilla.noreply.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20081112234331.GB8272@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 16, 2008 at 09:59:22PM +0100, Peter Palfrader wrote:
-> Hi,
+On Wed, Nov 12, 2008 at 11:43:31PM +0000, Mark Brown wrote:
+> > With this patch you're breaking that expectation because the read|write_dev()
+> > I'd prefer to fix the callers code, so that we keep the expected semantics
 > 
-> on several (probably all) of my systems running a 2.6.27 kernel on at
-> least i386, amd64, ia64, sparc proc/sys does have files not owned by
-> root:
+> Just to clarify, when you say "expectation" and "fix" are you talking
+> about your preference that the hardware access functions return the
+> number of bytes read or written or is there something else going on
+> here? 
+No, definitely just my preference. I personnaly expect this kind of IO
+routines to return the number of bytes read/written.
 
-D'oh...
+> To be honest I'm really not sure it's worth changing this - I'm having a
+> hard time thinking of a user that would be able to do anything useful
+> with a short access.  
+I agree with that, yes.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index 94fcfff..06ed10b 100644
---- a/fs/proc/proc_sysctl.c
-+++ b/fs/proc/proc_sysctl.c
-@@ -31,6 +31,7 @@ static struct inode *proc_sys_make_inode(struct super_block *sb,
- 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
- 	inode->i_flags |= S_PRIVATE; /* tell selinux to ignore this inode */
- 	inode->i_mode = table->mode;
-+	inode->i_uid = inode->i_gid = 0;
- 	if (!table->child) {
- 		inode->i_mode |= S_IFREG;
- 		inode->i_op = &proc_sys_inode_operations;
+> It also seems like it'd be a rather invasive
+> change for an -rc.
+Fair enough, I applied your patch, and sent Linus a pull request.
+
+Cheers,
+Samuel.
+
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
