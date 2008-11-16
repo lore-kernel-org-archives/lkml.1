@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053AbYKPXcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbYKPXgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053AbYKPXcf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 18:32:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbYKPXc1
+	id S1755204AbYKPXgp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 18:36:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYKPXgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 18:32:27 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47498 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751327AbYKPXc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 18:32:26 -0500
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX194UTBTUvx4ldyqSLRLTLqbi24knGKyqzMqxQElDN
-	RJa5m0Gwgk68Zc
-From: Helge Deller <deller@gmx.de>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, Kyle Mc Martin <kyle@hera.kernel.org>,
-       linux-parisc@vger.kernel.org, linux-mm <linux-mm@kvack.org>
-Subject: [PATCH, 2.6.28-rc5] unitialized return value in mm/mlock.c: __mlock_vma_pages_range()
-Date: Mon, 17 Nov 2008 00:30:57 +0100
-User-Agent: KMail/1.9.7
-X-Face: &[jmHH-Dw>Aj):"[/t-VasJu+(5eP`/LEckV7V"JV,!nBy[6(/?#8M>x`5xzg/7:FkM.l@=?utf-8?q?=0A=0913?=<&9'nfV3"OkD~P)@j{P2=(uB7J(){:CcrM2jZeA+IBq?FUTp3c8Y{t+k<95mZf~[v"=?utf-8?q?=27=3A=0A=09t?="f6wKtHUPFB&/]Z5^?9~IQs=16R;Pg"NS9JD=DK!ft&4b@=?utf-8?q?S=7E=26q/MfI3=3BqWqlg7Q1=3D=3DjS4=0A=099V5OJkm=24WQ=5Bdc=5E=5FY?=
- =?utf-8?q?=27=5DDvibvMjizUZ=5D+=27Jd4UnM?=><yrT}Rw(
+	Sun, 16 Nov 2008 18:36:35 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:33092 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbYKPXge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 18:36:34 -0500
+Date: Mon, 17 Nov 2008 00:36:02 +0100
+From: Holger Macht <hmacht@suse.de>
+To: Greg KH <greg@kroah.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
+       Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+Subject: Re: [stable] [patch 20/23] ACPI: dock: avoid check _STA method
+Message-ID: <20081116233602.GA2985@homac.site>
+Mail-Followup-To: Greg KH <greg@kroah.com>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, stable@kernel.org,
+	Justin Forbes <jmforbes@linuxtx.org>,
+	Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+	Theodore Ts'o <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+	Dave Jones <davej@redhat.com>,
+	Chuck Wolber <chuckw@quantumlinux.com>,
+	Chris Wedgwood <reviews@ml.cw.f00f.org>,
+	Michael Krufky <mkrufky@linuxtv.org>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+	Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+	Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+	torvalds@linux-foundation.org, akpm@linux-foundation.org,
+	alan@lxorguk.ukuu.org.uk, linux-acpi@vger.kernel.org,
+	Shaohua Li <shaohua.li@intel.com>, Len Brown <len.brown@intel.com>
+References: <20081107224818.593212310@mini.kroah.org> <20081107231606.GU1108@kroah.com> <20081111121607.GA32066@homac.suse.de> <20081113212305.GA5697@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200811170030.58246.deller@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+In-Reply-To: <20081113212305.GA5697@kroah.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix an unitialized return value when compiling on parisc (with CONFIG_UNEVICTABLE_LRU=y):
-	mm/mlock.c: In function `__mlock_vma_pages_range':
-	mm/mlock.c:165: warning: `ret' might be used uninitialized in this function
+On Thu 13. Nov - 13:23:05, Greg KH wrote:
+> On Tue, Nov 11, 2008 at 01:16:07PM +0100, Holger Macht wrote:
+> > On Fri 07. Nov - 15:16:06, Greg KH wrote:
+> > > 2.6.26-stable review patch.  If anyone has any objections, please let us know.
+> > 
+> > Objecting. This will only work in conjunction with
+> > 
+> >   commit 39a0ad871000d2a016a4fa113a6e53d22aabf25d
+> >   Author: Zhao Yakui <yakui.zhao@intel.com>
+> >   Date:   Mon Aug 11 13:40:22 2008 +0800
+> > 
+> >       ACPI : Load device driver according to the status of acpi device
+> > 
+> > Otherwise a device struct already exists although the device is not
+> > present.
+> 
+> So do you feel we should also add this patch to the 2.6.27-stable tree
+> to solve this issue?
 
-Signed-off-by: Helge Deller <deller@gmx.de>
+Yes, I think so.
 
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -162,7 +162,7 @@ static long __mlock_vma_pages_range(struct vm_area_struct *vma,
- 	unsigned long addr = start;
- 	struct page *pages[16]; /* 16 gives a reasonable batch */
- 	int nr_pages = (end - start) / PAGE_SIZE;
--	int ret;
-+	int ret = 0;
- 	int gup_flags = 0;
- 
- 	VM_BUG_ON(start & ~PAGE_MASK);
-
-
-
+Regards,
+	Holger
