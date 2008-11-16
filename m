@@ -1,41 +1,38 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755516AbYKPFV4 (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 16 Nov 2008 00:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYKPFVp
+	id S1752676AbYKPJLJ (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 16 Nov 2008 04:11:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYKPJKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 00:21:45 -0500
-Received: from emfmcb02.ucsfmedicalcenter.org ([64.54.46.98]:1183 "EHLO
-	emfmcb02.ucsfmedicalcenter.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751202AbYKPFVp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 00:21:45 -0500
-X-Server-Uuid: 70AB4C1F-E30B-44E9-99F3-BC3762B66E5B
-X-AuditID: 403623d2-a499ebb000007e21-c1-491fc9c87cc3
-Content-class: urn:content-classes:message
+	Sun, 16 Nov 2008 04:10:51 -0500
+Received: from dbsvr.nbnet.co.ke ([213.147.64.3]:58479 "EHLO dbsvr.nbnet.co.ke"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751366AbYKPJKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 04:10:50 -0500
+X-Greylist: delayed 5988 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Nov 2008 04:10:49 EST
+Message-ID: <1188.89.141.81.82.1226819373.squirrel@webmail.agrifinance.org>
+Date: Sun, 16 Nov 2008 10:09:33 +0300 (EAT)
+Subject: a proposal for you
+From: "ming yang" <ming01yanghsb@live.com>
+Reply-To: ming08yanghsb@yahoo.com.hk
+User-Agent: SquirrelMail/1.4.4
 MIME-Version: 1.0
-Subject: UN Foundation Grant.
-Date: Sat, 15 Nov 2008 21:20:34 -0800
-Message-ID: <9D5AF5BA13DC18428D7A0411D7F3E56005DBFEE1@EXVS06.net.ucsf.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: UN Foundation Grant.
-Thread-Index: AclHqwtjmecRjxGeQ9ONG9Vsxl+Taw==
-From: "Loetterle, Misty" <Misty.loetterle@ucsf.edu>
-X-OriginalArrivalTime: 16 Nov 2008 05:20:36.0135 (UTC)
- FILETIME=[0E480370:01C947AB]
-To: undisclosed-recipients:;
-X-Brightmail-Tracker: AAAAAgyiHx4MotsZ
-X-WSS-ID: 6501722F1RO862715-01-01
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755516AbYKPFV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752676AbYKPJLJ@vger.kernel.org>
 
- 
+a proposal for you
+Dear Friend,I have a proposal for you - this is not mandatory nor will I
+compel you to honour it against your will....I am Mr Ming Hoi Yang, 50
+years old, and work with the Hang-Seng Bank, Hong-Kong (Audit Department
+of the Hong-Kong leading bank).Contact me for full details via my private
+e-mail:  ming08yanghsb@yahoo.com.hk
 
-UN Foundation Grant.
-This is to notify you that you have been chosen as one of the final recipients of a Cash Grant/Donation for your personal development.you were selected among the beneficiaries to receive the sum of US$500,000.00 as developmental aid from the UN Foundation.Please contact.ITIL Foundation secetary-MR Mendy Blakess EMAIL: mendyblakess@live.com
+
 
 
