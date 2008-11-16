@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096AbYKPHXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752261AbYKPH0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752096AbYKPHXV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 02:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYKPHXL
+	id S1752261AbYKPH0h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 02:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYKPH03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 02:23:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35506 "EHLO mx2.mail.elte.hu"
+	Sun, 16 Nov 2008 02:26:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53757 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169AbYKPHXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 02:23:11 -0500
-Date: Sun, 16 Nov 2008 08:23:00 +0100
+	id S1751169AbYKPH02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 02:26:28 -0500
+Date: Sun, 16 Nov 2008 08:26:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Philipp Kohlbecher <xt28@gmx.de>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: alternative identifier for Phoenix BIOS
-Message-ID: <20081116072300.GB19646@elte.hu>
-References: <491EEDE8.5080508@gmx.de> <491F7D88.7080403@zytor.com>
+To: Markus Metzger <markus.t.metzger@googlemail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, work <markus.t.metzger@intel.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       stephane eranian <eranian@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch] x86, bts: fix unlock problem in ds.c
+Message-ID: <20081116072614.GC19646@elte.hu>
+References: <1226743217.6162.4.camel@raistlin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <491F7D88.7080403@zytor.com>
+In-Reply-To: <1226743217.6162.4.camel@raistlin>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,32 +39,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+* Markus Metzger <markus.t.metzger@googlemail.com> wrote:
 
-> Philipp Kohlbecher wrote:
-> > My laptop (a Samsung X20) contains a Phoenix BIOS and would 
-> > benefit from patch 1e22436eba84edfec9c25e5a25d09062c4f91ca9 (x86: 
-> > reserve low 64K on AMI and Phoenix BIOS boxen).
-> > 
-> > However, according to /sys/class/dmi/id/bios_vendor, the BIOS 
-> > identifies its vendor as "Phoenix Technologies LTD" (sans the 
-> > comma).
+> Fix a problem where ds_request() returned an error without releasing 
+> the ds lock.
+> 
+> Reported-by: Stephane Eranian <eranian@gmail.com>
+> Signed-off-by: Markus Metzger <markus.t.metzger@gmail.com>
 
-Note that we should do a simpler patch: just change the string to 
-"Phoenix Technologies" and that will provide a proper match. (DMI 
-matches work on substrings too)
+applied to tip/x86/urgent, thanks Markus!
 
-Also, note that you can also force this behavior (and the checking) 
-via CONFIG_X86_CHECK_BIOS_CORRUPTION=y - that will enable the 
-reservation and a debug check regardless of DMI matches.
-
-> Given that AMI and Phoenix combined is something like 80% of the 
-> BIOS market, if not more, it might simply be easier to make it 
-> unconditional, or make it a whitelist instead.
-
-The (slim) hope would be for them to address the memory corruptions 
-that have been reported. It can affect older Linux versions, etc. So 
-we want to print the fact to the syslog, based on the DMI strings from 
-the reports.
+i also reviewed the other locking branches there and they seem to be 
+fine.
 
 	Ingo
