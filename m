@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbYKPQUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbYKPQXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754201AbYKPQUJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 11:20:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbYKPQTz
+	id S1754477AbYKPQXz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 11:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYKPQXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 11:19:55 -0500
-Received: from mail.suse.de ([195.135.220.2]:48430 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750988AbYKPQTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 11:19:54 -0500
-Date: Sun, 16 Nov 2008 17:19:52 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       crash-utility@redhat.com
-Subject: Re: Turn CONFIG_STRICT_DEVMEM in sysctl dev.mem.restricted
-Message-ID: <20081116171952.632947a7@kopernikus.site>
-In-Reply-To: <20081116080342.3d6c6976@infradead.org>
-References: <1226846868-9595-1-git-send-email-bwalle@suse.de>
-	<20081116150756.3cece2de@lxorguk.ukuu.org.uk>
-	<20081116162003.04267538@kopernikus.site>
-	<20081116154541.1f196f1e@lxorguk.ukuu.org.uk>
-	<20081116080342.3d6c6976@infradead.org>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Nov 2008 11:23:44 -0500
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:59021 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753511AbYKPQXm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 11:23:42 -0500
+Date: Sun, 16 Nov 2008 11:23:32 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: George Spelvin <linux@horizon.com>
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 2/2] serial/8250.c: Use self-adjusting list for port poll
+	order.
+Message-ID: <20081116162332.GC6958@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	George Spelvin <linux@horizon.com>, alan@lxorguk.ukuu.org.uk,
+	linux-kernel@vger.kernel.org
+References: <20081113150308.3590.qmail@science.horizon.com> <20081114053042.11532.qmail@science.horizon.com> <20081114053314.12093.qmail@science.horizon.com> <20081114213449.14960.qmail@science.horizon.com> <20081114214711.3c1d1473@lxorguk.ukuu.org.uk> <20081115001013.GM25117@mit.edu> <20081116152352.20261.qmail@science.horizon.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081116152352.20261.qmail@science.horizon.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven [2008-11-16 08:03]:
-
+On Sun, Nov 16, 2008 at 10:23:52AM -0500, George Spelvin wrote:
+> Re: shared IRQs and PCI bus...
+> In desktop hardware, yes.  But PC-104 equipment (for the benefit of
+> confused bystandaers, that's classic ISA bus in a different form factor)
+> is still going strong; I just added an 8-port serial card to a little
+> embedded box.
 > 
-> the point of the /dev/mem restrictions is to not allow things you know
-> you don't need, while still allowing X to function where it can access
-> the crap it does. Now in Bernhard's case he DOES need them, so he
-> shouldn't use the restrictions.
+> But even PCI reads are slow, and the current code does not optimize the
+> case when interrupts are level-sensitive.  (The optimization is trivial,
+> but detecting whether the interrupt is edge- or level-sensitive looks
+> messy.)
 
-Right. But shipping two kernel images is a bit too much to turn a
-restriction on or off. Get away from that "recompile your kernel".
+> The idea is that, if you have 4 ports sharing an interrupt, and the fourth
+> is the one that's busy, you'll check every port twice.  If you could check
+> the busy port first, you'd only need to to do 5 checks.
 
-But I get more and more convinced that we really want to just turn that
-configuration option off. I'm no expert in security, and at some point,
-I just have to believe what people write.
+Um, but the ISA bus was edge sensitive.  So presumably PC-104 would be
+as well.  So you *have* to scan all of the ports twice, because you
+want to keep the race window as narrow as possible.  If you don't
+service incoming characters for a previously idle port (because of the
+thought that you only have to check currently busy ports as an
+optimization), you'll never get an interrupt on that IRQ again, and
+you'll have to wait for the serial timeout to save you (and in the
+meantime, you'll likely be losing characters as the FIFO's overflow).
 
-
-Regards,
-Bernhard
+	  	 	   	  	     	- Ted
