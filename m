@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYKPEiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbYKPEij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbYKPEiY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 23:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbYKPEhL
+	id S1755120AbYKPEij (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 23:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbYKPEh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 23:37:11 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:63575 "EHLO song.cn.fujitsu.com"
+	Sat, 15 Nov 2008 23:37:27 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64853 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754852AbYKPEhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 23:37:10 -0500
-Message-ID: <491FA2AF.3090304@cn.fujitsu.com>
-Date: Sun, 16 Nov 2008 12:33:51 +0800
+	id S1753187AbYKPEhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 23:37:24 -0500
+Message-ID: <491FA2BC.1030600@cn.fujitsu.com>
+Date: Sun, 16 Nov 2008 12:34:04 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
+To: "David S. Miller" <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/7] relay: use simple_malloc()/simple_free()
+Subject: [PATCH 5/7] net: use simple_free()
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,80 +25,66 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-simple_malloc()/simple_free() are same as current code.
-so we simple_malloc()/simple_free() instead of current code.
+simple_free() free the memory by kfree(), or vfree() if it is vmalloc addr.
+simple_free() is simpler than current codes.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 8d13a78..718dd60 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -65,35 +65,6 @@ static struct vm_operations_struct relay_file_mmap_ops = {
- 	.close = relay_file_mmap_close,
- };
+diff --git a/net/core/request_sock.c b/net/core/request_sock.c
+index 7552495..53fd8a7 100644
+--- a/net/core/request_sock.c
++++ b/net/core/request_sock.c
+@@ -16,6 +16,7 @@
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/vmalloc.h>
++#include <linux/mm.h>
  
--/*
-- * allocate an array of pointers of struct page
-- */
--static struct page **relay_alloc_page_array(unsigned int n_pages)
--{
--	struct page **array;
--	size_t pa_size = n_pages * sizeof(struct page *);
+ #include <net/request_sock.h>
+ 
+@@ -71,22 +72,11 @@ int reqsk_queue_alloc(struct request_sock_queue *queue,
+ 
+ void __reqsk_queue_destroy(struct request_sock_queue *queue)
+ {
+-	struct listen_sock *lopt;
+-	size_t lopt_size;
 -
--	if (pa_size > PAGE_SIZE) {
--		array = vmalloc(pa_size);
--		if (array)
--			memset(array, 0, pa_size);
--	} else {
--		array = kzalloc(pa_size, GFP_KERNEL);
--	}
--	return array;
--}
+ 	/*
+ 	 * this is an error recovery path only
+ 	 * no locking needed and the lopt is not NULL
+ 	 */
 -
--/*
-- * free an array of pointers of struct page
-- */
--static void relay_free_page_array(struct page **array)
--{
--	if (is_vmalloc_addr(array))
--		vfree(array);
+-	lopt = queue->listen_opt;
+-	lopt_size = sizeof(struct listen_sock) +
+-		lopt->nr_table_entries * sizeof(struct request_sock *);
+-
+-	if (lopt_size > PAGE_SIZE)
+-		vfree(lopt);
 -	else
--		kfree(array);
--}
--
- /**
-  *	relay_mmap_buf: - mmap channel buffer to process address space
-  *	@buf: relay channel buffer
-@@ -138,9 +109,10 @@ static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
- 	*size = PAGE_ALIGN(*size);
- 	n_pages = *size >> PAGE_SHIFT;
- 
--	buf->page_array = relay_alloc_page_array(n_pages);
-+	buf->page_array = simple_malloc(sizeof(struct page *) * n_pages);
- 	if (!buf->page_array)
- 		return NULL;
-+	memset(buf->page_array, 0, sizeof(struct page *) * n_pages);
- 
- 	for (i = 0; i < n_pages; i++) {
- 		buf->page_array[i] = alloc_page(GFP_KERNEL);
-@@ -159,7 +131,7 @@ static void *relay_alloc_buf(struct rchan_buf *buf, size_t *size)
- depopulate:
- 	for (j = 0; j < i; j++)
- 		__free_page(buf->page_array[j]);
--	relay_free_page_array(buf->page_array);
-+	simple_free(buf->page_array);
- 	return NULL;
+-		kfree(lopt);
++	simple_free(queue->listen_opt);
  }
  
-@@ -218,7 +190,7 @@ static void relay_destroy_buf(struct rchan_buf *buf)
- 		vunmap(buf->start);
- 		for (i = 0; i < buf->page_count; i++)
- 			__free_page(buf->page_array[i]);
--		relay_free_page_array(buf->page_array);
-+		simple_free(buf->page_array);
+ static inline struct listen_sock *reqsk_queue_yank_listen_sk(
+@@ -106,8 +96,6 @@ void reqsk_queue_destroy(struct request_sock_queue *queue)
+ {
+ 	/* make all the listen_opt local to us */
+ 	struct listen_sock *lopt = reqsk_queue_yank_listen_sk(queue);
+-	size_t lopt_size = sizeof(struct listen_sock) +
+-		lopt->nr_table_entries * sizeof(struct request_sock *);
+ 
+ 	if (lopt->qlen != 0) {
+ 		unsigned int i;
+@@ -124,9 +112,6 @@ void reqsk_queue_destroy(struct request_sock_queue *queue)
  	}
- 	chan->buf[buf->cpu] = NULL;
- 	kfree(buf->padding);
+ 
+ 	WARN_ON(lopt->qlen != 0);
+-	if (lopt_size > PAGE_SIZE)
+-		vfree(lopt);
+-	else
+-		kfree(lopt);
++	simple_free(lopt);
+ }
+ 
 
 
