@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbYKPTlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbYKPTl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752692AbYKPTlN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 14:41:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbYKPTjr
+	id S1755033AbYKPTl2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 14:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbYKPTjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 14:39:47 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43402 "EHLO ogre.sisk.pl"
+	Sun, 16 Nov 2008 14:39:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:43405 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754722AbYKPTjp convert rfc822-to-8bit (ORCPT
+	id S1754749AbYKPTjr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 14:39:45 -0500
+	Sun, 16 Nov 2008 14:39:47 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andi Kleen" <andi@firstfloor.org>
+       "Giovanni Pellerano" <giovanni.pellerano@gmail.com>,
+       "ykzhao" <yakui.zhao@intel.com>, "Zhang Rui" <rui.zhang@intel.com>
 References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera>
 In-Reply-To: <1ScKicKnTUE.A.VxH.DIHIJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <NjF0-fuClJC.A.FSB.OJHIJB@chimera>
-Subject: [Bug #11569] Panic stop CPUs regression
+Message-ID: <NjF0-fuClJC.A.wLB.8IHIJB@chimera>
+Subject: [Bug #11664] acpi errors and random freeze on sony vaio sr
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 16 Nov 2008 18:40:57 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +36,10 @@ introduced between 2.6.26 and 2.6.27.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11569
-Subject		: Panic stop CPUs regression
-Submitter	: Andi Kleen <andi@firstfloor.org>
-Date		: 2008-09-02 13:49 (76 days old)
-References	: http://marc.info/?l=linux-kernel&m=122036356127282&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11664
+Subject		: acpi errors and random freeze on sony vaio sr
+Submitter	: Giovanni Pellerano <giovanni.pellerano@gmail.com>
+Date		: 2008-09-28 03:48 (50 days old)
+Patch		:  &lt;<a href="http://marc.info/?l=linux-acpi&m=122514341319748&w=4
 
 
