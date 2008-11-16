@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbYKPHeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbYKPHig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752196AbYKPHeT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 02:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYKPHeJ
+	id S1752196AbYKPHig (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 02:38:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbYKPHi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 02:34:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47419 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169AbYKPHeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 02:34:06 -0500
-Date: Sun, 16 Nov 2008 08:33:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: walimis <walimisdev@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 1/1] ftrace: fix wrong pos computing when read buffer
-	has been fulfilled.
-Message-ID: <20081116073354.GF19646@elte.hu>
-References: <1226733546-23190-1-git-send-email-walimisdev@gmail.com>
+	Sun, 16 Nov 2008 02:38:28 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:23864 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYKPHi2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 02:38:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=CJ99A/lRQ4MZF/ATkDXzGlAsaCpSNSUPZCH58bvPPverf51i9OR29GEwxJiHcKVu0J
+         wCxNGFJEZ7lnyPOBTfwZoOWSkpeZdybCx0/VlpeT2J2U7kqLIQ5Vt7NbCmeB841zlwlL
+         CmhiJcTcS5EXjkddIAdKiZBHMJPmXNGddDTMU=
+Date: Sun, 16 Nov 2008 10:42:01 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: viro@ZenIV.linux.org.uk, sam@ravnborg.org, zippel@linux-m68k.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Immortal CONFIG_DEBUG_INFO=y
+Message-ID: <20081116074201.GA27921@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1226733546-23190-1-git-send-email-walimisdev@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+As known to everybody doing fat builds, banning DEBUG_INFO=y is mandatory,
+otherwise build is slower and takes much more disk space. And to not
+accidently enable it, banning it in kconfig:
 
-* walimis <walimisdev@gmail.com> wrote:
+	@@ -475,7 +475,7 @@ config DEBUG_BUGVERBOSE
+	 
+	 config DEBUG_INFO
+	 	bool "Compile the kernel with debug info"
+	-	depends on DEBUG_KERNEL
+	+	depends on DEBUG_KERNEL && DISABLED
+	 	help
+	           If you say Y here the resulting kernel image will include
+	 	  debugging info resulting in a larger kernel image.
 
-> hi Steven,
-> 
-> Could you help me to review this patch?
-> 
-> Thanks.
-> 
-> Impact: make output of available_filter_functions complete
-> 
-> phenomenon:
-> 
-> The first value of dyn_ftrace_total_info is not equal with
-> `cat available_filter_functions | wc -l`, but they should be equal.
-> 
-> root cause:
-> 
-> When printing functions with seq_printf in t_show, if the read 
-> buffer is just overflowed by current function record, then this 
-> function won't be printed to user space through read buffer, it will 
-> just be dropped. So we can't see this function printing. So, every 
-> time the last function to fill the read buffer, if overflowed, will 
-> be dropped. This also applies to set_ftrace_filter if 
-> set_ftrace_filter has more bytes than read buffer.
-> 
-> fix:
-> 
-> Through checking return value of seq_printf, if less than 0, we know 
-> this function doesn't be printed. Then we decrease position to force 
-> this function to be printed next time, in next read buffer.
-> 
-> another little fix is to show correct allocating pages count.
-> 
-> Signed-off-by: walimis <walimisdev@gmail.com>
-> ---
->  kernel/trace/ftrace.c |   26 +++++++++++++++-----------
->  1 files changed, 15 insertions(+), 11 deletions(-)
+This works pretty well -- allmodconfig generates config without DEBUG_INFO and
+so on, defconfigs also regenerated without it, even if original one in arch/
+has DEBUG_INFO enabled and so on. Trick also works for other options, like,
+KALLSYMS_EXTRA_PASS.
 
-looks sane - applied to tip/tracing/urgent. Steve, any objections?
+Except one case:
 
-	Ingo
+	make ARCH=sh magicpanelr2_defconfig
+
+DEBUG_INFO survives to .config and resulting build runs with -g.
+
+Now, DEBUG_INFO correctly dissapeares for all other defconfig.
+And it dissapeares in se7721_defconfig case (which has CONFIG_DEBUG_KERNEL=y
+_and_ CONFIG_DEBUG_INFO=y)
+
+All other options I ban and enable (LOCALVERSION_AUTO, KALLSYMS_EXTRA_PASS,
+MODVERSIONS, MODULE_SRCVERSION_ALL, STANDALONE, STAGING) correctly on and off
+themselves in all cases.
