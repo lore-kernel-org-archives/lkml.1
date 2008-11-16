@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYKPRfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbYKPRrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbYKPRfe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 12:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbYKPRf0
+	id S1753922AbYKPRrD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 12:47:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYKPRqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 12:35:26 -0500
-Received: from lazybastard.de ([212.112.238.170]:49588 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbYKPRfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 12:35:25 -0500
-Date: Sun, 16 Nov 2008 18:34:54 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mtd: unify mtd partition/device registration
-Message-ID: <20081116173453.GA703@logfs.org>
-References: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1226533133-7405-1-git-send-email-vapier@gentoo.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 16 Nov 2008 12:46:51 -0500
+Received: from mga02.intel.com ([134.134.136.20]:37980 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752066AbYKPRqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 12:46:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,614,1220252400"; 
+   d="scan'208";a="463736497"
+Subject: Re: iwlagn driver segfault in 2.6.28-rc3
+From: reinette chatre <reinette.chatre@intel.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>
+In-Reply-To: <20081116120621.GA3937@localhost.aei.mpg.de>
+References: <20081111143410.GA4401@ics.muni.cz>
+	 <1226560041.1115.945.camel@rc-desk>
+	 <20081116120621.GA3937@localhost.aei.mpg.de>
+Content-Type: text/plain
+Date: Sun, 16 Nov 2008 09:47:31 -0800
+Message-Id: <1226857651.1115.1260.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 12 November 2008 18:38:53 -0500, Mike Frysinger wrote:
+On Sun, 2008-11-16 at 04:06 -0800, Carlos R. Mafra wrote:
+
 > 
-> Rather than having every map/mtd driver doing the same sequence of
-> registering partitions and/or devices, implement common parse_mtd().
+> From now on I will apply Reinette's patch and wait for it to
+> happen again (but it seldom happens).
 
-I just added partitioning support to block2mtd.  Looks like I might
-rethink the patch. :)
+Sorry but that patch does not address this problem which turned out to
+be memory corruption, not uninitialized memory. Another patch is being
+worked on.
 
-> @@ -292,6 +292,43 @@ void put_mtd_device(struct mtd_info *mtd)
->  	module_put(mtd->owner);
->  }
->  
-> +#include <linux/mtd/partitions.h>
+Reinette
 
-#include in the middle of the code?
-
-Jörn
-
--- 
-Happiness isn't having what you want, it's wanting what you have.
--- unknown
