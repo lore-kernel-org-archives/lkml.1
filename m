@@ -1,39 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbYKPVmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbYKPVvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbYKPVmd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 16:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbYKPVmN
+	id S1754728AbYKPVvW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 16:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYKPVvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 16:42:13 -0500
-Received: from main.gmane.org ([80.91.229.2]:51138 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054AbYKPVmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 16:42:12 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Subject: Re: broken ownership of /proc/sys/ files on 2.6.27
-Date: Sun, 16 Nov 2008 21:41:54 +0000
-Message-ID: <yw1xod0f9wm5.fsf@thrashbarg.mansr.com>
-References: <20081116205922.GI28958@anguilla.noreply.org> <200811162233.13339.elendil@planet.nl>
+	Sun, 16 Nov 2008 16:51:12 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59111 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181AbYKPVvL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 16:51:11 -0500
+Date: Sun, 16 Nov 2008 13:51:30 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Dave Airlie" <airlied@gmail.com>
+Cc: "David Miller" <davem@davemloft.net>, laijs@cn.fujitsu.com,
+       akpm@linux-foundation.org, menage@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
+       jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
+Message-ID: <20081116135130.5e8b4e13@infradead.org>
+In-Reply-To: <21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
+References: <491FA28B.2070003@cn.fujitsu.com>
+	<20081115205229.765f7ee3@infradead.org>
+	<20081116.001926.150424480.davem@davemloft.net>
+	<20081116105725.12458b13@infradead.org>
+	<21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: thrashbarg.mansr.com
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (Educational Television, linux)
-Cancel-Lock: sha1:/tuax3Hn1/2XoQdLFUfy83/kFQg=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop <elendil@planet.nl> writes:
+On Mon, 17 Nov 2008 07:39:55 +1000
+"Dave Airlie" <airlied@gmail.com> wrote:
 
-> Confirmed for 2.6.28-rc5.
+> On Mon, Nov 17, 2008 at 4:57 AM, Arjan van de Ven
+> <arjan@infradead.org> wrote:
+> > On Sun, 16 Nov 2008 00:19:26 -0800 (PST)
+> > David Miller <davem@davemloft.net> wrote:
+> >
+> >> From: Arjan van de Ven <arjan@infradead.org>
+> >> Date: Sat, 15 Nov 2008 20:52:29 -0800
+> >>
+> >> > On Sun, 16 Nov 2008 12:33:15 +0800
+> >> > Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+> >> >
+> >> > >
+> >> > > some subsystem needs vmalloc() when required memory is large.
+> >> > > but current kernel has not APIs for this requirement.
+> >> > > this patch introduces simple_malloc() and simple_free().
+> >> >
+> >> > I kinda really don't like this approach. vmalloc() (and
+> >> > especially, vfree()) is a really expensive operation, and
+> >> > vmalloc()'d memory is also slower (due to tlb pressure).
+> >> > Realistically, people should try hard to use small datastructure
+> >> > instead....
+> >>
+> >> This is happening in many places, already, for good reason.
+> >>
+> >> There are lots of places where we can't (core hash tables, etc.)
+> >> and we want NUMA spreading and reliable allocation, and thus
+> >> vmalloc it is.
+> >
+> > vmalloc() isn't 100% evil; for truely long term stuff it's
+> > sometimes a quite reasonable solution.
+> >
+> > There are some issues with it still: the vmalloc() space is shared
+> > with ioremap, modules and others and it's not all that big on 32
+> > bit; on x86 you could well end up with only 64Mb total (after
+> > taking out the various ioremap's etc).
+> >
+> > Yes there's places where it's then totally fine to dip into this
+> > space at boot/init time. You mention a few very good users.
+> > (There's still the tlb miss cost on use but on modern cpus a tlb
+> > miss is actually quite cheap)
+> >
+> > But this doesn't make vmalloc() the magic bullet that solves the "oh
+> > Linux can't allocate large chunks of memory" problem. Specifically
+> > in driver space for things that get ported from other OSes.
+> 
+> So we keep the duplicated code? or we just audit new callers.... I
+> think this patch
+> makes it easier to spot new callers doing something stupid. As davem
+> said we duplicate
+> this code all over the place, so for that reason along a simple
+> wrapper makes things a lot
+> easier, and also possibly a lot easier to change in the future to a
+> new non-sucky API.
+> 
+> So I'm all for it maybe with a non simple name.
+> 
 
-No problem on my 2.6.27.4.
+I would go further than this.
+
+Make the code just use vmalloc(). Period.
+
+But then make vmalloc() smart and try do a direct mapping allocation
+first, before falling back to a virtual mapping. (and based on size it
+wouldn't even try it for just big things)
+
+
 
 -- 
-Måns Rullgård
-mans@mansr.com
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
