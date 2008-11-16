@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbYKPEij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYKPEiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbYKPEij (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 15 Nov 2008 23:38:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbYKPEh1
+	id S1756474AbYKPEiz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 15 Nov 2008 23:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbYKPEhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 15 Nov 2008 23:37:27 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64853 "EHLO song.cn.fujitsu.com"
+	Sat, 15 Nov 2008 23:37:31 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50303 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753187AbYKPEhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 23:37:24 -0500
-Message-ID: <491FA2BC.1030600@cn.fujitsu.com>
-Date: Sun, 16 Nov 2008 12:34:04 +0800
+	id S1753810AbYKPEh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 15 Nov 2008 23:37:29 -0500
+Message-ID: <491FA2C0.7030501@cn.fujitsu.com>
+Date: Sun, 16 Nov 2008 12:34:08 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/7] net: use simple_free()
+Subject: [PATCH 6/7] udf: use simple_malloc()/simple_free()
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,66 +24,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-simple_free() free the memory by kfree(), or vfree() if it is vmalloc addr.
-simple_free() is simpler than current codes.
+use simple_malloc()/simple_free() instead of current codes.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/net/core/request_sock.c b/net/core/request_sock.c
-index 7552495..53fd8a7 100644
---- a/net/core/request_sock.c
-+++ b/net/core/request_sock.c
-@@ -16,6 +16,7 @@
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/vmalloc.h>
-+#include <linux/mm.h>
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index e25e701..165ca64 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -1069,10 +1069,7 @@ static struct udf_bitmap *udf_sb_alloc_bitmap(struct super_block *sb, u32 index)
+ 	size = sizeof(struct udf_bitmap) +
+ 		(sizeof(struct buffer_head *) * nr_groups);
  
- #include <net/request_sock.h>
- 
-@@ -71,22 +72,11 @@ int reqsk_queue_alloc(struct request_sock_queue *queue,
- 
- void __reqsk_queue_destroy(struct request_sock_queue *queue)
- {
--	struct listen_sock *lopt;
--	size_t lopt_size;
--
- 	/*
- 	 * this is an error recovery path only
- 	 * no locking needed and the lopt is not NULL
- 	 */
--
--	lopt = queue->listen_opt;
--	lopt_size = sizeof(struct listen_sock) +
--		lopt->nr_table_entries * sizeof(struct request_sock *);
--
--	if (lopt_size > PAGE_SIZE)
--		vfree(lopt);
+-	if (size <= PAGE_SIZE)
+-		bitmap = kmalloc(size, GFP_KERNEL);
 -	else
--		kfree(lopt);
-+	simple_free(queue->listen_opt);
+-		bitmap = vmalloc(size); /* TODO: get rid of vmalloc */
++	bitmap = simple_malloc(size);
+ 
+ 	if (bitmap == NULL) {
+ 		udf_error(sb, __func__,
+@@ -1801,17 +1798,12 @@ static void udf_sb_free_bitmap(struct udf_bitmap *bitmap)
+ {
+ 	int i;
+ 	int nr_groups = bitmap->s_nr_groups;
+-	int size = sizeof(struct udf_bitmap) + (sizeof(struct buffer_head *) *
+-						nr_groups);
+ 
+ 	for (i = 0; i < nr_groups; i++)
+ 		if (bitmap->s_block_bitmap[i])
+ 			brelse(bitmap->s_block_bitmap[i]);
+ 
+-	if (size <= PAGE_SIZE)
+-		kfree(bitmap);
+-	else
+-		vfree(bitmap);
++	simple_free(bitmap);
  }
  
- static inline struct listen_sock *reqsk_queue_yank_listen_sk(
-@@ -106,8 +96,6 @@ void reqsk_queue_destroy(struct request_sock_queue *queue)
- {
- 	/* make all the listen_opt local to us */
- 	struct listen_sock *lopt = reqsk_queue_yank_listen_sk(queue);
--	size_t lopt_size = sizeof(struct listen_sock) +
--		lopt->nr_table_entries * sizeof(struct request_sock *);
- 
- 	if (lopt->qlen != 0) {
- 		unsigned int i;
-@@ -124,9 +112,6 @@ void reqsk_queue_destroy(struct request_sock_queue *queue)
- 	}
- 
- 	WARN_ON(lopt->qlen != 0);
--	if (lopt_size > PAGE_SIZE)
--		vfree(lopt);
--	else
--		kfree(lopt);
-+	simple_free(lopt);
- }
- 
+ static void udf_free_partition(struct udf_part_map *map)
 
 
