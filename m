@@ -1,40 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbYKPUaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYKPUge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbYKPUaU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 15:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbYKPUaH
+	id S1754115AbYKPUge (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 15:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbYKPUgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 15:30:07 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:4632 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752253AbYKPUaG (ORCPT
+	Sun, 16 Nov 2008 15:36:23 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46340 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752287AbYKPUgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 15:30:06 -0500
-Date: Sun, 16 Nov 2008 15:30:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] 2.6.28-rc5: Reported regressions from 2.6.27
-In-Reply-To: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-Message-ID: <Pine.LNX.4.44L0.0811161527410.14867-100000@netrider.rowland.org>
+	Sun, 16 Nov 2008 15:36:23 -0500
+Message-ID: <4920836E.1080803@kernel.org>
+Date: Sun, 16 Nov 2008 12:32:46 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Bernhard Walle <bwalle@suse.de>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       crash-utility@redhat.com
+Subject: Re: Turn CONFIG_STRICT_DEVMEM in sysctl dev.mem.restricted
+References: <1226846868-9595-1-git-send-email-bwalle@suse.de> <20081116073948.02aea58c@infradead.org>
+In-Reply-To: <20081116073948.02aea58c@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008, Rafael J. Wysocki wrote:
+Arjan van de Ven wrote:
+> 
+> I assume /dev/crash is read only
+> 
+> but your series still makes absolutely no sense to me...
+> really. Nak.
+> 
+> You either want this at compile time or you don't want it at all.
+> 
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11858
-> Subject		: Timeout regression introduced by 242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-> Submitter	: Tejun Heo <tj@kernel.org>
-> Date		: 2008-10-26 9:46 (22 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=242f9dcb8ba6f68fcd217a119a7648a4f69290e9
-> References	: http://marc.info/?l=linux-kernel&m=122501447326698&w=4
+You could certainly envision this as a boottime option, or even a
+*one-way* settable runtime option (kind of like the BSD securelevel
+idea.)  The question is to which extent even that makes any sense.
 
-I believe this was fixed by commit 
-2920ebbd65f3e80c318adf5191ac0987142bda80.  Tejun, isn't that right?
-
-Alan Stern
-
+	-hpa
