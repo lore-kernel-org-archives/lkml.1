@@ -1,167 +1,608 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYKPFBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbYKPFCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbYKPFBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 00:01:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYKPFBD
+	id S1756106AbYKPFCV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 00:02:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbYKPFCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 00:01:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59379 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750720AbYKPFBB (ORCPT
+	Sun, 16 Nov 2008 00:02:13 -0500
+Received: from fk-out-0910.google.com ([209.85.128.190]:12720 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbYKPFCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 00:01:01 -0500
-Date: Sat, 15 Nov 2008 21:00:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] mm: evict streaming IO cache first
-Message-Id: <20081115210039.537f59f5.akpm@linux-foundation.org>
-In-Reply-To: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 16 Nov 2008 00:02:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=jx0CGzXoFVYIdXmn6I4hB5LlE2bvl3Xj33JTuzE4Zjo4Yf5qKoUZQ2+i40QwLndwRU
+         KpYLv3Fe7lMZJ+ffM2zxuRqC11OE30jfeeJsIafuJCYnoRB2yPufRRg+m8Rop4JOwTsb
+         wcvZMNpFOgqzqC0MspkrnYUc8qfdVH6zoMcGA=
+Message-ID: <491FA94E.9090207@gmail.com>
+Date: Sun, 16 Nov 2008 06:02:06 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 4/4] tracing/function-return-tracer: Support for dynamic ftrace
+ on function return tracer
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 15 Nov 2008 18:38:59 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+This patch adds the support for dynamic tracing on the function return tracer.
+The whole difference with normal dynamic function tracing is that we don't need
+to hook on a particular callback. The only pro that we want is to nop or set
+dynamically the calls to ftrace_caller (which is ftrace_return_caller here).
 
-> Hi Andrew,
-> 
-> I think we need this patch at 2.6.28.
-> Can this thinking get acception?
-> 
-> 
-> --------------------------------------------------
-> From: Rik van Riel <riel@redhat.com>
-> 
-> Gene Heskett reported 2.6.28-rc3 often make unnecessary swap-out
-> on his system(4GB mem, 2GB swap).
-> and He has had to do a "swapoff -a; swapon -a" daily to clear the swap.
-> 
-> 
-> Actually, When there is a lot of streaming IO (or lite memory pressure workload)
-> going on, we do not want to scan or evict pages from the working set.  
-> The old VM used to skip any mapped page, but still evict indirect blocks and
-> other data that is useful to cache.
+Some security checks ensure that we are not trying to launch dynamic tracing for
+return tracing while normal function tracing is already running.
 
-Well yes, that was to stop precisely this problem from happening.
+An example of trace with getnstimeofday set as a filter:
 
-> This patch adds logic to skip scanning the anon lists and
-> the active file list if most of the file pages are on the
-> inactive file list (where streaming IO pages live), while
-> at the lowest scanning priority.
-> 
-> If the system is not doing a lot of streaming IO, eg. the
-> system is running a database workload, then more often used
-> file pages will be on the active file list and this logic
-> is automatically disabled.
-> 
-> 
-> IOW, Large server apparently doesn't need this patch. but
-> desktop or small server need it.
-> 
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Ackted-by: Gene Heskett <gene.heskett@gmail.com>
-> Tested-by: Gene Heskett <gene.heskett@gmail.com>
-> ---
->  include/linux/mmzone.h |    1 +
->  mm/vmscan.c            |   18 ++++++++++++++++--
->  2 files changed, 17 insertions(+), 2 deletions(-)
-> 
-> Index: b/include/linux/mmzone.h
-> ===================================================================
-> --- a/include/linux/mmzone.h	2008-11-10 16:10:34.000000000 +0900
-> +++ b/include/linux/mmzone.h	2008-11-10 16:12:20.000000000 +0900
-> @@ -453,6 +453,7 @@ static inline int zone_is_oom_locked(con
->   * queues ("queue_length >> 12") during an aging round.
->   */
->  #define DEF_PRIORITY 12
-> +#define PRIO_CACHE_ONLY (DEF_PRIORITY+1)
->  
->  /* Maximum number of zones on a zonelist */
->  #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
-> Index: b/mm/vmscan.c
-> ===================================================================
-> --- a/mm/vmscan.c	2008-11-10 16:10:34.000000000 +0900
-> +++ b/mm/vmscan.c	2008-11-10 16:11:30.000000000 +0900
-> @@ -1443,6 +1443,20 @@ static unsigned long shrink_zone(int pri
->  		}
->  	}
->  
-> +	/*
-> +	 * If there is a lot of sequential IO going on, most of the
-> +	 * file pages will be on the inactive file list.  We start
-> +	 * out by reclaiming those pages, without putting pressure on
-> +	 * the working set.  We only do this if the bulk of the file pages
-> +	 * are not in the working set (on the active file list).
-> +	 */
-> +	if (priority == PRIO_CACHE_ONLY &&
-> +			(nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]))
-> +		for_each_evictable_lru(l)
-> +			/* Scan only the inactive_file list. */
-> +			if (l != LRU_INACTIVE_FILE)
-> +				nr[l] = 0;
-> +
->  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
->  					nr[LRU_INACTIVE_FILE]) {
->  		for_each_evictable_lru(l) {
-> @@ -1573,7 +1587,7 @@ static unsigned long do_try_to_free_page
->  		}
->  	}
->  
-> -	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
-> +	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
->  		sc->nr_scanned = 0;
->  		if (!priority)
->  			disable_swap_token();
-> @@ -1735,7 +1749,7 @@ loop_again:
->  	for (i = 0; i < pgdat->nr_zones; i++)
->  		temp_priority[i] = DEF_PRIORITY;
->  
-> -	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
-> +	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
->  		int end_zone = 0;	/* Inclusive.  0 = ZONE_DMA */
->  		unsigned long lru_pages = 0;
+ktime_get_ts+0x22/0x50 -> getnstimeofday (2283 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1396 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1382 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1825 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1426 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1464 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1524 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1382 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1382 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1434 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1464 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1502 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1404 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1397 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1051 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1314 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1344 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1163 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1390 ns)
+ktime_get_ts+0x22/0x50 -> getnstimeofday (1374 ns)
 
-This is a twiddle, and not a terribly good one, IMO.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+---
+ arch/x86/kernel/entry_32.S            |   18 ++-
+ arch/x86/kernel/ftrace.c              |  258 +++++++++++++++++----------------
+ include/linux/ftrace.h                |   16 ++-
+ kernel/trace/Kconfig                  |    1 -
+ kernel/trace/ftrace.c                 |   58 +++++++-
+ kernel/trace/trace_functions_return.c |   15 +--
+ 6 files changed, 211 insertions(+), 155 deletions(-)
 
-See, the old reclaim_mapped logic tried to work by *observing* the
-behaviour of page reclaim.  The above tweak tries to predict a-priori
-what will happen, and hence has far less information.  This is a key
-difference!
-
-The guesses which the above code makes can and will go wrong, I expect.
-
-For a start, it has a sudden transition point at (nr[LRU_INACTIVE_FILE]
-== nr[LRU_ACTIVE_FILE).  That is a completely arbitrary wet finger in
-the air, and when it is crossed, there will be large changes in
-behaviour.  This cannot be right!
-
-Secondly, the above code is dependent upon the size of the zone.  We
-scan 1/8192th of the zone's pages in "only reclaim file pages" mode,
-then we flip into "scan anon pages as well" mode.
-
-If the size of the zone is less than (SWAP_CLUSTER_MAX * 8192) (1GB
-with 4k pages) then this code will _always_ fail to reclaim
-SWAP_CLUSTER_MAX pages on that initial pass, and hence will always
-decrement `priority' and will always fall into "scan anon pages as
-well" mode.
-
-So I suspect this code didn't fix the problem for small zones much at
-all.
-
-
-Really, I think that the old approach of observing the scanner
-behaviour (rather than trying to predict it) was better.  It has more
-information.  I see that bits of it are still left there - afaict
-zone->prev_priority doesn't do anything any more?
-
-
+diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
+index 266b317..fa4d1b1 100644
+--- a/arch/x86/kernel/entry_32.S
++++ b/arch/x86/kernel/entry_32.S
+@@ -1200,7 +1200,7 @@ ENTRY(mcount)
+ 	jnz trace
+ #ifdef CONFIG_FUNCTION_RET_TRACER
+ 	cmpl $ftrace_stub, ftrace_function_return
+-	jnz trace_return
++	jnz ftrace_return_caller
+ #endif
+ .globl ftrace_stub
+ ftrace_stub:
+@@ -1221,9 +1221,15 @@ trace:
+ 	popl %ecx
+ 	popl %eax
+ 	jmp ftrace_stub
++END(mcount)
++#endif /* CONFIG_DYNAMIC_FTRACE */
++#endif /* CONFIG_FUNCTION_TRACER */
+ 
+ #ifdef CONFIG_FUNCTION_RET_TRACER
+-trace_return:
++ENTRY(ftrace_return_caller)
++	cmpl $0, function_trace_stop
++	jne ftrace_stub
++
+ 	pushl %eax
+ 	pushl %ecx
+ 	pushl %edx
+@@ -1233,7 +1239,8 @@ trace_return:
+ 	popl %edx
+ 	popl %ecx
+ 	popl %eax
+-	jmp ftrace_stub
++	ret
++END(ftrace_return_caller)
+ 
+ .globl return_to_handler
+ return_to_handler:
+@@ -1247,10 +1254,7 @@ return_to_handler:
+ 	popl %ecx
+ 	popl %eax
+ 	ret
+-#endif /* CONFIG_FUNCTION_RET_TRACER */
+-END(mcount)
+-#endif /* CONFIG_DYNAMIC_FTRACE */
+-#endif /* CONFIG_FUNCTION_TRACER */
++#endif
+ 
+ .section .rodata,"a"
+ #include "syscall_table_32.S"
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index d98b5a8..924153e 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -24,134 +24,6 @@
+ #include <asm/nmi.h>
+ 
+ 
+-
+-#ifdef CONFIG_FUNCTION_RET_TRACER
+-
+-/*
+- * These functions are picked from those used on
+- * this page for dynamic ftrace. They have been
+- * simplified to ignore all traces in NMI context.
+- */
+-static atomic_t in_nmi;
+-
+-void ftrace_nmi_enter(void)
+-{
+-	atomic_inc(&in_nmi);
+-}
+-
+-void ftrace_nmi_exit(void)
+-{
+-	atomic_dec(&in_nmi);
+-}
+-
+-/* Add a function return address to the trace stack on thread info.*/
+-static int push_return_trace(unsigned long ret, unsigned long long time,
+-				unsigned long func)
+-{
+-	int index;
+-	struct thread_info *ti = current_thread_info();
+-
+-	/* The return trace stack is full */
+-	if (ti->curr_ret_stack == FTRACE_RET_STACK_SIZE - 1)
+-		return -EBUSY;
+-
+-	index = ++ti->curr_ret_stack;
+-	barrier();
+-	ti->ret_stack[index].ret = ret;
+-	ti->ret_stack[index].func = func;
+-	ti->ret_stack[index].calltime = time;
+-
+-	return 0;
+-}
+-
+-/* Retrieve a function return address to the trace stack on thread info.*/
+-static void pop_return_trace(unsigned long *ret, unsigned long long *time,
+-				unsigned long *func)
+-{
+-	int index;
+-
+-	struct thread_info *ti = current_thread_info();
+-	index = ti->curr_ret_stack;
+-	*ret = ti->ret_stack[index].ret;
+-	*func = ti->ret_stack[index].func;
+-	*time = ti->ret_stack[index].calltime;
+-	ti->curr_ret_stack--;
+-}
+-
+-/*
+- * Send the trace to the ring-buffer.
+- * @return the original return address.
+- */
+-unsigned long ftrace_return_to_handler(void)
+-{
+-	struct ftrace_retfunc trace;
+-	pop_return_trace(&trace.ret, &trace.calltime, &trace.func);
+-	trace.rettime = cpu_clock(raw_smp_processor_id());
+-	ftrace_function_return(&trace);
+-
+-	return trace.ret;
+-}
+-
+-/*
+- * Hook the return address and push it in the stack of return addrs
+- * in current thread info.
+- */
+-void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+-{
+-	unsigned long old;
+-	unsigned long long calltime;
+-	int faulted;
+-	unsigned long return_hooker = (unsigned long)
+-				&return_to_handler;
+-
+-	/* Nmi's are currently unsupported */
+-	if (atomic_read(&in_nmi))
+-		return;
+-
+-	/*
+-	 * Protect against fault, even if it shouldn't
+-	 * happen. This tool is too much intrusive to
+-	 * ignore such a protection.
+-	 */
+-	asm volatile(
+-		"1: movl (%[parent_old]), %[old]\n"
+-		"2: movl %[return_hooker], (%[parent_replaced])\n"
+-		"   movl $0, %[faulted]\n"
+-
+-		".section .fixup, \"ax\"\n"
+-		"3: movl $1, %[faulted]\n"
+-		".previous\n"
+-
+-		".section __ex_table, \"a\"\n"
+-		"   .long 1b, 3b\n"
+-		"   .long 2b, 3b\n"
+-		".previous\n"
+-
+-		: [parent_replaced] "=r" (parent), [old] "=r" (old),
+-		  [faulted] "=r" (faulted)
+-		: [parent_old] "0" (parent), [return_hooker] "r" (return_hooker)
+-		: "memory"
+-	);
+-
+-	if (WARN_ON(faulted)) {
+-		unregister_ftrace_return();
+-		return;
+-	}
+-
+-	if (WARN_ON(!__kernel_text_address(old))) {
+-		unregister_ftrace_return();
+-		*parent = old;
+-		return;
+-	}
+-
+-	calltime = cpu_clock(raw_smp_processor_id());
+-
+-	if (push_return_trace(old, calltime, self_addr) == -EBUSY)
+-		*parent = old;
+-}
+-
+-#endif
+-
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+ union ftrace_code_union {
+@@ -450,3 +322,133 @@ int __init ftrace_dyn_arch_init(void *data)
+ 	return 0;
+ }
+ #endif
++
++#ifdef CONFIG_FUNCTION_RET_TRACER
++
++#ifndef CONFIG_DYNAMIC_FTRACE
++
++/*
++ * These functions are picked from those used on
++ * this page for dynamic ftrace. They have been
++ * simplified to ignore all traces in NMI context.
++ */
++static atomic_t in_nmi;
++
++void ftrace_nmi_enter(void)
++{
++	atomic_inc(&in_nmi);
++}
++
++void ftrace_nmi_exit(void)
++{
++	atomic_dec(&in_nmi);
++}
++#endif /* !CONFIG_DYNAMIC_FTRACE */
++
++/* Add a function return address to the trace stack on thread info.*/
++static int push_return_trace(unsigned long ret, unsigned long long time,
++				unsigned long func)
++{
++	int index;
++	struct thread_info *ti = current_thread_info();
++
++	/* The return trace stack is full */
++	if (ti->curr_ret_stack == FTRACE_RET_STACK_SIZE - 1)
++		return -EBUSY;
++
++	index = ++ti->curr_ret_stack;
++	barrier();
++	ti->ret_stack[index].ret = ret;
++	ti->ret_stack[index].func = func;
++	ti->ret_stack[index].calltime = time;
++
++	return 0;
++}
++
++/* Retrieve a function return address to the trace stack on thread info.*/
++static void pop_return_trace(unsigned long *ret, unsigned long long *time,
++				unsigned long *func)
++{
++	int index;
++
++	struct thread_info *ti = current_thread_info();
++	index = ti->curr_ret_stack;
++	*ret = ti->ret_stack[index].ret;
++	*func = ti->ret_stack[index].func;
++	*time = ti->ret_stack[index].calltime;
++	ti->curr_ret_stack--;
++}
++
++/*
++ * Send the trace to the ring-buffer.
++ * @return the original return address.
++ */
++unsigned long ftrace_return_to_handler(void)
++{
++	struct ftrace_retfunc trace;
++	pop_return_trace(&trace.ret, &trace.calltime, &trace.func);
++	trace.rettime = cpu_clock(raw_smp_processor_id());
++	ftrace_function_return(&trace);
++
++	return trace.ret;
++}
++
++/*
++ * Hook the return address and push it in the stack of return addrs
++ * in current thread info.
++ */
++void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
++{
++	unsigned long old;
++	unsigned long long calltime;
++	int faulted;
++	unsigned long return_hooker = (unsigned long)
++				&return_to_handler;
++
++	/* Nmi's are currently unsupported */
++	if (atomic_read(&in_nmi))
++		return;
++
++	/*
++	 * Protect against fault, even if it shouldn't
++	 * happen. This tool is too much intrusive to
++	 * ignore such a protection.
++	 */
++	asm volatile(
++		"1: movl (%[parent_old]), %[old]\n"
++		"2: movl %[return_hooker], (%[parent_replaced])\n"
++		"   movl $0, %[faulted]\n"
++
++		".section .fixup, \"ax\"\n"
++		"3: movl $1, %[faulted]\n"
++		".previous\n"
++
++		".section __ex_table, \"a\"\n"
++		"   .long 1b, 3b\n"
++		"   .long 2b, 3b\n"
++		".previous\n"
++
++		: [parent_replaced] "=r" (parent), [old] "=r" (old),
++		  [faulted] "=r" (faulted)
++		: [parent_old] "0" (parent), [return_hooker] "r" (return_hooker)
++		: "memory"
++	);
++
++	if (WARN_ON(faulted)) {
++		unregister_ftrace_return();
++		return;
++	}
++
++	if (WARN_ON(!__kernel_text_address(old))) {
++		unregister_ftrace_return();
++		*parent = old;
++		return;
++	}
++
++	calltime = cpu_clock(raw_smp_processor_id());
++
++	if (push_return_trace(old, calltime, self_addr) == -EBUSY)
++		*parent = old;
++}
++
++#endif /* CONFIG_FUNCTION_RET_TRACER */
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 166a207..f1af1aa 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -25,6 +25,17 @@ struct ftrace_ops {
+ 
+ extern int function_trace_stop;
+ 
++/*
++ * Type of the current tracing.
++ */
++enum ftrace_tracing_type_t {
++	FTRACE_TYPE_ENTER = 0, /* Hook the call of the function */
++	FTRACE_TYPE_RETURN,	/* Hook the return of the function */
++};
++
++/* Current tracing type, default is FTRACE_TYPE_ENTER */
++extern enum ftrace_tracing_type_t ftrace_tracing_type;
++
+ /**
+  * ftrace_stop - stop function tracer.
+  *
+@@ -104,6 +115,9 @@ extern int ftrace_update_ftrace_func(ftrace_func_t func);
+ extern void ftrace_caller(void);
+ extern void ftrace_call(void);
+ extern void mcount_call(void);
++#ifdef CONFIG_FUNCTION_RET_TRACER
++extern void ftrace_return_caller(void);
++#endif
+ 
+ /**
+  * ftrace_make_nop - convert code into top
+@@ -310,7 +324,7 @@ struct ftrace_retfunc {
+ /* Type of a callback handler of tracing return function */
+ typedef void (*trace_function_return_t)(struct ftrace_retfunc *);
+ 
+-extern void register_ftrace_return(trace_function_return_t func);
++extern int register_ftrace_return(trace_function_return_t func);
+ /* The current handler in use */
+ extern trace_function_return_t ftrace_function_return;
+ extern void unregister_ftrace_return(void);
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 9c89526..b8378fa 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -59,7 +59,6 @@ config FUNCTION_TRACER
+ 
+ config FUNCTION_RET_TRACER
+ 	bool "Kernel Function return Tracer"
+-	depends on !DYNAMIC_FTRACE
+ 	depends on HAVE_FUNCTION_RET_TRACER
+ 	depends on FUNCTION_TRACER
+ 	help
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index b42ec1d..2f78a45 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -50,6 +50,9 @@ static int last_ftrace_enabled;
+ /* Quick disabling of function tracer. */
+ int function_trace_stop;
+ 
++/* By default, current tracing type is normal tracing. */
++enum ftrace_tracing_type_t ftrace_tracing_type = FTRACE_TYPE_ENTER;
++
+ /*
+  * ftrace_disabled is set when an anomaly is discovered.
+  * ftrace_disabled is much stronger than ftrace_enabled.
+@@ -385,12 +388,21 @@ static void ftrace_bug(int failed, unsigned long ip)
+ 	}
+ }
+ 
+-#define FTRACE_ADDR ((long)(ftrace_caller))
+ 
+ static int
+ __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
+ {
+ 	unsigned long ip, fl;
++	unsigned long ftrace_addr;
++
++#ifdef CONFIG_FUNCTION_RET_TRACER
++	if (ftrace_tracing_type == FTRACE_TYPE_ENTER)
++		ftrace_addr = (unsigned long)ftrace_caller;
++	else
++		ftrace_addr = (unsigned long)ftrace_return_caller;
++#else
++	ftrace_addr = (unsigned long)ftrace_caller;
++#endif
+ 
+ 	ip = rec->ip;
+ 
+@@ -450,9 +462,9 @@ __ftrace_replace_code(struct dyn_ftrace *rec, int enable)
+ 	}
+ 
+ 	if (rec->flags & FTRACE_FL_ENABLED)
+-		return ftrace_make_call(rec, FTRACE_ADDR);
++		return ftrace_make_call(rec, ftrace_addr);
+ 	else
+-		return ftrace_make_nop(NULL, rec, FTRACE_ADDR);
++		return ftrace_make_nop(NULL, rec, ftrace_addr);
+ }
+ 
+ static void ftrace_replace_code(int enable)
+@@ -1405,10 +1417,17 @@ int register_ftrace_function(struct ftrace_ops *ops)
+ 		return -1;
+ 
+ 	mutex_lock(&ftrace_sysctl_lock);
++
++	if (ftrace_tracing_type == FTRACE_TYPE_RETURN) {
++		ret = -EBUSY;
++		goto out;
++	}
++
+ 	ret = __register_ftrace_function(ops);
+ 	ftrace_startup();
+-	mutex_unlock(&ftrace_sysctl_lock);
+ 
++out:
++	mutex_unlock(&ftrace_sysctl_lock);
+ 	return ret;
+ }
+ 
+@@ -1474,16 +1493,45 @@ ftrace_enable_sysctl(struct ctl_table *table, int write,
+ }
+ 
+ #ifdef CONFIG_FUNCTION_RET_TRACER
++
++/* The callback that hooks the return of a function */
+ trace_function_return_t ftrace_function_return =
+ 			(trace_function_return_t)ftrace_stub;
+-void register_ftrace_return(trace_function_return_t func)
++
++int register_ftrace_return(trace_function_return_t func)
+ {
++	int ret = 0;
++
++	mutex_lock(&ftrace_sysctl_lock);
++
++	/*
++	 * Don't launch return tracing if normal function
++	 * tracing is already running.
++	 */
++	if (ftrace_trace_function != ftrace_stub) {
++		ret = -EBUSY;
++		goto out;
++	}
++
++	ftrace_tracing_type = FTRACE_TYPE_RETURN;
+ 	ftrace_function_return = func;
++	ftrace_startup();
++
++out:
++	mutex_unlock(&ftrace_sysctl_lock);
++	return ret;
+ }
+ 
+ void unregister_ftrace_return(void)
+ {
++	mutex_lock(&ftrace_sysctl_lock);
++
+ 	ftrace_function_return = (trace_function_return_t)ftrace_stub;
++	ftrace_shutdown();
++	/* Restore normal tracing type */
++	ftrace_tracing_type = FTRACE_TYPE_ENTER;
++
++	mutex_unlock(&ftrace_sysctl_lock);
+ }
+ #endif
+ 
+diff --git a/kernel/trace/trace_functions_return.c b/kernel/trace/trace_functions_return.c
+index 61185f7..a68564a 100644
+--- a/kernel/trace/trace_functions_return.c
++++ b/kernel/trace/trace_functions_return.c
+@@ -14,29 +14,18 @@
+ #include "trace.h"
+ 
+ 
+-static void start_return_trace(struct trace_array *tr)
+-{
+-	register_ftrace_return(&trace_function_return);
+-}
+-
+-static void stop_return_trace(struct trace_array *tr)
+-{
+-	unregister_ftrace_return();
+-}
+-
+ static int return_trace_init(struct trace_array *tr)
+ {
+ 	int cpu;
+ 	for_each_online_cpu(cpu)
+ 		tracing_reset(tr, cpu);
+ 
+-	start_return_trace(tr);
+-	return 0;
++	return register_ftrace_return(&trace_function_return);
+ }
+ 
+ static void return_trace_reset(struct trace_array *tr)
+ {
+-		stop_return_trace(tr);
++		unregister_ftrace_return();
+ }
+ 
+ 
+-- 
+1.5.2.5
