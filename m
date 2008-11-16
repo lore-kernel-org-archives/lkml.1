@@ -1,78 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbYKPFAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbYKPFBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753477AbYKPFAP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 00:00:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbYKPFAA
+	id S1753232AbYKPFBR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 00:01:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbYKPFBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 00:00:00 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:35141 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751916AbYKPE77 (ORCPT
+	Sun, 16 Nov 2008 00:01:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59379 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750720AbYKPFBB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 15 Nov 2008 23:59:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=ROau2neGJ5z9Jyf1KGN7290uYuxoPWpyI23wTKK45rFw24fDLiLs04S7Z7GMIlbXHe
-         h278zPuzIkPfeCLx5uq0NN3K9Bm8N3VfWofi7hppxWBmG/y4vbU+nhuh//SoTdH1Wln0
-         anQv2Z1n76HLvPcvDR2+fw+aDoEF6HCjFfxqg=
-Message-ID: <491FA8C8.1040905@gmail.com>
-Date: Sun, 16 Nov 2008 05:59:52 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/4] tracing/branch-tracer: Fix a trace recursion on branch
- tracer
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 16 Nov 2008 00:01:01 -0500
+Date: Sat, 15 Nov 2008 21:00:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] mm: evict streaming IO cache first
+Message-Id: <20081115210039.537f59f5.akpm@linux-foundation.org>
+In-Reply-To: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Make the branch tracer use raw irq save/restore
+On Sat, 15 Nov 2008 18:38:59 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-When the branch tracer inserts an event through probe_likely_condition(),
-it calls local_irq_save() and then results in a trace recursion.
+> Hi Andrew,
+> 
+> I think we need this patch at 2.6.28.
+> Can this thinking get acception?
+> 
+> 
+> --------------------------------------------------
+> From: Rik van Riel <riel@redhat.com>
+> 
+> Gene Heskett reported 2.6.28-rc3 often make unnecessary swap-out
+> on his system(4GB mem, 2GB swap).
+> and He has had to do a "swapoff -a; swapon -a" daily to clear the swap.
+> 
+> 
+> Actually, When there is a lot of streaming IO (or lite memory pressure workload)
+> going on, we do not want to scan or evict pages from the working set.  
+> The old VM used to skip any mapped page, but still evict indirect blocks and
+> other data that is useful to cache.
 
-local_irq_save() -> trace_hardirqs_off() -> trace_hardirqs_off_caller()
-	-> unlikely()
+Well yes, that was to stop precisely this problem from happening.
 
-The trace_branch.c file is protected by DISABLE_BRANCH_PROFILING but that
-doesn't prevent from external call to functions that use unlikely().
+> This patch adds logic to skip scanning the anon lists and
+> the active file list if most of the file pages are on the
+> inactive file list (where streaming IO pages live), while
+> at the lowest scanning priority.
+> 
+> If the system is not doing a lot of streaming IO, eg. the
+> system is running a database workload, then more often used
+> file pages will be on the active file list and this logic
+> is automatically disabled.
+> 
+> 
+> IOW, Large server apparently doesn't need this patch. but
+> desktop or small server need it.
+> 
+> 
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Ackted-by: Gene Heskett <gene.heskett@gmail.com>
+> Tested-by: Gene Heskett <gene.heskett@gmail.com>
+> ---
+>  include/linux/mmzone.h |    1 +
+>  mm/vmscan.c            |   18 ++++++++++++++++--
+>  2 files changed, 17 insertions(+), 2 deletions(-)
+> 
+> Index: b/include/linux/mmzone.h
+> ===================================================================
+> --- a/include/linux/mmzone.h	2008-11-10 16:10:34.000000000 +0900
+> +++ b/include/linux/mmzone.h	2008-11-10 16:12:20.000000000 +0900
+> @@ -453,6 +453,7 @@ static inline int zone_is_oom_locked(con
+>   * queues ("queue_length >> 12") during an aging round.
+>   */
+>  #define DEF_PRIORITY 12
+> +#define PRIO_CACHE_ONLY (DEF_PRIORITY+1)
+>  
+>  /* Maximum number of zones on a zonelist */
+>  #define MAX_ZONES_PER_ZONELIST (MAX_NUMNODES * MAX_NR_ZONES)
+> Index: b/mm/vmscan.c
+> ===================================================================
+> --- a/mm/vmscan.c	2008-11-10 16:10:34.000000000 +0900
+> +++ b/mm/vmscan.c	2008-11-10 16:11:30.000000000 +0900
+> @@ -1443,6 +1443,20 @@ static unsigned long shrink_zone(int pri
+>  		}
+>  	}
+>  
+> +	/*
+> +	 * If there is a lot of sequential IO going on, most of the
+> +	 * file pages will be on the inactive file list.  We start
+> +	 * out by reclaiming those pages, without putting pressure on
+> +	 * the working set.  We only do this if the bulk of the file pages
+> +	 * are not in the working set (on the active file list).
+> +	 */
+> +	if (priority == PRIO_CACHE_ONLY &&
+> +			(nr[LRU_INACTIVE_FILE] > nr[LRU_ACTIVE_FILE]))
+> +		for_each_evictable_lru(l)
+> +			/* Scan only the inactive_file list. */
+> +			if (l != LRU_INACTIVE_FILE)
+> +				nr[l] = 0;
+> +
+>  	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
+>  					nr[LRU_INACTIVE_FILE]) {
+>  		for_each_evictable_lru(l) {
+> @@ -1573,7 +1587,7 @@ static unsigned long do_try_to_free_page
+>  		}
+>  	}
+>  
+> -	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+> +	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
+>  		sc->nr_scanned = 0;
+>  		if (!priority)
+>  			disable_swap_token();
+> @@ -1735,7 +1749,7 @@ loop_again:
+>  	for (i = 0; i < pgdat->nr_zones; i++)
+>  		temp_priority[i] = DEF_PRIORITY;
+>  
+> -	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
+> +	for (priority = PRIO_CACHE_ONLY; priority >= 0; priority--) {
+>  		int end_zone = 0;	/* Inclusive.  0 = ZONE_DMA */
+>  		unsigned long lru_pages = 0;
 
-My box crashed each time I tried to set this tracer (sudden and hard reboot).
+This is a twiddle, and not a terribly good one, IMO.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_branch.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+See, the old reclaim_mapped logic tried to work by *observing* the
+behaviour of page reclaim.  The above tweak tries to predict a-priori
+what will happen, and hence has far less information.  This is a key
+difference!
 
-diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-index 44bd395..23f9b02 100644
---- a/kernel/trace/trace_branch.c
-+++ b/kernel/trace/trace_branch.c
-@@ -41,7 +41,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 	if (unlikely(!tr))
- 		return;
- 
--	local_irq_save(flags);
-+	raw_local_irq_save(flags);
- 	cpu = raw_smp_processor_id();
- 	if (atomic_inc_return(&tr->data[cpu]->disabled) != 1)
- 		goto out;
-@@ -73,7 +73,7 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
- 
-  out:
- 	atomic_dec(&tr->data[cpu]->disabled);
--	local_irq_restore(flags);
-+	raw_local_irq_restore(flags);
- }
- 
- static inline
--- 
-1.5.2.5
+The guesses which the above code makes can and will go wrong, I expect.
+
+For a start, it has a sudden transition point at (nr[LRU_INACTIVE_FILE]
+== nr[LRU_ACTIVE_FILE).  That is a completely arbitrary wet finger in
+the air, and when it is crossed, there will be large changes in
+behaviour.  This cannot be right!
+
+Secondly, the above code is dependent upon the size of the zone.  We
+scan 1/8192th of the zone's pages in "only reclaim file pages" mode,
+then we flip into "scan anon pages as well" mode.
+
+If the size of the zone is less than (SWAP_CLUSTER_MAX * 8192) (1GB
+with 4k pages) then this code will _always_ fail to reclaim
+SWAP_CLUSTER_MAX pages on that initial pass, and hence will always
+decrement `priority' and will always fall into "scan anon pages as
+well" mode.
+
+So I suspect this code didn't fix the problem for small zones much at
+all.
+
+
+Really, I think that the old approach of observing the scanner
+behaviour (rather than trying to predict it) was better.  It has more
+information.  I see that bits of it are still left there - afaict
+zone->prev_priority doesn't do anything any more?
+
+
