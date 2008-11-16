@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752877AbYKPP4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753884AbYKPQDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752877AbYKPP4V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 10:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYKPP4M
+	id S1753884AbYKPQDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 11:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYKPQDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 10:56:12 -0500
-Received: from mx2.suse.de ([195.135.220.15]:49405 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbYKPP4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 10:56:12 -0500
-Date: Sun, 16 Nov 2008 16:56:09 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	Sun, 16 Nov 2008 11:03:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37449 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291AbYKPQDC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 11:03:02 -0500
+Date: Sun, 16 Nov 2008 08:03:42 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bernhard Walle <bwalle@suse.de>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
        crash-utility@redhat.com
 Subject: Re: Turn CONFIG_STRICT_DEVMEM in sysctl dev.mem.restricted
-Message-ID: <20081116165609.4f17fc10@kopernikus.site>
-In-Reply-To: <20081116073948.02aea58c@infradead.org>
+Message-ID: <20081116080342.3d6c6976@infradead.org>
+In-Reply-To: <20081116154541.1f196f1e@lxorguk.ukuu.org.uk>
 References: <1226846868-9595-1-git-send-email-bwalle@suse.de>
-	<20081116073948.02aea58c@infradead.org>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.4; i686-pc-linux-gnu)
+	<20081116150756.3cece2de@lxorguk.ukuu.org.uk>
+	<20081116162003.04267538@kopernikus.site>
+	<20081116154541.1f196f1e@lxorguk.ukuu.org.uk>
+Organization: Intel
+X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Arjan van de Ven [2008-11-16 07:39]:
->
-> On Sun, 16 Nov 2008 15:47:45 +0100
-> Bernhard Walle <bwalle@suse.de> wrote:
+On Sun, 16 Nov 2008 15:45:41 +0000
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+ules that circumvent that
+> > protection.
 > 
-> > While the original submission of CONFIG_STRICT_DEVMEM mentions that
-> > the option has been in RHEL and Fedora for 4 years without problems,
-> > that's only a half of the story. The truth is that at least RHEL
-> > has /dev/crash exactly to circumvent that /dev/mem restriction. Don't
-> > tell me that this is better than having that sysctl entry. ;-)
+> With your patch I get crap in the kernel I don't need. In every kernel
+> including those on memory tight devices like wireless routers that
+> don't need it.
 > 
-> I assume /dev/crash is read only
+> You are turd polishing, and what is needed is a shovel.
+> 
+> Even if you want to turd polish there are cleaner solutions. A process
+> with CAP_SYS_RAWIO can cheerfully bypass any restriction you try and
+> place
 
-I don't know. But if that matters, why can't we make /dev/mem
-write-only for certain areas and read-only for the rest ...?
+because it can load kernel modules?
+or because it can bypass the iommu?
 
-> You either want this at compile time or you don't want it at all.
+the point of the /dev/mem restrictions is to not allow things you know
+you don't need, while still allowing X to function where it can access
+the crap it does. Now in Bernhard's case he DOES need them, so he
+shouldn't use the restrictions.
 
-Why? You don't write something about my arguments (as Alan does, even
-though I disagree), you only write that you "nak" it.
+> There are proper ways to deal with X, modern video cards and modern
+> security models. They involve using framebuffer mappings off the PCI
+> device node itself and DRI.
+> 
+when X has this for all hw that matters /dev/mem could go away for the
+people who then no longer have any need for it.
 
 
-
-Regards,
-Bernhard
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
