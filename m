@@ -1,120 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbYKPM30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbYKPMft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894AbYKPM30 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 07:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYKPM3O
+	id S1753080AbYKPMft (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 07:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKPMfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 07:29:14 -0500
-Received: from rv-out-0506.google.com ([209.85.198.235]:27820 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751966AbYKPM3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 07:29:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=ZEUPMWn/bxYU/5J9A9LwRPDLEv/RP0Dn/7iQDaq96C0XoObv9NegVgSCR9C+6gnY1h
-         sRyz6Da39lLtpk0lLSA7I3VBESXW6Njzl1woe7EtvERs7nEYAaCbWUHWmWj2ONVDzeSS
-         gkc0oOQaNYxBlcYU/dd8rGj9jS6mG+BoAsfbg=
-Message-ID: <1ba2fa240811160429ld8cc080s7e023b0398eeda08@mail.gmail.com>
-Date: Sun, 16 Nov 2008 14:29:12 +0200
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Subject: Re: iwlagn driver segfault in 2.6.28-rc3
-Cc: "reinette chatre" <reinette.chatre@intel.com>,
-       "Lukas Hejtmanek" <xhejtman@ics.muni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-In-Reply-To: <20081116120621.GA3937@localhost.aei.mpg.de>
+	Sun, 16 Nov 2008 07:35:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42092 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751873AbYKPMfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 07:35:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [patch] ACPI toshiba: only register rfkill if bt is enabled
+Date: Sun, 16 Nov 2008 13:40:36 +0100
+User-Agent: KMail/1.9.9
+Cc: Frederik Deweerdt <frederik.deweerdt@xprog.eu>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       philipl@overt.org
+References: <20081029081934.GB26314@gambetta> <200811161129.02028.arvidjaar@mail.ru>
+In-Reply-To: <200811161129.02028.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20081111143410.GA4401@ics.muni.cz>
-	 <1226560041.1115.945.camel@rc-desk>
-	 <20081116120621.GA3937@localhost.aei.mpg.de>
+Message-Id: <200811161340.36798.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Nov 16, 2008 at 2:06 PM, Carlos R. Mafra <crmafra2@gmail.com> wrote:
-> I just got (another) one of this too.
->
-> The wireless connection suddenly lost the AP and I was waiting
-> for ifplugd to reconnect to it again automatically, as it always
-> does.
->
-> After waiting for one or two minutes I decided to 'modprobe -r
-> iwlagn' but this command never returned (it got stuck).
->
-> Then I looked at the end of dmesg and found this:
+On Sunday, 16 of November 2008, Andrey Borzenkov wrote:
+> On Wednesday 29 October 2008, Frederik Deweerdt wrote:
+> > [resending as it didn't make it to the list, removing netdev from cc
+> > also]
+> > Hello  Andrey,
+> > 
+> > It looks like a part of the rfkill initialization was done whenever
+> > BT was on or not. The following patch checks for BT presence before
+> > registering the rfkill to the input layer. Does it solve the problem for
+> > you?
+> > 
+> 
+> This patch fixes regression in 2.6.28. Patch has been tested and
+> acnowledged. Rafael, could you add it to list of open regressions?
+> Thank you!
 
-Did you happen to have logs open so I can see what happen prior to that
-We found out that this is due to double removal of an encryption key
-but I still haven't see the exact flow.
-Thanks
-Tomas
+I will, if you provide me with a link to the patch and (optionally) to the
+original bug report.
 
->
-> general protection fault: 0000 [#1] SMP
-> last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-> CPU 1
-> Modules linked in: nls_iso8859_1 nls_cp437 vfat fat usb_storage xt_comment xt_policy xt_tcpmss xt_pkttype xt_owner xt_NFQUEUE xt_NFLOG xt_multiport xt_MARK xt_mark xt_mac xt_limit xt_length xt_iprange xt_hashlimit xt_dscp xt_dccp xt_CLASSIFY snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss nvram ohci1394 ieee1394 snd_hda_intel uvcvideo snd_pcm sg sky2 i2c_i801 sr_mod iwlagn compat_ioctl32 snd_timer evdev videodev snd_page_alloc v4l1_compat snd_hwdep ata_piix ahci libata sd_mod scsi_mod uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: scsi_wait_scan]
-> Pid: 3163, comm: ifplugd Not tainted 2.6.28-rc4-keypress-00322-g58e20d8 #14
-> RIP: 0010:[<ffffffff803d844b>]  [<ffffffff803d844b>] iwl_eeprom_query16+0xb/0x20
-> RSP: 0018:ffff88007b631a88  EFLAGS: 00010092
-> RAX: 7fff88007dfd5400 RBX: ffff88007d81a000 RCX: 00000000800600f0
-> RDX: 0000000000000cfc RSI: 0000000000000090 RDI: ffff88007dcc1940
-> RBP: ffff88007b631a88 R08: 0000000000000002 R09: ffff88007b631a5c
-> R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000080006
-> R13: ffff88007dcc1940 R14: ffff88007dcc29f8 R15: ffff88007d81a740
-> FS:  00007f7f93ef16f0(0000) GS:ffff88007f0686c0(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00002ad88fdfd000 CR3: 000000007d935000 CR4: 00000000000006a0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process ifplugd (pid: 3163, threadinfo ffff88007b630000, task ffff88007b5ba980)
-> Stack:
->  ffff88007b631af8 ffffffffa0108526 ffff88007b631af8 ffffffffa00f3aaf
->  0000000000000000 ffff88007dcc2328 0000000000000292 0000000000000000
->  0143000000000000 ffff88007d81a000 ffff88007dcc1940 ffff88007dcc2328
-> Call Trace:
->  [<ffffffffa0108526>] iwl4965_nic_config+0xa6/0x380 [iwlagn]
->  [<ffffffffa00f3aaf>] ? iwl4965_set_pwr_src+0x1cf/0x3d0 [iwlagn]
->  [<ffffffff803d5a9b>] iwl_hw_nic_init+0x11b/0x1d0
->  [<ffffffffa00fbe17>] __iwl4965_up+0x1a7/0x720 [iwlagn]
->  [<ffffffffa00fd0c8>] iwl4965_mac_start+0xd38/0x1570 [iwlagn]
->  [<ffffffff8022d365>] ? __wake_up_sync+0x55/0x70
->  [<ffffffff8043000f>] ? sock_def_readable+0x6f/0x80
->  [<ffffffff8049b893>] ? unix_dgram_sendmsg+0x463/0x4f0
->  [<ffffffff804b5cf8>] ieee80211_open+0x328/0x830
->  [<ffffffff8042bf5b>] ? sock_sendmsg+0xdb/0xf0
->  [<ffffffff8043cba4>] dev_open+0x64/0xc0
->  [<ffffffff8043ba71>] dev_change_flags+0x91/0x1b0
->  [<ffffffff8047fde3>] devinet_ioctl+0x5b3/0x750
->  [<ffffffff8048096d>] inet_ioctl+0x6d/0x90
->  [<ffffffff8042c4d5>] sock_ioctl+0xc5/0x240
->  [<ffffffff802a60f1>] vfs_ioctl+0x31/0x90
->  [<ffffffff802a647b>] do_vfs_ioctl+0x32b/0x460
->  [<ffffffff802a65fa>] sys_ioctl+0x4a/0x80
->  [<ffffffff8020c1fb>] system_call_fastpath+0x16/0x1b
-> Code: 48 8b 47 18 55 48 89 e5 48 8b 40 18 48 8b 00 ff 90 00 01 00 00 c9 c3 66 0f 1f 84 00 00 00 00 00 48 8b 87 98 22 01 00 55 48 89 e5 <0f> b6 54 06 01 0f b6 04 30 c9 c1 e2 08 09 d0 0f b7 c0 c3 66 90
-> RIP  [<ffffffff803d844b>] iwl_eeprom_query16+0xb/0x20
->  RSP <ffff88007b631a88>
-> ---[ end trace 28eaede31d178563 ]---
->
->
-> I tried to reboot but it got stuck too, so I had to SysRq+b.
->
-> From now on I will apply Reinette's patch and wait for it to
-> happen again (but it seldom happens).
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Thanks,
+Rafael
+
+
+> > Register toshiba RFKill Switch only if bluetooth is enabled
+> > 
+> > Part of the rfkill initialization was done whenever BT was on or not. The
+> > following patch checks for BT presence before registering the rfkill to
+> > the input layer. Some minor cleanups (> 80 char lines) were also added
+> > in the process.
+> > 
+> > On Tue, Oct 28, 2008 at 10:10:37PM +0300, Andrey Borzenkov wrote:
+> > [...]
+> > > [   66.633036] toshiba_acpi: Toshiba Laptop ACPI Extras version 0.19
+> > > [   66.633054] toshiba_acpi:     HCI method: \_SB_.VALD.GHCI
+> > > [   66.637764] input: Toshiba RFKill Switch as /devices/virtual/input/input3
+> > [...]
+> > > [  113.920753] ------------[ cut here ]------------
+> > > [  113.920828] kernel BUG at /home/bor/src/linux-git/net/rfkill/rfkill.c:347!
+> > > [  113.920845] invalid opcode: 0000 [#1] 
+> > > [  113.920877] last sysfs file: /sys/devices/pci0000:00/0000:00:04.0/host0/target0:0:0/0:0:0:0/block/sda/size
+> > > [  113.920900] Dumping ftrace buffer:
+> > > [  113.920919]    (ftrace buffer empty)
+> > > [  113.920933] Modules linked in: af_packet irnet ppp_generic slhc ircomm_tty ircomm binfmt_misc loop dm_mirror dm_region_hash dm_log dm_round_robin dm_multipath dm_mod alim15x3 ide_core nvram toshiba cryptomgr aead crypto_blkcipher michael_mic crypto_algapi orinoco_cs orinoco hermes_dld hermes pcmcia firmware_class snd_ali5451 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device smsc_ircc2 snd_pcm_oss snd_pcm rtc_cmos irda snd_timer snd_mixer_oss rtc_core snd crc_ccitt yenta_socket rtc_lib rsrc_nonstatic i2c_ali1535 pcmcia_core pcspkr psmouse soundcore i2c_core evdev sr_mod snd_page_alloc alim1535_wdt cdrom fan sg video output toshiba_acpi rfkill thermal backlight ali_agp processor ac button input_polldev battery agpgart ohci_hcd usbcore reiserfs pata_ali libata sd_mod scsi_mod [last unloaded: scsi_wait_scan]
+> > > [  113.921765] 
+> > > [  113.921785] Pid: 3272, comm: ipolldevd Not tainted (2.6.28-rc2-1avb #3) PORTEGE 4000
+> > > [  113.921801] EIP: 0060:[<dfaa4683>] EFLAGS: 00010246 CPU: 0
+> > > [  113.921854] EIP is at rfkill_force_state+0x53/0x90 [rfkill]
+> > > [  113.921870] EAX: 00000000 EBX: 00000000 ECX: 00000003 EDX: 00000000
+> > > [  113.921885] ESI: 00000000 EDI: ddd50300 EBP: d8d7af40 ESP: d8d7af24
+> > > [  113.921900]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> > > [  113.921918] Process ipolldevd (pid: 3272, ti=d8d7a000 task=d8d93c90 task.ti=d8d7a000)
+> > > [  113.921933] Stack:
+> > > [  113.921945]  d8d7af38 00000246 dfb029d8 dfb029c0 dfb029d8 dfb029c0 ddd50300 d8d7af5c
+> > > [  113.922014]  dfb018e2 01000246 01000000 ddd50300 ddd50314 ddabb8a0 d8d7af68 dfb381c1
+> > > [  113.922098]  00000000 d8d7afa4 c012ec0a 00000000 00000002 00000000 c012eba8 ddabb8c0
+> > > [  113.922240] Call Trace:
+> > > [  113.922240]  [<dfb018e2>] ? bt_poll_rfkill+0x5c/0x82 [toshiba_acpi]
+> > > [  113.922240]  [<dfb381c1>] ? input_polled_device_work+0x11/0x40 [input_polldev]
+> > > [  113.922240]  [<c012ec0a>] ? run_workqueue+0xea/0x1f0
+> > > [  113.922240]  [<c012eba8>] ? run_workqueue+0x88/0x1f0
+> > > [  113.922240]  [<dfb381b0>] ? input_polled_device_work+0x0/0x40 [input_polldev]
+> > > [  113.922240]  [<c012f047>] ? worker_thread+0x87/0xf0
+> > > [  113.922240]  [<c0132b00>] ? autoremove_wake_function+0x0/0x50
+> > > [  113.922240]  [<c012efc0>] ? worker_thread+0x0/0xf0
+> > > [  113.922240]  [<c013280f>] ? kthread+0x3f/0x80
+> > > [  113.922240]  [<c01327d0>] ? kthread+0x0/0x80
+> > > [  113.922240]  [<c01040d7>] ? kernel_thread_helper+0x7/0x10
+> > > [  113.922240] Code: 43 54 89 73 54 39 c6 74 11 89 d9 ba 01 00 00 00 b8 40 68 aa df e8 3e 35 69 e0 89 f8 e8 77 fd 85 e0 31 c0 83 c4 10 5b 5e 5f 5d c3 <0f> 0b eb fe 89 f6 8d bc 27 00 00 00 00 be f4 4d aa df bb 5f 01 
+> > > [  113.922240] EIP: [<dfaa4683>] rfkill_force_state+0x53/0x90 [rfkill] SS:ESP 0068:d8d7af24
+> > > [  113.924700] ---[ end trace 0e404eb40cadd5f0 ]---
+> > 
+> > Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+> > 
+> > diff --git a/drivers/acpi/toshiba_acpi.c b/drivers/acpi/toshiba_acpi.c
+> > index 66aac06..c1c9d87 100644
+> > --- a/drivers/acpi/toshiba_acpi.c
+> > +++ b/drivers/acpi/toshiba_acpi.c
+> > @@ -824,34 +824,38 @@ static int __init toshiba_acpi_init(void)
+> >  			toshiba_acpi_exit();
+> >  			return -ENOMEM;
+> >  		}
+> > -	}
+> >  
+> > -	/* Register input device for kill switch */
+> > -	toshiba_acpi.poll_dev = input_allocate_polled_device();
+> > -	if (!toshiba_acpi.poll_dev) {
+> > -		printk(MY_ERR "unable to allocate kill-switch input device\n");
+> > -		toshiba_acpi_exit();
+> > -		return -ENOMEM;
+> > -	}
+> > -	toshiba_acpi.poll_dev->private = &toshiba_acpi;
+> > -	toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
+> > -	toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
+> > -
+> > -	toshiba_acpi.poll_dev->input->name = toshiba_acpi.rfk_name;
+> > -	toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
+> > -	toshiba_acpi.poll_dev->input->id.vendor = 0x0930; /* Toshiba USB ID */
+> > -	set_bit(EV_SW, toshiba_acpi.poll_dev->input->evbit);
+> > -	set_bit(SW_RFKILL_ALL, toshiba_acpi.poll_dev->input->swbit);
+> > -	input_report_switch(toshiba_acpi.poll_dev->input, SW_RFKILL_ALL, TRUE);
+> > -	input_sync(toshiba_acpi.poll_dev->input);
+> > -
+> > -	ret = input_register_polled_device(toshiba_acpi.poll_dev);
+> > -	if (ret) {
+> > -		printk(MY_ERR "unable to register kill-switch input device\n");
+> > -		rfkill_free(toshiba_acpi.rfk_dev);
+> > -		toshiba_acpi.rfk_dev = NULL;
+> > -		toshiba_acpi_exit();
+> > -		return ret;
+> > +		/* Register input device for kill switch */
+> > +		toshiba_acpi.poll_dev = input_allocate_polled_device();
+> > +		if (!toshiba_acpi.poll_dev) {
+> > +			printk(MY_ERR
+> > +			       "unable to allocate kill-switch input device\n");
+> > +			toshiba_acpi_exit();
+> > +			return -ENOMEM;
+> > +		}
+> > +		toshiba_acpi.poll_dev->private = &toshiba_acpi;
+> > +		toshiba_acpi.poll_dev->poll = bt_poll_rfkill;
+> > +		toshiba_acpi.poll_dev->poll_interval = 1000; /* msecs */
+> > +
+> > +		toshiba_acpi.poll_dev->input->name = toshiba_acpi.rfk_name;
+> > +		toshiba_acpi.poll_dev->input->id.bustype = BUS_HOST;
+> > +		/* Toshiba USB ID */
+> > +		toshiba_acpi.poll_dev->input->id.vendor = 0x0930;
+> > +		set_bit(EV_SW, toshiba_acpi.poll_dev->input->evbit);
+> > +		set_bit(SW_RFKILL_ALL, toshiba_acpi.poll_dev->input->swbit);
+> > +		input_report_switch(toshiba_acpi.poll_dev->input,
+> > +				    SW_RFKILL_ALL, TRUE);
+> > +		input_sync(toshiba_acpi.poll_dev->input);
+> > +
+> > +		ret = input_register_polled_device(toshiba_acpi.poll_dev);
+> > +		if (ret) {
+> > +			printk(MY_ERR
+> > +			       "unable to register kill-switch input device\n");
+> > +			rfkill_free(toshiba_acpi.rfk_dev);
+> > +			toshiba_acpi.rfk_dev = NULL;
+> > +			toshiba_acpi_exit();
+> > +			return ret;
+> > +		}
+> >  	}
+> >  
+> >  	return 0;
+> > 
+> > ----- End forwarded message -----
+> > 
+> > 
+> 
+> 
+> 
+
+
+
+-- 
+Everyone knows that debugging is twice as hard as writing a program
+in the first place.  So if you're as clever as you can be when you write it,
+how will you ever debug it? --- Brian Kernighan
