@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755320AbYKPVlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755523AbYKPVmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755320AbYKPVlX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 16:41:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbYKPVlE
+	id S1755523AbYKPVmT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 16:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbYKPVmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 16:41:04 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:54854 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbYKPVlB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 16:41:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=E95acGinLRqtR2zpCzREuJvoB6YOdPZ9tQQlBbMFIMZg7VU4j+nUOgCVjXjCwssMMU
-         WeUpdVdJtTa1jk56Df8rnqYKFiXcZkA8DEra30NiM5e/CXnVhVoE5ahvwXurD07DMCfn
-         hahM9QVHe9BZ57ffdy8qYXmamT/wf2UI1Dkfs=
-Message-ID: <49209366.3060500@gmail.com>
-Date: Sun, 16 Nov 2008 23:40:54 +0200
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sun, 16 Nov 2008 16:42:08 -0500
+Received: from ozlabs.org ([203.10.76.45]:46541 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753572AbYKPVmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 16:42:08 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] Allocate module.ref array dynamically
+Date: Mon, 17 Nov 2008 08:11:57 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Takashi Iwai <tiwai@suse.de>,
+       Andreas Gruenbacher <agruen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mike Travis <travis@sgi.com>
+References: <s5htzaekp6o.wl%tiwai@suse.de> <Pine.LNX.4.64.0811131759250.7010@quilx.com> <200811161030.34054.rusty@rustcorp.com.au>
+In-Reply-To: <200811161030.34054.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-In-Reply-To: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811170811.58111.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to note, here on acer aspire one suspend to disk is broken too.
-System suspends, and then hangs.
+On Sunday 16 November 2008 10:30:33 Rusty Russell wrote:
+> There are 4 places which use __alloc_percpu, and all of
+> them can be converted to alloc_percpu (see patch below).
 
-If I shutdown the system, and then attempt resume, it resumes, and then hangs.
+No they can't: that patch was crap.
 
-Best regards,
-	Maxim Levitsky
+The three files which use __alloc_percpu will need conversion.
+
+Sorry,
+Rusty.
