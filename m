@@ -1,94 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbYKPMGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYKPMGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752705AbYKPMGT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 07:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbYKPMGG
+	id S1753298AbYKPMGr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 07:06:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751903AbYKPMGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 07:06:06 -0500
-Received: from ox1.aei.mpg.de ([194.94.224.6]:44305 "EHLO ox1.aei.mpg.de"
+	Sun, 16 Nov 2008 07:06:38 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:33369 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbYKPMGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 07:06:04 -0500
-Date: Sun, 16 Nov 2008 13:06:22 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-Subject: Re: iwlagn driver segfault in 2.6.28-rc3
-Message-ID: <20081116120621.GA3937@localhost.aei.mpg.de>
-References: <20081111143410.GA4401@ics.muni.cz> <1226560041.1115.945.camel@rc-desk>
+	id S1751967AbYKPMGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 07:06:37 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] checkpatch: try to catch missing VMLINUX_SYMBOL() in vmlinux.lds.h
+Date: Sun, 16 Nov 2008 07:06:34 -0500
+User-Agent: KMail/1.10.3 (Linux/2.6.27.4; KDE/4.1.3; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1226184965-13502-1-git-send-email-vapier@gentoo.org> <20081112140250.GF8302@shadowen.org>
+In-Reply-To: <20081112140250.GF8302@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1226560041.1115.945.camel@rc-desk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200811160706.34901.vapier@gentoo.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just got (another) one of this too.
+On Wednesday 12 November 2008 09:02:50 Andy Whitcroft wrote:
+> On Sat, Nov 08, 2008 at 05:56:05PM -0500, Mike Frysinger wrote:
+> > Seems like every other release we have someone who updates vmlinux.lds.h
+> > and adds C-visible symbols without VMLINUX_SYMBOL() around them.  So
+> > start checking the file and only allow assignments that use one of the
+> > following symbols on a side:
+> > 	.
+> > 	ALIGN(...)
+> > 	VMLINUX_SYMBOL(...)
+> >
+> > Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> > ---
+> >  scripts/checkpatch.pl |   13 +++++++++++++
+> >  1 files changed, 13 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+> > index f88bb3e..8e96b42 100755
+> > --- a/scripts/checkpatch.pl
+> > +++ b/scripts/checkpatch.pl
+> > @@ -2189,6 +2189,19 @@ sub process {
+> >  			}
+> >  		}
+> >
+> > +# make sure symbols are always wrapped with VMLINUX_SYMBOL() ...
+> > +# all assignments may have only one of the following with an assignment:
+> > +#	.
+> > +#	ALIGN(...)
+> > +#	VMLINUX_SYMBOL(...)
+> > +		if ($realfile =~ /vmlinux.lds.h$/) {
+> > +			if ($line =~ /=/ &&
+> > +			    !($line =~
+> > /([.]|(ALIGN|VMLINUX_SYMBOL)[(][^=]*[)])\s*=\s*([.]|(ALIGN|VMLINUX_SYMBOL
+> >)[(][^=]*[)])/)) +			{
+> > +				WARN("vmlinux.lds.h needs VMLINUX_SYMBOL() around C-visible
+> > symbols\n" . $herecurr); +			}
+> > +		}
+> > +
+> >  # check for redundant bracing round if etc
+> >  		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/) {
+> >  			my ($level, $endln, @chunks) =
+> > --
+>
+> Ok, that seems like a sane check.  I think what we are really wanting
+> to check for is assigments with plain identifiers on either side?  I've
+> pushed a softened version of this check to my tree for testing.
+>
+>  
+> http://www.kernel.org/pub/linux/kernel/people/apw/checkpatch/checkpatch.pl-
+>testing
 
-The wireless connection suddenly lost the AP and I was waiting
-for ifplugd to reconnect to it again automatically, as it always
-does.
+perl isnt my thing so i'm going to assume what you added does as intended (i 
+dont really get the regex statement you've added)
 
-After waiting for one or two minutes I decided to 'modprobe -r
-iwlagn' but this command never returned (it got stuck). 
+all i was using to test was to edit the file and remove VMLINUX_SYMBOL() from 
+a place or two and then do:
+diff -Nur /dev/null include/asm-generic/vmlinux.lds.h | 
+./scripts/checkpatch.pl
 
-Then I looked at the end of dmesg and found this:
+thanks for adding this ... it'll save me consistent pain :)
+-mike
 
-general protection fault: 0000 [#1] SMP 
-last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-CPU 1 
-Modules linked in: nls_iso8859_1 nls_cp437 vfat fat usb_storage xt_comment xt_policy xt_tcpmss xt_pkttype xt_owner xt_NFQUEUE xt_NFLOG xt_multiport xt_MARK xt_mark xt_mac xt_limit xt_length xt_iprange xt_hashlimit xt_dscp xt_dccp xt_CLASSIFY snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss nvram ohci1394 ieee1394 snd_hda_intel uvcvideo snd_pcm sg sky2 i2c_i801 sr_mod iwlagn compat_ioctl32 snd_timer evdev videodev snd_page_alloc v4l1_compat snd_hwdep ata_piix ahci libata sd_mod scsi_mod uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: scsi_wait_scan]
-Pid: 3163, comm: ifplugd Not tainted 2.6.28-rc4-keypress-00322-g58e20d8 #14
-RIP: 0010:[<ffffffff803d844b>]  [<ffffffff803d844b>] iwl_eeprom_query16+0xb/0x20
-RSP: 0018:ffff88007b631a88  EFLAGS: 00010092
-RAX: 7fff88007dfd5400 RBX: ffff88007d81a000 RCX: 00000000800600f0
-RDX: 0000000000000cfc RSI: 0000000000000090 RDI: ffff88007dcc1940
-RBP: ffff88007b631a88 R08: 0000000000000002 R09: ffff88007b631a5c
-R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000080006
-R13: ffff88007dcc1940 R14: ffff88007dcc29f8 R15: ffff88007d81a740
-FS:  00007f7f93ef16f0(0000) GS:ffff88007f0686c0(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00002ad88fdfd000 CR3: 000000007d935000 CR4: 00000000000006a0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process ifplugd (pid: 3163, threadinfo ffff88007b630000, task ffff88007b5ba980)
-Stack:
- ffff88007b631af8 ffffffffa0108526 ffff88007b631af8 ffffffffa00f3aaf
- 0000000000000000 ffff88007dcc2328 0000000000000292 0000000000000000
- 0143000000000000 ffff88007d81a000 ffff88007dcc1940 ffff88007dcc2328
-Call Trace:
- [<ffffffffa0108526>] iwl4965_nic_config+0xa6/0x380 [iwlagn]
- [<ffffffffa00f3aaf>] ? iwl4965_set_pwr_src+0x1cf/0x3d0 [iwlagn]
- [<ffffffff803d5a9b>] iwl_hw_nic_init+0x11b/0x1d0
- [<ffffffffa00fbe17>] __iwl4965_up+0x1a7/0x720 [iwlagn]
- [<ffffffffa00fd0c8>] iwl4965_mac_start+0xd38/0x1570 [iwlagn]
- [<ffffffff8022d365>] ? __wake_up_sync+0x55/0x70
- [<ffffffff8043000f>] ? sock_def_readable+0x6f/0x80
- [<ffffffff8049b893>] ? unix_dgram_sendmsg+0x463/0x4f0
- [<ffffffff804b5cf8>] ieee80211_open+0x328/0x830
- [<ffffffff8042bf5b>] ? sock_sendmsg+0xdb/0xf0
- [<ffffffff8043cba4>] dev_open+0x64/0xc0
- [<ffffffff8043ba71>] dev_change_flags+0x91/0x1b0
- [<ffffffff8047fde3>] devinet_ioctl+0x5b3/0x750
- [<ffffffff8048096d>] inet_ioctl+0x6d/0x90
- [<ffffffff8042c4d5>] sock_ioctl+0xc5/0x240
- [<ffffffff802a60f1>] vfs_ioctl+0x31/0x90
- [<ffffffff802a647b>] do_vfs_ioctl+0x32b/0x460
- [<ffffffff802a65fa>] sys_ioctl+0x4a/0x80
- [<ffffffff8020c1fb>] system_call_fastpath+0x16/0x1b
-Code: 48 8b 47 18 55 48 89 e5 48 8b 40 18 48 8b 00 ff 90 00 01 00 00 c9 c3 66 0f 1f 84 00 00 00 00 00 48 8b 87 98 22 01 00 55 48 89 e5 <0f> b6 54 06 01 0f b6 04 30 c9 c1 e2 08 09 d0 0f b7 c0 c3 66 90 
-RIP  [<ffffffff803d844b>] iwl_eeprom_query16+0xb/0x20
- RSP <ffff88007b631a88>
----[ end trace 28eaede31d178563 ]---
-
-
-I tried to reboot but it got stuck too, so I had to SysRq+b.
-
->From now on I will apply Reinette's patch and wait for it to
-happen again (but it seldom happens).
