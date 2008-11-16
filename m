@@ -1,88 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbYKPGEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbYKPGJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbYKPGEs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 01:04:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYKPGEi
+	id S1755374AbYKPGJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 01:09:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751108AbYKPGJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 01:04:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41128 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751404AbYKPGEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 01:04:37 -0500
-Message-ID: <491FB7E2.2030105@kernel.org>
-Date: Sun, 16 Nov 2008 15:04:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 16 Nov 2008 01:09:49 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:57271 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbYKPGJt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 01:09:49 -0500
+Message-ID: <491FB8E5.50806@cosmosbay.com>
+Date: Sun, 16 Nov 2008 07:08:37 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-To: Linda Walsh <lkml@tlinx.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       linux-ide@vger.kernel.org, Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: FYI: BUG in SATA Promise 300 TX4 (2.6.24 - 2.6.27-3) w/Linux
-References: <491C9A4F.1020801@tlinx.org>
-In-Reply-To: <491C9A4F.1020801@tlinx.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 16 Nov 2008 06:04:04 +0000 (UTC)
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Menage <menage@google.com>, kamezawa.hiroyu@jp.fujitsu.com,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>, Jan Kara <jack@suse.cz>,
+       Jes Sorensen <jes@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
+References: <491FA28B.2070003@cn.fujitsu.com>	<20081115205229.765f7ee3@infradead.org>	<20081115210334.3870cdf6.akpm@linux-foundation.org>	<491FB107.6050703@cn.fujitsu.com> <20081115215309.7f29c33c@infradead.org>
+In-Reply-To: <20081115215309.7f29c33c@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 16 Nov 2008 07:08:45 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc'ing Mikael Pettersson)
-Hello, Linda.
-
-Linda Walsh wrote:
-> FYI -- ever since I switched to using SATA, I've not had a stable kernel.
-> Sys uptime went from near infinite (striking planned take downs), to less
-> than a week consistently.  I'd been using the Promise 300 TX4 with 1-2
-> Seagate drives.  (PDC40718, rev 02).
+Arjan van de Ven a écrit :
+> On Sun, 16 Nov 2008 13:35:03 +0800
+> Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
 > 
-> Finally an explicit problem regarding that controller under Linux, with it
-> timing out a drive returning from suspend during 'SMART' operations, got a
-> suggestions from the community (Tnx, Tejun Heo) to try a _cheaper_ but
-> better featured Silicon Image controller (SiI 3124 Sata).
-
-Yeah, I'm quite fond of the controller.  Except for the bandwidth
-limit due to limited number of postable requests which shows up only
-when multiple drives are attached to a single port via PMP, I can't
-think of anything bad about it.
-
-> Not only did it NOT have the SMART problem (that would hang the drive or
-> machine), but my random hangs seem to have gone away.
+>> vmalloc() is not good for performance and increasing fragment.
+>> but vmalloc() is need for some subsystems' alternative malloc,
+>> like cgroup's tasks file and other subsystems(about 20 subsystems).
 > 
-> My main server has been up nearly 21 days now on 2.6.27-3 SMP
-> (vanilla-i386).
+> actually what you are pointing out is that these areas need improvement
+> to not need such huge blocks of memory... but only a series of smaller
+> blocks instead.
 > 
-> I'd had problems with the ranging in kernels going back to 2.6.24 or so
-> when I had first tried adding SATA to the system.
-> 
-> So Tnx again to Tejun --
-> 
-> and NOTE: the card or driver (or both) for the Promise 300 TX4 isn't
-> stable for production use -- and has a repeatable problem of timing out
-> some drives before it can spin-up from standby (just the drive -- not the
-> computer).  The error logically removes the drive from the system until
-> the next boot (unplugging, and replugging in the SATA cable on the drive
-> would hang the machine within 5 seconds of replugging in the cable).  Not
-> an instant, hang as might indicated a HW upset plugging in cable, but a
-> couple second delay after plugin -- before keyboard would lock up --
-> pointing toward the software trying to re-add+initialize the drive.
 
-Some promise controllers seem to suffer transmission problems when
-combined with certain drives, which often show up as timeouts.  The
-hardreset of sata_promise wasn't as robust as it should have been and
-in some cases it wasn't able to recover a link after error condition
-causing the system to lose drive after such events.  The hardreset
-problem was fixed recently by Mikael Pettersson.  Can you please try
-2.6.28-rc5 and see whether sata_promise still loses drives after
-failures?
 
-Mikael, I think the hardreset fix is worthy including into -stable.
-It should be safe for -stable too, right?
+Just zap vmalloc()/vfree() then ?
 
-Thanks.
+More seriously, vmalloc()/vfree() were designed partly to make people life easier,
+not to be *the* premium interface to manage kernel memory
 
--- 
-tejun
+Some parts of the kernel cannot afford the cost of vmalloc()/vfree(), so people
+must think and design complex algos.
+
+I personnaly like this cleanup too. For example bnx2 driver actually uses vmalloc() while
+a kmalloc() should be OK for bnx2_alloc_rx_mem()
+
+# grep bnx2 /proc/vmallocinfo
+0xf8260000-0xf8274000   81920 bnx2_init_board+0x104/0xae0 phys=f6000000 ioremap
+0xf8280000-0xf8294000   81920 bnx2_init_board+0x104/0xae0 phys=fa000000 ioremap
+0xf82c1000-0xf82c3000    8192 bnx2_alloc_rx_mem+0x33/0x310 pages=1 vmalloc
+0xf82d9000-0xf82db000    8192 bnx2_alloc_rx_mem+0x33/0x310 pages=1 vmalloc
+
+I have two comments :
+
+1) Names should be not "simple" : That is misleading. "convenient" maybe, or "slow"...
+
+2) Since vmalloc()/vfree() is potentially a very expensive operation, we should make
+   slow_malloc()/slow_free() or whatever name is chosen, uninlined. No need to try to save
+   3 or 4 cpu cycles. This will save icache at least.
+
+
