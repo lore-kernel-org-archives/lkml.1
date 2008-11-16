@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753639AbYKPQHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbYKPQJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753639AbYKPQHY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 11:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYKPQGs
+	id S1754623AbYKPQJr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 11:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753380AbYKPQJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 11:06:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56576 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbYKPQGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 11:06:46 -0500
-Message-ID: <492044A7.3080107@redhat.com>
-Date: Sun, 16 Nov 2008 18:04:55 +0200
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Andi Kleen <andi@firstfloor.org>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "Chiang, Alexander" <achiang@hp.com>, Matthew Wilcox <matthew@wil.cx>,
-       Greg KH <greg@kroah.com>, "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>
-Subject: Re: [PATCH 0/16 v6] PCI: Linux kernel SR-IOV support
-References: <20081106154351.GA30459@kroah.com>	<894107.30288.qm@web45108.mail.sp1.yahoo.com>	<20081106164919.GA4099@kroah.com>	<0199E0D51A61344794750DC57738F58E5E26F996C4@GVW1118EXC.americas.hpqcorp.net>	<20081106183630.GD11773@parisc-linux.org>	<491371F0.7020805@codemonkey.ws> <87d4h7pnnm.fsf__4937.77150190926$1226071173$gmane$org@basil.nowhere.org> <491B5B97.2000407@codemonkey.ws>
-In-Reply-To: <491B5B97.2000407@codemonkey.ws>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 16 Nov 2008 11:09:38 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37093 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753286AbYKPQJi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 11:09:38 -0500
+Date: Sun, 16 Nov 2008 16:09:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Bernhard Walle <bwalle@suse.de>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       crash-utility@redhat.com
+Subject: Re: Turn CONFIG_STRICT_DEVMEM in sysctl dev.mem.restricted
+Message-ID: <20081116160905.17e867da@lxorguk.ukuu.org.uk>
+In-Reply-To: <20081116080342.3d6c6976@infradead.org>
+References: <1226846868-9595-1-git-send-email-bwalle@suse.de>
+	<20081116150756.3cece2de@lxorguk.ukuu.org.uk>
+	<20081116162003.04267538@kopernikus.site>
+	<20081116154541.1f196f1e@lxorguk.ukuu.org.uk>
+	<20081116080342.3d6c6976@infradead.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> I don't think it's established that PV/VF will have less latency than 
-> using virtio-net.  virtio-net requires a world switch to send a group 
-> of packets.  The cost of this (if it stays in kernel) is only a few 
-> thousand cycles on the most modern processors.
->
-> Using VT-d means that for every DMA fetch that misses in the IOTLB, 
-> you potentially have to do four memory fetches to main memory.  There 
-> will be additional packet latency using VT-d compared to native, it's 
-> just not known how much at this time.
+> because it can load kernel modules?
+> or because it can bypass the iommu?
 
-If the IOTLB has intermediate TLB entries like the processor, we're 
-talking just one or two fetches.  That's a lot less than the cacheline 
-bouncing that virtio and kvm interrupt injection incur right now.
+It has iopl, firmware loading, ioperm, raw disk I/O, mknod, module loading
+etc etc.. 
 
--- 
-error compiling committee.c: too many arguments to function
+> the point of the /dev/mem restrictions is to not allow things you know
+> you don't need, while still allowing X to function where it can access
+> the crap it does. Now in Bernhard's case he DOES need them, so he
+> shouldn't use the restrictions.
 
+I know what the point is, but it doesn't actually implement any
+meaningful restriction to achieve that result, so it is worthless junk.
+
+> > There are proper ways to deal with X, modern video cards and modern
+> > security models. They involve using framebuffer mappings off the PCI
+> > device node itself and DRI.
+> > 
+> when X has this for all hw that matters /dev/mem could go away for the
+> people who then no longer have any need for it.
+
+Why should it go away ? It's a matter of file permissions and security
+rules as to who can access it. Trying to make it go away is just more
+fake-security crap.
+
+Alan
