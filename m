@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbYKPKCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752303AbYKPKJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbYKPKCV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 05:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbYKPKCL
+	id S1752303AbYKPKJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 05:09:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYKPKJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 05:02:11 -0500
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:54362 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751703AbYKPKCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 05:02:10 -0500
-X-Greylist: delayed 1228 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Nov 2008 05:02:10 EST
-Message-ID: <491FEAD5.4090205@krogh.cc>
-Date: Sun, 16 Nov 2008 10:41:41 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Sun, 16 Nov 2008 05:09:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:27015 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751589AbYKPKJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 05:09:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Jp8eqvNq84zqtlElcklzT3uogI0olEEst0kE10L9lwWA6zOFFjfQBzRx9OdhW527tm
+         /3VCMgp3zOlnohTGvVFebMg6XLXgOw44NJZ2XeLrXStg4FEEH1MB8gNqIyOvsf9bt9R9
+         SsfxymXzDOlASNG/Xj9/i2PQ5It039lj7jGT0=
+Date: Sun, 16 Nov 2008 13:13:18 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 2/2] Add dev.mem.restricted sysctl
+Message-ID: <20081116101318.GA31541@x200.localdomain>
+References: <1226793823-32360-1-git-send-email-bwalle@suse.de> <1226793823-32360-3-git-send-email-bwalle@suse.de> <20081116003327.GA2405@x200.localdomain> <20081116102843.35658969@kopernikus.site>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Regression in bonding between 2.6.26.8 and 2.6.27.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081116102843.35658969@kopernikus.site>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Sun, Nov 16, 2008 at 10:28:43AM +0100, Bernhard Walle wrote:
+> * Alexey Dobriyan [2008-11-16 03:33]:
+> >
+> > On Sun, Nov 16, 2008 at 01:03:43AM +0100, Bernhard Walle wrote:
+> > > --- a/include/linux/sysctl.h
+> > > +++ b/include/linux/sysctl.h
+> > > @@ -858,6 +858,7 @@ enum {
+> > >  	DEV_MAC_HID=5,
+> > >  	DEV_SCSI=6,
+> > >  	DEV_IPMI=7,
+> > > +	DEV_MEM=8,
+> > >  };
+> > >  
+> > >  /* /proc/sys/dev/cdrom */
+> > > @@ -875,6 +876,11 @@ enum {
+> > >  	DEV_PARPORT_DEFAULT=-3
+> > >  };
+> > >  
+> > > +/* /proc/sys/dev/mem */
+> > > +enum {
+> > > +    DEV_MEM_RESTRICTED=1,
+> > > +};
+> > 
+> > No new binary sysctls please.
+> 
+> Why is that sysctl binary? It's just an integer.
 
-I have something that looks like a regression in bonding between 
-2.6.26.8 and 2.6.27.6 (I'll try the mid-steps later).
+It's a name for sysctls accessible via sysctl(2).
 
-Setup: LACP bond(mode=4,mmimon=100) with 3 NIC's and dhcp on top (static 
-ip didn't work either).
-
-Problem: The bond doesn't get up after bootup. Subsequence ifdown/ifup 
-brings it up.
-
-I suspect it it timing related. The interface being configured before 
-it's ready:
-root@quad01:~# dmesg | egrep '(dhc|bond)'
-[   12.421963] bonding: MII link monitoring set to 100 ms
-[   12.483370] bonding: bond0: enslaving eth0 as a backup interface with 
-an up link.
-[   12.523372] bonding: bond0: enslaving eth1 as a backup interface with 
-an up link.
-[   12.611731] bonding: bond0: enslaving eth2 as a backup interface with 
-a down link.
-[   12.780816] warning: `dhclient3' uses 32-bit capabilities (legacy 
-support in use)
-[   15.720491] bonding: bond0: link status definitely up for interface eth2.
-[   87.800324] bond0: no IPv6 routers present
-
-
-The setup is a 3 NIC bond on a Sun X2200 dual-cpu Quad-core server.
-I have similar bond on a X4600 where they works with 2.6.27.6 so I 
-suspect that the difference is that the X4600 has all NIC's from the
-same vendor where as the X2200 has 2 Broadcom NIC's and 2 NVidia nics.
-
-root@quad01:~# lspci | grep -i ethernet
-00:08.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a3)
-00:09.0 Bridge: nVidia Corporation MCP55 Ethernet (rev a3)
-06:04.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5715 
-Gigabit Ethernet (rev a3)
-06:04.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5715 
-Gigabit Ethernet (rev a3)
-
-
-
-
--- 
-Jesper
+Please, if you're adding sysctl, supply only .procname and make it accessible
+only via /proc/sys/.
