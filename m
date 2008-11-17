@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYKQCCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbYKQCDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYKQCCZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 21:02:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbYKQCCP
+	id S1756252AbYKQCDT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 21:03:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbYKQCDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 21:02:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48095 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754589AbYKQCCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 21:02:15 -0500
-Message-ID: <4920D07C.40005@kernel.org>
-Date: Mon, 17 Nov 2008 11:01:32 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 16 Nov 2008 21:03:09 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:44683 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754654AbYKQCDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 21:03:08 -0500
+Message-ID: <4920D0D7.7050905@sgi.com>
+Date: Sun, 16 Nov 2008 18:03:03 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Brad Campbell <brad@wasp.net.au>
-CC: Mikael Pettersson <mikpe@it.uu.se>, Linda Walsh <lkml@tlinx.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Smartmontools Mailing List 
-	<smartmontools-support@lists.sourceforge.net>,
-       linux-ide@vger.kernel.org
-Subject: Re: FYI: BUG in SATA Promise 300 TX4 (2.6.24 - 2.6.27-3) w/Linux
-References: <491C9A4F.1020801@tlinx.org>	<491FB7E2.2030105@kernel.org> <18719.65298.689618.835202@harpo.it.uu.se> <49204EEA.8030605@wasp.net.au>
-In-Reply-To: <49204EEA.8030605@wasp.net.au>
-X-Enigmail-Version: 0.95.7
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org> <4920B3E3.4050707@zytor.com> <4920B911.7060504@kernel.org> <4920BA3A.5090100@zytor.com> <4920BCA8.6080600@kernel.org> <4920BF62.10700@zytor.com> <4920C19E.8090402@kernel.org> <4920C21C.2030605@zytor.com>
+In-Reply-To: <4920C21C.2030605@zytor.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 17 Nov 2008 02:01:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brad Campbell wrote:
->> The hardreset fix was included in 2.6.27.5. I wanted it in 2.6.26-stable
->> too, but that branch seems to have been closed now.
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> so we have one list to map domain/bus/dev/func to bits [31,12] in irq ?
+>>
 > 
-> Is that likely to do anything for the old SATA150-TX4 ?
-> I have 2 of them in a machine and I've been dropping drives under write
-> load recently but it was a 2.6.27.4 kernel.
+> That works, although having a more generic allocation mechanism which
+> isn't so tied to MSI-X would make more sense.
 > 
-> Reboot required to pick up the drives again (unless the kernel panics
-> and it reboots itself - which it's been doing also).
+> 	-hpa
 
-Does unloading and reloading sata_promise fix the problem?  If your root
-is on promise, you'll need to try this from usb stick or live CD.
+Hmm, I see I picked up this conversation quite late.  I would agree that
+trying to map any set of fixed bit fields to domain/bus/device/function
+would be problematic (esp. since I don't understand how MSI's figure into
+the deal.)
 
--- 
-tejun
+Is there some reason why we need that?
+
+Thanks,
+Mike
