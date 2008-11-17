@@ -1,36 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYKQN6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752818AbYKQOBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbYKQN6M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:58:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYKQN55
+	id S1752818AbYKQOBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 09:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbYKQOBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:57:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49046 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbYKQN54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:57:56 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20081116162149.07f05c7c@kopernikus.site>
-References: <20081116162149.07f05c7c@kopernikus.site> <1226846868-9595-1-git-send-email-bwalle@suse.de> <1226846868-9595-4-git-send-email-bwalle@suse.de> <20081116150901.4d824e6d@lxorguk.ukuu.org.uk>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: dhowells@redhat.com, Alan Cox <alan@lxorguk.ukuu.org.uk>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       crash-utility@redhat.com
-Subject: Re: [PATCH 3/3] Remove CONFIG_STRICT_DEVMEM
-Date: Mon, 17 Nov 2008 13:57:38 +0000
-Message-ID: <32168.1226930258@redhat.com>
+	Mon, 17 Nov 2008 09:01:13 -0500
+Received: from zucker.schokokeks.org ([78.46.69.5]:35050 "EHLO
+	zucker.schokokeks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751582AbYKQOBN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 09:01:13 -0500
+X-Greylist: delayed 307 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Nov 2008 09:01:13 EST
+From: Hanno =?utf-8?q?B=C3=B6ck?= <hanno@hboeck.de>
+To: linux-kernel@vger.kernel.org
+Subject: Inclusion of tp_smapi module into kernel?
+Date: Mon, 17 Nov 2008 14:55:49 +0100
+User-Agent: KMail/1.9.10
+Cc: tpctl-users@lists.sourceforge.net
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart76685882.XZN7g1HNW6";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200811171455.50039.hanno@hboeck.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernhard Walle <bwalle@suse.de> wrote:
+--nextPart76685882.XZN7g1HNW6
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> For embedded users, do they use CONFIG_SYSCTL at all?
+Hi,
 
-Yes.  It still allows you to configure various things about the kernel.
+=46or thinkpad users, there is the tp_smapi module (along with thinkpad_ec =
+and=20
+an improved hdaps driver):
+http://sourceforge.net/projects/tpctl
 
-David
+I wanted to ask if there is some status on possible kernel inclusion. On
+http://www.linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
+I read
+"will not be accepted upstream due to authorship issues (written by an=20
+anonymous developer)"
+
+Now I can see copyright notices in all source files, though they may be=20
+incomplete. But anyway, would this be a real problem?
+Is there any rule that kernel code needs a named author? As long as it has =
+a=20
+fitting license, shouldn't this be fine?
+
+(tp_smapi and thinkpad_ec are gpl2 or later, hdaps is gpl2, so this should =
+be=20
+just fine)
+
+cu,
+
+=2D-=20
+Hanno B=C3=B6ck		Blog:		http://www.hboeck.de/
+GPG: 3DBD3B20		Jabber/Mail:	hanno@hboeck.de
+
+http://waldbesetzung.blogsport.de/ Waldbesetzung gegen Flughafenausbau=20
+=46rankfurt, 28. - 30.11.
+http://www.jukss.de/ Jugemdumweltkongress, 27.12.-4.1.
+
+--nextPart76685882.XZN7g1HNW6
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAkkhd+YACgkQr2QksT29OyDPoQCgkStFTsQ8k9HUnf2AnRPa11iS
+uqQAoJz5mklmivpGgPWxXftWWs2gJWRX
+=n9Gh
+-----END PGP SIGNATURE-----
+
+--nextPart76685882.XZN7g1HNW6--
