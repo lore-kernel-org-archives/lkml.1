@@ -1,60 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYKQLhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbYKQLwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYKQLhJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 06:37:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbYKQLg5
+	id S1756129AbYKQLwq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 06:52:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYKQLwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 06:36:57 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:56407 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753380AbYKQLgz (ORCPT
+	Mon, 17 Nov 2008 06:52:37 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:27783 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbYKQLwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 06:36:55 -0500
-Subject: Re: 2.6.28-rc5: Reported regressions from 2.6.27
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>
-In-Reply-To: <20081116182953.6231ae8c@lxorguk.ukuu.org.uk>
-References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera>
-	 <20081116182953.6231ae8c@lxorguk.ukuu.org.uk>
+	Mon, 17 Nov 2008 06:52:36 -0500
+X-IronPort-AV: E=Sophos;i="4.33,618,1220241600"; 
+   d="scan'208";a="28354012"
+Subject: Re: [PATCH 04 of 38] swiotlb: move some definitions to header
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, x86@kernel.org
+In-Reply-To: <20081117120246K.fujita.tomonori@lab.ntt.co.jp>
+References: <patchbomb.1226603398@abulafia.goop.org>
+	 <3d0746ce3c320ac694db.1226603402@abulafia.goop.org>
+	 <20081117120246K.fujita.tomonori@lab.ntt.co.jp>
 Content-Type: text/plain
-Date: Mon, 17 Nov 2008 20:36:46 +0900
-Message-Id: <1226921806.8582.6.camel@localhost.localdomain>
+Organization: Citrix Systems, Inc.
+Date: Mon, 17 Nov 2008 11:52:28 +0000
+Message-Id: <1226922748.18916.28.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 17 Nov 2008 11:52:35.0349 (UTC) FILETIME=[FB3D0450:01C948AA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-16 at 18:29 +0000, Alan Cox wrote:
-> >      the majority of these patches have not been merged for over two weeks
-> >      (for almost three weeks in many cases and for over a _month_ in one case).
-> >      IMO, this is insane.]
-> 
-> Some of them are quite serious too - some stuff is basically unusable in
-> 2.6.28rc due to the vmalloc bug.
-> 
-> Is there any reason why someone (Rafael ?) shouldn't simply submit all of
-> those patches that look sensible, are reported to fix regressions and
-> whose maintainer has not provided a reason to NOT apply them into the
-> tree ?
+On Mon, 2008-11-17 at 12:48 +0900, FUJITA Tomonori wrote:
+> Why do we need to export IO_TLB_SEGSIZE and IO_TLB_SHIFT to everyone
+> in include/linux?
 
-There is for SCSI.  Our two bugzilla entries each have several patches
-(one has two, the other has four).  The patches listed in the
-regressions aren't necessarily going to be the ones applied (depending
-on how the arguing and testing goes).
+A subsequent Xen patch needs to make use of them, although I can't see
+it in the patchset Jeremy posted so here it is (not fully baked yet)
 
-James
+Subject: xen swiotlb: fixup swiotlb is chunks smaller than MAX_CONTIG_ORDER
+
+From: Ian Campbell <ian.campbell@citrix.com>
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/pci-swiotlb_64.c |    7 +------
+ drivers/pci/xen-iommu.c          |   30 ++++++++++++++++++++----------
+ 2 files changed, 21 insertions(+), 16 deletions(-)
+
+===================================================================
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -28,12 +28,7 @@
+ 
+ void *swiotlb_alloc(unsigned order, unsigned long nslabs)
+ {
+-	void *ret = (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
+-
+-	if (ret && xen_pv_domain())
+-		xen_swiotlb_fixup(ret, 1u << order, nslabs);
+-
+-	return ret;
++	BUG();
+ }
+ 
+ static dma_addr_t
+===================================================================
+--- a/drivers/pci/xen-iommu.c
++++ b/drivers/pci/xen-iommu.c
+@@ -6,6 +6,7 @@
+ #include <linux/version.h>
+ #include <linux/scatterlist.h>
+ #include <linux/bio.h>
++#include <linux/swiotlb.h>
+ #include <linux/io.h>
+ #include <linux/bug.h>
+ 
+@@ -43,19 +44,27 @@
+ 	unsigned long	*bitmap;
+ };
+ 
++static int max_dma_bits = 32;
++
+ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+ {
+-	unsigned order = get_order(size);
++	int i, rc;
++	int dma_bits;
+ 
+-	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
+-		buf, size, order);
++	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu\n",
++		buf, size);
+ 
+-	if (WARN_ON(size != (PAGE_SIZE << order)))
+-		return;
+-
+-	if (xen_create_contiguous_region((unsigned long)buf,
+-					 order, 0xffffffff))
+-		printk(KERN_ERR "xen_create_contiguous_region failed\n");
++	dma_bits = get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT) + PAGE_SHIFT;
++	for (i = 0; i < nslabs; i += IO_TLB_SEGSIZE) {
++		do {
++			rc = xen_create_contiguous_region(
++				(unsigned long)buf + (i << IO_TLB_SHIFT),
++				get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT),
++				dma_bits);
++		} while (rc && dma_bits++ < max_dma_bits);
++		if (rc)
++			panic(KERN_ERR "xen_create_contiguous_region failed\n");
++	}
+ }
+ 
+ static inline int address_needs_mapping(struct device *hwdev,
+@@ -117,7 +126,8 @@
+ 	if (check_pages_physically_contiguous(pfn, offset, size))
+ 		return 0;
+ 
+-	printk("range_straddles_page_boundary: p=%Lx size=%d pfn=%lx\n",
++	printk(KERN_WARNING "range_straddles_page_boundary: "
++	       "p=%Lx size=%zd pfn=%lx\n",
+ 		p, size, pfn);
+ 	return 1;
+ }
 
 
