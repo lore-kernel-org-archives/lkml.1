@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYKQIth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYKQIui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756741AbYKQIth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 03:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYKQIt3
+	id S1756701AbYKQIui (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 03:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYKQIu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 03:49:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35789 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbYKQIt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 03:49:28 -0500
-Date: Mon, 17 Nov 2008 09:49:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
-	field
-Message-ID: <20081117084923.GD28786@elte.hu>
-References: <4920D571.4050007@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4920D571.4050007@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 17 Nov 2008 03:50:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38054
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752606AbYKQIu0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 03:50:26 -0500
+Date: Mon, 17 Nov 2008 00:50:25 -0800 (PST)
+Message-Id: <20081117.005025.141630310.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: folkert@vanheusden.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: [2.6.26] OOPS in __linkwatch_run_queue (unable to
+ handle kernel NULL pointer dereference at 00000235)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081117084058.GA6345@ff.dom.local>
+References: <20081030020910.f97ee3fc.akpm@linux-foundation.org>
+	<20081117084058.GA6345@ff.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Mon, 17 Nov 2008 08:40:58 +0000
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Impact: help to find the better depth of trace
+> net: link_watch: Don't add a linkwatch event before register_netdev()
 > 
-> We decided to arbitrary define the depth of function return trace as 
-> "20". Perhaps this is not enough. To help finding an optimal depth, 
-> we measure now the overrun: the number of functions that have been 
-> missed for the current thread. By default this is not displayed, we 
-> have to do set a particular flag on the return tracer: echo overrun 
-> > /debug/tracing/trace_options And the overrun will be printed on 
-> the right.
+> b44 and some other network drivers run netif_carrier_off() before
+> register_netdev(). Then, if register fails, free_netdev() destruction
+> is done while dev is still referenced and held on the lweventlist.
 > 
-> As the trace shows below, the current 20 depth is not enough.
+> Of course, it would be nice if all drivers could use some common order
+> of calling things like register_netdev() vs. netif_carrier_off(), but
+> since there is a lot of this I guess there is probably some reason,
+> so this patch doesn't change the order but assumes that such an early
+> netif_carrier_off() is only to set the __LINK_STATE_NOCARRIER flag,
+> and some netif_carrier_on()/_off() will still follow.
 > 
-> update_wall_time+0x37f/0x8c0 -> update_xtime_cache (345 ns) (Overruns: 2838)
-> update_wall_time+0x384/0x8c0 -> clocksource_get_next (1141 ns) (Overruns: 2838)
-> do_timer+0x23/0x100 -> update_wall_time (3882 ns) (Overruns: 2838)
+> Reported-by: Folkert van Heusden <folkert@vanheusden.com>
+> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 
-hm, interesting. Have you tried to figure out what a practical depth 
-limit would be?
+Ugh, drivers should not be fiddling with stuff like this before the
+device object is even registered.
 
-With lockdep we made the experience that function call stacks can be 
-very deep - if we count IRQ contexts too it can be up to 100 in the 
-extreme cases. (but at that stage kernel stack limits start hitting 
-us)
+I can just imagine all sorts of other operations drivers might find
+it "convenient" to do before the sucker is even registered, causing
+similar if not even worse problems.
 
-I'd say 50 would be needed.
+It's pretty simple, make netif_carrier_off() be the first thing
+->open() does and make it the last thing ->stop() and ->suspend()
+do.  That's how to fix this bug.
 
-	Ingo
+I'm going to fix this as follows.  B44 already abided by 2/3 of
+this by handling the ->stop() and ->suspend() cases correctly already.
+
+b44: Do not call netif_carrier_off() before device is even registered.
+
+This is illegal.  Instead simply do this first thing in ->open().
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+index c3bda5c..2e353b8 100644
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -1426,6 +1426,8 @@ static int b44_open(struct net_device *dev)
+ 	struct b44 *bp = netdev_priv(dev);
+ 	int err;
+ 
++	netif_carrier_off(dev);
++
+ 	err = b44_alloc_consistent(bp, GFP_KERNEL);
+ 	if (err)
+ 		goto out;
+@@ -2165,8 +2167,6 @@ static int __devinit b44_init_one(struct ssb_device *sdev,
+ 	dev->irq = sdev->irq;
+ 	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
+ 
+-	netif_carrier_off(dev);
+-
+ 	err = ssb_bus_powerup(sdev->bus, 0);
+ 	if (err) {
+ 		dev_err(sdev->dev,
