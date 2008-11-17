@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYKQAWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYKQAaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755607AbYKQAWW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 19:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYKQAWM
+	id S1755435AbYKQAaS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 19:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYKQA37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 19:22:12 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51535 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbYKQAWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 19:22:11 -0500
-Message-ID: <4920B911.7060504@kernel.org>
-Date: Sun, 16 Nov 2008 16:21:37 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+	Sun, 16 Nov 2008 19:29:59 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45052 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752349AbYKQA37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 19:29:59 -0500
+Message-ID: <4920BA3A.5090100@zytor.com>
+Date: Sun, 16 Nov 2008 16:26:34 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
+To: Yinghai Lu <yinghai@kernel.org>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
        tglx@linutronix.de, linux-kernel@vger.kernel.org, travis@sgi.com
 Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org> <4920B3E3.4050707@zytor.com>
-In-Reply-To: <4920B3E3.4050707@zytor.com>
+References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org> <4920B3E3.4050707@zytor.com> <4920B911.7060504@kernel.org>
+In-Reply-To: <4920B911.7060504@kernel.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yinghai Lu wrote:
->> H. Peter Anvin wrote:
->>> Yinghai Lu wrote:
->>>> 2. make irq number is bus/devfn/idx, and every dev func will use 12bit range, irq number is relatively fixed not like current MSI irq creating is some kind of floating from NR_IRQS too. 
->>> 2 is *STILL WRONG*, dammit!
->>>
->>> You keep bringing this one up, but our PCI addressing is
->>> *DOMAIN*/bus/devfn -- it falls flat on its face when you have more than
->>> 16 PCI domains.  CAN WE PLEASE STOP WITH THIS FOOLISHNESS NOW!
->> you want to u64 instead of unsigned int for irq?
+Yinghai Lu wrote:
 >>
+>> I really don't think anyone gives a hoot about the IRQ number for any
+>> IRQ above the 0-15 legacy range, even including the "APIC" numbers 16+.
 > 
-> No, I think the whole notion of a static *numeric* identifier for an IRQ
-> when it's something like MSI-X is simply pointless.  I think we should
-> assign IRQ numbers beyond the legacy range dynamically.
+> you want to change ioapic/pin to irq mapping too?
+> so INTx and MSI will call create_irq_nr to get one irq for 16, and following first come and first serve rule.
 > 
-> I really don't think anyone gives a hoot about the IRQ number for any
-> IRQ above the 0-15 legacy range, even including the "APIC" numbers 16+.
 
-you want to change ioapic/pin to irq mapping too?
+I personally don't think there is any issue with changing ioapic/pin to
+IRQ mapping.  Other people may disagree.  My opinion is that IRQ numbers
+16-23 are somewhat useful when you're dealing with a single IOAPIC, but
+after that it's all a blur.
 
-so INTx and MSI will call create_irq_nr to get one irq for 16, and following first come and first serve rule.
+It would, however, be a good idea if IOAPICs had their numbers assigned
+at detection time, as opposed to when the interrupt is registered, thus
+making it a stable number for a single boot, at least.  The same is
+probably true for MSI(-X); we could assign it a range of numbers when
+the device is enumerated (as opposed to when a driver is activated), but
+I don't know to what extent that is likely to cause more troubles than
+it solves.
 
-YH
+	-hpa
