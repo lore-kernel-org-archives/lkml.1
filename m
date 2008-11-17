@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbYKQQUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbYKQQV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbYKQQUd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:20:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYKQQUZ
+	id S1753677AbYKQQV7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:21:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYKQQVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:20:25 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:53549 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYKQQUZ (ORCPT
+	Mon, 17 Nov 2008 11:21:50 -0500
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:30001 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752193AbYKQQVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:20:25 -0500
-Message-ID: <492199AA.2090801@oracle.com>
-Date: Mon, 17 Nov 2008 08:19:54 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 17 Nov 2008 11:21:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Reply-To:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=X2Oh5DYjvIAJkkz5xABrRYLPRSCnw9Lf2ZcyugxJdOu8+yLxv3w788AHOozVkE9Pr8zZo0ykcZ+9mM8QKvgc50ZgoH5zcJLEkyyIngaXONNKvsr+33ZLhGds5koen2guZSDIrsfyHzKGDEYRpCv3mGKuPElNEi8iTq0xiX7plIg=  ;
+X-YMail-OSG: DCzXMU8VM1nABmGryLL16vXwThTCj4qUpbfqmqytKKjWWSg6prVn_2F1_WjZ.kmUpUyWBFHr7x3UJXGTHdozm10cLgJjQZl44QuW8v7zxlKZCaufNsso1aSMotLmz7SCaIw-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+Reply-To: dbrownell@users.sourceforge.net
+To: Mark Brown <broonie@sirena.org.uk>
+Subject: Re: [patch 2.6.28-rc5] regulator: enable/disable refcounting
+Date: Mon, 17 Nov 2008 08:21:47 -0800
+User-Agent: KMail/1.9.10
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, lkml <linux-kernel@vger.kernel.org>
+References: <200811161144.46582.david-b@pacbell.net> <20081117151636.GG1559@sirena.org.uk>
+In-Reply-To: <20081117151636.GG1559@sirena.org.uk>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-Subject: Re: [Bug #11404] BUG: in 2.6.23-rc3-git7 in do_cciss_intr
-References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.hsB.gKHIJB@chimera>
-In-Reply-To: <NjF0-fuClJC.A.hsB.gKHIJB@chimera>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.492199B0.00CF:SCFSTAT928724,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200811170821.47582.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.26 and 2.6.27.
+On Monday 17 November 2008, Mark Brown wrote:
+> On Sun, Nov 16, 2008 at 11:44:46AM -0800, David Brownell wrote:
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
-> be listed and let me know (either way).
+> > +	mutex_lock(&rdev->mutex);
+> > +	if (regulator->enabled == 1) {
+> > +		ret = _regulator_disable(rdev);
+> > +		if (ret == 0)
+> > +			regulator->uA_load = 0;
 > 
+> Why clear the load here?  I'd expect to be able to enable and disable
+> the regulator while preserving the configuration.
 
-Nothing has changed.  IMO that means leave the bug as is (alive).
+That clear was in the original code.  Didn't make much sense
+to me either, but I was just caring it forward...
 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11404
-> Subject		: BUG: in 2.6.23-rc3-git7 in do_cciss_intr
-> Submitter	: rdunlap <randy.dunlap@oracle.com>
-> Date		: 2008-08-21 5:52 (88 days old)
-> References	: http://marc.info/?l=linux-kernel&m=121929819616273&w=4
-> 		  http://marc.info/?l=linux-kernel&m=121932889105368&w=4
-> Handled-By	: Miller, Mike (OS Dev) <Mike.Miller@hp.com>
-> 		  James Bottomley <James.Bottomley@hansenpartnership.com>
-
--- 
-~Randy
