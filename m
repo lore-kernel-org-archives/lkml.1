@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYKQVXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbYKQVY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbYKQVXd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYKQVXY
+	id S1754072AbYKQVY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbYKQVYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:23:24 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:42465 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751468AbYKQVXX (ORCPT
+	Mon, 17 Nov 2008 16:24:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44541 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751461AbYKQVYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:23:23 -0500
-Date: Mon, 17 Nov 2008 16:23:22 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Manish Lachwani <mlachwani@gmail.com>
-cc: USB list <linux-usb@vger.kernel.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: oops in file_storage.c
-In-Reply-To: <431757fd0810231055m4b697888j9132f7183a2318c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0811171622520.18528-100000@iolanthe.rowland.org>
+	Mon, 17 Nov 2008 16:24:19 -0500
+Date: Mon, 17 Nov 2008 13:23:23 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       paulus@samba.org, benh@kernel.crashing.org, linuxppc-dev@ozlabs.org,
+       mingo@elte.hu, tglx@linutronix.de, linux-mm@kvack.org
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <20081117130856.92e41cd3.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <20081117130856.92e41cd3.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Oct 2008, Manish Lachwani wrote:
 
-> Hi Alan,
-> 
-> Yes, I am trying out the changes below. Will let you know how it goes.
-> If it works well, I will send an updated patch.
 
+On Mon, 17 Nov 2008, Andrew Morton wrote:
 > 
-> diff --git a/drivers/usb/gadget/file_storage.c
-> b/drivers/usb/gadget/file_storage.c index 3e807f0..844f992 100644 ---
-> a/drivers/usb/gadget/file_storage.c +++
-> b/drivers/usb/gadget/file_storage.c @@ -1927,26 +1927,11 @@ static
-> int do_write(struct fsg_dev *fsg)
->  static int fsync_sub(struct lun *curlun)
->  {
->         struct file     *filp = curlun->filp;
-> -       struct inode    *inode;
-> -       int             rc, err;
+> Far be it from me to apportion blame, but THIS IS ALL LINUS'S FAULT!!!!! :)
 > 
->         if (curlun->ro || !filp)
->                 return 0;
-> -       if (!filp->f_op || !filp->f_op->fsync)
-> -               return -EINVAL;
-> 
-> -       inode = filp->f_path.dentry->d_inode;
-> -       mutex_lock(&inode->i_mutex);
-> -       rc = filemap_fdatawrite(inode->i_mapping);
-> -       err = filp->f_op->fsync(filp, filp->f_path.dentry, 1);
-> -       if (!rc)
-> -               rc = err;
-> -       err = filemap_fdatawait(inode->i_mapping);
-> -       if (!rc)
-> -               rc = err;
-> -       mutex_unlock(&inode->i_mutex);
-> -       VLDBG(curlun, "fdatasync -> %d\n", rc);
-> -       return rc;
-> +       return do_fsync(filp, 0);
->  }
-> 
->  static void fsync_all(struct fsg_dev *fsg)
-> diff --git a/fs/sync.c b/fs/sync.c
-> index e700eb1..53ff1f3 100644
-> --- a/fs/sync.c
-> +++ b/fs/sync.c
-> @@ -111,6 +111,7 @@ long do_fsync(struct file *file, int datasync)
->  out:
->         return ret;
->  }
-> +EXPORT_SYMBOL(do_fsync);
-> 
->  static long __do_fsync(unsigned int fd, int datasync)
->  {
+> I fixed this six years ago.  See http://lkml.org/lkml/2002/6/17/68
 
-Any news on this?
+Btw, in that thread I also said:
 
-Alan Stern
+  "If we have 64kB pages, such architectures will have to have a bigger 
+   kernel stack. Which they will have, simply by virtue of having the very 
+   same bigger page. So that problem kind of solves itself."
 
+and that may still be the "right" solution - if somebody is so insane that 
+they want 64kB pages, then they might as well have a 64kB kernel stack as 
+well. 
+
+Trust me, the kernel stack isn't where you blow your memory with a 64kB 
+page. You blow all your memory on the memory fragmentation of your page 
+cache. I did the stats for the kernel source tree a long time ago, and I 
+think you wasted something like 4GB of RAM with a 64kB page size.
+
+			Linus
