@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbYKQWLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbYKQWMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbYKQWLV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 17:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483AbYKQWLJ
+	id S1754377AbYKQWMY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 17:12:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYKQWMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 17:11:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752377AbYKQWLI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 17:11:08 -0500
-Date: Mon, 17 Nov 2008 14:09:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, Stephen Hemminger <shemminger@vyatta.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: system_call() - Re: [Bug #11308] tbench regression on each kernel
- release from 2.6.22 -&gt; 2.6.28
-In-Reply-To: <20081117215950.GA6398@elte.hu>
-Message-ID: <alpine.LFD.2.00.0811171407080.18283@nehalem.linux-foundation.org>
-References: <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com>
- <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org> <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu> <20081117215950.GA6398@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 17 Nov 2008 17:12:15 -0500
+Received: from kroah.org ([198.145.64.141]:40195 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752009AbYKQWMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 17:12:14 -0500
+Date: Mon, 17 Nov 2008 13:35:58 -0800
+From: Greg KH <greg@kroah.com>
+To: Theodore Tso <tytso@mit.edu>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [stable] [patch 24/46] Fix broken ownership of /proc/sys/ files
+Message-ID: <20081117213558.GA9808@kroah.com>
+References: <20081117070621.430169021@blue.kroah.org> <20081117071547.GY29522@kroah.com> <20081117200859.GF14523@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081117200859.GF14523@mit.edu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 17 Nov 2008, Ingo Molnar wrote:
+On Mon, Nov 17, 2008 at 03:09:00PM -0500, Theodore Tso wrote:
+> On Sun, Nov 16, 2008 at 11:15:47PM -0800, Greg KH wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> > ------------------
+> > 
+> > From: Al Viro <viro@ZenIV.linux.org.uk>
+> > 
+> > commit 5c06fe772da43db63b053addcd2c267f76d0be91 upstream.
+> > 
+> > D'oh...
+> > 
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> > Reported-and-tested-by: Peter Palfrader <peter@palfrader.org>
+> > Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> syscall entry instruction costs - unavoidable security checks, etc. - 
-> hardware costs.
+> It's harmless to include this, but I thought this fixed a regression
+> that showed up only after 2.6.28-rc4?
 
-Yes. One thing to look out for on x86 is the system call _return_ path. It 
-doesn't show up in kernel profiles (it shows up as user costs), and we had 
-a bug where auditing essentially always caused us to use 'iret' instead of 
-'sysret' because it took us the long way around.
+I thought I saw a report that it happened for someone using the 2.6.27.y
+tree as well.
 
-And profiling doesn't show it, but things like lmbench did, iret being 
-about five times slower than sysret.
+thanks,
 
-But yes:
-
-> -ENTRY(system_call_after_swapgs)
-> +.globl system_call_after_swapgs
-> +system_call_after_swapgs:
-
-This definitely makes sense. We definitely do not want to align that 
-special case.
-
-		Linus
+greg k-h
