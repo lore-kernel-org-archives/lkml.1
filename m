@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbYKQCDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756145AbYKQCJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbYKQCDT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 21:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbYKQCDJ
+	id S1756145AbYKQCJT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 21:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbYKQCJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 21:03:09 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:44683 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754654AbYKQCDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 21:03:08 -0500
-Message-ID: <4920D0D7.7050905@sgi.com>
-Date: Sun, 16 Nov 2008 18:03:03 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 16 Nov 2008 21:09:10 -0500
+Received: from yx-out-2122.google.com ([74.125.44.26]:14579 "EHLO
+	yx-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754621AbYKQCJJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 21:09:09 -0500
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org> <4920B3E3.4050707@zytor.com> <4920B911.7060504@kernel.org> <4920BA3A.5090100@zytor.com> <4920BCA8.6080600@kernel.org> <4920BF62.10700@zytor.com> <4920C19E.8090402@kernel.org> <4920C21C.2030605@zytor.com>
-In-Reply-To: <4920C21C.2030605@zytor.com>
+Date: Sun, 16 Nov 2008 18:09:07 -0800 (PST)
+In-Reply-To: <fa.bpPjMeyj8xB9538KBi6bqExNNEA@ifi.uio.no>
+X-IP: 82.113.55.18
+References: <fa.mpq0DX5K46IifhpU7MkX+zEPRog@ifi.uio.no> <fa.bpPjMeyj8xB9538KBi6bqExNNEA@ifi.uio.no>
+User-Agent: G2/1.0
+X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.3) 
+	Gecko/2008092816 Iceweasel/3.0.3 (Debian-3.0.3-3),gzip(gfe),gzip(gfe)
+Message-ID: <dbed9d1b-f761-4621-b328-ee68562a9dd7@z28g2000prd.googlegroups.com>
+Subject: Re: Possibility to build more kernels in one shot?
+From: cijoml@gmail.com
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Yinghai Lu wrote:
->> so we have one list to map domain/bus/dev/func to bits [31,12] in irq ?
->>
-> 
-> That works, although having a more generic allocation mechanism which
-> isn't so tied to MSI-X would make more sense.
-> 
-> 	-hpa
+Hello Alexey,
 
-Hmm, I see I picked up this conversation quite late.  I would agree that
-trying to map any set of fixed bit fields to domain/bus/device/function
-would be problematic (esp. since I don't understand how MSI's figure into
-the deal.)
 
-Is there some reason why we need that?
 
-Thanks,
-Mike
+Alexey Dobriyan wrote:
+> On Tue, Nov 11, 2008 at 08:01:14AM +0100, CIJOML wrote:
+> > currently I compile kernel for 12 different machines. I would like to see
+> > profile support in kernel, so I could have all my .configs in source and
+> > compile them in one shot. and than see in profile directory subdirectories
+> > for every config with it's vmlinuz and modules.
+>
+> Write a script, shouldn't take more than 15 min including testing.
+> And use "make O=".
+
+I currently use it, but It is not a good idea (fill make oldconfig 12x
+with mostly same answers makes me personally mad)
+
+>
+> > I think it would speedup also compilation time because some .o should be than
+> > reuse.
+>
+> Very optimistic hope. Use ccache(1) if you want .o reuse.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
