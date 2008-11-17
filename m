@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbYKQTGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbYKQTKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbYKQTGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYKQTGE
+	id S1752648AbYKQTKJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:10:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYKQTJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:06:04 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:52092 "EHLO e6.ny.us.ibm.com"
+	Mon, 17 Nov 2008 14:09:57 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:45517 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbYKQTGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:06:01 -0500
-Subject: Re: [PATCH 4/4] integrity: IMA radix tree
+	id S1751048AbYKQTJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 14:09:56 -0500
+Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, jmorris@namei.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, safford@watson.ibm.com,
-       serue@linux.vnet.ibm.com, zohar@us.ibm.com
-In-Reply-To: <20081114141518.3a463dfe.akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       David Safford <safford@watson.ibm.com>,
+       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+In-Reply-To: <20081117160515.GA25459@infradead.org>
 References: <cover.1226547084.git.zohar@linux.vnet.ibm.com>
-	 <eb03c8958cecce6f38ff9d7ab562542ee1def143.1226547085.git.zohar@linux.vnet.ibm.com>
-	 <20081114141518.3a463dfe.akpm@linux-foundation.org>
+	 <9395c0a4110469d19100084664900789c34ebd42.1226547084.git.zohar@linux.vnet.ibm.com>
+	 <20081117160515.GA25459@infradead.org>
 Content-Type: text/plain
-Date: Mon, 17 Nov 2008 14:05:36 -0500
-Message-Id: <1226948736.2927.31.camel@localhost.localdomain>
+Date: Mon, 17 Nov 2008 14:09:40 -0500
+Message-Id: <1226948980.2927.33.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -29,124 +30,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-11-14 at 14:15 -0800, Andrew Morton wrote: 
-> On Wed, 12 Nov 2008 22:47:14 -0500
-> Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+On Mon, 2008-11-17 at 11:05 -0500, Christoph Hellwig wrote: 
+> On Wed, Nov 12, 2008 at 10:47:12PM -0500, Mimi Zohar wrote:
+> > This version resolves the merge issues resulting from the removal
+> > of the nameidata parameter to inode_permission(), by moving the
+> > integrity_inode_permission() call from inode_permission() to
+> > may_open(), and renaming the hook to integrity_nameidata_check().
 > 
-> > This version stores integrity information associated with an inode
-> > in a radix tree in order to avoid bloating the in memory inode.
-> > As entries can not be added to the radix tree at security_initcall,
-> > this version removes the dual stage initialization.  Allocating and
-> > freeing the memory continues to be done at inode_alloc and file_free,
-> > respectively, except for inodes created before late_initcall.
-> > 
-> > Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-> > ---
-> > diff --git a/include/linux/fs.h b/include/linux/fs.h
-> > index bc6460c..0dcdd94 100644
-> > --- a/include/linux/fs.h
-> > +++ b/include/linux/fs.h
-> > @@ -683,9 +683,6 @@ struct inode {
-> >  #ifdef CONFIG_SECURITY
-> >  	void			*i_security;
-> >  #endif
-> > -#ifdef CONFIG_INTEGRITY
-> > -	void			*i_integrity;
-> > -#endif
-> 
-> ah, I was going to ask about that..
+> Still neither a good parameter nor a good name.  If you look at fsdevel
+> you'll see that a patch for the next merged window is already out and
+> in Al's to be applied queue that removes the nameidata there.  A
+> strcut path and maybe the MAY_ lookup flags should be enough for you,
+> and a integrity_path_check also sounds like it really does what you
+> want.
 
-Hm, perhaps posting as a separate patch was not such a good idea.
+Ok. So, instead of integrity_nameidata_check(nd, flags), call it
+integrity_path_check(path, flags). 
 
-> >  	void			*i_private; /* fs or device private pointer */
-> >  };
-> >  
-> > diff --git a/security/integrity/ima/Makefile b/security/integrity/ima/Makefile
-> > index f3aced4..959ae66 100644
-> > --- a/security/integrity/ima/Makefile
-> > +++ b/security/integrity/ima/Makefile
-> > @@ -6,4 +6,4 @@
-> >  obj-$(CONFIG_IMA) += ima.o
-> >  
-> >  ima-y := ima_fs.o ima_queue.o ima_init.o ima_main.o ima_crypto.o ima_api.o \
-> > -	 ima_policy.o
-> > +	 ima_policy.o ima_iint.o
-> > diff --git a/security/integrity/ima/ima.h b/security/integrity/ima/ima.h
-> > index 9a24305..09a5e1a 100644
-> > --- a/security/integrity/ima/ima.h
-> > +++ b/security/integrity/ima/ima.h
-> > @@ -92,7 +92,6 @@ void ima_store_measurement(void *d);
-> >  void ima_template_show(struct seq_file *m, void *e,
-> >  		       enum integrity_show_type show);
-> >  
-> > -
-> >  /*
-> >   * used to protect h_table and sha_table
-> >   */
-> > @@ -109,7 +108,7 @@ extern struct ima_h_table ima_htable;
-> >  
-> >  static inline unsigned long IMA_HASH_KEY(u8 *digest)
-> >  {
-> > -	 return(hash_long(*digest, IMA_HASH_BITS));
-> > +	return (hash_long(*digest, IMA_HASH_BITS));
-> 
-> And I _did_ ask about that ;)
-Definitely better now.
+Perhaps I'm looking at the wrong vfs tree, but I don't see the changes.
+Where is fsdevel? 
 
-> >  }
-> >  
-> >  /* TPM "Glue" definitions */
-> > @@ -145,11 +144,36 @@ struct ima_iint_cache {
-> >  	u8 hmac[IMA_DIGEST_SIZE];
-> >  	u8 digest[IMA_DIGEST_SIZE];
-> >  	struct mutex mutex;
-> > +	atomic_t refcount;
-> >  };
-> >  #define IMA_IINT_INIT		1
-> >  #define IMA_MUST_MEASURE	2
-> >  #define IMA_MEASURED		4
-> >  
-> > +void ima_iint_init(void);
-> > +struct ima_iint_cache * ima_iint_lookup(struct inode *inode);
-> 
-> checkpatch...
-> >
-> > ...
-> >
-> > --- /dev/null
-> > +++ b/security/integrity/ima/ima_iint.c
-> > @@ -0,0 +1,68 @@
-> > +/*
-> > + * Copyright (C) 2008 IBM Corporation
-> > + *
-> > + * Authors:
-> > + * Mimi Zohar <zohar@us.ibm.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License as
-> > + * published by the Free Software Foundation, version 2 of the
-> > + * License.
-> > + *
-> > + * File: ima_iint.c
-> > + *             cache integrity information associated with an inode
-> > + *             using a radix tree.
-> > + */
-> > +#include <linux/module.h>
-> > +#include <linux/spinlock.h>
-> > +#include <linux/radix-tree.h>
-> > +#include "ima.h"
-> > +
-> > +static struct radix_tree_root ima_iint_store;
-> > +DEFINE_SPINLOCK(ima_iint_lock);
-> > +
-> > +void ima_iint_init(void)
-> > +{
-> > +	INIT_RADIX_TREE(&ima_iint_store, GFP_ATOMIC);
-> > +}
-> 
-> Use the RADIX_TREE() macro, then remove this function.
+> Also please merge the last radix tree patch into this one so tat it's
+> possible to review the code that actually goes in instead of replacing
+> a large part of it in a follow-up patch.
 
-Done. Will be in next patch set.
+np
 
 Mimi
 
