@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbYKQGx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYKQGzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbYKQGx4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 01:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbYKQGxs
+	id S1753451AbYKQGzU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 01:55:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbYKQGzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 01:53:48 -0500
-Received: from gate.crashing.org ([63.228.1.57]:47487 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbYKQGxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 01:53:48 -0500
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       travis@sgi.com
-In-Reply-To: <4920F649.60901@zytor.com>
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>
-	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>
-	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>
-	 <20081110094033.GL22392@elte.hu>
-	 <20081110015511.453a801e.akpm@linux-foundation.org>
-	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>
-	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>
-	 <491C8B38.9060901@kernel.org>
-	 <20081113131850.d94fb229.akpm@linux-foundation.org>
-	 <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org>
-	 <4920B15E.6090200@zytor.com> <1226895741.7178.183.camel@pasglop>
-	 <4920F649.60901@zytor.com>
-Content-Type: text/plain
-Date: Mon, 17 Nov 2008 17:52:35 +1100
-Message-Id: <1226904755.7178.223.camel@pasglop>
+	Mon, 17 Nov 2008 01:55:07 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47744 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbYKQGzG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 01:55:06 -0500
+Date: Mon, 17 Nov 2008 15:54:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Gene Heskett" <gene.heskett@gmail.com>
+Subject: Re: [PATCH] mm: evict streaming IO cache first
+Message-Id: <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com>
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081115210039.537f59f5.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org>
+	<49208E9A.5080801@redhat.com>
+	<20081116204720.1b8cbe18.akpm@linux-foundation.org>
+	<20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com>
+	<2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-16 at 20:42 -0800, H. Peter Anvin wrote:
-> Benjamin Herrenschmidt wrote:
-> > 
-> > IRQ numbers are arbitrary, some platforms make up numbers out of the
-> > blue, or they can be hypervisor internal tokens etc...
-> > 
-> > The only sane way to handle this generically IMHO is to do what we do
-> > on powerpc (and I think sparc64) which is to totally disconnect the HW
-> > number from the "linux" number.
-> > 
+On Mon, 17 Nov 2008 15:39:20 +0900
+"KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> rewote by div to mul changing.
 > 
-> Yes, that's what I want to see, too.  On x86, it's important to preserve
-> the first 16 (BIOS-compatible, XT-PIC) numbers, as they are widely used
-> as a user interface, but for the rest, there is no point.
+> 
+>                         file               recent scanned.
+>   %file = IO_cost * ------------ * -------------
+>                      anon + file       recent rotated.
+> 
+> 
+Ah, sorry.
 
-Right, and I do that on powerpc by reserving those numbers so they get
-automatically assigned to and only to the PIC that comes up as claiming
-the legacy number space (if any, if none, then they remain unassigned to
-avoid problems with old crappy modules hard coding IRQ numbers and
-trying to request them).
+> > But when "files are used by streaming or some touch once application",
+> > there is no rotation because they are in INACTIVE FILE at first add_to_lru().
+> > But recent_rotated will not increase while recent_scanned goes bigger and bigger.
+> 
+> Yup.
+> 
+> > Then %file goes to 0 rapidly.
+> 
+> I think reverse.
+> 
+> The problem is, when streaming access started right after, recent
+> scanned isn't so much.
+> then %file don't reach 100%.
+> 
+> then, few anon pages swaped out althouth memory pressure isn't so heavy.
+> 
+"few" ? 
+85Mbytes of used swap while 1.2GBytes of free memory in Gene Heskett's report.
+Hmm..
 
-> It is probably desirable to do that by overlaying the first (primary,
-> south bridge) IO-APIC, which also takes care of the "semi-legacy" IRQ
-> 16-23 numbers.
+How about resetting zone->recent_scanned/rotated to be some value calculated from
+INACTIVE_ANON/INACTIVE_FILE at some time (when the system is enough idle) ?
 
-Would make sense indeed to treat those numbers specifically.
+Thanks,
+-Kame
 
-Ben.
 
 
