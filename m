@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbYKQR3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbYKQRci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbYKQR3T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 12:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbYKQR3L
+	id S1753252AbYKQRci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 12:32:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYKQRc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 12:29:11 -0500
-Received: from mail.deathmatch.net ([70.167.247.36]:4077 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbYKQR3K (ORCPT
+	Mon, 17 Nov 2008 12:32:29 -0500
+Received: from wf-out-1314.google.com ([209.85.200.168]:57011 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYKQRc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 12:29:10 -0500
-From: "Bob Copeland" <me@bobcopeland.com>
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: Nick Kossifidis <mickflemm@gmail.com>, ath5k-devel@venema.h4ckr.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ath5k-devel] Bugs on aspire one A150
-Date: Mon, 17 Nov 2008 12:28:24 -0500
-Message-Id: <20081117171433.M54175@bobcopeland.com>
-In-Reply-To: <491DCA12.3000304@gmail.com>
-References: <491506DB.1070000@gmail.com> <b6c5339f0811100851t1fd9a180pfe24312081885467@mail.gmail.com> <4918A8C5.3050607@gmail.com> <40f31dec0811101412n1a4faf86sf4b1f37bb41caef9@mail.gmail.com> <491B17B3.204@gmail.com> <20081114034730.GA9482@hash.localnet> <491DCA12.3000304@gmail.com>
-X-Mailer: OpenWebMail 2.53 
-X-OriginatingIP: 149.101.1.135 (bob)
+	Mon, 17 Nov 2008 12:32:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=I6al6/BDnfEptV+pDTOqdWg3LcX75R98nYiruYno1O+sn8Gk7No+Z1PMDTx7GL0DUO
+         u4HHIuL/K1KQzDc0mAbGcYxccc1Ih0MhTRV+mO5nfCoDfbLQZXn/7yGFQAj2AIalMySz
+         uGq34wjVwjuvAHbz3OPqLe5Oq/AfUHhC/lJgU=
+Message-ID: <2f11576a0811170932g7f70ab3ai57d03958514124e@mail.gmail.com>
+Date: Tue, 18 Nov 2008 02:32:26 +0900
+From: "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
+To: "Rik van Riel" <riel@redhat.com>
+Subject: Re: [PATCH] vmscan: fix get_scan_ratio comment
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       "Gene Heskett" <gene.heskett@gmail.com>
+In-Reply-To: <4921A706.9030501@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20081116204720.1b8cbe18.akpm@linux-foundation.org>
+	 <20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com>
+	 <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.0811170802010.3468@nehalem.linux-foundation.org>
+	 <alpine.LFD.2.00.0811170830320.3468@nehalem.linux-foundation.org>
+	 <4921A1AF.1070909@redhat.com>
+	 <alpine.LFD.2.00.0811170904160.3468@nehalem.linux-foundation.org>
+	 <4921A706.9030501@redhat.com>
+X-Google-Sender-Auth: 1a21d05ac9e075b4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008 20:57:22 +0200, Maxim Levitsky wrote
-> Bob Copeland wrote:
-> > On Wed, Nov 12, 2008 at 07:51:47PM +0200, Maxim Levitsky wrote:
-> >>>> Why it doesn't accept new mac?, can this be fixed?
-> >> Any update on mac changer status?
-> > 
-> > As a first stab, can you try this patch?  This sets the address on
-> 
-> Works almost perfectly,
-> 
-> when I load the module, then run macchanger, and then ifconfig wlan0 up
-> then it works, if I do an ifconfig up once, then ifdowning the interface, it
-> doesn't.
+2008/11/18 Rik van Riel <riel@redhat.com>:
+>
+> Fix the old comment on the scan ratio calculations.
+>
+> Signed-off-by: Rik van Riel <riel@redhat.com>
+> ---
+>  mm/vmscan.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> Index: linux-2.6.28-rc5/mm/vmscan.c
+> ===================================================================
+> --- linux-2.6.28-rc5.orig/mm/vmscan.c   2008-11-16 17:47:13.000000000 -0500
+> +++ linux-2.6.28-rc5/mm/vmscan.c        2008-11-17 12:05:03.000000000 -0500
+> @@ -1386,9 +1386,9 @@ static void get_scan_ratio(struct zone *
+>        file_prio = 200 - sc->swappiness;
+>
+>        /*
+> -        *                  anon       recent_rotated[0]
+> -        * %anon = 100 * ----------- / ----------------- * IO cost
+> -        *               anon + file      rotate_sum
+> +        *         recent_scanned[anon]
+> +        * %anon = -------------------- * sc->swappiness
+> +        *         recent_rotated[anon]
+>         */
+>        ap = (anon_prio + 1) * (zone->recent_scanned[0] + 1);
+>        ap /= zone->recent_rotated[0] + 1;
 
-Yeah, I had actually written more for that patch originally, but didn't 
-post it because it was a bit more invasive.  I think the issue is just that 
-start() shouldn't program the mac at all and let add_interface handle that.
-I'll post a revised patch in a day or two.
-
-> The noise floor calibration issue bites me again and gain.
-> When it shows up, usually card continues to work, but at next assotiation
-> stops working.
-
-Does this help?
-http://marc.info/?l=linux-wireless&m=122570806813839&w=2
-
-> Transfer speeds are unusually low:
-
-You can try using the minstrel rate control algorithm, it may help.
-
--- 
-Bob Copeland %% www.bobcopeland.com
-
-
+looks good to me, absolutely.
+      Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
