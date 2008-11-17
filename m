@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYKQVnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYKQVuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbYKQVnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbYKQVnb
+	id S1753374AbYKQVuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYKQVuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:43:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53497 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754251AbYKQVna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:43:30 -0500
-Date: Mon, 17 Nov 2008 13:42:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org, paulus@samba.org,
-       benh@kernel.crashing.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
-       tglx@linutronix.de, linux-mm@kvack.org
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <20081117133137.616cf287.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0811171337400.18283@nehalem.linux-foundation.org>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <20081117130856.92e41cd3.akpm@linux-foundation.org> <alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org> <20081117133137.616cf287.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 17 Nov 2008 16:50:10 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49175 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751279AbYKQVuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 16:50:09 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Frank Mayhar <fmayhar@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, adobriyan@gmail.com,
+       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+In-Reply-To: Oleg Nesterov's message of  Monday, 17 November 2008 23:18:57 +0100 <20081117221857.GA29423@redhat.com>
+References: <1226053744.7803.5851.camel@twins>
+	<1226081448.28191.64.camel@bobble.smo.corp.google.com>
+	<1226089574.31966.85.camel@lappy.programming.kicks-ass.net>
+	<Pine.LNX.4.64.0811100834500.21257@quilx.com>
+	<1226328152.7685.192.camel@twins>
+	<1226340009.19109.17.camel@bobble.smo.corp.google.com>
+	<20081114024239.07CC91541E8@magilla.localdomain>
+	<20081114164155.GA7738@redhat.com>
+	<20081117143623.GA4658@redhat.com>
+	<20081117181655.8BDE9154221@magilla.localdomain>
+	<20081117221857.GA29423@redhat.com>
+X-Windows: foiled again.
+Message-Id: <20081117214946.8F601154240@magilla.localdomain>
+Date: Mon, 17 Nov 2008 13:49:46 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> But please note that currently this already happens for sub-threads (and
+> if we protect ->signal with rcu too), the exiting sub-thread does not
+> contribute to accounting after release_task(self). Also, when the last
+> thread exits the process can be reaped by its parent, but after that
+> the threads can still use CPU.
 
+Understood (I think I mentioned this earlier).  All this is what makes it
+seem potentially attractive in the long run to reorganize this more thoroughly.
 
-On Mon, 17 Nov 2008, Andrew Morton wrote:
+> > Yes, I think you're right.  The best solution that comes to mind off hand
+> > is to protect the update/read of that u64 with a seqcount_t on 32-bit.
 > 
-> Yup.  That being said, the younger me did assert that "this is a neater
-> implementation anyway".  If we can implement those loops without
-> needing those on-stack temporary arrays then things probably are better
-> overall.
+> Oh, but we need them to be per-cpu, and both read and write need memory
+> barriers... Not that I argue, this will fix the problem of course, just
+> I don't know how this impacts the perfomance.
 
-Sure, if it actually ends up being nicer, I'll not argue with it. But from 
-an L1 I$ standpoint (and I$ is often very important, especially for kernel 
-loads where loops are fairly rare), it's often _much_ better to do two 
-"tight" loops over two subsystems (filesystem and block layer) than it is 
-to do one bigger loop that contains both. If the L1 can fit both subsystem 
-paths, you're fine - but if not, you may get a lot more misses.
+I agree it's a sticky question.  Just the only thing I've thought of so far.
 
-So it's often nice if you can "stage" things so that you do a cluster of 
-calls to one area, followed by a cluster of calls to another, rather than 
-mix it up. 
 
-But numbers talk. And code cleanliness. If somebody has numbers that the 
-code size actually goes down for example, or the code is just more 
-readable, micro-optimizing cache patterns isn't worth it.
-
-			Linus
+Thanks,
+Roland
