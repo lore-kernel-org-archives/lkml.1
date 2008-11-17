@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbYKQRfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbYKQRgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbYKQRfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 12:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbYKQRfm
+	id S1754499AbYKQRgX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 12:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbYKQRgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 12:35:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46903 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752317AbYKQRfl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 12:35:41 -0500
-Date: Mon, 17 Nov 2008 18:35:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Mon, 17 Nov 2008 12:36:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45942 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752261AbYKQRgM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 12:36:12 -0500
+Date: Mon, 17 Nov 2008 09:35:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2
-Message-ID: <20081117173527.GA2827@elte.hu>
-References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu> <20081117171157.GB7326@localhost>
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] vmscan: fix get_scan_ratio comment
+In-Reply-To: <4921A706.9030501@redhat.com>
+Message-ID: <alpine.LFD.2.00.0811170932390.3468@nehalem.linux-foundation.org>
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081115210039.537f59f5.akpm@linux-foundation.org> <alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org> <49208E9A.5080801@redhat.com> <20081116204720.1b8cbe18.akpm@linux-foundation.org>
+ <20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com> <2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com> <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.0811170802010.3468@nehalem.linux-foundation.org>
+ <alpine.LFD.2.00.0811170830320.3468@nehalem.linux-foundation.org> <4921A1AF.1070909@redhat.com> <alpine.LFD.2.00.0811170904160.3468@nehalem.linux-foundation.org> <4921A706.9030501@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117171157.GB7326@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-> [Ingo Molnar - Mon, Nov 17, 2008 at 05:52:24PM +0100]
-> | 
-> | * Yinghai Lu <yinghai@kernel.org> wrote:
-> | 
-> | > Impact: fix wakeup path with numaq and es7000
-> | 
-> | applied	to tip/x86/quirks, thanks Yinghai!
-> | 
-> | A couple of comments:
-> | 
-> | > +static inline void inquire_remote_apic(int apicid)
-> | > +{
-> | > +	if (apic_verbosity >= APIC_DEBUG)
-> | > +		__inquire_remote_apic(apicid);
-> | > +}
-> |
-> 
-> Btw, Ingo, Yinghai,
-> 
-> it's a bit weird but I found that we use apic_verbosity
-> here to _do_ something (ie touching circuit) but on any
-> other cases apic_verbosity is just a additional logging
-> filter so -- what the initial apic_verbosity purpose was?
-> If it's just a logging filter (to which I'm more biased)
-> this case is plain wrong. But if apic_verbosity is not
-> like this -- then it's fine. Since I was not initial author
-> of the code -- I'm asking you :)
+Grr. Don't use attachments. Now I can't sanely reply and quote things 
+with a sane default setting (yes, I could set "include attachements in 
+reply", but that is _not_ a sane default setting, and anybody who claims 
+it is is a moron).
 
-the reason why it's dependent on apic_verbosity is that the 
-inquire_remote_apic() function is a debug function which we only call 
-if we fail to start up a secondary CPU.
+Why don't people learn?
 
-Perhaps renaming it to debug_print_remote_apic() would have made that 
-more obvious.
+Anyway, without quoting, the thing is - your fix isn't any better. The 
+more interesting part is how the fractions get combined, and that is 
+indeed approximately "anon% = anon / (anon + file)".
 
-	Ingo
+So you in many ways made the comment worse. It wasn't good before, but 
+it's still not good, and now it comments on the part that isn't even 
+interesting (ie it comments the _trivial_ fractional part)
+
+		Linus
