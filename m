@@ -1,36 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZDGPv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZDGQRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZDGPv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Apr 2009 11:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZDGPvq
+	id S1758141AbZDGQRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Apr 2009 12:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754364AbZDGQRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Apr 2009 11:51:46 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:37255 "EHLO mail.pxnet.com"
+	Tue, 7 Apr 2009 12:17:01 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:40220 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753284AbZDGPvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Apr 2009 11:51:45 -0400
+	id S1755172AbZDGQRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Apr 2009 12:17:01 -0400
 From: Tilman Schmidt <tilman@imap.cc>
 To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Date: Mon, 17 Nov 2008 14:01:32 +0100
-Subject: [PATCH] update Documentation/isdn/00-INDEX
-Message-Id: <20090407155132.ADBEE111811@xenon.ts.pxnet.com>
+Subject: [PATCH v2] update Documentation/isdn/00-INDEX
+Message-Id: <20090407161650.51200111811@xenon.ts.pxnet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave,
+
+sorry for the mistake in the preceding mail. That was an old,
+incomplete version of the patch which won't even apply to the
+current tree. Please disregard and use this one instead.
+
+Thanks,
+Tilman
+
+ISDN: update Documentation/isdn/00-INDEX
+
 After the merging of mISDN, state which files refer only to the
-old isdn4linux subsystem.  Also add a few missing files.
+old isdn4linux subsystem. Also add a few missing files and sort
+alphabetically.
 
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- Documentation/isdn/00-INDEX |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
+ Documentation/isdn/00-INDEX |   45 ++++++++++++++++++++++++------------------
+ 1 files changed, 26 insertions(+), 19 deletions(-)
 
 diff --git a/Documentation/isdn/00-INDEX b/Documentation/isdn/00-INDEX
-index 9fee5f2..105cc6f 100644
+index 9fee5f2..33543ac 100644
 --- a/Documentation/isdn/00-INDEX
 +++ b/Documentation/isdn/00-INDEX
-@@ -2,8 +2,12 @@
+@@ -2,28 +2,20 @@
  	- this file (info on ISDN implementation for Linux)
  CREDITS
  	- list of the kind folks that brought you this stuff.
@@ -44,27 +56,58 @@ index 9fee5f2..105cc6f 100644
  README
  	- general info on what you need and what to do for Linux ISDN.
  README.FAQ
-@@ -12,6 +16,8 @@ README.audio
- 	- info for running audio over ISDN.
- README.fax
- 	- info for using Fax over ISDN.
-+README.gigaset
-+	- info on the drivers for Siemens Gigaset ISDN adapters.
- README.icn
- 	- info on the ICN-ISDN-card and its driver.
+ 	- general info for FAQ.
+-README.audio
+-	- info for running audio over ISDN.
+-README.fax
+-	- info for using Fax over ISDN.
+-README.icn
+-	- info on the ICN-ISDN-card and its driver.
  README.HiSax
-@@ -37,8 +43,9 @@ README.diversion
+ 	- info on the HiSax driver which replaces the old teles.
+-README.hfc-pci
+-	- info on hfc-pci based cards.
+-README.pcbit
+-	- info on the PCBIT-D ISDN adapter and driver.
+-README.syncppp
+-	- info on running Sync PPP over ISDN.
+-syncPPP.FAQ
+-	- frequently asked questions about running PPP over ISDN.
++README.audio
++	- info for running audio over ISDN.
+ README.avmb1
+ 	- info on driver for AVM-B1 ISDN card.
+ README.act2000
+@@ -34,10 +26,25 @@ README.concap
+ 	- info on "CONCAP" encapsulation protocol interface used for X.25.
+ README.diversion
+ 	- info on module for isdn diversion services.
++README.fax
++	- info for using Fax over ISDN.
++README.gigaset
++	- info on the drivers for Siemens Gigaset ISDN adapters
++README.hfc-pci
++	- info on hfc-pci based cards.
++README.hysdn
++        - info on driver for Hypercope active HYSDN cards
++README.icn
++	- info on the ICN-ISDN-card and its driver.
++README.mISDN
++	- info on the Modular ISDN subsystem (mISDN)
++README.pcbit
++	- info on the PCBIT-D ISDN adapter and driver.
  README.sc
  	- info on driver for Spellcaster cards.
++README.syncppp
++	- info on running Sync PPP over ISDN.
  README.x25
 -    _ info for running X.25 over ISDN.
-+	- info on running X.25 over ISDN.
- README.hysdn
-         - info on driver for Hypercope active HYSDN cards
+-README.hysdn
+-        - info on driver for Hypercope active HYSDN cards
 - 
-+README.mISDN
-+	- info on the Modular ISDN subsystem (mISDN).
-+
++	- info on running X.25 over ISDN.
++syncPPP.FAQ
++	- frequently asked questions about running PPP over ISDN.
 -- 
 1.6.2.1.214.ge986c
 
