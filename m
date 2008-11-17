@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbYKQADS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYKQAKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbYKQADS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 19:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbYKQADD
+	id S1755224AbYKQAKa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 19:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbYKQAKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 19:03:03 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35137 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbYKQADB (ORCPT
+	Sun, 16 Nov 2008 19:10:21 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57995 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbYKQAKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 19:03:01 -0500
-Message-ID: <4920B3E3.4050707@zytor.com>
-Date: Sun, 16 Nov 2008 15:59:31 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, travis@sgi.com
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org>
-In-Reply-To: <4920B2A4.4040900@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 16 Nov 2008 19:10:20 -0500
+Date: Mon, 17 Nov 2008 09:09:38 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/7] memcontrol: use simple_malloc()/simple_free()
+Message-Id: <20081117090938.0cdb531e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081116045404.GC24624@x200.localdomain>
+References: <491FA2AA.6060706@cn.fujitsu.com>
+	<20081116045128.GB24624@x200.localdomain>
+	<20081116045404.GC24624@x200.localdomain>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> H. Peter Anvin wrote:
->> Yinghai Lu wrote:
->>> 2. make irq number is bus/devfn/idx, and every dev func will use 12bit range, irq number is relatively fixed not like current MSI irq creating is some kind of floating from NR_IRQS too. 
->> 2 is *STILL WRONG*, dammit!
->>
->> You keep bringing this one up, but our PCI addressing is
->> *DOMAIN*/bus/devfn -- it falls flat on its face when you have more than
->> 16 PCI domains.  CAN WE PLEASE STOP WITH THIS FOOLISHNESS NOW!
+On Sun, 16 Nov 2008 07:54:04 +0300
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
+
+> On Sun, Nov 16, 2008 at 07:51:28AM +0300, Alexey Dobriyan wrote:
+> > On Sun, Nov 16, 2008 at 12:33:46PM +0800, Lai Jiangshan wrote:
+> > > use simple_malloc()/simple_free() instead of current codes.
+> > 
+> > struct mem_cgroup can't reach the size when kmalloc starts failing.
 > 
-> you want to u64 instead of unsigned int for irq?
+> Or it probably can with big NR_CPUS.
+> 
+> 	struct mem_cgroup_stat {
+>   	      struct mem_cgroup_stat_cpu cpustat[NR_CPUS];
+> 	};
+
+It's now changed. see mmotm.
+
+Thanks,
+-Kame
+> 
+> > > --- a/mm/memcontrol.c
+> > > +++ b/mm/memcontrol.c
+> > > @@ -1062,11 +1062,7 @@ static struct mem_cgroup *mem_cgroup_alloc(void)
+> > >  {
+> > >  	struct mem_cgroup *mem;
+> > >  
+> > > -	if (sizeof(*mem) < PAGE_SIZE)
+> > > -		mem = kmalloc(sizeof(*mem), GFP_KERNEL);
+> > > -	else
+> > > -		mem = vmalloc(sizeof(*mem));
+> > > -
+> > > +	mem = simple_malloc(sizeof(*mem));
+> > >  	if (mem)
+> > >  		memset(mem, 0, sizeof(*mem));
+> > >  	return mem;
+> > > @@ -1074,10 +1070,7 @@ static struct mem_cgroup *mem_cgroup_alloc(void)
+> > >  
+> > >  static void mem_cgroup_free(struct mem_cgroup *mem)
+> > >  {
+> > > -	if (sizeof(*mem) < PAGE_SIZE)
+> > > -		kfree(mem);
+> > > -	else
+> > > -		vfree(mem);
+> > > +	simple_free(mem);
+> > >  }
 > 
 
-No, I think the whole notion of a static *numeric* identifier for an IRQ
-when it's something like MSI-X is simply pointless.  I think we should
-assign IRQ numbers beyond the legacy range dynamically.
-
-I really don't think anyone gives a hoot about the IRQ number for any
-IRQ above the 0-15 legacy range, even including the "APIC" numbers 16+.
-
-	-hpa
