@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753734AbYKQXsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYKQXtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753734AbYKQXsl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 18:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYKQXs3
+	id S1752933AbYKQXtY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 18:49:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751633AbYKQXtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 18:48:29 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:47980 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753412AbYKQXs2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 18:48:28 -0500
-Message-ID: <492202CB.4000604@ct.jp.nec.com>
-Date: Mon, 17 Nov 2008 15:48:27 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 17 Nov 2008 18:49:11 -0500
+Received: from kroah.org ([198.145.64.141]:50799 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751823AbYKQXtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 18:49:10 -0500
+Date: Mon, 17 Nov 2008 15:38:33 -0800
+From: Greg KH <greg@kroah.com>
+To: Steve French <smfrench@gmail.com>
+Cc: Jeff Layton <jlayton@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "linux-cifs-client@lists.samba.org" 
+	<linux-cifs-client@lists.samba.org>
+Subject: Re: third patch
+Message-ID: <20081117233833.GA28435@kroah.com>
+References: <20081114185039.1f3af842@tleilax.poochiereds.net> <524f69650811141609n63f3631bn6493e2be76b1bed6@mail.gmail.com> <20081115063641.26003498@tleilax.poochiereds.net> <524f69650811161918i738ba50frd87666a58640b76f@mail.gmail.com> <20081117055603.GA1381@kroah.com> <524f69650811171506y1f518c3bnac03e4f557ba29fb@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com
-Subject: [PATCH v2 4/5] x86: ia32_signal: remove using temporary variable
-References: <491E4101.7010405@ct.jp.nec.com> <492201F2.1060804@ct.jp.nec.com>
-In-Reply-To: <492201F2.1060804@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <524f69650811171506y1f518c3bnac03e4f557ba29fb@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Mon, Nov 17, 2008 at 05:06:43PM -0600, Steve French wrote:
+> On Sun, Nov 16, 2008 at 11:56 PM, Greg KH <greg@kroah.com> wrote:
+> > On Sun, Nov 16, 2008 at 09:18:43PM -0600, Steve French wrote:
+> >> Jeff and I have worked on a series of patches to fix the oopses,
+> >> memory corruption and mount failures due to races in various linked
+> >> list handling relating to socket, session and tree connection when
+> >> using the reproducer detailed here:
+> >>
+> >> https://bugzilla.samba.org/show_bug.cgi?id=5720
+> >>
+> >> The fix series is now merged into cifs-2.6.git
+> >
+> > Are these patches going to be sent to Linus for the 2.6.28 release?
+> > Should they be also added to the 2.6.27-stable tree when they get to
+> > Linus's tree?  If so, what are their git commit ids?
+> 
+> The fixes passed testing (both Jeff's and mine) and I am planning to
+> request a merge upstream tomorrow morning.   I am waiting on testing
+> to finish of an unrelated fix, a one line fix (to cifs_writepages) for
+> a writepages corruption under heavy stress that Shaggy suggested,
+> before requesting the merge.
+> 
+> I don't mind the large mount/umount fix series (diffstat shows about
+> 800 lines added, 800 removed) being included in stable, it does fix
+> some oopses that can occur with simultaneous cifs mounts/umounts
+> racing.
 
-Impact: cleanup
+Well, if Linus takes them so late in the merge window, I'll consider
+also adding them to -stable, as they do fix reported problems, and are
+good to have in there for users who rely on cifs.
 
-No need to use temporary variable.
-Also rename the variable same as arch/x86/kernel/signal_32.c.
+thanks,
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Reviewed-by: WANG Cong <wangcong@zeuux.org>
----
- arch/x86/ia32/ia32_signal.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 0b7fcf6..2883f41 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -218,7 +218,7 @@ struct rt_sigframe
- 
- static int ia32_restore_sigcontext(struct pt_regs *regs,
- 				   struct sigcontext_ia32 __user *sc,
--				   unsigned int *peax)
-+				   unsigned int *pax)
- {
- 	unsigned int tmpflags, gs, oldgs, err = 0;
- 	void __user *buf;
-@@ -265,9 +265,7 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
- 	buf = compat_ptr(tmp);
- 	err |= restore_i387_xstate_ia32(buf);
- 
--	err |= __get_user(tmp, &sc->ax);
--	*peax = tmp;
--
-+	err |= __get_user(*pax, &sc->ax);
- 	return err;
- }
- 
--- 
-1.5.6
-
+greg k-h
