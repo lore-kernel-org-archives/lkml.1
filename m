@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYKQH0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbYKQH1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbYKQH0s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:26:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbYKQHVN
+	id S1757011AbYKQH1G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:27:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbYKQHVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:13 -0500
-Received: from kroah.org ([198.145.64.141]:38329 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:14 -0500
+Received: from kroah.org ([198.145.64.141]:38368 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752751AbYKQHVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:21:02 -0500
-Date: Sun, 16 Nov 2008 23:15:10 -0800
+	id S1752958AbYKQHVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:21:06 -0500
+Date: Sun, 16 Nov 2008 23:15:17 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>,
+       alan@lxorguk.ukuu.org.uk,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 15/46] rtl8187 : support for Sitecom WL-168 0001 v4
-Message-ID: <20081117071510.GP29522@kroah.com>
+Subject: [patch 17/46] block: fix nr_phys_segments miscalculation bug
+Message-ID: <20081117071517.GR29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtl8187-support-for-sitecom-wl-168-0001-v4.patch"
+Content-Disposition: inline; filename="block-fix-nr_phys_segments-miscalculation-bug.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,29 +43,118 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bob Jolliffe <bobjolliffe@gmail.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-commit f3c769185a28b7947d97b3552a977102c1fac3f2 upstream.
+commit 8677142710516d986d932d6f1fba7be8382c1fec upstream
+backported by Nikanth Karthikesan <knikanth@suse.de> to the 2.6.27.y tree.
 
-the Sitecom 0001 v4 with product id 0x0df6:0028, uses Realtek's
-RTL8187B and work fine with new 2.6.27 driver.
+block: fix nr_phys_segments miscalculation bug
 
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+This fixes the bug reported by Nikanth Karthikesan <knikanth@suse.de>:
+
+http://lkml.org/lkml/2008/10/2/203
+
+The root cause of the bug is that blk_phys_contig_segment
+miscalculates q->max_segment_size.
+
+blk_phys_contig_segment checks:
+
+req->biotail->bi_size + next_req->bio->bi_size > q->max_segment_size
+
+But blk_recalc_rq_segments might expect that req->biotail and the
+previous bio in the req are supposed be merged into one
+segment. blk_recalc_rq_segments might also expect that next_req->bio
+and the next bio in the next_req are supposed be merged into one
+segment. In such case, we merge two requests that can't be merged
+here. Later, blk_rq_map_sg gives more segments than it should.
+
+We need to keep track of segment size in blk_recalc_rq_segments and
+use it to see if two requests can be merged. This patch implements it
+in the similar way that we used to do for hw merging (virtual
+merging).
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: Nikanth Karthikesan <knikanth@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_dev.c |    1 +
- 1 file changed, 1 insertion(+)
+ block/blk-merge.c   |   19 +++++++++++++++++--
+ include/linux/bio.h |    7 +++++++
+ 2 files changed, 24 insertions(+), 2 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_dev.c
-+++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -45,6 +45,7 @@ static struct usb_device_id rtl8187_tabl
- 	{USB_DEVICE(0x03f0, 0xca02), .driver_info = DEVICE_RTL8187},
- 	/* Sitecom */
- 	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
-+	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
- 	/* Abocom */
- 	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
- 	{}
+--- a/block/blk-merge.c
++++ b/block/blk-merge.c
+@@ -95,6 +95,9 @@ new_hw_segment:
+ 			nr_hw_segs++;
+ 		}
+ 
++		if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
++			rq->bio->bi_seg_front_size = seg_size;
++
+ 		nr_phys_segs++;
+ 		bvprv = bv;
+ 		seg_size = bv->bv_len;
+@@ -106,6 +109,10 @@ new_hw_segment:
+ 		rq->bio->bi_hw_front_size = hw_seg_size;
+ 	if (hw_seg_size > rq->biotail->bi_hw_back_size)
+ 		rq->biotail->bi_hw_back_size = hw_seg_size;
++	if (nr_phys_segs == 1 && seg_size > rq->bio->bi_seg_front_size)
++		rq->bio->bi_seg_front_size = seg_size;
++	if (seg_size > rq->biotail->bi_seg_back_size)
++		rq->biotail->bi_seg_back_size = seg_size;
+ 	rq->nr_phys_segments = nr_phys_segs;
+ 	rq->nr_hw_segments = nr_hw_segs;
+ }
+@@ -133,7 +140,8 @@ static int blk_phys_contig_segment(struc
+ 
+ 	if (!BIOVEC_PHYS_MERGEABLE(__BVEC_END(bio), __BVEC_START(nxt)))
+ 		return 0;
+-	if (bio->bi_size + nxt->bi_size > q->max_segment_size)
++	if (bio->bi_seg_back_size + nxt->bi_seg_front_size >
++	    q->max_segment_size)
+ 		return 0;
+ 
+ 	/*
+@@ -377,6 +385,8 @@ static int ll_merge_requests_fn(struct r
+ {
+ 	int total_phys_segments;
+ 	int total_hw_segments;
++	unsigned int seg_size =
++		req->biotail->bi_seg_back_size + next->bio->bi_seg_front_size;
+ 
+ 	/*
+ 	 * First check if the either of the requests are re-queued
+@@ -392,8 +402,13 @@ static int ll_merge_requests_fn(struct r
+ 		return 0;
+ 
+ 	total_phys_segments = req->nr_phys_segments + next->nr_phys_segments;
+-	if (blk_phys_contig_segment(q, req->biotail, next->bio))
++	if (blk_phys_contig_segment(q, req->biotail, next->bio)) {
++		if (req->nr_phys_segments == 1)
++			req->bio->bi_seg_front_size = seg_size;
++		if (next->nr_phys_segments == 1)
++			next->biotail->bi_seg_back_size = seg_size;
+ 		total_phys_segments--;
++	}
+ 
+ 	if (total_phys_segments > q->max_phys_segments)
+ 		return 0;
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -98,6 +98,13 @@ struct bio {
+ 	unsigned int		bi_size;	/* residual I/O count */
+ 
+ 	/*
++	 * To keep track of the max segment size, we account for the
++	 * sizes of the first and last mergeable segments in this bio.
++	 */
++	unsigned int            bi_seg_front_size;
++	unsigned int            bi_seg_back_size;
++
++	/*
+ 	 * To keep track of the max hw size, we account for the
+ 	 * sizes of the first and last virtually mergeable segments
+ 	 * in this bio
 
 -- 
