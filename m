@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbYKQGoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYKQGwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756434AbYKQGoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 01:44:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbYKQGoB
+	id S1752724AbYKQGwm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 01:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYKQGwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 01:44:01 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:43977 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbYKQGoB (ORCPT
+	Mon, 17 Nov 2008 01:52:32 -0500
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:57699 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbYKQGwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 01:44:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=EVxx2t7P9J4LZY0vjhzPKfacQ0o9GbmmgF/f6jcyw/PD+VYZhhn/nv68Ye+MD4f1im
-         dxJD3qnBOjgNPBLBCQnsRMcQKc6Oz2AnTIwwzn5FHEspp0KP8aRFgMZQ4Aul433CJfCj
-         j/nNo8CBENaIYlNIDFg4EqiNspjrCinmLZ2oc=
-Message-ID: <2f11576a0811162243r7527d271ya8ab2fc3a9be9f7d@mail.gmail.com>
-Date: Mon, 17 Nov 2008 15:43:59 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
-Cc: balbir@linux.vnet.ibm.com, "Lai Jiangshan" <laijs@cn.fujitsu.com>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Dave Airlie" <airlied@gmail.com>, "David Miller" <davem@davemloft.net>,
-       akpm@linux-foundation.org, menage@google.com, jens.axboe@oracle.com,
-       jack@suse.cz, jes@sgi.com, linux-kernel@vger.kernel.org,
-       dada1@cosmosbay.com, "Alexey Dobriyan" <adobriyan@gmail.com>
-In-Reply-To: <20081117142539.9b2c6bfc.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 17 Nov 2008 01:52:32 -0500
+Message-ID: <492114A6.3020905@nttdata.co.jp>
+Date: Mon, 17 Nov 2008 15:52:22 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: akpm@linux-foundation.org
+CC: haradats@nttdata.co.jp, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, penguin-kernel@I-love.SAKURA.ne.jp
+Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 04/11] Introduce d_realpath().
+References: <20081104060847.086543472@nttdata.co.jp>	<20081104060948.233911964@nttdata.co.jp> <20081105151212.9c6053eb.akpm@linux-foundation.org>
+In-Reply-To: <20081105151212.9c6053eb.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <491FA28B.2070003@cn.fujitsu.com>
-	 <20081115205229.765f7ee3@infradead.org>
-	 <20081116.001926.150424480.davem@davemloft.net>
-	 <20081116105725.12458b13@infradead.org>
-	 <21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
-	 <20081116135130.5e8b4e13@infradead.org>
-	 <4920D238.8090905@cn.fujitsu.com> <4920F8C4.30209@linux.vnet.ibm.com>
-	 <20081117142539.9b2c6bfc.kamezawa.hiroyu@jp.fujitsu.com>
-X-Google-Sender-Auth: 33bb1b53acc244aa
+X-OriginalArrivalTime: 17 Nov 2008 06:52:25.0603 (UTC) FILETIME=[0C97DD30:01C94881]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > (I'll rename simple_malloc/simple_free to kvmalloc/kvfree)
->> >
->>
->> I would prefer to find a way to say that one cannot select gfp_mask with this API.
->>
-> I think gfp_mask must be passed explicitly.
+Andrew Morton wrote:
+> On Tue, 04 Nov 2008 15:08:51 +0900
+> Kentaro Takeda <takedakn@nttdata.co.jp> wrote:
+> 
+>> +		/*
+>> +		 * Exception: Use /proc/self/ rather than /proc/\$/
+>> +		 * for current process.
+>> +		 */
+>> +		name = dentry->d_name.name;
+>> +		name_len = dentry->d_name.len;
+>> +		if (IS_ROOT(parent) &&
+>> +		    parent->d_sb->s_magic == PROC_SUPER_MAGIC &&
+>> +		    !strict_strtoul(name, 10, &pid)) {
+> 
+> Well that looks like rather a hack.
+> 
+> It would still be a hack, but a better implementation might be to save
+> the procfs superblock's address in a global then do
+> 
+> 
+> #ifdef CONFIG_PROCFS
+> static inline bool is_procfs_sb(struct super_block *sb)
+> {
+> 	return sb == saved_procfs_sb;
+> }
+> #else
+> static inline bool is_procfs_sb(struct super_block *sb)
+> {
+> 	return false;
+> }
+> #endif
+It seems to me that the procfs superblock's address is not a single value
+because proc_get_sb() in fs/proc/root.c could be called for multiple times.
+Thus, I'd like to continue using "parent->d_sb->s_magic == PROC_SUPER_MAGIC"
+rather than "is_procfs_sb(parent->d_sb)".
 
-Agreed.
+I think I've replied to most of your comments.
+Is there anything we can do before reposting TOMOYO #13 ?
+
+Regards,
+
+
