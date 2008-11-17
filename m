@@ -1,92 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbYKQOTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbYKQOZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbYKQOTI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 09:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbYKQOSw
+	id S1752892AbYKQOZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 09:25:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYKQOZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 09:18:52 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:59659 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbYKQOSv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 09:18:51 -0500
-Subject: Re: [PATCH] softirq: Use local_irq_save() in local_bh_enable()
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Ferenc Wagner <wferi@niif.hu>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20081117133548.GC6345@ff.dom.local> (sfid-20081117_143601_411488_D8071C4B)
-References: <20081117133548.GC6345@ff.dom.local>
-	 (sfid-20081117_143601_411488_D8071C4B)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-sXfwD+X/n5h6zbR1vndj"
-Date: Mon, 17 Nov 2008 15:18:28 +0100
-Message-Id: <1226931509.3902.16.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 17 Nov 2008 09:25:47 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49066 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752157AbYKQOZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 09:25:46 -0500
+Date: Mon, 17 Nov 2008 09:23:09 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
+       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
+       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
+       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
+       Fabio Checconi <fchecconi@gmail.com>, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081117142309.GA15564@redhat.com>
+References: <20081106153022.215696930@redhat.com> <20081113.180558.519459540419535699.ryov@valinux.co.jp> <20081113155834.GE7542@redhat.com> <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com> <20081113214642.GG7542@redhat.com> <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com> <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Nov 14, 2008 at 02:44:22PM -0800, Nauman Rafique wrote:
+> In an attempt to make sure that this discussion leads to
+> something useful, we have summarized the points raised in this
+> discussion and have come up with a strategy for future.
+> The goal of this is to find common ground between all the approaches
+> proposed on this mailing list.
+> 
+> 1 Start with Satoshi's latest patches.
 
---=-sXfwD+X/n5h6zbR1vndj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I have had a brief look at both Satoshi's patch and bfq. I kind of like
+bfq's patches for keeping track of per cgroup, per queue data structures.
+May be we can look there also.
 
-On Mon, 2008-11-17 at 13:35 +0000, Jarek Poplawski wrote:
-> This report: http://marc.info/?l=3Dlinux-netdev&m=3D122599341430090&w=3D2
-> shows local_bh_enable() is used in the wrong context (irqs disabled).
-> It happens when a usual network receive path is called by netconsole,
-> which simply turns off irqs around this all. Probably this is wrong,
-> but it worked like this long time, and it's not trivial to fix this.
+> 2 Do the following to support propotional division:
+>  a) Give time slices in proportion to weights (configurable
+>  option). We can support both priorities and weights by doing
+>  propotional division between requests with same priorities.
+> 3 Schedule time slices using WF2Q+ instead of round robin.
+>  Test the performance impact (both throughput and jitter in latency).
+> 4 Do the following to support the goals of 2 level schedulers:
+>  a) Limit the request descriptors allocated to each cgroup by adding
+>  functionality to elv_may_queue()
+>  b) Add support for putting an absolute limit on IO consumed by a
+>  cgroup. Such support exists in dm-ioband and is provided by Andrea
+>  Righi's patches too.
 
-Unfortunately my brain lacks the magic to decrypt x86 stack traces, so
-I'm unable to read much from that report other than that it hit the
-WARN_ON. That looks more like the TX path to me? Anyway, my patch made
-that trigger for everybody rather than just on NOPREEMPT/UP (or
-something like that) and made the code easier to understand by removing
-the flags that are pointless anyway if the API is used correctly.
+Does dm-iobnd support abosolute limit? I think till last version they did
+not. I have not check the latest version though.
 
-You can find discussion around the patch at
-http://lkml.org/lkml/2008/6/17/259
+>  c) Add support (configurable option) to keep track of total disk
+> time/sectors/count
+>  consumed at each device, and factor that into scheduling decision
+>  (more discussion needed here)
+> 5 Support multiple layers of cgroups to align IO controller behavior
+>  with CPU scheduling behavior (more discussion?)
+> 6 Incorporate an IO tracking approach which re-uses memory resource
+> controller code but is not dependent on it (may be biocgroup patches from
+> dm-ioband can be used here directly)
+> 7 Start an offline email thread to keep track of progress on the above
+> goals.
+> 
+> Please feel free to add/modify items to the list
+> when you respond back. Any comments/suggestions are more than welcome.
+> 
 
-> Anyway, a commit 0f476b6d91a1395bda6464e653ce66ea9bea7167 "softirq:
-> remove irqs_disabled warning from local_bh_enable" can break things
-> after changing from local_irq_save() to local_irq_disable(). Before
-> this commit there was only a warning, now a lockup is possible, so
-> it could be treated as a regression. This patch reverts the change
-> in irqs.
+Thanks
+Vivek
 
-Do we have evidence of this actually hitting often? This is the first
-report of anything going wrong that I've seen ever since a single one
-right after this commit went into testing five months ago.
-
-IFF we want to add this back (and I'm not in favour) then please add a
-big comment that this is only to accomodate broken users.
-
-johannes
-
---=-sXfwD+X/n5h6zbR1vndj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJIX0uAAoJEKVg1VMiehFYciwQAIxSVCvhKJ6Qz/X30F0smssr
-eG0YeihZlN3Ap/+uxqeeXHj5aNP7A2R/oc6l31O/UTPvxz313Fui0RwjN8NfTUvQ
-9yRB3BbPoDCCEYEGsEl5or1Ik5EhtW6GO3rDjuSHQYeF5aWxNqXlk69NIgcbg6sg
-+JO2fnzYWyM4zkxwdyIo9D3M2wbUM3y72HTXb+ZEcLWfpDmGoxzMPgx3pq+NX8o9
-1VdWV2Pz8P3XXeaNC1dx0an8lm2eItur43UXumJWiaTPe6RLmQu03i6RlM0/rAOe
-gYM7L+pDFa8W/Zloz5TXxYVO3FDASh7hBB7ZzLC3aE4KB9UNL9I1rqoBmCcEwaHS
-POnJ/sAvHJeURziOJBPz/BM2QblWdR24tgYUCyoYpggdDDeLCisVLJjQVXkwpU5W
-wag44HG6gc8MXsd2+WXMnTDTR9dqs91E8kV4hor2ir5hdIZ3n15L10vPYU4q8wT1
-jNg6Ua1RonbmIQKz9+20d0rSk2MzMwDmGtjUgQ/yCdkqplm3zt4FamprwiQR8OjI
-ZCJeGjn4sZcMYT4Kz1PRBuug0yuaHv9/nBuS4k9MbnaWSo/O/TqhHH24d9kTlF41
-w03YMLk0ySXiyQJJkU7FF3Dz3//lWN+8yx+VLEcM7/IIOboGSCD1lq6PZXPijzn3
-hDYp7bv/6OcW3LXqZZYw
-=xUvE
------END PGP SIGNATURE-----
-
---=-sXfwD+X/n5h6zbR1vndj--
-
+> Thanks.
+> Divyesh & Nauman
+> 
+> On Fri, Nov 14, 2008 at 8:05 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Thu, Nov 13, 2008 at 02:57:29PM -0800, Divyesh Shah wrote:
+> >
+> > [..]
+> >> > > > Ryo, do you still want to stick to two level scheduling? Given the problem
+> >> > > > of it breaking down underlying scheduler's assumptions, probably it makes
+> >> > > > more sense to the IO control at each individual IO scheduler.
+> >> > >
+> >> > > Vivek,
+> >> > >      I agree with you that 2 layer scheduler *might* invalidate some
+> >> > > IO scheduler assumptions (though some testing might help here to
+> >> > > confirm that). However, one big concern I have with proportional
+> >> > > division at the IO scheduler level is that there is no means of doing
+> >> > > admission control at the request queue for the device. What we need is
+> >> > > request queue partitioning per cgroup.
+> >> > >     Consider that I want to divide my disk's bandwidth among 3
+> >> > > cgroups(A, B and C) equally. But say some tasks in the cgroup A flood
+> >> > > the disk with IO requests and completely use up all of the requests in
+> >> > > the rq resulting in the following IOs to be blocked on a slot getting
+> >> > > empty in the rq thus affecting their overall latency. One might argue
+> >> > > that over the long term though we'll get equal bandwidth division
+> >> > > between these cgroups. But now consider that cgroup A has tasks that
+> >> > > always storm the disk with large number of IOs which can be a problem
+> >> > > for other cgroups.
+> >> > >     This actually becomes an even larger problem when we want to
+> >> > > support high priority requests as they may get blocked behind other
+> >> > > lower priority requests which have used up all the available requests
+> >> > > in the rq. With request queue division we can achieve this easily by
+> >> > > having tasks requiring high priority IO belong to a different cgroup.
+> >> > > dm-ioband and any other 2-level scheduler can do this easily.
+> >> > >
+> >> >
+> >> > Hi Divyesh,
+> >> >
+> >> > I understand that request descriptors can be a bottleneck here. But that
+> >> > should be an issue even today with CFQ where a low priority process
+> >> > consume lots of request descriptors and prevent higher priority process
+> >> > from submitting the request.
+> >>
+> >> Yes that is true and that is one of the main reasons why I would lean
+> >> towards 2-level scheduler coz you get request queue division as well.
+> >>
+> >>  I think you already said it and I just
+> >> > reiterated it.
+> >> >
+> >> > I think in that case we need to do something about request descriptor
+> >> > allocation instead of relying on 2nd level of IO scheduler.
+> >> > At this point I am not sure what to do. May be we can take feedback from the
+> >> > respective queue (like cfqq) of submitting application and if it is already
+> >> > backlogged beyond a certain limit, then we can put that application to sleep
+> >> > and stop it from consuming excessive amount of request descriptors
+> >> > (despite the fact that we have free request descriptors).
+> >>
+> >> This should be done per-cgroup rather than per-process.
+> >>
+> >
+> > Yep, per cgroup limit will make more sense. get_request() already calls
+> > elv_may_queue() to get a feedback from IO scheduler. May be here IO
+> > scheduler can make a decision how many request descriptors are already
+> > allocated to this cgroup. And if the queue is congested, then IO scheduler
+> > can deny the fresh request allocation.
+> >
+> > Thanks
+> > Vivek
+> >
