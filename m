@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYKQQOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbYKQQQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYKQQOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbYKQQOZ
+	id S1752994AbYKQQQX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYKQQQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:14:25 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:16410 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbYKQQOY (ORCPT
+	Mon, 17 Nov 2008 11:16:15 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:50340 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbYKQQQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:14:24 -0500
-Date: Mon, 17 Nov 2008 08:10:59 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       LKML <linux-kernel@vger.kernel.org>, linux-pcmcia@lists.infradead.org
-Subject: Re: Strange behavior since commit 5fef0e5c
-Message-Id: <20081117081059.e008ff46.randy.dunlap@oracle.com>
-In-Reply-To: <491DECF9.6020707@lwfinger.net>
-References: <491D92EB.2030200@lwfinger.net>
-	<200811142053.05880.bzolnier@gmail.com>
-	<491DECF9.6020707@lwfinger.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 17 Nov 2008 11:16:14 -0500
+X-IronPort-AV: E=Sophos;i="4.33,618,1220241600"; 
+   d="scan'208";a="28387142"
+Subject: Re: [PATCH 18 of 38] x86: unify pci iommu setup and allow swiotlb
+	to	compile for 32 bit
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jeremy@goop.org, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, x86@kernel.org
+In-Reply-To: <20081117124857Z.fujita.tomonori@lab.ntt.co.jp>
+References: <patchbomb.1226603398@abulafia.goop.org>
+	 <e918eb1b71515e7c2f99.1226603416@abulafia.goop.org>
+	 <20081117124857Z.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Mon, 17 Nov 2008 16:16:06 +0000
+Message-Id: <1226938566.18916.80.camel@zakaz.uk.xensource.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.492197DC.00BE:SCFSTAT928724,ss=1,fgs=0
+X-OriginalArrivalTime: 17 Nov 2008 16:16:13.0393 (UTC) FILETIME=[CF86FC10:01C948CF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 14 Nov 2008 15:26:17 -0600 Larry Finger wrote:
-
-> Bartlomiej Zolnierkiewicz wrote:
-> > On Friday 14 November 2008, Larry Finger wrote:
-> >> In testing kernel version 2.6.28-rc4 on my server that was running kernel
-> >> 2.6.27, an external IDE disk system connected via a PCCard interface failed to
-> >> start because module ide_disk would not load. The console output is as follows:
-> >>
-> >> finger@sonylap:~> sudo modprobe -v ide-disk
-> >> WARNING: module 'ide_gd_mod' is unsupported
-> >> FATAL: Module ide_disk not found.
-> > 
-> > Please verify that your system uses a recent module-init-tools version
-> > and then repeat 'make modules' + 'make modules_install' (it could be that
-> > something went wrong previously during installing modules) as it works
-> > just fine for me with 2.6.28-rc3 and module-init-tools 3.4.
+On Mon, 2008-11-17 at 12:48 +0900, FUJITA Tomonori wrote:
+> On Thu, 13 Nov 2008 11:10:16 -0800
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 > 
-> That was the problem. I had 3.3 pre11, which was installed by openSUSE 10.3.
-> Updating to version 3.4 fixed the problem. Thanks.
+> > swiotlb on 32 bit will be used by Xen domain 0 support.
 > 
-> Should the requirement in Documentation/Changes be modified, or is that info no
-> longer used?
+> If you want swiotlb on 32 bit, you need more modifications, I think.
 
-IMO it should be updated (or deleted if it's really useless).
+Possibly. It currently "Works For Me(tm)", but I should check it over.
 
----
-~Randy
+> For example, the following code assumes that the mask needs to be
+> 64 bits.
+
+The use of unsigned long for the mask is throughout the API and not
+simply limited to swiotlb.c. All the callers of dma_set_seg_boundary
+(PCI and SCSI subsys it seems) do not use a value >4G anywhere I can
+see. Presumably if something was we would see "warning: overflow in
+implicit constant conversion" somewhere along the line. If no value is
+set then the default is 0xffffffff which is safe on 32 bit.
+
+I suspect that even with PAE addresses above 4G aren't seen very often
+due to pre-existing subsystem specific bounce buffers or other existing
+limitations (like network buffers being in lowmem).
+
+Perhaps dma_addr_t should be used though?
+
+Ian.
+
+> 
+> static void *
+> map_single(struct device *hwdev, char *buffer, size_t size, int dir)
+> {
+> 	unsigned long flags;
+> 	char *dma_addr;
+> 	unsigned int nslots, stride, index, wrap;
+> 	int i;
+> 	unsigned long start_dma_addr;
+> 	unsigned long mask;
+> 	unsigned long offset_slots;
+> 	unsigned long max_slots;
+> 
+> 	mask = dma_get_seg_boundary(hwdev);
+> 	start_dma_addr = virt_to_bus(io_tlb_start) & mask;
+> 
+> 	offset_slots = ALIGN(start_dma_addr, 1 << IO_TLB_SHIFT) >> IO_TLB_SHIFT;
+> 	max_slots = mask + 1
+> 		    ? ALIGN(mask + 1, 1 << IO_TLB_SHIFT) >> IO_TLB_SHIFT
+> 		    : 1UL << (BITS_PER_LONG - IO_TLB_SHIFT);
+> 
+
