@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007AbYKQX3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbYKQXbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007AbYKQX3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 18:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYKQX3p
+	id S1752763AbYKQXbO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 18:31:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYKQXa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 18:29:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35436 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751630AbYKQX3o (ORCPT
+	Mon, 17 Nov 2008 18:30:58 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34145 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751279AbYKQXa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 18:29:44 -0500
-Date: Mon, 17 Nov 2008 15:28:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+	Mon, 17 Nov 2008 18:30:57 -0500
+Date: Mon, 17 Nov 2008 18:30:53 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Paul Mackerras <paulus@samba.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <1226963596.7178.254.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>  <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org> <1226963596.7178.254.camel@pasglop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+In-Reply-To: <18721.60712.438025.564030@cargo.ozlabs.ibm.com>
+Message-ID: <alpine.DEB.1.10.0811171829140.26123@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com> <18721.60712.438025.564030@cargo.ozlabs.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,62 +31,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Tue, 18 Nov 2008, Paul Mackerras wrote:
 
-On Tue, 18 Nov 2008, Benjamin Herrenschmidt wrote:
+> Steven Rostedt writes:
 > 
-> Guess who is pushing for larger page sizes nowadays ? Embedded
-> people :-) In fact, we have patches submited on the list to offer the
-> option for ... 256K pages on some 44x embedded CPUs :-)
+> > Here's my stack after boot up with CONFIG_IRQSTACKS set. Seems that 
+> > softirqs still use the same stack as the process.
 > 
-> It makes some sort of sense I suppose on very static embedded workloads
-> with no swap nor demand paging.
-
-It makes perfect sense for anything that doesn't use any MMU. 
-
-The hugepage support seems to cover many of the relevant cases, ie 
-databases and things like big static mappings (frame buffers etc).
-
-> > It's made worse by the fact that they 
-> > also have horribly bad TLB fills on their broken CPU's, and years and 
-> > years of telling people that the MMU on ppc's are sh*t has only been 
-> > reacted to with "talk to the hand, we know better".
+> They shouldn't.  I don't see do_softirq in the trace, though.  Which
+> functions did you think would be run in a softirq?  It looks to me
+> like the deepest 10 or so functions are called at hard irq level,
+> within hrtimer_interrupt called from timer_interrupt.
 > 
-> Who are you talking about here precisely ? I don't think either Paul or
-> I every said something nearly around those lines ... Oh well.
+> > root@electra ~> cat /debug/tracing/stack_trace 
+> >         Depth   Size      Location    (59 entries)
+> >         -----   ----      --------
+> >   0)    12384     192   ftrace_call+0x4/0x14
+> >   1)    12192     128   .sched_clock+0x20/0x60
+> >   2)    12064     128   .sched_clock_cpu+0x34/0x50
+> >   3)    11936     144   .cpu_clock+0x3c/0xa0
+> >   4)    11792     144   .get_timestamp+0x2c/0x50
+> >   5)    11648     144   .__touch_softlockup_watchdog+0x3c/0x60
+> >   6)    11504     192   .softlockup_tick+0xe4/0x220
+> >   7)    11312     128   .run_local_timers+0x34/0x50
+> >   8)    11184     160   .update_process_times+0x44/0xb0
+> >   9)    11024     176   .tick_sched_timer+0x8c/0x120
+> >  10)    10848     160   .__run_hrtimer+0xd8/0x130
+> >  11)    10688     240   .hrtimer_interrupt+0x16c/0x220
+> >  12)    10448     160   .timer_interrupt+0xcc/0x110
+> >  13)    10288      96   decrementer_common+0xe0/0x100
 
-Every single time I've complained about it, somebody from IBM has said ".. 
-but but AIX".
+Ah, you are right. I thought I saw softirq code in there, but must have 
+been seeing things. I need to get my eyesight checked. The other day I 
+totally botch a hand in cards because I thought I had 3 Aces of diamonds 
+when I really only had 2 Aces of diamonds and a Ace of hearts.
 
-This time it was Paul. Sometimes it has been software people who agree, 
-but point to hardware designers who "know better". If it's not some insane 
-database person, it's a Fortran program that runs for days.
+-- Steve
 
-> But there is also pressure to get larger page sizes from small embedded
-> field, where CPUs have even poorer TLB refill (software loaded
-> basically) :-)
-
-Yeah, I agree that you _can_ have even worse MMU's. I'm not saying that 
-PPC64 is absolutely pessimal and cannot be made worse. Software fill is 
-indeed even worse from a performance angle, despite the fact that it's 
-really "nice" from a conceptual angle.
-
-Of course, of thesw fill users that remain, many do seem to be ppc.. It's 
-like the architecture brings out the worst in hardware designers.
-
-> > Quite frankly, 64kB pages are INSANE. But yes, in this case they actually 
-> > cause bugs. With a sane page-size, that *arr[MAX_BUF_PER_PAGE] thing uses 
-> > 64 bytes, not 1kB.
-> 
-> Come on, the code is crap to allocate that on the stack anyway :-)
-
-Why? We do actually expect to be able to use stack-space for small 
-structures. We do it for a lot of things, including stuff like select() 
-optimistically using arrays allocated on the stack for the common small 
-case, just because it's, oh, about infinitely faster to do than to use 
-kmalloc().
-
-Many of the page cache functions also have the added twist that they get 
-called from low-memory setups (eg write_whole_page()), and so try to 
-minimize allocations for that reason too.
-
-			Linus
