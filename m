@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYKQAPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbYKQAWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbYKQAPI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 19:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYKQAO4
+	id S1755607AbYKQAWW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 19:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbYKQAWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 19:14:56 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52607 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbYKQAO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 19:14:56 -0500
-Date: Mon, 17 Nov 2008 09:14:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] memcg: handle swap caches build fix
-Message-Id: <20081117091413.4a123b7d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0811162046080.5813@blonde.site>
-References: <Pine.LNX.4.64.0811162046080.5813@blonde.site>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+	Sun, 16 Nov 2008 19:22:12 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51535 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751861AbYKQAWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 19:22:11 -0500
+Message-ID: <4920B911.7060504@kernel.org>
+Date: Sun, 16 Nov 2008 16:21:37 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080922)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org> <4920B3E3.4050707@zytor.com>
+In-Reply-To: <4920B3E3.4050707@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 20:52:22 +0000 (GMT)
-Hugh Dickins <hugh@veritas.com> wrote:
-
-> Fix to build error when CONFIG_SHMEM=y but CONFIG_SWAP is not set:
-> mm/shmem.c: In function ‘shmem_unuse_inode’:
-> mm/shmem.c:927: error: implicit declaration of function ‘mem_cgroup_cache_charge_swapin’
+H. Peter Anvin wrote:
+> Yinghai Lu wrote:
+>> H. Peter Anvin wrote:
+>>> Yinghai Lu wrote:
+>>>> 2. make irq number is bus/devfn/idx, and every dev func will use 12bit range, irq number is relatively fixed not like current MSI irq creating is some kind of floating from NR_IRQS too. 
+>>> 2 is *STILL WRONG*, dammit!
+>>>
+>>> You keep bringing this one up, but our PCI addressing is
+>>> *DOMAIN*/bus/devfn -- it falls flat on its face when you have more than
+>>> 16 PCI domains.  CAN WE PLEASE STOP WITH THIS FOOLISHNESS NOW!
+>> you want to u64 instead of unsigned int for irq?
+>>
 > 
-> Yes, there's a lot of code in mm/shmem.c which only comes into play when
-> CONFIG_SWAP=y: better than this quick fix would be to restructure shmem.c
-> with all swap stuff in a separate file; that's on my mind, but now is not
-> the moment for it.
+> No, I think the whole notion of a static *numeric* identifier for an IRQ
+> when it's something like MSI-X is simply pointless.  I think we should
+> assign IRQ numbers beyond the legacy range dynamically.
 > 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> I really don't think anyone gives a hoot about the IRQ number for any
+> IRQ above the 0-15 legacy range, even including the "APIC" numbers 16+.
 
-Thanks! (>_<
+you want to change ioapic/pin to irq mapping too?
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+so INTx and MSI will call create_irq_nr to get one irq for 16, and following first come and first serve rule.
 
-> ---
-> Fix should follow or be merged into memcg-handle-swap-caches.patch
-> 
->  include/linux/swap.h |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> --- mmotm/include/linux/swap.h	2008-11-16 17:33:25.000000000 +0000
-> +++ linux/include/linux/swap.h	2008-11-16 20:18:27.000000000 +0000
-> @@ -442,6 +442,12 @@ static inline swp_entry_t get_swap_page(
->  #define has_swap_token(x) 0
->  #define disable_swap_token() do { } while(0)
->  
-> +static inline int mem_cgroup_cache_charge_swapin(struct page *page,
-> +			struct mm_struct *mm, gfp_t mask, bool locked)
-> +{
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_SWAP */
->  #endif /* __KERNEL__*/
->  #endif /* _LINUX_SWAP_H */
-
+YH
