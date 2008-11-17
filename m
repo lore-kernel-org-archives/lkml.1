@@ -1,112 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYKQCTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756411AbYKQCVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbYKQCTT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 21:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYKQCTI
+	id S1756411AbYKQCVz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 21:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbYKQCVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 21:19:08 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:7725 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754664AbYKQCTF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 21:19:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=SP9yUnKzq67ULFwhIIwjmjOywhyrnPt6oODwoE/y34ualRXAcUyYvzm8Zi43LTjJ83
-         lQyDPMME2Bih+NUXsHL2JMZCtaVNcinHm4qXPhFffXoYefNKGVko7i1MtUBsmfzhChoS
-         FYptjmR+UfvWf6KZbumzHYzLTI1bcxehbjUSo=
-Message-ID: <4920D494.1010108@gmail.com>
-Date: Mon, 17 Nov 2008 03:19:00 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Steven Noonan <steven@uplinklabs.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] tracing/ftrace: make nop tracer using tracer flags
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 16 Nov 2008 21:21:41 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33375 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754792AbYKQCVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 21:21:39 -0500
+From: Izik Eidus <ieidus@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, avi@redhat.com,
+       dlaor@redhat.com, kamezawa.hiroyu@jp.fujitsu.com,
+       cl@linux-foundation.org, corbet@lwn.net, ieidus@redhat.com
+Subject: [PATCH 0/4] ksm - dynamic page sharing driver for linux v2
+Date: Mon, 17 Nov 2008 04:20:28 +0200
+Message-Id: <1226888432-3662-1-git-send-email-ieidus@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: give an example on how to use specific tracer flags
+(From v1 to v2 the main change is much more documentation)
 
-This patch propose to use the nop tracer to provide an
-example for using the tracer's custom flags implementation.
+KSM is a linux driver that allows dynamicly sharing identical memory
+pages between one or more processes.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace_nop.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 48 insertions(+), 0 deletions(-)
+Unlike tradtional page sharing that is made at the allocation of the
+memory, ksm do it dynamicly after the memory was created.
+Memory is periodically scanned; identical pages are identified and
+merged.
+The sharing is unnoticeable by the process that use this memory.
+(the shared pages are marked as readonly, and in case of write
+do_wp_page() take care to create new copy of the page)
 
-diff --git a/kernel/trace/trace_nop.c b/kernel/trace/trace_nop.c
-index 0e77415..1d8b4f8 100644
---- a/kernel/trace/trace_nop.c
-+++ b/kernel/trace/trace_nop.c
-@@ -41,6 +41,52 @@ static void nop_trace_reset(struct trace_array *tr)
- 	stop_nop_trace(tr);
- }
+This driver is very useful for KVM as in cases of runing multiple guests
+operation system of the same type.
+(For desktop work loads we have achived more than x2 memory overcommit
+(more like x3))
+
+This driver have found users other than KVM, for example CERN,
+Fons Rademakers:
+"on many-core machines we run one large detector simulation program per core.
+These simulation programs are identical but run each in their own process and
+need about 2 - 2.5 GB RAM.
+We typically buy machines with 2GB RAM per core and so have a problem to run
+one of these programs per core.
+Of the 2 - 2.5 GB about 700MB is identical data in the form of magnetic field
+maps, detector geometry, etc.
+Currently people have been trying to start one program, initialize the geometry
+and field maps and then fork it N times, to have the data shared.
+With KSM this would be done automatically by the system so it sounded extremely
+attractive when Andrea presented it."
+
+(We have are already started to test KSM on their systems...)
+
+KSM can run as kernel thread or as userspace application or both
+
+example for how to control the kernel thread:
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include "ksm.h"
+
+int main(int argc, char *argv[])
+{
+	int fd;
+	int used = 0;
+	int fd_start;
+	struct ksm_kthread_info info;
+	
+
+	if (argc < 2) {
+		fprintf(stderr,
+			"usage: %s {start npages sleep | stop | info}\n",
+			argv[0]);
+		exit(1);
+	}
+
+	fd = open("/dev/ksm", O_RDWR | O_TRUNC, (mode_t)0600);
+	if (fd == -1) {
+		fprintf(stderr, "could not open /dev/ksm\n");
+		exit(1);
+	}
+
+	if (!strncmp(argv[1], "start", strlen(argv[1]))) {
+		used = 1;
+		if (argc < 4) {
+			fprintf(stderr,
+		    "usage: %s start npages_to_scan max_pages_to_merge sleep\n",
+		    argv[0]);
+			exit(1);
+		}
+		info.pages_to_scan = atoi(argv[2]);
+		info.max_pages_to_merge = atoi(argv[3]);
+		info.sleep = atoi(argv[4]);
+		info.flags = ksm_control_flags_run;
+
+		fd_start = ioctl(fd, KSM_START_STOP_KTHREAD, &info);
+		if (fd_start == -1) {
+			fprintf(stderr, "KSM_START_KTHREAD failed\n");
+			exit(1);
+		}
+		printf("created scanner\n");
+	}
+
+	if (!strncmp(argv[1], "stop", strlen(argv[1]))) {
+		used = 1;
+		info.flags = 0;
+		fd_start = ioctl(fd, KSM_START_STOP_KTHREAD, &info);
+		printf("stopped scanner\n");
+	}
+
+	if (!strncmp(argv[1], "info", strlen(argv[1]))) {
+		used = 1;
+		ioctl(fd, KSM_GET_INFO_KTHREAD, &info);
+	 printf("flags %d, pages_to_scan %d npages_merge %d, sleep_time %d\n",
+	 info.flags, info.pages_to_scan, info.max_pages_to_merge, info.sleep);
+	}
+
+	if (!used)
+		fprintf(stderr, "unknown command %s\n", argv[1]);
+
+	return 0;
+}
+
+example of how to register qemu to ksm (or any userspace application)
+
+diff --git a/qemu/vl.c b/qemu/vl.c
+index 4721fdd..7785bf9 100644
+--- a/qemu/vl.c
++++ b/qemu/vl.c
+@@ -21,6 +21,7 @@
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+  * DEALINGS IN
+  * THE SOFTWARE.
+  */
++#include "ksm.h"
+ #include "hw/hw.h"
+ #include "hw/boards.h"
+ #include "hw/usb.h"
+@@ -5799,6 +5800,37 @@ static void termsig_setup(void)
  
-+#define TRACE_NOP_OPT_ACCEPT	0x1
-+#define TRACE_NOP_OPT_REFUSE	0x2
-+/* Options for the tracer (see trace_options file) */
-+static struct tracer_opt nop_opts[] = {
-+	/* Option that will be accepted by set_flag callback */
-+	{ TRACER_OPT(test_nop_accept, TRACE_NOP_OPT_ACCEPT) },
-+	/* Option that will be refused by set_flag callback */
-+	{ TRACER_OPT(test_nop_refuse, TRACE_NOP_OPT_REFUSE) },
-+	{ } /* Always set the last empty entry */
-+};
-+
-+static struct tracer_flags nop_flags = {
-+	/* You can check your flags value here when you want. */
-+	.val = 0, /* By default: all flags disabled */
-+	.opts = nop_opts
-+};
-+
-+/* It only serves as a signal handler and a callback to
-+ * accept or refuse tthe setting of a flag.
-+ * If you don't implement it, then the flag setting will be
-+ * automatically accepted.
-+ */
-+static int nop_set_flag(u32 old_flags, u32 bit, int set)
+ #endif
+ 
++int ksm_register_memory(void)
 +{
-+	/*
-+	 * Note that you don't need to update nop_flags.val yourself.
-+	 * The tracing Api will do it automatically if you return 0
-+	 */
-+	if (bit == TRACE_NOP_OPT_ACCEPT) {
-+		printk(KERN_DEBUG "nop_test_accept flag set to %d: we accept."
-+			" Now cat trace_options to see the result\n",
-+			set);
-+		return 0;
-+	}
++    int fd;
++    int ksm_fd;
++    int r = 1;
++    struct ksm_memory_region ksm_region;
 +
-+	if (bit == TRACE_NOP_OPT_REFUSE) {
-+		printk(KERN_DEBUG "nop_test_refuse flag set to %d: we refuse."
-+			"Now cat trace_options to see the result\n",
-+			set);
-+		return -EINVAL;
-+	}
++    fd = open("/dev/ksm", O_RDWR | O_TRUNC, (mode_t)0600);
++    if (fd == -1)
++        goto out;
 +
-+	return 0;
++    ksm_fd = ioctl(fd, KSM_CREATE_SHARED_MEMORY_AREA);
++    if (ksm_fd == -1)
++        goto out_free;
++
++    ksm_region.npages = phys_ram_size / TARGET_PAGE_SIZE;
++    ksm_region.addr = phys_ram_base;
++    r = ioctl(ksm_fd, KSM_REGISTER_MEMORY_REGION, &ksm_region);
++    if (r)
++        goto out_free1;
++
++    return r;
++
++out_free1:
++    close(ksm_fd);
++out_free:
++    close(fd);
++out:
++    return r;
 +}
 +
-+
- struct tracer nop_trace __read_mostly =
+ int main(int argc, char **argv)
  {
- 	.name		= "nop",
-@@ -49,5 +95,7 @@ struct tracer nop_trace __read_mostly =
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest	= trace_selftest_startup_nop,
- #endif
-+	.flags		= &nop_flags,
-+	.set_flag	= nop_set_flag
- };
+ #ifdef CONFIG_GDBSTUB
+@@ -6735,6 +6767,8 @@ int main(int argc, char **argv)
+     /* init the dynamic translator */
+     cpu_exec_init_all(tb_size * 1024 * 1024);
  
--- 
-1.5.2.5
++    ksm_register_memory();
++
+     bdrv_init();
+ 
+     /* we always create the cdrom drive, even if no disk is there */
+
