@@ -1,36 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbYKQF0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbYKQFb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754921AbYKQF0c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 00:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYKQF0X
+	id S1754921AbYKQFb0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 00:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbYKQFbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 00:26:23 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53957 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbYKQF0W (ORCPT
+	Mon, 17 Nov 2008 00:31:18 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44075 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750997AbYKQFbR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 00:26:22 -0500
-Date: Mon, 17 Nov 2008 14:25:39 +0900
+	Mon, 17 Nov 2008 00:31:17 -0500
+Date: Mon, 17 Nov 2008 14:30:35 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: balbir@linux.vnet.ibm.com
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Arjan van de Ven <arjan@infradead.org>, Dave Airlie <airlied@gmail.com>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       menage@google.com, jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, dada1@cosmosbay.com,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
-Message-Id: <20081117142539.9b2c6bfc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4920F8C4.30209@linux.vnet.ibm.com>
-References: <491FA28B.2070003@cn.fujitsu.com>
-	<20081115205229.765f7ee3@infradead.org>
-	<20081116.001926.150424480.davem@davemloft.net>
-	<20081116105725.12458b13@infradead.org>
-	<21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
-	<20081116135130.5e8b4e13@infradead.org>
-	<4920D238.8090905@cn.fujitsu.com>
-	<4920F8C4.30209@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: Fix typo in swap cgroup message
+Message-Id: <20081117143035.58e7aa62.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081117044008.GA25269@balbir.in.ibm.com>
+References: <20081117044008.GA25269@balbir.in.ibm.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -40,33 +29,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008 10:23:24 +0530
+On Mon, 17 Nov 2008 10:10:08 +0530
 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Lai Jiangshan wrote:
-> > Arjan van de Ven wrote:
-> >> On Mon, 17 Nov 2008 07:39:55 +1000
-> >>
-> >> I would go further than this.
-> >>
-> >> Make the code just use vmalloc(). Period.
-> >>
-> >> But then make vmalloc() smart and try do a direct mapping allocation
-> >> first, before falling back to a virtual mapping. (and based on size it
-> >> wouldn't even try it for just big things)
-> >>
-> >>
-> >>
-> > 
-> > Hi, Arjan van de Ven
-> > 
-> > (I'll rename simple_malloc/simple_free to kvmalloc/kvfree)
-> > 
 > 
-> I would prefer to find a way to say that one cannot select gfp_mask with this API.
+> There is a typo in the spelling of buffers (buffres) and the message is
+> not very clear either. Fix the message and typo (hopefully not introducing
+> any new ones ;) )
 > 
-I think gfp_mask must be passed explicitly.
+(>_< thanks, I found my private aspell dict includes "buffres"...
 
-Thanks,
 -Kame
+
+> Cc: Hugh Dickins <hugh@veritas.com>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Pavel Emelyanov <xemul@openvz.org>
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/page_cgroup.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff -puN mm/page_cgroup.c~fix-typo-swap-cgroup mm/page_cgroup.c
+> --- linux-2.6.28-rc4/mm/page_cgroup.c~fix-typo-swap-cgroup	2008-11-16 20:03:28.000000000 +0530
+> +++ linux-2.6.28-rc4-balbir/mm/page_cgroup.c	2008-11-17 09:59:43.000000000 +0530
+> @@ -423,7 +423,8 @@ int swap_cgroup_swapon(int type, unsigne
+>  	mutex_unlock(&swap_cgroup_mutex);
+>  
+>  	printk(KERN_INFO
+> -		"swap_cgroup: uses %ld bytes vmalloc and %ld bytes buffres\n",
+> +		"swap_cgroup: uses %ld bytes of vmalloc for pointer array space"
+> +		" and %ld bytes to hold mem_cgroup pointers on swap\n",
+>  		array_size, length * PAGE_SIZE);
+>  	printk(KERN_INFO
+>  	"swap_cgroup can be disabled by noswapaccount boot option.\n");
+> _
+> 
+> -- 
+> 	Balbir
+> 
 
