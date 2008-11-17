@@ -1,52 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbYKQHjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251AbYKQHsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbYKQHjZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756553AbYKQHim
+	id S1755251AbYKQHsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYKQHsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:38:42 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:33617 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbYKQHik (ORCPT
+	Mon, 17 Nov 2008 02:48:10 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:57510 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751418AbYKQHsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:38:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:bcc:subject:date:user-agent:message-id;
-        b=ROdhqV7yhv9TpyiyoB8A57WgvNcCyRQLhfPO4YQFZpt8wNUQgGa9pC3wh71JJAUmro
-         tIzrjVbJ+ZxUx3+X45iJwj/n/botBqi9ak9o+/ndA5/Jd24KhIKmnO6PuX4VucwgiUj+
-         fzzSbIJPDOdIF82rY2HM+RTzZWUkKAUgNtDlk=
-From: Qinghuang Feng <qhfeng.kernel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       qhfeng.kernel@gmail.com
-Subject: [PATCH] fs/binfmt_misc.c: let binfmt status be more readable 
-Date: Mon, 17 Nov 2008 15:38:16 +0800
-User-Agent: sniper-patch-carrier/1.06
-Message-ID: <49211f7b.09876e0a.012d.079f@mx.google.com>
+	Mon, 17 Nov 2008 02:48:09 -0500
+Message-ID: <4921225B.4000503@oss.ntt.co.jp>
+Date: Mon, 17 Nov 2008 16:50:51 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: Hirokazu Takahashi <taka@valinux.co.jp>
+CC: ryov@valinux.co.jp, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@sourceware.org, xemul@openvz.org, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, s-uchida@ap.jp.nec.com, ngupta@google.com,
+       vgoyal@redhat.com
+Subject: [PATCH 6/8]Re: bio-cgroup: The body of bio-cgroup
+References: <20081113.121357.75173118738921642.ryov@valinux.co.jp>	<20081113.121433.632868945383117577.ryov@valinux.co.jp>	<491D2251.7010702@oss.ntt.co.jp> <20081116.204609.65892670.taka@valinux.co.jp>
+In-Reply-To: <20081116.204609.65892670.taka@valinux.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following is what it looks like before patching.
-It is not much readable.
+Hi i/o controller/scheduler developers,
 
-user@ubuntu:/proc/sys/fs/binfmt_misc$ cat status 
-enableduser@ubuntu:/proc/sys/fs/binfmt_misc$
+Hirokazu Takahashi wrote:
+> Hi,
+> 
+> As you pointed out, cgroup iocontext stuff isn't well designed yet
+> since the current implementation of dm-iband doesn't need it.
+> I'd like to leave the iocontext stuff to you I/O scheduler guys
+> if you want to implement the bio-cgroup infrastructure to handle iocotexts
+> as the I/O schedulers expect.
 
-Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
----
-diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
-index f2744ab..72e8b24 100644
---- a/fs/binfmt_misc.c
-+++ b/fs/binfmt_misc.c
-@@ -652,7 +652,7 @@ static const struct file_operations bm_register_operations = {
- static ssize_t
- bm_status_read(struct file *file, char __user *buf, size_t nbytes, loff_t *ppos)
- {
--	char *s = enabled ? "enabled" : "disabled";
-+	char *s = enabled ? "enabled\n" : "disabled\n";
- 
- 	return simple_read_from_buffer(buf, nbytes, ppos, s, strlen(s));
- }
+Yes, I want to contribute to this because I think the io context tracking part
+can be used for a lot of other things. So it would be nice if we can talk about
+"the most useful desing for everyone."
+
+> 
+>> Hi,
+>>
+>> Ryo Tsuruta wrote:
+>>>  
+>>> +void init_io_context(struct io_context *ioc)
+>>> +{
+>>> +	atomic_set(&ioc->refcount, 1);
+>>> +	atomic_set(&ioc->nr_tasks, 1);
+>>> +	spin_lock_init(&ioc->lock);
+>>> +	ioc->ioprio_changed = 0;
+>>> +	ioc->ioprio = 0;
+>>> +	ioc->last_waited = jiffies; /* doesn't matter... */
+>>> +	ioc->nr_batch_requests = 0; /* because this is 0 */
+>>> +	ioc->aic = NULL;
+>>> +	INIT_RADIX_TREE(&ioc->radix_root, GFP_ATOMIC | __GFP_HIGH);
+>>> +	INIT_HLIST_HEAD(&ioc->cic_list);
+>>> +	ioc->ioc_data = NULL;
+>>> +}
+>>> +
+>>>  struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+>>>  {
+>>>  	struct io_context *ret;
+>>>  
+>>>  	ret = kmem_cache_alloc_node(iocontext_cachep, gfp_flags, node);
+>>> -	if (ret) {
+>>> -		atomic_set(&ret->refcount, 1);
+>>> -		atomic_set(&ret->nr_tasks, 1);
+>>> -		spin_lock_init(&ret->lock);
+>>> -		ret->ioprio_changed = 0;
+>>> -		ret->ioprio = 0;
+>>> -		ret->last_waited = jiffies; /* doesn't matter... */
+>>> -		ret->nr_batch_requests = 0; /* because this is 0 */
+>>> -		ret->aic = NULL;
+>>> -		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
+>>> -		INIT_HLIST_HEAD(&ret->cic_list);
+>>> -		ret->ioc_data = NULL;
+>>> -	}
+>>> +	if (ret)
+>>> +		init_io_context(ret);
+>>>  
+>>>  	return ret;
+>>>  }
+>>
+>>> +
+>>> +/* Create a new bio-cgroup. */
+>>> +static struct cgroup_subsys_state *
+>>> +bio_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>>> +{
+>>> +	struct bio_cgroup *biog;
+>>> +	struct io_context *ioc;
+>>> +	int ret;
+>>> +
+>>> +	if (!cgrp->parent) {
+>>> +		biog = &default_bio_cgroup;
+>>> +		init_io_context(biog->io_context);
+>>> +		/* Increment the referrence count not to be released ever. */
+>>> +		atomic_inc(&biog->io_context->refcount);
+>>> +		idr_init(&bio_cgroup_id);
+>>> +		return &biog->css;
+>>> +	}
+>>> +
+>>> +	biog = kzalloc(sizeof(*biog), GFP_KERNEL);
+>>> +	ioc = alloc_io_context(GFP_KERNEL, -1);
+>>> +	if (!ioc || !biog) {
+>>> +		ret = -ENOMEM;
+>>> +		goto out_err;
+>>> +	}
+>>> +	biog->io_context = ioc;
+>> If I understand correctly io_contexts allocated by alloc_io_context() should
+>> be owned by some tasks. In this case, the newly created io_context has no
+>> owner though biog->io_context->nr_tasks == 1. With the cfq scheduler this may
+>> cause some problems especially when cic_free_func() is called because
+>> cfq_exit_io_context() would never be called. Am I wrong?
+> 
+> I think iocontext allocated for a certain cgroup should be owned by the
+> cgroup itself, whose code isn't implemented yet. I think you need to
+> enhance it a bit if the owner is a cgroup.
+> 
+>>> +retry:
+>>> +	if (!idr_pre_get(&bio_cgroup_id, GFP_KERNEL)) {
+>>> +		ret = -EAGAIN;
+>>> +		goto out_err;
+>>> +	}
+>>> +	spin_lock_irq(&bio_cgroup_idr_lock);
+>>> +	ret = idr_get_new_above(&bio_cgroup_id, (void *)biog, 1, &biog->id);
+>>> +	spin_unlock_irq(&bio_cgroup_idr_lock);
+>>> +	if (ret == -EAGAIN)
+>>> +		goto retry;
+>>> +	else if (ret)
+>>> +		goto out_err;
+>>> +
+>>> +	return &biog->css;
+>>> +out_err:
+>>> +	if (biog)
+>>> +		kfree(biog);
+>>> +	if (ioc)
+>>> +		put_io_context(ioc);
+>>> +	return ERR_PTR(ret);
+>>> +}
+>>> +
+>>> +/* Delete the bio-cgroup. */
+>>> +static void bio_cgroup_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>>> +{
+>>> +	struct bio_cgroup *biog = cgroup_bio(cgrp);
+>>> +
+>>> +	put_io_context(biog->io_context);
+>> Here, I suspects what will happen under the following condition:
+>> biog->io_context->refcount: 1 --> 0
+>> biog->io_context->nr_tasks: 1 --> 1
+>> ==> cfq_dtor() will be called but cfq_exit() has not be called yet.
+>>
+>>> +
+>>> +	spin_lock_irq(&bio_cgroup_idr_lock);
+>>> +	idr_remove(&bio_cgroup_id, biog->id);
+>>> +	spin_unlock_irq(&bio_cgroup_idr_lock);
+>>> +
+>>> +	kfree(biog);
+>>> +}
+>>> +
+>>> +
+>>> +/* Determine the iocontext of the bio-cgroup that issued a given bio. */
+>>> +struct io_context *get_bio_cgroup_iocontext(struct bio *bio)
+>>> +{
+>>> +	struct bio_cgroup *biog = NULL;
+>>> +	struct io_context *ioc;
+>>> +	int	id = 0;
+>>> +
+>>> +	id = get_bio_cgroup_id(bio);
+>>> +	if (id)
+>>> +		biog = find_bio_cgroup(id);
+>>> +	if (!biog)
+>>> +		biog = &default_bio_cgroup;
+>>> +	ioc = biog->io_context;	/* default io_context for this cgroup */
+>>> +	atomic_inc(&ioc->refcount);
+>>> +	return ioc;
+>>> +}
+>>> +EXPORT_SYMBOL(get_bio_cgroup_iocontext);
+>>
+>> Thanks,
+>> Takuya Yoshikawa
+> 
+> Thank you,
+> Hirokazu Takahashi.
+> 
 
