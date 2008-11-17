@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753250AbYKQPrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbYKQPuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753250AbYKQPrp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 10:47:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbYKQPrg
+	id S1752861AbYKQPuq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 10:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYKQPui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 10:47:36 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47565 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751745AbYKQPrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 10:47:36 -0500
-Date: Mon, 17 Nov 2008 10:47:34 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Paul Mackerras <paulus@samba.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/7] ftrace, ppc: convert to new dynamic ftrace arch
- API
-In-Reply-To: <18720.60351.611649.125429@drongo.ozlabs.ibm.com>
-Message-ID: <alpine.DEB.1.10.0811171045070.2919@gandalf.stny.rr.com>
-References: <20081116212428.938752312@goodmis.org> <20081116212515.331278109@goodmis.org> <18720.60351.611649.125429@drongo.ozlabs.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 17 Nov 2008 10:50:38 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33752 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751061AbYKQPuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 10:50:37 -0500
+Date: Mon, 17 Nov 2008 16:50:09 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, Doug Chapman <doug.chapman@hp.com>,
+       Frank Mayhar <fmayhar@google.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] fix the racy usage of ->signal in
+	account_group_xxx/run_posix_cpu_timers
+Message-ID: <20081117155009.GA12081@elte.hu>
+References: <20081117143947.GA5360@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081117143947.GA5360@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 17 Nov 2008, Paul Mackerras wrote:
+* Oleg Nesterov <oleg@redhat.com> wrote:
 
-> Steven Rostedt writes:
+> Another stupid patch for 2.6.28 until we find the good fix.
 > 
-> > +static int test_24bit_addr(unsigned long ip, unsigned long addr)
-> > +{
-> > +	unsigned long diff;
-> > +
-> > +	/* can we get to addr from ip in 24 bits? */
-> > +	diff = ip > addr ? ip - addr : addr - ip;
-> > +
-> > +	return !(diff & ((unsigned long)-1 << 24));
+> Contrary to ad474caca3e2a0550b7ce0706527ad5ab389a4d4 changelog, 
+> other acct_group_xxx() helpers can be called after exit_notify() by 
+> timer tick. Thanks to Roland for pointing out this. Somehow I missed 
+> this simple fact when I read the original patch, and I am afraid I 
+> confused Frank during the discussion. Sorry.
 > 
-> Since a branch instruction can reach +/- 32MB, the 24 needs to be 25.
-> It's 25 not 26 since you have effectively accounted for one bit by
-> taking the absolute value of the offset.  Also, this will say that an
-> offset of -0x2000000 is out of range whereas it is just in range.
-> That probably doesn't matter unless you're relying on this to give
-> exactly the same answer in all cases as tests done elsewhere (e.g. in
-> module_64.c).
-
-I'll update this to be correct.
-
+> Fortunately, these helpers work with current, we can check 
+> ->exit_state to ensure that ->signal can't go away under us.
 > 
-> Note that the address difference being too large isn't the only reason
-> for a procedure call to go via a trampoline on ppc64.  A trampoline is
-> also needed when the called function uses a different TOC from the
-> caller.  The most obvious example of this is when the caller is in a
-> module and the callee is in the main kernel or another module.
+> Also, add the comment and compiler barrier to 
+> account_group_exec_runtime(), to make sure we load ->signal only 
+> once.
 > 
-> Currently all functions in the main kernel use the same TOC, but the
-> linker is capable of dividing up a large executable into groups of
-> functions and assigning a different TOC to each group, in order to
-> avoid any of the TOCs getting too large (a TOC is limited to 64kB).
-> If the linker does that, it automatically inserts trampolines to
-> handle the TOC change.
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-OK, I'll deal with that at a another time. If this does happen in core 
-kernel code, it will produce a nice warning and nicely shutdown ftrace, 
-without causing any harm. Then I can deal with the bug report.
+applied to tip/sched/urgent, thanks Oleg.
 
--- Steve
-
-
+	Ingo
