@@ -1,43 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752700AbYKQTWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYKQT2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752700AbYKQTWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbYKQTV7
+	id S1752713AbYKQT2d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYKQT2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:21:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32888
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751737AbYKQTV6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:21:58 -0500
-Date: Mon, 17 Nov 2008 11:21:57 -0800 (PST)
-Message-Id: <20081117.112157.146825192.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
- 2.6.22 -&gt; 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081117110119.GL28786@elte.hu>
-References: <20081117090648.GG28786@elte.hu>
-	<20081117.011403.06989342.davem@davemloft.net>
-	<20081117110119.GL28786@elte.hu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Nov 2008 14:28:10 -0500
+Received: from zbr.yandex.ru ([213.180.219.33]:59143 "EHLO gavana.yandex.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751654AbYKQT2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 14:28:08 -0500
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [resend take 2 4/4] DST Makefile/Kconfig files.
+Date: Mon, 17 Nov 2008 22:21:39 +0300
+Message-Id: <12269496993388-git-send-email-zbr@ioremap.net>
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <12269496991188-git-send-email-zbr@ioremap.net>
+References: <12269496993020-git-send-email-zbr@ioremap.net>
+ <12269496993007-git-send-email-zbr@ioremap.net>
+ <12269496993328-git-send-email-zbr@ioremap.net>
+ <12269496991188-git-send-email-zbr@ioremap.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 17 Nov 2008 12:01:19 +0100
+Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 
-> The scheduler's overhead barely even registers on a 16-way x86 system 
-> i'm running tbench on. Here's the NMI profile during 64 threads tbench 
-> on a 16-way x86 box with an v2.6.28-rc5 kernel [config attached]:
-
-Try a non-NMI profile.
-
-It's the whole of the try_to_wake_up() path that's the problem.
+diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
+index 61ad8d6..2a92cd8 100644
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -445,4 +445,6 @@ config BLK_DEV_HD
+ 
+ 	  If unsure, say N.
+ 
++source "drivers/block/dst/Kconfig"
++
+ endif # BLK_DEV
+diff --git a/drivers/block/Makefile b/drivers/block/Makefile
+index 204332b..6400de0 100644
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -32,3 +32,5 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
+ 
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
++
++obj-$(CONFIG_DST)	+= dst/
+diff --git a/drivers/block/dst/Kconfig b/drivers/block/dst/Kconfig
+new file mode 100644
+index 0000000..507dba8
+--- /dev/null
++++ b/drivers/block/dst/Kconfig
+@@ -0,0 +1,14 @@
++config DST
++	tristate "Distributed storage"
++	depends on NET && CRYPTO && SYSFS
++	select CONNECTOR
++	select LIBCRC32C
++	---help---
++	This driver allows to create a distributed storage block device.
++
++config DST_DEBUG
++	bool "DST debug"
++	depends on DST
++	---help---
++	This option will turn HEAVY debugging of the DST.
++	Turn it on ONLY if you have to debug some really obscure problem.
+diff --git a/drivers/block/dst/Makefile b/drivers/block/dst/Makefile
+new file mode 100644
+index 0000000..3a8b0cf
+--- /dev/null
++++ b/drivers/block/dst/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_DST) += nst.o
++
++nst-y := dcore.o state.o export.o thread_pool.o crypto.o trans.o
