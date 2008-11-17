@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYKQUfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923AbYKQUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYKQUfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 15:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbYKQUfn
+	id S1752923AbYKQUnT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 15:43:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYKQUnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 15:35:43 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53361 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152AbYKQUfm (ORCPT
+	Mon, 17 Nov 2008 15:43:10 -0500
+Received: from igw2.watson.ibm.com ([129.34.20.6]:54666 "EHLO
+	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751620AbYKQUnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 15:35:42 -0500
-To: hpa@zytor.com
-CC: multinymous@gmail.com, jrm8005@gmail.com,
-       tpctl-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-reply-to: <4921C425.7020806@zytor.com> (hpa@zytor.com)
-Subject: Re: [Tpctl-users] Inclusion of tp_smapi module into kernel?
-References: <200811171455.50039.hanno@hboeck.de> <49219DF5.5040404@zytor.com>	 <3aaafc130811170913o761ce43fg3a2738586ebd2396@mail.gmail.com> <41840b750811171035w63c794aepaa273bc55fbaf2@mail.gmail.com> <4921C425.7020806@zytor.com>
-Message-Id: <E1L2Aog-0007g9-94@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 17 Nov 2008 21:35:26 +0100
+	Mon, 17 Nov 2008 15:43:09 -0500
+Subject: Re: [PATCH 0/4] integrity
+From: david safford <safford@watson.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       jmorris@namei.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       serue@linux.vnet.ibm.com
+In-Reply-To: <20081114141813.71a0050a.akpm@linux-foundation.org>
+References: <cover.1226547084.git.zohar@linux.vnet.ibm.com>
+	 <20081114141813.71a0050a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Nov 2008 15:42:37 -0500
+Message-Id: <1226954557.3080.66.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008, H. Peter Anvin wrote:
-> Shem Multinymous wrote:
-> > On Mon, Nov 17, 2008 at 12:13 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
-> >> There are several utilities maintained by this author, and finding
-> >> some way to merge the code has been tried more than once. If you look
-> >> back far enough, Andrew asked to have another of the project's members
-> >> sign off on the patch, and maybe that would be acceptable enough, but
-> >> afaik the author has never responded directly to that idea.
-> > 
-> > We've discussed that in private at the time, and recently on LKML too.
-> > In summary:
-> > I'm fine with that, and so is everybody I talked to (including Linus),
-> > except Greg KH who vetoed it since he believes the code is irrevocably
-> > and contagiously evil.
-> > 
+On Fri, 2008-11-14 at 14:18 -0800, Andrew Morton wrote:
+> On Wed, 12 Nov 2008 22:47:10 -0500
+> Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
 > 
-> Signed-off-by is about copyright, it's not a review issue.  It means "I 
-> certify that I know that the author had the rights to submit this code." 
->    Code quality is important but separate.
+> > The Linux Integrity Module (LIM) Framework provides hooks
+> > ...
+> This all looks quite mergeable to me, although I am far from being an
+> expert on security things.
+> 
+> One thing which I cannot say, and which is quite important: how useful
+> will all of this be to our users?  Are people asking for it?  Are
+> people likely to enable and use it?  Are they even likely to understand
+> it?  ;) Are any large/important customers asking for it?  Are distros
+> likely to enable and support it?
 
-We've discussed this issue on the internal suse mailing lists, and
-concluded that the solution is simple: someone from IBM, Lenovo or
-whoever they license the technology from should sign off on the code.
-But implementing this got stuck at some stage.
+LIM/IMA's maintenance of a TPM hardware anchored file measurement 
+list is fundamental to the Trusted Computing Group's standards 
+efforts. Several projects have implemented the TNC (Trusted Network
+Connect) and PTS (Platform Trust Services) standards (see below). 
+There are three demo packaged distros which have integrated these
+apps, two of which are government funded (EU and US), with definite
+customer interest. We are working with the RHEL team to provide
+a supported, patched kernel for HAP. All of these so far have used
+the old LSM based IMA, and have asked for a supported, upstreamed 
+implementation, with the ability to work with SELinux.
 
-Can anybody help with info about who's responsible for this part of
-the ThinkPad?
+Standards
+http://www.trustedcomputinggroup.org
 
-Thanks,
-Miklos
+TNC/PTS Projects:
+http://tnc.inform.fh-hannover.de/wiki/index.php/Main_Page  (server)
+http://sourceforge.net/projects/libtnc   (library)
+http://hostap.epitest.fi/wpa_supplicant/wpa_supplicant   (client)
+http://sourceforge.jp/projects/openpts   (client and server)
+
+Test Distros:
+http://unit.aist.go.jp/itri/knoppix/index-en.html   (trusted Knoppix)
+http://www.nsa.gov/ia/industry/HAP/   (US)
+http://www.opentc.net   (EU)
+
+
+
+
+
+
