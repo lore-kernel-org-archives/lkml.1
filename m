@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112AbYKQUQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbYKQUSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112AbYKQUQy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 15:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752243AbYKQUQm
+	id S1753254AbYKQUSy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 15:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbYKQUSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 15:16:42 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60746
+	Mon, 17 Nov 2008 15:18:45 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41870
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752319AbYKQUQl (ORCPT
+	by vger.kernel.org with ESMTP id S1751515AbYKQUSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 15:16:41 -0500
-Date: Mon, 17 Nov 2008 12:16:41 -0800 (PST)
-Message-Id: <20081117.121641.167690467.davem@davemloft.net>
+	Mon, 17 Nov 2008 15:18:44 -0500
+Date: Mon, 17 Nov 2008 12:18:44 -0800 (PST)
+Message-Id: <20081117.121844.56281291.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-Cc: mingo@elte.hu, dada1@cosmosbay.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
-       shemminger@vyatta.com
+Cc: mingo@elte.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
+       a.p.zijlstra@chello.nl
 Subject: Re: [Bug #11308] tbench regression on each kernel release from
  2.6.22 -&gt; 2.6.28
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0811171149100.18283@nehalem.linux-foundation.org>
-References: <20081117184951.GA5585@elte.hu>
-	<20081117.113936.81699150.davem@davemloft.net>
-	<alpine.LFD.2.00.0811171149100.18283@nehalem.linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811171156080.18283@nehalem.linux-foundation.org>
+References: <alpine.LFD.2.00.0811171147380.18283@nehalem.linux-foundation.org>
+	<20081117.115258.227376348.davem@davemloft.net>
+	<alpine.LFD.2.00.0811171156080.18283@nehalem.linux-foundation.org>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -33,17 +32,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 17 Nov 2008 11:55:35 -0800 (PST)
+Date: Mon, 17 Nov 2008 11:57:55 -0800 (PST)
 
-> So try to figure out why his (better) profile doesn't match your 
-> (inferior) one, instead of asking him to do stupid things. It's some 
-> difference in architectures, likely: maybe the sparc timekeeping is crap, 
-> maybe it's a cache issue and sparc caches are crap, maybe it's something 
-> where Niagara (is it niagara) has some oddness that shows up because it 
-> has that odd four-threads+four-cores or whatever.
+> On Mon, 17 Nov 2008, David Miller wrote:
+> > And as a result I found that wake_up() is now 4 times slower than it
+> > was in 2.6.22, I even analyzed this for every single kernel release
+> > till now.
+> 
+> ..and that's the one where you then pointed to hrtimers, and now you claim 
+> that was fixed?
 
-It's on my workstation which is a much simpler 2 processor
-UltraSPARC-IIIi (1.5Ghz) system.
+That was a huge increase going from 2.6.26 to 2.6.27, and has
+been fixed.
 
-And yes I will investigate, it's all I've been doing in my
-spare time these past few weeks.
+The rest of the gradual release-to-release cost increase, however,
+remains.
+
+> At least I haven't seen any new analysis since then.
+
+I will find time ot make it after I get back from Portland.
