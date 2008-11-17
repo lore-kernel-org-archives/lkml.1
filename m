@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbYKQCMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYKQCOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbYKQCMb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 21:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYKQCMW
+	id S1756161AbYKQCOX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 21:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbYKQCON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 21:12:22 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57383 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbYKQCMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 21:12:21 -0500
-Message-ID: <4920D238.8090905@cn.fujitsu.com>
-Date: Mon, 17 Nov 2008 10:08:56 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Sun, 16 Nov 2008 21:14:13 -0500
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35109 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752499AbYKQCOM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 21:14:12 -0500
+X-Sasl-enc: hve79meezjP6HLMdadLE0jcZZA8xY+FjSdYxp9hB6Bk/ 1226888051
+Date: Mon, 17 Nov 2008 00:14:08 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ACPI: thinkpad-acpi: fix fan sleep/resume path
+Message-ID: <20081117021408.GD22260@khazad-dum.debian.net>
+References: <20081109113011.GB8329@khazad-dum.debian.net> <1226235242-11130-2-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Dave Airlie <airlied@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, menage@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
-       linux-kernel@vger.kernel.org,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, dada1@cosmosbay.com,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
-References: <491FA28B.2070003@cn.fujitsu.com>	<20081115205229.765f7ee3@infradead.org>	<20081116.001926.150424480.davem@davemloft.net>	<20081116105725.12458b13@infradead.org>	<21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com> <20081116135130.5e8b4e13@infradead.org>
-In-Reply-To: <20081116135130.5e8b4e13@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1226235242-11130-2-git-send-email-hmh@hmh.eng.br>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Mon, 17 Nov 2008 07:39:55 +1000
-> 
-> I would go further than this.
-> 
-> Make the code just use vmalloc(). Period.
-> 
-> But then make vmalloc() smart and try do a direct mapping allocation
-> first, before falling back to a virtual mapping. (and based on size it
-> wouldn't even try it for just big things)
-> 
-> 
-> 
+Len,
 
-Hi, Arjan van de Ven
+The patch needs to go to Linus...  I don't think anyone cares to have
+their names as tested-by:, or they would have replied already.
 
-(I'll rename simple_malloc/simple_free to kvmalloc/kvfree)
+I have tested the patch and it fixes things here.  It would be better with
+more "works for me" replies, but it should be enough testing.
 
-I think vmalloc() should only do one thing(virtual mapping). Your idea
-can be implemented in helper function kvmalloc() if there is a good
-algorithm provided for it.
-
-kvmalloc() is for cleanup mostly. It will remove existed duplicate code.
-As David and I pointed out, vmalloc() is need for some good reason.
-
-If we do not introduce a helper function, these duplicate code
-are still spread everywhere.
-
-
-kvfree() is not only for free the memory allocated by kvmalloc().
-
-kvfree() frees the memory that we don't know whether it was allocated
-by kmalloc() nor vmalloc().
-
-Someone use a flag for it, and other guys calculate size of memory again
-before kfree() or vfree(). these two ways increase complexity, and
-it is hard to prove the re-calculated size is reliable.
-
-kvfree() will remove these needless complexity!
-
-
-
-Thanx, Lai
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
