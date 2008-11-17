@@ -1,102 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYKQXNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbYKQXN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYKQXNZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 18:13:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYKQXNQ
+	id S1754109AbYKQXN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 18:13:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYKQXNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 18:13:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38136 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Nov 2008 18:13:49 -0500
+Received: from gate.crashing.org ([63.228.1.57]:60424 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751279AbYKQXNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 18:13:15 -0500
-Date: Tue, 18 Nov 2008 00:13:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [git pull] scheduler updates
-Message-ID: <20081117231305.GA2314@elte.hu>
-References: <20081108170224.GA553@elte.hu> <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org> <20081108104116.48bd26e6@infradead.org> <alpine.LFD.2.00.0811081051190.3468@nehalem.linux-foundation.org> <20081108190517.GA9806@elte.hu> <alpine.LFD.2.00.0811081115290.3468@nehalem.linux-foundation.org> <20081108192957.GA22219@elte.hu> <20081117224358.GA27249@linux-os.sc.intel.com> <20081117225018.GA25619@elte.hu> <20081117230403.GA30861@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117230403.GA30861@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	id S1751468AbYKQXNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 18:13:48 -0500
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 10:13:16 +1100
+Message-Id: <1226963596.7178.254.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-
-> On Mon, Nov 17, 2008 at 02:50:18PM -0800, Ingo Molnar wrote:
-> > 
-> > * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-> > 
-> > > Patch being discussed on this thread (commit 0d12cdd) has a
-> > > regression on one of the test systems here.
-> > >
-> > > With the patch, I see
-> > >
-> > > checking TSC synchronization [CPU#0 -> CPU#1]:
-> > > Measured 28 cycles TSC warp between CPUs, turning off TSC clock.
-> > > Marking TSC unstable due to check_tsc_sync_source failed
-> > >
-> > > Whereas, without the patch syncs pass fine on all CPUs
-> > >
-> > > checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> > >
-> > > Due to this, TSC is marke unstable, when it is not actually unstable.
-> > > This is because syncs in check_tsc_wrap() goes away due to this commit.
-> > >
-> > > As per the discussion on this thread, correct way to fix this is to add
-> > > explicit syncs as below?
-> > 
-> > ah. Yes.
-> > 
-> > Could you please check whether:
-> > 
-> > > +     rdtsc_barrier();
-> > >       start = get_cycles();
-> > > +     rdtsc_barrier();
-> > >       /*
-> > >        * The measurement runs for 20 msecs:
-> > >        */
-> > > @@ -61,7 +63,9 @@ static __cpuinit void check_tsc_warp(voi
-> > >                */
-> > >               __raw_spin_lock(&sync_lock);
-> > >               prev = last_tsc;
-> > > +             rdtsc_barrier();
-> > >               now = get_cycles();
-> > > +             rdtsc_barrier();
-> > 
-> > adding the barrier just _after_ the get_cycles() call (but not before
-> > it) does the trick too? That should be enough in this case.
-> >
+> Well, it's not unacceptable on good CPU's with 4kB blocks (just an 8-entry 
+> array), but as you say:
 > 
-> With barrier only after get_cycles, I do see syncs across first few 
-> CPUs passing. But later I see:
+> > On PPC64 I'm told that the page size is 64K, which makes the above equal 
+> > to: 64K / 512 = 128  multiply that by 8 byte words, we have 1024 bytes.
 > 
-> checking TSC synchronization [CPU#0 -> CPU#13]: Measured 4 cycles 
-> TSC warp between CPUs, turning off TSC clock. Marking TSC unstable 
-> due to check_tsc_sync_source failed
+> Yeah. Not good. I think 64kB pages are insane. In fact, I think 32kB 
+> pages are insane, and 16kB pages are borderline. I've told people so.
+> 
+> The ppc people run databases, and they don't care about sane people 
+> telling them the big pages suck.
 
-yeah - has to be surrounded, to make sure our last_tsc observation 
-does not happen after the RDTSC.
+Hehe :-)
 
-I have applied your patch to tip/x86/urgent, thanks!
+Guess who is pushing for larger page sizes nowadays ? Embedded
+people :-) In fact, we have patches submited on the list to offer the
+option for ... 256K pages on some 44x embedded CPUs :-)
 
-	Ingo
+It makes some sort of sense I suppose on very static embedded workloads
+with no swap nor demand paging.
+
+> It's made worse by the fact that they 
+> also have horribly bad TLB fills on their broken CPU's, and years and 
+> years of telling people that the MMU on ppc's are sh*t has only been 
+> reacted to with "talk to the hand, we know better".
+
+Who are you talking about here precisely ? I don't think either Paul or
+I every said something nearly around those lines ... Oh well.
+
+But yeah, our existing server CPUs have pretty poor TLB refills and yes,
+64K pages help. And yes, we would like things to be different, but they
+aren't.
+
+But there is also pressure to get larger page sizes from small embedded
+field, where CPUs have even poorer TLB refill (software loaded
+basically) :-)
+
+> Quite frankly, 64kB pages are INSANE. But yes, in this case they actually 
+> cause bugs. With a sane page-size, that *arr[MAX_BUF_PER_PAGE] thing uses 
+> 64 bytes, not 1kB.
+
+Come on, the code is crap to allocate that on the stack anyway :-)
+
+> Of course, that would likely mean that FAT etc wouldn't work on ppc64, so 
+> I don't think that's a valid model either. But if the 64kB page size is 
+> just a "database server crazy-people config option", then maybe it's 
+> acceptable.
+
+Well, as I said, embedded folks are wanting that too ...
+
+Cheers,
+Ben.
+
