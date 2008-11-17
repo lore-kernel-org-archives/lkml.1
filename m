@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYKQEqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbYKQEql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756644AbYKQEqZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 23:46:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYKQEqR
+	id S1756167AbYKQEql (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 23:46:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbYKQEqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 23:46:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35911 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755988AbYKQEqR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 23:46:17 -0500
-Message-ID: <4920F649.60901@zytor.com>
-Date: Sun, 16 Nov 2008 20:42:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 16 Nov 2008 23:46:30 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:52016 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756726AbYKQEq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 23:46:29 -0500
+Message-ID: <4920F70D.9030100@cn.fujitsu.com>
+Date: Mon, 17 Nov 2008 12:46:05 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       travis@sgi.com
-Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
-References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org>	 <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org>	 <4920B15E.6090200@zytor.com> <1226895741.7178.183.camel@pasglop>
-In-Reply-To: <1226895741.7178.183.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [mm] [PATCH 4/4] Memory cgroup hierarchy feature selector (v4)
+References: <20081116081034.25166.7586.sendpatchset@balbir-laptop> <20081116081105.25166.54820.sendpatchset@balbir-laptop>
+In-Reply-To: <20081116081105.25166.54820.sendpatchset@balbir-laptop>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> 
-> IRQ numbers are arbitrary, some platforms make up numbers out of the
-> blue, or they can be hypervisor internal tokens etc...
-> 
-> The only sane way to handle this generically IMHO is to do what we do
-> on powerpc (and I think sparc64) which is to totally disconnect the HW
-> number from the "linux" number.
-> 
+> +	/*
+> +	 * If parent's use_hiearchy is set, we can't make any modifications
+> +	 * in the child subtrees. If it is unset, then the change can
+> +	 * occur, provided the current cgroup has no children.
+> +	 *
+> +	 * For the root cgroup, parent_mem is NULL, we allow value to be
+> +	 * set if there are no children.
+> +	 */
+> +	if (!parent_mem || (!parent_mem->use_hierarchy &&
+> +				(val == 1 || val == 0))) {
 
-Yes, that's what I want to see, too.  On x86, it's important to preserve
-the first 16 (BIOS-compatible, XT-PIC) numbers, as they are widely used
-as a user interface, but for the rest, there is no point.
+Should be :
 
-It is probably desirable to do that by overlaying the first (primary,
-south bridge) IO-APIC, which also takes care of the "semi-legacy" IRQ
-16-23 numbers.
+if ((!parent_mem || !parent_mem->use_hierarchy) &&
+    (val == 1 || val == 0)) {
 
-	-hpa
+> +		if (list_empty(&cont->children))
+> +			mem->use_hierarchy = val;
+> +		else
+> +			retval = -EBUSY;
+> +	} else
+> +		retval = -EINVAL;
+> +	cgroup_unlock();
+> +
+> +	return retval;
+> +}
+
