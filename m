@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbYKQNgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbYKQNgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbYKQNgT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYKQNgA
+	id S1752625AbYKQNgs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:36:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYKQNgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:36:00 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:19718 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbYKQNf7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:35:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent;
-        b=q4rJu+DlKolXTfUrdgxBfzMQbDrGwQzl4lLLVa5kV5ThKPN2CCsyYXBNjNgw9/RzuP
-         CS213Atx5Pm6OaplKM0IxrKqj6++Ug6lxyrhkeee6+XLp7EAcfh/c4Q5Lo28Ev8MmhKG
-         npqk9eVCaibzCk85yZzPe1uZig/gO8F+jBV8c=
-Date: Mon, 17 Nov 2008 13:35:48 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       David Miller <davem@davemloft.net>, Ferenc Wagner <wferi@niif.hu>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] softirq: Use local_irq_save() in local_bh_enable()
-Message-ID: <20081117133548.GC6345@ff.dom.local>
+	Mon, 17 Nov 2008 08:36:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:46052 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752169AbYKQNge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 08:36:34 -0500
+Date: Mon, 17 Nov 2008 15:36:23 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Frank Mayhar <fmayhar@google.com>, Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, adobriyan@gmail.com,
+       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: regression introduced by - timers: fix itimer/many thread hang
+Message-ID: <20081117143623.GA4658@redhat.com>
+References: <1225984098.7803.4642.camel@twins> <1226015568.2186.20.camel@bobble.smo.corp.google.com> <1226053744.7803.5851.camel@twins> <1226081448.28191.64.camel@bobble.smo.corp.google.com> <1226089574.31966.85.camel@lappy.programming.kicks-ass.net> <Pine.LNX.4.64.0811100834500.21257@quilx.com> <1226328152.7685.192.camel@twins> <1226340009.19109.17.camel@bobble.smo.corp.google.com> <20081114024239.07CC91541E8@magilla.localdomain> <20081114164155.GA7738@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87y6zwwy5c.fsf@tac.ki.iif.hu>
+In-Reply-To: <20081114164155.GA7738@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2
-shows local_bh_enable() is used in the wrong context (irqs disabled).
-It happens when a usual network receive path is called by netconsole,
-which simply turns off irqs around this all. Probably this is wrong,
-but it worked like this long time, and it's not trivial to fix this.
+On 11/14, Oleg Nesterov wrote:
+>
+> Currently I am trying to find the ugly, but simple fixes for 2.6.28.
+>
+> account_group_user_time(), run_posix_cpu_timers() are simpler to
+> fix. Again, I need to actually read the code, but afaics we can
+> rely on the fact that the task is current, so we can change the
+> code
+>
+> 	-	if (!->signal)
+> 	+	if (->exit_state)
+> 			return;
 
-Anyway, a commit 0f476b6d91a1395bda6464e653ce66ea9bea7167 "softirq:
-remove irqs_disabled warning from local_bh_enable" can break things
-after changing from local_irq_save() to local_irq_disable(). Before
-this commit there was only a warning, now a lockup is possible, so
-it could be treated as a regression. This patch reverts the change
-in irqs.
+Yes, unless I missed something again, this should work. I'll send
+the (simple) patches soon, but I have no idea how to test them.
 
-Reported-by: Ferenc Wagner <wferi@niif.hu>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
----
 
- kernel/softirq.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+However, I'm afraid there is another problem. On 32 bit cpus we can't
+read "u64 sum_exec_runtime" atomically, and so thread_group_cputime()
+can "overestimate" ->sum_exec_runtime by (up to) UINT_MAX if it races
+with the thread which updates its per_cpu_ptr(.totals). This for example
+means that check_process_timers() can fire the CPUCLOCK_SCHED timers
+before time.
 
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index e7c69a7..756c928 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -135,9 +135,12 @@ EXPORT_SYMBOL(_local_bh_enable);
- 
- static inline void _local_bh_enable_ip(unsigned long ip)
- {
-+#ifdef CONFIG_TRACE_IRQFLAGS
-+	unsigned long flags;
-+#endif
- 	WARN_ON_ONCE(in_irq() || irqs_disabled());
- #ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_disable();
-+	local_irq_save(flags);
- #endif
- 	/*
- 	 * Are softirqs going to be turned on now:
-@@ -155,7 +158,7 @@ static inline void _local_bh_enable_ip(unsigned long ip)
- 
- 	dec_preempt_count();
- #ifdef CONFIG_TRACE_IRQFLAGS
--	local_irq_enable();
-+	local_irq_restore(flags);
- #endif
- 	preempt_check_resched();
- }
+No?
+
+Oleg.
+
