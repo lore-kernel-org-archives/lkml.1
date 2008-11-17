@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYKQIvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYKQIyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbYKQIvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 03:51:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYKQIvM
+	id S1756606AbYKQIyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 03:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYKQIyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 03:51:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56508 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752606AbYKQIvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 03:51:11 -0500
-Date: Mon, 17 Nov 2008 09:50:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Tejun Heo <htejun@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix kunmap() argument in sg_miter_stop
-Message-ID: <20081117085046.GE28786@elte.hu>
-References: <20081115112751.1d38c072@infradead.org> <Pine.LNX.4.64.0811152003360.1618@blonde.site> <20081115123916.0d83a89e@infradead.org> <491FACC3.1050202@gmail.com> <20081117081117.GD26778@kernel.dk> <20081117082201.GB24603@elte.hu> <20081117083022.GE26778@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117083022.GE26778@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+	Mon, 17 Nov 2008 03:54:08 -0500
+Received: from smtp.eu.citrix.com ([62.200.22.115]:33347 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbYKQIyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 03:54:07 -0500
+X-Greylist: delayed 580 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Nov 2008 03:54:06 EST
+X-IronPort-AV: E=Sophos;i="4.33,617,1220227200"; 
+   d="scan'208";a="2773015"
+User-Agent: Microsoft-Entourage/11.4.0.080122
+Date: Mon, 17 Nov 2008 08:44:20 +0000
+Subject: Re: [Xen-devel] [PATCH 03 of 38] swiotlb: allow architectures
+ tooverride swiotlb pool allocation
+From: Keir Fraser <keir.fraser@eu.citrix.com>
+To: Chris Lalancette <clalance@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Message-ID: <C546DF64.1F481%keir.fraser@eu.citrix.com>
+Thread-Topic: [Xen-devel] [PATCH 03 of 38] swiotlb: allow architectures
+ tooverride swiotlb pool allocation
+Thread-Index: AclIkK6v7PwvhLSDEd2TBAAWy6hiGQ==
+In-Reply-To: <49212587.8020702@redhat.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 17 Nov 2008 08:44:25.0015 (UTC) FILETIME=[B1ACC470:01C94890]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 17/11/08 08:04, "Chris Lalancette" <clalance@redhat.com> wrote:
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Mon, Nov 17 2008, Ingo Molnar wrote:
-> > 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > +#define kunmap(p)			\
-> > > +	do {				\
-> > > +		struct page *__p;	\
-> > > +		(void) (&__p == &(p));	\
-> > > +		__kunmap(p);		\
-> > > +	} while (0)
-> > > +
-> > > +#define kunmap_atomic(a, t)		\
-> > > +	do {				\
-> > > +		void *__p;		\
-> > > +		(void) (&__p == &(a));	\
-> > > +		__kunmap_atomic(a, t);	\
-> > > +	} while (0)
-> > 
-> > Agreed - but please use the typecheck() primitive. (linux/typecheck.h)
+>> Could you be more specific?  The swiotlb allocation should be machine
+>> contiguous and so there's no stradding required, but I think I'm missing
+>> your point.
 > 
-> Neat, didn't know about that, thanks.
+> In general, I think you are right; swiotlb should be machine contiguous, so it
+> works in the normal case.  The range_straddles_page_boundary function takes
+> care
+> of a corner case, where you can run into swiotlb exhaustion when you really
+> shouldn't.  As I understand it, it comes about because it is possible to get a
+> swiotlb request with two pages that just happen to be machine contiguous, but
+> were *not* allocated through xen_create_contiguous_region (and hence weren't
+> marked in the contiguous_bitmap as such).  In this case, you split the request
+> into two separate requests, and this can more easily lead to exhaustion.
+> range_straddles_page_boundary works around this by checking whether any two
+> pages coming through the swiotlb layer are machine contiguous, and if they
+> are,
+> not splitting the request.
 
-and ack on your patch obviously. Feel free to push it via the block 
-tree straight away, it doesnt collide with anything pending in the x86 
-tree.
+A more specific problem solved by range_straddle_page_boundary() in our
+2.6.18 kernel was that the block layer would do bio merging because it
+checked that pages really were contiguous, and then swiotlb (without
+r_s_p_b) would decide that the pages weren't contiguous (because the
+contiguity was random luck rather than explicitly requested) and hence do
+bounce buffering. Result was that sufficiently aggressive I/O would exhaust
+swiotlb resources and crash the kernel.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+In the 2.6.18 port we actually got rid of contiguous_bitmap[] entirely.
 
-	Ingo
+ -- Keir
+
+
