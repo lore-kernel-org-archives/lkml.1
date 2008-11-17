@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbYKQWup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYKQWxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754446AbYKQWup (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 17:50:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYKQWuh
+	id S1753861AbYKQWxu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 17:53:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYKQWxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 17:50:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47593 "EHLO mx3.mail.elte.hu"
+	Mon, 17 Nov 2008 17:53:43 -0500
+Received: from ozlabs.org ([203.10.76.45]:37153 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633AbYKQWuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 17:50:37 -0500
-Date: Mon, 17 Nov 2008 23:50:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [git pull] scheduler updates
-Message-ID: <20081117225018.GA25619@elte.hu>
-References: <20081108170224.GA553@elte.hu> <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org> <20081108104116.48bd26e6@infradead.org> <alpine.LFD.2.00.0811081051190.3468@nehalem.linux-foundation.org> <20081108190517.GA9806@elte.hu> <alpine.LFD.2.00.0811081115290.3468@nehalem.linux-foundation.org> <20081108192957.GA22219@elte.hu> <20081117224358.GA27249@linux-os.sc.intel.com>
+	id S1751633AbYKQWxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 17:53:42 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117224358.GA27249@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+Content-Transfer-Encoding: 7bit
+Message-ID: <18721.62958.479215.822513@cargo.ozlabs.ibm.com>
+Date: Tue, 18 Nov 2008 09:53:34 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds writes:
 
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+> The ppc people run databases, and they don't care about sane people 
 
-> Patch being discussed on this thread (commit 0d12cdd) has a 
-> regression on one of the test systems here.
-> 
-> With the patch, I see
-> 
-> checking TSC synchronization [CPU#0 -> CPU#1]:
-> Measured 28 cycles TSC warp between CPUs, turning off TSC clock.
-> Marking TSC unstable due to check_tsc_sync_source failed
-> 
-> Whereas, without the patch syncs pass fine on all CPUs
-> 
-> checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> 
-> Due to this, TSC is marke unstable, when it is not actually unstable.
-> This is because syncs in check_tsc_wrap() goes away due to this commit.
-> 
-> As per the discussion on this thread, correct way to fix this is to add
-> explicit syncs as below?
+And HPC apps, and all sorts of other things...
 
-ah. Yes.
+> telling them the big pages suck. It's made worse by the fact that they 
+> also have horribly bad TLB fills on their broken CPU's, and years and 
 
-Could you please check whether:
+Taking page faults at a 4k granularity also sucks.  A lot of the
+performance improvement from using 64k pages comes just from executing
+the page fault path (and other paths in the mm code) less frequently.
+That's why we see a performance improvement from 64k pages even on
+machines that don't support 64k pages in hardware (like the 21%
+reduction in system time on a kernel compile that I reported earlier).
+That has nothing to do with TLB miss times or anything to do with the
+MMU.
 
-> +	rdtsc_barrier();
->  	start = get_cycles();
-> +	rdtsc_barrier();
->  	/*
->  	 * The measurement runs for 20 msecs:
->  	 */
-> @@ -61,7 +63,9 @@ static __cpuinit void check_tsc_warp(voi
->  		 */
->  		__raw_spin_lock(&sync_lock);
->  		prev = last_tsc;
-> +		rdtsc_barrier();
->  		now = get_cycles();
-> +		rdtsc_barrier();
+I'd love to be able to use a 4k base page size if I could still get
+the reduction in page faults and the expanded TLB reach that we get
+now with 64k pages.  If we could allocate the page cache for large
+files with order-4 allocations wherever possible that would be a good
+start.  I think Christoph Lameter had some patches in that direction
+but they didn't seem to get very far.
 
-adding the barrier just _after_ the get_cycles() call (but not before 
-it) does the trick too? That should be enough in this case.
+> years of telling people that the MMU on ppc's are sh*t has only been 
+> reacted to with "talk to the hand, we know better".
 
-	Ingo
+Well, it's been reacted to with "AIX can use small pages where it
+makes sense, and large pages where that makes sense, so why can't
+Linux?"
+
+> I suspect the PPC people need to figure out some way to handle this in 
+> their broken setups (since I don't really expect them to finally admit 
+> that they were full of sh*t with their big pages), but since I think it's 
+> a ppc bug, I'm not at all interested in a fix that penalizes the _good_ 
+> case.
+
+Looks like we should make the stack a bit larger.
+
+Paul.
