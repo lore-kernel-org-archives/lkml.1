@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756436AbYKQG01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbYKQGbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756436AbYKQG01 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 01:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYKQG0S
+	id S1755470AbYKQGbJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 01:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752607AbYKQGa4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 01:26:18 -0500
-Received: from ns.suse.de ([195.135.220.2]:49414 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbYKQG0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 01:26:17 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
+	Mon, 17 Nov 2008 01:30:56 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41109 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752554AbYKQGaz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 01:30:55 -0500
+Date: Mon, 17 Nov 2008 15:30:12 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Make /proc/sys/vm/drop_caches write only
-Date: Mon, 17 Nov 2008 11:57:57 +0530
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200811131754.11863.knikanth@suse.de> <20081114150705.c98e5004.akpm@linux-foundation.org>
-In-Reply-To: <20081114150705.c98e5004.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] mm: evict streaming IO cache first
+Message-Id: <20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081116204720.1b8cbe18.akpm@linux-foundation.org>
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20081115210039.537f59f5.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org>
+	<49208E9A.5080801@redhat.com>
+	<20081116204720.1b8cbe18.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200811171157.57438.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 15 November 2008 04:37:05 Andrew Morton wrote:
-> On Thu, 13 Nov 2008 17:54:11 +0530
->
-> Nikanth Karthikesan <knikanth@suse.de> wrote:
-> >  /proc/sys/vm/drop_caches is used only to trigger dropping caches. It
-> > does not disable the cache. The ability to read the value written to this
-> > file long back gives wrong impression.
-> >
-> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> >
-> > ---
-> >
-> > diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-> > index 3e5637f..9892e1b 100644
-> > --- a/fs/drop_caches.c
-> > +++ b/fs/drop_caches.c
-> > @@ -66,11 +66,9 @@ int drop_caches_sysctl_handler(ctl_table *table, int
-> > write, struct file *file, void __user *buffer, size_t *length, loff_t
-> > *ppos) {
-> >  	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-> > -	if (write) {
-> > -		if (sysctl_drop_caches & 1)
-> > -			drop_pagecache();
-> > -		if (sysctl_drop_caches & 2)
-> > -			drop_slab();
-> > -	}
-> > +	if (sysctl_drop_caches & 1)
-> > +		drop_pagecache();
-> > +	if (sysctl_drop_caches & 2)
-> > +		drop_slab();
-> >  	return 0;
-> >  }
-> > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> > index 9d048fa..dff3c13 100644
-> > --- a/kernel/sysctl.c
-> > +++ b/kernel/sysctl.c
-> > @@ -1015,7 +1015,7 @@ static struct ctl_table vm_table[] = {
-> >  		.procname	= "drop_caches",
-> >  		.data		= &sysctl_drop_caches,
-> >  		.maxlen		= sizeof(int),
-> > -		.mode		= 0644,
-> > +		.mode		= 0200,
-> >  		.proc_handler	= drop_caches_sysctl_handler,
-> >  		.strategy	= &sysctl_intvec,
-> >  	},
->
-> True.  But it's a backward-incompatible change, and there's a (small)
-> chance that someone's tools will break if we do this.
->
-> We have to get these things right first time :(
+On Sun, 16 Nov 2008 20:47:20 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-hmm.. add this to the list of things for the big version change ;)
+> On Sun, 16 Nov 2008 16:20:26 -0500 Rik van Riel <riel@redhat.com> wrote:
+> Anyway, we need to do something.
+> 
+> Shouldn't get_scan_ratio() be handling this case already?
+> 
+Hmm, could I make a question ?
 
-May be zeroing out the value would have slimmer chance of breaking things?! Or 
-would it cause a different confusion?
+I think
 
-Thanks
-Nikanth Karthikesan
+  - recent_rolated[LRU_FILE] is incremented when file cache is moved from
+    ACTIVE_FILE to INACTIVE_FILE.
+  - recent_scanned[LRU_FILE] is sum of scanning numbers on INACTIVE/ACTIVE list
+    of file.
+  - file caches are added to INACITVE_FILE, at first.
+  - get_scan_ratio() calculates %file to be
 
-/proc/sys/vm/drop_caches is used only to trigger dropping caches. It
-does not disable the cache. Unset it after clearing the cache.
+                         file        recent rotated.
+   %file = IO_cost * ------------ / -------------
+                      anon + file    recent scanned.
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+But when "files are used by streaming or some touch once application",
+there is no rotation because they are in INACTIVE FILE at first add_to_lru().
+But recent_rotated will not increase while recent_scanned goes bigger and bigger.
 
----
+Then %file goes to 0 rapidly.
 
-diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-index 3e5637f..1a03d6e 100644
---- a/fs/drop_caches.c
-+++ b/fs/drop_caches.c
-@@ -71,6 +71,7 @@ int drop_caches_sysctl_handler(ctl_table *table, int write,
- 			drop_pagecache();
- 		if (sysctl_drop_caches & 2)
- 			drop_slab();
-+		sysctl_drop_caches = 0;
- 	}
- 	return 0;
- }
+Hmm?
+
+Thanks,
+-kame
 
