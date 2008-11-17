@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbYKQOIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbYKQOJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752872AbYKQOIX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 09:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYKQOIP
+	id S1753237AbYKQOJn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 09:09:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYKQOJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 09:08:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:18413 "EHLO
+	Mon, 17 Nov 2008 09:09:35 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:12388 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808AbYKQOIO (ORCPT
+	with ESMTP id S1752089AbYKQOJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 09:08:14 -0500
+	Mon, 17 Nov 2008 09:09:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
          :content-type:content-transfer-encoding:content-disposition
          :references;
-        b=EV7kbTq2aD6RfSs0lU0RI6/F7V5vp5uuIPLIMzmiLDf1qiQcR4+AafPnJpfDPvvQ2Q
-         ovJqBmQY1pX9T6JmMHKS8nAP13/tOiPRvtVEaeSNnoJIVVWYgrZWY2j57Po4kASPyip6
-         YNxLQhz2YWK5dBer9RoQcsx5jQvmrWTOq3Zeo=
-Message-ID: <ab4346860811170608n4f940506v55862448c09f0b19@mail.gmail.com>
-Date: Mon, 17 Nov 2008 16:08:12 +0200
+        b=uaZSuW+JbUmIuWNae1Sk7g/Y0LYXNwJSX1mHaHNoc+UZdLi5WRcuohvANGnE+9m1CQ
+         mqRGPWBtmoqHH/btQkdZCD8HyrwP4HvbsG6cR5FmwmnX5MvBsBhVVXdY7PFqosJ6R3P+
+         OXZqJ5BZKgy630/0nKFccZUEk2YVqEQH5D/Go=
+Message-ID: <ab4346860811170609j2d98a49aif9fcabf3a0402fbc@mail.gmail.com>
+Date: Mon, 17 Nov 2008 16:09:32 +0200
 From: "Victoria Muntean" <vikimun@gmail.com>
-To: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
 Subject: Re: size of swapped-out part of the process
 Cc: "Kernel Linux" <linux-kernel@vger.kernel.org>
-In-Reply-To: <3aaafc130811170555l7e35b6b9s169d03f23eeb6388@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0811171343340.11044@blonde.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <ab4346860811170452t2cbcb451u407edca19c9e0ba6@mail.gmail.com>
 	 <ab4346860811170453i2bba95a6nb16c2c9e59424272@mail.gmail.com>
-	 <3aaafc130811170533j4c7e0008vd76c42da0cbb9f36@mail.gmail.com>
-	 <ab4346860811170547j6f21ba2ducd451e761e165a5d@mail.gmail.com>
-	 <3aaafc130811170555l7e35b6b9s169d03f23eeb6388@mail.gmail.com>
+	 <Pine.LNX.4.64.0811171343340.11044@blonde.site>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 17, 2008 at 3:55 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
-> On Mon, Nov 17, 2008 at 8:47 AM, Victoria Muntean <vikimun@gmail.com> wrote:
->> On Mon, Nov 17, 2008 at 3:33 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
->>> On Mon, Nov 17, 2008 at 7:53 AM, Victoria Muntean <vikimun@gmail.com> wrote:
->>>> How can I calculate size of swapped-out part of the process from
->>>> /proc/PID/*, even if approximately ?
->>>> For example, I have VmSize=1216192 kB, VmRSS = 628788 kB, but global
->>>> swap-in-use==0.
->>>> Hence (VmSize - VmRSS) is far from being swapped-out part of the
->>>> process. What is ?
->>>
->>> Doesn't top's SWAP field give you this?
->>
->> No. SWAP is global. I need per-process. Per-process participation in swap.
->>
+On Mon, Nov 17, 2008 at 4:02 PM, Hugh Dickins <hugh@veritas.com> wrote:
+> On Mon, 17 Nov 2008, Victoria Muntean wrote:
+>> How can I calculate size of swapped-out part of the process from
+>> /proc/PID/*, even if approximately ?
+>> For example, I have VmSize=1216192 kB, VmRSS = 628788 kB, but global
+>> swap-in-use==0.
+>> Hence (VmSize - VmRSS) is far from being swapped-out part of the
+>> process. What is ?
 >
-> Are you sure? I'm not talking about the Swap: BigNumber in the header.
-> If you hit f you can add a SWAP column which is per process. Or if it
-> isn't per-process, it's horribly misleading.
+> I'm sorry, we don't record those numbers per process or per mm,
+> so you won't find them in /proc/PID/status or /proc/PID/statm.
+>
+> And we'd probably resist accepting a patch to add them,
+> so as not to enlarge key data structures to hold them.
+>
+> There's also an ambiguity about what "swapped-out" means: does
+> it include shared file pages which were once mapped into the
+> process, but have since been freed under memory pressure?
+>
+> But it looks like you're interested in swapped-out to mean written
+> on swap.  In that case, if you have CONFIG_PROC_PAGE_MONITOR=y,
+> you can read /proc/PID/smaps and add up all the "Swap:" lines.
 
-'top' naively shows (VmSize - VmRSS) in the SWAP column, which is not helpful.
+ok thanks
+
+> But don't keep reading it in a tight loop: that would
+> tend to detract from the performance of your system.
