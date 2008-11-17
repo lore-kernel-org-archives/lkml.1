@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbYKQWTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbYKQWUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754707AbYKQWTz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 17:19:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYKQWTr
+	id S1755015AbYKQWUX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 17:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYKQWT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 17:19:47 -0500
-Received: from ozlabs.org ([203.10.76.45]:34813 "EHLO ozlabs.org"
+	Mon, 17 Nov 2008 17:19:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42885 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752020AbYKQWTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 17:19:46 -0500
+	id S1753092AbYKQWT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 17:19:58 -0500
+Date: Mon, 17 Nov 2008 23:19:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
+       a.p.zijlstra@chello.nl, Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20081117221933.GD6398@elte.hu>
+References: <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com> <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org> <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18721.60712.438025.564030@cargo.ozlabs.ibm.com>
-Date: Tue, 18 Nov 2008 09:16:08 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.DEB.1.10.0811171557370.26123@gandalf.stny.rr.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20081117184951.GA5585@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt writes:
 
-> Here's my stack after boot up with CONFIG_IRQSTACKS set. Seems that 
-> softirqs still use the same stack as the process.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-They shouldn't.  I don't see do_softirq in the trace, though.  Which
-functions did you think would be run in a softirq?  It looks to me
-like the deepest 10 or so functions are called at hard irq level,
-within hrtimer_interrupt called from timer_interrupt.
+> 100.000000 total
+> ................
+>   1.385125 tcp_sendmsg
 
-> root@electra ~> cat /debug/tracing/stack_trace 
->         Depth   Size      Location    (59 entries)
->         -----   ----      --------
->   0)    12384     192   ftrace_call+0x4/0x14
->   1)    12192     128   .sched_clock+0x20/0x60
->   2)    12064     128   .sched_clock_cpu+0x34/0x50
->   3)    11936     144   .cpu_clock+0x3c/0xa0
->   4)    11792     144   .get_timestamp+0x2c/0x50
->   5)    11648     144   .__touch_softlockup_watchdog+0x3c/0x60
->   6)    11504     192   .softlockup_tick+0xe4/0x220
->   7)    11312     128   .run_local_timers+0x34/0x50
->   8)    11184     160   .update_process_times+0x44/0xb0
->   9)    11024     176   .tick_sched_timer+0x8c/0x120
->  10)    10848     160   .__run_hrtimer+0xd8/0x130
->  11)    10688     240   .hrtimer_interrupt+0x16c/0x220
->  12)    10448     160   .timer_interrupt+0xcc/0x110
->  13)    10288      96   decrementer_common+0xe0/0x100
+this too is spread out, no spikes i noticed.
 
-Paul.
+Seems like the subsequent functions seem to be spread out pretty 
+evenly, with no particular spikes visible.
+
+	Ingo
