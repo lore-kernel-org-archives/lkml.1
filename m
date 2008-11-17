@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbYKQDrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbYKQDtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbYKQDrk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 22:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbYKQDrc
+	id S1756516AbYKQDtS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 22:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755674AbYKQDtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 22:47:32 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:34867 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755674AbYKQDrb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 22:47:31 -0500
-Message-ID: <4920E869.9030501@linux.vnet.ibm.com>
-Date: Mon, 17 Nov 2008 09:13:37 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mm] vmscan: bail out of page reclaim after swap_cluster_max
- pages
-References: <20081113171208.6985638e@bree.surriel.com> <20081116163316.F205.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081117093832.f383bd61.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081117093832.f383bd61.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 16 Nov 2008 22:49:04 -0500
+Received: from sh.osrg.net ([192.16.179.4]:50269 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755607AbYKQDtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 22:49:02 -0500
+Date: Mon, 17 Nov 2008 12:48:46 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, stern@rowland.harvard.edu,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Problems with the block-layer timeouts
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20081113103456.GB26778@kernel.dk>
+References: <20081111191936.GK26778@kernel.dk>
+	<20081112110840W.fujita.tomonori@lab.ntt.co.jp>
+	<20081113103456.GB26778@kernel.dk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20081117120029M.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sun, 16 Nov 2008 16:38:56 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Thu, 13 Nov 2008 11:34:56 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Wed, Nov 12 2008, FUJITA Tomonori wrote:
+> > On Tue, 11 Nov 2008 20:19:36 +0100
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Tue, Nov 11 2008, Alan Stern wrote:
+> > > > On Tue, 11 Nov 2008, FUJITA Tomonori wrote:
+> > > > 
+> > > > > I don't worry about anything. I just think that these round_jiffies_up
+> > > > > are pointless because they were added for the block-layer users that
+> > > > > care about exact timeouts, however the block-layer doesn't export
+> > > > > blk_add_timer() so the block-layer users can't control the exact time
+> > > > > when the timer starts. So doing round_jiffies_up calculation per every
+> > > > > request doesn't make sense for me.
+> > > > 
+> > > > In fact the round_jiffies_up() routines were added for other users as
+> > > > well as the block layer.  However none of the others could be changed
+> > > > until the routines were merged.  Now that the routines are in the 
+> > > > mainline, you should see them start to be called in multiple places.
+> > > > 
+> > > > Also, the users of the block layer _don't_ care about exact timeouts.  
+> > > > That's an important aspect of round_jiffies() and round_jiffies_up() --
+> > > > you don't use them if you want an exact timeout.
+> > > > 
+> > > > The reason for using round_jiffies() is to insure that the timeout
+> > > > will occur at a 1-second boundary.  If several timeouts are set for
+> > > > about the same time and they all use round_jiffies() or
+> > > > round_jiffies_up(), then they will all occur at the same tick instead
+> > > > of spread out among several different ticks during the course of that
+> > > > 1-second interval.  As a result, the system will need to wake up only
+> > > > once to service all those timeouts, instead of waking up several
+> > > > different times.  It is a power-saving scheme.
+> > 
+> > Hmm, but for 99.9% of the cases, the timeout of the block layer
+> > doesn't expire, the timeout rarely happens. The power-saving scheme
+> > can be applied to only 0.1%, but at the cost of the round_jiffies
+> > overhead per every request.
+> > 
+> > If I understand correctly, round_jiffies() is designed for timers that
+> > will expire, such as periodic checking. The power-saving scheme nicely
+> > works for such usages.
 > 
->> One more point.
->>
->>> Sometimes the VM spends the first few priority rounds rotating back
->>> referenced pages and submitting IO.  Once we get to a lower priority,
->>> sometimes the VM ends up freeing way too many pages.
->>>
->>> The fix is relatively simple: in shrink_zone() we can check how many
->>> pages we have already freed and break out of the loop.
->>>
->>> However, in order to do this we do need to know how many pages we already
->>> freed, so move nr_reclaimed into scan_control.
->> IIRC, Balbir-san explained the implemetation of the memcgroup 
->> force cache dropping feature need non bail out at the past reclaim 
->> throttring discussion.
->>
-
-Yes, for we used that for force_empty() in the past, but see below
-
->> I am not sure about this still right or not (iirc, memcgroup implemetation
->> was largely changed).
->>
->> Balbir-san, Could you comment to this patch?
->>
->>
-> I'm not Balbir-san but there is no "force-cache-dropping" feature now.
-> (I have no plan to do that.)
+> Your understanding is correct. The overhead of round_jiffies() is not
+> large, though.
 > 
-> But, mem+swap controller will need to modify reclaim path to do "cache drop
-> first" becasue the amount of "mem+swap" will not change when "mem+swap" hit
-> limit. It's now set "sc.may_swap" to 0.
+> I want to get rid of this in blk_delete_timer():
 > 
+>         if (list_empty(&q->timeout_list))
+>                 del_timer(&q->timeout);
+> 
+> though and simply let the timer run even if the list is empty, since for
+> sync sequential IO we'll be fiddling a much with the timer as we did
+> before unifying it. And then the timer will expire every x seconds
+> always and it becomes more important with the grouping.
 
-Yes, there have been several changes to force_empty() and its meaning, including
-movement of accounts. Since you've made most of the recent changes, your
-comments are very relevant.
+I see. It depends on workloads but the above 'periodic expiration'
+scheme might be better than the current one, I guess. It doesn't gives
+large impact though.
 
-> Hmm, I hope memcg is a silver bullet to this kind of special? workload in
-> long term.
-
-:-) From my perspective, hierarchy, soft limits (sharing memory when there is no
-contention), some form of over commit support and getting swappiness to work
-correctly are very important for memcg.
-
--- 
-	Balbir
+Thanks for the clarification.
