@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYKQRPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbYKQRPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbYKQRPY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 12:15:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYKQRPL
+	id S1753047AbYKQRPy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 12:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbYKQRPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 12:15:11 -0500
-Received: from broadrack.ru ([195.178.208.66]:41498 "EHLO tservice.net.ru"
+	Mon, 17 Nov 2008 12:15:45 -0500
+Received: from gw.goop.org ([64.81.55.164]:59250 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbYKQRPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 12:15:10 -0500
-Date: Mon, 17 Nov 2008 20:15:08 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: mtk.manpages@gmail.com
-Cc: Robert Love <rlove@rlove.org>, linux-api@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [take 3] Use pid in inotify events.
-Message-ID: <20081117171508.GA564@ioremap.net>
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com> <20081116232450.GA13547@ioremap.net> <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
+	id S1752495AbYKQRPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 12:15:44 -0500
+Message-ID: <4921A6BE.7000206@goop.org>
+Date: Mon, 17 Nov 2008 09:15:42 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tejun Heo <htejun@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix kunmap() argument in sg_miter_stop
+References: <20081117081117.GD26778@kernel.dk> <20081117082201.GB24603@elte.hu> <20081117083022.GE26778@kernel.dk> <20081117085046.GE28786@elte.hu> <20081117085807.GF26778@kernel.dk> <20081117093425.GG26778@kernel.dk> <20081117094147.GJ28786@elte.hu> <20081117094551.GI26778@kernel.dk> <20081117111350.GJ26778@kernel.dk> <4921A4F3.1030309@goop.org> <20081117171005.GA25729@elte.hu>
+In-Reply-To: <20081117171005.GA25729@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael.
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> Jens Axboe wrote:
+>>     
+>>> One exception is a real bug that this turned up. The XEN balloon driver
+>>> passes the virt address into kunmap() as well, so that part should go in
+>>> for 2.6.28. I've CC'ed Jeremy.
+>>>   
+>>>       
+>> Oops.  Acked-by: Jeremy Fitzhardinge  <jeremy.fitzhardinge@citrix.com>
+>>     
+>
+> Could you please send a changelogged fix for x86/urgent, to make sure 
+> this shows up in .28?
+>   
 
-On Mon, Nov 17, 2008 at 11:59:11AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
-> NAK.  If we are going to do this -- and I leave the security
-> discussions to others more knowlegeable on that score than me -- then
-> the API design should be better than this.  The current design is a
-> hack.  Why exclude rename events?  Why re-use the cookie field?  The
-> only answers I can guess at are that the current patch is less work to
-> write.  IMO, there are (much) better design possibilities, using
-> inotify1(), as I suggested earlier in this thread.
+Subject: xen/balloon: kunmap takes a page *
 
-Cookie was created to store information used to somehow connect events to
-each other. PID does that from another angle than rename. Extending
-(rewriting userspace event processing part) events is a solution for the
-new project, while existing patch (where all security concerns are
-resolved) is a minimum functionality extension.
+Pass the struct page * to kunmap, not the vaddr of the mapping itself.
 
-if I will spent a day and rewrite userspace report side to report new
-events I'm pretty sure there will be people, who will start complaining
-that again design does not match some theoretically perfect
-expectations, and for the purpose of reporting origin's PID cookie
-fields can be reused since right now it is unused.
+Pointed out by Jens Axboe <jens.axboe@oracle.com>
 
-Plus, if it is that hard to comment on patch which adds 14 (!) lines
-including blank, which feedback we should expect on larger one? :)
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ drivers/xen/balloon.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--- 
-	Evgeniy Polyakov
+===================================================================
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -120,7 +120,7 @@
+ 	if (PageHighMem(page)) {
+ 		void *v = kmap(page);
+ 		clear_page(v);
+-		kunmap(v);
++		kunmap(page);
+ 	} else {
+ 		void *v = page_address(page);
+ 		clear_page(v);
+
+
+
