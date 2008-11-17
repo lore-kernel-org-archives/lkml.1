@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbYKQH03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbYKQH0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757306AbYKQH03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754055AbYKQHVM
+	id S1757363AbYKQH0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbYKQHVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:12 -0500
-Received: from kroah.org ([198.145.64.141]:38316 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:13 -0500
+Received: from kroah.org ([198.145.64.141]:38329 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752721AbYKQHVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:21:01 -0500
-Date: Sun, 16 Nov 2008 23:15:07 -0800
+	id S1752751AbYKQHVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:21:02 -0500
+Date: Sun, 16 Nov 2008 23:15:10 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ivan Kuten <ivan.kuten@promwad.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 14/46] rtl8187: Add Abocom USB ID
-Message-ID: <20081117071507.GO29522@kroah.com>
+Subject: [patch 15/46] rtl8187 : support for Sitecom WL-168 0001 v4
+Message-ID: <20081117071510.GP29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtl8187-add-abocom-usb-id.patch"
+Content-Disposition: inline; filename="rtl8187-support-for-sitecom-wl-168-0001-v4.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,29 +40,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ivan Kuten <ivan.kuten@promwad.com>
+From: Bob Jolliffe <bobjolliffe@gmail.com>
 
-commit 8f7c41d4cec91cdbfa89b4a77d5a628938875366 upstream.
+commit f3c769185a28b7947d97b3552a977102c1fac3f2 upstream.
 
-Signed-off-by: Ivan Kuten <ivan.kuten@promwad.com>
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+the Sitecom 0001 v4 with product id 0x0df6:0028, uses Realtek's
+RTL8187B and work fine with new 2.6.27 driver.
+
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_dev.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/wireless/rtl8187_dev.c |    1 +
+ 1 file changed, 1 insertion(+)
 
 --- a/drivers/net/wireless/rtl8187_dev.c
 +++ b/drivers/net/wireless/rtl8187_dev.c
-@@ -45,6 +45,8 @@ static struct usb_device_id rtl8187_tabl
+@@ -45,6 +45,7 @@ static struct usb_device_id rtl8187_tabl
  	{USB_DEVICE(0x03f0, 0xca02), .driver_info = DEVICE_RTL8187},
  	/* Sitecom */
  	{USB_DEVICE(0x0df6, 0x000d), .driver_info = DEVICE_RTL8187},
-+	/* Abocom */
-+	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
++	{USB_DEVICE(0x0df6, 0x0028), .driver_info = DEVICE_RTL8187B},
+ 	/* Abocom */
+ 	{USB_DEVICE(0x13d1, 0xabe6), .driver_info = DEVICE_RTL8187},
  	{}
- };
- 
 
 -- 
