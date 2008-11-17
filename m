@@ -1,100 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbYKQH6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYKQIFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbYKQH6b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085AbYKQH6V
+	id S1754223AbYKQIFV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 03:05:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYKQIFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:58:21 -0500
-Received: from mail4customers.bluetone.cz ([212.158.128.5]:57418 "EHLO
-	mail.bluetone.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751630AbYKQH6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:58:20 -0500
-X-Greylist: delayed 898 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Nov 2008 02:58:20 EST
-Message-ID: <492120DC.1070407@slax.org>
-Date: Mon, 17 Nov 2008 08:44:28 +0100
-From: Tomas M <tomas@slax.org>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Mon, 17 Nov 2008 03:05:07 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58046 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752133AbYKQIFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 03:05:06 -0500
+Message-ID: <49212587.8020702@redhat.com>
+Date: Mon, 17 Nov 2008 09:04:23 +0100
+From: Chris Lalancette <clalance@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] loop file resizable
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Jan Beulich <jbeulich@novell.com>,
+       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Xen-devel] [PATCH 03 of 38] swiotlb: allow architectures	tooverride
+ swiotlb pool allocation
+References: <patchbomb.1226603398@abulafia.goop.org>	<e9f25b3bb6625ee88f9f.1226603401@abulafia.goop.org> <491D4C89.76E4.0078.0@novell.com> <491DD27A.30707@goop.org>
+In-Reply-To: <491DD27A.30707@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch against loop.c adds ability to 'resize' the loop device on the fly.
-This may be practically very useful.
+Jeremy Fitzhardinge wrote:
+>> While perhaps less intrusive to take care of, I also didn't see an equivalent
+>> of the range_straddles_page_boundary() logic, without which I can't see
+>> how this would work in the common case.
+>>   
+> Could you be more specific?  The swiotlb allocation should be machine 
+> contiguous and so there's no stradding required, but I think I'm missing 
+> your point.
 
-One practical application is a loop file with XFS filesystem, already mounted:
-You can easily enlarge the file (append some bytes) and then call
-ioctl(fd, LOOP_SET_CAPACITY, new);
-The loop driver will learn about the new size and you can use xfs_growfs
-later on, which will allow you to use full capacity of the loop
-file without the need to unmount.
+In general, I think you are right; swiotlb should be machine contiguous, so it
+works in the normal case.  The range_straddles_page_boundary function takes care
+of a corner case, where you can run into swiotlb exhaustion when you really
+shouldn't.  As I understand it, it comes about because it is possible to get a
+swiotlb request with two pages that just happen to be machine contiguous, but
+were *not* allocated through xen_create_contiguous_region (and hence weren't
+marked in the contiguous_bitmap as such).  In this case, you split the request
+into two separate requests, and this can more easily lead to exhaustion.
+range_straddles_page_boundary works around this by checking whether any two
+pages coming through the swiotlb layer are machine contiguous, and if they are,
+not splitting the request.
 
-Please include it in mainline kernel.
-
-Hope you like it.
-
-Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Signed-off-by: Tomas Matejicek <tomas@slax.org>
-
-Tomas M
-slax.org
-
-
-Index: linux-2.6.27/drivers/block/loop.c
-===================================================================
-retrieving revision 1.1
-diff -u -p -r1.1 loop.c
---- linux-2.6.27/drivers/block/loop.c	7 Nov 2008 13:07:06 -0000	1.1
-+++ linux-2.6.27/drivers/block/loop.c	8 Nov 2008 03:29:47 -0000
-@@ -1142,6 +1142,8 @@ static int lo_ioctl(struct inode * inode
- {
- 	struct loop_device *lo = inode->i_bdev->bd_disk->private_data;
- 	int err;
-+	sector_t sec;
-+	loff_t sz;
- 
- 	mutex_lock(&lo->lo_ctl_mutex);
- 	switch (cmd) {
-@@ -1166,6 +1168,16 @@ static int lo_ioctl(struct inode * inode
- 	case LOOP_GET_STATUS64:
- 		err = loop_get_status64(lo, (struct loop_info64 __user *) arg);
- 		break;
-+	case LOOP_SET_CAPACITY:
-+		err = figure_loop_size(lo);
-+		if (!err) {
-+			sec = get_capacity(lo->lo_disk);
-+			sz = sec << 9;
-+			mutex_lock(&inode->i_bdev->bd_mutex);
-+			bd_set_size(inode->i_bdev, sz);
-+			mutex_unlock(&inode->i_bdev->bd_mutex);
-+		}
-+		break;
- 	default:
- 		err = lo->ioctl ? lo->ioctl(lo, cmd, arg) : -EINVAL;
- 	}
-@@ -1311,6 +1323,7 @@ static long lo_compat_ioctl(struct file 
- 			lo, (struct compat_loop_info __user *) arg);
- 		mutex_unlock(&lo->lo_ctl_mutex);
- 		break;
-+	case LOOP_SET_CAPACITY:
- 	case LOOP_CLR_FD:
- 	case LOOP_GET_STATUS64:
- 	case LOOP_SET_STATUS64:
-Index: linux-2.6.27/include/linux/loop.h
-===================================================================
-retrieving revision 1.1
-diff -u -p -r1.1 loop.h
---- linux-2.6.27/include/linux/loop.h	7 Nov 2008 13:05:58 -0000	1.1
-+++ linux-2.6.27/include/linux/loop.h	8 Nov 2008 03:22:36 -0000
-@@ -160,5 +160,6 @@ int loop_unregister_transfer(int number)
- #define LOOP_SET_STATUS64	0x4C04
- #define LOOP_GET_STATUS64	0x4C05
- #define LOOP_CHANGE_FD		0x4C06
-+#define LOOP_SET_CAPACITY	0x4C07
- 
- #endif
+-- 
+Chris Lalancette
