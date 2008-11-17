@@ -1,143 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbYKQSYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbYKQS0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbYKQSYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 13:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYKQSYI
+	id S1754203AbYKQS0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 13:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbYKQS0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 13:24:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47591 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753902AbYKQSYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 13:24:02 -0500
-Date: Mon, 17 Nov 2008 19:23:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [Bug #11308] tbench regression on each kernel release from
-	2.6.22 -&gt; 2.6.28
-Message-ID: <20081117182320.GA26844@elte.hu>
-References: <20081117090648.GG28786@elte.hu> <20081117.011403.06989342.davem@davemloft.net> <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com> <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org>
+	Mon, 17 Nov 2008 13:26:37 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:19949 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbYKQS0g convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 13:26:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=URNDp5YZD3XO7fz0Ng8/XL7DGbkrdE1hLB0NmTAnYARPgE4NzOVtkXv9MuvtqzaAKp
+         leGg4qMEvjjg9a8w0Set6pC/V8CuTZIhDIhnGw5CX9T8YP8JwGSvaf8KLaGIyCS5hY1Q
+         Uv5ePsGhCelbS6xXFGmKbJ/p8BHa4FMfOD+RE=
+Message-ID: <4921B756.5010805@gmail.com>
+Date: Mon, 17 Nov 2008 19:26:30 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.1 required=5.9 tests=DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	0.1 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Steven Noonan <steven@uplinklabs.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] tracing/ftrace: make nop tracer using tracer flags
+References: <4920D494.1010108@gmail.com> <20081117084638.GC28786@elte.hu>
+In-Reply-To: <20081117084638.GC28786@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Mon, 17 Nov 2008, Eric Dumazet wrote:
+Ingo Molnar a écrit :
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> > Ingo Molnar a écrit :
+>> +#define TRACE_NOP_OPT_ACCEPT	0x1
+>> +#define TRACE_NOP_OPT_REFUSE	0x2
 > 
-> > > it gives a small speedup of ~1% on my box:
-> > > 
-> > >    before:      Throughput 3437.65 MB/sec 64 procs
-> > >    after:       Throughput 3473.99 MB/sec 64 procs
-> > 
-> > Strange, I get 2350 MB/sec on my 8 cpus box. "tbench 8"
+> please use C enums not CPP defines.
 > 
-> I think Ingo may have a Nehalem. Let's just say that those things 
-> rock, and have rather good memory throughput.
+> 	Ingo
 
-hm, i'm not sure whether i can post benchmarks from the Nehalem box - 
-but i can confirm it in general terms that it's rather nice ;-)
+Fixed in the V3 below:
 
-This was run on another testbox (4x4 Barcelona) that rocks similarly 
-well in terms of memory subsystem latencies: which seems to be 
-tbench's main current critical path.
+--
+>From adc63c6d8f79927740058a50679a94a1c31c30e2 Mon Sep 17 00:00:00 2001
+From: Frederic Weisbecker <fweisbec@gmail.com>
+Date: Mon, 17 Nov 2008 16:19:35 +0100
+Subject: [PATCH 2/3][V3] tracing/ftrace: make nop tracer using tracer flags
 
-For the tbench bragging rights i'd probably turn off CONFIG_SECURITY 
-and a few other options. Plus i'd run with 16 threads only - in this 
-test i ran with 4x overload (64 tbench threads, not 16) to stress the 
-scheduler harder.
+Impact: give an example on how to use specific tracer flags
 
-Although we degrade very gently with overload so the numbers arent all 
-that much different:
+This patch propose to use the nop tracer to provide an
+example for using the tracer's custom flags implementation.
 
-   16 threads: Throughput 3463.14 MB/sec 16 procs
-   64 threads: Throughput 3473.99 MB/sec 64 procs
-  256 threads: Throughput 3457.67 MB/sec 256 procs
- 1024 threads: Throughput 3448.85 MB/sec 1024 procs
+V3: replace defines by enum values.
+V2: replace structures and defines just after the headers includes for
+cleanliness.
 
- [ so it's the same within noise range. ]
+Acked-by: Steven Noonan <steven@uplinklabs.net>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/trace_nop.c |   52 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 52 insertions(+), 0 deletions(-)
 
-1024 threads is already a massive 64x overload so beyond any 
-reasonable limit of workload sanity.
-
-Which suggests that the main limitation factor is cacheline ping-pong 
-that is already in full effect at 16 threads.
-
-Which is supported by the "most expensive instructions" top-10 sorted 
-list:
-
-            RIP     #hits
-..........................                           
-
-                           [ usercopy ]
-ffffffff80350fcd:  1373300 	f3 48 a5             	rep movsq %ds:(%rsi),%es:(%rdi)
-
-ffffffff804a2f33:          <sock_rfree>:
-ffffffff804a2f34:   985253 	48 89 e5             	mov    %rsp,%rbp
-
-
-ffffffff804d2eb7:          <ip_local_deliver>:
-ffffffff804d2eb8:   432659 	48 89 e5             	mov    %rsp,%rbp
-
-ffffffff804aa23c:          <constant_test_bit>: [ => napi_disable_pending() ]
-ffffffff804aa24c:   374052 	89 d1                	mov    %edx,%ecx
-
-ffffffff804d5076:          <ip_dont_fragment>:
-ffffffff804d5076:   310051 	8a 97 56 02 00 00    	mov    0x256(%rdi),%dl
-
-ffffffff804d9b17:          <__inet_lookup_established>:
-ffffffff804d9bdf:   247224 	eb ba                	jmp    ffffffff804d9b9b <__inet_lookup_established+0x84>
-
-ffffffff80321529:          <selinux_ip_postroute>:
-ffffffff8032152a:   183700 	48 89 e5             	mov    %rsp,%rbp
-
-ffffffff8020c020:          <system_call>:
-ffffffff8020c020:   183600 	0f 01 f8             	swapgs 
-
-ffffffff8051884a:          <netlbl_enabled>:
-ffffffff8051884a:   179538 	55                   	push   %rbp
-
-The usual profiling caveat applies: it's not _these_ instructions that 
-matter, but the surrounding code that calls them. Profiling overhead 
-is delayed by a couple of instructions - the more out-of-order a CPU 
-is, the larger this delay can be. But even a quick look to the list 
-above shows that all of the heavy cachemisses are generated by 
-networking.
-
-Beyond the usual suspects of syscall entry and memcpy, it's only 
-networking. We dont even have the mov %cr3 TLB flush overhead in this 
-list, load_cr3() is a distant #30:
-
-ffffffff8023049f:        0      0f 22 d8                mov    %rax,%cr3
-ffffffff802304a2:   126303      c9                      leaveq
-
-The place for the sock_rfree() hit looks a bit weird, and i'll 
-investigate it now a bit more to place the real overhead point 
-properly. (i already mapped the test-bit overhead: that comes from 
-napi_disable_pending())
+diff --git a/kernel/trace/trace_nop.c b/kernel/trace/trace_nop.c
+index 0e77415..b9767ac 100644
+--- a/kernel/trace/trace_nop.c
++++ b/kernel/trace/trace_nop.c
+@@ -12,6 +12,27 @@
  
-The first entry is 10x the cost of the last entry in the list so 
-clearly we've got 1-2 brutal cacheline ping-pongs that dominate the 
-overhead of this workload.
+ #include "trace.h"
+ 
++/* Our two options */
++enum {
++	TRACE_NOP_OPT_ACCEPT = 0x1,
++	TRACE_NOP_OPT_REFUSE = 0x2
++};
++
++/* Options for the tracer (see trace_options file) */
++static struct tracer_opt nop_opts[] = {
++	/* Option that will be accepted by set_flag callback */
++	{ TRACER_OPT(test_nop_accept, TRACE_NOP_OPT_ACCEPT) },
++	/* Option that will be refused by set_flag callback */
++	{ TRACER_OPT(test_nop_refuse, TRACE_NOP_OPT_REFUSE) },
++	{ } /* Always set a last empty entry */
++};
++
++static struct tracer_flags nop_flags = {
++	/* You can check your flags value here when you want. */
++	.val = 0, /* By default: all flags disabled */
++	.opts = nop_opts
++};
++
+ static struct trace_array	*ctx_trace;
+ 
+ static void start_nop_trace(struct trace_array *tr)
+@@ -41,6 +62,35 @@ static void nop_trace_reset(struct trace_array *tr)
+ 	stop_nop_trace(tr);
+ }
+ 
++/* It only serves as a signal handler and a callback to
++ * accept or refuse tthe setting of a flag.
++ * If you don't implement it, then the flag setting will be
++ * automatically accepted.
++ */
++static int nop_set_flag(u32 old_flags, u32 bit, int set)
++{
++	/*
++	 * Note that you don't need to update nop_flags.val yourself.
++	 * The tracing Api will do it automatically if you return 0
++	 */
++	if (bit == TRACE_NOP_OPT_ACCEPT) {
++		printk(KERN_DEBUG "nop_test_accept flag set to %d: we accept."
++			" Now cat trace_options to see the result\n",
++			set);
++		return 0;
++	}
++
++	if (bit == TRACE_NOP_OPT_REFUSE) {
++		printk(KERN_DEBUG "nop_test_refuse flag set to %d: we refuse."
++			"Now cat trace_options to see the result\n",
++			set);
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++
+ struct tracer nop_trace __read_mostly =
+ {
+ 	.name		= "nop",
+@@ -49,5 +99,7 @@ struct tracer nop_trace __read_mostly =
+ #ifdef CONFIG_FTRACE_SELFTEST
+ 	.selftest	= trace_selftest_startup_nop,
+ #endif
++	.flags		= &nop_flags,
++	.set_flag	= nop_set_flag
+ };
+ 
+-- 
+1.5.2.5
 
-	Ingo
+
