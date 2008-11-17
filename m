@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753770AbYKQQjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891AbYKQQlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753770AbYKQQjl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752195AbYKQQjc
+	id S1753891AbYKQQlB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:41:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYKQQkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:39:32 -0500
-Received: from mail.suse.de ([195.135.220.2]:50006 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141AbYKQQjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:39:31 -0500
-Date: Mon, 17 Nov 2008 17:39:30 +0100
-From: Bernhard Walle <bwalle@suse.de>
-To: John Keller <jpk@sgi.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
-       John Keller <jpk@sgi.com>
-Subject: Re: [PATCH] ia64: SN specific version of dma_get_required_mask()
-Message-ID: <20081117173930.35342b31@hale.suse.de>
-In-Reply-To: <20081117162454.169426.74531.sendpatchset@attica.americas.sgi.com>
-References: <20081117162454.169426.74531.sendpatchset@attica.americas.sgi.com>
-Organization: SUSE Linux Products GmbH
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-X-Face: ,G!z)dEOMkc[Cu+sF64,T9^5r3b>/}#HBRL%D^j@\SZbr'Itl7q@1<*dgB?A7(_leO1Tc4^
- D*WfvfwKcz;,@E^y+pNP%86n8o<&g-vToCXW:r>Y$jxY,`KT?{H!07=2|Jdt?0ba^C-Tnx50vIV8It
- vi&Sicl:sj`k2`y)E;ECFi;i7W-?t3%\kD*));q)+%-pQd^.r'W}oBBx=+.~Gu}&F;lS7.a-m>Rv"w
- pe`D'OV^?HJd$-)7<2T[naDPl6+bAj'+UYd]u]B^'.LYK$2jS
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Nov 2008 11:40:52 -0500
+Received: from antispam.upcomillas.es ([130.206.70.245]:38314 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbYKQQkw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 11:40:52 -0500
+Message-ID: <49219E8F.70207@upcomillas.es>
+Date: Mon, 17 Nov 2008 17:40:47 +0100
+From: "Romano Giannetti (lists)" <romanol@upcomillas.es>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bernhard Schmidt <berni@birkenwald.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Johan Bilien <jobi@via.ecp.fr>,
+       Romano Giannetti <romano.giannetti@gmail.com>
+Subject: Re: [Bug #11947] 2.6.28-rc VC switching with Intel graphics broken
+References: <VwdsQNEjR_C.A.CiD.9_FIJB@chimera> <Q7OAnAv0V3D.A.8gF.CBGIJB@chimera>
+In-Reply-To: <Q7OAnAv0V3D.A.8gF.CBGIJB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* John Keller [2008-11-17 10:24]:
->
-> Create a platform specific version of dma_get_required_mask()
-> for ia64 SN Altix. All SN Altix platforms support 64 bit DMA
-> addressing regardless of the size of system memory.
-> Create a ia64 machvec for dma_get_required_mask, with the
-> SN version unconditionally returning DMA_64BIT_MASK.
 
-Maybe we should then switch the ia64_platform_is("sn2")
-in check_crashkernel_memory() to dma_get_required_mask() ==
-DMA_64BIT_MASK because that's basically what the check is about.
+Rafael J. Wysocki wrote:
 
-BTW: What about UV?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11947
+> Subject		: 2.6.28-rc VC switching with Intel graphics broken
+
+Continue to malfunction. More details on the bugzilla entry. But basically, I had:
+
+- one complete lock on VC switching (not switching back, just pressing ctrl-alt-f1).
+- 3 two-plus minutes delay on VC switching
+- a complete freeze on resuming from ram (not even SysRq-b working).
+
+OTOH, it seems that VC malfunctioning happens only with "visual effect" aka 
+compiz on.
+
+Back to 2.6.27.5. This is quite worrying now... should I try to start a
+bisection? Although I know from experience that bisecting over a -rc1 is quite
+painful.
+
+Romano
 
 
-Regards,
-Bernhard
 -- 
-Bernhard Walle, SUSE Linux Products GmbH, Architecture Development
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
