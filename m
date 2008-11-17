@@ -1,246 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbYKQHHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbYKQHOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753506AbYKQHHV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:07:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYKQHHG
+	id S1753415AbYKQHOZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:14:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYKQHOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:07:06 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59998 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751888AbYKQHHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:07:03 -0500
-Date: Mon, 17 Nov 2008 18:06:51 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for November 17
-Message-Id: <20081117180651.8a498cd9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Mon, 17 Nov 2008 02:14:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38744 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751048AbYKQHOQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:14:16 -0500
+Date: Sun, 16 Nov 2008 23:13:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       balbir@linux.vnet.ibm.com, "Lai Jiangshan" <laijs@cn.fujitsu.com>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Dave Airlie" <airlied@gmail.com>, "David Miller" <davem@davemloft.net>,
+       menage@google.com, jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
+       linux-kernel@vger.kernel.org, dada1@cosmosbay.com,
+       "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
+Message-Id: <20081116231301.c6b0da95.akpm@linux-foundation.org>
+In-Reply-To: <2f11576a0811162243r7527d271ya8ab2fc3a9be9f7d@mail.gmail.com>
+References: <491FA28B.2070003@cn.fujitsu.com>
+	<20081115205229.765f7ee3@infradead.org>
+	<20081116.001926.150424480.davem@davemloft.net>
+	<20081116105725.12458b13@infradead.org>
+	<21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
+	<20081116135130.5e8b4e13@infradead.org>
+	<4920D238.8090905@cn.fujitsu.com>
+	<4920F8C4.30209@linux.vnet.ibm.com>
+	<20081117142539.9b2c6bfc.kamezawa.hiroyu@jp.fujitsu.com>
+	<2f11576a0811162243r7527d271ya8ab2fc3a9be9f7d@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__17_Nov_2008_18_06_51_+1100_Hhsr6dCj8l/lXrfV"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__17_Nov_2008_18_06_51_+1100_Hhsr6dCj8l/lXrfV
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 17 Nov 2008 15:43:59 +0900 "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Hi all,
+> >> > (I'll rename simple_malloc/simple_free to kvmalloc/kvfree)
+> >> >
+> >>
+> >> I would prefer to find a way to say that one cannot select gfp_mask with this API.
+> >>
+> > I think gfp_mask must be passed explicitly.
+> 
+> Agreed.
 
-Changes since 20081114:
+It would only make sense if __vmalloc() can be called in atomic contexts.
 
-Undropped trees:
-	sound
-	osd
+__vmalloc() cannot be called from irq contexts due to it taking
+non-irq-safe spinlocks.
 
-Dropped trees (temporarily):
-	userns (it depends on creds)
-	semaphore-removal (due to unfixed conflicts against Linus' tree)
-	firmware (unfixed build failure)
+__vmalloc() kinda looks like it could be called from non-irq atomic
+contexts with GFP_ATOMIC, but I think it lies.  For example,
+pud_alloc_one/pmd_alloc_one/etc use hard-wired GFP_KERNEL.
 
-The cifs tree gained a conflict against the net tree.
+In which case this new allocation function can only be called from
+contexts where GFP_KERNEL can be used, hence we don't need to pass that
+in - it would be misleading to do so.
 
-The hdlc tree lost a conflict.
-
-The security-testing tree gained a conflict against the cifs tree.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 125 trees (counting Linus' and 14 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-2.6.26
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging quilt/m68k
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-CONFLICT (content): Merge conflict in include/linux/kernel.h
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-Merging cifs/master
-CONFLICT (content): Merge conflict in fs/cifs/connect.c
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging semaphore/semaphore
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-CONFLICT (delete/modify): drivers/net/wan/syncppp.c deleted in hdlc/hdlc-ne=
-xt and modified in HEAD. Version HEAD of drivers/net/wan/syncppp.c left in =
-tree.
-$ git rm -f drivers/net/wan/syncppp.c
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-CONFLICT (content): Merge conflict in fs/cifs/misc.c
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_cred.h
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_globals.h
-CONFLICT (content): Merge conflict in fs/xfs/xfs_vnodeops.h
-Merging lblnet/master
-Merging quilt/ttydev
-CONFLICT (content): Merge conflict in fs/devpts/inode.c
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cpu_alloc/cpu_alloc
-CONFLICT (content): Merge conflict in kernel/lockdep.c
-CONFLICT (content): Merge conflict in kernel/module.c
-Applying cpu_alloc: merge_fix_1
-Merging cputime/cputime
-Merging perfmon3/master
-Merging osd/linux-next
-Merging fatfs/master
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Mon__17_Nov_2008_18_06_51_+1100_Hhsr6dCj8l/lXrfV
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkkhGAsACgkQjjKRsyhoI8zhdwCgoie6PDz5CecZdQ9eMoIrvqp2
-x4kAoLKgZP3asiaYf5CsIOp2ye4HySNP
-=rP2b
------END PGP SIGNATURE-----
-
---Signature=_Mon__17_Nov_2008_18_06_51_+1100_Hhsr6dCj8l/lXrfV--
+In fact it's not immediately clear why __vmalloc() takes a gfp_t
+argument either?
