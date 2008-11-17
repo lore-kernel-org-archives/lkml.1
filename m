@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbYKQVbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbYKQVdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523AbYKQVbu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbYKQVbl
+	id S1754621AbYKQVdK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:33:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752355AbYKQVc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:31:41 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36636 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbYKQVbk (ORCPT
+	Mon, 17 Nov 2008 16:32:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49792 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751279AbYKQVc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:31:40 -0500
-Message-ID: <4921E1D3.8040700@cs.helsinki.fi>
-Date: Mon, 17 Nov 2008 23:27:47 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.17 (Macintosh/20080914)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, cl@linux-foundation.org, mpm@selenic.com,
-       eduard.munteanu@linux360.ro
-Subject: Re: [PATCH] ext2/ext3: allocate ->s_blockgroup_lock separately to
- avoid wasting space
-References: <Pine.LNX.4.64.0811141115100.29826@melkki.cs.Helsinki.FI> <1226840289.8172.8.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1226840289.8172.8.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 17 Nov 2008 16:32:56 -0500
+Date: Mon, 17 Nov 2008 13:31:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+       benh@kernel.crashing.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
+       tglx@linutronix.de, linux-mm@kvack.org
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+Message-Id: <20081117133137.616cf287.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
+	<20081117130856.92e41cd3.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Fri, 2008-11-14 at 11:17 +0200, Pekka J Enberg wrote:
->> From: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> As spotted by kmemtrace, struct ext2_sb_info is 17024 bytes and ext3_sb_info is
->> 17152 bytes on 64-bit which makes them a very bad fit for SLAB allocators. In
->> fact, both allocations are round up to the next available page size of 
->> order 3 which is 32 KB.
->>
->> The culprit if the wasted memory is the ->s_blockgroup_lock which can be as big
->> as 16 KB when CONFIG_NR_CPUS is set to 32. As struct blockgroup_lock is a
->> perfect fit for order 2 page in the worst case, allocate ->s_blockgroup_lock
->> separately to avoid wasting space.
-> 
-> And here I was thinking that NR_CPUS=4096 is currently our worst
-> case ;-)
+On Mon, 17 Nov 2008 13:23:23 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Sure but look at <linux/blockgroup_lock.h>. NR_BG_LOCKS is capped to 128 
-for >= 32 CPUs.
+> 
+> 
+> On Mon, 17 Nov 2008, Andrew Morton wrote:
+> > 
+> > Far be it from me to apportion blame, but THIS IS ALL LINUS'S FAULT!!!!! :)
+> > 
+> > I fixed this six years ago.  See http://lkml.org/lkml/2002/6/17/68
+> 
+> Btw, in that thread I also said:
+> 
+>   "If we have 64kB pages, such architectures will have to have a bigger 
+>    kernel stack. Which they will have, simply by virtue of having the very 
+>    same bigger page. So that problem kind of solves itself."
+> 
+> and that may still be the "right" solution - if somebody is so insane that 
+> they want 64kB pages, then they might as well have a 64kB kernel stack as 
+> well. 
+
+I'd have thought so, but I'm sure we're about to hear how important an
+optimisation the smaller stacks are ;)
+
+> Trust me, the kernel stack isn't where you blow your memory with a 64kB 
+> page. You blow all your memory on the memory fragmentation of your page 
+> cache. I did the stats for the kernel source tree a long time ago, and I 
+> think you wasted something like 4GB of RAM with a 64kB page size.
+> 
+
+Yup.  That being said, the younger me did assert that "this is a neater
+implementation anyway".  If we can implement those loops without
+needing those on-stack temporary arrays then things probably are better
+overall.
+
