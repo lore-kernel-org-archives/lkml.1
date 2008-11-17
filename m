@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbYKQSll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbYKQSl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669AbYKQSll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 13:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYKQSlQ
+	id S1754796AbYKQSl7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 13:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYKQSle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 13:41:16 -0500
-Received: from mga02.intel.com ([134.134.136.20]:4513 "EHLO mga02.intel.com"
+	Mon, 17 Nov 2008 13:41:34 -0500
+Received: from mga02.intel.com ([134.134.136.20]:36137 "EHLO mga02.intel.com"
 	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752657AbYKQSlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 13:41:14 -0500
+	id S1754469AbYKQSld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 13:41:33 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.33,619,1220252400"; 
-   d="scan'208";a="464100134"
+   d="scan'208";a="464100177"
 From: Yi Zou <yi.zou@intel.com>
-Subject: [PATCH 2/3] net: reclaim 8 upper bits of the netdev->features from GSO
+Subject: [PATCH 3/3] net: define feature flags for FCoE offloads
 To: davem@davemloft.net
 Cc: jeff@garzik.org, linux-netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Date: Mon, 17 Nov 2008 10:30:39 -0800
-Message-ID: <20081117183039.15776.61222.stgit@zychongqing.jf.intel.com>
+Date: Mon, 17 Nov 2008 10:30:51 -0800
+Message-ID: <20081117183049.15776.84674.stgit@zychongqing.jf.intel.com>
 In-Reply-To: <20081117182659.15776.58181.stgit@zychongqing.jf.intel.com>
 References: <20081117182659.15776.58181.stgit@zychongqing.jf.intel.com>
 User-Agent: StGIT/0.14.3
@@ -35,34 +35,42 @@ Signed-off-by: Chris Leech <christopher.leech@intel.com>
 Signed-off-by: Yi Zou <yi.zou@intel.com>
 ---
 
- drivers/net/xen-netfront.c |    2 +-
- include/linux/netdevice.h  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ include/linux/netdevice.h |    3 +++
+ include/linux/skbuff.h    |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/xen-netfront.c b/drivers/net/xen-netfront.c
-index 4b21bcf..a2bbdaa 100644
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -1504,7 +1504,7 @@ static int xennet_set_tso(struct net_device *dev, u32 data)
- static void xennet_set_features(struct net_device *dev)
- {
- 	/* Turn off all GSO bits except ROBUST. */
--	dev->features &= (1 << NETIF_F_GSO_SHIFT) - 1;
-+	dev->features &= ~NETIF_F_GSO_MASK;
- 	dev->features |= NETIF_F_GSO_ROBUST;
- 	xennet_set_sg(dev, 0);
- 
 diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 12d7f44..423c7bc 100644
+index 423c7bc..9347464 100644
 --- a/include/linux/netdevice.h
 +++ b/include/linux/netdevice.h
-@@ -525,7 +525,7 @@ struct net_device
+@@ -523,6 +523,8 @@ struct net_device
+ #define NETIF_F_NETNS_LOCAL	8192	/* Does not change network namespaces */
+ #define NETIF_F_LRO		32768	/* large receive offload */
  
++#define NETIF_F_FCOE_CRC	(1 << 24) /* FCoE CRC32 */
++
  	/* Segmentation offload features */
  #define NETIF_F_GSO_SHIFT	16
--#define NETIF_F_GSO_MASK	0xffff0000
-+#define NETIF_F_GSO_MASK	0x00ff0000
- #define NETIF_F_TSO		(SKB_GSO_TCPV4 << NETIF_F_GSO_SHIFT)
- #define NETIF_F_UFO		(SKB_GSO_UDP << NETIF_F_GSO_SHIFT)
+ #define NETIF_F_GSO_MASK	0x00ff0000
+@@ -531,6 +533,7 @@ struct net_device
  #define NETIF_F_GSO_ROBUST	(SKB_GSO_DODGY << NETIF_F_GSO_SHIFT)
+ #define NETIF_F_TSO_ECN		(SKB_GSO_TCP_ECN << NETIF_F_GSO_SHIFT)
+ #define NETIF_F_TSO6		(SKB_GSO_TCPV6 << NETIF_F_GSO_SHIFT)
++#define NETIF_F_GSO_FCOE	(SKB_GSO_FCOE << NETIF_F_GSO_SHIFT)
+ 
+ 	/* List of features with software fallbacks. */
+ #define NETIF_F_GSO_SOFTWARE	(NETIF_F_TSO | NETIF_F_TSO_ECN | NETIF_F_TSO6)
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index a01b6f8..81c3f7c 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -188,6 +188,8 @@ enum {
+ 	SKB_GSO_TCP_ECN = 1 << 3,
+ 
+ 	SKB_GSO_TCPV6 = 1 << 4,
++
++	SKB_GSO_FCOE = 1 << 5,
+ };
+ 
+ #if BITS_PER_LONG > 32
 
