@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbYKQHbD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYKQHbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757078AbYKQHbD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:31:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755480AbYKQHVb
+	id S1758113AbYKQHbd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:31:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYKQHVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:31 -0500
-Received: from kroah.org ([198.145.64.141]:38536 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:32 -0500
+Received: from kroah.org ([198.145.64.141]:38555 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752485AbYKQHVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:21:22 -0500
-Date: Sun, 16 Nov 2008 23:16:01 -0800
+	id S1755274AbYKQHVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:21:23 -0500
+Date: Sun, 16 Nov 2008 23:16:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Geert Uytterhoeven <geert@linux-m68k.org>,
+       alan@lxorguk.ukuu.org.uk, Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 28/46] m68k: Fix off-by-one in m68k_setup_user_interrupt()
-Message-ID: <20081117071601.GC29522@kroah.com>
+Subject: [patch 29/46] SCSI: qla2xxx: Return a FAILED status when abort
+	mailbox-command fails.
+Message-ID: <20081117071604.GD29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="m68k-fix-off-by-one-in-m68k_setup_user_interrupt.patch"
+Content-Disposition: inline; filename="scsi-qla2xxx-return-a-failed-status-when-abort-mailbox-command-fails.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,35 +42,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Michael Reed <mdr@sgi.com>
 
-commit 27123cbc264de89ce6951b1b4c84c223eb0f1702 upstream.
+commit 5bff55db3dc4d659f46b4d2fce2f61c1964c2762 upstream.
 
-commit 69961c375288bdab7604e0bb1c8d22999bb8a347 ("[PATCH] m68k/Atari:
-Interrupt updates") added a BUG_ON() with an incorrect upper bound
-comparison, which causes an early crash on VME boards, where IRQ_USER is
-8, cnt is 192 and NR_IRQS is 200.
+Mike Reed noted
+(https://bugzilla.novell.com/show_bug.cgi?id=421330) that the
+driver was incorrectly returning a SUCCESS status if the driver's
+request to the firmware to abort a command failed.  By doing so,
+the mid-layer believed, incorrectly, that the command has
+completed and has been returned (ultimately clearing
+scsi_cmnd.request_buffer) yet the driver still has the command.
+What should correctly happen is a mid-layer escalation
+(device-reset, etc.) of recovery during which the driver will
+eventually return the outstanding commands to the mid-layer.
 
-Reported-by: Stephen N Chivers <schivers@csc.com.au>
-Tested-by: Kars de Jong <jongk@linux-m68k.org>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/m68k/kernel/ints.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/qla2xxx/qla_os.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/m68k/kernel/ints.c
-+++ b/arch/m68k/kernel/ints.c
-@@ -133,7 +133,7 @@ void __init m68k_setup_user_interrupt(un
- {
- 	int i;
- 
--	BUG_ON(IRQ_USER + cnt >= NR_IRQS);
-+	BUG_ON(IRQ_USER + cnt > NR_IRQS);
- 	m68k_first_user_vec = vec;
- 	for (i = 0; i < cnt; i++)
- 		irq_controller[IRQ_USER + i] = &user_irq_controller;
+--- a/drivers/scsi/qla2xxx/qla_os.c
++++ b/drivers/scsi/qla2xxx/qla_os.c
+@@ -730,6 +730,7 @@ qla2xxx_eh_abort(struct scsi_cmnd *cmd)
+ 		if (ha->isp_ops->abort_command(ha, sp)) {
+ 			DEBUG2(printk("%s(%ld): abort_command "
+ 			    "mbx failed.\n", __func__, ha->host_no));
++			ret = FAILED;
+ 		} else {
+ 			DEBUG3(printk("%s(%ld): abort_command "
+ 			    "mbx success.\n", __func__, ha->host_no));
 
 -- 
