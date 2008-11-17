@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbYKQT43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYKQT5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753460AbYKQT43 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:56:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808AbYKQT4U
+	id S1754605AbYKQT5F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbYKQT4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:56:20 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54838 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751823AbYKQT4T (ORCPT
+	Mon, 17 Nov 2008 14:56:54 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:51020 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751808AbYKQT4x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:56:19 -0500
-Date: Mon, 17 Nov 2008 11:55:35 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: mingo@elte.hu, dada1@cosmosbay.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
-       shemminger@vyatta.com
-Subject: Re: [Bug #11308] tbench regression on each kernel release from 2.6.22
- -&gt; 2.6.28
-In-Reply-To: <20081117.113936.81699150.davem@davemloft.net>
-Message-ID: <alpine.LFD.2.00.0811171149100.18283@nehalem.linux-foundation.org>
-References: <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org> <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu> <20081117.113936.81699150.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 17 Nov 2008 14:56:53 -0500
+Date: Mon, 17 Nov 2008 14:53:52 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Frans Pop <elendil@planet.nl>
+Cc: eo@nebensachen.de, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       mingo@elte.hu, bugme-daemon@bugzilla.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [Bug 11905] REGRESSION: lots of extra timer interrupts costing
+	power
+Message-ID: <20081117195352.GE14523@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Frans Pop <elendil@planet.nl>, eo@nebensachen.de,
+	linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+	bugme-daemon@bugzilla.kernel.org, akpm@linux-foundation.org
+References: <E1KvN6w-0002QE-E3@closure.thunk.org> <20081031031516.GA9781@mit.edu> <87mygl2hg1.fsf@denkblock.local> <87mygl2hg1.fsf@denkblock.local> <20081117081326.GA14523@mit.edu> <200811171036.49067.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200811171036.49067.elendil@planet.nl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 17 Nov 2008, David Miller wrote:
+On Mon, Nov 17, 2008 at 10:36:48AM +0100, Frans Pop wrote:
+> Theodore Tso wrote:
+> > Hi, what's going on with this regression?  To refresh people's memory,
+> > I tracked down the excess interrupts to a specific commit, fb02fbc1,
+> > and I've been running quite happily with a patch to revert this
+> > commit.
 > 
-> Again, do a non-NMI profile and the top (at least for me)
-> looks like this:
+> Isn't that solved by this commit (included in -rc5)?
+> 
+> commit ae99286b4f1be7788f2d6947c66a91dbd6351eec
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Mon Nov 10 13:20:23 2008 +0100
+> 
+>     nohz: disable tick_nohz_kick_tick() for now
 
-Can _you_ please do a NMI profile and see what your real problem is?
+Yep, so it is.  Sorry, I missed that; I haven't migrated to -rc5 yet.
 
-I can't imagine that Niagara (or whatever) is so weak that it can't do 
-NMI's. 
+I'll close the Bugzilla entry.
 
-The fact is, David, that Ingo just posted a profile that was _better_ than 
-anything you have ever posted, and it doesn't show what you complain 
-about. So he's not seeing it. Asking him to do a _stupid_ profile is just 
-that: stupid.
-
-So try to figure out why his (better) profile doesn't match your 
-(inferior) one, instead of asking him to do stupid things. It's some 
-difference in architectures, likely: maybe the sparc timekeeping is crap, 
-maybe it's a cache issue and sparc caches are crap, maybe it's something 
-where Niagara (is it niagara) has some oddness that shows up because it 
-has that odd four-threads+four-cores or whatever.
-
-			Linus
+							- Ted
