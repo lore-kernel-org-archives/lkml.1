@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753353AbYKQTgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088AbYKQTjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753353AbYKQTgr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbYKQTgi
+	id S1753088AbYKQTjr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYKQTji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:36:38 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55034
+	Mon, 17 Nov 2008 14:39:38 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44601
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751997AbYKQTgh (ORCPT
+	by vger.kernel.org with ESMTP id S1752009AbYKQTjh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:36:37 -0500
-Date: Mon, 17 Nov 2008 11:36:37 -0800 (PST)
-Message-Id: <20081117.113637.72930858.davem@davemloft.net>
+	Mon, 17 Nov 2008 14:39:37 -0500
+Date: Mon, 17 Nov 2008 11:39:36 -0800 (PST)
+Message-Id: <20081117.113936.81699150.davem@davemloft.net>
 To: mingo@elte.hu
-Cc: dada1@cosmosbay.com, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+Cc: torvalds@linux-foundation.org, dada1@cosmosbay.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
        shemminger@vyatta.com
 Subject: Re: [Bug #11308] tbench regression on each kernel release from
  2.6.22 -&gt; 2.6.28
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081117170844.GJ12081@elte.hu>
-References: <20081117161135.GE12081@elte.hu>
-	<49219D36.5020801@cosmosbay.com>
-	<20081117170844.GJ12081@elte.hu>
+In-Reply-To: <20081117184951.GA5585@elte.hu>
+References: <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org>
+	<20081117182320.GA26844@elte.hu>
+	<20081117184951.GA5585@elte.hu>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -33,21 +33,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 17 Nov 2008 18:08:44 +0100
+Date: Mon, 17 Nov 2008 19:49:51 +0100
 
-> Mike Galbraith has been spending months trying to pin down all the 
-> issues.
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> 4> The place for the sock_rfree() hit looks a bit weird, and i'll 
+> > investigate it now a bit more to place the real overhead point 
+> > properly. (i already mapped the test-bit overhead: that comes from 
+> > napi_disable_pending())
+> 
+> ok, here's a new set of profiles. (again for tbench 64-thread on a 
+> 16-way box, with v2.6.28-rc5-19-ge14c8bf and with the kernel config i 
+> posted before.)
 
-Yes Mike has been doing tireless good work.
+Again, do a non-NMI profile and the top (at least for me)
+looks like this:
 
-Another thing I noticed is that because all of the scheduler
-core operations are now function pointer callbacks, the
-call chain is deeper for core operations like wake_up().
+samples  %        app name                 symbol name
+473       6.3928  vmlinux                  finish_task_switch
+349       4.7169  vmlinux                  tcp_v4_rcv
+327       4.4195  vmlinux                  U3copy_from_user
+322       4.3519  vmlinux                  tl0_linux32
+178       2.4057  vmlinux                  tcp_ack
+170       2.2976  vmlinux                  tcp_sendmsg
+167       2.2571  vmlinux                  U3copy_to_user
 
-Much of it used to be completely inlined into try_to_wake_up()
-
-With the addition of the RB tree stuff, that adds yet another
-unavoidable depth of function call.
-
-wake_up() is usually at the deepest part of the call chain,
-so this is a big deal
+That tcp_v4_rcv() hit is %98 on the wake_up() call it does.
