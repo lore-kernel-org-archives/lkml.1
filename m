@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbYKQHdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYKQHeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbYKQHdn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbYKQHVi
+	id S1758069AbYKQHeG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755887AbYKQHVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:38 -0500
-Received: from kroah.org ([198.145.64.141]:38593 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:40 -0500
+Received: from kroah.org ([198.145.64.141]:38629 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755384AbYKQHV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:21:26 -0500
-Date: Sun, 16 Nov 2008 23:16:12 -0800
+	id S1755437AbYKQHVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:21:30 -0500
+Date: Sun, 16 Nov 2008 23:16:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,16 +23,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 31/46] SCSI: qla2xxx: Correct Atmel flash-part handling.
-Message-ID: <20081117071612.GF29522@kroah.com>
+Subject: [patch 34/46] USB: remove optional bus bindings in isp1760, fixing
+	runtime warning
+Message-ID: <20081117071623.GI29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-qla2xxx-correct-atmel-flash-part-handling.patch"
+Content-Disposition: inline; filename="usb-remove-optional-bus-bindings-in-isp1760-fixing-runtime-warning.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,90 +42,163 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lalit Chandivade <lalit.chandivade@qlogic.com>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-commit 821b3996001508e872582dcafc7575021f122728 upstream.
+commit ff30bf1ca4b548c0928dae6bfce89458b95e5bf4 upstream.
 
-Use correct block size (4K) for erase command 0x20 for Atmel
-Flash. Use dword addresses for determining sector boundary.
+Roland Reported the following:
+| kmem_cache_create: duplicate cache isp1760_qtd
+| Pid: 461, comm: modprobe Tainted: G        W  2.6.28-rc2-git3-default #4
+| Call Trace:
+|  [<c017540e>] kmem_cache_create+0xc9/0x3a3
+|  [<c0159a8d>] free_pages_bulk+0x16c/0x1c9
+|  [<f165c05f>] isp1760_init+0x0/0xb [isp1760]
+|  [<f165c018>] init_kmem_once+0x18/0x5f [isp1760]
+|  [<f165c064>] isp1760_init+0x5/0xb [isp1760]
+|  [<c010113d>] _stext+0x4d/0x148
+|  [<c0142936>] load_module+0x12cd/0x142e
+|  [<c01743c4>] kmem_cache_destroy+0x0/0xd7
+|  [<c0142b1e>] sys_init_module+0x87/0x176
+|  [<c01039eb>] sysenter_do_call+0x12/0x2f
 
-Signed-off-by: Lalit Chandivade <lalit.chandivade@qlogic.com>
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+The reason, is that ret is initialized with ENODEV instead of 0 _or_
+the kmem cache is not freed in error case with no bus binding.
+
+The difference between OF+PCI and OF only is
+| 15148     804      32   15984    3e70 isp1760-of-pci.o
+| 13748     676       8   14432    3860 isp1760-of.o
+
+about 1.5 KiB.
+
+Until there is a checkbox where the user *must* select atleast one item,
+and may select multiple entries I don't make it selectable anymore.
+Having a driver which can't be used under any circumstances is broken
+anyway and I've seen distros shipping it that way.
+
+Reported-by: Roland Kletzing <devzero@web.de>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/qla2xxx/qla_def.h |    1 -
- drivers/scsi/qla2xxx/qla_sup.c |   19 +++++++------------
- 2 files changed, 7 insertions(+), 13 deletions(-)
+ drivers/usb/host/Kconfig      |   23 ++++++-----------------
+ drivers/usb/host/isp1760-if.c |   22 +++++++++++-----------
+ 2 files changed, 17 insertions(+), 28 deletions(-)
 
---- a/drivers/scsi/qla2xxx/qla_def.h
-+++ b/drivers/scsi/qla2xxx/qla_def.h
-@@ -2546,7 +2546,6 @@ typedef struct scsi_qla_host {
- 	uint8_t		fcode_revision[16];
- 	uint32_t	fw_revision[4];
+--- a/drivers/usb/host/isp1760-if.c
++++ b/drivers/usb/host/isp1760-if.c
+@@ -14,16 +14,16 @@
+ #include "../core/hcd.h"
+ #include "isp1760-hcd.h"
  
--	uint16_t	fdt_odd_index;
- 	uint32_t	fdt_wrt_disable;
- 	uint32_t	fdt_erase_cmd;
- 	uint32_t	fdt_block_size;
---- a/drivers/scsi/qla2xxx/qla_sup.c
-+++ b/drivers/scsi/qla2xxx/qla_sup.c
-@@ -546,6 +546,7 @@ qla24xx_get_flash_manufacturer(scsi_qla_
- void
- qla2xxx_get_flash_info(scsi_qla_host_t *ha)
+-#ifdef CONFIG_USB_ISP1760_OF
++#ifdef CONFIG_PPC_OF
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #endif
+ 
+-#ifdef CONFIG_USB_ISP1760_PCI
++#ifdef CONFIG_PCI
+ #include <linux/pci.h>
+ #endif
+ 
+-#ifdef CONFIG_USB_ISP1760_OF
++#ifdef CONFIG_PPC_OF
+ static int of_isp1760_probe(struct of_device *dev,
+ 		const struct of_device_id *match)
  {
-+#define FLASH_BLK_SIZE_4K	0x1000
- #define FLASH_BLK_SIZE_32K	0x8000
- #define FLASH_BLK_SIZE_64K	0x10000
- 	uint16_t cnt, chksum;
-@@ -577,7 +578,6 @@ qla2xxx_get_flash_info(scsi_qla_host_t *
- 		goto no_flash_data;
+@@ -128,7 +128,7 @@ static struct of_platform_driver isp1760
+ };
+ #endif
+ 
+-#ifdef CONFIG_USB_ISP1760_PCI
++#ifdef CONFIG_PCI
+ static u32 nxp_pci_io_base;
+ static u32 iolength;
+ static u32 pci_mem_phy0;
+@@ -287,28 +287,28 @@ static struct pci_driver isp1761_pci_dri
+ 
+ static int __init isp1760_init(void)
+ {
+-	int ret = -ENODEV;
++	int ret;
+ 
+ 	init_kmem_once();
+ 
+-#ifdef CONFIG_USB_ISP1760_OF
++#ifdef CONFIG_PPC_OF
+ 	ret = of_register_platform_driver(&isp1760_of_driver);
+ 	if (ret) {
+ 		deinit_kmem_cache();
+ 		return ret;
  	}
+ #endif
+-#ifdef CONFIG_USB_ISP1760_PCI
++#ifdef CONFIG_PCI
+ 	ret = pci_register_driver(&isp1761_pci_driver);
+ 	if (ret)
+ 		goto unreg_of;
+ #endif
+ 	return ret;
  
--	ha->fdt_odd_index = le16_to_cpu(fdt->man_id) == 0x1f;
- 	ha->fdt_wrt_disable = fdt->wrt_disable_bits;
- 	ha->fdt_erase_cmd = flash_conf_to_access_addr(0x0300 | fdt->erase_cmd);
- 	ha->fdt_block_size = le32_to_cpu(fdt->block_size);
-@@ -590,10 +590,10 @@ qla2xxx_get_flash_info(scsi_qla_host_t *
- 	}
+-#ifdef CONFIG_USB_ISP1760_PCI
++#ifdef CONFIG_PCI
+ unreg_of:
+ #endif
+-#ifdef CONFIG_USB_ISP1760_OF
++#ifdef CONFIG_PPC_OF
+ 	of_unregister_platform_driver(&isp1760_of_driver);
+ #endif
+ 	deinit_kmem_cache();
+@@ -318,10 +318,10 @@ module_init(isp1760_init);
  
- 	DEBUG2(qla_printk(KERN_DEBUG, ha, "Flash[FDT]: (0x%x/0x%x) erase=0x%x "
--	    "pro=%x upro=%x idx=%d wrtd=0x%x blk=0x%x.\n",
-+	    "pro=%x upro=%x wrtd=0x%x blk=0x%x.\n",
- 	    le16_to_cpu(fdt->man_id), le16_to_cpu(fdt->id), ha->fdt_erase_cmd,
- 	    ha->fdt_protect_sec_cmd, ha->fdt_unprotect_sec_cmd,
--	    ha->fdt_odd_index, ha->fdt_wrt_disable, ha->fdt_block_size));
-+	    ha->fdt_wrt_disable, ha->fdt_block_size));
- 	return;
+ static void __exit isp1760_exit(void)
+ {
+-#ifdef CONFIG_USB_ISP1760_OF
++#ifdef CONFIG_PPC_OF
+ 	of_unregister_platform_driver(&isp1760_of_driver);
+ #endif
+-#ifdef CONFIG_USB_ISP1760_PCI
++#ifdef CONFIG_PCI
+ 	pci_unregister_driver(&isp1761_pci_driver);
+ #endif
+ 	deinit_kmem_cache();
+--- a/drivers/usb/host/Kconfig
++++ b/drivers/usb/host/Kconfig
+@@ -110,29 +110,18 @@ config USB_ISP116X_HCD
  
- no_flash_data:
-@@ -614,8 +614,7 @@ no_flash_data:
- 		ha->fdt_block_size = FLASH_BLK_SIZE_64K;
- 		break;
- 	case 0x1f: /* Atmel 26DF081A. */
--		ha->fdt_odd_index = 1;
--		ha->fdt_block_size = FLASH_BLK_SIZE_64K;
-+		ha->fdt_block_size = FLASH_BLK_SIZE_4K;
- 		ha->fdt_erase_cmd = flash_conf_to_access_addr(0x0320);
- 		ha->fdt_unprotect_sec_cmd = flash_conf_to_access_addr(0x0339);
- 		ha->fdt_protect_sec_cmd = flash_conf_to_access_addr(0x0336);
-@@ -710,13 +709,9 @@ qla24xx_write_flash_data(scsi_qla_host_t
- 	qla24xx_unprotect_flash(ha);
+ config USB_ISP1760_HCD
+ 	tristate "ISP 1760 HCD support"
+-	depends on USB && EXPERIMENTAL
++	depends on USB && EXPERIMENTAL && (PCI || PPC_OF)
+ 	---help---
+ 	  The ISP1760 chip is a USB 2.0 host controller.
  
- 	for (liter = 0; liter < dwords; liter++, faddr++, dwptr++) {
--		if (ha->fdt_odd_index) {
--			findex = faddr << 2;
--			fdata = findex & sec_mask;
--		} else {
--			findex = faddr;
--			fdata = (findex & sec_mask) << 2;
--		}
-+
-+		findex = faddr;
-+		fdata = (findex & sec_mask) << 2;
+ 	  This driver does not support isochronous transfers or OTG.
++	  This USB controller is usually attached to a non-DMA-Master
++	  capable bus. NXP's eval kit brings this chip on PCI card
++	  where the chip itself is behind a PLB to simulate such
++	  a bus.
  
- 		/* Are we at the beginning of a sector? */
- 		if ((findex & rest_addr) == 0) {
+ 	  To compile this driver as a module, choose M here: the
+-	  module will be called isp1760-hcd.
+-
+-config USB_ISP1760_PCI
+-	bool "Support for the PCI bus"
+-	depends on USB_ISP1760_HCD && PCI
+-	---help---
+-	  Enables support for the device present on the PCI bus.
+-	  This should only be required if you happen to have the eval kit from
+-	  NXP and you are going to test it.
+-
+-config USB_ISP1760_OF
+-	bool "Support for the OF platform bus"
+-	depends on USB_ISP1760_HCD && PPC_OF
+-	---help---
+-	  Enables support for the device present on the PowerPC
+-	  OpenFirmware platform bus.
++	  module will be called isp1760.
+ 
+ config USB_OHCI_HCD
+ 	tristate "OHCI HCD support"
 
 -- 
