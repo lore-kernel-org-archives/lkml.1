@@ -1,155 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYKQVlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYKQVna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbYKQVlB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYKQVkw
+	id S1754529AbYKQVna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYKQVnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:40:52 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:37275 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbYKQVkv convert rfc822-to-8bit (ORCPT
+	Mon, 17 Nov 2008 16:43:22 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:16847 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752066AbYKQVnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:40:51 -0500
-Message-ID: <4921E4B0.7010507@cosmosbay.com>
-Date: Mon, 17 Nov 2008 22:40:00 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 17 Nov 2008 16:43:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding
+         :sender;
+        b=xt6hG8cZFR53cBTm5wtoBPe5WGs3N3n+FXsUyDqA1TyQJ2iFJunHqvpZq8buWO6r+H
+         dHsZt5/e9LrlZa1f4HWDNFMIDRDuBD42TMhgD5gYs4D9Fs/cfovjj1jwGeLOGqbHyLJz
+         npLlf7/P5iaJ79GM0zAlWFTcekwy3gbvtPf9A=
+Message-ID: <4921E574.3090602@tuffmail.co.uk>
+Date: Mon, 17 Nov 2008 21:43:16 +0000
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: eth_type_trans(): Re: [Bug #11308] tbench regression on each
- kernel release from 2.6.22 -&gt; 2.6.28
-References: <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com> <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org> <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu> <20081117212657.GH12020@elte.hu>
-In-Reply-To: <20081117212657.GH12020@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 17 Nov 2008 22:40:04 +0100 (CET)
+To: csnook@redhat.com, atl1-devel@lists.sourceforge.net
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: atl2: don't mess up irq on suspend/resume (probably msi only)
+References: <49201401.1060600@tuffmail.co.uk>
+In-Reply-To: <49201401.1060600@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> 100.000000 total
->> ................
->>   1.717771 eth_type_trans
-> 
->                       hits (total: 171777)
->                  .........
-> ffffffff8049e215:      457 <eth_type_trans>:
-> ffffffff8049e215:      457 	41 54                	push   %r12
-> ffffffff8049e217:     6514 	55                   	push   %rbp
-> ffffffff8049e218:        0 	48 89 f5             	mov    %rsi,%rbp
-> ffffffff8049e21b:        0 	53                   	push   %rbx
-> ffffffff8049e21c:      441 	48 8b 87 d8 00 00 00 	mov    0xd8(%rdi),%rax
-> ffffffff8049e223:        5 	48 89 fb             	mov    %rdi,%rbx
-> ffffffff8049e226:        0 	2b 87 d0 00 00 00    	sub    0xd0(%rdi),%eax
-> ffffffff8049e22c:      493 	48 89 73 20          	mov    %rsi,0x20(%rbx)
-> ffffffff8049e230:        2 	be 0e 00 00 00       	mov    $0xe,%esi
-> ffffffff8049e235:        0 	89 87 c0 00 00 00    	mov    %eax,0xc0(%rdi)
-> ffffffff8049e23b:      472 	e8 2c 98 fe ff       	callq  ffffffff80487a6c <skb_pull>
-> ffffffff8049e240:      501 	44 8b a3 c0 00 00 00 	mov    0xc0(%rbx),%r12d
-> ffffffff8049e247:      763 	4c 03 a3 d0 00 00 00 	add    0xd0(%rbx),%r12
-> ffffffff8049e24e:        0 	41 f6 04 24 01       	testb  $0x1,(%r12)
-> ffffffff8049e253:      497 	74 26                	je     ffffffff8049e27b <eth_type_trans+0x66>
-> ffffffff8049e255:        0 	48 8d b5 38 02 00 00 	lea    0x238(%rbp),%rsi
-> ffffffff8049e25c:        0 	4c 89 e7             	mov    %r12,%rdi
-> ffffffff8049e25f:        0 	e8 49 fc ff ff       	callq  ffffffff8049dead <compare_ether_addr>
-> ffffffff8049e264:        0 	85 c0                	test   %eax,%eax
-> ffffffff8049e266:        0 	8a 43 7d             	mov    0x7d(%rbx),%al
-> ffffffff8049e269:        0 	75 08                	jne    ffffffff8049e273 <eth_type_trans+0x5e>
-> ffffffff8049e26b:        0 	83 e0 f8             	and    $0xfffffffffffffff8,%eax
-> ffffffff8049e26e:        0 	83 c8 01             	or     $0x1,%eax
-> ffffffff8049e271:        0 	eb 24                	jmp    ffffffff8049e297 <eth_type_trans+0x82>
-> ffffffff8049e273:        0 	83 e0 f8             	and    $0xfffffffffffffff8,%eax
-> ffffffff8049e276:        0 	83 c8 02             	or     $0x2,%eax
-> ffffffff8049e279:        0 	eb 1c                	jmp    ffffffff8049e297 <eth_type_trans+0x82>
-> ffffffff8049e27b:       82 	48 8d b5 18 02 00 00 	lea    0x218(%rbp),%rsi
-> ffffffff8049e282:     8782 	4c 89 e7             	mov    %r12,%rdi
-> ffffffff8049e285:     1752 	e8 23 fc ff ff       	callq  ffffffff8049dead <compare_ether_addr>
-> ffffffff8049e28a:        0 	85 c0                	test   %eax,%eax
-> ffffffff8049e28c:      757 	74 0c                	je     ffffffff8049e29a <eth_type_trans+0x85>
-> ffffffff8049e28e:        0 	8a 43 7d             	mov    0x7d(%rbx),%al
-> ffffffff8049e291:        0 	83 e0 f8             	and    $0xfffffffffffffff8,%eax
-> ffffffff8049e294:        0 	83 c8 03             	or     $0x3,%eax
-> ffffffff8049e297:        0 	88 43 7d             	mov    %al,0x7d(%rbx)
-> ffffffff8049e29a:      107 	66 41 8b 44 24 0c    	mov    0xc(%r12),%ax
-> ffffffff8049e2a0:     1031 	0f b7 c8             	movzwl %ax,%ecx
-> ffffffff8049e2a3:      518 	66 c1 e8 08          	shr    $0x8,%ax
-> ffffffff8049e2a7:        0 	89 ca                	mov    %ecx,%edx
-> ffffffff8049e2a9:        0 	c1 e2 08             	shl    $0x8,%edx
-> ffffffff8049e2ac:      484 	09 d0                	or     %edx,%eax
-> ffffffff8049e2ae:        0 	0f b7 c0             	movzwl %ax,%eax
-> ffffffff8049e2b1:        0 	3d ff 05 00 00       	cmp    $0x5ff,%eax
-> ffffffff8049e2b6:      468 	7f 18                	jg     ffffffff8049e2d0 <eth_type_trans+0xbb>
-> ffffffff8049e2b8:        0 	48 8b 83 d8 00 00 00 	mov    0xd8(%rbx),%rax
-> ffffffff8049e2bf:        0 	b9 00 01 00 00       	mov    $0x100,%ecx
-> ffffffff8049e2c4:        0 	66 83 38 ff          	cmpw   $0xffffffffffffffff,(%rax)
-> ffffffff8049e2c8:        0 	b8 00 04 00 00       	mov    $0x400,%eax
-> ffffffff8049e2cd:        0 	0f 45 c8             	cmovne %eax,%ecx
-> ffffffff8049e2d0:        0 	5b                   	pop    %rbx
-> ffffffff8049e2d1:    85064 	5d                   	pop    %rbp
-> ffffffff8049e2d2:    63776 	41 5c                	pop    %r12
-> ffffffff8049e2d4:        1 	89 c8                	mov    %ecx,%eax
-> ffffffff8049e2d6:      474 	c3                   	retq   
-> 
-> small function, big bang - 1.7% of the total overhead.
-> 
-> 90% of this function's cost is in the closing sequence. My guess would 
-> be that it originates from ffffffff8049e2ae (the branch after that is 
-> not taken), which corresponds to this source code context:
-> 
-> (gdb) list *0xffffffff8049e2ae
-> 0xffffffff8049e2ae is in eth_type_trans (net/ethernet/eth.c:199).
-> 194		if (netdev_uses_dsa_tags(dev))
-> 195			return htons(ETH_P_DSA);
-> 196		if (netdev_uses_trailer_tags(dev))
-> 197			return htons(ETH_P_TRAILER);
-> 198	
-> 199		if (ntohs(eth->h_proto) >= 1536)
-> 200			return eth->h_proto;
-> 201	
-> 202		rawp = skb->data;
-> 203	
-> 
-> eth->h_proto access.
-> 
-> Given that this workload does localhost networking, my guess would be 
-> that eth->h_proto is bouncing around between 16 CPUs? At minimum this 
-> read-mostly field should be separated from the bouncing bits.
-> 
+Alan Jenkins wrote:
+> According to Documentation/power/pci.txt, the correct suspend sequence is:
+>
+>     A reference implementation
+>     -------------------------
+>     .suspend()
+>     {
+>         /* driver specific operations */
+>
+>         /* Disable IRQ */
+>         free_irq();
+>         /* If using MSI */
+>         pci_disable_msi();
+>
+>         pci_save_state();
+>         pci_enable_wake();
+>         /* Disable IO/bus master/irq router */
+>         pci_disable_device();
+>         pci_set_power_state(pci_choose_state());
+>     }
+>
+>
+> Whereas atl2 calls pci_save_state() *before* free_irq() and
+> pci_disable_msi().  Hilarity ensues on resume as pci_restore_state()
+> restores a state with MSI enabled; the atl2 resume handler then enables
+> msi for the second time.  Looking at /proc/interrupts, it seems to leak
+> an irq each time this happens.  (I had 6 entries for "eth0" by the time
+> I noticed this).  It also triggers a warning.
+>
+> I was able to avoid the warning + leak by re-ordering the resume
+> method.  Patch attached - it's just a few lines, I hope that's all
+> that's necessary.
+>   
 
-"eth" is on the frame itself, so each cpu is handling a skb it owns.
-If there is a cache line miss, then scheduler might have done a wrong schedule ?
-(tbench server and tbench client on different cpus)
+Don't listen to me.  The problem went away because when I was testing my
+patch, I plugged the ethernet in and actually used it.  My patch doesn't
+seem to fix anything.
 
-But seeing your disassembly, I can see compare_ether_addr() is not inlined.
+So I now have the steps to reproduce this warning: remove the ethernet
+cable and suspend.
 
-This sucks.
+Also, I was speaking rubbish because the warning isn't on the resume
+path.  It seems to be when network-manager re-opens the device on resume.
 
-/**
- * compare_ether_addr - Compare two Ethernet addresses
- * @addr1: Pointer to a six-byte array containing the Ethernet address
- * @addr2: Pointer other six-byte array containing the Ethernet address
- *
- * Compare two ethernet addresses, returns 0 if equal
- */
-static inline unsigned compare_ether_addr(const u8 *addr1, const u8 *addr2)
-{
-        const u16 *a = (const u16 *) addr1;
-        const u16 *b = (const u16 *) addr2;
+I'll have another look for possible culprits.  Hints appreciated :).
 
-        BUILD_BUG_ON(ETH_ALEN != 6);
-        return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2])) != 0;
-}
-
-On my machine/compiler, it is inlined, that makes a big difference.
-
-c0420750 <eth_type_trans>: /* eth_type_trans total:  14417  0.4101 */ 
-
+> ------------[ cut here ]------------
+> WARNING: at drivers/pci/msi.c:570 pci_enable_msi+0x3a/0x1cd()
+> Modules linked in: cpufreq_stats freq_table nls_iso8859_1 nls_cp437 vfat fat rfkill_input ae
+> Pid: 2620, comm: NetworkManager Tainted: G        W  2.6.28-rc4eeepc #136
+> Call Trace:
+>  [<c011b89a>] warn_on_slowpath+0x40/0x59
+>  [<c023df15>] raw_pci_read+0x4d/0x55
+>  [<c023dff3>] pci_read+0x1c/0x21
+>  [<c01bcd81>] __pci_find_next_cap_ttl+0x44/0x70
+>  [<c01bce86>] __pci_find_next_cap+0x1a/0x1f
+>  [<c01bcef9>] pci_find_capability+0x28/0x2c
+>  [<c01c4144>] pci_msi_check_device+0x53/0x62
+>  [<c01c49c2>] pci_enable_msi+0x3a/0x1cd
+>  [<e019f17b>] atl2_write_phy_reg+0x40/0x5f [atl2]
+>  [<c01061b1>] dma_generic_alloc_coherent+0x0/0xd7
+>  [<e019f107>] atl2_request_irq+0x15/0x49 [atl2]
+>  [<e01a1481>] atl2_open+0x20b/0x297 [atl2]
+>  [<c024a35c>] dev_open+0x62/0x91
+>  [<c0248b9a>] dev_change_flags+0x93/0x141
+>  [<c024f308>] do_setlink+0x238/0x2d5
+>  [<c02501b2>] rtnl_setlink+0xa9/0xbf
+>  [<c0297f0c>] mutex_lock+0xb/0x19
+>  [<c024ffa7>] rtnl_dump_ifinfo+0x0/0x69
+>  [<c0250109>] rtnl_setlink+0x0/0xbf
+>  [<c024fe42>] rtnetlink_rcv_msg+0x185/0x19f
+>  [<c0240fd1>] sock_rmalloc+0x23/0x57
+>  [<c024fcbd>] rtnetlink_rcv_msg+0x0/0x19f
+>  [<c0259457>] netlink_rcv_skb+0x2d/0x71
+>  [<c024fcb7>] rtnetlink_rcv+0x14/0x1a
+>  [<c025929e>] netlink_unicast+0x184/0x1e4
+>  [<c025992a>] netlink_sendmsg+0x233/0x240
+>  [<c023f405>] sock_sendmsg+0xb7/0xd0
+>  [<c0129131>] autoremove_wake_function+0x0/0x2b
+>  [<c0129131>] autoremove_wake_function+0x0/0x2b
+>  [<c0147796>] mempool_alloc+0x2d/0x9e
+>  [<c020c923>] scsi_pool_alloc_command+0x35/0x4f
+>  [<c0297f0c>] mutex_lock+0xb/0x19
+>  [<c028e867>] unix_stream_recvmsg+0x357/0x3e2
+>  [<c01b81c9>] copy_from_user+0x23/0x4f
+>  [<c02452ea>] verify_iovec+0x3e/0x6c
+>  [<c023f5ab>] sys_sendmsg+0x18d/0x1f0
+>  [<c023ffa8>] sys_recvmsg+0x146/0x1c8
+>  [<c0240016>] sys_recvmsg+0x1b4/0x1c8
+>  [<c0118f48>] __wake_up+0xf/0x15
+>  [<c02586cd>] netlink_table_ungrab+0x17/0x19
+>  [<c01b83ba>] copy_to_user+0x25/0x3b
+>  [<c023fe4a>] move_addr_to_user+0x50/0x68
+>  [<c0240266>] sys_getsockname+0x6f/0x9a
+>  [<c0240280>] sys_getsockname+0x89/0x9a
+>  [<c015046a>] do_wp_page+0x3ae/0x41a
+>  [<c0151525>] handle_mm_fault+0x4c5/0x540
+>  [<c02405d0>] sys_socketcall+0x176/0x1b0
+>  [<c010376d>] sysenter_do_call+0x12/0x21
+> ---[ end trace ad80134e35e20aad ]---
+>
+>
+>
+>
+>   
 
