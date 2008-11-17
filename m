@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbYKQIsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbYKQIth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756489AbYKQIsv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 03:48:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbYKQIsl
+	id S1756741AbYKQIth (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 03:49:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYKQIt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 03:48:41 -0500
-Received: from sh.osrg.net ([192.16.179.4]:42415 "EHLO sh.osrg.net"
+	Mon, 17 Nov 2008 03:49:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35789 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752697AbYKQIsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 03:48:40 -0500
-Date: Mon, 17 Nov 2008 17:47:51 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       joerg.roedel@amd.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] swiotlb: use coherent_dma_mask in alloc_coherent
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20081117081526.GA24603@elte.hu>
-References: <20081117162445C.fujita.tomonori@lab.ntt.co.jp>
-	<20081117081526.GA24603@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20081117174828U.fujita.tomonori@lab.ntt.co.jp>
+	id S1752619AbYKQIt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 03:49:28 -0500
+Date: Mon, 17 Nov 2008 09:49:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
+	field
+Message-ID: <20081117084923.GD28786@elte.hu>
+References: <4920D571.4050007@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4920D571.4050007@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 17 Nov 2008 09:15:26 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
 
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Impact: help to find the better depth of trace
 > 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> We decided to arbitrary define the depth of function return trace as 
+> "20". Perhaps this is not enough. To help finding an optimal depth, 
+> we measure now the overrun: the number of functions that have been 
+> missed for the current thread. By default this is not displayed, we 
+> have to do set a particular flag on the return tracer: echo overrun 
+> > /debug/tracing/trace_options And the overrun will be printed on 
+> the right.
 > 
-> > This patch fixes swiotlb to use dev->coherent_dma_mask in 
-> > alloc_coherent. Currently, swiotlb uses dev->dma_mask in 
-> > alloc_coherent but alloc_coherent is supposed to use 
-> > coherent_dma_mask. It could break drivers that uses smaller 
-> > coherent_dma_mask than dma_mask (though the current code works for 
-> > the majority that use the same mask for coherent_dma_mask and 
-> > dma_mask).
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  lib/swiotlb.c |   10 +++++++---
-> >  1 files changed, 7 insertions(+), 3 deletions(-)
+> As the trace shows below, the current 20 depth is not enough.
 > 
-> Applied it with the changelog below to tip/core/urgent, thanks!
-> 
-> I also flagged it for v2.6.28 inclusion. This bug was caused by the 
-> removal of the GFP_DMA hack in swiotlb_alloc_coherent() in this cycle. 
-> I havent seen it actually reported anywhere - have you perhaps?Or have 
-> you found this via code review?
+> update_wall_time+0x37f/0x8c0 -> update_xtime_cache (345 ns) (Overruns: 2838)
+> update_wall_time+0x384/0x8c0 -> clocksource_get_next (1141 ns) (Overruns: 2838)
+> do_timer+0x23/0x100 -> update_wall_time (3882 ns) (Overruns: 2838)
 
-This wasn't introduced by the removal of the GFP_DMA hack. It has been
-for ages, I think.
+hm, interesting. Have you tried to figure out what a practical depth 
+limit would be?
 
-I knew this issue but I thought that it's harmless and let it
-alone. But Grant Grundler said that there are some devices are
-troubled by this:
+With lockdep we made the experience that function call stacks can be 
+very deep - if we count IRQ contexts too it can be up to 100 in the 
+extreme cases. (but at that stage kernel stack limits start hitting 
+us)
 
-http://marc.info/?l=linux-kernel&m=122379585203173&w=2
+I'd say 50 would be needed.
 
-I fixed VT-d about this (bb9e6d65078da2f38cfe1067cfd31a896ca867c0) but
-somehow I forgot about swiotlb.
-
-I think that it would be fine to push this to 2.6.29 since seems that
-nobody hits this. But it's also fine to push it for 2.6.28 since it's
-theoretically a bug fix and pretty trivial.
-
-
-> Do we know roughly the range of devices/systems where there's a real 
-> address range that cannot be DMA-ed to coherently, and an estimation 
-> about how frequently they would be affected by this bug?
-
-I think that if a driver hits this bug, it's likely that an user sees
-kinda data corruption right after loading the driver.
+	Ingo
