@@ -1,322 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbYKQSX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbYKQSYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbYKQSX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 13:23:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYKQSXu
+	id S1754624AbYKQSYX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 13:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbYKQSYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 13:23:50 -0500
-Received: from gv-out-0910.google.com ([216.239.58.185]:37602 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbYKQSXs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 13:23:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iru63ZTcaV5RLhjQq0KxkiRcVjsz5T/lWN0e91OAdpq72UEncKrDOCVShyvGR+xd7x
-         2V4HDQZCSLkwTB0UAGuMlfhTOBPa6wQ8C8473WwlFK+pFuQur1bMv11EoKyNKmMPO6IC
-         iq5rpvOES9wJ8Y5RP2t8XhPN4VQXnYAE6+R6Q=
-Message-ID: <4921B6AE.5090608@gmail.com>
-Date: Mon, 17 Nov 2008 19:23:42 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 17 Nov 2008 13:24:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47591 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753902AbYKQSYC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 13:24:02 -0500
+Date: Mon, 17 Nov 2008 19:23:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
+       a.p.zijlstra@chello.nl, Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20081117182320.GA26844@elte.hu>
+References: <20081117090648.GG28786@elte.hu> <20081117.011403.06989342.davem@davemloft.net> <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com> <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Steven Noonan <steven@uplinklabs.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing/ftrace: implement a set_flag callback for
- tracers
-References: <4920D402.3000803@gmail.com> <20081117084524.GB28786@elte.hu>
-In-Reply-To: <20081117084524.GB28786@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.1 required=5.9 tests=DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	0.1 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> i've got some syntactic nits:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Mon, 17 Nov 2008, Eric Dumazet wrote:
 > 
-
+> > Ingo Molnar a écrit :
 > 
-> magic constant '3' needs a comment at least.
+> > > it gives a small speedup of ~1% on my box:
+> > > 
+> > >    before:      Throughput 3437.65 MB/sec 64 procs
+> > >    after:       Throughput 3473.99 MB/sec 64 procs
+> > 
+> > Strange, I get 2350 MB/sec on my 8 cpus box. "tbench 8"
 > 
+> I think Ingo may have a Nehalem. Let's just say that those things 
+> rock, and have rather good memory throughput.
 
-> 
-> how about making a dummy empty trace_opts for all tracers (set by 
-> plugin init if the init function finds a NULL there) - that way the 
-> 'if (trace_opts)' can go away and you can just iterate away on that 
-> array of options.
+hm, i'm not sure whether i can post benchmarks from the Nehalem box - 
+but i can confirm it in general terms that it's rather nice ;-)
 
+This was run on another testbox (4x4 Barcelona) that rocks similarly 
+well in terms of memory subsystem latencies: which seems to be 
+tbench's main current critical path.
+
+For the tbench bragging rights i'd probably turn off CONFIG_SECURITY 
+and a few other options. Plus i'd run with 16 threads only - in this 
+test i ran with 4x overload (64 tbench threads, not 16) to stress the 
+scheduler harder.
+
+Although we degrade very gently with overload so the numbers arent all 
+that much different:
+
+   16 threads: Throughput 3463.14 MB/sec 16 procs
+   64 threads: Throughput 3473.99 MB/sec 64 procs
+  256 threads: Throughput 3457.67 MB/sec 256 procs
+ 1024 threads: Throughput 3448.85 MB/sec 1024 procs
+
+ [ so it's the same within noise range. ]
+
+1024 threads is already a massive 64x overload so beyond any 
+reasonable limit of workload sanity.
+
+Which suggests that the main limitation factor is cacheline ping-pong 
+that is already in full effect at 16 threads.
+
+Which is supported by the "most expensive instructions" top-10 sorted 
+list:
+
+            RIP     #hits
+..........................                           
+
+                           [ usercopy ]
+ffffffff80350fcd:  1373300 	f3 48 a5             	rep movsq %ds:(%rsi),%es:(%rdi)
+
+ffffffff804a2f33:          <sock_rfree>:
+ffffffff804a2f34:   985253 	48 89 e5             	mov    %rsp,%rbp
+
+
+ffffffff804d2eb7:          <ip_local_deliver>:
+ffffffff804d2eb8:   432659 	48 89 e5             	mov    %rsp,%rbp
+
+ffffffff804aa23c:          <constant_test_bit>: [ => napi_disable_pending() ]
+ffffffff804aa24c:   374052 	89 d1                	mov    %edx,%ecx
+
+ffffffff804d5076:          <ip_dont_fragment>:
+ffffffff804d5076:   310051 	8a 97 56 02 00 00    	mov    0x256(%rdi),%dl
+
+ffffffff804d9b17:          <__inet_lookup_established>:
+ffffffff804d9bdf:   247224 	eb ba                	jmp    ffffffff804d9b9b <__inet_lookup_established+0x84>
+
+ffffffff80321529:          <selinux_ip_postroute>:
+ffffffff8032152a:   183700 	48 89 e5             	mov    %rsp,%rbp
+
+ffffffff8020c020:          <system_call>:
+ffffffff8020c020:   183600 	0f 01 f8             	swapgs 
+
+ffffffff8051884a:          <netlbl_enabled>:
+ffffffff8051884a:   179538 	55                   	push   %rbp
+
+The usual profiling caveat applies: it's not _these_ instructions that 
+matter, but the surrounding code that calls them. Profiling overhead 
+is delayed by a couple of instructions - the more out-of-order a CPU 
+is, the larger this delay can be. But even a quick look to the list 
+above shows that all of the heavy cachemisses are generated by 
+networking.
+
+Beyond the usual suspects of syscall entry and memcpy, it's only 
+networking. We dont even have the mov %cr3 TLB flush overhead in this 
+list, load_cr3() is a distant #30:
+
+ffffffff8023049f:        0      0f 22 d8                mov    %rax,%cr3
+ffffffff802304a2:   126303      c9                      leaveq
+
+The place for the sock_rfree() hit looks a bit weird, and i'll 
+investigate it now a bit more to place the real overhead point 
+properly. (i already mapped the test-bit overhead: that comes from 
+napi_disable_pending())
  
-> one tab too much. Also, the condition can be avoided by creating a 
-> dummy ->set_flag() that just returns 0.
-> 
+The first entry is 10x the cost of the last entry in the list so 
+clearly we've got 1-2 brutal cacheline ping-pongs that dominate the 
+overhead of this workload.
 
-
-> 
-> variable should be one line higher, to not break the upside down 
-> christmas tree layout. [ :-) ]
-> 
-
-> 
-> please look at the file you modify and try to clone the micro-style it 
-> follows. For example in this file it would be more standard to use 
-> vertical alignment for structure definitions:
-> 
-
-> ditto - here the new field deviates from he existing style.
-> 
-> also note how the 'int set);' line is unnecessarily broken to a 
-> separate line - it could be in the same line where the set_flag field 
-> begins.
-> 
-
-> 
-> spurious looking newline insertion.
-> 
-> 	Ingo
-
-Ok. That's fixed in the patch below. I hope I haven't missed something.
---
->From 93a0793dad5bb7937ccba6f4f4a8cc13ad18d2f9 Mon Sep 17 00:00:00 2001
-From: Frederic Weisbecker <fweisbec@gmail.com>
-Date: Mon, 17 Nov 2008 18:28:19 +0100
-Subject: [PATCH 1/3][V2] tracing/ftrace: implement a set_flag callback for tracers
-
-Impact: give a way to send specific messages to tracers
-
-The current implementation of tracing uses some flags to control the output
-of general tracers. But we have no way to implement custom flags handling for
-a specific tracer.
-This patch proposes a new callback for the struct tracer which called set_flag
-and a structure that represents a 32 bits variable flag.
-
-A tracer can implement a struct tracer_flags on which it puts the initial value
-of the flag integer. Than it can place a range of flags with their name and their
-flag mask on the flag integer. The structure that implement a single flag is called
-struct tracer_opt.
-
-These custom flags will be available through the trace_options file like the general
-tracing flags. Changing their value is done like the other general flags.
-For example if you have a flag that calls "foo", you can activate it by writing
-"foo" or "nofoo" on trace_options.
-
-Note that the set_flag callback is optional and is only needed if you want the flags
-changing to be signaled to your tracer and let it to accept or refuse their assignment.
-
-V2: Some arrangements in coding style....
-
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.c |   92 ++++++++++++++++++++++++++++++++++++++++++++++---
- kernel/trace/trace.h |   26 ++++++++++++++
- 2 files changed, 112 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 4a90462..cd123e2 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -43,6 +43,20 @@
- unsigned long __read_mostly	tracing_max_latency = (cycle_t)ULONG_MAX;
- unsigned long __read_mostly	tracing_thresh;
- 
-+/* For tracers that don't implement custom flags */
-+static struct tracer_opt dummy_tracer_opt[] = {
-+	{ }
-+};
-+
-+static struct tracer_flags dummy_tracer_flags = {
-+	.val = 0,
-+	.opts = dummy_tracer_opt
-+};
-+
-+static int dummy_set_flag(u32 old_flags, u32 bit, int set)
-+{
-+	return 0;
-+}
- 
- /*
-  * Kill all tracing for good (never come back).
-@@ -531,6 +545,14 @@ int register_tracer(struct tracer *type)
- 		}
- 	}
- 
-+	if (!type->set_flag)
-+		type->set_flag = &dummy_set_flag;
-+	if (!type->flags)
-+		type->flags = &dummy_tracer_flags;
-+	else
-+		if (!type->flags->opts)
-+			type->flags->opts = dummy_tracer_opt;
-+
- #ifdef CONFIG_FTRACE_STARTUP_TEST
- 	if (type->selftest) {
- 		struct tracer *saved_tracer = current_trace;
-@@ -2428,10 +2450,13 @@ static ssize_t
- tracing_trace_options_read(struct file *filp, char __user *ubuf,
- 		       size_t cnt, loff_t *ppos)
- {
-+	int i;
- 	char *buf;
- 	int r = 0;
- 	int len = 0;
--	int i;
-+	u32 tracer_flags = current_trace->flags->val;
-+	struct tracer_opt *trace_opts = current_trace->flags->opts;
-+
- 
- 	/* calulate max size */
- 	for (i = 0; trace_options[i]; i++) {
-@@ -2439,6 +2464,15 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
- 		len += 3; /* "no" and space */
- 	}
- 
-+	/*
-+	 * Increase the size with names of options specific
-+	 * of the current tracer.
-+	 */
-+	for (i = 0; trace_opts[i].name; i++) {
-+		len += strlen(trace_opts[i].name);
-+		len += 3; /* "no" and space */
-+	}
-+
- 	/* +2 for \n and \0 */
- 	buf = kmalloc(len + 2, GFP_KERNEL);
- 	if (!buf)
-@@ -2451,6 +2485,15 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
- 			r += sprintf(buf + r, "no%s ", trace_options[i]);
- 	}
- 
-+	for (i = 0; trace_opts[i].name; i++) {
-+		if (tracer_flags & trace_opts[i].bit)
-+			r += sprintf(buf + r, "%s ",
-+				trace_opts[i].name);
-+		else
-+			r += sprintf(buf + r, "no%s ",
-+				trace_opts[i].name);
-+	}
-+
- 	r += sprintf(buf + r, "\n");
- 	WARN_ON(r >= len + 2);
- 
-@@ -2461,6 +2504,40 @@ tracing_trace_options_read(struct file *filp, char __user *ubuf,
- 	return r;
- }
- 
-+/* Try to assign a tracer specific option */
-+static int set_tracer_option(struct tracer *trace, char *cmp, int neg)
-+{
-+	struct tracer_flags *trace_flags = trace->flags;
-+	struct tracer_opt *opts = NULL;
-+	int ret = 0, i = 0;
-+	int len;
-+
-+	for (i = 0; trace_flags->opts[i].name; i++) {
-+		opts = &trace_flags->opts[i];
-+		len = strlen(opts->name);
-+
-+		if (strncmp(cmp, opts->name, len) == 0) {
-+			ret = trace->set_flag(trace_flags->val,
-+				opts->bit, !neg);
-+			break;
-+		}
-+	}
-+	/* Not found */
-+	if (!trace_flags->opts[i].name)
-+		return -EINVAL;
-+
-+	/* Refused to handle */
-+	if (ret)
-+		return ret;
-+
-+	if (neg)
-+		trace_flags->val &= ~opts->bit;
-+	else
-+		trace_flags->val |= opts->bit;
-+
-+	return 0;
-+}
-+
- static ssize_t
- tracing_trace_options_write(struct file *filp, const char __user *ubuf,
- 			size_t cnt, loff_t *ppos)
-@@ -2468,6 +2545,7 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
- 	char buf[64];
- 	char *cmp = buf;
- 	int neg = 0;
-+	int ret;
- 	int i;
- 
- 	if (cnt >= sizeof(buf))
-@@ -2494,11 +2572,13 @@ tracing_trace_options_write(struct file *filp, const char __user *ubuf,
- 			break;
- 		}
- 	}
--	/*
--	 * If no option could be set, return an error:
--	 */
--	if (!trace_options[i])
--		return -EINVAL;
-+
-+	/* If no option could be set, test the specific tracer options */
-+	if (!trace_options[i]) {
-+		ret = set_tracer_option(current_trace, cmp, neg);
-+		if (ret)
-+			return ret;
-+	}
- 
- 	filp->f_pos += cnt;
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 790ea8c..23c8b67 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -259,6 +259,29 @@ enum print_line_t {
- 	TRACE_TYPE_UNHANDLED	= 2	/* Relay to other output functions */
- };
- 
-+
-+/*
-+ * An option specific to a tracer. This is a boolean value.
-+ * The bit is the bit index that sets its value on the
-+ * flags value in struct tracer_flags.
-+ */
-+struct tracer_opt {
-+	const char 	*name; /* Will appear on the trace_options file */
-+	u32 		bit; /* Mask assigned in val field in tracer_flags */
-+};
-+
-+/*
-+ * The set of specific options for a tracer. Your tracer
-+ * have to set the initial value of the flags val.
-+ */
-+struct tracer_flags {
-+	u32			val;
-+	struct tracer_opt 	*opts;
-+};
-+
-+/* Makes more easy to define a tracer opt */
-+#define TRACER_OPT(s, b)	.name = #s, .bit = b
-+
- /*
-  * A specific tracer, represented by methods that operate on a trace array:
-  */
-@@ -279,8 +302,11 @@ struct tracer {
- 					    struct trace_array *tr);
- #endif
- 	enum print_line_t	(*print_line)(struct trace_iterator *iter);
-+	/* If you handled the flag setting, return 0 */
-+	int			(*set_flag)(u32 old_flags, u32 bit, int set);
- 	struct tracer		*next;
- 	int			print_max;
-+	struct tracer_flags 	*flags;
- };
- 
- struct trace_seq {
--- 
-1.5.2.5
-
+	Ingo
