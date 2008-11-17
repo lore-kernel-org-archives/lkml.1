@@ -1,106 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYKQJLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbYKQJOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbYKQJLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 04:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYKQJLS
+	id S1756383AbYKQJOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 04:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYKQJOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 04:11:18 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:36029 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbYKQJLP (ORCPT
+	Mon, 17 Nov 2008 04:14:07 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56349
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751589AbYKQJOF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 04:11:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xUK6f9cl3TIG8RPii9YIQYGawidnj9Guvr5mHbpl7OEkm3QRVj4eFBCmyCA97BT5Ig
-         NQNnz5OOvuP6G9myV1JIwrc7TIqPKDKhZf5SumgAKi8oO7Ln/wIYakCIUTd2gQJYl51C
-         U4KPf3UEJXZxqApViISbsJ69ejJj/ljv60FEg=
-Date: Mon, 17 Nov 2008 09:11:08 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: folkert@vanheusden.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Re: [2.6.26] OOPS in __linkwatch_run_queue (unable to
-	handle kernel NULL pointer dereference at 00000235)
-Message-ID: <20081117091108.GB6345@ff.dom.local>
-References: <20081030020910.f97ee3fc.akpm@linux-foundation.org> <20081117084058.GA6345@ff.dom.local> <20081117.005025.141630310.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117.005025.141630310.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 17 Nov 2008 04:14:05 -0500
+Date: Mon, 17 Nov 2008 01:14:03 -0800 (PST)
+Message-Id: <20081117.011403.06989342.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+ 2.6.22 -&gt; 2.6.28
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20081117090648.GG28786@elte.hu>
+References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera>
+	<NjF0-fuClJC.A.73B.cLHIJB@chimera>
+	<20081117090648.GG28786@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Nov 17, 2008 at 12:50:25AM -0800, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Mon, 17 Nov 2008 08:40:58 +0000
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 17 Nov 2008 10:06:48 +0100
+
 > 
-> > net: link_watch: Don't add a linkwatch event before register_netdev()
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.26 and 2.6.27.
 > > 
-> > b44 and some other network drivers run netif_carrier_off() before
-> > register_netdev(). Then, if register fails, free_netdev() destruction
-> > is done while dev is still referenced and held on the lweventlist.
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> > be listed and let me know (either way).
 > > 
-> > Of course, it would be nice if all drivers could use some common order
-> > of calling things like register_netdev() vs. netif_carrier_off(), but
-> > since there is a lot of this I guess there is probably some reason,
-> > so this patch doesn't change the order but assumes that such an early
-> > netif_carrier_off() is only to set the __LINK_STATE_NOCARRIER flag,
-> > and some netif_carrier_on()/_off() will still follow.
 > > 
-> > Reported-by: Folkert van Heusden <folkert@vanheusden.com>
-> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11308
+> > Subject		: tbench regression on each kernel release from  2.6.22 -&gt; 2.6.28
+> > Submitter	: Christoph Lameter <cl@linux-foundation.org>
+> > Date		: 2008-08-11 18:36 (98 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121847986119495&w=4
+> > 		  http://marc.info/?l=linux-kernel&m=122125737421332&w=4
 > 
-> Ugh, drivers should not be fiddling with stuff like this before the
-> device object is even registered.
+> Christoph, as per the recent analysis of Mike:
 > 
-> I can just imagine all sorts of other operations drivers might find
-> it "convenient" to do before the sucker is even registered, causing
-> similar if not even worse problems.
+>  http://fixunix.com/kernel/556867-regression-benchmark-throughput-loss-a622cf6-f7160c7-pull.html
 > 
-> It's pretty simple, make netif_carrier_off() be the first thing
-> ->open() does and make it the last thing ->stop() and ->suspend()
-> do.  That's how to fix this bug.
+> all scheduler components of this regression have been eliminated.
 > 
-> I'm going to fix this as follows.  B44 already abided by 2/3 of
-> this by handling the ->stop() and ->suspend() cases correctly already.
-> 
-> b44: Do not call netif_carrier_off() before device is even registered.
-> 
-> This is illegal.  Instead simply do this first thing in ->open().
+> In fact his numbers show that scheduler speedups since 2.6.22 have 
+> offset and hidden most other sources of tbench regression. (i.e. the 
+> scheduler portion got 5% faster, hence it was able to offset a 
+> slowdown of 5% in other areas of the kernel that tbench triggers)
 
-Yes, this looks very nice! But this should be done in "a few" more
-drivers, like cxgb3 etc.
+Although I respect the improvements, wake_up() is still several orders
+of magnitude slower than it was in 2.6.22 and wake_up() is at the top
+of the profiles in tbench runs.
 
-Jarek P.
+It really is premature to close this regression at this time.
 
-PS: I think "Reported-by" could stay anyway.
-
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> 
-> diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-> index c3bda5c..2e353b8 100644
-> --- a/drivers/net/b44.c
-> +++ b/drivers/net/b44.c
-> @@ -1426,6 +1426,8 @@ static int b44_open(struct net_device *dev)
->  	struct b44 *bp = netdev_priv(dev);
->  	int err;
->  
-> +	netif_carrier_off(dev);
-> +
->  	err = b44_alloc_consistent(bp, GFP_KERNEL);
->  	if (err)
->  		goto out;
-> @@ -2165,8 +2167,6 @@ static int __devinit b44_init_one(struct ssb_device *sdev,
->  	dev->irq = sdev->irq;
->  	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
->  
-> -	netif_carrier_off(dev);
-> -
->  	err = ssb_bus_powerup(sdev->bus, 0);
->  	if (err) {
->  		dev_err(sdev->dev,
+I am working with every spare moment I have to try and nail this
+stuff, but unless someone else helps me people need to be patient.
