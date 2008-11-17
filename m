@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbYKQHih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbYKQHiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbYKQHih (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:38:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756162AbYKQHV5
+	id S1758588AbYKQHiz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYKQHYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:57 -0500
-Received: from kroah.org ([198.145.64.141]:38576 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754426AbYKQHVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:21:24 -0500
-Date: Sun, 16 Nov 2008 23:16:08 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 30/46] SCSI: qla2xxx: Do not honour max_vports from
-	firmware for 2G ISPs and below.
-Message-ID: <20081117071608.GE29522@kroah.com>
-References: <20081117070621.430169021@blue.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-qla2xxx-do-not-honour-max_vports-from-firmware-for-2g-isps-and-below.patch"
-In-Reply-To: <20081117071333.GA29522@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 17 Nov 2008 02:24:52 -0500
+Received: from sh.osrg.net ([192.16.179.4]:37196 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756872AbYKQHYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:24:51 -0500
+Date: Mon, 17 Nov 2008 16:24:34 +0900
+To: mingo@elte.hu, tony.luck@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: [PATCH] swiotlb: use coherent_dma_mask in alloc_coherent
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20081117162445C.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+This patch fixes swiotlb to use dev->coherent_dma_mask in
+alloc_coherent. Currently, swiotlb uses dev->dma_mask in
+alloc_coherent but alloc_coherent is supposed to use
+coherent_dma_mask. It could break drivers that uses smaller
+coherent_dma_mask than dma_mask (though the current code works for the
+majority that use the same mask for coherent_dma_mask and dma_mask).
 
-------------------
-
-From: Shyam Sundar <shyam.sundar@qlogic.com>
-
-commit 680d7db88ace53c673e1c437c9b6abcc053e8d6f upstream.
-
-For 23XX ISPs, max_vports may return an invalid value.
-Do not honour it.
-
-Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- drivers/scsi/qla2xxx/qla_init.c |    2 +-
- drivers/scsi/qla2xxx/qla_mbx.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ lib/swiotlb.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
---- a/drivers/scsi/qla2xxx/qla_init.c
-+++ b/drivers/scsi/qla2xxx/qla_init.c
-@@ -974,7 +974,6 @@ qla2x00_setup_chip(scsi_qla_host_t *ha)
- 				    &ha->fw_minor_version,
- 				    &ha->fw_subminor_version,
- 				    &ha->fw_attributes, &ha->fw_memory_size);
--				qla2x00_resize_request_q(ha);
- 				ha->flags.npiv_supported = 0;
- 				if ((IS_QLA24XX(ha) || IS_QLA25XX(ha) ||
- 				     IS_QLA84XX(ha)) &&
-@@ -986,6 +985,7 @@ qla2x00_setup_chip(scsi_qla_host_t *ha)
- 						ha->max_npiv_vports =
- 						    MIN_MULTI_ID_FABRIC - 1;
- 				}
-+				qla2x00_resize_request_q(ha);
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 78330c3..5f6c629 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -467,9 +467,13 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dma_addr_t dev_addr;
+ 	void *ret;
+ 	int order = get_order(size);
++	u64 dma_mask = DMA_32BIT_MASK;
++
++	if (hwdev && hwdev->coherent_dma_mask)
++		dma_mask = hwdev->coherent_dma_mask;
  
- 				if (ql2xallocfwdump)
- 					qla2x00_alloc_fw_dump(ha);
---- a/drivers/scsi/qla2xxx/qla_mbx.c
-+++ b/drivers/scsi/qla2xxx/qla_mbx.c
-@@ -1964,7 +1964,7 @@ qla2x00_get_resource_cnts(scsi_qla_host_
- 			*cur_iocb_cnt = mcp->mb[7];
- 		if (orig_iocb_cnt)
- 			*orig_iocb_cnt = mcp->mb[10];
--		if (max_npiv_vports)
-+		if (ha->flags.npiv_supported && max_npiv_vports)
- 			*max_npiv_vports = mcp->mb[11];
- 	}
+ 	ret = (void *)__get_free_pages(flags, order);
+-	if (ret && address_needs_mapping(hwdev, virt_to_bus(ret), size)) {
++	if (ret && !is_buffer_dma_capable(dma_mask, virt_to_bus(ret), size)) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+ 		 * Fall back on swiotlb_map_single().
+@@ -493,9 +497,9 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dev_addr = virt_to_bus(ret);
  
-
+ 	/* Confirm address can be DMA'd by device */
+-	if (address_needs_mapping(hwdev, dev_addr, size)) {
++	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
+ 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+-		       (unsigned long long)*hwdev->dma_mask,
++		       (unsigned long long)dma_mask,
+ 		       (unsigned long long)dev_addr);
+ 
+ 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
 -- 
+1.5.5.GIT
+
