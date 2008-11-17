@@ -1,85 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbYKQQfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbYKQQiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbYKQQfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbYKQQfX
+	id S1753316AbYKQQiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYKQQiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:35:23 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:48764 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbYKQQfW convert rfc822-to-8bit (ORCPT
+	Mon, 17 Nov 2008 11:38:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38963 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751595AbYKQQiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:35:22 -0500
-Message-ID: <49219D36.5020801@cosmosbay.com>
-Date: Mon, 17 Nov 2008 17:35:02 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Mon, 17 Nov 2008 11:38:15 -0500
+Date: Mon, 17 Nov 2008 08:37:56 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] mm: evict streaming IO cache first
+In-Reply-To: <alpine.LFD.2.00.0811170802010.3468@nehalem.linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0811170830320.3468@nehalem.linux-foundation.org>
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081115210039.537f59f5.akpm@linux-foundation.org> <alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org> <49208E9A.5080801@redhat.com> <20081116204720.1b8cbe18.akpm@linux-foundation.org>
+ <20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com> <2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com> <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.0811170802010.3468@nehalem.linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: [Bug #11308] tbench regression on each kernel release from	2.6.22
- -&gt; 2.6.28
-References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera> <20081117090648.GG28786@elte.hu> <20081117.011403.06989342.davem@davemloft.net> <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu>
-In-Reply-To: <20081117161135.GE12081@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 17 Nov 2008 17:35:08 +0100 (CET)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+
+
+On Mon, 17 Nov 2008, Linus Torvalds wrote:
+> On Mon, 17 Nov 2008, KAMEZAWA Hiroyuki wrote:
+> > 
+> > How about resetting zone->recent_scanned/rotated to be some value calculated from
+> > INACTIVE_ANON/INACTIVE_FILE at some time (when the system is enough idle) ?
 > 
->>> It all looks like pure old-fashioned straight overhead in the 
->>> networking layer to me. Do we still touch the same global cacheline 
->>> for every localhost packet we process? Anything like that would 
->>> show up big time.
->> Yes we do, I find strange we dont see dst_release() in your NMI 
->> profile
->>
->> I posted a patch ( commit 5635c10d976716ef47ae441998aeae144c7e7387 
->> net: make sure struct dst_entry refcount is aligned on 64 bytes) (in 
->> net-next-2.6 tree) to properly align struct dst_entry refcounter and 
->> got 4% speedup on tbench on my machine.
-> 
-> Ouch, +4% from a oneliner networking change? That's a _huge_ speedup 
-> compared to the things we were after in scheduler land. A lot of 
-> scheduler folks worked hard to squeeze the last 1-2% out of the 
-> scheduler fastpath (which was not trivial at all). The _full_ 
-> scheduler accounts for only about 7% of the total system overhead here 
-> on a 16-way box...
+> .. or how about just considering the act of adding a new page to the LRU 
+> to be a "scan" event? IOW, "scanning" is not necessarily just an act of 
+> the VM looking for pages to free, but would be a more general "activity" 
+> meter.
 
-4% on my machine, but apparently my machine is sooooo special (see oprofile thread),
-so maybe its cpus have a hard time playing with a contended cache line.
+Another thing strikes me: it looks like the logic in "get_scan_ratio()" 
+has a tendency to get unbalanced - if we end up deciding that we should 
+scan a lot of anonymous pages, the scan numbers for anonymous pages will 
+go up, and we get even _more_ eager to scan those. Of course, "rotate" 
+events will then make us less likely again, but for streaming loads, you 
+wouldn't expect to see those at all.
 
-It definitly needs more testing on other machines.
+There seems to be another bug there wrt the "aging" - we age anon page 
+events and file page events independently, which sounds like it would make 
+the math totally nonsensical. We do that whole
 
-Maybe you'll discover patch is bad on your machines, this is why it's in
-net-next-2.6
+	anon / (anon + file)
 
-> 
-> So why should we be handling this anything but a plain networking 
-> performance regression/weakness? The localhost scalability bottleneck 
-> has been reported a _long_ time ago.
-> 
+thing, but since anon and file counts are aged independently, that "math" 
+is not math, it looks like a totally random number that has no meaning.
 
-struct dst_entry problem was already discovered a _long_ time ago
-and probably solved at this time.
+So instead of having two independent aging things, if we age one side, we 
+should age the other. No?
 
-(commit f1dd9c379cac7d5a76259e7dffcd5f8edc697d17
-Thu, 13 Mar 2008 05:52:37 +0000 (22:52 -0700)
-[NET]: Fix tbench regression in 2.6.25-rc1)
+But maybe I'm looking at it wrong. It doesn't seem sensible to me, but 
+maybe there's some deeper truth in there somewhere that I'm missing..
 
-Then, a gremlin came and broke the thing.
-
-They are many contended cache lines in the system, we can do our
-best to try to make them disappear. Thats not always possible.
-
-Another contended cache line is the rwlock in iptables.
-I remember Stephen had a patch to make the thing use RCU.
-
+		Linus
