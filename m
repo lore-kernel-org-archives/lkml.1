@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756339AbYKQFHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbYKQF0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756339AbYKQFHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 00:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbYKQFG1
+	id S1754921AbYKQF0c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 00:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYKQF0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 00:06:27 -0500
-Received: from ozlabs.org ([203.10.76.45]:46163 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752081AbYKQFGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 00:06:25 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Nov 2008 00:26:23 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53957 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750997AbYKQF0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 00:26:22 -0500
+Date: Mon, 17 Nov 2008 14:25:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Arjan van de Ven <arjan@infradead.org>, Dave Airlie <airlied@gmail.com>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       menage@google.com, jens.axboe@oracle.com, jack@suse.cz, jes@sgi.com,
+       linux-kernel@vger.kernel.org,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, dada1@cosmosbay.com,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
+Message-Id: <20081117142539.9b2c6bfc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4920F8C4.30209@linux.vnet.ibm.com>
+References: <491FA28B.2070003@cn.fujitsu.com>
+	<20081115205229.765f7ee3@infradead.org>
+	<20081116.001926.150424480.davem@davemloft.net>
+	<20081116105725.12458b13@infradead.org>
+	<21d7e9970811161339x174d6041x1622d478f8e4247e@mail.gmail.com>
+	<20081116135130.5e8b4e13@infradead.org>
+	<4920D238.8090905@cn.fujitsu.com>
+	<4920F8C4.30209@linux.vnet.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18720.59484.266300.486911@drongo.ozlabs.ibm.com>
-Date: Mon, 17 Nov 2008 14:43:24 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       David Miller <davem@davemloft.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
-       Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/7] ftrace, PPC: do not latency trace idle
-In-Reply-To: <20081116212515.093117788@goodmis.org>
-References: <20081116212428.938752312@goodmis.org>
-	<20081116212515.093117788@goodmis.org>
-X-Mailer: VM 8.0.11 under Emacs 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt writes:
+On Mon, 17 Nov 2008 10:23:24 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> When idle is called, interrupts are disabled, but the idle function
-> will still wake up on an interrupt. The problem is that the interrupt
-> disabled latency tracer will take this call to idle as a latency.
+> Lai Jiangshan wrote:
+> > Arjan van de Ven wrote:
+> >> On Mon, 17 Nov 2008 07:39:55 +1000
+> >>
+> >> I would go further than this.
+> >>
+> >> Make the code just use vmalloc(). Period.
+> >>
+> >> But then make vmalloc() smart and try do a direct mapping allocation
+> >> first, before falling back to a virtual mapping. (and based on size it
+> >> wouldn't even try it for just big things)
+> >>
+> >>
+> >>
+> > 
+> > Hi, Arjan van de Ven
+> > 
+> > (I'll rename simple_malloc/simple_free to kvmalloc/kvfree)
+> > 
 > 
-> This patch disables the latency tracing when going into idle.
+> I would prefer to find a way to say that one cannot select gfp_mask with this API.
+> 
+I think gfp_mask must be passed explicitly.
 
-Patch looks OK, but what is the connection with ftrace?
+Thanks,
+-Kame
 
-Paul.
