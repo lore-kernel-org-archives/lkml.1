@@ -1,78 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbYKQVyo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYKQVzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbYKQVyo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:54:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbYKQVyg
+	id S1754763AbYKQVzB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:55:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYKQVys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:54:36 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:4426 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbYKQVyf (ORCPT
+	Mon, 17 Nov 2008 16:54:48 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42483 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754321AbYKQVyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:54:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=wSH0plXb/fg5db4DzxUaGV1pQzQjeNsI2+Wy43SR8a9biH3W32hsFasI/lp44kb4B/
-         QiSWSTrgc1N/zsMA36W7iCzEwgwSKKJmjJC6eso3WNg+PcyvOe5odegEdTqK0krp75Zi
-         +s3lJh7JSqeRXtWvzoTyEd8C6mBpFnLK03aCw=
-Message-ID: <c384c5ea0811171354u5d6f5be6v857f92b1e75769c7@mail.gmail.com>
-Date: Mon, 17 Nov 2008 22:54:33 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: pci_map_sg() does not coalesce adjacent physical memory? x86
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 17 Nov 2008 16:54:47 -0500
+Date: Mon, 17 Nov 2008 23:54:44 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: adilger@sun.com, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       cl@linux-foundation.org, mpm@selenic.com, eduard.munteanu@linux360.ro
+Subject: [PATCH 1/4] fs: introduce bgl_lock_ptr()
+Message-ID: <Pine.LNX.4.64.0811172354030.18904@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-pci_map_sg() does not coalesce the scattergather list for me on x86.
-Is this expected? Documentation mentions that coalescing is typically
-done by pci_map_sg().
+As suggested by Andreas Dilger, introduce a bgl_lock_ptr() helper in
+<linux/blockgroup_lock.h> and add separate sb_bgl_lock() helpers to filesystem
+specific header files to break the hidden dependency to struct
+ext[234]_sb_info. Also, while at it, convert the macros to static inlines to
+try make up for all the times I broke Andrew Morton's tree.
 
-Manually traversing scatterlists that describe large user space
-allocations I found that on my system 25% reduction of list length can
-be achieved.
+Cc: Andreas Dilger <adilger@sun.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/ext4/ext4_sb.h               |    6 ++++++
+ include/linux/blockgroup_lock.h |    7 +++++--
+ include/linux/ext2_fs_sb.h      |    6 ++++++
+ include/linux/ext3_fs_sb.h      |    6 ++++++
+ 4 files changed, 23 insertions(+), 2 deletions(-)
 
-
-static int sgm_map_to_table(struct sg_mapping_t *sgm)
-{
-        int i, j = 0;
-        dma_addr_t addr = sg_dma_address(&sgm->sgl[0]);
-        unsigned int len = sg_dma_len(&sgm->sgl[0]);
-        dma_addr_t cont_addr = addr;
-        unsigned int cont_len = len;
-        for (i = 0; i < sgm->mapped_pages - 1; i++) {
-                dma_addr_t next = sg_dma_address(&sgm->sgl[i + 1]);
-                len = sg_dma_len(&sgm->sgl[i]);
-                printk(KERN_DEBUG "%04d: addr=0x%08x length=0x%08x\n",
-i, addr, len);
-                /* page i + 1 is non-contiguous with page i? */
-                if (next != addr + len) {
-                        /* TODO create entry here (we could overwrite i) */
-                        printk(KERN_DEBUG "%4d: cont_addr=0x%08x
-cont_len=0x%08x\n",
-                                j++, cont_addr, cont_len);
-                        cont_addr = next;
-                        cont_len = 0;
-                }
-                /* add page i + 1 to current contiguous block */
-                cont_len += len;
-                /* goto page i + 1 */
-                addr = next;
-        }
-        /* TODO create entry here  (we could overwrite i) */
-        printk(KERN_DEBUG "%04d: addr=0x%08x length=0x%08x\n", i, addr, len);
-        printk(KERN_DEBUG "%4d: cont_addr=0x%08x length=0x%08x\n",
-j++, cont_addr, cont_len);
-}
-
-Regards,
+diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+index 445fde6..b21f167 100644
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -146,4 +146,10 @@ struct ext4_sb_info {
+ 	struct flex_groups *s_flex_groups;
+ };
+ 
++static inline spinlock_t *
++sb_bgl_lock(struct ext4_sb_info *sbi, unsigned int block_group)
++{
++	return bgl_lock_ptr(&sbi->s_blockgroup_lock, block_group);
++}
++
+ #endif	/* _EXT4_SB */
+diff --git a/include/linux/blockgroup_lock.h b/include/linux/blockgroup_lock.h
+index 8607312..e44b88b 100644
+--- a/include/linux/blockgroup_lock.h
++++ b/include/linux/blockgroup_lock.h
+@@ -53,7 +53,10 @@ static inline void bgl_lock_init(struct blockgroup_lock *bgl)
+  * The accessor is a macro so we can embed a blockgroup_lock into different
+  * superblock types
+  */
+-#define sb_bgl_lock(sb, block_group) \
+-	(&(sb)->s_blockgroup_lock.locks[(block_group) & (NR_BG_LOCKS-1)].lock)
++static inline spinlock_t *
++bgl_lock_ptr(struct blockgroup_lock *bgl, unsigned int block_group)
++{
++	return &bgl->locks[(block_group) & (NR_BG_LOCKS-1)].lock;
++}
+ 
+ #endif
+diff --git a/include/linux/ext2_fs_sb.h b/include/linux/ext2_fs_sb.h
+index f273415..dc541f3 100644
+--- a/include/linux/ext2_fs_sb.h
++++ b/include/linux/ext2_fs_sb.h
+@@ -108,4 +108,10 @@ struct ext2_sb_info {
+ 	struct ext2_reserve_window_node s_rsv_window_head;
+ };
+ 
++static inline spinlock_t *
++sb_bgl_lock(struct ext2_sb_info *sbi, unsigned int block_group)
++{
++	return bgl_lock_ptr(&sbi->s_blockgroup_lock, block_group);
++}
++
+ #endif	/* _LINUX_EXT2_FS_SB */
+diff --git a/include/linux/ext3_fs_sb.h b/include/linux/ext3_fs_sb.h
+index b65f028..e024e38 100644
+--- a/include/linux/ext3_fs_sb.h
++++ b/include/linux/ext3_fs_sb.h
+@@ -83,4 +83,10 @@ struct ext3_sb_info {
+ #endif
+ };
+ 
++static inline spinlock_t *
++sb_bgl_lock(struct ext3_sb_info *sbi, unsigned int block_group)
++{
++	return bgl_lock_ptr(&sbi->s_blockgroup_lock, block_group);
++}
++
+ #endif	/* _LINUX_EXT3_FS_SB */
 -- 
-Leon
+1.5.4.3
+
