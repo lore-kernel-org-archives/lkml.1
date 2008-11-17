@@ -1,119 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbYKQWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbYKQWAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754416AbYKQWAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 17:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYKQWAV
+	id S1754926AbYKQWAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 17:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbYKQWAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 17:00:21 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56481 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbYKQWAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 17:00:20 -0500
-Date: Mon, 17 Nov 2008 22:59:50 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, David Miller <davem@davemloft.net>,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl, Stephen Hemminger <shemminger@vyatta.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: system_call() - Re: [Bug #11308] tbench regression on each kernel
-	release from 2.6.22 -&gt; 2.6.28
-Message-ID: <20081117215950.GA6398@elte.hu>
-References: <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com> <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org> <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu>
+	Mon, 17 Nov 2008 17:00:38 -0500
+Received: from monster.nessie.de ([84.200.20.120]:40497 "EHLO
+	monster.nessie.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbYKQWAh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 17:00:37 -0500
+X-Greylist: delayed 1252 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Nov 2008 17:00:37 EST
+Message-ID: <4921E49F.6040006@nessie.de>
+Date: Mon, 17 Nov 2008 22:39:43 +0100
+From: Michael Roth <mroth@nessie.de>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080927)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081117184951.GA5585@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: linux-kernel@vger.kernel.org
+Subject: patch: drivers/usb/serial/cp2101.c: New vendor/product ID
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------010001050505010300000906"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------010001050505010300000906
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Hello list,
 
-> 100.000000 total
-> ................
->   1.508888 system_call
+please, could somebody include this vendor/product-id into the kernel?
 
-that's an easy one:
+I'm a newbie to this list. Thanks for your patience.
 
-ffffffff8020be00:    97321 <system_call>:
-ffffffff8020be00:    97321 	0f 01 f8             	swapgs 
-ffffffff8020be03:    53089 	66 66 66 90          	xchg   %ax,%ax
-ffffffff8020be07:     1524 	66 66 90             	xchg   %ax,%ax
-ffffffff8020be0a:        0 	66 66 90             	xchg   %ax,%ax
-ffffffff8020be0d:        0 	66 66 90             	xchg   %ax,%ax
 
-ffffffff8020be10:     1511 <system_call_after_swapgs>:
-ffffffff8020be10:     1511 	65 48 89 24 25 18 00 	mov    %rsp,%gs:0x18
-ffffffff8020be17:        0 	00 00 
-ffffffff8020be19:        0 	65 48 8b 24 25 10 00 	mov    %gs:0x10,%rsp
-ffffffff8020be20:        0 	00 00 
-ffffffff8020be22:     1490 	fb                   	sti    
+Michael
 
-syscall entry instruction costs - unavoidable security checks, etc. - 
-hardware costs.
 
-But looking at this profile made me notice this detail:
+--------------010001050505010300000906
+Content-Type: text/plain;
+ name="cp2101.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="cp2101.patch"
 
-  ENTRY(system_call_after_swapgs)
+--- linux-2.6.27.6/drivers/usb/serial/cp2101.c.orig	2008-11-17 21:06:55.000000000 +0100
++++ linux-2.6.27.6/drivers/usb/serial/cp2101.c	2008-11-17 21:07:31.000000000 +0100
+@@ -85,6 +85,7 @@
+ 	{ USB_DEVICE(0x10C4, 0x8218) }, /* Lipowsky Industrie Elektronik GmbH, HARP-1 */
+ 	{ USB_DEVICE(0x10c4, 0x8293) }, /* Telegesys ETRX2USB */
+ 	{ USB_DEVICE(0x10C4, 0x8341) }, /* Siemens MC35PU GPRS Modem */
++	{ USB_DEVICE(0x10c4, 0x83a8) }, /* Amber Wireless AMB2560 */
+ 	{ USB_DEVICE(0x10C4, 0xEA60) }, /* Silicon Labs factory default */
+ 	{ USB_DEVICE(0x10C4, 0xEA61) }, /* Silicon Labs factory default */
+ 	{ USB_DEVICE(0x10C4, 0xF001) }, /* Elan Digital Systems USBscope50 */
 
-Combined with this alignment rule we have in 
-arch/x86/include/asm/linkage.h on 64-bit:
-
-  #ifdef CONFIG_X86_64
-  #define __ALIGN .p2align 4,,15
-  #define __ALIGN_STR ".p2align 4,,15"
-  #endif
-
-while it inserts NOP sequences, that is still +13 bytes of excessive, 
-stupid, and straight in our syscall entry path alignment padding.
-
-system_call_after_swapgs is an utter slowpath in any case. The interim 
-fix is below - although it needs more thinking and probably should be 
-done via an ENTRY_UNALIGNED() method as well, for slowpath targets.
-
-With that we get this much nicer entry sequence:
-
-ffffffff8020be00:   544323 <system_call>:
-ffffffff8020be00:   544323 	0f 01 f8             	swapgs 
-
-ffffffff8020be03:   197954 <system_call_after_swapgs>:
-ffffffff8020be03:   197954 	65 48 89 24 25 18 00 	mov    %rsp,%gs:0x18
-ffffffff8020be0a:        0 	00 00 
-ffffffff8020be0c:     6578 	65 48 8b 24 25 10 00 	mov    %gs:0x10,%rsp
-ffffffff8020be13:        0 	00 00 
-ffffffff8020be15:        0 	fb                   	sti    
-ffffffff8020be16:        0 	48 83 ec 50          	sub    $0x50,%rsp
-
-And we should probably weaken the generic code alignment rules as well 
-on x86. I'll do some measurements of it.
-
-	Ingo
-
-Index: linux/arch/x86/kernel/entry_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S
-+++ linux/arch/x86/kernel/entry_64.S
-@@ -315,7 +315,8 @@ ENTRY(system_call)
- 	 * after the swapgs, so that it can do the swapgs
- 	 * for the guest and jump here on syscall.
- 	 */
--ENTRY(system_call_after_swapgs)
-+.globl system_call_after_swapgs
-+system_call_after_swapgs:
- 
- 	movq	%rsp,%gs:pda_oldrsp 
- 	movq	%gs:pda_kernelstack,%rsp
+--------------010001050505010300000906--
