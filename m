@@ -1,142 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbYKQVna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbYKQVnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbYKQVna (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYKQVnW
+	id S1755029AbYKQVnq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbYKQVnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:43:22 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:16847 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbYKQVnV (ORCPT
+	Mon, 17 Nov 2008 16:43:31 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53497 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754251AbYKQVna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:43:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding
-         :sender;
-        b=xt6hG8cZFR53cBTm5wtoBPe5WGs3N3n+FXsUyDqA1TyQJ2iFJunHqvpZq8buWO6r+H
-         dHsZt5/e9LrlZa1f4HWDNFMIDRDuBD42TMhgD5gYs4D9Fs/cfovjj1jwGeLOGqbHyLJz
-         npLlf7/P5iaJ79GM0zAlWFTcekwy3gbvtPf9A=
-Message-ID: <4921E574.3090602@tuffmail.co.uk>
-Date: Mon, 17 Nov 2008 21:43:16 +0000
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+	Mon, 17 Nov 2008 16:43:30 -0500
+Date: Mon, 17 Nov 2008 13:42:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+       benh@kernel.crashing.org, linuxppc-dev@ozlabs.org, mingo@elte.hu,
+       tglx@linutronix.de, linux-mm@kvack.org
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+In-Reply-To: <20081117133137.616cf287.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0811171337400.18283@nehalem.linux-foundation.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <20081117130856.92e41cd3.akpm@linux-foundation.org> <alpine.LFD.2.00.0811171320330.18283@nehalem.linux-foundation.org> <20081117133137.616cf287.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: csnook@redhat.com, atl1-devel@lists.sourceforge.net
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: atl2: don't mess up irq on suspend/resume (probably msi only)
-References: <49201401.1060600@tuffmail.co.uk>
-In-Reply-To: <49201401.1060600@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> According to Documentation/power/pci.txt, the correct suspend sequence is:
->
->     A reference implementation
->     -------------------------
->     .suspend()
->     {
->         /* driver specific operations */
->
->         /* Disable IRQ */
->         free_irq();
->         /* If using MSI */
->         pci_disable_msi();
->
->         pci_save_state();
->         pci_enable_wake();
->         /* Disable IO/bus master/irq router */
->         pci_disable_device();
->         pci_set_power_state(pci_choose_state());
->     }
->
->
-> Whereas atl2 calls pci_save_state() *before* free_irq() and
-> pci_disable_msi().  Hilarity ensues on resume as pci_restore_state()
-> restores a state with MSI enabled; the atl2 resume handler then enables
-> msi for the second time.  Looking at /proc/interrupts, it seems to leak
-> an irq each time this happens.  (I had 6 entries for "eth0" by the time
-> I noticed this).  It also triggers a warning.
->
-> I was able to avoid the warning + leak by re-ordering the resume
-> method.  Patch attached - it's just a few lines, I hope that's all
-> that's necessary.
->   
 
-Don't listen to me.  The problem went away because when I was testing my
-patch, I plugged the ethernet in and actually used it.  My patch doesn't
-seem to fix anything.
 
-So I now have the steps to reproduce this warning: remove the ethernet
-cable and suspend.
+On Mon, 17 Nov 2008, Andrew Morton wrote:
+> 
+> Yup.  That being said, the younger me did assert that "this is a neater
+> implementation anyway".  If we can implement those loops without
+> needing those on-stack temporary arrays then things probably are better
+> overall.
 
-Also, I was speaking rubbish because the warning isn't on the resume
-path.  It seems to be when network-manager re-opens the device on resume.
+Sure, if it actually ends up being nicer, I'll not argue with it. But from 
+an L1 I$ standpoint (and I$ is often very important, especially for kernel 
+loads where loops are fairly rare), it's often _much_ better to do two 
+"tight" loops over two subsystems (filesystem and block layer) than it is 
+to do one bigger loop that contains both. If the L1 can fit both subsystem 
+paths, you're fine - but if not, you may get a lot more misses.
 
-I'll have another look for possible culprits.  Hints appreciated :).
+So it's often nice if you can "stage" things so that you do a cluster of 
+calls to one area, followed by a cluster of calls to another, rather than 
+mix it up. 
 
-> ------------[ cut here ]------------
-> WARNING: at drivers/pci/msi.c:570 pci_enable_msi+0x3a/0x1cd()
-> Modules linked in: cpufreq_stats freq_table nls_iso8859_1 nls_cp437 vfat fat rfkill_input ae
-> Pid: 2620, comm: NetworkManager Tainted: G        W  2.6.28-rc4eeepc #136
-> Call Trace:
->  [<c011b89a>] warn_on_slowpath+0x40/0x59
->  [<c023df15>] raw_pci_read+0x4d/0x55
->  [<c023dff3>] pci_read+0x1c/0x21
->  [<c01bcd81>] __pci_find_next_cap_ttl+0x44/0x70
->  [<c01bce86>] __pci_find_next_cap+0x1a/0x1f
->  [<c01bcef9>] pci_find_capability+0x28/0x2c
->  [<c01c4144>] pci_msi_check_device+0x53/0x62
->  [<c01c49c2>] pci_enable_msi+0x3a/0x1cd
->  [<e019f17b>] atl2_write_phy_reg+0x40/0x5f [atl2]
->  [<c01061b1>] dma_generic_alloc_coherent+0x0/0xd7
->  [<e019f107>] atl2_request_irq+0x15/0x49 [atl2]
->  [<e01a1481>] atl2_open+0x20b/0x297 [atl2]
->  [<c024a35c>] dev_open+0x62/0x91
->  [<c0248b9a>] dev_change_flags+0x93/0x141
->  [<c024f308>] do_setlink+0x238/0x2d5
->  [<c02501b2>] rtnl_setlink+0xa9/0xbf
->  [<c0297f0c>] mutex_lock+0xb/0x19
->  [<c024ffa7>] rtnl_dump_ifinfo+0x0/0x69
->  [<c0250109>] rtnl_setlink+0x0/0xbf
->  [<c024fe42>] rtnetlink_rcv_msg+0x185/0x19f
->  [<c0240fd1>] sock_rmalloc+0x23/0x57
->  [<c024fcbd>] rtnetlink_rcv_msg+0x0/0x19f
->  [<c0259457>] netlink_rcv_skb+0x2d/0x71
->  [<c024fcb7>] rtnetlink_rcv+0x14/0x1a
->  [<c025929e>] netlink_unicast+0x184/0x1e4
->  [<c025992a>] netlink_sendmsg+0x233/0x240
->  [<c023f405>] sock_sendmsg+0xb7/0xd0
->  [<c0129131>] autoremove_wake_function+0x0/0x2b
->  [<c0129131>] autoremove_wake_function+0x0/0x2b
->  [<c0147796>] mempool_alloc+0x2d/0x9e
->  [<c020c923>] scsi_pool_alloc_command+0x35/0x4f
->  [<c0297f0c>] mutex_lock+0xb/0x19
->  [<c028e867>] unix_stream_recvmsg+0x357/0x3e2
->  [<c01b81c9>] copy_from_user+0x23/0x4f
->  [<c02452ea>] verify_iovec+0x3e/0x6c
->  [<c023f5ab>] sys_sendmsg+0x18d/0x1f0
->  [<c023ffa8>] sys_recvmsg+0x146/0x1c8
->  [<c0240016>] sys_recvmsg+0x1b4/0x1c8
->  [<c0118f48>] __wake_up+0xf/0x15
->  [<c02586cd>] netlink_table_ungrab+0x17/0x19
->  [<c01b83ba>] copy_to_user+0x25/0x3b
->  [<c023fe4a>] move_addr_to_user+0x50/0x68
->  [<c0240266>] sys_getsockname+0x6f/0x9a
->  [<c0240280>] sys_getsockname+0x89/0x9a
->  [<c015046a>] do_wp_page+0x3ae/0x41a
->  [<c0151525>] handle_mm_fault+0x4c5/0x540
->  [<c02405d0>] sys_socketcall+0x176/0x1b0
->  [<c010376d>] sysenter_do_call+0x12/0x21
-> ---[ end trace ad80134e35e20aad ]---
->
->
->
->
->   
+But numbers talk. And code cleanliness. If somebody has numbers that the 
+code size actually goes down for example, or the code is just more 
+readable, micro-optimizing cache patterns isn't worth it.
 
+			Linus
