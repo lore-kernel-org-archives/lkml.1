@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYKQRKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753947AbYKQRMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbYKQRKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 12:10:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbYKQRKb
+	id S1753947AbYKQRMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 12:12:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYKQRME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 12:10:31 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45677 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbYKQRKa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 12:10:30 -0500
-Date: Mon, 17 Nov 2008 18:10:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tejun Heo <htejun@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
-       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Fix kunmap() argument in sg_miter_stop
-Message-ID: <20081117171005.GA25729@elte.hu>
-References: <20081117081117.GD26778@kernel.dk> <20081117082201.GB24603@elte.hu> <20081117083022.GE26778@kernel.dk> <20081117085046.GE28786@elte.hu> <20081117085807.GF26778@kernel.dk> <20081117093425.GG26778@kernel.dk> <20081117094147.GJ28786@elte.hu> <20081117094551.GI26778@kernel.dk> <20081117111350.GJ26778@kernel.dk> <4921A4F3.1030309@goop.org>
+	Mon, 17 Nov 2008 12:12:04 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:25723 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752317AbYKQRMD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 12:12:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=R5yI5HzNKsqvUvOIkcNpy7z5txeJzLNaomQocBSP3fI6y/n0AUzrOcaAcfgx/RtjGS
+         zLU55xOJkmn+zHiapyueEzwDR+/rx3+FADPxyWQurUfVKjSVIUI4Wv6FqZWyRwEgr37l
+         7rhK0kq8L9wkXjoLf8pXz+Aa98AcXBuMqVg0Y=
+Date: Mon, 17 Nov 2008 20:11:57 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix wakeup_cpu with numaq/es7000 v2
+Message-ID: <20081117171157.GB7326@localhost>
+References: <491FDE2A.1010809@kernel.org> <49200031.2040701@kernel.org> <20081117165224.GH12081@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4921A4F3.1030309@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+In-Reply-To: <20081117165224.GH12081@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Ingo Molnar - Mon, Nov 17, 2008 at 05:52:24PM +0100]
+| 
+| * Yinghai Lu <yinghai@kernel.org> wrote:
+| 
+| > Impact: fix wakeup path with numaq and es7000
+| 
+| applied	to tip/x86/quirks, thanks Yinghai!
+| 
+| A couple of comments:
+| 
+| > +static inline void inquire_remote_apic(int apicid)
+| > +{
+| > +	if (apic_verbosity >= APIC_DEBUG)
+| > +		__inquire_remote_apic(apicid);
+| > +}
+|
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Btw, Ingo, Yinghai,
 
-> Jens Axboe wrote:
->> One exception is a real bug that this turned up. The XEN balloon driver
->> passes the virt address into kunmap() as well, so that part should go in
->> for 2.6.28. I've CC'ed Jeremy.
->>   
->
-> Oops.  Acked-by: Jeremy Fitzhardinge  <jeremy.fitzhardinge@citrix.com>
+it's a bit weird but I found that we use apic_verbosity
+here to _do_ something (ie touching circuit) but on any
+other cases apic_verbosity is just a additional logging
+filter so -- what the initial apic_verbosity purpose was?
+If it's just a logging filter (to which I'm more biased)
+this case is plain wrong. But if apic_verbosity is not
+like this -- then it's fine. Since I was not initial author
+of the code -- I'm asking you :)
 
-Could you please send a changelogged fix for x86/urgent, to make sure 
-this shows up in .28?
-
-	Ingo
+		- Cyrill -
