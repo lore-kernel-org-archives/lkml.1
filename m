@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbYKQHVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYKQHVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbYKQHVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYKQHUz
+	id S1755908AbYKQHVk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYKQHU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:20:55 -0500
-Received: from kroah.org ([198.145.64.141]:38111 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:20:56 -0500
+Received: from kroah.org ([198.145.64.141]:38132 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751878AbYKQHUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752114AbYKQHUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 17 Nov 2008 02:20:54 -0500
-Date: Sun, 16 Nov 2008 23:14:08 -0800
+Date: Sun, 16 Nov 2008 23:14:13 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Kay Sievers <kay.sievers@vrfy.org>,
-       Neil Brown <neilb@suse.de>, Dan Williams <dan.j.williams@intel.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 01/46] touch_mnt_namespace when the mount flags change
-Message-ID: <20081117071408.GB29522@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>,
+       Holger Macht <hmacht@novell.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 02/46] iwlagn: avoid sleep in softirq context
+Message-ID: <20081117071413.GC29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="touch_mnt_namespace-when-the-mount-flags-change.patch"
+Content-Disposition: inline; filename="iwlagn-avoid-sleep-in-softirq-context.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,39 +40,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Williams <dan.j.williams@intel.com>
+From: John W. Linville <linville@tuxdriver.com>
 
-commit 0e55a7cca4b66f625d67b292f80b6a976e77c51b upstream
+commit 964d2777438bf7687324243d38ade538d9bbfe3c upstream.
 
-Daemons that need to be launched while the rootfs is read-only can now
-poll /proc/mounts to be notified when their O_RDWR requests may no
-longer end in EROFS.
+__ieee80211_tasklet_handler -> __ieee80211_rx ->
+	__ieee80211_rx_handle_packet -> ieee80211_invoke_rx_handlers ->
+	ieee80211_rx_h_decrypt -> ieee80211_crypto_tkip_decrypt ->
+	ieee80211_tkip_decrypt_data -> iwl4965_mac_update_tkip_key ->
+	iwl_scan_cancel_timeout -> msleep
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Neil Brown <neilb@suse.de>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Ooops!
+
+Avoid the sleep by changing iwl_scan_cancel_timeout with
+iwl_scan_cancel and simply returning on failure if the scan persists.
+This will cause hardware decryption to fail and we'll handle a few more
+frames with software decryption.
+
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Cc: Holger Macht <hmacht@novell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/namespace.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/net/wireless/iwlwifi/iwl-agn.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1553,8 +1553,13 @@ static noinline int do_remount(struct na
- 	if (!err)
- 		nd->path.mnt->mnt_flags = mnt_flags;
- 	up_write(&sb->s_umount);
--	if (!err)
-+	if (!err) {
- 		security_sb_post_remount(nd->path.mnt, flags, data);
-+
-+		spin_lock(&vfsmount_lock);
-+		touch_mnt_namespace(nd->path.mnt->mnt_ns);
-+		spin_unlock(&vfsmount_lock);
-+	}
- 	return err;
- }
+--- a/drivers/net/wireless/iwlwifi/iwl-agn.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+@@ -3275,7 +3275,11 @@ static void iwl4965_mac_update_tkip_key(
+ 		return;
+ 	}
  
+-	iwl_scan_cancel_timeout(priv, 100);
++	if (iwl_scan_cancel(priv)) {
++		/* cancel scan failed, just live w/ bad key and rely
++		   briefly on SW decryption */
++		return;
++	}
+ 
+ 	key_flags |= (STA_KEY_FLG_TKIP | STA_KEY_FLG_MAP_KEY_MSK);
+ 	key_flags |= cpu_to_le16(keyconf->keyidx << STA_KEY_FLG_KEYID_POS);
 
 -- 
