@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbYKQTFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbYKQTFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbYKQTFS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYKQTFG
+	id S1753374AbYKQTFq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:05:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751527AbYKQTFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:05:06 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:34153 "EHLO e8.ny.us.ibm.com"
+	Mon, 17 Nov 2008 14:05:37 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51921 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbYKQTFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:05:03 -0500
-Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
+	id S1751331AbYKQTFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 14:05:36 -0500
+Subject: Re: [PATCH 3/4] integrity: IMA as an integrity service provider
 From: Mimi Zohar <zohar@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, jmorris@namei.org, hch@infradead.org,
        viro@ZenIV.linux.org.uk, safford@watson.ibm.com,
        serue@linux.vnet.ibm.com, zohar@us.ibm.com
-In-Reply-To: <20081114141510.6f04404d.akpm@linux-foundation.org>
+In-Reply-To: <20081114141515.325f6989.akpm@linux-foundation.org>
 References: <cover.1226547084.git.zohar@linux.vnet.ibm.com>
-	 <9395c0a4110469d19100084664900789c34ebd42.1226547084.git.zohar@linux.vnet.ibm.com>
-	 <20081114141510.6f04404d.akpm@linux-foundation.org>
+	 <6ce62b4aac47ea9b2189aa5b6149008b99324c34.1226547085.git.zohar@linux.vnet.ibm.com>
+	 <20081114141515.325f6989.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 17 Nov 2008 14:04:41 -0500
-Message-Id: <1226948681.2927.29.camel@localhost.localdomain>
+Date: Mon, 17 Nov 2008 14:05:14 -0500
+Message-Id: <1226948714.2927.30.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -30,127 +30,81 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Fri, 2008-11-14 at 14:15 -0800, Andrew Morton wrote: 
-> On Wed, 12 Nov 2008 22:47:12 -0500
+> On Wed, 12 Nov 2008 22:47:13 -0500
 > Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
 > 
-> > This version resolves the merge issues resulting from the removal
-> > of the nameidata parameter to inode_permission(), by moving the
-> > integrity_inode_permission() call from inode_permission() to
-> > may_open(), and renaming the hook to integrity_nameidata_check().
-> > The nameidata is needed in order to open and read the file, so
-> > that the file can be hashed(a cryptographically strong checksum.)
+> > This is a re-release of Integrity Measurement Architecture(IMA) as an
+> > independent Linunx Integrity Module(LIM) service provider.
 > > 
-> > This patch also fixes the template locking, preventing the template
-> > from being freed while being used.
+> > As a LIM integrity provider, IMA implements the new LIM must_measure(),
+> > collect_measurement(), store_measurement(), and display_template() API
+> > calls. The store_measurement() call supports two types of data, IMA
+> > (i.e. file data) and generic template data.
 > > 
-> > This patch is a redesign of the integrity framework, which address a
-> > number of issues, including
-> >    - generalizing the measurement API beyond just inode measurements.
-> >    - separation of the measurement into distinct collection, appraisal,
-> >      and commitment phases, for greater flexibility.
+> > IMA provides hardware (TPM) based measurement and attestation for both
+> > files and other types of template measurements. As the Trusted Computing
+> > (TPM) model requires, IMA measures all files before they are accessed
+> > in any way (on the bprm_check_integrity, nameidata_check_integrity,
+> > file_mmap hooks), and commits the measurements to the TPM.  In addition,
+> > IMA maintains a list of these hash values, which can be used to validate
+> > the aggregate PCR value.  The TPM can sign these measurements, and thus
+> > the system can prove to itself and to a third party these measurements
+> > in a way that cannot be circumvented by malicious or compromised software.
 > > 
-> > Extended Verification Module(EVM) and the Integrity Measurement
-> > Architecture(IMA) were originally implemented as an LSM module.  Based
-> > on discussions on the LSM mailing list, a decision was made that the
-> > LSM hooks should only be used to enforce mandatory access control
-> > decisions and a new set of hooks should be defined specifically for
-> > integrity.
+> > When store_measurement() is called for the IMA type of data, the file
+> > measurement and the file name hint are used to form an IMA template.
+> > IMA then calculates the IMA template measurement(hash) and submits it
+> > to the TPM chip for inclusion in one of the chip's Platform Configuration
+> > Registers (PCR).
 > > 
-> > EVM/IMA was limited to verifying and measuring a file's (i.e. an inode)
-> > integrity and the metadata associated with it.  Current research is
-> > looking into other types of integrity measurements. (i.e. "Linux kernel
-> > integrity measurement using contextual inspection",  by Peter A. Loscocco,
-> > Perry W. Wilson, J. Aaron Pendergrass, C. Durward McDonell,
-> > http://doi.acm.org/10.1145/1314354.1314362). As a result, a requirement
-> > of the new integrity framework is support for different types of integrity
-> > measurements.
-> > This patch provides an integrity framework(api and hooks) and placement
-> > of the integrity hooks in the appropriate places in the fs directory.
-> > Collecting, appraising, and storing of file and other types of integrity
-> > data is supported.  Multiple integrity templates, which implement the
-> > integrity API, may register themselves.  For now, only a single integrity
-> > provider can register itself for the integrity hooks. (Support for multiple
-> > providers registering themselves for the integrity hooks would require
-> > some form of stacking.)
+> > When store_measurement() is called for generic template data, IMA
+> > calculates the measurement(hash) of the template data, and submits
+> > the template measurement to the TPM chip for inclusion in one of the
+> > chip's Platform Configuration Registers(PCR).
 > > 
-> > The six integrity hooks are:
-> >    nameidata_check_integrity, inode_alloc_integrity, inode_free_integrity,
-> >    bprm_check_integrity, file_free_integrity, file_mmap
+> > In order to view the contents of template data through securityfs, the
+> > template_display() function must be defined in the registered
+> > template_operations.  In the case of the IMA template, the list of
+> > file names and files hashes submitted can be viewed through securityfs.
 > > 
-> > The five integrity API calls provided are:
-> >    integrity_must_measure, integrity_collect_measurement,
-> >    integrity_appraise_measurement, integrity_store_measurement,
-> >    and integrity_display_template.
+> > As mentioned above, IMA maintains a list of hash values of executables
+> > and other sensitive system files loaded into the run-time of the system.
+> > Our work has shown that requests for integrity appraisal and measurement
+> > need to be based on knowledge of the filesystem, requiring the system
+> > to either be labeled with integrity data or depend on the existent LSM
+> > security labels.  The previous set of integrity patches modified the LSM
+> > modules to be integrity context aware, meaning that the LSM modules made
+> > integrity data/metadata appraisal and measurement API calls based on
+> > an understanding of the LSM security labels.  Both of the LSM maintainers
+> > felt that the changes were too intrusive and that integrity enforcement
+> > should be made by the integrity provider, not the LSM module.
 > > 
-> > The type of integrity data being collected, appraised, stored, or
-> > displayed is template dependent.
+> > To address these concerns, Stephen Smalley suggested using the
+> > security_audit_rule_match(), renamed to security_filter_rule_match(), to
+> > define LSM specific integrity measurement policy rules, in lieu of
+> > modifying the LSM modules.  In the current set of patches, the integrity
+> > API calls can be made either by IMA, based on an LSM specific integrity
+> > policy, or by an integrity context aware LSM.
 > > 
-> >
 > > ...
 > >
-> > +int integrity_register_template(const char *template_name,
-> > +				const struct template_operations *template_ops)
+> > +static void ima_add_boot_aggregate(void)
 > > +{
-> > +	int template_len;
-> > +	struct template_list_entry *entry;
+> > +	/* cumulative sha1 over tpm registers 0-7 */
+> > +	struct ima_measure_entry *entry;
+> > +	size_t count;
+> > +	int err;
 > > +
-> > +	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
-> > +	if (!entry)
-> > +		return -ENOMEM;
-> > +	INIT_LIST_HEAD(&entry->template);
-> > +
-> > +	atomic_set(&entry->refcount, 1);
-> > +	template_len = strlen(template_name);
-> > +	if (template_len > TEMPLATE_NAME_LEN_MAX) {
+> > +	/* create new entry for boot aggregate */
+> > +	entry = kzalloc(sizeof(*entry), GFP_ATOMIC);
 > 
-> It would be much neater to perform this check before running kzalloc().
-
-Yes, will be moved in next patch set.
-
-> > +		kfree(entry);
-> > +		return -EINVAL;
-> > +	}
-> > +	strcpy(entry->template_name, template_name);
-> > +	entry->template_ops = template_ops;
-> > +
-> > +	mutex_lock(&integrity_templates_mutex);
-> > +	list_add_rcu(&entry->template, &integrity_templates);
-> > +	mutex_unlock(&integrity_templates_mutex);
-> > +	synchronize_rcu();
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +EXPORT_SYMBOL_GPL(integrity_register_template);
+> This uses GFP_ATOMIC, but crypto_alloc_hash() (called later) uses
+> GFP_KERNEL.
 > 
-> someone forgot to run checkpatch.
+> If this _had_ to be GFP_ATOMIC then you have a bug.
 
-There's a couple of things like this where Lindent "fixes", and then
-checkpatch complains.  In this case though, Lindent has been fixed. :-)
+Sorry, thought I fixed this.
 
-> >
-> > ...
-> >
-> > +static inline void tget(struct template_list_entry *entry)
-> > +{
-> > +	if (!entry)
-> > +		return;
-> > +	atomic_inc(&entry->refcount);
-> > +}
-> > +
-> > +static inline void tput(struct template_list_entry *entry)
-> > +{
-> > +	if (!entry)
-> > +		return;
-> > +	if (atomic_dec_and_test(&entry->refcount))
-> > +		kfree(entry);
-> > +}
-> 
-> Do these _really_ need to test for a NULL pointer?  It's an extra
-> test-n-branch in many fastpaths.  It would be better to avoid doing
-> this here, if poss.
+> Otherwise, please use the much more reliable GFP_KERNEL here.
 
-Cleaned up the callers to avoid requiring the extra test.
-
-Mimi
 
