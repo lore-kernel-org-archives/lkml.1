@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYKQAjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbYKQAwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbYKQAjj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 19:39:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbYKQAjV
+	id S1755487AbYKQAwm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 19:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752176AbYKQAwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 19:39:21 -0500
-Received: from ox1.aei.mpg.de ([194.94.224.6]:40734 "EHLO ox1.aei.mpg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754692AbYKQAjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 19:39:20 -0500
-Date: Mon, 17 Nov 2008 01:39:41 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Tomas Winkler <tomasw@gmail.com>
-Cc: reinette chatre <reinette.chatre@intel.com>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>
-Subject: Re: iwlagn driver segfault in 2.6.28-rc3
-Message-ID: <20081117003941.GA21367@localhost.aei.mpg.de>
-References: <20081111143410.GA4401@ics.muni.cz> <1226560041.1115.945.camel@rc-desk> <20081116120621.GA3937@localhost.aei.mpg.de> <1ba2fa240811160429ld8cc080s7e023b0398eeda08@mail.gmail.com> <20081116125148.GA16746@localhost.aei.mpg.de> <1ba2fa240811161554r45d98ae7h3a37ae78c332a4dd@mail.gmail.com>
+	Sun, 16 Nov 2008 19:52:32 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39627 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbYKQAwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 19:52:31 -0500
+Message-ID: <4920BF62.10700@zytor.com>
+Date: Sun, 16 Nov 2008 16:48:34 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1ba2fa240811161554r45d98ae7h3a37ae78c332a4dd@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>	 <20081110094033.GL22392@elte.hu>	 <20081110015511.453a801e.akpm@linux-foundation.org>	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>	 <491C8B38.9060901@kernel.org>	 <20081113131850.d94fb229.akpm@linux-foundation.org> <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org> <4920B15E.6090200@zytor.com> <4920B2A4.4040900@kernel.org> <4920B3E3.4050707@zytor.com> <4920B911.7060504@kernel.org> <4920BA3A.5090100@zytor.com> <4920BCA8.6080600@kernel.org>
+In-Reply-To: <4920BCA8.6080600@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 17.Nov'08 at  1:54:16 +0200, Tomas Winkler wrote:
-[...]
-> Can you please try this one (might be white space broken, just pasted in)
-
-Sure, I've already applied it by hand and will start testing it right away.
-
-But it will take many days until I can report back about it, because
-this oops happened only two times in one month or so.
-
-Thanks for taking a look at it, the last time you did my regression
-got fixed :-)
-
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-sta.c
-> b/drivers/net/wireless/iwlwifi/iwl-sta.c
-> index 61797f3..d848c63 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-sta.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-sta.c
-> @@ -734,6 +734,12 @@ int iwl_remove_dynamic_key(struct iwl_priv *priv,
->                 return 0;
->         }
+Yinghai Lu wrote:
+> H. Peter Anvin wrote:
+>> It would, however, be a good idea if IOAPICs had their numbers assigned
+>> at detection time, as opposed to when the interrupt is registered, thus
+>> making it a stable number for a single boot, at least.  The same is
+>> probably true for MSI(-X); we could assign it a range of numbers when
+>> the device is enumerated (as opposed to when a driver is activated), but
+>> I don't know to what extent that is likely to cause more troubles than
+>> it solves.
 > 
-> +       if (WARN(priv->stations[sta_id].sta.key.key_offset ==
-> WEP_INVALID_OFFSET,
-> +               "Removing wrong key %d 0x%x\n", keyconf->keyidx, key_flags)) {
-> +               spin_unlock_irqrestore(&priv->sta_lock, flags);
-> +               return 0;
-> +       }
-> +
->         if (!test_and_clear_bit(priv->stations[sta_id].sta.key.key_offset,
->                 &priv->ucode_key_table))
->                 IWL_ERROR("index %d not used in uCode key table.\n",
+> how to find the range for MSIX, one device/func may need a lot. for example, niu driver could use 20 MSI-X for one port. (one dev/func)
+> some could use 256. we only know that when driver is loaded.
+> So as Eric said, just try to use 12bits (4k range) for them.
 > 
-> Thanks
-> Tomas
-> 
+
+You can know how many vectors are exported in generic code.  However,
+using 4k per should be fine.
+
+	-hpa
