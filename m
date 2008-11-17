@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbYKQHYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYKQHWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756625AbYKQHYh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYKQHVH
+	id S1756408AbYKQHWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:22:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYKQHU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:07 -0500
-Received: from kroah.org ([198.145.64.141]:38249 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752391AbYKQHU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 17 Nov 2008 02:20:57 -0500
-Date: Sun, 16 Nov 2008 23:14:54 -0800
+Received: from kroah.org ([198.145.64.141]:38190 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751630AbYKQHUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:20:54 -0500
+Date: Sun, 16 Nov 2008 23:14:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 11/46] ACPI: avoid empty file name in sysfs
-Message-ID: <20081117071454.GL29522@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Eilon Greenstein <eilong@broadcom.com>,
+       "David S. Miller" <davem@davemloft.net>, Alex Chiang <achiang@hp.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 05/46] bnx2x: Removing the PMF indication when unloading
+Message-ID: <20081117071429.GF29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-avoid-empty-file-name-in-sysfs.patch"
+Content-Disposition: inline; filename="bnx2x-removing-the-pmf-indication-when-unloading.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,77 +41,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Peter Gruber <nokos@gmx.net>
+From: Eilon Greenstein <eilong@broadcom.com>
 
-commit 4feba70a2c1a1a0c96909f657f48b2e11e682370 upstream.
+commit 9a0354405feb0f8bd460349a93db05e4cca8d166 upstream.
 
-Since commit bc45b1d39a925b56796bebf8a397a0491489d85c acpi tables are
-allowed to have an empty signature and /sys/firmware/acpi/tables uses the
-signature as filename.  Applications using naive recursion through /sys
-loop forever.  A possible solution would be: (replacing the zero length
-filename with the string "NULL")
+When the PMF flag is set, the driver can access the HW freely. When the
+driver is unloaded, it should not access the HW. The problem caused fatal
+errors when "ethtool -i" was called after the calling instance was unloaded
+and another instance was already loaded
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11539
-
-Acked-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Eilon Greenstein <eilong@broadcom.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Alex Chiang <achiang@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/system.c |   25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+ drivers/net/bnx2x_main.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/acpi/system.c
-+++ b/drivers/acpi/system.c
-@@ -78,9 +78,15 @@ static ssize_t acpi_table_show(struct ko
- 	    container_of(bin_attr, struct acpi_table_attr, attr);
- 	struct acpi_table_header *table_header = NULL;
- 	acpi_status status;
-+	char name[ACPI_NAME_SIZE];
-+
-+	if (strncmp(table_attr->name, "NULL", 4))
-+		memcpy(name, table_attr->name, ACPI_NAME_SIZE);
-+	else
-+		memcpy(name, "\0\0\0\0", 4);
+--- a/drivers/net/bnx2x_main.c
++++ b/drivers/net/bnx2x_main.c
+@@ -6480,6 +6480,7 @@ load_int_disable:
+ 	bnx2x_free_irq(bp);
+ load_error:
+ 	bnx2x_free_mem(bp);
++	bp->port.pmf = 0;
  
- 	status =
--	    acpi_get_table(table_attr->name, table_attr->instance,
-+	    acpi_get_table(name, table_attr->instance,
- 			   &table_header);
- 	if (ACPI_FAILURE(status))
- 		return -ENODEV;
-@@ -95,21 +101,24 @@ static void acpi_table_attr_init(struct 
- 	struct acpi_table_header *header = NULL;
- 	struct acpi_table_attr *attr = NULL;
+ 	/* TBD we really need to reset the chip
+ 	   if we want to recover from this */
+@@ -6790,6 +6791,7 @@ unload_error:
+ 	/* Report UNLOAD_DONE to MCP */
+ 	if (!BP_NOMCP(bp))
+ 		bnx2x_fw_command(bp, DRV_MSG_CODE_UNLOAD_DONE);
++	bp->port.pmf = 0;
  
--	memcpy(table_attr->name, table_header->signature, ACPI_NAME_SIZE);
-+	if (table_header->signature[0] != '\0')
-+		memcpy(table_attr->name, table_header->signature,
-+			ACPI_NAME_SIZE);
-+	else
-+		memcpy(table_attr->name, "NULL", 4);
- 
- 	list_for_each_entry(attr, &acpi_table_attr_list, node) {
--		if (!memcmp(table_header->signature, attr->name,
--			    ACPI_NAME_SIZE))
-+		if (!memcmp(table_attr->name, attr->name, ACPI_NAME_SIZE))
- 			if (table_attr->instance < attr->instance)
- 				table_attr->instance = attr->instance;
- 	}
- 	table_attr->instance++;
- 
- 	if (table_attr->instance > 1 || (table_attr->instance == 1 &&
--					 !acpi_get_table(table_header->
--							 signature, 2,
--							 &header)))
--		sprintf(table_attr->name + 4, "%d", table_attr->instance);
-+					!acpi_get_table
-+					(table_header->signature, 2, &header)))
-+		sprintf(table_attr->name + ACPI_NAME_SIZE, "%d",
-+			table_attr->instance);
- 
- 	table_attr->attr.size = 0;
- 	table_attr->attr.read = acpi_table_show;
+ 	/* Free SKBs, SGEs, TPA pool and driver internals */
+ 	bnx2x_free_skbs(bp);
 
 -- 
