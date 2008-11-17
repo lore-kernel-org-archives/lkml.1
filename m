@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYKQIui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbYKQIvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbYKQIui (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 03:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYKQIu0
+	id S1756897AbYKQIvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 03:51:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbYKQIvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 03:50:26 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38054
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752606AbYKQIu0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 03:50:26 -0500
-Date: Mon, 17 Nov 2008 00:50:25 -0800 (PST)
-Message-Id: <20081117.005025.141630310.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: folkert@vanheusden.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Re: [2.6.26] OOPS in __linkwatch_run_queue (unable to
- handle kernel NULL pointer dereference at 00000235)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20081117084058.GA6345@ff.dom.local>
-References: <20081030020910.f97ee3fc.akpm@linux-foundation.org>
-	<20081117084058.GA6345@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Nov 2008 03:51:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56508 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752606AbYKQIvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 03:51:11 -0500
+Date: Mon, 17 Nov 2008 09:50:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Tejun Heo <htejun@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix kunmap() argument in sg_miter_stop
+Message-ID: <20081117085046.GE28786@elte.hu>
+References: <20081115112751.1d38c072@infradead.org> <Pine.LNX.4.64.0811152003360.1618@blonde.site> <20081115123916.0d83a89e@infradead.org> <491FACC3.1050202@gmail.com> <20081117081117.GD26778@kernel.dk> <20081117082201.GB24603@elte.hu> <20081117083022.GE26778@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081117083022.GE26778@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Mon, 17 Nov 2008 08:40:58 +0000
 
-> net: link_watch: Don't add a linkwatch event before register_netdev()
+* Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Mon, Nov 17 2008, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > +#define kunmap(p)			\
+> > > +	do {				\
+> > > +		struct page *__p;	\
+> > > +		(void) (&__p == &(p));	\
+> > > +		__kunmap(p);		\
+> > > +	} while (0)
+> > > +
+> > > +#define kunmap_atomic(a, t)		\
+> > > +	do {				\
+> > > +		void *__p;		\
+> > > +		(void) (&__p == &(a));	\
+> > > +		__kunmap_atomic(a, t);	\
+> > > +	} while (0)
+> > 
+> > Agreed - but please use the typecheck() primitive. (linux/typecheck.h)
 > 
-> b44 and some other network drivers run netif_carrier_off() before
-> register_netdev(). Then, if register fails, free_netdev() destruction
-> is done while dev is still referenced and held on the lweventlist.
-> 
-> Of course, it would be nice if all drivers could use some common order
-> of calling things like register_netdev() vs. netif_carrier_off(), but
-> since there is a lot of this I guess there is probably some reason,
-> so this patch doesn't change the order but assumes that such an early
-> netif_carrier_off() is only to set the __LINK_STATE_NOCARRIER flag,
-> and some netif_carrier_on()/_off() will still follow.
-> 
-> Reported-by: Folkert van Heusden <folkert@vanheusden.com>
-> Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> Neat, didn't know about that, thanks.
 
-Ugh, drivers should not be fiddling with stuff like this before the
-device object is even registered.
+and ack on your patch obviously. Feel free to push it via the block 
+tree straight away, it doesnt collide with anything pending in the x86 
+tree.
 
-I can just imagine all sorts of other operations drivers might find
-it "convenient" to do before the sucker is even registered, causing
-similar if not even worse problems.
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-It's pretty simple, make netif_carrier_off() be the first thing
-->open() does and make it the last thing ->stop() and ->suspend()
-do.  That's how to fix this bug.
-
-I'm going to fix this as follows.  B44 already abided by 2/3 of
-this by handling the ->stop() and ->suspend() cases correctly already.
-
-b44: Do not call netif_carrier_off() before device is even registered.
-
-This is illegal.  Instead simply do this first thing in ->open().
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-index c3bda5c..2e353b8 100644
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -1426,6 +1426,8 @@ static int b44_open(struct net_device *dev)
- 	struct b44 *bp = netdev_priv(dev);
- 	int err;
- 
-+	netif_carrier_off(dev);
-+
- 	err = b44_alloc_consistent(bp, GFP_KERNEL);
- 	if (err)
- 		goto out;
-@@ -2165,8 +2167,6 @@ static int __devinit b44_init_one(struct ssb_device *sdev,
- 	dev->irq = sdev->irq;
- 	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
- 
--	netif_carrier_off(dev);
--
- 	err = ssb_bus_powerup(sdev->bus, 0);
- 	if (err) {
- 		dev_err(sdev->dev,
+	Ingo
