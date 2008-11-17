@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbYKQTxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbYKQTxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753221AbYKQTxO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:53:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKQTw7
+	id S1754101AbYKQTxy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:53:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKQTxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:52:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46634
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751331AbYKQTw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:52:58 -0500
-Date: Mon, 17 Nov 2008 11:52:58 -0800 (PST)
-Message-Id: <20081117.115258.227376348.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: mingo@elte.hu, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
-       a.p.zijlstra@chello.nl
+	Mon, 17 Nov 2008 14:53:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42716 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbYKQTxo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 14:53:44 -0500
+Date: Mon, 17 Nov 2008 20:53:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, dada1@cosmosbay.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
+       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl
 Subject: Re: [Bug #11308] tbench regression on each kernel release from
- 2.6.22 -&gt; 2.6.28
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0811171147380.18283@nehalem.linux-foundation.org>
-References: <20081117110119.GL28786@elte.hu>
-	<20081117.112157.146825192.davem@davemloft.net>
-	<alpine.LFD.2.00.0811171147380.18283@nehalem.linux-foundation.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20081117195316.GA8235@elte.hu>
+References: <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <20081117.113158.200497613.davem@davemloft.net> <alpine.LFD.2.00.0811171134480.18283@nehalem.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0811171134480.18283@nehalem.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 17 Nov 2008 11:48:33 -0800 (PST)
 
-> We've asked _you_ to do NMI profiling, it shouldn't be the other way 
-> around.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I wasn't able to on these systems, so instead I did cycle level
-evaluation of the parts that have to run with interrupts disabled.
+> On Mon, 17 Nov 2008, David Miller wrote:
+> > 
+> > The scheduler has accounted for at least %10 of the tbench 
+> > regressions at this point, what are you talking about?
+> 
+> I'm wondering if you're not looking at totally different issues.
+> 
+> For example, if I recall correctly, David had a big hit on the 
+> hrtimers. And I wonder if perhaps Ingo's numbers are without 
+> hrtimers or something?
 
-And as a result I found that wake_up() is now 4 times slower than it
-was in 2.6.22, I even analyzed this for every single kernel release
-till now.
+hrtimers should not be an issue anymore since this commit:
 
-It could be a sparc specific issue, because the call chain is deeper
-and we eat a lot more register window spills onto the stack.
+| commit 0c4b83da58ec2e96ce9c44c211d6eac5f9dae478
+| Author: Ingo Molnar <mingo@elte.hu>
+| Date:   Mon Oct 20 14:27:43 2008 +0200
+|
+|     sched: disable the hrtick for now
+|    
+|     David Miller reported that hrtick update overhead has tripled the
+|     wakeup overhead on Sparc64.
+|    
+|     That is too much - disable the HRTICK feature for now by default,
+|     until a faster implementation is found.
+|    
+|     Reported-by: David Miller <davem@davemloft.net>
+|     Acked-by: Peter Zijlstra <peterz@infradead.org>
+|     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+Which was included in v2.6.28-rc1 already.
+
+	Ingo
