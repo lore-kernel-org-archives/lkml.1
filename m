@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbYKQNP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752221AbYKQNXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752495AbYKQNP6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYKQNPu
+	id S1752221AbYKQNXj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbYKQNX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:15:50 -0500
-Received: from cmpxchg.org ([85.214.51.133]:46190 "EHLO cmpxchg.org"
+	Mon, 17 Nov 2008 08:23:29 -0500
+Received: from ozlabs.org ([203.10.76.45]:39343 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbYKQNPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:15:50 -0500
-Date: Mon, 17 Nov 2008 14:14:40 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Dave Airlie <airlied@gmail.com>,
-       Paul Menage <menage@google.com>, kamezawa.hiroyu@jp.fujitsu.com,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jan Kara <jack@suse.cz>,
-       Jes Sorensen <jes@sgi.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, dada1@cosmosbay.com,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH V2 1/1] mm: introduce kvmalloc()/kvfree()
-Message-ID: <20081117131440.GB29931@cmpxchg.org>
-References: <492162E4.9080902@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751232AbYKQNX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 08:23:28 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH RFC] cpu alloc cleanups and implementation improvement
+Date: Mon, 17 Nov 2008 23:53:17 +1030
+User-Agent: KMail/1.10.1 (Linux/2.6.27-7-generic; KDE/4.1.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <492162E4.9080902@cn.fujitsu.com>
+Message-Id: <200811172353.18356.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lai,
+Hi all,
 
-On Mon, Nov 17, 2008 at 08:26:12PM +0800, Lai Jiangshan wrote:
-> +/**
-> + * kvfree - free the memory by kfree(), or vfree() if it is vmalloc addr
+  I've argued with Christoph that his implementation contains gratuitous 
+obsolescence of perfectly-good APIs; hopefully providing real patches will 
+give us a more useful debate.
 
-Could that be just `free the memory allocated by kvmalloc()'?
+  It's in easy stages.  There are three general cleanup patches, then four 
+patches to expose the current module percpu allocator as a the general dynamic 
+percpu allocator, then documentation, a new __get_cpu_ptr() primitive and 
+finally a test patch.
 
-	Hannes
+I hope this adds some light,
+Rusty.
