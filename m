@@ -1,50 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYKQJH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbYKQJLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYKQJH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 04:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbYKQJHc
+	id S1753905AbYKQJLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 04:11:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYKQJLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 04:07:32 -0500
-Received: from vpn.id2.novell.com ([195.33.99.129]:8396 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753649AbYKQJH3 convert rfc822-to-8bit (ORCPT
+	Mon, 17 Nov 2008 04:11:18 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:36029 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751514AbYKQJLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 04:07:29 -0500
-Message-Id: <4921428A.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Mon, 17 Nov 2008 09:08:10 +0000
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Zachary Amsden" <zach@vmware.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: arch_flush_lazy_mmu_mode() in arch/x86/mm/highmem_32.c
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 17 Nov 2008 04:11:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xUK6f9cl3TIG8RPii9YIQYGawidnj9Guvr5mHbpl7OEkm3QRVj4eFBCmyCA97BT5Ig
+         NQNnz5OOvuP6G9myV1JIwrc7TIqPKDKhZf5SumgAKi8oO7Ln/wIYakCIUTd2gQJYl51C
+         U4KPf3UEJXZxqApViISbsJ69ejJj/ljv60FEg=
+Date: Mon, 17 Nov 2008 09:11:08 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: folkert@vanheusden.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: [2.6.26] OOPS in __linkwatch_run_queue (unable to
+	handle kernel NULL pointer dereference at 00000235)
+Message-ID: <20081117091108.GB6345@ff.dom.local>
+References: <20081030020910.f97ee3fc.akpm@linux-foundation.org> <20081117084058.GA6345@ff.dom.local> <20081117.005025.141630310.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20081117.005025.141630310.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 49f19710512c825aaea73b9207b3a848027cda1d hints at the
-current solution not being the final one, yet the advertised (for 2.6.22)
-change apparently never happened. However, it seems to me that
-flushing a potentially huge (it terms of time to completion) batch
-asynchronously is no really good idea. Instead, I'd think that adding to
-the batch should be prevented in asynchronous contexts altogether, or
-things should properly nest. As a positive side effect, disabling interrupts
-in the batch handling - in particular around the submission of the batch -
-could also be avoided, reducing interrupt latency (perhaps significantly
-in some case).
+On Mon, Nov 17, 2008 at 12:50:25AM -0800, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Mon, 17 Nov 2008 08:40:58 +0000
+> 
+> > net: link_watch: Don't add a linkwatch event before register_netdev()
+> > 
+> > b44 and some other network drivers run netif_carrier_off() before
+> > register_netdev(). Then, if register fails, free_netdev() destruction
+> > is done while dev is still referenced and held on the lweventlist.
+> > 
+> > Of course, it would be nice if all drivers could use some common order
+> > of calling things like register_netdev() vs. netif_carrier_off(), but
+> > since there is a lot of this I guess there is probably some reason,
+> > so this patch doesn't change the order but assumes that such an early
+> > netif_carrier_off() is only to set the __LINK_STATE_NOCARRIER flag,
+> > and some netif_carrier_on()/_off() will still follow.
+> > 
+> > Reported-by: Folkert van Heusden <folkert@vanheusden.com>
+> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+> 
+> Ugh, drivers should not be fiddling with stuff like this before the
+> device object is even registered.
+> 
+> I can just imagine all sorts of other operations drivers might find
+> it "convenient" to do before the sucker is even registered, causing
+> similar if not even worse problems.
+> 
+> It's pretty simple, make netif_carrier_off() be the first thing
+> ->open() does and make it the last thing ->stop() and ->suspend()
+> do.  That's how to fix this bug.
+> 
+> I'm going to fix this as follows.  B44 already abided by 2/3 of
+> this by handling the ->stop() and ->suspend() cases correctly already.
+> 
+> b44: Do not call netif_carrier_off() before device is even registered.
+> 
+> This is illegal.  Instead simply do this first thing in ->open().
 
-Likewise I would think that the flush out of vmalloc_sync_one() isn't
-appropriate, and it should rather be avoided for the set_pmd() there to
-get into the batching code altogether.
+Yes, this looks very nice! But this should be done in "a few" more
+drivers, like cxgb3 etc.
 
-(Background to this: After adding lazy mmu mode support in our forward
-ported tree, we've actually been hit by these calls out of kmap_...(), as
-originally I didn't pay much attention to these and didn't care to synchronize
-batch addition and flushing with asynchronous operations.)
+Jarek P.
 
-Jan
+PS: I think "Reported-by" could stay anyway.
 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> 
+> diff --git a/drivers/net/b44.c b/drivers/net/b44.c
+> index c3bda5c..2e353b8 100644
+> --- a/drivers/net/b44.c
+> +++ b/drivers/net/b44.c
+> @@ -1426,6 +1426,8 @@ static int b44_open(struct net_device *dev)
+>  	struct b44 *bp = netdev_priv(dev);
+>  	int err;
+>  
+> +	netif_carrier_off(dev);
+> +
+>  	err = b44_alloc_consistent(bp, GFP_KERNEL);
+>  	if (err)
+>  		goto out;
+> @@ -2165,8 +2167,6 @@ static int __devinit b44_init_one(struct ssb_device *sdev,
+>  	dev->irq = sdev->irq;
+>  	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
+>  
+> -	netif_carrier_off(dev);
+> -
+>  	err = ssb_bus_powerup(sdev->bus, 0);
+>  	if (err) {
+>  		dev_err(sdev->dev,
