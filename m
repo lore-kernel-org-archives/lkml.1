@@ -1,99 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbYKQJGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbYKQJHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753999AbYKQJGw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 04:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbYKQJGf
+	id S1756477AbYKQJHc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 04:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYKQJHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 04:06:35 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4209 "EHLO mga09.intel.com"
+	Mon, 17 Nov 2008 04:07:13 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35726 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbYKQJGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 04:06:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,617,1220252400"; 
-   d="scan'208";a="360984858"
-Date: Mon, 17 Nov 2008 16:09:49 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "achiang@hp.com" <achiang@hp.com>,
-       "grundler@parisc-linux.org" <grundler@parisc-linux.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "matthew@wil.cx" <matthew@wil.cx>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>,
-       "rdreier@cisco.com" <rdreier@cisco.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH 15/16 v6] PCI: document the SR-IOV sysfs entries
-Message-ID: <20081117080949.GA5247@yzhao12-linux.sh.intel.com>
-References: <20081022083809.GA3757@yzhao12-linux.sh.intel.com> <20081022084515.GO3773@yzhao12-linux.sh.intel.com> <20081106043318.GB30292@kroah.com> <20081106044613.GA30397@kroah.com> <4913AF89.2050504@intel.com> <20081107031837.GB30003@kroah.com> <20081113065024.GA3038@yzhao12-linux.sh.intel.com> <20081114005538.GA21161@kroah.com>
+	id S1750783AbYKQJHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 04:07:10 -0500
+Date: Mon, 17 Nov 2008 10:06:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [Bug #11308] tbench regression on each kernel release from
+	2.6.22 -&gt; 2.6.28
+Message-ID: <20081117090648.GG28786@elte.hu>
+References: <1ScKicKnTUE.A.VxH.DIHIJB@chimera> <NjF0-fuClJC.A.73B.cLHIJB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081114005538.GA21161@kroah.com>
+In-Reply-To: <NjF0-fuClJC.A.73B.cLHIJB@chimera>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 08:55:38AM +0800, Greg KH wrote:
-> On Thu, Nov 13, 2008 at 02:50:24PM +0800, Yu Zhao wrote:
-> > On Fri, Nov 07, 2008 at 11:18:37AM +0800, Greg KH wrote:
-> > > On Fri, Nov 07, 2008 at 11:01:29AM +0800, Zhao, Yu wrote:
-> > > > Currently PCI subsystem has /sys/.../{vendor,device,...} bundled to the 
-> > > > main PCI device (I suppose this means the entries are created by 
-> > > > 'device_add')
-> > > >
-> > > > And after the PCI device is announced, 
-> > > > /sys/.../{config,resourceX,rom,vpd,iov,...} get created depending on if 
-> > > > these features are supported.
-> > > 
-> > > And that's a bug.  Let's not continue to make the same bug here as well.
-> > > 
-> > > > Making dynamic entries tie to the main PCI device would require PCI 
-> > > > subsystem to allocate different 'bus_type' for the devices, right?
-> > > 
-> > > No, it would just mean they need to be all added before the device is
-> > > fully registered with the driver core.
-> > 
-> > I looked into the PCI and driver core code again, but didn't figured out how
-> > to do it.
-> > 
-> > A 'pci_dev' is added by pci_bus_add_device() via device_add(), which creates
-> > sysfs entries according to 'dev_attrs' in the 'pci_bus_type'. If we want those
-> > dynamic entries to appear before the uevent is triggered, we have to bundle
-> > them into the 'dev_attrs'. Is this right way for the dynamic entries? Or I
-> > missed something?
+
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.26 and 2.6.27.
 > 
-> Yes, that is correct.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.26 and 2.6.27.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> Or you can add attributes before device_add() is called to the device,
-> which is probably much easier to do, right?
 > 
-> There are also "conditional" attributes, which get only displayed if
-> some kind of condition is met, I think you want to use those.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11308
+> Subject		: tbench regression on each kernel release from  2.6.22 -&gt; 2.6.28
+> Submitter	: Christoph Lameter <cl@linux-foundation.org>
+> Date		: 2008-08-11 18:36 (98 days old)
+> References	: http://marc.info/?l=linux-kernel&m=121847986119495&w=4
+> 		  http://marc.info/?l=linux-kernel&m=122125737421332&w=4
 
-The problem is the sysfs directory of the PCI device is created by the
-kobject_add() in the device_add() as follows. And the static entries
-bundled with the 'pci_bus_type' are created by the bus_add_device().
-Between the kobject_add() and the kobject_uevent(), we don't have any
-other choice to add the dynamic entries.
+Christoph, as per the recent analysis of Mike:
 
-In device_add():
+ http://fixunix.com/kernel/556867-regression-benchmark-throughput-loss-a622cf6-f7160c7-pull.html
 
-	error = kobject_add(&dev->kobj, dev->kobj.parent, "%s", dev->bus_id);
-	...
-	error = bus_add_device(dev);
-	...
-	kobject_uevent(&dev->kobj, KOBJ_ADD);
+all scheduler components of this regression have been eliminated.
 
+In fact his numbers show that scheduler speedups since 2.6.22 have 
+offset and hidden most other sources of tbench regression. (i.e. the 
+scheduler portion got 5% faster, hence it was able to offset a 
+slowdown of 5% in other areas of the kernel that tbench triggers)
 
-So looks like the only way is to make the dynamic entries bundled with
-the 'pci_bus_type', which means they would become static no matter the
-device supports the entries (i.e. corresponding capabilities) or not.
-
-Thanks,
-Yu
+	Ingo
