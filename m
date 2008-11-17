@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbYKQTKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYKQTLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbYKQTKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 14:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbYKQTJ5
+	id S1753212AbYKQTLS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 14:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbYKQTLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 14:09:57 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:45517 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbYKQTJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 14:09:56 -0500
-Subject: Re: [PATCH 2/4] integrity: Linux Integrity Module(LIM)
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       David Safford <safford@watson.ibm.com>,
-       Serge Hallyn <serue@linux.vnet.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20081117160515.GA25459@infradead.org>
-References: <cover.1226547084.git.zohar@linux.vnet.ibm.com>
-	 <9395c0a4110469d19100084664900789c34ebd42.1226547084.git.zohar@linux.vnet.ibm.com>
-	 <20081117160515.GA25459@infradead.org>
-Content-Type: text/plain
-Date: Mon, 17 Nov 2008 14:09:40 -0500
-Message-Id: <1226948980.2927.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Nov 2008 14:11:06 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54511 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751279AbYKQTLF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 14:11:05 -0500
+Message-Id: <20081117191059.408002035@goodmis.org>
+References: <20081117190948.619751203@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Mon, 17 Nov 2008 14:09:50 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       David Miller <davem@davemloft.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Pekka Paalanen <pq@iki.fi>,
+       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Paul Mackerras <paulus@samba.org>, Paul Mundt <lethal@linux-sh.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 2/4] ftrace,ppc: fix test of 24bit jump
+Content-Disposition: inline; filename=0002-ftrace-ppc-fix-test-of-24bit-jump.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-17 at 11:05 -0500, Christoph Hellwig wrote: 
-> On Wed, Nov 12, 2008 at 10:47:12PM -0500, Mimi Zohar wrote:
-> > This version resolves the merge issues resulting from the removal
-> > of the nameidata parameter to inode_permission(), by moving the
-> > integrity_inode_permission() call from inode_permission() to
-> > may_open(), and renaming the hook to integrity_nameidata_check().
-> 
-> Still neither a good parameter nor a good name.  If you look at fsdevel
-> you'll see that a patch for the next merged window is already out and
-> in Al's to be applied queue that removes the nameidata there.  A
-> strcut path and maybe the MAY_ lookup flags should be enough for you,
-> and a integrity_path_check also sounds like it really does what you
-> want.
+Impact: fix of test if an address is 26 bits away or not
 
-Ok. So, instead of integrity_nameidata_check(nd, flags), call it
-integrity_path_check(path, flags). 
+Paul Mackerras pointed out that the test of the 24bit offset jump was
+incorrect. For one thing, it is a 26 bit distance since we multiply
+by 4 to account for the alignment. Another is that it may produce an
+incorrect result on a negative jump of exactly the offset size.
 
-Perhaps I'm looking at the wrong vfs tree, but I don't see the changes.
-Where is fsdevel? 
+Reported-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/powerpc/kernel/ftrace.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-> Also please merge the last radix tree patch into this one so tat it's
-> possible to review the code that actually goes in instead of replacing
-> a large part of it in a follow-up patch.
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 9360fd1..918a5d2 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -114,12 +114,19 @@ ftrace_modify_code(unsigned long ip, unsigned char *old_code,
+  */
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
+ {
+-	unsigned long diff;
++	long diff;
+ 
+-	/* can we get to addr from ip in 24 bits? */
+-	diff = ip > addr ? ip - addr : addr - ip;
++	/*
++	 * Can we get to addr from ip in 24 bits?
++	 *  (26 really, since we mulitply by 4 for 4 byte alignment)
++	 */
++	diff = addr - ip;
+ 
+-	return !(diff & ((unsigned long)-1 << 24));
++	/*
++	 * Return true if diff is less than 1 << 25
++	 *  and greater than -1 << 26.
++	 */
++	return (diff < (1 << 25)) && (diff > (-1 << 26));
+ }
+ 
+ static int is_bl_op(unsigned int op)
+-- 
+1.5.6.5
 
-np
-
-Mimi
-
+-- 
