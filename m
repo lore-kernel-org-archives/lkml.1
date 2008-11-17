@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbYKQSl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752757AbYKQSt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbYKQSl7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 13:41:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbYKQSle
+	id S1752757AbYKQSt0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 13:49:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbYKQStK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 13:41:34 -0500
-Received: from mga02.intel.com ([134.134.136.20]:36137 "EHLO mga02.intel.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754469AbYKQSld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 13:41:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,619,1220252400"; 
-   d="scan'208";a="464100177"
-From: Yi Zou <yi.zou@intel.com>
-Subject: [PATCH 3/3] net: define feature flags for FCoE offloads
-To: davem@davemloft.net
-Cc: jeff@garzik.org, linux-netdev@vger.kernel.org,
+	Mon, 17 Nov 2008 13:49:10 -0500
+Received: from rv-out-0506.google.com ([209.85.198.227]:41554 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751357AbYKQStJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 13:49:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=QEnR8PvZwxgfxGWm0mHYNEFZR4jC2oWagAGFoxdMNdXW82MNfo8wFfLr/dplpe2FuL
+         fkWs5TJLgMBTAQtV6kgZ8AKPiUw57LgC+33vyW4MqPnJwDe0RqffpxQ7BHtbIPXNtvKf
+         zfXIawde5yI1RBY4jeAVvhE5ZgGbL/90zRC24=
+Message-ID: <3aaafc130811171049l473fbc60h36ba26f048ac986f@mail.gmail.com>
+Date: Mon, 17 Nov 2008 13:49:08 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Shem Multinymous" <multinymous@gmail.com>
+Subject: Re: [Tpctl-users] Inclusion of tp_smapi module into kernel?
+Cc: "H. Peter Anvin" <hpa@zytor.com>, tpctl-users@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Date: Mon, 17 Nov 2008 10:30:51 -0800
-Message-ID: <20081117183049.15776.84674.stgit@zychongqing.jf.intel.com>
-In-Reply-To: <20081117182659.15776.58181.stgit@zychongqing.jf.intel.com>
-References: <20081117182659.15776.58181.stgit@zychongqing.jf.intel.com>
-User-Agent: StGIT/0.14.3
+In-Reply-To: <41840b750811171035w63c794aepaa273bc55fbaf2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200811171455.50039.hanno@hboeck.de> <49219DF5.5040404@zytor.com>
+	 <3aaafc130811170913o761ce43fg3a2738586ebd2396@mail.gmail.com>
+	 <41840b750811171035w63c794aepaa273bc55fbaf2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Leech <christopher.leech@intel.com>
+On Mon, Nov 17, 2008 at 1:35 PM, Shem Multinymous <multinymous@gmail.com> wrote:
+> On Mon, Nov 17, 2008 at 12:13 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
+>> There are several utilities maintained by this author, and finding
+>> some way to merge the code has been tried more than once. If you look
+>> back far enough, Andrew asked to have another of the project's members
+>> sign off on the patch, and maybe that would be acceptable enough, but
+>> afaik the author has never responded directly to that idea.
+>
+> We've discussed that in private at the time, and recently on LKML too.
+> In summary:
+> I'm fine with that, and so is everybody I talked to (including Linus),
+> except Greg KH who vetoed it since he believes the code is irrevocably
+> and contagiously evil.
 
-Signed-off-by: Chris Leech <christopher.leech@intel.com>
-Signed-off-by: Yi Zou <yi.zou@intel.com>
----
+Does Greg know that both Linus and Andrew have ok'd a second signoff?
 
- include/linux/netdevice.h |    3 +++
- include/linux/skbuff.h    |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 423c7bc..9347464 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -523,6 +523,8 @@ struct net_device
- #define NETIF_F_NETNS_LOCAL	8192	/* Does not change network namespaces */
- #define NETIF_F_LRO		32768	/* large receive offload */
- 
-+#define NETIF_F_FCOE_CRC	(1 << 24) /* FCoE CRC32 */
-+
- 	/* Segmentation offload features */
- #define NETIF_F_GSO_SHIFT	16
- #define NETIF_F_GSO_MASK	0x00ff0000
-@@ -531,6 +533,7 @@ struct net_device
- #define NETIF_F_GSO_ROBUST	(SKB_GSO_DODGY << NETIF_F_GSO_SHIFT)
- #define NETIF_F_TSO_ECN		(SKB_GSO_TCP_ECN << NETIF_F_GSO_SHIFT)
- #define NETIF_F_TSO6		(SKB_GSO_TCPV6 << NETIF_F_GSO_SHIFT)
-+#define NETIF_F_GSO_FCOE	(SKB_GSO_FCOE << NETIF_F_GSO_SHIFT)
- 
- 	/* List of features with software fallbacks. */
- #define NETIF_F_GSO_SOFTWARE	(NETIF_F_TSO | NETIF_F_TSO_ECN | NETIF_F_TSO6)
-diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index a01b6f8..81c3f7c 100644
---- a/include/linux/skbuff.h
-+++ b/include/linux/skbuff.h
-@@ -188,6 +188,8 @@ enum {
- 	SKB_GSO_TCP_ECN = 1 << 3,
- 
- 	SKB_GSO_TCPV6 = 1 << 4,
-+
-+	SKB_GSO_FCOE = 1 << 5,
- };
- 
- #if BITS_PER_LONG > 32
-
+>
+>  Shem
+>
