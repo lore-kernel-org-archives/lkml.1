@@ -1,139 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbYKQXm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbYKQXo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbYKQXm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 18:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYKQXms
+	id S1752462AbYKQXo4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 18:44:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbYKQXon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 18:42:48 -0500
-Received: from gw1.cosmosbay.com ([86.65.150.130]:39904 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751279AbYKQXmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 18:42:47 -0500
-Message-ID: <49220144.2010005@cosmosbay.com>
-Date: Tue, 18 Nov 2008 00:41:56 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       cl@linux-foundation.org, efault@gmx.de, a.p.zijlstra@chello.nl,
-       Stephen Hemminger <shemminger@vyatta.com>
-Subject: Re: eth_type_trans(): Re: [Bug #11308] tbench regression on each
- kernel release from 2.6.22 -&gt; 2.6.28
-References: <20081117110119.GL28786@elte.hu> <4921539B.2000002@cosmosbay.com> <20081117161135.GE12081@elte.hu> <49219D36.5020801@cosmosbay.com> <20081117170844.GJ12081@elte.hu> <20081117172549.GA27974@elte.hu> <4921AAD6.3010603@cosmosbay.com> <alpine.LFD.2.00.0811170937540.3468@nehalem.linux-foundation.org> <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu> <20081117212657.GH12020@elte.hu> <4921E4B0.7010507@cosmosbay.com>
-In-Reply-To: <4921E4B0.7010507@cosmosbay.com>
-Content-Type: multipart/mixed;
- boundary="------------010901030205040709000206"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 18 Nov 2008 00:42:02 +0100 (CET)
+	Mon, 17 Nov 2008 18:44:43 -0500
+Received: from mga02.intel.com ([134.134.136.20]:6462 "EHLO mga02.intel.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751279AbYKQXom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 18:44:42 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,620,1220252400"; 
+   d="scan'208";a="464204572"
+Subject: Re: [PATCH 02/13] dmaengine: remove dependency on async_tx
+From: Dan Williams <dan.j.williams@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+In-Reply-To: <20081114220214.4168ae1b.akpm@linux-foundation.org>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114213426.32354.75721.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114220214.4168ae1b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 17 Nov 2008 16:44:40 -0700
+Message-Id: <1226965480.31596.16.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010901030205040709000206
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Thanks for the review.
 
-Eric Dumazet a =E9crit :
->=20
-> But seeing your disassembly, I can see compare_ether_addr() is not inli=
-ned.
->=20
-> This sucks.
->=20
-> /**
-> * compare_ether_addr - Compare two Ethernet addresses
-> * @addr1: Pointer to a six-byte array containing the Ethernet address
-> * @addr2: Pointer other six-byte array containing the Ethernet address
-> *
-> * Compare two ethernet addresses, returns 0 if equal
-> */
-> static inline unsigned compare_ether_addr(const u8 *addr1, const u8 *ad=
-dr2)
-> {
->        const u16 *a =3D (const u16 *) addr1;
->        const u16 *b =3D (const u16 *) addr2;
->=20
->        BUILD_BUG_ON(ETH_ALEN !=3D 6);
->        return ((a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2])) !=3D 0;
-> }
->=20
-> On my machine/compiler, it is inlined, that makes a big difference.
+On Fri, 2008-11-14 at 23:02 -0700, Andrew Morton wrote:
+> > +/* dma_wait_for_async_tx - spin wait for a transcation to complete
+> 
+> yuo cnat sepll
 
-old gcc compiler... OK understood...
+Noted... and a few more:
 
->=20
-> c0420750 <eth_type_trans>: /* eth_type_trans total:  14417  0.4101 */
->=20
->=20
-
-Could you try this patch Ingo ?
-
-Thanks
-
-[PATCH] net: eth_type_trans() should be a leaf function
-
-In old days, eth_type_trans() was a leaf function. It is not anymore the =
-case.
-
-eth_type_trans() is a critical network function, called for each incoming=
- packet.
-
-We should make sure it is not calling functions, especially trivial ones.=
-
-
-1) Adds an __always_inline to compare_ether_addr() : This one was created=
- to be faster
-   than memcmp(). It really should be faster (and inlined)
-
-2) Hand code skb_put() call in eth_type_trans()
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
----
- include/linux/etherdevice.h |    2 +-
- net/ethernet/eth.c          |    7 ++++++-
- 2 files changed, 7 insertions(+), 2 deletions(-)
-
---------------010901030205040709000206
-Content-Type: text/plain;
- name="eth_type_trans_speedup.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="eth_type_trans_speedup.patch"
-
-diff --git a/include/linux/etherdevice.h b/include/linux/etherdevice.h
-index 25d62e6..94af6a7 100644
---- a/include/linux/etherdevice.h
-+++ b/include/linux/etherdevice.h
-@@ -128,7 +128,7 @@ static inline void random_ether_addr(u8 *addr)
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index dae88f2..d5d60de 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -344,9 +344,9 @@ static struct dma_chan *nth_chan(enum dma_transaction_type cap, int n)
+  * dma_channel_rebalance - redistribute the available channels
   *
-  * Compare two ethernet addresses, returns 0 if equal
+  * Optimize for cpu isolation (each cpu gets a dedicated channel for an
+- * operation type) in the SMP case,  and opertaion isolation (avoid
+- * multi-tasking channels) in the uniprocessor case.  Must be called
+- * under dma_list_mutex.
++ * operation type) in the SMP case,  and operation isolation (avoid
++ * multi-tasking channels) in the non-SMP case.  Must be called under
++ * dma_list_mutex.
   */
--static inline unsigned compare_ether_addr(const u8 *addr1, const u8 *addr2)
-+static __always_inline unsigned compare_ether_addr(const u8 *addr1, const u8 *addr2)
+ static void dma_channel_rebalance(void)
  {
- 	const u16 *a = (const u16 *) addr1;
- 	const u16 *b = (const u16 *) addr2;
-diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
-index b9d85af..30b60b2 100644
---- a/net/ethernet/eth.c
-+++ b/net/ethernet/eth.c
-@@ -162,7 +162,12 @@ __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev)
+@@ -632,7 +632,7 @@ err_out:
+ EXPORT_SYMBOL(dma_async_device_register);
  
- 	skb->dev = dev;
- 	skb_reset_mac_header(skb);
--	skb_pull(skb, ETH_HLEN);
-+	/*
-+	 * Hand coded skb_pull(skb, ETH_HLEN) to avoid a function call
-+	 */
-+	if (likely(skb->len >= ETH_HLEN))
-+		__skb_pull(skb, ETH_HLEN);
-+
- 	eth = eth_hdr(skb);
+ /**
+- * dma_async_device_unregister - unregisters DMA devices
++ * dma_async_device_unregister - unregister a DMA device
+  * @device: &dma_device
+  *
+  * This routine is called by dma driver exit routines, dmaengine holds module
+@@ -804,7 +804,7 @@ void dma_async_tx_descriptor_init(struct dma_async_tx_descriptor *tx,
+ }
+ EXPORT_SYMBOL(dma_async_tx_descriptor_init);
  
- 	if (is_multicast_ether_addr(eth->h_dest)) {
+-/* dma_wait_for_async_tx - spin wait for a transcation to complete
++/* dma_wait_for_async_tx - spin wait for a transaction to complete
+  * @tx: transaction to wait on
+  */
+ enum dma_status
 
---------------010901030205040709000206--
+
+> 
+> > + * @tx: transaction to wait on
+> > + */
+> > +enum dma_status
+> > +dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
+> > +{
+> > +	enum dma_status status;
+> > +	struct dma_async_tx_descriptor *iter;
+> > +	struct dma_async_tx_descriptor *parent;
+> > +
+> > +	if (!tx)
+> > +		return DMA_SUCCESS;
+> > +
+> > +	/* poll through the dependency chain, return when tx is complete */
+> > +	do {
+> > +		iter = tx;
+> > +
+> > +		/* find the root of the unsubmitted dependency chain */
+> > +		do {
+> > +			parent = iter->parent;
+> > +			if (!parent)
+> > +				break;
+> > +			else
+> > +				iter = parent;
+> > +		} while (parent);
+> > +
+> > +		/* there is a small window for ->parent == NULL and
+> > +		 * ->cookie == -EBUSY
+> > +		 */
+> > +		while (iter->cookie == -EBUSY)
+> > +			cpu_relax();
+> > +
+> > +		status = dma_sync_wait(iter->chan, iter->cookie);
+> > +	} while (status == DMA_IN_PROGRESS || (iter != tx));
+> > +
+> > +	return status;
+> > +}
+> > +EXPORT_SYMBOL_GPL(dma_wait_for_async_tx);
+> 
+> hm, strange.
+> 
+> The unlocked list walk assumes that this thread of control has
+> exclusive access to *tx (somehow??), but this thread of control doesn't
+> end up freeing *tx.  I guess the caller does that.
+
+This routine was created to cover cases where the backing device driver
+did not support "interrupt" descriptors for notification of operation
+completion.  All drivers should be fixed up now so how about the
+following:
+
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index d5d60de..dce6d00 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -805,7 +805,13 @@ void dma_async_tx_descriptor_init(struct dma_async_tx_descriptor *tx,
+ EXPORT_SYMBOL(dma_async_tx_descriptor_init);
+ 
+ /* dma_wait_for_async_tx - spin wait for a transaction to complete
+- * @tx: transaction to wait on
++ * @tx: in-flight transaction to wait on
++ *
++ * This routine assumes that tx was obtained from a call to async_memcpy,
++ * async_xor, async_memset, etc which ensures that tx is "in-flight" (prepped
++ * and submitted).  Walking the parent chain is only meant to cover for DMA
++ * drivers that do not implement the DMA_INTERRUPT capability and may race with
++ * the driver's descriptor cleanup routine.
+  */
+ enum dma_status
+ dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
+@@ -817,6 +823,9 @@ dma_wait_for_async_tx(struct dma_async_tx_descriptor *tx)
+ 	if (!tx)
+ 		return DMA_SUCCESS;
+ 
++	WARN_ONCE(tx->parent, "%s: speculatively walking dependency chain for"
++		  " %s\n", __func__, dev_name(&tx->chan->dev));
++
+ 	/* poll through the dependency chain, return when tx is complete */
+ 	do {
+ 		iter = tx;
+
+
+Regards,
+Dan
+
