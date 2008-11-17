@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYKQBHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYKQBk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbYKQBHG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 20:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbYKQBGz
+	id S1755835AbYKQBk3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 20:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYKQBkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 20:06:55 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56648 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751458AbYKQBGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 20:06:55 -0500
-Message-ID: <4920C395.1000208@cn.fujitsu.com>
-Date: Mon, 17 Nov 2008 09:06:29 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: linux-mm@kvack.org, YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [mm] [PATCH 1/4] Memory cgroup hierarchy documentation (v4)
-References: <20081116081034.25166.7586.sendpatchset@balbir-laptop> <20081116081040.25166.65142.sendpatchset@balbir-laptop>
-In-Reply-To: <20081116081040.25166.65142.sendpatchset@balbir-laptop>
-Content-Type: text/plain; charset=GB2312
+	Sun, 16 Nov 2008 20:40:19 -0500
+Received: from mga09.intel.com ([134.134.136.24]:5087 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753824AbYKQBkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 20:40:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,615,1220252400"; 
+   d="scan'208";a="360848940"
+Subject: Re: [STABLE PATCH .26 .27] ACPI: avoid empty file name in sysfs
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Len Brown <lenb@kernel.org>, "stable@kernel.org" <stable@kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20081115171725.GB1523@ucw.cz>
+References: <alpine.LFD.2.00.0811130015100.3128@localhost.localdomain>
+	 <20081115171725.GB1523@ucw.cz>
+Content-Type: text/plain
+Date: Mon, 17 Nov 2008 09:40:12 +0800
+Message-Id: <1226886012.15014.231.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +6.1 Enabling hierarchical accounting and reclaim
-> +
-> +The memory controller by default disables the hierarchy feature. Support
-> +can be enabled by writing 1 to memory.use_hierarchy file of the root cgroup
-> +
-> +# echo 1 > memory.use_hierarchy
-> +
-> +The feature can be disabled by
-> +
-> +# echo 0 > memory.use_hierarchy
-> +
-> +NOTE1: Enabling/disabling will fail if the cgroup already has other
-> +cgroups created below it.
-> +
-
-It's better to also document that it will fail if it's parent's use_hierarchy
-is already enabled.
-
-> +NOTE2: This feature can be enabled/disabled per subtree.
-> +
-> +7. TODO
->  
->  1. Add support for accounting huge pages (as a separate controller)
->  2. Make per-cgroup scanner reclaim not-shared pages first
-> _
+On Sun, 2008-11-16 at 01:17 +0800, Pavel Machek wrote:
+> Hi!
 > 
+> > upstream 4feba70a2c1a1a0c96909f657f48b2e11e682370
+> > 
+> > Since commit bc45b1d39a925b56796bebf8a397a0491489d85c acpi tables are
+> > allowed to have an empty signature and /sys/firmware/acpi/tables uses the
+> > signature as filename.  Applications using naive recursion through /sys
+> > loop forever.  A possible solution would be: (replacing the zero length
+> > filename with the string "NULL")
+> 
+> What about using some string that is not a valid table name? Shorter
+> than 4 characters? AFAICT,
+> 'NULL' table could be added to acpi in future...?
+> 
+> What if *two* tales have empty signature?
+there are "NULL1" and "NULL2" in this case.
+
+thanks,
+rui
+
