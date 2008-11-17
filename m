@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbYKQRoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbYKQRog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbYKQRoV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 12:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYKQRn5
+	id S1754763AbYKQRog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 12:44:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbYKQRoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 12:43:57 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:61526 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753505AbYKQRn4 (ORCPT
+	Mon, 17 Nov 2008 12:44:11 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:39041 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbYKQRoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 12:43:56 -0500
-Date: Mon, 17 Nov 2008 09:43:41 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Qinghuang Feng <qhfeng.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 1/7] drivers/ata/pata_radisys.c: cleanup kernel-doc
-Message-Id: <20081117094341.75ec0d7a.randy.dunlap@oracle.com>
-In-Reply-To: <491feb5b.08486e0a.075a.4c48@mx.google.com>
-References: <491feb5b.08486e0a.075a.4c48@mx.google.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4921AD52.0046:SCFSTAT928724,ss=1,fgs=0
+	Mon, 17 Nov 2008 12:44:09 -0500
+Date: Mon, 17 Nov 2008 12:44:01 -0500
+From: "Jeffrey J. Kosowsky" <linux-kernel@kosowsky.org>
+Subject: NFS directory corruption with Ext3 but not Ext2 (in older   embedded
+ kernel)
+To: linux-kernel@vger.kernel.org
+Message-id: <18721.44385.649149.611080@consult.pretender>
+MIME-version: 1.0
+X-Mailer: VM 8.0.11 under Emacs 22.1.1 (i386-redhat-linux-gnu)
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 17:43:46 +0800 Qinghuang Feng wrote:
+I have encountered the following interaction issue between NFS and
+Ext3 (but not Ext2) on an embedded 2.6.12.6 kernel (yes, I know it is
+old but I can't upgrade it because of hardware interface issues).
 
-> No argument named @isich in radisys_set_dmamode,
-> remove it.
-> 
-> Signed-off-by: Qinghuang Feng <qhfeng.kernel@gmail.com>
+Problem:
+When accessing files from the NFS client, various files and
+subdirectories on the NFS mount randomly seem to disappear, resulting
+in errors when either they or their parent directory is listed.
 
-patches 1-7:
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Specifically, I repeatedly find that after some mildly intensive
+directory access operations (e.g. ls'ing several large directories or
+using find on root), that subsequent file or directory access
+operations to the same directories return file/directory access areas
+on a subset of their contents. Thus "chunks" of the NFS filesystem
+seem to randomly be dropped.
 
-I'll leave them for Jeff to merge.
+- This behavior persists until either the NFS server is restarted or
+  until the same file/directory is accessed from the NFS
+  server. Remounting the NFS share does not fix the problem.
 
-Thanks.
+- Note that at all times the files/directories remain accessible from
+  the NFS server under the normal ext3 (or ext2) filesystem.
 
----
-~Randy
+- The timing and selection of which files "disappear" appears to be
+  random, though once a file is inaccessible, it stays that way until
+  its presence is reset as above.
+
+- This behaviour only occurs when the partition is mounted as ext3 but
+  not as ext2. Also, it only happens with kernel-space nfsd (not with
+  user-space unfsd).
+
+- Changing the various nfs settings such as turning on/off caching,
+  changing the rsize/wsize, using sync vs. async or hard vs. soft have
+  no effect.
+
+- There doesn't seem to be any (permanent) filesystem corruption
+  except as a direct side effect of NFS-client side programs
+  potentially operating on missing files/directories.
+
+To my layman's eyes, this behavior suggests that there is something
+wrong with how ext3 is caching (or marking as cached) directory/file
+lookups and sharing this information with other kernel processes (like
+nfsd) requiring access to the filesystem directory.
+
+Has anybody seen this problem before and if so is it possible to
+fix/patch?
+
+Again, I can't upgrade the kernel because of compatibility with the
+embedded hardware.
+
+Thanks!
