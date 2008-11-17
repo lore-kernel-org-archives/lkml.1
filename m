@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbYKQAKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbYKQAPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbYKQAKa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 19:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbYKQAKV
+	id S1755417AbYKQAPI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 19:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbYKQAO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 19:10:21 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57995 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYKQAKU (ORCPT
+	Sun, 16 Nov 2008 19:14:56 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52607 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbYKQAO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 19:10:20 -0500
-Date: Mon, 17 Nov 2008 09:09:38 +0900
+	Sun, 16 Nov 2008 19:14:56 -0500
+Date: Mon, 17 Nov 2008 09:14:13 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/7] memcontrol: use simple_malloc()/simple_free()
-Message-Id: <20081117090938.0cdb531e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20081116045404.GC24624@x200.localdomain>
-References: <491FA2AA.6060706@cn.fujitsu.com>
-	<20081116045128.GB24624@x200.localdomain>
-	<20081116045404.GC24624@x200.localdomain>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] memcg: handle swap caches build fix
+Message-Id: <20081117091413.4a123b7d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0811162046080.5813@blonde.site>
+References: <Pine.LNX.4.64.0811162046080.5813@blonde.site>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 07:54:04 +0300
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+On Sun, 16 Nov 2008 20:52:22 +0000 (GMT)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-> On Sun, Nov 16, 2008 at 07:51:28AM +0300, Alexey Dobriyan wrote:
-> > On Sun, Nov 16, 2008 at 12:33:46PM +0800, Lai Jiangshan wrote:
-> > > use simple_malloc()/simple_free() instead of current codes.
-> > 
-> > struct mem_cgroup can't reach the size when kmalloc starts failing.
+> Fix to build error when CONFIG_SHMEM=y but CONFIG_SWAP is not set:
+> mm/shmem.c: In function ‘shmem_unuse_inode’:
+> mm/shmem.c:927: error: implicit declaration of function ‘mem_cgroup_cache_charge_swapin’
 > 
-> Or it probably can with big NR_CPUS.
+> Yes, there's a lot of code in mm/shmem.c which only comes into play when
+> CONFIG_SWAP=y: better than this quick fix would be to restructure shmem.c
+> with all swap stuff in a separate file; that's on my mind, but now is not
+> the moment for it.
 > 
-> 	struct mem_cgroup_stat {
->   	      struct mem_cgroup_stat_cpu cpustat[NR_CPUS];
-> 	};
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
 
-It's now changed. see mmotm.
+Thanks! (>_<
 
-Thanks,
--Kame
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+> ---
+> Fix should follow or be merged into memcg-handle-swap-caches.patch
 > 
-> > > --- a/mm/memcontrol.c
-> > > +++ b/mm/memcontrol.c
-> > > @@ -1062,11 +1062,7 @@ static struct mem_cgroup *mem_cgroup_alloc(void)
-> > >  {
-> > >  	struct mem_cgroup *mem;
-> > >  
-> > > -	if (sizeof(*mem) < PAGE_SIZE)
-> > > -		mem = kmalloc(sizeof(*mem), GFP_KERNEL);
-> > > -	else
-> > > -		mem = vmalloc(sizeof(*mem));
-> > > -
-> > > +	mem = simple_malloc(sizeof(*mem));
-> > >  	if (mem)
-> > >  		memset(mem, 0, sizeof(*mem));
-> > >  	return mem;
-> > > @@ -1074,10 +1070,7 @@ static struct mem_cgroup *mem_cgroup_alloc(void)
-> > >  
-> > >  static void mem_cgroup_free(struct mem_cgroup *mem)
-> > >  {
-> > > -	if (sizeof(*mem) < PAGE_SIZE)
-> > > -		kfree(mem);
-> > > -	else
-> > > -		vfree(mem);
-> > > +	simple_free(mem);
-> > >  }
+>  include/linux/swap.h |    6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
+> --- mmotm/include/linux/swap.h	2008-11-16 17:33:25.000000000 +0000
+> +++ linux/include/linux/swap.h	2008-11-16 20:18:27.000000000 +0000
+> @@ -442,6 +442,12 @@ static inline swp_entry_t get_swap_page(
+>  #define has_swap_token(x) 0
+>  #define disable_swap_token() do { } while(0)
+>  
+> +static inline int mem_cgroup_cache_charge_swapin(struct page *page,
+> +			struct mm_struct *mm, gfp_t mask, bool locked)
+> +{
+> +	return 0;
+> +}
+> +
+>  #endif /* CONFIG_SWAP */
+>  #endif /* __KERNEL__*/
+>  #endif /* _LINUX_SWAP_H */
 
