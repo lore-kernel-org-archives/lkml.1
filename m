@@ -1,82 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYKQQ6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbYKQQ7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753386AbYKQQ6f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYKQQ61
+	id S1753949AbYKQQ7Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYKQQ7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:58:27 -0500
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60180 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751541AbYKQQ60 (ORCPT
+	Mon, 17 Nov 2008 11:59:15 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:15563 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbYKQQ7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:58:26 -0500
-Subject: Re: arch_flush_lazy_mmu_mode() in arch/x86/mm/highmem_32.c
-From: Zachary Amsden <zach@vmware.com>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4921428A.76E4.0078.0@novell.com>
-References: <4921428A.76E4.0078.0@novell.com>
-Content-Type: text/plain
-Date: Mon, 17 Nov 2008 09:53:07 -0800
-Message-Id: <1226944387.9969.77.camel@bodhitayantram.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.2 
+	Mon, 17 Nov 2008 11:59:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:references;
+        b=jL3ygo0JC2Zp2LWJnQ6XY5istJewfDuvxPO1Hi4VWuYpbMTkHreL9JS06x6nwIufKj
+         om5wHRTgi4JN5bXSZhTuF5Z/2vbKOlrziDg/ulbVkIVwTpp8fcayXupcq9j70yOxlmUm
+         nulYUBNsiedKDg7gbPYfU+15DLbx1jzCbR+3Q=
+Message-ID: <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
+Date: Mon, 17 Nov 2008 11:59:11 -0500
+From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
+Reply-To: mtk.manpages@gmail.com
+To: "Evgeniy Polyakov" <zbr@ioremap.net>
+Subject: Re: [take 3] Use pid in inotify events.
+Cc: "Robert Love" <rlove@rlove.org>, linux-api@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@lst.de>
+In-Reply-To: <20081116232450.GA13547@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
+	 <20081116232450.GA13547@ioremap.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-17 at 01:08 -0800, Jan Beulich wrote:
-> Commit 49f19710512c825aaea73b9207b3a848027cda1d hints at the
-> current solution not being the final one, yet the advertised (for 2.6.22)
-> change apparently never happened. However, it seems to me that
-> flushing a potentially huge (it terms of time to completion) batch
-> asynchronously is no really good idea. Instead, I'd think that adding to
+Hi Evgeniy,
 
-The batch size is limited by many factors; the number of possible PTEs
-updated is only 64 in the COW path, up to 1024 at most for zero / remap
-paths / mprotect paths.  While 1024 is large, I don't think it qualifies
-as huge, and it should really be very uncommon.  In practice, the
-batching under VMI is limited by the size of the hypercall queue, which
-is only 256 entries.
+On Sun, Nov 16, 2008 at 6:24 PM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
+> Hi.
+>
+> This patch allows to send IO origin PID in inotify events (using cookie
+> fields for all events except moving, where it is already used to track
+> move from and move to parts) when its uid matches inotify owner uid or
+> when inotify owner has admin (CAP_SYS_ADMIN) capabilities (Jeff
+> Schroeder's idea).
+>
+> This is a resend of the previous patch, which was not commented by
+> anyone. Does it mean no one objects? If so, please apply.
 
-> the batch should be prevented in asynchronous contexts altogether, or
-> things should properly nest. As a positive side effect, disabling interrupts
-> in the batch handling - in particular around the submission of the batch -
-> could also be avoided, reducing interrupt latency (perhaps significantly
-> in some case).
-
-Jeremy already fixed that; we don't disable interrupts, the change he
-made was to flush and then immediately restart the batching.
-
-Re: nesting properly, there is no low-level interface provided to issue
-"forced" updates, that is updates which bypass any batching and take
-effect immediately.  We considered it, but wanted a simple design of a
-strictly in-order update queue to reduce complexity.  This means you
-either have no batching, eliminate the scenarios which require nesting,
-disable interrupts, or flush previously batched updates when nested
-operations are required.  The latter seems the lesser of the evils.
-
-> 
-> Likewise I would think that the flush out of vmalloc_sync_one() isn't
-> appropriate, and it should rather be avoided for the set_pmd() there to
-> get into the batching code altogether.
-
-That's impossible.  The flush is needed and there is no way to avoid it.
-The kernel has no general restrictions about contexts in which it is
-safe vs. unsafe to touch the kernel's own vmalloc'ed memory, so you can
-get a page fault due to lazy syncing of vmalloc area PDEs in non-PAE
-mode.  You really have to service that fault.
-
-> (Background to this: After adding lazy mmu mode support in our forward
-> ported tree, we've actually been hit by these calls out of kmap_...(), as
-> originally I didn't pay much attention to these and didn't care to synchronize
-> batch addition and flushing with asynchronous operations.)
-
-What tree is that?  Unclear from your message.
+NAK.  If we are going to do this -- and I leave the security
+discussions to others more knowlegeable on that score than me -- then
+the API design should be better than this.  The current design is a
+hack.  Why exclude rename events?  Why re-use the cookie field?  The
+only answers I can guess at are that the current patch is less work to
+write.  IMO, there are (much) better design possibilities, using
+inotify1(), as I suggested earlier in this thread.
 
 Thanks,
 
-Zach
+Michael
 
+> Also removed John McCutchan's email, which bounces.
+>
+> Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
+>
+> diff --git a/fs/inotify.c b/fs/inotify.c
+> index 690e725..835259d 100644
+> --- a/fs/inotify.c
+> +++ b/fs/inotify.c
+> @@ -69,6 +69,9 @@ static atomic_t inotify_cookie;
+>  * inotify_add_watch() to the final put_inotify_watch().
+>  */
+>
+> +#define IH_FLAGS_ADMIN         (0x00000001)
+> +/* handler owner has admin capabilities */
+> +
+>  /*
+>  * struct inotify_handle - represents an inotify instance
+>  *
+> @@ -80,6 +83,8 @@ struct inotify_handle {
+>        struct list_head        watches;        /* list of watches */
+>        atomic_t                count;          /* reference count */
+>        u32                     last_wd;        /* the last wd allocated */
+> +       uid_t                   uid;            /* owner's uid */
+> +       u32                     flags;          /* operation flags */
+>        const struct inotify_operations *in_ops; /* inotify caller operations */
+>  };
+>
+> @@ -292,6 +297,11 @@ void inotify_inode_queue_event(struct inode *inode, u32 mask, u32 cookie,
+>                        mutex_lock(&ih->mutex);
+>                        if (watch_mask & IN_ONESHOT)
+>                                remove_watch_no_event(watch, ih);
+> +
+> +                       if (!cookie && ((ih->flags & IH_FLAGS_ADMIN) ||
+> +                                       (current->uid == ih->uid)))
+> +                               cookie = task_tgid_vnr(current);
+> +
+>                        ih->in_ops->handle_event(watch, watch->wd, mask, cookie,
+>                                                 name, n_inode);
+>                        mutex_unlock(&ih->mutex);
+> @@ -459,6 +469,10 @@ struct inotify_handle *inotify_init(const struct inotify_operations *ops)
+>        mutex_init(&ih->mutex);
+>        ih->last_wd = 0;
+>        ih->in_ops = ops;
+> +       ih->uid = current->user->uid;
+> +       ih->flags = 0;
+> +       if (capable(CAP_SYS_ADMIN))
+> +               ih->flags |= IH_FLAGS_ADMIN;
+>        atomic_set(&ih->count, 0);
+>        get_inotify_handle(ih);
+>
+> --
+>        Evgeniy Polyakov
+>
+
+
+
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
