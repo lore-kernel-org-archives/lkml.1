@@ -1,58 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbYKQNgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753168AbYKQNiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752625AbYKQNgs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:36:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYKQNgf
+	id S1753168AbYKQNiU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYKQNiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:36:35 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46052 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbYKQNge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:36:34 -0500
-Date: Mon, 17 Nov 2008 15:36:23 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Frank Mayhar <fmayhar@google.com>, Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Doug Chapman <doug.chapman@hp.com>, mingo@elte.hu, adobriyan@gmail.com,
-       akpm@linux-foundation.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: regression introduced by - timers: fix itimer/many thread hang
-Message-ID: <20081117143623.GA4658@redhat.com>
-References: <1225984098.7803.4642.camel@twins> <1226015568.2186.20.camel@bobble.smo.corp.google.com> <1226053744.7803.5851.camel@twins> <1226081448.28191.64.camel@bobble.smo.corp.google.com> <1226089574.31966.85.camel@lappy.programming.kicks-ass.net> <Pine.LNX.4.64.0811100834500.21257@quilx.com> <1226328152.7685.192.camel@twins> <1226340009.19109.17.camel@bobble.smo.corp.google.com> <20081114024239.07CC91541E8@magilla.localdomain> <20081114164155.GA7738@redhat.com>
+	Mon, 17 Nov 2008 08:38:11 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:40888 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbYKQNiK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 08:38:10 -0500
+Date: Mon, 17 Nov 2008 13:38:04 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Corentin Chary <corentin.chary@gmail.com>, ecc@cmu.edu
+Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: [Patch 2/3] eeepc-laptop: Check return values from rfkill_register
+Message-ID: <20081117133804.GD12303@srcf.ucam.org>
+References: <20081117133325.GB12303@srcf.ucam.org> <20081117133510.GC12303@srcf.ucam.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081114164155.GA7738@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20081117133510.GC12303@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11/14, Oleg Nesterov wrote:
->
-> Currently I am trying to find the ugly, but simple fixes for 2.6.28.
->
-> account_group_user_time(), run_posix_cpu_timers() are simpler to
-> fix. Again, I need to actually read the code, but afaics we can
-> rely on the fact that the task is current, so we can change the
-> code
->
-> 	-	if (!->signal)
-> 	+	if (->exit_state)
-> 			return;
+We should check that rfkill registration succeeds and error out if it 
+doesn't. This patch also sets the default state to match the BIOS on 
+load.
 
-Yes, unless I missed something again, this should work. I'll send
-the (simple) patches soon, but I have no idea how to test them.
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
+diff --git a/drivers/misc/eeepc-laptop.c b/drivers/misc/eeepc-laptop.c
+index e81ef18..4d70626 100644
+--- a/drivers/misc/eeepc-laptop.c
++++ b/drivers/misc/eeepc-laptop.c
+@@ -573,18 +573,25 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 							   RFKILL_TYPE_WLAN);
+ 
+ 		if (!ehotk->eeepc_wlan_rfkill)
+-			goto end;
++			goto wlan_fail;
+ 
+ 		ehotk->eeepc_wlan_rfkill->name = "eeepc-wlan";
+ 		ehotk->eeepc_wlan_rfkill->toggle_radio = eeepc_wlan_rfkill_set;
+ 		ehotk->eeepc_wlan_rfkill->get_state = eeepc_wlan_rfkill_state;
+-		if (get_acpi(CM_ASL_WLAN) == 1)
++		if (get_acpi(CM_ASL_WLAN) == 1) {
+ 			ehotk->eeepc_wlan_rfkill->state =
+ 				RFKILL_STATE_UNBLOCKED;
+-		else
++			rfkill_set_default(RFKILL_TYPE_WLAN,
++					   RFKILL_STATE_UNBLOCKED);
++		} else {
+ 			ehotk->eeepc_wlan_rfkill->state =
+ 				RFKILL_STATE_SOFT_BLOCKED;
+-		rfkill_register(ehotk->eeepc_wlan_rfkill);
++			rfkill_set_default(RFKILL_TYPE_WLAN,
++					   RFKILL_STATE_SOFT_BLOCKED);
++		}
++		result = rfkill_register(ehotk->eeepc_wlan_rfkill);
++		if (result)
++			goto wlan_fail;
+ 	}
+ 
+ 	if (get_acpi(CM_ASL_BLUETOOTH) != -1) {
+@@ -592,22 +599,39 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 			rfkill_allocate(&device->dev, RFKILL_TYPE_BLUETOOTH);
+ 
+ 		if (!ehotk->eeepc_bluetooth_rfkill)
+-			goto end;
++			goto bluetooth_fail;
+ 
+ 		ehotk->eeepc_bluetooth_rfkill->name = "eeepc-bluetooth";
+ 		ehotk->eeepc_bluetooth_rfkill->toggle_radio =
+ 			eeepc_bluetooth_rfkill_set;
+ 		ehotk->eeepc_bluetooth_rfkill->get_state =
+ 			eeepc_bluetooth_rfkill_state;
+-		if (get_acpi(CM_ASL_BLUETOOTH) == 1)
++		if (get_acpi(CM_ASL_BLUETOOTH) == 1) {
+ 			ehotk->eeepc_bluetooth_rfkill->state =
+ 				RFKILL_STATE_UNBLOCKED;
+-		else
++			rfkill_set_default(RFKILL_TYPE_BLUETOOTH,
++					   RFKILL_STATE_UNBLOCKED);
++		} else {
+ 			ehotk->eeepc_bluetooth_rfkill->state =
+ 				RFKILL_STATE_SOFT_BLOCKED;
+-		rfkill_register(ehotk->eeepc_bluetooth_rfkill);
++			rfkill_set_default(RFKILL_TYPE_BLUETOOTH,
++					   RFKILL_STATE_SOFT_BLOCKED);
++		}
++
++		result = rfkill_register(ehotk->eeepc_bluetooth_rfkill);
++		if (result)
++			goto bluetooth_fail;
+ 	}
++	return 0;
+ 
++ bluetooth_fail:
++	if (ehotk->eeepc_bluetooth_rfkill)
++		rfkill_free(ehotk->eeepc_bluetooth_rfkill);
++	rfkill_unregister(ehotk->eeepc_wlan_rfkill);
++	ehotk->eeepc_wlan_rfkill = NULL;
++ wlan_fail:
++	if (ehotk->eeepc_wlan_rfkill)
++		rfkill_free(ehotk->eeepc_wlan_rfkill);
+  end:
+ 	if (result) {
+ 		kfree(ehotk);
 
-However, I'm afraid there is another problem. On 32 bit cpus we can't
-read "u64 sum_exec_runtime" atomically, and so thread_group_cputime()
-can "overestimate" ->sum_exec_runtime by (up to) UINT_MAX if it races
-with the thread which updates its per_cpu_ptr(.totals). This for example
-means that check_process_timers() can fire the CPUCLOCK_SCHED timers
-before time.
-
-No?
-
-Oleg.
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
