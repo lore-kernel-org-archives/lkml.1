@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYKQQy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbYKQQ6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbYKQQy4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:54:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbYKQQys
+	id S1753386AbYKQQ6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYKQQ61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:54:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39955 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751910AbYKQQys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:54:48 -0500
-Message-ID: <4921A1AF.1070909@redhat.com>
-Date: Mon, 17 Nov 2008 11:54:07 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] mm: evict streaming IO cache first
-References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081115210039.537f59f5.akpm@linux-foundation.org> <alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org> <49208E9A.5080801@redhat.com> <20081116204720.1b8cbe18.akpm@linux-foundation.org> <20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com> <2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com> <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.0811170802010.3468@nehalem.linux-foundation.org> <alpine.LFD.2.00.0811170830320.3468@nehalem.linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0811170830320.3468@nehalem.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 17 Nov 2008 11:58:27 -0500
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60180 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751541AbYKQQ60 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 11:58:26 -0500
+Subject: Re: arch_flush_lazy_mmu_mode() in arch/x86/mm/highmem_32.c
+From: Zachary Amsden <zach@vmware.com>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4921428A.76E4.0078.0@novell.com>
+References: <4921428A.76E4.0078.0@novell.com>
+Content-Type: text/plain
+Date: Mon, 17 Nov 2008 09:53:07 -0800
+Message-Id: <1226944387.9969.77.camel@bodhitayantram.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Mon, 2008-11-17 at 01:08 -0800, Jan Beulich wrote:
+> Commit 49f19710512c825aaea73b9207b3a848027cda1d hints at the
+> current solution not being the final one, yet the advertised (for 2.6.22)
+> change apparently never happened. However, it seems to me that
+> flushing a potentially huge (it terms of time to completion) batch
+> asynchronously is no really good idea. Instead, I'd think that adding to
 
-> Another thing strikes me: it looks like the logic in "get_scan_ratio()" 
-> has a tendency to get unbalanced - if we end up deciding that we should 
-> scan a lot of anonymous pages, the scan numbers for anonymous pages will 
-> go up, and we get even _more_ eager to scan those. Of course, "rotate" 
-> events will then make us less likely again, but for streaming loads, you 
-> wouldn't expect to see those at all.
+The batch size is limited by many factors; the number of possible PTEs
+updated is only 64 in the COW path, up to 1024 at most for zero / remap
+paths / mprotect paths.  While 1024 is large, I don't think it qualifies
+as huge, and it should really be very uncommon.  In practice, the
+batching under VMI is limited by the size of the hypercall queue, which
+is only 256 entries.
 
-True for streaming loads - if we scan the file list and find
-mostly pages from streaming loads, we will become more eager
-to scan the file list.
+> the batch should be prevented in asynchronous contexts altogether, or
+> things should properly nest. As a positive side effect, disabling interrupts
+> in the batch handling - in particular around the submission of the batch -
+> could also be avoided, reducing interrupt latency (perhaps significantly
+> in some case).
 
-I do not expect streaming loads to ever hit the anon list in
-the same way, because anonymous pages start out referenced and
-on the active list, which means an anonymous deactivation will
-always be counted as a rotate event.
+Jeremy already fixed that; we don't disable interrupts, the change he
+made was to flush and then immediately restart the batching.
 
-> There seems to be another bug there wrt the "aging" - we age anon page 
-> events and file page events independently, which sounds like it would make 
-> the math totally nonsensical. We do that whole
+Re: nesting properly, there is no low-level interface provided to issue
+"forced" updates, that is updates which bypass any batching and take
+effect immediately.  We considered it, but wanted a simple design of a
+strictly in-order update queue to reduce complexity.  This means you
+either have no batching, eliminate the scenarios which require nesting,
+disable interrupts, or flush previously batched updates when nested
+operations are required.  The latter seems the lesser of the evils.
+
 > 
-> 	anon / (anon + file)
+> Likewise I would think that the flush out of vmalloc_sync_one() isn't
+> appropriate, and it should rather be avoided for the set_pmd() there to
+> get into the batching code altogether.
 
-That's an outdated comment.  Andrew had a patch to update that
-comment, but it must have gotten lost somewhere.  I'll send you
-a patch to update it.
+That's impossible.  The flush is needed and there is no way to avoid it.
+The kernel has no general restrictions about contexts in which it is
+safe vs. unsafe to touch the kernel's own vmalloc'ed memory, so you can
+get a page fault due to lazy syncing of vmalloc area PDEs in non-PAE
+mode.  You really have to service that fault.
 
-If you look at the actual calculation, you'l see that the
-scan percentages are keyed off just swappiness and the
-rotated/scanned ratios for each page category.
+> (Background to this: After adding lazy mmu mode support in our forward
+> ported tree, we've actually been hit by these calls out of kmap_...(), as
+> originally I didn't pay much attention to these and didn't care to synchronize
+> batch addition and flushing with asynchronous operations.)
 
--- 
-All rights reversed.
+What tree is that?  Unclear from your message.
+
+Thanks,
+
+Zach
+
