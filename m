@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbYKQIFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbYKQILP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754223AbYKQIFV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 03:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbYKQIFH
+	id S1753927AbYKQILP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 03:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbYKQIK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 03:05:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58046 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752133AbYKQIFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 03:05:06 -0500
-Message-ID: <49212587.8020702@redhat.com>
-Date: Mon, 17 Nov 2008 09:04:23 +0100
-From: Chris Lalancette <clalance@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Mon, 17 Nov 2008 03:10:58 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:51171 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751048AbYKQIK6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 03:10:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references:x-google-sender-auth;
+        b=aS5igmmktr7a2fiJJb+XkWnXMhpJd/vxOMUjW66HBau0x/iY/fAr/OGO7RBGz3uHAs
+         t1KnUC4MxgFREvjZFHkzU3f1xzjwW9+W1jbaQh5rTuDkYrCOLbafyyHulFb8rRnC+h5v
+         4Ye6fGrgQWWvw5rhstsA+czh6jvOkLaCn5Sr4=
+Message-ID: <2f11576a0811170010u19ef4e3qf81639a75f8bbabe@mail.gmail.com>
+Date: Mon, 17 Nov 2008 17:10:57 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH 1/7] mm: introduce simple_malloc()/simple_free()
+Cc: akpm@linux-foundation.org, kamezawa.hiroyu@jp.fujitsu.com,
+       balbir@linux.vnet.ibm.com, laijs@cn.fujitsu.com, arjan@infradead.org,
+       airlied@gmail.com, menage@google.com, jens.axboe@oracle.com,
+       jack@suse.cz, jes@sgi.com, linux-kernel@vger.kernel.org,
+       dada1@cosmosbay.com, adobriyan@gmail.com
+In-Reply-To: <20081116.231555.190117597.davem@davemloft.net>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Jan Beulich <jbeulich@novell.com>,
-       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>, linux-kernel@vger.kernel.org
-Subject: Re: [Xen-devel] [PATCH 03 of 38] swiotlb: allow architectures	tooverride
- swiotlb pool allocation
-References: <patchbomb.1226603398@abulafia.goop.org>	<e9f25b3bb6625ee88f9f.1226603401@abulafia.goop.org> <491D4C89.76E4.0078.0@novell.com> <491DD27A.30707@goop.org>
-In-Reply-To: <491DD27A.30707@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20081117142539.9b2c6bfc.kamezawa.hiroyu@jp.fujitsu.com>
+	 <2f11576a0811162243r7527d271ya8ab2fc3a9be9f7d@mail.gmail.com>
+	 <20081116231301.c6b0da95.akpm@linux-foundation.org>
+	 <20081116.231555.190117597.davem@davemloft.net>
+X-Google-Sender-Auth: 01af146792f9cb7e
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->> While perhaps less intrusive to take care of, I also didn't see an equivalent
->> of the range_straddles_page_boundary() logic, without which I can't see
->> how this would work in the common case.
->>   
-> Could you be more specific?  The swiotlb allocation should be machine 
-> contiguous and so there's no stradding required, but I think I'm missing 
-> your point.
+2008/11/17 David Miller <davem@davemloft.net>:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Sun, 16 Nov 2008 23:13:01 -0800
+>
+>> In fact it's not immediately clear why __vmalloc() takes a gfp_t
+>> argument either?
+>
+> Probably for things like GFP_DMA32, GFP_HIGHMEM, et al.
 
-In general, I think you are right; swiotlb should be machine contiguous, so it
-works in the normal case.  The range_straddles_page_boundary function takes care
-of a corner case, where you can run into swiotlb exhaustion when you really
-shouldn't.  As I understand it, it comes about because it is possible to get a
-swiotlb request with two pages that just happen to be machine contiguous, but
-were *not* allocated through xen_create_contiguous_region (and hence weren't
-marked in the contiguous_bitmap as such).  In this case, you split the request
-into two separate requests, and this can more easily lead to exhaustion.
-range_straddles_page_boundary works around this by checking whether any two
-pages coming through the swiotlb layer are machine contiguous, and if they are,
-not splitting the request.
+Thanks.
 
--- 
-Chris Lalancette
+I think to __GFP_ZERO or __GFP_COLD etc..
+but that also is right, imho.
