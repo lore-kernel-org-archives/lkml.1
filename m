@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865AbYKQOcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272AbYKQOeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752865AbYKQOcy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 09:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYKQOcq
+	id S1753272AbYKQOeA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 09:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbYKQOdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 09:32:46 -0500
-Received: from gate.crashing.org ([63.228.1.57]:47954 "EHLO gate.crashing.org"
+	Mon, 17 Nov 2008 09:33:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47971 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbYKQOcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 09:32:45 -0500
+	id S1752180AbYKQOdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 09:33:52 -0500
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
        Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
-Message-Id: <7D365ECF-C4B1-445C-85F9-36D4C9808E44@kernel.crashing.org>
+Message-Id: <A84F59D4-E594-4C31-B881-B35B93DBDB97@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Steven Rostedt <srostedt@redhat.com>
 In-Reply-To: <491F107E.4070702@redhat.com>
@@ -19,7 +19,7 @@ Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
 Mime-Version: 1.0 (Apple Message framework v929.2)
 Subject: Re: [PATCH][for 2.6.28] Remove -mno-spe flags as they dont belong
-Date: Mon, 17 Nov 2008 08:31:30 -0600
+Date: Mon, 17 Nov 2008 08:33:30 -0600
 References: <1226772154-6109-1-git-send-email-galak@kernel.crashing.org> <491F107E.4070702@redhat.com>
 X-Mailer: Apple Mail (2.929.2)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,29 +39,12 @@ On Nov 15, 2008, at 12:10 PM, Steven Rostedt wrote:
 > The unknown reason was that my PPC64 failed to compile without  
 > it ;-) It was unknown because I forgot to mention that in the change  
 > log (my bad).
->
-> On Monday, I'll apply this patch and make sure that my PPC64 still  
-> compiles.
->
-> -- Steve
 
-Thanks, if you can Ack the patch today if it works for you that would  
-be great.
+Are you sure you were building a ppc64 kernel?  This makes no sense in  
+that the -mno-spe flag should not be relevant at all to such a kernel  
+build.  (No ppc64 chip has SPE support and thus the compiler doesnt  
+support generation of the instructions in that mode).
+
+Were you building some ppc32 targeted kernel?
 
 - k
-
->
->
->> We are removing it because:
->>
->> 1. It generates e500 kernels that don't work
->> 2. its not the correct set of flags to do this
->> 3. we handle this in the arch/powerpc/Makefile already
->> 4. its unknown in talking to Steven why he did this
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> kernel/Makefile |    4 +---
->> 1 files changed, 1 insertions(+), 3 deletions(-)
->
-
