@@ -1,104 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbYKQV4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbYKQV5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbYKQV4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 16:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbYKQV4A
+	id S1754645AbYKQV5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 16:57:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbYKQV51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 16:56:00 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42483 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752997AbYKQVz7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 16:55:59 -0500
-Date: Mon, 17 Nov 2008 23:55:58 +0200 (EET)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: adilger@sun.com, linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       cl@linux-foundation.org, mpm@selenic.com, eduard.munteanu@linux360.ro
-Subject: [PATCH 4/4] ext4: allocate ->s_blockgroup_lock separately
-Message-ID: <Pine.LNX.4.64.0811172355360.18904@melkki.cs.Helsinki.FI>
+	Mon, 17 Nov 2008 16:57:27 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:43206 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbYKQV51 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 16:57:27 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.28-rc4-mmotm1110 shift-lock oddness
+From: Valdis.Kletnieks@vt.edu
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; boundary="==_Exmh_1226959015_3596P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 17 Nov 2008 16:56:55 -0500
+Message-ID: <5397.1226959015@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+--==_Exmh_1226959015_3596P
+Content-Type: text/plain; charset=us-ascii
 
-As spotted by kmemtrace, struct ext4_sb_info is 17664 bytes on 64-bit which
-makes it a very bad fit for SLAB allocators. The culprit of the wasted memory
-is ->s_blockgroup_lock which can be as big as 16 KB when NR_CPUS >= 32.
+Twice today, I've managed to get my laptop into an odd state where the keyboard
+got quite confused:
 
-To fix that, allocate ->s_blockgroup_lock, which fits nicely in a order 2 page
-in the worst case, separately. This shinks down struct ext4_sb_info enough to
-fit a 2 KB slab cache so now we allocate 16 KB + 2 KB instead of 32 KB saving
-14 KB of memory.
+1) For the characters [a-z] the shift bit was *inverted* - if the shift-lock
+LED was off, you'd get UPPER-case, and if it was on, you'd get lower-case.
 
-Cc: Andreas Dilger <adilger@sun.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- fs/ext4/ext4_sb.h |    4 ++--
- fs/ext4/super.c   |   10 +++++++++-
- 2 files changed, 11 insertions(+), 3 deletions(-)
+2) To add to the fun, the 0-9 keys were stuck shifted - I'd get the special
+characters no matter what setting the shift or shift-lock key had.  I suspect
+that the special-char keys like [{ and ;: were also stuck in shifted state,
+but can't totally confirm it.
 
-diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-index b21f167..ed3bc9c 100644
---- a/fs/ext4/ext4_sb.h
-+++ b/fs/ext4/ext4_sb.h
-@@ -61,7 +61,7 @@ struct ext4_sb_info {
- 	struct percpu_counter s_freeinodes_counter;
- 	struct percpu_counter s_dirs_counter;
- 	struct percpu_counter s_dirtyblocks_counter;
--	struct blockgroup_lock s_blockgroup_lock;
-+	struct blockgroup_lock *s_blockgroup_lock;
- 	struct proc_dir_entry *s_proc;
- 
- 	/* root of the per fs reservation window tree */
-@@ -149,7 +149,7 @@ struct ext4_sb_info {
- static inline spinlock_t *
- sb_bgl_lock(struct ext4_sb_info *sbi, unsigned int block_group)
- {
--	return bgl_lock_ptr(&sbi->s_blockgroup_lock, block_group);
-+	return bgl_lock_ptr(sbi->s_blockgroup_lock, block_group);
- }
- 
- #endif	/* _EXT4_SB */
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index e4a241c..1add517 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -497,6 +497,7 @@ static void ext4_put_super(struct super_block *sb)
- 		ext4_blkdev_remove(sbi);
- 	}
- 	sb->s_fs_info = NULL;
-+	kfree(sbi->s_blockgroup_lock);
- 	kfree(sbi);
- 	return;
- }
-@@ -1883,6 +1884,13 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
- 	if (!sbi)
- 		return -ENOMEM;
-+
-+	sbi->s_blockgroup_lock =
-+		kzalloc(sizeof(struct blockgroup_lock), GFP_KERNEL);
-+	if (!sbi->s_blockgroup_lock) {
-+		kfree(sbi);
-+		return -ENOMEM;
-+	}
- 	sb->s_fs_info = sbi;
- 	sbi->s_mount_opt = 0;
- 	sbi->s_resuid = EXT4_DEF_RESUID;
-@@ -2179,7 +2187,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- 				 &sbi->s_inode_readahead_blks);
- #endif
- 
--	bgl_lock_init(&sbi->s_blockgroup_lock);
-+	bgl_lock_init(sbi->s_blockgroup_lock);
- 
- 	for (i = 0; i < db_count; i++) {
- 		block = descriptor_loc(sb, logical_sb_block, i);
--- 
-1.5.4.3
+The previous two issues combined meant that I wasn't able to su or login
+as root to do much of anything about it (guess who has special chars in their
+root password? ;)
 
+3) ctl-alt-Fn to switch virtual consoles was spotty/erratic - one time
+I was unable to use it at all, another time I was able to use c-a-F1 to get
+to a green-screen console, but then F2 to get another one or F7 to get
+back to the X server screen wouldn't work.
+
+4) Fortunately for my sanity, alt-sysrq was still working as advertised,
+so I was able to reboot and thus clear the problem.
+
+I was thinking this might be a simple "missed a key press/released" event
+for a shift key, except that doesn't explain the numerics getting stuck shifted.
+
+Any suggestions/hints for instrumentation/etc, in case I can replicate it
+again?
+
+--==_Exmh_1226959015_3596P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJIeincC3lWbTT17ARAsMXAKDxMFHGzUEbdVit6Z7OfHhwdhP51gCeK2qk
+il5f7FwsnBLFpw3oL6N+bbM=
+=L3UN
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1226959015_3596P--
