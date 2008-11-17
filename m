@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYKQQlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbYKQQqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbYKQQlu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbYKQQlm
+	id S1753379AbYKQQqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbYKQQqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:41:42 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59534 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530AbYKQQll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:41:41 -0500
-Message-ID: <49219DF5.5040404@zytor.com>
-Date: Mon, 17 Nov 2008 08:38:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: =?UTF-8?B?SGFubm8gQsO2Y2s=?= <hanno@hboeck.de>
-CC: linux-kernel@vger.kernel.org, tpctl-users@lists.sourceforge.net
-Subject: Re: Inclusion of tp_smapi module into kernel?
-References: <200811171455.50039.hanno@hboeck.de>
-In-Reply-To: <200811171455.50039.hanno@hboeck.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 17 Nov 2008 11:46:34 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:57551 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752081AbYKQQqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 11:46:34 -0500
+Subject: Re: [patch 2.6.28-rc5] regulator: enable/disable refcounting
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: dbrownell@users.sourceforge.net
+Cc: Mark Brown <broonie@sirena.org.uk>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <200811170821.47582.david-b@pacbell.net>
+References: <200811161144.46582.david-b@pacbell.net>
+	 <20081117151636.GG1559@sirena.org.uk>
+	 <200811170821.47582.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Mon, 17 Nov 2008 16:46:30 +0000
+Message-Id: <1226940390.585.4.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hanno Böck wrote:
+On Mon, 2008-11-17 at 08:21 -0800, David Brownell wrote:
+> On Monday 17 November 2008, Mark Brown wrote:
+> > On Sun, Nov 16, 2008 at 11:44:46AM -0800, David Brownell wrote:
+> > 
+> > > +	mutex_lock(&rdev->mutex);
+> > > +	if (regulator->enabled == 1) {
+> > > +		ret = _regulator_disable(rdev);
+> > > +		if (ret == 0)
+> > > +			regulator->uA_load = 0;
+> > 
+> > Why clear the load here?  I'd expect to be able to enable and disable
+> > the regulator while preserving the configuration.
 > 
-> I wanted to ask if there is some status on possible kernel inclusion. On
-> http://www.linuxdriverproject.org/twiki/bin/view/Main/OutOfTreeDrivers
-> I read
-> "will not be accepted upstream due to authorship issues (written by an 
-> anonymous developer)"
-> 
-> Now I can see copyright notices in all source files, though they may be 
-> incomplete. But anyway, would this be a real problem?
-> Is there any rule that kernel code needs a named author? As long as it has a 
-> fitting license, shouldn't this be fine?
+> That clear was in the original code.  Didn't make much sense
+> to me either, but I was just caring it forward...
 > 
 
-We need to be able to identify who owns the copyright.  For all we know,
-the anonymous submitter might not have the right to his own work (work
-for hire, etc.) or it could have been produced in violation of NDA
-terms, etc.
+Hmm, this looks like a bug - I'll fix in a subsequent patch.
 
-	-hpa
+Will have time to look over the rest later tonight.
+
+Thanks
+
+Liam 
+
