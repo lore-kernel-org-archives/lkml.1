@@ -1,55 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbYKQNfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbYKQNgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753095AbYKQNfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbYKQNfV
+	id S1753383AbYKQNgT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbYKQNgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:35:21 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:40822 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbYKQNfU (ORCPT
+	Mon, 17 Nov 2008 08:36:00 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:19718 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbYKQNf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:35:20 -0500
-Date: Mon, 17 Nov 2008 13:35:10 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Corentin Chary <corentin.chary@gmail.com>, ecc@cmu.edu
-Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [Patch 1/3] eeepc-laptop: Add support for extended hotkeys
-Message-ID: <20081117133510.GC12303@srcf.ucam.org>
-References: <20081117133325.GB12303@srcf.ucam.org>
+	Mon, 17 Nov 2008 08:35:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=q4rJu+DlKolXTfUrdgxBfzMQbDrGwQzl4lLLVa5kV5ThKPN2CCsyYXBNjNgw9/RzuP
+         CS213Atx5Pm6OaplKM0IxrKqj6++Ug6lxyrhkeee6+XLp7EAcfh/c4Q5Lo28Ev8MmhKG
+         npqk9eVCaibzCk85yZzPe1uZig/gO8F+jBV8c=
+Date: Mon, 17 Nov 2008 13:35:48 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       David Miller <davem@davemloft.net>, Ferenc Wagner <wferi@niif.hu>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] softirq: Use local_irq_save() in local_bh_enable()
+Message-ID: <20081117133548.GC6345@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081117133325.GB12303@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <87y6zwwy5c.fsf@tac.ki.iif.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Newer Eees have extra hotkeys above the function keys. This patch adds 
-support for sending them through the input layer. Some default keycodes 
-are added, but these can be remapped by the user.
+This report: http://marc.info/?l=linux-netdev&m=122599341430090&w=2
+shows local_bh_enable() is used in the wrong context (irqs disabled).
+It happens when a usual network receive path is called by netconsole,
+which simply turns off irqs around this all. Probably this is wrong,
+but it worked like this long time, and it's not trivial to fix this.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Anyway, a commit 0f476b6d91a1395bda6464e653ce66ea9bea7167 "softirq:
+remove irqs_disabled warning from local_bh_enable" can break things
+after changing from local_irq_save() to local_irq_disable(). Before
+this commit there was only a warning, now a lockup is possible, so
+it could be treated as a regression. This patch reverts the change
+in irqs.
 
-diff --git a/drivers/misc/eeepc-laptop.c b/drivers/misc/eeepc-laptop.c
-index 9ef98b2..e81ef18 100644
---- a/drivers/misc/eeepc-laptop.c
-+++ b/drivers/misc/eeepc-laptop.c
-@@ -161,6 +161,10 @@ static struct key_entry eeepc_keymap[] = {
- 	{KE_KEY, 0x13, KEY_MUTE },
- 	{KE_KEY, 0x14, KEY_VOLUMEDOWN },
- 	{KE_KEY, 0x15, KEY_VOLUMEUP },
-+	{KE_KEY, 0x1a, KEY_COFFEE },
-+	{KE_KEY, 0x1b, KEY_ZOOM },
-+	{KE_KEY, 0x1c, KEY_PROG2 },
-+	{KE_KEY, 0x1d, KEY_PROG3 },
- 	{KE_KEY, 0x30, KEY_SWITCHVIDEOMODE },
- 	{KE_KEY, 0x31, KEY_SWITCHVIDEOMODE },
- 	{KE_KEY, 0x32, KEY_SWITCHVIDEOMODE },
+Reported-by: Ferenc Wagner <wferi@niif.hu>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ kernel/softirq.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index e7c69a7..756c928 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -135,9 +135,12 @@ EXPORT_SYMBOL(_local_bh_enable);
+ 
+ static inline void _local_bh_enable_ip(unsigned long ip)
+ {
++#ifdef CONFIG_TRACE_IRQFLAGS
++	unsigned long flags;
++#endif
+ 	WARN_ON_ONCE(in_irq() || irqs_disabled());
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-	local_irq_disable();
++	local_irq_save(flags);
+ #endif
+ 	/*
+ 	 * Are softirqs going to be turned on now:
+@@ -155,7 +158,7 @@ static inline void _local_bh_enable_ip(unsigned long ip)
+ 
+ 	dec_preempt_count();
+ #ifdef CONFIG_TRACE_IRQFLAGS
+-	local_irq_enable();
++	local_irq_restore(flags);
+ #endif
+ 	preempt_check_resched();
+ }
