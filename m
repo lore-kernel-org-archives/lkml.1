@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356AbYKQRXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbYKQR0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356AbYKQRXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 12:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbYKQRXG
+	id S1753912AbYKQR0R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 12:26:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYKQR0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 12:23:06 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:11052 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbYKQRXE (ORCPT
+	Mon, 17 Nov 2008 12:26:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36736 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751620AbYKQR0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 12:23:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:reply-to:to:subject:cc:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:references;
-        b=jZnWFu6hzqaH1676Ez5c6B28Zah0Pb3DEaa1SKjvGUv21EFG3C0nILg5tyESD1A4vc
-         ZECVj8qfRJx6t5xSuraIze40Whu8hrVeVYXgNMkc5TPWXQnpuoBAywB0HnYgMUJmOWn6
-         yI+uBjQIAuP7ouoSuAa6CpF4uTH2M/ckLeLMk=
-Message-ID: <cfd18e0f0811170923q6b72bd0fn9d319bbceb8fa6a@mail.gmail.com>
-Date: Mon, 17 Nov 2008 12:23:01 -0500
-From: "Michael Kerrisk" <mtk.manpages@googlemail.com>
-Reply-To: mtk.manpages@gmail.com
-To: "Evgeniy Polyakov" <zbr@ioremap.net>
-Subject: Re: [take 3] Use pid in inotify events.
-Cc: "Robert Love" <rlove@rlove.org>, linux-api@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@lst.de>
-In-Reply-To: <20081117171508.GA564@ioremap.net>
+	Mon, 17 Nov 2008 12:26:01 -0500
+Date: Mon, 17 Nov 2008 09:25:18 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Tejun Heo <htejun@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
+       Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix kunmap() argument in sg_miter_stop
+In-Reply-To: <4921A6BE.7000206@goop.org>
+Message-ID: <alpine.LFD.2.00.0811170922000.3468@nehalem.linux-foundation.org>
+References: <20081117081117.GD26778@kernel.dk> <20081117082201.GB24603@elte.hu> <20081117083022.GE26778@kernel.dk> <20081117085046.GE28786@elte.hu> <20081117085807.GF26778@kernel.dk> <20081117093425.GG26778@kernel.dk> <20081117094147.GJ28786@elte.hu>
+ <20081117094551.GI26778@kernel.dk> <20081117111350.GJ26778@kernel.dk> <4921A4F3.1030309@goop.org> <20081117171005.GA25729@elte.hu> <4921A6BE.7000206@goop.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <acdcfe7e0811081035l56eedf05x8b3b7ee2fc01eee6@mail.gmail.com>
-	 <20081116232450.GA13547@ioremap.net>
-	 <cfd18e0f0811170859w1d3f903ej1d5626f2d2bf4496@mail.gmail.com>
-	 <20081117171508.GA564@ioremap.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Evgeniy,
 
-On Mon, Nov 17, 2008 at 12:15 PM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
-> Hi Michael.
->
-> On Mon, Nov 17, 2008 at 11:59:11AM -0500, Michael Kerrisk (mtk.manpages@googlemail.com) wrote:
->> NAK.  If we are going to do this -- and I leave the security
->> discussions to others more knowlegeable on that score than me -- then
->> the API design should be better than this.  The current design is a
->> hack.  Why exclude rename events?  Why re-use the cookie field?  The
->> only answers I can guess at are that the current patch is less work to
->> write.  IMO, there are (much) better design possibilities, using
->> inotify1(), as I suggested earlier in this thread.
->
-> Cookie was created to store information used to somehow connect events to
-> each other. PID does that from another angle than rename.
 
-Yes, but it does it in an inconsistent, incomplete way.
+On Mon, 17 Nov 2008, Jeremy Fitzhardinge wrote:
 
-> Extending
-> (rewriting userspace event processing part) events is a solution for the
-> new project,
+> Pass the struct page * to kunmap, not the vaddr of the mapping itself.
+> 
+> Pointed out by Jens Axboe <jens.axboe@oracle.com>
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> ---
+> drivers/xen/balloon.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> ===================================================================
+> --- a/drivers/xen/balloon.c
+> +++ b/drivers/xen/balloon.c
+> @@ -120,7 +120,7 @@
+> 	if (PageHighMem(page)) {
+> 		void *v = kmap(page);
+> 		clear_page(v);
+> -		kunmap(v);
+> +		kunmap(page);
+> 	} else {
+> 		void *v = page_address(page);
+> 		clear_page(v);
 
-Not quite sure of your point here.  Whatever change is made, userspace
-apps will need to be trained to understand the interface.
+Well, quite frankly, the whole thing looks like crud.
 
-> while existing patch (where all security concerns are
-> resolved) is a minimum functionality extension.
+First off, 'kmap/kunmap' work on regular pages too. So if you're highmem 
+aware, you should just do
 
-It is a minimum functionality extension that serves the needs of one
-or a few projects, while dirtying the design for all users.
+	void *v = kmap(page);
+	clear_page(v);
+	kunmap(page);
 
-> if I will spent a day and rewrite userspace report side to report new
-> events I'm pretty sure there will be people, who will start complaining
-> that again design does not match some theoretically perfect
-> expectations,
+and be done with it. 
 
-Maybe.  Mabe not.  But that is (a necessary) part of the design process.
+Secondly, we actually have a function called "clear_highpage()" that does 
+this, except it uses kmap_atomic(page, KM_USER0). Which is _probably 
+better anyway, but I didn't check if there is some magical reason why it 
+wouldn't work.
 
-> and for the purpose of reporting origin's PID cookie
-> fields can be reused since right now it is unused.
-
-You didn't really respond to my earlier comment.  Why are you doing
-things this way.  As far as I can see, only becuase it is quicker to
-implement.
-
-> Plus, if it is that hard to comment on patch which adds 14 (!) lines
-> including blank, which feedback we should expect on larger one? :)
-
-Still NAK, sorry.
-
-Cheers,
-
-Michael
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+			Linus
