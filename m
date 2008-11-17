@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbYKQWxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbYKQXEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbYKQWxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 17:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbYKQWxn
+	id S1752939AbYKQXEP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 18:04:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbYKQXEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 17:53:43 -0500
-Received: from ozlabs.org ([203.10.76.45]:37153 "EHLO ozlabs.org"
+	Mon, 17 Nov 2008 18:04:05 -0500
+Received: from mga01.intel.com ([192.55.52.88]:43407 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633AbYKQWxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 17:53:42 -0500
-MIME-Version: 1.0
+	id S1751714AbYKQXEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 18:04:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,620,1220252400"; 
+   d="scan'208";a="404757719"
+Date: Mon, 17 Nov 2008 15:04:03 -0800
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [git pull] scheduler updates
+Message-ID: <20081117230403.GA30861@linux-os.sc.intel.com>
+References: <20081108170224.GA553@elte.hu> <alpine.LFD.2.00.0811081026280.3468@nehalem.linux-foundation.org> <20081108104116.48bd26e6@infradead.org> <alpine.LFD.2.00.0811081051190.3468@nehalem.linux-foundation.org> <20081108190517.GA9806@elte.hu> <alpine.LFD.2.00.0811081115290.3468@nehalem.linux-foundation.org> <20081108192957.GA22219@elte.hu> <20081117224358.GA27249@linux-os.sc.intel.com> <20081117225018.GA25619@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18721.62958.479215.822513@cargo.ozlabs.ibm.com>
-Date: Tue, 18 Nov 2008 09:53:34 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20081117225018.GA25619@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+On Mon, Nov 17, 2008 at 02:50:18PM -0800, Ingo Molnar wrote:
+> 
+> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+> 
+> > Patch being discussed on this thread (commit 0d12cdd) has a
+> > regression on one of the test systems here.
+> >
+> > With the patch, I see
+> >
+> > checking TSC synchronization [CPU#0 -> CPU#1]:
+> > Measured 28 cycles TSC warp between CPUs, turning off TSC clock.
+> > Marking TSC unstable due to check_tsc_sync_source failed
+> >
+> > Whereas, without the patch syncs pass fine on all CPUs
+> >
+> > checking TSC synchronization [CPU#0 -> CPU#1]: passed.
+> >
+> > Due to this, TSC is marke unstable, when it is not actually unstable.
+> > This is because syncs in check_tsc_wrap() goes away due to this commit.
+> >
+> > As per the discussion on this thread, correct way to fix this is to add
+> > explicit syncs as below?
+> 
+> ah. Yes.
+> 
+> Could you please check whether:
+> 
+> > +     rdtsc_barrier();
+> >       start = get_cycles();
+> > +     rdtsc_barrier();
+> >       /*
+> >        * The measurement runs for 20 msecs:
+> >        */
+> > @@ -61,7 +63,9 @@ static __cpuinit void check_tsc_warp(voi
+> >                */
+> >               __raw_spin_lock(&sync_lock);
+> >               prev = last_tsc;
+> > +             rdtsc_barrier();
+> >               now = get_cycles();
+> > +             rdtsc_barrier();
+> 
+> adding the barrier just _after_ the get_cycles() call (but not before
+> it) does the trick too? That should be enough in this case.
+>
 
-> The ppc people run databases, and they don't care about sane people 
+With barrier only after get_cycles, I do see syncs across first few CPUs
+passing. But later I see:
 
-And HPC apps, and all sorts of other things...
+checking TSC synchronization [CPU#0 -> CPU#13]:
+Measured 4 cycles TSC warp between CPUs, turning off TSC clock.
+Marking TSC unstable due to check_tsc_sync_source failed
 
-> telling them the big pages suck. It's made worse by the fact that they 
-> also have horribly bad TLB fills on their broken CPU's, and years and 
 
-Taking page faults at a 4k granularity also sucks.  A lot of the
-performance improvement from using 64k pages comes just from executing
-the page fault path (and other paths in the mm code) less frequently.
-That's why we see a performance improvement from 64k pages even on
-machines that don't support 64k pages in hardware (like the 21%
-reduction in system time on a kernel compile that I reported earlier).
-That has nothing to do with TLB miss times or anything to do with the
-MMU.
-
-I'd love to be able to use a 4k base page size if I could still get
-the reduction in page faults and the expanded TLB reach that we get
-now with 64k pages.  If we could allocate the page cache for large
-files with order-4 allocations wherever possible that would be a good
-start.  I think Christoph Lameter had some patches in that direction
-but they didn't seem to get very far.
-
-> years of telling people that the MMU on ppc's are sh*t has only been 
-> reacted to with "talk to the hand, we know better".
-
-Well, it's been reacted to with "AIX can use small pages where it
-makes sense, and large pages where that makes sense, so why can't
-Linux?"
-
-> I suspect the PPC people need to figure out some way to handle this in 
-> their broken setups (since I don't really expect them to finally admit 
-> that they were full of sh*t with their big pages), but since I think it's 
-> a ppc bug, I'm not at all interested in a fix that penalizes the _good_ 
-> case.
-
-Looks like we should make the stack a bit larger.
-
-Paul.
+Thanks,
+Venki
