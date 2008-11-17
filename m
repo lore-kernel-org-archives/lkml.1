@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbYKQQWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYKQQW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbYKQQWn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 11:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYKQQWf
+	id S1754015AbYKQQW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 11:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbYKQQWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 11:22:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38082 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751974AbYKQQWe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 11:22:34 -0500
-Date: Mon, 17 Nov 2008 08:22:13 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] mm: evict streaming IO cache first
-In-Reply-To: <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.0811170802010.3468@nehalem.linux-foundation.org>
-References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20081115210039.537f59f5.akpm@linux-foundation.org> <alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org> <49208E9A.5080801@redhat.com> <20081116204720.1b8cbe18.akpm@linux-foundation.org>
- <20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com> <2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com> <20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 17 Nov 2008 11:22:37 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39843 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752483AbYKQQWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 11:22:36 -0500
+Message-ID: <49219A3E.1080100@redhat.com>
+Date: Mon, 17 Nov 2008 11:22:22 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [PATCH] mm: evict streaming IO cache first
+References: <20081115181748.3410.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<20081115210039.537f59f5.akpm@linux-foundation.org>	<alpine.LFD.2.00.0811161013270.3468@nehalem.linux-foundation.org>	<49208E9A.5080801@redhat.com>	<20081116204720.1b8cbe18.akpm@linux-foundation.org>	<20081117153012.51ece88f.kamezawa.hiroyu@jp.fujitsu.com>	<2f11576a0811162239w58555c6dq8a61ec184b22bd52@mail.gmail.com>	<20081117155417.5cc63907.kamezawa.hiroyu@jp.fujitsu.com>	<2f11576a0811162303t51609098o6cd765c04d791581@mail.gmail.com> <20081117172202.343e1b35.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20081117172202.343e1b35.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 17 Nov 2008, KAMEZAWA Hiroyuki wrote:
+KAMEZAWA Hiroyuki wrote:
+> On Mon, 17 Nov 2008 16:03:48 +0900
+> "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
+>>> How about resetting zone->recent_scanned/rotated to be some value calculated from
+>>> INACTIVE_ANON/INACTIVE_FILE at some time (when the system is enough idle) ?
+>> in get_scan_ratio()
+>>
+> But active/inactive ratio (and mapped_ratio) is not handled there.
 > 
-> How about resetting zone->recent_scanned/rotated to be some value calculated from
-> INACTIVE_ANON/INACTIVE_FILE at some time (when the system is enough idle) ?
+> Follwoing 2 will return the same scan ratio.
 
-.. or how about just considering the act of adding a new page to the LRU 
-to be a "scan" event? IOW, "scanning" is not necessarily just an act of 
-the VM looking for pages to free, but would be a more general "activity" 
-meter.
+get_scan_ratio does not look at the sizes of the lists, but
+at the ratio between "pages scanned" and "pages rotated".
 
-IOW, when we calculate the percentages of anon-vs-file in get_scan_ratio() 
-we take into account how much anon-page activity vs how much file cache 
-activity there has been.
+A page that is moved from the inactive to the active list
+is always counted as rotated.
 
-So if we've seen a lot of filesystem activity ("streaming"), we would tend 
-to prefer to scan the page cache. If we've seen a lot of anon page 
-mapping, we'd tend to prefer to scan the anon side.
+A page that is moved from the active to the inactive list
+is counted as rotated if it was mapped and referenced.
 
-That would seem to be the right kind of thing to do: if we literally have 
-a load that only does streaming and pages never get moved to the active 
-LRU, it should basically keep the page cache close to constant size - 
-which is just another way of saying that we should only be scanning page 
-cache pages.
+> ==case 1==
+>   active_anon = 480M
+>   inactive_anon = 32M
+>   active_file = 2M
+>   inactive_file = 510M
+> 
+> ==case 2==
+>   active_anon = 480M
+>   inactive_anon = 32M
+>   active_file = 480M
+>   inactive_file = 32M
+> ==
+> 
+> 
+> 
+> -Kame
+> 
 
-Hmm? 
 
-			Linus
+-- 
+All rights reversed.
