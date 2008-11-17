@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbYKQSCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbYKQSDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbYKQSCY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 13:02:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbYKQSCQ
+	id S1754559AbYKQSDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 13:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbYKQSDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 13:02:16 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49639 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752465AbYKQSCP (ORCPT
+	Mon, 17 Nov 2008 13:03:06 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:59366 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbYKQSDD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 13:02:15 -0500
-Date: Mon, 17 Nov 2008 18:01:49 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
-       Milan Broz <mbroz@redhat.com>
-Subject: Re: Active waiting with yield()
-Message-ID: <20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
-	<20081114190616.30dd273e@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
-	<1226696221.7685.8148.camel@twins>
-	<Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
-	<1226789714.8172.0.camel@lappy.programming.kicks-ass.net>
-	<Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 17 Nov 2008 13:03:03 -0500
+Message-ID: <4921B1D7.5060608@ct.jp.nec.com>
+Date: Mon, 17 Nov 2008 10:03:03 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+MIME-Version: 1.0
+To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] x86: ia32_signal: introduce COPY_SEG_STRICT
+References: <491E4101.7010405@ct.jp.nec.com> <491E416F.5040703@ct.jp.nec.com> <2375c9f90811150911l3cfba998r1ae949912b7a8df3@mail.gmail.com>
+In-Reply-To: <2375c9f90811150911l3cfba998r1ae949912b7a8df3@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --- so if the driver processes more than 100000 requests between reboots, 
-> wait queues actually slow things down.
+Américo Wang wrote:
+> On Sat, Nov 15, 2008 at 3:26 AM, Hiroshi Shimamoto
+> <h-shimamoto@ct.jp.nec.com> wrote:
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> Impact: cleanup
+>>
+>> Introduce COPY_SEG_STRICT for ia32_restore_sigcontext().
+>>
+>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> ---
+>>  arch/x86/ia32/ia32_signal.c |   12 ++++++++----
+>>  1 files changed, 8 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+>> index a28790a..f74178e 100644
+>> --- a/arch/x86/ia32/ia32_signal.c
+>> +++ b/arch/x86/ia32/ia32_signal.c
+>> @@ -201,6 +201,12 @@ struct rt_sigframe
+>>        err |= __get_user(regs->x, &sc->x);     \
+>>  }
+>>
+>> +#define COPY_SEG_STRICT(seg)   {                       \
+>> +               unsigned short tmp;                     \
+>> +               err |= __get_user(tmp, &sc->seg);       \
+>> +               regs->seg = tmp | 3;                    \
+>> +}
+>> +
+> 
+> Since your first patch is to kill the temporary variables, then why do you
+> introduce a temporary variable here? It can be avoided like it was.
+> 
+> Can you explain the reason? :)
 
-Versus power consumption and virtualisation considerations. Plus your
-numbers are wrong. You seem terribly keen to ignore the fact that the
-true cost is a predicted branch and usually a predicted branch of a
-cached variable and you'll only touch the wait queue in rare cases.
+The first reason is to make this macro same as arch/x86/kernel/signal_{32|64}.c.
+And second, I guess gcc may generate little better code.
 
-I'd also note as an aside modern drivers usually run off krefs so
-destruction and thus closedown is refcounted and comes off the last kref
-destruct.
-
-Alan
+thanks,
+Hiroshi Shimamoto
