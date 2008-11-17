@@ -1,124 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbYKQNuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752763AbYKQNzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752911AbYKQNuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 08:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbYKQNt6
+	id S1752763AbYKQNzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 08:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYKQNzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 08:49:58 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:36819 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864AbYKQNt5 (ORCPT
+	Mon, 17 Nov 2008 08:55:41 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:21329 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752063AbYKQNzl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 08:49:57 -0500
-Date: Mon, 17 Nov 2008 13:49:52 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-pci@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] acpiphp: Identify more removable slots
-Message-ID: <20081117134952.GA12932@srcf.ucam.org>
-References: <20081113235255.GA17709@srcf.ucam.org>
+	Mon, 17 Nov 2008 08:55:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=Y6ZwamdKKftcWFbZRNAVc3bXcW8N5erXMKmA1LhcZwDkuzWDXlZj5F4vj+p9TmEftf
+         //B5ncixpP7Gt92nvUcTAUj1I8w0WdYLkcPq21OBdetTADckPHPtFRczbunGVXdi3gl2
+         o8X5ygeg7cz6l5tAwvanQU84iRtYbHDC7l+7Q=
+Message-ID: <3aaafc130811170555l7e35b6b9s169d03f23eeb6388@mail.gmail.com>
+Date: Mon, 17 Nov 2008 08:55:40 -0500
+From: "J.R. Mauro" <jrm8005@gmail.com>
+To: "Victoria Muntean" <vikimun@gmail.com>
+Subject: Re: size of swapped-out part of the process
+Cc: "Kernel Linux" <linux-kernel@vger.kernel.org>
+In-Reply-To: <ab4346860811170547j6f21ba2ducd451e761e165a5d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20081113235255.GA17709@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+References: <ab4346860811170452t2cbcb451u407edca19c9e0ba6@mail.gmail.com>
+	 <ab4346860811170453i2bba95a6nb16c2c9e59424272@mail.gmail.com>
+	 <3aaafc130811170533j4c7e0008vd76c42da0cbb9f36@mail.gmail.com>
+	 <ab4346860811170547j6f21ba2ducd451e761e165a5d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to section 6.3.6 of the ACPI spec, the presence of an _RMV 
-method that evaluates to 1 is sufficient to indicate that a slot is 
-removable without needing an eject method. This patch refactors the 
-ejectable slot detection code a little in order to flag these slots as 
-ejectable and register them. Acpihp then binds to the expresscard slot 
-on my HP test machine.
+On Mon, Nov 17, 2008 at 8:47 AM, Victoria Muntean <vikimun@gmail.com> wrote:
+> On Mon, Nov 17, 2008 at 3:33 PM, J.R. Mauro <jrm8005@gmail.com> wrote:
+>> On Mon, Nov 17, 2008 at 7:53 AM, Victoria Muntean <vikimun@gmail.com> wrote:
+>>> How can I calculate size of swapped-out part of the process from
+>>> /proc/PID/*, even if approximately ?
+>>> For example, I have VmSize=1216192 kB, VmRSS = 628788 kB, but global
+>>> swap-in-use==0.
+>>> Hence (VmSize - VmRSS) is far from being swapped-out part of the
+>>> process. What is ?
+>>
+>> Doesn't top's SWAP field give you this?
+>
+> No. SWAP is global. I need per-process. Per-process participation in swap.
+>
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
-
----
-
-The _LCK handling code requires some more cleanup and ideally some 
-hardware that actually implements it
-
- drivers/pci/hotplug/acpiphp_glue.c |   32 +++++++++++++++++---------------
- 1 files changed, 17 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index 955aae4..e8cef99 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -74,7 +74,7 @@ static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *contex
-  * Ejectable slot should satisfy at least these conditions:
-  *
-  *  1. has _ADR method
-- *  2. has _EJ0 method
-+ *  2. has _EJ0 method or _RMV method
-  *
-  * optionally
-  *
-@@ -87,18 +87,25 @@ static int is_ejectable(acpi_handle handle)
- {
- 	acpi_status status;
- 	acpi_handle tmp;
-+	unsigned long long removable;
- 
- 	status = acpi_get_handle(handle, "_ADR", &tmp);
--	if (ACPI_FAILURE(status)) {
-+	if (ACPI_FAILURE(status))
- 		return 0;
--	}
- 
- 	status = acpi_get_handle(handle, "_EJ0", &tmp);
--	if (ACPI_FAILURE(status)) {
--		return 0;
-+	if (ACPI_SUCCESS(status))
-+		return 1;
-+
-+	status = acpi_get_handle(handle, "_RMV", &tmp);
-+	if (ACPI_SUCCESS(status)) {
-+		status = acpi_evaluate_integer(handle, "_RMV", NULL,
-+					       &removable);
-+		if (ACPI_SUCCESS(status) && removable)
-+			return 1;
- 	}
- 
--	return 1;
-+	return 0;
- }
- 
- 
-@@ -185,16 +192,10 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	unsigned long long adr, sun;
- 	int device, function, retval;
- 
--	status = acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
--
--	if (ACPI_FAILURE(status))
--		return AE_OK;
--
--	status = acpi_get_handle(handle, "_EJ0", &tmp);
--
--	if (ACPI_FAILURE(status) && !(is_dock_device(handle)))
-+	if (!is_ejectable(handle) && !is_dock_device(handle))
- 		return AE_OK;
- 
-+	acpi_evaluate_integer(handle, "_ADR", NULL, &adr);
- 	device = (adr >> 16) & 0xffff;
- 	function = adr & 0xffff;
- 
-@@ -205,7 +206,8 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	INIT_LIST_HEAD(&newfunc->sibling);
- 	newfunc->handle = handle;
- 	newfunc->function = function;
--	if (ACPI_SUCCESS(status))
-+
-+	if (ACPI_SUCCESS(acpi_get_handle(handle, "_EJ0", &tmp)))
- 		newfunc->flags = FUNC_HAS_EJ0;
- 
- 	if (ACPI_SUCCESS(acpi_get_handle(handle, "_STA", &tmp)))
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Are you sure? I'm not talking about the Swap: BigNumber in the header.
+If you hit f you can add a SWAP column which is per process. Or if it
+isn't per-process, it's horribly misleading.
