@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbYKQHZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYKQHY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbYKQHZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:25:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYKQHVJ
+	id S1757253AbYKQHY4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYKQHVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:09 -0500
-Received: from kroah.org ([198.145.64.141]:38291 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:05 -0500
+Received: from kroah.org ([198.145.64.141]:38255 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752606AbYKQHU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:20:59 -0500
-Date: Sun, 16 Nov 2008 23:14:57 -0800
+	id S1752193AbYKQHUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:20:55 -0500
+Date: Sun, 16 Nov 2008 23:14:45 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,17 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 12/46] ACPI: EC: make kernel messages more useful when GPE
-	storm is detected
-Message-ID: <20081117071457.GM29522@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "Darrick J. Wong" <djwong@us.ibm.com>,
+       Corey Minyard <cminyard@mvista.com>, Jean Delvare <khali@linux-fr.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 09/46] Fix platform drivers that crash on suspend/resume
+Message-ID: <20081117071445.GJ29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-ec-make-kernel-messages-more-useful-when-gpe-storm-is-detected.patch"
+Content-Disposition: inline; filename="fix-platform-drivers-that-crash-on-suspend-resume.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,56 +41,212 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+From: Darrick J. Wong <djwong@us.ibm.com>
 
-commit f8248434e6a11d7cd314281be3b39bbcf82fc243 upstream.
+commit fe2d5ffc74a1de6a31e9fd65b65cce72d881edf7 upstream.
 
-Make sure we can tell if the GPE storm workaround gets activated,
-and avoid flooding the logs afterwards.
+It turns out that if one registers a struct platform_device, the
+platform device code expects that platform_device.device->driver points
+to a struct driver inside a struct platform_driver.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11841
-"plenty of line "ACPI: EC: non-query interrupt received,
- switching to interrupt mode" in dmesg"
+This is not the case with the ipmi-si, ipmi-msghandler and ibmaem
+drivers, which causes the suspend/resume hook functions to jump off into
+nowhere, causing a crash.  Make this assumption hold true for these
+three drivers.
 
-Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Acked-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+Acked-by: Corey Minyard <cminyard@mvista.com>
+Cc: Jean Delvare <khali@linux-fr.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/ec.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ drivers/char/ipmi/ipmi_msghandler.c |   20 +++++++++++---------
+ drivers/char/ipmi/ipmi_si_intf.c    |   16 +++++++++-------
+ drivers/hwmon/ibmaem.c              |   18 ++++++++++--------
+ 3 files changed, 30 insertions(+), 24 deletions(-)
 
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -286,7 +286,8 @@ static int acpi_ec_transaction_unlocked(
- 		acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
- 	} else if (test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
- 		   t->irq_count > ACPI_EC_STORM_THRESHOLD) {
--		pr_debug(PREFIX "GPE storm detected\n");
-+		pr_info(PREFIX "GPE storm detected, "
-+			"transactions will use polling mode\n");
- 		set_bit(EC_FLAGS_GPE_STORM, &ec->flags);
- 	}
- 	return ret;
-@@ -566,9 +567,15 @@ static u32 acpi_ec_gpe_handler(void *dat
- 	if (!test_bit(EC_FLAGS_GPE_MODE, &ec->flags) &&
- 	    !test_bit(EC_FLAGS_NO_GPE, &ec->flags)) {
- 		/* this is non-query, must be confirmation */
--		if (printk_ratelimit())
--			pr_info(PREFIX "non-query interrupt received,"
-+		if (!test_bit(EC_FLAGS_GPE_STORM, &ec->flags)) {
-+			if (printk_ratelimit())
-+				pr_info(PREFIX "non-query interrupt received,"
-+					" switching to interrupt mode\n");
-+		} else {
-+			/* hush, STORM switches the mode every transaction */
-+			pr_debug(PREFIX "non-query interrupt received,"
- 				" switching to interrupt mode\n");
-+		}
- 		set_bit(EC_FLAGS_GPE_MODE, &ec->flags);
- 	}
- 	return ACPI_INTERRUPT_HANDLED;
+--- a/drivers/char/ipmi/ipmi_msghandler.c
++++ b/drivers/char/ipmi/ipmi_msghandler.c
+@@ -422,9 +422,11 @@ struct ipmi_smi {
+ /**
+  * The driver model view of the IPMI messaging driver.
+  */
+-static struct device_driver ipmidriver = {
+-	.name = "ipmi",
+-	.bus = &platform_bus_type
++static struct platform_driver ipmidriver = {
++	.driver = {
++		.name = "ipmi",
++		.bus = &platform_bus_type
++	}
+ };
+ static DEFINE_MUTEX(ipmidriver_mutex);
+ 
+@@ -2384,9 +2386,9 @@ static int ipmi_bmc_register(ipmi_smi_t 
+ 	 * representing the interfaced BMC already
+ 	 */
+ 	if (bmc->guid_set)
+-		old_bmc = ipmi_find_bmc_guid(&ipmidriver, bmc->guid);
++		old_bmc = ipmi_find_bmc_guid(&ipmidriver.driver, bmc->guid);
+ 	else
+-		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver,
++		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
+ 						    bmc->id.product_id,
+ 						    bmc->id.device_id);
+ 
+@@ -2416,7 +2418,7 @@ static int ipmi_bmc_register(ipmi_smi_t 
+ 		snprintf(name, sizeof(name),
+ 			 "ipmi_bmc.%4.4x", bmc->id.product_id);
+ 
+-		while (ipmi_find_bmc_prod_dev_id(&ipmidriver,
++		while (ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
+ 						 bmc->id.product_id,
+ 						 bmc->id.device_id)) {
+ 			if (!warn_printed) {
+@@ -2446,7 +2448,7 @@ static int ipmi_bmc_register(ipmi_smi_t 
+ 			       " Unable to allocate platform device\n");
+ 			return -ENOMEM;
+ 		}
+-		bmc->dev->dev.driver = &ipmidriver;
++		bmc->dev->dev.driver = &ipmidriver.driver;
+ 		dev_set_drvdata(&bmc->dev->dev, bmc);
+ 		kref_init(&bmc->refcount);
+ 
+@@ -4247,7 +4249,7 @@ static int ipmi_init_msghandler(void)
+ 	if (initialized)
+ 		return 0;
+ 
+-	rv = driver_register(&ipmidriver);
++	rv = driver_register(&ipmidriver.driver);
+ 	if (rv) {
+ 		printk(KERN_ERR PFX "Could not register IPMI driver\n");
+ 		return rv;
+@@ -4308,7 +4310,7 @@ static __exit void cleanup_ipmi(void)
+ 	remove_proc_entry(proc_ipmi_root->name, NULL);
+ #endif /* CONFIG_PROC_FS */
+ 
+-	driver_unregister(&ipmidriver);
++	driver_unregister(&ipmidriver.driver);
+ 
+ 	initialized = 0;
+ 
+--- a/drivers/char/ipmi/ipmi_si_intf.c
++++ b/drivers/char/ipmi/ipmi_si_intf.c
+@@ -114,9 +114,11 @@ static char *si_to_str[] = { "kcs", "smi
+ 
+ #define DEVICE_NAME "ipmi_si"
+ 
+-static struct device_driver ipmi_driver = {
+-	.name = DEVICE_NAME,
+-	.bus = &platform_bus_type
++static struct platform_driver ipmi_driver = {
++	.driver = {
++		.name = DEVICE_NAME,
++		.bus = &platform_bus_type
++	}
+ };
+ 
+ 
+@@ -2868,7 +2870,7 @@ static int try_smi_init(struct smi_info 
+ 			goto out_err;
+ 		}
+ 		new_smi->dev = &new_smi->pdev->dev;
+-		new_smi->dev->driver = &ipmi_driver;
++		new_smi->dev->driver = &ipmi_driver.driver;
+ 
+ 		rv = platform_device_add(new_smi->pdev);
+ 		if (rv) {
+@@ -2983,7 +2985,7 @@ static __devinit int init_ipmi_si(void)
+ 	initialized = 1;
+ 
+ 	/* Register the device drivers. */
+-	rv = driver_register(&ipmi_driver);
++	rv = driver_register(&ipmi_driver.driver);
+ 	if (rv) {
+ 		printk(KERN_ERR
+ 		       "init_ipmi_si: Unable to register driver: %d\n",
+@@ -3052,7 +3054,7 @@ static __devinit int init_ipmi_si(void)
+ #ifdef CONFIG_PPC_OF
+ 		of_unregister_platform_driver(&ipmi_of_platform_driver);
+ #endif
+-		driver_unregister(&ipmi_driver);
++		driver_unregister(&ipmi_driver.driver);
+ 		printk(KERN_WARNING
+ 		       "ipmi_si: Unable to find any System Interface(s)\n");
+ 		return -ENODEV;
+@@ -3151,7 +3153,7 @@ static __exit void cleanup_ipmi_si(void)
+ 		cleanup_one_si(e);
+ 	mutex_unlock(&smi_infos_lock);
+ 
+-	driver_unregister(&ipmi_driver);
++	driver_unregister(&ipmi_driver.driver);
+ }
+ module_exit(cleanup_ipmi_si);
+ 
+--- a/drivers/hwmon/ibmaem.c
++++ b/drivers/hwmon/ibmaem.c
+@@ -88,9 +88,11 @@
+ static DEFINE_IDR(aem_idr);
+ static DEFINE_SPINLOCK(aem_idr_lock);
+ 
+-static struct device_driver aem_driver = {
+-	.name = DRVNAME,
+-	.bus = &platform_bus_type,
++static struct platform_driver aem_driver = {
++	.driver = {
++		.name = DRVNAME,
++		.bus = &platform_bus_type,
++	}
+ };
+ 
+ struct aem_ipmi_data {
+@@ -583,7 +585,7 @@ static int aem_init_aem1_inst(struct aem
+ 	data->pdev = platform_device_alloc(DRVNAME, data->id);
+ 	if (!data->pdev)
+ 		goto dev_err;
+-	data->pdev->dev.driver = &aem_driver;
++	data->pdev->dev.driver = &aem_driver.driver;
+ 
+ 	res = platform_device_add(data->pdev);
+ 	if (res)
+@@ -716,7 +718,7 @@ static int aem_init_aem2_inst(struct aem
+ 	data->pdev = platform_device_alloc(DRVNAME, data->id);
+ 	if (!data->pdev)
+ 		goto dev_err;
+-	data->pdev->dev.driver = &aem_driver;
++	data->pdev->dev.driver = &aem_driver.driver;
+ 
+ 	res = platform_device_add(data->pdev);
+ 	if (res)
+@@ -1085,7 +1087,7 @@ static int __init aem_init(void)
+ {
+ 	int res;
+ 
+-	res = driver_register(&aem_driver);
++	res = driver_register(&aem_driver.driver);
+ 	if (res) {
+ 		printk(KERN_ERR "Can't register aem driver\n");
+ 		return res;
+@@ -1097,7 +1099,7 @@ static int __init aem_init(void)
+ 	return 0;
+ 
+ ipmi_reg_err:
+-	driver_unregister(&aem_driver);
++	driver_unregister(&aem_driver.driver);
+ 	return res;
+ 
+ }
+@@ -1107,7 +1109,7 @@ static void __exit aem_exit(void)
+ 	struct aem_data *p1, *next1;
+ 
+ 	ipmi_smi_watcher_unregister(&driver_data.bmc_events);
+-	driver_unregister(&aem_driver);
++	driver_unregister(&aem_driver.driver);
+ 	list_for_each_entry_safe(p1, next1, &driver_data.aem_devices, list)
+ 		aem_delete(p1);
+ }
 
 -- 
