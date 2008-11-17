@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbYKQHY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757081AbYKQHZ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253AbYKQHY4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:24:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYKQHVF
+	id S1757081AbYKQHZ5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:25:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYKQHVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:05 -0500
-Received: from kroah.org ([198.145.64.141]:38255 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:11 -0500
+Received: from kroah.org ([198.145.64.141]:38298 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752193AbYKQHUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:20:55 -0500
-Date: Sun, 16 Nov 2008 23:14:45 -0800
+	id S1752683AbYKQHVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:21:00 -0500
+Date: Sun, 16 Nov 2008 23:15:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Darrick J. Wong" <djwong@us.ibm.com>,
-       Corey Minyard <cminyard@mvista.com>, Jean Delvare <khali@linux-fr.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 09/46] Fix platform drivers that crash on suspend/resume
-Message-ID: <20081117071445.GJ29522@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Adam Litke <agl@us.ibm.com>,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 13/46] hugetlb: make unmap_ref_private multi-size-aware
+Message-ID: <20081117071503.GN29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-platform-drivers-that-crash-on-suspend-resume.patch"
+Content-Disposition: inline; filename="hugetlb-make-unmap_ref_private-multi-size-aware.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,212 +41,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Darrick J. Wong <djwong@us.ibm.com>
+From: Adam Litke <agl@us.ibm.com>
 
-commit fe2d5ffc74a1de6a31e9fd65b65cce72d881edf7 upstream.
+commit 7526674de0c921e7f1e9b6f71a1f9d832557b554 upstream.
 
-It turns out that if one registers a struct platform_device, the
-platform device code expects that platform_device.device->driver points
-to a struct driver inside a struct platform_driver.
+Oops.  Part of the hugetlb private reservation code was not fully
+converted to use hstates.
 
-This is not the case with the ipmi-si, ipmi-msghandler and ibmaem
-drivers, which causes the suspend/resume hook functions to jump off into
-nowhere, causing a crash.  Make this assumption hold true for these
-three drivers.
+When a huge page must be unmapped from VMAs due to a failed COW,
+HPAGE_SIZE is used in the call to unmap_hugepage_range() regardless of
+the page size being used.  This works if the VMA is using the default
+huge page size.  Otherwise we might unmap too much, too little, or
+trigger a BUG_ON.  Rare but serious -- fix it.
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-Acked-by: Corey Minyard <cminyard@mvista.com>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Adam Litke <agl@us.ibm.com>
+Cc: Jon Tollefson <kniht@linux.vnet.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/ipmi/ipmi_msghandler.c |   20 +++++++++++---------
- drivers/char/ipmi/ipmi_si_intf.c    |   16 +++++++++-------
- drivers/hwmon/ibmaem.c              |   18 ++++++++++--------
- 3 files changed, 30 insertions(+), 24 deletions(-)
+ mm/hugetlb.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/char/ipmi/ipmi_msghandler.c
-+++ b/drivers/char/ipmi/ipmi_msghandler.c
-@@ -422,9 +422,11 @@ struct ipmi_smi {
- /**
-  * The driver model view of the IPMI messaging driver.
-  */
--static struct device_driver ipmidriver = {
--	.name = "ipmi",
--	.bus = &platform_bus_type
-+static struct platform_driver ipmidriver = {
-+	.driver = {
-+		.name = "ipmi",
-+		.bus = &platform_bus_type
-+	}
- };
- static DEFINE_MUTEX(ipmidriver_mutex);
- 
-@@ -2384,9 +2386,9 @@ static int ipmi_bmc_register(ipmi_smi_t 
- 	 * representing the interfaced BMC already
- 	 */
- 	if (bmc->guid_set)
--		old_bmc = ipmi_find_bmc_guid(&ipmidriver, bmc->guid);
-+		old_bmc = ipmi_find_bmc_guid(&ipmidriver.driver, bmc->guid);
- 	else
--		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver,
-+		old_bmc = ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
- 						    bmc->id.product_id,
- 						    bmc->id.device_id);
- 
-@@ -2416,7 +2418,7 @@ static int ipmi_bmc_register(ipmi_smi_t 
- 		snprintf(name, sizeof(name),
- 			 "ipmi_bmc.%4.4x", bmc->id.product_id);
- 
--		while (ipmi_find_bmc_prod_dev_id(&ipmidriver,
-+		while (ipmi_find_bmc_prod_dev_id(&ipmidriver.driver,
- 						 bmc->id.product_id,
- 						 bmc->id.device_id)) {
- 			if (!warn_printed) {
-@@ -2446,7 +2448,7 @@ static int ipmi_bmc_register(ipmi_smi_t 
- 			       " Unable to allocate platform device\n");
- 			return -ENOMEM;
- 		}
--		bmc->dev->dev.driver = &ipmidriver;
-+		bmc->dev->dev.driver = &ipmidriver.driver;
- 		dev_set_drvdata(&bmc->dev->dev, bmc);
- 		kref_init(&bmc->refcount);
- 
-@@ -4247,7 +4249,7 @@ static int ipmi_init_msghandler(void)
- 	if (initialized)
- 		return 0;
- 
--	rv = driver_register(&ipmidriver);
-+	rv = driver_register(&ipmidriver.driver);
- 	if (rv) {
- 		printk(KERN_ERR PFX "Could not register IPMI driver\n");
- 		return rv;
-@@ -4308,7 +4310,7 @@ static __exit void cleanup_ipmi(void)
- 	remove_proc_entry(proc_ipmi_root->name, NULL);
- #endif /* CONFIG_PROC_FS */
- 
--	driver_unregister(&ipmidriver);
-+	driver_unregister(&ipmidriver.driver);
- 
- 	initialized = 0;
- 
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -114,9 +114,11 @@ static char *si_to_str[] = { "kcs", "smi
- 
- #define DEVICE_NAME "ipmi_si"
- 
--static struct device_driver ipmi_driver = {
--	.name = DEVICE_NAME,
--	.bus = &platform_bus_type
-+static struct platform_driver ipmi_driver = {
-+	.driver = {
-+		.name = DEVICE_NAME,
-+		.bus = &platform_bus_type
-+	}
- };
- 
- 
-@@ -2868,7 +2870,7 @@ static int try_smi_init(struct smi_info 
- 			goto out_err;
- 		}
- 		new_smi->dev = &new_smi->pdev->dev;
--		new_smi->dev->driver = &ipmi_driver;
-+		new_smi->dev->driver = &ipmi_driver.driver;
- 
- 		rv = platform_device_add(new_smi->pdev);
- 		if (rv) {
-@@ -2983,7 +2985,7 @@ static __devinit int init_ipmi_si(void)
- 	initialized = 1;
- 
- 	/* Register the device drivers. */
--	rv = driver_register(&ipmi_driver);
-+	rv = driver_register(&ipmi_driver.driver);
- 	if (rv) {
- 		printk(KERN_ERR
- 		       "init_ipmi_si: Unable to register driver: %d\n",
-@@ -3052,7 +3054,7 @@ static __devinit int init_ipmi_si(void)
- #ifdef CONFIG_PPC_OF
- 		of_unregister_platform_driver(&ipmi_of_platform_driver);
- #endif
--		driver_unregister(&ipmi_driver);
-+		driver_unregister(&ipmi_driver.driver);
- 		printk(KERN_WARNING
- 		       "ipmi_si: Unable to find any System Interface(s)\n");
- 		return -ENODEV;
-@@ -3151,7 +3153,7 @@ static __exit void cleanup_ipmi_si(void)
- 		cleanup_one_si(e);
- 	mutex_unlock(&smi_infos_lock);
- 
--	driver_unregister(&ipmi_driver);
-+	driver_unregister(&ipmi_driver.driver);
- }
- module_exit(cleanup_ipmi_si);
- 
---- a/drivers/hwmon/ibmaem.c
-+++ b/drivers/hwmon/ibmaem.c
-@@ -88,9 +88,11 @@
- static DEFINE_IDR(aem_idr);
- static DEFINE_SPINLOCK(aem_idr_lock);
- 
--static struct device_driver aem_driver = {
--	.name = DRVNAME,
--	.bus = &platform_bus_type,
-+static struct platform_driver aem_driver = {
-+	.driver = {
-+		.name = DRVNAME,
-+		.bus = &platform_bus_type,
-+	}
- };
- 
- struct aem_ipmi_data {
-@@ -583,7 +585,7 @@ static int aem_init_aem1_inst(struct aem
- 	data->pdev = platform_device_alloc(DRVNAME, data->id);
- 	if (!data->pdev)
- 		goto dev_err;
--	data->pdev->dev.driver = &aem_driver;
-+	data->pdev->dev.driver = &aem_driver.driver;
- 
- 	res = platform_device_add(data->pdev);
- 	if (res)
-@@ -716,7 +718,7 @@ static int aem_init_aem2_inst(struct aem
- 	data->pdev = platform_device_alloc(DRVNAME, data->id);
- 	if (!data->pdev)
- 		goto dev_err;
--	data->pdev->dev.driver = &aem_driver;
-+	data->pdev->dev.driver = &aem_driver.driver;
- 
- 	res = platform_device_add(data->pdev);
- 	if (res)
-@@ -1085,7 +1087,7 @@ static int __init aem_init(void)
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1797,6 +1797,7 @@ int unmap_ref_private(struct mm_struct *
+ 					struct page *page,
+ 					unsigned long address)
  {
- 	int res;
++	struct hstate *h = hstate_vma(vma);
+ 	struct vm_area_struct *iter_vma;
+ 	struct address_space *mapping;
+ 	struct prio_tree_iter iter;
+@@ -1806,7 +1807,7 @@ int unmap_ref_private(struct mm_struct *
+ 	 * vm_pgoff is in PAGE_SIZE units, hence the different calculation
+ 	 * from page cache lookup which is in HPAGE_SIZE units.
+ 	 */
+-	address = address & huge_page_mask(hstate_vma(vma));
++	address = address & huge_page_mask(h);
+ 	pgoff = ((address - vma->vm_start) >> PAGE_SHIFT)
+ 		+ (vma->vm_pgoff >> PAGE_SHIFT);
+ 	mapping = (struct address_space *)page_private(page);
+@@ -1825,7 +1826,7 @@ int unmap_ref_private(struct mm_struct *
+ 		 */
+ 		if (!is_vma_resv_set(iter_vma, HPAGE_RESV_OWNER))
+ 			unmap_hugepage_range(iter_vma,
+-				address, address + HPAGE_SIZE,
++				address, address + huge_page_size(h),
+ 				page);
+ 	}
  
--	res = driver_register(&aem_driver);
-+	res = driver_register(&aem_driver.driver);
- 	if (res) {
- 		printk(KERN_ERR "Can't register aem driver\n");
- 		return res;
-@@ -1097,7 +1099,7 @@ static int __init aem_init(void)
- 	return 0;
- 
- ipmi_reg_err:
--	driver_unregister(&aem_driver);
-+	driver_unregister(&aem_driver.driver);
- 	return res;
- 
- }
-@@ -1107,7 +1109,7 @@ static void __exit aem_exit(void)
- 	struct aem_data *p1, *next1;
- 
- 	ipmi_smi_watcher_unregister(&driver_data.bmc_events);
--	driver_unregister(&aem_driver);
-+	driver_unregister(&aem_driver.driver);
- 	list_for_each_entry_safe(p1, next1, &driver_data.aem_devices, list)
- 		aem_delete(p1);
- }
 
 -- 
