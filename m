@@ -1,54 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbYKQBk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbYKQBnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbYKQBk3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 16 Nov 2008 20:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYKQBkT
+	id S1756035AbYKQBnR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 16 Nov 2008 20:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbYKQBnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 16 Nov 2008 20:40:19 -0500
-Received: from mga09.intel.com ([134.134.136.24]:5087 "EHLO mga09.intel.com"
+	Sun, 16 Nov 2008 20:43:00 -0500
+Received: from dino.spamt.net ([217.10.9.51]:48582 "EHLO dino.spamt.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753824AbYKQBkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 16 Nov 2008 20:40:18 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.33,615,1220252400"; 
-   d="scan'208";a="360848940"
-Subject: Re: [STABLE PATCH .26 .27] ACPI: avoid empty file name in sysfs
-From: Zhang Rui <rui.zhang@intel.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Len Brown <lenb@kernel.org>, "stable@kernel.org" <stable@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20081115171725.GB1523@ucw.cz>
-References: <alpine.LFD.2.00.0811130015100.3128@localhost.localdomain>
-	 <20081115171725.GB1523@ucw.cz>
-Content-Type: text/plain
-Date: Mon, 17 Nov 2008 09:40:12 +0800
-Message-Id: <1226886012.15014.231.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S1753824AbYKQBnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 16 Nov 2008 20:43:00 -0500
+X-Greylist: delayed 885 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Nov 2008 20:42:59 EST
+From: Ulrich Dangel <uli-kernel@spamt.net>
+To: linux-input@vger.kernel.org
+Subject: [PATCH] input/mouse/alps.c: Handle touchpoints buttons correctly
+Date: Mon, 17 Nov 2008 02:42:50 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811170242.51046.uli-kernel@spamt.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-11-16 at 01:17 +0800, Pavel Machek wrote:
-> Hi!
-> 
-> > upstream 4feba70a2c1a1a0c96909f657f48b2e11e682370
-> > 
-> > Since commit bc45b1d39a925b56796bebf8a397a0491489d85c acpi tables are
-> > allowed to have an empty signature and /sys/firmware/acpi/tables uses the
-> > signature as filename.  Applications using naive recursion through /sys
-> > loop forever.  A possible solution would be: (replacing the zero length
-> > filename with the string "NULL")
-> 
-> What about using some string that is not a valid table name? Shorter
-> than 4 characters? AFAICT,
-> 'NULL' table could be added to acpi in future...?
-> 
-> What if *two* tales have empty signature?
-there are "NULL1" and "NULL2" in this case.
+When pressing any button belonging to the touchpoint, the generated click
+events dont belong to the touchpoint but to the touchpad.
 
-thanks,
-rui
+This patch fixes this behaviour, the events will be sent via the correct
+device, so scrolling with touchpoint is possible.
 
+The patch compiles cleanly and has been tested successfully on my
+machine.
+
+Signed-off-by: Ulrich Dangel <uli@spamt.net>
+
+---
+
+ alps.c |   13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+
+--- a/drivers/input/mouse/alps.c    2008-10-26 00:05:07.000000000 +0200
++++ b/drivers/input/mouse/alps.c    2008-11-17 01:22:03.738057264 +0100
+@@ -130,18 +130,23 @@ static void alps_process_packet(struct p
+    ges = packet[2] & 1;
+    fin = packet[2] & 2;
+
+-   input_report_key(dev, BTN_LEFT, left);
+-   input_report_key(dev, BTN_RIGHT, right);
+-   input_report_key(dev, BTN_MIDDLE, middle);
+-
+    if ((priv->i->flags & ALPS_DUALPOINT) && z == 127) {
+        input_report_rel(dev2, REL_X,  (x > 383 ? (x - 768) : x));
+        input_report_rel(dev2, REL_Y, -(y > 255 ? (y - 512) : y));
++
++       input_report_key(dev2, BTN_LEFT, left);
++       input_report_key(dev2, BTN_RIGHT, right);
++       input_report_key(dev2, BTN_MIDDLE, middle);
++
+        input_sync(dev);
+        input_sync(dev2);
+        return;
+    }
+
++   input_report_key(dev, BTN_LEFT, left);
++   input_report_key(dev, BTN_RIGHT, right);
++   input_report_key(dev, BTN_MIDDLE, middle);
++
+    /* Convert hardware tap to a reasonable Z value */
+    if (ges && !fin) z = 40;
