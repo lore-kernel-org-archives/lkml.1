@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757735AbYKQH2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbYKQH3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757735AbYKQH2r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 02:28:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYKQHVX
+	id S1757435AbYKQH3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 02:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYKQHVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 02:21:23 -0500
-Received: from kroah.org ([198.145.64.141]:38351 "EHLO coco.kroah.org"
+	Mon, 17 Nov 2008 02:21:24 -0500
+Received: from kroah.org ([198.145.64.141]:38451 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752832AbYKQHVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 02:21:04 -0500
-Date: Sun, 16 Nov 2008 23:15:13 -0800
+	id S1754426AbYKQHVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 02:21:13 -0500
+Date: Sun, 16 Nov 2008 23:15:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jonathan McDowell <noodles@earth.li>,
-       Frans Pop <elendil@planet.nl>, Sam Ravnborg <sam@ravnborg.org>,
+       alan@lxorguk.ukuu.org.uk, Adam Jackson <ajax@redhat.com>,
+       Mattia Dongili <malattia@linux.it>, Len Brown <lenb@kernel.org>,
+       Steve Conklin <sconklin@canonical.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 16/46] kbuild: Fixup deb-pkg target to generate separate
-	firmware deb
-Message-ID: <20081117071513.GQ29522@kroah.com>
+Subject: [patch 22/46] sony-laptop: ignore missing _DIS method on pic device
+Message-ID: <20081117071539.GW29522@kroah.com>
 References: <20081117070621.430169021@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kbuild-fixup-deb-pkg-target-to-generate-separate-firmware-deb.patch"
+Content-Disposition: inline; filename="sony-laptop-ignore-missing-_dis-method-on-pic-device.patch"
 In-Reply-To: <20081117071333.GA29522@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,78 +42,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jonathan McDowell <noodles@earth.li>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
 
-commit bf1b36445dc868cbbde194aa1dd87e38fe24cf16 upstream.
+commit 6158d3a2323835546c7cf83a170316fa77b726e0 upstream.
 
-The below is a simplistic fix for "make deb-pkg"; it splits the
-firmware out to a linux-firmware-image package and adds an
-(unversioned) Suggests to the linux package for this firmware.
+At least the Vaio VGN-Z540N doesn't have this method, so let's not fail
+to suspend just because it doesn't exist.
 
-Signed-Off-By: Jonathan McDowell <noodles@earth.li>
-Acked-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Adam Jackson <ajax@redhat.com>
+Acked-by: Mattia Dongili <malattia@linux.it>
+Cc: Len Brown <lenb@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steve Conklin <sconklin@canonical.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- scripts/package/builddeb |   24 ++++++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
 
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -15,15 +15,18 @@ set -e
- version=$KERNELRELEASE
- revision=`cat .version`
- tmpdir="$objtree/debian/tmp"
-+fwdir="$objtree/debian/fwtmp"
- packagename=linux-$version
-+fwpackagename=linux-firmware-image
- 
- if [ "$ARCH" == "um" ] ; then
- 	packagename=user-mode-linux-$version
- fi
- 
- # Setup the directory structure
--rm -rf "$tmpdir"
-+rm -rf "$tmpdir" "$fwdir"
- mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
-+mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
- if [ "$ARCH" == "um" ] ; then
- 	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
- fi
-@@ -107,6 +110,7 @@ Standards-Version: 3.6.1
- 
- Package: $packagename
- Provides: kernel-image-$version, linux-image-$version
-+Suggests: $fwpackagename
- Architecture: any
- Description: Linux kernel, version $version
-  This package contains the Linux kernel, modules and corresponding other
-@@ -118,8 +122,24 @@ fi
- chown -R root:root "$tmpdir"
- chmod -R go-w "$tmpdir"
- 
-+# Do we have firmware? Move it out of the way and build it into a package.
-+if [ -e "$tmpdir/lib/firmware" ]; then
-+	mv "$tmpdir/lib/firmware" "$fwdir/lib/"
+---
+ drivers/misc/sony-laptop.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- a/drivers/misc/sony-laptop.c
++++ b/drivers/misc/sony-laptop.c
+@@ -2315,8 +2315,10 @@ end:
+  */
+ static int sony_pic_disable(struct acpi_device *device)
+ {
+-	if (ACPI_FAILURE(acpi_evaluate_object(device->handle,
+-			"_DIS", NULL, NULL)))
++	acpi_status ret = acpi_evaluate_object(device->handle, "_DIS", NULL,
++					       NULL);
 +
-+	cat <<EOF >> debian/control
-+
-+Package: $fwpackagename
-+Architecture: all
-+Description: Linux kernel firmware, version $version
-+ This package contains firmware from the Linux kernel, version $version
-+EOF
-+
-+	dpkg-gencontrol -isp -p$fwpackagename -P"$fwdir"
-+	dpkg --build "$fwdir" ..
-+fi
-+
- # Perform the final magic
--dpkg-gencontrol -isp
-+dpkg-gencontrol -isp -p$packagename
- dpkg --build "$tmpdir" ..
++	if (ACPI_FAILURE(ret) && ret != AE_NOT_FOUND)
+ 		return -ENXIO;
  
- exit 0
+ 	dprintk("Device disabled\n");
 
 -- 
