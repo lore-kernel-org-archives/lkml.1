@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbYKQGwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbYKQGx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbYKQGwm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 01:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbYKQGwc
+	id S1753186AbYKQGx4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 01:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbYKQGxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 01:52:32 -0500
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:57699 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750952AbYKQGwc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 01:52:32 -0500
-Message-ID: <492114A6.3020905@nttdata.co.jp>
-Date: Mon, 17 Nov 2008 15:52:22 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.17) Gecko/20080914 Thunderbird/2.0.0.17 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: haradats@nttdata.co.jp, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, penguin-kernel@I-love.SAKURA.ne.jp
-Subject: Re: [TOMOYO #12 (2.6.28-rc2-mm1) 04/11] Introduce d_realpath().
-References: <20081104060847.086543472@nttdata.co.jp>	<20081104060948.233911964@nttdata.co.jp> <20081105151212.9c6053eb.akpm@linux-foundation.org>
-In-Reply-To: <20081105151212.9c6053eb.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Nov 2008 01:53:48 -0500
+Received: from gate.crashing.org ([63.228.1.57]:47487 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbYKQGxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 01:53:48 -0500
+Subject: Re: [PATCH] sparse_irq aka dyn_irq v13
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       travis@sgi.com
+In-Reply-To: <4920F649.60901@zytor.com>
+References: <491434FB.2050904@kernel.org> <20081107124957.GA21709@elte.hu>
+	 <49168BD3.5010204@kernel.org> <20081109073813.GA17180@elte.hu>
+	 <86802c440811090003g5ac53822y852a4c1096228f8b@mail.gmail.com>
+	 <20081110094033.GL22392@elte.hu>
+	 <20081110015511.453a801e.akpm@linux-foundation.org>
+	 <4918065A.6050402@kernel.org> <20081110100329.GA19970@elte.hu>
+	 <491A9F87.8040403@kernel.org> <20081112120814.GG11352@elte.hu>
+	 <491C8B38.9060901@kernel.org>
+	 <20081113131850.d94fb229.akpm@linux-foundation.org>
+	 <1226869137.7178.175.camel@pasglop> <4920B069.5020203@kernel.org>
+	 <4920B15E.6090200@zytor.com> <1226895741.7178.183.camel@pasglop>
+	 <4920F649.60901@zytor.com>
+Content-Type: text/plain
+Date: Mon, 17 Nov 2008 17:52:35 +1100
+Message-Id: <1226904755.7178.223.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Nov 2008 06:52:25.0603 (UTC) FILETIME=[0C97DD30:01C94881]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 04 Nov 2008 15:08:51 +0900
-> Kentaro Takeda <takedakn@nttdata.co.jp> wrote:
+On Sun, 2008-11-16 at 20:42 -0800, H. Peter Anvin wrote:
+> Benjamin Herrenschmidt wrote:
+> > 
+> > IRQ numbers are arbitrary, some platforms make up numbers out of the
+> > blue, or they can be hypervisor internal tokens etc...
+> > 
+> > The only sane way to handle this generically IMHO is to do what we do
+> > on powerpc (and I think sparc64) which is to totally disconnect the HW
+> > number from the "linux" number.
+> > 
 > 
->> +		/*
->> +		 * Exception: Use /proc/self/ rather than /proc/\$/
->> +		 * for current process.
->> +		 */
->> +		name = dentry->d_name.name;
->> +		name_len = dentry->d_name.len;
->> +		if (IS_ROOT(parent) &&
->> +		    parent->d_sb->s_magic == PROC_SUPER_MAGIC &&
->> +		    !strict_strtoul(name, 10, &pid)) {
-> 
-> Well that looks like rather a hack.
-> 
-> It would still be a hack, but a better implementation might be to save
-> the procfs superblock's address in a global then do
-> 
-> 
-> #ifdef CONFIG_PROCFS
-> static inline bool is_procfs_sb(struct super_block *sb)
-> {
-> 	return sb == saved_procfs_sb;
-> }
-> #else
-> static inline bool is_procfs_sb(struct super_block *sb)
-> {
-> 	return false;
-> }
-> #endif
-It seems to me that the procfs superblock's address is not a single value
-because proc_get_sb() in fs/proc/root.c could be called for multiple times.
-Thus, I'd like to continue using "parent->d_sb->s_magic == PROC_SUPER_MAGIC"
-rather than "is_procfs_sb(parent->d_sb)".
+> Yes, that's what I want to see, too.  On x86, it's important to preserve
+> the first 16 (BIOS-compatible, XT-PIC) numbers, as they are widely used
+> as a user interface, but for the rest, there is no point.
 
-I think I've replied to most of your comments.
-Is there anything we can do before reposting TOMOYO #13 ?
+Right, and I do that on powerpc by reserving those numbers so they get
+automatically assigned to and only to the PIC that comes up as claiming
+the legacy number space (if any, if none, then they remain unassigned to
+avoid problems with old crappy modules hard coding IRQ numbers and
+trying to request them).
 
-Regards,
+> It is probably desirable to do that by overlaying the first (primary,
+> south bridge) IO-APIC, which also takes care of the "semi-legacy" IRQ
+> 16-23 numbers.
+
+Would make sense indeed to treat those numbers specifically.
+
+Ben.
 
 
