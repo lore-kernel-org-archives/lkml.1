@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752682AbYKRIKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752266AbYKRIOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752682AbYKRIKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 03:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbYKRIKI
+	id S1752266AbYKRIOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 03:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750950AbYKRIOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 03:10:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53196 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbYKRIKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 03:10:06 -0500
-Date: Tue, 18 Nov 2008 09:09:52 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: H Peter Anvin <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 18 Nov 2008 03:14:14 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:36923 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbYKRION (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 03:14:13 -0500
+Date: Tue, 18 Nov 2008 09:14:07 +0100
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Greg KH <greg@kroah.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Support always running TSC on Intel CPUs
-Message-ID: <20081118080952.GE17838@elte.hu>
-References: <20081118001137.GA12350@linux-os.sc.intel.com>
+Subject: Re: chris: struct device - replace bus_id with dev_name(),
+	dev_set_name()
+Message-ID: <20081118081407.GA4856@axis.com>
+References: <1226018320.3189.9.camel@nga> <20081107120136.GD4013@axis.com> <20081117225359.GB10377@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081118001137.GA12350@linux-os.sc.intel.com>
+In-Reply-To: <20081117225359.GB10377@kroah.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Nov 17, 2008 at 11:53:59PM +0100, Greg KH wrote:
+> On Fri, Nov 07, 2008 at 01:01:36PM +0100, Jesper Nilsson wrote:
+> > On Fri, Nov 07, 2008 at 01:38:40AM +0100, Kay Sievers wrote:
+> > > This patch is part of a larger patch series which will remove
+> > > the "char bus_id[20]" name string from struct device. The device
+> > > name is managed in the kobject anyway, and without any size
+> > > limitation, and just needlessly copied into "struct device".
+> > 
+> > Thanks, but I think that since this driver has been broken a long time
+> > it is high time to fix it, and I think the fix removes the need for your patch.
+> > 
+> > Greg, could you please look this patch over?
+> > 
+> > 
+> > [CRISv32] Fix IOP fw-loader to use platform_device.
+> > 
+> > Change IOP fw-loader to use platform_device instead of
+> > raw device, which should be more correct usage.
+> > 
+> > Signed-off-by: Stefan Andersson <stefan.andersson@axis.com>
+> > Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+> 
+> Looks sane to me.  Want me to take it through my tree, or will you be
+> submitting it?
 
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+Thanks, good to hear, I'll take it into the CRIS-tree.
 
-> +	if (c->x86_power & (1 << 8)) {
->  		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
-> +		set_cpu_cap(c, X86_FEATURE_NOSTOP_TSC);
-> +	}
+> thanks,
+> 
+> greg k-h
 
-hm, the naming is a bit confusing. We now have 3 variants:
-
-  X86_FEATURE_TSC
-  X86_FEATURE_CONSTANT_TSC
-  X86_FEATURE_NOSTOP_TSC
-
-NOSTOP_TSC is basically what CONSTANT_TSC should have been to begin 
-with ;-)
-
-i'd suggest to rename it to this:
-
-  X86_FEATURE_TSC
-  X86_FEATURE_CONSTANT_FREQ_TSC
-  X86_FEATURE_STABLE_TSC
-
-... with CONSTANT_FREQ_TSC not having any real role in the long run. 
-(it's similarly problematic to a completely unstable TSC)
-
-does this sound ok?
-
-	Ingo
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
