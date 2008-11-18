@@ -1,152 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbYKRTAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbYKRTOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbYKRTAg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 14:00:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYKRTA1
+	id S1752749AbYKRTOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 14:14:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbYKRTOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 14:00:27 -0500
-Received: from wf-out-1314.google.com ([209.85.200.175]:63839 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbYKRTA0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 14:00:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references:x-google-sender-auth;
-        b=lRFrbaOiBwEFzyF32yQMRS/9SLDiX7aiv7Ki8Q1WavSbCh63AwMVJZ5I8NdZz4kEYj
-         HaPhqhbYKN4pf4g5LT3yVayu3n/fJ+WDuhVJjsARspoOark7YOLRqqYSPLVqd+qrKRkF
-         F1R8o6jSggIGErRZHx/M5cTRc0Zh9wslbyzLQ=
-Message-ID: <e9c3a7c20811181100q27af85ey49823ba326e70a09@mail.gmail.com>
-Date: Tue, 18 Nov 2008 12:00:25 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Nicolas Ferre" <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH] dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller
-Cc: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       "Linux Kernel list" <linux-kernel@vger.kernel.org>,
-       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "Andrew Victor" <linux@maxim.org.za>
-In-Reply-To: <491DA8AC.5010703@atmel.com>
+	Tue, 18 Nov 2008 14:14:01 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:56719 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750990AbYKRTOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 14:14:00 -0500
+Date: Tue, 18 Nov 2008 20:12:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Divyesh Shah <dpshah@google.com>,
+       Ryo Tsuruta <ryov@valinux.co.jp>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org, taka@valinux.co.jp,
+       righi.andrea@gmail.com, s-uchida@ap.jp.nec.com, fernando@oss.ntt.co.jp,
+       balbir@linux.vnet.ibm.com, akpm@linux-foundation.org, menage@google.com,
+       ngupta@google.com, riel@redhat.com, jmoyer@redhat.com,
+       peterz@infradead.org, paolo.valente@unimore.it
+Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
+Message-ID: <20081118191208.GJ26308@kernel.dk>
+References: <20081113214642.GG7542@redhat.com> <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com> <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it> <20081118140751.GA4283@redhat.com> <20081118144139.GE15268@gandalf.sssup.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <48F8B291.1060500@atmel.com>
-	 <1224530326.27425.25.camel@dwillia2-linux.ch.intel.com>
-	 <491DA8AC.5010703@atmel.com>
-X-Google-Sender-Auth: 8b2c390a603b30a3
+In-Reply-To: <20081118144139.GE15268@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 14, 2008 at 9:34 AM, Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
->>>  include/linux/at_hdmac.h                |   26 +
->>
->> ...this header should be moved somewhere under arch/arm/include.
->
-> This is where dw_dmac.h resides. Moreover, if one day this IP is implemented
-> on a different architecture, it will be good not to reach it through
-> arch/arm path.
+On Tue, Nov 18 2008, Fabio Checconi wrote:
+> > From: Vivek Goyal <vgoyal@redhat.com>
+> > Date: Tue, Nov 18, 2008 09:07:51AM -0500
+> >
+> > On Tue, Nov 18, 2008 at 01:05:08PM +0100, Fabio Checconi wrote:
+> ...
+> > > I have to think a little bit on how it would be possible to support
+> > > an option for time-only budgets, coexisting with the current behavior,
+> > > but I think it can be done.
+> > > 
+> > 
+> > IIUC, bfq and cfq are different in following manner.
+> > 
+> > a. BFQ employs WF2Q+ for fairness and CFQ employes weighted round robin.
+> > b. BFQ uses the budget (sector count) as notion of service and CFQ uses
+> >    time slices.
+> > c. BFQ supports hierarchical fair queuing and CFQ does not.  
+> > 
+> > We are looking forward for implementation of point C. Fabio seems to
+> > thinking of supporting time slice as a service (B). It seems like
+> > convergence of CFQ and BFQ except the point A (WF2Q+ vs weighted round
+> > robin). 
+> > 
+> > It looks like WF2Q+ provides tighter service bound and bfq guys mention
+> > that they have been able to ensure throughput while ensuring tighter 
+> > bounds. If that's the case, does that mean BFQ is a replacement for CFQ
+> > down the line?
+> >   
+> 
+> BFQ started from CFQ, extending it in the way you correctly describe,
+> so it is indeed very similar.  There are also some minor changes to
+> locking, cic handling, hw_tag detection and to the CIC_SEEKY heuristic.
+> 
+> The two schedulers share similar goals, and in my opinion BFQ can be
+> considered, in the long term, a CFQ replacement; *but* before talking
+> about replacing CFQ we have to consider that:
+> 
+>   - it *needs* review and testing; we've done our best, but for sure
+>     it's not enough; review and testing are never enough;
+>   - the service domain fairness, which was one of our objectives, requires
+>     some extra complexity; the mechanisms we used and the design choices
+>     we've made may not fit all the needs, or may not be as generic as the
+>     simpler CFQ's ones;
+>   - CFQ has years of history behind and has been tuned for a wider
+>     variety of environments than the ones we've been able to test.
+> 
+> If time-based fairness is considered more robust and the loss of
+> service-domain fairness is not a problem, then the two schedulers can
+> be made even more similar.
 
-Ok, I won't gate acceptance on this since dw_dmac already set the
-precedent, but shouldn't the header move after the IP has been
-duplicated?  Just my 2cents.
+My preferred approach here would be, in order or TODO:
 
->>> +               memset(desc, 0, sizeof(struct at_desc));
->>> +               dma_async_tx_descriptor_init(&desc->txd, chan);
->>> +               async_tx_ack(&desc->txd);
->>
->> the DMA_CTRL_ACK bit is under control of the client.  It should be
->> read-only to the driver (except for extra descriptors that the driver
->> creates on behalf of the client).
->
-> This is precisely where the descriptors are been created so, I thought it
-> should be ok to initialize this bit. Am I right ?
->
+- Create and test the smallish patches for seekiness, hw_tag checking,
+  and so on for CFQ.
+- Create and test a WF2Q+ service dispatching patch for CFQ.
 
-They will be acknowledged by client code.  Calls like async_memcpy
-assume that the the ack bit is clear by default so they can specify
-some actions to run at completion time.  By setting it early, at
-descriptor allocation time, async_tx will get confused.
+and if there are leftovers after that, we could even conditionally
+enable some of those if appropriate. I think the WF2Q+ is quite cool and
+could be easily usable as the default, so it's definitely a viable
+alternative.
 
->>> +/**
->>> + * atc_alloc_chan_resources - allocate resources for DMA channel
->>> + * @chan: allocate descriptor resources for this channel
->>> + * @client: current client requesting the channel be ready for requests
->>> + *
->>> + * return - the number of allocated descriptors
->>> + */
->>> +static int atc_alloc_chan_resources(struct dma_chan *chan,
->>> +                                   struct dma_client *client)
->>> +{
->>> +       struct at_dma_chan      *atchan = to_at_dma_chan(chan);
->>> +       struct at_dma           *atdma = to_at_dma(chan->device);
->>> +       struct at_desc          *desc;
->>> +       int                     i;
->>> +       LIST_HEAD(tmp_list);
->>> +
->>> +       dev_vdbg(&chan->dev, "alloc_chan_resources\n");
->>> +
->
-> [TAG]
->
->>> +       /* ASSERT:  channel is idle */
->>> +       if (atc_chan_is_enabled(atchan)) {
->>> +               dev_dbg(&chan->dev, "DMA channel not idle ?\n");
->>> +               return -EIO;
->>> +       }
->
-> [/TAG]
->
->>> +
->>> +       /* have we already been set up? */
->>> +       if (!list_empty(&atchan->free_list))
->>> +               return atchan->descs_allocated;
->>> +
->>> +       /* Allocate initial pool of descriptors */
->>> +       for (i = 0; i < INIT_NR_DESCS_PER_CHANNEL; i++) {
->>> +               desc = atc_alloc_descriptor(chan, GFP_KERNEL);
->>> +               if (!desc) {
->>> +                       dev_err(atdma->dma_common.dev,
->>> +                               "Only %d initial descriptors\n", i);
->>> +                       break;
->>> +               }
->>> +               list_add_tail(&desc->desc_node, &tmp_list);
->>> +       }
->>> +
->>> +       spin_lock_bh(&atchan->lock);
->>> +       atchan->descs_allocated = i;
->>> +       list_splice(&tmp_list, &atchan->free_list);
->>> +       atchan->completed_cookie = chan->cookie = 1;
->>> +       spin_unlock_bh(&atchan->lock);
->>> +
->>> +       /* channel parameters */
->>> +       channel_writel(atchan, CFG, ATC_DEFAULT_CFG);
->>> +
->>> +       tasklet_init(&atchan->tasklet, atc_tasklet, (unsigned
->>> long)atchan);
->>
->> This routine may be called while the channel is already active,
->> potentially causing tasklet_init() to be called while a tasklet is
->> pending.  Can this move to at_dma_probe()?
->
-> Oh, really ? In [TAG] above, I protect the call of this function when
-> channel is enabled. Is the code at [TAG] ok ?
+My main goal here is basically avoiding addition of Yet Another IO
+scheduler, especially one that is so closely tied to CFQ already.
 
-Yes, but it still feels like something that should be moved to the
-probe routine.  In any event with the dmaengine rework I posted
-recently [1] ->device_alloc_chan_resources() will no longer be called
-multiple times without a ->free_chan_resources() inbetween.
+I'll start things off by splitting cfq into a few files similar to what
+bfq has done, as I think it makes a lot of sense. Fabio, if you could
+create patches for the small behavioural changes you made, we can
+discuss and hopefully merge those next.
 
-> I will regenerate a new patch as soon as you acknowledge my comments.
->
-> Thanks for your help, kind regards,
+-- 
+Jens Axboe
 
-Thanks Nicolas.
-
-Regards,
-Dan
-
-[1] http://marc.info/?l=linux-kernel&m=122669881026508&w=2
