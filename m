@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbYKRU6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbYKRU7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754066AbYKRU6H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 15:58:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbYKRU5z
+	id S1754218AbYKRU7B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 15:59:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYKRU6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 15:57:55 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56367 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbYKRU5y (ORCPT
+	Tue, 18 Nov 2008 15:58:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43131 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752760AbYKRU6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 15:57:54 -0500
-Date: Tue, 18 Nov 2008 21:59:12 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: Re: linux-m68k.git
-Message-ID: <20081118205912.GA23894@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0811182136060.27671@anakin>
+	Tue, 18 Nov 2008 15:58:49 -0500
+Date: Tue, 18 Nov 2008 12:58:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       maciej.sosnowski@intel.com, hskinnemoen@atmel.com,
+       g.liakhovetski@gmx.de, nicolas.ferre@atmel.com
+Subject: Re: [PATCH 08/13] dmatest: convert to dma_request_channel
+Message-Id: <20081118125840.e3c7745d.akpm@linux-foundation.org>
+In-Reply-To: <1227032661.15042.10.camel@dwillia2-linux.ch.intel.com>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+	<20081114213458.32354.58258.stgit@dwillia2-linux.ch.intel.com>
+	<20081114221704.fe9ea599.akpm@linux-foundation.org>
+	<1227032661.15042.10.camel@dwillia2-linux.ch.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0811182136060.27671@anakin>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 09:49:01PM +0100, Geert Uytterhoeven wrote:
-> (Finally) I created an experimental git tree for Linux/m68k:
-> http://git.kernel.org/?p=linux/kernel/git/geert/linux-m68k.git
-> 
-> It contains more or less all patches I had in my quilt series at
-> http://www.kernel.org/pub/linux/kernel/people/geert/linux-m68k-patches-2.6/
-> A notable exception is m68k-PRIVATE-m68k-changes.diff, which hardcoded ARCH to
-> m68k.
-> 
-> As suggested by David Woodhouse, I grouped the commits by topic. But unlike
-> David's suggestion, I used topic branches, not topic repositories. Oh well,
-> we'll see...
-> 
-> I also created for-next and for-linus branches. Do they look OK?
-> 
-> If I did something wrong, please let me know.
-> This is still experimental stuff, which may be rebased if needed.
-> 
-> In addition, one day I may pull from Ralf's repository that reflects the state
-> of Linux/m68k CVS a few commits before our server died...
-> 
-> Thanks for all your (past and future) help, suggestions, tips and tricks!
+On Tue, 18 Nov 2008 11:24:21 -0700
+Dan Williams <dan.j.williams@intel.com> wrote:
 
-If you plan to keep it then it would be nice if
-you could add a T: entry to MAINTAINERS.
-This way we can find it again later...
+> Ok, so I now have:
+> # git shortlog `stg id akpm-review-spell-fixes.patch`^..
+> Dan Williams (6):
+>       dmaengine review: spelling/grammar fixes
+>       dmaengine review: dma_wait_for_async_tx clarification
+>       dmaengine review: fix up kernel doc for dma_list_mutex usage
+>       dmaengine review: propagate alloc_chan_resources error code
+>       dmaengine review: return meaningful error code from initcall
+>       dmaengine review: dmatest stop on dmatest_add_channel failure
+> 
+> May I add your Reviewed-by for these and the original 13.
 
-	Sam
+Sure.  Ignorantly-stared-at-by: would be more appropriate though.
+
+>  I could fold
+> these into the originals but perhaps it is better to document fixups
+> when they are the result of review [1].
+
+I think that a clean commit trail is more important.  One can always
+retain documentation/attributions/etc in the changelog when folding.
+
