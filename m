@@ -1,64 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbYKRSVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298AbYKRSYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752734AbYKRSVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYKRSVE
+	id S1753298AbYKRSYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 13:24:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750866AbYKRSYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:21:04 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:23576 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbYKRSVC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:21:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent:from;
-        b=Uaw/Wqe4Zy+vAg+dYMjPRplqTuUH7TmUJ3xLVhFcQBZf1R4bN+Tv/oNH79MbbvPwjj
-         scRurMqMGWXlKQbl3cJrFl3CT27KWjY0ed4KIOMIU/FQg5AKE8kb+NOo+TJGlSDADUmB
-         QHgDk0rqmfsvx/jZcLssu6VXgFWGt5x93xvwQ=
-Date: Tue, 18 Nov 2008 19:22:13 +0100
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] trace: introduce missing mutex_unlock()
-Message-ID: <20081118182213.GA5436@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+	Tue, 18 Nov 2008 13:24:25 -0500
+Received: from mga09.intel.com ([134.134.136.24]:6367 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750844AbYKRSYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 13:24:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.33,626,1220252400"; 
+   d="scan'208";a="361599260"
+Subject: Re: [PATCH 08/13] dmatest: convert to dma_request_channel
+From: Dan Williams <dan.j.williams@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "hskinnemoen@atmel.com" <hskinnemoen@atmel.com>,
+       "g.liakhovetski@gmx.de" <g.liakhovetski@gmx.de>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>
+In-Reply-To: <20081114221704.fe9ea599.akpm@linux-foundation.org>
+References: <20081114213300.32354.1154.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114213458.32354.58258.stgit@dwillia2-linux.ch.intel.com>
+	 <20081114221704.fe9ea599.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 11:24:21 -0700
+Message-Id: <1227032661.15042.10.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8a98729e7b3af032b798c36788095d955f0d7e79 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Tue, 18 Nov 2008 19:15:02 +0100
-Subject: [PATCH] trace: introduce missing mutex_unlock()
+On Fri, 2008-11-14 at 23:17 -0700, Andrew Morton wrote:
+> On Fri, 14 Nov 2008 14:34:58 -0700 Dan Williams <dan.j.williams@intel.com> wrote:
+> 
+> >  static int __init dmatest_init(void)
+> >  {
+> > -	dma_cap_set(DMA_MEMCPY, dmatest_client.cap_mask);
+> > -	dma_async_client_register(&dmatest_client);
+> > -	dma_async_client_chan_request(&dmatest_client);
+> > +	dma_cap_mask_t mask;
+> > +	struct dma_chan *chan;
+> > +
+> > +	dma_cap_zero(mask);
+> > +	dma_cap_set(DMA_MEMCPY, mask);
+> > +	for (;;) {
+> > +		chan = dma_request_channel(mask, filter, NULL);
+> > +		if (chan) {
+> > +			if (dmatest_add_channel(chan) == 0)
+> > +				continue;
+> 
+> hrm.  I trust this loop can't lock up the box.
+> 
 
-This error was spotted by this semantic patch:
+Only if the system has infinite channels, but we should break if
+dma_add_channel fails.
 
-http://www.emn.fr/x-info/coccinelle/mut.html
-
-It looks correct as far as I can tell. Please review.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- kernel/trace/ring_buffer.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 036456c..f780e95 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -617,6 +617,7 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
- 		list_del_init(&page->list);
- 		free_buffer_page(page);
- 	}
-+	mutex_unlock(&buffer->mutex);
- 	return -ENOMEM;
- }
+diff --git a/drivers/dma/dmatest.c b/drivers/dma/dmatest.c
+index e0f9139..c77d47c 100644
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -375,23 +375,27 @@ static int __init dmatest_init(void)
+ {
+ 	dma_cap_mask_t mask;
+ 	struct dma_chan *chan;
++	int err = 0;
  
--- 
-1.5.6.5
+ 	dma_cap_zero(mask);
+ 	dma_cap_set(DMA_MEMCPY, mask);
+ 	for (;;) {
+ 		chan = dma_request_channel(mask, filter, NULL);
+ 		if (chan) {
+-			if (dmatest_add_channel(chan) == 0)
++			err = dmatest_add_channel(chan);
++			if (err == 0)
+ 				continue;
+-			else
++			else {
+ 				dma_release_channel(chan);
++				break; /* add_channel failed, punt */
++			}
+ 		} else
+ 			break; /* no more channels available */
+ 		if (max_channels && nr_channels >= max_channels)
+ 			break; /* we have all we need */
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ /* when compiled-in wait for drivers to load first */
+ late_initcall(dmatest_init);
+
+---
+
+Ok, so I now have:
+# git shortlog `stg id akpm-review-spell-fixes.patch`^..
+Dan Williams (6):
+      dmaengine review: spelling/grammar fixes
+      dmaengine review: dma_wait_for_async_tx clarification
+      dmaengine review: fix up kernel doc for dma_list_mutex usage
+      dmaengine review: propagate alloc_chan_resources error code
+      dmaengine review: return meaningful error code from initcall
+      dmaengine review: dmatest stop on dmatest_add_channel failure
+
+May I add your Reviewed-by for these and the original 13.  I could fold
+these into the originals but perhaps it is better to document fixups
+when they are the result of review [1].
+
+Thanks,
+Dan
+
+[1] http://lwn.net/Articles/306690/
 
