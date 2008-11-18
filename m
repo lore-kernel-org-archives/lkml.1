@@ -1,134 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYKRWdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbYKRWer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbYKRWdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 17:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbYKRWdW
+	id S1754256AbYKRWer (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 17:34:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbYKRWej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 17:33:22 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:32602 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbYKRWdV (ORCPT
+	Tue, 18 Nov 2008 17:34:39 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:25488 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753225AbYKRWei convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 17:33:21 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding;
-	b=x4cS8GKrIWaNUBb26K+jiR0jXmJcPClP5O/iEYK06kBHL84wSXex2B/H9yVSZjeX9
-	FltRpg0fv/7XRig0a4aUA==
+	Tue, 18 Nov 2008 17:34:38 -0500
+From: "Mingarelli, Thomas" <Thomas.Mingarelli@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Bernhard Walle <bwalle@suse.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "wim@iguana.be" <wim@iguana.be>, "bwalle@suse.de" <bwalle@suse.de>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "Montgomery, Bob" <bob.montgomery@hp.com>
+Date: Tue, 18 Nov 2008 22:33:47 +0000
+Subject: RE: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space as
+ executable
+Thread-Topic: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space
+ as executable
+Thread-Index: AclJzT2iRs+5Ll2oSqOrZhtye6WvswAAExEA
+Message-ID: <183C1D5A376DE343AA8F94FC2A1EC1493AA5CEE59A@GVW1091EXB.americas.hpqcorp.net>
+References: <1226674023-5374-1-git-send-email-bwalle@suse.de>
+ <20081118143015.72af31d3.akpm@linux-foundation.org>
+In-Reply-To: <20081118143015.72af31d3.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-In-Reply-To: <20081118120508.GD15268@gandalf.sssup.it>
-References: <20081113.180558.519459540419535699.ryov@valinux.co.jp>
-	 <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com>
-	 <20081113214642.GG7542@redhat.com>
-	 <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com>
-	 <20081114160525.GE24624@redhat.com>
-	 <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com>
-	 <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com>
-	 <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com>
-	 <20081118120508.GD15268@gandalf.sssup.it>
-Date: Tue, 18 Nov 2008 14:33:19 -0800
-Message-ID: <e98e18940811181433o4bb5a147i1e0b9c1baf495ae2@mail.gmail.com>
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-From: Nauman Rafique <nauman@google.com>
-To: Fabio Checconi <fchecconi@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       paolo.valente@unimore.it
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 4:05 AM, Fabio Checconi <fchecconi@gmail.com> wrote:
-> Hi,
->
->> From: Nauman Rafique <nauman@google.com>
->> Date: Mon, Nov 17, 2008 09:01:48PM -0800
->>
->> If we start with bfq patches, this is how plan would look like:
->>
->> 1 Start with BFQ take 2.
->> 2 Do the following to support proportional division:
->>  a) Expose the per device weight interface to user, instead of calculating
->>  from priority.
->>  b) Add support for disk time budgets, besides sector budget that is currently
->>  available (configurable option). (Fabio: Do you think we can just emulate
->> that using the existing code?). Another approach would be to give time slices
->> just like CFQ (discussing?)
->
->  it should be possible without altering the code.  The slices can be
-> assigned in the time domain using big values for max_budget.  The logic
-> is: each process is assigned a budget (in the range [max_budget/2, max_budget],
-> choosen from the feedback mechanism, driven in __bfq_bfqq_recalc_budget()),
-> and if it does not complete it in timeout_sync milliseconds, it is
-> charged a fixed amount of sectors of service.
->
-> Using big values for max_budget (where big means greater than two
-> times the number of sectors the hard drive can transfer in timeout_sync
-> milliseconds) makes the budgets always to time out, so the disk time
-> is scheduled in slices of timeout_sync.
->
-> However this is just a temporary workaround to do some basic testing.
->
-> Modifying the scheduler to support time slices instead of sector
-> budgets would indeed simplify the code; I think that the drawback
-> would be being too unfair in the service domain.  Of course we
-> have to consider how much is important to be fair in the service
-> domain, and how much added complexity/new code can we accept for it.
->
-> [ Better service domain fairness is one of the main reasons why
->  we started working on bfq, so, talking for me and Paolo it _is_
->  important :) ]
->
-> I have to think a little bit on how it would be possible to support
-> an option for time-only budgets, coexisting with the current behavior,
-> but I think it can be done.
+Yes. I agree with this fix. The HP ProLiant systems have an RBSU setting in the BIOS for the NX bit but we need to make certain we can execute as the default setting for this RBSU option may switch between enable/disable.
 
-I think "time only budget" vs "sector budget" is dependent on the
-definition of fairness: do you want to be fair in the time that is
-given to each cgroup or fair in total number of sectors transferred.
-And the appropriate definition of fairness depends on how/where the IO
-scheduler is used. Do you think the work-around that you mentioned
-would have a significant performance difference compared to direct
-built-in support?
 
+Tom
+
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org]
+Sent: Tuesday, November 18, 2008 4:30 PM
+To: Bernhard Walle
+Cc: Mingarelli, Thomas; linux-kernel@vger.kernel.org; wim@iguana.be; bwalle@suse.de; stable@kernel.org
+Subject: Re: [PATCH] [WATCHDOG] [hpwdt] Set the mapped BIOS address space as executable
+
+On Fri, 14 Nov 2008 15:47:03 +0100
+Bernhard Walle <bwalle@suse.de> wrote:
+
+> The address provided by the SMBIOS/DMI CRU information is mapped via
+> ioremap() in the virtual address space. However, since the address
+> is executed (i.e. call'd), we need to set that pages as executable.
+>
+> Without that, I get following oops on a HP ProLiant DL385 G2
+> machine with BIOS from 05/29/2008 when I trigger crashdump:
+>
+>     BUG: unable to handle kernel paging request at ffffc20011090c00
+>     IP: [<ffffc20011090c00>] 0xffffc20011090c00
+>     PGD 12f813067 PUD 7fe6a067 PMD 7effe067 PTE 80000000fffd3173
+>     Oops: 0011 [1] SMP
+>     last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
+>     CPU 1
+>     Modules linked in: autofs4 ipv6 af_packet cpufreq_conservative cpufreq_userspace
+>      cpufreq_powersave powernow_k8 fuse loop dm_mod rtc_cmos ipmi_si sg rtc_core i2c
+>     _piix4 ipmi_msghandler bnx2 sr_mod container button i2c_core hpilo joydev pcspkr
+>      rtc_lib shpchp hpwdt cdrom pci_hotplug usbhid hid ff_memless ohci_hcd ehci_hcd
+>     uhci_hcd usbcore edd ext3 mbcache jbd fan ide_pci_generic serverworks ide_core p
+>     ata_serverworks pata_acpi cciss ata_generic libata scsi_mod dock thermal process
+>     or thermal_sys hwmon
+>     Supported: Yes
+>     Pid: 0, comm: swapper Not tainted 2.6.27.5-HEAD_20081111100657-default #1
+>     RIP: 0010:[<ffffc20011090c00>]  [<ffffc20011090c00>] 0xffffc20011090c00
+>     RSP: 0018:ffff88012f6f9e68  EFLAGS: 00010046
+>     RAX: 0000000000000d02 RBX: 0000000000000000 RCX: 0000000000000000
+>     RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000000
+>     RBP: ffff88012f6f9e98 R08: 666666666666660a R09: ffffffffa1006fc0
+>     R10: 0000000000000000 R11: ffff88012f6f3ea8 R12: ffffc20011090c00
+>     R13: ffff88012f6f9ee8 R14: 000000000000000e R15: 0000000000000000
+>     FS:  00007ff70b29a6f0(0000) GS:ffff88012f6512c0(0000) knlGS:0000000000000000
+>     CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+>     CR2: ffffc20011090c00 CR3: 0000000000201000 CR4: 00000000000006e0
+>     DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>     DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>     Process swapper (pid: 0, threadinfo ffff88012f6f2000, task ffff88007fa8a1c0)
+>     Stack:  ffffffffa0f8502b 0000000000000002 ffffffff80738d50 0000000000000000
+>      0000000000000046 0000000000000046 00000000fffffffe ffffffffa0f852ec
+>      0000000000000000 ffffffff804ad9a6 0000000000000000 0000000000000000
+>     Call Trace:
+>     Inexact backtrace:
+>
+>      <NMI>  [<ffffffffa0f8502b>] ? asminline_call+0x2b/0x55 [hpwdt]
+>      [<ffffffffa0f852ec>] hpwdt_pretimeout+0x3c/0xa0 [hpwdt]
+>      [<ffffffff804ad9a6>] ? notifier_call_chain+0x29/0x4c
+>      [<ffffffff802587e4>] ? notify_die+0x2d/0x32
+>      [<ffffffff804abbdc>] ? default_do_nmi+0x53/0x1d9
+>      [<ffffffff804abd90>] ? do_nmi+0x2e/0x43
+>      [<ffffffff804ab552>] ? nmi+0xa2/0xd0
+>      [<ffffffff80221ef9>] ? native_safe_halt+0x2/0x3
+>      <<EOE>>  [<ffffffff8021345d>] ? default_idle+0x38/0x54
+>      [<ffffffff8021359a>] ? c1e_idle+0x118/0x11c
+>      [<ffffffff8020b3b5>] ? cpu_idle+0xa9/0xf1
 >
 >
->> 4 Do the following to support the goals of 2 level schedulers:
->>  a) Limit the request descriptors allocated to each cgroup by adding
->>  functionality to elv_may_queue()
->>  b) Add support for putting an absolute limit on IO consumed by a
->>  cgroup. Such support is provided by Andrea
->>  Righi's patches too.
->>  c) Add support (configurable option) to keep track of total disk
->> time/sectors/count
->>  consumed at each device, and factor that into scheduling decision
->>  (more discussion needed here)
->> 6 Incorporate an IO tracking approach which re-uses memory resource
->> controller code but is not dependent on it (may be biocgroup patches from
->> dm-ioband can be used here directly)
->> 7 Start an offline email thread to keep track of progress on the above
->> goals.
->>
->> BFQ's support for hierarchy of cgroups means that its close to where
->> we want to get. Any comments on what approach looks better?
->>
+>     Code: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff <55> 50 e8 00 00 00 00 58 48 2d 07 10 40 00 48 8b e8 58 e9 68 02
+>     RIP  [<ffffc20011090c00>] 0xffffc20011090c00
+>      RSP <ffff88012f6f9e68>
+>     CR2: ffffc20011090c00
+>     Kernel panic - not syncing: Fatal exception
 >
-> The main problems with this approach (as with the cfq-based ones) in
-> my opinion are:
->  - the request descriptor allocation problem Divyesh talked about,
->  - the impossibility of respecting different weights, resulting from
->    the interlock problem with synchronous requests Vivek talked about
->    [ in cfq/bfq this can happen when idling is disabled, e.g., for
->      SSDs, or when using NCQ ],
 >
-> but I think that correctly addressing your points 4.a) and 4.b) should
-> solve them.
+> Signed-off-by: Bernhard Walle <bwalle@suse.de>
+> ---
+>  drivers/watchdog/hpwdt.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 >
+> diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
+> index 9890dff..e83e1ac 100644
+> --- a/drivers/watchdog/hpwdt.c
+> +++ b/drivers/watchdog/hpwdt.c
+> @@ -40,6 +40,7 @@
+>  #include <linux/bootmem.h>
+>  #include <linux/slab.h>
+>  #include <asm/desc.h>
+> +#include <asm/cacheflush.h>
+>
+>  #define PCI_BIOS32_SD_VALUE          0x5F32335F      /* "_32_" */
+>  #define CRU_BIOS_SIGNATURE_VALUE     0x55524324
+> @@ -394,6 +395,8 @@ static void __devinit dmi_find_cru(const struct dmi_header *dm)
+>                               smbios_cru64_ptr->double_offset;
+>                       cru_rom_addr = ioremap(cru_physical_address,
+>                               smbios_cru64_ptr->double_length);
+> +                     set_memory_x((unsigned long)cru_rom_addr & PAGE_MASK,
+> +                             smbios_cru64_ptr->double_length >> PAGE_SHIFT);
+>               }
+>       }
+>  }
+
+This is also needed in 2.6.27.x, yes?
