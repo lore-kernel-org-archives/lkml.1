@@ -1,100 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754849AbYKRQYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753736AbYKRQ3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754849AbYKRQYq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbYKRQYf
+	id S1753736AbYKRQ3m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 11:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbYKRQ3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:24:35 -0500
-Received: from mercury.realtime.net ([205.238.132.86]:39628 "EHLO
-	mercury.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbYKRQYe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:24:34 -0500
-In-Reply-To: <20081116.124924.146154114.davem@davemloft.net>
-References: <312268717986b8b45674.846930886.miltonm@bga.com> <1226849525.8189.6.camel@localhost.localdomain> <20081116.124924.146154114.davem@davemloft.net>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <eff33bff566e125171ec813f2ed58015@bga.com>
-Content-Transfer-Encoding: 7bit
-Cc: linux-kernel@vger.kernel.org, jdb@comx.dk, segher@kernel.crashing.org,
-       netdev@vger.kernel.org, bhutchings@solarflare.com
-From: Milton Miller <miltonm@bga.com>
-Subject: [SPARSE REQUEST] was [PATCH] niu: bitwise or does not imply ordering
-Date: Tue, 18 Nov 2008 10:29:10 -0600
-To: David Miller <davem@davemloft.net>
-X-Mailer: Apple Mail (2.624)
-X-Originating-IP: 205.232.218.30
+	Tue, 18 Nov 2008 11:29:33 -0500
+Received: from main.gmane.org ([80.91.229.2]:51403 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751617AbYKRQ3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:29:33 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Developing non-commercial drivers ?
+Date: Tue, 18 Nov 2008 10:29:14 -0600
+Message-ID: <4922ED5A.3030808@shaw.ca>
+References: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: s0106000c41bb86e1.ss.shawcable.net
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+In-Reply-To: <fc262dee0811180816k29cc93aas51c2c47ede2c7a1@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Nov 16, 2008, at 2:49 PM, David Miller wrote:
-> From: Jesper Dangaard Brouer <jdb@comx.dk>
-> Date: Sun, 16 Nov 2008 16:32:05 +0100
+Fredrik Markström wrote:
+> Linus, others...
+> 
+> I'm working for as a consultant for a large hardware company porting
+> Linux to their new cpu-architecture and everything is pretty much
+> up and running. Now they want us to develop a closed-source (to
+> protect their IP) ethernet driver for their proprietary Ethernet MAC.
+> 
+> My question is:    Is there a fair way to do this and still comply to
+> the intent and spirit of the Linux licensing ?
+> 
+> If yes, how ?
 
-[restored context]
->> Milton Miller wrote:
->>> commit e23a59e1ca6d177a57a7791b3629db93ff1d9813 (niu: Fix readq
->>> implementation when architecture does not provide one.) reordered the
->>> arguments to a bitwise or to change the emitted code.   However, C 
->>> does
->>> not guarantee the evaluation order.
-[end restored context]
->>
->> I have tested it on the actual hardware, it works...
->>
->> I actually agree that we should make it explicit, eventhough DaveM 
->> seems
->> to disagree on the netdev list.
->
-> I'm also not applying this patch for another reason.
->
-> This is a knee-jerk reaction patch, purely.  This person
-> saw the commit and wants to fix only _THIS_ case.
+In a word, I would say: no.
 
-Yes, I saw the commit that said *for this driver* the order of the 
-operations matter.  I saw a change that relied on implementation 
-behavior that I doubt even the current compiler would make any future 
-guarantees.
+When developing a non-GPL kernel driver, one finds themselves on very 
+shaky legal ground. Unless one is 100% sure their code is not legally 
+considered a derived work from the kernel, it's likely a GPL violation.
 
-> Well guess what?  If you really CARED, you'd go change this
-> across the whole tree.  This exact construct exists ALL
-> OVER the kernel.  In fact there are sequences that match
-> this new NIU code exactly.
-
-But does the hardware require the two reads occur in order, or does the 
-order not matter to that hardware?
-
-By the same token, I don't care, as I don't use the hardware.   I was 
-trying to save you future debug.
-
-But thinking about it further, I think you only changed the size of the 
-window, and the underlying problem still exists.  What prevents 
-hardware from setting (additional) bits between the read to the lower 
-portion and the upper?     You reduced the window to the few cycles 
-between the first and second read. but the window is still there.
-
-> Did these people complaining look for those?  No.
-
-You are right, I didn't look.   But I don't think the tool to use to 
-look for this is grep.   I think its either sparse or one of the 
-semantic parsers.  Gcc has  -Wsequence-point in -Wall, although I am 
-told it will only complain when it can prove a multiple reference and 
-store.   What the kernel checker should be checking is (1) volatile 
-dereference or (2) barrier (volatile asm?) (or any combination) on both 
-sides of a sequence point.  Because the reference might be hidden 
-out-of-line, it was suggested we annotate things like readl/writel as 
-(has_side_effects).   The way to remove such errors is to choose one 
-order (preferably the one some version of gcc uses) and create local 
-variables with the partial results.   I would expect this option should 
-get its own kconfig to enable/disable the warning like the warn 
-deprecated stuff while the points are identified.
-
-Since I'm not a toolchain hacker, I'm hoping someone on linux-kernel 
-will see this request and act on it.  And I would guess that most of 
-the cc list doesn't' care to watch it, so consider your cc list.
-
-
-thanks
-milton
+One could point out the pile of other Ethernet drivers in the kernel 
+from the likes of Intel, Broadcom, etc. and ask why those companies did 
+not feel the need to "protect their IP" in this manner.. as well as the 
+significant advantages of having their driver in the mainline kernel, 
+and the horrible disadvantages of trying to manage closed-source drivers..
 
