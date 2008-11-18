@@ -1,148 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbYKRX3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbYKRXgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbYKRX3H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 18:29:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbYKRX2w
+	id S1753351AbYKRXgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 18:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbYKRXg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 18:28:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51464 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753656AbYKRX2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 18:28:51 -0500
-Date: Tue, 18 Nov 2008 15:28:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, yamamoto@valinux.co.jp, menage@google.com,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       nickpiggin@yahoo.com.au, rientjes@google.com, xemul@openvz.org,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Subject: Re: [mm] [PATCH 4/4] Memory cgroup hierarchy feature selector (v4)
-Message-Id: <20081118152833.98125cdd.akpm@linux-foundation.org>
-In-Reply-To: <20081116081105.25166.54820.sendpatchset@balbir-laptop>
-References: <20081116081034.25166.7586.sendpatchset@balbir-laptop>
-	<20081116081105.25166.54820.sendpatchset@balbir-laptop>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Nov 2008 18:36:28 -0500
+Received: from gw.goop.org ([64.81.55.164]:51460 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751737AbYKRXg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 18:36:27 -0500
+Message-ID: <49235178.2050108@goop.org>
+Date: Tue, 18 Nov 2008 15:36:24 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jan Beulich <jbeulich@novell.com>, heukelum@fastmail.fm,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       Glauber Costa <gcosta@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC,v2] x86_64: save_args out of line
+References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm> <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com> <20081118111633.GA21036@mailshack.com> <4922C863.76E4.0078.0@novell.com> <20081118140349.GC23479@elte.hu> <4922E4D4.76E4.0078.0@novell.com> <20081118150024.GD30358@elte.hu> <20081118225336.60FFA1544EB@magilla.localdomain> <20081118233552.GP6703@one.firstfloor.org>
+In-Reply-To: <20081118233552.GP6703@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 16 Nov 2008 13:41:05 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Andi Kleen wrote:
+>> I don't think auto-generation is very a useful angle to take for this any
+>> time soon.  Explicit (but simple) macros in the assembly is what I favor.
+>>     
+>
+> Do you mean macros that generate both the instruction and the CFI
+> or separate? The major disadvantage of doing it together in a 
+> single macro is that it is not really readable for any assembler 
+> programmer anymore, but starts becoming a Linux specific assembler 
+> language. Likely not a good thing for maintenance. anyone who
+> wants to know the real assembler would need to read objdump -S
+> output, which is not nice.
+>
+> Perhaps it would be a reasonable readability improvement to just use shorter 
+> cfi macros which are not shouted?
 
-> 
-> Don't enable multiple hierarchy support by default. This patch introduces
-> a features element that can be set to enable the nested depth hierarchy
-> feature. This feature can only be enabled when the cgroup for which the
-> feature this is enabled, has no children.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  mm/memcontrol.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 57 insertions(+), 4 deletions(-)
-> 
-> diff -puN mm/memcontrol.c~memcg-add-hierarchy-selector mm/memcontrol.c
-> --- linux-2.6.28-rc4/mm/memcontrol.c~memcg-add-hierarchy-selector	2008-11-16 13:19:33.000000000 +0530
-> +++ linux-2.6.28-rc4-balbir/mm/memcontrol.c	2008-11-16 13:19:33.000000000 +0530
-> @@ -148,6 +148,10 @@ struct mem_cgroup {
->  	 * reclaimed from. Protected by cgroup_lock()
->  	 */
->  	struct mem_cgroup *last_scanned_child;
-> +	/*
-> +	 * Should the accounting and control be hierarchical, per subtree?
-> +	 */
-> +	unsigned long use_hierarchy;
+Not really.  At the moment we have two parallel assembly languages which 
+say different things about the same instructions.  In practice, almost 
+nobody understands the cfi parts, so they just get ignored while the x86 
+instructions change around them, leaving them either stale or missing.
 
-This field is a boolean, but it is declared as an unsigned long and is
-accessed from userspace via an API which returns a u64.  This all seems
-ripe for a cleanup..
+If we had a sensible macro layer which emits both instructions and cfi 
+annotations, it at least means that people who write plain x86 
+instructions will simply get no annotations, and people who bother to 
+learn the (clearly and fully documented) macros will get the best of both.
 
->  	int		obsolete;
->  	atomic_t	refcnt;
-> @@ -1527,6 +1531,44 @@ int mem_cgroup_force_empty_write(struct 
->  }
->  
->  
-> +static u64 mem_cgroup_hierarchy_read(struct cgroup *cont, struct cftype *cft)
-> +{
-> +	return mem_cgroup_from_cont(cont)->use_hierarchy;
-> +}
-> +
-> +static int mem_cgroup_hierarchy_write(struct cgroup *cont, struct cftype *cft,
-> +					u64 val)
-> +{
-> +	int retval = 0;
-> +	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> +	struct cgroup *parent = cont->parent;
-> +	struct mem_cgroup *parent_mem = NULL;
-> +
-> +	if (parent)
-> +		parent_mem = mem_cgroup_from_cont(parent);
-> +
-> +	cgroup_lock();
-> +	/*
-> +	 * If parent's use_hiearchy is set, we can't make any modifications
-> +	 * in the child subtrees. If it is unset, then the change can
-> +	 * occur, provided the current cgroup has no children.
-> +	 *
-> +	 * For the root cgroup, parent_mem is NULL, we allow value to be
-> +	 * set if there are no children.
-> +	 */
-> +	if (!parent_mem || (!parent_mem->use_hierarchy &&
-> +				(val == 1 || val == 0))) {
-
-One part of this test permits any value, but the other part restricts
-values to 0 or 1.
-
-> +		if (list_empty(&cont->children))
-> +			mem->use_hierarchy = val;
-> +		else
-> +			retval = -EBUSY;
-> +	} else
-> +		retval = -EINVAL;
-> +	cgroup_unlock();
-> +
-> +	return retval;
-> +}
-> +
->  static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
->  {
->  	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
-> @@ -1690,6 +1732,11 @@ static struct cftype mem_cgroup_files[] 
->  		.name = "force_empty",
->  		.trigger = mem_cgroup_force_empty_write,
->  	},
-> +	{
-> +		.name = "use_hierarchy",
-> +		.write_u64 = mem_cgroup_hierarchy_write,
-> +		.read_u64 = mem_cgroup_hierarchy_read,
-> +	},
->  };
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> @@ -1865,12 +1912,18 @@ mem_cgroup_create(struct cgroup_subsys *
->  	if (cont->parent == NULL) {
->  		enable_swap_cgroup();
->  		parent = NULL;
-> -	} else
-> +	} else {
->  		parent = mem_cgroup_from_cont(cont->parent);
-> +		mem->use_hierarchy = parent->use_hierarchy;
-> +	}
->  
-> - 	res_counter_init(&mem->res, parent ? &parent->res : NULL);
-> -	res_counter_init(&mem->memsw, parent ? &parent->memsw : NULL);
-> -
-> +	if (parent && parent->use_hierarchy) {
-> +		res_counter_init(&mem->res, &parent->res);
-> +		res_counter_init(&mem->memsw, &parent->memsw);
-> +	} else {
-> +		res_counter_init(&mem->res, NULL);
-> +		res_counter_init(&mem->memsw, NULL);
-> +	}
-
+    J
