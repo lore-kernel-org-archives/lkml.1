@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896AbYKRMbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbYKRMde@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752896AbYKRMbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 07:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYKRMbD
+	id S1752963AbYKRMde (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 07:33:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYKRMdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 07:31:03 -0500
-Received: from casper.infradead.org ([85.118.1.10]:55350 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbYKRMbB (ORCPT
+	Tue, 18 Nov 2008 07:33:25 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56947 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086AbYKRMdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 07:31:01 -0500
-Subject: Re: busted CFS group load balancer?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ken Chen <kenchen@google.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <b040c32a0811172333k5a89ccfy6438bf66d32dca5d@mail.gmail.com>
-References: <20081115011452.GA28135@google.com>
-	 <49218FB4.6090805@nortel.com>
-	 <b040c32a0811171204p4ce6d706j3ee2c018d0f33548@mail.gmail.com>
-	 <4921DFD8.9060509@nortel.com>
-	 <1226985548.29743.6.camel@lappy.programming.kicks-ass.net>
-	 <b040c32a0811172333k5a89ccfy6438bf66d32dca5d@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 18 Nov 2008 13:30:43 +0100
-Message-Id: <1227011444.29743.15.camel@lappy.programming.kicks-ass.net>
+	Tue, 18 Nov 2008 07:33:24 -0500
+Date: Tue, 18 Nov 2008 12:32:15 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hitoshi Mitake <h.mitake@gmail.com>,
+       Hitoshi Mitake <mitake@clustcom.com>, Doug Thompson <norsk5@yahoo.com>,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
+       ktaka@clustcom.com, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 1/1] edac x38: new MC driver module
+Message-ID: <20081118123215.GB30509@flint.arm.linux.org.uk>
+Mail-Followup-To: Ralf Baechle <ralf@linux-mips.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Hitoshi Mitake <h.mitake@gmail.com>,
+	Hitoshi Mitake <mitake@clustcom.com>,
+	Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
+	linux-kernel@vger.kernel.org, ktaka@clustcom.com,
+	linux-arch@vger.kernel.org
+References: <20081105222911.d76e7e1c.mitake@clustcom.com> <413709.12821.qm@web50106.mail.re2.yahoo.com> <20081106164641.ed369060.akpm@linux-foundation.org> <20081107152830.a42766f3.mitake@clustcom.com> <20081106223122.8a255211.akpm@linux-foundation.org> <20081107153824.0ec934e6.mitake@clustcom.com> <20081106231102.aab83cd4.akpm@linux-foundation.org> <a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com> <20081109112646.97c594b5.akpm@linux-foundation.org> <20081118121620.GB8625@linux-mips.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081118121620.GB8625@linux-mips.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-11-17 at 23:33 -0800, Ken Chen wrote:
-> On Mon, Nov 17, 2008 at 9:19 PM, Peter Zijlstra wrote:
-> > Note that with larger cpu count and/or lower group weight we'll quickly
-> > run into numerical trouble...
-> >
-> > I would recommend trying this with the minimum weight in the order of
-> > 8-16 times number of cpus on your system.
-> >
-> > There is only so much one can do with 10 bit fixed precision math :/
+On Tue, Nov 18, 2008 at 12:16:20PM +0000, Ralf Baechle wrote:
+> On Sun, Nov 09, 2008 at 11:26:46AM -0800, Andrew Morton wrote:
 > 
-> That is probably one of the many problems.  I also found that the
-> updates to the per-cpu task_group's sched_entity load weight
-> (tg->se[cpu]->load.weight) is very problematic and very erratic.
+> > Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
+> > disable these drivers on the architectures which don't provide
+> > readq/writeq support.
 > 
-> The total rq_weight is calculated at one beginning of tg_shares_up(),
+> And we also need to define the exact semantics.  Questions coming to mind:
 > 
->         for_each_cpu_mask(i, sd->span) {
->                 rq_weight += tg->cfs_rq[i]->load.weight;
->                 shares += tg->cfs_rq[i]->shares;
->         }
-> 
-> However, the scaling of per-cpu se->load.weight in function
-> __update_group_shares_cpu() takes another lookup of
-> tg->cfs_rq[cpu]->load.weight at a different time.
-> cfs_rq[cpu].load.weight aren't always consistent across these two
-> times.  Due to these inconsistency of value taken on per cpu cfs_rq,
-> I've see tg->se[cpu]->load.weight jumping all over the place.  In our
-> environment, the cpu loads are very dynamic.  Process
-> queuing/dequeuing at high rate.
+>   o are implementations performing 2 32-bit accesses acceptable?
+>   o if so, what ordering for the two accesses is acceptable?
 
-Ok, if your load values are very unstable in the order of the
-load-balance interval then you're hosed too, the same is true for the
-normal smp load-balancer.
+and don't forget to document the semantics.  If we're going to end up
+with CONFIG_ARCH_HAS_READQ which architectures can select, I suggest
+putting it in the help for that symbol.  Why not another random file
+in Documentation/ ?  Because it's a random file in Documentation/
+that'll be overlooked when someone decided to select ARCH_HAS_READQ.
+If it's along side the relevent config option, there is a higher
+chance it will be noticed.
 
-The cgroup load-balancer makes that even more problematic.
-
-Again, there's just very little you can do about that, except increase
-the coupling between cpus and thereby increase the overhead. Try
-decreasing 
-sysctl_sched_shares_ratelimit.
-
-
-> I'm also very troubled with this calculation in __update_group_shares_cpu():
-> 
->         shares = (sd_shares * rq_weight) / (sd_rq_weight + 1);
-> 
-> Won't you have rounding problem here?  value 'shares' will gradually
-> decrease for each iteration of __update_group_shares_cpu()?
-
-Yes it will, however at the top of the sched-domain tree its reset. 
-
-        if (!sd->parent || !(sd->parent->flags & SD_LOAD_BALANCE))
-                shares = tg->shares;
-
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
