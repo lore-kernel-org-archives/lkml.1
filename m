@@ -1,100 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbYKROKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbYKROOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412AbYKROKp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:10:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbYKROKg
+	id S1753266AbYKROOc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYKROOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:10:36 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55223 "EHLO mx2.redhat.com"
+	Tue, 18 Nov 2008 09:14:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42048 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752240AbYKROKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:10:36 -0500
-Date: Tue, 18 Nov 2008 09:07:51 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Fabio Checconi <fchecconi@gmail.com>
-Cc: Nauman Rafique <nauman@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Divyesh Shah <dpshah@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org, jens.axboe@oracle.com,
-       taka@valinux.co.jp, righi.andrea@gmail.com, s-uchida@ap.jp.nec.com,
-       fernando@oss.ntt.co.jp, balbir@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, menage@google.com, ngupta@google.com,
-       riel@redhat.com, jmoyer@redhat.com, peterz@infradead.org,
-       paolo.valente@unimore.it
-Subject: Re: [patch 0/4] [RFC] Another proportional weight IO controller
-Message-ID: <20081118140751.GA4283@redhat.com>
-References: <20081113155834.GE7542@redhat.com> <af41c7c40811131041t1b8491b6la5574ebe75f89000@mail.gmail.com> <20081113214642.GG7542@redhat.com> <af41c7c40811131457w472e4a86tb5344cc1d3d366fb@mail.gmail.com> <20081114160525.GE24624@redhat.com> <e98e18940811141444u5947b806v27fac453ed1e8a5@mail.gmail.com> <20081117142309.GA15564@redhat.com> <4922224A.5030502@cn.fujitsu.com> <e98e18940811172101na345b6bh5c73f9e657aac5a7@mail.gmail.com> <20081118120508.GD15268@gandalf.sssup.it>
+	id S1752442AbYKROOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 09:14:24 -0500
+Date: Tue, 18 Nov 2008 15:14:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [git pull] core kernel fixes
+Message-ID: <20081118141419.GA26741@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081118120508.GD15268@gandalf.sssup.it>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 01:05:08PM +0100, Fabio Checconi wrote:
-> Hi,
-> 
-> > From: Nauman Rafique <nauman@google.com>
-> > Date: Mon, Nov 17, 2008 09:01:48PM -0800
-> >
-> > If we start with bfq patches, this is how plan would look like:
-> > 
-> > 1 Start with BFQ take 2.
-> > 2 Do the following to support proportional division:
-> >  a) Expose the per device weight interface to user, instead of calculating
-> >  from priority.
-> >  b) Add support for disk time budgets, besides sector budget that is currently
-> >  available (configurable option). (Fabio: Do you think we can just emulate
-> > that using the existing code?). Another approach would be to give time slices
-> > just like CFQ (discussing?)
-> 
->   it should be possible without altering the code.  The slices can be
-> assigned in the time domain using big values for max_budget.  The logic
-> is: each process is assigned a budget (in the range [max_budget/2, max_budget],
-> choosen from the feedback mechanism, driven in __bfq_bfqq_recalc_budget()),
-> and if it does not complete it in timeout_sync milliseconds, it is
-> charged a fixed amount of sectors of service.
-> 
-> Using big values for max_budget (where big means greater than two
-> times the number of sectors the hard drive can transfer in timeout_sync
-> milliseconds) makes the budgets always to time out, so the disk time
-> is scheduled in slices of timeout_sync.
-> 
-> However this is just a temporary workaround to do some basic testing.
-> 
-> Modifying the scheduler to support time slices instead of sector
-> budgets would indeed simplify the code; I think that the drawback
-> would be being too unfair in the service domain.  Of course we
-> have to consider how much is important to be fair in the service
-> domain, and how much added complexity/new code can we accept for it.
-> 
-> [ Better service domain fairness is one of the main reasons why
->   we started working on bfq, so, talking for me and Paolo it _is_
->   important :) ]
-> 
-> I have to think a little bit on how it would be possible to support
-> an option for time-only budgets, coexisting with the current behavior,
-> but I think it can be done.
-> 
+Linus,
 
-IIUC, bfq and cfq are different in following manner.
+Please pull the latest core-fixes-for-linus git tree from:
 
-a. BFQ employs WF2Q+ for fairness and CFQ employes weighted round robin.
-b. BFQ uses the budget (sector count) as notion of service and CFQ uses
-   time slices.
-c. BFQ supports hierarchical fair queuing and CFQ does not.  
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git core-fixes-for-linus
 
-We are looking forward for implementation of point C. Fabio seems to
-thinking of supporting time slice as a service (B). It seems like
-convergence of CFQ and BFQ except the point A (WF2Q+ vs weighted round
-robin). 
+ Thanks,
 
-It looks like WF2Q+ provides tighter service bound and bfq guys mention
-that they have been able to ensure throughput while ensuring tighter 
-bounds. If that's the case, does that mean BFQ is a replacement for CFQ
-down the line?
-  
-Thanks
-Vivek
+	Ingo
+
+------------------>
+FUJITA Tomonori (1):
+      swiotlb: use coherent_dma_mask in alloc_coherent
+
+Ingo Molnar (1):
+      MAINTAINERS: remove me as RAID maintainer
+
+
+ MAINTAINERS   |    2 --
+ lib/swiotlb.c |   10 +++++++---
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8e0777f..627e4c8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3928,8 +3928,6 @@ M:	bootc@bootc.net
+ S:	Maintained
+ 
+ SOFTWARE RAID (Multiple Disks) SUPPORT
+-P:	Ingo Molnar
+-M:	mingo@redhat.com
+ P:	Neil Brown
+ M:	neilb@suse.de
+ L:	linux-raid@vger.kernel.org
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 78330c3..5f6c629 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -467,9 +467,13 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dma_addr_t dev_addr;
+ 	void *ret;
+ 	int order = get_order(size);
++	u64 dma_mask = DMA_32BIT_MASK;
++
++	if (hwdev && hwdev->coherent_dma_mask)
++		dma_mask = hwdev->coherent_dma_mask;
+ 
+ 	ret = (void *)__get_free_pages(flags, order);
+-	if (ret && address_needs_mapping(hwdev, virt_to_bus(ret), size)) {
++	if (ret && !is_buffer_dma_capable(dma_mask, virt_to_bus(ret), size)) {
+ 		/*
+ 		 * The allocated memory isn't reachable by the device.
+ 		 * Fall back on swiotlb_map_single().
+@@ -493,9 +497,9 @@ swiotlb_alloc_coherent(struct device *hwdev, size_t size,
+ 	dev_addr = virt_to_bus(ret);
+ 
+ 	/* Confirm address can be DMA'd by device */
+-	if (address_needs_mapping(hwdev, dev_addr, size)) {
++	if (!is_buffer_dma_capable(dma_mask, dev_addr, size)) {
+ 		printk("hwdev DMA mask = 0x%016Lx, dev_addr = 0x%016Lx\n",
+-		       (unsigned long long)*hwdev->dma_mask,
++		       (unsigned long long)dma_mask,
+ 		       (unsigned long long)dev_addr);
+ 
+ 		/* DMA_TO_DEVICE to avoid memcpy in unmap_single */
