@@ -1,43 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbYKRBgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752604AbYKRBik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbYKRBgU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 20:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbYKRBgH
+	id S1752604AbYKRBik (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 20:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYKRBic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 20:36:07 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:33082 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751879AbYKRBgE (ORCPT
+	Mon, 17 Nov 2008 20:38:32 -0500
+Received: from host2.marvell.com ([65.219.4.2]:54077 "EHLO maili.marvell.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752009AbYKRBib convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 20:36:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type
-         :content-transfer-encoding:content-disposition;
-        b=r9qLwPnFQADjjITJFzQ5Bw0xnLgKyN5tQ7S2XnEOBKlgzXTZ7BjwtgGx28majGd4pN
-         YnI1PHjgckDDVxGZkJyV1l1irWYkqd5mbZGFalv4KsKOMeJgxYK4NQ/RmdByDNN1pU6e
-         pSGYJ92/NvWnMjz2Zu7yCLvfnjM1OFZmwRuKo=
-Message-ID: <e38d12ff0811171736h1238ee6at4bafe06dafff6378@mail.gmail.com>
-Date: Mon, 17 Nov 2008 20:36:02 -0500
-From: "Andrey Vul" <andrey.vul@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: how to show ACPI key events
+	Mon, 17 Nov 2008 20:38:31 -0500
+X-Greylist: delayed 1200 seconds by postgrey-1.27 at vger.kernel.org; Mon, 17 Nov 2008 20:38:31 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [patch 2.6.28-rc5] mfd da903x: section fix
+Date: Mon, 17 Nov 2008 17:18:29 -0800
+Message-ID: <E913911567467945BBEB9277E27868B001494C8B@msiexch01.marvell.com>
+In-Reply-To: <200811171142.38587.david-b@pacbell.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 2.6.28-rc5] mfd da903x: section fix
+Thread-Index: AclI+SwoFgv4kBwfRI+B++f2uukWmgAIlCdQ
+References: <200811171142.38587.david-b@pacbell.net>
+From: "Eric Miao" <ymiao3@marvell.com>
+To: <dbrownell@users.sourceforge.net>, "Samuel Ortiz" <sameo@openedhand.com>
+Cc: "lkml" <linux-kernel@vger.kernel.org>,
+       "Mike Rapoport" <mike@compulab.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I hacked atkbd.c to dump every keycode and enabled CONFIG_EVBUG yet
-the Fn+F{1..12} and Fn+{arrow} keys don't register an event. Is there
-a way to hack the ACPI drivers to dump keycodes?
+Indeed.
 
->From hacking at the Windows drivers, pressing the hotkeys generates an
-acpi event. How do I get the acpi key events dumped?
+Acked-by: Eric Miao <eric.miao@marvell.com>
 
-One-liners if possible, please.
+Samuel, please consider merge, thanks.
 
---
-Andrey Vul
+-----Original Message-----
+From: David Brownell [mailto:david-b@pacbell.net] 
+Sent: Tuesday, November 18, 2008 3:43 AM
+To: Samuel Ortiz
+Cc: lkml; Eric Miao; Mike Rapoport
+Subject: [patch 2.6.28-rc5] mfd da903x: section fix
+
+From: David Brownell <dbrownell@users.sourceforge.net>
+
+This fixes the following section warning:
+
+  WARNING: vmlinux.o(.devinit.text+0x3d36): Section mismatch in
+reference from the function 
+  da903x_add_subdevs() to the function
+.devexit.text:da903x_remove_subdevs()
+  The function __devinit da903x_add_subdevs() references
+  a function __devexit da903x_remove_subdevs().
+  This is often seen when error handling in the init function
+  uses functionality in the exit path.
+  The fix is often to remove the __devexit annotation of
+  da903x_remove_subdevs() so it may be used outside an exit section.
+
+It might be nice to have an "init and exit" section annotation for such
+cases; in this case the waste is only about 40 bytes (x86 test build).
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+ drivers/mfd/da903x.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- a/drivers/mfd/da903x.c
++++ b/drivers/mfd/da903x.c
+@@ -435,13 +435,13 @@ static const struct i2c_device_id da903x
+ };
+ MODULE_DEVICE_TABLE(i2c, da903x_id_table);
+ 
+-static int __devexit __remove_subdev(struct device *dev, void *unused)
++static int __remove_subdev(struct device *dev, void *unused)
+ {
+ 	platform_device_unregister(to_platform_device(dev));
+ 	return 0;
+ }
+ 
+-static int __devexit da903x_remove_subdevs(struct da903x_chip *chip)
++static int da903x_remove_subdevs(struct da903x_chip *chip)
+ {
+ 	return device_for_each_child(chip->dev, NULL, __remove_subdev);
+ }
