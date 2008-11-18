@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbYKRWNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbYKRWNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753451AbYKRWNU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 17:13:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbYKRWNE
+	id S1754015AbYKRWNg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 17:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbYKRWNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 17:13:04 -0500
-Received: from zbr.yandex.ru ([213.180.219.33]:34063 "EHLO gavana.yandex.ru"
+	Tue, 18 Nov 2008 17:13:06 -0500
+Received: from zbr.yandex.ru ([213.180.219.33]:34068 "EHLO gavana.yandex.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752676AbYKRWND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752687AbYKRWND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 18 Nov 2008 17:13:03 -0500
 From: Evgeniy Polyakov <zbr@ioremap.net>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
        Evgeniy Polyakov <zbr@ioremap.net>
-Subject: [PATCH] MX31: add w1 platform_device and resources
-Date: Wed, 19 Nov 2008 01:16:15 +0300
-Message-Id: <12270465772346-git-send-email-zbr@ioremap.net>
+Subject: [PATCH] MX2 pcm038: add 1-wire master support
+Date: Wed, 19 Nov 2008 01:16:16 +0300
+Message-Id: <1227046577789-git-send-email-zbr@ioremap.net>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <1227046577498-git-send-email-zbr@ioremap.net>
+In-Reply-To: <12270465772346-git-send-email-zbr@ioremap.net>
 References: <1227046577988-git-send-email-zbr@ioremap.net>
  <1227046577498-git-send-email-zbr@ioremap.net>
+ <12270465772346-git-send-email-zbr@ioremap.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -29,42 +30,29 @@ From: Sascha Hauer <s.hauer@pengutronix.de>
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 Signed-off-by: Evgeniy Polyakov <zbr@ioremap.net>
 ---
- arch/arm/mach-mx3/devices.c |   15 +++++++++++++++
- arch/arm/mach-mx3/devices.h |    1 +
- 2 files changed, 16 insertions(+), 0 deletions(-)
+ arch/arm/mach-mx2/pcm038.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-mx3/devices.c b/arch/arm/mach-mx3/devices.c
-index a6bdcc0..12b3e3c 100644
---- a/arch/arm/mach-mx3/devices.c
-+++ b/arch/arm/mach-mx3/devices.c
-@@ -145,3 +145,18 @@ int __init mxc_register_gpios(void)
- {
- 	return mxc_gpio_init(imx_gpio_ports, ARRAY_SIZE(imx_gpio_ports));
- }
-+
-+static struct resource mxc_w1_master_resources[] = {
-+	{
-+		.start = OWIRE_BASE_ADDR,
-+		.end   = OWIRE_BASE_ADDR + SZ_4K - 1,
-+		.flags = IORESOURCE_MEM,
-+	},
-+};
-+
-+struct platform_device mxc_w1_master_device = {
-+	.name = "mxc_w1",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(mxc_w1_master_resources),
-+	.resource = mxc_w1_master_resources,
-+};
-diff --git a/arch/arm/mach-mx3/devices.h b/arch/arm/mach-mx3/devices.h
-index 4dc03f9..cb1459c 100644
---- a/arch/arm/mach-mx3/devices.h
-+++ b/arch/arm/mach-mx3/devices.h
-@@ -4,3 +4,4 @@ extern struct platform_device mxc_uart_device1;
- extern struct platform_device mxc_uart_device2;
- extern struct platform_device mxc_uart_device3;
- extern struct platform_device mxc_uart_device4;
-+extern struct platform_device mxc_w1_master_device;
+diff --git a/arch/arm/mach-mx2/pcm038.c b/arch/arm/mach-mx2/pcm038.c
+index 7f55746..ac516b1 100644
+--- a/arch/arm/mach-mx2/pcm038.c
++++ b/arch/arm/mach-mx2/pcm038.c
+@@ -168,6 +168,7 @@ static void gpio_fec_inactive(void)
+ 
+ static struct platform_device *platform_devices[] __initdata = {
+ 	&pcm038_nor_mtd_device,
++	&mxc_w1_master_device,
+ };
+ 
+ static void __init pcm038_init(void)
+@@ -177,6 +178,7 @@ static void __init pcm038_init(void)
+ 	mxc_register_device(&mxc_uart_device0, &uart_pdata[0]);
+ 	mxc_register_device(&mxc_uart_device1, &uart_pdata[1]);
+ 	mxc_register_device(&mxc_uart_device2, &uart_pdata[2]);
++	mxc_gpio_mode(PE16_AF_RTCK); /* OWIRE */
+ 
+ 	platform_add_devices(platform_devices, ARRAY_SIZE(platform_devices));
+ 
 -- 
 1.5.2.5
 
