@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbYKRJpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752416AbYKRJxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbYKRJpA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 04:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbYKRJov
+	id S1752416AbYKRJxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 04:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbYKRJxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 04:44:51 -0500
-Received: from lazybastard.de ([212.112.238.170]:38857 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbYKRJou (ORCPT
+	Tue, 18 Nov 2008 04:53:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60973 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbYKRJxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 04:44:50 -0500
-Date: Tue, 18 Nov 2008 10:44:40 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 3/7] Improve alloc_percpu: expose percpu_modalloc and percpu_modfree
-Message-ID: <20081118094439.GA17733@logfs.org>
-References: <20081117132630.AC29EDDDFF@ozlabs.org> <20081117134713.GA8949@logfs.org> <200811180854.52492.rusty@rustcorp.com.au>
+	Tue, 18 Nov 2008 04:53:09 -0500
+Date: Tue, 18 Nov 2008 04:53:05 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Large stack usage in fs code (especially for PPC64)
+Message-ID: <20081118095305.GA24119@infradead.org>
+References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com> <1226963005.7178.248.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200811180854.52492.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1226963005.7178.248.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 November 2008 08:54:52 +1030, Rusty Russell wrote:
-> On Tuesday 18 November 2008 00:17:13 Jörn Engel wrote:
-> >
-> > You didn't test the patches much, did you? :)
+On Tue, Nov 18, 2008 at 10:03:25AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2008-11-17 at 15:34 -0500, Steven Rostedt wrote:
+> > Note, I was using a default config that had CONFIG_IRQSTACKS off and
+> > CONFIG_PPC_64K_PAGES on.
 > 
-> No, not UP :)  I'd spent over four hours on them, so I figured it was time to
-> post them and get some concrete discussion.
+> For one, we definitely need to turn IRQSTACKS on by default ... In fact,
+> I'm pondering just removing the option.
 
-Oh, absolutely.  I just wish I could give a more substantial comment to
-all this.
+It shouldn't be a user-visible option.  It shouldn't on x86 either, but
+there it always gets into the ideological 4k stacks flameware so people
+usually gave up after a while instead of doing the sensibke 8k +
+irqstacks by default, 4k as an option..
 
-Jörn
-
--- 
-A defeated army first battles and then seeks victory.
--- Sun Tzu
