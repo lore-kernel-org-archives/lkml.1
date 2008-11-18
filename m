@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbYKRIsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbYKRIuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752239AbYKRIsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 03:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYKRIsB
+	id S1752447AbYKRIuP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 03:50:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbYKRIuC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 03:48:01 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52348 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbYKRIsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 03:48:01 -0500
-Date: Tue, 18 Nov 2008 09:47:55 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
-	field
-Message-ID: <20081118084755.GK17838@elte.hu>
-References: <4920D571.4050007@gmail.com> <20081117084923.GD28786@elte.hu> <4921BA25.3090704@gmail.com>
+	Tue, 18 Nov 2008 03:50:02 -0500
+Received: from gw1.cosmosbay.com ([86.65.150.130]:39410 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbYKRIuA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 03:50:00 -0500
+Message-ID: <4922818B.1020303@cosmosbay.com>
+Date: Tue, 18 Nov 2008 09:49:15 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4921BA25.3090704@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, cl@linux-foundation.org, efault@gmx.de,
+       a.p.zijlstra@chello.nl, shemminger@vyatta.com
+Subject: Re: eth_type_trans(): Re: [Bug #11308] tbench regression on each
+ kernel release from 2.6.22 -&gt; 2.6.28
+References: <20081117182320.GA26844@elte.hu> <20081117184951.GA5585@elte.hu> <20081117212657.GH12020@elte.hu> <20081117.211645.193706814.davem@davemloft.net> <20081118083018.GI17838@elte.hu>
+In-Reply-To: <20081118083018.GI17838@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 18 Nov 2008 09:49:21 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> Ingo Molnar a écrit :
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> >> Impact: help to find the better depth of trace
-> >>
-> >> We decided to arbitrary define the depth of function return trace as 
-> >> "20". Perhaps this is not enough. To help finding an optimal depth, 
-> >> we measure now the overrun: the number of functions that have been 
-> >> missed for the current thread. By default this is not displayed, we 
-> >> have to do set a particular flag on the return tracer: echo overrun 
-> >>> /debug/tracing/trace_options And the overrun will be printed on 
-> >> the right.
-> >>
-> >> As the trace shows below, the current 20 depth is not enough.
-> >>
-> >> update_wall_time+0x37f/0x8c0 -> update_xtime_cache (345 ns) (Overruns: 2838)
-> >> update_wall_time+0x384/0x8c0 -> clocksource_get_next (1141 ns) (Overruns: 2838)
-> >> do_timer+0x23/0x100 -> update_wall_time (3882 ns) (Overruns: 2838)
-> > 
-> > hm, interesting. Have you tried to figure out what a practical depth 
-> > limit would be?
-> > 
-> > With lockdep we made the experience that function call stacks can be 
-> > very deep - if we count IRQ contexts too it can be up to 100 in the 
-> > extreme cases. (but at that stage kernel stack limits start hitting 
-> > us)
-> > 
-> > I'd say 50 would be needed.
-> > 
-> > 	Ingo
+Ingo Molnar a écrit :
+> * David Miller <davem@davemloft.net> wrote:
 > 
+>> From: Ingo Molnar <mingo@elte.hu>
+>> Date: Mon, 17 Nov 2008 22:26:57 +0100
+>>
+>>> eth->h_proto access.
+>> Yes, this is the first time a packet is touched on receive.
+>>
+>>> Given that this workload does localhost networking, my guess would be 
+>>> that eth->h_proto is bouncing around between 16 CPUs? At minimum this 
+>>> read-mostly field should be separated from the bouncing bits.
+>> It's the packet contents, there is no way to "seperate it".
+>>
+>> And it should be unlikely bouncing on your system under tbench, the 
+>> senders and receivers should hang out on the same cpu unless the 
+>> something completely stupid is happening.
+>>
+>> That's why I like running tbench with a num_threads command line 
+>> argument equal to the number of cpus, every cpu gets the two thread 
+>> talking to eachother over the TCP socket.
 > 
-> Ok I will try with 50. If there are still a lot and often missing 
-> traces with this depth, perhaps should we consider a hybrid solution 
-> between ret stack and trampolines? We could use the normal ret stack 
-> on struct info for most common cases and the trampoline when we are 
-> exceeding the depth....
+> yeah - and i posted the numbers for that too - it's the same 
+> throughput, within ~1% of noise.
 
-dunno, trampolines make me feel uneasy.
+Thinking once again about loopback driver, I recall a previous attempt
+to call netif_receive_skb() instead of netif_rx() and pay the price
+of cache line ping-pongs between cpus.
 
-Could you set it to some really large value (200) and add a "max depth 
-seen" variable perhaps, and see the maximum depth?
+http://kerneltrap.org/mailarchive/linux-netdev/2008/2/21/939644
 
-	Ingo
+Maybe we could do that, with a temporary percpu stack, like we do in softirq
+when CONFIG_4KSTACKS=y
+
+(arch/x86/kernel/irq_32.c  : call_on_stack(func, stack)
+
+And do this only if the current cpu doesnt already use its softirq_stack
+(think about loopback re-entering loopback xmit because of TCP ACK for example)
+
+Oh well... black magic, you are going to kill me :)
+
+
