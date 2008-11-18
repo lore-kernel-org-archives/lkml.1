@@ -1,191 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbYKRVdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbYKRViK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbYKRVdf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 16:33:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYKRVdK
+	id S1753894AbYKRViK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 16:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbYKRVh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 16:33:10 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:49638 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753194AbYKRVdI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 16:33:08 -0500
-Message-ID: <4923347D.8000205@oracle.com>
-Date: Tue, 18 Nov 2008 13:32:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Tue, 18 Nov 2008 16:37:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54437 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751334AbYKRVh4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 16:37:56 -0500
+Date: Tue, 18 Nov 2008 22:37:35 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>,
+       Hugh Dickins <hugh@veritas.com>, Roland Dreier <rdreier@cisco.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+Message-ID: <20081118213735.GB28825@elte.hu>
+References: <20081112212647.259698000@intel.com> <20081112212900.151113000@intel.com> <20081112232312.GB29363@wotan.suse.de> <7E82351C108FA840AB1866AC776AEC46426F30E5@orsmsx505.amr.corp.intel.com> <20081113034425.GA23434@wotan.suse.de> <7E82351C108FA840AB1866AC776AEC4642775AF2@orsmsx505.amr.corp.intel.com> <20081114020547.GA24414@wotan.suse.de> <7E82351C108FA840AB1866AC776AEC46427EC16C@orsmsx505.amr.corp.intel.com> <20081117023019.GB1943@wotan.suse.de>
 MIME-Version: 1.0
-To: scsi <linux-scsi@vger.kernel.org>
-CC: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
-References: <20080821091514.8f56e2d5.randy.dunlap@oracle.com>	<0F5B06BAB751E047AB5C87D1F77A778835118100D6@GVW0547EXC.americas.hpqcorp.net>	<20080821172653.3e3e855c.randy.dunlap@oracle.com>	<0F5B06BAB751E047AB5C87D1F77A77883511810706@GVW0547EXC.americas.hpqcorp.net>	<1219420487.3339.22.camel@localhost.localdomain>	<48AEEE0A.1010900@oracle.com>	<1219424538.3339.51.camel@localhost.localdomain>	<0F5B06BAB751E047AB5C87D1F77A77883511810894@GVW0547EXC.americas.hpqcorp.net>	<48C013D9.7060309@oracle.com>	<0F5B06BAB751E047AB5C87D1F77A7788413663D229@GVW0547EXC.americas.hpqcorp.net>	<20080905092838.GS20055@kernel.dk>	<48DBF583.3050307@oracle.com> <20080925134000.9b133f8c.randy.dunlap@oracle.com> <0F5B06BAB751E047AB5C87D1F77A77884BFF5D1F76@GVW0547EXC.americas.hpqcorp.net> <49232232.10604@oracle.com> <4923237B.9090707@xenotime.net>
-In-Reply-To: <4923237B.9090707@xenotime.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.49233482.0013:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20081117023019.GB1943@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Randy Dunlap wrote:
->> Miller, Mike (OS Dev) wrote:
->>>> -----Original Message-----
->>>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com]
->>>> Sent: Thursday, September 25, 2008 3:40 PM
->>>> To: scsi
->>>> Cc: Jens Axboe; Miller, Mike (OS Dev); James Bottomley; lkml; akpm
->>>> Subject: Re: in 2.6.23-rc3-git7 in do_cciss_intr
->>>>
->>>> On Thu, 25 Sep 2008 13:33:07 -0700 Randy Dunlap wrote:
->>>>
->>>>> Jens Axboe wrote:
->>>>>> On Thu, Sep 04 2008, Miller, Mike (OS Dev) wrote:
->>>>>>>>>>> 0x3bb2 <do_cciss_intr+1649>:    mov    0x2(%r8),%dx
->>>>>>>>>>> 0x3bb7 <do_cciss_intr+1654>:    test   %dx,%dx
->>>>>>>>>>> 0x3bba <do_cciss_intr+1657>:    je     0x3f0e
->>>> <do_cciss_intr+2509>
->>>>>>>>>>> $ addr2line -e cciss.o -f  do_cciss_intr+0x627 SA5_fifo_full
->>>>>>>>>>>
->>>> /home/rdunlap/linsrc/linux-2.6.27-rc3-git7/drivers/block/cciss.h:2
->>>>>>>> 06
->>>>>>>>>> OK ...that's confusing.  It seems to be saying that
->>>> ctrlr_info_t
->>>>>>>>>> * was NULL.  However, I can't see a way of getting into the
->>>>>>>> fifo_full
->>>>>>>>>> callback from do_cciss_intr ..
->>>>>>>>>> especially not with an NULL host.
->>>>>>>>>>
->>>>>>>>>> James
->>>>>>>>> That is weird. Even if we could get there fifo_full doesn't
->>>>>>>> do anything but wait for a bit.
->>>>>>>>
->>>>>>>> Hi,
->>>>>>>>
->>>>>>>> This just happened again.  This time it's on 2.6.27-rc5-git3.
->>>>>>>>
->>>>>>>> ~Randy
->>>>>>> Thanks Randy. I think. :)
->>>>>>>
->>>>>>> I'll try to recreate in my lab.
->>>>>> This looks somewhat strange, mostly like 'c' is NULL and it's
->>>>>> oopsing in in removeQ (I don't think Randy's analysis is
->>>> correct in
->>>>>> assuming it's 'h' and it's in fifo_full). Given that 'c'
->>>> cannot be
->>>>>> NULL, it's c->prev or c->next that are NULL.
->> This BUG: has happened (now) 5 times today.  Higher frequency than usual for
->> some reason.
->>
->> I enabled CCISS_DEBUG and added one printk in removeQ().  On the first call
+
+* Nick Piggin <npiggin@suse.de> wrote:
+
+> On Fri, Nov 14, 2008 at 01:35:38PM -0800, Pallipadi, Venkatesh wrote:
+> > 
+> > 
+> > >-----Original Message-----
+> > >From: Nick Piggin [mailto:npiggin@suse.de]
+> > >Sent: Thursday, November 13, 2008 6:06 PM
+> > >To: Pallipadi, Venkatesh
+> > >Cc: Ingo Molnar; Thomas Gleixner; H Peter Anvin; Hugh Dickins;
+> > >Roland Dreier; Jesse Barnes; Jeremy Fitzhardinge; Arjan van de
+> > >Ven; linux-kernel@vger.kernel.org; Siddha, Suresh B
+> > >Subject: Re: [patch 2/8] x86 PAT: set VM_PFNMAP flag in vm_insert_pfn
+> > >
+> > >On Thu, Nov 13, 2008 at 10:47:23AM -0800, Pallipadi, Venkatesh wrote:
+> > >>
+> > >> Yes. It does. But, it calls a lower level insert_pfn()
+> > >function. The lower
+> > >> level insert_pfn() does not have any bug checks. But the higher level
+> > >> vm_insert_pfn() checks for PFNMAP or MIXEDMAP.
+> > >
+> > >Yes, but is there anything extra you need to check for cache aliases in
+> > >MIXEDMAP mappings?
+> > >
+> > 
+> > Yes. We need additional things to track MIXEDMAP and we are looking at that.
+> > But, that is slightly more trickier than the general PFNMAP case. And
+> > only in-tree user of MIXEDMAP is xip and that too it only uses it for
+> > regular WB mapping. So, we thought we should fix the more common case
+> > first here.
+> > 
+> > With MIXEDMAP there is no way whether to distinguish whether insert_pfn
+> > Or insert_page was used while looking at VMA. We can probably use PFNMAP
+> > in addition to MIXEDMAP to indicate that, which will make things easier.
 > 
-> s/first/second/
+> It's difficult because it can have either method for a single VMA, and
+> a given address in the vma may even change over time (not with current
+> code in kernel AFAIKS, but AXFS eventually might get to that point).
 > 
 > 
->> to removeQ(), both c->next and c->prev are NULL.
->>
->> Here's the kernel log output from cciss:
+> > But, we are still looking at that and trying to understand the change
+> > implication.
+> 
+> OK: now I understand correctly. Getting PFNMAP working is an important
+> first step. I agree.
 
-I added a printk() in addQ() as well.  Here's the new output:
+Venki, a patch logistics sidenote: the final mm/* bits of this 
+patchset need acks from MM folks - Andrew, Nick or Hugh - we cannot 
+just queue them up in the x86/pat tree without agreement from MM 
+maintainers.
 
-HP CISS Driver (v 3.6.20)
-ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54
-cciss 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) -> IRQ 54
-command = 147
-irq = 36
-board_id = 3211103c
-cciss 0000:42:08.0: irq 87 for MSI/MSI-X
-address 0 = fdf80000
-cfg base address = 10
-cfg base address index = 0
-cfg offset = 400
-Controller Configuration information
-------------------------------------
-   Signature = CISS
-   Spec Number = 1
-   Transport methods supported = 0x6
-   Transport methods active = 0x3
-   Requested transport Method = 0x0
-   Coalesce Interrupt Delay = 0x0
-   Coalesce Interrupt Count = 0x1
-   Max outstanding commands = 0x256
-   Bus Types = 0x200000
-   Server Name =
-   Heartbeat Counter = 0x1672
-
-
-Trying to put board into Simple mode
-I counter got to 1 0
-Controller Configuration information
-------------------------------------
-   Signature = CISS
-   Spec Number = 1
-   Transport methods supported = 0x6
-   Transport methods active = 0x3
-   Requested transport Method = 0x0
-   Coalesce Interrupt Delay = 0x0
-   Coalesce Interrupt Count = 0x1
-   Max outstanding commands = 0x256
-   Bus Types = 0x200000
-   Server Name =
-   Heartbeat Counter = 0x1672
-
-
-cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 87 using DAC
-cciss: intr_pending 8
-cciss: addQ: Qptr=ffff88027e0100b8, c=ffff88007f83e000
-cciss: removeQ: Qptr=ffff88027e0100b8, c=ffff88007f83e000, next=ffff88007f83e000, prev=ffff88007f83e000
-Sending 7f83e000 - down to controller
-cciss: addQ: Qptr=ffff88027e0100c0, c=ffff88007f83e000
-cciss: intr_pending 8
-cciss:  Read 4 back from board
-cciss: removeQ: Qptr=ffff88027e0100c0, c=ffff88007f840000, next=0000000000000000, prev=0000000000000000
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000248
-IP: [<ffffffffa0025106>] do_cciss_intr+0x706/0xb6c [cciss]
-PGD 0
-Oops: 0002 [#1] SMP
-last sysfs file: /sys/block/ram15/dev
-CPU 2
-Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
-Pid: 0, comm: swapper Not tainted 2.6.28-rc5 #1
-RIP: 0010:[<ffffffffa0025106>]  [<ffffffffa0025106>] do_cciss_intr+0x706/0xb6c [cciss]
-RSP: 0018:ffff88027f643ee8  EFLAGS: 00010087
-RAX: 0000000000000000 RBX: ffff88007f840000 RCX: 000000000000a44f
-RDX: 0000000000000000 RSI: 0000000000000046 RDI: ffffffff8080e634
-RBP: ffff88027f643f18 R08: 0000000000000000 R09: ffff88017e964800
-R10: 0000000000000000 R11: 0000000000000000 R12: ffff88027e000000
-R13: 0000000000000000 R14: 0000000000000057 R15: 0000000000000086
-FS:  00000000008558f0(0000) GS:ffff88017fc01c80(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000248 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 0, threadinfo ffff88017fa9e000, task ffff88017fa5d400)
-Stack:
- 0000000000000030 ffff88027f627500 0000000000000000 0000000000000000
- 0000000000000057 0000000000000000 ffff88027f643f48 ffffffff8026a8b9
- ffffffff8074ab00 0000000000000057 ffff88027f627500 ffffffff8074ab58
-Call Trace:
- <IRQ> <0> [<ffffffff8026a8b9>] handle_IRQ_event+0x27/0x57
- [<ffffffff8026c424>] handle_edge_irq+0xde/0x11f
- [<ffffffff8020e29b>] do_IRQ+0xfc/0x175
- [<ffffffff8020c3e6>] ret_from_intr+0x0/0xa
- <EOI> <0> [<ffffffff8023c7d2>] ? ksoftirqd+0x0/0xa6
- [<ffffffff80212575>] ? default_idle+0x2b/0x40
- [<ffffffff80212799>] ? c1e_idle+0xe5/0xec
- [<ffffffff8056a7f6>] ? atomic_notifier_call_chain+0xf/0x11
- [<ffffffff8020acd1>] ? cpu_idle+0x40/0x5e
- [<ffffffff8056284e>] ? start_secondary+0x174/0x179
-Code: 8b 83 48 02 00 00 48 39 d8 74 37 49 39 9c 24 c0 00 01 00 75 08 49 89 84 24 c0 00 01 00 48 8b 83 40 02 00 00 48 8b 93 48 02 00 00 <48> 89 90 48 02 00 00 48 8b 93 48 02 00 00 48 89 82 40 02 00 00
-RIP  [<ffffffffa0025106>] do_cciss_intr+0x706/0xb6c [cciss]
- RSP <ffff88027f643ee8>
-CR2: 0000000000000248
-Kernel panic - not syncing: Fatal exception in interrupt
-
-~Randy
-
+	Ingo
