@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYKROwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbYKROwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbYKROwS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYKROwJ
+	id S1753895AbYKROwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYKROwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:52:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39597 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751334AbYKROwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:52:08 -0500
-Date: Tue, 18 Nov 2008 15:51:54 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
-	field
-Message-ID: <20081118145154.GC30358@elte.hu>
-References: <4920D571.4050007@gmail.com> <20081117084923.GD28786@elte.hu> <4921BA25.3090704@gmail.com> <20081118084755.GK17838@elte.hu> <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 18 Nov 2008 09:52:11 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:21752 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751495AbYKROwK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 09:52:10 -0500
+Message-Id: <4922E4D4.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 18 Nov 2008 14:52:52 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <heukelum@fastmail.fm>, "Andi Kleen" <andi@firstfloor.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>,
+       "Glauber Costa" <gcosta@redhat.com>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [RFC,v2] x86_64: save_args out of line
+References: <1226845741-12470-2-git-send-email-heukelum@fastmail.fm>
+ <20081117175232.GA13766@mailshack.com> <49228648.76E4.0078.0@novell.com>
+ <20081118111633.GA21036@mailshack.com> <4922C863.76E4.0078.0@novell.com>
+ <20081118140349.GC23479@elte.hu>
+In-Reply-To: <20081118140349.GC23479@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
-	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> Ingo Molnar <mingo@elte.hu> 18.11.08 15:03 >>>
+>* Jan Beulich <jbeulich@novell.com> wrote:
+>> No tool, if you mean that. Extensive changes I verify by looking at 
+>> the dump, problems are usually found only when back traces don't 
+>> come out right.
+>
+>that's a fundamental weakness of all the CFI annotations.
+>
+>It is outright wrong to waste humans on this mechanic task: as it is 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+This part I agree to.
 
-> 
-> On Tue, 18 Nov 2008, Ingo Molnar wrote:
-> > > 
-> > > Ok I will try with 50. If there are still a lot and often missing 
-> > > traces with this depth, perhaps should we consider a hybrid solution 
-> > > between ret stack and trampolines? We could use the normal ret stack 
-> > > on struct info for most common cases and the trampoline when we are 
-> > > exceeding the depth....
-> > 
-> > dunno, trampolines make me feel uneasy.
-> > 
-> > Could you set it to some really large value (200) and add a "max 
-> > depth seen" variable perhaps, and see the maximum depth?
-> 
-> Don't run that on a box you care about ;-) But hopefully the stacks 
-> will not collide. This should also depend on IRQSTACKS.
+>abundantly clear to GAS where we change a stack pointer and by how 
+>much - it could emit magic annotations automatically just as much.
+>
+>So if you care about it, please fix this in the tools space. The 
+>entry_64.S impact of finegrained annotations is just too ugly for 
+>things like this.
+>
+>One limited exception is for basic stack frames where we do syscalls 
+>or call into other C code. (i.e. the patch proposed here would have to 
+>do that limited annotation)
+>
+>But the per instruction annotations currently in that code are madness 
+>and must either be cleaned up significantly via the use of GAS macros 
+>(so that all stack pointer manipulations go via a single macro 
+>invocation), or be completely auto-generated by GAS.
 
-that reminds me: ti->ret_stack[] should be moved to task->ret_stack[]. 
-That way we decouple its size from any kernel stack size limits. 
-(thread-info resides at one end of the kernel stack, on x86)
+Making gas auto-generate this is not really possible (much like ia64
+requires the annotations to be inserted manually), mainly because gas
+can't know whether e.g. a push of a register is in order to preserve its
+value, or for some other purpose.
 
-	Ingo
+I do have a set of macros for this in nlkd, maybe (as you're asking for it)
+I should get them out of there (and convert them to AT&T syntax).
+
+Jan
+
