@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbYKROuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbYKROwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbYKROuK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 09:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbYKROt6
+	id S1753589AbYKROwS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 09:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751421AbYKROwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 09:49:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34235 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbYKROt5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 09:49:57 -0500
-Date: Tue, 18 Nov 2008 06:49:43 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, rml@tech9.net,
-       Alasdair G Kergon <agk@redhat.com>, Milan Broz <mbroz@redhat.com>
-Subject: Re: Active waiting with yield()
-Message-ID: <20081118064943.332516f7@infradead.org>
-In-Reply-To: <Pine.LNX.4.64.0811180921450.12274@hs20-bc2-1.build.redhat.com>
-References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
-	<20081114190616.30dd273e@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
-	<1226696221.7685.8148.camel@twins>
-	<Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
-	<1226789714.8172.0.camel@lappy.programming.kicks-ass.net>
-	<Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
-	<20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.64.0811180921450.12274@hs20-bc2-1.build.redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.6.0 (GTK+ 2.14.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 18 Nov 2008 09:52:09 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39597 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751334AbYKROwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 09:52:08 -0500
+Date: Tue, 18 Nov 2008 15:51:54 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun
+	field
+Message-ID: <20081118145154.GC30358@elte.hu>
+References: <4920D571.4050007@gmail.com> <20081117084923.GD28786@elte.hu> <4921BA25.3090704@gmail.com> <20081118084755.GK17838@elte.hu> <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0811180922370.15003@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00,DNS_FROM_SECURITYSAGE autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.0 DNS_FROM_SECURITYSAGE  RBL: Envelope sender in
+	blackholes.securitysage.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008 09:34:16 -0500 (EST)
-> So what are the reasons why you (and others) are against active
-> waiting? All you are saying is that my reasons are wrong, but you
-> haven't single example when active waiting causes trouble. If there
-> is a workload when waiting 1ms-to-10ms with mdelay(1) on driver
-> unload would cause discomfort to the user, describe it.
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
+> On Tue, 18 Nov 2008, Ingo Molnar wrote:
+> > > 
+> > > Ok I will try with 50. If there are still a lot and often missing 
+> > > traces with this depth, perhaps should we consider a hybrid solution 
+> > > between ret stack and trampolines? We could use the normal ret stack 
+> > > on struct info for most common cases and the trampoline when we are 
+> > > exceeding the depth....
+> > 
+> > dunno, trampolines make me feel uneasy.
+> > 
+> > Could you set it to some really large value (200) and add a "max 
+> > depth seen" variable perhaps, and see the maximum depth?
+> 
+> Don't run that on a box you care about ;-) But hopefully the stacks 
+> will not collide. This should also depend on IRQSTACKS.
 
-mdelay()
-* costs you quite a bit of power
-* will cause your cpu to go to full speed
-* makes it more likely that your fan goes on
-* takes away CPU time from others who do want to run
-  - including the guy you are waiting for!
-* if you do it with interrupts off you can even cause time skew
-* adds 10 milliseconds of latency to the entire system, which is very
-  user noticable in a desktop environment (the threshold for that is
-  like 1 or 2 milliseconds total)
+that reminds me: ti->ret_stack[] should be moved to task->ret_stack[]. 
+That way we decouple its size from any kernel stack size limits. 
+(thread-info resides at one end of the kernel stack, on x86)
 
-now there are some cases, mostly during error recovery or driver init
-slowpaths where mdelay() can be justified, but "I'm too lazy to use a
-waitqueue or other sleeping construct" is not one of them.
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Ingo
