@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752416AbYKRJhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751792AbYKRJhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752416AbYKRJhc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 04:37:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbYKRJhX
+	id S1751792AbYKRJhr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 04:37:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbYKRJhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 04:37:23 -0500
-Received: from qw-out-2122.google.com ([74.125.92.25]:60327 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751356AbYKRJhW (ORCPT
+	Tue, 18 Nov 2008 04:37:25 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:62924 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbYKRJhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 04:37:22 -0500
+	Tue, 18 Nov 2008 04:37:23 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
-         :content-type:content-transfer-encoding:content-disposition
-         :references;
-        b=x5JwxFV8I5zvloKpWuVlI4zJirVbeZfNFO5rYaXxhC/0BES5uIFoU7zMkhuL+5+CDm
-         vtn6hFbNYG8EqAngIngteuK4KDtSdZJE3l4fDwnnm47L4NlEp714/8eGmHAXnc2Bb0RF
-         3bXN63Ej7zS8yTJAebBlhyeTH01nCQr2xrMRM=
-Message-ID: <c384c5ea0811180137l2f82147eqb0af68baac9ed4b2@mail.gmail.com>
-Date: Tue, 18 Nov 2008 10:37:21 +0100
-From: "Leon Woestenberg" <leon.woestenberg@gmail.com>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: pci_map_sg() does not coalesce adjacent physical memory? x86
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "Tejun Heo" <tj@kernel.org>
-In-Reply-To: <1226985689.3403.20.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=xIUAtQAyyl25F/hJM9/l+CZTYL38Z8wsioNlOU3Ei/a6NFNyh3a910/c1m2GoSpa6n
+         nuzqoL8e61o1o4Pla5oX1Ecz5DxZvGxxTv97JdmW83gTJU7TIJWmydTGAuEGXKfMqtpf
+         jNzH6mdchgrywCYM+PpvQuFpRQ4MhdaYVmCEY=
+Subject: [   11.333737]    is this a ghost?
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 18 Nov 2008 01:37:18 -0800
+Message-Id: <1227001038.3184.6.camel@LiNuX>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c384c5ea0811171354u5d6f5be6v857f92b1e75769c7@mail.gmail.com>
-	 <20081117191532.c1c849f5.akpm@linux-foundation.org>
-	 <1226985689.3403.20.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+in dmesg I see:
+[   11.333737]  
+but nothing else.
+          ---------------(cut)-----------------
+[   11.247147] Monitor-Mwait will be used to enter C-1 state
+[   11.247151] Monitor-Mwait will be used to enter C-2 state
+[   11.247154] Monitor-Mwait will be used to enter C-3 state
+[   11.247671] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
+[   11.247996] processor ACPI_CPU:00: registered as cooling_device0
+[   11.248008] ACPI: Processor [CPU0] (supports 8 throttling states)
+[   11.306465] ACPI: SSDT 3FEB8F10, 0087 (r1 APPLE   Cpu1Ist     3000
+INTL 20050309)<7>power_supply ADP1: No power supply yet
+[   11.306831] power_supply ADP1: power_supply_changed
+[   11.306839] ACPI: AC Adapter [ADP1] (on-line)
+[   11.333737]                         <------------what's with this!!!
+[   11.342937] power_supply ADP1: power_supply_changed_work
+[   11.351901] power_supply ADP1: power_supply_update_gen_leds 1
+[   11.351916] ACPI: SSDT 3FEB7F10, 0085 (r1 APPLE   Cpu1Cst     3000
+INTL 20050309)
+[   11.357477] Marking TSC unstable due to TSC halts in idle
+[   11.382273] power_supply ADP1: uevent
+[   11.392955] power_supply ADP1: POWER_SUPPLY_NAME=ADP1
+[   11.403674] power_supply ADP1: Static prop TYPE=Mains
+[   11.413736] power_supply ADP1: 1 dynamic props
+[   11.424526] power_supply ADP1: prop ONLINE=1
+[   11.437151] ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
 
-On Tue, Nov 18, 2008 at 6:21 AM, James Bottomley
-<James.Bottomley@hansenpartnership.com> wrote:
-> On Mon, 2008-11-17 at 19:15 -0800, Andrew Morton wrote:
->> (cc's added)
->>
->> On Mon, 17 Nov 2008 22:54:33 +0100 "Leon Woestenberg" <leon.woestenberg@gmail.com> wrote:
->> > pci_map_sg() does not coalesce the scattergather list for me on x86.
->> In which kernel version(s)?
->
-2.6.24 for x86, and 2.6.27 for powerpc. Sorry, this is a bogus report:
+if you need to see the full dmesg I can attach..
+I've seen this happen on a random.
 
-I tried to isolate the scattergather implementation, thereby the dev
-pointer got NULL, which results in different dma_ops.
+regards;
 
-I am bringing a freshly written driver upstream 'altpciechdma' for the
-Altera FPGA PCI Express Chaining DMA reference design. Will probably
-appear in staging RSN.
 
-Thanks for the help,
 -- 
-Leon
+Justin P. Mattock <justinmattock@gmail.com>
+
