@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753192AbYKRNwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488AbYKRNwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753192AbYKRNwM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 08:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752397AbYKRNv4
+	id S1753488AbYKRNwj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 08:52:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYKRNwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 08:51:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46976 "EHLO mx2.mail.elte.hu"
+	Tue, 18 Nov 2008 08:52:30 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47109 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752029AbYKRNvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 08:51:55 -0500
-Date: Tue, 18 Nov 2008 14:51:05 +0100
+	id S1752233AbYKRNw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 08:52:29 -0500
+Date: Tue, 18 Nov 2008 14:52:21 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       hawk@pld-linux.org, stable@kernel.org
-Subject: Re: [PATCH] x86: always select SWIOTLB on x86_64
-Message-ID: <20081118135105.GD31146@elte.hu>
-References: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: ftrace: preemptoff selftest not working
+Message-ID: <20081118135221.GE31146@elte.hu>
+References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1227008661-1609-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,22 +37,30 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Impact: fixes korg bugzilla 11980
+> > Hence the trace buffer will be empty. The patch below makes the 
+> > selftests working for me, since then they run in preemptible 
+> > context. But it is ugly and I'm not proposing it for upstream ;)
+> > 
+> > Just wanted to make you aware that there is a bug.
 > 
-> A kernel for a 64bit x86 system should always contain the swiotlb code
-> in case it is booted on a machine without any hardware IOMMU supported
-> by the kernel and more than 4GB of RAM. This patch changes Kconfig to
-> always compile swiotlb into the kernel for x86_64.
+> Yep, this might be a better answer than what I put into linux-tip 
+> (and my git repo).
 > 
-> Cc: hawk@pld-linux.org
-> Cc: stable@kernel.org
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> See:
+> 
+>   ftrace: force pass of preemptoff selftest
+> 
+> The cause of the bug was the conversion of the BKL back to a 
+> spinlock, and making it non preempt.  The initcall code is called 
+> with the BKL applied which now means it can not preempt. This breaks 
+> the preempt tracer selftest.
+> 
+> My solution was to just force a pass if this is detected. Perhaps 
+> moving the test might be better.
 
-applied to tip/x86/iommu, thanks Joerg!
+it would be better to just drop the BKL in that selftest. (or in all 
+selftests - an elevated preempt count will skew a number of things)
 
 	Ingo
