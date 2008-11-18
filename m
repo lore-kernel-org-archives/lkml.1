@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbYKRXlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbYKRXoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbYKRXlk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 18:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYKRXlb
+	id S1753502AbYKRXoZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 18:44:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752270AbYKRXoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 18:41:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54926 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751737AbYKRXlb (ORCPT
+	Tue, 18 Nov 2008 18:44:17 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:18372 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbYKRXoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 18:41:31 -0500
-Date: Tue, 18 Nov 2008 15:41:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tom.leiming@gmail.com, kay.sievers@vrfy.org, greg@kroah.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/ksysfs.c:fix dependence on CONFIG_NET
-Message-Id: <20081118154128.56d1d3ca.akpm@linux-foundation.org>
-In-Reply-To: <20081118153818.e623ba03.akpm@linux-foundation.org>
-References: <1226830929-6610-1-git-send-email-tom.leiming@gmail.com>
-	<20081118153818.e623ba03.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 18 Nov 2008 18:44:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=NvZoO4gf1wwW//Bz+OFghELN05p8VDfdm6zQlZPSdD/hwDz7y1A6mj77BUX2giCJWW
+         jciFXAiCnhtvJOzMvvSDl1K7PIe9TLNZ2MSrc6LE6BWdLXTc/Lv0oNaY5nS5lDaoxAFG
+         Yj43Ap2A/q1xdhvvSoU9qPHtUx+1eWSM7wag4=
+From: Eric Lacombe <goretux@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [x86] do_arch_prctl - bug?
+Date: Wed, 19 Nov 2008 00:44:11 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.5; KDE/4.1.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <200811181835.07360.goretux@gmail.com>
+In-Reply-To: <200811181835.07360.goretux@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200811190044.11566.goretux@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 18 Nov 2008 15:38:18 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+I look at the Intel docs (vol. 3A) again, and see that in 64 bits mode the 
+hidden field gs.base are physically mapped to the MSR, so it seems that in 
+order to load gs.base we don't need to load gs (like in 32 bits mode), but 
+rather we only need to load the MSR.
 
-> On Sun, 16 Nov 2008 18:22:09 +0800
-> tom.leiming@gmail.com wrote:
-> 
-> > From: Ming Lei <tom.leiming@gmail.com>
-> > 
-> > Access to uevent_seqnum and uevent_helper does not need to
-> > depend on CONFIG_NET, so remove it.
-> > 
-> > Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> > ---
-> >  kernel/ksysfs.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
-> > index 08dd8ed..528dd78 100644
-> > --- a/kernel/ksysfs.c
-> > +++ b/kernel/ksysfs.c
-> > @@ -24,7 +24,7 @@ static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
-> >  static struct kobj_attribute _name##_attr = \
-> >  	__ATTR(_name, 0644, _name##_show, _name##_store)
-> >  
-> > -#if defined(CONFIG_HOTPLUG) && defined(CONFIG_NET)
-> > +#if defined(CONFIG_HOTPLUG)
-> >  /* current uevent sequence number */
-> >  static ssize_t uevent_seqnum_show(struct kobject *kobj,
-> >  				  struct kobj_attribute *attr, char *buf)
-> > @@ -137,7 +137,7 @@ struct kobject *kernel_kobj;
-> >  EXPORT_SYMBOL_GPL(kernel_kobj);
-> >  
-> >  static struct attribute * kernel_attrs[] = {
-> > -#if defined(CONFIG_HOTPLUG) && defined(CONFIG_NET)
-> > +#if defined(CONFIG_HOTPLUG)
-> >  	&uevent_seqnum_attr.attr,
-> >  	&uevent_helper_attr.attr,
-> >  #endif
-> 
-> I think the story here is that uevent uses netlink, and with
-> CONFIG_NET=n, we have no netlink, so that code couldn't do anything
-> anyway.
-> 
+So I don't understand the purpose of load_gs_index in that context :
 
-Or not.  Perhaps we can still use uevent_helper in this case?
+if (doit) {
+	load_gs_index(0);
+	ret = checking_wrmsrl(MSR_KERNEL_GS_BASE, addr);
+}
 
-(Getting a bit tired of writing people's changelogs for them!)
+Why don't we only load the MSR ?
+What is the purpose of calling load_gs_index with 0 as parameter ?
+
+Thanks in advance for your response,
+
+	Eric
+
+> ENTRY(native_load_gs_index)
+>         CFI_STARTPROC
+>         pushf
+>         CFI_ADJUST_CFA_OFFSET 8
+>         DISABLE_INTERRUPTS(CLBR_ANY | ~(CLBR_RDI))
+>         SWAPGS
+> gs_change:
+>         movl %edi,%gs
+> 2:      mfence          /* workaround */
+>         SWAPGS
+>         popf
+>         CFI_ADJUST_CFA_OFFSET -8
+>         ret
+>         CFI_ENDPROC
+> ENDPROC(native_load_gs_index)
+
