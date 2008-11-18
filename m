@@ -1,104 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYKRRGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYKRRME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYKRRGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 12:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbYKRRGi
+	id S1754204AbYKRRME (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 12:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbYKRRLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 12:06:38 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:57647 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754700AbYKRRGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 12:06:37 -0500
-Date: Tue, 18 Nov 2008 18:06:35 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: ftrace: preemptoff selftest not working
-Message-ID: <20081118170635.GB4417@osiris.boeblingen.de.ibm.com>
-References: <20081118125359.GA4417@osiris.boeblingen.de.ibm.com> <alpine.DEB.1.10.0811180826510.15003@gandalf.stny.rr.com> <20081118135221.GE31146@elte.hu> <alpine.DEB.1.10.0811180931270.15003@gandalf.stny.rr.com> <20081118144751.GA30358@elte.hu>
+	Tue, 18 Nov 2008 12:11:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47517 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751058AbYKRRLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 12:11:52 -0500
+Date: Tue, 18 Nov 2008 12:11:23 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rml@tech9.net, Alasdair G Kergon <agk@redhat.com>,
+       Milan Broz <mbroz@redhat.com>
+Subject: Re: Active waiting with yield()
+In-Reply-To: <20081118144053.0072d54c@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.64.0811181157260.13418@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0811141327100.22830@hs20-bc2-1.build.redhat.com>
+ <20081114190616.30dd273e@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811141412290.12992@hs20-bc2-1.build.redhat.com>
+ <1226696221.7685.8148.camel@twins> <Pine.LNX.4.64.0811141630590.6783@hs20-bc2-1.build.redhat.com>
+ <1226789714.8172.0.camel@lappy.programming.kicks-ass.net>
+ <Pine.LNX.4.64.0811171228500.4019@hs20-bc2-1.build.redhat.com>
+ <20081117180149.7a48d2e9@lxorguk.ukuu.org.uk>
+ <Pine.LNX.4.64.0811180921450.12274@hs20-bc2-1.build.redhat.com>
+ <20081118144053.0072d54c@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20081118144751.GA30358@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 03:47:51PM +0100, Ingo Molnar wrote:
+On Tue, 18 Nov 2008, Alan Cox wrote:
+
+> > You will touch the wait queue always when finishing the last pending 
+> > request --- just to find out that there is no one waiting on it.
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> Why ? If my fast path for this something like
 > 
-> > 
-> > On Tue, 18 Nov 2008, Ingo Molnar wrote:
-> > > 
-> > > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > 
-> > > > > Hence the trace buffer will be empty. The patch below makes the 
-> > > > > selftests working for me, since then they run in preemptible 
-> > > > > context. But it is ugly and I'm not proposing it for upstream ;)
-> > > > > 
-> > > > > Just wanted to make you aware that there is a bug.
-> > > > 
-> > > > Yep, this might be a better answer than what I put into linux-tip 
-> > > > (and my git repo).
-> > > > 
-> > > > See:
-> > > > 
-> > > >   ftrace: force pass of preemptoff selftest
-> > > > 
-> > > > The cause of the bug was the conversion of the BKL back to a 
-> > > > spinlock, and making it non preempt.  The initcall code is called 
-> > > > with the BKL applied which now means it can not preempt. This breaks 
-> > > > the preempt tracer selftest.
-> > > > 
-> > > > My solution was to just force a pass if this is detected. Perhaps 
-> > > > moving the test might be better.
-> > > 
-> > > it would be better to just drop the BKL in that selftest. (or in all 
-> > > selftests - an elevated preempt count will skew a number of things)
-> > 
-> > I have no problem with that, but does the BKL play any role for 
-> > being held? I have no idea why it is taken in boot up, so I'm 
-> > hestiant to touch it.
+> 	if (unlikely(foo->unload_pending) && count == 0)
+> 		wake_up(..)
 > 
-> we can drop it in selected initcalls just fine. Its only role is 
-> old-style init functions racing with other async contexts of 
-> themselves.
+> chances are that I can put unload_pending somewhere in a cache line with
+> other stuff (certainly for L2) and it will get predicted well.
 
-Something like below works fine for me...
+This makes a code branch that is very rarely tested and a potential bug. 
+Every such rarely executed branch is a danger and even a silly typo in the 
+code can hide there for many years without being noticed.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+These rare branches are inevitable at some places, I just don't see a 
+reason why make deliberately more of them.
 
- kernel/trace/trace.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+> > And besides cache line, there is coding and testing overhead with wait 
+> > queues.
+> 
+> If you want correctness you don't want busy waiting with yields - as Ingo
+> pointed out already thats a bug in itself with hard realtime.
 
-Index: linux-2.6/kernel/trace/trace.c
-===================================================================
---- linux-2.6.orig/kernel/trace/trace.c
-+++ linux-2.6/kernel/trace/trace.c
-@@ -482,6 +482,13 @@ int register_tracer(struct tracer *type)
- 	}
- 
- #ifdef CONFIG_FTRACE_STARTUP_TEST
-+	/*
-+	 * When this gets called we hold the BKL which means that preemption
-+	 * is disabled. Various trace selftests however need to disable
-+	 * and enable preemption for successful tests. So we drop the BKL here
-+	 * and grab it after the tests again.
-+	 */
-+	unlock_kernel();
- 	if (type->selftest) {
- 		struct tracer *saved_tracer = current_trace;
- 		struct trace_array *tr = &global_trace;
-@@ -515,6 +522,7 @@ int register_tracer(struct tracer *type)
- 		}
- 		printk(KERN_CONT "PASSED\n");
- 	}
-+	lock_kernel();
- #endif
- 
- 	type->next = trace_types;
+So, I say msleep(1) instead of yield(). What are the counterarguments to 
+msleep?
+
+> > So what are the reasons why you (and others) are against active waiting? 
+> > All you are saying is that my reasons are wrong, but you haven't single 
+> > example when active waiting causes trouble. If there is a workload when 
+> 
+> Untrue - I've given very clear reasons twice, and Ingo has given you
+> more. If you don't wish to accept the answers that is your problem not
+> mine, just expect such hacks to get a NAK and not make the kernel.
+
+If it is only a matter of coding style and there is no valid reason why 
+msleep(1) when unloading the driver would hurt. Just say it "we have this 
+coding policy, we want the code to look like a state machine independent 
+on the timer".
+
+But don't invent pseudoreasons, such that: the system boots 30 seconds, 
+shuts down in 5 seconds, and that 1ms-10ms sleep on shutdown is bad for 
+virtualization and power consumption and performance and whatever --- even 
+if it actually happens only to one user in a few years.
+
+Mikulas
+
+> Alan
+> --
+> "I can only provide the information, I can't make you hear it."
+> 		- Shelley Bainter
+> 
