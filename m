@@ -1,87 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbYKRSLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbYKRSMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750844AbYKRSLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 13:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbYKRSLj
+	id S1753033AbYKRSMv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 13:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751867AbYKRSMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 13:11:39 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59831 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750766AbYKRSLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 13:11:39 -0500
-Date: Tue, 18 Nov 2008 19:09:51 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Miquel van Smoorenburg <mikevs@xs4all.ne>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
-Subject: Re: next-20081114: WARNING: at block/blk-barrier.c:246 blk_do_ordered()
-Message-ID: <20081118180951.GF26308@kernel.dk>
-References: <a4423d670811140556o45f0063dn85f695f74d158b03@mail.gmail.com> <20081115160739.GA26778@kernel.dk> <a4423d670811150925qf74b63dy1ef923347140a8fe@mail.gmail.com> <a4423d670811170739w3cab002aqda014ab87ebed529@mail.gmail.com> <20081117180604.GV26778@kernel.dk> <a4423d670811181005r3bbd99efk5b57a16fc3a7b767@mail.gmail.com> <a4423d670811181007o707540bahd3f1911b1d5a6f0d@mail.gmail.com>
+	Tue, 18 Nov 2008 13:12:43 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:29642 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbYKRSMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 13:12:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=XKsRapeuvuERgc0vx04zF/HXBmt0aZEi3o0eqZ9CWl8HyLyhAdawnr6OCjDKOkNJQl
+         SbEWbzHuXeebcnOPUZ122emboO6o+2OXdWpjSly9Uhi4h3wdWPlQHcvRCAmiGmwtD2mY
+         nw8+XSGS3Fl/Wy4+tWRLbc/ncwJMTRQb80Kck=
+Date: Tue, 18 Nov 2008 18:12:26 +0000
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Eric Biederman <ebiederm@xmision.com>
+Subject: [Patch] ipc/ipc_sysctl.c: move the definition of
+	ipc_auto_callback()
+Message-ID: <20081118181226.GG3185@hack.voiplan.pt>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a4423d670811181007o707540bahd3f1911b1d5a6f0d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18 2008, Alexander Beregalov wrote:
-> 2008/11/18 Alexander Beregalov <a.beregalov@gmail.com>:
-> > 2008/11/17 Jens Axboe <jens.axboe@oracle.com>:
-> >> On Mon, Nov 17 2008, Alexander Beregalov wrote:
-> >>> 2008/11/15 Alexander Beregalov <a.beregalov@gmail.com>:
-> >>> > 2008/11/15 Jens Axboe <jens.axboe@oracle.com>:
-> >>> >> On Fri, Nov 14 2008, Alexander Beregalov wrote:
-> >>> >>> WARNING: at block/blk-barrier.c:246 blk_do_ordered+0x22b/0x26a()
-> >>> >>> Modules linked in:
-> >>> >>> Pid: 0, comm: swapper Not tainted 2.6.28-rc4-next-20081114 #3
-> >>> >>> Call Trace:
-> >>> >>>  <IRQ>  [<ffffffff80236d63>] warn_on_slowpath+0x58/0x7d
-> >>> >>>  [<ffffffff802570e3>] ? mark_lock+0x1c/0x37a
-> >>> >>>  [<ffffffff803a69f9>] ? elv_rb_del+0x30/0x4b
-> >>> >>>  [<ffffffff803b1092>] ? cfq_remove_request+0x180/0x1d8
-> >>> >>>  [<ffffffff803afd03>] ? __cfq_slice_expired+0xd6/0xeb
-> >>> >>>  [<ffffffff803afd31>] ? cfq_slice_expired+0x19/0x1b
-> >>> >>>  [<ffffffff803b1832>] ? cfq_dispatch_requests+0x2c1/0x37e
-> >>> >>>  [<ffffffff803aa98c>] blk_do_ordered+0x22b/0x26a
-> >>> >>>  [<ffffffff803a6560>] elv_next_request+0x1d0/0x210
-> >>> >>>  [<ffffffff80439c7c>] scsi_request_fn+0x9e/0x539
-> >>> >>>  [<ffffffff80255c66>] ? put_lock_stats+0xe/0x27
-> >>> >>>  [<ffffffff803a827e>] blk_invoke_request_fn+0x3b/0x6e
-> >>> >>>  [<ffffffff803a87fd>] __blk_run_queue+0x25/0x29
-> >>> >>>  [<ffffffff803a8822>] blk_run_queue+0x21/0x35
-> >>> >>>  [<ffffffff80439509>] scsi_run_queue+0x2cf/0x379
-> >>> >>>  [<ffffffff8043a33e>] scsi_next_command+0x36/0x46
-> >>> >>>  [<ffffffff8043a509>] scsi_end_request+0x92/0xa4
-> >>> >>>  [<ffffffff8043aae7>] scsi_io_completion+0x1a7/0x3ad
-> >>> >>>  [<ffffffff80434551>] scsi_finish_command+0xe9/0xf2
-> >>> >>>  [<ffffffff8043afd5>] scsi_softirq_done+0x10e/0x117
-> >>> >>>  [<ffffffff803ac393>] blk_done_softirq+0x7f/0x8f
-> >>> >>>  [<ffffffff8023c173>] __do_softirq+0x70/0x101
-> >>> >>>  [<ffffffff8020cc0c>] call_softirq+0x1c/0x28
-> >>> >>>  [<ffffffff8020e229>] do_softirq+0x39/0x8a
-> >>> >>>  [<ffffffff8023bd78>] irq_exit+0x45/0xa2
-> >>> >>>  [<ffffffff8020e53a>] do_IRQ+0x16a/0x19c
-> >>> >>>  [<ffffffff8020bceb>] ret_from_intr+0x0/0xf
-> >>> >>>  <EOI>  [<ffffffff80212e09>] ? mwait_idle+0x3e/0x48
-> >>> >>>  [<ffffffff80212e00>] ? mwait_idle+0x35/0x48
-> >>> >>>  [<ffffffff8020a940>] ? cpu_idle+0x51/0xba
-> >>> >>>  [<ffffffff80514f9c>] ? rest_init+0x70/0x72
-> >>> >>> ---[ end trace 115cb4be7e150bb9 ]---
-> >>> >>
-> >>> >> I'm assuming this is new with -next and doesn't happen with 2.6.28-rc4?
-> >>> > Yes.
-> >>> >> Is it reproducible in -next?
-> >>> > I have seen it only once yet.
-> >>>
-> >>> I have the same warning on 2.6.28-rc5-next-20081117, reproducible on dbench.
-> > Bisected down to 70bfe2de81b32969db1b4939bf171bbe55bcf1ef
-> > "elevator prevent flushing small requests to device"
-> forget: revert fixes it.
 
-That was my main culprit, thanks a lot for testing and taking the time
-to bisect! I'll take a look at it and probably ask you to test a patch.
+proc_ipcauto_dointvec_minmax() is the only user of ipc_auto_callback(),
+since the former function is protected by CONFIG_PROC_FS, so should be
+the latter one.
 
--- 
-Jens Axboe
+Just move its definition down.
+
+
+Signed-off-by: WANG Cong <wangcong@zeuux.org>
+Cc: Eric Biederman <ebiederm@xmision.com>
+
+---
+diff --git a/ipc/ipc_sysctl.c b/ipc/ipc_sysctl.c
+index 0dfebc5..4a7a12c 100644
+--- a/ipc/ipc_sysctl.c
++++ b/ipc/ipc_sysctl.c
+@@ -26,29 +26,6 @@ static void *get_ipc(ctl_table *table)
+ 	return which;
+ }
+ 
+-/*
+- * Routine that is called when the file "auto_msgmni" has successfully been
+- * written.
+- * Two values are allowed:
+- * 0: unregister msgmni's callback routine from the ipc namespace notifier
+- *    chain. This means that msgmni won't be recomputed anymore upon memory
+- *    add/remove or ipc namespace creation/removal.
+- * 1: register back the callback routine.
+- */
+-static void ipc_auto_callback(int val)
+-{
+-	if (!val)
+-		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+-	else {
+-		/*
+-		 * Re-enable automatic recomputing only if not already
+-		 * enabled.
+-		 */
+-		recompute_msgmni(current->nsproxy->ipc_ns);
+-		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
+-	}
+-}
+-
+ #ifdef CONFIG_PROC_FS
+ static int proc_ipc_dointvec(ctl_table *table, int write, struct file *filp,
+ 	void __user *buffer, size_t *lenp, loff_t *ppos)
+@@ -94,6 +71,29 @@ static int proc_ipc_doulongvec_minmax(ctl_table *table, int write,
+ 					lenp, ppos);
+ }
+ 
++/*
++ * Routine that is called when the file "auto_msgmni" has successfully been
++ * written.
++ * Two values are allowed:
++ * 0: unregister msgmni's callback routine from the ipc namespace notifier
++ *    chain. This means that msgmni won't be recomputed anymore upon memory
++ *    add/remove or ipc namespace creation/removal.
++ * 1: register back the callback routine.
++ */
++static void ipc_auto_callback(int val)
++{
++	if (!val)
++		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
++	else {
++		/*
++		 * Re-enable automatic recomputing only if not already
++		 * enabled.
++		 */
++		recompute_msgmni(current->nsproxy->ipc_ns);
++		cond_register_ipcns_notifier(current->nsproxy->ipc_ns);
++	}
++}
++
+ static int proc_ipcauto_dointvec_minmax(ctl_table *table, int write,
+ 	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
+ {
+
 
