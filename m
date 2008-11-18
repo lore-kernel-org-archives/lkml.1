@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbYKRAME@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbYKRANz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752005AbYKRAME (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 17 Nov 2008 19:12:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbYKRALq
+	id S1753303AbYKRANz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 17 Nov 2008 19:13:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbYKRANo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 17 Nov 2008 19:11:46 -0500
-Received: from ozlabs.org ([203.10.76.45]:43299 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752553AbYKRALp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 17 Nov 2008 19:11:45 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 17 Nov 2008 19:13:44 -0500
+Received: from rv-out-0506.google.com ([209.85.198.230]:65033 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbYKRANn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 17 Nov 2008 19:13:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=H7R3rqBW6JMA8ULDlovdTxkLBBBBm9xGji+2wRwtPIkUnh8L/YKzxO2AEnGHwyKaZV
+         AJhG3nMp6vypyGaVSScM4XBDKjZQItLSa3A2qiItANpqwyucu6K8zSC+aK9FGBWPssTi
+         Ls55HPZIvQrFFFmVwSfXXjxW52h4NGvOW/vgY=
+Date: Mon, 17 Nov 2008 18:13:36 -0600
+From: Jay Cliburn <jcliburn@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: csnook@redhat.com, atl1-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [atl1-devel] atl2: don't mess up irq on suspend/resume
+ (probably msi only)
+Message-ID: <20081117181336.1a270561@osprey.hogchain.net>
+In-Reply-To: <4921E574.3090602@tuffmail.co.uk>
+References: <49201401.1060600@tuffmail.co.uk>
+	<4921E574.3090602@tuffmail.co.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18722.2107.970887.768477@cargo.ozlabs.ibm.com>
-Date: Tue, 18 Nov 2008 11:11:39 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Large stack usage in fs code (especially for PPC64)
-In-Reply-To: <alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
-References: <alpine.DEB.1.10.0811171508300.8722@gandalf.stny.rr.com>
-	<alpine.LFD.2.00.0811171300410.18283@nehalem.linux-foundation.org>
-	<1226963596.7178.254.camel@pasglop>
-	<alpine.LFD.2.00.0811171522030.18283@nehalem.linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+[adding netdev to cc list]
 
-> > > It's made worse by the fact that they 
-> > > also have horribly bad TLB fills on their broken CPU's, and years and 
-> > > years of telling people that the MMU on ppc's are sh*t has only been 
-> > > reacted to with "talk to the hand, we know better".
-> > 
-> > Who are you talking about here precisely ? I don't think either Paul or
-> > I every said something nearly around those lines ... Oh well.
+On Mon, 17 Nov 2008 21:43:16 +0000
+Alan Jenkins <alan-jenkins@tuffmail.co.uk> wrote:
+
+
+> Don't listen to me.  The problem went away because when I was testing
+> my patch, I plugged the ethernet in and actually used it.  My patch
+> doesn't seem to fix anything.
 > 
-> Every single time I've complained about it, somebody from IBM has said ".. 
-> but but AIX".
+> So I now have the steps to reproduce this warning: remove the ethernet
+> cable and suspend.
 > 
-> This time it was Paul. Sometimes it has been software people who agree, 
+> Also, I was speaking rubbish because the warning isn't on the resume
+> path.  It seems to be when network-manager re-opens the device on
+> resume.
+> 
+> I'll have another look for possible culprits.  Hints appreciated :).
 
-Maybe I wasn't clear.  I was reporting the reaction I get from the
-hardware designers, who often like to push off the hard problems to
-software to fix.
+Does this help?
 
-Keep flaming, by the way.  It provides me with some amount of
-assistance in my quest to get the hardware designers to do better. ;)
-
-Also, you didn't respond to my comments about the purely software
-benefits of a larger page size.
-
-Paul.
+diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+index f5bdc92..5b292f0 100644
+--- a/drivers/net/atlx/atl2.c
++++ b/drivers/net/atlx/atl2.c
+@@ -1690,10 +1690,6 @@ static int atl2_resume(struct pci_dev *pdev)
+ 
+ 	ATL2_WRITE_REG(&adapter->hw, REG_WOL_CTRL, 0);
+ 
+-	err = atl2_request_irq(adapter);
+-	if (netif_running(netdev) && err)
+-		return err;
+-
+	atl2_reset_hw(&adapter->hw);
+ 
+	if (netif_running(netdev))
