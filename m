@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752963AbYKRMde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbYKRMh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752963AbYKRMde (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 07:33:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbYKRMdZ
+	id S1752941AbYKRMh6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 07:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbYKRMht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 07:33:25 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56947 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbYKRMdY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 07:33:24 -0500
-Date: Tue, 18 Nov 2008 12:32:15 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hitoshi Mitake <h.mitake@gmail.com>,
-       Hitoshi Mitake <mitake@clustcom.com>, Doug Thompson <norsk5@yahoo.com>,
-       dougthompson@xmission.com, linux-kernel@vger.kernel.org,
-       ktaka@clustcom.com, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 1/1] edac x38: new MC driver module
-Message-ID: <20081118123215.GB30509@flint.arm.linux.org.uk>
-Mail-Followup-To: Ralf Baechle <ralf@linux-mips.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Hitoshi Mitake <h.mitake@gmail.com>,
-	Hitoshi Mitake <mitake@clustcom.com>,
-	Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
-	linux-kernel@vger.kernel.org, ktaka@clustcom.com,
-	linux-arch@vger.kernel.org
-References: <20081105222911.d76e7e1c.mitake@clustcom.com> <413709.12821.qm@web50106.mail.re2.yahoo.com> <20081106164641.ed369060.akpm@linux-foundation.org> <20081107152830.a42766f3.mitake@clustcom.com> <20081106223122.8a255211.akpm@linux-foundation.org> <20081107153824.0ec934e6.mitake@clustcom.com> <20081106231102.aab83cd4.akpm@linux-foundation.org> <a6b9f31a0811090710y17e956bawf20675d6678b145e@mail.gmail.com> <20081109112646.97c594b5.akpm@linux-foundation.org> <20081118121620.GB8625@linux-mips.org>
-Mime-Version: 1.0
+	Tue, 18 Nov 2008 07:37:49 -0500
+Received: from styx.suse.cz ([82.119.242.94]:57963 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752084AbYKRMht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 07:37:49 -0500
+Date: Tue, 18 Nov 2008 13:37:48 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: using smp_processor_id() in preemptible [00000000] code:
+	latencytop/5621
+Message-ID: <20081118123748.GB5336@dhcp35.suse.cz>
+References: <20081114085820.GA5206@dhcp35.suse.cz> <200811160028.13724.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20081118121620.GB8625@linux-mips.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200811160028.13724.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Nov 18, 2008 at 12:16:20PM +0000, Ralf Baechle wrote:
-> On Sun, Nov 09, 2008 at 11:26:46AM -0800, Andrew Morton wrote:
+On Sun 16-11-08 00:28:12, Rafael J. Wysocki wrote:
+> On Friday, 14 of November 2008, Michal Hocko wrote:
+> > Hi Ingo,
+> > I am experiencing %subj whenever I run latencytop with the rc4 kernel. I
+> > have bisected down to the patch 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5
+> > I am not sure whether this is the same problem as the one reported by
+> > Maciej Rutecki (http://lkml.org/lkml/2008/11/12/266), but I have tried
+> > your patch (http://lkml.org/lkml/2008/11/12/295) and the problem is
+> > still there:
+> > BUG: using smp_processor_id() in preemptible [00000000] code:
+> > latencytop/5621
+> > caller is native_sched_clock+0x47/0x65
+> > Pid: 5621, comm: latencytop Not tainted 2.6.28-rc4 #13
+> > Call Trace:
+> >  [<c03f17c0>] ? printk+0xf/0x11
+> >  [<c022ad36>] debug_smp_processor_id+0xa2/0xb8
+> >  [<c01080d4>] native_sched_clock+0x47/0x65
+> >  [<c01259a9>] proc_sched_show_task+0xd72/0xdd0
+> >  [<c01a73c4>] sched_show+0x39/0x55
+> >  [<c018cc43>] seq_read+0xee/0x29a
+> >  [<c018cb55>] ? seq_read+0x0/0x29a
+> >  [<c017a04c>] vfs_read+0x87/0x12b
+> >  [<c017a189>] sys_read+0x3b/0x60
+> >  [<c0103a59>] sysenter_do_call+0x12/0x25
+> >  [<c03f0000>] ? cpu_callback+0x238/0x25b
+> > 
+> > I receive flood if this messages immediately after latencytop starts.
+> > Reverting 7cbaef9c83e58bbd4bdd534b09052b6c5ec457d5 solves the problem.
+> > Config is attached.
+> > 
+> > Let me know if you need some more testing (however I will afk until
+> > Tuesday).
 > 
-> > Perhaps it would be better to have a CONFIG_ARCH_HAS_READQ and to then
-> > disable these drivers on the architectures which don't provide
-> > readq/writeq support.
-> 
-> And we also need to define the exact semantics.  Questions coming to mind:
-> 
->   o are implementations performing 2 32-bit accesses acceptable?
->   o if so, what ordering for the two accesses is acceptable?
+> Please retest with 2.6.28-rc5.
 
-and don't forget to document the semantics.  If we're going to end up
-with CONFIG_ARCH_HAS_READQ which architectures can select, I suggest
-putting it in the help for that symbol.  Why not another random file
-in Documentation/ ?  Because it's a random file in Documentation/
-that'll be overlooked when someone decided to select ARCH_HAS_READQ.
-If it's along side the relevent config option, there is a higher
-chance it will be noticed.
+Still problem with rc5 (4e14e833ac3b97a4aa8803eea49f899adc5bb5f4).
+Ingo's patch from http://lkml.org/lkml/2008/11/16/26 fixes this problem
+
+> 
+> Thanks,
+> Rafael
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Michal Hocko
+L3 team 
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic
