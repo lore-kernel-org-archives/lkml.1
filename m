@@ -1,125 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbYKRQ7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbYKRRA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbYKRQ7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 18 Nov 2008 11:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbYKRQ6w
+	id S1754977AbYKRRA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 18 Nov 2008 12:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbYKRQ7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 18 Nov 2008 11:58:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:46018 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753785AbYKRQ6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 18 Nov 2008 11:58:49 -0500
-Date: Tue, 18 Nov 2008 18:59:05 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] simplify sig_ignored() pathes
-Message-ID: <20081118175905.GA17142@redhat.com>
+	Tue, 18 Nov 2008 11:59:03 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:32198 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754581AbYKRQ7A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 18 Nov 2008 11:59:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version
+         :content-type:content-transfer-encoding:content-disposition
+         :references;
+        b=JrnQThyEVSPusrM1yZ4rM+1wT3+5mmw+pKDdr5iLXXJIJyO1vEabd7ce9Yzvscniym
+         U5RKYKBGYymrDHqD9l3ZtWn5mEHcIzcHxG14TmJIMCMQ/qaeO3OPWojEIlNN5G8UmCeR
+         wymIaJUvcFrJRnxscY2fvNfpoqWfAcJdK01CM=
+Message-ID: <c62985530811180858u397fbac8h63f61b6d816abb46@mail.gmail.com>
+Date: Tue, 18 Nov 2008 17:58:59 +0100
+From: "=?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?=" <fweisbec@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 3/3] tracing/function-return-tracer: add the overrun field
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0811181151010.15003@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+References: <20081117084923.GD28786@elte.hu> <20081118145154.GC30358@elte.hu>
+	 <alpine.DEB.1.10.0811181006010.15003@gandalf.stny.rr.com>
+	 <20081118151326.GH30358@elte.hu>
+	 <alpine.DEB.1.10.0811181020350.15003@gandalf.stny.rr.com>
+	 <20081118155045.GJ30358@elte.hu>
+	 <c62985530811180831n132ed6dep77aa2684ff59861@mail.gmail.com>
+	 <20081118164019.GA18620@elte.hu>
+	 <c62985530811180847w30f5724dvb6dff8fd7f4913de@mail.gmail.com>
+	 <alpine.DEB.1.10.0811181151010.15003@gandalf.stny.rr.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The code which checks for ignored signals is a bit overcomplicated
-because tracehook_consider_ignored_signal() wants the "handler" arg.
-Can't we kill it? It is not used even with utrace, and even if it will
-be used later it is OK to read ->sighand again in the slow path.
+2008/11/18 Steven Rostedt <rostedt@goodmis.org>:
+> How about a compromise, start off the patch series getting it working with
+> task struct static array, and then finish the series with the dynamic
+> array.
+>
+> This is my development model, because it lets me know where the bugs are
+> better. If we find some strange bug, this can help pin point via a bisect
+> if the bug is with the general code, or with the use of a dynamic array.
+>
+> Just my preference ;-)
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
---- K-IS/include/linux/tracehook.h~2_SIG_IGNORED	2008-11-10 19:21:17.000000000 +0100
-+++ K-IS/include/linux/tracehook.h	2008-11-17 22:01:28.000000000 +0100
-@@ -388,17 +388,14 @@ static inline void tracehook_signal_hand
-  * tracehook_consider_ignored_signal - suppress short-circuit of ignored signal
-  * @task:		task receiving the signal
-  * @sig:		signal number being sent
-- * @handler:		%SIG_IGN or %SIG_DFL
-  *
-  * Return zero iff tracing doesn't care to examine this ignored signal,
-  * so it can short-circuit normal delivery and never even get queued.
-- * Either @handler is %SIG_DFL and @sig's default is ignore, or it's %SIG_IGN.
-  *
-  * Called with @task->sighand->siglock held.
-  */
- static inline int tracehook_consider_ignored_signal(struct task_struct *task,
--						    int sig,
--						    void __user *handler)
-+						    int sig)
- {
- 	return (task_ptrace(task) & PT_PTRACED) != 0;
- }
---- K-IS/kernel/signal.c~2_SIG_IGNORED	2008-11-17 19:54:09.000000000 +0100
-+++ K-IS/kernel/signal.c	2008-11-17 22:01:28.000000000 +0100
-@@ -41,44 +41,33 @@
- 
- static struct kmem_cache *sigqueue_cachep;
- 
--static void __user *sig_handler(struct task_struct *t, int sig)
-+static int sig_task_ignored(struct task_struct *t, int sig)
- {
- 	void __user *h = t->sighand->action[sig - 1].sa.sa_handler;
- 
--	/* drop SIGKILL early to not confuse wait_xxx_killable/etc */
--	if (unlikely(t->signal->flags & SIGNAL_UNKILLABLE) && h == SIG_DFL)
--		h = SIG_IGN;
--
--	return h;
--}
--
--static int sig_handler_ignored(void __user *handler, int sig)
--{
--	/* Is it explicitly or implicitly ignored? */
--	return handler == SIG_IGN ||
--		(handler == SIG_DFL && sig_kernel_ignore(sig));
-+	if (h == SIG_DFL) {
-+		/* init drops SIGKILL early to not confuse xxx_killable/etc */
-+		return sig_kernel_ignore(sig) ||
-+			unlikely(t->signal->flags & SIGNAL_UNKILLABLE);
-+	}
-+	return h == SIG_IGN;
- }
- 
- static int sig_ignored(struct task_struct *t, int sig)
- {
--	void __user *handler;
--
- 	/*
- 	 * Blocked signals are never ignored, since the
- 	 * signal handler may change by the time it is
- 	 * unblocked.
- 	 */
--	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
--		return 0;
--
--	handler = sig_handler(t, sig);
--	if (!sig_handler_ignored(handler, sig))
-+	if (sigismember(&t->blocked, sig) ||
-+	    sigismember(&t->real_blocked, sig) ||
-+	    !sig_task_ignored(t, sig))
- 		return 0;
--
- 	/*
- 	 * Tracers may want to know about even ignored signals.
- 	 */
--	return !tracehook_consider_ignored_signal(t, sig, handler);
-+	return !tracehook_consider_ignored_signal(t, sig);
- }
- 
- /*
-@@ -2338,7 +2327,7 @@ int do_sigaction(int sig, struct k_sigac
- 		 *   (for example, SIGCHLD), shall cause the pending signal to
- 		 *   be discarded, whether or not it is blocked"
- 		 */
--		if (sig_handler_ignored(sig_handler(t, sig), sig)) {
-+		if (sig_task_ignored(t, sig)) {
- 			sigemptyset(&mask);
- 			sigaddset(&mask, sig);
- 			rm_from_queue_full(&mask, &t->signal->shared_pending);
+Ooh. I first agreed with Ingo's arguments about the fact that distros
+can enable it whithout worrying.
+But as I read your message, I guess that would be better to start with
+static arrays to better find the bugs,
+state by state...
 
+Ingo, what do you think?
